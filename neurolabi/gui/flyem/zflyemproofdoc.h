@@ -52,9 +52,23 @@ public:
     return &m_bodyMerger;
   }
 
+  const ZFlyEmBodyMerger* getBodyMerger() const {
+    return &m_bodyMerger;
+  }
+
   void updateBodyObject();
 
   void clearData();
+
+  /*!
+   * \brief Get body ID at a certain location
+   *
+   * \return The body ID mapped by merge operations.
+   */
+  uint64_t getBodyId(int x, int y, int z);
+  uint64_t getBodyId(const ZIntPoint &pt);
+
+  std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -69,24 +83,15 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
-  /*!
-   * \brief Get body ID at a certain location
-   *
-   * \return The body ID mapped by merge operations.
-   */
-  uint64_t getBodyId(int x, int y, int z);
-  uint64_t getBodyId(const ZIntPoint &pt);
-
   void saveCustomBookmark();
   void downloadBookmark();
-
-  void enhanceTileContrast(bool highContrast);
-
   inline void setCustomBookmarkSaveState(bool state) {
     m_isCustomBookmarkSaved = state;
   }
 
   ZDvidSparseStack* getDvidSparseStack() const;
+
+  void enhanceTileContrast(bool highContrast);
 
 public:
   void notifyBodyMerged();

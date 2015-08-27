@@ -1327,7 +1327,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 }
 
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-                            NeuTube::EImageBackground bg)
+                            NeuTube::EImageBackground bg, int option)
 {
   if (tn == NULL || stack == NULL) {
     return false;
@@ -1384,20 +1384,34 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   y1 += 3;
   */
 
+  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    Stack_Invert_Value(slice);
+  }
+
+  Stack *denoised = Stack_Median_Filter_N(slice, 8, NULL);
+  C_Stack::kill(slice);
+  slice = denoised;
+
 #ifdef _DEBUG_2
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", slice);
 #endif
 
   //RC threshold
-  int thre = Stack_Threshold_RC(slice, 0, 65535);
+
+  int thre = 0;
+  if (option == 1) {
+    thre = Stack_Threshold_RC(slice, 0, 65535);
+  } else {
+    thre = Stack_Threshold_Triangle(slice, 0, 65535);
+  }
+//  int thre = Stack_Threshold_RC(slice, 0, thre2);
+
+
+//  int thre = (thre1 + thre2) / 2;
 
   //Binarize
   Stack_Threshold_Binarize(slice, thre);
   C_Stack::translate(slice, GREY, 1);
-
-  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-    Stack_Invert_Value(slice);
-  }
 
   Stack *skel = Stack_Bwthin(slice, NULL);
 
@@ -1411,7 +1425,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     }
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   C_Stack::write(GET_TEST_DATA_DIR + "/test2.tif", dist);
 #endif
 
@@ -1429,7 +1443,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
 
   ZStackProcessor::ShrinkSkeleton(skel, 3);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   C_Stack::write(GET_TEST_DATA_DIR + "/test3.tif", skel);
 #endif
 

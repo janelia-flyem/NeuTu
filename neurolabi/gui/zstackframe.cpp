@@ -836,6 +836,7 @@ void ZStackFrame::clearDecoration()
 void ZStackFrame::setBc(double greyScale, double greyOffset, int channel)
 {
   presenter()->setStackBc(greyScale, greyOffset, channel);
+  document()->setStackBc(greyScale, greyOffset, channel);
 }
 
 void ZStackFrame::synchronizeSetting()

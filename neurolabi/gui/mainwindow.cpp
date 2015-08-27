@@ -1028,9 +1028,10 @@ void MainWindow::createToolBars()
     m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
     m_ui->toolBar->addAction(m_ui->actionDVID_Bundle);
     //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
-    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
-    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
+//    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
+//    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
     m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
+    m_ui->toolBar->addSeparator();
     m_ui->toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
     m_ui->toolBar->addAction(m_ui->actionShape_Matching);
@@ -1504,6 +1505,7 @@ void MainWindow::openFileFunc2(const QString &fileName)
 
     emit progressAdvanced(0.3);
 
+    doc->moveToThread(QApplication::instance()->thread());
     emit docReady(doc);
 
     setCurrentFile(fileName);
@@ -1511,21 +1513,6 @@ void MainWindow::openFileFunc2(const QString &fileName)
     emit progressDone();
     reportFileOpenProblem(fileName, "Unrecognized file type.");
   }
-
-#if 0
-    reader = new ZStackDocReader;
-    //m_progressManager->notifyProgressAdvanced(0.2);
-    emit progressAdvanced(0.2);
-    if (reader->readFile(fileName) == false) {
-      delete reader;
-      reader = NULL;
-    }
-    emit progressAdvanced(0.3);
-   // m_progressManager->notifyProgressAdvanced(0.3);
-  }
-
-  emit docReaderReady(reader);
-#endif
 }
 
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
@@ -1561,7 +1548,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
     m_progress->setValue(++currentProgress);
     m_progress->show();
 //    QFuture<ZStackDocReader*> res =
-        QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+        QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
    // res.waitForFinished();
   }
 }
@@ -1583,7 +1570,7 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->show();
 
   //QFuture<ZStackDocReader*> res =
-  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
+  QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
 
 }
 

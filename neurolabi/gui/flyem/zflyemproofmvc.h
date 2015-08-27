@@ -3,12 +3,13 @@
 
 #include <QString>
 #include <QMetaType>
+#include <QSharedPointer>
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "qthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
-
+#include "zwindowfactory.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -155,11 +156,23 @@ public slots:
 
 //  void toggleEdgeMode(bool edgeOn);
 
+protected slots:
+  void detachCoarseBodyWindow();
+  void detachBodyWindow();
+  void detachSplitWindow();
+//  void closeBodyWindow(int index);
+  void closeBodyWindow(Z3DWindow *window);
+  void closeAllBodyWindow();
+  void updateCoarseBodyWindow();
+  void updateBodyWindow();
+
 protected:
   void customInit();
   void createPresenter();
 
 private:
+  void init();
+  void initBodyWindow();
   void launchSplitFunc(uint64_t bodyId);
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
@@ -169,6 +182,16 @@ private:
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
+
+  void makeCoarseBodyWindow();
+  void makeBodyWindow();
+  void makeSplitWindow();
+
+  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera);
+
+  void setWindowSignalSlot(Z3DWindow *window);
+  void updateBodyWindowPlane(
+      Z3DWindow *window, const ZStackViewParam &viewParam);
 
 private:
   bool m_showSegmentation;
@@ -184,6 +207,15 @@ private:
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+
+  Z3DMainWindow *m_bodyViewWindow;
+  Z3DTabWidget *m_bodyViewers;
+  Z3DWindow *m_coarseBodyWindow;
+  Z3DWindow *m_bodyWindow;
+  Z3DWindow *m_splitWindow;
+  QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
+
+  ZDvidInfo m_dvidInfo;
 };
 
 template <typename T>

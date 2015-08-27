@@ -757,6 +757,7 @@ public:
 
   virtual void selectSwcNode(const ZRect2d &roi);
 
+  void setStackBc(double factor, double offset, int channel);
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }

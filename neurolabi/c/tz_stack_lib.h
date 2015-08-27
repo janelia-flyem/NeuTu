@@ -118,6 +118,8 @@ Stack* Scale_Double_Stack(double *fStack, int  width, int height,
 Stack* Scale_Double_Stack_P(double *fStack, int  width, int height, 
 			    int depth, int kind);
 
+void Stack_Scale(Stack *stack, int c, double factor, double offset);
+
 void Stretch_Stack_Value(Stack *stack);
 void Stretch_Stack_Value_Q(Stack *stack, double q);
 void Stack_Brighten_Bw(Stack *stack);

@@ -78,6 +78,30 @@ void ZFlyEmProofDoc::connectSignalSlot()
           this, SLOT(saveCustomBookmarkSlot()));
 }
 
+std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
+    NeuTube::EBodyLabelType labelType) const
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+  std::set<uint64_t> finalSet;
+  for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    const ZDvidLabelSlice *labelSlice = *iter;
+    const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
+    finalSet.insert(selected.begin(), selected.end());
+  }
+
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    finalSet = getBodyMerger()->getFinalLabel(finalSet);
+    break;
+  }
+
+  return finalSet;
+}
+
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();

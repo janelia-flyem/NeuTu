@@ -558,7 +558,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemsplitcommitdialog.h \
     zswctreenodeselector.h \
     zstackdocfactory.h \
-    zintcuboidobj.h
+    zintcuboidobj.h \
+    flyem/zflyembodywindowfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -981,7 +982,8 @@ SOURCES += main.cpp \
     dialogs/zflyemsplitcommitdialog.cpp \
     zswctreenodeselector.cpp \
     zstackdocfactory.cpp \
-    zintcuboidobj.cpp
+    zintcuboidobj.cpp \
+    flyem/zflyembodywindowfactory.cpp
 
 OTHER_FILES += \
     extlib.pri \

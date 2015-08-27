@@ -2862,9 +2862,9 @@ void ZStackPresenter::acceptActiveStroke()
         Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
         if (buddyDocument()->getStackBackground() ==
             NeuTube::IMAGE_BACKGROUND_BRIGHT) {
-          sgw->wf = Stack_Voxel_Weight_Sr;
+          sgw->wf = Stack_Voxel_Weight;
         } else {
-          sgw->wf = Stack_Voxel_Weight_S;
+          sgw->wf = Stack_Voxel_Weight_I;
         }
 
         double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
@@ -2888,8 +2888,16 @@ void ZStackPresenter::acceptActiveStroke()
 
         //sgw->wf = Stack_Voxel_Weight;
 
-        Int_Arraylist *path = Stack_Route(
-              buddyDocument()->getStack()->c_stack(), source, target, sgw);
+        int channel = 0;
+        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+          channel = 1;
+        }
+
+        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
+        sgw->greyFactor = m_greyScale[channel];
+        sgw->greyOffset = m_greyOffset[channel];
+
+        Int_Arraylist *path = Stack_Route(stack, source, target, sgw);
 
         newStroke->clear();
 #ifdef _DEBUG_2

@@ -220,7 +220,12 @@ void ZStackDoc::initNeuronTracer()
   m_neuronTracer.initConnectionTestWorkspace();
 //  m_neuronTracer.getConnectionTestWorkspace()->sp_test = 1;
   if (getStack() != NULL) {
-    m_neuronTracer.setIntensityField(getStack()->c_stack());
+    if (getTag() == NeuTube::Document::BIOCYTIN_STACK &&
+        getStack()->channelNumber() > 1) {
+      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
+    } else {
+      m_neuronTracer.setIntensityField(getStack()->c_stack());
+    }
   }
   m_neuronTracer.setBackgroundType(getStackBackground());
   if (getTag() == NeuTube::Document::FLYEM_BODY) {
@@ -5116,6 +5121,19 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(const ZPoint &center)
   return false;
 }
 
+void ZStackDoc::setStackBc(double factor, double offset, int channel)
+{
+  if (channel == 0) {
+    if (factor != 1.0 || offset != 0.0) {
+      m_neuronTracer.setBcAdjust(true);
+      m_neuronTracer.setGreyFactor(factor);
+      m_neuronTracer.setGrayOffset(offset);
+    } else {
+      m_neuronTracer.setBcAdjust(false);
+    }
+  }
+}
+
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
@@ -5745,8 +5763,10 @@ void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
     for (int iter = 0; iter < maxIter; ++iter) {
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
         if (SwcTreeNode::isRegular(tn)) {
-          SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
-          SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground());
+          if (!SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground())) {
+            SwcTreeNode::fitSignal(
+                  tn, getStack()->c_stack(), getStackBackground(), 2);
+          }
         }
         advanceProgress(step);
       }
@@ -5784,8 +5804,14 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
           getTag() == NeuTube::Document::BIOCYTIN_STACK) {
         stack = getStack()->c_stack(1);
       }
-      if (SwcTreeNode::fitSignal(&newNode, stack,
-                                 getStackBackground())) {
+      bool succ = SwcTreeNode::fitSignal(&newNode, stack,
+                                         getStackBackground());
+      if (!succ) {
+        succ = SwcTreeNode::fitSignal(&newNode, stack,
+                                      getStackBackground(), 2);
+      }
+
+      if (succ) {
         SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
                                offset.getZ());
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
