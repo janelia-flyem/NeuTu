@@ -205,6 +205,14 @@ public:
 
   static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
 
+
+  inline std::string getObjectId() const { return m_objectId; }
+  inline void setObjectId(const std::string &id) { m_objectId = id; }
+
+  inline std::string getObjectClass() const { return m_objectClass; }
+  inline void setObjectClass(const std::string &id) { m_objectClass = id; }
+
+
   inline void setZScale(double scale) { m_zScale = scale; }
 
   /*!
@@ -318,6 +326,7 @@ protected:
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;
+  std::string m_objectClass;
   std::string m_objectId;
   int m_zOrder;
   EType m_type;

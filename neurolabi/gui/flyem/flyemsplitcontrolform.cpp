@@ -34,6 +34,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(splitQuickViewTriggered()));
   connect(ui->view3dBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(bodyViewTriggered()));
+  connect(ui->coarseBodyViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(coarseBodyViewTriggered()));
   connect(ui->viewSplitPushButton, SIGNAL(clicked()),
           this, SIGNAL(splitViewTriggered()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()),

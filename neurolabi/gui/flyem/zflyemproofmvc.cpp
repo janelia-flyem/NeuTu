@@ -189,6 +189,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
 //  doc->updateFrame();
   doc->setDataDoc(m_doc);
 
+  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_bodyWindow);
 
@@ -1063,6 +1065,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         body->setMaskColor(labelSlice->getColor(
                              bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setSelectable(false);
+        body->getObjectMask()->setLabel(bodyId);
         getDocument()->addObject(body, true);
         m_splitProject.setBodyId(bodyId);
 
