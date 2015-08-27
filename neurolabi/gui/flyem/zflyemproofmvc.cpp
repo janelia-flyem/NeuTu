@@ -861,12 +861,17 @@ void ZFlyEmProofMvc::checkOutBody()
         } else {
           std::string owner = getSupervisor()->getOwner(bodyId);
           if (owner.empty()) {
-            owner = "unknown user";
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                    NeuTube::MSG_ERROR));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1 because it has been locked by %2").
+                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
           }
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("Failed to lock body %1 because it has been locked by %2").
-                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
       }
     }
@@ -928,12 +933,18 @@ void ZFlyEmProofMvc::annotateBody()
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
           if (owner.empty()) {
-            owner = "unknown user";
+//            owner = "unknown user";
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                    NeuTube::MSG_ERROR));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to start annotation. %1 has been locked by %2").
+                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
           }
-          emit messageGenerated(
-                ZWidgetMessage(
-                  QString("Failed to start annotation. %1 has been locked by %2").
-                  arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
         }
       }
     } else {
@@ -1115,7 +1126,12 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
     } else {
       std::string owner = getSupervisor()->getOwner(bodyId);
       if (owner.empty()) {
-        owner = "unknown user";
+//        owner = "unknown user";
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                NeuTube::MSG_ERROR));
       }
       emit messageGenerated(
             ZWidgetMessage(

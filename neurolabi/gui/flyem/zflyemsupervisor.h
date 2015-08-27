@@ -23,6 +23,8 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   const ZDvidTarget& getDvidTarget() const;
 
+  void setSever(const std::string &server);
+
   inline const std::string &getUserName() const {
     return m_userName;
   }
@@ -71,7 +73,7 @@ public slots:
 private:
   std::string m_userName;
   ZDvidTarget m_dvidTarget;
-  static const std::string m_server;
+  std::string m_server;
 };
 
 #endif // ZFLYEMSUPERVISOR_H
