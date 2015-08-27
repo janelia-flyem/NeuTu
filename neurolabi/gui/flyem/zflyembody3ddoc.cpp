@@ -10,6 +10,8 @@
 #include "z3dgraphfactory.h"
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidlabelslice.h"
+#include "zwidgetmessage.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_garbageJustDumped(false)
@@ -244,6 +246,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
 #ifdef _DEBUG_
   if (!m_actionMap.isEmpty()) {
     std::cout << "====Processing Event====" << std::endl;
+    emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
     for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
          iter != m_actionMap.end(); ++iter) {
       const BodyEvent &event = iter.value();
@@ -259,6 +262,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
 #ifdef _DEBUG_
+  emit messageGenerated(ZWidgetMessage("3D Body view updated."));
   std::cout << "====Processing done====" << std::endl;
 #endif
 }
@@ -399,17 +403,32 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
   ZSwcTree *tree = NULL;
 
   if (bodyId > 0) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-      ZObject3dScan obj;
-      reader.readBody(bodyId, &obj);
-      if (!obj.isEmpty()) {
-        obj.canonize();
-        tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
-        if (tree != NULL) {
-          tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+    ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
+    ZObject3dScan *cachedBody = NULL;
+    if (cachedStack != NULL) {
+      if (cachedStack->getObjectMask() != NULL) {
+        if (cachedStack->getObjectMask()->getLabel() == bodyId) {
+          cachedBody = cachedStack->getObjectMask();
         }
       }
+    }
+
+    if (cachedBody == NULL) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        ZObject3dScan obj;
+        reader.readBody(bodyId, &obj);
+        if (!obj.isEmpty()) {
+          obj.canonize();
+          tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
+        }
+      }
+    } else {
+      tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
+    }
+
+    if (tree != NULL) {
+      tree->setSource(ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
     }
   }
 

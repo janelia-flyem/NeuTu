@@ -24,6 +24,7 @@ public:
 signals:
   void exitingSplit();
   void quickViewTriggered();
+  void coarseBodyViewTriggered();
   void splitQuickViewTriggered();
   void bodyViewTriggered();
   void splitViewTriggered();
