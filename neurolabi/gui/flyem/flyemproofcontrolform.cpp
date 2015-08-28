@@ -129,7 +129,7 @@ void FlyEmProofControlForm::createMenu()
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
-  colorMenu->hide();
+  colorMenu->setEnabled(false);
 }
 
 void FlyEmProofControlForm::changeColorMap(QAction *action)
