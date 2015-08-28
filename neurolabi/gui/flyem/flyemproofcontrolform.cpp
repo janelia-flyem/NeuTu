@@ -109,6 +109,32 @@ void FlyEmProofControlForm::createMenu()
   QAction *selectBodyAction = new QAction("Select Body", this);
   m_mainMenu->addAction(selectBodyAction);
   connect(selectBodyAction, SIGNAL(triggered()), this, SLOT(selectBody()));
+
+  QMenu *colorMenu = m_mainMenu->addMenu("Color Map");
+  QActionGroup *colorActionGroup = new QActionGroup(this);
+  QAction *normalColorAction = new QAction("Normal", this);
+  normalColorAction->setCheckable(true);
+  normalColorAction->setChecked(true);
+
+  QAction *nameColorAction = new QAction("Name", this);
+  nameColorAction->setCheckable(true);
+
+  colorActionGroup->addAction(normalColorAction);
+  colorActionGroup->addAction(nameColorAction);
+  colorActionGroup->setExclusive(true);
+
+  colorMenu->addAction(normalColorAction);
+  colorMenu->addAction(nameColorAction);
+
+  connect(colorActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(changeColorMap(QAction*)));
+}
+
+void FlyEmProofControlForm::changeColorMap(QAction *action)
+{
+  if (action != NULL) {
+    emit changingColorMap(action->text());
+  }
 }
 
 void FlyEmProofControlForm::selectBody()

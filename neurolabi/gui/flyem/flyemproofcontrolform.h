@@ -41,6 +41,7 @@ signals:
   void bookmarkChecked(QString, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
   void userBookmarkChecked(ZFlyEmBookmark*);
+  void changingColorMap(QString);
 
 public slots:
   void setInfo(const QString &info);
@@ -59,6 +60,7 @@ private slots:
   void selectBody();
   void locateAssignedBookmark(const QModelIndex &index);
   void locateUserBookmark(const QModelIndex &index);
+  void changeColorMap(QAction *action);
 
 private:
   void createMenu();
