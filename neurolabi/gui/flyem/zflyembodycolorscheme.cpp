@@ -8,5 +8,4 @@ ZFlyEmBodyColorScheme::ZFlyEmBodyColorScheme()
 
 QColor ZFlyEmBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)
 {
-
 }
