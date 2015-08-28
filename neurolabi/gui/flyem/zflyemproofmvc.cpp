@@ -203,7 +203,12 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 void ZFlyEmProofMvc::updateCoarseBodyWindow()
 {
-  updateCoarseBodyWindow(false, false);
+  updateCoarseBodyWindow(false, false, false);
+}
+
+void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
+{
+  updateCoarseBodyWindow(false, false, true);
 }
 
 void ZFlyEmProofMvc::updateBodyWindow()
@@ -220,18 +225,24 @@ void ZFlyEmProofMvc::updateBodyWindow()
 }
 
 void ZFlyEmProofMvc::updateCoarseBodyWindow(
-    bool showingWindow, bool resettingCamera)
+    bool showingWindow, bool resettingCamera, bool isDeep)
 {
   if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
 
-
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
             ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+    }
+
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    if (isDeep) {
+      m_coarseBodyWindow->getDocument()->removeAllSwcTree(true);
     }
 
     std::set<std::string> oldBodySourceSet;
@@ -246,10 +257,6 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
         oldBodySourceSet.insert(tree->getSource());
       }
     }
-
-    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
-          ZStackDoc::OBJECT_MODIFIED_CACHE);
-
 
     ZDvidReader reader;
     reader.open(getDvidTarget());
@@ -542,9 +549,9 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          this, SLOT(updateCoarseBodyWindow()));
+          this, SLOT(updateCoarseBodyWindowDeep()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          this, SLOT(updateCoarseBodyWindow()));
+          this, SLOT(updateCoarseBodyWindowDeep()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           &m_mergeProject, SLOT(saveMergeOperation()));
@@ -757,7 +764,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     const std::set<uint64_t> &selected = slice->getSelectedOriginal();
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
-    updateCoarseBodyWindow(false, false);
+    updateCoarseBodyWindow(false, false, false);
     updateBodyWindow();
 //    m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
@@ -1252,7 +1259,7 @@ void ZFlyEmProofMvc::showCoarseBody3d()
     m_bodyViewers->addWindow(m_coarseBodyWindow, "Coarse Body View");
   }
 
-  updateCoarseBodyWindow(false, true);
+  updateCoarseBodyWindow(false, true, false);
 
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();

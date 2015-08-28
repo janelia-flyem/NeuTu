@@ -164,6 +164,7 @@ protected slots:
   void closeBodyWindow(Z3DWindow *window);
   void closeAllBodyWindow();
   void updateCoarseBodyWindow();
+  void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
 
 protected:
@@ -187,7 +188,8 @@ private:
   void makeBodyWindow();
   void makeSplitWindow();
 
-  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera);
+  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
+                              bool isDeep);
 
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
