@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QtGui>
 
+#include "dvid/zdvidtarget.h"
 #include "zjsonobject.h"
 
 namespace Ui {
@@ -21,6 +22,8 @@ public:
 public:
   void importBookmarksFile(const QString &filename);
 
+public slots:
+  void dvidTargetChanged(ZDvidTarget target);
 signals:
   void bodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
@@ -33,12 +36,15 @@ private slots:
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
 
+    void autoloadChanged(int state);
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
+    ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
+    void importBookmarksDvid(ZDvidTarget target);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

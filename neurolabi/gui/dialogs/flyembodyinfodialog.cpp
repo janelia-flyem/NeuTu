@@ -7,6 +7,9 @@
 #include "zjsonparser.h"
 #include "zstring.h"
 
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
+
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
 #include "zdialogfactory.h"
@@ -40,6 +43,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // UI connects
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
+    connect(ui->autoloadCheckBox, SIGNAL(stateChanged(int)), this, SLOT(autoloadChanged(int)));
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
     // data update connects
@@ -63,6 +67,27 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
   }
 }
 
+void FlyEmBodyInfoDialog::autoloadChanged(int state) {
+    // if new state = on, trigger load with current dvid target
+    if (state != 0) {
+        dvidTargetChanged(m_currentDvidTarget);
+    }
+}
+
+void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
+#ifdef _DEBUG_
+    std::cout << "dvid target changed to " << target.getUuid() << std::endl;
+#endif
+
+    // store dvid target (in case autoload is off now and turned on later)
+    m_currentDvidTarget = target;
+
+    // if target isn't null and autoload on, trigger load in thread
+    if (target.isValid() && ui->autoloadCheckBox->isChecked()) {
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+    }
+}
+
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
     QStandardItemModel* model = new QStandardItemModel(0, 4, parent);
     setHeaders(model);
@@ -74,6 +99,61 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(1, new QStandardItem(QString("# pre")));
     model->setHorizontalHeaderItem(2, new QStandardItem(QString("# post")));
     model->setHorizontalHeaderItem(3, new QStandardItem(QString("status")));
+}
+
+void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
+#ifdef _DEBUG_
+    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
+#endif
+
+    if (!target.isValid()) {
+        return;
+    }
+
+    // following example in ZFlyEmProofMvc::syncDvidBookmarks()
+    // check for data name and key
+    ZDvidReader reader;
+    /*
+    if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have body annotations" << std::endl;
+        #endif
+        return;
+    }
+    */
+
+    // I don't like this hack, but we seem not to have "hasKey()"
+    /*
+    if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+        "body_synapse", "body_synapses").size() == 0) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have body_synapses key" << std::endl;
+        #endif
+        return;
+    }
+    */
+
+
+    if (reader.open(target)) {
+        const QByteArray &bookmarkData = reader.readKeyValue(
+            // this is the data name Lowell where is storing this file;
+            //  the key, however, is not in Ting's constants yet
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+            "body_synapses");
+
+        ZJsonObject dataObject;
+        dataObject.decodeString(bookmarkData.data());
+
+        // validate; this method does its own error notifications
+        if (!isValidBookmarkFile(dataObject)) {
+            return;
+        }
+
+        emit dataChanged(dataObject.value("data"));
+    }
+
+    // no feedback if open fails?
+
 }
 
 void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
