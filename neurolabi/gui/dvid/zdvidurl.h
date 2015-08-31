@@ -32,6 +32,8 @@ public:
   std::string getSkeletonUrl() const;
   std::string getSkeletonUrl(uint64_t bodyId) const;
 
+  std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
+
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 

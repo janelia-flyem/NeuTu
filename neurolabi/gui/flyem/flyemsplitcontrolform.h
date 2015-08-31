@@ -73,7 +73,6 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   //ZFlyEmBodySplitProject m_project;
   QMenu *m_mainMenu;
-//  QMenu *m_bookmarkContextMenu;
 };
 
 #endif // FLYEMSPLITCONTROLFORM_H

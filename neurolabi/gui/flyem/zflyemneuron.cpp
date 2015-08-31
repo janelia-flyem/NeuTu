@@ -225,9 +225,16 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
 
         if (m_unscaledModel == NULL) {
           ZStackSkeletonizer skeletonizer;
-          ZJsonObject config;
-          config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                      "/json/skeletonize_fib25_len40.json");
+
+          ZDvidUrl dvidUrl(reader.getDvidTarget());
+          ZJsonObject config = reader.readJsonObject(
+                dvidUrl.getSkeletonConfigUrl(
+                  reader.getDvidTarget().getBodyLabelName()));
+
+          if (config.isEmpty()) {
+            config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                        "/json/skeletonize_fib25_len40.json");
+          }
           skeletonizer.configure(config);
           ZObject3dScan obj = reader.readBody(getId());
           if (!obj.isEmpty()) {

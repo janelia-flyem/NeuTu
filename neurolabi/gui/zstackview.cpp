@@ -1556,6 +1556,51 @@ void ZStackView::paintActiveDecoration()
   updateImageScreen();
 }
 
+ZStack* ZStackView::getStrokeMask(NeuTube::EColor color)
+{
+  if (m_objectCanvas != NULL){
+    updateObjectCanvas();
+
+    int slice = m_depthControl->value();
+    if (buddyPresenter()->interactiveContext().isObjectProjectView()) {
+      slice = -slice - 1;
+    }
+
+    foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
+      bool isMask = false;
+      if (obj->isEraser()) {
+        isMask = true;
+      } else {
+        switch (color) {
+        case NeuTube::RED:
+          isMask = (obj->getColor().red() > 0 && obj->getColor().green() == 0 &&
+                    obj->getColor().blue() == 0);
+          break;
+        case NeuTube::GREEN:
+          isMask = (obj->getColor().red() == 0 && obj->getColor().green() > 0 &&
+                    obj->getColor().blue() == 0);
+          break;
+        case NeuTube::BLUE:
+          isMask = (obj->getColor().red() == 0 && obj->getColor().green() == 0 &&
+                    obj->getColor().blue() > 0);
+          break;
+        }
+
+        if (isMask) {
+          obj->display(m_objectCanvasPainter,
+                       slice, buddyPresenter()->objectStyle());
+        }
+      }
+    }
+  }
+
+  ZStack *stack = getObjectMask(1);
+
+  paintObjectBuffer();
+
+  return stack;
+}
+
 ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
 {
 #if 0

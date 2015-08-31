@@ -1177,9 +1177,6 @@ private:
   //  Action map
   QMap<EActionItem, QAction*> m_actionMap;
 
-  //Context menu
-  //QMenu *m_swcNodeContextMenu;
-
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
   NeuTube::Document::ETag m_tag;

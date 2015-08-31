@@ -174,6 +174,7 @@
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
@@ -349,6 +350,7 @@ QSettings& MainWindow::getSettings()
   return NeutubeConfig::getInstance().getSettings();
 }
 
+
 void MainWindow::initDialog()
 {
   m_frameInfoDlg = new FrameInfoDialog(this);
@@ -455,6 +457,7 @@ void MainWindow::initDialog()
   m_synapseDlg = NULL;
 #endif
 }
+
 
 void MainWindow::configure()
 {
@@ -1555,14 +1558,6 @@ void MainWindow::openFile(const QStringList &fileNameList)
 
 void MainWindow::openFile(const QString &fileName)
 {
-
-  /*
-  if (m_docReader != NULL) {
-    RECORD_WARNING_UNCOND("Bad buffer");
-    delete m_docReader;
-    m_docReader = NULL;
-  }
-*/
   m_progress->setRange(0, 5);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
   int currentProgress = 0;
@@ -3998,11 +3993,6 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
     input.push_back(fileList.getFilePath(i));
   }
 
-  //input.resize(1);
-  //Filter_3d *filter = Gaussian_Filter_3d(0.5, 0.5, 0.5);
-  //input.resize(1);
-  //input[0] = dataPath + "/" + dataDir + "/" + "Pm2-8_171795.tif";
-
   for (std::vector<std::string>::const_iterator inputIter = input.begin();
        inputIter != input.end(); ++inputIter) {
     std::string output;
@@ -4889,13 +4879,17 @@ void MainWindow::on_actionMask_SWC_triggered()
                    NeuTube::MSG_WARNING);
             Stack *depthData = frame->document()->getStack()->c_stack(1);
             if (depthData != NULL) {
-              Biocytin::SwcProcessor::assignZ(wholeTree, *depthData);
+              Biocytin::SwcProcessor::AssignZ(wholeTree, *depthData);
             }
           }
         }
 
-        Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
-        Biocytin::SwcProcessor::removeOrphan(wholeTree);
+        Biocytin::SwcProcessor swcProcessor;
+        swcProcessor.setResolution(stackFrame->document()->getResolution());
+        swcProcessor.breakZJump(wholeTree);
+
+//        Biocytin::SwcProcessor::BreakZJump(wholeTree, 2.0);
+        Biocytin::SwcProcessor::RemoveOrphan(wholeTree);
         reporter.advance(0.1);
 
         skeletonizer.setConnectingBranch(true);
@@ -4936,8 +4930,8 @@ void MainWindow::on_actionMask_SWC_triggered()
         if (stackFrame != NULL) {
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
-          Biocytin::SwcProcessor::smoothRadius(wholeTree);
-          Biocytin::SwcProcessor::smoothZ(wholeTree);
+          Biocytin::SwcProcessor::SmoothRadius(wholeTree);
+          Biocytin::SwcProcessor::SmoothZ(wholeTree);
 
 #ifdef _DEBUG_2
         wholeTree->save(GET_DATA_DIR + "/test.swc");

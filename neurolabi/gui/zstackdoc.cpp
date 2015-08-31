@@ -169,7 +169,6 @@ ZStackDoc::~ZStackDoc()
   delete m_undoStack;
   delete m_labelField;
   delete m_stackFactory;
-  //delete m_swcNodeContextMenu;
 
   if (m_resDlg != NULL) {
     delete m_resDlg;
@@ -4279,6 +4278,8 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
+  case ZFileType::PNG_FILE:
+  case ZFileType::V3D_PBD_FILE:
     readStack(filePath.toStdString().c_str(), false);
     break;
   case ZFileType::FLYEM_NETWORK_FILE:

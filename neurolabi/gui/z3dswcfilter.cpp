@@ -1363,7 +1363,6 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
   if (e->type() == QEvent::MouseButtonRelease) { 
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
-      //bool showingContextMenu = (e->button() == Qt::RightButton);
       bool appending = (e->modifiers() == Qt::ControlModifier) ||
           (e->modifiers() == Qt::ShiftModifier) ||
           (e->modifiers() == Qt::AltModifier) ||

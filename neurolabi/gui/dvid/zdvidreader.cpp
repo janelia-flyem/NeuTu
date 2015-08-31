@@ -1362,3 +1362,17 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 
   return annotation;
 }
+
+ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
+{
+  ZJsonObject obj;
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(url.c_str());
+  const QByteArray &buffer = bufferReader.getBuffer();
+  if (!buffer.isEmpty()) {
+    obj.decodeString(buffer.constData());
+  }
+
+  return obj;
+}

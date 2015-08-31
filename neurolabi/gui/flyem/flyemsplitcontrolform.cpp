@@ -106,20 +106,6 @@ void FlyEmSplitControlForm::createMenu()
   QAction *importSeedAction = new QAction("Import", this);
   seedMenu->addAction(importSeedAction);
   connect(importSeedAction, SIGNAL(triggered()), this, SLOT(importSeed()));
-
-  /*
-  m_bookmarkContextMenu = new QMenu(this);
-  QAction *checkAction = new QAction("Set Checked", this);
-  m_bookmarkContextMenu->addAction(checkAction);
-  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
-
-  QAction *unCheckAction = new QAction("Uncheck", this);
-  m_bookmarkContextMenu->addAction(unCheckAction);
-  connect(unCheckAction, SIGNAL(triggered()),
-          this, SLOT(uncheckCurrentBookmark()));
-
-*/
-//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)

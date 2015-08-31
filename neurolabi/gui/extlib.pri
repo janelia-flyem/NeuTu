@@ -67,10 +67,6 @@ CONFIG(debug, debug|release) {
 }
 
 contains(TEMPLATE, app) {
-!exists($$DVIDCPP_PATH) {
-    DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
-}
-
 exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
@@ -78,6 +74,10 @@ exists($$DVIDCPP_PATH) {
 } else:exists($${BUILDEM_DIR}) {
     INCLUDEPATH +=  $${BUILDEM_DIR}/include
     LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    DEFINES += _ENABLE_LIBDVIDCPP_
+} else:exists($${CONDA_ENV}) {
+    INCLUDEPATH +=  $${CONDA_ENV}/include
+    LIBS += -L$${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 

@@ -2889,7 +2889,8 @@ void ZStackPresenter::acceptActiveStroke()
         //sgw->wf = Stack_Voxel_Weight;
 
         int channel = 0;
-        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION &&
+            buddyDocument()->getStack()->channelNumber() > 1) {
           channel = 1;
         }
 

@@ -134,6 +134,8 @@ public:
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
+  ZJsonObject readJsonObject(const std::string &url);
+
 signals:
   void readingDone();
 
