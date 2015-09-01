@@ -925,16 +925,7 @@ void ZFlyEmProofMvc::annotateBody()
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          ZDvidWriter writer;
-          if (writer.open(getDvidTarget())) {
-            writer.writeAnnotation(bodyId, dlg->getBodyAnnotation().toJsonObject());
-          }
-          if (writer.getStatusCode() == 200) {
-            emit messageGenerated(QString("Body %1 is annotated.").arg(bodyId));
-          } else {
-            qDebug() << writer.getStandardOutput();
-            emit errorGenerated("Cannot save annotation.");
-          }
+          getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
         }
 
         checkInBodyWithMessage(bodyId);

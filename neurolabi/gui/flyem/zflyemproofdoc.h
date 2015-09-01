@@ -95,6 +95,7 @@ public:
 
   void enhanceTileContrast(bool highContrast);
 
+  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
 public:

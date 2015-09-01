@@ -7,6 +7,9 @@ ZFlyEmBodyColorScheme::ZFlyEmBodyColorScheme()
 {
   m_colorMap["KC-s"] = QColor(255, 0, 0);
   m_colorMap["KC-c"] = QColor(0, 255, 0);
+  m_colorMap["KC-p"] = QColor(0, 0, 255);
+  m_colorMap["MBON"] = QColor(255, 0, 255);
+  m_colorMap["PPL1"] = QColor(0, 255, 255);
 }
 
 QColor ZFlyEmBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)
@@ -27,7 +30,10 @@ QColor ZFlyEmBodyColorScheme::getBodyColor(uint64_t bodyId)
 //  ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
 
 //  color = getColor(annotation);
-  color = m_colorMap[m_nameMap[bodyId]];
+  const QString &name = m_nameMap[bodyId];
+  if (m_colorMap.contains(name)) {
+    color = m_colorMap[m_nameMap[bodyId]];
+  }
 
   return color;
 }
@@ -54,4 +60,14 @@ void ZFlyEmBodyColorScheme::prepareNameMap()
       }
     }
   }
+}
+
+void ZFlyEmBodyColorScheme::updateNameMap(const ZFlyEmBodyAnnotation &annotation)
+{
+  updateNameMap(annotation.getBodyId(), annotation.getName().c_str());
+}
+
+void ZFlyEmBodyColorScheme::updateNameMap(uint64_t bodyId, const QString &name)
+{
+  m_nameMap[bodyId] = name;
 }

@@ -1458,11 +1458,14 @@ void ZObject3dScan::display(
 //      pen.setCosmetic(true);
 //      pen.setStyle(Qt::DotLine);
     }
-    painter.setPen(pen);
-    if (isSelected()) {
-      displaySolid(painter, z, isProj, 1);
-    } else {
-      displaySolid(painter, z, isProj, 1);
+
+    if (pen.color().alpha() > 0) {
+      painter.setPen(pen);
+      if (isSelected()) {
+        displaySolid(painter, z, isProj, 1);
+      } else {
+        displaySolid(painter, z, isProj, 1);
+      }
     }
   }
     break;

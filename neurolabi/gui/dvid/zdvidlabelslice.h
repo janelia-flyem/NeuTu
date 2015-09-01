@@ -121,10 +121,11 @@ public:
 
   void setCustomColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap);
   void removeCustomColorMap();
+  bool hasCustomColorMap() const;
+  void assignColorMap();
 
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
-  void assignColorMap();
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight);

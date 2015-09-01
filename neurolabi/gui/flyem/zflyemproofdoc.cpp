@@ -40,8 +40,6 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   connectSignalSlot();
-
-  m_bodyColorMap = ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
 }
 
 void ZFlyEmProofDoc::initTimer()
@@ -170,11 +168,33 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
   }
 }
 
+void ZFlyEmProofDoc::annotateBody(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeAnnotation(bodyId, annotation.toJsonObject());
+    m_bodyColorMap->updateNameMap(annotation);
+    if (getDvidLabelSlice()->hasCustomColorMap()) {
+      getDvidLabelSlice()->assignColorMap();
+      processObjectModified(getDvidLabelSlice());
+      notifyObjectModified();
+    }
+  }
+  if (writer.getStatusCode() == 200) {
+    emit messageGenerated(
+          ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
+  } else {
+    qDebug() << writer.getStandardOutput();
+    emit messageGenerated(
+          ZWidgetMessage("Cannot save annotation.", NeuTube::MSG_ERROR));
+  }
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
-  m_bodyColorMap->setDvidTarget(m_dvidTarget);
-  m_bodyColorMap->prepareNameMap();
+  m_bodyColorMap.reset();
 }
 
 void ZFlyEmProofDoc::updateTileData()
@@ -741,6 +761,12 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
     if (on) {
+      if (m_bodyColorMap.get() == NULL) {
+        m_bodyColorMap =
+            ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
+        m_bodyColorMap->setDvidTarget(getDvidTarget());
+        m_bodyColorMap->prepareNameMap();
+      }
       getDvidLabelSlice()->setCustomColorMap(m_bodyColorMap);
     } else {
       getDvidLabelSlice()->removeCustomColorMap();
