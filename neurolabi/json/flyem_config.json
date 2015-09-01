@@ -426,7 +426,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "4c83",
+      "uuid": "7872",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",
