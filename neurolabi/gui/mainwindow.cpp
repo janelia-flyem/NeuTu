@@ -173,7 +173,7 @@
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
-
+#include "dvid/libdvidheader.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -321,6 +321,9 @@ MainWindow::MainWindow(QWidget *parent) :
   m_autoCheckTimer->setInterval(600000);
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDCache::get_cache()->set_cache_size(1000000000);
+#endif
 }
 
 MainWindow::~MainWindow()

@@ -1245,7 +1245,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
 
   case Qt::Key_Right:
-    if (interactiveContext().isStackSliceView()) {
+    if (!interactiveContext().isProjectView()) {
       int step = 1;
 
       if (event->modifiers() & Qt::ShiftModifier) {
