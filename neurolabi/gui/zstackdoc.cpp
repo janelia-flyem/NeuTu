@@ -3665,7 +3665,9 @@ void ZStackDoc::deselectAllObject()
 
   QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
-    labelSlice->deselectAll();
+    if (labelSlice->isHittable()) {
+      labelSlice->deselectAll();
+    }
   }
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));

@@ -41,6 +41,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
 
   m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
+  m_selectionFrozen = false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)

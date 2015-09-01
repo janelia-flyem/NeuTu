@@ -46,6 +46,9 @@ public:
   void toggleHitSelection(bool appending = false);
   void clearSelection();
 
+  bool isSelectionFrozen() const { return m_selectionFrozen; }
+  bool freezeSelection(bool on) { m_selectionFrozen = on; }
+
 
   void setSelection(
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
@@ -139,6 +142,8 @@ private:
 
   int m_maxWidth;
   int m_maxHeight;
+
+  bool m_selectionFrozen;
 };
 
 template <typename InputIterator>
