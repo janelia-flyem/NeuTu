@@ -23,7 +23,8 @@ public:
     ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
     ROLE_BODY_INFO,
     ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID,
-    ROLE_MULTISCALE_2D, ROLE_MERGE_OPERATION, ROLE_BOOKMARK
+    ROLE_MULTISCALE_2D, ROLE_MERGE_OPERATION, 
+    ROLE_BOOKMARK, ROLE_BODY_SYNAPSES
   };
 
   enum EType {
@@ -62,7 +63,7 @@ private:
   static const char *m_multiscale2dName;
   static const char *m_mergeOperationName;
   static const char *m_bookmarkName;
-
+  static const char *m_bodySynapsesName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_emptyName;

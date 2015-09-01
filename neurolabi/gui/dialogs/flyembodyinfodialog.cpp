@@ -84,6 +84,8 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
     // if target isn't null and autoload on, trigger load in thread
     if (target.isValid() && ui->autoloadCheckBox->isChecked()) {
+        // clear the model regardless at this point
+        m_model->clear();
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
     }
 }
@@ -111,35 +113,31 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
     }
 
     // following example in ZFlyEmProofMvc::syncDvidBookmarks()
-    // check for data name and key
     ZDvidReader reader;
-    /*
-    if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
-        #ifdef _DEBUG_
-            std::cout << "UUID doesn't have body annotations" << std::endl;
-        #endif
-        return;
-    }
-    */
-
-    // I don't like this hack, but we seem not to have "hasKey()"
-    /*
-    if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-        "body_synapse", "body_synapses").size() == 0) {
-        #ifdef _DEBUG_
-            std::cout << "UUID doesn't have body_synapses key" << std::endl;
-        #endif
-        return;
-    }
-    */
-
-
     if (reader.open(target)) {
+
+        // check for data name and key
+        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
+            #ifdef _DEBUG_
+                std::cout << "UUID doesn't have body annotations" << std::endl;
+            #endif
+            return;
+        }
+
+        // I don't like this hack, but we seem not to have "hasKey()"
+        if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+            #ifdef _DEBUG_
+                std::cout << "UUID doesn't have body_synapses key" << std::endl;
+            #endif
+            return;
+        }
+
         const QByteArray &bookmarkData = reader.readKeyValue(
             // this is the data name Lowell where is storing this file;
             //  the key, however, is not in Ting's constants yet
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-            "body_synapses");
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
 
         ZJsonObject dataObject;
         dataObject.decodeString(bookmarkData.data());
@@ -151,9 +149,6 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
         emit dataChanged(dataObject.value("data"));
     }
-
-    // no feedback if open fails?
-
 }
 
 void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
@@ -179,9 +174,9 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     // validation is admittedly limited for now; ultimately, I
     //  expect we'll be getting the info from DVID rather than
     //  a file anyway, so I'm not going to spend much time on it
-
-    // likewise, I'm copy/pasting the error dialog code rather than
-    //  neatly factoring it out
+    
+    // in a perfect world, all these json constants would be collected
+    //  somewhere central
 
     if (!jsonObject.hasKey("data") || !jsonObject.hasKey("metadata")) {
         emit jsonLoadError("This file is missing 'data' or 'metadata'. Are you sure this is a Fly EM JSON file?");

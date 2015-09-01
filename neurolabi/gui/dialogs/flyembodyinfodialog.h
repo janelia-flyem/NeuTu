@@ -35,8 +35,8 @@ private slots:
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
-
     void autoloadChanged(int state);
+
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
