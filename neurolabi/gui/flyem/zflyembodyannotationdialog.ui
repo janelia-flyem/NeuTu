@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>320</width>
-    <height>217</height>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -89,6 +89,16 @@
        <item>
         <property name="text">
          <string>KC-p</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>KC-alpha prime</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Others-alpha prime</string>
         </property>
        </item>
        <item>
