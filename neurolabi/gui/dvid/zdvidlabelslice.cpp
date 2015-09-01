@@ -198,11 +198,26 @@ QColor ZDvidLabelSlice::getColor(
 QColor ZDvidLabelSlice::getColor(
     int64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  QColor color = m_objColorSheme.getColor(
-        abs((int) getMappedLabel((uint64_t) label, labelType)));
+  QColor color = getCustomColor(label);
+  if (color.alpha() == 0) {
+    color = m_objColorSheme.getColor(
+          abs((int) getMappedLabel((uint64_t) label, labelType)));
+  }
+
   color.setAlpha(64);
 
   return color;
+}
+
+void ZDvidLabelSlice::setCustomColorMap(
+    const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap)
+{
+  m_customColorScheme = colorMap;
+}
+
+void ZDvidLabelSlice::removeCustomColorMap()
+{
+  m_customColorScheme.reset();
 }
 
 void ZDvidLabelSlice::assignColorMap()
@@ -496,4 +511,15 @@ void ZDvidLabelSlice::processSelection()
       m_selector.deselectObject(*iter);
     }
   }
+}
+
+QColor ZDvidLabelSlice::getCustomColor(uint64_t label) const
+{
+  QColor color(0, 0, 0, 0);
+
+  if (m_customColorScheme.get() != NULL) {
+    color = m_customColorScheme->getBodyColor(label);
+  }
+
+  return color;
 }

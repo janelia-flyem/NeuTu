@@ -154,6 +154,8 @@ public slots:
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
+  void changeColorMap(const QString &option);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -261,6 +263,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(changingColorMap(QString)),
+          this, SLOT(changeColorMap(QString)));
 }
 
 template <typename T>

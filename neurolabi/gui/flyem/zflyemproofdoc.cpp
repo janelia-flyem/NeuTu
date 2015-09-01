@@ -40,6 +40,8 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   connectSignalSlot();
+
+  m_bodyColorMap = ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
 }
 
 void ZFlyEmProofDoc::initTimer()
@@ -166,6 +168,13 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
         new ZFlyEmProofDocCommand::MergeBody(this);
     pushUndoCommand(command);
   }
+}
+
+void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+  m_bodyColorMap->setDvidTarget(m_dvidTarget);
+  m_bodyColorMap->prepareNameMap();
 }
 
 void ZFlyEmProofDoc::updateTileData()
@@ -726,6 +735,20 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 void ZFlyEmProofDoc::deprecateSplitSource()
 {
   m_splitSource.reset();
+}
+
+void ZFlyEmProofDoc::useBodyNameMap(bool on)
+{
+  if (getDvidLabelSlice() != NULL) {
+    if (on) {
+      getDvidLabelSlice()->setCustomColorMap(m_bodyColorMap);
+    } else {
+      getDvidLabelSlice()->removeCustomColorMap();
+    }
+
+    processObjectModified(getDvidLabelSlice());
+    notifyObjectModified();
+  }
 }
 
 //////////////////////////////////////////

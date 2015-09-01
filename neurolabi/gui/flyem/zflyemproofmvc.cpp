@@ -1795,6 +1795,15 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
   emit userBookmarkUpdated(getDocument().get());
 }
 
+void ZFlyEmProofMvc::changeColorMap(const QString &option)
+{
+  if (option == "Name") {
+    getCompleteDocument()->useBodyNameMap(true);
+  } else {
+    getCompleteDocument()->useBodyNameMap(false);
+  }
+}
+
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 
