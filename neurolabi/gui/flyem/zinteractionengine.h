@@ -36,7 +36,8 @@ public:
   enum EState {
     STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_LEFT_BUTTON_PRESSED,
     STATE_RIGHT_BUTTON_PRESSED, STATE_MOVE_OBJECT, STATE_SWC_SMART_EXTEND,
-    STATE_SWC_EXTEND, STATE_SWC_CONNECT, STATE_SWC_ADD_NODE
+    STATE_SWC_EXTEND, STATE_SWC_CONNECT, STATE_SWC_ADD_NODE,
+    STATE_DRAW_RECT
   };
 
   QList<ZStackObject*> getDecorationList() const;
@@ -86,6 +87,8 @@ signals:
 private:
   void enterPaintStroke();
   void exitPaintStroke();
+  void enterPaintRect();
+  void exitPaintRect();
   void saveStroke();
   void commitData();
 
@@ -111,6 +114,7 @@ private:
   QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
+  ZRect2d m_rect;
   bool m_isStrokeOn;
 
   ZStackDocReader *m_dataBuffer;

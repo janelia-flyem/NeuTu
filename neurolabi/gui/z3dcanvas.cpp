@@ -92,11 +92,12 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 bool Z3DCanvas::suppressingContextMenu() const
 {
-#if defined(_FLYEM_)
-  if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE)) {
+//#if defined(_FLYEM_)
+  if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT)) {
     return true;
   }
-#endif
+//#endif
 
   return false;
 }

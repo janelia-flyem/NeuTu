@@ -51,6 +51,11 @@ public:
   void setLastCorner(int x, int y);
   void setFirstCorner(int x, int y);
 
+  /*!
+    * \brief Set size by fixing the first corner.
+    */
+  void setSize(int width, int height);
+
   int getFirstX() const;
   int getFirstY() const;
   int getLastX() const;
