@@ -86,6 +86,7 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     exists($$BUILDEM_DIR) {
         LIBS *= -lssl -lcrypto
     }
+    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }

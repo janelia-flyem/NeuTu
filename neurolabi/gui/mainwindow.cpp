@@ -321,7 +321,7 @@ MainWindow::MainWindow(QWidget *parent) :
   m_autoCheckTimer->setInterval(600000);
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
-#if defined(_ENABLE_LIBDVIDCPP_)
+#if defined(_LIBDVIDCPP_CACHE_)
   libdvid::DVIDCache::get_cache()->set_cache_size(1000000000);
 #endif
 }
