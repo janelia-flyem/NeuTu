@@ -174,8 +174,9 @@ void ZFlyEmProofDoc::annotateBody(
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
-    m_bodyColorMap->updateNameMap(annotation);
+
     if (getDvidLabelSlice()->hasCustomColorMap()) {
+      m_bodyColorMap->updateNameMap(annotation);
       getDvidLabelSlice()->assignColorMap();
       processObjectModified(getDvidLabelSlice());
       notifyObjectModified();

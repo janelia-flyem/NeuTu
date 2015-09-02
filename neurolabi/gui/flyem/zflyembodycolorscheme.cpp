@@ -54,10 +54,7 @@ void ZFlyEmBodyColorScheme::prepareNameMap()
     foreach (const QString &idStr, annotationList) {
       uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
       ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
-      std::string name = annotation.getName();
-      if (!name.empty()) {
-        m_nameMap[bodyId] = name.c_str();
-      }
+      updateNameMap(bodyId, annotation.getName().c_str());
     }
   }
 }
@@ -69,5 +66,15 @@ void ZFlyEmBodyColorScheme::updateNameMap(const ZFlyEmBodyAnnotation &annotation
 
 void ZFlyEmBodyColorScheme::updateNameMap(uint64_t bodyId, const QString &name)
 {
-  m_nameMap[bodyId] = name;
+  if (!name.isEmpty()) {
+    QString finalName = name;
+
+    if (name.startsWith("MBON")) {
+      finalName = "MBON";
+    } else if (name.startsWith("PPL1")) {
+      finalName = "PPL1";
+    }
+
+    m_nameMap[bodyId] = finalName;
+  }
 }
