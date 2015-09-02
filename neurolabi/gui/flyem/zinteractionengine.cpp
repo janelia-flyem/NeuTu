@@ -9,6 +9,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 {
   m_stroke.setWidth(10.0);
   m_namedDecorationList.append(&m_stroke);
+  m_namedDecorationList.append(&m_rect);
 
   //m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
 }
@@ -22,7 +23,7 @@ ZInteractionEngine::~ZInteractionEngine()
 
 bool ZInteractionEngine::lockingMouseMoveEvent() const
 {
-  return isStateOn(STATE_DRAW_STROKE);
+  return isStateOn(STATE_DRAW_STROKE) || isStateOn(STATE_DRAW_RECT);
 }
 
 void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
@@ -44,7 +45,14 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
 #endif
 
     emit decorationUpdated();
-  }
+  }else if (m_interactiveContext.rectEditMode() ==
+            ZInteractiveContext::RECT_DRAW) {
+    if (m_mouseLeftButtonPressed == true) {
+      m_rect.setLastCorner(event->x(), event->y());
+    }
+
+    emit decorationUpdated();
+ }
 }
 
 void ZInteractionEngine::processMouseReleaseEvent(
@@ -83,6 +91,10 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
 
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
+    if (isStateOn(STATE_DRAW_RECT)) {
+      m_rect.setFirstCorner(event->x(), event->y());
+      m_rect.setSize(0, 0);
+    }
   } else if (event->button() == Qt::RightButton) {
     m_mouseRightButtonPressed = true;
   }
@@ -98,7 +110,10 @@ void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_R:
     if (event->modifiers() == Qt::ControlModifier) {
       enterPaintStroke();
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      enterPaintRect();
     }
+
     break;
   case Qt::Key_Escape:
     exitPaintStroke();
@@ -163,6 +178,24 @@ void ZInteractionEngine::enterPaintStroke()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enterPaintRect()
+{
+  if (isStateOn(STATE_DRAW_STROKE)) {
+    exitPaintStroke();
+  }
+
+  m_rect.setVisible(true);
+  m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_DRAW);
+  emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitPaintRect()
+{
+  m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+  m_rect.setVisible(false);
+  emit decorationUpdated();
+}
+
 void ZInteractionEngine::exitPaintStroke()
 {
   m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
@@ -199,6 +232,9 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_DRAW_STROKE:
     return m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW;
+  case STATE_DRAW_RECT:
+    return m_interactiveContext.rectEditMode() ==
+        ZInteractiveContext::RECT_DRAW;
   case STATE_LEFT_BUTTON_PRESSED:
     return m_mouseLeftButtonPressed;
   case STATE_RIGHT_BUTTON_PRESSED:

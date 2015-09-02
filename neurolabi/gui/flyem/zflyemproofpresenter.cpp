@@ -49,6 +49,9 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       emit deselectingAllBody();
     }
     break;
+  case Qt::Key_M:
+    emit mergingBody();
+    break;
   default:
     break;
   }

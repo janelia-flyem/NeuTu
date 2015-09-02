@@ -129,31 +129,34 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
        iter != sliceList.end(); ++iter) {
     const ZDvidLabelSlice *labelSlice = *iter;
     const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
-    for (std::set<uint64_t>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      if (supervisor != NULL) {
-        if (supervisor->checkOut(*iter)) {
-          labelSet.insert(*iter);
-        } else {
-          labelSet.clear();
-          std::string owner = supervisor->getOwner(*iter);
-          if (owner.empty()) {
-//            owner = "unknown user";
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to merge. Is the librarian sever (%2) ready?").
-                    arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
-                    NeuTube::MSG_ERROR));
+
+    if (selected.size() > 1){
+      for (std::set<uint64_t>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        if (supervisor != NULL) {
+          if (supervisor->checkOut(*iter)) {
+            labelSet.insert(*iter);
           } else {
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to merge. %1 has been locked by %2").
-                    arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+            labelSet.clear();
+            std::string owner = supervisor->getOwner(*iter);
+            if (owner.empty()) {
+              //            owner = "unknown user";
+              emit messageGenerated(
+                    ZWidgetMessage(
+                      QString("Failed to merge. Is the librarian sever (%2) ready?").
+                      arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
+                      NeuTube::MSG_ERROR));
+            } else {
+              emit messageGenerated(
+                    ZWidgetMessage(
+                      QString("Failed to merge. %1 has been locked by %2").
+                      arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+            }
+            break;
           }
-          break;
+        } else {
+          labelSet.insert(*iter);
         }
-      } else {
-        labelSet.insert(*iter);
       }
     }
   }
@@ -174,8 +177,9 @@ void ZFlyEmProofDoc::annotateBody(
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
-    m_bodyColorMap->updateNameMap(annotation);
+
     if (getDvidLabelSlice()->hasCustomColorMap()) {
+      m_bodyColorMap->updateNameMap(annotation);
       getDvidLabelSlice()->assignColorMap();
       processObjectModified(getDvidLabelSlice());
       notifyObjectModified();

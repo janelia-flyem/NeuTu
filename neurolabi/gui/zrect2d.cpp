@@ -73,6 +73,12 @@ void ZRect2d::setFirstCorner(int x, int y)
   m_y0 = y;
 }
 
+void ZRect2d::setSize(int width, int height)
+{
+  m_width = width;
+  m_height = height;
+}
+
 bool ZRect2d::makeValid()
 {
   if (m_width == 0 || m_height == 0) {

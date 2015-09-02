@@ -1264,6 +1264,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                                      buddyView()->sliceIndex());
       }
+    } else {
+      processed = false;
     }
     break;
 
