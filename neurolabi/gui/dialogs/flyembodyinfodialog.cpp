@@ -124,7 +124,8 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             return;
         }
 
-        // I don't like this hack, but we seem not to have "hasKey()"
+        // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
+        //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
         if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
             #ifdef _DEBUG_
@@ -134,20 +135,50 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
         }
 
         const QByteArray &bookmarkData = reader.readKeyValue(
-            // this is the data name Lowell where is storing this file;
-            //  the key, however, is not in Ting's constants yet
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
-
-        ZJsonObject dataObject;
-        dataObject.decodeString(bookmarkData.data());
+        ZJsonObject jsonDataObject;
+        jsonDataObject.decodeString(bookmarkData.data());
 
         // validate; this method does its own error notifications
-        if (!isValidBookmarkFile(dataObject)) {
+        if (!isValidBookmarkFile(jsonDataObject)) {
             return;
         }
 
-        emit dataChanged(dataObject.value("data"));
+        // now we try to fill in name and status data from more dvid calls
+        // note: not sure how well this will scale, as we're querying
+        //  every body's data individually
+        ZJsonArray bookmarks(jsonDataObject.value("data"));
+        for (size_t i = 0; i < bookmarks.size(); ++i) {
+            ZJsonObject bkmk(bookmarks.at(i), false);
+
+            // as noted above, reader doesn't have "hasKey", so we search the range
+            // also, ZJsonValue doesn't have toString, so we go via int
+            if (reader.readKeys("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()),
+                QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
+
+                const QByteArray &temp = reader.readKeyValue("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()));
+                ZJsonObject tempJson;
+                tempJson.decodeString(temp.data());
+
+                #ifdef _DEBUG_
+                    std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
+                    std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
+                    std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
+                #endif
+
+                // now push the value back in:
+                // updateModel expects "body status", not "status" (matches original file version)
+                if (tempJson.hasKey("status")) {
+                    bkmk.setEntry("body status", tempJson["status"]);
+                }
+                if (tempJson.hasKey("name")) {
+                    bkmk.setEntry("name", tempJson["name"]);
+                    }
+                }
+            }
+
+        emit dataChanged(jsonDataObject.value("data"));
     }
 }
 
@@ -223,7 +254,6 @@ void FlyEmBodyInfoDialog::onOpenButton() {
  * update the data model from json; input should be the
  * "data" part of our standard bookmarks json file
  */
-// void FlyEmBodyInfoDialog::updateModel(ZJsonValue * data) {
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_model->clear();
     setHeaders(m_model);
@@ -250,6 +280,8 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
         m_model->setItem(i, 2, postSynapseItem);
 
+        // note that this routine expects "body status", not "status";
+        //  historical side-effect of the original file format we read from
         const char* status = ZJsonParser::stringValue(bkmk["body status"]);
         m_model->setItem(i, 3, new QStandardItem(QString(status)));
     }
