@@ -130,9 +130,10 @@ void Z3DCanvas::wheelEvent(QWheelEvent* e)
 
 void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
-  broadcastEvent(event, width(), height());
+  if (!m_interaction.processKeyPressEvent(event)) {
+    broadcastEvent(event, width(), height());
+  }
 
-  m_interaction.processKeyPressEvent(event);
   setCursor(m_interaction.getCursorShape());
 }
 

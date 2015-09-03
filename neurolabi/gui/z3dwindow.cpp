@@ -479,6 +479,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(moveSelectedObjects(double,double,double)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
+          this, SLOT(cropSwcInRoi()));
 
   /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -2203,7 +2205,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  {
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_COARSE_BODY &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3656,6 +3659,17 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
   setScale(LAYER_SWC, sx, sy, sz);
   setScale(LAYER_PUNCTA, sx, sy, sz);
   setScale(LAYER_VOLUME, sx, sy, sz);
+}
+
+void Z3DWindow::cropSwcInRoi()
+{
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+//    m_doc->executeDeleteSwcNodeCommand();
+    emit croppingSwcInRoi();
+  } else {
+    selectSwcTreeNodeInRoi(false);
+    m_doc->executeDeleteSwcNodeCommand();
+  }
 }
 
 void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)

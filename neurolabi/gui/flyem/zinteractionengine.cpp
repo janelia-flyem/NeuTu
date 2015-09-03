@@ -116,82 +116,112 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
   }
 }
 
-void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
+bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 {
   if (!m_isKeyEventEnabled) {
-    return;
+    return false;
   }
+
+  bool processed = false;
 
   switch (event->key()) {
   case Qt::Key_R:
     if (event->modifiers() == Qt::ControlModifier) {
       enterPaintStroke();
+      processed = true;
     } else if (event->modifiers() == Qt::ShiftModifier) {
       enterPaintRect();
+      processed = true;
     }
-
     break;
   case Qt::Key_Escape:
-    exitPaintStroke();
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      exitPaintStroke();
+      processed = true;
+    }
+
+    if (isStateOn(STATE_DRAW_RECT)) {
+      exitPaintRect();
+      processed = true;
+    }
     break;
   case Qt::Key_1:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(1);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_2:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(2);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_3:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(3);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_4:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(4);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_5:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(5);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_6:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(6);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_7:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(7);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_QuoteLeft:
     if (isStateOn(STATE_DRAW_STROKE)) {
       m_stroke.setLabel(255);
       emit decorationUpdated();
+      processed = true;
     }
     break;
   case Qt::Key_S:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      emit selectingSwcNodeInRoi(true);
-    } else {
-      emit selectingSwcNodeInRoi(false);
+    if (hasRectDecoration()) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        emit selectingSwcNodeInRoi(true);
+      } else {
+        emit selectingSwcNodeInRoi(false);
+      }
+      processed = true;
+    }
+    break;
+  case Qt::Key_X:
+    if (hasRectDecoration()) {
+      emit croppingSwc();
+      processed = true;
     }
     break;
   default:
     break;
   }
+
+  return processed;
 }
 
 void ZInteractionEngine::enterPaintStroke()

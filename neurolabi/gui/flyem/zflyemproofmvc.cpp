@@ -150,6 +150,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     if (window == m_coarseBodyWindow) {
       connect(window, SIGNAL(destroyed()), this,
               SLOT(detachCoarseBodyWindow()));
+      connect(window, SIGNAL(croppingSwcInRoi()),
+              this, SLOT(cropCoarseBody3D()));
     } else if (window == m_bodyWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachBodyWindow()));
     } else if (window == m_splitWindow) {
@@ -163,6 +165,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZStackDoc *doc = new ZStackDoc;
+  doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
 
   getProgressSignal()->startProgress("Showing 3D coarse body ...");
 

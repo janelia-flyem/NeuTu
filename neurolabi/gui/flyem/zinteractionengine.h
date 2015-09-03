@@ -61,7 +61,7 @@ public:
   void initInteractiveContext();
 
   void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex = 0);
-  void processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event, int sliceIndex = 0);
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex = 0);
@@ -89,6 +89,7 @@ signals:
   void strokePainted(ZStroke2d*);
   void showingContextMenu();
   void selectingSwcNodeInRoi(bool appending);
+  void croppingSwc();
 
 private:
   void enterPaintStroke();

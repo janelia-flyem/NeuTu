@@ -859,7 +859,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            NeuTube::MSG_ERROR));
     } else {
       updateSplitDocument();
-      emitMessage("Done.");
+      emitMessage(QString("Done. The cropped part has bodyId %1").arg(bodyId));
       emit resultCommitted();
     }
   }

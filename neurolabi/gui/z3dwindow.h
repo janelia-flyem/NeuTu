@@ -209,6 +209,7 @@ private:
 signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
+  void croppingSwcInRoi();
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -338,6 +339,7 @@ public slots:
   void markSwcSoma();
 
   void selectSwcTreeNodeInRoi(bool appending);
+  void cropSwcInRoi();
 
 
 protected:
