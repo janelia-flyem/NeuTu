@@ -150,6 +150,10 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
         // note: not sure how well this will scale, as we're querying
         //  every body's data individually
         ZJsonArray bookmarks(jsonDataObject.value("data"));
+        #ifdef _DEBUG_
+            std::cout << "number of bookmarks to process = " << bookmarks.size() << std::endl;
+        #endif
+
         for (size_t i = 0; i < bookmarks.size(); ++i) {
             ZJsonObject bkmk(bookmarks.at(i), false);
 
