@@ -8429,7 +8429,28 @@ void ZStackDoc::notifySelectorChanged()
 
 void ZStackDoc::notifySwcTreeNodeSelectionChanged()
 {
-  emit swcTreeNodeSelectionChanged();
+  QList<ZSwcTree*> treeList = getSwcList();
+  QList<Swc_Tree_Node*> selected;
+  QList<Swc_Tree_Node*> deselected;
+  foreach (const ZSwcTree *tree, treeList) {
+    const std::set<Swc_Tree_Node*> &selectedSet =
+        tree->getNodeSelector().getSelectedSet();
+    for (std::set<Swc_Tree_Node*>::iterator iter = selectedSet.begin();
+         iter != selectedSet.end(); ++iter) {
+      selected.append(*iter);
+    }
+
+    const std::set<Swc_Tree_Node*> &deselectedSet =
+        tree->getNodeSelector().getSelectedSet();
+    for (std::set<Swc_Tree_Node*>::iterator iter = deselectedSet.begin();
+         iter != deselectedSet.end(); ++iter) {
+      deselected.append(*iter);
+    }
+  }
+
+  emit swcTreeNodeSelectionChanged(selected, deselected);
+
+//  emit swcTreeNodeSelectionChanged();
 }
 
 void ZStackDoc::registerUser(QObject *user)

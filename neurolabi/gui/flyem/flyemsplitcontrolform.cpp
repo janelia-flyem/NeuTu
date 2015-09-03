@@ -106,6 +106,10 @@ void FlyEmSplitControlForm::createMenu()
   QAction *importSeedAction = new QAction("Import", this);
   seedMenu->addAction(importSeedAction);
   connect(importSeedAction, SIGNAL(triggered()), this, SLOT(importSeed()));
+
+  QAction *crop3DAction = new QAction("Coarse Body Crop", this);
+  m_mainMenu->addAction(crop3DAction);
+  connect(crop3DAction, SIGNAL(triggered()), this, SLOT(cropCoarseBody3D()));
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -172,6 +176,11 @@ void FlyEmSplitControlForm::exportSeed()
 void FlyEmSplitControlForm::importSeed()
 {
   emit importingSeed();
+}
+
+void FlyEmSplitControlForm::cropCoarseBody3D()
+{
+  emit croppingCoarseBody3D();
 }
 
 void FlyEmSplitControlForm::selectSeed()

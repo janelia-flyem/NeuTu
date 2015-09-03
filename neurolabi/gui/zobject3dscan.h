@@ -99,6 +99,7 @@ public:
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
 
+  void copyDataFrom(const ZObject3dScan &obj);
 
   /*!
    * \brief Import a dvid object

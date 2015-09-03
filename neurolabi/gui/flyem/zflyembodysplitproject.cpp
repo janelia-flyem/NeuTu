@@ -792,7 +792,7 @@ void ZFlyEmBodySplitProject::commitResult()
 
   getProgressSignal()->startProgress(0.8);
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDocument()->getConstSparseStack()->getObjectMask(),
+        getDocument()->getSparseStack()->getObjectMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
@@ -807,7 +807,7 @@ void ZFlyEmBodySplitProject::commitResult()
   }
 //  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
 //  removeAllSideSeed();
-  downloadBodyMask();
+//  downloadBodyMask();
 
   getDocument()->setSegmentationReady(false);
 
@@ -845,8 +845,28 @@ void ZFlyEmBodySplitProject::updateSplitDocument()
   }
 }
 
+void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    emitMessage("Uploading crop result ...");
+    uint64_t bodyId = writer.writeCoarseSplit(
+          splitPart, getBodyId());
+    if (bodyId == 0) {
+      emit messageGenerated(
+            ZWidgetMessage(QString("Split %1 failed.").
+                           arg(getBodyId()),
+                           NeuTube::MSG_ERROR));
+    } else {
+      updateSplitDocument();
+      emitMessage("Done.");
+      emit resultCommitted();
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::commitResultFunc(
-    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
+    ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
     size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
@@ -1006,6 +1026,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     obj.load(objFile.toStdString());
     uint64_t newBodyId = writer.writeSplit(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
+    wholeBody->subtract(obj);
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;

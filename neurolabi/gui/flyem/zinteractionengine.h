@@ -70,6 +70,11 @@ public:
 
   bool isStateOn(EState status) const;
 
+  bool hasRectDecoration() const;
+  const ZRect2d& getRectDecoration() const { return m_rect; }
+
+  void removeRectDecoration();
+
   Qt::CursorShape getCursorShape() const;
   //void setCursor(const QCursor &c);
 
@@ -83,6 +88,7 @@ signals:
   void decorationUpdated();
   void strokePainted(ZStroke2d*);
   void showingContextMenu();
+  void selectingSwcNodeInRoi(bool appending);
 
 private:
   void enterPaintStroke();

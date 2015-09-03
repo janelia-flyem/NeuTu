@@ -61,6 +61,45 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) co
   painter.drawRect(m_x0, m_y0, m_width, m_height);
 }
 
+bool ZRect2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
+             EDisplaySliceMode sliceMode) const
+{
+  bool painted = false;
+
+  if (rawPainter == NULL || !isVisible()) {
+    return painted;
+  }
+
+  QColor color = m_color;
+  QPen pen(color);
+  if (isSelected()) {
+    pen.setWidth(pen.width() + 5);
+    pen.setStyle(Qt::DashLine);
+  }
+
+  rawPainter->setPen(pen);
+  rawPainter->setBrush(Qt::NoBrush);
+
+  int width = m_width;
+  int height = m_height;
+  int x0 = m_x0;
+  int y0 = m_y0;
+
+  if (width < 0) {
+    width = -width;
+    x0 -= width - 1;
+  }
+
+  if (height < 0) {
+    height = -height;
+    y0 -= height - 1;
+  }
+
+  rawPainter->drawRect(x0, y0, width, height);
+
+  return true;
+}
+
 void ZRect2d::setLastCorner(int x, int y)
 {
   m_width = x - m_x0 + 1;

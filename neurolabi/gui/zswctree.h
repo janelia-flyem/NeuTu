@@ -448,6 +448,10 @@ public:
   bool hasSelectedNode() const;
   bool isNodeSelected(const Swc_Tree_Node *tn) const;
 
+  const ZSwcTreeNodeSelector& getNodeSelector() const {
+    return m_selector;
+  }
+
   Swc_Tree_Node* getHitNode() const { return m_hitSwcNode; }
   void setHitNode(Swc_Tree_Node *tn) { m_hitSwcNode = tn; }
 

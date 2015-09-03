@@ -10,6 +10,7 @@ const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
+const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_roiCommand = "roi";
 
@@ -445,8 +446,24 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 }
 
 std::string ZDvidUrl::getSplitUrl(
+    const std::string &dataName, uint64_t originalLabel,
+    const std::string &command) const
+{
+  std::ostringstream stream;
+  if (command.empty()) {
+    stream << getDataUrl(dataName) << "/" << originalLabel;
+  } else {
+    stream << getDataUrl(dataName) << "/" << command << "/" << originalLabel;
+  }
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSplitUrl(
     const std::string &dataName, uint64_t originalLabel) const
 {
+  return getSplitUrl(dataName, originalLabel, m_splitCommand);
+#if 0
   std::ostringstream stream;
   if (m_splitCommand.empty()) {
     stream << getDataUrl(dataName) << "/" << originalLabel;
@@ -455,6 +472,27 @@ std::string ZDvidUrl::getSplitUrl(
   }
 
   return stream.str();
+#endif
+}
+
+std::string ZDvidUrl::getCoarseSplitUrl(
+    const std::string &dataName, uint64_t originalLabel) const
+{
+  if (!m_coarseSplitCommand.empty()) {
+    return getSplitUrl(dataName, originalLabel, m_coarseSplitCommand);
+  }
+
+  return "";
+
+#if 0
+  std::ostringstream stream;
+  if (m_coarseSplitCommand.empty()) {
+    stream << getDataUrl(dataName) << "/" << m_coarseSplitCommand << "/"
+           << originalLabel;
+  }
+
+  return stream.str();
+#endif
 }
 
 /*

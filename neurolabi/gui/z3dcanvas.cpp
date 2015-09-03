@@ -52,12 +52,12 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
 #endif
   setMouseTracking(true);
 
-#if defined(_FLYEM_)
+//#if defined(_FLYEM_)
   connect(&m_interaction, SIGNAL(decorationUpdated()),
           this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
-#endif
+//#endif
 }
 
 Z3DCanvas::~Z3DCanvas() {}
@@ -181,7 +181,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   m_fakeStereoOnce = false;
 
 
-#if defined(_FLYEM_)
+#if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
   foreach (ZStackObject *drawable, drawableList) {

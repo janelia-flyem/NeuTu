@@ -39,6 +39,7 @@
 #include "flyem/zflyemmisc.h"
 #include "zswcgenerator.h"
 #include "zflyembody3ddoc.h"
+#include "neutubeconfig.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -581,6 +582,8 @@ void ZFlyEmProofMvc::customInit()
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
           this->getView(), SLOT(setView(const ZStackViewParam&)));
+  connect(&m_splitProject, SIGNAL(resultCommitted()),
+          this, SLOT(updateSplitBody()));
   /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
@@ -1083,6 +1086,24 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       getProgressSignal()->endProgress();
     }
+  }
+}
+
+void ZFlyEmProofMvc::updateSplitBody()
+{
+  if (m_splitProject.getBodyId() > 0) {
+#if 0
+    uint64_t bodyId = m_splitProject.getBodyId();
+    getDocument()->removeObject(
+          ZStackObjectSourceFactory::MakeSplitObjectSource(), true);
+    m_splitProject.setBodyId(0);
+    launchSplit(bodyId);
+#endif
+    if (m_coarseBodyWindow != NULL) {
+      m_coarseBodyWindow->removeRectRoi();
+      updateCoarseBodyWindow(false, false, true);
+    }
+    updateBodyWindow();
   }
 }
 
@@ -1794,6 +1815,53 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
     getCompleteDocument()->useBodyNameMap(true);
   } else {
     getCompleteDocument()->useBodyNameMap(false);
+  }
+}
+
+void ZFlyEmProofMvc::cropCoarseBody3D()
+{
+  if (m_coarseBodyWindow != NULL) {
+    if (m_coarseBodyWindow->hasRectRoi()) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        if (getCompletePresenter()->isSplitOn()) {
+          ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
+          if (body.isEmpty()) {
+            emit messageGenerated(
+                  ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
+                                 arg(m_splitProject.getBodyId()),
+                                 NeuTube::MSG_ERROR));
+          } else {
+            ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+            ZObject3dScan bodyInRoi;
+            ZObject3dScan::ConstSegmentIterator iter(&body);
+            while (iter.hasNext()) {
+              const ZObject3dScan::Segment &seg = iter.next();
+              for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+                ZIntPoint pt(0, seg.getY(), seg.getZ());
+                pt.setX(x);
+                pt -= dvidInfo.getStartBlockIndex();
+                pt *= dvidInfo.getBlockSize();
+                pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                                dvidInfo.getBlockSize().getY() / 2, 0);
+                pt += dvidInfo.getStartCoordinates();
+
+                QPointF screenPos = m_coarseBodyWindow->getScreenProjection(
+                      pt.getX(), pt.getY(), pt.getZ(), Z3DWindow::LAYER_SWC);
+                if (m_coarseBodyWindow->getRectRoi().contains(screenPos.x(), screenPos.y())) {
+                  bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                }
+              }
+            }
+#ifdef _DEBUG_2
+            body.save(GET_TEST_DATA_DIR + "/test2.sobj");
+            bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+            m_splitProject.commitCoarseSplit(bodyInRoi);
+          }
+        }
+      }
+    }
   }
 }
 

@@ -9,6 +9,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 {
   m_stroke.setWidth(10.0);
   m_namedDecorationList.append(&m_stroke);
+  m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
 
   //m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -49,6 +50,7 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
             ZInteractiveContext::RECT_DRAW) {
     if (m_mouseLeftButtonPressed == true) {
       m_rect.setLastCorner(event->x(), event->y());
+//      m_rect.makeValid();
     }
 
     emit decorationUpdated();
@@ -62,6 +64,9 @@ void ZInteractionEngine::processMouseReleaseEvent(
   if (event->button() == Qt::LeftButton) {
     if (isStateOn(STATE_DRAW_STROKE)) {
       commitData();
+    } else if (isStateOn(STATE_DRAW_RECT)) {
+      m_rect.makeValid();
+      exitPaintRect();
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
@@ -82,6 +87,17 @@ void ZInteractionEngine::commitData()
 {
   saveStroke();
 }
+
+bool ZInteractionEngine::hasRectDecoration() const
+{
+  return m_rect.isValid();
+}
+
+void ZInteractionEngine::removeRectDecoration()
+{
+  m_rect.setSize(0, 0);
+}
+
 
 void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
                                                 int sliceIndex)
@@ -165,6 +181,14 @@ void ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       m_stroke.setLabel(255);
       emit decorationUpdated();
     }
+    break;
+  case Qt::Key_S:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      emit selectingSwcNodeInRoi(true);
+    } else {
+      emit selectingSwcNodeInRoi(false);
+    }
+    break;
   default:
     break;
   }
@@ -184,7 +208,7 @@ void ZInteractionEngine::enterPaintRect()
     exitPaintStroke();
   }
 
-  m_rect.setVisible(true);
+//  m_rect.setVisible(true);
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_DRAW);
   emit decorationUpdated();
 }
@@ -192,7 +216,7 @@ void ZInteractionEngine::enterPaintRect()
 void ZInteractionEngine::exitPaintRect()
 {
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
-  m_rect.setVisible(false);
+//  m_rect.setVisible(false);
   emit decorationUpdated();
 }
 
@@ -272,6 +296,8 @@ Qt::CursorShape ZInteractionEngine::getCursorShape() const
   } else if (isStateOn(STATE_SWC_CONNECT)) {
     return Qt::SizeBDiagCursor;
   } else if (isStateOn(STATE_SWC_ADD_NODE)) {
+    return Qt::PointingHandCursor;
+  } else if (isStateOn(STATE_DRAW_RECT)) {
     return Qt::PointingHandCursor;
   }
 

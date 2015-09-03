@@ -556,6 +556,37 @@ uint64_t ZDvidWriter::writeSplit(
   return newBodyId;
 }
 
+uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel)
+{
+  QString tmpPath = QString("%1/%2_coarse.dvid").
+      //arg((GET_TEST_DATA_DIR + "/backup").c_str()).
+      arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+      arg(oldLabel);
+
+  obj.exportDvidObject(tmpPath.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << tmpPath.toStdString() + " saved" << std::endl;
+#endif
+
+  QString command = QString(
+        "curl -i -X POST %1 --data-binary \"@%2\"").
+      arg(ZDvidUrl(m_dvidTarget).getCoarseSplitUrl(
+            m_dvidTarget.getBodyLabelName(), oldLabel).c_str()).
+      arg(tmpPath);
+
+//  qDebug() << command;
+
+  uint64_t newBodyId = 0;
+  if (runCommand(command)) {
+    if (m_jsonOutput.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(m_jsonOutput["label"]);
+    }
+  }
+
+  return newBodyId;
+}
+
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(

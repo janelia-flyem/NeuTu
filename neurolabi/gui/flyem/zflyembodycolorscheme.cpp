@@ -10,6 +10,8 @@ ZFlyEmBodyColorScheme::ZFlyEmBodyColorScheme()
   m_colorMap["KC-p"] = QColor(0, 0, 255);
   m_colorMap["MBON"] = QColor(255, 0, 255);
   m_colorMap["PPL1"] = QColor(0, 255, 255);
+  m_colorMap["KC-alpha prime"] = QColor(255, 255, 0);
+  m_colorMap["non-KC"] = QColor(255, 140, 0);
 }
 
 QColor ZFlyEmBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)

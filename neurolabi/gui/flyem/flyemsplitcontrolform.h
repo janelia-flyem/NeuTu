@@ -41,6 +41,7 @@ signals:
   void loadingSynapse();
   void bookmarkChecked(QString key, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void croppingCoarseBody3D();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
@@ -50,6 +51,7 @@ public slots:
   void importSeed();
   void selectSeed();
   void selectAllSeed();
+  void cropCoarseBody3D();
 
 private slots:
   void slotTest();

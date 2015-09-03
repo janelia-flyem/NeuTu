@@ -168,6 +168,8 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void cropCoarseBody3D();
+  void updateSplitBody();
 
 protected:
   void customInit();
@@ -192,6 +194,7 @@ private:
 
   void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
                               bool isDeep);
+  void updateBodyWindowForSplit();
 
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
@@ -303,6 +306,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           this, SLOT(recordCheckedBookmark(QString, bool)));
   connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(recordBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(croppingCoarseBody3D()), this, SLOT(cropCoarseBody3D()));
 }
 
 

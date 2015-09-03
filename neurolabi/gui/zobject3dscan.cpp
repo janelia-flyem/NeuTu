@@ -116,6 +116,14 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   return *this;
 }
 
+void ZObject3dScan::copyDataFrom(const ZObject3dScan &obj)
+{
+  deprecate(COMPONENT_ALL);
+
+  m_stripeArray = obj.m_stripeArray;
+  m_isCanonized = obj.m_isCanonized;
+}
+
 
 bool ZObject3dScan::isDeprecated(EComponent comp) const
 {
@@ -2514,7 +2522,7 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   remained.canonize();
   subtracted.canonize();
 
-  *this = remained;
+  this->copyDataFrom(remained);
 
   return subtracted;
 }
