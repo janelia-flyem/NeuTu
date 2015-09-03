@@ -91,16 +91,17 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 4, parent);
+    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
     setHeaders(model);
     return model;
 }
 
 void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(1, new QStandardItem(QString("# pre")));
-    model->setHorizontalHeaderItem(2, new QStandardItem(QString("# post")));
-    model->setHorizontalHeaderItem(3, new QStandardItem(QString("status")));
+    model->setHorizontalHeaderItem(1, new QStandardItem(QString("name")));
+    model->setHorizontalHeaderItem(2, new QStandardItem(QString("# pre")));
+    model->setHorizontalHeaderItem(3, new QStandardItem(QString("# post")));
+    model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
 }
 
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
@@ -263,30 +264,39 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
-        // carefully set data for items so they will sort numerically;
-        //  contrast the "body status" entry, which we keep as a string
+        // carefully set data for column items so they will sort
+        //  properly (eg, IDs numerically, not lexically)
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
         m_model->setItem(i, 0, bodyIDItem);
 
+        if (bkmk.hasKey("name")) {
+            const char* name = ZJsonParser::stringValue(bkmk["name"]);
+            m_model->setItem(i, 1, new QStandardItem(QString(name)));
+        }
+
         int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
         QStandardItem * preSynapseItem = new QStandardItem();
         preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-        m_model->setItem(i, 1, preSynapseItem);
+        m_model->setItem(i, 2, preSynapseItem);
 
         int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
         QStandardItem * postSynapseItem = new QStandardItem();
         postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-        m_model->setItem(i, 2, postSynapseItem);
+        m_model->setItem(i, 3, postSynapseItem);
 
         // note that this routine expects "body status", not "status";
         //  historical side-effect of the original file format we read from
-        const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-        m_model->setItem(i, 3, new QStandardItem(QString(status)));
+        if (bkmk.hasKey("body status")) {
+            const char* status = ZJsonParser::stringValue(bkmk["body status"]);
+            m_model->setItem(i, 4, new QStandardItem(QString(status)));
+        }
     }
     ui->tableView->resizeColumnsToContents();
-    ui->tableView->sortByColumn(1, Qt::DescendingOrder);
+
+    // currently initially sorting on # pre-synaptic sites
+    ui->tableView->sortByColumn(2, Qt::DescendingOrder);
 }
 
 void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
