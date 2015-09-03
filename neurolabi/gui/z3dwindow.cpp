@@ -3673,9 +3673,9 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
         tree->deselectAllNode();
       }
 
-      ZSwcTree::DepthFirstIterator iter(tree);
-      while (iter.hasNext()) {
-        Swc_Tree_Node *tn = iter.next();
+      ZSwcTree::DepthFirstIterator nodeIter(tree);
+      while (nodeIter.hasNext()) {
+        Swc_Tree_Node *tn = nodeIter.next();
         if (SwcTreeNode::isRegular(tn)) {
           const QPointF &pt = getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
