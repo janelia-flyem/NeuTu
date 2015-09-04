@@ -177,6 +177,8 @@ public: /* attributes */
    */
   int getIntValue(int x, int y, int z, int c = 0) const;
 
+  int getIntValue8WithXCheckOnly(int x, int y, int z, int c = 0) const;
+
   /*!
    * \brief Get the intensity value as an integer
    *

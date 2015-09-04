@@ -930,6 +930,26 @@ void ZStack::addIntValue(int x, int y, int z, int c, int v)
     break;
   }
 }
+int ZStack::getIntValue8WithXCheckOnly(int x, int y, int z, int c) const
+{
+  x -= getOffset().getX();
+  y -= getOffset().getY();
+  z -= getOffset().getZ();
+
+  if (x < 0 || x >= width()) {
+    return 0;
+  }
+
+  size_t stride_y = m_stack->width;
+  size_t stride_z = stride_y * m_stack->height;
+  size_t stride_c = stride_z * m_stack->depth;
+
+  Image_Array ima;
+  ima.array = m_stack->array;
+  size_t offset = stride_c * c + stride_z * z + stride_y * y +  x;
+
+  return ima.array8[offset];
+}
 
 int ZStack::getIntValue(int x, int y, int z, int c) const
 {
