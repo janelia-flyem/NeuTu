@@ -1862,6 +1862,12 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
             bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
             m_splitProject.commitCoarseSplit(bodyInRoi);
+            ZFlyEmMisc::SubtractBodyWithBlock(
+                  getCompleteDocument()->getBodyForSplit()->getObjectMask(),
+                  bodyInRoi, dvidInfo);
+            getCompleteDocument()->processObjectModified(
+                  getCompleteDocument()->getBodyForSplit());
+            getCompleteDocument()->notifyObjectModified();
           }
         }
       }

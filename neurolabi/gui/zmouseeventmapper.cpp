@@ -192,7 +192,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
           if (hitTestOn) {
             ZStackDocHitTest hitManager;
-            if (rawStackPosition.z() < 0) {
+
+            if (m_context->isObjectProjectView()) {
               hitManager.hitTest(
                     const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
             } else {

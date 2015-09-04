@@ -394,6 +394,14 @@ ZIntCuboid ZDvidInfo::getBlockBox(const ZIntPoint &blockIndex) const
   return getBlockBox(blockIndex.getX(), blockIndex.getY(), blockIndex.getZ());
 }
 
+ZIntCuboid ZDvidInfo::getBlockBox(int x0, int x1, int y, int z) const
+{
+  ZIntCuboid cuboid = getBlockBox(x0, y, z);
+  cuboid.setWidth(cuboid.getWidth() * (x1 - x0 + 1));
+
+  return cuboid;
+}
+
 ZIntPoint ZDvidInfo::getEndCoordinates() const
 {
   ZIntPoint pt = getStartCoordinates();

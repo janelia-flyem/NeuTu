@@ -2221,8 +2221,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
-    //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), true);
     if (buddyDocument()->getSelectedSwcNodeNumber() == 1 &&
+        buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION &&
         NeutubeConfig::getInstance().getApplication() == "Biocytin") {
       enterSwcExtendMode();
     }
@@ -2255,6 +2255,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyDocument()->selectSwcNodeFloodFilling(op.getHitSwcNode());
     */
     interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+    break;
+  case ZStackOperator::OP_SWC_BREAK_NODE:
+    buddyDocument()->executeBreakSwcConnectionCommand();
     break;
   case ZStackOperator::OP_SWC_CONNECT_TO:
   {
