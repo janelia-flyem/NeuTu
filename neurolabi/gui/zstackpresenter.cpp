@@ -33,6 +33,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zkeyoperationconfig.h"
+#include "zstackfactory.h"
 
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -2852,10 +2853,11 @@ void ZStackPresenter::acceptActiveStroke()
         buddyDocument()->mapToStackCoord(&start);
         buddyDocument()->mapToStackCoord(&end);
 
-        int z0 = buddyView()->sliceIndex();
-        int z1 = z0;
-        start.setZ(z0);
-        end.setZ(z1);
+        int z0 = buddyView()->getZ(NeuTube::COORD_STACK);
+//        int z0 = buddyView()->sliceIndex();
+//        int z1 = z0;
+        start.setZ(0);
+        end.setZ(0);
 
         int source[3] = {0, 0, 0};
         int target[3] = {0, 0, 0};
@@ -2863,6 +2865,9 @@ void ZStackPresenter::acceptActiveStroke()
           source[i] = iround(start[i]);
           target[i] = iround(end[i]);
         }
+
+        ZStack *signal = ZStackFactory::makeSlice(
+              *buddyDocument()->getStack(), z0);
 
         Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
         if (buddyDocument()->getStackBackground() ==
@@ -2885,25 +2890,24 @@ void ZStackPresenter::acceptActiveStroke()
         //int z1 = (int) (cz + pointDistance);
 
 
-        Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, z0, z1);
+        Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, 0, 0);
         Stack_Graph_Workspace_Validate_Range(
-              sgw, buddyDocument()->getStack()->width(),
-              buddyDocument()->getStack()->height(),
-              buddyDocument()->getStack()->depth());
+              sgw, signal->width(), signal->height(), 1);
 
         //sgw->wf = Stack_Voxel_Weight;
 
         int channel = 0;
         if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION &&
-            buddyDocument()->getStack()->channelNumber() > 1) {
+            signal->channelNumber() > 1) {
           channel = 1;
         }
 
-        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
+//        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
         sgw->greyFactor = m_greyScale[channel];
         sgw->greyOffset = m_greyOffset[channel];
 
-        Int_Arraylist *path = Stack_Route(stack, source, target, sgw);
+        Stack *signalData = signal->c_stack(channel);
+        Int_Arraylist *path = Stack_Route(signalData, source, target, sgw);
 
         newStroke->clear();
 #ifdef _DEBUG_2
@@ -2924,11 +2928,14 @@ void ZStackPresenter::acceptActiveStroke()
         std::cout << "New stroke created" << std::endl;
         newStroke->print();
 #endif
+
+        delete signal;
       }
     }
   } else {
     newStroke->setColor(QColor(0, 0, 0, 0));
   }
+
   newStroke->setZ(buddyView()->sliceIndex() +
                   buddyDocument()->getStackOffset().getZ());
   newStroke->setPenetrating(false);
@@ -2970,4 +2977,43 @@ QWidget* ZStackPresenter::getParentWidget() const
 bool ZStackPresenter::isSwcFullSkeletonVisible() const
 {
   return m_actionMap[ACTION_TOGGLE_SWC_SKELETON]->isChecked();
+}
+
+void ZStackPresenter::testBiocytinProjectionMask()
+{
+  interactiveContext().setStrokeEditMode(
+        ZInteractiveContext::STROKE_DRAW);
+  m_stroke.set(23, 21);
+  acceptActiveStroke();
+  m_stroke.set(126, 139);
+  ZMouseEvent event;
+  event.addModifier(Qt::ShiftModifier);
+  m_mouseEventProcessor.getRecorder().record(event);
+//  m_mouseEventProcessor.getLatestMouseEvent().getModifiers()
+  acceptActiveStroke();
+
+  event.removeModifier(Qt::ShiftModifier);
+  m_mouseEventProcessor.getRecorder().record(event);
+  m_stroke.set(65, 55);
+  m_stroke.setEraser(true);
+  acceptActiveStroke();
+
+  m_stroke.setEraser(false);
+  m_stroke.setColor(0, 255, 0);
+  m_stroke.set(104, 47);
+  acceptActiveStroke();
+  m_stroke.set(49, 89);
+  event.addModifier(Qt::ShiftModifier);
+  m_mouseEventProcessor.getRecorder().record(event);
+  acceptActiveStroke();
+
+  ZStack *stack = buddyView()->getStrokeMask(NeuTube::COLOR_RED);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete stack;
+
+  stack = buddyView()->getStrokeMask(NeuTube::COLOR_GREEN);
+  stack->save(GET_TEST_DATA_DIR + "/test2.tif");
+
+
+  delete stack;
 }

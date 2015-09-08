@@ -37,7 +37,7 @@ enum ECoordinateSystem {
 };
 
 enum EColor {
-  RED, GREEN, BLUE
+  COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_ALL
 };
 
 enum EWindowConfig {

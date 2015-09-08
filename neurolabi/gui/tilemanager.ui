@@ -14,29 +14,18 @@
    <string>Tile Manager</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="ZTileManagerView" name="tileView">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>9</y>
-      <width>1240</width>
-      <height>1001</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QProgressBar" name="progressBar">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>118</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>24</number>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="ZTileManagerView" name="tileView"/>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -44,7 +33,7 @@
      <x>0</x>
      <y>0</y>
      <width>1250</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

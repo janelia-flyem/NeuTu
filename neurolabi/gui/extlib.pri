@@ -71,6 +71,7 @@ exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
     LIBS += -L$$DVIDCPP_PATH/lib
+    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${BUILDEM_DIR}) {
     INCLUDEPATH +=  $${BUILDEM_DIR}/include
     LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
@@ -86,7 +87,6 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     exists($$BUILDEM_DIR) {
         LIBS *= -lssl -lcrypto
     }
-    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }

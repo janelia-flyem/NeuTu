@@ -273,13 +273,13 @@ bool ZBiocytinProjectionDoc::executeMergeSwcNodeCommand()
 }
 
 bool ZBiocytinProjectionDoc::executeTraceSwcBranchCommand(
-    double x, double y, double z, int c)
+    double x, double y, double z)
 {
   if (m_parentDoc.get() != NULL) {
-    return m_parentDoc->executeTraceSwcBranchCommand(x, y, z, c);
+    return m_parentDoc->executeTraceSwcBranchCommand(x, y, z);
   }
 
-  return ZStackDoc::executeTraceSwcBranchCommand(x, y, z, c);
+  return ZStackDoc::executeTraceSwcBranchCommand(x, y, z);
 }
 
 bool ZBiocytinProjectionDoc::executeTraceSwcBranchCommand(double x, double y)

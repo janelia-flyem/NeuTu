@@ -1376,7 +1376,7 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
       ZDvidBufferReader reader;
       reader.read(
             ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-              NeuTube::GetUserName()).c_str());
+              NeuTube::GetCurrentUserName()).c_str());
       const QByteArray& buffer = reader.getBuffer();
       bodyMerger->decodeJsonString(buffer.data());
 

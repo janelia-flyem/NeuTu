@@ -46,7 +46,7 @@ std::string NeuTube::getInfoFile()
   return "";
 }
 
-std::string NeuTube::GetUserName()
+std::string NeuTube::GetCurrentUserName()
 {
 #ifdef _DEBUG_2
   std::cout << qgetenv("USER").data() << std::endl;
@@ -57,11 +57,11 @@ std::string NeuTube::GetUserName()
 bool NeuTube::IsAdminUser()
 {
 #if defined(_FLYEM_)
-  if (NeuTube::GetUserName() == "takemuras") {
+  if (NeuTube::GetCurrentUserName() == "takemuras") {
     return true;
   }
 #endif
 
-  return NeuTube::GetUserName() == "zhaot";
+  return NeuTube::GetCurrentUserName() == "zhaot";
 }
 

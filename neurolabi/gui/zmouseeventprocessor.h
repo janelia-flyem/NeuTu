@@ -46,6 +46,10 @@ public:
 
   const ZStackDoc* getDocument() const;
 
+  ZMouseEventRecorder& getRecorder() {
+    return m_recorder;
+  }
+
   const ZMouseEventRecorder& getRecorder() const {
     return m_recorder;
   }

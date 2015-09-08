@@ -792,7 +792,7 @@ void ZFlyEmBodySplitProject::commitResult()
 
   getProgressSignal()->startProgress(0.8);
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDocument()->getSparseStack()->getObjectMask(),
+        getDocument()->getSparseStackMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
@@ -922,6 +922,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (stack != NULL) { //Process splits
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
+    emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
 #ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -1015,6 +1016,9 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (!filePathList.empty()) {
     dp = 0.2 / filePathList.size();
+  } else {
+    emitError("Warning: No splits generated for upload! "
+              "Please contact the developer as soon as possible.");
   }
 
   QList<uint64_t> newBodyIdList;

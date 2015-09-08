@@ -225,7 +225,9 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/jneurontracer.h \
    $${PWD}/neutube_def.h \
    $${PWD}/flyem/zflyembodyannotationbundle.h \
-   $${PWD}/zswcfactory.h
+   $${PWD}/zswcfactory.h \
+    swc/zswcradiusestimator.h \
+    swc/zswcsignalfitter.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -433,5 +435,7 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zobject3dstripe.cpp \
    $${PWD}/jneurontracer.cpp \
    $${PWD}/flyem/zflyembodyannotationbundle.cpp \
-   $${PWD}/zswcfactory.cpp
+   $${PWD}/zswcfactory.cpp \
+    swc/zswcradiusestimator.cpp \
+    swc/zswcsignalfitter.cpp
 

@@ -170,6 +170,7 @@
 #include "biocytin/zbiocytinprojectiondoc.h"
 #include "zstackdocfactory.h"
 #include "zwidgetmessage.h"
+#include "zstackarray.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -912,8 +913,11 @@ void MainWindow::customizeActions()
   }
 
 #ifdef _DEBUG_
-  testAction->setVisible(
-        NeutubeConfig::getInstance().getApplication() != "Biocytin");
+  testAction->setVisible(true);
+//        NeutubeConfig::getInstance().getApplication() != "Biocytin");
+
+  testAction2->setVisible(
+        NeutubeConfig::getInstance().getApplication() == "FlyEM");
 #else
 //  testAction->setVisible(false);
   this->punctaExportAction->setVisible(false);
@@ -2142,11 +2146,6 @@ void MainWindow::about()
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
                      "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
-                     /*
-                     "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
-                     "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
-                     "<i>Nature Methods</i> 9 (1), 96-102</p>"
-                                        */
                      );
 }
 
@@ -3373,7 +3372,7 @@ void MainWindow::test()
   presentStackFrame(frame);
 #endif
 
-#if 1
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3386,6 +3385,21 @@ void MainWindow::test()
   m_progress->reset();
 
   statusBar()->showMessage(tr("Test done."));
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/biocytin/MC0509C3-2_small_small.tif");
+  frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+  frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+  addStackFrame(frame);
+  presentStackFrame(frame);
+
+  on_actionMake_Projection_triggered();
+
+  ZStackFrame *projFrame = currentStackFrame();
+  projFrame->presenter()->testBiocytinProjectionMask();
+
 #endif
 }
 
@@ -4533,7 +4547,7 @@ void MainWindow::on_actionMask_triggered()
 #endif
 
     if (!fileName.isEmpty()) {
-      frame->exportObjectMask(NeuTube::RED, fileName);
+      frame->exportObjectMask(NeuTube::COLOR_RED, fileName);
       m_lastOpenedFilePath = fileName;
     }
   }
@@ -4821,20 +4835,36 @@ void MainWindow::on_actionMask_SWC_triggered()
   if (m_skeletonDlg->exec() == QDialog::Accepted) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
+      ZStackArray maskArray;
+
       ZStack *mask = NULL;
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-        mask = frame->getObjectMask(NeuTube::RED);
+        mask = frame->getStrokeMask(NeuTube::COLOR_RED);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
+        mask = frame->getStrokeMask(NeuTube::COLOR_GREEN);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
+        mask = frame->getStrokeMask(NeuTube::COLOR_BLUE);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
       } else {
         mask = frame->getStrokeMask();
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
       }
 
-      if (mask == NULL) {
+      if (maskArray.empty()) {
         report("Skeletonization Failed", "No mask found. No SWC generated",
                NeuTube::MSG_WARNING);
         return;
       }
 
-      Stack *maskData = mask->c_stack();
+//      Stack *maskData = mask->c_stack();
 
       QProgressDialog *progressDlg = getProgressDialog();
       //progressDlg->setCancelButton(NULL);
@@ -4856,7 +4886,10 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       //skeletonizer.setRebase(false);
 
-      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskData);
+      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskArray);
+
+//      delete mask;
+
       reporter.endSubprogress(0.5);
 
       if (wholeTree != NULL) {
@@ -5640,6 +5673,8 @@ void MainWindow::on_actionTiles_triggered()
     }
 
     m_tileDlg->setDocument(frame->document());
+    connect(frame, SIGNAL(closed(ZStackFrame*)),
+            m_tileDlg, SLOT(closeProject()));
   }
   on_actionTile_Manager_2_triggered();
 }

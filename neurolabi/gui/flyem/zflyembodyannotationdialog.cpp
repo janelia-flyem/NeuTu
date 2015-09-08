@@ -9,8 +9,8 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  if (NeuTube::GetUserName() == "takemuras" ||
-      NeuTube::GetUserName() == "zhaot") {
+  if (NeuTube::GetCurrentUserName() == "takemuras" ||
+      NeuTube::GetCurrentUserName() == "zhaot") {
     ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
@@ -95,7 +95,7 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
-  annotation.setUser(NeuTube::GetUserName());
+  annotation.setUser(NeuTube::GetCurrentUserName());
 
   return annotation;
 }

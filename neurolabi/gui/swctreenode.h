@@ -324,6 +324,8 @@ void copyProperty(const Swc_Tree_Node *src, Swc_Tree_Node *dst);
 void setDownstreamType(Swc_Tree_Node *tn, int type);
 void setUpstreamType(Swc_Tree_Node *tn, int type, Swc_Tree_Node *stop = NULL);
 void translate(Swc_Tree_Node *tn, double dx, double dy, double dz);
+void translate(Swc_Tree_Node *tn, const ZPoint &pt);
+void translate(Swc_Tree_Node *tn, const ZIntPoint &pt);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center,
             bool inverse = false);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, bool inverse = false);

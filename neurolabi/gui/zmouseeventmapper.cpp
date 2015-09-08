@@ -562,14 +562,6 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         op.setTogglingStrokeLabel(true);
       }
 #endif
-      /*
-      if (event.getModifiers() == Qt::ShiftModifier &&
-          m_context->strokeEditMode() == ZInteractiveContext::STROKE_DRAW) {
-        op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE);
-      } else {
-        op.setOperation(ZStackOperator::OP_TRACK_MOUSE_MOVE);
-      }
-      */
     }
   }
 
