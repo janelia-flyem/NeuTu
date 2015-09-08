@@ -84,8 +84,8 @@ exists($$DVIDCPP_PATH) {
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -ljsoncpp -llz4 -lpng -lcurl -ljpeg -lboost_system -lboost_thread
-    exists($$BUILDEM_DIR) {
-        LIBS *= -lssl -lcrypto
+    !contains(DEFINES, _LIBDVIDCPP_OLD_) {
+        LIBS *= -lssl -lcrypto -lcom_err
     }
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
