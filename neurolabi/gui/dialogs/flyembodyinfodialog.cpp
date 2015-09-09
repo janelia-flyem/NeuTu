@@ -178,7 +178,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                     std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
                 #endif
 
-                // now push the value back in:
+                // now push the value back in; don't put empty strings in (messes with sorting)
                 // updateModel expects "body status", not "status" (matches original file version)
                 if (tempJson.hasKey("status") && strlen(ZJsonParser::stringValue(tempJson["status"])) > 0) {
                     bkmk.setEntry("body status", tempJson["status"]);
