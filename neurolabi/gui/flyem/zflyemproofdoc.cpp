@@ -435,7 +435,7 @@ void ZFlyEmProofDoc::downloadBookmark()
   if (getDvidTarget().isValid()) {
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
-    reader.read(url.getCustomBookmarkUrl(NeuTube::GetUserName()).c_str());
+    reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
     ZJsonArray jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {

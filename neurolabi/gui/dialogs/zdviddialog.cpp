@@ -21,7 +21,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   const std::vector<ZDvidTarget> dvidRepo =
       NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
 
-  std::string userName = NeuTube::GetUserName();
+  std::string userName = NeuTube::GetCurrentUserName();
 
   for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
            iter != dvidRepo.end(); ++iter) {

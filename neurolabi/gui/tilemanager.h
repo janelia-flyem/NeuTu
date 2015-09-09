@@ -26,7 +26,10 @@ public:
     void setTileManager(ZTileManager *manager);
     void setDocument(ZSharedPointer<ZStackDoc> p_doc);
     inline ZSharedPointer<ZStackDoc> getDocument() const { return m_doc; }
-    inline float getScaleFactor() {return scaleFactor;}
+    inline float getScaleFactor() {return m_scaleFactor;}
+
+public slots:
+    void closeProject();
 
 private slots:
     void ShowContextMenu(const QPoint& pos);
@@ -38,7 +41,7 @@ private:
     Ui::TileManager *ui;
     ZQtBarProgressReporter *m_progressReporter;
     ZSharedPointer<ZStackDoc> m_doc;
-    float scaleFactor;
+    float m_scaleFactor;
 };
 
 #endif // TILEMANAGER_H

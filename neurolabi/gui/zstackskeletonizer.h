@@ -2,6 +2,7 @@
 #define ZSTACKSKELETONIZER_H
 
 #include <string>
+#include <vector>
 #include "tz_image_lib_defs.h"
 #include "zprogressable.h"
 
@@ -84,6 +85,11 @@ public:
   ZSwcTree* makeSkeleton(const Stack *stack);
   ZSwcTree* makeSkeleton(const ZStack &stack);
   ZSwcTree* makeSkeleton(const ZObject3dScan &obj);
+
+  /*!
+   * \brief Make a skeleton from an array of masks
+   */
+  ZSwcTree* makeSkeleton(const std::vector<ZStack *> &stackArray);
 
   void reconnect(ZSwcTree *tree);
   inline void setConnectingBranch(bool conn) {

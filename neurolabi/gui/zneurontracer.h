@@ -140,7 +140,10 @@ public:
 public:
   ZSwcPath trace(double x, double y, double z);
   void updateMask(const ZSwcPath &branch);
-  void setIntensityField(Stack *stack);
+  void setIntensityField(ZStack *stack);
+  Stack* getIntensityData() const;
+  inline const ZStack *getStack() const { return m_stack; }
+  inline ZStack *getStack() { return m_stack; }
   void updateMask(Swc_Tree *tree);
   void setTraceWorkspace(Trace_Workspace *workspace);
   void setConnWorkspace(Connection_Test_Workspace *workspace);
@@ -160,6 +163,7 @@ public:
     m_resolution[2] = z;
   }
 
+#if 0
   inline void setStackOffset(double x, double y, double z) {
     m_stackOffset[0] = x;
     m_stackOffset[1] = y;
@@ -167,10 +171,14 @@ public:
   }
 
   void setStackOffset(const ZIntPoint &pt);
+#endif
 
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
   }
+
+  void setSignalChannel(int c) { m_preferredSignalChannel = c; }
+  int getSignalChannel() const { return m_preferredSignalChannel; }
 
   /*!
    * \brief Auto trace
@@ -257,14 +265,14 @@ private:
   void config();
 
 private:
-  Stack *m_stack;
+  ZStack *m_stack;
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
   NeuTube::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
-  double m_stackOffset[3];
+//  double m_stackOffset[3];
 
   double m_seedMinScore;
   double m_autoTraceMinScore;
@@ -275,6 +283,7 @@ private:
 
   int m_recover;
   int m_seedingMethod;
+  int m_preferredSignalChannel;
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;

@@ -590,7 +590,7 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(
-        NeuTube::GetUserName());
+        NeuTube::GetCurrentUserName());
 
   if (!bodyMap.isEmpty()) {
     ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
@@ -651,7 +651,7 @@ void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
 void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
 {
   writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
-            NeuTube::GetUserName(), bookmarkJson);
+            NeuTube::GetCurrentUserName(), bookmarkJson);
 }
 
 void ZDvidWriter::deleteAllCustomBookmark()

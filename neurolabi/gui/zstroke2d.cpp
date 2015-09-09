@@ -31,7 +31,9 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
   m_width = stroke.m_width;
-  setLabel(stroke.m_label);
+  m_label = stroke.m_label;
+  m_originalLabel = stroke.m_originalLabel;
+//  setLabel(stroke.m_label);
   //m_label = stroke.m_label;
   m_z = stroke.m_z;
   //m_isEraser = stroke.m_isEraser;

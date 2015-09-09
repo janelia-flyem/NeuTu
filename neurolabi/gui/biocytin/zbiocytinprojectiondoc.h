@@ -45,8 +45,7 @@ public slots:
   virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);
   virtual bool executeMergeSwcNodeCommand();
-  virtual bool executeTraceSwcBranchCommand(
-      double x, double y, double z, int c = 0);
+  virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
   virtual bool executeTraceSwcBranchCommand(double x, double y);
   virtual bool executeInterpolateSwcZCommand();
   virtual bool executeInterpolateSwcRadiusCommand();

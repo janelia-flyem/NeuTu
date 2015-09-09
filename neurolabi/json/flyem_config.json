@@ -152,7 +152,7 @@
       "body_label": "bodies",
       "label_block": "labels",
       "librarian": "emdata2.int.janelia.org:9100",
-      "user_name": ["zhaot"]
+      "user_name": ["zhaot", "yuy"]
     },
     {
       "address": "emdata1.int.janelia.org",

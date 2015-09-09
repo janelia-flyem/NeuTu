@@ -1558,6 +1558,8 @@ void ZStackView::paintActiveDecoration()
 
 ZStack* ZStackView::getStrokeMask(NeuTube::EColor color)
 {
+  ZStack *stack = NULL;
+
   if (m_objectCanvas != NULL){
     updateObjectCanvas();
 
@@ -1566,37 +1568,46 @@ ZStack* ZStackView::getStrokeMask(NeuTube::EColor color)
       slice = -slice - 1;
     }
 
+    bool painted = false;
     foreach (ZStroke2d *obj, buddyDocument()->getStrokeList()) {
       bool isMask = false;
       if (obj->isEraser()) {
         isMask = true;
       } else {
         switch (color) {
-        case NeuTube::RED:
+        case NeuTube::COLOR_RED:
           isMask = (obj->getColor().red() > 0 && obj->getColor().green() == 0 &&
                     obj->getColor().blue() == 0);
           break;
-        case NeuTube::GREEN:
+        case NeuTube::COLOR_GREEN:
           isMask = (obj->getColor().red() == 0 && obj->getColor().green() > 0 &&
                     obj->getColor().blue() == 0);
           break;
-        case NeuTube::BLUE:
+        case NeuTube::COLOR_BLUE:
           isMask = (obj->getColor().red() == 0 && obj->getColor().green() == 0 &&
                     obj->getColor().blue() > 0);
+          break;
+        case NeuTube::COLOR_ALL:
+          isMask = true;
           break;
         }
 
         if (isMask) {
-          obj->display(m_objectCanvasPainter,
-                       slice, buddyPresenter()->objectStyle());
+          painted = true;
         }
       }
+
+      if (isMask && painted) {
+        obj->display(m_objectCanvasPainter,
+                     slice, buddyPresenter()->objectStyle());
+      }
+    }
+
+    if (painted) {
+      stack = getObjectMask(1);
+      paintObjectBuffer();
     }
   }
-
-  ZStack *stack = getObjectMask(1);
-
-  paintObjectBuffer();
 
   return stack;
 }
@@ -1665,7 +1676,7 @@ ZStack* ZStackView::getObjectMask(uint8_t maskValue)
     for (int y = 0; y < m_objectCanvas->height(); ++y) {
       for (int x = 0; x < m_objectCanvas->width(); ++x) {
         QRgb rgb = image.pixel(x, y);
-        if (qRed(rgb) > 0) {
+        if (qRed(rgb) > 0 || qGreen(rgb) > 0 || qBlue(rgb) > 0) {
           array[offset] = maskValue;
         } else {
           array[offset] = 0;
@@ -1693,17 +1704,17 @@ ZStack* ZStackView::getObjectMask(NeuTube::EColor color, uint8_t maskValue)
         QRgb rgb = image.pixel(x, y);
         bool isForeground = false;
         switch (color) {
-        case NeuTube::RED:
+        case NeuTube::COLOR_RED:
           if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
             isForeground = true;
           }
           break;
-        case NeuTube::GREEN:
+        case NeuTube::COLOR_GREEN:
           if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
             isForeground = true;
           }
           break;
-        case NeuTube::BLUE:
+        case NeuTube::COLOR_BLUE:
           if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
             isForeground = true;
           }

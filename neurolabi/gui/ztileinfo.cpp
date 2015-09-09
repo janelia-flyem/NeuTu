@@ -15,8 +15,12 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 {
   if (obj.hasKey("source")) {
     m_source = ZJsonParser::stringValue(obj["source"]);
-    QString fn = tileFilePath+QDir::separator()+QFileInfo(m_source.c_str()).fileName();
-    m_source = fn.toStdString();
+    QFileInfo fileInfo(m_source.c_str());
+    if (!fileInfo.isAbsolute()) {
+      QString fn = tileFilePath+QDir::separator()+
+          QFileInfo(m_source.c_str()).fileName();
+      m_source = fn.toStdString();
+    }
   }
 
   if (obj.hasKey("offset")) {
@@ -54,8 +58,11 @@ bool ZTileInfo::loadJsonObject(const ZJsonObject &obj, QString tileFilePath)
 
   if (obj.hasKey("image")) {
       m_imageSourse = ZJsonParser::stringValue(obj["image"]);
-      QString fn = tileFilePath+QDir::separator()+QFileInfo(m_imageSourse.c_str()).fileName();
-      m_imageSourse = fn.toStdString();
+      QFileInfo fileInfo(m_imageSourse.c_str());
+      if (!fileInfo.isAbsolute()) {
+        QString fn = tileFilePath+QDir::separator()+QFileInfo(m_imageSourse.c_str()).fileName();
+        m_imageSourse = fn.toStdString();
+      }
   }
 
   return true;

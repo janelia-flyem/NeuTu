@@ -71,6 +71,7 @@ exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
     LIBS += -L$$DVIDCPP_PATH/lib
+    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${BUILDEM_DIR}) {
     INCLUDEPATH +=  $${BUILDEM_DIR}/include
     LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
@@ -83,10 +84,9 @@ exists($$DVIDCPP_PATH) {
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -ljsoncpp -llz4 -lpng -lcurl -ljpeg -lboost_system -lboost_thread
-    exists($$BUILDEM_DIR) {
+    !contains(DEFINES, _LIBDVIDCPP_OLD_) {
         LIBS *= -lssl -lcrypto
     }
-    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }

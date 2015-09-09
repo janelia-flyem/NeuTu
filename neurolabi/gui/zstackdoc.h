@@ -711,6 +711,8 @@ public:
   virtual const ZSparseStack* getSparseStack() const;
   virtual const ZSparseStack* getConstSparseStack() const;
   virtual ZSparseStack* getSparseStack();
+  virtual ZObject3dScan* getSparseStackMask() const;
+
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -972,7 +974,7 @@ public slots: //undoable commands
   virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);
   virtual bool executeMergeSwcNodeCommand();
-  virtual bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
+  virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
   virtual bool executeTraceSwcBranchCommand(double x, double y);
   virtual bool executeInterpolateSwcZCommand();
   virtual bool executeInterpolateSwcRadiusCommand();

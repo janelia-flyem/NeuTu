@@ -108,6 +108,7 @@
 #include "zwidgetmessage.h"
 #include "swc/zswcresampler.h"
 #include "zswcforest.h"
+#include "swc/zswcsignalfitter.h"
 
 using namespace std;
 
@@ -221,22 +222,30 @@ void ZStackDoc::initNeuronTracer()
   if (getStack() != NULL) {
     if (getTag() == NeuTube::Document::BIOCYTIN_STACK &&
         getStack()->channelNumber() > 1) {
-      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
+      m_neuronTracer.setSignalChannel(1);
+//      m_neuronTracer.setIntensityField(getStack()->c_stack(1));
     } else {
-      m_neuronTracer.setIntensityField(getStack()->c_stack());
+//      m_neuronTracer.setIntensityField(getStack()->c_stack());
     }
+    m_neuronTracer.setIntensityField(getStack());
   }
   m_neuronTracer.setBackgroundType(getStackBackground());
   if (getTag() == NeuTube::Document::FLYEM_BODY) {
     m_neuronTracer.setVertexOption(ZStackGraph::VO_SURFACE);
   }
 
+  m_neuronTracer.setResolution(getResolution().voxelSizeX(),
+                               getResolution().voxelSizeY(),
+                               getResolution().voxelSizeZ());
+
+  /*
   if (GET_APPLICATION_NAME == "Biocytin") {
     m_neuronTracer.setResolution(1, 1, 10);
   }
+  */
 
-  ZIntPoint offset = getStackOffset();
-  m_neuronTracer.setStackOffset(offset.getX(), offset.getY(), offset.getZ());
+//  ZIntPoint offset = getStackOffset();
+//  m_neuronTracer.setStackOffset(offset.getX(), offset.getY(), offset.getZ());
 }
 
 /*
@@ -685,6 +694,15 @@ const ZSparseStack* ZStackDoc::getConstSparseStack() const
 ZSparseStack* ZStackDoc::getSparseStack()
 {
   return m_sparseStack;
+}
+
+ZObject3dScan* ZStackDoc::getSparseStackMask() const
+{
+  if (getConstSparseStack() != NULL) {
+    return const_cast<ZObject3dScan*>(getConstSparseStack()->getObjectMask());
+  }
+
+  return NULL;
 }
 
 bool ZStackDoc::hasSwc() const
@@ -4254,29 +4272,54 @@ bool ZStackDoc::loadFile(const QString &filePath)
     break;
   case ZFileType::OBJECT_SCAN_FILE:
     setTag(NeuTube::Document::FLYEM_BODY);
-  if (hasStackData()){
-    ZObject3dScan *obj = new ZObject3dScan;
-    obj->load(filePath.toStdString());
-    int index = m_objectGroup.getObjectList(
-          ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
-    QColor color = m_objColorSheme.getColor(index);
-    color.setAlpha(128);
-    obj->setColor(color);
-    executeAddObjectCommand(obj);
-  } else {
-    ZSparseObject *sobj = new ZSparseObject;
-    sobj->load(filePath.toStdString().c_str());
-    addObject(sobj);
-    sobj->setColor(255, 255, 255, 255);
+    if (hasStackData()){
+      ZObject3dScan *obj = new ZObject3dScan;
+      obj->load(filePath.toStdString());
+      int index = m_objectGroup.getObjectList(
+            ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
+      QColor color = m_objColorSheme.getColor(index);
+      color.setAlpha(128);
+      obj->setColor(color);
+      executeAddObjectCommand(obj);
+    } else {
+      ZSparseObject *sobj = new ZSparseObject;
+      sobj->load(filePath.toStdString().c_str());
+      addObject(sobj);
+      sobj->setColor(255, 255, 255, 255);
 
-    ZIntCuboid cuboid = sobj->getBoundBox();
-    ZStack *stack = ZStackFactory::makeVirtualStack(
-          cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-    stack->setSource(filePath.toStdString());
-    stack->setOffset(cuboid.getFirstCorner());
-    loadStack(stack);
-  }
+      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZStack *stack = ZStackFactory::makeVirtualStack(
+            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+      stack->setSource(filePath.toStdString());
+      stack->setOffset(cuboid.getFirstCorner());
+      loadStack(stack);
+    }
     break; //experimenting _DEBUG_
+  case ZFileType::DVID_OBJECT_FILE:
+    setTag(NeuTube::Document::FLYEM_BODY);
+    if (hasStackData()){
+      ZObject3dScan *obj = new ZObject3dScan;
+      obj->importDvidObject(filePath.toStdString());
+      int index = m_objectGroup.getObjectList(
+            ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
+      QColor color = m_objColorSheme.getColor(index);
+      color.setAlpha(128);
+      obj->setColor(color);
+      executeAddObjectCommand(obj);
+    } else {
+      ZSparseObject *sobj = new ZSparseObject;
+      sobj->importDvidObject(filePath.toStdString());
+      addObject(sobj);
+      sobj->setColor(255, 255, 255, 255);
+
+      ZIntCuboid cuboid = sobj->getBoundBox();
+      ZStack *stack = ZStackFactory::makeVirtualStack(
+            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+      stack->setSource(filePath.toStdString());
+      stack->setOffset(cuboid.getFirstCorner());
+      loadStack(stack);
+    }
+    break;
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
@@ -5185,7 +5228,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
                                      getResolution().voxelSizeY(),
                                      getResolution().voxelSizeZ());
 
-        m_neuronTracer.setStackOffset(getStackOffset());
+//        m_neuronTracer.setStackOffset(getStackOffset());
 
 //        if (getTag() == NeuTube::Document::FLYEM_ROI) {
 //          m_neuronTracer.useEdgePath(true);
@@ -5762,15 +5805,20 @@ void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count / maxIter;
+    ZSwcSignalFitter fitter;
+    fitter.setBackground(getStackBackground());
 
     for (int iter = 0; iter < maxIter; ++iter) {
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
+        fitter.fitSignal(tn, getStack(), 0);
+        /*
         if (SwcTreeNode::isRegular(tn)) {
           if (!SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground())) {
             SwcTreeNode::fitSignal(
                   tn, getStack()->c_stack(), getStackBackground(), 2);
           }
         }
+        */
         advanceProgress(step);
       }
     }
@@ -5794,11 +5842,21 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     startProgress();
 
+    ZSwcSignalFitter fitter;
+    fitter.setBackground(getStackBackground());
+
+    int channel = 0;
+    if (getStack()->channelNumber() == 3 &&
+        getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+      channel = 1;
+    }
+
     QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
     double step = 1.0 / nodeList.size();
     for (QList<Swc_Tree_Node*>::iterator iter = nodeList.begin();
          iter != nodeList.end(); ++iter) {
       Swc_Tree_Node newNode = *(*iter);
+#if 0
       ZIntPoint offset = getStackOffset();
       SwcTreeNode::translate(&newNode, -offset.getX(), -offset.getY(),
                              -offset.getZ());
@@ -5807,16 +5865,20 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
           getTag() == NeuTube::Document::BIOCYTIN_STACK) {
         stack = getStack()->c_stack(1);
       }
+
+
       bool succ = SwcTreeNode::fitSignal(&newNode, stack,
                                          getStackBackground());
       if (!succ) {
         succ = SwcTreeNode::fitSignal(&newNode, stack,
                                       getStackBackground(), 2);
       }
+#endif
 
+      bool succ = fitter.fitSignal(&newNode, getStack(), channel);
       if (succ) {
-        SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
-                               offset.getZ());
+        //SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
+          //                     offset.getZ());
         new ZStackDocCommand::SwcEdit::ChangeSwcNode(
               this, *iter, newNode, allCommand);
         advanceProgress(step);
@@ -6771,11 +6833,11 @@ bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
   y -= getStackOffset().getY();
   double z = maxIntesityDepth(x, y) + getStackOffset().getZ();
 
-  return executeTraceSwcBranchCommand(x, y, z, 0);
+  return executeTraceSwcBranchCommand(x, y, z);
 }
 
 bool ZStackDoc::executeTraceSwcBranchCommand(
-    double x, double y, double z, int c)
+    double x, double y, double z)
 {
   /*
   QUndoCommand *command =
@@ -6784,7 +6846,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
   */
 
   //ZNeuronTracer tracer;
-  m_neuronTracer.setIntensityField(getStack()->c_stack(c));
+  m_neuronTracer.setIntensityField(getStack());
   //tracer.setTraceWorkspace(getTraceWorkspace());
   //tracer.setStackOffset(getStackOffset().x(), getStackOffset().y(),
   //                      getStackOffset().z());

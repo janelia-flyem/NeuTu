@@ -20,6 +20,7 @@
 #include "tz_objdetect.h"
 #include "zjsonobject.h"
 #include "zswctree.h"
+#include "swc/zswcsignalfitter.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -372,7 +373,7 @@ void ZNeuronTracer::init()
   m_swcConnector = new ZSwcConnector;
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
-    m_stackOffset[i] = 0.0;
+//    m_stackOffset[i] = 0.0;
   }
 
   m_mask = NULL;
@@ -381,6 +382,7 @@ void ZNeuronTracer::init()
   m_bcAdjust = false;
   m_greyFactor = 1.0;
   m_greyOffset = 0.0;
+  m_preferredSignalChannel = 0;
 
   config();
 }
@@ -427,7 +429,22 @@ void ZNeuronTracer::clear()
   clearBuffer();
 }
 
-void ZNeuronTracer::setIntensityField(Stack *stack)
+Stack* ZNeuronTracer::getIntensityData() const
+{
+  Stack *stack = NULL;
+
+  if (m_stack != NULL) {
+    if (m_preferredSignalChannel < m_stack->channelNumber()) {
+      stack = m_stack->c_stack(m_preferredSignalChannel);
+    } else {
+      stack = m_stack->c_stack();
+    }
+  }
+
+  return stack;
+}
+
+void ZNeuronTracer::setIntensityField(ZStack *stack)
 {
   m_stack = stack;
 }
@@ -438,15 +455,19 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 
   if (m_traceWorkspace->trace_mask == NULL) {
     m_traceWorkspace->trace_mask =
-        C_Stack::make(GREY, C_Stack::width(m_stack), C_Stack::height(m_stack),
-                      C_Stack::depth(m_stack));
+        C_Stack::make(GREY, getStack()->width(), getStack()->height(),
+                      getStack()->depth());
     Zero_Stack(m_traceWorkspace->trace_mask);
   }
 
+  Stack *stackData = getIntensityData();
+
+  ZIntPoint stackOffset = getStack()->getOffset();
+
   double pos[3];
-  pos[0] = x - m_stackOffset[0];
-  pos[1] = y - m_stackOffset[1];
-  pos[2] = z - m_stackOffset[2];
+  pos[0] = x - stackOffset.getX();
+  pos[1] = y - stackOffset.getY();
+  pos[2] = z - stackOffset.getZ();
 
   /* alloc <locseg> */
   Local_Neuroseg *locseg = New_Local_Neuroseg();
@@ -456,7 +477,7 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 
   Locseg_Fit_Workspace *ws =
       (Locseg_Fit_Workspace*) m_traceWorkspace->fit_workspace;
-  Local_Neuroseg_Optimize_W(locseg, m_stack, 1.0, 1, ws);
+  Local_Neuroseg_Optimize_W(locseg, stackData, 1.0, 1, ws);
 
   Trace_Record *tr = New_Trace_Record();
   tr->mask = ZERO_BIT_MASK;
@@ -470,7 +491,7 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 
   Trace_Workspace_Set_Trace_Status(m_traceWorkspace, TRACE_NORMAL,
                                    TRACE_NORMAL);
-  Trace_Locseg(m_stack, 1.0, locseg_chain, m_traceWorkspace);
+  Trace_Locseg(stackData, 1.0, locseg_chain, m_traceWorkspace);
   Locseg_Chain_Remove_Overlap_Ends(locseg_chain);
   Locseg_Chain_Remove_Turn_Ends(locseg_chain, 1.0);
 
@@ -489,8 +510,7 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
     if (!path.empty()) {
       SwcTreeNode::setParent(tn, path.back());
     }
-    SwcTreeNode::translate(tn, m_stackOffset[0], m_stackOffset[1],
-        m_stackOffset[2]);
+    SwcTreeNode::translate(tn, stackOffset);
     path.push_back(tn);
   }
 
@@ -534,16 +554,19 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
                                double x2, double y2, double z2, double r2)
 {
   setTraceScoreThreshold(TRACING_INTERACTIVE);
-  x1 -= m_stackOffset[0];
-  y1 -= m_stackOffset[1];
-  z1 -= m_stackOffset[2];
 
-  x2 -= m_stackOffset[0];
-  y2 -= m_stackOffset[1];
-  z2 -= m_stackOffset[2];
+  ZIntPoint stackOffset = getStack()->getOffset();
 
-  if (x1 < 0 || y1 < 0 || z1 < 0 || x1 >= C_Stack::width(m_stack) ||
-      y1 >= C_Stack::height(m_stack) || z1 >= C_Stack::depth(m_stack)) {
+  x1 -= stackOffset.getX();
+  y1 -= stackOffset.getY();
+  z1 -= stackOffset.getZ();
+
+  x2 -= stackOffset.getX();
+  y2 -= stackOffset.getY();
+  z2 -= stackOffset.getZ();
+
+  if (x1 < 0 || y1 < 0 || z1 < 0 || x1 >= getStack()->width() ||
+      y1 >= getStack()->height() || z1 >= getStack()->depth()) {
     return NULL;
   }
 
@@ -551,10 +574,9 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (m_resolution[2] / m_resolution[0] > 3.0) {
     stackGraph.setZMargin(2);
   }
-  stackGraph.updateRange(x1, y1, z1, x2, y2, z2,
-                         C_Stack::width(m_stack),
-                         C_Stack::height(m_stack),
-                         C_Stack::depth(m_stack));
+  stackGraph.updateRange(
+        x1, y1, z1, x2, y2, z2,
+        getStack()->width(), getStack()->height(), getStack()->depth());
   if (stackGraph.getRoiVolume() > MAX_P2P_TRACE_VOLUME) {
     return NULL;
   }
@@ -582,7 +604,7 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 //  }
 
   Stack *partial = C_Stack::crop(
-        m_stack, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        getIntensityData(), box.getFirstCorner().getX(), box.getFirstCorner().getY(),
         box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth(), NULL);
 
@@ -636,21 +658,20 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     }
 
   } else {
-    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, C_Stack::width(m_stack),
-                                             C_Stack::height(m_stack),
-                                             C_Stack::depth(m_stack));
-    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, C_Stack::width(m_stack),
-                                           C_Stack::height(m_stack),
-                                           C_Stack::depth(m_stack));
+    int width = getStack()->width();
+    int height = getStack()->height();
+    int depth = getStack()->depth();
+
+    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, width, height, depth);
+    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, width, height, depth);
 
     path = stackGraph.computeShortestPath(
-          m_stack, startIndex, endIndex, m_vertexOption);
+          getIntensityData(), startIndex, endIndex, m_vertexOption);
 //    C_Stack::kill(stackField);
 
     for (size_t i = path.size(); i > 0; --i) {
       int x, y, z;
-      C_Stack::indexToCoord(path[i - 1], C_Stack::width(m_stack),
-          C_Stack::height(m_stack), &x, &y, &z);
+      C_Stack::indexToCoord(path[i - 1], width, height, &x, &y, &z);
       voxelArray.append(ZVoxel(x, y, z));
     }
   }
@@ -671,9 +692,14 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   Swc_Tree *tree = voxelArray.toSwcTree();
   if (tree != NULL) {
-    Swc_Tree_Translate(tree, m_stackOffset[0], m_stackOffset[1],
-        m_stackOffset[2]);
+    Swc_Tree_Translate(
+          tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
   }
+
+  ZSwcSignalFitter fitter;
+  fitter.setBackground(m_backgroundType);
+  fitter.setFixingTerminal(true);
+  fitter.fitSignal(tree, getStack(), getSignalChannel());
 
   return tree;
 }
@@ -1207,7 +1233,7 @@ void ZNeuronTracer::setTraceScoreThreshold(ETracingMode mode)
 {
   bool is2d = false;
   if (m_stack != NULL) {
-    if (C_Stack::depth(m_stack) == 1) {
+    if (getStack()->depth() == 1) {
       is2d = true;
     }
   }
@@ -1314,10 +1340,12 @@ void ZNeuronTracer::updateConnectionTestWorkspace(
   m_connWorkspace->crossover_test = crossoverTest;
 }
 
+/*
 void ZNeuronTracer::setStackOffset(const ZIntPoint &pt)
 {
   setStackOffset(pt.getX(), pt.getY(), pt.getZ());
 }
+*/
 
 void ZNeuronTracer::setTraceLevel(int level)
 {
