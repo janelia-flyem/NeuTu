@@ -10,6 +10,10 @@
 #include "zstackview.h"
 #include "zflyemproofdoc.h"
 
+#ifdef _WIN32
+#undef GetUserName
+#endif
+
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false),
   m_highTileContrast(false)

@@ -40,14 +40,14 @@ endif
 #ifeq ($(UNAME), MINGW32_NT-6.1)
 #if (findstring $(UNAME),MINGW32)
 ifneq (,$(findstring MINGW32,$(UNAME)))
-LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@ -lpcreposix -lpcre
+LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@ -lpcre2posix -lpcre2-8
 else
 #LIBFLAGS = -L/usr/local/lib -L$(EXT_LIB_DIR) @LIBS@
-LIBFLAGS = -L../lib/fftw3/lib -L../lib/jansson/lib -L../lib/png/lib -L ../lib/xml/lib -L$(EXT_LIB_DIR) @LIBS@
+LIBFLAGS = -L../lib/fftw3/lib -L../lib/jansson/lib -L ../lib/xml/lib -L$(EXT_LIB_DIR) @LIBS@
 endif
 
 #VERSION=1.0.0
 
-OTHER_LIBFLAGS =  -L/sw/lib -L/usr/X11R6/lib/ -lX11 -lXext -ljpeg -lpng -lgif -lImlib -I/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include -I/sw/include
+OTHER_LIBFLAGS =  -L/sw/lib -L/usr/X11R6/lib/ -lX11 -lXext -ljpeg -lgif -lImlib -I/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include -I/sw/include
 LDFLAGS = $(LIBFLAGS) @ARCH_FLAG@
 #-fprofile-arcs -ftest-coverage

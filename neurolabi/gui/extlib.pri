@@ -31,7 +31,7 @@ win32 {
         -lfftw3f \
         -lxml2 \
 #        -lpng \
-        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+        -mwin32 -mthreads -lpcre2posix -lpcre2-8 -ljansson -lpthread
 }
 
 #Self-contained libraries
