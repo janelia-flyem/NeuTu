@@ -12,6 +12,8 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
   if (NeuTube::GetUserName() == "takemuras" ||
       NeuTube::GetUserName() == "zhaot") {
     ui->statusComboBox->addItem("Finalized");
+  } else {
+    ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
 
