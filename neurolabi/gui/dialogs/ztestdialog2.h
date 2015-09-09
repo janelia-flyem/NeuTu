@@ -2,6 +2,7 @@
 #define ZTESTDIALOG2_H
 
 #include <QDialog>
+#include <QFileDialog>
 
 #include "flyembodyinfodialog.h"
 

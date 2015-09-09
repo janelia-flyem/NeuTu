@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #if defined(_WIN32) || defined(_WIN64)
   #define PCRE_STATIC
-  #include <pcreposix.h>
+  #include <pcre2posix.h>
 #else
   #include <regex.h>
 #endif

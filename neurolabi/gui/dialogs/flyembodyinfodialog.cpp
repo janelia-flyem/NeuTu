@@ -3,6 +3,12 @@
 #include <QtGui>
 #include <QMessageBox>
 
+#if QT_VERSION >= 0x050000
+#include <QtConcurrent>
+#else
+#include <QtCore>
+#endif
+
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zstring.h"

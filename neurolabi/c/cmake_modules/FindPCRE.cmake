@@ -16,8 +16,8 @@ libfind_pkg_check_modules(PCRE_PKGCONF libpcre)
 
 # attempt to find static library first if this is set
 if(PCRE_STATIC_LIBRARY)
-  set(PCRE_POSIX_STATIC libpcreposix.a)
-  set(PCRE_STATIC libpcre.a)
+  set(PCRE_POSIX_STATIC libpcre2posix.a)
+  set(PCRE_STATIC libpcre2-8.a)
 endif(PCRE_STATIC_LIBRARY)
 
 # additional hints
@@ -27,17 +27,17 @@ endif(MINGW)
 
 # Include dir
 find_path(PCRE_INCLUDE_DIR
-  NAMES pcreposix.h
+  NAMES pcre2posix.h
   PATHS ${PCRE_PKGCONF_INCLUDE_DIRS}
 )
 
 # Finally the library itself
 find_library(PCRE_POSIX_LIBRARY
-  NAMES ${PCRE_POSIX_STATIC} pcreposix
+  NAMES ${PCRE_POSIX_STATIC} pcre2posix
   PATHS ${PCRE_PKGCONF_LIBRARY_DIRS}
 )
 find_library(PCRE_LIBRARY
-  NAMES ${PCRE_STATIC} pcre
+  NAMES ${PCRE_STATIC} pcre2-8
   PATHS ${PCRE_PKGCONF_LIBRARY_DIRS}
 )
 set(PCRE_POSIX_LIBRARY ${PCRE_POSIX_LIBRARY} ${PCRE_LIBRARY})
