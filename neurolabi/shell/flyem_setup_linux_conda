@@ -10,9 +10,9 @@ fi
 downloadDir=$install_dir/Download
 cd $downloadDir
 wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-bash Miniconda-latest-Linux-x86_64.sh
-
 condaDir=/opt/Download/miniconda
+bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+
 CONDA_ROOT=`$condaDir/bin/conda info --root`
 source ${CONDA_ROOT}/bin/activate root
 $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
