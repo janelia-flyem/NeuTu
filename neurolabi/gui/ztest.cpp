@@ -17705,7 +17705,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   Stack *stack = C_Stack::readSc(
         GET_TEST_DATA_DIR + "/benchmark//binary/2d/btrig2_skel.tif");
   ZStackProcessor::ShrinkSkeleton(stack, 10);
