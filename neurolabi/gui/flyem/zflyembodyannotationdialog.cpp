@@ -9,8 +9,8 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  if (NeuTube::GetCurrentUserName() == "takemuras" ||
-      NeuTube::GetCurrentUserName() == "zhaot") {
+  if (NeuTube::GetCurrentUserName() == "takemuras"/* ||
+      NeuTube::GetCurrentUserName() == "zhaot"*/) {
     ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
@@ -109,10 +109,17 @@ void ZFlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 void ZFlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 {
   int index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);
+  ui->statusLabel->setText("Status");
+  ui->statusComboBox->setEnabled(true);
   if (index >= 0) {
     ui->statusComboBox->setCurrentIndex(index);
   } else {
-    ui->statusComboBox->setCurrentIndex(0);
+    if (status == "Finalized") {
+      ui->statusLabel->setText("Finalized");
+      ui->statusComboBox->setEnabled(false);
+    } else {
+      ui->statusComboBox->setCurrentIndex(0);
+    }
   }
 //  ui->skipCheckBox->setChecked(status == "Skip");
 }

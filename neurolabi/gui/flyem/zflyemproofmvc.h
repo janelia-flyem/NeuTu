@@ -112,6 +112,7 @@ public slots:
   void showSplit3d();
   void showCoarseBody3d();
   void showFineBody3d();
+  void showExternalNeuronWindow();
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
@@ -162,6 +163,7 @@ protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
   void detachSplitWindow();
+  void detachExternalNeuronWindow();
 //  void closeBodyWindow(int index);
   void closeBodyWindow(Z3DWindow *window);
   void closeAllBodyWindow();
@@ -174,6 +176,7 @@ protected slots:
 protected:
   void customInit();
   void createPresenter();
+  virtual void dropEvent(QDropEvent *event);
 
 private:
   void init();
@@ -191,6 +194,7 @@ private:
   void makeCoarseBodyWindow();
   void makeBodyWindow();
   void makeSplitWindow();
+  void makeExternalNeuronWindow();
 
   void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
                               bool isDeep);
@@ -219,6 +223,7 @@ private:
   Z3DTabWidget *m_bodyViewers;
   Z3DWindow *m_coarseBodyWindow;
   Z3DWindow *m_bodyWindow;
+  Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 

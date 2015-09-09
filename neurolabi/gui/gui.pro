@@ -132,6 +132,13 @@ unix {
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
         }
 
+        exists($${NEUROLABI_DIR}/macosx10.10) {
+            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+            QMAKE_MAC_SDK = macosx10.10
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
+        }
+
+
         doc.files = doc
         doc.path = Contents/MacOS
         QMAKE_BUNDLE_DATA += doc
@@ -560,7 +567,8 @@ HEADERS += mainwindow.h \
     zstackdocfactory.h \
     zintcuboidobj.h \
     flyem/zflyembodywindowfactory.h \
-    flyem/zflyembodycolorscheme.h
+    flyem/zflyembodycolorscheme.h \
+    flyem/zflyemexternalneurondoc.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -985,7 +993,8 @@ SOURCES += main.cpp \
     zstackdocfactory.cpp \
     zintcuboidobj.cpp \
     flyem/zflyembodywindowfactory.cpp \
-    flyem/zflyembodycolorscheme.cpp
+    flyem/zflyembodycolorscheme.cpp \
+    flyem/zflyemexternalneurondoc.cpp
 
 OTHER_FILES += \
     extlib.pri \

@@ -54,6 +54,8 @@ public slots:
   void advanceProgress(double dp);
   void endProgress();
 
+protected:
+  void dragEnterEvent(QDragEnterEvent *event);
 
 private:
   void init();
@@ -80,6 +82,8 @@ private:
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
   QAction *m_contrastAction;
+
+  QAction *m_openExtNeuronWindowAction;
 
   QToolBar *m_toolBar;
 

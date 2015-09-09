@@ -26,6 +26,7 @@ public:
   static std::string MakeFlyEmTBarSource();
   static std::string MakeFlyEmPsdSource();
   static std::string MakeFlyEmSplitRoiSource();
+  static std::string MakeFlyEmExtNeuronClass();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

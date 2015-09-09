@@ -40,6 +40,8 @@
 #include "zswcgenerator.h"
 #include "zflyembody3ddoc.h"
 #include "neutubeconfig.h"
+#include "flyem/zflyemexternalneurondoc.h"
+#include "zfiletype.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -103,6 +105,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
 
   m_coarseBodyWindow = NULL;
+  m_externalNeuronWindow = NULL;
   m_bodyWindow = NULL;
   m_splitWindow = NULL;
 }
@@ -144,6 +147,11 @@ void ZFlyEmProofMvc::detachSplitWindow()
   m_splitWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachExternalNeuronWindow()
+{
+  m_externalNeuronWindow = NULL;
+}
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -156,6 +164,9 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachBodyWindow()));
     } else if (window == m_splitWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachSplitWindow()));
+    } else if (window == m_externalNeuronWindow) {
+      connect(window, SIGNAL(destroyed()),
+              this, SLOT(detachExternalNeuronWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this->getView(), SLOT(setView(ZStackViewParam)));
@@ -201,6 +212,21 @@ void ZFlyEmProofMvc::makeBodyWindow()
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_bodyWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
+}
+
+void ZFlyEmProofMvc::makeExternalNeuronWindow()
+{
+  ZFlyEmExternalNeuronDoc *doc = new ZFlyEmExternalNeuronDoc;
+  doc->setDataDoc(m_doc);
+  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+
+  m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
+  setWindowSignalSlot(m_externalNeuronWindow);
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_externalNeuronWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
   }
 }
@@ -1270,6 +1296,19 @@ void ZFlyEmProofMvc::showSplit3d()
   m_splitProject.showResult3d();
 }
 
+void ZFlyEmProofMvc::showExternalNeuronWindow()
+{
+  if (m_externalNeuronWindow == NULL) {
+    makeExternalNeuronWindow();
+    m_bodyViewers->addWindow(m_externalNeuronWindow, "Neuron Reference");
+  }
+
+//  updateCoarseBodyWindow(false, true, false);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
 void ZFlyEmProofMvc::showCoarseBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
@@ -1319,6 +1358,7 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
   closeBodyWindow(m_coarseBodyWindow);
   closeBodyWindow(m_bodyWindow);
   closeBodyWindow(m_splitWindow);
+  closeBodyWindow(m_externalNeuronWindow);
 }
 
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
@@ -1739,6 +1779,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 
   updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
   updateBodyWindowPlane(m_bodyWindow, viewParam);
+  updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
@@ -1873,6 +1914,49 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
       }
     }
   }
+}
+
+void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
+{
+  QList<QUrl> urls = event->mimeData()->urls();
+  bool processed = false;
+  if (urls.size() == 1) {
+    const QUrl &url = urls[0];
+    if (ZFileType::fileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
+      processed = true; //todo
+    }
+  }
+
+  if (!processed) {
+    foreach (const QUrl &url, urls) {
+      if (ZFileType::fileType(url.path().toStdString()) ==
+          ZFileType::SWC_FILE) {
+        ZSwcTree *tree = new ZSwcTree;
+        tree->load(url.path().toStdString());
+        tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
+        tree->setHittable(false);
+        tree->setColor(QColor(255, 0, 0));
+        getDocument()->addObject(tree);
+      }
+    }
+  }
+
+#if 0
+  //Filter out tiff files
+  QList<QUrl> imageUrls;
+  QList<QUrl> nonImageUrls;
+
+  foreach (QUrl url, urls) {
+    if (ZFileType::isImageFile(url.path().toStdString())) {
+      imageUrls.append(url);
+    } else {
+      nonImageUrls.append(url);
+    }
+  }
+  if (!nonImageUrls.isEmpty()) {
+    getDocument()->loadFileList(nonImageUrls);
+  }
+#endif
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

@@ -473,6 +473,10 @@ void Z3DWindow::init(EInitMode mode)
     m_axis->setVisible(false);
   }
 
+//  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isGraphOn()) {
+//    m_graphFilter->get
+//  }
+
   connect(getInteractionHandler(), SIGNAL(cameraMoved()),
           this, SLOT(resetCameraClippingRange()));
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)),
