@@ -11,6 +11,8 @@
 #include "zimage.h"
 #include "zselector.h"
 #include "dvid/zdvidreader.h"
+#include "zsharedpointer.h"
+#include "flyem/zflyembodycolorscheme.h"
 
 class ZFlyEmBodyMerger;
 class QColor;
@@ -45,6 +47,9 @@ public:
   void deselectAll();
   void toggleHitSelection(bool appending = false);
   void clearSelection();
+
+  bool isSelectionFrozen() const { return m_selectionFrozen; }
+  void freezeSelection(bool on) { m_selectionFrozen = on; }
 
 
   void setSelection(
@@ -114,12 +119,17 @@ public:
     return m_selector;
   }
 
+  void setCustomColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap);
+  void removeCustomColorMap();
+  bool hasCustomColorMap() const;
+  void assignColorMap();
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
-  void assignColorMap();
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight);
+  QColor getCustomColor(uint64_t label) const;
 
 private:
   ZDvidTarget m_dvidTarget;
@@ -127,6 +137,8 @@ private:
   ZObject3dScanArray m_objArray;
   ZStackViewParam m_currentViewParam;
   ZObjectColorScheme m_objColorSheme;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
+
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
@@ -139,6 +151,8 @@ private:
 
   int m_maxWidth;
   int m_maxHeight;
+
+  bool m_selectionFrozen;
 };
 
 template <typename InputIterator>

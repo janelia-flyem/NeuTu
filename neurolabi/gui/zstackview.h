@@ -188,6 +188,7 @@ public:
   ZStack* getObjectMask(NeuTube::EColor color, uint8_t maskValue);
 
   ZStack* getStrokeMask(uint8_t maskValue);
+  ZStack* getStrokeMask(NeuTube::EColor color);
 
 
   void exportObjectMask(const std::string &filePath);

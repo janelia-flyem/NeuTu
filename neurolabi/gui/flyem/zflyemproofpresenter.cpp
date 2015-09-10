@@ -10,6 +10,10 @@
 #include "zstackview.h"
 #include "zflyemproofdoc.h"
 
+#ifdef _WIN32
+#undef GetUserName
+#endif
+
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
   ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false),
   m_highTileContrast(false)
@@ -48,6 +52,9 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     if (!isSplitOn()) {
       emit deselectingAllBody();
     }
+    break;
+  case Qt::Key_M:
+    emit mergingBody();
     break;
   default:
     break;
@@ -130,6 +137,7 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode()
 {
+  exitStrokeEdit();
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryAddBookmarkMode(pos.x(), pos.y());
 }
@@ -160,7 +168,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
   bookmark->setRadius(radius);
   bookmark->setCustom(true);
-  bookmark->setUser(NeuTube::GetUserName().c_str());
+  bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
   ZFlyEmProofDoc *doc = dynamic_cast<ZFlyEmProofDoc*>(buddyDocument());
   if (doc != NULL) {
     bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));

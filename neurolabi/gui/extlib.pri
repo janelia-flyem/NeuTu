@@ -31,7 +31,7 @@ win32 {
         -lfftw3f \
         -lxml2 \
 #        -lpng \
-        -mwin32 -mthreads -lpcreposix -lpcre -ljansson -lpthread
+        -mwin32 -mthreads -lpcre2posix -lpcre2-8 -ljansson -lpthread
 }
 
 #Self-contained libraries
@@ -67,23 +67,24 @@ CONFIG(debug, debug|release) {
 }
 
 contains(TEMPLATE, app) {
-!exists($$DVIDCPP_PATH) {
-    DVIDCPP_PATH = $${EXTLIB_DIR}/dvid-cpp
-}
-
 exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
     LIBS += -L$$DVIDCPP_PATH/lib
+    DEFINES += _LIBDVIDCPP_OLD_
 } else:exists($${BUILDEM_DIR}) {
     INCLUDEPATH +=  $${BUILDEM_DIR}/include
     LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    DEFINES += _ENABLE_LIBDVIDCPP_
+} else:exists($${CONDA_ENV}) {
+    INCLUDEPATH +=  $${CONDA_ENV}/include
+    LIBS += -L$${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -ljsoncpp -llz4 -lpng -lcurl -ljpeg -lboost_system -lboost_thread
-    exists($$BUILDEM_DIR) {
+    !contains(DEFINES, _LIBDVIDCPP_OLD_) {
         LIBS *= -lssl -lcrypto
     }
 } else:exists($${EXTLIB_DIR}/png/lib) {

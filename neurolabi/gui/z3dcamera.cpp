@@ -371,9 +371,19 @@ glm::vec3 Z3DCamera::pointWorldToEye(glm::vec3 pt, Z3DEye eye)
   return glm::applyMatrix(getViewMatrix(eye), pt);
 }
 
+glm::vec3 Z3DCamera::project(glm::vec3 wpt, glm::ivec4 viewport)
+{
+  glm::mat4 projection = getProjectionMatrix(CenterEye);
+  glm::mat4 modelview = getViewMatrix(CenterEye);
+
+
+  return glm::project(wpt, modelview, projection, viewport);
+}
+
 glm::vec3 Z3DCamera::worldToScreen(glm::vec3 wpt, glm::ivec4 viewport, Z3DEye eye)
 {
-  glm::vec4 clipSpacePos = getProjectionMatrix(eye) * getViewMatrix(eye) * glm::vec4(wpt, 1.f);
+  glm::vec4 clipSpacePos =
+      getProjectionMatrix(eye) * getViewMatrix(eye) * glm::vec4(wpt, 1.f);
   if (clipSpacePos.w == 0.f)
     return glm::vec3(-1.f, -1.f, -1.f);
   glm::vec3 ndcSpacePos = glm::vec3(clipSpacePos.xyz()) / clipSpacePos.w;

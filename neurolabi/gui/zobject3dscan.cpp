@@ -116,6 +116,14 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   return *this;
 }
 
+void ZObject3dScan::copyDataFrom(const ZObject3dScan &obj)
+{
+  deprecate(COMPONENT_ALL);
+
+  m_stripeArray = obj.m_stripeArray;
+  m_isCanonized = obj.m_isCanonized;
+}
+
 
 bool ZObject3dScan::isDeprecated(EComponent comp) const
 {
@@ -1458,11 +1466,14 @@ void ZObject3dScan::display(
 //      pen.setCosmetic(true);
 //      pen.setStyle(Qt::DotLine);
     }
-    painter.setPen(pen);
-    if (isSelected()) {
-      displaySolid(painter, z, isProj, 1);
-    } else {
-      displaySolid(painter, z, isProj, 1);
+
+    if (pen.color().alpha() > 0) {
+      painter.setPen(pen);
+      if (isSelected()) {
+        displaySolid(painter, z, isProj, 1);
+      } else {
+        displaySolid(painter, z, isProj, 1);
+      }
     }
   }
     break;
@@ -2476,6 +2487,34 @@ void ZObject3dScan::addForeground(ZStack *stack)
   }
 }
 
+void ZObject3dScan::addForegroundSlice8(ZStack *stack)
+{
+  ConstSegmentIterator iterator(this);
+  int z0 = stack->getOffset().getZ();
+  int y0 = stack->getOffset().getY();
+  int x0 = stack->getOffset().getX();
+  size_t stride_y = stack->width();
+  uint8_t *stackArray = stack->array8();
+
+  while (iterator.hasNext()) {
+    const ZObject3dScan::Segment &seg = iterator.next();
+    int z = seg.getZ() - z0;
+    if (z == 0) {
+      int y = seg.getY() - y0;
+      if (y >= 0 && y < stack->height()) {
+        int startX = imax2(0, seg.getStart() - x0);
+        int endX = imin2(seg.getEnd() - x0, stack->width() - 1);
+        for (int x = startX; x <= endX; ++x) {
+          size_t offset = stride_y * y +  x;
+          if (stackArray[offset] > 0) {
+            stackArray[offset] += 1;
+          }
+        }
+      }
+    }
+  }
+}
+
 ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
 {
   int minZ = getMinZ();
@@ -2491,7 +2530,7 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
       remained.concat(slice);
     } else {
       ZStack *plane = slice.toStackObject();
-      slice2.addForeground(plane); //1: remained; 2: subtracted
+      slice2.addForegroundSlice8(plane); //1: remained; 2: subtracted
 
       std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
       for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
@@ -2511,7 +2550,7 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   remained.canonize();
   subtracted.canonize();
 
-  *this = remained;
+  this->copyDataFrom(remained);
 
   return subtracted;
 }

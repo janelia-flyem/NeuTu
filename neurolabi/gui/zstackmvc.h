@@ -85,6 +85,8 @@ protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
   virtual void customInit();
   virtual void createPresenter();
+  virtual void dragEnterEvent(QDragEnterEvent *event);
+  virtual void dropEvent(QDropEvent *event);
 
 private:
   void createView();

@@ -2,6 +2,7 @@
 #include "z3dlinerenderer.h"
 #include "z3dsphererenderer.h"
 #include "z3dconerenderer.h"
+#include "neutubeconfig.h"
 
 using namespace std;
 
@@ -18,6 +19,10 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_showingArrow(false)
 {
   addParameter(m_showGraph);
+
+  const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
+      NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
+  m_showGraph.set(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
 }
@@ -54,6 +59,11 @@ void Z3DGraphFilter::deinitialize()
     removeParameter(paras[i]);
   }
   Z3DGeometryFilter::deinitialize();
+}
+
+void Z3DGraphFilter::setVisible(bool v)
+{
+  m_showGraph.set(v);
 }
 
 void Z3DGraphFilter::render(Z3DEye eye)

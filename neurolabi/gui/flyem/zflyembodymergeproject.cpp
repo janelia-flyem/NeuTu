@@ -42,6 +42,10 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
 
+#ifdef _WIN32
+#undef GetUserName
+#endif
+
 ZFlyEmBodyMergeProject::ZFlyEmBodyMergeProject(QObject *parent) :
   QObject(parent), m_dataFrame(NULL),
   m_bodyViewWindow(NULL),
@@ -1376,7 +1380,7 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
       ZDvidBufferReader reader;
       reader.read(
             ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-              NeuTube::GetUserName()).c_str());
+              NeuTube::GetCurrentUserName()).c_str());
       const QByteArray& buffer = reader.getBuffer();
       bodyMerger->decodeJsonString(buffer.data());
 

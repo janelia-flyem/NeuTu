@@ -9,6 +9,7 @@
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
 #include "zintpoint.h"
+#include "zresolution.h"
 
 class ZStack;
 class ZSwcTree;
@@ -25,6 +26,7 @@ public:
    */
   ZSwcTree* trace(const Stack *stack, bool doResampleAfterTracing = true);
   Stack* makeMask(const Stack *stack);
+  void setResolution(const ZResolution &resolution);
 
 private:
   //gaussian filter in 2d, modified from Vaa3D plugin gaussianfilter.
@@ -37,6 +39,7 @@ private:
 private:
 //  NeuTube::EImageBackground m_background;
   int m_splitNumber;
+  ZResolution m_resolution;
 
 };
 

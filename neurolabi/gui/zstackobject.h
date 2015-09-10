@@ -309,6 +309,7 @@ public:
 public:
   static bool isEmptyTree(const ZStackObject *obj);
   static bool isSameSource(const std::string &s1, const std::string &s2);
+  static bool isSameClass(const std::string &s1, const std::string &s2);
   static bool isSelected(const ZStackObject *obj);
   template <typename T>
   static T* CastVoidPointer(void *p);

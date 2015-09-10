@@ -99,8 +99,9 @@ public:
 
   void exportSplits();
   void commitResult();
-  void commitResultFunc(const ZObject3dScan *wholeBody, const ZStack *stack,
+  void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       const ZIntPoint &dsIntv, size_t minObjSize);
+  void commitCoarseSplit(const ZObject3dScan &splitPart);
 
   void viewPreviousSlice();
   void viewNextSlice();

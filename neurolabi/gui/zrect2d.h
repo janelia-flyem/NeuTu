@@ -27,6 +27,9 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
+               EDisplaySliceMode sliceMode) const;
+
   virtual const std::string& className() const;
   bool isSliceVisible(int z) const;
   inline void setPenetrating(bool p) {
@@ -50,6 +53,11 @@ public:
    */
   void setLastCorner(int x, int y);
   void setFirstCorner(int x, int y);
+
+  /*!
+    * \brief Set size by fixing the first corner.
+    */
+  void setSize(int width, int height);
 
   int getFirstX() const;
   int getFirstY() const;

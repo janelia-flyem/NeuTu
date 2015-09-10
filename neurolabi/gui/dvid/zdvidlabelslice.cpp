@@ -41,6 +41,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
 
   m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
+  m_selectionFrozen = false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -197,11 +198,37 @@ QColor ZDvidLabelSlice::getColor(
 QColor ZDvidLabelSlice::getColor(
     int64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  QColor color = m_objColorSheme.getColor(
-        abs((int) getMappedLabel((uint64_t) label, labelType)));
-  color.setAlpha(64);
+  QColor color;
+  if (hasCustomColorMap()) {
+    color = getCustomColor(label);
+//    if (color.alpha() != 0) {
+      color.setAlpha(64);
+//    }
+  } else {
+    color = m_objColorSheme.getColor(
+          abs((int) getMappedLabel((uint64_t) label, labelType)));
+    color.setAlpha(64);
+  }
 
   return color;
+}
+
+void ZDvidLabelSlice::setCustomColorMap(
+    const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap)
+{
+  m_customColorScheme = colorMap;
+  assignColorMap();
+}
+
+bool ZDvidLabelSlice::hasCustomColorMap() const
+{
+  return m_customColorScheme.get() != NULL;
+}
+
+void ZDvidLabelSlice::removeCustomColorMap()
+{
+  m_customColorScheme.reset();
+  assignColorMap();
 }
 
 void ZDvidLabelSlice::assignColorMap()
@@ -495,4 +522,15 @@ void ZDvidLabelSlice::processSelection()
       m_selector.deselectObject(*iter);
     }
   }
+}
+
+QColor ZDvidLabelSlice::getCustomColor(uint64_t label) const
+{
+  QColor color(0, 0, 0, 0);
+
+  if (m_customColorScheme.get() != NULL) {
+    color = m_customColorScheme->getBodyColor(label);
+  }
+
+  return color;
 }

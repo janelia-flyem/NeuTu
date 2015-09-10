@@ -9,6 +9,10 @@
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 #include "libdvid/DVIDNodeService.h"
+#ifndef _LIBDVIDCPP_OLD_
+#include "libdvid/DVIDCache.h"
+#define _LIBDVIDCPP_CACHE_
+#endif
 #endif
 
 #endif // LIBDVIDHEADER_H

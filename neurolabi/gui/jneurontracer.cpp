@@ -809,6 +809,11 @@ void JNeuronTracer::levelsetSmoothing(int nx, int ny, float *bw, float *edge,int
   free(g);
 }
 
+void JNeuronTracer::setResolution(const ZResolution &resolution)
+{
+  m_resolution = resolution;
+}
+
 ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
 {
   Stack *maskData = makeMask(stack);
@@ -829,9 +834,14 @@ ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
     adjuster.setSignal(const_cast<Stack*>(stack), NeuTube::IMAGE_BACKGROUND_DARK);
     adjuster.adjustPosition(*wholeTree);
 
-    Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
-    Biocytin::SwcProcessor::removeOrphan(wholeTree);
-    Biocytin::SwcProcessor::smoothZ(wholeTree);
+    Biocytin::SwcProcessor swcProcessor;
+    swcProcessor.setResolution(m_resolution);
+    swcProcessor.setMaxVLRatio(2.0);
+
+    swcProcessor.breakZJump(wholeTree);
+//    Biocytin::SwcProcessor::BreakZJump(wholeTree, 2.0);
+    Biocytin::SwcProcessor::RemoveOrphan(wholeTree);
+    Biocytin::SwcProcessor::SmoothZ(wholeTree);
 
     skeletonizer.setConnectingBranch(true);
     skeletonizer.reconnect(wholeTree);
@@ -846,7 +856,7 @@ ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
       resampler.optimalDownsample(wholeTree);
     }
 
-    Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
+    Biocytin::SwcProcessor::BreakZJump(wholeTree, 2.0);
 
     //    if (stackFrame != NULL) {
     //      wholeTree->translate(stackFrame->document()->getStackOffset());

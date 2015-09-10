@@ -9,6 +9,7 @@
 #include "zstackdoccommand.h"
 #include "zsharedpointer.h"
 //#include "zflyembodysplitproject.h"
+#include "flyem/zflyembodycolorscheme.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -27,9 +28,7 @@ public:
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
 
-  void setDvidTarget(const ZDvidTarget &target) {
-    m_dvidTarget = target;
-  }
+  void setDvidTarget(const ZDvidTarget &target);
 
   void updateTileData();
 
@@ -96,6 +95,9 @@ public:
 
   void enhanceTileContrast(bool highContrast);
 
+  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void useBodyNameMap(bool on);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -142,6 +144,8 @@ private:
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
+
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 //  mutable ZIntCuboid m_splitRoi;

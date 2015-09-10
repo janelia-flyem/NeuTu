@@ -40,7 +40,7 @@ public:
 
 private:
   std::string m_source;
-  std::string m_imageSourse;
+  std::string m_imageSourse; //for projection
   ZPoint m_offset;
   int m_dim[3];
 };

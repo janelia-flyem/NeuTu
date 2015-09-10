@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>320</width>
-    <height>217</height>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -93,6 +93,16 @@
        </item>
        <item>
         <property name="text">
+         <string>KC-alpha prime</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Others-alpha prime</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Others</string>
         </property>
        </item>
@@ -108,7 +118,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="statusLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
          <horstretch>0</horstretch>

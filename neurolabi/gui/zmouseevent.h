@@ -59,6 +59,14 @@ public:
     return m_modifiers;
   }
 
+  void addModifier(Qt::KeyboardModifier modifier) {
+    m_modifiers |= modifier;
+  }
+
+  void removeModifier(Qt::KeyboardModifier modifier) {
+    m_modifiers &= ~modifier;
+  }
+
   inline const ZIntPoint& getPosition() const {
     return m_position;
   }

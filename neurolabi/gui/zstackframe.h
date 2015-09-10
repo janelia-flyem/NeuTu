@@ -124,6 +124,7 @@ public:
   ZStack* getObjectMask();
   ZStack* getObjectMask(NeuTube::EColor color);
   ZStack* getStrokeMask();
+  ZStack* getStrokeMask(NeuTube::EColor color);
   ZTileManager* getTileManager() {return m_tile;}
   void setTileManager(ZTileManager *p) {m_tile = p; }
 

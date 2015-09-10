@@ -473,10 +473,18 @@ void Z3DWindow::init(EInitMode mode)
     m_axis->setVisible(false);
   }
 
+//  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isGraphOn()) {
+//    m_graphFilter->get
+//  }
+
   connect(getInteractionHandler(), SIGNAL(cameraMoved()),
           this, SLOT(resetCameraClippingRange()));
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)),
           this, SLOT(moveSelectedObjects(double,double,double)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
+          this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
+          this, SLOT(cropSwcInRoi()));
 
   /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -1172,9 +1180,36 @@ void Z3DWindow::loadView()
   }
 }
 
+bool Z3DWindow::hasRectRoi() const
+{
+  return getCanvas()->getInteractionEngine()->hasRectDecoration();
+}
+
+ZRect2d Z3DWindow::getRectRoi() const
+{
+  return getCanvas()->getInteractionEngine()->getRectDecoration();
+}
+
 void Z3DWindow::resetCameraClippingRange()
 {
   getCamera()->resetCameraNearFarPlane(m_boundBox);
+}
+
+QPointF Z3DWindow::getScreenProjection(
+    double x, double y, double z, ERendererLayer layer)
+{
+  Z3DRendererBase *base = getRendererBase(layer);
+
+  QPointF pt(0, 0);
+
+  if (base != NULL) {
+    glm::vec3 coord = getRendererBase(layer)->getViewCoord(
+          x, y, z, getCanvas()->width(), getCanvas()->height());
+    pt.setX(coord[0]);
+    pt.setY(coord[1]);
+  }
+
+  return pt;
 }
 
 void Z3DWindow::updateVolumeBoundBox()
@@ -2174,7 +2209,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  {
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_COARSE_BODY &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3627,4 +3663,60 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
   setScale(LAYER_SWC, sx, sy, sz);
   setScale(LAYER_PUNCTA, sx, sy, sz);
   setScale(LAYER_VOLUME, sx, sy, sz);
+}
+
+void Z3DWindow::cropSwcInRoi()
+{
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+//    m_doc->executeDeleteSwcNodeCommand();
+    emit croppingSwcInRoi();
+  } else {
+    selectSwcTreeNodeInRoi(false);
+    m_doc->executeDeleteSwcNodeCommand();
+  }
+}
+
+void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::DepthFirstIterator nodeIter(tree);
+      while (nodeIter.hasNext()) {
+        Swc_Tree_Node *tn = nodeIter.next();
+        if (SwcTreeNode::isRegular(tn)) {
+          const QPointF &pt = getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                LAYER_SWC);
+          if (rect.contains(pt.x(), pt.y())) {
+            tree->selectNode(tn, true);
+          }
+        }
+      }
+    }
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
+void Z3DWindow::removeRectRoi()
+{
+  getCanvas()->getInteractionEngine()->removeRectDecoration();
 }

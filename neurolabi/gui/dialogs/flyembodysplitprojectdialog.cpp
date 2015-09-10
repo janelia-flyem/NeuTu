@@ -174,15 +174,6 @@ void FlyEmBodySplitProjectDialog::createMenu()
   batchMenu->addAction(allSeedProcessAction);
   connect(allSeedProcessAction, SIGNAL(triggered()),
           this, SLOT(processAllSeed()));
-
-  /*
-  m_bookmarkContextMenu = new QMenu(this);
-  QAction *checkAction = new QAction("Set Checked", this);
-  m_bookmarkContextMenu->addAction(checkAction);
-  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
-  */
-
-//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
 }
 
 void FlyEmBodySplitProjectDialog::closeEvent(QCloseEvent */*event*/)

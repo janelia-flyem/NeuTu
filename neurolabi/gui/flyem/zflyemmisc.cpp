@@ -20,6 +20,8 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "zstackviewparam.h"
+#include "zintcuboidarray.h"
+#include "zobject3dfactory.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -284,5 +286,28 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
 
     window->getDocument()->addObject(graph, true);
     window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+  }
+}
+
+void ZFlyEmMisc::SubtractBodyWithBlock(
+    ZObject3dScan *body, const ZObject3dScan &coarsePart,
+    const ZDvidInfo& dvidInfo)
+{
+  if (body != NULL) {
+//    tic();
+    ZObject3dScan expandedPart;
+
+    ZObject3dScan::ConstSegmentIterator segIter(&coarsePart);
+    while (segIter.hasNext()) {
+      const ZObject3dScan::Segment &seg = segIter.next();
+
+      ZIntCuboid box = dvidInfo.getBlockBox(
+            seg.getStart(), seg.getEnd(), seg.getY(), seg.getZ());
+
+      expandedPart.concat(ZObject3dFactory::MakeObject3dScan(box));
+    }
+
+    body->subtract(expandedPart);
+//    std::cout << "Subtracting time: " << toc() << std::endl;
   }
 }

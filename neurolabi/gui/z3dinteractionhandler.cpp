@@ -338,7 +338,8 @@ void Z3DTrackballInteractionHandler::wheelEvent(QWheelEvent *e, int, int)
 #endif
 }
 
-void Z3DTrackballInteractionHandler::shift(glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
+void Z3DTrackballInteractionHandler::shift(
+    glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
 {
   glm::ivec4 viewport(0, 0, w, h);
   float centerDepth = m_camera->worldToScreen(m_camera->getCenter(), viewport).z;

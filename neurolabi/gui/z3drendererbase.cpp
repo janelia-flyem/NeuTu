@@ -488,6 +488,19 @@ glm::mat4 Z3DRendererBase::getViewportMatrixInverse()
   return glm::inverse(getViewportMatrix());
 }
 
+glm::vec3 Z3DRendererBase::getViewCoord(
+    double x, double y, double z, double w, double h)
+{
+  glm::ivec4 viewport(0, 0, w, h);
+  glm::vec3 pt = getCamera().project(
+        glm::vec3(x * m_coordXScale.get(), y * m_coordYScale.get(),
+                  z * m_coordZScale.get()), viewport);
+
+  pt[1] = h - pt[1];
+
+  return pt;
+}
+
 void Z3DRendererBase::setClipPlanes(std::vector<glm::dvec4> *clipPlanes)
 {
   size_t nOldClipPlanes = m_clipPlanes.size();

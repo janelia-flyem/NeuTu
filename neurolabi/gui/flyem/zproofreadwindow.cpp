@@ -9,6 +9,7 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
+#include <QDragEnterEvent>
 
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -174,12 +175,18 @@ void ZProofreadWindow::createMenu()
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 
+  m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
+  m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
+  connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showExternalNeuronWindow()));
+
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
-
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_openExtNeuronWindowAction);
 
 //  menu->addAction(new QAction("test", menu));
 
@@ -365,4 +372,11 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_viewSegmentationAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
+}
+
+void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->mimeData()->hasFormat("text/uri-list")) {
+    event->acceptProposedAction();
+  }
 }

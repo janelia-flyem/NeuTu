@@ -60,6 +60,9 @@ public:
   TStackObjectList findSameSourceClass(
       ZStackObject::EType type, const std::string &source);
 
+  TStackObjectList findSameClass(
+      ZStackObject::EType type, const std::string &objClass);
+
   template<typename InputIterator>
   QList<ZStackObject*> findSameSource(
       const InputIterator begin, const InputIterator end) const;

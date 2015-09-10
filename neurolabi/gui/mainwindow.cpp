@@ -170,9 +170,12 @@
 #include "biocytin/zbiocytinprojectiondoc.h"
 #include "zstackdocfactory.h"
 #include "zwidgetmessage.h"
+#include "zstackarray.h"
+#include "flyem/zflyembodyannotationdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
+#include "dvid/libdvidheader.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -320,6 +323,9 @@ MainWindow::MainWindow(QWidget *parent) :
   m_autoCheckTimer->setInterval(600000);
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
+#if defined(_LIBDVIDCPP_CACHE_)
+  libdvid::DVIDCache::get_cache()->set_cache_size(1000000000);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -348,6 +354,7 @@ QSettings& MainWindow::getSettings()
 {
   return NeutubeConfig::getInstance().getSettings();
 }
+
 
 void MainWindow::initDialog()
 {
@@ -455,6 +462,7 @@ void MainWindow::initDialog()
   m_synapseDlg = NULL;
 #endif
 }
+
 
 void MainWindow::configure()
 {
@@ -906,8 +914,11 @@ void MainWindow::customizeActions()
   }
 
 #ifdef _DEBUG_
-  testAction->setVisible(
-        NeutubeConfig::getInstance().getApplication() != "Biocytin");
+  testAction->setVisible(true);
+//        NeutubeConfig::getInstance().getApplication() != "Biocytin");
+
+  testAction2->setVisible(
+        NeutubeConfig::getInstance().getApplication() == "FlyEM");
 #else
 //  testAction->setVisible(false);
   this->punctaExportAction->setVisible(false);
@@ -1555,14 +1566,6 @@ void MainWindow::openFile(const QStringList &fileNameList)
 
 void MainWindow::openFile(const QString &fileName)
 {
-
-  /*
-  if (m_docReader != NULL) {
-    RECORD_WARNING_UNCOND("Bad buffer");
-    delete m_docReader;
-    m_docReader = NULL;
-  }
-*/
   m_progress->setRange(0, 5);
   m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
   int currentProgress = 0;
@@ -2116,7 +2119,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (e7d829f7cae6e2a85fe43381ee43716266175fdc)</p>";
+        " (4d31a04fb7a5a438739e134831abf07d81b1656d)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2144,11 +2147,6 @@ void MainWindow::about()
                      "<p>Source code: "
                      "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
                      "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
-                     /*
-                     "<p>Reference: <a href=\"http://www.nature.com/nmeth/journal/v9/n1/full/nmeth.1784.html\">"
-                     "mGRASP enables mapping mammalian synaptic connectivity with light microscopy</a>, "
-                     "<i>Nature Methods</i> 9 (1), 96-102</p>"
-                                        */
                      );
 }
 
@@ -3375,7 +3373,7 @@ void MainWindow::test()
   presentStackFrame(frame);
 #endif
 
-#if 1
+#if 0
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3388,6 +3386,28 @@ void MainWindow::test()
   m_progress->reset();
 
   statusBar()->showMessage(tr("Test done."));
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/biocytin/MC0509C3-2_small_small.tif");
+  frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+  frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+  addStackFrame(frame);
+  presentStackFrame(frame);
+
+  on_actionMake_Projection_triggered();
+
+  ZStackFrame *projFrame = currentStackFrame();
+  projFrame->presenter()->testBiocytinProjectionMask();
+
+#endif
+
+#if 1
+  ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
+  dlg->setStatus("Finalized");
+  dlg->exec();
+  dlg->getBodyAnnotation().print();
 #endif
 }
 
@@ -3998,11 +4018,6 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
     input.push_back(fileList.getFilePath(i));
   }
 
-  //input.resize(1);
-  //Filter_3d *filter = Gaussian_Filter_3d(0.5, 0.5, 0.5);
-  //input.resize(1);
-  //input[0] = dataPath + "/" + dataDir + "/" + "Pm2-8_171795.tif";
-
   for (std::vector<std::string>::const_iterator inputIter = input.begin();
        inputIter != input.end(); ++inputIter) {
     std::string output;
@@ -4540,7 +4555,7 @@ void MainWindow::on_actionMask_triggered()
 #endif
 
     if (!fileName.isEmpty()) {
-      frame->exportObjectMask(NeuTube::RED, fileName);
+      frame->exportObjectMask(NeuTube::COLOR_RED, fileName);
       m_lastOpenedFilePath = fileName;
     }
   }
@@ -4828,20 +4843,36 @@ void MainWindow::on_actionMask_SWC_triggered()
   if (m_skeletonDlg->exec() == QDialog::Accepted) {
     ZStackFrame *frame = currentStackFrame();
     if (frame != NULL) {
+      ZStackArray maskArray;
+
       ZStack *mask = NULL;
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-        mask = frame->getObjectMask(NeuTube::RED);
+        mask = frame->getStrokeMask(NeuTube::COLOR_RED);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
+        mask = frame->getStrokeMask(NeuTube::COLOR_GREEN);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
+        mask = frame->getStrokeMask(NeuTube::COLOR_BLUE);
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
       } else {
         mask = frame->getStrokeMask();
+        if (mask != NULL) {
+          maskArray.push_back(mask);
+        }
       }
 
-      if (mask == NULL) {
+      if (maskArray.empty()) {
         report("Skeletonization Failed", "No mask found. No SWC generated",
                NeuTube::MSG_WARNING);
         return;
       }
 
-      Stack *maskData = mask->c_stack();
+//      Stack *maskData = mask->c_stack();
 
       QProgressDialog *progressDlg = getProgressDialog();
       //progressDlg->setCancelButton(NULL);
@@ -4863,7 +4894,10 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       //skeletonizer.setRebase(false);
 
-      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskData);
+      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskArray);
+
+//      delete mask;
+
       reporter.endSubprogress(0.5);
 
       if (wholeTree != NULL) {
@@ -4889,13 +4923,17 @@ void MainWindow::on_actionMask_SWC_triggered()
                    NeuTube::MSG_WARNING);
             Stack *depthData = frame->document()->getStack()->c_stack(1);
             if (depthData != NULL) {
-              Biocytin::SwcProcessor::assignZ(wholeTree, *depthData);
+              Biocytin::SwcProcessor::AssignZ(wholeTree, *depthData);
             }
           }
         }
 
-        Biocytin::SwcProcessor::breakZJump(wholeTree, 2.0);
-        Biocytin::SwcProcessor::removeOrphan(wholeTree);
+        Biocytin::SwcProcessor swcProcessor;
+        swcProcessor.setResolution(stackFrame->document()->getResolution());
+        swcProcessor.breakZJump(wholeTree);
+
+//        Biocytin::SwcProcessor::BreakZJump(wholeTree, 2.0);
+        Biocytin::SwcProcessor::RemoveOrphan(wholeTree);
         reporter.advance(0.1);
 
         skeletonizer.setConnectingBranch(true);
@@ -4936,8 +4974,8 @@ void MainWindow::on_actionMask_SWC_triggered()
         if (stackFrame != NULL) {
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
-          Biocytin::SwcProcessor::smoothRadius(wholeTree);
-          Biocytin::SwcProcessor::smoothZ(wholeTree);
+          Biocytin::SwcProcessor::SmoothRadius(wholeTree);
+          Biocytin::SwcProcessor::SmoothZ(wholeTree);
 
 #ifdef _DEBUG_2
         wholeTree->save(GET_DATA_DIR + "/test.swc");
@@ -5643,6 +5681,8 @@ void MainWindow::on_actionTiles_triggered()
     }
 
     m_tileDlg->setDocument(frame->document());
+    connect(frame, SIGNAL(closed(ZStackFrame*)),
+            m_tileDlg, SLOT(closeProject()));
   }
   on_actionTile_Manager_2_triggered();
 }

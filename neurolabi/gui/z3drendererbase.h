@@ -90,6 +90,8 @@ public:
   glm::mat4 getViewportMatrix();
   glm::mat4 getViewportMatrixInverse();
 
+  glm::vec3 getViewCoord(double x, double y, double z, double w, double h);
+
   void setClipPlanes(std::vector<glm::dvec4> *clipPlanes);
 
   void addParameter(ZParameter &para);
@@ -98,7 +100,8 @@ public:
   std::vector<ZParameter*> getRendererParameters(Z3DPrimitiveRenderer *renderer) const;
 
   // return scale of x,y,z coordinate
-  inline glm::vec3 getCoordScales() const {return glm::vec3(m_coordXScale.get(), m_coordYScale.get(), m_coordZScale.get());}
+  inline glm::vec3 getCoordScales() const {
+    return glm::vec3(m_coordXScale.get(), m_coordYScale.get(), m_coordZScale.get());}
   inline float getOpacity() const {return m_opacity.get();}
   inline float getSizeScale() const {return m_sizeScale.get();}
 

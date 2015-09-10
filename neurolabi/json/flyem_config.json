@@ -47,13 +47,13 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "f5ff",
+      "uuid": "3716",
       "name": "FIB19 (emdata2)",
-      "comment": "branched from 897b",
+      "comment": "branched from f5ff",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "user_name": ["shinomiyak", "zhaot"]
+      "user_name": ["shinomiyak", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa"]
     },
     {
       "address": "emrecon100.janelia.priv",
@@ -152,7 +152,7 @@
       "body_label": "bodies",
       "label_block": "labels",
       "librarian": "emdata2.int.janelia.org:9100",
-      "user_name": ["zhaot"]
+      "user_name": ["zhaot", "yuy"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -426,12 +426,12 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "4c83",
+      "uuid": "7872",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -451,7 +451,7 @@
       "comment": "MB seg for practice(branched from 66ba)",
       "body_label": "bodies3",
       "label_block": "labels3",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "olbrisd"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -462,7 +462,7 @@
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "shinomiyak"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "shinomiyak", "olbrisd"]
     }
   ]
 }

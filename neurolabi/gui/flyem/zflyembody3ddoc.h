@@ -43,7 +43,7 @@ public:
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
     const QColor& getBodyColor() const { return m_bodyColor; }
-    const bool isRefreshing() const { return m_refreshing; }
+    bool isRefreshing() const { return m_refreshing; }
 
     void setAction(EAction action) { m_action = action; }
     void setBodyColor(const QColor &color) { m_bodyColor = color; }
