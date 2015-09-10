@@ -103,6 +103,11 @@
        </item>
        <item>
         <property name="text">
+         <string>Others-orphan</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Others</string>
         </property>
        </item>
