@@ -171,6 +171,7 @@
 #include "zstackdocfactory.h"
 #include "zwidgetmessage.h"
 #include "zstackarray.h"
+#include "flyem/zflyembodyannotationdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -3387,7 +3388,7 @@ void MainWindow::test()
   statusBar()->showMessage(tr("Test done."));
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/biocytin/MC0509C3-2_small_small.tif");
   frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
@@ -3400,6 +3401,13 @@ void MainWindow::test()
   ZStackFrame *projFrame = currentStackFrame();
   projFrame->presenter()->testBiocytinProjectionMask();
 
+#endif
+
+#if 1
+  ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
+  dlg->setStatus("Finalized");
+  dlg->exec();
+  dlg->getBodyAnnotation().print();
 #endif
 }
 

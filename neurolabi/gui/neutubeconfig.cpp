@@ -466,7 +466,7 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
 }
 
 NeutubeConfig::Z3DWindowConfig::GraphTabConfig::GraphTabConfig() :
-  m_isVisible(false), m_opacity(1.0)
+  m_isVisible(true), m_opacity(1.0)
 {
 }
 
