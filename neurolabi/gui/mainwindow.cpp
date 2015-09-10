@@ -2119,14 +2119,15 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (292dcd5cd9df89c8d138528583584ed59db95d28)</p>";
+        " (dc5d433752467cee26743da4b71519242ceaf389)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
-                     "for neuron tracing and visualization. "
+                     "for neuron reconstruction and visualization. "
+#if !defined(_FLYEM_)
                      "It was originally developed by Ting Zhao "
                      "in Myers Lab "
                      "at Howard Hughes Medical Institute.</p>"
@@ -2138,6 +2139,7 @@ void MainWindow::about()
                      "<li>Linqing Feng</li>"
                      "<p>Jinny Kim's Lab, Center for Functional Connectomics, KIST, Korea</p>"
                      "</ul>"
+#endif
                      "<p>The Software is provided \"as is\" without warranty of any kind, "
                      "either express or implied, including without limitation any implied "
                      "warranties of condition, uniterrupted use, merchantability, fitness "
