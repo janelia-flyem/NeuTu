@@ -89,11 +89,19 @@ Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
 
     toolBar = addToolBar("3DBodyViewTools");
 
-    QPixmap quitpix("quit.png");
-    QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
-    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+    //    Z3DTabWidget *curTabWidget = (Z3DTabWidget *)(this->centralWidget());
+    //    Z3DWindow *cur3Dwin = (Z3DWindow *)(curTabWidget->currentWidget());
 
-    toolBar->hide();
+    //    QAction *resetCameraAction = toolBar->addAction("Reset Camera");
+    //    connect(resetCameraAction, SIGNAL(triggered()), this, SLOT(cur3Dwin->resetCamera()));
+
+    //QPixmap quitpix("quit.png");
+    //QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
+//    QAction *quit = toolBar->addAction("Quit 3D Body View");
+//    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+
+    //toolBar->hide();
 }
 
 Z3DMainWindow::~Z3DMainWindow()
@@ -139,6 +147,17 @@ void Z3DTabWidget::tabSlotFunc(int index)
 {
     // to do
     // this->tabBar()
+}
+
+void Z3DTabWidget::resetCamera()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCamera();
+    }
+
 }
 
 void Z3DTabWidget::addWindow(Z3DWindow *window, const QString &title)

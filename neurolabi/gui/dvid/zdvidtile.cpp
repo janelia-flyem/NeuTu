@@ -56,10 +56,13 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
       m_image = new ZImage;
     }
 
-#ifdef _DEBUG_2
+//#ifdef _DEBUG_
     std::cout << "Decoding tile ..." << std::endl;
-#endif
+    std::cout << "data length: " << length << std::endl;
+//#endif
     m_image->loadFromData(buf, length);
+    std::cout << m_image->width() << "x" << m_image->height() << std::endl;
+
     m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
     m_image->setOffset(-getX(), -getY());
 
@@ -68,7 +71,7 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
     m_image->enhanceContrast(
           hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     std::cout << "Format: " << m_image->format() << std::endl;
     setVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
 #endif
@@ -84,8 +87,14 @@ void ZDvidTile::updatePixmap()
 {
   m_pixmap.cleanUp();
   m_pixmap.convertFromImage(*m_image);
+  std::cout << m_image->width() << "x" << m_image->height() << std::endl;
+
   m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
   m_pixmap.setOffset(-getX(), -getY());
+
+  std::cout << "saving pixmap" << std::endl;
+  std::cout << m_pixmap.width() << "x" << m_pixmap.height() << std::endl;
+  m_pixmap.save("/lhome/yy/work/tools/dvid/neutube/neurolabi/build/test.tif");
 }
 
 void ZDvidTile::enhanceContrast(bool high)
@@ -288,7 +297,7 @@ void ZDvidTile::update(int z)
     tic();
     bufferReader.read(
           dvidUrl.getTileUrl(getDvidTarget().getMultiscale2dName(),
-                             m_res.getLevel(), m_ix, m_iy, z).c_str());
+                             m_res.getLevel(), m_ix, m_iy, z).c_str(), true);
     QByteArray buffer = bufferReader.getBuffer();
     std::cout << "Tile reading time: " << toc() << std::endl;
 

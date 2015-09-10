@@ -62,6 +62,9 @@ public slots:
     void tabSlotFunc(int index);
     void closeWindow(int index);
 
+public slots:
+    void resetCamera();
+
 };
 
 class Z3DMainWindow : public QMainWindow

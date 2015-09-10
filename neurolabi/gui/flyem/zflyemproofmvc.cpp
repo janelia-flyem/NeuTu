@@ -101,6 +101,8 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
 
+  QAction *resetCameraAction = m_bodyViewWindow->toolBar->addAction("Reset Camera");
+  connect(resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
 
   m_coarseBodyWindow = NULL;
   m_bodyWindow = NULL;

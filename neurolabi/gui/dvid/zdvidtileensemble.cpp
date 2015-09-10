@@ -108,6 +108,10 @@ void ZDvidTileEnsemble::update(
       const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
+
+      std::cout << "tile count" << tile_locs_array.size() << std::endl;
+      std::cout << "tile read:" << data.size() << std::endl;
+
       size_t dataIndex = 0;
 
 //      QThreadFutureMap futureMap;
@@ -123,12 +127,14 @@ void ZDvidTileEnsemble::update(
 
           ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
           task->setZ(z);
+          std::cout << "data length" << dataPtr->length() << std::endl;
           task->setData(dataPtr->get_raw(), dataPtr->length());
           task->setHighContrast(m_highContrast);
-          taskManager.addTask(task);
+          task->execute();
+//          taskManager.addTask(task);
 
-          QFuture<void> future = QtConcurrent::run(task, &ZDvidTileDecodeTask::execute);
-          futureList.append(future);
+//          QFuture<void> future = QtConcurrent::run(task, &ZDvidTileDecodeTask::execute);
+//          futureList.append(future);
             //      tile->display(painter, slice, option);
 
 //          tile->loadDvidSlice(dataPtr->get_raw(), dataPtr->length(), z);
@@ -159,6 +165,7 @@ void ZDvidTileEnsemble::update(
 #else
 
   //  tic();
+    std::cout << "reading tiles" << std::endl;
   ZMultiTaskManager taskManager;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
@@ -174,12 +181,15 @@ void ZDvidTileEnsemble::update(
   taskManager.start();
   taskManager.waitForDone();
   taskManager.clear();
+  std::cout << "reading done" << std::endl;
 #endif
 }
 
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
+    std::cout << "displaying tiles" << std::endl;
+
   if (m_view == NULL) {
     return;
   }
@@ -219,6 +229,8 @@ void ZDvidTileEnsemble::display(
       tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);
     }
   }
+
+   std::cout << "updating tiles" << std::endl;
 
   const_cast<ZDvidTileEnsemble&>(*this).update(tileIndices, resLevel, painter.getZ(slice));
 
