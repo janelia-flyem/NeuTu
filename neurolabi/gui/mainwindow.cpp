@@ -748,7 +748,6 @@ void MainWindow::createActions()
   testAction2->setStatusTip(tr("Test2"));
   testAction2->setIcon(QIcon(":/images/test.png"));
   connect(testAction2, SIGNAL(triggered()), this, SLOT(test2()));
-
 //#endif
 
   //customizeActions();
@@ -920,7 +919,8 @@ void MainWindow::customizeActions()
   testAction2->setVisible(
         NeutubeConfig::getInstance().getApplication() == "FlyEM");
 #else
-//  testAction->setVisible(false);
+  testAction->setVisible(false);
+  testAction2->setVisible(false);
   this->punctaExportAction->setVisible(false);
 #endif
 
