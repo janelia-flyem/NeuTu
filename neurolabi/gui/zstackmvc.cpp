@@ -7,6 +7,7 @@
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
+#include "zfiletype.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -15,6 +16,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_presenter = NULL;
   m_layout = new QHBoxLayout(this);
   m_progressSignal = new ZProgressSignal(this);
+  setAcceptDrops(true);
 
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
@@ -274,3 +276,30 @@ void ZStackMvc::emitError(const QString &msg, bool appending)
         ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
 }
 */
+
+void ZStackMvc::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->mimeData()->hasFormat("text/uri-list")) {
+    event->acceptProposedAction();
+  }
+}
+
+void ZStackMvc::dropEvent(QDropEvent *event)
+{
+  QList<QUrl> urls = event->mimeData()->urls();
+
+  //Filter out tiff files
+  QList<QUrl> imageUrls;
+  QList<QUrl> nonImageUrls;
+
+  foreach (QUrl url, urls) {
+    if (ZFileType::isImageFile(url.path().toStdString())) {
+      imageUrls.append(url);
+    } else {
+      nonImageUrls.append(url);
+    }
+  }
+  if (!nonImageUrls.isEmpty()) {
+    getDocument()->loadFileList(nonImageUrls);
+  }
+}

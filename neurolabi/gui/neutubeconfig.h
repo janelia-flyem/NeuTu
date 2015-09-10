@@ -204,8 +204,25 @@ public:
       double m_zscale;
     };
 
+    class GraphTabConfig {
+    public:
+      GraphTabConfig();
+      void loadXmlNode(const ZXmlNode *node);
+
+      inline bool isVisible() const { return m_isVisible; }
+      inline double getOpacity() const { return m_opacity; }
+
+    private:
+      bool m_isVisible;
+      double m_opacity;
+    };
+
     const SwcTabConfig& getSwcTabConfig() const {
       return m_swcTabConfig;
+    }
+
+    const GraphTabConfig& getGraphTabConfig() const {
+      return m_graphTabConfig;
     }
 
   private:
@@ -220,6 +237,7 @@ public:
     bool m_isAxisOn;
     bool m_isBackgroundOn;
     SwcTabConfig m_swcTabConfig;
+    GraphTabConfig m_graphTabConfig;
   };
 
   class ObjManagerConfig {

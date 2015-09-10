@@ -1057,7 +1057,9 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       taken = true;
     } else {
       if (m_paintStrokeAction->isEnabled()) {
-        if (isStrokeOn()) {
+//        if (isStrokeOn()) {
+        if (interactiveContext().strokeEditMode() ==
+            ZInteractiveContext::STROKE_DRAW) {
           exitStrokeEdit();
         } else {
           m_paintStrokeAction->trigger();
@@ -1070,12 +1072,14 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   case Qt::Key_1:
   case Qt::Key_2:
   case Qt::Key_3:
+#if defined(_FLYEM_)
   case Qt::Key_4:
   case Qt::Key_5:
   case Qt::Key_6:
   case Qt::Key_7:
   case Qt::Key_8:
   case Qt::Key_9:
+#endif
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
       m_stroke.setLabel(event->key() - Qt::Key_0);

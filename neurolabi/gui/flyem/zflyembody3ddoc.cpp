@@ -160,7 +160,7 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
   }
 }
 
-void ZFlyEmBody3dDoc::setDataDoc(ztr1::shared_ptr<ZStackDoc> doc)
+void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 {
   m_dataDoc = doc;
 }

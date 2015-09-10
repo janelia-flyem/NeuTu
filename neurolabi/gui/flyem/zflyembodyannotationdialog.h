@@ -36,6 +36,11 @@ public:
   void setName(const std::string &name);
   void setType(const std::string &type);
 
+  void hideFinalizedStatus();
+  void showFinalizedStatus();
+  void freezeFinalizedStatus();
+  void freezeUnknownStatus(const std::string &status);
+
 public slots:
   void setNameEdit(const QString &name);
 
@@ -45,6 +50,8 @@ private:
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
+
+  static const std::string m_finalizedText;
 };
 
 #endif // ZFLYEMBODYANNOTATIONDIALOG_H

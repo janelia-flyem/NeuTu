@@ -106,3 +106,8 @@ std::string ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()
   return "#.FlyEmSplitRoi";
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass()
+{
+  return "#.FlyEmExternalNeuron";
+}
+

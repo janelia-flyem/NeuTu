@@ -17590,8 +17590,8 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "1c420", 8500);
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "7872", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
 
@@ -17599,11 +17599,19 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(14228569);
-  bodyArray.push_back(4933329);
-  bodyArray.push_back(5171945);
-  bodyArray.push_back(5500923);
-  bodyArray.push_back(200013718);
+
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/body.txt").c_str(), "r");
+  ZString str;
+  while (str.readLine(fp)) {
+    std::vector<uint64_t> bodyIdArray = str.toUint64Array();
+    for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      bodyArray.push_back(bodyId);
+    }
+  }
+
+  fclose(fp);
 
 
   std::vector<ZIntPoint> posArray;
@@ -17713,6 +17721,5 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
 
-#if 1
-#endif
+
 }

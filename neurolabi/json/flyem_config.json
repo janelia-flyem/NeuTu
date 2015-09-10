@@ -47,13 +47,13 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "f5ff",
+      "uuid": "3716",
       "name": "FIB19 (emdata2)",
-      "comment": "branched from 897b",
+      "comment": "branched from f5ff",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "user_name": ["shinomiyak", "zhaot"]
+      "user_name": ["shinomiyak", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa"]
     },
     {
       "address": "emrecon100.janelia.priv",
