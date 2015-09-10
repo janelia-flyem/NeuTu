@@ -183,10 +183,6 @@ void Z3DTabWidget::settingsPanel()
     if(cur3Dwin)
     {
         cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
-
-        qDebug()<<"settings panel";
-
-        //cur3Dwin->updateSettingsDockWidget();
     }
 
 }
@@ -197,7 +193,18 @@ void Z3DTabWidget::objectsPanel()
 
     if(cur3Dwin)
     {
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction();
+        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+    }
+
+}
+
+void Z3DTabWidget::showGraph(bool v)
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getGraphFilter()->setVisible(v);
     }
 
 }

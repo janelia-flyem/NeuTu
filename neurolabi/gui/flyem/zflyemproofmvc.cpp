@@ -112,8 +112,15 @@ void ZFlyEmProofMvc::initBodyWindow()
   QAction *yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
   connect(yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
 
+
+  QAction *showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
+  connect(showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
+  showGraphAction->setCheckable(true);
+  showGraphAction->setChecked(true);
+
+
   QAction *settingsAction = m_bodyViewWindow->toolBar->addAction("Control and Settings");
-  connect(settingsAction, SIGNAL(triggered(bool)), m_bodyViewers, SLOT(settingsPanel()));
+  connect(settingsAction, SIGNAL(triggered()), m_bodyViewers, SLOT(settingsPanel()));
   settingsAction->setCheckable(true);
 
   QAction *objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");

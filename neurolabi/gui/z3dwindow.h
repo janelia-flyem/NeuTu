@@ -70,6 +70,8 @@ public slots:
     void settingsPanel();
     void objectsPanel();
 
+    void showGraph(bool v);
+
 };
 
 class Z3DMainWindow : public QMainWindow
