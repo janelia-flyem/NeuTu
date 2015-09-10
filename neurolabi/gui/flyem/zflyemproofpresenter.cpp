@@ -137,6 +137,7 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode()
 {
+  exitStrokeEdit();
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryAddBookmarkMode(pos.x(), pos.y());
 }
