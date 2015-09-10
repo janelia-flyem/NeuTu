@@ -64,6 +64,11 @@ public slots:
 
 public slots:
     void resetCamera();
+    void setXZView();
+    void setYZView();
+
+    void settingsPanel();
+    void objectsPanel();
 
 };
 
@@ -174,6 +179,9 @@ public: //Bounding box
   bool hasRectRoi() const;
   ZRect2d getRectRoi() const;
   void removeRectRoi();
+
+  QDockWidget * getSettingsDockWidget();
+  QDockWidget * getObjectsDockWidget();
 
 public:
   //Control panel setup

@@ -89,16 +89,10 @@ Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
 
     toolBar = addToolBar("3DBodyViewTools");
 
-    //    Z3DTabWidget *curTabWidget = (Z3DTabWidget *)(this->centralWidget());
-    //    Z3DWindow *cur3Dwin = (Z3DWindow *)(curTabWidget->currentWidget());
-
-    //    QAction *resetCameraAction = toolBar->addAction("Reset Camera");
-    //    connect(resetCameraAction, SIGNAL(triggered()), this, SLOT(cur3Dwin->resetCamera()));
-
-    //QPixmap quitpix("quit.png");
-    //QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
-//    QAction *quit = toolBar->addAction("Quit 3D Body View");
-//    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+    //    QPixmap quitpix("quit.png");
+    //    QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
+    //    QAction *quit = toolBar->addAction("Quit 3D Body View");
+    //    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
 
     //toolBar->hide();
@@ -156,6 +150,54 @@ void Z3DTabWidget::resetCamera()
     if(cur3Dwin)
     {
         cur3Dwin->resetCamera();
+    }
+
+}
+
+void Z3DTabWidget::setXZView()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->setXZView();
+    }
+
+}
+
+void Z3DTabWidget::setYZView()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->setYZView();
+    }
+
+}
+
+void Z3DTabWidget::settingsPanel()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
+
+        qDebug()<<"settings panel";
+
+        //cur3Dwin->updateSettingsDockWidget();
+    }
+
+}
+
+void Z3DTabWidget::objectsPanel()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getObjectsDockWidget()->toggleViewAction();
     }
 
 }
@@ -3738,4 +3780,14 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
 void Z3DWindow::removeRectRoi()
 {
   getCanvas()->getInteractionEngine()->removeRectDecoration();
+}
+
+QDockWidget* Z3DWindow::getSettingsDockWidget()
+{
+    return m_settingsDockWidget;
+}
+
+QDockWidget* Z3DWindow::getObjectsDockWidget()
+{
+    return m_objectsDockWidget;
 }

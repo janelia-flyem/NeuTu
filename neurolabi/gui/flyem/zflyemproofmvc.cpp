@@ -103,8 +103,22 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
 
-  QAction *resetCameraAction = m_bodyViewWindow->toolBar->addAction("Reset Camera");
+  QAction *resetCameraAction = m_bodyViewWindow->toolBar->addAction("X-Y View");
   connect(resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
+
+  QAction *xzViewAction = m_bodyViewWindow->toolBar->addAction("X-Z View");
+  connect(xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
+
+  QAction *yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
+  connect(yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
+
+  QAction *settingsAction = m_bodyViewWindow->toolBar->addAction("Control and Settings");
+  connect(settingsAction, SIGNAL(triggered(bool)), m_bodyViewers, SLOT(settingsPanel()));
+  settingsAction->setCheckable(true);
+
+  QAction *objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
+  connect(objectsAction, SIGNAL(triggered()), m_bodyViewers, SLOT(objectsPanel()));
+  objectsAction->setCheckable(true);
 
   m_coarseBodyWindow = NULL;
   m_externalNeuronWindow = NULL;
