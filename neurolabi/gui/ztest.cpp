@@ -17721,6 +17721,5 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
 
-#if 1
-#endif
+
 }

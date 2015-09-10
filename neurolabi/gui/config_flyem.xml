@@ -6,6 +6,9 @@
     <tracing status="off"></tracing>
   </MainWindow>
   <Z3DWindow>
+    <Graph status="on">
+      <Visible>1</Visible>
+    </Graph>
     <Swcs status="on">
       <Primitive>Normal</Primitive>
       <Color_Mode>Individual</Color_Mode>
