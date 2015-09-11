@@ -113,6 +113,9 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
 
 
+  QAction *recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
+  connect(recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
+
   QAction *showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
   connect(showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
   showGraphAction->setCheckable(true);

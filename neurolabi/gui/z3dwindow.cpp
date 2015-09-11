@@ -206,7 +206,16 @@ void Z3DTabWidget::showGraph(bool v)
     {
         cur3Dwin->getGraphFilter()->setVisible(v);
     }
+}
 
+void Z3DTabWidget::resetCameraCenter()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCameraCenter();
+    }
 }
 
 void Z3DTabWidget::addWindow(Z3DWindow *window, const QString &title)

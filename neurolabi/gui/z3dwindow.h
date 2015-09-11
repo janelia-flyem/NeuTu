@@ -72,6 +72,8 @@ public slots:
 
     void showGraph(bool v);
 
+    void resetCameraCenter();
+
 };
 
 class Z3DMainWindow : public QMainWindow
