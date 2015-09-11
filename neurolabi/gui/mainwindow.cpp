@@ -6330,6 +6330,15 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
   emit progressDone();
 }
 
+void MainWindow::processArgument(const QString &arg)
+{
+  report("arg", arg.toStdString(), NeuTube::MSG_INFORMATION);
+  statusBar()->showMessage(arg);
+  if (arg.startsWith("neutu://")) {
+    m_ui->actionProof->trigger();
+  }
+}
+
 void MainWindow::runBodySplit()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
