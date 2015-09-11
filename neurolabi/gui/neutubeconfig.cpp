@@ -409,6 +409,7 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
   childNode = node->queryNode("Graph");
   if (!childNode.empty()) {
     enableGraph(childNode.getAttribute("status") != "off");
+    m_graphTabConfig.loadXmlNode(&childNode);
   } else {
     enableGraph(true);
   }
@@ -461,6 +462,24 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
     enableAxis(childNode.getAttribute("status") != "off");
   } else {
     enableAxis(true);
+  }
+}
+
+NeutubeConfig::Z3DWindowConfig::GraphTabConfig::GraphTabConfig() :
+  m_isVisible(true), m_opacity(1.0)
+{
+}
+
+void NeutubeConfig::Z3DWindowConfig::GraphTabConfig::loadXmlNode(const ZXmlNode *node)
+{
+  ZXmlNode childNode = node->queryNode("Visible");
+  if (!childNode.empty()) {
+    m_isVisible = childNode.intValue() > 0;
+  }
+
+  childNode = node->queryNode("Opacity");
+  if (!childNode.empty()) {
+    m_opacity = childNode.doubleValue();
   }
 }
 

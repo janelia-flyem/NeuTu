@@ -39,6 +39,9 @@
 #include "flyem/zflyemmisc.h"
 #include "zswcgenerator.h"
 #include "zflyembody3ddoc.h"
+#include "neutubeconfig.h"
+#include "flyem/zflyemexternalneurondoc.h"
+#include "zfiletype.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -102,6 +105,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
 
   m_coarseBodyWindow = NULL;
+  m_externalNeuronWindow = NULL;
   m_bodyWindow = NULL;
   m_splitWindow = NULL;
 }
@@ -143,16 +147,26 @@ void ZFlyEmProofMvc::detachSplitWindow()
   m_splitWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachExternalNeuronWindow()
+{
+  m_externalNeuronWindow = NULL;
+}
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
     if (window == m_coarseBodyWindow) {
       connect(window, SIGNAL(destroyed()), this,
               SLOT(detachCoarseBodyWindow()));
+      connect(window, SIGNAL(croppingSwcInRoi()),
+              this, SLOT(cropCoarseBody3D()));
     } else if (window == m_bodyWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachBodyWindow()));
     } else if (window == m_splitWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachSplitWindow()));
+    } else if (window == m_externalNeuronWindow) {
+      connect(window, SIGNAL(destroyed()),
+              this, SLOT(detachExternalNeuronWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this->getView(), SLOT(setView(ZStackViewParam)));
@@ -162,6 +176,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZStackDoc *doc = new ZStackDoc;
+  doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
 
   getProgressSignal()->startProgress("Showing 3D coarse body ...");
 
@@ -197,6 +212,21 @@ void ZFlyEmProofMvc::makeBodyWindow()
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_bodyWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
+}
+
+void ZFlyEmProofMvc::makeExternalNeuronWindow()
+{
+  ZFlyEmExternalNeuronDoc *doc = new ZFlyEmExternalNeuronDoc;
+  doc->setDataDoc(m_doc);
+  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+
+  m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
+  setWindowSignalSlot(m_externalNeuronWindow);
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_externalNeuronWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
   }
 }
@@ -581,6 +611,8 @@ void ZFlyEmProofMvc::customInit()
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
           this->getView(), SLOT(setView(const ZStackViewParam&)));
+  connect(&m_splitProject, SIGNAL(resultCommitted()),
+          this, SLOT(updateSplitBody()));
   /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
@@ -621,6 +653,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
+  connect(getCompletePresenter(), SIGNAL(mergingBody()),
+          this, SLOT(mergeSelected()));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
 
   disableSplit();
@@ -628,6 +662,7 @@ void ZFlyEmProofMvc::customInit()
 
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)), m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -925,16 +960,7 @@ void ZFlyEmProofMvc::annotateBody()
         }
 
         if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          ZDvidWriter writer;
-          if (writer.open(getDvidTarget())) {
-            writer.writeAnnotation(bodyId, dlg->getBodyAnnotation().toJsonObject());
-          }
-          if (writer.getStatusCode() == 200) {
-            emit messageGenerated(QString("Body %1 is annotated.").arg(bodyId));
-          } else {
-            qDebug() << writer.getStandardOutput();
-            emit errorGenerated("Cannot save annotation.");
-          }
+          getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
         }
 
         checkInBodyWithMessage(bodyId);
@@ -1090,6 +1116,24 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       getProgressSignal()->endProgress();
     }
+  }
+}
+
+void ZFlyEmProofMvc::updateSplitBody()
+{
+  if (m_splitProject.getBodyId() > 0) {
+#if 0
+    uint64_t bodyId = m_splitProject.getBodyId();
+    getDocument()->removeObject(
+          ZStackObjectSourceFactory::MakeSplitObjectSource(), true);
+    m_splitProject.setBodyId(0);
+    launchSplit(bodyId);
+#endif
+    if (m_coarseBodyWindow != NULL) {
+      m_coarseBodyWindow->removeRectRoi();
+      updateCoarseBodyWindow(false, false, true);
+    }
+    updateBodyWindow();
   }
 }
 
@@ -1252,6 +1296,19 @@ void ZFlyEmProofMvc::showSplit3d()
   m_splitProject.showResult3d();
 }
 
+void ZFlyEmProofMvc::showExternalNeuronWindow()
+{
+  if (m_externalNeuronWindow == NULL) {
+    makeExternalNeuronWindow();
+    m_bodyViewers->addWindow(m_externalNeuronWindow, "Neuron Reference");
+  }
+
+//  updateCoarseBodyWindow(false, true, false);
+
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
 void ZFlyEmProofMvc::showCoarseBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
@@ -1301,6 +1358,7 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
   closeBodyWindow(m_coarseBodyWindow);
   closeBodyWindow(m_bodyWindow);
   closeBodyWindow(m_splitWindow);
+  closeBodyWindow(m_externalNeuronWindow);
 }
 
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
@@ -1721,6 +1779,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 
   updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
   updateBodyWindowPlane(m_bodyWindow, viewParam);
+  updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
@@ -1793,6 +1852,111 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofMvc::updateUserBookmarkTable()
 {
   emit userBookmarkUpdated(getDocument().get());
+}
+
+void ZFlyEmProofMvc::changeColorMap(const QString &option)
+{
+  if (option == "Name") {
+    getCompleteDocument()->useBodyNameMap(true);
+  } else {
+    getCompleteDocument()->useBodyNameMap(false);
+  }
+}
+
+void ZFlyEmProofMvc::cropCoarseBody3D()
+{
+  if (m_coarseBodyWindow != NULL) {
+    if (m_coarseBodyWindow->hasRectRoi()) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        if (getCompletePresenter()->isSplitOn()) {
+          ZObject3dScan body = reader.readCoarseBody(m_splitProject.getBodyId());
+          if (body.isEmpty()) {
+            emit messageGenerated(
+                  ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
+                                 arg(m_splitProject.getBodyId()),
+                                 NeuTube::MSG_ERROR));
+          } else {
+            ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+            ZObject3dScan bodyInRoi;
+            ZObject3dScan::ConstSegmentIterator iter(&body);
+            while (iter.hasNext()) {
+              const ZObject3dScan::Segment &seg = iter.next();
+              for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
+                ZIntPoint pt(0, seg.getY(), seg.getZ());
+                pt.setX(x);
+                pt -= dvidInfo.getStartBlockIndex();
+                pt *= dvidInfo.getBlockSize();
+                pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                                dvidInfo.getBlockSize().getY() / 2, 0);
+                pt += dvidInfo.getStartCoordinates();
+
+                QPointF screenPos = m_coarseBodyWindow->getScreenProjection(
+                      pt.getX(), pt.getY(), pt.getZ(), Z3DWindow::LAYER_SWC);
+                if (m_coarseBodyWindow->getRectRoi().contains(screenPos.x(), screenPos.y())) {
+                  bodyInRoi.addSegment(seg.getZ(), seg.getY(), x, x);
+                }
+              }
+            }
+#ifdef _DEBUG_2
+            body.save(GET_TEST_DATA_DIR + "/test2.sobj");
+            bodyInRoi.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+            m_splitProject.commitCoarseSplit(bodyInRoi);
+            ZFlyEmMisc::SubtractBodyWithBlock(
+                  getCompleteDocument()->getBodyForSplit()->getObjectMask(),
+                  bodyInRoi, dvidInfo);
+            getCompleteDocument()->processObjectModified(
+                  getCompleteDocument()->getBodyForSplit());
+            getCompleteDocument()->notifyObjectModified();
+          }
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
+{
+  QList<QUrl> urls = event->mimeData()->urls();
+  bool processed = false;
+  if (urls.size() == 1) {
+    const QUrl &url = urls[0];
+    if (ZFileType::fileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
+      processed = true; //todo
+    }
+  }
+
+  if (!processed) {
+    foreach (const QUrl &url, urls) {
+      if (ZFileType::fileType(url.path().toStdString()) ==
+          ZFileType::SWC_FILE) {
+        ZSwcTree *tree = new ZSwcTree;
+        tree->load(url.path().toStdString());
+        tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
+        tree->setHittable(false);
+        tree->setColor(QColor(255, 0, 0));
+        getDocument()->addObject(tree);
+      }
+    }
+  }
+
+#if 0
+  //Filter out tiff files
+  QList<QUrl> imageUrls;
+  QList<QUrl> nonImageUrls;
+
+  foreach (QUrl url, urls) {
+    if (ZFileType::isImageFile(url.path().toStdString())) {
+      imageUrls.append(url);
+    } else {
+      nonImageUrls.append(url);
+    }
+  }
+  if (!nonImageUrls.isEmpty()) {
+    getDocument()->loadFileList(nonImageUrls);
+  }
+#endif
 }
 
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)

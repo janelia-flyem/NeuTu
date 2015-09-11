@@ -82,8 +82,9 @@ public:
    * the block index.
    */
   ZIntCuboid getBlockBox(int x, int y, int z) const;
-
   ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
+
+  ZIntCuboid getBlockBox(int x0, int x1, int y, int z) const;
 
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;

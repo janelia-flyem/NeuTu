@@ -5,9 +5,75 @@
 
 Biocytin::SwcProcessor::SwcProcessor()
 {
+  init();
 }
 
-void Biocytin::SwcProcessor::assignZ(ZSwcTree *tree, const Stack &depthImage)
+void Biocytin::SwcProcessor::init()
+{
+  m_minDeltaZ = 0.0;
+  m_maxVLRatio = 3.0;
+}
+
+void Biocytin::SwcProcessor::setResolution(const ZResolution &resolution)
+{
+  m_resolution = resolution;
+}
+
+/*
+void Biocytin::SwcProcessor::removeZJump(ZSwcTree *tree)
+{
+  tree->forceVirtualRoot();
+  tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+  Swc_Tree_Node *tn = tree->begin();
+  while (tn != NULL) {
+    Swc_Tree_Node *next = tree->next();
+    if (!SwcTreeNode::isRoot(tn)) {
+      Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+      double deltaZ =
+          fabs(SwcTreeNode::z(tn) - SwcTreeNode::z(parent)) *
+          m_resolution.voxelSizeZ();
+      double dx = SwcTreeNode::x(tn) - SwcTreeNode::x(parent);
+      double dy = SwcTreeNode::y(tn) - SwcTreeNode::y(parent);
+      double deltaXY = sqrt(dx * dx + dy * dy);
+
+      if ((deltaZ > m_minDeltaZ) && (deltaZ / deltaXY > m_maxVLRatio)) {
+        SwcTreeNode::detachParent(tn);
+        SwcTreeNode::adoptChildren(tree->root(), tn);
+        SwcTreeNode::kill(tn);
+      }
+    }
+    tn = next;
+  }
+}
+*/
+
+void Biocytin::SwcProcessor::breakZJump(ZSwcTree *tree)
+{
+  tree->forceVirtualRoot();
+  tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+  Swc_Tree_Node *tn = tree->begin();
+  while (tn != NULL) {
+    Swc_Tree_Node *next = tree->next();
+    if (!SwcTreeNode::isRoot(tn)) {
+      Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+      double deltaZ =
+          fabs(SwcTreeNode::z(tn) - SwcTreeNode::z(parent)) *
+          m_resolution.voxelSizeZ();
+      double dx = (SwcTreeNode::x(tn) - SwcTreeNode::x(parent)) *
+          m_resolution.voxelSizeX();
+      double dy = SwcTreeNode::y(tn) - SwcTreeNode::y(parent) *
+          m_resolution.voxelSizeY();
+      double deltaXY = sqrt(dx * dx + dy * dy);
+
+      if ((deltaZ > m_minDeltaZ) && (deltaZ / deltaXY > m_maxVLRatio)) {
+        SwcTreeNode::setParent(tn, tree->root());
+      }
+    }
+    tn = next;
+  }
+}
+
+void Biocytin::SwcProcessor::AssignZ(ZSwcTree *tree, const Stack &depthImage)
 {
   tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
   for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
@@ -23,7 +89,8 @@ void Biocytin::SwcProcessor::assignZ(ZSwcTree *tree, const Stack &depthImage)
   }
 }
 
-void Biocytin::SwcProcessor::removeZJump(ZSwcTree *tree, double minDeltaZ)
+/*
+void Biocytin::SwcProcessor::RemoveZJump(ZSwcTree *tree, double minDeltaZ)
 {
   tree->forceVirtualRoot();
   tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
@@ -41,8 +108,9 @@ void Biocytin::SwcProcessor::removeZJump(ZSwcTree *tree, double minDeltaZ)
     tn = next;
   }
 }
+*/
 
-void Biocytin::SwcProcessor::breakZJump(ZSwcTree *tree, double minDeltaZ)
+void Biocytin::SwcProcessor::BreakZJump(ZSwcTree *tree, double minDeltaZ)
 {
   tree->forceVirtualRoot();
   tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
@@ -62,7 +130,7 @@ void Biocytin::SwcProcessor::breakZJump(ZSwcTree *tree, double minDeltaZ)
   }
 }
 
-void Biocytin::SwcProcessor::removeOrphan(ZSwcTree *tree)
+void Biocytin::SwcProcessor::RemoveOrphan(ZSwcTree *tree)
 {
   if (SwcTreeNode::isVirtual(tree->root())) {
     Swc_Tree_Node *root = SwcTreeNode::firstChild(tree->root());
@@ -77,7 +145,7 @@ void Biocytin::SwcProcessor::removeOrphan(ZSwcTree *tree)
   }
 }
 
-void Biocytin::SwcProcessor::smoothZ(ZSwcTree *tree)
+void Biocytin::SwcProcessor::SmoothZ(ZSwcTree *tree)
 {
   const std::vector<Swc_Tree_Node*> &leafArray =
       tree->getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR);
@@ -98,7 +166,7 @@ void Biocytin::SwcProcessor::smoothZ(ZSwcTree *tree)
   }
 }
 
-void Biocytin::SwcProcessor::smoothRadius(ZSwcTree *tree)
+void Biocytin::SwcProcessor::SmoothRadius(ZSwcTree *tree)
 {
   const std::vector<Swc_Tree_Node*> &leafArray =
       tree->getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR);

@@ -56,6 +56,8 @@ public:
    */
   void setSize(int width, int height, int depth);
 
+  void setWidth(int width);
+
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;

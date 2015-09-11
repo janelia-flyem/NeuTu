@@ -237,6 +237,9 @@ public:
 
   bool isSwcFullSkeletonVisible() const;
 
+public: //test functions
+  void testBiocytinProjectionMask();
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);

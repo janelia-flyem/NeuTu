@@ -12,6 +12,7 @@ class Z3DWindow;
 class ZDvidTarget;
 class ZDvidReader;
 class ZStackViewParam;
+class ZObject3dScan;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -24,6 +25,11 @@ void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                           const ZStackViewParam &viewParam);
 void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                                const ZStackViewParam &viewParam);
+
+void SubtractBodyWithBlock(
+    ZObject3dScan *body, const ZObject3dScan &coarsePart,
+    const ZDvidInfo& dvidInfo);
+
 
 class HackathonEvaluator {
 public:

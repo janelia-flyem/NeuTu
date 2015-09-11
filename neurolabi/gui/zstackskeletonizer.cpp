@@ -46,6 +46,31 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
   return tree;
 }
 
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(
+    const std::vector<ZStack*> &stackArray)
+{
+  ZSwcTree *wholeTree = new ZSwcTree;
+
+  int count = 0;
+  for (std::vector<ZStack*>::const_iterator iter = stackArray.begin();
+       iter != stackArray.end(); ++iter) {
+    const ZStack* stack = *iter;
+    ZSwcTree *tree = makeSkeleton(*stack);
+    if (!tree->isEmpty()) {
+      wholeTree->merge(tree, true);
+      ++count;
+    } else {
+      delete tree;
+    }
+  }
+
+  if (m_connectingBranch && count > 1) {
+    reconnect(wholeTree);
+  }
+
+  return wholeTree;
+}
+
 static double AdjustedDistanceWeight(double v)
 {
   return dmax2(0.1, sqrt(v) - 0.5);

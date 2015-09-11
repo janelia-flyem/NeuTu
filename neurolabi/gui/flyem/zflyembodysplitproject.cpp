@@ -792,7 +792,7 @@ void ZFlyEmBodySplitProject::commitResult()
 
   getProgressSignal()->startProgress(0.8);
   ZFlyEmBodySplitProject::commitResultFunc(
-        getDocument()->getConstSparseStack()->getObjectMask(),
+        getDocument()->getSparseStackMask(),
         getDocument()->getLabelField(),
         getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
@@ -807,7 +807,7 @@ void ZFlyEmBodySplitProject::commitResult()
   }
 //  getDocument()->removeObject(ZStackObject::TYPE_OBJ3D);
 //  removeAllSideSeed();
-  downloadBodyMask();
+//  downloadBodyMask();
 
   getDocument()->setSegmentationReady(false);
 
@@ -845,8 +845,28 @@ void ZFlyEmBodySplitProject::updateSplitDocument()
   }
 }
 
+void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    emitMessage("Uploading crop result ...");
+    uint64_t bodyId = writer.writeCoarseSplit(
+          splitPart, getBodyId());
+    if (bodyId == 0) {
+      emit messageGenerated(
+            ZWidgetMessage(QString("Split %1 failed.").
+                           arg(getBodyId()),
+                           NeuTube::MSG_ERROR));
+    } else {
+      updateSplitDocument();
+      emitMessage(QString("Done. The cropped part has bodyId %1").arg(bodyId));
+      emit resultCommitted();
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::commitResultFunc(
-    const ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
+    ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
     size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
@@ -902,6 +922,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   if (stack != NULL) { //Process splits
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
+    emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
 #ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -995,6 +1016,9 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (!filePathList.empty()) {
     dp = 0.2 / filePathList.size();
+  } else {
+    emitError("Warning: No splits generated for upload! "
+              "Please contact the developer as soon as possible.");
   }
 
   QList<uint64_t> newBodyIdList;
@@ -1006,6 +1030,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     obj.load(objFile.toStdString());
     uint64_t newBodyId = writer.writeSplit(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
+    wholeBody->subtract(obj);
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;

@@ -1,4 +1,3 @@
-# for mingw
 cd /d "%~dp0"
 set currDIR=%CD%
 
@@ -10,6 +9,8 @@ set deployDIR=%currDIR%\..\..\neuTube_win64
 set libDIR=%currDIR%\..\lib\Mingw\64\bin
 for /f %%i in ('%qmakeCmd% -query QT_INSTALL_BINS') do set qtbinDIR=%%i
 for /f %%i in ('%qmakeCmd% -query QT_INSTALL_PLUGINS') do set qtpluginsDIR=%%i
+set "qtbinDIR=%qtbinDIR:/=\%"
+set "qtpluginsDIR=%qtpluginsDIR:/=\%"
 
 rd /q/s %deployDIR%
 md %deployDIR%
@@ -30,10 +31,8 @@ xcopy %qtbinDIR%\QtOpenGL4.dll %deployDIR%
 xcopy %qtbinDIR%\QtXml4.dll %deployDIR%
 xcopy %libDIR%\libfftw3-3.dll %deployDIR%
 xcopy %libDIR%\libfftw3f-3.dll %deployDIR%
-xcopy %libDIR%\libxml2-2.dll %deployDIR%
-xcopy %libDIR%\libjansson-4.dll %deployDIR%
+xcopy %libDIR%\libxml2.dll %deployDIR%
 xcopy %libDIR%\libzlib.dll %deployDIR%
-xcopy %libDIR%\libpng16.dll %deployDIR%
 
 cd /d %deployDIR%\plugins
 del /F /S /Q *d4.dll

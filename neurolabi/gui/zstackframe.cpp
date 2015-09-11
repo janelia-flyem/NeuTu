@@ -1157,6 +1157,11 @@ ZStack* ZStackFrame::getStrokeMask()
   return view()->getStrokeMask(1);
 }
 
+ZStack* ZStackFrame::getStrokeMask(NeuTube::EColor color)
+{
+  return view()->getStrokeMask(color);
+}
+
 void ZStackFrame::exportObjectMask(const QString &filePath)
 {
   view()->exportObjectMask(filePath.toStdString());

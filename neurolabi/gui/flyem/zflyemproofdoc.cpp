@@ -129,31 +129,34 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
        iter != sliceList.end(); ++iter) {
     const ZDvidLabelSlice *labelSlice = *iter;
     const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
-    for (std::set<uint64_t>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      if (supervisor != NULL) {
-        if (supervisor->checkOut(*iter)) {
-          labelSet.insert(*iter);
-        } else {
-          labelSet.clear();
-          std::string owner = supervisor->getOwner(*iter);
-          if (owner.empty()) {
-//            owner = "unknown user";
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to merge. Is the librarian sever (%2) ready?").
-                    arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
-                    NeuTube::MSG_ERROR));
+
+    if (selected.size() > 1){
+      for (std::set<uint64_t>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        if (supervisor != NULL) {
+          if (supervisor->checkOut(*iter)) {
+            labelSet.insert(*iter);
           } else {
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    QString("Failed to merge. %1 has been locked by %2").
-                    arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+            labelSet.clear();
+            std::string owner = supervisor->getOwner(*iter);
+            if (owner.empty()) {
+              //            owner = "unknown user";
+              emit messageGenerated(
+                    ZWidgetMessage(
+                      QString("Failed to merge. Is the librarian sever (%2) ready?").
+                      arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
+                      NeuTube::MSG_ERROR));
+            } else {
+              emit messageGenerated(
+                    ZWidgetMessage(
+                      QString("Failed to merge. %1 has been locked by %2").
+                      arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+            }
+            break;
           }
-          break;
+        } else {
+          labelSet.insert(*iter);
         }
-      } else {
-        labelSet.insert(*iter);
       }
     }
   }
@@ -166,6 +169,36 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
         new ZFlyEmProofDocCommand::MergeBody(this);
     pushUndoCommand(command);
   }
+}
+
+void ZFlyEmProofDoc::annotateBody(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
+{
+  ZDvidWriter writer;
+  if (writer.open(getDvidTarget())) {
+    writer.writeAnnotation(bodyId, annotation.toJsonObject());
+
+    if (getDvidLabelSlice()->hasCustomColorMap()) {
+      m_bodyColorMap->updateNameMap(annotation);
+      getDvidLabelSlice()->assignColorMap();
+      processObjectModified(getDvidLabelSlice());
+      notifyObjectModified();
+    }
+  }
+  if (writer.getStatusCode() == 200) {
+    emit messageGenerated(
+          ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
+  } else {
+    qDebug() << writer.getStandardOutput();
+    emit messageGenerated(
+          ZWidgetMessage("Cannot save annotation.", NeuTube::MSG_ERROR));
+  }
+}
+
+void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+  m_bodyColorMap.reset();
 }
 
 void ZFlyEmProofDoc::updateTileData()
@@ -402,7 +435,7 @@ void ZFlyEmProofDoc::downloadBookmark()
   if (getDvidTarget().isValid()) {
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
-    reader.read(url.getCustomBookmarkUrl(NeuTube::GetUserName()).c_str());
+    reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
     ZJsonArray jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
@@ -726,6 +759,26 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 void ZFlyEmProofDoc::deprecateSplitSource()
 {
   m_splitSource.reset();
+}
+
+void ZFlyEmProofDoc::useBodyNameMap(bool on)
+{
+  if (getDvidLabelSlice() != NULL) {
+    if (on) {
+      if (m_bodyColorMap.get() == NULL) {
+        m_bodyColorMap =
+            ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
+        m_bodyColorMap->setDvidTarget(getDvidTarget());
+        m_bodyColorMap->prepareNameMap();
+      }
+      getDvidLabelSlice()->setCustomColorMap(m_bodyColorMap);
+    } else {
+      getDvidLabelSlice()->removeCustomColorMap();
+    }
+
+    processObjectModified(getDvidLabelSlice());
+    notifyObjectModified();
+  }
 }
 
 //////////////////////////////////////////

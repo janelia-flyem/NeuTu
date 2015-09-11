@@ -45,6 +45,7 @@ class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
 class Z3DWindow;
+class ZRect2d;
 //class Z3DRendererBase;
 
 class Z3DTabWidget : public QTabWidget
@@ -133,6 +134,7 @@ public: //Components
   inline Z3DSwcFilter* getSwcFilter() { return m_swcFilter; }
   inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
   inline Z3DCanvas* getCanvas() { return m_canvas; }
+  inline const Z3DCanvas* getCanvas() const { return m_canvas; }
 
   Z3DRendererBase* getRendererBase(ERendererLayer layer);
 
@@ -142,6 +144,8 @@ public: //Components
   inline Z3DVolumeSource *getVolumeSource() { return m_volumeSource; }
   inline Z3DAxis *getAxis() { return m_axis; }
   const std::vector<double>& getBoundBox() const { return m_boundBox; }
+
+  QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
 public: //Bounding box
   void updateVolumeBoundBox();
@@ -163,6 +167,10 @@ public: //Bounding box
 
   void hideControlPanel();
   void hideObjectView();
+
+  bool hasRectRoi() const;
+  ZRect2d getRectRoi() const;
+  void removeRectRoi();
 
 public:
   //Control panel setup
@@ -201,6 +209,7 @@ private:
 signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
+  void croppingSwcInRoi();
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -328,6 +337,10 @@ public slots:
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
   void markSwcSoma();
+
+  void selectSwcTreeNodeInRoi(bool appending);
+  void cropSwcInRoi();
+
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);

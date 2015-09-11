@@ -711,6 +711,8 @@ public:
   virtual const ZSparseStack* getSparseStack() const;
   virtual const ZSparseStack* getConstSparseStack() const;
   virtual ZSparseStack* getSparseStack();
+  virtual ZObject3dScan* getSparseStackMask() const;
+
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -931,72 +933,73 @@ public:
   }*/
 
 public slots: //undoable commands
-  bool executeAddObjectCommand(ZStackObject *obj,
+  virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
-  bool executeRemoveSelectedObjectCommand();
+  virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
-  bool executeMoveObjectCommand(
+  virtual bool executeMoveObjectCommand(
       double x, double y, double z,
       double punctaScaleX, double punctaScaleY, double punctaScaleZ,
       double swcScaleX, double swcScaleY, double swcScaleZ);
 
-  bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
-  bool executeRemoveTubeCommand();
-  bool executeAutoTraceCommand(int traceLevel, bool doResample);
-  bool executeAutoTraceAxonCommand();
+  virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
+  virtual bool executeRemoveTubeCommand();
+  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample);
+  virtual bool executeAutoTraceAxonCommand();
 
-  bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);
-  bool executeAddSwcCommand(ZSwcTree *tree);
-  bool executeReplaceSwcCommand(ZSwcTree *tree);
-  void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  bool executeSwcNodeExtendCommand(const ZPoint &center);
-  bool executeSwcNodeExtendCommand(const ZPoint &center, double radius);
-  bool executeSwcNodeSmartExtendCommand(const ZPoint &center);
-  bool executeSwcNodeSmartExtendCommand(const ZPoint &center, double radius);
-  bool executeSwcNodeChangeZCommand(double z);
-  bool executeSwcNodeEstimateRadiusCommand();
-  bool executeMoveSwcNodeCommand(double dx, double dy, double dz);
-  bool executeScaleSwcNodeCommand(
+  virtual bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);
+  virtual bool executeAddSwcCommand(ZSwcTree *tree);
+  virtual bool executeReplaceSwcCommand(ZSwcTree *tree);
+  virtual void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
+
+  virtual bool executeSwcNodeExtendCommand(const ZPoint &center);
+  virtual bool executeSwcNodeExtendCommand(const ZPoint &center, double radius);
+  virtual bool executeSwcNodeSmartExtendCommand(const ZPoint &center);
+  virtual bool executeSwcNodeSmartExtendCommand(const ZPoint &center, double radius);
+  virtual bool executeSwcNodeChangeZCommand(double z);
+  virtual bool executeSwcNodeEstimateRadiusCommand();
+  virtual bool executeMoveSwcNodeCommand(double dx, double dy, double dz);
+  virtual bool executeScaleSwcNodeCommand(
       double sx, double sy, double sz, const ZPoint &center);
-  bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
-  bool executeTranslateSelectedSwcNode();
+  virtual bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
+  virtual bool executeTranslateSelectedSwcNode();
   virtual bool executeDeleteSwcNodeCommand();
-  bool executeConnectSwcNodeCommand();
-  bool executeChangeSelectedSwcNodeSize();
-  bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
-  bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
-  bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
-  bool executeSmartConnectSwcNodeCommand();
-  bool executeBreakSwcConnectionCommand();
-  bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
-  bool executeSwcNodeChangeSizeCommand(double dr);
-  bool executeMergeSwcNodeCommand();
-  bool executeTraceSwcBranchCommand(double x, double y, double z, int c = 0);
-  bool executeTraceSwcBranchCommand(double x, double y);
-  bool executeInterpolateSwcZCommand();
-  bool executeInterpolateSwcRadiusCommand();
-  bool executeInterpolateSwcPositionCommand();
-  bool executeInterpolateSwcCommand();
-  bool executeBreakForestCommand();
-  bool executeGroupSwcCommand();
-  bool executeSetRootCommand();
-  bool executeRemoveTurnCommand();
-  bool executeResolveCrossoverCommand();
-  bool executeInsertSwcNode();
-  bool executeSetBranchPoint();
-  bool executeConnectIsolatedSwc();
-  bool executeResetBranchPoint();
+  virtual bool executeConnectSwcNodeCommand();
+  virtual bool executeChangeSelectedSwcNodeSize();
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  virtual bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
+  virtual bool executeSmartConnectSwcNodeCommand();
+  virtual bool executeBreakSwcConnectionCommand();
+  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
+  virtual bool executeSwcNodeChangeSizeCommand(double dr);
+  virtual bool executeMergeSwcNodeCommand();
+  virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
+  virtual bool executeTraceSwcBranchCommand(double x, double y);
+  virtual bool executeInterpolateSwcZCommand();
+  virtual bool executeInterpolateSwcRadiusCommand();
+  virtual bool executeInterpolateSwcPositionCommand();
+  virtual bool executeInterpolateSwcCommand();
+  virtual bool executeBreakForestCommand();
+  virtual bool executeGroupSwcCommand();
+  virtual bool executeSetRootCommand();
+  virtual bool executeRemoveTurnCommand();
+  virtual bool executeResolveCrossoverCommand();
+  virtual bool executeInsertSwcNode();
+  virtual bool executeSetBranchPoint();
+  virtual bool executeConnectIsolatedSwc();
+  virtual bool executeResetBranchPoint();
 
-  bool executeMoveAllSwcCommand(double dx, double dy, double dz);
-  bool executeScaleAllSwcCommand(double sx, double sy, double sz,
+  virtual bool executeMoveAllSwcCommand(double dx, double dy, double dz);
+  virtual bool executeScaleAllSwcCommand(double sx, double sy, double sz,
                                  bool aroundCenter = false);
-  bool executeRotateAllSwcCommand(
+  virtual bool executeRotateAllSwcCommand(
       double theta, double psi, bool aroundCenter = false);
 
-  bool executeBinarizeCommand(int thre);
-  bool executeBwsolidCommand();
-  bool executeEnhanceLineCommand();
-  bool executeWatershedCommand();
+  virtual bool executeBinarizeCommand(int thre);
+  virtual bool executeBwsolidCommand();
+  virtual bool executeEnhanceLineCommand();
+  virtual bool executeWatershedCommand();
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1176,9 +1179,6 @@ private:
 
   //  Action map
   QMap<EActionItem, QAction*> m_actionMap;
-
-  //Context menu
-  //QMenu *m_swcNodeContextMenu;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 

@@ -32,6 +32,8 @@ public:
   std::string getSkeletonUrl() const;
   std::string getSkeletonUrl(uint64_t bodyId) const;
 
+  std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
+
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 
@@ -115,6 +117,8 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+  std::string getCoarseSplitUrl(
+      const std::string &dataName, uint64_t originalLabel) const;
 
   //std::string getMergeOperationUrl(const std::string &dataName) const;
   std::string getMergeOperationUrl(const std::string &userName) const;
@@ -141,6 +145,11 @@ public:
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
 private:
+  std::string getSplitUrl(
+      const std::string &dataName, uint64_t originalLabel,
+      const std::string &command) const;
+
+private:
   ZDvidTarget m_dvidTarget;
 
   static const std::string m_keyCommand;
@@ -150,6 +159,7 @@ private:
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
   static const std::string m_splitCommand;
+  static const std::string m_coarseSplitCommand;
   static const std::string m_labelCommand;
   static const std::string m_roiCommand;
 };

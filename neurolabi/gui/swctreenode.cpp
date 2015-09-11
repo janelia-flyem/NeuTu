@@ -428,6 +428,16 @@ void SwcTreeNode::translate(Swc_Tree_Node *tn, double dx, double dy, double dz)
   }
 }
 
+void SwcTreeNode::translate(Swc_Tree_Node *tn, const ZPoint &pt)
+{
+  translate(tn, pt.x(), pt.y(), pt.z());
+}
+
+void SwcTreeNode::translate(Swc_Tree_Node *tn, const ZIntPoint &pt)
+{
+  translate(tn, pt.getX(), pt.getY(), pt.getZ());
+}
+
 void SwcTreeNode::rotate(Swc_Tree_Node *tn, double theta, double psi,
                          const ZPoint &center, bool inverse)
 {

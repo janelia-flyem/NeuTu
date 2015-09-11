@@ -27,7 +27,8 @@ void Z3DGeometryFilter::setPickingManager(Z3DPickingManager *pm)
   }
 }
 
-void Z3DGeometryFilter::get3DRayUnderScreenPoint(glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height)
+void Z3DGeometryFilter::get3DRayUnderScreenPoint(
+    glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height)
 {
   glm::mat4 projection = getCamera().getProjectionMatrix(CenterEye);
   glm::mat4 modelview = getCamera().getViewMatrix(CenterEye);
@@ -43,7 +44,8 @@ void Z3DGeometryFilter::get3DRayUnderScreenPoint(glm::vec3 &v1, glm::vec3 &v2, i
   v2 = glm::normalize(v2-v1) + v1;
 }
 
-void Z3DGeometryFilter::get3DRayUnderScreenPoint(glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height)
+void Z3DGeometryFilter::get3DRayUnderScreenPoint(
+    glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height)
 {
   glm::dmat4 projection = glm::dmat4(getCamera().getProjectionMatrix(CenterEye));
   glm::dmat4 modelview = glm::dmat4(getCamera().getViewMatrix(CenterEye));

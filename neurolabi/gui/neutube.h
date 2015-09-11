@@ -17,7 +17,7 @@ std::string getWarnFile();
 std::string getInfoFile();
 
 
-std::string GetUserName();
+std::string GetCurrentUserName();
 bool IsAdminUser();
 }
 

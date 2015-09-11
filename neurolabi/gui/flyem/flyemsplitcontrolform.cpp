@@ -107,19 +107,9 @@ void FlyEmSplitControlForm::createMenu()
   seedMenu->addAction(importSeedAction);
   connect(importSeedAction, SIGNAL(triggered()), this, SLOT(importSeed()));
 
-  /*
-  m_bookmarkContextMenu = new QMenu(this);
-  QAction *checkAction = new QAction("Set Checked", this);
-  m_bookmarkContextMenu->addAction(checkAction);
-  connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
-
-  QAction *unCheckAction = new QAction("Uncheck", this);
-  m_bookmarkContextMenu->addAction(unCheckAction);
-  connect(unCheckAction, SIGNAL(triggered()),
-          this, SLOT(uncheckCurrentBookmark()));
-
-*/
-//  ui->bookmarkView->setContextMenu(m_bookmarkContextMenu);
+  QAction *crop3DAction = new QAction("Coarse Body Crop", this);
+  m_mainMenu->addAction(crop3DAction);
+  connect(crop3DAction, SIGNAL(triggered()), this, SLOT(cropCoarseBody3D()));
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -186,6 +176,11 @@ void FlyEmSplitControlForm::exportSeed()
 void FlyEmSplitControlForm::importSeed()
 {
   emit importingSeed();
+}
+
+void FlyEmSplitControlForm::cropCoarseBody3D()
+{
+  emit croppingCoarseBody3D();
 }
 
 void FlyEmSplitControlForm::selectSeed()

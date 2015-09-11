@@ -176,6 +176,8 @@ public:
   glm::vec3 worldToScreen(glm::vec3 wpt, glm::ivec4 viewport, Z3DEye eye = CenterEye);
   glm::vec3 screenToWorld(glm::vec3 spt, glm::ivec4 viewport, Z3DEye eye = CenterEye);
 
+  glm::vec3 project(glm::vec3 wpt, glm::ivec4 viewport);
+
   ZJsonObject toJsonObject() const;
   void set(const ZJsonObject &cameraJson);
 

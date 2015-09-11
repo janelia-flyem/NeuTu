@@ -3,17 +3,18 @@
 #include "zflyembodyannotation.h"
 #include "neutube.h"
 
+const std::string ZFlyEmBodyAnnotationDialog::m_finalizedText = "Finalized";
+
 ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::ZFlyEmBodyAnnotationDialog)
 {
   ui->setupUi(this);
 
-  if (NeuTube::GetUserName() == "takemuras" ||
-      NeuTube::GetUserName() == "zhaot") {
-    ui->statusComboBox->addItem("Finalized");
-  } else {
-    ui->statusComboBox->addItem("Finalized");
+  if (NeuTube::GetCurrentUserName() == "takemuras" /*||
+      NeuTube::GetCurrentUserName() == "zhaot"*/) {
+    showFinalizedStatus();
+//    ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
 
@@ -97,7 +98,7 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
-  annotation.setUser(NeuTube::GetUserName());
+  annotation.setUser(NeuTube::GetCurrentUserName());
 
   return annotation;
 }
@@ -111,10 +112,16 @@ void ZFlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 void ZFlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 {
   int index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);
+  ui->statusLabel->setText("Status");
+  ui->statusComboBox->setEnabled(true);
   if (index >= 0) {
     ui->statusComboBox->setCurrentIndex(index);
   } else {
-    ui->statusComboBox->setCurrentIndex(0);
+    if (status == m_finalizedText) {
+      freezeFinalizedStatus();
+    } else {
+      freezeUnknownStatus(status);
+    }
   }
 //  ui->skipCheckBox->setChecked(status == "Skip");
 }
@@ -138,4 +145,37 @@ void ZFlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setStatus(annotation.getStatus());
   setName(annotation.getName());
   setType(annotation.getType());
+}
+
+void ZFlyEmBodyAnnotationDialog::hideFinalizedStatus()
+{
+  int index = ui->statusComboBox->findText(m_finalizedText.c_str());
+  if (index >= 0) {
+    ui->statusComboBox->removeItem(index);
+  }
+}
+
+void ZFlyEmBodyAnnotationDialog::showFinalizedStatus()
+{
+  int index = ui->statusComboBox->findText(m_finalizedText.c_str());
+  if (index < 0) {
+    ui->statusComboBox->addItem(m_finalizedText.c_str());
+  }
+}
+
+void ZFlyEmBodyAnnotationDialog::freezeFinalizedStatus()
+{
+  showFinalizedStatus();
+  ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
+  ui->statusComboBox->setEnabled(false);
+}
+
+void ZFlyEmBodyAnnotationDialog::freezeUnknownStatus(const std::string &status)
+{
+  int index = ui->statusComboBox->findText(status.c_str());
+  if (index < 0) {
+    ui->statusComboBox->addItem(status.c_str());
+    ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
+    ui->statusComboBox->setEnabled(false);
+  }
 }

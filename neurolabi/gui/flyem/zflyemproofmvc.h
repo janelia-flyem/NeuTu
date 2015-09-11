@@ -112,6 +112,7 @@ public slots:
   void showSplit3d();
   void showCoarseBody3d();
   void showFineBody3d();
+  void showExternalNeuronWindow();
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
@@ -154,22 +155,28 @@ public slots:
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
+  void changeColorMap(const QString &option);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
   void detachSplitWindow();
+  void detachExternalNeuronWindow();
 //  void closeBodyWindow(int index);
   void closeBodyWindow(Z3DWindow *window);
   void closeAllBodyWindow();
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void cropCoarseBody3D();
+  void updateSplitBody();
 
 protected:
   void customInit();
   void createPresenter();
+  virtual void dropEvent(QDropEvent *event);
 
 private:
   void init();
@@ -187,9 +194,11 @@ private:
   void makeCoarseBodyWindow();
   void makeBodyWindow();
   void makeSplitWindow();
+  void makeExternalNeuronWindow();
 
   void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
                               bool isDeep);
+  void updateBodyWindowForSplit();
 
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
@@ -214,6 +223,7 @@ private:
   Z3DTabWidget *m_bodyViewers;
   Z3DWindow *m_coarseBodyWindow;
   Z3DWindow *m_bodyWindow;
+  Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
@@ -261,6 +271,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(changingColorMap(QString)),
+          this, SLOT(changeColorMap(QString)));
 }
 
 template <typename T>
@@ -299,6 +311,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           this, SLOT(recordCheckedBookmark(QString, bool)));
   connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(recordBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(croppingCoarseBody3D()), this, SLOT(cropCoarseBody3D()));
 }
 
 

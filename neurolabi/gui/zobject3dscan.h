@@ -99,6 +99,7 @@ public:
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
 
+  void copyDataFrom(const ZObject3dScan &obj);
 
   /*!
    * \brief Import a dvid object
@@ -506,6 +507,7 @@ public:
 
 private:
   void addForeground(ZStack *stack);
+  void addForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
 

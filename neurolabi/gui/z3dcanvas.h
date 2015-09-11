@@ -106,6 +106,10 @@ public:
     return &m_interaction;
   }
 
+  inline const ZInteractionEngine* getInteractionEngine() const {
+    return &m_interaction;
+  }
+
   inline ZInteractiveContext& getInteractionContext() {
     return getInteractionEngine()->getInteractiveContext();
   }

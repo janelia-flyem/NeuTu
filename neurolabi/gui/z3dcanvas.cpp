@@ -52,12 +52,12 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
 #endif
   setMouseTracking(true);
 
-#if defined(_FLYEM_)
+//#if defined(_FLYEM_)
   connect(&m_interaction, SIGNAL(decorationUpdated()),
           this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
-#endif
+//#endif
 }
 
 Z3DCanvas::~Z3DCanvas() {}
@@ -92,11 +92,12 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 bool Z3DCanvas::suppressingContextMenu() const
 {
-#if defined(_FLYEM_)
-  if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE)) {
+//#if defined(_FLYEM_)
+  if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT)) {
     return true;
   }
-#endif
+//#endif
 
   return false;
 }
@@ -129,9 +130,10 @@ void Z3DCanvas::wheelEvent(QWheelEvent* e)
 
 void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 {
-  broadcastEvent(event, width(), height());
+  if (!m_interaction.processKeyPressEvent(event)) {
+    broadcastEvent(event, width(), height());
+  }
 
-  m_interaction.processKeyPressEvent(event);
   setCursor(m_interaction.getCursorShape());
 }
 
@@ -180,7 +182,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   m_fakeStereoOnce = false;
 
 
-#if defined(_FLYEM_)
+#if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
   foreach (ZStackObject *drawable, drawableList) {
