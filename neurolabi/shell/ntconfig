@@ -4,7 +4,7 @@ src_neutu=$1
 dst_neutu=$2
 
 cp $src_neutu/neurolabi/json/flyem_config.json $dst_neutu/neurolabi/build/json/
-if [ -d $dst_neutu/neurolabi/build_debug]
+if [ -d $dst_neutu/neurolabi/build_debug ]
 then
   cp $src_neutu/neurolabi/json/flyem_config.json $dst_neutu/neurolabi/build_debug/json/
 fi
