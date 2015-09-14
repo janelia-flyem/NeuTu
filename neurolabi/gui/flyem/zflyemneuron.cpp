@@ -210,9 +210,9 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
     if (!m_modelPath.empty()) {
       //m_model = new ZSwcTree;
       ZString path(m_modelPath);
+#if defined(_QT_GUI_USED_)
       ZDvidReader reader;
       if (path.startsWith("http:") && reader.open(m_modelPath.c_str())) {
-#if defined(_QT_GUI_USED_)
         if (!forceUpdate) {
           m_unscaledModel = reader.readSwc(getId());
           if (m_unscaledModel != NULL) {
@@ -247,8 +247,8 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
             }
           }
         }
-#endif
       }
+#endif
     }
   }
 
