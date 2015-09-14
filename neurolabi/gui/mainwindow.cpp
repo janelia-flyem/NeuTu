@@ -6333,7 +6333,7 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
 
 void MainWindow::processArgument(const QString &arg)
 {
-  report("arg", arg.toStdString(), NeuTube::MSG_INFORMATION);
+//  report("arg", arg.toStdString(), NeuTube::MSG_INFORMATION);
   statusBar()->showMessage(arg);
   if (arg.startsWith("neutu://")) {
     m_ui->actionProof->trigger();

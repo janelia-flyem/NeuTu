@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     if (argc > 1) {
       mainWin->processArgument(argv[1]);
     } /*else {
-      mainWin->processArgument(QString("test %1").arg(argc));
+      mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
     int result =  app.exec();

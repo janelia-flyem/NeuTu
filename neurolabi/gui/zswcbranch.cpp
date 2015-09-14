@@ -438,31 +438,33 @@ void ZSwcBranch::radiusResample()
     vector<ZWeightedPoint> pointArray = radiusSamplePoint();
     int newNodeNumber = pointArray.size();
 
-    int n = newNodeNumber - nodeNumber();
-    if (n > 0) {
-      for (int i = 0; i < n; i++) {
-        Swc_Tree_Node_Add_Break(m_end, 0.5);
+    if (newNodeNumber > 2) {
+      int n = newNodeNumber - nodeNumber();
+      if (n > 0) {
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Add_Break(m_end, 0.5);
+        }
+      } else if (n < 0) {
+        n = -n;
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Merge_To_Parent(m_end->parent);
+        }
       }
-    } else if (n < 0) {
-      n = -n;
-      for (int i = 0; i < n; i++) {
-        Swc_Tree_Node_Merge_To_Parent(m_end->parent);
+
+      Swc_Tree_Node *tn = m_end;
+
+//      TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
+
+      size_t startIndex = newNodeNumber - 1;
+
+      for (size_t i = startIndex; i > 0; i--) {
+        SwcTreeNode::setPos(tn, pointArray[i]);
+        SwcTreeNode::setRadius(tn, pointArray[i].weight());
+        tn = tn->parent;
+        //      double pos[3];
+        //      pointArray[i].toArray(pos);
+        //      Swc_Tree_Node_Set_Pos(tn, pos);
       }
-    }
-
-    Swc_Tree_Node *tn = m_end;
-
-    TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
-
-    size_t startIndex = newNodeNumber - 1;
-
-    for (size_t i = startIndex; i > 0; i--) {
-      SwcTreeNode::setPos(tn, pointArray[i]);
-      SwcTreeNode::setRadius(tn, pointArray[i].weight());
-      tn = tn->parent;
-//      double pos[3];
-//      pointArray[i].toArray(pos);
-//      Swc_Tree_Node_Set_Pos(tn, pos);
     }
   }
 }
