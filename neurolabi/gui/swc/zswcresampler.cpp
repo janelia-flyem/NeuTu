@@ -2,6 +2,8 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "tz_error.h"
+#include "zswcbranch.h"
+
 
 ZSwcResampler::ZSwcResampler()
 {
@@ -191,3 +193,13 @@ void ZSwcResampler::upsampleAsFixedNodeNumber(ZSwcTree *tree, int n)
   }
 }
 #endif
+
+void ZSwcResampler::radiusResample(ZSwcTree *tree)
+{
+  int n = Swc_Tree_Label_Branch_All(tree->data());
+
+  for (int i = 1; i <= n; i++) {
+    ZSwcBranch *branch = tree->extractBranch(i);
+    branch->radiusResample();
+  }
+}

@@ -65,6 +65,53 @@ int Stack_Threshold(Stack *stack,int thre)
 
 #undef STACK_THRESHOLD
 
+#define STACK_LOWER_THRESHOLD(stack_array)		\
+  for (i = 0; i < voxel_number; i++) {		\
+    if (stack_array[i] >= thre) {		\
+      stack_array[i] = 0;			\
+      is_changed = 1;				\
+    }						\
+  }
+
+int Stack_Lower_Threshold(Stack *stack,int thre)
+{
+  if (stack == NULL) {
+    return 0;
+  }
+
+  int is_changed = 0;
+  size_t voxel_number = Stack_Voxel_Number(stack);
+
+  DEFINE_SCALAR_ARRAY_ALL(array, stack);
+
+  size_t i;  
+  switch(Stack_Kind(stack)) {
+  case GREY:
+    if (thre > 0) {
+      STACK_LOWER_THRESHOLD(array_grey);
+    }
+    break;
+  case GREY16:
+    if (thre > 0) {
+      STACK_LOWER_THRESHOLD(array_grey16);
+    }
+    break;
+  case FLOAT32:
+    STACK_LOWER_THRESHOLD(array_float32);
+    break;
+  case FLOAT64:
+    STACK_LOWER_THRESHOLD(array_float64);
+    break;
+  default:
+    perror("Unsupported stack kind.");
+    TZ_ERROR(ERROR_DATA_TYPE);
+  }
+
+  return is_changed;
+}
+
+#undef STACK_LOWER_THRESHOLD
+
 #define STACK_THRESHOLD_BINARIZE(stack_array)	\
   for (i = 0; i < voxel_number; i++) {		\
     stack_array[i] = stack_array[i] > thre;	\

@@ -245,11 +245,18 @@ int main(int argc, char *argv[])
       mainWin->showStackFrame(fileList, true);
     }
 
+    if (argc > 1) {
+      mainWin->processArgument(argv[1]);
+    } /*else {
+      mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
+    }*/
+
     int result =  app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();
     z3dApp.deinitialize();
+
     return result;
   } else {
     if (runCommandLine) {

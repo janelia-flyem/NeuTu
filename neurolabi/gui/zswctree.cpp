@@ -494,17 +494,45 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   pen.setWidthF(strokeWidth * 2.0);
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (!SwcTreeNode::isRoot(tn)) {
+      const Swc_Tree_Node *lowerTn = tn;
+      const Swc_Tree_Node *upperTn = SwcTreeNode::parent(tn);
+
+      double dz1 = SwcTreeNode::z(lowerTn) - dataFocus;
+      double dz2 = SwcTreeNode::z(upperTn) - dataFocus;
+
       pen.setColor(m_planeSkeletonColor);
+      if (dz1 < 0 && dz2 < 0) {
+        pen.setStyle(Qt::DotLine);
+      }
+
       painter.setPen(pen);
       if (hasVisualEffect(VE_FULL_SKELETON)) {
+
         painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                          QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
                                  SwcTreeNode::y(SwcTreeNode::parent(tn))));
+      } else {
+        QColor lineColor = m_planeSkeletonColor;
+
+        if (dz1 * dz2 > 0) {
+          double deltaZ = dmin2(fabs(dz1), fabs(dz2));
+          double alphaRatio = 1.0 / deltaZ;
+          if (alphaRatio >= 0.1) {
+            lineColor.setAlphaF(lineColor.alphaF() * alphaRatio);
+            painter.setPen(lineColor);
+            painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
+                             QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
+                                     SwcTreeNode::y(SwcTreeNode::parent(tn))));
+          }
+        } else {
+          painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
+                           QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
+                                   SwcTreeNode::y(SwcTreeNode::parent(tn))));
+        }
       }
+      pen.setStyle(Qt::SolidLine);
 
       bool visible = false;
-      const Swc_Tree_Node *lowerTn = tn;
-      const Swc_Tree_Node *upperTn = SwcTreeNode::parent(tn);
 
       QPointF lineStart, lineEnd;
 

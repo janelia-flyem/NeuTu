@@ -31,7 +31,8 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 {
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
+//  m_eventQueueMutex.unlock();
 
   m_futureMap.waitForFinished();
 
@@ -206,6 +207,7 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
 
 void ZFlyEmBody3dDoc::processEventFunc()
 {
+  std::cout << "Locking process event" << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
 //  QSet<uint64_t> bodySet = m_bodySet;
@@ -241,7 +243,8 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
+  std::cout << "Unlock process event" << std::endl;
 
   if (!m_actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));

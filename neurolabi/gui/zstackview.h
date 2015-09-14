@@ -149,7 +149,7 @@ public:
   ZStack *stackData();
 
   //set up the view after the document is ready
-  //void prepareDocument();
+  void prepareDocument();
 
   virtual void resizeEvent(QResizeEvent *event);
 

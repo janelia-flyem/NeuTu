@@ -64,6 +64,10 @@ public:
     m_level = level;
   }
 
+  inline void setLevelOp(int op) {
+    m_grayOp = op;
+  }
+
   inline void setResolution(double xyRes, double zRes) {
     m_resolution[0] = xyRes;
     m_resolution[1] = xyRes;
@@ -126,6 +130,8 @@ private:
   int m_downsampleInterval[3];
   bool m_usingOriginalSignal;
   bool m_resampleSwc;
+  bool m_autoGrayThreshold;
+  int m_grayOp;
 };
 
 #endif // ZSTACKSKELETONIZER_H

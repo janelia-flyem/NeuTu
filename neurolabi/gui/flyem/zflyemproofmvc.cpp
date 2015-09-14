@@ -254,6 +254,43 @@ void ZFlyEmProofMvc::updateBodyWindow()
   }
 }
 
+void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
+{
+  if (m_coarseBodyWindow != NULL) {
+    std::set<std::string> currentBodySourceSet;
+    std::set<uint64_t> selectedMapped =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+
+    for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
+         iter != selectedMapped.end(); ++iter) {
+      currentBodySourceSet.insert(
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+    }
+
+    m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
+          ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+    QList<ZSwcTree*> bodyList = m_coarseBodyWindow->getDocument()->getSwcList();
+    for (QList<ZSwcTree*>::iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+
+      std::vector<uint64_t> labelArray = ZString(tree->getSource()).toUint64Array();
+      if (!labelArray.empty()) {
+        uint64_t label = labelArray.back();
+        QColor color = labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL);
+        color.setAlpha(255);
+        tree->setColor(color);
+        m_coarseBodyWindow->getDocument()->processObjectModified(tree);
+      }
+    }
+
+    m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
+    m_coarseBodyWindow->getDocument()->notifyObjectModified();
+  }
+}
+
 void ZFlyEmProofMvc::updateCoarseBodyWindow(
     bool showingWindow, bool resettingCamera, bool isDeep)
 {
@@ -579,9 +616,9 @@ void ZFlyEmProofMvc::customInit()
           &m_mergeProject, SLOT(update3DBodyViewDeep()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
+          this, SLOT(updateCoarseBodyWindowColor()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          this, SLOT(updateCoarseBodyWindowDeep()));
+          this, SLOT(updateCoarseBodyWindowColor()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           &m_mergeProject, SLOT(saveMergeOperation()));
