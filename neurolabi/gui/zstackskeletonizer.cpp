@@ -26,8 +26,9 @@ using namespace std;
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
   m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
-  m_keepingSingleObject(false), m_level(0), m_connectingBranch(true),
-  m_usingOriginalSignal(false), m_resampleSwc(true)
+  m_keepingSingleObject(false), m_level(-1), m_connectingBranch(true),
+  m_usingOriginalSignal(false), m_resampleSwc(true), m_autoGrayThreshold(true),
+  m_grayOp(0)
 {
   for (int i = 0; i < 3; ++i) {
     m_resolution[i] = 1.0;
@@ -105,9 +106,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     signal = C_Stack::clone(stackData);
   }
 
-  if (m_level > 0) {
-    Stack_Level_Mask(stackData, m_level);
+  int level = m_level;
+  if (m_autoGrayThreshold) {
+    level = Stack_Threshold_RC(stackData, 0, 65535);
   }
+//  if (m_level > 0) {
+  Stack_Level_Mask(stackData, level);
+//  }
   advanceProgress(0.05);
 
   double maxMaskIntensity = Stack_Max(stackData, NULL);
@@ -430,31 +435,53 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 {
   Stack *stackSignal = NULL;
 
+  /*
   if (m_level > 0) {
     Stack_Level_Mask(stackData, m_level);
   }
+  */
 
   advanceProgress(0.05);
 
   double maxMaskIntensity = Stack_Max(stackData, NULL);
-  if (maxMaskIntensity > 1.0) {
-    if (m_level == 0) {
-      if (m_usingOriginalSignal) {
-        stackSignal = C_Stack::clone(stackData);
-      }
+
+  if (maxMaskIntensity == 0.0) {
+    C_Stack::kill(stackData);
+    cout << "Not a binary image. No skeleton generated." << endl;
+    return NULL;
+  }
+
+
+  if (m_grayOp >= 0) {
+    switch (m_grayOp) {
+    case 0: //>=
+      Stack_Threshold(stackData, m_level);
+      break;
+    case 1: //<=
+      Stack_Lower_Threshold(stackData, m_level);
+      break;
+    case 2: //==
+      Stack_Level_Mask(stackData, m_level);
+    }
+  } else if (maxMaskIntensity > 1.0) {
+    if (m_usingOriginalSignal) {
+      stackSignal = C_Stack::clone(stackData);
+    }
+
+    int thre = 0;
+    if (m_autoGrayThreshold) {
       int thre1 =
           Stack_Find_Threshold_RC(stackData, 0, iround(maxMaskIntensity));
       int thre2 = Stack_Find_Threshold_Locmax(
             stackData, 0, iround(maxMaskIntensity));
 
-      int thre = imax2(thre1, thre2);
-      Stack_Threshold(stackData, thre);
+      thre = imax2(thre1, thre2);
     }
+    Stack_Threshold(stackData, thre);
+  }
+
+  if (maxMaskIntensity > 1.0) {
     Stack_Binarize(stackData);
-  } else if (maxMaskIntensity == 0.0) {
-    C_Stack::kill(stackData);
-    cout << "Not a binary image. No skeleton generated." << endl;
-    return NULL;
   }
 
   if (C_Stack::kind(stackData) != GREY) {

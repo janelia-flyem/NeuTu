@@ -1681,6 +1681,7 @@ void ZStackPresenter::updateSwcExtensionHint()
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
       m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+      m_stroke.setWidth(SwcTreeNode::radius(tn) * 2.0);
       QPointF pos = mapFromGlobalToStack(QCursor::pos());
       m_stroke.append(pos.x(), pos.y());
     }

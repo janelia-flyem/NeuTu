@@ -748,7 +748,6 @@ void MainWindow::createActions()
   testAction2->setStatusTip(tr("Test2"));
   testAction2->setIcon(QIcon(":/images/test.png"));
   connect(testAction2, SIGNAL(triggered()), this, SLOT(test2()));
-
 //#endif
 
   //customizeActions();
@@ -920,7 +919,8 @@ void MainWindow::customizeActions()
   testAction2->setVisible(
         NeutubeConfig::getInstance().getApplication() == "FlyEM");
 #else
-//  testAction->setVisible(false);
+  testAction->setVisible(false);
+  testAction2->setVisible(false);
   this->punctaExportAction->setVisible(false);
 #endif
 
@@ -2119,14 +2119,15 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (4d31a04fb7a5a438739e134831abf07d81b1656d)</p>";
+        " (dc5d433752467cee26743da4b71519242ceaf389)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
                      "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
-                     "for neuron tracing and visualization. "
+                     "for neuron reconstruction and visualization. "
+#if !defined(_FLYEM_)
                      "It was originally developed by Ting Zhao "
                      "in Myers Lab "
                      "at Howard Hughes Medical Institute.</p>"
@@ -2138,6 +2139,7 @@ void MainWindow::about()
                      "<li>Linqing Feng</li>"
                      "<p>Jinny Kim's Lab, Center for Functional Connectomics, KIST, Korea</p>"
                      "</ul>"
+#endif
                      "<p>The Software is provided \"as is\" without warranty of any kind, "
                      "either express or implied, including without limitation any implied "
                      "warranties of condition, uniterrupted use, merchantability, fitness "
@@ -3178,6 +3180,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (dlg.isLevelChecked()) {
         skeletonizer.setLevel(dlg.level());
+        skeletonizer.setLevelOp(dlg.getLevelOp());
         //skeletonizer.useOriginalSignal(true);
       }
 
@@ -6326,6 +6329,15 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
 //  emit progressAdvanced(0.3);
   frame->runSeededWatershed();
   emit progressDone();
+}
+
+void MainWindow::processArgument(const QString &arg)
+{
+  report("arg", arg.toStdString(), NeuTube::MSG_INFORMATION);
+  statusBar()->showMessage(arg);
+  if (arg.startsWith("neutu://")) {
+    m_ui->actionProof->trigger();
+  }
 }
 
 void MainWindow::runBodySplit()

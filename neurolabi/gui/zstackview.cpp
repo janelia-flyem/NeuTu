@@ -724,11 +724,11 @@ void ZStackView::redraw(bool updatingScreen)
   std::cout << "paint time per frame: " << timer.restart() << std::endl;
 }
 
-/*
+
 void ZStackView::prepareDocument()
 {
+  updateSlider();
 }
-*/
 
 QMenu* ZStackView::leftMenu()
 {

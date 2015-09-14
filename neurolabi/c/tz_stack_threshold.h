@@ -21,6 +21,15 @@ __BEGIN_DECLS
  */
 int Stack_Threshold(Stack *stack, int thre);
 
+/**@brief Manual Thresholding.
+ *
+ * Stack_Threshold() thresholds <stack> by comparing its voxel intensity values
+ * to <thre>. Any voxel that has intensity value no less than <thre> is set 
+ * to 0 and other voxels are unchanged. It returns 1 if any voxel of <stack>
+ * is changed; otherwise it returns 0.
+ */
+int Stack_Lower_Threshold(Stack *stack, int thre);
+
 /**@brief Binarize a stack by a threshold.
  *
  * Stack_Threshold_Binarize() binarizes <stack> by the threshold <thre>. All
