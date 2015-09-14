@@ -31,7 +31,8 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 {
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
+//  m_eventQueueMutex.unlock();
 
   m_futureMap.waitForFinished();
 
@@ -242,7 +243,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
   std::cout << "Unlock process event" << std::endl;
 
   if (!m_actionMap.isEmpty()) {

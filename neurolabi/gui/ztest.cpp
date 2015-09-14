@@ -17590,7 +17590,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "7872", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
@@ -17721,5 +17721,30 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
 #endif
 
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/mouse_single_org.swc");
+//  ZSwcBranch *branch = tree.extractFurthestBranch();
+//  branch->print();
+
+  ZSwcResampler sampler;
+  sampler.radiusResample(&tree);
+
+  tree.print();
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+  /*
+  std::vector<ZWeightedPoint> ptArray = branch->radiusSamplePoint();
+  for (std::vector<ZWeightedPoint>::const_iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    const ZWeightedPoint &pt = *iter;
+    std::cout << pt << std::endl;
+  }
+  */
+
+//  branch->radiusResample();
+//  branch->print();
+
+#endif
 
 }

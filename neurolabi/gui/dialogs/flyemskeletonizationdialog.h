@@ -23,6 +23,7 @@ public:
   bool isExcludingSmallObj() const;
   bool isLevelChecked() const;
   int level() const;
+  int getLevelOp() const;
 
   bool isDownsampleChecked() const;
   int getXInterval() const;

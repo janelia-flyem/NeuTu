@@ -126,6 +126,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "c6b0",
+      "name": "MB_Demo",
+      "comment": "MB Demo (branched from 99ef)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["takemuras", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "fe38",
       "name": "MB_split",
       "comment": "MB seg (branched from 47b1)",

@@ -3180,6 +3180,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (dlg.isLevelChecked()) {
         skeletonizer.setLevel(dlg.level());
+        skeletonizer.setLevelOp(dlg.getLevelOp());
         //skeletonizer.useOriginalSignal(true);
       }
 

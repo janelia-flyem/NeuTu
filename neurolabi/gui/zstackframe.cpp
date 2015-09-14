@@ -180,7 +180,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
     m_presenter->setViewMode(ZInteractiveContext::VIEW_OBJECT_PROJECT);
   }
   setView(m_view);
-  //m_view->prepareDocument();
+  m_view->prepareDocument();
   m_presenter->prepareView();
 
   if (doc.get() != NULL) {
@@ -290,7 +290,9 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
           QList<ZLocsegChain*>)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),
+  connect(m_doc.get(), SIGNAL(
+            swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,
+                                        QList<Swc_Tree_Node*>)),
           this, SLOT(updateSwcExtensionHint()));
   connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
