@@ -241,7 +241,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+//  m_eventQueueMutex.unlock();
 
   if (!m_actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
