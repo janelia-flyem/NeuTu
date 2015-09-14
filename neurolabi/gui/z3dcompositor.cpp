@@ -143,7 +143,8 @@ void Z3DCompositor::initialize()
 
 void Z3DCompositor::deinitialize()
 {
-  std::vector<ZParameter*> paras = m_rendererBase->getRendererParameters(m_backgroundRenderer);
+  std::vector<ZParameter*> paras =
+      m_rendererBase->getRendererParameters(m_backgroundRenderer);
   for (size_t i=0; i<paras.size(); i++) {
     //paras[i]->disconnect(this);
     removeParameter(paras[i]);
