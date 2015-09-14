@@ -206,6 +206,7 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
 
 void ZFlyEmBody3dDoc::processEventFunc()
 {
+  std::cout << "Locking process event" << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
 //  QSet<uint64_t> bodySet = m_bodySet;

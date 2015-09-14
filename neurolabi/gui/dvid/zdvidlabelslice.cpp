@@ -133,6 +133,8 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 //    if (reader.open(getDvidTarget())) {
       QRect viewPort = viewParam.getViewPort();
 
+      std::cout << "Deleting " << m_labelArray << std::endl;
+
       delete m_labelArray;
       m_labelArray = m_reader.readLabels64(
             getDvidTarget().getLabelBlockName(),

@@ -1,0 +1,9 @@
+#!/bin/bash
+dvidlib=/opt/Download/buildem/lib
+if [ -d /opt/Download/miniconda/envs/dvidenv ]
+then
+  dvidlib=/opt/Download/miniconda/envs/dvidenv/lib 
+fi
+
+export LD_LIBRARY_PATH=$dvidlib:$LD_LIBRARY_PATH
+/opt/Download/neutube/neurolabi/build/neuTube

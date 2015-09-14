@@ -42,6 +42,8 @@ public:
     m_distanceScale = scale;
   }
 
+  void radiusResample(ZSwcTree *tree);
+
 private:
   void init();
 

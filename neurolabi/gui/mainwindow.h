@@ -143,6 +143,8 @@ public:
 
   void runBodySplit();
 
+  void processArgument(const QString &arg);
+
 signals:
   void dvidRequestCanceled();
   void progressDone();

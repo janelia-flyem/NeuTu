@@ -8,13 +8,15 @@
 
 #include "zpoint.h"
 
+class ZWeightedPoint;
+
 class ZSwcBranch
 {
 public:
   ZSwcBranch();
   ZSwcBranch(Swc_Tree_Node *upEnd, Swc_Tree_Node *downEnd);
 
-  void updateIterator();
+  void updateIterator() const;
 
   Swc_Tree_Node* root();
 
@@ -44,10 +46,15 @@ public:
   std::vector<ZPoint> sample(double step);
   //std::vector<ZPoint> sampleFix(int n);
 
-  std::string toString();
+  std::string toString() const;
+  void print() const;
 
   //Note: resample() modifies the intermediate
   void resample(double step);
+
+  std::vector<ZWeightedPoint> radiusSamplePoint();
+  void radiusResample();
+
   //void upsample(double step, int maxNewNodeNumber);
 
   void removeSmallEnds(double ratio);

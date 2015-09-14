@@ -172,6 +172,7 @@ protected slots:
   void updateBodyWindow();
   void cropCoarseBody3D();
   void updateSplitBody();
+  void updateCoarseBodyWindowColor();
 
 protected:
   void customInit();

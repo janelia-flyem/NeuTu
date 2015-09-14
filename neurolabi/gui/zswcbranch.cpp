@@ -6,6 +6,7 @@
 #include "tz_math.h"
 #include "swctreenode.h"
 #include "zerror.h"
+#include "zweightedpoint.h"
 
 using namespace std;
 
@@ -209,7 +210,7 @@ void ZSwcBranch::updateAccumDistance()
   }
 }
 
-void ZSwcBranch::updateIterator()
+void ZSwcBranch::updateIterator() const
 {
   m_end->next = NULL;
   for (Swc_Tree_Node *iter = m_end; iter != m_begin; iter = iter->parent) {
@@ -247,7 +248,12 @@ void ZSwcBranch::save(const char *filePath)
   fclose(fp);
 }
 
-string ZSwcBranch::toString()
+void ZSwcBranch::print() const
+{
+  std::cout << toString();
+}
+
+string ZSwcBranch::toString() const
 {
   ostringstream stream;
 
@@ -262,6 +268,59 @@ string ZSwcBranch::toString()
   }
 
   return stream.str();
+}
+
+std::vector<ZWeightedPoint> ZSwcBranch::radiusSamplePoint()
+{
+  vector<ZWeightedPoint> sampleArray;
+
+  updateIterator();
+
+  double prevLength = 0.0;
+  double curLength = 0.0;
+
+  sampleArray.push_back(
+        ZWeightedPoint(SwcTreeNode::x(m_begin), SwcTreeNode::y(m_begin),
+                       SwcTreeNode::z(m_begin), SwcTreeNode::radius(m_begin)));
+
+  Swc_Tree_Node *tn = m_begin->next;
+  double targetLength = SwcTreeNode::radius(tn->parent);
+  while (tn != NULL) {
+    double dist = Swc_Tree_Node_Dist(tn, tn->parent);
+    curLength += dist;
+    while (targetLength <= curLength) {
+//      double start[3];
+//      double end[3];
+//      double inter[3];
+      double x = 0;
+      double y = 0;
+      double z = 0;
+      double r = 0;
+
+//      Swc_Tree_Node_Pos(tn->parent, start);
+//      Swc_Tree_Node_Pos(tn, end);
+      double lambda = (targetLength - prevLength) / dist;
+
+      SwcTreeNode::interpolate(tn, tn->parent, lambda, &x, &y, &z, &r);
+
+//      Geo3d_Lineseg_Break(start, end, lambda, inter);
+      sampleArray.push_back(ZWeightedPoint(x, y, z, r));
+      targetLength += r;
+    }
+
+    prevLength = curLength;
+    tn = tn->next;
+  }
+
+  const ZWeightedPoint &lastPoint = sampleArray.back();
+  if (lastPoint.distanceTo(SwcTreeNode::center(m_end)) /
+      SwcTreeNode::radius(m_end) > 0.1) {
+    sampleArray.push_back(
+          ZWeightedPoint(SwcTreeNode::x(m_end), SwcTreeNode::y(m_end),
+                         SwcTreeNode::z(m_end), SwcTreeNode::radius(m_end)));
+  }
+
+  return sampleArray;
 }
 
 vector<ZPoint> ZSwcBranch::sample(double step)
@@ -368,6 +427,45 @@ void ZSwcBranch::setType(int type)
   while (tn != NULL) {
     tn->node.type = type;
     tn = tn->next;
+  }
+}
+
+void ZSwcBranch::radiusResample()
+{
+  double len = computeLength();
+
+  if (len > 0) {
+    vector<ZWeightedPoint> pointArray = radiusSamplePoint();
+    int newNodeNumber = pointArray.size();
+
+    if (newNodeNumber > 2) {
+      int n = newNodeNumber - nodeNumber();
+      if (n > 0) {
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Add_Break(m_end, 0.5);
+        }
+      } else if (n < 0) {
+        n = -n;
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Merge_To_Parent(m_end->parent);
+        }
+      }
+
+      Swc_Tree_Node *tn = m_end;
+
+//      TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
+
+      size_t startIndex = newNodeNumber - 1;
+
+      for (size_t i = startIndex; i > 0; i--) {
+        SwcTreeNode::setPos(tn, pointArray[i]);
+        SwcTreeNode::setRadius(tn, pointArray[i].weight());
+        tn = tn->parent;
+        //      double pos[3];
+        //      pointArray[i].toArray(pos);
+        //      Swc_Tree_Node_Set_Pos(tn, pos);
+      }
+    }
   }
 }
 

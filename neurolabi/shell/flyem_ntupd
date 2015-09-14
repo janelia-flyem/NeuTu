@@ -9,10 +9,21 @@ fi
 
 #cd $install_dir/Download/neutube
 #/usr/bin/git pull
-sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem
-if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+
+condaEnv=$install_dir/Download/miniconda/envs/dvidenv
+if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
 then
-  sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c debug
+  sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q CONDA_ENV=$condaEnv
+  if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+  then
+    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q CONDA_ENV=$condaEnv -c debug
+  fi
+else
+  sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem
+  if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+  then
+    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c debug
+  fi
 fi
 
 $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/build
