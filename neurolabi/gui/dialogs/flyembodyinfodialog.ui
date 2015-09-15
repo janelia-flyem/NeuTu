@@ -33,16 +33,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="autoloadCheckBox">
-       <property name="text">
-        <string>Autoload</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -54,13 +44,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="openButton">
-       <property name="text">
-        <string>Open...</string>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="closeButton">

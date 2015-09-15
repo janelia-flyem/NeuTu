@@ -39,7 +39,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui(new Ui::FlyEmBodyInfoDialog)
 {
     ui->setupUi(this);
-    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
     m_model = createModel(ui->tableView);
@@ -49,7 +48,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // UI connects
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
-    connect(ui->autoloadCheckBox, SIGNAL(stateChanged(int)), this, SLOT(autoloadChanged(int)));
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
     // data update connects
@@ -73,23 +71,17 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
   }
 }
 
-void FlyEmBodyInfoDialog::autoloadChanged(int state) {
-    // if new state = on, trigger load with current dvid target
-    if (state != 0) {
-        dvidTargetChanged(m_currentDvidTarget);
-    }
-}
-
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 #ifdef _DEBUG_
     std::cout << "dvid target changed to " << target.getUuid() << std::endl;
 #endif
 
-    // store dvid target (in case autoload is off now and turned on later)
+    // store dvid target (may not be necessary, now that I removed the
+    //  option to turn off autoload?)
     m_currentDvidTarget = target;
 
-    // if target isn't null and autoload on, trigger load in thread
-    if (target.isValid() && ui->autoloadCheckBox->isChecked()) {
+    // if target isn't null, trigger load in thread
+    if (target.isValid()) {
         // clear the model regardless at this point
         m_model->clear();
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
@@ -251,14 +243,6 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
 
 void FlyEmBodyInfoDialog::onCloseButton() {
     close();
-}
-
-void FlyEmBodyInfoDialog::onOpenButton() {
-  QString filename =
-      ZDialogFactory::GetOpenFileName("Open bookmarks file", "", this);
-  if (!filename.isEmpty()) {
-    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksFile, filename);
-  }
 }
 
 /*
