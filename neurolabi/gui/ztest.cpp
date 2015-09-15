@@ -17782,4 +17782,20 @@ void ZTest::test(MainWindow *host)
   tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
 #endif
 
+#if 1
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "9875", 8500);
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+
+  writer.open(target);
+
+  ZJsonObject jsonObj;
+  jsonObj.load("/Users/zhaot/Work/neutube/neurolabi/json/skeletonize_mb.json");
+
+  writer.writeJson("bodies3_skeletons", "config.json", jsonObj);
+
+#endif
+
 }

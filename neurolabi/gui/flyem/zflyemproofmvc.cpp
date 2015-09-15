@@ -103,33 +103,41 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
 
-  QAction *resetCameraAction = m_bodyViewWindow->toolBar->addAction("X-Y View");
-  connect(resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
+  m_bodyViewWindow->resetCameraAction = m_bodyViewWindow->toolBar->addAction("X-Y View");
+  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
 
-  QAction *xzViewAction = m_bodyViewWindow->toolBar->addAction("X-Z View");
-  connect(xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
+  m_bodyViewWindow->xzViewAction = m_bodyViewWindow->toolBar->addAction("X-Z View");
+  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
 
-  QAction *yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
-  connect(yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
-
-
-  QAction *recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
-  connect(recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
-
-  QAction *showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
-  connect(showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
-  showGraphAction->setCheckable(true);
-  showGraphAction->setChecked(true);
+  m_bodyViewWindow->yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
+  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
 
 
-  QAction *settingsAction = m_bodyViewWindow->toolBar->addAction("Control and Settings");
-  connect(settingsAction, SIGNAL(triggered()), m_bodyViewers, SLOT(settingsPanel()));
-  settingsAction->setCheckable(true);
+  m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
+  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
 
-  QAction *objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
-  connect(objectsAction, SIGNAL(triggered()), m_bodyViewers, SLOT(objectsPanel()));
-  objectsAction->setCheckable(true);
+  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
+  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
+  m_bodyViewWindow->showGraphAction->setCheckable(true);
+  m_bodyViewWindow->showGraphAction->setChecked(true);
 
+
+  m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("Control and Settings");
+  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
+  m_bodyViewWindow->settingsAction->setCheckable(true);
+  m_bodyViewWindow->settingsAction->setChecked(false);
+
+  m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
+  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(objectsPanel(bool)));
+  m_bodyViewWindow->objectsAction->setCheckable(true);
+  m_bodyViewWindow->objectsAction->setChecked(false);
+
+  //update button status reversely
+  connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)), m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+
+  //
   m_coarseBodyWindow = NULL;
   m_externalNeuronWindow = NULL;
   m_bodyWindow = NULL;
@@ -1363,7 +1371,11 @@ void ZFlyEmProofMvc::showExternalNeuronWindow()
 {
   if (m_externalNeuronWindow == NULL) {
     makeExternalNeuronWindow();
-    m_bodyViewers->addWindow(m_externalNeuronWindow, "Neuron Reference");
+    m_bodyViewers->addWindow(2, m_externalNeuronWindow, "Neuron Reference");
+  }
+  else
+  {
+      m_bodyViewers->updateWindow(2);
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1376,7 +1388,11 @@ void ZFlyEmProofMvc::showCoarseBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
     makeCoarseBodyWindow();
-    m_bodyViewers->addWindow(m_coarseBodyWindow, "Coarse Body View");
+    m_bodyViewers->addWindow(0, m_coarseBodyWindow, "Coarse Body View");
+  }
+  else
+  {
+      m_bodyViewers->updateWindow(0);
   }
 
   updateCoarseBodyWindow(false, true, false);
@@ -1392,9 +1408,13 @@ void ZFlyEmProofMvc::showFineBody3d()
 //  m_mergeProject.showBody3d();
   if (m_bodyWindow == NULL) {
     makeBodyWindow();
-    m_bodyViewers->addWindow(m_bodyWindow, "Body View");
+    m_bodyViewers->addWindow(1, m_bodyWindow, "Body View");
     updateBodyWindow();
     m_bodyWindow->setYZView();
+  }
+  else
+  {
+      m_bodyViewers->updateWindow(1);
   }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
