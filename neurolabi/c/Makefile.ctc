@@ -43,7 +43,7 @@ GENFILES = tz_darray.h tz_darray.c tz_farray.h tz_farray.c tz_iarray.h \
 	   tz_locrect_node_doubly_linked_list.c
 
 CHANGE_MODE_BEGIN = @if test -f $@; then chmod u+w $@; fi
-CHANGE_MODE_END = chmod a-w $@
+CHANGE_MODE_END = @chmod a-w $@
 
 .PHONY: all
 
