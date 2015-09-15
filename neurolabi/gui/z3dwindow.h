@@ -61,6 +61,7 @@ public:
 public slots:
     void tabSlotFunc(int index);
     void closeWindow(int index);
+    void updateTabs(int index);
     void updateWindow(int index);
 
 public slots:
@@ -79,6 +80,8 @@ signals:
     void buttonShowGraphToggled(bool);
     void buttonSettingsToggled(bool);
     void buttonObjectsToggled(bool);
+
+    void tabIndexChanged(int);
 
 private:
     bool buttonStatus[4][3]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects
