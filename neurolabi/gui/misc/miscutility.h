@@ -63,7 +63,6 @@ std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
 
 template<typename T>
 std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
-
 }
 
 // generic solution

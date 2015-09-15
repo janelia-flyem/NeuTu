@@ -2755,27 +2755,29 @@ Mc_Stack* Read_Mc_Stack(const char *filepath, int channel)
     char sz_buffer[16];
     size_t sz[4];
 
-    char dataTypeBuffer[2];
-
-    fread(dataTypeBuffer, 1, 2, fp);
-    fread(sz_buffer, 2, 8, fp);
+    fread(&dataType, 2, 1, fp);
+    fread(sz_buffer, 1, 8, fp);
 
     int i;
     for (i = 0; i < 4; i++) {
       sz[i] = *((uint16_t*) (sz_buffer + i * 2));
+      if (endian == 'B') {
+        sz[i] = Flip_Endian_U16(sz[i]);
+      }
     }
 
     if (endian == 'B') {
-        dataType = dataTypeBuffer[0];
-        dataType <<= 8;
-        dataType |= dataTypeBuffer[1];
+      dataType = Flip_Endian_U16(dataType);
     }
 
     if ((sz[0] == 0) || (sz[1] == 0) || (sz[2] == 0) || (sz[3] == 0)) {
-      fread(sz_buffer + 8, 2, 8, fp);
+      fread(sz_buffer + 8, 1, 8, fp);
 
       for (i = 0; i < 4; i++) {
         sz[i] = *((uint32_t*) (sz_buffer + i * 4));
+        if (endian == 'B') {
+          sz[i] = Flip_Endian_U32(sz[i]);
+        }
       }
     }
 

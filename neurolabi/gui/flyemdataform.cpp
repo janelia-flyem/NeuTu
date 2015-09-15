@@ -475,15 +475,8 @@ ZStackDoc *FlyEmDataForm::updateViewSelectedModel(ZFlyEmQueryView *view)
 
   QItemSelectionModel *sel = view->selectionModel();
 
-#ifdef _DEBUG_2
-  appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
-#endif
-
-  //ZStackFrame *frame = new ZStackFrame;
-
   ZStackDoc *doc = new ZStackDoc;
-  view->getModel()->retrieveModel(
-        sel->selectedIndexes(), doc);
+  view->getModel()->retrieveModel(sel->selectedIndexes(), doc, true);
   ui->progressBar->setValue(75);
   //QApplication::processEvents();
 
@@ -677,7 +670,7 @@ void FlyEmDataForm::createAction()
   if (m_updateSelectedModelAction == NULL) {
     m_updateSelectedModelAction = new QAction("Update Model", this);
     connect(m_updateSelectedModelAction, SIGNAL(triggered()),
-            this, SLOT(updateSelectedMode()));
+            this, SLOT(updateSelectedModel()));
   }
 
   if (m_showSelectedBodyAction == NULL) {
