@@ -57,11 +57,11 @@ public:
     QTabBar* tabBar();
 
     void addWindow(int index, Z3DWindow *window, const QString &title);
-    void updateWindow(int index);
 
 public slots:
     void tabSlotFunc(int index);
     void closeWindow(int index);
+    void updateWindow(int index);
 
 public slots:
     void resetCamera();
@@ -79,6 +79,10 @@ signals:
     void buttonShowGraphToggled(bool);
     void buttonSettingsToggled(bool);
     void buttonObjectsToggled(bool);
+
+private:
+    bool buttonStatus[4][3]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects
+    int preIndex;
 
 };
 

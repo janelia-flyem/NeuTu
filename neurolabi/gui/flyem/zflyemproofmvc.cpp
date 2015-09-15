@@ -74,7 +74,7 @@ void ZFlyEmProofMvc::init()
 void ZFlyEmProofMvc::initBodyWindow()
 {
   m_bodyViewWindow = new Z3DMainWindow(this);
-  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D View"));
   m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
   m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
@@ -85,9 +85,11 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   QVBoxLayout* bvLayout = new QVBoxLayout;
 
+  QLabel *messageLabel = new QLabel;
+  bvLayout->addWidget(messageLabel);
+
   QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
   bvLayout->addWidget(toolWidget);
-
 
   bvLayout->addWidget(m_bodyViewers);
 
@@ -136,6 +138,8 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)), m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
   connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
   connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+
+  connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateWindow(int)));
 
   //
   m_coarseBodyWindow = NULL;
@@ -1375,7 +1379,7 @@ void ZFlyEmProofMvc::showExternalNeuronWindow()
   }
   else
   {
-      m_bodyViewers->updateWindow(2);
+      m_bodyViewers->setCurrentIndex(2);
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1392,7 +1396,7 @@ void ZFlyEmProofMvc::showCoarseBody3d()
   }
   else
   {
-      m_bodyViewers->updateWindow(0);
+      m_bodyViewers->setCurrentIndex(0);
   }
 
   updateCoarseBodyWindow(false, true, false);
@@ -1414,7 +1418,7 @@ void ZFlyEmProofMvc::showFineBody3d()
   }
   else
   {
-      m_bodyViewers->updateWindow(1);
+      m_bodyViewers->setCurrentIndex(1);
   }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
