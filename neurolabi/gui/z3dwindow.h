@@ -56,7 +56,8 @@ public:
     ~Z3DTabWidget();
     QTabBar* tabBar();
 
-    void addWindow(Z3DWindow *window, const QString &title);
+    void addWindow(int index, Z3DWindow *window, const QString &title);
+    void updateWindow(int index);
 
 public slots:
     void tabSlotFunc(int index);
@@ -67,12 +68,17 @@ public slots:
     void setXZView();
     void setYZView();
 
-    void settingsPanel();
-    void objectsPanel();
+    void settingsPanel(bool v);
+    void objectsPanel(bool v);
 
     void showGraph(bool v);
 
     void resetCameraCenter();
+
+signals:
+    void buttonShowGraphToggled(bool);
+    void buttonSettingsToggled(bool);
+    void buttonObjectsToggled(bool);
 
 };
 
@@ -92,6 +98,20 @@ private:
 
 public:
     QToolBar *toolBar;
+
+public:
+    QAction *resetCameraAction;
+    QAction *xzViewAction;
+    QAction *yzViewAction;
+    QAction *recenterAction;
+    QAction *showGraphAction;
+    QAction *settingsAction;
+    QAction *objectsAction;
+
+public slots:
+    void updateButtonShowGraph(bool v);
+    void updateButtonSettings(bool v);
+    void updateButtonObjects(bool v);
 
 signals:
     void closed();
@@ -188,8 +208,11 @@ public: //Bounding box
   QDockWidget * getObjectsDockWidget();
 
 public:
-  //Control panel setup
+  void setButtonStatus(int index, bool v);
+  bool getButtonStatus(int index);
 
+public:
+  //Control panel setup
 
 protected:
 
@@ -458,6 +481,8 @@ private:
   std::vector<double> m_graphBoundBox;
   std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
+
+  bool m_buttonStatus[3]; // 0-showgraph, 1-setting, 2-objects
 
   bool m_isClean;   //already cleanup?
 
