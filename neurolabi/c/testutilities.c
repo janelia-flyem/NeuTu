@@ -513,6 +513,15 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
+  uint16_t v = 0x0F00;
+  printf("%u\n", v);
+  printf("%u\n", Flip_Endian_U16(v));
+  printf("%u\n", Flip_Endian_U16(Flip_Endian_U16(v)));
+
+  uint32_t v2 = 0xFF000000;
+  printf("%u\n", v2);
+  printf("%u\n", Flip_Endian_U32(v2));
+  printf("%u\n", Flip_Endian_U32(Flip_Endian_U32(v2)));
 #endif
 
 

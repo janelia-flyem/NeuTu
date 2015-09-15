@@ -1121,8 +1121,8 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         break;
       case FLOAT64:
         for (size_t index = 0; index < size; ++index) {
-          dstima.array16[index] =
-              normalize(ima.array64[index], minValue, maxValue, 0, 65535, 0, 65535);
+          dstima.array16[index] = normalize(
+                ima.array64[index], minValue, maxValue, 0, 65535, 0, 65535);
         }
         break;
       default:
