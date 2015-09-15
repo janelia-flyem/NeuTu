@@ -154,6 +154,16 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
 
   QObject::connect(this,SIGNAL(currentChanged(int)),this,SLOT(tabSlotFunc(int)));
 
+  // default button status
+  for(int i=0; i<4; i++)
+  {
+      buttonStatus[i][0] = true;
+      buttonStatus[i][1] = false;
+      buttonStatus[i][2] = false;
+  }
+
+  preIndex = -1;
+
 }
 
 QTabBar* Z3DTabWidget::tabBar()
@@ -259,40 +269,45 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 
 void Z3DTabWidget::updateWindow(int index)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    setCurrentIndex(index);
-
-    Z3DWindow *w = (Z3DWindow *)(widget(index));
-
-    if (w != NULL)
+    if(index>-1)
     {
-        bool buttonChecked;
+        Z3DWindow *w = (Z3DWindow *)(widget(index));
 
-        // show graph
-        buttonChecked = w->getButtonStatus(0);
-        w->getGraphFilter()->setVisible(buttonChecked);
-
-        // settings
-        buttonChecked = w->getButtonStatus(1);
-        if(buttonChecked != cur3Dwin->getButtonStatus(1))
+        if (w != NULL)
         {
-            w->getSettingsDockWidget()->toggleViewAction()->trigger();
+            bool buttonChecked;
+
+            // show graph
+            buttonChecked = w->getButtonStatus(0);
+            w->getGraphFilter()->setVisible(buttonChecked);
+
+            if(preIndex>-1)
+            {
+                Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
+
+                // settings
+                buttonChecked = w->getButtonStatus(1);
+                if(buttonChecked != preWin->getButtonStatus(1))
+                {
+                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                }
+
+                // objects
+                buttonChecked = w->getButtonStatus(2);
+                if(buttonChecked != preWin->getButtonStatus(2))
+                {
+                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                }
+            }
+
+            //
+            emit buttonShowGraphToggled(w->getButtonStatus(0));
+            emit buttonSettingsToggled(w->getButtonStatus(1));
+            emit buttonObjectsToggled(w->getButtonStatus(2));
         }
-
-        // objects
-        buttonChecked = w->getButtonStatus(2);
-        if(buttonChecked != cur3Dwin->getButtonStatus(2))
-        {
-            w->getObjectsDockWidget()->toggleViewAction()->trigger();
-        }
-
-        //
-        emit buttonShowGraphToggled(w->getButtonStatus(0));
-        emit buttonSettingsToggled(w->getButtonStatus(1));
-        emit buttonObjectsToggled(w->getButtonStatus(2));
-
     }
+
+    preIndex = index;
 
 }
 
