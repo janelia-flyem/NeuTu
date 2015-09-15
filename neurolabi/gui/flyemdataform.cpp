@@ -43,6 +43,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   m_statusBar(NULL),
   m_neuronContextMenu(NULL),
   m_showSelectedModelAction(NULL),
+  m_updateSelectedModelAction(NULL),
   m_showSelectedModelWithBoundBoxAction(NULL),
   m_changeClassAction(NULL),
   m_neighborSearchAction(NULL),
@@ -466,6 +467,44 @@ ZStackDoc *FlyEmDataForm::showViewSelectedModel(ZFlyEmQueryView *view)
   return doc;
 }
 
+ZStackDoc *FlyEmDataForm::updateViewSelectedModel(ZFlyEmQueryView *view)
+{
+  ui->progressBar->setValue(50);
+  ui->progressBar->show();
+  //QApplication::processEvents();
+
+  QItemSelectionModel *sel = view->selectionModel();
+
+#ifdef _DEBUG_2
+  appendOutput(QString("%1 rows selected").arg(sel->selectedIndexes().size()).toStdString());
+#endif
+
+  //ZStackFrame *frame = new ZStackFrame;
+
+  ZStackDoc *doc = new ZStackDoc;
+  view->getModel()->retrieveModel(
+        sel->selectedIndexes(), doc);
+  ui->progressBar->setValue(75);
+  //QApplication::processEvents();
+
+  ZWindowFactory factory;
+  factory.setParentWidget(this->parentWidget());
+  Z3DWindow *window = factory.open3DWindow(doc);
+  window->getPunctaFilter()->setColorMode("Original Point Color");
+
+  /*
+  Z3DWindow *window = frame->open3DWindow(this->parentWidget());
+  window->getPunctaFilter()->setColorMode("Original Point Color");
+  ZStackDoc *hostDoc = frame->document().get();
+
+  delete frame;
+  */
+
+  ui->progressBar->hide();
+
+  return doc;
+}
+
 ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
@@ -498,6 +537,11 @@ ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
 void FlyEmDataForm::showSelectedModel()
 {
   showViewSelectedModel(ui->queryView);
+}
+
+void FlyEmDataForm::updateSelectedModel()
+{
+  updateViewSelectedModel(ui->queryView);
 }
 
 void FlyEmDataForm::showSelectedBody()
@@ -610,6 +654,7 @@ void FlyEmDataForm::createContextMenu()
     m_neuronContextMenu = new QMenu(this);
     m_neuronContextMenu->addAction(m_showSelectedModelAction);
     m_neuronContextMenu->addAction(m_showSelectedModelWithBoundBoxAction);
+    m_neuronContextMenu->addAction(m_updateSelectedModelAction);
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
     m_neuronContextMenu->addAction(m_showSelectedBodyAction);
@@ -627,6 +672,12 @@ void FlyEmDataForm::createAction()
     m_showSelectedModelAction = new QAction("Show Model", this);
     connect(m_showSelectedModelAction, SIGNAL(triggered()),
             this, SLOT(showSelectedModel()));
+  }
+
+  if (m_updateSelectedModelAction == NULL) {
+    m_updateSelectedModelAction = new QAction("Update Model", this);
+    connect(m_updateSelectedModelAction, SIGNAL(triggered()),
+            this, SLOT(updateSelectedMode()));
   }
 
   if (m_showSelectedBodyAction == NULL) {

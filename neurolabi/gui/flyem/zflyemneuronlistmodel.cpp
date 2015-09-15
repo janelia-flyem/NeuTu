@@ -203,7 +203,7 @@ QVector<const ZFlyEmNeuron*> ZFlyEmNeuronListModel::getNeuronArray(
 }
 
 void ZFlyEmNeuronListModel::retrieveModel(
-    const QModelIndexList &indexList, ZStackDoc *doc) const
+    const QModelIndexList &indexList, ZStackDoc *doc, bool forceUpdate) const
 {
 //  doc->blockSignals(true);
 
@@ -230,6 +230,10 @@ void ZFlyEmNeuronListModel::retrieveModel(
   foreach (const ZFlyEmNeuron *neuron, neuronArray) {
     if (neuron != NULL) {
       //doc->addSwcTree(neuron->getModel()->clone(), true);
+      if (forceUpdate) {
+        neuron->updateDvidModel(forceUpdate);
+      }
+
       ZSwcTree *model = neuron->getModel();
 
       if (model != NULL) {
