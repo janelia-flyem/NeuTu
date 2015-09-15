@@ -54,6 +54,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // register our type so we can signal/slot it across threads:
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(clearLoadingLabel()));
 
 }
 
@@ -84,6 +85,7 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     if (target.isValid()) {
         // clear the model regardless at this point
         m_model->clear();
+        setLoadingLabel("Loading...");
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
     }
 }
@@ -102,12 +104,21 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
 }
 
+void FlyEmBodyInfoDialog::setLoadingLabel(QString label) {
+    ui->loadingLabel->setText(label);
+}
+
+void FlyEmBodyInfoDialog::clearLoadingLabel() {
+    ui->loadingLabel->setText("");
+}
+
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 #ifdef _DEBUG_
     std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
 #endif
 
     if (!target.isValid()) {
+        emit loadCompleted();
         return;
     }
 
@@ -120,6 +131,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body annotations" << std::endl;
             #endif
+            emit loadCompleted();
             return;
         }
 
@@ -130,6 +142,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body_synapses key" << std::endl;
             #endif
+            emit loadCompleted();
             return;
         }
 
@@ -141,6 +154,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
         // validate; this method does its own error notifications
         if (!isValidBookmarkFile(jsonDataObject)) {
+            emit loadCompleted();
             return;
         }
 
@@ -181,27 +195,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             }
 
+        emit loadCompleted();
         emit dataChanged(jsonDataObject.value("data"));
     }
-}
-
-void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
-    ZJsonObject jsonObject;
-
-    if (!jsonObject.load(filename.toStdString())) {
-        emit jsonLoadError("Error parsing JSON file!  Are you sure this is a Fly EM JSON file?");
-        return;
-    }
-
-    if (!isValidBookmarkFile(jsonObject)) {
-        emit jsonLoadError("JSON file invalid!  Are you sure this is a Fly EM JSON bookmarks file?");
-        return;
-    }
-
-    // update model from the object, or the data piece of it
-    ZJsonValue dataObject = jsonObject.value("data");
-    emit dataChanged(dataObject);
-
 }
 
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
