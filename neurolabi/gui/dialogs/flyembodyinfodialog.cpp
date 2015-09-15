@@ -303,7 +303,9 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_model->setItem(i, 4, new QStandardItem(QString(status)));
         }
     }
+    // the resize isn't reliable, so set the name column wider by hand
     ui->tableView->resizeColumnsToContents();
+    ui->tableView->setColumnWidth(1, 150);
 
     // currently initially sorting on # pre-synaptic sites
     ui->tableView->sortByColumn(2, Qt::DescendingOrder);
