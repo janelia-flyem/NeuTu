@@ -794,7 +794,8 @@ void ZFlyEmBodySplitProject::commitResult()
   ZFlyEmBodySplitProject::commitResultFunc(
         getDocument()->getSparseStackMask(),
         getDocument()->getLabelField(),
-        getDocument()->getConstSparseStack()->getDownsampleInterval(),
+        getDocument()->getDvidSparseStack()->getDownsampleInterval(),
+//        getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
   getProgressSignal()->endProgress();
 

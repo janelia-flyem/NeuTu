@@ -140,6 +140,7 @@ ZStack* ZSparseStack::getStack()
         m_stack = new ZStack(GREY, cuboid, 1);
         m_stack->setZero();
         assignStackValue(m_stack, *m_objectMask, *m_stackGrid, m_baseValue);
+        m_dsIntv.set(0, 0, 0);
       }
     }
   }
