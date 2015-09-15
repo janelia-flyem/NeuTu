@@ -258,13 +258,17 @@ void Z3DTabWidget::resetCameraCenter()
 void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
-      //addTab(window, title);
-      //setTabsClosable(true);
+
       insertTab(index, window, title);
       connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
 
       setCurrentIndex(index);
   }
+}
+
+void Z3DTabWidget::updateTabs(int index)
+{
+    connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
 }
 
 void Z3DTabWidget::updateWindow(int index)
@@ -316,6 +320,10 @@ void Z3DTabWidget::closeWindow(int index)
   QWidget *w = widget(index);
   if (w != NULL) {
     w->close();
+
+    buttonStatus[index][0] = true;
+    buttonStatus[index][1] = false;
+    buttonStatus[index][2] = false;
   }
 }
 

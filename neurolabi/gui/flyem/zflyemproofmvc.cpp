@@ -139,7 +139,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
   connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
 
-  connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateWindow(int)));
+  connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
   //
   m_coarseBodyWindow = NULL;
