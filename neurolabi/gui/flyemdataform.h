@@ -118,6 +118,7 @@ private slots:
   void updateInfoWindow(const QModelIndex &index);
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
+  void updateSelectedModel();
   void showSelectedBody();
   //void showSelectedBodyCoarse();
   void showSelectedModelWithBoundBox();
@@ -162,6 +163,7 @@ private slots:
 
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
+  ZStackDoc* updateViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
   void updateThumbnail(ZFlyEmNeuron *neuron);
   void updateThumbnailLive(ZFlyEmNeuron *neuron);
@@ -178,6 +180,7 @@ private:
 
   QMenu *m_neuronContextMenu;
   QAction *m_showSelectedModelAction;
+  QAction *m_updateSelectedModelAction;
   QAction *m_showSelectedModelWithBoundBoxAction;
   QAction *m_changeClassAction;
   QAction *m_neighborSearchAction;
