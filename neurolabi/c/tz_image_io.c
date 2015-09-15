@@ -380,7 +380,7 @@ void Raw_Size(const char *filepath, int *size)
   fread(&endian, 1, 1, fp);
 
   uint16_t dataType;
-  char sz_buffer[16];
+  uint16_t sz_buffer[16];
 
   fread(&dataType, 2, 1, fp);
   fread(sz_buffer, 1, 8, fp);
@@ -2755,16 +2755,24 @@ Mc_Stack* Read_Mc_Stack(const char *filepath, int channel)
     char sz_buffer[16];
     size_t sz[4];
 
-    fread(&dataType, 2, 1, fp);
-    fread(sz_buffer, 1, 8, fp);
+    char dataTypeBuffer[2];
+
+    fread(dataTypeBuffer, 1, 2, fp);
+    fread(sz_buffer, 2, 8, fp);
 
     int i;
     for (i = 0; i < 4; i++) {
       sz[i] = *((uint16_t*) (sz_buffer + i * 2));
     }
 
+    if (endian == 'B') {
+        dataType = dataTypeBuffer[0];
+        dataType <<= 8;
+        dataType |= dataTypeBuffer[1];
+    }
+
     if ((sz[0] == 0) || (sz[1] == 0) || (sz[2] == 0) || (sz[3] == 0)) {
-      fread(sz_buffer + 8, 1, 8, fp);
+      fread(sz_buffer + 8, 2, 8, fp);
 
       for (i = 0; i < 4; i++) {
         sz[i] = *((uint32_t*) (sz_buffer + i * 4));
@@ -2803,7 +2811,8 @@ Mc_Stack* Read_Mc_Stack(const char *filepath, int channel)
         perror("fread");
         printf("ferror: %d  feof: %d\n", ferror(fp), feof(fp));
         fclose(fp);
-        TZ_ERROR(ERROR_IO_READ);
+
+        return NULL;
       }
       fclose(fp);
       return stack;
@@ -3672,14 +3681,6 @@ Stack* Read_Image_List_Bounded(File_List *list)
   if (list->file_number == 0) {
     return NULL;
   }
-
-  /*
-  int depth = 0;
-  int i;
-  for (i = 0; i < list->file_number; i++) {
-    depth++;
-  }
-  */
 
   int depth = bound_box.ce[2] - bound_box.cb[2] + 1;
 

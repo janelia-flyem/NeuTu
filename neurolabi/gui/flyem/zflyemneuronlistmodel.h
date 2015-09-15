@@ -39,7 +39,8 @@ public:
 
   QVector<const ZFlyEmNeuron*> getNeuronArray(const QModelIndex &index) const;
 
-  void retrieveModel(const QModelIndexList &indexList, ZStackDoc *doc) const;
+  void retrieveModel(const QModelIndexList &indexList, ZStackDoc *doc,
+                     bool forceUpdate = false) const;
   ZIntPoint retrieveBody(
       const QModelIndexList &indexList, ZStackDoc *doc) const;
   ZScalableStack* retrieveBody(const QModelIndexList &indexList) const;
