@@ -38,6 +38,7 @@ private slots:
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
+    QSortFilterProxyModel* m_proxy;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);

@@ -42,8 +42,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
     m_model = createModel(ui->tableView);
-    ui->tableView->setModel(m_model);
-    ui->tableView->resizeColumnsToContents();
+
+    m_proxy = new QSortFilterProxyModel(this);
+    m_proxy->setSourceModel(m_model);
+    m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    ui->tableView->setModel(m_proxy);
 
     // UI connects
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
@@ -61,7 +64,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
   if (modelIndex.column() == 0) {
-    QStandardItem *item = m_model->itemFromIndex(modelIndex);
+    QStandardItem *item = m_model->itemFromIndex(m_proxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
 #ifdef _DEBUG_
