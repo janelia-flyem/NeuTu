@@ -54,12 +54,20 @@ public:
 
     void print() const;
 
+
   private:
     EAction m_action;
     uint64_t m_bodyId;
     QColor m_bodyColor;
     bool m_refreshing;
   };
+
+  enum EBodyType {
+    BODY_FULL, BODY_COARSE, BODY_SKELETON
+  };
+
+  void setBodyType(EBodyType type) { m_bodyType = type; }
+  EBodyType getBodyType() { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
@@ -119,6 +127,7 @@ private:
 
 private:
   QSet<uint64_t> m_bodySet;
+  EBodyType m_bodyType;
 
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
