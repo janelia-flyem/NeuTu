@@ -59,10 +59,10 @@ public:
     void addWindow(int index, Z3DWindow *window, const QString &title);
 
 public slots:
-    void tabSlotFunc(int index);
     void closeWindow(int index);
     void updateTabs(int index);
     void updateWindow(int index);
+    void closeAllWindows();
 
 public slots:
     void resetCamera();
@@ -85,6 +85,7 @@ signals:
 
 private:
     bool buttonStatus[4][3]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects
+    bool windowStatus[4]; // 0-coarsebody 1-body 2-skeleton 3-synapse false-closed true-opened
     int preIndex;
 
 };

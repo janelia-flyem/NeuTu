@@ -148,11 +148,9 @@ void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
 
 Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
 {
-//    setParent(parent);
-
   setTabsClosable(true);
 
-  QObject::connect(this,SIGNAL(currentChanged(int)),this,SLOT(tabSlotFunc(int)));
+  connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
 
   // default button status
   for(int i=0; i<4; i++)
@@ -160,6 +158,8 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
       buttonStatus[i][0] = true;
       buttonStatus[i][1] = false;
       buttonStatus[i][2] = false;
+
+      windowStatus[i] = false;
   }
 
   preIndex = -1;
@@ -169,12 +169,6 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
 QTabBar* Z3DTabWidget::tabBar()
 {
     return QTabWidget::tabBar();
-}
-
-void Z3DTabWidget::tabSlotFunc(int index)
-{
-    // to do
-    // this->tabBar()
 }
 
 void Z3DTabWidget::resetCamera()
@@ -218,6 +212,7 @@ void Z3DTabWidget::showGraph(bool v)
     {
         cur3Dwin->getGraphFilter()->setVisible(v);
         cur3Dwin->setButtonStatus(0,v);
+        buttonStatus[this->currentIndex()][0] = v;
     }
 }
 
@@ -229,6 +224,7 @@ void Z3DTabWidget::settingsPanel(bool v)
     {
         cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(1,v);
+        buttonStatus[this->currentIndex()][1] = v;
     }
 
 }
@@ -241,6 +237,7 @@ void Z3DTabWidget::objectsPanel(bool v)
     {
         cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
+        buttonStatus[this->currentIndex()][2] = v;
     }
 
 }
@@ -263,17 +260,35 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
       connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
 
       setCurrentIndex(index);
+
+      windowStatus[index] = true;
+
+      updateWindow(index);
   }
 }
 
 void Z3DTabWidget::updateTabs(int index)
 {
-    connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
+    if(windowStatus[index]==true)
+    {
+        emit tabIndexChanged(index);
+    }
+    else
+    {
+        // only one tab is opened
+        for(int i=0; i<4; i++)
+        {
+            if(windowStatus[i]==true)
+            {
+                emit tabIndexChanged(i);
+            }
+        }
+    }
 }
 
 void Z3DTabWidget::updateWindow(int index)
 {
-    if(index>-1)
+    if(index>-1 && windowStatus[index]==true)
     {
         Z3DWindow *w = (Z3DWindow *)(widget(index));
 
@@ -284,8 +299,9 @@ void Z3DTabWidget::updateWindow(int index)
             // show graph
             buttonChecked = w->getButtonStatus(0);
             w->getGraphFilter()->setVisible(buttonChecked);
+            buttonStatus[index][0] = buttonChecked;
 
-            if(preIndex>-1)
+            if(preIndex>-1 && windowStatus[preIndex]==true && preIndex!=index)
             {
                 Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
 
@@ -294,6 +310,7 @@ void Z3DTabWidget::updateWindow(int index)
                 if(buttonChecked != preWin->getButtonStatus(1))
                 {
                     w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                    buttonStatus[index][1] = buttonChecked;
                 }
 
                 // objects
@@ -301,6 +318,25 @@ void Z3DTabWidget::updateWindow(int index)
                 if(buttonChecked != preWin->getButtonStatus(2))
                 {
                     w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                    buttonStatus[index][2] = buttonChecked;
+                }
+            }
+            else
+            {
+                // settings
+                buttonChecked = w->getButtonStatus(1);
+                if(buttonChecked != buttonStatus[index][1])
+                {
+                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                    buttonStatus[index][1] = buttonChecked;
+                }
+
+                // objects
+                buttonChecked = w->getButtonStatus(2);
+                if(buttonChecked != buttonStatus[index][2])
+                {
+                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                    buttonStatus[index][2] = buttonChecked;
                 }
             }
 
@@ -315,16 +351,28 @@ void Z3DTabWidget::updateWindow(int index)
 
 }
 
+void Z3DTabWidget::closeAllWindows()
+{
+    for(int i=0; i<4; i++)
+    {
+        closeWindow(i);
+    }
+}
+
 void Z3DTabWidget::closeWindow(int index)
 {
   QWidget *w = widget(index);
   if (w != NULL) {
     w->close();
-
-    buttonStatus[index][0] = true;
-    buttonStatus[index][1] = false;
-    buttonStatus[index][2] = false;
   }
+
+  windowStatus[index] = false;
+
+  if(preIndex==index)
+  {
+      preIndex = -1;
+  }
+
 }
 
 Z3DTabWidget::~Z3DTabWidget()
@@ -1480,6 +1528,10 @@ void Z3DWindow::cleanup()
 
     delete m_canvas;
     m_isClean = true;
+
+    m_buttonStatus[0] = true;  // showgraph
+    m_buttonStatus[1] = false; // settings
+    m_buttonStatus[2] = false; // objects
   }
 }
 
