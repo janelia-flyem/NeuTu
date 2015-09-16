@@ -3180,6 +3180,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (dlg.isLevelChecked()) {
         skeletonizer.setLevel(dlg.level());
+        skeletonizer.setLevelOp(dlg.getLevelOp());
         //skeletonizer.useOriginalSignal(true);
       }
 
@@ -6328,6 +6329,15 @@ void MainWindow::runSplitFunc(ZStackFrame *frame)
 //  emit progressAdvanced(0.3);
   frame->runSeededWatershed();
   emit progressDone();
+}
+
+void MainWindow::processArgument(const QString &arg)
+{
+//  report("arg", arg.toStdString(), NeuTube::MSG_INFORMATION);
+  statusBar()->showMessage(arg);
+  if (arg.startsWith("neutu://")) {
+    m_ui->actionProof->trigger();
+  }
 }
 
 void MainWindow::runBodySplit()

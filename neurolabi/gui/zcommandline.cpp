@@ -512,7 +512,7 @@ std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input)
   FILE *fp = fopen(input.c_str(), "r");
   ZString str;
   while (str.readLine(fp)) {
-    std::vector<int> bodyArray = str.toIntegerArray();
+    std::vector<uint64_t> bodyArray = str.toUint64Array();
     bodySet.insert(bodyArray.begin(), bodyArray.end());
   }
   fclose(fp);
@@ -562,28 +562,36 @@ int ZCommandLine::runSkeletonize()
       bodyIdSet = loadBodySet(m_input[1]);
     }
 
-    std::vector<int> bodyIdArray;
+    std::vector<uint64_t> bodyIdArray;
     bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
+    std::cout << bodyIdArray.size() << " bodies loaded." << std::endl;
 
     ZRandomGenerator rnd;
     std::vector<int> rank = rnd.randperm(bodyIdArray.size());
-    std::set<int> excluded;
+    std::set<uint64_t> excluded;
     //excluded.insert(16493);
     //excluded.insert(8772496);
 
     ZStackSkeletonizer skeletonizer;
-    ZJsonObject config;
 
-    if (m_input.size() <= 2) {
-      config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                  "/json/skeletonize.json");
+
+    if (m_configJson.hasKey("skeletonize")) {
+      skeletonizer.configure(
+            ZJsonObject(m_configJson["skeletonize"],
+            ZJsonValue::SET_INCREASE_REF_COUNT));
     } else {
-      config.load(m_input[2]);
+      ZJsonObject config;
+      if (m_input.size() <= 2) {
+        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
+                    "/json/skeletonize.json");
+      } else {
+        config.load(m_input[2]);
+      }
+      skeletonizer.configure(config);
     }
-    skeletonizer.configure(config);
 
     for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-      int bodyId = bodyIdArray[rank[i] - 1];
+      uint64_t bodyId = bodyIdArray[rank[i] - 1];
       if (excluded.count(bodyId) == 0) {
         ZSwcTree *tree = reader.readSwc(bodyId);
         if (tree == NULL) {

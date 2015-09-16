@@ -402,6 +402,9 @@ void Memset_Pattern4(void *b, const void *pattern4, size_t len);
  */
 BOOL Is_Valid_Array_Index(size_t index);
 
+uint16_t Flip_Endian_U16(uint16_t v);
+uint32_t Flip_Endian_U32(uint32_t v);
+
 __END_DECLS
 
 #endif

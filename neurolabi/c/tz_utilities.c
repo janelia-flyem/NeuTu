@@ -823,3 +823,30 @@ BOOL Is_Valid_Array_Index(size_t index)
 {
   return (index != INVALID_ARRAY_INDEX);
 }
+
+uint16_t Flip_Endian_U16(uint16_t v)
+{
+  uint16_t out = v;
+  out >>= 8;
+  out += (v << 8);
+
+  return out;
+}
+
+uint32_t Flip_Endian_U32(uint32_t v)
+{
+  uint32_t out = v;
+  out >>= 8;
+  v <<= 8;
+  out += (v & 0xFF000000);
+
+  out >>= 8;
+  v <<= 8;
+  out += (v & 0xFF000000);
+
+  out >>= 8;
+  v <<= 8;
+  out += v;
+
+  return out;
+}

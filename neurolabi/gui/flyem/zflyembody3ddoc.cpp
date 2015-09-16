@@ -14,7 +14,7 @@
 #include "dvid/zdvidsparsestack.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent), m_garbageJustDumped(false)
+  ZStackDoc(parent), m_bodyType(BODY_FULL), m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -31,7 +31,7 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 {
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
 
   m_futureMap.waitForFinished();
 
@@ -206,6 +206,7 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
 
 void ZFlyEmBody3dDoc::processEventFunc()
 {
+  std::cout << "Locking process event" << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
 //  QSet<uint64_t> bodySet = m_bodySet;
@@ -241,7 +242,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
   m_eventQueue.clear();
-  m_eventQueueMutex.unlock();
+  locker.unlock();
 
   if (!m_actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
@@ -400,28 +401,35 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
   ZSwcTree *tree = NULL;
 
   if (bodyId > 0) {
-    ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
-    ZObject3dScan *cachedBody = NULL;
-    if (cachedStack != NULL) {
-      if (cachedStack->getObjectMask() != NULL) {
-        if (cachedStack->getObjectMask()->getLabel() == bodyId) {
-          cachedBody = cachedStack->getObjectMask();
-        }
-      }
-    }
-
-    if (cachedBody == NULL) {
+    if (getBodyType() == BODY_SKELETON) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
-        ZObject3dScan obj;
-        reader.readBody(bodyId, &obj);
-        if (!obj.isEmpty()) {
-          obj.canonize();
-          tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
-        }
+        tree = reader.readSwc(bodyId);
       }
     } else {
-      tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
+      ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
+      ZObject3dScan *cachedBody = NULL;
+      if (cachedStack != NULL) {
+        if (cachedStack->getObjectMask() != NULL) {
+          if (cachedStack->getObjectMask()->getLabel() == bodyId) {
+            cachedBody = cachedStack->getObjectMask();
+          }
+        }
+      }
+
+      if (cachedBody == NULL) {
+        ZDvidReader reader;
+        if (reader.open(getDvidTarget())) {
+          ZObject3dScan obj;
+          reader.readBody(bodyId, &obj);
+          if (!obj.isEmpty()) {
+            obj.canonize();
+            tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
+          }
+        }
+      } else {
+        tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
+      }
     }
 
     if (tree != NULL) {

@@ -949,25 +949,35 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
         ZObject3dScan currentBody = body.subtract(*obj);
 
-        if (!currentBody.isEmpty()) {
-          std::vector<ZObject3dScan> objArray =
-              currentBody.getConnectedComponent();
-          for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
-               iter != objArray.end(); ++iter) {
-            ZObject3dScan &subobj = *iter;
-            bool isAdopted = false;
-            if (subobj.getVoxelNumber() < minIsolationSize &&
-                currentBody.getVoxelNumber() / subobj.getVoxelNumber() > 10) {
-              if (body.isAdjacentTo(subobj)) {
-                body.concat(subobj);
-                isAdopted = true;
+        if (currentBody.isEmpty()) {
+          emitError("Warning: Empty split detected.");
+        } else {
+          if (!dsIntv.isZero()) {
+            std::vector<ZObject3dScan> objArray =
+                currentBody.getConnectedComponent();
+            if (objArray.empty()) {
+              emitError("Warning: Empty split detected after connect component analysis.");
+            }
+            for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
+                 iter != objArray.end(); ++iter) {
+              ZObject3dScan &subobj = *iter;
+              bool isAdopted = false;
+              if (subobj.getVoxelNumber() < minIsolationSize &&
+                  currentBody.getVoxelNumber() / subobj.getVoxelNumber() > 10) {
+                if (body.isAdjacentTo(subobj)) {
+                  body.concat(subobj);
+                  isAdopted = true;
+                }
+              }
+
+              if (!isAdopted) {
+                prepareBodyUpload(subobj, filePathList, oldBodyIdList, maxNum,
+                                  getBodyId(), obj->getLabel());
               }
             }
-
-            if (!isAdopted) {
-              prepareBodyUpload(subobj, filePathList, oldBodyIdList, maxNum,
-                                getBodyId(), obj->getLabel());
-            }
+          } else {
+            prepareBodyUpload(currentBody, filePathList, oldBodyIdList, maxNum,
+                              getBodyId(), obj->getLabel());
           }
         }
       }

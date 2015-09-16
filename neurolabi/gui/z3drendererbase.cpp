@@ -539,9 +539,14 @@ std::vector<ZParameter*> Z3DRendererBase::getParameters() const
   return result;
 }
 
-std::vector<ZParameter*> Z3DRendererBase::getRendererParameters(Z3DPrimitiveRenderer *renderer) const
+std::vector<ZParameter*> Z3DRendererBase::getRendererParameters(
+    Z3DPrimitiveRenderer *renderer) const
 {
-  return renderer->getParameters();
+  if (renderer != NULL) {
+    return renderer->getParameters();
+  }
+
+  return std::vector<ZParameter*>();
 }
 
 void Z3DRendererBase::compile()

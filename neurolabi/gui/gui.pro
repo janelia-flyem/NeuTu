@@ -127,12 +127,14 @@ unix {
         QMAKE_CXXFLAGS += -m64
 
         exists($${NEUROLABI_DIR}/macosx10.9) {
+            LIBS -= -lstdc++
             QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
             QMAKE_MAC_SDK = macosx10.9
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
         }
 
         exists($${NEUROLABI_DIR}/macosx10.10) {
+            LIBS -= -lstdc++
             QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
             QMAKE_MAC_SDK = macosx10.10
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10

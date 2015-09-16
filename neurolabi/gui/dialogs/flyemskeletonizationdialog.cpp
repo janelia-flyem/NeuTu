@@ -76,6 +76,11 @@ int FlyEmSkeletonizationDialog::level() const
   return ui->levelSpinBox->value();
 }
 
+int FlyEmSkeletonizationDialog::getLevelOp() const
+{
+  return ui->grayOpComboBox->currentIndex();
+}
+
 bool FlyEmSkeletonizationDialog::isDownsampleChecked() const
 {
   return ui->downsampleCheckBox->isChecked();
