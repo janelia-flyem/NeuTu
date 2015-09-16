@@ -99,6 +99,7 @@ public:
 
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
+  ZSwcTree* getBodyModel(uint64_t bodyId);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
   void updateDvidInfo();
