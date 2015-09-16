@@ -93,7 +93,6 @@ private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
-  ZSwcTree* getBodyModel(uint64_t bodyId);
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color);

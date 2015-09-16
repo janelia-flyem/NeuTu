@@ -6,6 +6,10 @@
 #include <QFrame>
 #include <QLayout>
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#endif
+
 #include "zsharedpointer.h"
 //#include "zwidgetmessage.h"
 

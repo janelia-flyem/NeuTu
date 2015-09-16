@@ -32,7 +32,6 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
   locker.unlock();
-//  m_eventQueueMutex.unlock();
 
   m_futureMap.waitForFinished();
 
@@ -228,7 +227,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
     BodyEvent &event = iter.value();
     if (event.getAction() == BodyEvent::ACTION_ADD) {
       if (m_bodySet.contains(event.getBodyId())) {
-        event.setAction(BodyEvent::ACTION_UPDATE);
+        event.setAction(BodyEvent::ACTION_NULL);
       } else {
         m_bodySet.insert(event.getBodyId());
       }
@@ -244,7 +243,6 @@ void ZFlyEmBody3dDoc::processEventFunc()
 
   m_eventQueue.clear();
   locker.unlock();
-  std::cout << "Unlock process event" << std::endl;
 
   if (!m_actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
@@ -325,16 +323,7 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 
 void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-  ZSwcTree *tree = getBodyModel(bodyId);
-  if (tree != NULL) {
-    if (tree->getColor() != color) {
-      tree->setColor(color);
-      processObjectModified(tree);
-    }
-  }
-  endObjectModifiedMode();
-  notifyObjectModified();
+
 }
 
 void ZFlyEmBody3dDoc::addEvent(
@@ -405,11 +394,6 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId)
   ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
 
   return tree;
-}
-
-ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
-{
-  return retrieveBodyModel(bodyId);
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
