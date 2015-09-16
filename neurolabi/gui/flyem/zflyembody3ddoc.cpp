@@ -14,7 +14,8 @@
 #include "dvid/zdvidsparsestack.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent), m_bodyType(BODY_FULL), m_garbageJustDumped(false)
+  ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
+  m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -29,6 +30,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 {
+  m_quitting = true;
+
   QMutexLocker locker(&m_eventQueueMutex);
   m_eventQueue.clear();
   locker.unlock();
@@ -260,6 +263,9 @@ void ZFlyEmBody3dDoc::processEventFunc()
        iter != m_actionMap.end(); ++iter) {
     const BodyEvent &event = iter.value();
     processEventFunc(event);
+    if (m_quitting) {
+      break;
+    }
   }
 
   emit messageGenerated(ZWidgetMessage("3D Body view updated."));
@@ -280,24 +286,6 @@ void ZFlyEmBody3dDoc::processEvent()
         QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
     m_futureMap[threadId] = future;
   }
-
-
-  /*
-  for (QSet<uint64_t>::const_iterator iter = removingSet.begin();
-       iter != removingSet.end(); ++iter) {
-    uint64_t bodyId = *iter;
-    removeBody(bodyId);
-  }
-
-  for (QSet<uint64_t>::const_iterator iter = addingSet.begin();
-       iter != addingSet.end(); ++iter) {
-    uint64_t bodyId = *iter;
-    addBody(bodyId);
-  }
-  */
-
-//  locker.unlock();
-//  processBodySetBuffer();
 }
 
 bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
@@ -310,15 +298,6 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
   if (!hasBody(bodyId)) {
     m_bodySet.insert(bodyId);
     addBodyFunc(bodyId, color);
-    /*
-    QString threadId = QString("addBody(%1)").arg(bodyId);
-    if (!m_futureMap.isAlive(threadId)) {
-      m_futureMap.removeDeadThread();
-      QFuture<void> future =
-          QtConcurrent::run(this, &ZFlyEmBody3dDoc::addBodyFunc, bodyId, color);
-      m_futureMap[threadId] = future;
-    }
-    */
   }
 }
 
@@ -421,6 +400,19 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         tree = reader.readSwc(bodyId);
+      }
+    } else if (getBodyType() == BODY_COARSE) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        ZObject3dScan obj = reader.readCoarseBody(bodyId);
+        if (!obj.isEmpty()) {
+          tree = ZSwcFactory::CreateSurfaceSwc(obj);
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates());
+        }
       }
     } else {
       ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();

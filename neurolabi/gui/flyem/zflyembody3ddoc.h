@@ -130,6 +130,7 @@ private:
   QSet<uint64_t> m_bodySet;
   EBodyType m_bodyType;
 
+  bool m_quitting;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

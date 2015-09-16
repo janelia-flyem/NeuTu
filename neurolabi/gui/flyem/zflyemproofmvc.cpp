@@ -264,15 +264,10 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
-  doc->setDvidTarget(getDvidTarget());
-//  doc->updateFrame();
-  doc->setDataDoc(m_doc);
-
-  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
-
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_bodyWindow);
+
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -283,13 +278,9 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
-  ZFlyEmBody3dDoc *skeletonDoc = new ZFlyEmBody3dDoc;
-  skeletonDoc->setDvidTarget(getDvidTarget());
-  skeletonDoc->setDataDoc(m_doc);
-  skeletonDoc->setBodyType(ZFlyEmBody3dDoc::BODY_SKELETON);
-  ZWidgetMessage::ConnectMessagePipe(skeletonDoc, this, false);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
 
-  m_skeletonWindow = m_bodyWindowFactory->make3DWindow(skeletonDoc);
+  m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_skeletonWindow);
 
   if (m_doc->getParentMvc() != NULL) {
