@@ -74,7 +74,7 @@ void ZFlyEmProofMvc::init()
 void ZFlyEmProofMvc::initBodyWindow()
 {
   m_bodyViewWindow = new Z3DMainWindow(this);
-  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D View"));
+  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
   m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
   m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
@@ -97,7 +97,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->setCentralWidget(m_bodyViewers);
   m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
 
-  connect(m_bodyViewWindow, SIGNAL(closed()), this, SLOT(closeAllBodyWindow()));
+  connect(m_bodyViewWindow, SIGNAL(closed()), m_bodyViewers, SLOT(closeAllWindows()));
 
   m_bodyWindowFactory =
       QSharedPointer<ZWindowFactory>(new ZFlyEmBodyWindowFactory);
@@ -233,6 +233,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //  update3DBodyView(false, true);
 
   getProgressSignal()->endProgress();
+
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
