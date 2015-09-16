@@ -119,7 +119,9 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
           m_bodyViewers, SLOT(resetCameraCenter()));
 
-  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
+  m_bodyViewWindow->toolBar->addSeparator();
+
+  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
   connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(showGraph(bool)));
   m_bodyViewWindow->showGraphAction->setCheckable(true);
@@ -127,7 +129,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
 
   m_bodyViewWindow->settingsAction =
-      m_bodyViewWindow->toolBar->addAction("Control&Settings");
+      m_bodyViewWindow->toolBar->addAction("ControlSettings");
   connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
@@ -244,6 +246,20 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //  update3DBodyView(false, true);
 
   getProgressSignal()->endProgress();
+}
+
+ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
+    ZFlyEmBody3dDoc::EBodyType bodyType)
+{
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+  doc->setDvidTarget(getDvidTarget());
+//  doc->updateFrame();
+  doc->setDataDoc(m_doc);
+  doc->setBodyType(bodyType);
+
+  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+
+  return doc;
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
