@@ -1,6 +1,7 @@
 #include "zstackmvc.h"
 
 #include <QMainWindow>
+#include <QMimeData>
 
 #include "zstackdoc.h"
 #include "zstackview.h"
