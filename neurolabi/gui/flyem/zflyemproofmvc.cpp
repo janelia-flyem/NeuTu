@@ -74,7 +74,7 @@ void ZFlyEmProofMvc::init()
 void ZFlyEmProofMvc::initBodyWindow()
 {
   m_bodyViewWindow = new Z3DMainWindow(this);
-  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
+  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D View"));
   m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
   m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
@@ -85,9 +85,11 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   QVBoxLayout* bvLayout = new QVBoxLayout;
 
+  QLabel *messageLabel = new QLabel;
+  bvLayout->addWidget(messageLabel);
+
   QWidget *toolWidget = new QWidget(m_bodyViewWindow->toolBar);
   bvLayout->addWidget(toolWidget);
-
 
   bvLayout->addWidget(m_bodyViewers);
 
@@ -103,10 +105,50 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
 
+  m_bodyViewWindow->resetCameraAction = m_bodyViewWindow->toolBar->addAction("X-Y View");
+  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
 
+  m_bodyViewWindow->xzViewAction = m_bodyViewWindow->toolBar->addAction("X-Z View");
+  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
+
+  m_bodyViewWindow->yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
+  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
+
+
+  m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
+  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(resetCameraCenter()));
+
+  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
+  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(showGraph(bool)));
+  m_bodyViewWindow->showGraphAction->setCheckable(true);
+  m_bodyViewWindow->showGraphAction->setChecked(true);
+
+
+  m_bodyViewWindow->settingsAction =
+      m_bodyViewWindow->toolBar->addAction("Control&Settings");
+  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
+  m_bodyViewWindow->settingsAction->setCheckable(true);
+  m_bodyViewWindow->settingsAction->setChecked(false);
+
+  m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
+  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(objectsPanel(bool)));
+  m_bodyViewWindow->objectsAction->setCheckable(true);
+  m_bodyViewWindow->objectsAction->setChecked(false);
+
+  //update button status reversely
+  connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)), m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+
+  connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
+
+  //
   m_coarseBodyWindow = NULL;
   m_externalNeuronWindow = NULL;
   m_bodyWindow = NULL;
+  m_skeletonWindow = NULL;
   m_splitWindow = NULL;
 }
 
@@ -147,6 +189,11 @@ void ZFlyEmProofMvc::detachSplitWindow()
   m_splitWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachSkeletonWindow()
+{
+  m_skeletonWindow = NULL;
+}
+
 void ZFlyEmProofMvc::detachExternalNeuronWindow()
 {
   m_externalNeuronWindow = NULL;
@@ -167,6 +214,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     } else if (window == m_externalNeuronWindow) {
       connect(window, SIGNAL(destroyed()),
               this, SLOT(detachExternalNeuronWindow()));
+    } else if (window == m_skeletonWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachSkeletonWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this->getView(), SLOT(setView(ZStackViewParam)));
@@ -216,6 +265,24 @@ void ZFlyEmProofMvc::makeBodyWindow()
   }
 }
 
+void ZFlyEmProofMvc::makeSkeletonWindow()
+{
+  ZFlyEmBody3dDoc *skeletonDoc = new ZFlyEmBody3dDoc;
+  skeletonDoc->setDvidTarget(getDvidTarget());
+  skeletonDoc->setDataDoc(m_doc);
+  skeletonDoc->setBodyType(ZFlyEmBody3dDoc::BODY_SKELETON);
+  ZWidgetMessage::ConnectMessagePipe(skeletonDoc, this, false);
+
+  m_skeletonWindow = m_bodyWindowFactory->make3DWindow(skeletonDoc);
+  setWindowSignalSlot(m_skeletonWindow);
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_skeletonWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
+}
+
 void ZFlyEmProofMvc::makeExternalNeuronWindow()
 {
   ZFlyEmExternalNeuronDoc *doc = new ZFlyEmExternalNeuronDoc;
@@ -248,6 +315,19 @@ void ZFlyEmProofMvc::updateBodyWindow()
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::updateSkeletonWindow()
+{
+  if (m_skeletonWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -838,6 +918,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
     updateCoarseBodyWindow(false, false, false);
     updateBodyWindow();
+    updateSkeletonWindow();
 //    m_mergeProject.update3DBodyView();
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
@@ -1337,7 +1418,11 @@ void ZFlyEmProofMvc::showExternalNeuronWindow()
 {
   if (m_externalNeuronWindow == NULL) {
     makeExternalNeuronWindow();
-    m_bodyViewers->addWindow(m_externalNeuronWindow, "Neuron Reference");
+    m_bodyViewers->addWindow(2, m_externalNeuronWindow, "Neuron Reference");
+  }
+  else
+  {
+      m_bodyViewers->setCurrentIndex(2);
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1350,7 +1435,11 @@ void ZFlyEmProofMvc::showCoarseBody3d()
 {
   if (m_coarseBodyWindow == NULL) {
     makeCoarseBodyWindow();
-    m_bodyViewers->addWindow(m_coarseBodyWindow, "Coarse Body View");
+    m_bodyViewers->addWindow(0, m_coarseBodyWindow, "Coarse Body View");
+  }
+  else
+  {
+      m_bodyViewers->setCurrentIndex(0);
   }
 
   updateCoarseBodyWindow(false, true, false);
@@ -1366,12 +1455,33 @@ void ZFlyEmProofMvc::showFineBody3d()
 //  m_mergeProject.showBody3d();
   if (m_bodyWindow == NULL) {
     makeBodyWindow();
-    m_bodyViewers->addWindow(m_bodyWindow, "Body View");
+    m_bodyViewers->addWindow(1, m_bodyWindow, "Body View");
     updateBodyWindow();
     m_bodyWindow->setYZView();
   }
+  else
+  {
+      m_bodyViewers->setCurrentIndex(1);
+  }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
+void ZFlyEmProofMvc::showSkeletonWindow()
+{
+//  m_mergeProject.showBody3d();
+  if (m_skeletonWindow == NULL) {
+    makeSkeletonWindow();
+    m_bodyViewers->addWindow(3, m_skeletonWindow, "Skeleton View");
+    updateSkeletonWindow();
+    m_skeletonWindow->setYZView();
+  } else {
+    m_bodyViewers->setCurrentIndex(3);
+  }
+
+  m_bodyViewWindow->setCurrentWidow(m_skeletonWindow);
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();
 }
@@ -1395,6 +1505,7 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
   closeBodyWindow(m_coarseBodyWindow);
   closeBodyWindow(m_bodyWindow);
   closeBodyWindow(m_splitWindow);
+  closeBodyWindow(m_skeletonWindow);
   closeBodyWindow(m_externalNeuronWindow);
 }
 
@@ -1816,6 +1927,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 
   updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
   updateBodyWindowPlane(m_bodyWindow, viewParam);
+  updateBodyWindowPlane(m_skeletonWindow, viewParam);
   updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
 }
 

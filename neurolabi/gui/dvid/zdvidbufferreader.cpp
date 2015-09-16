@@ -19,7 +19,12 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   m_status(ZDvidBufferReader::READ_NULL)
 {
   m_networkManager = new QNetworkAccessManager(this);
+
+//#if !defined(_ENABLE_LIBDVIDCPP_)
   m_eventLoop = new QEventLoop(this);
+//#else
+//  m_eventLoop = NULL;
+//#endif
 
 //  m_timer = new QTimer(this);
 //  m_timer->setInterval(60000);

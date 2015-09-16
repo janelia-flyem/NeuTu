@@ -113,7 +113,7 @@ std::string ZDvidUrl::getSkeletonUrl(uint64_t bodyId) const
 
 std::string ZDvidUrl::getSkeletonConfigUrl(const std::string &bodyLabelName)
 {
-  return getSkeletonUrl(bodyLabelName) + "/config.json";
+  return getSkeletonUrl(bodyLabelName) + "/key/config.json";
 }
 
 std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)

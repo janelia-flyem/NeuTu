@@ -233,10 +233,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
                     ZActionFactory::ACTION_MOVE_SWC_NODE, presenter,
                     parentWidget));
 
-  if (GET_APPLICATION_NAME == "Biocytin") {
-    menu->addAction(presenter->getAction(
-                      ZStackPresenter::ACTION_ESTIMATE_SWC_NODE_RADIUS));
-  }
+  //  if (GET_APPLICATION_NAME == "Biocytin") {
+  menu->addAction(presenter->getAction(
+                    ZStackPresenter::ACTION_ESTIMATE_SWC_NODE_RADIUS));
+//  }
 
   return menu;
 }

@@ -11,8 +11,6 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_namedDecorationList.append(&m_stroke);
   m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
-
-  //m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
 }
 
 ZInteractionEngine::~ZInteractionEngine()

@@ -895,8 +895,9 @@ _read_failed:
     break;
   default:
     stack = Read_Mc_Stack(filePath.c_str(), channel);
-    if ((size_t)stack->width * stack->height * 4 >= (size_t)1024*1024*1024*2) {
-      double scale =  (1024.0*1024*1024*2) / ((double)stack->width * stack->height * 4);
+    if ((size_t)stack->width * stack->height * 2 >= (size_t)1024*1024*1024) {
+      double scale =
+          (1024.0*1024*1024) / ((double)stack->width * stack->height * 2);
       int newWidth = static_cast<int>(std::floor(stack->width * scale));
       int newHeight = static_cast<int>(std::floor(stack->height * scale));
       Mc_Stack *stack2 = C_Stack::resize(stack, newWidth, newHeight, stack->depth);
@@ -1120,8 +1121,8 @@ Mc_Stack* C_Stack::translate(const Mc_Stack *stack, int targetKind)
         break;
       case FLOAT64:
         for (size_t index = 0; index < size; ++index) {
-          dstima.array16[index] =
-              normalize(ima.array64[index], minValue, maxValue, 0, 65535, 0, 65535);
+          dstima.array16[index] = normalize(
+                ima.array64[index], minValue, maxValue, 0, 65535, 0, 65535);
         }
         break;
       default:
