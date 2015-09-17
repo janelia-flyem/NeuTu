@@ -768,6 +768,11 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
   return bodySet;
 }
 
+bool ZDvidReader::hasKey(const QString &dataName, const QString &key)
+{
+  return !readKeyValue(dataName, key).isEmpty();
+}
+
 QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
 {
   ZDvidUrl url(getDvidTarget());

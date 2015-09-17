@@ -11,7 +11,7 @@ class ZFlyEmProjectManager : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmProjectManager(QObject *parent = 0);
+  explicit ZFlyEmProjectManager(QWidget *parent = 0);
 
   inline FlyEmBodyMergeProjectDialog* getMergeDialog() { return m_mergeDlg; }
   inline FlyEmBodySplitProjectDialog* getSplitDialog() { return m_splitDlg; }
