@@ -27,7 +27,7 @@
 #include "dvid/libdvidheader.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
-  QObject(parent)
+  QObject(parent), m_verbose(true)
 {
   m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
@@ -174,7 +174,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
 
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
@@ -193,7 +193,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
 
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
@@ -234,9 +234,9 @@ ZSwcTree* ZDvidReader::readSwc(int bodyId)
   ZDvidBufferReader reader;
 
   ZDvidUrl url(getDvidTarget());
-  qDebug() << url.getSkeletonUrl(bodyId);
+//  qDebug() << url.getSkeletonUrl(bodyId);
 
-  reader.read(url.getSkeletonUrl(bodyId).c_str());
+  reader.read(url.getSkeletonUrl(bodyId).c_str(), isVerbose());
 
   const QByteArray &buffer = reader.getBuffer();
 
@@ -279,7 +279,7 @@ ZStack* ZDvidReader::readThumbnail(int bodyId)
   qDebug() << url.getThumbnailUrl(bodyId);
 
   ZDvidBufferReader reader;
-  reader.read(url.getThumbnailUrl(bodyId).c_str());
+  reader.read(url.getThumbnailUrl(bodyId).c_str(), isVerbose());
 
   Mc_Stack *rawStack =
       C_Stack::readMrawFromBuffer(reader.getBuffer().constData());
@@ -341,7 +341,8 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
   bufferReader.read(dvidUrl.getGrayScaleBlockUrl(blockIndex.getX(),
                                                  blockIndex.getY(),
                                                  blockIndex.getZ(),
-                                                 blockNumber).c_str());
+                                                 blockNumber).c_str(),
+                    isVerbose());
 #ifdef _DEBUG_2
   std::cout << "reading time:" << std::endl;
   ptoc();
@@ -387,7 +388,8 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   ZDvidUrl dvidUrl(getDvidTarget());
   bufferReader.read(dvidUrl.getGrayScaleBlockUrl(blockIndex.getX(),
                                                  blockIndex.getY(),
-                                                 blockIndex.getZ()).c_str());
+                                                 blockIndex.getZ()).c_str(),
+                    isVerbose());
   ZStack *stack = NULL;
   if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
     const QByteArray &data = bufferReader.getBuffer();
@@ -503,7 +505,7 @@ ZStack* ZDvidReader::readGrayScale(
   } else {
   */
     bufferReader.read(url.getGrayscaleUrl(
-                        width, height, depth, x0, y0, z0).c_str(), false);
+                        width, height, depth, x0, y0, z0).c_str(), isVerbose());
   //}
 
   const QByteArray &buffer = bufferReader.getBuffer();
@@ -591,7 +593,8 @@ bool ZDvidReader::isReadingDone()
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader reader;
-  reader.read(ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString()).c_str());
+  reader.read(ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString()).c_str(),
+             isVerbose());
   const QByteArray &buffer = reader.getBuffer();
 
   return QString(buffer);
@@ -725,7 +728,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
-  bufferReader.read(dvidUrl.getBodyListUrl(minSize).c_str());
+  bufferReader.read(dvidUrl.getBodyListUrl(minSize).c_str(), isVerbose());
 
   std::set<uint64_t> bodySet;
 
@@ -747,7 +750,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
-  bufferReader.read(dvidUrl.getBodyListUrl(minSize, maxSize).c_str());
+  bufferReader.read(dvidUrl.getBodyListUrl(minSize, maxSize).c_str(), isVerbose());
 
   std::set<uint64_t> bodySet;
 
@@ -770,7 +773,9 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
   ZDvidUrl url(getDvidTarget());
 
   ZDvidBufferReader bufferReader;
-  bufferReader.read(url.getKeyUrl(dataName.toStdString(), key.toStdString()).c_str());
+  bufferReader.read(
+        url.getKeyUrl(dataName.toStdString(), key.toStdString()).c_str(),
+        isVerbose());
 
   return bufferReader.getBuffer();
 #if 0
@@ -804,7 +809,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName)
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
-  reader.read(dvidUrl.getAllKeyUrl(dataName.toStdString()).c_str());
+  reader.read(dvidUrl.getAllKeyUrl(dataName.toStdString()).c_str(), isVerbose());
   QByteArray keyBuffer = reader.getBuffer();
 
   QStringList keys;
@@ -828,7 +833,8 @@ QStringList ZDvidReader::readKeys(
   const std::string &maxKey = "\xff";
 
   reader.read(dvidUrl.getKeyRangeUrl(
-                dataName.toStdString(), minKey.toStdString(), maxKey).c_str());
+                dataName.toStdString(), minKey.toStdString(), maxKey).c_str(),
+              isVerbose());
   QByteArray keyBuffer = reader.getBuffer();
 
   QStringList keys;
@@ -851,7 +857,7 @@ QStringList ZDvidReader::readKeys(
 
   ZDvidBufferReader reader;
   reader.read(url.getKeyRangeUrl(dataName.toStdString(), minKey.toStdString(),
-                                 maxKey.toStdString()).c_str());
+                                 maxKey.toStdString()).c_str(), isVerbose());
   const QByteArray &keyBuffer = reader.getBuffer();
 
   QStringList keys;
@@ -1261,7 +1267,7 @@ ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
   ZDvidUrl dvidUrl(getDvidTarget());
 
   ZDvidBufferReader bufferReader;
-  bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str());
+  bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str(), isVerbose());
 
   ZJsonObject infoJson;
   infoJson.decodeString(bufferReader.getBuffer().data());
@@ -1282,7 +1288,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   ZDvidUrl dvidUrl(getDvidTarget());
 
   ZDvidBufferReader bufferReader;
-  bufferReader.read(dvidUrl.getRepoInfoUrl().c_str());
+  bufferReader.read(dvidUrl.getRepoInfoUrl().c_str(), isVerbose());
 
   QString str(bufferReader.getBuffer().data());
   str.replace(QRegExp("\"MaxLabel\":\\s*\\{[^{}]*\\}"), "\"MaxLabel\":{}");
@@ -1302,7 +1308,7 @@ ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId)
   ZDvidBufferReader reader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   reader.read(dvidUrl.getCoarseSparsevolUrl(
-                bodyId, m_dvidTarget.getBodyLabelName()).c_str());
+                bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
 
   ZObject3dScan obj;
   obj.importDvidObjectBuffer(
@@ -1316,7 +1322,7 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
-  bufferReader.read(dvidUrl.getLocalBodyIdUrl(x, y, z).c_str());
+  bufferReader.read(dvidUrl.getLocalBodyIdUrl(x, y, z).c_str(), isVerbose());
 
   ZJsonObject infoJson;
   infoJson.decodeString(bufferReader.getBuffer().data());
@@ -1354,7 +1360,7 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 {
   ZDvidUrl url(getDvidTarget());
   ZDvidBufferReader bufferReader;
-  bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str());
+  bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str(), isVerbose());
 
   ZFlyEmBodyAnnotation annotation;
   annotation.loadJsonString(bufferReader.getBuffer().constData());
@@ -1368,7 +1374,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
   ZJsonObject obj;
 
   ZDvidBufferReader bufferReader;
-  bufferReader.read(url.c_str());
+  bufferReader.read(url.c_str(), isVerbose());
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
     obj.decodeString(buffer.constData());

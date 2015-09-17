@@ -141,6 +141,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
     // following example in ZFlyEmProofMvc::syncDvidBookmarks()
     ZDvidReader reader;
+    reader.setVerbose(false);
     if (reader.open(target)) {
 
         // check for data name and key
@@ -188,10 +189,14 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             // as noted above, reader doesn't have "hasKey", so we search the range
             // also, ZJsonValue doesn't have toString, so we go via int
-            if (reader.readKeys("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()),
-                QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
+            if (reader.readKeys(
+                  ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                  QString::number(bkmk.value("body ID").toInteger()),
+                  QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
 
-                const QByteArray &temp = reader.readKeyValue("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()));
+                const QByteArray &temp = reader.readKeyValue(
+                      ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                      QString::number(bkmk.value("body ID").toInteger()));
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 

@@ -136,6 +136,9 @@ public:
 
   ZJsonObject readJsonObject(const std::string &url);
 
+  void setVerbose(bool verbose) { m_verbose = verbose; }
+  bool isVerbose() const { return m_verbose; }
+
 signals:
   void readingDone();
 
@@ -159,6 +162,7 @@ protected:
   QTimer *m_timer;
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
+  bool m_verbose;
 #if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService *m_service;
 #endif
