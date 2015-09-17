@@ -4,10 +4,7 @@
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
-
-#if _ENABLE_LIBDVIDCPP_
-#include "libdvid/DVIDThreadedFetch.h"
-#endif
+#include "libdvidheader.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {

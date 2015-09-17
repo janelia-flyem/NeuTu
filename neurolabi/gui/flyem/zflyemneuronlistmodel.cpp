@@ -407,19 +407,27 @@ bool ZFlyEmNeuronListModel::insertColumns(
 bool ZFlyEmNeuronListModel::removeRows(
     int row, int count, const QModelIndex &parent)
 {
-  beginRemoveRows(parent, row, row + count - 1);
-  endRemoveRows();
+  if (count > 0) {
+    beginRemoveRows(parent, row, row + count - 1);
+    endRemoveRows();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool ZFlyEmNeuronListModel::removeColumns(
     int col, int count, const QModelIndex &parent)
 {
-  beginRemoveColumns(parent, col, col + count - 1);
-  endRemoveColumns();
+  if (count > 0) {
+    beginRemoveColumns(parent, col, col + count - 1);
+    endRemoveColumns();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 void ZFlyEmNeuronListModel::exportCsv(const QString &path)
