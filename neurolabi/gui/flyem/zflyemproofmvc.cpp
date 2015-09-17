@@ -1766,6 +1766,7 @@ void ZFlyEmProofMvc::loadBookmark()
 void ZFlyEmProofMvc::openSequencer()
 {
   m_bodyInfoDlg->show();
+  m_bodyInfoDlg->raise();
 }
 
 
