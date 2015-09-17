@@ -118,14 +118,6 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
   connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
 
-  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
-  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
-  m_bodyViewWindow->showGraphAction->setCheckable(true);
-  m_bodyViewWindow->showGraphAction->setChecked(true);
-
-
-  m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("Control and Settings");
-  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
   m_bodyViewWindow->toolBar->addSeparator();
 
   m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
@@ -1488,7 +1480,7 @@ void ZFlyEmProofMvc::showExternalNeuronWindow()
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(2);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(2));
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1509,7 +1501,7 @@ void ZFlyEmProofMvc::showCoarseBody3d()
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(0);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(0));
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1531,7 +1523,7 @@ void ZFlyEmProofMvc::showFineBody3d()
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(1);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(1));
   }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
@@ -1548,7 +1540,7 @@ void ZFlyEmProofMvc::showSkeletonWindow()
     updateSkeletonWindow();
     m_skeletonWindow->setYZView();
   } else {
-    m_bodyViewers->setCurrentIndex(3);
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(3));
   }
 
   m_bodyViewWindow->setCurrentWidow(m_skeletonWindow);

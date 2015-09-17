@@ -161,16 +161,8 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
       buttonStatus[i][2] = false;
 
       windowStatus[i] = false;
-  }
 
-  preIndex = -1;
-
-  // default button status
-  for(int i=0; i<4; i++)
-  {
-      buttonStatus[i][0] = true;
-      buttonStatus[i][1] = false;
-      buttonStatus[i][2] = false;
+      tabLUT[i] = -1;
   }
 
   preIndex = -1;
@@ -267,40 +259,53 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
 
-      insertTab(index, window, title);
-      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
+      int insertIndex = insertTab(index, window, title);
 
-      setCurrentIndex(index);
+      tabLUT[index] = insertIndex;
+      setCurrentIndex(tabLUT[index]);
+
+      for(int i=index+1; i<4; i++)
+      {
+          if(tabLUT[i]>-1)
+          {
+              tabLUT[i]++;
+          }
+      }
+
+      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
 
       windowStatus[index] = true;
 
       updateWindow(index);
 
-      qDebug()<<"#####addWindow###currentindex"<<currentIndex();
-
+      qDebug()<<"#####addWindow###currentindex"<<currentIndex()<<index<<insertIndex;
   }
+}
+
+int Z3DTabWidget::getTabIndex(int index)
+{
+    return (tabLUT[index]);
 }
 
 void Z3DTabWidget::updateTabs(int index)
 {
-    if(windowStatus[index]==true)
-    {
-        emit tabIndexChanged(index);
-    }
-    else
-    {
-        // only one tab is opened
-        for(int i=0; i<4; i++)
-        {
-            if(windowStatus[i]==true)
-            {
-                emit tabIndexChanged(i);
-            }
-        }
-    }
+//    if(windowStatus[index]==true)
+//    {
+//        emit tabIndexChanged(index);
+//    }
+//    else
+//    {
+//        // only one tab is opened
+//        for(int i=0; i<4; i++)
+//        {
+//            if(windowStatus[i]==true)
+//            {
+//                emit tabIndexChanged(i);
+//            }
+//        }
+//    }
 
-    connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
-
+    emit tabIndexChanged(index);
 }
 
 void Z3DTabWidget::updateWindow(int index)
@@ -309,7 +314,7 @@ void Z3DTabWidget::updateWindow(int index)
 
     if(index>-1 && windowStatus[index]==true)
     {
-        Z3DWindow *w = (Z3DWindow *)(widget(index));
+        Z3DWindow *w = (Z3DWindow *)(widget(tabLUT[index]));
 
         if (w != NULL)
         {
@@ -320,46 +325,50 @@ void Z3DTabWidget::updateWindow(int index)
             w->getGraphFilter()->setVisible(buttonChecked);
             buttonStatus[index][0] = buttonChecked;
 
-            if(preIndex>-1 && windowStatus[preIndex]==true && preIndex!=index)
+            if(preIndex>-1)
             {
-                qDebug()<<"#####????"<<preIndex<<index;
-
-                Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
-
-                // settings
-                buttonChecked = w->getButtonStatus(1);
-                if(buttonChecked != preWin->getButtonStatus(1))
+                if(windowStatus[preIndex]==true && preIndex!=index)
                 {
-                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][1] = buttonChecked;
+
+                    qDebug()<<"###if###"<<preIndex<<index;
+
+                    Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
+
+                    // settings
+                    buttonChecked = w->getButtonStatus(1);
+                    if(buttonChecked != preWin->getButtonStatus(1))
+                    {
+                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][1] = buttonChecked;
+                    }
+
+                    // objects
+                    buttonChecked = w->getButtonStatus(2);
+                    if(buttonChecked != preWin->getButtonStatus(2))
+                    {
+                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][2] = buttonChecked;
+                    }
                 }
-
-                // objects
-                buttonChecked = w->getButtonStatus(2);
-                if(buttonChecked != preWin->getButtonStatus(2))
+                else
                 {
-                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][2] = buttonChecked;
-                }
-            }
-            else
-            {
-                qDebug()<<"#####"<<preIndex<<index;
+                    qDebug()<<"###else###"<<preIndex<<index;
 
-                // settings
-                buttonChecked = w->getButtonStatus(1);
-                if(buttonChecked != buttonStatus[preIndex][1])
-                {
-                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][1] = buttonChecked;
-                }
+                    // settings
+                    buttonChecked = w->getButtonStatus(1);
+                    if(buttonChecked != buttonStatus[preIndex][1])
+                    {
+                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][1] = buttonChecked;
+                    }
 
-                // objects
-                buttonChecked = w->getButtonStatus(2);
-                if(buttonChecked != buttonStatus[preIndex][2])
-                {
-                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][2] = buttonChecked;
+                    // objects
+                    buttonChecked = w->getButtonStatus(2);
+                    if(buttonChecked != buttonStatus[preIndex][2])
+                    {
+                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][2] = buttonChecked;
+                    }
                 }
             }
 
@@ -381,8 +390,13 @@ void Z3DTabWidget::closeAllWindows()
         closeWindow(i);
     }
 
-    qDebug()<<"######closeAllWindows"<<currentIndex();
-    preIndex = currentIndex();
+    for(int i=0; i<4; i++)
+    {
+        if(tabLUT[i]==currentIndex())
+        {
+            preIndex = i;
+        }
+    }
 }
 
 void Z3DTabWidget::closeWindow(int index)
