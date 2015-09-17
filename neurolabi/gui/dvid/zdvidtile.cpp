@@ -251,7 +251,7 @@ void ZDvidTile::setTileIndex(int ix, int iy)
 void ZDvidTile::update(int z)
 {
   if (m_z != z || m_image == NULL) {
-#if defined(_ENABLE_LIBDVIDCPP_2)
+#if defined(_ENABLE_LIBDVIDCPP_)
     std::vector<int> offset(3);
     offset[0] = m_ix;
     offset[1] = m_iy;
