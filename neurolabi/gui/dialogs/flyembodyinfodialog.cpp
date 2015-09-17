@@ -212,7 +212,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             }
 
-        emit loadCompleted();
+        // no "loadCompleted()" here; it's emitted in updateMode(), when it's done
         emit dataChanged(jsonDataObject.value("data"));
     }
 }
@@ -306,6 +306,8 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
 
     // currently initially sorting on # pre-synaptic sites
     ui->tableView->sortByColumn(2, Qt::DescendingOrder);
+
+    emit loadCompleted();
 }
 
 void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
