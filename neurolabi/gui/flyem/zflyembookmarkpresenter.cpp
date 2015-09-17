@@ -4,8 +4,8 @@
 ZFlyEmBookmarkPresenter::ZFlyEmBookmarkPresenter(QObject *parent) :
   ZAbstractModelPresenter(parent)
 {
-  m_fieldList << "   Type   " << "      X      " << "      Y      "
-              << "      Z      " << "    Body ID    "
+  m_fieldList << "   Type   " << "    Body ID    "
+              << "      Z      " << "      Y      " << "      X      "
               << "     User     " << "  Status  "
               << "  Time  ";
 }
@@ -26,14 +26,14 @@ QVariant ZFlyEmBookmarkPresenter::data(
         return "Other";
       }
       break;
-    case 4:
-      return (int) bookmark.getBodyId();
     case 1:
-      return bookmark.getLocation().getX();
+      return (int) bookmark.getBodyId();
     case 2:
-      return bookmark.getLocation().getY();
-    case 3:
       return bookmark.getLocation().getZ();
+    case 3:
+      return bookmark.getLocation().getY();
+    case 4:
+      return bookmark.getLocation().getX();
     case 5:
       return bookmark.getUserName();
     case 6:
