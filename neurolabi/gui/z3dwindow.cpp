@@ -215,6 +215,16 @@ void Z3DTabWidget::setYZView()
 
 }
 
+void Z3DTabWidget::resetCameraCenter()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCameraCenter();
+    }
+}
+
 void Z3DTabWidget::showGraph(bool v)
 {
     Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
@@ -251,96 +261,6 @@ void Z3DTabWidget::objectsPanel(bool v)
         buttonStatus[this->currentIndex()][2] = v;
     }
 
-}
-
-void Z3DTabWidget::resetCameraCenter()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCameraCenter();
-    }
-}
-
-<<<<<<< HEAD
-=======
-void Z3DTabWidget::resetCamera()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCamera();
-    }
-
-}
-
-void Z3DTabWidget::setXZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setXZView();
-    }
-
-}
-
-void Z3DTabWidget::setYZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setYZView();
-    }
-
-}
-
-void Z3DTabWidget::showGraph(bool v)
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getGraphFilter()->setVisible(v);
-        cur3Dwin->setButtonStatus(0,v);
-    }
-}
-
-void Z3DTabWidget::settingsPanel(bool v)
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
-        cur3Dwin->setButtonStatus(1,v);
-    }
-
-}
-
-void Z3DTabWidget::objectsPanel(bool v)
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
-        cur3Dwin->setButtonStatus(2,v);
-    }
-
-}
-
-void Z3DTabWidget::resetCameraCenter()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCameraCenter();
-    }
 }
 
 void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
