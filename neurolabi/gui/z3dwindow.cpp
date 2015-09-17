@@ -276,7 +276,7 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 
       windowStatus[index] = true;
 
-      updateWindow(index);
+      updateWindow(tabLUT[index]);
 
       qDebug()<<"#####addWindow###currentindex"<<currentIndex()<<index<<insertIndex;
   }
@@ -289,32 +289,28 @@ int Z3DTabWidget::getTabIndex(int index)
 
 void Z3DTabWidget::updateTabs(int index)
 {
-//    if(windowStatus[index]==true)
-//    {
-//        emit tabIndexChanged(index);
-//    }
-//    else
-//    {
-//        // only one tab is opened
-//        for(int i=0; i<4; i++)
-//        {
-//            if(windowStatus[i]==true)
-//            {
-//                emit tabIndexChanged(i);
-//            }
-//        }
-//    }
-
     emit tabIndexChanged(index);
 }
 
 void Z3DTabWidget::updateWindow(int index)
 {
-    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex();
+    int cur = -1;
 
-    if(index>-1 && windowStatus[index]==true)
+    for(int i=0; i<4; i++)
     {
-        Z3DWindow *w = (Z3DWindow *)(widget(tabLUT[index]));
+        if(tabLUT[i]==index)
+        {
+            cur = i;
+        }
+    }
+
+    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex()<<cur;
+
+    if(cur>-1 && windowStatus[cur]==true)
+    {
+        qDebug()<<"####updateWindow run";
+
+        Z3DWindow *w = (Z3DWindow *)(widget(index));
 
         if (w != NULL)
         {
@@ -323,23 +319,23 @@ void Z3DTabWidget::updateWindow(int index)
             // show graph
             buttonChecked = w->getButtonStatus(0);
             w->getGraphFilter()->setVisible(buttonChecked);
-            buttonStatus[index][0] = buttonChecked;
+            buttonStatus[cur][0] = buttonChecked;
 
             if(preIndex>-1)
             {
-                if(windowStatus[preIndex]==true && preIndex!=index)
+                if(windowStatus[preIndex]==true && preIndex!=cur)
                 {
 
-                    qDebug()<<"###if###"<<preIndex<<index;
+                    qDebug()<<"###if###"<<preIndex<<cur;
 
-                    Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
+                    Z3DWindow *preWin = (Z3DWindow *)(widget(tabLUT[preIndex]));
 
                     // settings
                     buttonChecked = w->getButtonStatus(1);
                     if(buttonChecked != preWin->getButtonStatus(1))
                     {
                         w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[index][1] = buttonChecked;
+                        buttonStatus[cur][1] = buttonChecked;
                     }
 
                     // objects
@@ -347,7 +343,7 @@ void Z3DTabWidget::updateWindow(int index)
                     if(buttonChecked != preWin->getButtonStatus(2))
                     {
                         w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[index][2] = buttonChecked;
+                        buttonStatus[cur][2] = buttonChecked;
                     }
                 }
                 else
@@ -359,7 +355,7 @@ void Z3DTabWidget::updateWindow(int index)
                     if(buttonChecked != buttonStatus[preIndex][1])
                     {
                         w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[index][1] = buttonChecked;
+                        buttonStatus[cur][1] = buttonChecked;
                     }
 
                     // objects
@@ -367,7 +363,7 @@ void Z3DTabWidget::updateWindow(int index)
                     if(buttonChecked != buttonStatus[preIndex][2])
                     {
                         w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[index][2] = buttonChecked;
+                        buttonStatus[cur][2] = buttonChecked;
                     }
                 }
             }
@@ -379,7 +375,7 @@ void Z3DTabWidget::updateWindow(int index)
         }
     }
 
-    preIndex = index;
+    preIndex = cur;
 
 }
 
