@@ -82,7 +82,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
 void ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
 {
-#if defined(_ENABLE_LIBDVIDCPP_2)
+#if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<std::vector<int> > tile_locs_array;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
        iter != tileIndices.end(); ++iter) {
@@ -167,7 +167,8 @@ void ZDvidTileEnsemble::update(
     if (tile != NULL) {
       ZDvidTileUpdateTask *task = new ZDvidTileUpdateTask(NULL, tile);
       task->setZ(z);
-      taskManager.addTask(task);
+      task->execute();
+//      taskManager.addTask(task);
       //      tile->display(painter, slice, option);
     }
   }

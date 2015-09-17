@@ -77,37 +77,53 @@ void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark *bookmark)
 bool ZFlyEmBookmarkListModel::insertRows(
     int row, int count, const QModelIndex &parent)
 {
-  beginInsertRows(parent, row, row + count - 1);
-  endInsertRows();
+  if (count > 0) {
+    beginInsertRows(parent, row, row + count - 1);
+    endInsertRows();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool ZFlyEmBookmarkListModel::insertColumns(
     int col, int count, const QModelIndex &parent)
 {
-  beginInsertColumns(parent, col, col + count - 1);
-  endInsertColumns();
+  if (count > 0) {
+    beginInsertColumns(parent, col, col + count - 1);
+    endInsertColumns();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool ZFlyEmBookmarkListModel::removeRows(
     int row, int count, const QModelIndex &parent)
 {
-  beginRemoveRows(parent, row, row + count - 1);
-  endRemoveRows();
+  if (count > 0) {
+    beginRemoveRows(parent, row, row + count - 1);
+    endRemoveRows();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool ZFlyEmBookmarkListModel::removeColumns(
     int col, int count, const QModelIndex &parent)
 {
-  beginRemoveColumns(parent, col, col + count - 1);
-  endRemoveColumns();
+  if (count > 0){
+    beginRemoveColumns(parent, col, col + count - 1);
+    endRemoveColumns();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 void ZFlyEmBookmarkListModel::update(int row)
