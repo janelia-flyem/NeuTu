@@ -234,7 +234,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-        if (bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&
+        if (/*bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&*/
             !bookmark->isCustom()) {
           m_bookmarkList.append(bookmark);
         }
