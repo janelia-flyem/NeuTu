@@ -54,6 +54,7 @@
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
 #include "zpunctaobjsmodel.h"
+#include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
 #include "zstring.h"
@@ -2380,8 +2381,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_COARSE_BODY &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY){
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3838,9 +3839,15 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
-    emit croppingSwcInRoi();
+    if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+      emit croppingSwcInRoi();
+    }
+  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
+             m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+    QMessageBox::warning(
+          this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
     selectSwcTreeNodeInRoi(false);
     m_doc->executeDeleteSwcNodeCommand();

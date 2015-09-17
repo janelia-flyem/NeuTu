@@ -204,6 +204,8 @@ private:
 
   ZFlyEmBody3dDoc *makeBodyDoc(ZFlyEmBody3dDoc::EBodyType bodyType);
 
+  void mergeCoarseBodyWindow();
+
   void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
                               bool isDeep);
   void updateBodyWindowForSplit();

@@ -17,6 +17,7 @@
 #include "zsharedpointer.h"
 
 class ZFlyEmProofDoc;
+class ZFlyEmBodyMerger;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -53,8 +54,6 @@ public:
     void syncBodySelection();
 
     void print() const;
-
-
   private:
     EAction m_action;
     uint64_t m_bodyId;
@@ -66,7 +65,7 @@ public:
     BODY_FULL, BODY_COARSE, BODY_SKELETON
   };
 
-  void setBodyType(EBodyType type) { m_bodyType = type; }
+  void setBodyType(EBodyType type);
   EBodyType getBodyType() { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
@@ -95,7 +94,12 @@ public:
 
   void printEventQueue() const;
 
+  void dumpAllSwc();
+
   void dumpGarbage(ZStackObject *obj);
+  void mergeBodyModel(const ZFlyEmBodyMerger &merger);
+
+  void processEventFunc();
 
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
@@ -112,6 +116,8 @@ private:
 
   void processBodySetBuffer();
 
+
+
 signals:
 
 public slots:
@@ -123,7 +129,6 @@ private slots:
   void clearGarbage();
 
 private:
-  void processEventFunc();
   void processEventFunc(const BodyEvent &event);
 
 private:

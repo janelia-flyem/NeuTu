@@ -12,6 +12,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zwidgetmessage.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zstring.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
@@ -301,6 +302,22 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
   }
 }
 
+void ZFlyEmBody3dDoc::setBodyType(EBodyType type)
+{
+  m_bodyType = type;
+  switch (m_bodyType) {
+  case BODY_COARSE:
+    setTag(NeuTube::Document::FLYEM_QUICK_BODY_COARSE);
+    break;
+  case BODY_FULL:
+    setTag(NeuTube::Document::FLYEM_QUICK_BODY);
+    break;
+  case BODY_SKELETON:
+    setTag(NeuTube::Document::FLYEM_SKELETON);
+    break;
+  }
+}
+
 void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -331,7 +348,7 @@ void ZFlyEmBody3dDoc::addEvent(
     ZDvidLabelSlice *labelSlice = getDataDocument()->getDvidLabelSlice();
 
     if (labelSlice != NULL) {
-      QColor color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
+      QColor color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
       color.setAlpha(255);
       event.setBodyColor(color);
     }
@@ -342,7 +359,11 @@ void ZFlyEmBody3dDoc::addEvent(
 
 void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 {
-  ZSwcTree *tree = makeBodyModel(bodyId);
+  ZSwcTree *tree = getBodyModel(bodyId);
+  if (tree == NULL) {
+    tree = makeBodyModel(bodyId);
+  }
+
   if (tree != NULL) {
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
@@ -350,7 +371,11 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     tree->setColor(color);
 
 //    delete tree;
+    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     addObject(tree, true);
+    processObjectModified(tree);
+    endObjectModifiedMode();
+    notifyObjectModified();
 
 //    removeObject(tree->getSource(), true);
 //    removeObject(tree, true);
@@ -498,4 +523,53 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
 
   m_garbageList.append(obj);
   m_garbageJustDumped = true;
+}
+
+void ZFlyEmBody3dDoc::dumpAllSwc()
+{
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    removeObject(tree, false);
+    dumpGarbage(tree);
+  }
+  m_bodySet.clear();
+}
+
+void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
+{
+  if (!merger.isEmpty()) {
+    QMap<uint64_t, ZSwcTree*> treeMap;
+    QList<ZSwcTree*> treeList = getSwcList();
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (tree != NULL) {
+        uint64_t bodyId =
+            ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+              tree->getSource());
+        if (bodyId > 0) {
+          treeMap[bodyId] = tree;
+        }
+      }
+    }
+
+    for (QMap<uint64_t, ZSwcTree*>::iterator iter = treeMap.begin();
+         iter != treeMap.end(); ++iter) {
+      uint64_t bodyId = iter.key();
+      ZSwcTree *tree = iter.value();
+      uint64_t finalLabel = merger.getFinalLabel(bodyId);
+      if (finalLabel != bodyId) {
+        ZSwcTree *targetTree = treeMap[finalLabel];
+        if (targetTree == NULL) {
+          removeObject(tree, false);
+        } else {
+          targetTree->merge(tree);
+        }
+        dumpGarbage(tree);
+      }
+    }
+    removeEmptySwcTree(false);
+  }
 }
