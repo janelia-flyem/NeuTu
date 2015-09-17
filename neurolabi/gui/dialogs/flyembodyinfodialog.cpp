@@ -39,25 +39,30 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui(new Ui::FlyEmBodyInfoDialog)
 {
     ui->setupUi(this);
-    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
     m_model = createModel(ui->tableView);
 
     m_proxy = new QSortFilterProxyModel(this);
     m_proxy->setSourceModel(m_model);
     m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    // -1 = filter on all columns!  ALL!  no column left behind!
+    m_proxy->setFilterKeyColumn(-1);
     ui->tableView->setModel(m_proxy);
 
     // UI connects
+    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
-    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
+    connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
+    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
 
     // data update connects
     // register our type so we can signal/slot it across threads:
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(clearLoadingLabel()));
+    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
 }
 
@@ -113,6 +118,15 @@ void FlyEmBodyInfoDialog::setLoadingLabel(QString label) {
 
 void FlyEmBodyInfoDialog::clearLoadingLabel() {
     ui->loadingLabel->setText("");
+}
+
+void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
+    m_proxy->setFilterFixedString(filterText);
+
+    // turns out you need to explicitly tell it to resort after the filter
+    //  changes; if you don't, and new filter shows more items, those items
+    //  will appear somewhere lower than the existing items
+    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
 }
 
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {

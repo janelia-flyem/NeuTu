@@ -34,6 +34,7 @@ private slots:
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
     void clearLoadingLabel();
+    void filterUpdated(QString filterText);
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
