@@ -329,7 +329,7 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
 
   connect(frame, SIGNAL(destroyed()), this, SLOT(shallowClear()));
 
-  m_dataFrame = dynamic_cast<ZFlyEmBodyMergeFrame*>(frame);
+  m_dataFrame = qobject_cast<ZFlyEmBodyMergeFrame*>(frame);
 
   connect(this, SIGNAL(originalLabelUpdated(ZArray*, QSet<uint64_t>*)),
           m_dataFrame->getCompleteDocument(),
@@ -889,7 +889,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }

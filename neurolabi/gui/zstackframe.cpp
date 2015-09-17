@@ -1336,7 +1336,7 @@ MainWindow* ZStackFrame::getMainWindow()
       parentObject = parentObject->parent();
     }
 
-    mainwin = dynamic_cast<MainWindow*>(parentObject);
+    mainwin = qobject_cast<MainWindow*>(parentObject);
   }
 
   return mainwin;
@@ -1761,7 +1761,7 @@ void ZStackFrame::MessageProcessor::processMessage(
   switch (message->getType()) {
   case ZMessage::TYPE_3D_VIS:
   {
-    ZStackFrame *frame = dynamic_cast<ZStackFrame*>(host);
+    ZStackFrame *frame = qobject_cast<ZStackFrame*>(host);
     if (frame != NULL) {
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
         frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);

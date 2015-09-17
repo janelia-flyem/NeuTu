@@ -744,7 +744,7 @@ void ZFlyEmRoiDialog::setDataFrame(ZStackFrame *frame)
 
 MainWindow* ZFlyEmRoiDialog::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(this->parentWidget());
+  return qobject_cast<MainWindow*>(this->parentWidget());
 }
 
 void ZFlyEmRoiDialog::shallowClearDataFrame()

@@ -2,16 +2,7 @@
 #include <iostream>
 #include <QThreadPool>
 
-ZTask::ZTask(QObject *parent) : QObject(parent) {
-  setAutoDelete(false);
-}
-
-void ZTask::run()
-{
-  execute();
-
-  emit finished();
-}
+#include "ztask.h"
 
 ZMultiTaskManager::ZMultiTaskManager(QObject *parent) :
   QObject(parent), m_activeTaskNumber(0)
@@ -108,33 +99,7 @@ void ZMultiTaskManager::process()
   }
 }
 
-/////////////Moc class for testing//////////////
-ZSquareTask::ZSquareTask(QObject *parent) :
-  ZTask(parent), m_value(0), m_result(0)
-{
-}
 
-void ZSquareTask::run()
-{
-#if _DEBUG_
-  std::cout << "Compute " << m_value << std::endl;
-#endif
-
-  m_result = m_value * m_value;
-
-  emit finished();
-
-#if _DEBUG_2
-  std::cout << "finished() emitted from ZSquareTask::run() " << std::endl;
-#endif
-}
-
-/*
-void ZSquareTask::test()
-{
-  std::cout << "ZSquareTask::test" << std::endl;
-}
-*/
 
 //////////////////////////////////////////////////////////////////
 ZSquareTaskManager::ZSquareTaskManager(QObject *parent) :

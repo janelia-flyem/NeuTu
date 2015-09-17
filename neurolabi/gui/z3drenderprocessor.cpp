@@ -89,7 +89,7 @@ void Z3DRenderProcessor::updateSize()
   if(resized) {
     const std::vector<ZParameter*> parameters = getParameters();
     for (size_t i=0; i<parameters.size(); ++i) {
-      Z3DCameraParameter* cameraPara = dynamic_cast<Z3DCameraParameter*>(parameters[i]);
+      Z3DCameraParameter* cameraPara = qobject_cast<Z3DCameraParameter*>(parameters[i]);
       if (cameraPara) {
         cameraPara->viewportChanged(maxOutportSize);
       }

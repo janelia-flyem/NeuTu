@@ -389,9 +389,9 @@ void Z3DNetworkEvaluator::buildNetwork()
   // update reverse sorted renderprocessors
   for (std::vector<Z3DProcessor*>::reverse_iterator rit = m_renderingOrder.rbegin();
        rit != m_renderingOrder.rend(); rit++) {
-    if (dynamic_cast<Z3DRenderProcessor*>(*rit) == 0)
+    if (qobject_cast<Z3DRenderProcessor*>(*rit) == 0)
       continue;
-    m_reverseSortedRenderProcessors.push_back(dynamic_cast<Z3DRenderProcessor*>(*rit));
+    m_reverseSortedRenderProcessors.push_back(qobject_cast<Z3DRenderProcessor*>(*rit));
   }
 }
 

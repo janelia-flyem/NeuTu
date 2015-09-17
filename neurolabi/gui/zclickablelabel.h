@@ -30,6 +30,8 @@ protected:
 
 class ZClickableColorLabel : public ZClickableLabel
 {
+  Q_OBJECT
+
 public:
   explicit ZClickableColorLabel(ZVec4Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
   explicit ZClickableColorLabel(ZVec3Parameter *color, QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -69,6 +71,8 @@ private:
 
 class ZClickableColorMapLabel : public ZClickableLabel
 {
+  Q_OBJECT
+
 public:
   explicit ZClickableColorMapLabel(ZColorMapParameter *colorMap, QWidget *parent = NULL,
                                    Qt::WindowFlags f = 0);

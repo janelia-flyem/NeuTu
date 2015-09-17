@@ -61,7 +61,7 @@ void ZFlyEmDataLoader::loadDataBundleFunc(const ZDvidFilter &filter)
 
 MainWindow* ZFlyEmDataLoader::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(parent());
+  return qobject_cast<MainWindow*>(parent());
 }
 
 void ZFlyEmDataLoader::createFrame(ZFlyEmDataBundle *data, const QString &source)

@@ -5,13 +5,14 @@
 #include <QVector>
 #include "zmultitaskmanager.h"
 #include "flyem/zflyemneuronlayermatcher.h"
+#include "ztask.h"
 
 class ZFlyEmNeuron;
 class ZFlyEmDataBundle;
 
 class ZFlyEmNeuronMatchTask : public ZTask
 {
-  //Q_OBJECT
+  Q_OBJECT
 
 public:
   ZFlyEmNeuronMatchTask(QObject *parent = NULL);
@@ -51,7 +52,7 @@ private:
 
 class ZFlyEmNeuronMatchTaskManager : public ZMultiTaskManager
 {
-  //Q_OBJECT
+  Q_OBJECT
 
 public:
   ZFlyEmNeuronMatchTaskManager(QObject *parent = NULL);

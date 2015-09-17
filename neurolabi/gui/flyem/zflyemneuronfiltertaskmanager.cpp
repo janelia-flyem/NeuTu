@@ -34,7 +34,7 @@ void ZFlyEmNeuronFilterTaskManager::postProcess()
 {
   foreach (ZTask *task, m_taskArray) {
     ZFlyEmNeuronFilterTask *filterTask =
-        dynamic_cast<ZFlyEmNeuronFilterTask*>(task);
+        qobject_cast<ZFlyEmNeuronFilterTask*>(task);
     if (filterTask != NULL) {
       m_filterResult.append(filterTask->getResult());
     }

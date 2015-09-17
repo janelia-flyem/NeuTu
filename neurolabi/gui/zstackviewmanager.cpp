@@ -55,7 +55,7 @@ void ZStackViewManager::print() const
 
 void ZStackViewManager::removeWidget()
 {
-  removeWidget(dynamic_cast<QWidget*>(sender()));
+  removeWidget(qobject_cast<QWidget*>(sender()));
 }
 
 void ZStackViewManager::removeWidget(QWidget *widget)
@@ -84,12 +84,12 @@ void ZStackViewManager::updateView(const ZStackViewParam &param)
   std::cout << "Slot: ZStackViewManager::updateView" << std::endl;
 #endif
 
-  QWidget *senderWidget = dynamic_cast<QWidget*>(sender());
+  QWidget *senderWidget = qobject_cast<QWidget*>(sender());
 
   QList<QWidget*> receiverList = m_windowGraph.values(senderWidget);
   for (QList<QWidget*>::iterator iter = receiverList.begin();
        iter != receiverList.end(); ++iter) {
-    ZStackFrame *frame = dynamic_cast<ZStackFrame*>(*iter);
+    ZStackFrame *frame = qobject_cast<ZStackFrame*>(*iter);
     if (frame != NULL) {
       frame->view()->setView(param);
     }

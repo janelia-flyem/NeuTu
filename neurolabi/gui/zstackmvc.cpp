@@ -59,7 +59,7 @@ void ZStackMvc::createView()
 {
   if (m_doc.get() != NULL) {
     //ZIntPoint size = m_doc->getStackSize();
-    m_view = new ZStackView(dynamic_cast<QWidget*>(this));
+    m_view = new ZStackView(qobject_cast<QWidget*>(this));
     m_layout->addWidget(m_view);
   }
 }
@@ -239,7 +239,7 @@ QMainWindow* ZStackMvc::getMainWindow() const
   QObject *parentObject = parent();
   while (parentObject != NULL) {
     parentObject = parentObject->parent();
-    mainwin = dynamic_cast<QMainWindow*>(parentObject);
+    mainwin = qobject_cast<QMainWindow*>(parentObject);
     if (mainwin != NULL) {
       break;
     }

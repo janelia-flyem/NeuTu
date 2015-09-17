@@ -80,7 +80,7 @@ void ZFlyEmNeuronMatchTaskManager::postProcess()
   if (!m_taskArray.empty()) {
     foreach (ZTask *task, m_taskArray) {
       ZFlyEmNeuronMatchTask *matchTask =
-          dynamic_cast<ZFlyEmNeuronMatchTask*>(task);
+          qobject_cast<ZFlyEmNeuronMatchTask*>(task);
       if (matchTask != NULL) {
         ZFlyEmNeuron *source = matchTask->getSource();
         ZFlyEmNeuron *target = matchTask->getTarget();

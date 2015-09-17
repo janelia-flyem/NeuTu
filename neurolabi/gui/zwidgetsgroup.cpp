@@ -116,7 +116,7 @@ QWidget *ZWidgetsGroup::createWidget(QMainWindow *mainWin, bool createBasic)
 {
   QLayout *lw = createLayout(mainWin, createBasic);
   // if is boxLayout, add strech to fill the space
-  QBoxLayout *blo = dynamic_cast<QBoxLayout*>(lw);
+  QBoxLayout *blo = qobject_cast<QBoxLayout*>(lw);
   if (blo)
     blo->addStretch();
   QWidget *widget = new QWidget();
@@ -140,7 +140,7 @@ QLayout *ZWidgetsGroup::createLayout(QMainWindow *mainWin, bool createBasic)
   }
   case PARAMETER: {
     QHBoxLayout *hbl = new QHBoxLayout;
-    if (dynamic_cast<Z3DCameraParameter*>(m_parameter)) {
+    if (qobject_cast<Z3DCameraParameter*>(m_parameter)) {
       QWidget* wg = m_parameter->createWidget();
       hbl->addWidget(wg);
       return hbl;
