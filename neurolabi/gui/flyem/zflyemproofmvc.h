@@ -262,6 +262,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(bodyViewTriggered()),
           this, SLOT(showFineBody3d()));
+  connect(panel, SIGNAL(skeletonViewTriggered()),
+          this, SLOT(showSkeletonWindow()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
