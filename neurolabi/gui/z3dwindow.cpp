@@ -54,6 +54,7 @@
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
 #include "zpunctaobjsmodel.h"
+#include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
 #include "zstring.h"
@@ -164,6 +165,16 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
 
   preIndex = -1;
 
+  // default button status
+  for(int i=0; i<4; i++)
+  {
+      buttonStatus[i][0] = true;
+      buttonStatus[i][1] = false;
+      buttonStatus[i][2] = false;
+  }
+
+  preIndex = -1;
+
 }
 
 QTabBar* Z3DTabWidget::tabBar()
@@ -252,6 +263,86 @@ void Z3DTabWidget::resetCameraCenter()
     }
 }
 
+<<<<<<< HEAD
+=======
+void Z3DTabWidget::resetCamera()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCamera();
+    }
+
+}
+
+void Z3DTabWidget::setXZView()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->setXZView();
+    }
+
+}
+
+void Z3DTabWidget::setYZView()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->setYZView();
+    }
+
+}
+
+void Z3DTabWidget::showGraph(bool v)
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getGraphFilter()->setVisible(v);
+        cur3Dwin->setButtonStatus(0,v);
+    }
+}
+
+void Z3DTabWidget::settingsPanel(bool v)
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
+        cur3Dwin->setButtonStatus(1,v);
+    }
+
+}
+
+void Z3DTabWidget::objectsPanel(bool v)
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+        cur3Dwin->setButtonStatus(2,v);
+    }
+
+}
+
+void Z3DTabWidget::resetCameraCenter()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCameraCenter();
+    }
+}
+
 void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
@@ -287,6 +378,9 @@ void Z3DTabWidget::updateTabs(int index)
             }
         }
     }
+
+    connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
+
 }
 
 void Z3DTabWidget::updateWindow(int index)
@@ -376,6 +470,10 @@ void Z3DTabWidget::closeWindow(int index)
   QWidget *w = widget(index);
   if (w != NULL) {
     w->close();
+
+    buttonStatus[index][0] = true;
+    buttonStatus[index][1] = false;
+    buttonStatus[index][2] = false;
   }
 
   windowStatus[index] = false;
@@ -2444,8 +2542,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_COARSE_BODY &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY){
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3902,9 +4000,15 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
-    emit croppingSwcInRoi();
+    if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+      emit croppingSwcInRoi();
+    }
+  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
+             m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+    QMessageBox::warning(
+          this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
     selectSwcTreeNodeInRoi(false);
     m_doc->executeDeleteSwcNodeCommand();

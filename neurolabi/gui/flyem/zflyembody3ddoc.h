@@ -17,6 +17,7 @@
 #include "zsharedpointer.h"
 
 class ZFlyEmProofDoc;
+class ZFlyEmBodyMerger;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -53,13 +54,19 @@ public:
     void syncBodySelection();
 
     void print() const;
-
   private:
     EAction m_action;
     uint64_t m_bodyId;
     QColor m_bodyColor;
     bool m_refreshing;
   };
+
+  enum EBodyType {
+    BODY_FULL, BODY_COARSE, BODY_SKELETON
+  };
+
+  void setBodyType(EBodyType type);
+  EBodyType getBodyType() { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
@@ -87,10 +94,16 @@ public:
 
   void printEventQueue() const;
 
+  void dumpAllSwc();
+
   void dumpGarbage(ZStackObject *obj);
+  void mergeBodyModel(const ZFlyEmBodyMerger &merger);
+
+  void processEventFunc();
 
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
+  ZSwcTree* getBodyModel(uint64_t bodyId);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
   void updateDvidInfo();
@@ -103,6 +116,8 @@ private:
 
   void processBodySetBuffer();
 
+
+
 signals:
 
 public slots:
@@ -114,12 +129,13 @@ private slots:
   void clearGarbage();
 
 private:
-  void processEventFunc();
   void processEventFunc(const BodyEvent &event);
 
 private:
   QSet<uint64_t> m_bodySet;
+  EBodyType m_bodyType;
 
+  bool m_quitting;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
