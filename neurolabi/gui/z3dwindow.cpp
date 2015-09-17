@@ -54,6 +54,7 @@
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
 #include "zpunctaobjsmodel.h"
+#include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
 #include "zstring.h"
@@ -160,6 +161,8 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
       buttonStatus[i][2] = false;
 
       windowStatus[i] = false;
+
+      tabLUT[i] = -1;
   }
 
   preIndex = -1;
@@ -204,6 +207,16 @@ void Z3DTabWidget::setYZView()
 
 }
 
+void Z3DTabWidget::resetCameraCenter()
+{
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->resetCameraCenter();
+    }
+}
+
 void Z3DTabWidget::showGraph(bool v)
 {
     Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
@@ -242,55 +255,66 @@ void Z3DTabWidget::objectsPanel(bool v)
 
 }
 
-void Z3DTabWidget::resetCameraCenter()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCameraCenter();
-    }
-}
-
 void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
 
-      insertTab(index, window, title);
-      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
+      int insertIndex = insertTab(index, window, title);
 
-      setCurrentIndex(index);
+      tabLUT[index] = insertIndex;
+      setCurrentIndex(tabLUT[index]);
+
+      for(int i=index+1; i<4; i++)
+      {
+          if(tabLUT[i]>-1)
+          {
+              tabLUT[i]++;
+          }
+      }
+
+      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
 
       windowStatus[index] = true;
 
       updateWindow(index);
+
+      qDebug()<<"#####addWindow###currentindex"<<currentIndex()<<index<<insertIndex;
   }
+}
+
+int Z3DTabWidget::getTabIndex(int index)
+{
+    return (tabLUT[index]);
 }
 
 void Z3DTabWidget::updateTabs(int index)
 {
-    if(windowStatus[index]==true)
-    {
-        emit tabIndexChanged(index);
-    }
-    else
-    {
-        // only one tab is opened
-        for(int i=0; i<4; i++)
-        {
-            if(windowStatus[i]==true)
-            {
-                emit tabIndexChanged(i);
-            }
-        }
-    }
+//    if(windowStatus[index]==true)
+//    {
+//        emit tabIndexChanged(index);
+//    }
+//    else
+//    {
+//        // only one tab is opened
+//        for(int i=0; i<4; i++)
+//        {
+//            if(windowStatus[i]==true)
+//            {
+//                emit tabIndexChanged(i);
+//            }
+//        }
+//    }
+
+    emit tabIndexChanged(index);
 }
 
 void Z3DTabWidget::updateWindow(int index)
 {
+    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex();
+
     if(index>-1 && windowStatus[index]==true)
     {
-        Z3DWindow *w = (Z3DWindow *)(widget(index));
+        Z3DWindow *w = (Z3DWindow *)(widget(tabLUT[index]));
 
         if (w != NULL)
         {
@@ -301,42 +325,50 @@ void Z3DTabWidget::updateWindow(int index)
             w->getGraphFilter()->setVisible(buttonChecked);
             buttonStatus[index][0] = buttonChecked;
 
-            if(preIndex>-1 && windowStatus[preIndex]==true && preIndex!=index)
+            if(preIndex>-1)
             {
-                Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
+                if(windowStatus[preIndex]==true && preIndex!=index)
+                {
 
-                // settings
-                buttonChecked = w->getButtonStatus(1);
-                if(buttonChecked != preWin->getButtonStatus(1))
-                {
-                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][1] = buttonChecked;
-                }
+                    qDebug()<<"###if###"<<preIndex<<index;
 
-                // objects
-                buttonChecked = w->getButtonStatus(2);
-                if(buttonChecked != preWin->getButtonStatus(2))
-                {
-                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][2] = buttonChecked;
-                }
-            }
-            else
-            {
-                // settings
-                buttonChecked = w->getButtonStatus(1);
-                if(buttonChecked != buttonStatus[index][1])
-                {
-                    w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][1] = buttonChecked;
-                }
+                    Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
 
-                // objects
-                buttonChecked = w->getButtonStatus(2);
-                if(buttonChecked != buttonStatus[index][2])
+                    // settings
+                    buttonChecked = w->getButtonStatus(1);
+                    if(buttonChecked != preWin->getButtonStatus(1))
+                    {
+                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][1] = buttonChecked;
+                    }
+
+                    // objects
+                    buttonChecked = w->getButtonStatus(2);
+                    if(buttonChecked != preWin->getButtonStatus(2))
+                    {
+                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][2] = buttonChecked;
+                    }
+                }
+                else
                 {
-                    w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                    buttonStatus[index][2] = buttonChecked;
+                    qDebug()<<"###else###"<<preIndex<<index;
+
+                    // settings
+                    buttonChecked = w->getButtonStatus(1);
+                    if(buttonChecked != buttonStatus[preIndex][1])
+                    {
+                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][1] = buttonChecked;
+                    }
+
+                    // objects
+                    buttonChecked = w->getButtonStatus(2);
+                    if(buttonChecked != buttonStatus[preIndex][2])
+                    {
+                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[index][2] = buttonChecked;
+                    }
                 }
             }
 
@@ -357,6 +389,14 @@ void Z3DTabWidget::closeAllWindows()
     {
         closeWindow(i);
     }
+
+    for(int i=0; i<4; i++)
+    {
+        if(tabLUT[i]==currentIndex())
+        {
+            preIndex = i;
+        }
+    }
 }
 
 void Z3DTabWidget::closeWindow(int index)
@@ -364,14 +404,18 @@ void Z3DTabWidget::closeWindow(int index)
   QWidget *w = widget(index);
   if (w != NULL) {
     w->close();
+
+    buttonStatus[index][0] = true;
+    buttonStatus[index][1] = false;
+    buttonStatus[index][2] = false;
   }
 
   windowStatus[index] = false;
 
-  if(preIndex==index)
-  {
-      preIndex = -1;
-  }
+//  if(preIndex==index)
+//  {
+//      preIndex = -1;
+//  }
 
 }
 
@@ -2432,8 +2476,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_COARSE_BODY &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY){
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3890,9 +3934,15 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
-    emit croppingSwcInRoi();
+    if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
+      emit croppingSwcInRoi();
+    }
+  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
+             m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+    QMessageBox::warning(
+          this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
     selectSwcTreeNodeInRoi(false);
     m_doc->executeDeleteSwcNodeCommand();

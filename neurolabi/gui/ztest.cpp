@@ -17747,13 +17747,21 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_deform";
-  std::string baseName = "MBON-b1-a_deformed_byte";
+  std::string baseName = "MBON-a_1_deformed_byte";
 
   ZSwcTree tree;
   tree.load(dataDir + "/" + baseName + ".swc");
+
+  ZSwcTree::DepthFirstIterator treeIter(&tree);
+  while (treeIter.hasNext()) {
+    Swc_Tree_Node *tn = treeIter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      SwcTreeNode::setZ(tn, 570 - SwcTreeNode::z(tn));
+    }
+  }
 
   tree.rescale(20, 20, 20, false);
   tree.changeRadius(0, 10);
@@ -17782,7 +17790,7 @@ void ZTest::test(MainWindow *host)
   tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "9875", 8500);

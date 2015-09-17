@@ -43,6 +43,23 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
   return source;
 }
 
+uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+    const std::string &source)
+{
+  uint64_t id = 0;
+
+  ZString sourceBase = "#.FlyEmBody#";
+  if (source.length() > sourceBase.length()) {
+    ZString substr = source.substr(sourceBase.length() - 1);
+    std::vector<uint64_t> idArray = substr.toUint64Array();
+    if (idArray.size() == 1) {
+      id = idArray.front();
+    }
+  }
+
+  return id;
+}
+
 std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)
 {
   ZString source = "#.MutliResTile#";
