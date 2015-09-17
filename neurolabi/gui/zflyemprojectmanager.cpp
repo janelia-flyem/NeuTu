@@ -1,5 +1,7 @@
 #include "zflyemprojectmanager.h"
 
+#include <QWidget>
+
 #include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/flyembodysplitprojectdialog.h"
 

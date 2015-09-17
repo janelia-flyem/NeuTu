@@ -74,7 +74,7 @@ void ZFlyEmProofMvc::init()
 void ZFlyEmProofMvc::initBodyWindow()
 {
   m_bodyViewWindow = new Z3DMainWindow(this);
-  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D View"));
+  m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
   m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
   m_bodyViewers = new Z3DTabWidget(m_bodyViewWindow);
@@ -119,7 +119,9 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
           m_bodyViewers, SLOT(resetCameraCenter()));
 
-  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Show Graph");
+  m_bodyViewWindow->toolBar->addSeparator();
+
+  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
   connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
           m_bodyViewers, SLOT(showGraph(bool)));
   m_bodyViewWindow->showGraphAction->setCheckable(true);
@@ -127,7 +129,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
 
   m_bodyViewWindow->settingsAction =
-      m_bodyViewWindow->toolBar->addAction("Control&Settings");
+      m_bodyViewWindow->toolBar->addAction("ControlSettings");
   connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
@@ -222,8 +224,34 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
   }
 }
 
+ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
+    ZFlyEmBody3dDoc::EBodyType bodyType)
+{
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+  doc->setDvidTarget(getDvidTarget());
+//  doc->updateFrame();
+  doc->setDataDoc(m_doc);
+  doc->setBodyType(bodyType);
+
+  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+
+  return doc;
+}
+
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
+  m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+  setWindowSignalSlot(m_coarseBodyWindow);
+
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_coarseBodyWindow, m_dvidInfo,
+          m_doc->getParentMvc()->getView()->getViewParameter());
+  }
+
+  /*
   ZStackDoc *doc = new ZStackDoc;
   doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
 
@@ -244,19 +272,15 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //  update3DBodyView(false, true);
 
   getProgressSignal()->endProgress();
+  */
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
-  doc->setDvidTarget(getDvidTarget());
-//  doc->updateFrame();
-  doc->setDataDoc(m_doc);
-
-  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
-
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_bodyWindow);
+
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -267,13 +291,9 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
-  ZFlyEmBody3dDoc *skeletonDoc = new ZFlyEmBody3dDoc;
-  skeletonDoc->setDvidTarget(getDvidTarget());
-  skeletonDoc->setDataDoc(m_doc);
-  skeletonDoc->setBodyType(ZFlyEmBody3dDoc::BODY_SKELETON);
-  ZWidgetMessage::ConnectMessagePipe(skeletonDoc, this, false);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
 
-  m_skeletonWindow = m_bodyWindowFactory->make3DWindow(skeletonDoc);
+  m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_skeletonWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -298,14 +318,51 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
   }
 }
 
+void ZFlyEmProofMvc::mergeCoarseBodyWindow()
+{
+  if (m_coarseBodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+    if (doc != NULL){
+      doc->mergeBodyModel(*(getCompleteDocument()->getBodyMerger()));
+    }
+  }
+}
+
 void ZFlyEmProofMvc::updateCoarseBodyWindow()
 {
-  updateCoarseBodyWindow(false, false, false);
+  if (m_coarseBodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+
+//  updateCoarseBodyWindow(false, false, false);
 }
 
 void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
 {
-  updateCoarseBodyWindow(false, false, true);
+  if (m_coarseBodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllSwc();
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processEventFunc();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+    }
+  }
+//  updateCoarseBodyWindow(false, false, true);
 }
 
 void ZFlyEmProofMvc::updateBodyWindow()
@@ -336,6 +393,8 @@ void ZFlyEmProofMvc::updateSkeletonWindow()
 
 void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
 {
+  updateCoarseBodyWindow();
+#if 0
   if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped =
@@ -369,6 +428,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
     m_coarseBodyWindow->getDocument()->endObjectModifiedMode();
     m_coarseBodyWindow->getDocument()->notifyObjectModified();
   }
+#endif
 }
 
 void ZFlyEmProofMvc::updateCoarseBodyWindow(
@@ -916,7 +976,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     const std::set<uint64_t> &selected = slice->getSelectedOriginal();
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
-    updateCoarseBodyWindow(false, false, false);
+    updateCoarseBodyWindow();
     updateBodyWindow();
     updateSkeletonWindow();
 //    m_mergeProject.update3DBodyView();
@@ -1249,7 +1309,8 @@ void ZFlyEmProofMvc::updateSplitBody()
 #endif
     if (m_coarseBodyWindow != NULL) {
       m_coarseBodyWindow->removeRectRoi();
-      updateCoarseBodyWindow(false, false, true);
+      updateCoarseBodyWindowDeep();
+//      updateCoarseBodyWindow(false, false, true);
     }
     updateBodyWindow();
   }
@@ -1436,13 +1497,15 @@ void ZFlyEmProofMvc::showCoarseBody3d()
   if (m_coarseBodyWindow == NULL) {
     makeCoarseBodyWindow();
     m_bodyViewers->addWindow(0, m_coarseBodyWindow, "Coarse Body View");
+    updateCoarseBodyWindow();
+    m_coarseBodyWindow->setYZView();
   }
   else
   {
       m_bodyViewers->setCurrentIndex(0);
   }
 
-  updateCoarseBodyWindow(false, true, false);
+//  updateCoarseBodyWindow(false, true, false);
 
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();
@@ -1547,6 +1610,7 @@ void ZFlyEmProofMvc::commitMerge()
                           "Do you want to upload the merging result now? "
                           "It cannot be undone. ",
                           this)) {
+    mergeCoarseBodyWindow();
     m_mergeProject.uploadResult();
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {
@@ -2059,6 +2123,10 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
                   getCompleteDocument()->getBodyForSplit());
             getCompleteDocument()->notifyObjectModified();
           }
+        } else {
+          emit messageGenerated(
+                ZWidgetMessage("Must enter split mode to enable crop.",
+                               NeuTube::MSG_WARNING));
         }
       }
     }

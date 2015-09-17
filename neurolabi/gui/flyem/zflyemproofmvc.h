@@ -10,6 +10,7 @@
 #include "qthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
+#include "flyem/zflyembody3ddoc.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -200,6 +201,10 @@ private:
   void makeSkeletonWindow();
   void makeSplitWindow();
   void makeExternalNeuronWindow();
+
+  ZFlyEmBody3dDoc *makeBodyDoc(ZFlyEmBody3dDoc::EBodyType bodyType);
+
+  void mergeCoarseBodyWindow();
 
   void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
                               bool isDeep);

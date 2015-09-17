@@ -14,6 +14,7 @@ public:
   static std::string MakeRectRoiSource(const std::string &suffix = "");
   static std::string MakeFlyEmBodyMaskSource(uint64_t bodyId);
   static std::string MakeFlyEmBodySource(uint64_t bodyId);
+  static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
   static std::string MakeDvidLabelSliceSource();

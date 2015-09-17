@@ -39,30 +39,37 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui(new Ui::FlyEmBodyInfoDialog)
 {
     ui->setupUi(this);
-    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(onOpenButton()));
-    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
 
     m_model = createModel(ui->tableView);
-    ui->tableView->setModel(m_model);
-    ui->tableView->resizeColumnsToContents();
+
+    m_proxy = new QSortFilterProxyModel(this);
+    m_proxy->setSourceModel(m_model);
+    m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    // -1 = filter on all columns!  ALL!  no column left behind!
+    m_proxy->setFilterKeyColumn(-1);
+    ui->tableView->setModel(m_proxy);
 
     // UI connects
+    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
-    connect(ui->autoloadCheckBox, SIGNAL(stateChanged(int)), this, SLOT(autoloadChanged(int)));
-    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
+    connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
+    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
 
     // data update connects
     // register our type so we can signal/slot it across threads:
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(clearLoadingLabel()));
+    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
 }
 
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
   if (modelIndex.column() == 0) {
-    QStandardItem *item = m_model->itemFromIndex(modelIndex);
+    QStandardItem *item = m_model->itemFromIndex(m_proxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
 #ifdef _DEBUG_
@@ -73,25 +80,20 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
   }
 }
 
-void FlyEmBodyInfoDialog::autoloadChanged(int state) {
-    // if new state = on, trigger load with current dvid target
-    if (state != 0) {
-        dvidTargetChanged(m_currentDvidTarget);
-    }
-}
-
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 #ifdef _DEBUG_
     std::cout << "dvid target changed to " << target.getUuid() << std::endl;
 #endif
 
-    // store dvid target (in case autoload is off now and turned on later)
+    // store dvid target (may not be necessary, now that I removed the
+    //  option to turn off autoload?)
     m_currentDvidTarget = target;
 
-    // if target isn't null and autoload on, trigger load in thread
-    if (target.isValid() && ui->autoloadCheckBox->isChecked()) {
+    // if target isn't null, trigger load in thread
+    if (target.isValid()) {
         // clear the model regardless at this point
         m_model->clear();
+        setLoadingLabel("Loading...");
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
     }
 }
@@ -110,17 +112,36 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
 }
 
+void FlyEmBodyInfoDialog::setLoadingLabel(QString label) {
+    ui->loadingLabel->setText(label);
+}
+
+void FlyEmBodyInfoDialog::clearLoadingLabel() {
+    ui->loadingLabel->setText("");
+}
+
+void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
+    m_proxy->setFilterFixedString(filterText);
+
+    // turns out you need to explicitly tell it to resort after the filter
+    //  changes; if you don't, and new filter shows more items, those items
+    //  will appear somewhere lower than the existing items
+    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+}
+
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 #ifdef _DEBUG_
     std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
 #endif
 
     if (!target.isValid()) {
+        emit loadCompleted();
         return;
     }
 
     // following example in ZFlyEmProofMvc::syncDvidBookmarks()
     ZDvidReader reader;
+    reader.setVerbose(false);
     if (reader.open(target)) {
 
         // check for data name and key
@@ -128,6 +149,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body annotations" << std::endl;
             #endif
+            emit loadCompleted();
             return;
         }
 
@@ -138,6 +160,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body_synapses key" << std::endl;
             #endif
+            emit loadCompleted();
             return;
         }
 
@@ -149,6 +172,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
         // validate; this method does its own error notifications
         if (!isValidBookmarkFile(jsonDataObject)) {
+            emit loadCompleted();
             return;
         }
 
@@ -165,10 +189,14 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             // as noted above, reader doesn't have "hasKey", so we search the range
             // also, ZJsonValue doesn't have toString, so we go via int
-            if (reader.readKeys("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()),
-                QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
+            if (reader.readKeys(
+                  ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                  QString::number(bkmk.value("body ID").toInteger()),
+                  QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
 
-                const QByteArray &temp = reader.readKeyValue("bodies3_annotations", QString::number(bkmk.value("body ID").toInteger()));
+                const QByteArray &temp = reader.readKeyValue(
+                      ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                      QString::number(bkmk.value("body ID").toInteger()));
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 
@@ -178,38 +206,20 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                     std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
                 #endif
 
-                // now push the value back in:
+                // now push the value back in; don't put empty strings in (messes with sorting)
                 // updateModel expects "body status", not "status" (matches original file version)
-                if (tempJson.hasKey("status")) {
+                if (tempJson.hasKey("status") && strlen(ZJsonParser::stringValue(tempJson["status"])) > 0) {
                     bkmk.setEntry("body status", tempJson["status"]);
                 }
-                if (tempJson.hasKey("name")) {
+                if (tempJson.hasKey("name") && strlen(ZJsonParser::stringValue(tempJson["name"])) > 0) {
                     bkmk.setEntry("name", tempJson["name"]);
                     }
                 }
             }
 
+        // no "loadCompleted()" here; it's emitted in updateMode(), when it's done
         emit dataChanged(jsonDataObject.value("data"));
     }
-}
-
-void FlyEmBodyInfoDialog::importBookmarksFile(const QString &filename) {
-    ZJsonObject jsonObject;
-
-    if (!jsonObject.load(filename.toStdString())) {
-        emit jsonLoadError("Error parsing JSON file!  Are you sure this is a Fly EM JSON file?");
-        return;
-    }
-
-    if (!isValidBookmarkFile(jsonObject)) {
-        emit jsonLoadError("JSON file invalid!  Are you sure this is a Fly EM JSON bookmarks file?");
-        return;
-    }
-
-    // update model from the object, or the data piece of it
-    ZJsonValue dataObject = jsonObject.value("data");
-    emit dataChanged(dataObject);
-
 }
 
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
@@ -251,14 +261,6 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
 
 void FlyEmBodyInfoDialog::onCloseButton() {
     close();
-}
-
-void FlyEmBodyInfoDialog::onOpenButton() {
-  QString filename =
-      ZDialogFactory::GetOpenFileName("Open bookmarks file", "", this);
-  if (!filename.isEmpty()) {
-    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksFile, filename);
-  }
 }
 
 /*
@@ -303,10 +305,14 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_model->setItem(i, 4, new QStandardItem(QString(status)));
         }
     }
+    // the resize isn't reliable, so set the name column wider by hand
     ui->tableView->resizeColumnsToContents();
+    ui->tableView->setColumnWidth(1, 150);
 
     // currently initially sorting on # pre-synaptic sites
     ui->tableView->sortByColumn(2, Qt::DescendingOrder);
+
+    emit loadCompleted();
 }
 
 void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
