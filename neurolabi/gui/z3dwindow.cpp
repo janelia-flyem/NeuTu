@@ -219,38 +219,46 @@ void Z3DTabWidget::resetCameraCenter()
 
 void Z3DTabWidget::showGraph(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
         cur3Dwin->getGraphFilter()->setVisible(v);
         cur3Dwin->setButtonStatus(0,v);
-        buttonStatus[this->currentIndex()][0] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][0] = v;
     }
 }
 
 void Z3DTabWidget::settingsPanel(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
         cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[this->currentIndex()][1] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][1] = v;
     }
 
 }
 
 void Z3DTabWidget::objectsPanel(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
+        qDebug()<<"####objects toggle ??? #####";
+
         cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[this->currentIndex()][2] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][2] = v;
     }
 
 }
@@ -287,12 +295,7 @@ int Z3DTabWidget::getTabIndex(int index)
     return (tabLUT[index]);
 }
 
-void Z3DTabWidget::updateTabs(int index)
-{
-    emit tabIndexChanged(index);
-}
-
-void Z3DTabWidget::updateWindow(int index)
+int Z3DTabWidget::getRealIndex(int index)
 {
     int cur = -1;
 
@@ -303,6 +306,18 @@ void Z3DTabWidget::updateWindow(int index)
             cur = i;
         }
     }
+
+    return cur;
+}
+
+void Z3DTabWidget::updateTabs(int index)
+{
+    emit tabIndexChanged(index);
+}
+
+void Z3DTabWidget::updateWindow(int index)
+{
+    int cur = getRealIndex(index);
 
     qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex()<<cur;
 
@@ -360,8 +375,13 @@ void Z3DTabWidget::updateWindow(int index)
 
                     // objects
                     buttonChecked = w->getButtonStatus(2);
+
+                    qDebug()<<"####objects"<<buttonChecked<<buttonStatus[preIndex][2];
+
                     if(buttonChecked != buttonStatus[preIndex][2])
                     {
+                        qDebug()<<"####objects toggle";
+
                         w->getObjectsDockWidget()->toggleViewAction()->trigger();
                         buttonStatus[cur][2] = buttonChecked;
                     }
@@ -383,16 +403,18 @@ void Z3DTabWidget::closeAllWindows()
 {
     for(int i=0; i<4; i++)
     {
-        closeWindow(i);
-    }
-
-    for(int i=0; i<4; i++)
-    {
         if(tabLUT[i]==currentIndex())
         {
             preIndex = i;
         }
+
+        tabLUT[i] = -1;
     }
+
+    for(int i=0; i<4; i++)
+    {
+        closeWindow(i);
+    } 
 }
 
 void Z3DTabWidget::closeWindow(int index)
@@ -407,11 +429,6 @@ void Z3DTabWidget::closeWindow(int index)
   }
 
   windowStatus[index] = false;
-
-//  if(preIndex==index)
-//  {
-//      preIndex = -1;
-//  }
 
 }
 
