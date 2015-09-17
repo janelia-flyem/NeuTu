@@ -42,14 +42,16 @@ bool ZSwcFileListModel::removeRows(int row, int count,
 {
   bool removed = false;
 
-  beginRemoveRows(parent, row, row + count - 1);
-  for (int i = 0; i < count; ++i) {
-    if (row < m_fileList.size()) {
-      m_fileList.removeAt(row);
-      removed = true;
+  if (count > 0) {
+    beginRemoveRows(parent, row, row + count - 1);
+    for (int i = 0; i < count; ++i) {
+      if (row < m_fileList.size()) {
+        m_fileList.removeAt(row);
+        removed = true;
+      }
     }
+    endRemoveRows();
   }
-  endRemoveRows();
 
   return removed;
 }

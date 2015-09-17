@@ -1,5 +1,6 @@
 #include "zeventlistenerparameter.h"
 #include <QLabel>
+#include <QEvent>
 
 ZEventListenerParameter::ZEventListenerParameter(const QString &name, bool acceptEvent, bool sharing, QObject *parent)
   : ZParameter(name, parent)
@@ -32,7 +33,12 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
   if (!isAcceptingEvent())
     return;
 
-  if (QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(e)) {
+//  if (QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(e)) {
+  if (e->type() == QEvent::MouseMove ||
+      e->type() == QEvent::MouseButtonPress ||
+      e->type() == QEvent::MouseButtonRelease ||
+      e->type() == QEvent::MouseButtonDblClick) {
+    QMouseEvent *mouseEvent = (QMouseEvent*) e;
     bool accept = false;
     for (int i=0; i<m_mouseEvents.size(); i++) {
       accept = true;
@@ -52,7 +58,9 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
       if (m_sharing)
         e->ignore();
     }
-  } else if (QWheelEvent *wheelEvent = dynamic_cast<QWheelEvent*>(e)) {
+  } else if (e->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) (e);
+//             QWheelEvent *wheelEvent = dynamic_cast<QWheelEvent*>(e)) {
     bool accept = false;
     for (int i=0; i<m_mouseEvents.size(); i++) {
       accept = true;
@@ -69,7 +77,9 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
       if (m_sharing)
         e->ignore();
     }
-  } else if (QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e)) {
+//  } else if (QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e)) {
+  } else if (e->type() == QEvent::KeyPress) {
+    QKeyEvent *keyEvent = (QKeyEvent*) e;
     bool accept = false;
     for (int i=0; i<m_keyEvents.size(); i++) {
       accept = true;
