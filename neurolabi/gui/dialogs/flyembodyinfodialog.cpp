@@ -19,6 +19,7 @@
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
 #include "zdialogfactory.h"
+#include "zstring.h"
 
 /*
  * this dialog displays a list of bodies and their properties; data is
@@ -184,18 +185,42 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
             std::cout << "number of bookmarks to process = " << bookmarks.size() << std::endl;
         #endif
 
+        QString bodyAnnotationName = ZDvidData::GetName(
+              ZDvidData::ROLE_BODY_ANNOTATION,
+              ZDvidData::ROLE_BODY_LABEL,
+              target.getBodyLabelName()).c_str();
+
+        QStringList keyList = reader.readKeys(bodyAnnotationName);
+        QSet<uint64_t> bodySet;
+        foreach (const QString &str, keyList) {
+          std::vector<uint64_t> bodyIdArray =
+              ZString(str.toStdString()).toUint64Array();
+          if (bodyIdArray.size() == 1) {
+            uint64_t bodyId = bodyIdArray.front();
+            if (bodyId > 0) {
+              bodySet.insert(bodyId);
+            }
+          }
+        }
+
         for (size_t i = 0; i < bookmarks.size(); ++i) {
             ZJsonObject bkmk(bookmarks.at(i), false);
 
             // as noted above, reader doesn't have "hasKey", so we search the range
             // also, ZJsonValue doesn't have toString, so we go via int
+            /*
             if (reader.readKeys(
                   ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
                   QString::number(bkmk.value("body ID").toInteger()),
                   QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
-
-                const QByteArray &temp = reader.readKeyValue(
-                      ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                  */
+            /*
+            if (reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                              QString::number(bkmk.value("body ID").toInteger()))) {
+                              */
+            uint64_t bodyId = bkmk.value("body ID").toInteger();
+            if (bodySet.contains(bodyId)) {
+                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName,
                       QString::number(bkmk.value("body ID").toInteger()));
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
