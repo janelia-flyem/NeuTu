@@ -227,7 +227,7 @@ void Z3DTabWidget::showGraph(bool v)
     {
         cur3Dwin->getGraphFilter()->setVisible(v);
         cur3Dwin->setButtonStatus(0,v);
-        buttonStatus[ tabLUT[getRealIndex(index)] ][0] = v;
+        buttonStatus[getRealIndex(index)][0] = v;
     }
 }
 
@@ -241,7 +241,7 @@ void Z3DTabWidget::settingsPanel(bool v)
     {
         cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[ tabLUT[getRealIndex(index)] ][1] = v;
+        buttonStatus[getRealIndex(index)][1] = v;
     }
 
 }
@@ -254,11 +254,9 @@ void Z3DTabWidget::objectsPanel(bool v)
 
     if(cur3Dwin)
     {
-        qDebug()<<"####objects toggle ??? #####";
-
         cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[ tabLUT[getRealIndex(index)] ][2] = v;
+        buttonStatus[getRealIndex(index)][2] = v;
     }
 
 }
@@ -267,9 +265,8 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
 
-      int insertIndex = insertTab(index, window, title);
+      tabLUT[index] = insertTab(index, window, title);
 
-      tabLUT[index] = insertIndex;
       setCurrentIndex(tabLUT[index]);
 
       for(int i=index+1; i<4; i++)
@@ -285,8 +282,6 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
       windowStatus[index] = true;
 
       updateWindow(tabLUT[index]);
-
-      qDebug()<<"#####addWindow###currentindex"<<currentIndex()<<index<<insertIndex;
   }
 }
 
@@ -299,11 +294,14 @@ int Z3DTabWidget::getRealIndex(int index)
 {
     int cur = -1;
 
-    for(int i=0; i<4; i++)
+    if(index>-1)
     {
-        if(tabLUT[i]==index)
+        for(int i=0; i<4; i++)
         {
-            cur = i;
+            if(tabLUT[i]==index)
+            {
+                cur = i;
+            }
         }
     }
 
@@ -393,14 +391,15 @@ void Z3DTabWidget::updateWindow(int index)
             emit buttonSettingsToggled(w->getButtonStatus(1));
             emit buttonObjectsToggled(w->getButtonStatus(2));
         }
-    }
 
-    preIndex = cur;
+        preIndex = cur;
+    }
 
 }
 
 void Z3DTabWidget::closeAllWindows()
 {
+
     for(int i=0; i<4; i++)
     {
         if(tabLUT[i]==currentIndex())
