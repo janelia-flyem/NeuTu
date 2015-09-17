@@ -68,7 +68,7 @@ bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y, double z)
 //Swc_Tree_Node* ZStackDocHitTest::getHitSwcNode() const
 //{
 //  Swc_Tree_Node *tn = NULL;
-//  ZSwcTree *tree = dynamic_cast<ZSwcTree*>(m_hitObject);
+//  ZSwcTree *tree = qobject_cast<ZSwcTree*>(m_hitObject);
 //  if (tree != NULL) {
 //    tn = tree->getHitNode();
 //  }
@@ -78,17 +78,17 @@ bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y, double z)
 
 //ZStroke2d* ZStackDocHitTest::getHitStroke2d() const
 //{
-//  return dynamic_cast<ZStroke2d*>(m_hitObject);
+//  return qobject_cast<ZStroke2d*>(m_hitObject);
 //}
 
 //ZObject3d* ZStackDocHitTest::getObj3d() const
 //{
-//  return dynamic_cast<ZObject3d*>(m_hitObject);
+//  return qobject_cast<ZObject3d*>(m_hitObject);
 //}
 
 //ZPunctum* ZStackDocHitTest::getPunctum() const
 //{
-//  return dynamic_cast<ZPunctum*>(m_hitObject);
+//  return qobject_cast<ZPunctum*>(m_hitObject);
 //}
 
 template<>

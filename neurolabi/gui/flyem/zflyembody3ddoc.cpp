@@ -171,7 +171,7 @@ void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 
 ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
+  return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
@@ -366,7 +366,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 
   if (tree != NULL) {
 #ifdef _DEBUG_
-    std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
+    std::cout << "Adding object: " << qobject_cast<ZStackObject*>(tree) << std::endl;
 #endif
     tree->setColor(color);
 
@@ -411,7 +411,7 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId)
         ZStackObject::TYPE_SWC,
         ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-  ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+  ZSwcTree *tree = qobject_cast<ZSwcTree*>(obj);
 
   return tree;
 }

@@ -209,7 +209,7 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
         doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      const ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(*iter);
       if (bookmark != NULL) {
         if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
@@ -233,7 +233,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
       //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
-        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+        const ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(*iter);
         if (/*bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&*/
             !bookmark->isCustom()) {
           m_bookmarkList.append(bookmark);

@@ -204,7 +204,7 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
           iround(image.height() / image.getTransform().getSy()));
     QRect sourceRect = QRect(0, 0, image.width(), image.height());
     m_painter.drawImage(targetRect,
-                        dynamic_cast<const QImage&>(image), sourceRect);
+                        qobject_cast<const QImage&>(image), sourceRect);
     setPainted(true);
   }
 }
@@ -251,7 +251,7 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
           iround(sourceRect.height() / image.getTransform().getSy()));
 
     m_painter.drawPixmap(
-          targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
+          targetRect, qobject_cast<const QPixmap&>(image), sourceRect);
 
     setPainted(true);
   }
@@ -277,7 +277,7 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
 
     if (sourceRect.isValid()) {
       m_painter.drawPixmap(
-            targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
+            targetRect, qobject_cast<const QPixmap&>(image), sourceRect);
 
       setPainted(true);
     }

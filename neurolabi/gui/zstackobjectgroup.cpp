@@ -289,7 +289,7 @@ TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType type)
 
 const TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType type) const
 {
-  return dynamic_cast<const TStackObjectList&>(
+  return qobject_cast<const TStackObjectList&>(
         const_cast<ZStackObjectGroup&>(*this).getObjectList(type));
 }
 
@@ -305,7 +305,7 @@ TStackObjectSet& ZStackObjectGroup::getSelectedSet(ZStackObject::EType type)
 const TStackObjectSet& ZStackObjectGroup::getSelectedSet(
     ZStackObject::EType type) const
 {
-  return dynamic_cast<const TStackObjectSet&>(
+  return qobject_cast<const TStackObjectSet&>(
         const_cast<ZStackObjectGroup&>(*this).getSelectedSet(type));
 }
 

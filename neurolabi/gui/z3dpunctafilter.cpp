@@ -720,6 +720,6 @@ void Z3DPunctaFilter::setSelectedPuncta(const QSet<ZStackObject*> &selected)
   for (QSet<ZStackObject *>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     m_selectedPuncta.insert(
-          const_cast<ZPunctum*>(dynamic_cast<const ZPunctum*>(*iter)));
+          const_cast<ZPunctum*>(qobject_cast<const ZPunctum*>(*iter)));
   }
 }

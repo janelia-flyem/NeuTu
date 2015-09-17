@@ -340,7 +340,7 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
       obj.setEntry("location", arrayObj);
     }
 #if 0
-    ZPointGeometry *geometry = dynamic_cast<ZPointGeometry*>(m_geometry);
+    ZPointGeometry *geometry = qobject_cast<ZPointGeometry*>(m_geometry);
     if (geometry != NULL) {
       ptArray = geometry->toPointArray();
     }
@@ -356,7 +356,7 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
       arrayObj <<  x << y << z;
       obj.setEntry("location", arrayObj);
     } else {
-      ZCurveGeometry *geometry = dynamic_cast<ZCurveGeometry*>(m_geometry);
+      ZCurveGeometry *geometry = qobject_cast<ZCurveGeometry*>(m_geometry);
 
       if (geometry != NULL) {
         ZFlyEmCoordinateConverter converter;

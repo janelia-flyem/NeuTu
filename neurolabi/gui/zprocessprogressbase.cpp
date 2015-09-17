@@ -194,7 +194,7 @@ void ZProcessProgressBase::addParentOperation(ZProcessProgressBase *parentOp)
 void ZProcessProgressBase::processITKEvent(itk::Object *caller, const itk::EventObject &event)
 {
   if (typeid(itk::ProgressEvent) == typeid(event)) {
-    itk::ProcessObject* process =  dynamic_cast<itk::ProcessObject*>(caller);
+    itk::ProcessObject* process =  qobject_cast<itk::ProcessObject*>(caller);
     reportProgress(process, clamp(process->GetProgress()));
   }
 }
@@ -202,7 +202,7 @@ void ZProcessProgressBase::processITKEvent(itk::Object *caller, const itk::Event
 void ZProcessProgressBase::constProcessITKEvent(const itk::Object *caller, const itk::EventObject &event)
 {
   if (typeid(itk::ProgressEvent) == typeid(event)) {
-    const itk::ProcessObject* process =  dynamic_cast<const itk::ProcessObject*>(caller);
+    const itk::ProcessObject* process =  qobject_cast<const itk::ProcessObject*>(caller);
     reportProgress(process, clamp(process->GetProgress()));
   }
 }

@@ -19,7 +19,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
           doc->getObjectList(ZStackObject::TYPE_DVID_TILE_ENSEMBLE);
       if (!objList.isEmpty()) {
         ZDvidTileEnsemble *obj =
-            dynamic_cast<ZDvidTileEnsemble*>(objList.first());
+            qobject_cast<ZDvidTileEnsemble*>(objList.first());
         if (obj->isVisible()) {
           if (obj->getView() != NULL) {
             m_currentZ = obj->getView()->getCurrentZ();
@@ -33,7 +33,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
       const TStackObjectList &objList =
           doc->getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
       if (!objList.isEmpty()) {
-        ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(objList.first());
+        ZDvidLabelSlice *obj = qobject_cast<ZDvidLabelSlice*>(objList.first());
         if (obj->isVisible()) {
           m_currentZ = obj->getViewParam().getZ();
           m_hasCurrentZ = true;

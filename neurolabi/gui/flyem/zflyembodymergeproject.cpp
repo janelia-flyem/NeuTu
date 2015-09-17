@@ -329,7 +329,7 @@ void ZFlyEmBodyMergeProject::setDataFrame(ZStackFrame *frame)
 
   connect(frame, SIGNAL(destroyed()), this, SLOT(shallowClear()));
 
-  m_dataFrame = dynamic_cast<ZFlyEmBodyMergeFrame*>(frame);
+  m_dataFrame = qobject_cast<ZFlyEmBodyMergeFrame*>(frame);
 
   connect(this, SIGNAL(originalLabelUpdated(ZArray*, QSet<uint64_t>*)),
           m_dataFrame->getCompleteDocument(),
@@ -752,7 +752,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
       ZSwcTree *tree = *iter;
       if (currentBodySourceSet.count(tree->getSource()) == 0) {
         m_coarseBodyWindow->getDocument()->removeObject(
-              dynamic_cast<ZStackObject*>(tree), true);
+              qobject_cast<ZStackObject*>(tree), true);
       } else {
         oldBodySourceSet.insert(tree->getSource());
       }
@@ -889,7 +889,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -912,7 +912,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
       ZSwcTree *tree = *iter;
       if (currentBodySourceSet.count(tree->getSource()) == 0) {
         m_coarseBodyWindow->getDocument()->removeObject(
-              dynamic_cast<ZStackObject*>(tree), true);
+              qobject_cast<ZStackObject*>(tree), true);
       } else {
         oldBodySourceSet.insert(tree->getSource());
       }
@@ -1053,7 +1053,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      ZObject3dScan *sparseObject = dynamic_cast<ZObject3dScan*>(obj);
+      ZObject3dScan *sparseObject = qobject_cast<ZObject3dScan*>(obj);
       if (sparseObject != NULL) {
         uint64_t label = sparseObject->getLabel();
 //        tic();
@@ -1091,7 +1091,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      ZObject3dScan *sparseObject = dynamic_cast<ZObject3dScan*>(obj);
+      ZObject3dScan *sparseObject = qobject_cast<ZObject3dScan*>(obj);
       if (sparseObject != NULL) {
         uint64_t label = sparseObject->getLabel();
         ZStackObject *obj = m_coarseBodyWindow->getDocument()->getObjectGroup().
@@ -1125,7 +1125,7 @@ int ZFlyEmBodyMergeProject::getSelectedBodyId() const
         m_dataFrame->document()->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
     if (objSet.size() == 1) {
       const ZObject3dScan* obj =
-          dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
+          qobject_cast<ZObject3dScan*>(*(objSet.begin()));
       bodyId = obj->getLabel();
     }
     */

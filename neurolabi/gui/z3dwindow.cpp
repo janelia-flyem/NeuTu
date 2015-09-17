@@ -137,7 +137,7 @@ void Z3DMainWindow::updateButtonObjects(bool v)
 
 Z3DTabWidget* Z3DMainWindow::getCentralTab() const
 {
-  return dynamic_cast<Z3DTabWidget*>(centralWidget());
+  return qobject_cast<Z3DTabWidget*>(centralWidget());
 }
 
 void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
@@ -501,7 +501,7 @@ void Z3DWindow::init(EInitMode mode)
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+    m_graphFilter->addData(*qobject_cast<Z3DGraph*>(*iter));
   }
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
@@ -1520,7 +1520,7 @@ void Z3DWindow::update3DGraphDisplay()
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+    m_graphFilter->addData(*qobject_cast<Z3DGraph*>(*iter));
   }
   updateGraphBoundBox();
 //  updateDecorationBoundBox();
@@ -1956,7 +1956,7 @@ void Z3DWindow::markSelectedPunctaProperty1()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty1("true");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -1966,7 +1966,7 @@ void Z3DWindow::markSelectedPunctaProperty2()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty2("true");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -1976,7 +1976,7 @@ void Z3DWindow::markSelectedPunctaProperty3()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty3("true");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -1986,7 +1986,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty1()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty1("");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -1996,7 +1996,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty2()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty2("");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -2006,7 +2006,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty3()
 {
   TStackObjectSet &objSet = m_doc->getSelected(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
-    ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
+    ZPunctum *punctum = qobject_cast<ZPunctum*>(*it);
     punctum->setProperty3("");
     m_doc->punctaObjsModel()->updateData(punctum);
   }
@@ -2116,7 +2116,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
     m_viewMenu->addAction(m_advancedSettingDockWidget->toggleViewAction());
   }
   m_advancedSettingDockWidget->showNormal();
-  QTabWidget *tabWidget = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+  QTabWidget *tabWidget = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
   for (int i=0; i<tabWidget->count(); i++) {
     if (tabWidget->tabText(i) == name) {
       tabWidget->setCurrentIndex(i);
@@ -2187,15 +2187,15 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  //  QScrollArea *oldSA = dynamic_cast<QScrollArea*>(m_settingsDockWidget->widget());
+  //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
   //    QScrollBar *bar = oldSA->verticalScrollBar();
   //    oldScrollBarValue = bar->value();
   //  }
-  //  QScrollArea *newSA = dynamic_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
+  //  QScrollArea *newSA = qobject_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
   //  newSA->verticalScrollBar()->setValue(oldScrollBarValue);
-  QTabWidget *old = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *old = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   int oldIndex = 0;
   if (old)
     oldIndex = old->currentIndex();
@@ -2212,7 +2212,7 @@ void Z3DWindow::updateSettingsDockWidget()
 
   // for advanced setting widget
   if (m_advancedSettingDockWidget) {
-    QTabWidget *old = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+    QTabWidget *old = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
     int oldIndex = 0;
     if (old)
       oldIndex = old->currentIndex();
@@ -2307,7 +2307,7 @@ void Z3DWindow::changeBackground()
 {
   m_settingsDockWidget->show();
   int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
-  QTabWidget *tab = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
 }
 
@@ -2458,7 +2458,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   {
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
-          dynamic_cast<ZOptionParameter<QString>*>(
+          qobject_cast<ZOptionParameter<QString>*>(
             getSwcFilter()->getParameter("Geometry"));
       sm->selectNext();
     }

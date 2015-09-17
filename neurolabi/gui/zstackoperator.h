@@ -155,7 +155,7 @@ Swc_Tree_Node* ZStackOperator::getHitObject<Swc_Tree_Node>() const;
 template <typename T>
 T* ZStackOperator::getHitObject() const
 {
-  return dynamic_cast<T*>(m_hitObject);
+  return qobject_cast<T*>(m_hitObject);
 }
 
 

@@ -581,7 +581,7 @@ string ZStackDoc::getSwcSource() const
   const TStackObjectList &swcSet =
       getObjectList(ZStackObject::TYPE_SWC);
   if (swcSet.size() == 1) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*swcSet.begin());
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*swcSet.begin());
     swcSource = tree->getSource();
   }
 
@@ -745,7 +745,7 @@ const ZUndoCommand* ZStackDoc::getLastUndoCommand() const
 
   qDebug() << command->text();
 
-  return dynamic_cast<const ZUndoCommand*>(command);
+  return qobject_cast<const ZUndoCommand*>(command);
 }
 
 void ZStackDoc::setSaved(NeuTube::EDocumentableType type, bool state)
@@ -957,7 +957,7 @@ void ZStackDoc::selectUpstreamNode()
       m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
        ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     tree->selectUpstreamNode();
   }
 
@@ -988,7 +988,7 @@ void ZStackDoc::selectBranchNode()
       m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
        ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     tree->selectBranchNode();
   }
 
@@ -1044,7 +1044,7 @@ void ZStackDoc::selectConnectedNode()
 
   for (TStackObjectList::iterator iter = swcList.begin();
        iter != swcList.end(); ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     tree->selectConnectedNode();
   }
 
@@ -1080,7 +1080,7 @@ void ZStackDoc::selectNeighborSwcNode()
 
   for (TStackObjectList::iterator iter = swcList.begin();
        iter != swcList.end(); ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     tree->selectNeighborNode();
   }
 
@@ -1284,7 +1284,7 @@ void ZStackDoc::selectDownstreamNode()
       m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter= objList.begin(); iter != objList.end();
        ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     tree->selectDownstreamNode();
   }
 
@@ -2342,7 +2342,7 @@ void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
          iter != m_objectGroup.end(); ++iter) {\
       ZStackObject *obj = const_cast<ZStackObject*>(*iter);\
       if (obj->getType() == ZStackObject::OBJECT_TYPE) {\
-        ObjectClass *dobj = dynamic_cast<ObjectClass*>(obj);\
+        ObjectClass *dobj = qobject_cast<ObjectClass*>(obj);\
         TZ_ASSERT(dobj != NULL, "Null pointer.");\
         objList.append(dobj);\
       }\
@@ -2358,7 +2358,7 @@ QList<ZSwcTree*> ZStackDoc::getSwcList() const
        iter != m_objectGroup.end(); ++iter) {
     ZStackObject *obj = const_cast<ZStackObject*>(*iter);
     if (obj->getType() == ZStackObject::TYPE_SWC) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+      ZSwcTree *tree = qobject_cast<ZSwcTree*>(obj);
       TZ_ASSERT(tree != NULL, "Null pointer.");
       treeList.append(tree);
     }
@@ -2841,7 +2841,7 @@ bool ZStackDoc::deleteAllPuncta()
     bool match = false;
     ZPunctum *obj = m_punctaList.takeLast();
     for (int i=objStartPos; i>=0; i--) {
-      if (m_objectList.at(i) == dynamic_cast<ZStackObject*>(obj)) {
+      if (m_objectList.at(i) == qobject_cast<ZStackObject*>(obj)) {
         m_objectList.removeAt(i);
         match = true;
         objStartPos = i-1;
@@ -3096,7 +3096,7 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
   const TStackObjectList &objList =
       m_objectGroup.getObjectList(ZStackObject::TYPE_SWC);
 
-  return const_cast<ZSwcTree*>(dynamic_cast<const ZSwcTree*>(objList.at(index)));
+  return const_cast<ZSwcTree*>(qobject_cast<const ZSwcTree*>(objList.at(index)));
 }
 
 void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
@@ -3181,7 +3181,7 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
     if (deleteObject) {
       delete *iter;
     } else {
-      emptyTreeSet.insert(dynamic_cast<ZSwcTree*>(*iter));
+      emptyTreeSet.insert(qobject_cast<ZSwcTree*>(*iter));
     }
   }
 
@@ -3210,7 +3210,7 @@ std::set<ZSwcTree*> ZStackDoc::getEmptySwcTreeSet() const
         ZStackObject::TYPE_SWC, ZStackObject::isEmptyTree);
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     if (tree != NULL) {
       treeSet.insert(tree);
     }
@@ -3389,7 +3389,7 @@ void ZStackDoc::deselectAllPuncta()
       m_objectGroup.getSelectedSet(ZStackObject::TYPE_PUNCTUM);
   for (TStackObjectSet::iterator iter= selectedSet.begin();
        iter != selectedSet.end(); ++iter) {
-    deselected.append(dynamic_cast<ZPunctum*>(*iter));
+    deselected.append(qobject_cast<ZPunctum*>(*iter));
   }
 
   m_objectGroup.setSelected(ZStackObject::TYPE_PUNCTUM, false);
@@ -3599,7 +3599,7 @@ QList<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeList() const
 
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    const ZSwcTree* tree = qobject_cast<const ZSwcTree*>(*iter);
     for (std::set<Swc_Tree_Node*>::const_iterator
          iter = tree->getSelectedNode().begin();
          iter != tree->getSelectedNode().end(); ++iter) {
@@ -3617,7 +3617,7 @@ std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
 
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    const ZSwcTree* tree = qobject_cast<const ZSwcTree*>(*iter);
     swcNodeSet.insert(tree->getSelectedNode().begin(),
                       tree->getSelectedNode().end());
   }
@@ -3657,7 +3657,7 @@ bool ZStackDoc::isSwcNodeSelected(const Swc_Tree_Node *tn) const
         getObjectGroup().getObjectList(ZStackObject::TYPE_SWC);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+      const ZSwcTree* tree = qobject_cast<const ZSwcTree*>(*iter);
       if (tree->isNodeSelected(tn)) {
         return true;
       }
@@ -5200,7 +5200,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = const_cast<ZSwcTree*>(
-          dynamic_cast<const ZSwcTree*>(*iter));
+          qobject_cast<const ZSwcTree*>(*iter));
     if (tree->getSelectedNode().size() == 1) {
       hostTree = tree;
     }
@@ -6160,7 +6160,7 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
     TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+      ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
 //      targetSet.insert(tree->getTarget());
       if (tree->hasSelectedNode()) {
         processObjectModified(tree);
@@ -6545,7 +6545,7 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
        iter != playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(tree->getRole().getRole())) {
-      ZSwcTree *roleTree = dynamic_cast<ZSwcTree*>(player->getData());
+      ZSwcTree *roleTree = qobject_cast<ZSwcTree*>(player->getData());
       if (roleTree != NULL) {
         new ZStackDocCommand::SwcEdit::RemoveSwc(this, roleTree, command);
       }
@@ -6595,7 +6595,7 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   switch (obj->getType()) {
   case ZStackObject::TYPE_SWC:
   {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(obj);
     if (tree != NULL) {
       addSwcTreeP(tree);
       if (obj->hasRole(ZStackObjectRole::ROLE_ROI)) {
@@ -6606,14 +6606,14 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   }
     break;
   case ZStackObject::TYPE_PUNCTUM:
-    addPunctumP(dynamic_cast<ZPunctum*>(obj));
+    addPunctumP(qobject_cast<ZPunctum*>(obj));
     break;
   case ZStackObject::TYPE_OBJ3D:
-    addObj3dP(dynamic_cast<ZObject3d*>(obj));
+    addObj3dP(qobject_cast<ZObject3d*>(obj));
     break;
   case ZStackObject::TYPE_OBJECT3D_SCAN:
   {
-    ZObject3dScan *comObj = dynamic_cast<ZObject3dScan*>(obj);
+    ZObject3dScan *comObj = qobject_cast<ZObject3dScan*>(obj);
     if (comObj != NULL) {
       if (obj->hasRole(ZStackObjectRole::ROLE_MASK)) {
         /*
@@ -6629,16 +6629,16 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   }
     break;
   case ZStackObject::TYPE_LOCSEG_CHAIN:
-    addLocsegChainP(dynamic_cast<ZLocsegChain*>(obj));
+    addLocsegChainP(qobject_cast<ZLocsegChain*>(obj));
     break;
   case ZStackObject::TYPE_STROKE:
-    addStrokeP(dynamic_cast<ZStroke2d*>(obj));
+    addStrokeP(qobject_cast<ZStroke2d*>(obj));
     break;
   case ZStackObject::TYPE_SPARSE_OBJECT:
-    addSparseObjectP(dynamic_cast<ZSparseObject*>(obj));
+    addSparseObjectP(qobject_cast<ZSparseObject*>(obj));
     break;
   case ZStackObject::TYPE_STACK_PATCH:
-    addStackPatchP(dynamic_cast<ZStackPatch*>(obj));
+    addStackPatchP(qobject_cast<ZStackPatch*>(obj));
     break;
   default:
     //addObject(obj);
@@ -7227,7 +7227,7 @@ bool ZStackDoc::getLastStrokePoint(int *x, int *y) const
   const ZStackObject *obj =
       m_objectGroup.getLastObject(ZStackObject::TYPE_STROKE);
   if (obj != NULL) {
-    const ZStroke2d *stroke = dynamic_cast<const ZStroke2d*>(obj);
+    const ZStroke2d *stroke = qobject_cast<const ZStroke2d*>(obj);
     return stroke->getLastPoint(x, y);
   }
 
@@ -7238,7 +7238,7 @@ bool ZStackDoc::getLastStrokePoint(double *x, double *y) const
 {
   const ZStackObject *obj = m_objectGroup.getLastObject(ZStackObject::TYPE_STROKE);
   if (obj != NULL) {
-    const ZStroke2d *stroke = dynamic_cast<const ZStroke2d*>(obj);
+    const ZStroke2d *stroke = qobject_cast<const ZStroke2d*>(obj);
     return stroke->getLastPoint(x, y);
   }
 
@@ -7260,7 +7260,7 @@ bool ZStackDoc::hasSelectedSwcNode() const
 #endif
 
   foreach (const ZStackObject *obj, objList) {
-    const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
+    const ZSwcTree *tree = qobject_cast<const ZSwcTree*>(obj);
     if (tree->hasSelectedNode()) {
       hasSelected = true;
       break;
@@ -7275,7 +7275,7 @@ int ZStackDoc::getSelectedSwcNodeNumber() const
   int n = 0;
   const QList<ZStackObject*>& objList = getObjectList(ZStackObject::TYPE_SWC);
   foreach (const ZStackObject *obj, objList) {
-    const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
+    const ZSwcTree *tree = qobject_cast<const ZSwcTree*>(obj);
     n += tree->getSelectedNode().size();
   }
 
@@ -8089,7 +8089,7 @@ ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
   ZStackObject *obj = getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_DVID_SPARSE_STACK,
         ZStackObjectSourceFactory::MakeSplitObjectSource());
-  ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+  ZDvidSparseStack *sparseStack = qobject_cast<ZDvidSparseStack*>(obj);
 
   return sparseStack;
 }
@@ -8207,7 +8207,7 @@ void ZStackDoc::seededWatershed()
         ZStackObject *obj = getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_SPARSE_STACK,
               ZStackObjectSourceFactory::MakeSplitObjectSource());
-        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
+        ZDvidSparseStack *sparseStack = qobject_cast<ZDvidSparseStack*>(obj);
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack();
           dsIntv = sparseStack->getDownsampleInterval();
@@ -8470,7 +8470,7 @@ ZRect2d ZStackDoc::getRect2dRoi() const
 {
   ZRect2d rect;
 
-  ZRect2d *rectObj = dynamic_cast<ZRect2d*>(
+  ZRect2d *rectObj = qobject_cast<ZRect2d*>(
         getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource()));
@@ -8542,7 +8542,7 @@ const T* ZStackDoc::getFirstUserByType() const
 {
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *parent = dynamic_cast<T*>(*iter);
+    T *parent = qobject_cast<T*>(*iter);
     if (parent != NULL) {
       return parent;
     }
@@ -8645,7 +8645,7 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     if (state) {
       tree->addVisualEffect(ZSwcTree::VE_FULL_SKELETON);
     } else {
@@ -8684,7 +8684,7 @@ void ZStackDoc::selectSwcNode(const ZRect2d &roi)
   QList<Swc_Tree_Node*> deselected;
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     expandSwcNodeList(&deselected, tree->getSelectedNode());
     tree->selectNode(roi, false);
     expandSwcNodeList(&selected, tree->getSelectedNode());

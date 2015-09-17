@@ -2091,7 +2091,7 @@ void ZStackPresenter::acceptRectRoi()
   ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_RECT2D,
         ZStackObjectSourceFactory::MakeRectRoiSource());
-  ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
+  ZRect2d *rect = qobject_cast<ZRect2d*>(obj);
   if (rect != NULL) {
     rect->setColor(QColor(255, 255, 255));
   }
@@ -2659,7 +2659,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource());
-    ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
+    ZRect2d *rect = qobject_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
             Qt::LeftButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
@@ -2966,17 +2966,17 @@ void ZStackPresenter::acceptActiveStroke()
 
 ZStackFrame* ZStackPresenter::getParentFrame() const
 {
-  return dynamic_cast<ZStackFrame*>(parent());
+  return qobject_cast<ZStackFrame*>(parent());
 }
 
 ZStackMvc* ZStackPresenter::getParentMvc() const
 {
-  return dynamic_cast<ZStackMvc*>(parent());
+  return qobject_cast<ZStackMvc*>(parent());
 }
 
 QWidget* ZStackPresenter::getParentWidget() const
 {
-  return dynamic_cast<QWidget*>(parent());
+  return qobject_cast<QWidget*>(parent());
 }
 
 bool ZStackPresenter::isSwcFullSkeletonVisible() const

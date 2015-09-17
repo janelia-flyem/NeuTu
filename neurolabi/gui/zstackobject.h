@@ -344,7 +344,7 @@ typedef ZSharedPointer<ZStackObject> ZStackObjectPtr;
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)
 {
-  return dynamic_cast<T*>(static_cast<ZStackObject*>(p));
+  return qobject_cast<T*>(static_cast<ZStackObject*>(p));
 }
 
 #define ZSTACKOBJECT_DEFINE_CLASS_NAME(c) \

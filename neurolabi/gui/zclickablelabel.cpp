@@ -23,7 +23,7 @@ bool ZClickableLabel::event(QEvent *event)
 {
   if(event->type() == QEvent::ToolTip)
   {
-    QHelpEvent *helpEvent = dynamic_cast<QHelpEvent *>(event);
+    QHelpEvent *helpEvent = qobject_cast<QHelpEvent *>(event);
     QRect tipRect;
     QString tipText;
     if(getTip(helpEvent->pos(), &tipRect, &tipText))

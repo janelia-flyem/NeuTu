@@ -1185,7 +1185,7 @@ void ZStackFrame::saveStack(const QString &filePath)
     QList<ZSparseObject*> objList = document()->getSparseObjectList();
     ZObject3dScanArray objArray;
     foreach (ZSparseObject *obj, objList) {
-      objArray.push_back(*dynamic_cast<ZObject3dScan*>(obj));
+      objArray.push_back(*qobject_cast<ZObject3dScan*>(obj));
     }
     ZStack *stack = objArray.toStackObject();
     if (stack != NULL) {
@@ -1336,7 +1336,7 @@ MainWindow* ZStackFrame::getMainWindow()
       parentObject = parentObject->parent();
     }
 
-    mainwin = dynamic_cast<MainWindow*>(parentObject);
+    mainwin = qobject_cast<MainWindow*>(parentObject);
   }
 
   return mainwin;
@@ -1647,7 +1647,7 @@ void ZStackFrame::zoomToSelectedSwcNodes()
       if (!bound.contains(center.x(),center.y())) {
         QList<QGraphicsItem*> itemList = getTileManager()->items();
         foreach (QGraphicsItem *item, itemList) {
-          ZTileGraphicsItem *zitem = dynamic_cast<ZTileGraphicsItem*>(item);
+          ZTileGraphicsItem *zitem = qobject_cast<ZTileGraphicsItem*>(item);
           if (zitem != NULL) {
             //check whether this item contains the selected points.
             tile = zitem->getTileInfo();
@@ -1761,7 +1761,7 @@ void ZStackFrame::MessageProcessor::processMessage(
   switch (message->getType()) {
   case ZMessage::TYPE_3D_VIS:
   {
-    ZStackFrame *frame = dynamic_cast<ZStackFrame*>(host);
+    ZStackFrame *frame = qobject_cast<ZStackFrame*>(host);
     if (frame != NULL) {
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
         frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);

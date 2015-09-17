@@ -98,7 +98,7 @@ ZStack* ZFlyEmStackFrame::spinoffStackSelection(
   std::vector<std::vector<double> > newSelected = selected;
 
   if (neighborIncluded) {
-    dynamic_cast<ZFlyEmStackDoc*>(m_doc.get())->appendBodyNeighbor(&newSelected);
+    qobject_cast<ZFlyEmStackDoc*>(m_doc.get())->appendBodyNeighbor(&newSelected);
   }
 
   return spinoffStackSelection(newSelected);

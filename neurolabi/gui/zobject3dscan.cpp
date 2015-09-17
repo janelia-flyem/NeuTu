@@ -1453,7 +1453,7 @@ void ZObject3dScan::display(
   if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::SOLID;
   }
-  //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
+  //QImage *targetImage = qobject_cast<QImage*>(painter.device());
 
   switch (style) {
   case ZStackObject::SOLID:

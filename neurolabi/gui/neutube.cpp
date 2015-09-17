@@ -14,7 +14,7 @@ ZMessageReporter* NeuTube::getMessageReporter()
 
 ZLogMessageReporter* NeuTube::getLogMessageReporter()
 {
-  return dynamic_cast<ZLogMessageReporter*>(getMessageReporter());
+  return qobject_cast<ZLogMessageReporter*>(getMessageReporter());
 }
 
 

@@ -23,7 +23,7 @@ void ZFlyEmExternalNeuronDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
-    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+    ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
     addObject(tree->clone());
   }
 }

@@ -54,7 +54,7 @@ void ZFlyEmBookmarkView::keyPressEvent(QKeyEvent *event)
 
 ZFlyEmBookmarkListModel* ZFlyEmBookmarkView::getModel() const
 {
-  return dynamic_cast<ZFlyEmBookmarkListModel*>(model());
+  return qobject_cast<ZFlyEmBookmarkListModel*>(model());
 }
 
 void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)

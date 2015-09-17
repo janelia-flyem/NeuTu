@@ -253,7 +253,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
 
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
-  return dynamic_cast<ZDvidSparseStack*>(
+  return qobject_cast<ZDvidSparseStack*>(
         getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_DVID_SPARSE_STACK,
           ZStackObjectSourceFactory::MakeSplitObjectSource()));
@@ -412,7 +412,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
-    ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    ZDvidLabelSlice *obj = qobject_cast<ZDvidLabelSlice*>(*iter);
     obj->forceUpdate();
     processObjectModified(obj);
   }
@@ -421,7 +421,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
   for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
        ++iter) {
-    ZDvidSparsevolSlice *obj = dynamic_cast<ZDvidSparsevolSlice*>(*iter);
+    ZDvidSparsevolSlice *obj = qobject_cast<ZDvidSparsevolSlice*>(*iter);
     obj->update();
     processObjectModified(obj);
   }
@@ -523,7 +523,7 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
       getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(*iter);
+    const ZFlyEmBookmark *bookmark = qobject_cast<const ZFlyEmBookmark*>(*iter);
     if (bookmark->getDvidKey() == key) {
       return const_cast<ZFlyEmBookmark*>(bookmark);
     }
@@ -544,7 +544,7 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
+      ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
 #ifdef _DEBUG_
@@ -643,7 +643,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
     ZJsonArray jsonArray;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      const ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(*iter);
       if (bookmark != NULL) {
         if (bookmark->isCustom()) {
           ZJsonObject obj = bookmark->toJsonObject();
@@ -693,7 +693,7 @@ void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
 
 ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {
-  return dynamic_cast<ZIntCuboidObj*>(
+  return qobject_cast<ZIntCuboidObj*>(
       getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_INT_CUBOID,
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
@@ -791,7 +791,7 @@ ZFlyEmProofDocCommand::MergeBody::MergeBody(
 
 ZFlyEmProofDoc* ZFlyEmProofDocCommand::MergeBody::getCompleteDocument()
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(m_doc);
+  return qobject_cast<ZFlyEmProofDoc*>(m_doc);
 }
 
 void ZFlyEmProofDocCommand::MergeBody::redo()

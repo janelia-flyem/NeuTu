@@ -369,7 +369,7 @@ void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
     ZCuboid boundBox;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+      ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
       if (tree != NULL) {
         if (boundBox.isValid()) {
           boundBox.bind(tree->getBoundBox());
@@ -405,7 +405,7 @@ void ZFlyEmBodySplitProject::startBodyQuickView()
     ZCuboid boundBox;
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
+      ZSwcTree *tree = qobject_cast<ZSwcTree*>(*iter);
       if (tree != NULL) {
         if (boundBox.isValid()) {
           boundBox.bind(tree->getBoundBox());
@@ -487,7 +487,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     }
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      ZObject3dScan *splitObj = qobject_cast<ZObject3dScan*>(*iter);
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
           ZObject3d *obj = splitObj->toObject3d();
@@ -771,7 +771,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
         doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      const ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(*iter);
       bodySet.insert(bookmark->getBodyId());
     }
   }
@@ -1446,7 +1446,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
 //      }
 
       int z = currentSlice + offset.getZ();
-      ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
+      ZDvidGraySlice *graySlice = qobject_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_GRAY_SLICE,
               ZStackObjectSourceFactory::MakeDvidGraySliceSource()));

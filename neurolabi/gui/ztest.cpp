@@ -17681,7 +17681,7 @@ void ZTest::test(MainWindow *host)
   std::cout << obj.use_count() << std::endl;
 
 //  ZSharedPointer<ZSwcTree> obj2 =
-//      ZSharedPointer<ZSwcTree>(dynamic_cast<ZSwcTree*>(obj.get()));
+//      ZSharedPointer<ZSwcTree>(qobject_cast<ZSwcTree*>(obj.get()));
 //  std::cout << obj.use_count() << std::endl;
 
   ZSharedPointer<ZSwcTree> obj2 = Shared_Dynamic_Cast<ZSwcTree>(obj);

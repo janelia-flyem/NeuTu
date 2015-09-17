@@ -81,7 +81,7 @@ QString ShapePaperDialog::getDataBundlePath() const
 
 MainWindow* ShapePaperDialog::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(parent());
+  return qobject_cast<MainWindow*>(parent());
 }
 
 void ShapePaperDialog::on_sparseObjectPushButton_clicked()

@@ -123,7 +123,7 @@ bool ZGenericSwcTree::exportSwcFile(
             ZTreeNode<ZSwcNode> *tn = NULL;
             while ((tn = next()) != NULL) {
                 if (tn->isRegular()) {
-                    ZSwcTreeNode* swcNode = dynamic_cast<ZSwcTreeNode*>(tn);
+                    ZSwcTreeNode* swcNode = qobject_cast<ZSwcTreeNode*>(tn);
                     output << swcNode->id() << " " << swcNode->type() << " " <<
                         swcNode->x() << " " << swcNode->y() << " " << swcNode->z() <<
                         " " << swcNode->r() << " " << swcNode->parentId() << endl;

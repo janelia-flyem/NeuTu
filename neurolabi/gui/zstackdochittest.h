@@ -41,7 +41,7 @@ Swc_Tree_Node* ZStackDocHitTest::getHitObject<Swc_Tree_Node>() const;
 template <typename T>
 T* ZStackDocHitTest::getHitObject() const
 {
-  return dynamic_cast<T*>(m_hitObject);
+  return qobject_cast<T*>(m_hitObject);
 }
 
 #endif // ZSTACKDOCHITTEST_H

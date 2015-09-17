@@ -59,7 +59,7 @@ void Z3DRenderProcessor::updateSize()
   const std::vector<Z3DOutputPortBase*> outports = getOutputPorts();
   glm::ivec2 maxOutportSize(-1, -1);
   for(size_t i=0; i<outports.size(); ++i) {
-    Z3DRenderOutputPort* rp = dynamic_cast<Z3DRenderOutputPort*>(outports[i]);
+    Z3DRenderOutputPort* rp = qobject_cast<Z3DRenderOutputPort*>(outports[i]);
     if (rp) {
       glm::ivec2 outportSize = rp->getExpectedSize();
       if (outportSize.x > 0 && outportSize != rp->getSize()) {
@@ -80,7 +80,7 @@ void Z3DRenderProcessor::updateSize()
   // 3. update inport expected size
   const std::vector<Z3DInputPortBase*> inports = getInputPorts();
   for (size_t i=0; i<inports.size(); i++) {
-    Z3DRenderInputPort *renderInport = dynamic_cast< Z3DRenderInputPort* >(inports[i]);
+    Z3DRenderInputPort *renderInport = qobject_cast< Z3DRenderInputPort* >(inports[i]);
     if (renderInport)
       renderInport->setExpectedSize(maxOutportSize);
   }
@@ -89,7 +89,7 @@ void Z3DRenderProcessor::updateSize()
   if(resized) {
     const std::vector<ZParameter*> parameters = getParameters();
     for (size_t i=0; i<parameters.size(); ++i) {
-      Z3DCameraParameter* cameraPara = dynamic_cast<Z3DCameraParameter*>(parameters[i]);
+      Z3DCameraParameter* cameraPara = qobject_cast<Z3DCameraParameter*>(parameters[i]);
       if (cameraPara) {
         cameraPara->viewportChanged(maxOutportSize);
       }

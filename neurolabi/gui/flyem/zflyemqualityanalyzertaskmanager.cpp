@@ -59,7 +59,7 @@ void ZFlyEmQualityAnalyzerTaskManager::postProcess()
   if (!m_taskArray.empty()) {
     foreach (ZTask *task, m_taskArray) {
       ZFlyEmQualityAnalyzerTask *analyzerTask =
-          dynamic_cast<ZFlyEmQualityAnalyzerTask*>(task);
+          qobject_cast<ZFlyEmQualityAnalyzerTask*>(task);
       if (analyzerTask != NULL) {
         m_hotSpotArray.concat(analyzerTask->getHotSpot());
       }

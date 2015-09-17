@@ -84,7 +84,7 @@ glm::ivec2 Z3DRenderOutputPort::getExpectedSize() const
   glm::ivec2 result(-1, -1);
   const std::vector<Z3DInputPortBase*> inports = getConnected();
   for (size_t j=0; j<inports.size(); ++j) {
-    Z3DRenderInputPort *renderInport = dynamic_cast< Z3DRenderInputPort* >(inports[j]);
+    Z3DRenderInputPort *renderInport = qobject_cast< Z3DRenderInputPort* >(inports[j]);
     if (renderInport)
       result = glm::max(result, renderInport->getExpectedSize());
     else
@@ -151,7 +151,7 @@ void Z3DRenderOutputPort::chagneDepthFormat(GLint internalDepthFormat)
 
 bool Z3DRenderOutputPort::canConnectTo(const Z3DInputPortBase *inport) const
 {
-  if (dynamic_cast<const Z3DRenderInputPort*>(inport))
+  if (qobject_cast<const Z3DRenderInputPort*>(inport))
     return Z3DOutputPortBase::canConnectTo(inport);
   else
     return false;
@@ -198,7 +198,7 @@ void Z3DRenderOutputPort::setProcessor(Z3DProcessor *p)
 {
   Z3DOutputPortBase::setProcessor(p);
 
-  Z3DRenderProcessor* rp = dynamic_cast<Z3DRenderProcessor*>(p);
+  Z3DRenderProcessor* rp = qobject_cast<Z3DRenderProcessor*>(p);
   assert(rp);
   if (!rp) {
     LERROR() << "RenderPort" << getName() << "attached to processor of wrong type:"
@@ -223,7 +223,7 @@ size_t Z3DRenderInputPort::getNumOfValidInputs() const
 {
   size_t res = 0;
   for (size_t i=0; i<m_connectedOutputPorts.size(); ++i) {
-    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
+    const Z3DRenderOutputPort* p = qobject_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
     assert(p);
     if (p->hasValidData())
       ++res;
@@ -259,7 +259,7 @@ void Z3DRenderInputPort::setProcessor(Z3DProcessor *p)
 {
   Z3DInputPortBase::setProcessor(p);
 
-  Z3DRenderProcessor* rp = dynamic_cast<Z3DRenderProcessor*>(p);
+  Z3DRenderProcessor* rp = qobject_cast<Z3DRenderProcessor*>(p);
   assert(rp);
   if (!rp) {
     LERROR() << "RenderPort" << getName() << "attached to processor of wrong type:"
@@ -273,7 +273,7 @@ const Z3DRenderTarget *Z3DRenderInputPort::getRenderTarget(size_t idx) const
     return NULL;
   size_t res = 0;
   for (size_t i=0; i<m_connectedOutputPorts.size(); ++i) {
-    const Z3DRenderOutputPort* p = dynamic_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
+    const Z3DRenderOutputPort* p = qobject_cast<const Z3DRenderOutputPort*>(m_connectedOutputPorts[i]);
     assert(p);
     if (p->hasValidData())
       ++res;

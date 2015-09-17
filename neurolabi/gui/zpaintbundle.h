@@ -109,7 +109,7 @@ private:
   {
     return m_listIdx < m_bundle->m_objLists.size() ?
           m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
-          dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
+          qobject_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
   void setSwcNodeAdaptor()

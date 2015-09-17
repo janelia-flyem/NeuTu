@@ -324,7 +324,7 @@ void ZFlyEmProofMvc::mergeCoarseBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->mergeBodyModel(*(getCompleteDocument()->getBodyMerger()));
     }
@@ -337,7 +337,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -352,7 +352,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
       doc->dumpAllSwc();
@@ -371,7 +371,7 @@ void ZFlyEmProofMvc::updateBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -384,7 +384,7 @@ void ZFlyEmProofMvc::updateSkeletonWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -459,7 +459,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
       ZSwcTree *tree = *iter;
       if (currentBodySourceSet.count(tree->getSource()) == 0) {
         m_coarseBodyWindow->getDocument()->removeObject(
-              dynamic_cast<ZStackObject*>(tree), true);
+              qobject_cast<ZStackObject*>(tree), true);
       } else {
         oldBodySourceSet.insert(tree->getSource());
       }
@@ -537,12 +537,12 @@ void ZFlyEmProofMvc::updateBodyWindowPlane(
 
 ZFlyEmProofDoc* ZFlyEmProofMvc::getCompleteDocument() const
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(getDocument().get());
+  return qobject_cast<ZFlyEmProofDoc*>(getDocument().get());
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofMvc::getCompletePresenter() const
 {
-  return dynamic_cast<ZFlyEmProofPresenter*>(getPresenter());
+  return qobject_cast<ZFlyEmProofPresenter*>(getPresenter());
 }
 
 void ZFlyEmProofMvc::mergeSelected()
@@ -929,7 +929,7 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
       selector.getSelectedList(ZStackObject::TYPE_FLYEM_BOOKMARK);
   if (!objList.empty()) {
     const ZStackObject *obj = objList.back();
-    const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
+    const ZFlyEmBookmark *bookmark = qobject_cast<const ZFlyEmBookmark*>(obj);
     if (bookmark != NULL) {
       emit messageGenerated(
             ZWidgetMessage(bookmark->toJsonObject(true).dumpString(0).c_str(),
@@ -1235,7 +1235,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
           ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
     emit errorGenerated(msg);
   } else {
-    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
+    ZDvidSparseStack *body = qobject_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
@@ -1397,7 +1397,7 @@ void ZFlyEmProofMvc::exitSplit()
 
 
     /*
-    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
+    ZDvidSparseStack *body = qobject_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
@@ -1682,7 +1682,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
+      ZFlyEmBookmark *bookmark = qobject_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         const QByteArray &bookmarkData = reader.readKeyValue(
               ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());

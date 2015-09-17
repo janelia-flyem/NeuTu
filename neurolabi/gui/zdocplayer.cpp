@@ -198,7 +198,7 @@ ZStroke2dPlayer::ZStroke2dPlayer(ZStackObject *data) :
 
 ZStroke2d* ZStroke2dPlayer::getCompleteData() const
 {
-  return dynamic_cast<ZStroke2d*>(m_data);
+  return qobject_cast<ZStroke2d*>(m_data);
 }
 
 void ZStroke2dPlayer::labelStack(ZStack* stack) const
@@ -293,7 +293,7 @@ ZObject3dPlayer::ZObject3dPlayer(ZStackObject *data) :
 
 const ZObject3d* ZObject3dPlayer::getCompleteData() const
 {
-  return dynamic_cast<const ZObject3d*>(m_data);
+  return qobject_cast<const ZObject3d*>(m_data);
 }
 
 void ZObject3dPlayer::labelStack(ZStack *stack, int value) const
@@ -426,7 +426,7 @@ ZObject3dScanPlayer::ZObject3dScanPlayer(ZStackObject *data) :
 
 const ZObject3dScan* ZObject3dScanPlayer::getCompleteData() const
 {
-  return dynamic_cast<const ZObject3dScan*>(m_data);
+  return qobject_cast<const ZObject3dScan*>(m_data);
 }
 
 /*************************************/
@@ -438,7 +438,7 @@ ZSparseObjectPlayer::ZSparseObjectPlayer(ZStackObject *data) :
 
 ZSparseObject* ZSparseObjectPlayer::getCompleteData() const
 {
-  return dynamic_cast<ZSparseObject*>(m_data);
+  return qobject_cast<ZSparseObject*>(m_data);
 }
 
 void ZSparseObjectPlayer::labelStack(ZStack* stack) const
@@ -469,7 +469,7 @@ ZStackBallPlayer::ZStackBallPlayer(ZStackObject *data) :
 
 ZStackBall* ZStackBallPlayer::getCompleteData() const
 {
-  return dynamic_cast<ZStackBall*>(m_data);
+  return qobject_cast<ZStackBall*>(m_data);
 }
 
 Z3DGraph ZStackBallPlayer::get3DGraph() const
@@ -491,7 +491,7 @@ ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
 
 ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
 {
-  return dynamic_cast<ZDvidLabelSlice*>(m_data);
+  return qobject_cast<ZDvidLabelSlice*>(m_data);
 }
 
 void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
@@ -511,7 +511,7 @@ ZDvidSparsevolSlicePlayer::ZDvidSparsevolSlicePlayer(ZStackObject *data) :
 
 ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
 {
-  return dynamic_cast<ZDvidSparsevolSlice*>(m_data);
+  return qobject_cast<ZDvidSparsevolSlice*>(m_data);
 }
 
 void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const

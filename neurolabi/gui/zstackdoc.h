@@ -1351,7 +1351,7 @@ QList<T*> ZStackDoc::getSelectedObjectList(ZStackObject::EType type) const
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
-    T *obj = dynamic_cast<T*>(*iter);
+    T *obj = qobject_cast<T*>(*iter);
     TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.append(obj);
@@ -1369,7 +1369,7 @@ std::set<T*> ZStackDoc::getSelectedObjectSet(ZStackObject::EType type) const
 
   for (TStackObjectSet::const_iterator iter = objSet.begin();
        iter != objSet.end(); ++iter) {
-    T *obj = dynamic_cast<T*>(*iter);
+    T *obj = qobject_cast<T*>(*iter);
     TZ_ASSERT(obj != NULL, "Unmatched type");
     if (obj != NULL) {
       objList.insert(obj);
@@ -1385,7 +1385,7 @@ QList<T*> ZStackDoc::getUserList() const
   QList<T*> userList;
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *user = dynamic_cast<T*>(*iter);
+    T *user = qobject_cast<T*>(*iter);
     if (user != NULL) {
       userList.append(user);
     }

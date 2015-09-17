@@ -15,7 +15,7 @@ void ZMainWindowMessageProcessor::processMessage(
     return;
   }
 
-  MainWindow *realHost = dynamic_cast<MainWindow*>(host);
+  MainWindow *realHost = qobject_cast<MainWindow*>(host);
   if (realHost != NULL) {
     switch (message->getType()) {
     case ZMessage::TYPE_INFORMATION:

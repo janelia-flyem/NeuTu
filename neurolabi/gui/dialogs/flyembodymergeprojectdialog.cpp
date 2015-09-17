@@ -327,7 +327,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
         getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN);
     for (TStackObjectSet::const_iterator iter = objSet.begin();
          iter != objSet.end(); ++iter) {
-      const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);
+      const ZObject3dScan *obj = qobject_cast<ZObject3dScan*>(*iter);
       if (obj != NULL) {
         if (selector.isInSelectedSet(obj)) {
           info += QString("<b>%1</b> ").arg(obj->getLabel());
@@ -342,7 +342,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
 
 //    for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
 //         iter != objList.end(); ++iter) {
-//      const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);
+//      const ZObject3dScan *obj = qobject_cast<ZObject3dScan*>(*iter);
 //      if (obj != NULL) {
 //        info += QString("<b>%1</b> ").arg(obj->getLabel());
 //      } else {
@@ -354,7 +354,7 @@ void FlyEmBodyMergeProjectDialog::notifySelection(
         selector.getDeselectedList(ZStackObject::TYPE_OBJECT3D_SCAN);
     for (std::vector<ZStackObject*>::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      const ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(*iter);
+      const ZObject3dScan *obj = qobject_cast<ZObject3dScan*>(*iter);
       if (obj != NULL) {
         info += QString("<font color=\"#808080\"><s>%1</s></font> ").
             arg(obj->getLabel());
@@ -398,7 +398,7 @@ void FlyEmBodyMergeProjectDialog::notifyBodyMerged(
 
 ZDvidVersionModel* FlyEmBodyMergeProjectDialog::getVersionModel()
 {
-  return dynamic_cast<ZDvidVersionModel*>(ui->verionTreeView->model());
+  return qobject_cast<ZDvidVersionModel*>(ui->verionTreeView->model());
 }
 
 void FlyEmBodyMergeProjectDialog::changeDvidNode(const QModelIndex &index)
@@ -489,7 +489,7 @@ void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
   FlyEmBodyMergeProjectDialog *dlg =
-      dynamic_cast<FlyEmBodyMergeProjectDialog*>(host);
+      qobject_cast<FlyEmBodyMergeProjectDialog*>(host);
 
   switch (message->getType()) {
   case ZMessage::TYPE_FLYEM_MERGE:

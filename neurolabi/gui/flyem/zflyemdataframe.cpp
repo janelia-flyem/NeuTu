@@ -70,7 +70,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   m_centralWidget = form;
   form->setSizePolicy(QSizePolicy::Expanding,
                       QSizePolicy::Expanding);
-  QMainWindow* mainWindow = dynamic_cast<QMainWindow*>(parent);
+  QMainWindow* mainWindow = qobject_cast<QMainWindow*>(parent);
 
   if (mainWindow != NULL) {
     form->setStatusBar(mainWindow->statusBar());
@@ -106,12 +106,12 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   m_trunkAnalyzer = new ZSwcDistTrunkAnalyzer;
   ZSwcLayerFeatureAnalyzer *analyzer = new ZSwcLayerFeatureAnalyzer;
   analyzer->setLayerScale(4000.0);
-  m_featureAnalyzer = dynamic_cast<ZSwcFeatureAnalyzer*>(analyzer);
+  m_featureAnalyzer = qobject_cast<ZSwcFeatureAnalyzer*>(analyzer);
 */
 
   ZSwcLayerTrunkAnalyzer *trunkAnalyzer = new ZSwcLayerTrunkAnalyzer;
   trunkAnalyzer->setStep(200.0);
-  m_trunkAnalyzer = dynamic_cast<ZSwcTrunkAnalyzer*>(trunkAnalyzer);
+  m_trunkAnalyzer = qobject_cast<ZSwcTrunkAnalyzer*>(trunkAnalyzer);
   ZSwcLayerShollFeatureAnalyzer *helperAnalyzer =
       new ZSwcLayerShollFeatureAnalyzer;
   helperAnalyzer->setLayerScale(4000.0);
@@ -121,7 +121,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   ZSwcNodeBufferFeatureAnalyzer *analyzer = new ZSwcNodeBufferFeatureAnalyzer;
   analyzer->setHelper(m_helperFeatureAnalyzer);
 
-  m_featureAnalyzer = dynamic_cast<ZSwcFeatureAnalyzer*>(analyzer);
+  m_featureAnalyzer = qobject_cast<ZSwcFeatureAnalyzer*>(analyzer);
 
   /*
   ZSwcShollFeatureAnalyzer analyzer;
@@ -1788,7 +1788,7 @@ void ZFlyEmDataFrame::showSummary() const
 
 FlyEmDataForm *ZFlyEmDataFrame::getMainWidget() const
 {
-  FlyEmDataForm *form = dynamic_cast<FlyEmDataForm*>(widget());
+  FlyEmDataForm *form = qobject_cast<FlyEmDataForm*>(widget());
 
   return form;
 }
@@ -1809,7 +1809,7 @@ QProgressBar* ZFlyEmDataFrame::getProgressBar()
 void ZFlyEmDataFrame::displayQueryOutput(
     const ZFlyEmNeuron *neuron, bool appending) const
 {
-  FlyEmDataForm *form = dynamic_cast<FlyEmDataForm*>(widget());
+  FlyEmDataForm *form = qobject_cast<FlyEmDataForm*>(widget());
   if (form != NULL) {
     if (appending) {
       form->appendQueryOutput(neuron);
@@ -1984,13 +1984,13 @@ void ZFlyEmDataFrame::test()
 void ZFlyEmDataFrame::setParameter()
 {
   ZSwcLayerTrunkAnalyzer *trunkAnalyzer =
-      dynamic_cast<ZSwcLayerTrunkAnalyzer*>(m_trunkAnalyzer);
+      qobject_cast<ZSwcLayerTrunkAnalyzer*>(m_trunkAnalyzer);
   if (trunkAnalyzer != NULL) {
     m_optionDialog.setTrunkStep(trunkAnalyzer->getStep());
   }
 
   ZSwcLayerShollFeatureAnalyzer *featureAnalyzer =
-      dynamic_cast<ZSwcLayerShollFeatureAnalyzer*>(m_helperFeatureAnalyzer);
+      qobject_cast<ZSwcLayerShollFeatureAnalyzer*>(m_helperFeatureAnalyzer);
 
   if (featureAnalyzer != NULL) {
     m_optionDialog.setLayerScale(featureAnalyzer->getLayerScale());
@@ -2503,7 +2503,7 @@ ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData()
 
 const ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData() const
 {
-  return dynamic_cast<const ZFlyEmDataBundle*>(
+  return qobject_cast<const ZFlyEmDataBundle*>(
         (const_cast<ZFlyEmDataFrame*>(this))->getMasterData());
 }
 

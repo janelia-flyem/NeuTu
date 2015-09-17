@@ -144,7 +144,7 @@ void Z3DVolumeRaycaster::enterInteractionMode()
   if (m_interactionDownsample.get() != 1) {
     const std::vector<Z3DOutputPortBase*> outports = getOutputPorts();
     for(size_t i=0; i<outports.size(); ++i) {
-      Z3DRenderOutputPort* rp = dynamic_cast<Z3DRenderOutputPort*>(outports[i]);
+      Z3DRenderOutputPort* rp = qobject_cast<Z3DRenderOutputPort*>(outports[i]);
       if (rp)
         rp->resize(expectedSize / m_interactionDownsample.get());
     }
@@ -157,7 +157,7 @@ void Z3DVolumeRaycaster::enterInteractionMode()
 
     const std::vector<Z3DInputPortBase*> inports = getInputPorts();
     for(size_t i=0; i<inports.size(); ++i) {
-      Z3DRenderInputPort* rp = dynamic_cast<Z3DRenderInputPort*>(inports[i]);
+      Z3DRenderInputPort* rp = qobject_cast<Z3DRenderInputPort*>(inports[i]);
       if (rp)
         rp->setExpectedSize(expectedSize / m_interactionDownsample.get());
     }
@@ -175,7 +175,7 @@ void Z3DVolumeRaycaster::exitInteractionMode()
   if (m_interactionDownsample.get() != 1) {
     const std::vector<Z3DOutputPortBase*> outports = getOutputPorts();
     for(size_t i=0; i<outports.size(); ++i) {
-      Z3DRenderOutputPort* rp = dynamic_cast<Z3DRenderOutputPort*>(outports[i]);
+      Z3DRenderOutputPort* rp = qobject_cast<Z3DRenderOutputPort*>(outports[i]);
       if (rp)
         rp->resize(expectedSize);
     }
@@ -188,7 +188,7 @@ void Z3DVolumeRaycaster::exitInteractionMode()
 
     const std::vector<Z3DInputPortBase*> inports = getInputPorts();
     for(size_t i=0; i<inports.size(); ++i) {
-      Z3DRenderInputPort* rp = dynamic_cast<Z3DRenderInputPort*>(inports[i]);
+      Z3DRenderInputPort* rp = qobject_cast<Z3DRenderInputPort*>(inports[i]);
       if (rp)
         rp->setExpectedSize(expectedSize);
     }

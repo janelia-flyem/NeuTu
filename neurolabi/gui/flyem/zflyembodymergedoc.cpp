@@ -113,7 +113,7 @@ void ZFlyEmBodyMergeDoc::mergeSelected()
     ZFlyEmBodyMerger::TLabelSet labelSet;
     for (TStackObjectSet::const_iterator iter = objSet.begin();
          iter != objSet.end(); ++iter) {
-      const ZObject3dScan *obj = dynamic_cast<const ZObject3dScan*>(*iter);
+      const ZObject3dScan *obj = qobject_cast<const ZObject3dScan*>(*iter);
       if (obj->getLabel() > 0) {
         labelSet.insert(obj->getLabel());
       }
@@ -140,7 +140,7 @@ uint64_t ZFlyEmBodyMergeDoc::getSelectedBodyId() const
       getSelected(ZStackObject::TYPE_OBJECT3D_SCAN);
   if (objSet.size() == 1) {
     const ZObject3dScan* obj =
-        dynamic_cast<ZObject3dScan*>(*(objSet.begin()));
+        qobject_cast<ZObject3dScan*>(*(objSet.begin()));
     bodyId = obj->getLabel();
   }
 
@@ -168,7 +168,7 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
       getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
 //  std::set<uint64_t> selectedBodySet;
   foreach (ZStackObject *plainObj, objList) {
-    ZObject3dScan *obj = dynamic_cast<ZObject3dScan*>(plainObj);
+    ZObject3dScan *obj = qobject_cast<ZObject3dScan*>(plainObj);
     if (selected->contains(obj->getLabel())) {
       obj->setSelected(true);
     }
@@ -200,7 +200,7 @@ ZFlyEmBodyMergerDocCommand::MergeBody::MergeBody(
 
 ZFlyEmBodyMergeDoc* ZFlyEmBodyMergerDocCommand::MergeBody::getCompleteDocument()
 {
-  return dynamic_cast<ZFlyEmBodyMergeDoc*>(m_doc);
+  return qobject_cast<ZFlyEmBodyMergeDoc*>(m_doc);
 }
 
 void ZFlyEmBodyMergerDocCommand::MergeBody::redo()

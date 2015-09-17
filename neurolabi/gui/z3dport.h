@@ -150,7 +150,7 @@ public:
 
   virtual bool canConnectTo(const Z3DInputPortBase* inport) const
   {
-    if (dynamic_cast<const Z3DInputPort<T>*>(inport))
+    if (qobject_cast<const Z3DInputPort<T>*>(inport))
       return Z3DOutputPortBase::canConnectTo(inport);
     else
       return false;
@@ -287,7 +287,7 @@ public:
 
   virtual bool canConnectTo(const Z3DInputPortBase* inport) const
   {
-    if (dynamic_cast<const Z3DProcessorInputPort<T>*>(inport))
+    if (qobject_cast<const Z3DProcessorInputPort<T>*>(inport))
       return Z3DOutputPortBase::canConnectTo(inport);
     else
       return false;
@@ -300,7 +300,7 @@ protected:
   virtual void setProcessor(Z3DProcessor *p)
   {
     Z3DOutputPortBase::setProcessor(p);
-    T* tp = dynamic_cast<T*>(p);
+    T* tp = qobject_cast<T*>(p);
     if (!tp) {
       LERROR() << "Port" << getName() << "attached to processor of wrong type" << p->getClassName();
     }

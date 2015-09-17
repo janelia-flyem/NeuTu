@@ -30,5 +30,5 @@ void ZFlyEmQueryView::mousePressEvent(QMouseEvent *event)
 
 ZFlyEmNeuronListModel* ZFlyEmQueryView::getModel() const
 {
-  return dynamic_cast<ZFlyEmNeuronListModel*>(model());
+  return qobject_cast<ZFlyEmNeuronListModel*>(model());
 }

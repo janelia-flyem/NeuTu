@@ -1636,7 +1636,7 @@ void Z3DSwcFilter::initialize()
 
 
   ZFloatParameter *zscaleParam =
-      dynamic_cast<ZFloatParameter*>(getParameter("Z Scale"));
+      qobject_cast<ZFloatParameter*>(getParameter("Z Scale"));
   if (zscaleParam != NULL) {
     zscaleParam->set(config.getZScale());
   }
@@ -1662,6 +1662,6 @@ void Z3DSwcFilter::setSelectedSwcs(const QSet<ZStackObject *> &selectedSwc)
 {
   for (QSet<ZStackObject *>::const_iterator iter = selectedSwc.begin();
        iter != selectedSwc.end(); ++iter) {
-    m_selectedSwcs.insert(dynamic_cast<ZSwcTree*>(*iter));
+    m_selectedSwcs.insert(qobject_cast<ZSwcTree*>(*iter));
   }
 }

@@ -1876,7 +1876,7 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
   if (other->id() != id())
     return false;
 
-  const MoveSelected *oth = dynamic_cast<const MoveSelected *>(other);
+  const MoveSelected *oth = qobject_cast<const MoveSelected *>(other);
   if (oth != NULL) {
     if (m_punctaList != oth->m_punctaList ||
         m_swcNodeList != oth->m_swcNodeList ||

@@ -32,7 +32,7 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
   if (!isAcceptingEvent())
     return;
 
-  if (QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(e)) {
+  if (QMouseEvent* mouseEvent = qobject_cast<QMouseEvent*>(e)) {
     bool accept = false;
     for (int i=0; i<m_mouseEvents.size(); i++) {
       accept = true;
@@ -52,7 +52,7 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
       if (m_sharing)
         e->ignore();
     }
-  } else if (QWheelEvent *wheelEvent = dynamic_cast<QWheelEvent*>(e)) {
+  } else if (QWheelEvent *wheelEvent = qobject_cast<QWheelEvent*>(e)) {
     bool accept = false;
     for (int i=0; i<m_mouseEvents.size(); i++) {
       accept = true;
@@ -69,7 +69,7 @@ void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
       if (m_sharing)
         e->ignore();
     }
-  } else if (QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e)) {
+  } else if (QKeyEvent* keyEvent = qobject_cast<QKeyEvent*>(e)) {
     bool accept = false;
     for (int i=0; i<m_keyEvents.size(); i++) {
       accept = true;

@@ -45,7 +45,7 @@ ZTileGraphicsItem* ZTileManager::getFirstTile()
 {
   QList<QGraphicsItem*> itemList = items();
   foreach (QGraphicsItem *item, itemList) {
-    ZTileGraphicsItem *firstItem = dynamic_cast<ZTileGraphicsItem*>(item);
+    ZTileGraphicsItem *firstItem = qobject_cast<ZTileGraphicsItem*>(item);
     if (firstItem != NULL) {
       return firstItem;
     }
@@ -106,13 +106,13 @@ bool ZTileManager::importJsonFile(const QString &filePath)
 
 ZStackFrame* ZTileManager::getParentFrame() const
 {
-  return dynamic_cast<ZStackFrame*>(parent());
+  return qobject_cast<ZStackFrame*>(parent());
 }
 
 void ZTileManager::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   ZTileGraphicsItem* hitItem =
-      dynamic_cast<ZTileGraphicsItem*>(
+      qobject_cast<ZTileGraphicsItem*>(
         itemAt(event->scenePos().x(), event->scenePos().y(), QTransform()));
 
   if (hitItem != NULL) {
@@ -140,7 +140,7 @@ void ZTileManager::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     clearPreselected();
 
   ZTileGraphicsItem* hitItem =
-      dynamic_cast<ZTileGraphicsItem*>(
+      qobject_cast<ZTileGraphicsItem*>(
         itemAt(event->scenePos().x(), event->scenePos().y(), QTransform()));
 
   if (hitItem != NULL) {

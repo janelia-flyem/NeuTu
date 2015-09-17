@@ -151,7 +151,7 @@ void ZSquareTaskManager::postProcess()
 {
   foreach (ZTask *task, m_taskArray) {
     ZSquareTask *matchTask =
-        dynamic_cast<ZSquareTask*>(task);
+        qobject_cast<ZSquareTask*>(task);
     if (matchTask != NULL) {
       m_result += matchTask->getResult();
     }
