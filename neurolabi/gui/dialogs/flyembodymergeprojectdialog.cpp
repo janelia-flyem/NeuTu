@@ -398,7 +398,7 @@ void FlyEmBodyMergeProjectDialog::notifyBodyMerged(
 
 ZDvidVersionModel* FlyEmBodyMergeProjectDialog::getVersionModel()
 {
-  return dynamic_cast<ZDvidVersionModel*>(ui->verionTreeView->model());
+  return qobject_cast<ZDvidVersionModel*>(ui->verionTreeView->model());
 }
 
 void FlyEmBodyMergeProjectDialog::changeDvidNode(const QModelIndex &index)
@@ -489,7 +489,7 @@ void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
   FlyEmBodyMergeProjectDialog *dlg =
-      dynamic_cast<FlyEmBodyMergeProjectDialog*>(host);
+      qobject_cast<FlyEmBodyMergeProjectDialog*>(host);
 
   switch (message->getType()) {
   case ZMessage::TYPE_FLYEM_MERGE:

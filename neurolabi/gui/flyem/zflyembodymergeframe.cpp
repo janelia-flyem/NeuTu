@@ -24,7 +24,7 @@ void ZFlyEmBodyMergeFrame::setDvidTarget(const ZDvidTarget &target)
 
 ZFlyEmBodyMergeDoc* ZFlyEmBodyMergeFrame::getCompleteDocument()
 {
-  return dynamic_cast<ZFlyEmBodyMergeDoc*>(document().get());
+  return qobject_cast<ZFlyEmBodyMergeDoc*>(document().get());
 }
 
 ZStackFrame*
@@ -59,7 +59,7 @@ void ZFlyEmBodyMergeFrame::MessageProcessor::processMessage(
   switch (message->getType()) {
   case ZMessage::TYPE_FLYEM_SPLIT:
   {
-    ZFlyEmBodyMergeFrame *frame = dynamic_cast<ZFlyEmBodyMergeFrame*>(host);
+    ZFlyEmBodyMergeFrame *frame = qobject_cast<ZFlyEmBodyMergeFrame*>(host);
     if (frame != NULL) {
       uint64_t id = frame->getCompleteDocument()->getSelectedBodyId();
       if (id > 0) {

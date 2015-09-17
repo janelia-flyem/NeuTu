@@ -2016,12 +2016,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 ZStackFrame* MainWindow::activeStackFrame()
 {
-  return dynamic_cast<ZStackFrame*>(mdiArea->activeSubWindow());
+  return qobject_cast<ZStackFrame*>(mdiArea->activeSubWindow());
 }
 
 ZStackFrame* MainWindow::currentStackFrame()
 {
-  return dynamic_cast<ZStackFrame*>(mdiArea->currentSubWindow());
+  return qobject_cast<ZStackFrame*>(mdiArea->currentSubWindow());
 }
 
 void MainWindow::setCurrentFile(const QString &fileName)
@@ -2119,7 +2119,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (75451f946a6323529fab891e4c0d499568fdd18f)</p>";
+        " (204c146d7cb1e4f0f88cec1cd87fa4c07f524e67)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -3438,12 +3438,12 @@ void MainWindow::evokeStackFrame(QMdiSubWindow *frame)
   }
 #endif
 
-  ZStackFrame *targetFrame = dynamic_cast<ZStackFrame*>(frame);
+  ZStackFrame *targetFrame = qobject_cast<ZStackFrame*>(frame);
 
   QList<QMdiSubWindow *> frameList = mdiArea->subWindowList();
   for (QList<QMdiSubWindow *>::iterator iter = frameList.begin();
        iter != frameList.end(); ++iter) {
-    ZStackFrame *frameIter = dynamic_cast<ZStackFrame*>(*iter);
+    ZStackFrame *frameIter = qobject_cast<ZStackFrame*>(*iter);
     if (frameIter != NULL) {
       if (frameIter != targetFrame) {
         frameIter->displayActiveDecoration(false);
@@ -4631,7 +4631,7 @@ ZStackFrame *MainWindow::createStackFrame(
       doc = ZSharedPointer<ZStackDoc>(new ZBiocytinProjectionDoc);
       if (parentFrame != NULL) {
         ZBiocytinProjectionDoc *cdoc =
-            dynamic_cast<ZBiocytinProjectionDoc*>(doc.get());
+            qobject_cast<ZBiocytinProjectionDoc*>(doc.get());
         cdoc->setParentDoc(parentFrame->document());
       }
     } else {
@@ -5134,13 +5134,13 @@ void MainWindow::on_actionSave_SWC_triggered()
 
 ZFlyEmDataFrame* MainWindow::currentFlyEmDataFrame()
 {
-  return dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+  return qobject_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 }
 
 void MainWindow::on_actionSimilarity_Matrix_triggered()
 {
   ZFlyEmDataFrame *frame =
-      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+      qobject_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 
   if (frame != NULL) {
     QString fileName = getSaveFileName("Export Similarity Matrix", "*.txt");
@@ -5200,7 +5200,7 @@ void MainWindow::on_actionSparse_objects_triggered()
 void MainWindow::on_actionDendrogram_triggered()
 {
   ZFlyEmDataFrame *frame =
-      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+      qobject_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 
   if (frame != NULL) {
     QString simmatFile = getOpenFileName("Similarity Matrix", "*.txt");
@@ -5263,7 +5263,7 @@ void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
   if (m_penWidthDialog->exec()) {
     ZStackObject::setDefaultPenWidth(m_penWidthDialog->getPenWidth());
     foreach (QMdiSubWindow *subwindow, mdiArea->subWindowList()) {
-      ZStackFrame *frame = dynamic_cast<ZStackFrame*>(subwindow);
+      ZStackFrame *frame = qobject_cast<ZStackFrame*>(subwindow);
       if (frame != NULL) {
         frame->updateView();
       }
@@ -5428,7 +5428,7 @@ void MainWindow::on_actionDvid_Object_triggered()
 void MainWindow::on_actionAssign_Clustering_triggered()
 {
   ZFlyEmDataFrame *frame =
-      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+      qobject_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 
   if (frame != NULL) {
     QString simmatFile = getOpenFileName("Similarity Matrix", "*.txt");
@@ -5642,7 +5642,7 @@ void MainWindow::on_actionGet_Grayscale_triggered()
 
 ZTiledStackFrame* MainWindow::currentTiledStackFrame()
 {
-  return dynamic_cast<ZTiledStackFrame*>(currentStackFrame());
+  return qobject_cast<ZTiledStackFrame*>(currentStackFrame());
 }
 
 void MainWindow::on_actionTile_Manager_2_triggered()
@@ -7176,7 +7176,7 @@ void MainWindow::on_actionLoad_Named_Bodies_triggered()
 void MainWindow::on_actionHackathonSimmat_triggered()
 {
   ZFlyEmDataFrame *frame =
-      dynamic_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
+      qobject_cast<ZFlyEmDataFrame*>(mdiArea->currentSubWindow());
 
   if (frame != NULL) {
     QString fileName = m_hackathonConfigDlg->getWorkDir() + "/simmat.txt";
@@ -7231,7 +7231,7 @@ void MainWindow::MessageProcessor::processMessage(
     return;
   }
 
-  MainWindow *realHost = dynamic_cast<MainWindow*>(host);
+  MainWindow *realHost = qobject_cast<MainWindow*>(host);
   if (realHost != NULL) {
     switch (message->getType()) {
     case ZMessage::TYPE_INFORMATION:

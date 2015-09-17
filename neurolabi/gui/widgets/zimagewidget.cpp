@@ -236,14 +236,29 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
 
   if (wRatio < hRatio) { //height has some margin
     int height = iround(screenSize().height() / wRatio);
+    int margin = (height - viewPort.height()) / 2;
+    int top = newViewPort.top() - margin;
+    if (top < 0) {
+      top = 0;
+    }
+    newViewPort.setTop(top);
+
     newViewPort.setHeight(
           imin2(height,
-                canvasSize().height() + m_canvasRegion.top() - viewPort.top()));
+                canvasSize().height() + m_canvasRegion.top() - newViewPort.top()));
   } else if (hRatio < wRatio) {
     int width = iround(screenSize().width() / hRatio);
+    int margin = (width - viewPort.width()) / 2;
+
+    int left = newViewPort.left() - margin;
+    if (left < 0) {
+      left = 0;
+    }
+    newViewPort.setLeft(left);
+
     newViewPort.setWidth(
           imin2(width,
-                canvasSize().width() + m_canvasRegion.left() - viewPort.left()));
+                canvasSize().width() + m_canvasRegion.left() - newViewPort.left()));
   }
 
   QRect projRect = QRect(

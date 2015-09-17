@@ -37,7 +37,7 @@ void ZSegmentationProjectDialog::loadSegmentationTarget(
 
 MainWindow* ZSegmentationProjectDialog::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(this->parentWidget());
+  return qobject_cast<MainWindow*>(this->parentWidget());
 }
 
 ZStackFrame* ZSegmentationProjectDialog::newDataFrame()

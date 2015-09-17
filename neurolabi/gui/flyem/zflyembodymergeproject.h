@@ -206,7 +206,7 @@ private:
 template <typename T>
 T* ZFlyEmBodyMergeProject::getDocument() const
 {
-  return dynamic_cast<T*>(getDocument());
+  return qobject_cast<T*>(getDocument());
 }
 
 #endif // ZFLYEMBODYMERGEPROJECT_H

@@ -391,7 +391,7 @@ void ZStackView::updateChannelControl()
         m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
         m_channelControlLayout->addWidget(
               channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
-        ZClickableColorLabel *colorWidget = dynamic_cast<ZClickableColorLabel*>
+        ZClickableColorLabel *colorWidget = qobject_cast<ZClickableColorLabel*>
             (channelColors[ch]->createWidget());
         colorWidget->setMinimumHeight(20);
         colorWidget->setMinimumWidth(30);
@@ -2008,12 +2008,12 @@ void ZStackView::MessageProcessor::processMessage(
 
 ZStackFrame* ZStackView::getParentFrame() const
 {
-  return dynamic_cast<ZStackFrame*>(parent());
+  return qobject_cast<ZStackFrame*>(parent());
 }
 
 ZStackMvc* ZStackView::getParentMvc() const
 {
-  return dynamic_cast<ZStackMvc*>(parent());
+  return qobject_cast<ZStackMvc*>(parent());
 }
 
 ZSharedPointer<ZStackDoc> ZStackView::buddyDocument() const

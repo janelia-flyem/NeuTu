@@ -27,7 +27,7 @@ FlyEmProjectDialog::~FlyEmProjectDialog()
 
 MainWindow* FlyEmProjectDialog::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(this->parentWidget());
+  return qobject_cast<MainWindow*>(this->parentWidget());
 }
 
 void FlyEmProjectDialog::consumeNewDoc(ZStackDocReader *m_docReader,

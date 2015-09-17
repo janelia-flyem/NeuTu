@@ -570,7 +570,9 @@ HEADERS += mainwindow.h \
     zintcuboidobj.h \
     flyem/zflyembodywindowfactory.h \
     flyem/zflyembodycolorscheme.h \
-    flyem/zflyemexternalneurondoc.h
+    flyem/zflyemexternalneurondoc.h \
+    ztask.h \
+    flyem/zflyemqualityanalyzertask.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -996,7 +998,9 @@ SOURCES += main.cpp \
     zintcuboidobj.cpp \
     flyem/zflyembodywindowfactory.cpp \
     flyem/zflyembodycolorscheme.cpp \
-    flyem/zflyemexternalneurondoc.cpp
+    flyem/zflyemexternalneurondoc.cpp \
+    ztask.cpp \
+    flyem/zflyemqualityanalyzertask.cpp
 
 OTHER_FILES += \
     extlib.pri \
