@@ -264,6 +264,9 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
       windowStatus[index] = true;
 
       updateWindow(index);
+
+      qDebug()<<"#####addWindow###currentindex"<<currentIndex();
+
   }
 }
 
@@ -288,6 +291,8 @@ void Z3DTabWidget::updateTabs(int index)
 
 void Z3DTabWidget::updateWindow(int index)
 {
+    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex();
+
     if(index>-1 && windowStatus[index]==true)
     {
         Z3DWindow *w = (Z3DWindow *)(widget(index));
@@ -303,6 +308,8 @@ void Z3DTabWidget::updateWindow(int index)
 
             if(preIndex>-1 && windowStatus[preIndex]==true && preIndex!=index)
             {
+                qDebug()<<"#####????"<<preIndex<<index;
+
                 Z3DWindow *preWin = (Z3DWindow *)(widget(preIndex));
 
                 // settings
@@ -323,9 +330,11 @@ void Z3DTabWidget::updateWindow(int index)
             }
             else
             {
+                qDebug()<<"#####"<<preIndex<<index;
+
                 // settings
                 buttonChecked = w->getButtonStatus(1);
-                if(buttonChecked != buttonStatus[index][1])
+                if(buttonChecked != buttonStatus[preIndex][1])
                 {
                     w->getSettingsDockWidget()->toggleViewAction()->trigger();
                     buttonStatus[index][1] = buttonChecked;
@@ -333,7 +342,7 @@ void Z3DTabWidget::updateWindow(int index)
 
                 // objects
                 buttonChecked = w->getButtonStatus(2);
-                if(buttonChecked != buttonStatus[index][2])
+                if(buttonChecked != buttonStatus[preIndex][2])
                 {
                     w->getObjectsDockWidget()->toggleViewAction()->trigger();
                     buttonStatus[index][2] = buttonChecked;
@@ -357,6 +366,9 @@ void Z3DTabWidget::closeAllWindows()
     {
         closeWindow(i);
     }
+
+    qDebug()<<"######closeAllWindows"<<currentIndex();
+    preIndex = currentIndex();
 }
 
 void Z3DTabWidget::closeWindow(int index)
@@ -368,10 +380,10 @@ void Z3DTabWidget::closeWindow(int index)
 
   windowStatus[index] = false;
 
-  if(preIndex==index)
-  {
-      preIndex = -1;
-  }
+//  if(preIndex==index)
+//  {
+//      preIndex = -1;
+//  }
 
 }
 
