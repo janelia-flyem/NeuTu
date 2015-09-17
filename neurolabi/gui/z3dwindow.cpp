@@ -137,7 +137,7 @@ void Z3DMainWindow::updateButtonObjects(bool v)
 
 Z3DTabWidget* Z3DMainWindow::getCentralTab() const
 {
-  return dynamic_cast<Z3DTabWidget*>(centralWidget());
+  return qobject_cast<Z3DTabWidget*>(centralWidget());
 }
 
 void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
@@ -219,38 +219,46 @@ void Z3DTabWidget::resetCameraCenter()
 
 void Z3DTabWidget::showGraph(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
         cur3Dwin->getGraphFilter()->setVisible(v);
         cur3Dwin->setButtonStatus(0,v);
-        buttonStatus[this->currentIndex()][0] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][0] = v;
     }
 }
 
 void Z3DTabWidget::settingsPanel(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
         cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[this->currentIndex()][1] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][1] = v;
     }
 
 }
 
 void Z3DTabWidget::objectsPanel(bool v)
 {
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
+        qDebug()<<"####objects toggle ??? #####";
+
         cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[this->currentIndex()][2] = v;
+        buttonStatus[ tabLUT[getRealIndex(index)] ][2] = v;
     }
 
 }
@@ -287,12 +295,7 @@ int Z3DTabWidget::getTabIndex(int index)
     return (tabLUT[index]);
 }
 
-void Z3DTabWidget::updateTabs(int index)
-{
-    emit tabIndexChanged(index);
-}
-
-void Z3DTabWidget::updateWindow(int index)
+int Z3DTabWidget::getRealIndex(int index)
 {
     int cur = -1;
 
@@ -303,6 +306,18 @@ void Z3DTabWidget::updateWindow(int index)
             cur = i;
         }
     }
+
+    return cur;
+}
+
+void Z3DTabWidget::updateTabs(int index)
+{
+    emit tabIndexChanged(index);
+}
+
+void Z3DTabWidget::updateWindow(int index)
+{
+    int cur = getRealIndex(index);
 
     qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex()<<cur;
 
@@ -360,8 +375,13 @@ void Z3DTabWidget::updateWindow(int index)
 
                     // objects
                     buttonChecked = w->getButtonStatus(2);
+
+                    qDebug()<<"####objects"<<buttonChecked<<buttonStatus[preIndex][2];
+
                     if(buttonChecked != buttonStatus[preIndex][2])
                     {
+                        qDebug()<<"####objects toggle";
+
                         w->getObjectsDockWidget()->toggleViewAction()->trigger();
                         buttonStatus[cur][2] = buttonChecked;
                     }
@@ -383,16 +403,18 @@ void Z3DTabWidget::closeAllWindows()
 {
     for(int i=0; i<4; i++)
     {
-        closeWindow(i);
-    }
-
-    for(int i=0; i<4; i++)
-    {
         if(tabLUT[i]==currentIndex())
         {
             preIndex = i;
         }
+
+        tabLUT[i] = -1;
     }
+
+    for(int i=0; i<4; i++)
+    {
+        closeWindow(i);
+    } 
 }
 
 void Z3DTabWidget::closeWindow(int index)
@@ -407,11 +429,6 @@ void Z3DTabWidget::closeWindow(int index)
   }
 
   windowStatus[index] = false;
-
-//  if(preIndex==index)
-//  {
-//      preIndex = -1;
-//  }
 
 }
 
@@ -2207,7 +2224,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
     m_viewMenu->addAction(m_advancedSettingDockWidget->toggleViewAction());
   }
   m_advancedSettingDockWidget->showNormal();
-  QTabWidget *tabWidget = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+  QTabWidget *tabWidget = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
   for (int i=0; i<tabWidget->count(); i++) {
     if (tabWidget->tabText(i) == name) {
       tabWidget->setCurrentIndex(i);
@@ -2278,15 +2295,15 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  //  QScrollArea *oldSA = dynamic_cast<QScrollArea*>(m_settingsDockWidget->widget());
+  //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
   //    QScrollBar *bar = oldSA->verticalScrollBar();
   //    oldScrollBarValue = bar->value();
   //  }
-  //  QScrollArea *newSA = dynamic_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
+  //  QScrollArea *newSA = qobject_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
   //  newSA->verticalScrollBar()->setValue(oldScrollBarValue);
-  QTabWidget *old = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *old = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   int oldIndex = 0;
   if (old)
     oldIndex = old->currentIndex();
@@ -2303,7 +2320,7 @@ void Z3DWindow::updateSettingsDockWidget()
 
   // for advanced setting widget
   if (m_advancedSettingDockWidget) {
-    QTabWidget *old = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+    QTabWidget *old = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
     int oldIndex = 0;
     if (old)
       oldIndex = old->currentIndex();
@@ -2398,7 +2415,7 @@ void Z3DWindow::changeBackground()
 {
   m_settingsDockWidget->show();
   int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
-  QTabWidget *tab = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
 }
 
@@ -2549,7 +2566,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   {
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
-          dynamic_cast<ZOptionParameter<QString>*>(
+          (ZOptionParameter<QString>*) (
             getSwcFilter()->getParameter("Geometry"));
       sm->selectNext();
     }

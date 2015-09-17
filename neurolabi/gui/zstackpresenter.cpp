@@ -2966,17 +2966,17 @@ void ZStackPresenter::acceptActiveStroke()
 
 ZStackFrame* ZStackPresenter::getParentFrame() const
 {
-  return dynamic_cast<ZStackFrame*>(parent());
+  return qobject_cast<ZStackFrame*>(parent());
 }
 
 ZStackMvc* ZStackPresenter::getParentMvc() const
 {
-  return dynamic_cast<ZStackMvc*>(parent());
+  return qobject_cast<ZStackMvc*>(parent());
 }
 
 QWidget* ZStackPresenter::getParentWidget() const
 {
-  return dynamic_cast<QWidget*>(parent());
+  return qobject_cast<QWidget*>(parent());
 }
 
 bool ZStackPresenter::isSwcFullSkeletonVisible() const

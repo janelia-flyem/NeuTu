@@ -31,6 +31,7 @@ signals:
   void labelSizeChanged(int width, int height);
   void showingFullSegmentation();
   void coarseBodyViewTriggered();
+  void skeletonViewTriggered();
   void bodyViewTriggered();
   void savingMerge();
   void committingMerge();

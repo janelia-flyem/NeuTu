@@ -260,7 +260,7 @@ void FlyEmDataForm::on_addDataPushButton_clicked()
         NULL/*, QFileDialog::DontUseNativeDialog*/);
 
   if (!fileName.isEmpty()) {
-    ZFlyEmDataFrame *frame = dynamic_cast<ZFlyEmDataFrame*>(this->parentWidget());
+    ZFlyEmDataFrame *frame = qobject_cast<ZFlyEmDataFrame*>(this->parentWidget());
     if (frame != NULL) {
       frame->load(fileName.toStdString(), true);
     }
@@ -300,7 +300,7 @@ void FlyEmDataForm::updateInfoWindow(const QModelIndex &index)
 
 ZFlyEmDataFrame* FlyEmDataForm::getParentFrame() const
 {
-  return dynamic_cast<ZFlyEmDataFrame*>(this->parentWidget());
+  return qobject_cast<ZFlyEmDataFrame*>(this->parentWidget());
 }
 
 void FlyEmDataForm::updateSlaveQuery(const QModelIndex &index)

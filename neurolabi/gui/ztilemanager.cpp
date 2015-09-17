@@ -106,7 +106,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
 
 ZStackFrame* ZTileManager::getParentFrame() const
 {
-  return dynamic_cast<ZStackFrame*>(parent());
+  return qobject_cast<ZStackFrame*>(parent());
 }
 
 void ZTileManager::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)

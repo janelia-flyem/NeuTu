@@ -198,7 +198,7 @@ void Z3DRenderOutputPort::setProcessor(Z3DProcessor *p)
 {
   Z3DOutputPortBase::setProcessor(p);
 
-  Z3DRenderProcessor* rp = dynamic_cast<Z3DRenderProcessor*>(p);
+  Z3DRenderProcessor* rp = qobject_cast<Z3DRenderProcessor*>(p);
   assert(rp);
   if (!rp) {
     LERROR() << "RenderPort" << getName() << "attached to processor of wrong type:"
@@ -259,7 +259,7 @@ void Z3DRenderInputPort::setProcessor(Z3DProcessor *p)
 {
   Z3DInputPortBase::setProcessor(p);
 
-  Z3DRenderProcessor* rp = dynamic_cast<Z3DRenderProcessor*>(p);
+  Z3DRenderProcessor* rp = qobject_cast<Z3DRenderProcessor*>(p);
   assert(rp);
   if (!rp) {
     LERROR() << "RenderPort" << getName() << "attached to processor of wrong type:"

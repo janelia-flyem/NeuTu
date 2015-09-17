@@ -54,6 +54,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(coarseBodyViewTriggered()));
   connect(ui->bodyViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(bodyViewTriggered()));
+  connect(ui->skeletonViewPushButton, SIGNAL(clicked()),
+          this, SIGNAL(skeletonViewTriggered()));
 
   connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(locateAssignedBookmark(QModelIndex)));

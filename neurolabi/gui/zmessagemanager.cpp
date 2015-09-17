@@ -33,7 +33,7 @@ void ZMessageManager::registerWidget(
 
 void ZMessageManager::detachWidget()
 {
-  disconnect(dynamic_cast<QObject*>(m_widget), SIGNAL(destroyed()),
+  disconnect(qobject_cast<QObject*>(m_widget), SIGNAL(destroyed()),
              this, SLOT(detachWidget()));
   m_widget = NULL;
   setParent(&(getRootManager()));
@@ -68,7 +68,7 @@ void ZMessageManager::dispatchMessage(ZMessage *message)
   const QObjectList& childList = children();
   foreach (const QObject *child, childList) {
     ZMessageManager *manager = const_cast<ZMessageManager*>(
-          dynamic_cast<const ZMessageManager*>(child));
+          qobject_cast<const ZMessageManager*>(child));
     if (manager != NULL) {
       if ((message->getCurrentSource() == NULL) ||
           (manager->getWidget() != message->getCurrentSource())) {
@@ -87,7 +87,7 @@ void ZMessageManager::reportMessage(ZMessage *message)
     return;
   }
 
-  ZMessageManager *manager = dynamic_cast<ZMessageManager*>(parent());
+  ZMessageManager *manager = qobject_cast<ZMessageManager*>(parent());
   if (manager != NULL) {
     if ((message->getOriginalSource() == NULL) ||
         (manager->getWidget() != message->getOriginalSource())) {
@@ -124,7 +124,7 @@ ZMessageManager* ZMessageManager::findChildManager(const QWidget *widget) const
   QObjectList objList = children();
   ZMessageManager *target = NULL;
   foreach (QObject *obj, objList) {
-    ZMessageManager *child = dynamic_cast<ZMessageManager*>(obj);
+    ZMessageManager *child = qobject_cast<ZMessageManager*>(obj);
     if (child != NULL) {
       if (child->getWidget() == widget) {
         target = child;
@@ -171,7 +171,7 @@ ZTextLineCompositer ZMessageManager::toLineCompositer(int level) const
 
   QObjectList objList = children();
   foreach (QObject *obj, objList) {
-    ZMessageManager *child = dynamic_cast<ZMessageManager*>(obj);
+    ZMessageManager *child = qobject_cast<ZMessageManager*>(obj);
     if (child != NULL) {
       text.appendLine(child->toLineCompositer(1));
     }

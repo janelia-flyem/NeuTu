@@ -8542,7 +8542,7 @@ const T* ZStackDoc::getFirstUserByType() const
 {
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *parent = dynamic_cast<T*>(*iter);
+    T *parent = qobject_cast<T*>(*iter);
     if (parent != NULL) {
       return parent;
     }

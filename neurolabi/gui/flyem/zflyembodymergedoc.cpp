@@ -200,7 +200,7 @@ ZFlyEmBodyMergerDocCommand::MergeBody::MergeBody(
 
 ZFlyEmBodyMergeDoc* ZFlyEmBodyMergerDocCommand::MergeBody::getCompleteDocument()
 {
-  return dynamic_cast<ZFlyEmBodyMergeDoc*>(m_doc);
+  return qobject_cast<ZFlyEmBodyMergeDoc*>(m_doc);
 }
 
 void ZFlyEmBodyMergerDocCommand::MergeBody::redo()
