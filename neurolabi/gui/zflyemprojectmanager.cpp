@@ -5,11 +5,11 @@
 #include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/flyembodysplitprojectdialog.h"
 
-ZFlyEmProjectManager::ZFlyEmProjectManager(QObject *parent) :
+ZFlyEmProjectManager::ZFlyEmProjectManager(QWidget *parent) :
   QObject(parent)
 {
-  m_mergeDlg = new FlyEmBodyMergeProjectDialog(dynamic_cast<QWidget*>(parent));
-  m_splitDlg = new FlyEmBodySplitProjectDialog(dynamic_cast<QWidget*>(parent));
+  m_mergeDlg = new FlyEmBodyMergeProjectDialog(parent);
+  m_splitDlg = new FlyEmBodySplitProjectDialog(parent);
 
   connectSignalSlot();
 
