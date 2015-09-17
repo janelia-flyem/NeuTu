@@ -324,7 +324,7 @@ void ZFlyEmProofMvc::mergeCoarseBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->mergeBodyModel(*(getCompleteDocument()->getBodyMerger()));
     }
@@ -337,7 +337,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -352,7 +352,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
       doc->dumpAllSwc();
@@ -371,7 +371,7 @@ void ZFlyEmProofMvc::updateBodyWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -384,7 +384,7 @@ void ZFlyEmProofMvc::updateSkeletonWindow()
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        dynamic_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -537,12 +537,12 @@ void ZFlyEmProofMvc::updateBodyWindowPlane(
 
 ZFlyEmProofDoc* ZFlyEmProofMvc::getCompleteDocument() const
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(getDocument().get());
+  return qobject_cast<ZFlyEmProofDoc*>(getDocument().get());
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofMvc::getCompletePresenter() const
 {
-  return dynamic_cast<ZFlyEmProofPresenter*>(getPresenter());
+  return qobject_cast<ZFlyEmProofPresenter*>(getPresenter());
 }
 
 void ZFlyEmProofMvc::mergeSelected()

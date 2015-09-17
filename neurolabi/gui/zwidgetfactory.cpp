@@ -29,7 +29,7 @@ ZButtonBox* ZWidgetFactory::makeButtonBox(
 
 ZButtonBox* ZWidgetFactory::makeButtonBox(ZButtonBox::TRole role, QDialog *parent)
 {
-  ZButtonBox *buttonBox = makeButtonBox(role, dynamic_cast<QWidget*>(parent));
+  ZButtonBox *buttonBox = makeButtonBox(role, qobject_cast<QWidget*>(parent));
 
   bool ok =
       QObject::connect(buttonBox, SIGNAL(clickedYes()), parent, SLOT(accept()));

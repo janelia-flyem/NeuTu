@@ -356,7 +356,7 @@ void FlyEmBodySplitProjectDialog::showResult3dQuick()
 
 MainWindow* FlyEmBodySplitProjectDialog::getMainWindow()
 {
-  return dynamic_cast<MainWindow*>(this->parentWidget());
+  return qobject_cast<MainWindow*>(this->parentWidget());
 }
 
 QProgressDialog* FlyEmBodySplitProjectDialog::getProgressDialog()
@@ -1075,7 +1075,7 @@ void FlyEmBodySplitProjectDialog::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
 {
   FlyEmBodySplitProjectDialog *dlg =
-      dynamic_cast<FlyEmBodySplitProjectDialog*>(host);
+      qobject_cast<FlyEmBodySplitProjectDialog*>(host);
 
   switch (message->getType()) {
   case ZMessage::TYPE_FLYEM_SPLIT:

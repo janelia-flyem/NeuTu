@@ -137,7 +137,7 @@ void Z3DMainWindow::updateButtonObjects(bool v)
 
 Z3DTabWidget* Z3DMainWindow::getCentralTab() const
 {
-  return dynamic_cast<Z3DTabWidget*>(centralWidget());
+  return qobject_cast<Z3DTabWidget*>(centralWidget());
 }
 
 void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
@@ -2116,7 +2116,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
     m_viewMenu->addAction(m_advancedSettingDockWidget->toggleViewAction());
   }
   m_advancedSettingDockWidget->showNormal();
-  QTabWidget *tabWidget = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+  QTabWidget *tabWidget = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
   for (int i=0; i<tabWidget->count(); i++) {
     if (tabWidget->tabText(i) == name) {
       tabWidget->setCurrentIndex(i);
@@ -2187,15 +2187,15 @@ void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix,
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  //  QScrollArea *oldSA = dynamic_cast<QScrollArea*>(m_settingsDockWidget->widget());
+  //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
   //    QScrollBar *bar = oldSA->verticalScrollBar();
   //    oldScrollBarValue = bar->value();
   //  }
-  //  QScrollArea *newSA = dynamic_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
+  //  QScrollArea *newSA = qobject_cast<QScrollArea*>(m_widgetsGroup->createWidget(this, true));
   //  newSA->verticalScrollBar()->setValue(oldScrollBarValue);
-  QTabWidget *old = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *old = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   int oldIndex = 0;
   if (old)
     oldIndex = old->currentIndex();
@@ -2212,7 +2212,7 @@ void Z3DWindow::updateSettingsDockWidget()
 
   // for advanced setting widget
   if (m_advancedSettingDockWidget) {
-    QTabWidget *old = dynamic_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
+    QTabWidget *old = qobject_cast<QTabWidget*>(m_advancedSettingDockWidget->widget());
     int oldIndex = 0;
     if (old)
       oldIndex = old->currentIndex();
@@ -2307,7 +2307,7 @@ void Z3DWindow::changeBackground()
 {
   m_settingsDockWidget->show();
   int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
-  QTabWidget *tab = dynamic_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
 }
 
@@ -2458,7 +2458,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   {
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
-          dynamic_cast<ZOptionParameter<QString>*>(
+          (ZOptionParameter<QString>*) (
             getSwcFilter()->getParameter("Geometry"));
       sm->selectNext();
     }

@@ -791,7 +791,7 @@ ZFlyEmProofDocCommand::MergeBody::MergeBody(
 
 ZFlyEmProofDoc* ZFlyEmProofDocCommand::MergeBody::getCompleteDocument()
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(m_doc);
+  return qobject_cast<ZFlyEmProofDoc*>(m_doc);
 }
 
 void ZFlyEmProofDocCommand::MergeBody::redo()

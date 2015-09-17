@@ -3,6 +3,7 @@
 
 #include "zmultitaskmanager.h"
 #include "tz_stdint.h"
+#include "ztask.h"
 
 class ZDvidTile;
 

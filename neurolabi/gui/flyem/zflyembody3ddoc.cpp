@@ -171,7 +171,7 @@ void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 
 ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 {
-  return dynamic_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
+  return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)

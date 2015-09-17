@@ -187,8 +187,8 @@ template<class T>
 std::vector<T*> Z3DProcessor::getParametersByType() const {
   std::vector<T*> result;
   for (size_t i=0; i<m_parameters.size(); ++i) {
-    if (dynamic_cast<T*>(m_parameters[i]))
-      result.push_back(dynamic_cast<T*>(m_parameters[i]));
+    if (qobject_cast<T*>(m_parameters[i]))
+      result.push_back(qobject_cast<T*>(m_parameters[i]));
   }
   return result;
 }

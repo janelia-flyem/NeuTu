@@ -56,6 +56,7 @@
 #include "zjsonparser.h"
 #include "zintset.h"
 #include "zwindowfactory.h"
+#include "flyem/zflyemqualityanalyzertask.h"
 
 using namespace std;
 
@@ -70,7 +71,7 @@ ZFlyEmDataFrame::ZFlyEmDataFrame(QWidget *parent) :
   m_centralWidget = form;
   form->setSizePolicy(QSizePolicy::Expanding,
                       QSizePolicy::Expanding);
-  QMainWindow* mainWindow = dynamic_cast<QMainWindow*>(parent);
+  QMainWindow* mainWindow = qobject_cast<QMainWindow*>(parent);
 
   if (mainWindow != NULL) {
     form->setStatusBar(mainWindow->statusBar());
@@ -1788,7 +1789,7 @@ void ZFlyEmDataFrame::showSummary() const
 
 FlyEmDataForm *ZFlyEmDataFrame::getMainWidget() const
 {
-  FlyEmDataForm *form = dynamic_cast<FlyEmDataForm*>(widget());
+  FlyEmDataForm *form = qobject_cast<FlyEmDataForm*>(widget());
 
   return form;
 }
@@ -1809,7 +1810,7 @@ QProgressBar* ZFlyEmDataFrame::getProgressBar()
 void ZFlyEmDataFrame::displayQueryOutput(
     const ZFlyEmNeuron *neuron, bool appending) const
 {
-  FlyEmDataForm *form = dynamic_cast<FlyEmDataForm*>(widget());
+  FlyEmDataForm *form = qobject_cast<FlyEmDataForm*>(widget());
   if (form != NULL) {
     if (appending) {
       form->appendQueryOutput(neuron);
@@ -2503,7 +2504,7 @@ ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData()
 
 const ZFlyEmDataBundle* ZFlyEmDataFrame::getMasterData() const
 {
-  return dynamic_cast<const ZFlyEmDataBundle*>(
+  return dynamic_cast<ZFlyEmDataBundle*>(
         (const_cast<ZFlyEmDataFrame*>(this))->getMasterData());
 }
 

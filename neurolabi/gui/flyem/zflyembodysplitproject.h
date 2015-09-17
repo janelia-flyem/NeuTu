@@ -245,7 +245,7 @@ private:
 template <typename T>
 T* ZFlyEmBodySplitProject::getDocument() const
 {
-  return dynamic_cast<T*>(getDocument());
+  return qobject_cast<T*>(getDocument());
 }
 
 #endif // ZFLYEMBODYSPLITPROJECT_H

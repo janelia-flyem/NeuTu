@@ -169,7 +169,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   bookmark->setRadius(radius);
   bookmark->setCustom(true);
   bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
-  ZFlyEmProofDoc *doc = dynamic_cast<ZFlyEmProofDoc*>(buddyDocument());
+  ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
   if (doc != NULL) {
     bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
   }
@@ -221,7 +221,7 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
 void ZFlyEmProofPresenter::processRectRoiUpdate()
 {
   if (isSplitOn()) {
-    ZFlyEmProofDoc *doc = dynamic_cast<ZFlyEmProofDoc*>(buddyDocument());
+    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
       doc->updateSplitRoi();
     }

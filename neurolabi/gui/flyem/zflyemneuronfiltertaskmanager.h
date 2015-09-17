@@ -3,12 +3,15 @@
 
 #include <QVector>
 #include "zmultitaskmanager.h"
+#include "ztask.h"
 
 class ZFlyEmNeuron;
 class ZFlyEmNeuronFilter;
 
 class ZFlyEmNeuronFilterTask : public ZTask
 {
+  Q_OBJECT
+
 public:
   ZFlyEmNeuronFilterTask();
 
