@@ -133,7 +133,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
   connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
-
+  m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
   m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
