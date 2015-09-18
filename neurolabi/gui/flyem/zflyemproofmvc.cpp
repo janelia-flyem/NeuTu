@@ -891,10 +891,11 @@ void ZFlyEmProofMvc::goToBodyBottom()
       ZIntPoint pt;
       std::set<uint64_t>::const_iterator iter = bodySet.begin();
       pt = reader.readBodyBottom(*iter);
+      ++iter;
       for (; iter != bodySet.end(); ++iter) {
         uint64_t bodyId = *iter;
         ZIntPoint tmpPt = reader.readBodyBottom(bodyId);
-        if (pt.getZ() > tmpPt.getZ()) {
+        if (pt.getZ() < tmpPt.getZ()) {
           pt = tmpPt;
         }
       }
@@ -912,11 +913,12 @@ void ZFlyEmProofMvc::goToBodyTop()
     if (!bodySet.empty()) {
       ZIntPoint pt;
       std::set<uint64_t>::const_iterator iter = bodySet.begin();
-      pt = reader.readBodyBottom(*iter);
+      pt = reader.readBodyTop(*iter);
+      ++iter;
       for (; iter != bodySet.end(); ++iter) {
         uint64_t bodyId = *iter;
         ZIntPoint tmpPt = reader.readBodyTop(bodyId);
-        if (pt.getZ() < tmpPt.getZ()) {
+        if (pt.getZ() > tmpPt.getZ()) {
           pt = tmpPt;
         }
       }

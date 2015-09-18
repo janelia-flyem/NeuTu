@@ -13,6 +13,7 @@ ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
 
 void ZFlyEmBookmarkView::init()
 {
+  setFocusPolicy(Qt::NoFocus);
   createMenu();
 }
 

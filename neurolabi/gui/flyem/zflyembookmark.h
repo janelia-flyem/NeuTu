@@ -72,6 +72,7 @@ private:
   EBookmarkType m_bookmarkType;
   bool m_isChecked;
   bool m_isCustom;
+  bool m_isInTable;
 //  QString m_decorationText;
 };
 
