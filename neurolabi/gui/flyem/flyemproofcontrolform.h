@@ -9,6 +9,7 @@ class QMenu;
 class ZDvidTarget;
 class ZFlyEmBodyMergeProject;
 class ZStackDoc;
+class QSortFilterProxyModel;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -65,12 +66,16 @@ private slots:
 
 private:
   void createMenu();
+  QSortFilterProxyModel *createSortingProxy(ZFlyEmBookmarkListModel *model);
 
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
   ZFlyEmBookmarkListModel m_bookmarkList;
   ZFlyEmBookmarkListModel m_userBookmarkList;
+
+  QSortFilterProxyModel *m_bookmarkProxy;
+  QSortFilterProxyModel *m_userBookmarkProxy;
 
 //  ZDvidDialog *m_dvidDlg;
 };

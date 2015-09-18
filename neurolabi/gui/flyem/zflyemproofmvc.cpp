@@ -1738,7 +1738,12 @@ void ZFlyEmProofMvc::zoomTo(const ZIntPoint &pt)
 
 void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
 {
-  zoomTo(x, y, z, 800);
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
 }
 
 void ZFlyEmProofMvc::syncDvidBookmark()
