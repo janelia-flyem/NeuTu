@@ -114,7 +114,7 @@ fi
 if [ $edition = "flyem" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
-  cp ../../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
+  cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
   cp -r ../json $bin_dir
 fi
 
