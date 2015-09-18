@@ -140,6 +140,9 @@ public:
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }
 
+  ZIntPoint readBodyBottom(uint64_t bodyId) const;
+  ZIntPoint readBodyTop(uint64_t bodyId) const;
+
 signals:
   void readingDone();
 

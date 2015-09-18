@@ -385,7 +385,7 @@ bool Z3DTransferFunctionWidget::event(QEvent *e)
   {
     size_t index;
     bool isLeftPart;
-    QHelpEvent *helpEvent = dynamic_cast<QHelpEvent *>(e);
+    QHelpEvent *helpEvent = (QHelpEvent *) (e);
     QRect tipRect;
     QString tipText;
     if (findkey(helpEvent->pos(), index, isLeftPart)) {

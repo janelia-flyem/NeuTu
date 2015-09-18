@@ -103,6 +103,9 @@ public:
 private:
     Z3DTabWidget* getCentralTab() const;
 
+private slots:
+    void stayOnTop(bool on);
+
 public:
     QToolBar *toolBar;
 
@@ -114,6 +117,8 @@ public:
     QAction *showGraphAction;
     QAction *settingsAction;
     QAction *objectsAction;
+
+    QAction *m_stayOnTopAction;
 
 public slots:
     void updateButtonShowGraph(bool v);

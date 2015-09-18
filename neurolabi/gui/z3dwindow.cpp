@@ -111,6 +111,18 @@ void Z3DMainWindow::closeEvent(QCloseEvent *event)
   emit closed();
 }
 
+void Z3DMainWindow::stayOnTop(bool on)
+{
+  Qt::WindowFlags flags = this->windowFlags();
+  if (on) {
+    setWindowFlags(flags | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
+    show();
+  } else {
+    setWindowFlags(flags ^ (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint));
+    show();
+  }
+}
+
 void Z3DMainWindow::updateButtonShowGraph(bool v)
 {
     if(showGraphAction)
