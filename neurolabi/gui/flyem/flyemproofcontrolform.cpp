@@ -2,6 +2,7 @@
 
 #include <QMenu>
 #include <QInputDialog>
+#include <QSortFilterProxyModel>
 
 #include "ui_flyemproofcontrolform.h"
 #include "dialogs/zdviddialog.h"
@@ -80,8 +81,23 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
         QUrl((GET_DOC_DIR + "/flyem_proofread_help.html").c_str()));
 */
 
-  ui->bookmarkView->setModel(&m_bookmarkList);
+  /*
+  QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+  proxy->setSourceModel(&m_userBookmarkList);
+  proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+  proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  proxy->setFilterKeyColumn(-1);
+  */
+
+  m_userBookmarkProxy = createSortingProxy(&m_userBookmarkList);
   ui->userBookmarkView->setModel(&m_userBookmarkList);
+//  ui->userBookmarkView->setSortingEnabled(true);
+
+//  ui->userBookmarkView->setModel(&m_userBookmarkList);
+
+  m_bookmarkProxy = createSortingProxy(&m_bookmarkList);
+  ui->bookmarkView->setModel(&m_bookmarkList);
+//  ui->bookmarkView->setSortingEnabled(true);
 
   ui->bookmarkView->resizeColumnsToContents();
   ui->userBookmarkView->resizeColumnsToContents();
@@ -92,6 +108,18 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 FlyEmProofControlForm::~FlyEmProofControlForm()
 {
   delete ui;
+}
+
+QSortFilterProxyModel*
+FlyEmProofControlForm::createSortingProxy(ZFlyEmBookmarkListModel *model)
+{
+  QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+  proxy->setSourceModel(model);
+  proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+  proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  proxy->setFilterKeyColumn(-1);
+
+  return proxy;
 }
 
 void FlyEmProofControlForm::createMenu()
@@ -219,6 +247,8 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
+  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
+                            m_userBookmarkProxy->sortOrder());
 //  ui->userBookmarkView->resizeColumnsToContents();
 }
 
@@ -242,6 +272,8 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
+    m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
+                          m_bookmarkProxy->sortOrder());
 //    ui->bookmarkView->resizeColumnsToContents();
 //    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }

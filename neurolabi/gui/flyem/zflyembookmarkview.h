@@ -6,6 +6,7 @@
 
 class ZFlyEmBookmarkListModel;
 class ZFlyEmBookmark;
+//class QSortFilterProxyModel;
 
 class ZFlyEmBookmarkView : public QTableView
 {
@@ -36,6 +37,7 @@ protected:
 
 private:
   QMenu *m_contextMenu;
+//  QSortFilterProxyModel* m_proxy;
 };
 
 #endif // ZFLYEMBOOKMARKVIEW_H

@@ -2,6 +2,7 @@
 
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QSortFilterProxyModel>
 
 #include "zflyembookmarklistmodel.h"
 
@@ -14,6 +15,7 @@ ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
 void ZFlyEmBookmarkView::init()
 {
   setFocusPolicy(Qt::NoFocus);
+
   createMenu();
 }
 
