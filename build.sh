@@ -114,7 +114,7 @@ fi
 if [ $edition = "flyem" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
-  if [ -d $bin_dir/doc ]
+  if [ ! -d $bin_dir/doc ]
   then
     mkdir $bin_dir/doc
   fi
