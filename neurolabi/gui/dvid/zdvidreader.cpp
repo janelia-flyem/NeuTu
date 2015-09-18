@@ -1056,6 +1056,36 @@ ZArray* ZDvidReader::readLabels64(
                      x0, y0, z0, width, height, depth);
 }
 
+ZIntPoint ZDvidReader::readBodyBottom(uint64_t bodyId) const
+{
+  ZIntPoint pt;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service != NULL) {
+    libdvid::PointXYZ coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 2, false);
+    pt.set(coord.x, coord.y, coord.z);
+  }
+#endif
+
+  return pt;
+}
+
+ZIntPoint ZDvidReader::readBodyTop(uint64_t bodyId) const
+{
+  ZIntPoint pt;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service != NULL) {
+    libdvid::PointXYZ coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 2, true);
+    pt.set(coord.x, coord.y, coord.z);
+  }
+#endif
+
+  return pt;
+}
+
 ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const

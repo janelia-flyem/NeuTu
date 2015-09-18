@@ -56,6 +56,8 @@ signals:
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void mergingBody();
+  void goingToBodyBottom();
+  void goingToBodyTop();
 
 public slots:
 

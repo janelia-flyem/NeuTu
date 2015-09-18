@@ -125,6 +125,8 @@ public slots:
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
   void goToBody();
+  void goToBodyBottom();
+  void goToBodyTop();
   void selectBody();
   void processLabelSliceSelectionChange();
 
