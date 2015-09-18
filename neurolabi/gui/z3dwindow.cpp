@@ -355,21 +355,25 @@ void Z3DTabWidget::updateWindow(int index)
 
                     Z3DWindow *preWin = (Z3DWindow *)(widget(tabLUT[preIndex]));
 
-                    // settings
-                    buttonChecked = w->getButtonStatus(1);
-                    if(buttonChecked != preWin->getButtonStatus(1))
+                    if(preWin)
                     {
-                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][1] = buttonChecked;
+                        // settings
+                        buttonChecked = w->getButtonStatus(1);
+                        if(buttonChecked != preWin->getButtonStatus(1))
+                        {
+                            w->getSettingsDockWidget()->toggleViewAction()->trigger();
+                            buttonStatus[cur][1] = buttonChecked;
+                        }
+
+                        // objects
+                        buttonChecked = w->getButtonStatus(2);
+                        if(buttonChecked != preWin->getButtonStatus(2))
+                        {
+                            w->getObjectsDockWidget()->toggleViewAction()->trigger();
+                            buttonStatus[cur][2] = buttonChecked;
+                        }
                     }
 
-                    // objects
-                    buttonChecked = w->getButtonStatus(2);
-                    if(buttonChecked != preWin->getButtonStatus(2))
-                    {
-                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][2] = buttonChecked;
-                    }
                 }
                 else
                 {
@@ -430,6 +434,8 @@ void Z3DTabWidget::closeAllWindows()
 
 void Z3DTabWidget::closeWindow(int index)
 {
+    qDebug()<<"####"<<preIndex<<index<<getRealIndex(index);
+
   Z3DWindow *w = (Z3DWindow *)(widget(index));
   if (w != NULL) {
 
@@ -451,12 +457,12 @@ void Z3DTabWidget::closeWindow(int index)
         w->getObjectsDockWidget()->toggleViewAction()->trigger();
     }
 
-    w->close();
-
     windowStatus[getRealIndex(index)] = false;
 
-    if(preIndex==index)
+    if(preIndex==getRealIndex(index))
         preIndex = -1;
+
+    w->close();
   }
 
 
