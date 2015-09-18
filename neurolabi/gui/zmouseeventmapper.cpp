@@ -132,6 +132,15 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
       }
       break;
+    case ZStackObject::TYPE_FLYEM_BOOKMARK:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
+      }
+      break;
     default:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);

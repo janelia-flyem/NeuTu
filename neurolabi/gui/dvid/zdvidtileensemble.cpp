@@ -4,10 +4,7 @@
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
-
-#if _ENABLE_LIBDVIDCPP_
-#include "libdvid/DVIDThreadedFetch.h"
-#endif
+#include "libdvidheader.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -174,7 +171,8 @@ void ZDvidTileEnsemble::update(
     if (tile != NULL) {
       ZDvidTileUpdateTask *task = new ZDvidTileUpdateTask(NULL, tile);
       task->setZ(z);
-      taskManager.addTask(task);
+      task->execute();
+//      taskManager.addTask(task);
       //      tile->display(painter, slice, option);
     }
   }

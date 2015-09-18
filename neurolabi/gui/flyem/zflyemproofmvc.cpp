@@ -53,7 +53,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   exitCurrentDoc();
 
-  delete m_bodyViewWindow;
+  m_bodyViewWindow->close();
 //  delete m_coarseBodyWindow;
 //  delete m_bodyWindow;
 //  delete m_splitWindow;
@@ -73,7 +73,7 @@ void ZFlyEmProofMvc::init()
 
 void ZFlyEmProofMvc::initBodyWindow()
 {
-  m_bodyViewWindow = new Z3DMainWindow(this);
+  m_bodyViewWindow = new Z3DMainWindow(NULL);
   m_bodyViewWindow->setWindowTitle(QString::fromUtf8("3D Body View"));
   m_bodyViewWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
@@ -105,15 +105,26 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
 
-  m_bodyViewWindow->resetCameraAction = m_bodyViewWindow->toolBar->addAction("X-Y View");
+  m_bodyViewWindow->m_stayOnTopAction =
+      m_bodyViewWindow->toolBar->addAction("Pin");
+  m_bodyViewWindow->m_stayOnTopAction->setCheckable(true);
+   m_bodyViewWindow->m_stayOnTopAction->setChecked(false);
+  connect(m_bodyViewWindow->m_stayOnTopAction, SIGNAL(triggered(bool)),
+          m_bodyViewWindow, SLOT(stayOnTop(bool)));
+
+  m_bodyViewWindow->toolBar->addSeparator();
+
+  m_bodyViewWindow->resetCameraAction =
+      m_bodyViewWindow->toolBar->addAction("X-Y View");
   connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
 
-  m_bodyViewWindow->xzViewAction = m_bodyViewWindow->toolBar->addAction("X-Z View");
+  m_bodyViewWindow->xzViewAction =
+      m_bodyViewWindow->toolBar->addAction("X-Z View");
   connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
 
-  m_bodyViewWindow->yzViewAction = m_bodyViewWindow->toolBar->addAction("Y-Z View");
+  m_bodyViewWindow->yzViewAction =
+      m_bodyViewWindow->toolBar->addAction("Y-Z View");
   connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
-
 
   m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
   connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
@@ -122,7 +133,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
   connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
-  m_bodyViewWindow->showGraphAction->setCheckable(true);
+
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
   m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
@@ -136,9 +147,12 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->objectsAction->setChecked(false);
 
   //update button status reversely
-  connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)), m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
-  connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
-  connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)), m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)),
+          m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonSettingsToggled(bool)),
+          m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)),
+          m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -738,7 +752,11 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
-//  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
+  connect(getCompletePresenter(), SIGNAL(goingToBodyBottom()),
+          this, SLOT(goToBodyBottom()));
+  connect(getCompletePresenter(), SIGNAL(goingToBodyTop()),
+          this, SLOT(goToBodyTop()));
+  //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
@@ -856,6 +874,53 @@ void ZFlyEmProofMvc::customInit()
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
 }
+
+void ZFlyEmProofMvc::goToBodyBottom()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    if (!bodySet.empty()) {
+      ZIntPoint pt;
+      std::set<uint64_t>::const_iterator iter = bodySet.begin();
+      pt = reader.readBodyBottom(*iter);
+      ++iter;
+      for (; iter != bodySet.end(); ++iter) {
+        uint64_t bodyId = *iter;
+        ZIntPoint tmpPt = reader.readBodyBottom(bodyId);
+        if (pt.getZ() < tmpPt.getZ()) {
+          pt = tmpPt;
+        }
+      }
+      zoomTo(pt.getX(), pt.getY(), pt.getZ());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::goToBodyTop()
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    if (!bodySet.empty()) {
+      ZIntPoint pt;
+      std::set<uint64_t>::const_iterator iter = bodySet.begin();
+      pt = reader.readBodyTop(*iter);
+      ++iter;
+      for (; iter != bodySet.end(); ++iter) {
+        uint64_t bodyId = *iter;
+        ZIntPoint tmpPt = reader.readBodyTop(bodyId);
+        if (pt.getZ() > tmpPt.getZ()) {
+          pt = tmpPt;
+        }
+      }
+      zoomTo(pt.getX(), pt.getY(), pt.getZ());
+    }
+  }
+}
+
 
 void ZFlyEmProofMvc::goToBody()
 {
@@ -1669,7 +1734,12 @@ void ZFlyEmProofMvc::zoomTo(const ZIntPoint &pt)
 
 void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
 {
-  zoomTo(x, y, z, 400);
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
 }
 
 void ZFlyEmProofMvc::syncDvidBookmark()

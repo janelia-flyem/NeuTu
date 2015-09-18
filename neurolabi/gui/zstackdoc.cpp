@@ -903,6 +903,26 @@ void ZStackDoc::selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree)
   notifySelectionAdded(oldSelected, newSelected);
 }
 
+void ZStackDoc::notifySelectionChanged(
+    const std::set<ZStackObject *> &selected,
+    const std::set<ZStackObject *> &deselected)
+{
+  QList<ZStackObject*> selectedList;
+  QList<ZStackObject*> deselectedList;
+
+  for (std::set<ZStackObject *>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    selectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+  for (std::set<ZStackObject *>::const_iterator iter = deselected.begin();
+       iter != deselected.end(); ++iter) {
+    deselectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+  notifySelectionChanged(selectedList, deselectedList);
+}
+
 #define DEFINE_NOTIFY_SELECTION_CHANGED(Type, Signal) \
   void ZStackDoc::notifySelectionChanged(\
      const QList<Type *> &selected, \
@@ -3694,6 +3714,60 @@ void ZStackDoc::deselectAllObject()
                      ZStackObject::TYPE_LOCSEG_CHAIN));
 
   m_objectGroup.setSelected(false);
+}
+
+void ZStackDoc::deselectAllObject(ZStackObject::EType type)
+{
+
+  switch (type) {
+  case ZStackObject::TYPE_SWC_NODE:
+    deselectAllSwcTreeNodes();
+    break;
+  case ZStackObject::TYPE_DVID_LABEL_SLICE:
+  {
+    QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
+    foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
+      if (labelSlice->isHittable()) {
+        labelSlice->deselectAll();
+      }
+    }
+  }
+    break;
+  default:
+  {
+    TStackObjectList objList = getObjectList(type);
+    m_objectGroup.getSelector()->reset();
+
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      if (obj->isSelected()) {
+        m_objectGroup.setSelected(obj, false);
+      }
+    }
+    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(type),
+                           m_objectGroup.getSelector()->getDeselectedSet(type));
+  }
+    break;
+  }
+
+  //m_selectedSwcTreeNodes.clear();
+
+
+  if (type == ZStackObject::TYPE_SWC) {
+    notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
+  }
+
+  if (type == ZStackObject::TYPE_PUNCTUM) {
+    notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM));
+  }
+
+  if (type == ZStackObject::TYPE_LOCSEG_CHAIN) {
+    notifyDeselected(getSelectedObjectList<ZLocsegChain>(
+                       ZStackObject::TYPE_LOCSEG_CHAIN));
+  }
+
+//  m_objectGroup.setSelected(false);
 }
 
 void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)

@@ -10,7 +10,7 @@
 
 ZFlyEmBookmark::ZFlyEmBookmark() :
   m_bodyId(0), m_bookmarkType(TYPE_LOCATION), m_isChecked(false),
-  m_isCustom(false)
+  m_isCustom(false), m_isInTable(true)
 {
   m_type = ZStackObject::TYPE_FLYEM_BOOKMARK;
   m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;

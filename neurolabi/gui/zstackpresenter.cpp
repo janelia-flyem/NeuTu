@@ -2471,6 +2471,14 @@ void ZStackPresenter::process(const ZStackOperator &op)
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
     break;
+  case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
+    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    if (op.getHitObject<ZStackObject>() != NULL) {
+      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+    break;
   case ZStackOperator::OP_OBJECT_SELECT_MULTIPLE:
     if (op.getHitObject<ZStackObject>() != NULL) {
       buddyDocument()->toggleSelected(op.getHitObject<ZStackObject>());

@@ -18,6 +18,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QPushButton" name="dvidPushButton">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Select Database</string>
        </property>
@@ -25,6 +28,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="menuPushButton">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Menu</string>
        </property>
@@ -52,6 +58,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -207,7 +216,11 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="ZFlyEmBookmarkView" name="userBookmarkView"/>
+        <widget class="ZFlyEmBookmarkView" name="userBookmarkView">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
