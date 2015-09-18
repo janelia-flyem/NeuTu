@@ -4566,7 +4566,8 @@ void MainWindow::on_actionMask_triggered()
 
 void MainWindow::on_actionShortcut_triggered()
 {
-  if (GET_APPLICATION_NAME == "Biocytin") {
+  if (GET_APPLICATION_NAME == "Biocytin" ||
+      GET_APPLICATION_NAME == "FlyEM") {
     m_helpDlg->show();
     m_helpDlg->raise();
   } else if (GET_APPLICATION_NAME == "General") {
