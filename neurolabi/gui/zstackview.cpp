@@ -627,9 +627,10 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   int numSteps = event->delta();
 
 #if !defined(_NEUTUBE_MAC_)
-  numSteps = -numSteps;
+//  numSteps = -numSteps;
 #endif
 
+  numSteps = -numSteps;
 
   if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
     if (numSteps > 0) {

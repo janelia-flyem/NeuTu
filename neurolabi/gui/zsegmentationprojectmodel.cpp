@@ -176,10 +176,14 @@ void ZSegmentationProjectModel::generateTestData()
 bool ZSegmentationProjectModel::removeRows(
     int row, int count, const QModelIndex &parent)
 {
-  beginRemoveRows(parent, row, row + count - 1);
-  endRemoveRows();
+  if (count > 0) {
+    beginRemoveRows(parent, row, row + count - 1);
+    endRemoveRows();
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 void ZSegmentationProjectModel::loadStack(const QString &fileName)

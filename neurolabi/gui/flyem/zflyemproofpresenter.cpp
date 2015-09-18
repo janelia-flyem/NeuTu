@@ -56,6 +56,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   case Qt::Key_M:
     emit mergingBody();
     break;
+  case Qt::Key_B:
+    emit goingToBodyBottom();
+    break;
+  case Qt::Key_T:
+    emit goingToBodyTop();
+    break;
   default:
     break;
   }

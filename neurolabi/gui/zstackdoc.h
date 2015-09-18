@@ -641,6 +641,7 @@ public:
   void setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllSwcTreeNodes();
   void deselectAllObject();
+  void deselectAllObject(ZStackObject::EType type);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
 
@@ -898,6 +899,9 @@ public:
   DECLARE_NOTIFY_SELECTION_CHANGED(ZPunctum);
   DECLARE_NOTIFY_SELECTION_CHANGED(ZLocsegChain);
   DECLARE_NOTIFY_SELECTION_CHANGED(ZStackObject);
+
+  void notifySelectionChanged(const std::set<ZStackObject*> &selected,
+                              const std::set<ZStackObject*> &deselected);
 
 public:
   inline QAction* getUndoAction() { return m_undoAction; }

@@ -17557,7 +17557,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "d1ea", 8500);
+  ZDvidTarget target("emdata1.int.janelia.org", "98759", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
 
@@ -17565,13 +17565,10 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(15640816);
-  bodyArray.push_back(2223045);
-  bodyArray.push_back(2502173);
-  bodyArray.push_back(27296924);
-  bodyArray.push_back(5349564);
-  bodyArray.push_back(93200998);
-  bodyArray.push_back(93215727);
+  bodyArray.push_back(200014980);
+  bodyArray.push_back(4434956);
+  bodyArray.push_back(103577490);
+  bodyArray.push_back(63800311);
 
   std::vector<ZIntPoint> posArray;
 
@@ -17749,8 +17746,8 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   std::string dataDir =
-      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_deform";
-  std::string baseName = "MBON-a_1_deformed_byte";
+      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_affine";
+  std::string baseName = "MBON-a2sc_affwarped_byte";
 
   ZSwcTree tree;
   tree.load(dataDir + "/" + baseName + ".swc");

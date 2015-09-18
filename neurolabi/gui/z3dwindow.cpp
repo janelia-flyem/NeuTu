@@ -111,6 +111,18 @@ void Z3DMainWindow::closeEvent(QCloseEvent *event)
   emit closed();
 }
 
+void Z3DMainWindow::stayOnTop(bool on)
+{
+  Qt::WindowFlags flags = this->windowFlags();
+  if (on) {
+    setWindowFlags(flags | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
+    show();
+  } else {
+    setWindowFlags(flags ^ (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint));
+    show();
+  }
+}
+
 void Z3DMainWindow::updateButtonShowGraph(bool v)
 {
     if(showGraphAction)
@@ -418,16 +430,35 @@ void Z3DTabWidget::closeAllWindows()
 
 void Z3DTabWidget::closeWindow(int index)
 {
-  QWidget *w = widget(index);
+  Z3DWindow *w = (Z3DWindow *)(widget(index));
   if (w != NULL) {
-    w->close();
 
     buttonStatus[index][0] = true;
     buttonStatus[index][1] = false;
     buttonStatus[index][2] = false;
+
+    w->getGraphFilter()->setVisible(true);
+
+    bool buttonChecked = w->getButtonStatus(1);
+    if(buttonChecked != false)
+    {
+        w->getSettingsDockWidget()->toggleViewAction()->trigger();
+    }
+
+    buttonChecked = w->getButtonStatus(2);
+    if(buttonChecked != false)
+    {
+        w->getObjectsDockWidget()->toggleViewAction()->trigger();
+    }
+
+    w->close();
+
+    windowStatus[getRealIndex(index)] = false;
+
+    if(preIndex==index)
+        preIndex = -1;
   }
 
-  windowStatus[index] = false;
 
 }
 
