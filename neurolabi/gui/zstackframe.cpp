@@ -223,7 +223,7 @@ void ZStackFrame::enableMessageManager()
 void ZStackFrame::createPresenter()
 {
   if (m_presenter == NULL) {
-    m_presenter = new ZStackPresenter(this);
+    m_presenter = ZStackPresenter::Make(this);
   }
 }
 
@@ -605,13 +605,7 @@ void ZStackFrame::setView(ZStackView *view)
 
 void ZStackFrame::closeEvent(QCloseEvent *event)
 {
-  if (m_doc->isUndoClean()) {
-    m_isClosing = true;
-    event->accept();
-
-    qDebug() << "emit closed(this)";
-    emit closed(this);
-  } else {
+  if (m_doc->isSavingRequired()) {
     int ans =  QMessageBox::question(
           this, tr("Confirm"), tr("There might be unsaved changes. Close anyway?"),
           QMessageBox::Cancel | QMessageBox::Ok, QMessageBox::Ok);
@@ -624,6 +618,12 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
     } else {
       event->ignore();
     }
+  } else {
+    m_isClosing = true;
+    event->accept();
+
+    qDebug() << "emit closed(this)";
+    emit closed(this);
   }
 
 //  close3DWindow();

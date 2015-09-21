@@ -35,10 +35,12 @@
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
 
+/*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
   init();
 }
+*/
 
 ZStackPresenter::ZStackPresenter(QWidget *parent) : QObject(parent)
 {
@@ -52,11 +54,15 @@ ZStackPresenter::~ZStackPresenter()
   delete m_swcNodeContextMenu;
   delete m_strokePaintContextMenu;
   delete m_stackContextMenu;
+  delete m_keyConfig;
 }
 
 ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 {
-  return new ZStackPresenter(parent);
+  ZStackPresenter *presenter = new ZStackPresenter(parent);
+  presenter->configKeyMap();
+
+  return presenter;
 }
 
 void ZStackPresenter::init()
@@ -109,11 +115,35 @@ void ZStackPresenter::init()
   //m_moveMapper.setContext(&m_interactiveContext);
   m_mouseEventProcessor.setInteractiveContext(&m_interactiveContext);
 
+  m_keyConfig = NULL;
+
+  /*
   ZKeyOperationConfig::Configure(m_activeStrokeOperationMap,
                                  ZKeyOperation::OG_ACTIVE_STROKE);
   ZKeyOperationConfig::Configure(
         m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
   ZKeyOperationConfig::Configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+        */
+}
+
+ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
+{
+  if (m_keyConfig == NULL) {
+    m_keyConfig = new ZKeyOperationConfig;
+  }
+
+  return m_keyConfig;
+}
+
+void ZStackPresenter::configKeyMap()
+{
+  ZKeyOperationConfig *config = getKeyConfig();
+  config->configure(
+        m_activeStrokeOperationMap, ZKeyOperation::OG_ACTIVE_STROKE);
+  config->configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  config->configure(
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
 }
 
@@ -1324,9 +1354,11 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       }
     }
     break;
+    /*
   case Qt::Key_F:
     toggleObjectVisible();
     break;
+    */
   default:
     processed = false;
     break;
@@ -2494,6 +2526,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
+    break;
+  case ZStackOperator::OP_OBJECT_TOGGLE_VISIBILITY:
+    toggleObjectVisible();
     break;
   case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();

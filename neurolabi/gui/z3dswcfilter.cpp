@@ -199,13 +199,13 @@ void Z3DSwcFilter::initTopologyColor()
 {
   // topology colors (root, branch point, leaf, others)
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Root Color", glm::vec4(0/255.f, 0/255.f, 255/255.f, 1.f)));
+        new ZVec4Parameter("Root Color", glm::vec4(0, 0, 255/255.f, 1.f)));
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Branch Point Color", glm::vec4(0/255.f, 255/255.f, 0/255.f, 1.f)));
+        new ZVec4Parameter("Branch Point Color", glm::vec4(0, 255/255.f, 0, 1.f)));
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Leaf Color", glm::vec4(255/255.f, 255/255.f, 0/255.f, 1.f)));
+        new ZVec4Parameter("Leaf Color", glm::vec4(255/255.f, 135.f/255.f, 0, 1.f)));
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Other", glm::vec4(255/255.f, 0/255.f, 0/255.f, 1.f)));
+        new ZVec4Parameter("Other", glm::vec4(255/255.f, 0, 0, 1.f)));
   for (size_t i=0; i<m_colorsForDifferentTopology.size(); i++) {
     m_colorsForDifferentTopology[i]->setStyle("COLOR");
     connect(m_colorsForDifferentTopology[i], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
