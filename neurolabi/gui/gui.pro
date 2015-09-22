@@ -565,7 +565,6 @@ HEADERS += mainwindow.h \
     flyem/zflyembookmarkptrarray.h \
     biocytin/zbiocytinprojectiondoc.h \
     dialogs/zflyemsplitcommitdialog.h \
-    zswctreenodeselector.h \
     zstackdocfactory.h \
     zintcuboidobj.h \
     flyem/zflyembodywindowfactory.h \
@@ -995,7 +994,6 @@ SOURCES += main.cpp \
     flyem/zflyembookmarkptrarray.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
     dialogs/zflyemsplitcommitdialog.cpp \
-    zswctreenodeselector.cpp \
     zstackdocfactory.cpp \
     zintcuboidobj.cpp \
     flyem/zflyembodywindowfactory.cpp \

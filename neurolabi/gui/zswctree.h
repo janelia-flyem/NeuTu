@@ -423,9 +423,9 @@ public:
 
   void recordSelection();
   void processSelection();
-
+#if defined(_QT_GUI_USED_)
   void selectNode(const ZRect2d &roi, bool appending);
-
+#endif
   Swc_Tree_Node* selectHitNode(bool appending);
   Swc_Tree_Node* deselectHitNode();
 

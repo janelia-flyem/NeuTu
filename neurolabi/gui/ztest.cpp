@@ -17747,11 +17747,12 @@ void ZTest::test(MainWindow *host)
 #if 1
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_affine";
-  std::string baseName = "MBON-a2sc_affwarped_byte";
+  std::string baseName = "MBON-a2sc_affreg";
 
   ZSwcTree tree;
   tree.load(dataDir + "/" + baseName + ".swc");
 
+#if 0
   ZSwcTree::DepthFirstIterator treeIter(&tree);
   while (treeIter.hasNext()) {
     Swc_Tree_Node *tn = treeIter.next();
@@ -17759,9 +17760,10 @@ void ZTest::test(MainWindow *host)
       SwcTreeNode::setZ(tn, 570 - SwcTreeNode::z(tn));
     }
   }
+#endif
 
   tree.rescale(20, 20, 20, false);
-  tree.changeRadius(0, 10);
+  tree.changeRadius(0, 20);
 
   ZSwcResampler sampler;
   sampler.radiusResample(&tree);
