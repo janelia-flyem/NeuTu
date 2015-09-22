@@ -572,7 +572,9 @@ HEADERS += mainwindow.h \
     flyem/zflyembodycolorscheme.h \
     flyem/zflyemexternalneurondoc.h \
     ztask.h \
-    flyem/zflyemqualityanalyzertask.h
+    flyem/zflyemqualityanalyzertask.h \
+    zstackobjectpainter.h \
+    flyem/zflyemkeyoperationconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1000,7 +1002,9 @@ SOURCES += main.cpp \
     flyem/zflyembodycolorscheme.cpp \
     flyem/zflyemexternalneurondoc.cpp \
     ztask.cpp \
-    flyem/zflyemqualityanalyzertask.cpp
+    flyem/zflyemqualityanalyzertask.cpp \
+    zstackobjectpainter.cpp \
+    flyem/zflyemkeyoperationconfig.cpp
 
 OTHER_FILES += \
     extlib.pri \

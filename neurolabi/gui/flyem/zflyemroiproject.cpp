@@ -301,7 +301,7 @@ bool ZFlyEmRoiProject::isRoiSaved() const
 void ZFlyEmRoiProject::setRoiSaved(bool state)
 {
   if (m_dataFrame != NULL) {
-    m_dataFrame->document()->setSaved(NeuTube::Documentable_SWC, state);
+    m_dataFrame->document()->setSaved(ZStackObject::TYPE_SWC, state);
   }
 }
 

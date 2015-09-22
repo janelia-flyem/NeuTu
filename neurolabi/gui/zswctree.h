@@ -795,6 +795,8 @@ private:
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;
+  QColor m_terminalColor;
+  QColor m_terminalFocusColor;
   QColor m_branchPointColor;
   QColor m_nodeColor;
   QColor m_planeSkeletonColor;

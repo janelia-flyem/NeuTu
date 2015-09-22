@@ -67,7 +67,7 @@ void ZStackMvc::createView()
 void ZStackMvc::createPresenter()
 {
   if (m_doc.get() != NULL) {
-    m_presenter = new ZStackPresenter(this);
+    m_presenter = ZStackPresenter::Make(this);
   }
 }
 

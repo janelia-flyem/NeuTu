@@ -14,6 +14,7 @@ class QPaintEvent;
 class ZPaintBundle;
 class ZImage;
 class ZPixmap;
+class ZWidgetMessage;
 
 /** A class of widget for image display.
  *  Sample usage:
@@ -49,7 +50,7 @@ public:
 
   void setViewPort(const QRect &rect);
   void setProjRegion(const QRect &rect);
-  void setView(int zoomRatio, const QPoint &zoomOffset);
+  void setView(double zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRect &projRegion);
 
   /*!
@@ -68,7 +69,7 @@ public:
    */
   void moveViewPort(int x, int y);
 
-  void setZoomRatio(int zoomRatio);
+  void setZoomRatio(double zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
   void increaseZoomRatio();
   void decreaseZoomRatio();
@@ -76,14 +77,14 @@ public:
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
-  void zoom(int zoomRatio);
+  void zoom(double zoomRatio);
 
   /*!
    * \brief Zoom an image at a fixed point
    *
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
-  void zoom(int zoomRatio, const QPoint &ref);
+  void zoom(double zoomRatio, const QPoint &ref);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 
@@ -170,6 +171,7 @@ signals:
   void mousePressed(QMouseEvent*);
   void mouseDoubleClicked(QMouseEvent*);
   void mouseWheelRolled(QWheelEvent *event);
+  void messageGenerated(const ZWidgetMessage&);
 
 protected:
   int getMaxZoomRatio() const;

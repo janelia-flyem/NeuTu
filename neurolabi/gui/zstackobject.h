@@ -74,7 +74,8 @@ public:
     TYPE_3D_GRAPH,
     TYPE_PUNCTA,
     TYPE_FLYEM_BOOKMARK,
-    TYPE_INT_CUBOID
+    TYPE_INT_CUBOID,
+    TYPE_LINE_SEGMENT
   };
 
   enum Palette_Color {
