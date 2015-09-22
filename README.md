@@ -35,7 +35,7 @@ Additional flags are needed to build special editions:
     
     sh build.sh <qmake_path> <qmake_spec_path> -e flyem -q "DVIDCPP_PATH=<dvidcpp_apth>"
     
-Here <dvidcpp_path> is the install path of libdvid-cpp.
+Here \<dvidcpp_path\> is the install path of libdvid-cpp.
 
 #### Bright Field (Biocytin) Edition
 
