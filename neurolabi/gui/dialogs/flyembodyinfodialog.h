@@ -33,19 +33,23 @@ private slots:
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
-    void clearLoadingLabel();
+    void updateStatusLabel();
+    void updateStatusAfterLoading();
     void filterUpdated(QString filterText);
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_model;
     QSortFilterProxyModel* m_proxy;
+    qlonglong m_totalPre;
+    qlonglong m_totalPost;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
     void importBookmarksDvid(ZDvidTarget target);
-    void setLoadingLabel(QString label);
+    void setStatusLabel(QString label);
+    void clearStatusLabel();
 };
 
 #endif // FLYEMBODYINFODIALOG_H
