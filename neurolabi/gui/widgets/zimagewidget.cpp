@@ -328,14 +328,23 @@ void ZImageWidget::setZoomRatio(double zoomRatio)
   update();
 }
 
+#define VIEW_PORT_AREA_THRESHOLD 25000000
+
 void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 {
   double zoomRatio = std::max(
         static_cast<double>(canvasSize().width()) /m_viewPort.width(),
         static_cast<double>(canvasSize().height()) / m_viewPort.height());
 
+
+
   if (zoomRatio < getMaxZoomRatio()) {
-    zoomRatio *= 1.1;
+    int currentViewArea = m_viewPort.width() * m_viewPort.height();
+    if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
+      zoomRatio += 1.0;
+    } else {
+      zoomRatio *= 1.1;
+    }
 
     if (usingRef) {
       zoom(zoomRatio, QPoint(x, y));
@@ -355,10 +364,15 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
   double zoomRatio = std::max(
         static_cast<double>(canvasSize().width()) /m_viewPort.width(),
         static_cast<double>(canvasSize().height()) / m_viewPort.height());
-
 //  double oldZoomRatio = zoomRatio;
   if (zoomRatio > 1) {
-    zoomRatio /= 1.1;
+    int currentViewArea = m_viewPort.width() * m_viewPort.height();
+    if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
+      zoomRatio -= 1.0;
+    } else {
+      zoomRatio /= 1.1;
+    }
+
     if (zoomRatio < 1.0) {
       zoomRatio = 1.0;
     }

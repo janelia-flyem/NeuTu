@@ -344,6 +344,10 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
               int level = key[0] - '0';
               ZJsonObject levelObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
               m_levelMap[level] = levelObj;
+#ifdef _DEBUG_
+              std::cout << "Tracing leve config: " << key[0] << std::endl;
+              levelObj.print();
+#endif
             }
           }
         }
@@ -400,6 +404,16 @@ void ZNeuronTracer::config()
   m_enhancingMask = config.enhancingMask();
   m_seedingMethod = config.getSeedMethod();
   m_recover = config.getRecoverLevel();
+
+  if (m_traceWorkspace != NULL) {
+    m_traceWorkspace->refit = config.isRefit();
+    m_traceWorkspace->tune_end = config.tuningEnd();
+  }
+
+  if (m_connWorkspace != NULL) {
+    m_connWorkspace->sp_test = config.spTest();
+    m_connWorkspace->crossover_test = config.crossoverTest();
+  }
 }
 
 void ZNeuronTracer::clear()
@@ -1088,20 +1102,27 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   C_Stack::kill(bw);
 
   //Thin line mask
-  std::cout << "Enhancing thin branches ..." << std::endl;
   /* <mask2> allocated */
-  Stack *mask2 = enhanceLine(stack);
-  advanceProgress(0.05);
+  Stack *mask2 = NULL;
 
-  std::cout << "Making mask for thin branches ..." << std::endl;
-  ZStackBinarizer binarizer;
-  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
-  binarizer.setRetryCount(5);
-  binarizer.setMinObjectSize(27);
-  if (binarizer.binarize(mask2) == false) {
-    std::cout << "Thresholding failed" << std::endl;
-    C_Stack::kill(mask2);
-    mask2 = NULL;
+  if (m_enhancingMask) {
+    std::cout << "Enhancing thin branches ..." << std::endl;
+    mask2 = enhanceLine(stack);
+    advanceProgress(0.05);
+  }
+
+  if (mask2 != NULL) {
+    std::cout << "Making mask for thin branches ..." << std::endl;
+    ZStackBinarizer binarizer;
+    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setRetryCount(5);
+    binarizer.setMinObjectSize(27);
+
+    if (binarizer.binarize(mask2) == false) {
+      std::cout << "Thresholding failed" << std::endl;
+      C_Stack::kill(mask2);
+      mask2 = NULL;
+    }
   }
 
   /* <mask2> freed */
@@ -1109,6 +1130,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     C_Stack::translate(mask2, GREY, 1);
     Stack_Or(mask, mask2, mask);
     C_Stack::kill(mask2);
+    mask2 = NULL;
   }
   advanceProgress(0.05);
 
@@ -1405,6 +1427,10 @@ const char *ZNeuronTracer::m_enhanceLineKey = "enhanceLine";
 */
 void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
 {
+#ifdef _DEBUG_
+  obj.print();
+#endif
+
   const char *key = ZNeuronTracerConfig::getLevelKey();
   if (obj.hasKey(key)) {
     setTraceLevel(ZJsonParser::integerValue(obj[key]));
@@ -1428,5 +1454,35 @@ void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
   key = ZNeuronTracerConfig::getEnhanceLineKey();
   if (obj.hasKey(key)) {
     m_enhancingMask = ZJsonParser::booleanValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getRefitKey();
+  if (obj.hasKey(key)) {
+    m_traceWorkspace->refit = ZJsonParser::booleanValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getSeedMethodKey();
+  if (obj.hasKey(key)) {
+    m_seedingMethod = ZJsonParser::integerValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getRecoverKey();
+  if (obj.hasKey(key)) {
+    m_recover = ZJsonParser::integerValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getCrossoverTestKey();
+  if (obj.hasKey(key)) {
+    m_connWorkspace->crossover_test = ZJsonParser::booleanValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getTuneEndKey();
+  if (obj.hasKey(key)) {
+    m_traceWorkspace->tune_end = ZJsonParser::booleanValue(obj[key]);
+  }
+
+  key = ZNeuronTracerConfig::getEdgePathKey();
+  if (obj.hasKey(key)) {
+    m_usingEdgePath = ZJsonParser::booleanValue(obj[key]);
   }
 }
