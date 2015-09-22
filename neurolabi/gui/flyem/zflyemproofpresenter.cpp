@@ -9,31 +9,58 @@
 #include "zflyembookmark.h"
 #include "zstackview.h"
 #include "zflyemproofdoc.h"
+#include "zkeyoperationconfig.h"
+#include "flyem/zflyemkeyoperationconfig.h"
 
 #ifdef _WIN32
 #undef GetUserName
 #endif
 
+/*
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false),
-  m_highTileContrast(false)
+  ZStackPresenter(parent)
 {
-  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+  init();
 }
+*/
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false), m_highTileContrast(false)
+  ZStackPresenter(parent)
 {
+  init();
+}
+
+void ZFlyEmProofPresenter::init()
+{
+  m_isHightlightMode = false;
+  m_splitWindowMode = false;
+  m_highTileContrast = false;
+
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+//  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
 {
   ZFlyEmProofPresenter *presenter = new ZFlyEmProofPresenter(parent);
+  presenter->configKeyMap();
+
+  /*
   ZKeyOperationConfig::Configure(
         presenter->m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+        */
 
   return presenter;
+}
+
+ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
+{
+  if (m_keyConfig == NULL) {
+    m_keyConfig = new ZFlyEmKeyOperationConfig();
+  }
+
+  return m_keyConfig;
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)

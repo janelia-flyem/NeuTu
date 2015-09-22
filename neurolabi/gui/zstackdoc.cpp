@@ -293,8 +293,11 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), this, SIGNAL(objectModified()));
   */
 
+  /*
   connect(m_undoStack, SIGNAL(cleanChanged(bool)),
           this, SIGNAL(cleanChanged(bool)));
+          */
+
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
   connect(this, SIGNAL(stackModified()), this, SIGNAL(volumeModified()));
@@ -625,10 +628,12 @@ bool ZStackDoc::saveSwc(const string &filePath)
     } else {
       tree = swcList.front();
     }
-    tree->resortId();
+//    tree->resortId();
     tree->save(filePath.c_str());
     tree->setSource(filePath);
     qDebug() << filePath.c_str();
+
+    setSaved(ZStackObject::TYPE_SWC, true);
 
     return true;
   }
@@ -748,18 +753,41 @@ const ZUndoCommand* ZStackDoc::getLastUndoCommand() const
   return dynamic_cast<const ZUndoCommand*>(command);
 }
 
-void ZStackDoc::setSaved(NeuTube::EDocumentableType type, bool state)
+bool ZStackDoc::isSaved(ZStackObject::EType type) const
 {
+  return m_unsavedSet.contains(type);
+}
+
+void ZStackDoc::setSaved(ZStackObject::EType type, bool state)
+{
+  if (state == true) {
+    m_unsavedSet.remove(type);
+  } else {
+    m_unsavedSet.insert(type);
+  }
+
+
+
+  emit cleanChanged(isSwcSavingRequired());
+
+#if 0
   ZUndoCommand* command = const_cast<ZUndoCommand*>(getLastUndoCommand());
   if (command != NULL) {
     switch (type) {
-    case NeuTube::Documentable_SWC:
+    case
       command->setSaved(type, state);
       break;
     default:
       break;
     }
   }
+#endif
+
+}
+
+bool ZStackDoc::isSavingRequired() const
+{
+  return !m_unsavedSet.empty();
 }
 
 bool ZStackDoc::isSwcSavingRequired() const
@@ -767,6 +795,7 @@ bool ZStackDoc::isSwcSavingRequired() const
 //  qDebug() << m_swcList.empty();
 //  qDebug() << isUndoClean();
 
+#if 0
   bool isSaved = true;
   if (m_undoStack->canUndo()) {
     const ZUndoCommand* command = getLastUndoCommand();
@@ -774,8 +803,9 @@ bool ZStackDoc::isSwcSavingRequired() const
       isSaved = command->isSaved(NeuTube::Documentable_SWC);
     }
   }
+#endif
 
-  return hasSwc() && !isSaved;
+  return hasSwc() && !isSaved(ZStackObject::TYPE_SWC);
 }
 
 void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)
@@ -789,13 +819,6 @@ void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)
   endObjectModifiedMode();
 
   notifyObjectModified();
-
-  /*
-  if (!swcList.empty()) {
-
-//    emit swcModified();
-  }
-  */
 }
 
 void ZStackDoc::swcTreeRescale(double scaleX, double scaleY, double scaleZ)
@@ -4991,6 +5014,8 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     break;
   }
 
+  setSaved(type, false);
+
   customNotifyObjectModified(type);
 }
 
@@ -7177,10 +7202,10 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
         fileName = QFileDialog::getSaveFileName(
               parentWidget, tr("Save SWC"), fileName, tr("SWC File"), 0);
         if (!fileName.isEmpty()) {
-          tree->resortId();
+//          tree->resortId();
           tree->save(fileName.toStdString().c_str());
           tree->setSource(fileName.toStdString());
-          setSaved(NeuTube::Documentable_SWC, true);
+          setSaved(ZStackObject::TYPE_SWC, true);
           notifySwcModified();
           QString msg = QString(tree->getSource().c_str()) + " saved.";
           emit statusMessageUpdated(msg);
