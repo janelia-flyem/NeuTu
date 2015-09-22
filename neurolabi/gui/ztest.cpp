@@ -17765,10 +17765,10 @@ void ZTest::test(MainWindow *host)
   tree.rescale(20, 20, 20, false);
   tree.changeRadius(0, 20);
 
-  ZSwcResampler sampler;
-  sampler.radiusResample(&tree);
+//  ZSwcResampler sampler;
+//  sampler.radiusResample(&tree);
 
-  tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
+  tree.save(dataDir + "/" + baseName + "_scaled.swc");
 
 #endif
 
