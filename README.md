@@ -23,7 +23,11 @@ Software package for neuron reconstruction and visualization
 
     sh build.sh <qmake_path> <qmake_spec_path>
 
-by specifying the qmake command path and the corresponding spec path. 
+by specifying the qmake command path and the corresponding spec path. You can also let the script figure out qt settings by itself:
+
+    sh build.sh <qt_dir>
+
+where \<qt_dir\> is the install directory of the Qt library. This simplification applies to other editions too.
 
 Additional flags are needed to build special editions:
 
@@ -44,14 +48,6 @@ Here \<dvidcpp_path\> is the install path of libdvid-cpp.
 ### Windows
 
 See neurolabi/Compile_Windows.txt for more details.
-
-## Configuration
-
-### The edition for dark field neuron reconstruction
-Copy neurolabi/gui/config.xml to the folder containing the executable 
-
-### The edition for FLyEM
-Copy config_flyem.xml and neurolabi/json to the folder containing the executable
 
 ## Other information
  
