@@ -2327,16 +2327,6 @@ void ZStackDoc::addObj3dP(ZObject3d *obj)
   }
 
   m_objectGroup.add(obj, false);
-
-  /*
-  if (obj->isSelected()) {
-    setSelected(obj, true);
-  }
-  */
-
-//  processObjectModified(obj);
-
-//  notifyObj3dModified();
 }
 
 void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
@@ -2346,12 +2336,6 @@ void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
   }
 
   m_objectGroup.add(obj, false);
-
-
-//  processObjectModified(obj);
-  //notifyObjectModified();
-  //notifyObject3dScanModified();
-
 }
 
 #define DEFINE_GET_OBJECT_LIST(Function, ObjectClass, OBJECT_TYPE) \

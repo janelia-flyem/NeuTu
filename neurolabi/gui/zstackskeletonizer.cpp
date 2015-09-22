@@ -1,6 +1,7 @@
 #include "zstackskeletonizer.h"
 
 #include <iostream>
+#include <string.h>
 #include "c_stack.h"
 #include "zswctree.h"
 #include "tz_stack_lib.h"
