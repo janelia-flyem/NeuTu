@@ -14,13 +14,15 @@ ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()
   removeObject(ZStackObject::TYPE_SWC, false);
 }
 
-void ZBiocytinProjectionDoc::setParentDoc(ztr1::shared_ptr<ZStackDoc> parentDoc)
+void ZBiocytinProjectionDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
 {
   m_parentDoc = parentDoc;
   connect(m_parentDoc.get(), SIGNAL(swcModified()),
           this, SLOT(updateSwc()));
   connect(this, SIGNAL(swcModified()),
           m_parentDoc.get(), SIGNAL(swcModified()));
+  connect(this, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
+          m_parentDoc.get(), SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)));
   updateSwc();
 }
 

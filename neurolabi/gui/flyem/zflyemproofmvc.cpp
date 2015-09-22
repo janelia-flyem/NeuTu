@@ -97,7 +97,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->setCentralWidget(m_bodyViewers);
   m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
 
-  connect(m_bodyViewWindow, SIGNAL(closed()), this, SLOT(closeAllBodyWindow()));
+  connect(m_bodyViewWindow, SIGNAL(closed()), m_bodyViewers, SLOT(closeAllWindows()));
 
   m_bodyWindowFactory =
       QSharedPointer<ZWindowFactory>(new ZFlyEmBodyWindowFactory);
@@ -126,24 +126,17 @@ void ZFlyEmProofMvc::initBodyWindow()
       m_bodyViewWindow->toolBar->addAction("Y-Z View");
   connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
 
-
-  m_bodyViewWindow->recenterAction =
-      m_bodyViewWindow->toolBar->addAction("Center");
-  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
-          m_bodyViewers, SLOT(resetCameraCenter()));
+  m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
+  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
 
   m_bodyViewWindow->toolBar->addSeparator();
 
-  m_bodyViewWindow->showGraphAction =
-      m_bodyViewWindow->toolBar->addAction("Graph");
-  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
-          m_bodyViewers, SLOT(showGraph(bool)));
+  m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
+  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
   m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
-
-  m_bodyViewWindow->settingsAction =
-      m_bodyViewWindow->toolBar->addAction("ControlSettings");
+  m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
   connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
@@ -289,7 +282,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //  update3DBodyView(false, true);
 
   getProgressSignal()->endProgress();
+
   */
+
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
@@ -297,7 +292,6 @@ void ZFlyEmProofMvc::makeBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_bodyWindow);
-
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -1551,7 +1545,7 @@ void ZFlyEmProofMvc::showExternalNeuronWindow()
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(2);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(2));
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1565,12 +1559,14 @@ void ZFlyEmProofMvc::showCoarseBody3d()
   if (m_coarseBodyWindow == NULL) {
     makeCoarseBodyWindow();
     m_bodyViewers->addWindow(0, m_coarseBodyWindow, "Coarse Body View");
+
     updateCoarseBodyWindow();
     m_coarseBodyWindow->setYZView();
+
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(0);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(0));
   }
 
 //  updateCoarseBodyWindow(false, true, false);
@@ -1592,7 +1588,7 @@ void ZFlyEmProofMvc::showFineBody3d()
   }
   else
   {
-      m_bodyViewers->setCurrentIndex(1);
+      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(1));
   }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);
@@ -1609,7 +1605,7 @@ void ZFlyEmProofMvc::showSkeletonWindow()
     updateSkeletonWindow();
     m_skeletonWindow->setYZView();
   } else {
-    m_bodyViewers->setCurrentIndex(3);
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(3));
   }
 
   m_bodyViewWindow->setCurrentWidow(m_skeletonWindow);
