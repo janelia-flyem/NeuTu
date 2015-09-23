@@ -63,6 +63,19 @@ ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
   return m_keyConfig;
 }
 
+void ZFlyEmProofPresenter::configKeyMap()
+{
+  ZKeyOperationConfig *config = getKeyConfig();
+
+  config->configure(
+        m_activeStrokeOperationMap, ZKeyOperation::OG_ACTIVE_STROKE);
+  config->configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  config->configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+  config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+}
+
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 {
   bool processed = false;

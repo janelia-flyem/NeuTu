@@ -320,10 +320,6 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(notifyViewChanged(ZStackViewParam)));
-  /*
-  connect(presenter(), SIGNAL(rectRoiUpdated()),
-        m_doc.get(), SLOT(processRectRoiUpdate()));
-        */
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)

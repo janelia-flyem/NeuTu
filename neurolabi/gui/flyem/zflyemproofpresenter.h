@@ -45,6 +45,7 @@ public:
   void processRectRoiUpdate();
 
   ZKeyOperationConfig* getKeyConfig();
+  void configKeyMap();
 
 private:
   void tryAddBookmarkMode();
