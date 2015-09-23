@@ -63,6 +63,13 @@ void ZSelector<T>::setSelection(T obj, bool selecting)
     }
 }
 
+template<typename T>
+void ZSelector<T>::deselectAll()
+{
+  m_deselectedSet.insert(m_selectedSet.begin(), m_selectedSet.end());
+  m_selectedSet.clear();
+}
+
 template <typename T>
 std::vector<T> ZSelector<T>::getSelectedList() const
 {

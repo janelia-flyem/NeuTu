@@ -2257,14 +2257,17 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
+    buddyDocument()->recordSwcTreeNodeSelection();
     buddyDocument()->deselectAllSwcTreeNodes();
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    buddyDocument()->notifySwcTreeNodeSelectionChanged();
+
     if (buddyDocument()->getSelectedSwcNodeNumber() == 1 &&
         buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION &&
         NeutubeConfig::getInstance().getApplication() == "Biocytin") {
       enterSwcExtendMode();
     }
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+//    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_ALL_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
@@ -2359,9 +2362,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
+    buddyDocument()->notifyZoomingToSelectedSwcNode();
+    /*
     if (getParentFrame() != NULL) {
       getParentFrame()->zoomToSelectedSwcNodes();
     }
+    */
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_UP:
     buddyDocument()->executeMoveSwcNodeCommand(0, -1.0, 0);

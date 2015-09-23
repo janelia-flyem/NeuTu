@@ -5,7 +5,7 @@
 
 set -e
 
-if [ $# -lt 2 ]
+if [ $# -lt 1 ]
 then
   echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
   echo "Example: "
@@ -13,10 +13,20 @@ then
   exit 1
 fi
 
-QMAKE=$1
-QMAKE_SPEC=$2
-shift
-shift
+if [ $1 == */qmake ]
+then
+  QMAKE=$1
+  shift
+  QMAKE_SPEC=$1
+  shift
+else
+  QMAKE=$1/bin/qmake
+  if [ `uname` == 'Darwin' ]; then
+    QMAKE_SPEC=$1/mkspecs/macx-g++
+  else
+    QMAKE_SPEC=$1/mkspecs/linux-g++-64
+  fi
+fi
 
 edition=general
 debug_config=release
@@ -62,7 +72,12 @@ else
   fi
 fi
 
-qmake_args="-spec $QMAKE_SPEC CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+if [ ! -z "QMAKE_SPEC" ]
+then
+  qmake_args="-spec $QMAKE_SPEC"
+fi
+
+qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""

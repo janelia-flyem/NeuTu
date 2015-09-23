@@ -2350,16 +2350,6 @@ void ZStackDoc::addObj3dP(ZObject3d *obj)
   }
 
   m_objectGroup.add(obj, false);
-
-  /*
-  if (obj->isSelected()) {
-    setSelected(obj, true);
-  }
-  */
-
-//  processObjectModified(obj);
-
-//  notifyObj3dModified();
 }
 
 void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
@@ -2369,12 +2359,6 @@ void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
   }
 
   m_objectGroup.add(obj, false);
-
-
-//  processObjectModified(obj);
-  //notifyObjectModified();
-  //notifyObject3dScanModified();
-
 }
 
 #define DEFINE_GET_OBJECT_LIST(Function, ObjectClass, OBJECT_TYPE) \
@@ -6888,6 +6872,12 @@ bool ZStackDoc::executeRemoveSelectedObjectCommand()
 
   return false;
 }
+
+void ZStackDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
+{
+  m_parentDoc = parentDoc;
+}
+
 /*
 bool ZStackDoc::executeRemoveUnselectedObjectCommand()
 {
@@ -8588,12 +8578,25 @@ void ZStackDoc::notifySelectorChanged()
   }
 }
 
+void ZStackDoc::recordSwcTreeNodeSelection()
+{
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    tree->recordSelection();
+  }
+}
+
 void ZStackDoc::notifySwcTreeNodeSelectionChanged()
 {
   QList<ZSwcTree*> treeList = getSwcList();
   QList<Swc_Tree_Node*> selected;
   QList<Swc_Tree_Node*> deselected;
-  foreach (const ZSwcTree *tree, treeList) {
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    tree->processSelection();
     const std::set<Swc_Tree_Node*> &selectedSet =
         tree->getNodeSelector().getSelectedSet();
     for (std::set<Swc_Tree_Node*>::iterator iter = selectedSet.begin();
@@ -8634,6 +8637,11 @@ void ZStackDoc::removeUser(QObject *user)
 void ZStackDoc::removeAllUser()
 {
   m_userList.clear();
+}
+
+void ZStackDoc::notifyZoomingToSelectedSwcNode()
+{
+  emit zoomingToSelectedSwcNode();
 }
 
 template<typename T>

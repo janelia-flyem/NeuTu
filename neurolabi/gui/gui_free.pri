@@ -227,6 +227,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/flyem/zflyembodyannotationbundle.h \
    $${PWD}/zswcfactory.h \
    $${PWD}/swc/zswcradiusestimator.h \
+   $${PWD}/zswctreenodeselector.h \
    $${PWD}/swc/zswcsignalfitter.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
@@ -437,5 +438,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/flyem/zflyembodyannotationbundle.cpp \
    $${PWD}/zswcfactory.cpp \
    $${PWD}/swc/zswcradiusestimator.cpp \
+   $${PWD}/zswctreenodeselector.cpp \
    $${PWD}/swc/zswcsignalfitter.cpp
 

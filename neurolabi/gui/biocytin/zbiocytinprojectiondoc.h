@@ -10,7 +10,7 @@ public:
   explicit ZBiocytinProjectionDoc(QObject *parent = 0);
   ~ZBiocytinProjectionDoc();
 
-  void setParentDoc(ZSharedPointer<ZStackDoc> parentDoc);
+  void setParentDoc(ZSharedPointer<ZStackDoc> doc);
 
 signals:
 
@@ -72,9 +72,6 @@ public slots:
 protected:
   void selectSwcNode(const ZRect2d &roi);
   void processRectRoiUpdate();
-
-private:
-  ZSharedPointer<ZStackDoc> m_parentDoc;
 };
 
 #endif // ZBIOCYTINPROJECTIONDOC_H
