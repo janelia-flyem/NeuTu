@@ -57,6 +57,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
     // register our type so we can signal/slot it across threads:
@@ -97,6 +98,10 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         setStatusLabel("Loading...");
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
     }
+}
+
+void FlyEmBodyInfoDialog::applicationQuitting() {
+    m_quitting = true;
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
@@ -229,6 +234,11 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
         }
 
         for (size_t i = 0; i < bookmarks.size(); ++i) {
+            // if application is quitting, return = exit thread
+            if (m_quitting) {
+                return;
+            }
+
             ZJsonObject bkmk(bookmarks.at(i), false);
 
             // as noted above, reader doesn't have "hasKey", so we search the range

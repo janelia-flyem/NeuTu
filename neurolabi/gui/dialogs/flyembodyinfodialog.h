@@ -36,6 +36,7 @@ private slots:
     void updateStatusLabel();
     void updateStatusAfterLoading();
     void filterUpdated(QString filterText);
+    void applicationQuitting();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
@@ -43,6 +44,7 @@ private:
     QSortFilterProxyModel* m_proxy;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
+    bool m_quitting = false;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
