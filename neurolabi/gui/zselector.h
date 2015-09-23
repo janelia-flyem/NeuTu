@@ -72,6 +72,8 @@ public:
    */
   void deselectObject(T obj);
 
+  void deselectAll();
+
   /*!
    * \brief The function of selecting or deselecting an object
    */

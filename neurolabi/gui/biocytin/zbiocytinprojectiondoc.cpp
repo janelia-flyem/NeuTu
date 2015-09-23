@@ -16,7 +16,11 @@ ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()
 
 void ZBiocytinProjectionDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
 {
-  m_parentDoc = parentDoc;
+  ZStackDoc::setParentDoc(parentDoc);
+
+  connect(this, SIGNAL(zoomingToSelectedSwcNode()),
+          m_parentDoc.get(), SIGNAL(zoomingToSelectedSwcNode()));
+
   connect(m_parentDoc.get(), SIGNAL(swcModified()),
           this, SLOT(updateSwc()));
   connect(this, SIGNAL(swcModified()),
