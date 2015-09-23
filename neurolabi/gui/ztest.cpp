@@ -17772,15 +17772,15 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   std::string dataDir =
-      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/output";
+      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/KCandMBON/MBON/affine";
 
   QList<std::string> baseNameList;
-  baseNameList << "KC_abs_affreg";
-  baseNameList << "KC_abs_aligned";
-  baseNameList << "MBON-a_3_affreg";
-  baseNameList << "MBON-a_3_aligned";
-  baseNameList << "MBON-a2sc_affreg";
-  baseNameList << "MBON-a2sc_aligned";
+  baseNameList << "MBON-b1-a_affreg";
+//  baseNameList << "KC_abs_aligned";
+//  baseNameList << "MBON-a_3_affreg";
+//  baseNameList << "MBON-a_3_aligned";
+//  baseNameList << "MBON-a2sc_affreg";
+//  baseNameList << "MBON-a2sc_aligned";
 
   foreach (const std::string &baseName, baseNameList) {
     ZSwcTree tree;
