@@ -267,57 +267,59 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
 {
   connectAction(m_doc.get(), SIGNAL(locsegChainSelected(ZLocsegChain*)),
       this, SLOT(setLocsegChainInfo(ZLocsegChain*)));
-  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
+
+  if (m_doc->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION) {
+    connectAction(m_doc.get(), SIGNAL(zoomingToSelectedSwcNode()),
+                  this, SLOT(zoomToSelectedSwcNodes()));
+  }
+
+  connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateChannelControl()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateThresholdSlider()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateSlider()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_presenter, SLOT(updateStackBc()));
-  connect(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateView()));
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
           m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
-  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),
+  connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
           this, SLOT(changeWindowTitle(bool)));
-  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
+  connectAction(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
           QList<ZLocsegChain*>)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(
+  connectAction(m_doc.get(), SIGNAL(
             swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,
                                         QList<Swc_Tree_Node*>)),
           this, SLOT(updateSwcExtensionHint()));
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
+  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(objectSelectionChanged(
+  connectAction(m_doc.get(), SIGNAL(objectSelectionChanged(
                                 QList<ZStackObject*>,QList<ZStackObject*>)),
           m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));
-  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
+  connectAction(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
+  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
+  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
+  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
           m_view, SLOT(paintObject()));
-  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+  connectAction(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
-  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));
-  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
-  connect(m_view, SIGNAL(viewChanged(ZStackViewParam)),
+  connectAction(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));
+  connectAction(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
+  connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(notifyViewChanged(ZStackViewParam)));
-  /*
-  connect(presenter(), SIGNAL(rectRoiUpdated()),
-        m_doc.get(), SLOT(processRectRoiUpdate()));
-        */
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -1261,8 +1263,12 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     return NULL;
   }
 
+  ZSharedPointer<ZStackDoc> doc = document();
+  if (doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    doc = doc->getParentDoc();
+  }
 
-  Z3DWindow *window = document()->getParent3DWindow();
+  Z3DWindow *window = doc->getParent3DWindow();
 
   if (window == NULL) {
     if (getMainWindow() != NULL) {
@@ -1271,10 +1277,10 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
-    window = factory.make3DWindow(document(), mode);
+    window = factory.make3DWindow(doc, mode);
     window->setWindowTitle(windowTitle());
 
-    document()->registerUser(window);
+    doc->registerUser(window);
 
     connect(this, SIGNAL(closed(ZStackFrame*)), window, SLOT(close()));
 //    connect(window, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
@@ -1763,7 +1769,8 @@ void ZStackFrame::MessageProcessor::processMessage(
   {
     ZStackFrame *frame = qobject_cast<ZStackFrame*>(host);
     if (frame != NULL) {
-      if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+      if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK ||
+          frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
         frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         frame->open3DWindow();

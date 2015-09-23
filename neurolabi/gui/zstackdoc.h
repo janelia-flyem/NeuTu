@@ -240,6 +240,10 @@ public: //attributes
   void mapToStackCoord(ZPoint *pt);
   void mapToStackCoord(double *x, double *y, double *z);
 
+  ZSharedPointer<ZStackDoc> getParentDoc() const {
+    return m_parentDoc;
+  }
+  virtual void setParentDoc(ZSharedPointer<ZStackDoc> parentDoc);
 
   // Prefix for tracing project.
   const char *tubePrefix() const;
@@ -478,6 +482,8 @@ private:
   void seededWatershed();
   template <class InputIterator>
   void removeObjectP(InputIterator first, InputIterator last, bool deleting);
+
+  void updateSwc();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -857,6 +863,8 @@ public:
   void notifyProgressEnd();
   void notifyProgressAdvanced(double dp);
 
+  void recordSwcTreeNodeSelection();
+
   void notifySelectorChanged();
   void notifySwcTreeNodeSelectionChanged();
 
@@ -1032,6 +1040,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
+  void notifyZoomingToSelectedSwcNode();
+
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1095,6 +1105,8 @@ signals:
   void progressEnded();
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
+
+  void zoomingToSelectedSwcNode();
 
 protected:
   virtual void autoSave();
@@ -1196,6 +1208,7 @@ private:
 
 protected:
   ZObjectColorScheme m_objColorSheme;
+  ZSharedPointer<ZStackDoc> m_parentDoc;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
