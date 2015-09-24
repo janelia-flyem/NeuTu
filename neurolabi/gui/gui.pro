@@ -230,6 +230,7 @@ HEADERS += mainwindow.h \
     z3dlinerenderer.h \
     z3dlinewithfixedwidthcolorrenderer.h \
     z3dconerenderer.h \
+    z3dtrianglerenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
     z3daxis.h \
@@ -322,6 +323,7 @@ HEADERS += mainwindow.h \
     z3dgeometryfilter.h \
     z3dgraphfilter.h \
     z3dpunctafilter.h \
+    z3dsurfacefilter.h \
     z3dswcfilter.h \
     z3dscene.h \
     zqtbarprogressreporter.h \
@@ -698,6 +700,7 @@ SOURCES += main.cpp \
     z3dlinerenderer.cpp \
     z3dlinewithfixedwidthcolorrenderer.cpp \
     z3dconerenderer.cpp \
+    z3dtrianglerenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
     z3daxis.cpp \
@@ -777,6 +780,7 @@ SOURCES += main.cpp \
     z3dgeometryfilter.cpp \
     z3dgraphfilter.cpp \
     z3dpunctafilter.cpp \
+    z3dsurfacefilter.cpp \
     z3dswcfilter.cpp \
     z3dscene.cpp \
     zqtbarprogressreporter.cpp \
