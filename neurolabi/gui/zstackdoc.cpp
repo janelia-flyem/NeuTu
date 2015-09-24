@@ -6860,6 +6860,19 @@ bool ZStackDoc::executeAddObjectCommand(ZStackObject *obj, bool uniqueSource)
   return false;
 }
 
+bool ZStackDoc::executeRemoveObjectCommand(ZStackObject *obj)
+{
+  if (obj != NULL) {
+    ZStackDocCommand::ObjectEdit::RemoveObject *command =
+        new ZStackDocCommand::ObjectEdit::RemoveObject(this, obj);
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::executeRemoveSelectedObjectCommand()
 {
   if (hasObjectSelected()) {
@@ -8806,11 +8819,13 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate()
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
 {
-  processObjectModified(getObjectGroup().findFirstSameSource(
-                          ZStackObject::TYPE_RECT2D,
-                          ZStackObjectSourceFactory::MakeRectRoiSource()));
+  if (rect != NULL) {
+    removeObject(rect, false);
+    executeAddObjectCommand(rect);
+    processObjectModified(rect);
+  }
 }
 
 void ZStackDoc::removeRect2dRoi()

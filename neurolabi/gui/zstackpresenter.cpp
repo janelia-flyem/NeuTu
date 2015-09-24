@@ -2113,9 +2113,9 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processRectRoiUpdate()
+void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect)
 {
-  buddyDocument()->processRectRoiUpdate();
+  buddyDocument()->processRectRoiUpdate(rect);
 }
 
 void ZStackPresenter::acceptRectRoi()
@@ -2126,8 +2126,9 @@ void ZStackPresenter::acceptRectRoi()
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect != NULL) {
     rect->setColor(QColor(255, 255, 255));
+    processRectRoiUpdate(rect);
   }
-  processRectRoiUpdate();
+
 //  exitRectEdit();
 }
 
@@ -2700,7 +2701,23 @@ void ZStackPresenter::process(const ZStackOperator &op)
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
     rect->setColor(255, 128, 128);
-    buddyDocument()->executeAddObjectCommand(rect);
+
+#ifdef _DEBUG_
+    std::cout << "Adding roi: " << rect << std::endl;
+#endif
+//    buddyDocument()->removeObject(rect->getSource(), false);
+
+    ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_RECT2D,
+          ZStackObjectSourceFactory::MakeRectRoiSource());
+    ZRect2d *oldRect = dynamic_cast<ZRect2d*>(obj);
+    if (oldRect != NULL) {
+      buddyDocument()->executeRemoveObjectCommand(obj);
+    }
+
+    buddyDocument()->addObject(rect, false); //Undo will be handled after roi accepted
+
+//    buddyDocument()->executeAddObjectCommand(rect);
   }
     break;
   case ZStackOperator::OP_RECT_ROI_UPDATE:

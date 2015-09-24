@@ -374,7 +374,7 @@ protected:
 
   void acceptActiveStroke();
   void acceptRectRoi();
-  virtual void processRectRoiUpdate();
+  virtual void processRectRoiUpdate(ZRect2d *rect);
 
 protected:
   //ZStackFrame *m_parent;

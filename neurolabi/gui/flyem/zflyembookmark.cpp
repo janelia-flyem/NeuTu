@@ -125,6 +125,7 @@ void ZFlyEmBookmark::display(
         ZIntPoint center = getLocation();
         int width = decorationText.size() * 50;
         int height = 50;
+        painter.setPen(QColor(0, 0, 0));
         painter.drawText(center.getX(), center.getY(), width, height,
                          Qt::AlignLeft, decorationText);
 //        painter.restore();

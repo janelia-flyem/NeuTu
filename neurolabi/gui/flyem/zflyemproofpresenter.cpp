@@ -264,14 +264,14 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
   m_highTileContrast = high;
 }
 
-void ZFlyEmProofPresenter::processRectRoiUpdate()
+void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect)
 {
   if (isSplitOn()) {
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
-      doc->updateSplitRoi();
+      doc->updateSplitRoi(rect);
     }
   } else {
-    buddyDocument()->processRectRoiUpdate();
+    buddyDocument()->processRectRoiUpdate(rect);
   }
 }

@@ -917,7 +917,7 @@ public:
     return m_progressSignal;
   }
 
-  virtual void processRectRoiUpdate();
+  virtual void processRectRoiUpdate(ZRect2d *rect);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -930,6 +930,7 @@ public:
 public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
+  virtual bool executeRemoveObjectCommand(ZStackObject *obj);
   virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(

@@ -699,32 +699,46 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi()
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
 {
-  ZRect2d rect = getRect2dRoi();
+//  ZRect2d rect = getRect2dRoi();
+
+  ZUndoCommand *command = new ZUndoCommand("Update ROI");
 
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  /*
   ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
   if (roi == NULL) {
-    roi = new ZIntCuboidObj;
-    roi->setColor(QColor(255, 255, 255));
-    roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
-    addObject(roi);
-  }
+  */
+  ZIntCuboidObj* roi = new ZIntCuboidObj;
+  roi->setColor(QColor(255, 255, 255));
+  roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+  roi->clear();
 
-  if (rect.isValid()) {
-    int sz = iround(sqrt(rect.getWidth() * rect.getWidth() +
-                             rect.getHeight() * rect.getHeight()) / 2.0);
-    roi->setFirstCorner(rect.getFirstX(), rect.getFirstY(), rect.getZ() - sz);
-    roi->setLastCorner(rect.getLastX(), rect.getLastY(), rect.getZ() + sz);
-  } else {
-    roi->clear();
-  }
+  executeRemoveObjectCommand(getSplitRoi());
 
+  new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
+//    addObject(roi);
+//  }
+
+  if (rect != NULL) {
+    if (rect->isValid()) {
+      int sz = iround(sqrt(rect->getWidth() * rect->getWidth() +
+                           rect->getHeight() * rect->getHeight()) / 2.0);
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
+      roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    }
+  }
   m_splitSource.reset();
-  removeRect2dRoi();
 
-  processObjectModified(roi);
+  removeObject(rect, true);
+
+  pushUndoCommand(command);
+
+//  new ZStackDocCommand::ObjectEdit::RemoveObje
+//  removeRect2dRoi();
+
+//  processObjectModified(roi);
 
   endObjectModifiedMode();
   notifyObjectModified();
