@@ -11,7 +11,7 @@ class ZRect2d : public ZStackObject
 public:
   ZRect2d();
   ZRect2d(int x0, int y0, int width, int height);
-  virtual ~ZRect2d() {}
+  virtual ~ZRect2d();
 
   void set(int x0, int y0, int width, int height);
 

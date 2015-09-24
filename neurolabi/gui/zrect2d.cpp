@@ -21,6 +21,13 @@ ZRect2d::ZRect2d(int x0, int y0, int width, int height) :
   m_type = ZStackObject::TYPE_RECT2D;
 }
 
+ZRect2d::~ZRect2d()
+{
+#ifdef _DEBUG_
+  std::cout << "Destroying ZRect2d: " << getSource() << std::endl;
+#endif
+}
+
 void ZRect2d::set(int x0, int y0, int width, int height)
 {
   m_x0 = x0;

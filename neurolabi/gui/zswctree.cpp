@@ -34,7 +34,9 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
+#endif
 
 using namespace std;
 
@@ -470,9 +472,10 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 
 #if defined(_QT_GUI_USED_)
 
-  painter.save();
+//  painter.save();
 
-  double dataFocus = slice + painter.getZOffset();
+//  double dataFocus = slice + painter.getZOffset();
+  double dataFocus = painter.getZ(slice);
 
   const double strokeWidth = getPenWidth();
 
@@ -488,7 +491,6 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
-
   //Draw skeletons
   pen.setCosmetic(true);
   pen.setWidthF(strokeWidth * 2.0);
@@ -501,13 +503,12 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       double dz2 = SwcTreeNode::z(upperTn) - dataFocus;
 
       pen.setColor(m_planeSkeletonColor);
-      if (dz1 < 0 && dz2 < 0) {
+      if (dz1 > 0 && dz2 > 0) {
         pen.setStyle(Qt::DotLine);
       }
 
       painter.setPen(pen);
       if (hasVisualEffect(VE_FULL_SKELETON)) {
-
         painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                          QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
                                  SwcTreeNode::y(SwcTreeNode::parent(tn))));
@@ -621,6 +622,12 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         } else {
           nodeColor = m_branchPointColor;
         }
+      } else if (SwcTreeNode::isLeaf(tn)) {
+        if (focused) {
+          nodeColor = m_terminalFocusColor;
+        } else {
+          nodeColor = m_terminalColor;
+        }
       } else {
         if (focused) {
           nodeColor = m_nodeFocusColor;
@@ -635,6 +642,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       {
           ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                          SwcTreeNode::radius(tn));
+          circle.addVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 //          if (isNodeSelected(tn)) {
 //            circle.setSelected(true);
 //          }
@@ -647,16 +655,21 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         break;
       case SOLID:
       {
-        QColor brushColor= pen.color();
-        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
-        painter.setBrush(brushColor);
+//        QColor brushColor= pen.color();
+//        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
+//        painter.setBrush(brushColor);
         ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
                        SwcTreeNode::radius(tn));
+        circle.addVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 //        if (isNodeSelected(tn)) {
 //          circle.setSelected(true);
 //        }
         circle.setColor(nodeColor);
         circle.useCosmeticPen(m_usingCosmeticPen);
+
+        QColor brushColor = nodeColor;
+        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
+        painter.setBrush(brushColor);
         circle.display(painter, slice, style);
 //        circle.displayHelper(&painter, stackFocus, style);
       }
@@ -690,7 +703,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     circle.display(painter, slice, BOUNDARY);
   }
 
-  painter.restore();
+//  painter.restore();
 #endif
 }
 
@@ -3228,9 +3241,11 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
 #ifdef _QT_GUI_USED_
   switch (scheme) {
   case COLOR_NORMAL:
-    m_rootColor = QColor(164, 164, 255, 164);
-    m_branchPointColor = QColor(164, 255, 164, 164);
-    m_nodeColor = QColor(255, 164, 164, 164);
+    m_rootColor = QColor(164, 164, 255, 255);
+    m_terminalColor = QColor(255, 153, 0, 255);
+    m_terminalFocusColor = QColor(255, 153, 0);
+    m_branchPointColor = QColor(164, 255, 164, 255);
+    m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
 
     m_rootFocusColor = QColor(0, 0, 255);
@@ -3238,9 +3253,11 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     m_nodeFocusColor = QColor(255, 0, 0);
     break;
   case COLOR_ROI_CURVE:
-    m_rootColor = QColor(164, 164, 255, 164);
-    m_branchPointColor = QColor(164, 255, 164, 164);
-    m_nodeColor = QColor(255, 164, 164, 164);
+    m_rootColor = QColor(164, 164, 255, 255);
+    m_terminalColor = QColor(255, 153, 0, 255);
+    m_terminalFocusColor = QColor(255, 153, 0);
+    m_branchPointColor = QColor(164, 255, 164, 255);
+    m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 128);
 
     m_rootFocusColor = QColor(255, 0, 100, 64);
@@ -3306,7 +3323,7 @@ ZClosedCurve ZSwcTree::toClosedCurve() const
 
   return curve;
 }
-
+#if defined(_QT_GUI_USED_)
 void ZSwcTree::selectNode(const ZRect2d &roi, bool appending)
 {
   std::vector<Swc_Tree_Node*> nodeList;
@@ -3322,7 +3339,7 @@ void ZSwcTree::selectNode(const ZRect2d &roi, bool appending)
 
   selectNode(nodeList.begin(), nodeList.end(), appending);
 }
-
+#endif
 Swc_Tree_Node* ZSwcTree::selectHitNode(bool appending)
 {
   Swc_Tree_Node *tn = getHitNode();

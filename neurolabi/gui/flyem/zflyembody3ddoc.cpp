@@ -247,6 +247,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
 
   m_eventQueue.clear();
   locker.unlock();
+  std::cout << "Unlock process event" << std::endl;
 
   if (!m_actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));

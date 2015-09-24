@@ -487,7 +487,23 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveSelected : public QUndoCommand
+class RemoveObject : public ZUndoCommand
+{
+public:
+  RemoveObject(ZStackDoc *doc, ZStackObject *obj,
+               QUndoCommand *parent = NULL);
+  virtual ~RemoveObject();
+
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  ZStackObject *m_obj;
+  bool m_isInDoc;
+};
+
+class RemoveSelected : public ZUndoCommand
 {
 public:
   RemoveSelected(ZStackDoc *doc, QUndoCommand *parent = NULL);

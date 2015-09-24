@@ -66,7 +66,8 @@ private:
 };
 
 template <typename T1, typename T2>
-void ZWidgetMessage::ConnectMessagePipe(T1 *source, T2 *target, bool dumping)
+void ZWidgetMessage::ConnectMessagePipe(
+    T1 *source, T2 *target, bool dumping = false)
 {
   if (dumping) {
     QObject::connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),

@@ -34,13 +34,16 @@ class QMenu;
 class ZInteractionEvent;
 class ZStackOperator;
 class ZStackMvc;
+class ZKeyOperationConfig;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
 
-public:
-  explicit ZStackPresenter(ZStackFrame *parent = 0);
+protected:
+//  explicit ZStackPresenter(ZStackFrame *parent = 0);
   explicit ZStackPresenter(QWidget *parent = 0);
+
+public:
   ~ZStackPresenter();
 
   static ZStackPresenter* Make(QWidget *parent);
@@ -237,6 +240,9 @@ public:
 
   bool isSwcFullSkeletonVisible() const;
 
+  virtual ZKeyOperationConfig* getKeyConfig();
+  virtual void configKeyMap();
+
 public: //test functions
   void testBiocytinProjectionMask();
 
@@ -368,7 +374,7 @@ protected:
 
   void acceptActiveStroke();
   void acceptRectRoi();
-  virtual void processRectRoiUpdate();
+  virtual void processRectRoiUpdate(ZRect2d *rect);
 
 protected:
   //ZStackFrame *m_parent;
@@ -455,6 +461,7 @@ protected:
   ZKeyOperationMap m_activeStrokeOperationMap;
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;
+  ZKeyOperationConfig *m_keyConfig;
 
 //  ZKeyEventSwcMapper m_swcKeyMapper;
   //ZMouseEventLeftButtonReleaseMapper m_leftButtonReleaseMapper;

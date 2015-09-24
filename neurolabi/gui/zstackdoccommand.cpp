@@ -1303,7 +1303,7 @@ void ZStackDocCommand::SwcEdit::TraceSwcBranch::undo()
 #endif
 
 ZStackDocCommand::ObjectEdit::RemoveSelected::RemoveSelected(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), doc(doc)
 {
   setText(QObject::tr("remove selected objects"));
 }
@@ -1410,6 +1410,33 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
     */
   }
   notifyObjectChanged(m_selectedObject);
+}
+
+ZStackDocCommand::ObjectEdit::RemoveObject::RemoveObject(
+    ZStackDoc *doc, ZStackObject *obj, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_isInDoc(true)
+{
+  setText(QObject::tr("Remove object"));
+}
+
+ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
+{
+  if (!m_isInDoc) {
+    delete m_obj;
+  }
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
+{
+  m_obj->setSelected(false);
+  m_doc->removeObject(m_obj, false);
+  m_isInDoc = false;
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
+{
+  m_doc->addObject(m_obj, false);
+  m_isInDoc = true;
 }
 
 ZStackDocCommand::TubeEdit::Trace::Trace(

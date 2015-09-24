@@ -42,6 +42,7 @@ class ZStackMvc;
 class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
+class ZWidgetMessage;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -279,6 +280,7 @@ signals:
   void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
   void viewPortChanged();
+  void messageGenerated(const ZWidgetMessage &message);
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);

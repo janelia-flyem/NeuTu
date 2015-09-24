@@ -230,6 +230,7 @@ HEADERS += mainwindow.h \
     z3dlinerenderer.h \
     z3dlinewithfixedwidthcolorrenderer.h \
     z3dconerenderer.h \
+    z3dtrianglerenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
     z3daxis.h \
@@ -322,6 +323,7 @@ HEADERS += mainwindow.h \
     z3dgeometryfilter.h \
     z3dgraphfilter.h \
     z3dpunctafilter.h \
+    z3dsurfacefilter.h \
     z3dswcfilter.h \
     z3dscene.h \
     zqtbarprogressreporter.h \
@@ -565,14 +567,15 @@ HEADERS += mainwindow.h \
     flyem/zflyembookmarkptrarray.h \
     biocytin/zbiocytinprojectiondoc.h \
     dialogs/zflyemsplitcommitdialog.h \
-    zswctreenodeselector.h \
     zstackdocfactory.h \
     zintcuboidobj.h \
     flyem/zflyembodywindowfactory.h \
     flyem/zflyembodycolorscheme.h \
     flyem/zflyemexternalneurondoc.h \
     ztask.h \
-    flyem/zflyemqualityanalyzertask.h
+    flyem/zflyemqualityanalyzertask.h \
+    zstackobjectpainter.h \
+    flyem/zflyemkeyoperationconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -698,6 +701,7 @@ SOURCES += main.cpp \
     z3dlinerenderer.cpp \
     z3dlinewithfixedwidthcolorrenderer.cpp \
     z3dconerenderer.cpp \
+    z3dtrianglerenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
     z3daxis.cpp \
@@ -777,6 +781,7 @@ SOURCES += main.cpp \
     z3dgeometryfilter.cpp \
     z3dgraphfilter.cpp \
     z3dpunctafilter.cpp \
+    z3dsurfacefilter.cpp \
     z3dswcfilter.cpp \
     z3dscene.cpp \
     zqtbarprogressreporter.cpp \
@@ -993,14 +998,15 @@ SOURCES += main.cpp \
     flyem/zflyembookmarkptrarray.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
     dialogs/zflyemsplitcommitdialog.cpp \
-    zswctreenodeselector.cpp \
     zstackdocfactory.cpp \
     zintcuboidobj.cpp \
     flyem/zflyembodywindowfactory.cpp \
     flyem/zflyembodycolorscheme.cpp \
     flyem/zflyemexternalneurondoc.cpp \
     ztask.cpp \
-    flyem/zflyemqualityanalyzertask.cpp
+    flyem/zflyemqualityanalyzertask.cpp \
+    zstackobjectpainter.cpp \
+    flyem/zflyemkeyoperationconfig.cpp
 
 OTHER_FILES += \
     extlib.pri \

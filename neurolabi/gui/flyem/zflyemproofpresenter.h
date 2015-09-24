@@ -9,10 +9,12 @@ class ZFlyEmBookmark;
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
   Q_OBJECT
-public:
-  explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
+
+protected:
+//  explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
 
+public:
   static ZFlyEmProofPresenter* Make(QWidget *parent);
 
   bool customKeyProcess(QKeyEvent *event);
@@ -40,12 +42,16 @@ public:
     m_splitWindowMode = state;
   }
 
-  void processRectRoiUpdate();
+  void processRectRoiUpdate(ZRect2d *rect);
+
+  ZKeyOperationConfig* getKeyConfig();
+  void configKeyMap();
 
 private:
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void addActiveStrokeAsBookmark();
+  void init();
 
 signals:
   void highlightingSelected(bool);
