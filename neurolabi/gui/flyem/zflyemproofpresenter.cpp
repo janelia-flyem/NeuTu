@@ -9,31 +9,71 @@
 #include "zflyembookmark.h"
 #include "zstackview.h"
 #include "zflyemproofdoc.h"
+#include "zkeyoperationconfig.h"
+#include "flyem/zflyemkeyoperationconfig.h"
 
 #ifdef _WIN32
 #undef GetUserName
 #endif
 
+/*
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(ZStackFrame *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false), m_splitWindowMode(false),
-  m_highTileContrast(false)
+  ZStackPresenter(parent)
 {
-  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+  init();
 }
+*/
 
 ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
-  ZStackPresenter(parent), m_isHightlightMode(false), m_highTileContrast(false)
+  ZStackPresenter(parent)
 {
+  init();
+}
+
+void ZFlyEmProofPresenter::init()
+{
+  m_isHightlightMode = false;
+  m_splitWindowMode = false;
+  m_highTileContrast = false;
+
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+//  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
 {
   ZFlyEmProofPresenter *presenter = new ZFlyEmProofPresenter(parent);
+  presenter->configKeyMap();
+
+  /*
   ZKeyOperationConfig::Configure(
         presenter->m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+        */
 
   return presenter;
+}
+
+ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
+{
+  if (m_keyConfig == NULL) {
+    m_keyConfig = new ZFlyEmKeyOperationConfig();
+  }
+
+  return m_keyConfig;
+}
+
+void ZFlyEmProofPresenter::configKeyMap()
+{
+  ZKeyOperationConfig *config = getKeyConfig();
+
+  config->configure(
+        m_activeStrokeOperationMap, ZKeyOperation::OG_ACTIVE_STROKE);
+  config->configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  config->configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+  config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
@@ -224,14 +264,14 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
   m_highTileContrast = high;
 }
 
-void ZFlyEmProofPresenter::processRectRoiUpdate()
+void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect)
 {
   if (isSplitOn()) {
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
-      doc->updateSplitRoi();
+      doc->updateSplitRoi(rect);
     }
   } else {
-    buddyDocument()->processRectRoiUpdate();
+    buddyDocument()->processRectRoiUpdate(rect);
   }
 }

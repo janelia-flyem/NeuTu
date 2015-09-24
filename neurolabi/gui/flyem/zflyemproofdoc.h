@@ -105,7 +105,7 @@ public:
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
-  void updateSplitRoi();
+  void updateSplitRoi(ZRect2d *rect);
 
 signals:
   void bodyMerged();

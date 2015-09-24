@@ -10,14 +10,13 @@ class ZKeyOperationConfig
 public:
   ZKeyOperationConfig();
 
-  static void Configure(
+  virtual void configure(
       ZKeyOperationMap &map, ZKeyOperation::EGroup group);
 
-private:
+protected:
   static void ConfigureActiveStrokeMap(ZKeyOperationMap &map);
   static void ConfigureSwcNodeMap(ZKeyOperationMap &map);
   static void ConfigureStackMap(ZKeyOperationMap &map);
-  static void ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map);
 };
 
 #endif // ZKEYOPERATIONCONFIG_H

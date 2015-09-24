@@ -5,7 +5,7 @@
 
 set -e
 
-if [ $# -lt 2 ]
+if [ $# -lt 1 ]
 then
   echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
   echo "Example: "
@@ -13,10 +13,27 @@ then
   exit 1
 fi
 
-QMAKE=$1
-QMAKE_SPEC=$2
-shift
-shift
+echo $1 |grep '/qmake$'
+
+if [ $? -eq 0 ]
+then
+  QMAKE=$1
+  shift
+  if [ $# -lt 1 ]
+  then
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+    exit 1
+  fi
+  QMAKE_SPEC=$1
+  shift
+else
+  QMAKE=$1/bin/qmake
+  if [ `uname` == 'Darwin' ]; then
+    QMAKE_SPEC=$1/mkspecs/macx-g++
+  else
+    QMAKE_SPEC=$1/mkspecs/linux-g++-64
+  fi
+fi
 
 edition=general
 debug_config=release
@@ -62,7 +79,12 @@ else
   fi
 fi
 
-qmake_args="-spec $QMAKE_SPEC CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+if [ ! -z "QMAKE_SPEC" ]
+then
+  qmake_args="-spec $QMAKE_SPEC"
+fi
+
+qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
@@ -111,13 +133,14 @@ then
   bin_dir=$bin_dir/neuTube.app/Contents/MacOS
 fi
 
+if [ ! -d $bin_dir/doc ]
+then
+  cp -r ../gui/doc $bin_dir/
+fi
+
 if [ $edition = "flyem" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
-  if [ ! -d $bin_dir/doc ]
-  then
-    mkdir $bin_dir/doc
-  fi
   cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
   cp -r ../json $bin_dir
 fi

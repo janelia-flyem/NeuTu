@@ -58,8 +58,9 @@ enum EBiDirection {
 };
 
 namespace Display {
-typedef uint32_t TVisualEffect;
+typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
+static const TVisualEffect VE_Z_PROJ = 0x0000000100000000;
 
 namespace Image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;

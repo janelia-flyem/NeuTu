@@ -34,6 +34,7 @@
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
 #include "zbenchtimer.h"
+#include "zstackobjectpainter.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -624,13 +625,26 @@ bool ZStackView::isDepthChangable()
 
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
-  int numSteps = event->delta();
+  int numSteps = -event->delta();
 
-#if !defined(_NEUTUBE_MAC_)
-//  numSteps = -numSteps;
+#if defined(_NEUTUBE_MAC_)
+  switch (QSysInfo::MacintoshVersion) {
+  case QSysInfo::MV_10_5:
+  case QSysInfo::MV_10_6:
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
+  case QSysInfo::MV_10_7:
+#endif
+#if (QT_VERSION > QT_VERSION_CHECK(4, 8, 1))
+  case QSysInfo::MV_10_8:
+#endif
+    numSteps = -numSteps;
+    break;
+  default:
+    break;
+  }
 #endif
 
-  numSteps = -numSteps;
+//  numSteps = -numSteps;
 
   if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
     if (numSteps > 0) {
@@ -1358,6 +1372,9 @@ void ZStackView::paintObjectBuffer(
     qDebug() << painter.getTransform();
 #endif
 
+  ZStackObjectPainter paintHelper;
+  paintHelper.setRestoringPainter(true);
+
   painter.setPainted(false);
 
   bool visible = true;
@@ -1403,7 +1420,8 @@ void ZStackView::paintObjectBuffer(
 #ifdef _DEBUG_
           std::cout << obj->className() << std::endl;
 #endif
-          obj->display(painter, slice, buddyPresenter()->objectStyle());
+          paintHelper.paint(obj, painter, slice, buddyPresenter()->objectStyle());
+//          obj->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
       }
@@ -1415,7 +1433,8 @@ void ZStackView::paintObjectBuffer(
            obj != objs->begin() - 1; --obj) {
         //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
         if ((*obj)->getTarget() == target) {
-          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
+          paintHelper.paint(*obj, painter, slice, buddyPresenter()->objectStyle());
+//          (*obj)->display(painter, slice, buddyPresenter()->objectStyle());
 //          painted = true;
         }
       }

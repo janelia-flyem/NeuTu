@@ -17565,9 +17565,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(200014980);
-  bodyArray.push_back(4434956);
-  bodyArray.push_back(103577490);
+  bodyArray.push_back(200015305);
   bodyArray.push_back(63800311);
 
   std::vector<ZIntPoint> posArray;
@@ -17744,14 +17742,15 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_affine";
-  std::string baseName = "MBON-a2sc_affwarped_byte";
+  std::string baseName = "MBON-a2sc_affreg";
 
   ZSwcTree tree;
   tree.load(dataDir + "/" + baseName + ".swc");
 
+#if 0
   ZSwcTree::DepthFirstIterator treeIter(&tree);
   while (treeIter.hasNext()) {
     Swc_Tree_Node *tn = treeIter.next();
@@ -17759,32 +17758,42 @@ void ZTest::test(MainWindow *host)
       SwcTreeNode::setZ(tn, 570 - SwcTreeNode::z(tn));
     }
   }
+#endif
 
   tree.rescale(20, 20, 20, false);
-  tree.changeRadius(0, 10);
+  tree.changeRadius(0, 20);
 
-  ZSwcResampler sampler;
-  sampler.radiusResample(&tree);
+//  ZSwcResampler sampler;
+//  sampler.radiusResample(&tree);
 
-  tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
+  tree.save(dataDir + "/" + baseName + "_scaled.swc");
 
 #endif
 
-#if 0
+#if 1
   std::string dataDir =
-      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/affreg";
-  std::string baseName = "KC_abap_warped";
+      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/KCandMBON/MBON/affine";
 
-  ZSwcTree tree;
-  tree.load(dataDir + "/" + baseName + ".swc");
+  QList<std::string> baseNameList;
+  baseNameList << "MBON-b1-a_affreg";
+//  baseNameList << "KC_abs_aligned";
+//  baseNameList << "MBON-a_3_affreg";
+//  baseNameList << "MBON-a_3_aligned";
+//  baseNameList << "MBON-a2sc_affreg";
+//  baseNameList << "MBON-a2sc_aligned";
 
-  tree.rescale(20, 20, 20, false);
-  tree.changeRadius(0, 10.0);
+  foreach (const std::string &baseName, baseNameList) {
+    ZSwcTree tree;
+    tree.load(dataDir + "/" + baseName + ".swc");
 
-  ZSwcResampler sampler;
-  sampler.radiusResample(&tree);
+    tree.rescale(20, 20, 20, false);
+    tree.changeRadius(0, 20.0);
 
-  tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
+    ZSwcResampler sampler;
+    sampler.radiusResample(&tree);
+
+    tree.save(dataDir + "/" + baseName + "_scaled.swc");
+  }
 #endif
 
 #if 0

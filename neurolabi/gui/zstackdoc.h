@@ -240,6 +240,10 @@ public: //attributes
   void mapToStackCoord(ZPoint *pt);
   void mapToStackCoord(double *x, double *y, double *z);
 
+  ZSharedPointer<ZStackDoc> getParentDoc() const {
+    return m_parentDoc;
+  }
+  virtual void setParentDoc(ZSharedPointer<ZStackDoc> parentDoc);
 
   // Prefix for tracing project.
   const char *tubePrefix() const;
@@ -269,11 +273,6 @@ public: //attributes
   inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
-//  inline std::set<ZPunctum*>* selectedPuncta() {return &m_selectedPuncta;}
-//  inline std::set<ZLocsegChain*>* selectedChains() {return &m_selectedChains;}
-//  inline std::set<ZSwcTree*>* selectedSwcs() {return &m_selectedSwcs;}
-//  inline const std::set<ZSwcTree*>* selectedSwcs() const {
-//    return &m_selectedSwcs;}
 
   std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
 
@@ -316,7 +315,10 @@ public: //attributes
 
   bool isUndoClean() const;
   bool isSwcSavingRequired() const;
-  void setSaved(NeuTube::EDocumentableType type, bool state);
+  bool isSavingRequired() const;
+  void setSaved(ZStackObject::EType type, bool state);
+
+  bool isSaved(ZStackObject::EType type) const;
 
   const ZUndoCommand* getLastUndoCommand() const;
   //const ZUndoCommand* getLastCommand() const;
@@ -340,8 +342,6 @@ public: //swc tree edit
   void estimateSwcRadius();
 
 public: //swc selection
-  //Select connection
-  //void selectSwcNodeConnection(); // change to slot
   void selectSwcNodeNeighbor();
   std::string getSwcSource() const;
 
@@ -482,6 +482,8 @@ private:
   void seededWatershed();
   template <class InputIterator>
   void removeObjectP(InputIterator first, InputIterator last, bool deleting);
+
+  void updateSwc();
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -666,10 +668,6 @@ public:
   void setWorkdir(const char *filePath);
   void setTubePrefix(const char *filePath);
 
-  //void autoTrace();
-  //void autoTrace(Stack* stack);
-  //void traceFromSwc(QProgressBar *pb = NULL);
-
   void test(QProgressBar *pb = NULL);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
@@ -747,10 +745,6 @@ public:
   template <typename T>
   QList<T*> getSelectedObjectList(ZStackObject::EType type) const;
 
-  /*
-  template <typename T, template <typename> class Cont>
-  Cont<T*> getSelectedObjectSet(ZStackObject::EType type) const;
-*/
   template <typename T>
   std::set<T*> getSelectedObjectSet(ZStackObject::EType type) const;
 
@@ -795,11 +789,6 @@ public:
   inline void setSegmentationReady(bool state) {
     m_isSegmentationReady = state;
   }
-
-  /*
-  template <typename T>
-  void registerUser(T *user);
-  */
 
 public:
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
@@ -874,6 +863,8 @@ public:
   void notifyProgressEnd();
   void notifyProgressAdvanced(double dp);
 
+  void recordSwcTreeNodeSelection();
+
   void notifySelectorChanged();
   void notifySwcTreeNodeSelectionChanged();
 
@@ -926,7 +917,7 @@ public:
     return m_progressSignal;
   }
 
-  virtual void processRectRoiUpdate();
+  virtual void processRectRoiUpdate(ZRect2d *rect);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -939,6 +930,7 @@ public:
 public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
+  virtual bool executeRemoveObjectCommand(ZStackObject *obj);
   virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
@@ -1049,6 +1041,8 @@ public slots:
   void removeUser(QObject *user);
   void removeAllUser();
 
+  void notifyZoomingToSelectedSwcNode();
+
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1112,6 +1106,8 @@ signals:
   void progressEnded();
   void progressAdvanced(double dp);
   void newDocReady(const ZStackDocReader &reader);
+
+  void zoomingToSelectedSwcNode();
 
 protected:
   virtual void autoSave();
@@ -1207,10 +1203,13 @@ private:
   ZStackObjectRole m_objectModifiedRoleBuffer;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
 
+  QSet<ZStackObject::EType> m_unsavedSet;
+
   QThreadFutureMap m_futureMap;
 
 protected:
   ZObjectColorScheme m_objColorSheme;
+  ZSharedPointer<ZStackDoc> m_parentDoc;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

@@ -423,9 +423,9 @@ public:
 
   void recordSelection();
   void processSelection();
-
+#if defined(_QT_GUI_USED_)
   void selectNode(const ZRect2d &roi, bool appending);
-
+#endif
   Swc_Tree_Node* selectHitNode(bool appending);
   Swc_Tree_Node* deselectHitNode();
 
@@ -795,6 +795,8 @@ private:
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;
+  QColor m_terminalColor;
+  QColor m_terminalFocusColor;
   QColor m_branchPointColor;
   QColor m_nodeColor;
   QColor m_planeSkeletonColor;

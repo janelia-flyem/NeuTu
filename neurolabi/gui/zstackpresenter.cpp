@@ -35,10 +35,12 @@
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
 
+/*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
   init();
 }
+*/
 
 ZStackPresenter::ZStackPresenter(QWidget *parent) : QObject(parent)
 {
@@ -52,11 +54,15 @@ ZStackPresenter::~ZStackPresenter()
   delete m_swcNodeContextMenu;
   delete m_strokePaintContextMenu;
   delete m_stackContextMenu;
+  delete m_keyConfig;
 }
 
 ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 {
-  return new ZStackPresenter(parent);
+  ZStackPresenter *presenter = new ZStackPresenter(parent);
+  presenter->configKeyMap();
+
+  return presenter;
 }
 
 void ZStackPresenter::init()
@@ -109,11 +115,35 @@ void ZStackPresenter::init()
   //m_moveMapper.setContext(&m_interactiveContext);
   m_mouseEventProcessor.setInteractiveContext(&m_interactiveContext);
 
+  m_keyConfig = NULL;
+
+  /*
   ZKeyOperationConfig::Configure(m_activeStrokeOperationMap,
                                  ZKeyOperation::OG_ACTIVE_STROKE);
   ZKeyOperationConfig::Configure(
         m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
   ZKeyOperationConfig::Configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+        */
+}
+
+ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
+{
+  if (m_keyConfig == NULL) {
+    m_keyConfig = new ZKeyOperationConfig;
+  }
+
+  return m_keyConfig;
+}
+
+void ZStackPresenter::configKeyMap()
+{
+  ZKeyOperationConfig *config = getKeyConfig();
+  config->configure(
+        m_activeStrokeOperationMap, ZKeyOperation::OG_ACTIVE_STROKE);
+  config->configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  config->configure(
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
 }
 
@@ -1324,9 +1354,11 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       }
     }
     break;
+    /*
   case Qt::Key_F:
     toggleObjectVisible();
     break;
+    */
   default:
     processed = false;
     break;
@@ -2081,9 +2113,9 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processRectRoiUpdate()
+void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect)
 {
-  buddyDocument()->processRectRoiUpdate();
+  buddyDocument()->processRectRoiUpdate(rect);
 }
 
 void ZStackPresenter::acceptRectRoi()
@@ -2094,8 +2126,9 @@ void ZStackPresenter::acceptRectRoi()
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect != NULL) {
     rect->setColor(QColor(255, 255, 255));
+    processRectRoiUpdate(rect);
   }
-  processRectRoiUpdate();
+
 //  exitRectEdit();
 }
 
@@ -2225,14 +2258,17 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
+    buddyDocument()->recordSwcTreeNodeSelection();
     buddyDocument()->deselectAllSwcTreeNodes();
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    buddyDocument()->notifySwcTreeNodeSelectionChanged();
+
     if (buddyDocument()->getSelectedSwcNodeNumber() == 1 &&
         buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION &&
         NeutubeConfig::getInstance().getApplication() == "Biocytin") {
       enterSwcExtendMode();
     }
-    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+//    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_ALL_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
@@ -2327,9 +2363,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
+    buddyDocument()->notifyZoomingToSelectedSwcNode();
+    /*
     if (getParentFrame() != NULL) {
       getParentFrame()->zoomToSelectedSwcNodes();
     }
+    */
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_UP:
     buddyDocument()->executeMoveSwcNodeCommand(0, -1.0, 0);
@@ -2495,6 +2534,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
             ZInteractionEvent::EVENT_STROKE_SELECTED);
     }
     break;
+  case ZStackOperator::OP_OBJECT_TOGGLE_VISIBILITY:
+    toggleObjectVisible();
+    break;
   case ZStackOperator::OP_OBJECT3D_SCAN_SELECT_SINGLE:
     buddyDocument()->deselectAllObject();
     if (op.getHitObject<ZObject3dScan>() != NULL) {
@@ -2659,7 +2701,23 @@ void ZStackPresenter::process(const ZStackOperator &op)
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
     rect->setColor(255, 128, 128);
-    buddyDocument()->executeAddObjectCommand(rect);
+
+#ifdef _DEBUG_
+    std::cout << "Adding roi: " << rect << std::endl;
+#endif
+//    buddyDocument()->removeObject(rect->getSource(), false);
+
+    ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_RECT2D,
+          ZStackObjectSourceFactory::MakeRectRoiSource());
+    ZRect2d *oldRect = dynamic_cast<ZRect2d*>(obj);
+    if (oldRect != NULL) {
+      buddyDocument()->executeRemoveObjectCommand(obj);
+    }
+
+    buddyDocument()->addObject(rect, false); //Undo will be handled after roi accepted
+
+//    buddyDocument()->executeAddObjectCommand(rect);
   }
     break;
   case ZStackOperator::OP_RECT_ROI_UPDATE:
