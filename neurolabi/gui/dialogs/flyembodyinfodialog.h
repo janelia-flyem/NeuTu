@@ -44,7 +44,7 @@ private:
     QSortFilterProxyModel* m_proxy;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
-    bool m_quitting = false;
+    bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
@@ -52,6 +52,7 @@ private:
     void importBookmarksDvid(ZDvidTarget target);
     void setStatusLabel(QString label);
     void clearStatusLabel();
+    void init();
 };
 
 #endif // FLYEMBODYINFODIALOG_H
