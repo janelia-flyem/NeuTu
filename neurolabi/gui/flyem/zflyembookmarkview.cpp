@@ -66,7 +66,7 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
   QModelIndexList selected = sel->selectedIndexes();
 
   foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
+    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.internalId());
     bookmark->setChecked(checking);
     getModel()->update(index.row());
 

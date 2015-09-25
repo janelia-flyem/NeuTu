@@ -573,7 +573,8 @@ HEADERS += mainwindow.h \
     ztask.h \
     flyem/zflyemqualityanalyzertask.h \
     zstackobjectpainter.h \
-    flyem/zflyemkeyoperationconfig.h
+    flyem/zflyemkeyoperationconfig.h \
+    zslicedpuncta.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1002,7 +1003,8 @@ SOURCES += main.cpp \
     ztask.cpp \
     flyem/zflyemqualityanalyzertask.cpp \
     zstackobjectpainter.cpp \
-    flyem/zflyemkeyoperationconfig.cpp
+    flyem/zflyemkeyoperationconfig.cpp \
+    zslicedpuncta.cpp
 
 OTHER_FILES += \
     extlib.pri \
