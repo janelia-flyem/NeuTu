@@ -41,6 +41,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    init();
+
     m_model = createModel(ui->tableView);
 
     m_proxy = new QSortFilterProxyModel(this);
@@ -66,6 +68,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
+}
+
+void FlyEmBodyInfoDialog::init()
+{
+    m_quitting = false;
 }
 
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
