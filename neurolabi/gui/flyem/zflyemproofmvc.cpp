@@ -1841,7 +1841,7 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_PUNCTA, visible);
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_SLICED_PUNCTA, visible);
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)

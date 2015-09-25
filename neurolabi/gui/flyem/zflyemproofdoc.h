@@ -17,6 +17,7 @@ class ZFlyEmBookmark;
 class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
+class ZSlicedPuncta;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -123,6 +124,7 @@ public slots:
   void deprecateSplitSource();
 
 protected:
+  void downloadSynapseFunc();
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
 
@@ -131,6 +133,9 @@ private:
 
   void decorateTBar(ZPuncta *puncta);
   void decoratePsd(ZPuncta *puncta);
+
+  void decorateTBar(ZSlicedPuncta *puncta);
+  void decoratePsd(ZSlicedPuncta *puncta);
 
   void init();
   void initTimer();

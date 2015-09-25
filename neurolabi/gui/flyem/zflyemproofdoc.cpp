@@ -4,6 +4,7 @@
 #include <QList>
 #include <QTimer>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -25,6 +26,7 @@
 #include "zstring.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
+#include "zslicedpuncta.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -453,12 +455,15 @@ void ZFlyEmProofDoc::downloadBookmark()
   }
 }
 
-void ZFlyEmProofDoc::downloadSynapse()
+void ZFlyEmProofDoc::downloadSynapseFunc()
 {
   if (getDvidTarget().isValid()) {
+    emit messageGenerated(ZWidgetMessage("Downloading synapses ..."));
+
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
     reader.read(url.getSynapseAnnotationUrl().c_str());
+
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
@@ -467,20 +472,33 @@ void ZFlyEmProofDoc::downloadSynapse()
       const double radius = 5.0;
       std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
 
-      ZPuncta *tbar = new ZPuncta;
+      ZSlicedPuncta *tbar = new ZSlicedPuncta;
       tbar->addPunctum(puncta.begin(), puncta.end());
       decorateTBar(tbar);
 
-      addObject(tbar);
+      emit addingObject(tbar, true);
+      emit messageGenerated(ZWidgetMessage("TBars ready."));
+//      addObject(tbar);
 
-      ZPuncta *psd = new ZPuncta;
+      ZSlicedPuncta *psd = new ZSlicedPuncta;
       puncta = synapseArray.toPsdPuncta(radius / 2.0);
       psd->addPunctum(puncta.begin(), puncta.end());
       decoratePsd(psd);
 
-      addObject(psd);
+      emit addingObject(psd, true);
+
+      emit messageGenerated(ZWidgetMessage("All synapses ready."));
+
+//      addObject(psd);
+    } else {
+      emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
   }
+}
+
+void ZFlyEmProofDoc::downloadSynapse()
+{
+  QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
@@ -505,6 +523,25 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
   puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
+
+void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 255, 0));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 0, 255));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
 
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
