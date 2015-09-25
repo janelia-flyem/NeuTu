@@ -4,6 +4,8 @@
 #include "zfiletype.h"
 #include "zstring.h"
 #include "zcolorscheme.h"
+#include "zstackball.h"
+#include "tz_math.h"
 
 ZSlicedPuncta::ZSlicedPuncta()
 {
@@ -17,7 +19,7 @@ ZSlicedPuncta::~ZSlicedPuncta()
   clear();
 }
 
-void ZSlicedPuncta::addPunctum(ZPunctum *p, bool ignoreNull)
+void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 {
   if (p != NULL || ignoreNull) {
     int z = iround(p->getZ()) - m_zStart;
@@ -25,7 +27,7 @@ void ZSlicedPuncta::addPunctum(ZPunctum *p, bool ignoreNull)
       m_puncta.resize(z + 1);
     }
 
-    QList<ZPunctum*> &punctumList = m_puncta[z];
+    QList<ZStackBall*> &punctumList = m_puncta[z];
 
     punctumList.append(p);
   }
@@ -44,11 +46,11 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) 
 
 
   for (int index = lowerIndex; index <= upperIndex; ++index) {
-    const QList<ZPunctum*> punctumArray = m_puncta[index];
+    const QList<ZStackBall*> punctumArray = m_puncta[index];
 
-    for (QList<ZPunctum*>::const_iterator iter = punctumArray.begin();
+    for (QList<ZStackBall*>::const_iterator iter = punctumArray.begin();
          iter != punctumArray.end(); ++iter) {
-      const ZPunctum* punctum = *iter;
+      const ZStackBall* punctum = *iter;
       punctum->display(painter, slice, option);
     }
   }
@@ -57,10 +59,10 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) 
 
 void ZSlicedPuncta::clear()
 {
-  for (QVector<QList<ZPunctum*> >::iterator iter = m_puncta.begin();
+  for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    QList<ZPunctum*> &punctumList = *iter;
-    for (QList<ZPunctum*>::iterator iter = punctumList.begin();
+    QList<ZStackBall*> &punctumList = *iter;
+    for (QList<ZStackBall*>::iterator iter = punctumList.begin();
          iter != punctumList.end(); ++iter) {
       delete *iter;
     }
@@ -74,7 +76,7 @@ bool ZSlicedPuncta::load(const ZJsonObject &obj, double radius)
   clear();
   FlyEm::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
-  std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+  std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
   addPunctum(puncta.begin(), puncta.end());
 
   return true;
@@ -103,14 +105,14 @@ bool ZSlicedPuncta::load(const std::string &filePath, double radius)
     while (line.readLine(fp)) {
       std::vector<int> pt = line.toIntegerArray();
       if (pt.size() >= 3) {
-        ZPunctum *punctum = new ZPunctum;
+        ZStackBall *punctum = new ZStackBall;
         punctum->setCenter(pt[0], pt[1], pt[2]);
         punctum->setRadius(radius);
         punctum->setColor(255, 255, 255, 255);
 
         if (pt.size() >= 4) {
           int label = pt[3];
-          punctum->setName(QString("%1").arg(label));
+//          punctum->setName(QString("%1").arg(label));
           punctum->setColor(scheme.getColor(label));
         }
         addPunctum(punctum);
@@ -129,12 +131,12 @@ bool ZSlicedPuncta::load(const std::string &filePath, double radius)
 
 void ZSlicedPuncta::pushCosmeticPen(bool state)
 {
-  for (QVector<QList<ZPunctum*> >::iterator iter = m_puncta.begin();
+  for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    QList<ZPunctum*> &punctumList = *iter;
-    for (QList<ZPunctum*>::iterator iter = punctumList.begin();
+    QList<ZStackBall*> &punctumList = *iter;
+    for (QList<ZStackBall*>::iterator iter = punctumList.begin();
          iter != punctumList.end(); ++iter) {
-      ZPunctum *p = *iter;
+      ZStackBall *p = *iter;
       p->useCosmeticPen(state);
     }
   }
@@ -142,12 +144,12 @@ void ZSlicedPuncta::pushCosmeticPen(bool state)
 
 void ZSlicedPuncta::pushColor(const QColor &color)
 {
-  for (QVector<QList<ZPunctum*> >::iterator iter = m_puncta.begin();
+  for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    QList<ZPunctum*> &punctumList = *iter;
-    for (QList<ZPunctum*>::iterator iter = punctumList.begin();
+    QList<ZStackBall*> &punctumList = *iter;
+    for (QList<ZStackBall*>::iterator iter = punctumList.begin();
          iter != punctumList.end(); ++iter) {
-      ZPunctum *p = *iter;
+      ZStackBall *p = *iter;
       p->setColor(color);
     }
   }
@@ -155,12 +157,12 @@ void ZSlicedPuncta::pushColor(const QColor &color)
 
 void ZSlicedPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
 {
-  for (QVector<QList<ZPunctum*> >::iterator iter = m_puncta.begin();
+  for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {
-    QList<ZPunctum*> &punctumList = *iter;
-    for (QList<ZPunctum*>::iterator iter = punctumList.begin();
+    QList<ZStackBall*> &punctumList = *iter;
+    for (QList<ZStackBall*>::iterator iter = punctumList.begin();
          iter != punctumList.end(); ++iter) {
-      ZPunctum *p = *iter;
+      ZStackBall *p = *iter;
       p->setVisualEffect(effect);
     }
   }

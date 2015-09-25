@@ -5,7 +5,10 @@
 #include <QVector>
 
 #include "zstackobject.h"
-#include "zpunctum.h"
+//#include "zpunctum.h"
+
+class ZStackBall;
+class ZJsonObject;
 
 class ZSlicedPuncta : public ZStackObject
 {
@@ -18,7 +21,7 @@ public:
 
 public:
   void clear();
-  void addPunctum(ZPunctum *p, bool ignoreNull = true);
+  void addPunctum(ZStackBall *p, bool ignoreNull = true);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
@@ -33,7 +36,7 @@ public:
   void pushVisualEffect(NeuTube::Display::TVisualEffect effect);
 
 private:
-  QVector<QList<ZPunctum*> > m_puncta;
+  QVector<QList<ZStackBall*> > m_puncta;
   int m_zStart;
 };
 
