@@ -57,12 +57,13 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
     // register our type so we can signal/slot it across threads:
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
-    connect(this, SIGNAL(loadCompleted()), this, SLOT(clearLoadingLabel()));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
 }
@@ -94,9 +95,13 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     if (target.isValid()) {
         // clear the model regardless at this point
         m_model->clear();
-        setLoadingLabel("Loading...");
+        setStatusLabel("Loading...");
         QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
     }
+}
+
+void FlyEmBodyInfoDialog::applicationQuitting() {
+    m_quitting = true;
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
@@ -113,12 +118,36 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
 }
 
-void FlyEmBodyInfoDialog::setLoadingLabel(QString label) {
-    ui->loadingLabel->setText(label);
+void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
+    ui->statusLabel->setText(label);
 }
 
-void FlyEmBodyInfoDialog::clearLoadingLabel() {
-    ui->loadingLabel->setText("");
+void FlyEmBodyInfoDialog::clearStatusLabel() {
+    ui->statusLabel->setText("");
+}
+
+void FlyEmBodyInfoDialog::updateStatusLabel() {
+    qlonglong nPre = 0;
+    qlonglong nPost = 0;
+    for (qlonglong i=0; i<m_proxy->rowCount(); i++) {
+        nPre += m_proxy->data(m_proxy->index(i, 2)).toLongLong();
+        nPost += m_proxy->data(m_proxy->index(i, 3)).toLongLong();
+    }
+
+    // have I mentioned how much I despise C++ strings?
+    std::ostringstream outputStream;
+    outputStream << "Showing " << m_proxy->rowCount() << "/" << m_model->rowCount() << " bodies, ";
+    outputStream << nPre << "/" <<  m_totalPre << " pre-syn, ";
+    outputStream << nPost << "/" <<  m_totalPost << " post-syn";
+    setStatusLabel(QString::fromStdString(outputStream.str()));
+}
+
+void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
+    if (m_model->rowCount() > 0) {
+        updateStatusLabel();
+    } else {
+        clearStatusLabel();
+    }
 }
 
 void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
@@ -128,6 +157,7 @@ void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
     //  changes; if you don't, and new filter shows more items, those items
     //  will appear somewhere lower than the existing items
     m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+    updateStatusLabel();
 }
 
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
@@ -204,6 +234,11 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
         }
 
         for (size_t i = 0; i < bookmarks.size(); ++i) {
+            // if application is quitting, return = exit thread
+            if (m_quitting) {
+                return;
+            }
+
             ZJsonObject bkmk(bookmarks.at(i), false);
 
             // as noted above, reader doesn't have "hasKey", so we search the range
@@ -242,7 +277,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             }
 
-        // no "loadCompleted()" here; it's emitted in updateMode(), when it's done
+        // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
         emit dataChanged(jsonDataObject.value("data"));
     }
 }
@@ -296,6 +331,9 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_model->clear();
     setHeaders(m_model);
 
+    m_totalPre = 0;
+    m_totalPost = 0;
+
     ZJsonArray bookmarks(data);
     m_model->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -314,11 +352,13 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         }
 
         int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
+        m_totalPre += nPre;
         QStandardItem * preSynapseItem = new QStandardItem();
         preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
         m_model->setItem(i, 2, preSynapseItem);
 
         int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
+        m_totalPost += nPost;
         QStandardItem * postSynapseItem = new QStandardItem();
         postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
         m_model->setItem(i, 3, postSynapseItem);
