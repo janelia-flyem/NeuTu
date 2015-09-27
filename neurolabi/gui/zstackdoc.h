@@ -532,16 +532,6 @@ public:
   void addSparseObjectP(ZSparseObject *obj);
 
   /*!
-   * \brief Add an object
-   * \param obj
-   * \param role
-   * \param uniqueSource Replace the object with the same nonempty source if it
-   *        is true. Note that if there are multiple objects with the same source
-   *        existing in the doc, only the first one is replaced.
-   */
-  void addObject(ZStackObject *obj, bool uniqueSource = true);
-
-  /*!
    * \brief Add an object in a quick way
    *
    * The function assumes that \a obj has no source and it does not exist in
@@ -928,6 +918,16 @@ public:
   }*/
 
 public slots: //undoable commands
+  /*!
+   * \brief Add an object
+   * \param obj
+   * \param role
+   * \param uniqueSource Replace the object with the same nonempty source if it
+   *        is true. Note that if there are multiple objects with the same source
+   *        existing in the doc, only the first one is replaced.
+   */
+  void addObject(ZStackObject *obj, bool uniqueSource = true);
+
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
   virtual bool executeRemoveObjectCommand(ZStackObject *obj);
@@ -1046,6 +1046,7 @@ public slots:
 //  void processRectRoiUpdateSlot();
 
 signals:
+  void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);

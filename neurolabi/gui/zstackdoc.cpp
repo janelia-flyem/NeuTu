@@ -282,6 +282,10 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
 
+  connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
+          this, SLOT(addObject(ZStackObject*,bool)));
+  connect(this, SIGNAL(addingObject(ZStackObject*)),
+          this, SLOT(addObject(ZStackObject*)));
   /*
   connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
