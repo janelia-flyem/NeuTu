@@ -14,6 +14,7 @@
 
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
+#include "zneurontracerconfig.h"
 
 #ifdef _QT5_
 #include <QSurfaceFormat>

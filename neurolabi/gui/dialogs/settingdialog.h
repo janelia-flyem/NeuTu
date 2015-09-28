@@ -11,6 +11,7 @@
 #include "neutube.h"
 
 class ZResolution;
+class ZNeuronTracerConfig;
 
 class SettingDialog : public QDialog, public Ui_SettingDialog
 {
@@ -49,6 +50,8 @@ public:
   void setResolution(const ZResolution &res);
   void setResolution(double x, double y, double z, int unit = 1);
   void setUnit(char unit);
+  void setTracingParameter(const ZNeuronTracerConfig &traceConfig);
+  void setTracingParameter();
 
 public slots:
   virtual void reject();

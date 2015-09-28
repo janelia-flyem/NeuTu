@@ -1185,7 +1185,7 @@ void Z3DWindow::customizeContextMenu()
     m_translateSwcNodeAction->setVisible(false);
     //m_selectSwcNodeDownstreamAction->setVisible(false);
     //m_changeSwcNodeTypeAction->setVisible(false);
-    m_mergeSwcNodeAction->setVisible(false);
+//    m_mergeSwcNodeAction->setVisible(false);
     m_changeSwcNodeSizeAction->setVisible(false);
     //m_setSwcRootAction->setVisible(false);
     //m_changeSwcTypeAction->setVisible(false);

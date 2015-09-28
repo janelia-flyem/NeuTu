@@ -879,7 +879,7 @@ void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
 int ZImageWidget::getMaxZoomRatio() const
 {
   int ratio = static_cast<int>(
-        std::ceil(std::min(canvasSize().width()*32.0/screenSize().width(),
+        std::ceil(std::max(canvasSize().width()*32.0/screenSize().width(),
                            canvasSize().height()*32.0/screenSize().height())));
   return std::min(std::min(canvasSize().width(), canvasSize().height()),
                   std::max(ratio, 32));

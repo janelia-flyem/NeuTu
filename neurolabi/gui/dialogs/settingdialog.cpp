@@ -3,6 +3,7 @@
 #include "settingdialog.h"
 #include "neutubeconfig.h"
 #include "zresolution.h"
+#include "zneurontracerconfig.h"
 
 SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
 {
@@ -262,4 +263,30 @@ void SettingDialog::setBackground(NeuTube::EImageBackground bg)
   case NeuTube::IMAGE_BACKGROUND_BRIGHT:
     backgroundComboBox->setCurrentIndex(1);
   }
+}
+
+void SettingDialog::setTracingParameter()
+{
+  setTracingParameter(ZNeuronTracerConfig::getInstance());
+}
+
+void SettingDialog::setTracingParameter(const ZNeuronTracerConfig &traceConfig)
+{
+  if (traceConfig.isRefit()) {
+    m_traceEffort = 0;
+  } else {
+    m_traceEffort = 1;
+  }
+
+  m_traceMinScore = traceConfig.getMinAutoScore();
+  m_distThre = traceConfig.getMaxEucDist();
+
+  m_crossoverTest = traceConfig.crossoverTest();
+  if (traceConfig.spTest()) {
+    m_reconstructEffort = 1;
+  } else {
+    m_reconstructEffort = 0;
+  }
+
+  resetWidgetValue();
 }
