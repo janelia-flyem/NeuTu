@@ -19,6 +19,7 @@
 #include "zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
+#include "zmultiscalepixmap.h"
 
 class ZStackPresenter;
 class QSlider;
@@ -365,6 +366,7 @@ private:
   ZPainter m_objectCanvasPainter;
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;
+//  ZMultiscalePixmap m_tileCanvas;
   ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
   ZLabeledSpinBoxWidget *m_zSpinBox;

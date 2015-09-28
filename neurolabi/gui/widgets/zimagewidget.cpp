@@ -341,7 +341,7 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio < getMaxZoomRatio()) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio += 1.0;
+      zoomRatio *= 2.0;
     } else {
       zoomRatio *= 1.1;
     }
