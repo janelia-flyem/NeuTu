@@ -323,6 +323,13 @@ private:
   void clearCanvas();
   template<typename T>
   void resetCanvasWithStack(T &canvas, ZPainter *painter);
+
+  void resetCanvasWithStack(ZMultiscalePixmap &canvas, ZPainter *painter);
+
+  void reloadTileCanvas();
+  bool reloadObjectCanvas(bool repaint = false);
+  void reloadCanvas();
+
   void updateImageCanvas();
   void updateMaskCanvas();
   void clearObjectCanvas();
@@ -349,6 +356,7 @@ private:
   void init();
 
   ZPainter* getPainter(ZStackObject::ETarget target);
+  ZPixmap* getCanvas(ZStackObject::ETarget target);
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
 
@@ -362,12 +370,14 @@ private:
   ZImage *m_image;
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
-  ZPixmap *m_objectCanvas;
+//  ZPixmap *m_objectCanvas;
+  ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
+
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;
-//  ZMultiscalePixmap m_tileCanvas;
-  ZPixmap *m_tileCanvas;
+  ZMultiscalePixmap m_tileCanvas;
+//  ZPixmap *m_tileCanvas;
   ZImageWidget *m_imageWidget;
   ZLabeledSpinBoxWidget *m_zSpinBox;
 

@@ -48,6 +48,11 @@ ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
   begin(pixmap);
 }
 
+QPaintDevice* ZPainter::device()
+{
+  return m_painter.device();
+}
+
 bool ZPainter::isActive() const
 {
   return m_painter.isActive();
