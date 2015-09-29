@@ -25,12 +25,17 @@ int ZFlyEmBookmarkListModel::columnCount(const QModelIndex &/*parent*/) const
 
 const ZFlyEmBookmark* ZFlyEmBookmarkListModel::getBookmark(int index) const
 {
+  if (index < 0 || index >= (int) m_bookmarkArray.size()) {
+    return NULL;
+  }
+
   return m_bookmarkArray[index];
 }
 
 ZFlyEmBookmark *ZFlyEmBookmarkListModel::getBookmark(int index)
 {
-  return m_bookmarkArray[index];
+  return const_cast<ZFlyEmBookmark*>(
+        static_cast<const ZFlyEmBookmarkListModel&>(*this).getBookmark(index));
 }
 
 const ZFlyEmBookmarkPtrArray& ZFlyEmBookmarkListModel::getBookmarkArray() const

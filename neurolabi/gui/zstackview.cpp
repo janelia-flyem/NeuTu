@@ -1167,12 +1167,14 @@ void ZStackView::updateTileCanvas()
       }
     }
     if (m_tileCanvas == NULL) {
-//      double scale = 0.5;
-//      m_tileCanvas = new ZPixmap(canvasSize * scale);
-//      m_tileCanvas->setScale(scale, scale);
-      m_tileCanvas = new ZPixmap(canvasSize);
+      double scale = 1.0;
+      m_tileCanvas = new ZPixmap(canvasSize * scale);
       m_tileCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
                               -buddyDocument()->getStackOffset().getY());
+//      m_tileCanvas->setScale(scale, scale);
+//      m_tileCanvas = new ZPixmap(canvasSize);
+//      m_tileCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
+//                              -buddyDocument()->getStackOffset().getY());
       m_tileCanvasPainter.begin(m_tileCanvas);
       m_tileCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
       m_imageWidget->setTileCanvas(m_tileCanvas);

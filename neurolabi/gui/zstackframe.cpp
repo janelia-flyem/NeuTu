@@ -55,6 +55,7 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
   setAcceptDrops(true);
   m_settingDlg = new SettingDialog(this);
+  m_settingDlg->setTracingParameter();
   m_manageObjsDlg = NULL;
 
   //m_presenter = new ZStackPresenter(this);

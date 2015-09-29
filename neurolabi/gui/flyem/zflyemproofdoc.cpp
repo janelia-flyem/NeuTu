@@ -470,7 +470,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
       FlyEm::ZSynapseAnnotationArray synapseArray;
       synapseArray.loadJson(jsonObj);
       const double radius = 5.0;
-      std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+      std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
 
       ZSlicedPuncta *tbar = new ZSlicedPuncta;
       tbar->addPunctum(puncta.begin(), puncta.end());
@@ -481,7 +481,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 //      addObject(tbar);
 
       ZSlicedPuncta *psd = new ZSlicedPuncta;
-      puncta = synapseArray.toPsdPuncta(radius / 2.0);
+      puncta = synapseArray.toPsdBall(radius / 2.0);
       psd->addPunctum(puncta.begin(), puncta.end());
       decoratePsd(psd);
 

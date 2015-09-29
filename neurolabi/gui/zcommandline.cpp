@@ -26,6 +26,7 @@
 #include "neutubeconfig.h"
 #include "zrandomgenerator.h"
 #include "zneurontracer.h"
+#include "zneurontracerconfig.h"
 
 using namespace std;
 
@@ -421,23 +422,33 @@ int ZCommandLine::runTraceNeuron()
     return 1;
   }
 
-  ZNeuronTracerConfig::getInstance().load(m_configDir + "/json/trace_config.json");
+  if (m_configJson.hasKey("trace")) {
+    ZNeuronTracerConfig::getInstance().loadJsonObject(
+          ZJsonObject(m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
+  } else {
+    ZNeuronTracerConfig::getInstance().load(m_configDir + "/trace_config.json");
+  }
+
+  ZStack signal;
+  signal.load(m_input[0]);
 
   ZNeuronTracer tracer;
+//  tracer.initTraceWorkspace(&signal);
+//  tracer.initConnectionTestWorkspace();
+
+#if 0
   if (m_configJson.hasKey("trace")) {
     tracer.loadJsonObject(
           ZJsonObject(
             m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
   }
+#endif
 
-  int level = 1;
+  int level = 0;
   if (Is_Arg_Matched(const_cast<char*>("--level"))) {
     level = Get_Int_Arg(const_cast<char*>("--level"));
   }
   tracer.setTraceLevel(level);
-
-  ZStack signal;
-  signal.load(m_input[0]);
 
   ZSwcTree *tree = tracer.trace(&signal);
 
@@ -882,14 +893,14 @@ std::string ZCommandLine::extractIncludePath(
 }
 
 void ZCommandLine::expandConfig(
-    const std::string &configFilePath, const std::string &key)
+    const std::string &configFilePath, const std::string &objKey)
 {
-  if (m_configJson.hasKey(key.c_str())) {
-    std::string includeFilePath = extractIncludePath(configFilePath, key);
+  if (m_configJson.hasKey(objKey.c_str())) {
+    std::string includeFilePath = extractIncludePath(configFilePath, objKey);
 
     if (!includeFilePath.empty()) {
       if (fexist(includeFilePath.c_str())) {
-        ZJsonObject subJson(m_configJson.value(key.c_str()));
+        ZJsonObject subJson(m_configJson.value(objKey.c_str()));
         ZJsonObject includeJson;
         includeJson.load(includeFilePath.c_str());
 

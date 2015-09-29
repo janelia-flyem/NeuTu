@@ -19,9 +19,12 @@ ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
   alllayout->addWidget(m_resampleCheckbox);
 
   m_levelSpinBox = new ZLabeledSpinBoxWidget;
-  m_levelSpinBox->setLabel("Level (1-6)");
-  m_levelSpinBox->setToolTip("Tracing level: higher value means longer tracing time to produce better result (hopefully).");
-  m_levelSpinBox->setRange(1, 6);
+  m_levelSpinBox->setLabel("Level (0-6)");
+  m_levelSpinBox->setToolTip(
+        "Tracing level: higher value means longer tracing"
+        "time to produce better result (hopefully). "
+        "Level 0 means default parameters.");
+  m_levelSpinBox->setRange(0, 6);
   alllayout->addWidget(m_levelSpinBox);
 
   QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok

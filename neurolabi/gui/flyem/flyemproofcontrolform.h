@@ -74,8 +74,8 @@ private:
   ZFlyEmBookmarkListModel m_bookmarkList;
   ZFlyEmBookmarkListModel m_userBookmarkList;
 
-  QSortFilterProxyModel *m_bookmarkProxy;
-  QSortFilterProxyModel *m_userBookmarkProxy;
+//  QSortFilterProxyModel *m_bookmarkProxy;
+//  QSortFilterProxyModel *m_userBookmarkProxy;
 
 //  ZDvidDialog *m_dvidDlg;
 };

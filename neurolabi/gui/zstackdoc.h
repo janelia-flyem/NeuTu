@@ -1205,6 +1205,7 @@ private:
   QStack<EObjectModifiedMode> m_objectModifiedMode;
 
   QSet<ZStackObject::EType> m_unsavedSet;
+  bool m_changingSaveState;
 
   QThreadFutureMap m_futureMap;
 

@@ -341,7 +341,7 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio < getMaxZoomRatio()) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio += 1.0;
+      zoomRatio *= 2.0;
     } else {
       zoomRatio *= 1.1;
     }
@@ -879,7 +879,7 @@ void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
 int ZImageWidget::getMaxZoomRatio() const
 {
   int ratio = static_cast<int>(
-        std::ceil(std::min(canvasSize().width()*32.0/screenSize().width(),
+        std::ceil(std::max(canvasSize().width()*32.0/screenSize().width(),
                            canvasSize().height()*32.0/screenSize().height())));
   return std::min(std::min(canvasSize().width(), canvasSize().height()),
                   std::max(ratio, 32));
