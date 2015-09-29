@@ -1,6 +1,7 @@
 #include "zneurontracerconfig.h"
 
 #include <iostream>
+#include <cstring>
 
 #include "tz_utilities.h"
 #include "zjsonobject.h"
