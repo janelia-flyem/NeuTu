@@ -844,6 +844,14 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
   }
 }
 
+void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)

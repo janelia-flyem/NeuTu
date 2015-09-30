@@ -99,6 +99,11 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
+
+  void selectBody(uint64_t bodyId);
+  template <typename InputIterator>
+  void selectBody(const InputIterator &first, const InputIterator &last);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -160,6 +165,15 @@ private:
 
   //ZFlyEmBodySplitProject m_splitProject;
 };
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::selectBody(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    selectBody(*iter);
+  }
+}
 
 namespace ZFlyEmProofDocCommand {
 class MergeBody : public ZUndoCommand

@@ -120,6 +120,7 @@ void FlyEmProofControlForm::createMenu()
   connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 
   QAction *selectBodyAction = new QAction("Select Body", this);
+  selectBodyAction->setShortcut(Qt::Key_F2);
   m_mainMenu->addAction(selectBodyAction);
   connect(selectBodyAction, SIGNAL(triggered()), this, SLOT(selectBody()));
 

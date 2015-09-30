@@ -917,6 +917,7 @@ public:
     return m_lastAddedSwcNode;
   }*/
 
+
 public slots: //undoable commands
   /*!
    * \brief Add an object

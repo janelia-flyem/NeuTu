@@ -8846,4 +8846,3 @@ void ZStackDoc::removeRect2dRoi()
 {
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
-
