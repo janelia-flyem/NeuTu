@@ -21,6 +21,16 @@ public:
 
   int getScale(int level) const;
 
+  int getWidth() const;
+  int getHeight() const;
+
+  int getTx() const;
+  int getTy() const;
+
+  void setVisible(bool visible);
+
+  bool isEmpty() const;
+
 private:
   void init();
 
@@ -28,6 +38,8 @@ private:
   std::vector<ZPixmap*> m_pixmapArray;
   QSize m_originalSize;
   QPoint m_offset;
+
+  bool m_visible;
 };
 
 #endif // ZMULTISCALEPIXMAP_H

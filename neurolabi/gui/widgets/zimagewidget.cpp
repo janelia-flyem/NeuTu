@@ -341,7 +341,7 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio < getMaxZoomRatio()) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio *= 2.0;
+      zoomRatio *= 1.2;
     } else {
       zoomRatio *= 1.1;
     }
@@ -368,7 +368,7 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio > 1) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio -= 1.0;
+      zoomRatio /= 1.2;
     } else {
       zoomRatio /= 1.1;
     }
@@ -671,7 +671,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     //tic();
     if (m_objectCanvas != NULL) {
 #ifdef _DEBUG_2
-      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
       if (m_objectCanvas->isVisible()) {
         painter.drawPixmap(m_projRegion, *m_objectCanvas, m_viewPort);
