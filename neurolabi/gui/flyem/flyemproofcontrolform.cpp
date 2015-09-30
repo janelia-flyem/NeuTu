@@ -129,20 +129,28 @@ void FlyEmProofControlForm::createMenu()
   normalColorAction->setCheckable(true);
   normalColorAction->setChecked(true);
 
-  QAction *nameColorAction = new QAction("Name", this);
-  nameColorAction->setCheckable(true);
+  m_nameColorAction = new QAction("Name", this);
+  m_nameColorAction->setCheckable(true);
+  m_nameColorAction->setEnabled(false);
 
   colorActionGroup->addAction(normalColorAction);
-  colorActionGroup->addAction(nameColorAction);
+  colorActionGroup->addAction(m_nameColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addAction(normalColorAction);
-  colorMenu->addAction(nameColorAction);
+  colorMenu->addAction(m_nameColorAction);
 
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::enableNameColorMap(bool on)
+{
+  if (m_nameColorAction != NULL) {
+    m_nameColorAction->setEnabled(on);
+  }
 }
 
 void FlyEmProofControlForm::changeColorMap(QAction *action)
@@ -273,10 +281,8 @@ void FlyEmProofControlForm::clearBookmarkTable(ZFlyEmBodyMergeProject */*project
   m_bookmarkList.clear();
 }
 
-void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
+void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
 {
-  const ZFlyEmBookmark *bookmark = ui->bookmarkView->getBookmark(index);
-
   if (bookmark != NULL) {
     emit zoomingTo(bookmark->getLocation().getX(),
                    bookmark->getLocation().getY(),
@@ -284,13 +290,16 @@ void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
   }
 }
 
+void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = ui->bookmarkView->getBookmark(index);
+
+  locateBookmark(bookmark);
+}
+
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = ui->userBookmarkView->getBookmark(index);
 
-  if (bookmark != NULL) {
-    emit zoomingTo(bookmark->getLocation().getX(),
-                   bookmark->getLocation().getY(),
-                   bookmark->getLocation().getZ());
-  }
+  locateBookmark(bookmark);
 }

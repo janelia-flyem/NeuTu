@@ -78,6 +78,7 @@ signals:
   void bookmarkDeleted(ZFlyEmBodySplitProject *m_project);
   void dvidTargetChanged(ZDvidTarget);
   void userBookmarkUpdated(ZStackDoc *doc);
+  void nameColorMapReady(bool ready);
 
 public slots:
   void mergeSelected();
@@ -179,6 +180,7 @@ protected slots:
   void cropCoarseBody3D();
   void updateSplitBody();
   void updateCoarseBodyWindowColor();
+  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
   void customInit();
@@ -288,6 +290,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
+  connect(this, SIGNAL(nameColorMapReady(bool)),
+          panel, SLOT(enableNameColorMap(bool)));
 }
 
 template <typename T>
