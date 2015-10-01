@@ -131,9 +131,9 @@ private:
   void parseStandardOutput();
 
 private:
-  QEventLoop *m_eventLoop;
-  ZDvidClient *m_dvidClient;
-  QTimer *m_timer;
+//  QEventLoop *m_eventLoop;
+//  ZDvidClient *m_dvidClient;
+//  QTimer *m_timer;
   ZDvidTarget m_dvidTarget;
   QString m_errorOutput;
   QString m_standardOutout;

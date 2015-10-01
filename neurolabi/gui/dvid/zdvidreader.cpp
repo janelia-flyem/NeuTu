@@ -1086,6 +1086,41 @@ ZIntPoint ZDvidReader::readBodyTop(uint64_t bodyId) const
   return pt;
 }
 
+ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
+{
+  ZIntCuboid box;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service != NULL) {
+    libdvid::PointXYZ coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 0, true);
+    box.setFirstX(coord.x);
+
+    coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 0, false);
+    box.setLastX(coord.x);
+
+    coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 1, true);
+    box.setFirstY(coord.y);
+
+    coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 1, false);
+    box.setLastY(coord.y);
+
+    coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 2, true);
+    box.setFirstZ(coord.z);
+
+    coord = m_service->get_body_extremum(
+          getDvidTarget().getBodyLabelName(), bodyId, 2, false);
+    box.setLastZ(coord.z);
+  }
+#endif
+
+  return box;
+}
+
 ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const

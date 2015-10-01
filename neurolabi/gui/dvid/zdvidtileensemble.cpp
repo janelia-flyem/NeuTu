@@ -197,10 +197,10 @@ void ZDvidTileEnsemble::display(
   int zoomRatio = std::min(fov.width() / screenSize.width(),
                            fov.height() / screenSize.height());
   int level = 0;
-  if (zoomRatio > 0) {
+  if (zoomRatio > 1) {
     ++level;
   }
-  while ((zoomRatio /= 2) > 0) {
+  while ((zoomRatio /= 2) > 1) {
     ++level;
   }
 
