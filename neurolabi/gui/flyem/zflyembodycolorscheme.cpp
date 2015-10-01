@@ -12,6 +12,7 @@ ZFlyEmBodyColorScheme::ZFlyEmBodyColorScheme()
   m_colorMap["PPL1"] = QColor(0, 255, 255);
   m_colorMap["KC-alpha prime"] = QColor(255, 255, 0);
   m_colorMap["non-KC"] = QColor(255, 140, 0);
+  m_isMapReady = false;
 }
 
 QColor ZFlyEmBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)
@@ -46,18 +47,39 @@ void ZFlyEmBodyColorScheme::setDvidTarget(const ZDvidTarget &target)
   m_reader.open(target);
 }
 
+void ZFlyEmBodyColorScheme::prepareNameMap(const ZJsonValue &bodyInfoObj)
+{
+  if (!m_isMapReady) {
+    ZJsonArray bookmarks(bodyInfoObj);
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+      ZJsonObject bkmk(bookmarks.at(i), false);
+      if (bkmk.hasKey("name")) {
+        const char* name = ZJsonParser::stringValue(bkmk["name"]);
+        uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);
+        updateNameMap(bodyId, name);
+      }
+    }
+
+    m_isMapReady = true;
+  }
+}
+
 void ZFlyEmBodyColorScheme::prepareNameMap()
 {
-  if (m_reader.getDvidTarget().isValid()) {
-    QStringList annotationList = m_reader.readKeys(
-          ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-                             ZDvidData::ROLE_BODY_LABEL,
-                             m_reader.getDvidTarget().getBodyLabelName()).c_str());
-    foreach (const QString &idStr, annotationList) {
-      uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
-      ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
-      updateNameMap(bodyId, annotation.getName().c_str());
+  if (!m_isMapReady) {
+    if (m_reader.getDvidTarget().isValid()) {
+      QStringList annotationList = m_reader.readKeys(
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                               ZDvidData::ROLE_BODY_LABEL,
+                               m_reader.getDvidTarget().getBodyLabelName()).c_str());
+      foreach (const QString &idStr, annotationList) {
+        uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
+        ZFlyEmBodyAnnotation annotation = m_reader.readBodyAnnotation(bodyId);
+        updateNameMap(bodyId, annotation.getName().c_str());
+      }
     }
+
+    m_isMapReady = true;
   }
 }
 

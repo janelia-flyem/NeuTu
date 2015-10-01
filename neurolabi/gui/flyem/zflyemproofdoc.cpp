@@ -812,6 +812,18 @@ void ZFlyEmProofDoc::deprecateSplitSource()
   m_splitSource.reset();
 }
 
+void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+{
+  if (m_bodyColorMap.get() == NULL) {
+    m_bodyColorMap =
+        ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
+    m_bodyColorMap->setDvidTarget(getDvidTarget());
+  }
+  m_bodyColorMap->prepareNameMap(bodyInfoObj);
+
+  emit bodyMapReady();
+}
+
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {

@@ -114,6 +114,7 @@ signals:
   void userBookmarkModified();
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
+  void bodyMapReady();
 
 public slots:
   void updateDvidLabelObject();
@@ -122,6 +123,7 @@ public slots:
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
+  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
   void downloadSynapseFunc();

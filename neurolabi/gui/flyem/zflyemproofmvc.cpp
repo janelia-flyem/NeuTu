@@ -854,7 +854,10 @@ void ZFlyEmProofMvc::customInit()
 
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
-  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)), m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
+          this, SLOT(prepareBodyMap(ZJsonValue)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -873,6 +876,13 @@ void ZFlyEmProofMvc::customInit()
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
+}
+
+void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+{
+  getCompleteDocument()->prepareBodyMap(bodyInfoObj);
+
+  emit nameColorMapReady(true);
 }
 
 void ZFlyEmProofMvc::goToBodyBottom()

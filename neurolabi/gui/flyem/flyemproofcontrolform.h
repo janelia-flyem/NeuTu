@@ -62,7 +62,9 @@ private slots:
   void selectBody();
   void locateAssignedBookmark(const QModelIndex &index);
   void locateUserBookmark(const QModelIndex &index);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
+  void enableNameColorMap(bool on);
 
 private:
   void createMenu();
@@ -73,6 +75,8 @@ private:
   QMenu *m_mainMenu;
   ZFlyEmBookmarkListModel m_bookmarkList;
   ZFlyEmBookmarkListModel m_userBookmarkList;
+
+  QAction *m_nameColorAction;
 
 //  QSortFilterProxyModel *m_bookmarkProxy;
 //  QSortFilterProxyModel *m_userBookmarkProxy;
