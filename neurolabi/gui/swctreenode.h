@@ -402,7 +402,7 @@ void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
 void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);
 void adoptChildren(Swc_Tree_Node *newParent, Swc_Tree_Node *oldParent);
-void mergeToParent(Swc_Tree_Node *tn);
+void mergeToParent(Swc_Tree_Node *tn, bool reservingGeometry = false);
 
 //Destructors
 //Delete <tn> and all its descendents

@@ -104,6 +104,10 @@ public:
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
+  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+
+  void downloadSynapseFunc();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -131,7 +135,6 @@ public slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
-  void downloadSynapseFunc();
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
 

@@ -34,14 +34,12 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
       Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
 
       bool redundant = false;
-      //bool mergingToChild = false;
+      bool mergingToChild = false;
       if (SwcTreeNode::isWithin(tn, parent) || SwcTreeNode::isWithin(tn, child)) {
         redundant = true;
-        /*
         if (SwcTreeNode::isWithin(tn, child)) {
           mergingToChild = true;
         }
-        */
       }
 
       if (!redundant) {
@@ -50,11 +48,9 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
 
       if (redundant) {
         next = next->next;
-        /*
         if (mergingToChild) {
           SwcTreeNode::copyProperty(tn, parent);
         }
-        */
 
         SwcTreeNode::mergeToParent(tn);
         ++count;
@@ -154,6 +150,8 @@ bool ZSwcResampler::isInterRedundant(
       TZ_ASSERT(SwcTreeNode::isRegular(&tmpNode), "Unexpected virtual node");
 
 //      double sizeScale = 1.2;
+      //More likely to be redundant with smaller distance scale
+      //More likely to be redundant with bigger radius scale
       if (SwcTreeNode::distance(tn, &tmpNode) * m_distanceScale <
           SwcTreeNode::radius(&tmpNode)) { //not too far away
         if ((SwcTreeNode::radius(tn) * m_radiusScale > SwcTreeNode::radius(&tmpNode)) &&

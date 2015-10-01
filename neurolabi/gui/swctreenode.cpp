@@ -1466,7 +1466,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   double r2 = C_Stack::value(dist, index);
 
   if (r2 > 0) {
-    if (Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0) <= (r2 + 3) * (r2 + 3)) {
+    double squreDistShift = Geo3d_Dist_Sqr(nx, ny, 0, x(tn) - x1, y(tn) - y1, 0);
+    if (squreDistShift <= (r2 + 3) * (r2 + 3)) {
       Stack_Label_Object_Dist_N(skel, NULL, index, 1, 2, 3, 8);
 
       SwcTreeNode::setRadius(tn, sqrt(r2));
@@ -1575,9 +1576,20 @@ bool SwcTreeNode::isWithin(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
       SwcTreeNode::radius(tn2);
 }
 
-void SwcTreeNode::mergeToParent(Swc_Tree_Node *tn)
+void SwcTreeNode::mergeToParent(Swc_Tree_Node *tn, bool reservingGeometry)
 {
-  Swc_Tree_Node_Merge_To_Parent(tn);
+  if (tn != NULL) {
+    if (reservingGeometry) {
+      ZPoint center = SwcTreeNode::center(tn);
+      double r = SwcTreeNode::radius(tn);
+      Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+      Swc_Tree_Node_Merge_To_Parent(tn);
+      SwcTreeNode::setPos(parent, center);
+      SwcTreeNode::setRadius(parent, r);
+    } else {
+      Swc_Tree_Node_Merge_To_Parent(tn);
+    }
+  }
 }
 
 Swc_Tree_Node* SwcTreeNode::findClosestNode(

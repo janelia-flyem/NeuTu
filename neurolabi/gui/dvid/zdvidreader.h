@@ -119,6 +119,7 @@ public:
   int readMaxBodyId();
 
   uint64_t readBodyIdAt(int x, int y, int z);
+  uint64_t readBodyIdAt(const ZIntPoint &pt);
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 

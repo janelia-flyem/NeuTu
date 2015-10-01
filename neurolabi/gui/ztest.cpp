@@ -248,6 +248,7 @@ using namespace std;
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
+#include "flyem/zflyemproofdoc.h"
 
 using namespace std;
 
@@ -17812,7 +17813,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan oldRoi;
   oldRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
 
@@ -17829,5 +17830,21 @@ void ZTest::test(MainWindow *host)
   ZJsonArray array = ZJsonFactory::MakeJsonArray(
         patchRoi, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/sample.swc");
+  ZSwcResampler resampler;
+  resampler.optimalDownsample(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  doc->downloadSynapseFunc();
+
+  delete doc;
 #endif
 }

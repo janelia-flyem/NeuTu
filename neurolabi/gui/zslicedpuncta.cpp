@@ -168,6 +168,16 @@ void ZSlicedPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
   }
 }
 
+QList<ZStackBall*> ZSlicedPuncta::getPunctaOnSlice(int z)
+{
+  int index = z - m_zStart;
+  if (index >= 0 && index < m_puncta.size()) {
+    return m_puncta[index];
+  }
+
+  return QList<ZStackBall*>();
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
 
 

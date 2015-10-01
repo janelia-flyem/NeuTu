@@ -5369,12 +5369,17 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             }
 
             ZSwcResampler resampler;
-            resampler.setDistanceScale(1.5);
+            resampler.setDistanceScale(3.0);
+            resampler.setRadiusScale(1.1);
 
             ZSwcTree tree;
             tree.setDataFromNode(begin);
 
 //            Swc_Tree_Remove_Zigzag(tree.data());
+#ifdef _DEBUG_
+            tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
             resampler.optimalDownsample(&tree);
             begin = tree.firstRegularRoot();
 
