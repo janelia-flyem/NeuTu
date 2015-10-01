@@ -3395,7 +3395,7 @@ void MainWindow::test()
   frame->document()->addObject(puncta);
 #endif
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;

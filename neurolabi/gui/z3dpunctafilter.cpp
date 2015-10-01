@@ -50,6 +50,9 @@ Z3DPunctaFilter::Z3DPunctaFilter()
 
   addParameter(m_useSameSizeForAllPuncta);
 
+  connect(&m_showPuncta, SIGNAL(valueChanged(bool)),
+          this, SIGNAL(visibleChanged(bool)));
+
   m_selectPunctumEvent = new ZEventListenerParameter("Select Puncta", true, false, this);
   m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);

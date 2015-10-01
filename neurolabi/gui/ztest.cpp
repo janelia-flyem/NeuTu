@@ -17832,7 +17832,7 @@ void ZTest::test(MainWindow *host)
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/sample.swc");
   ZSwcResampler resampler;
@@ -17841,9 +17841,21 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 0
+#if 1
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
   doc->downloadSynapseFunc();
+
+  ZDvidReader reader;
+
+//  reader.open(doc->getDvidTarget());
+//  ZObject3dScan body = reader.readBody(12918474);
+  tic();
+//  std::vector<ZPunctum*> puncta = doc->getTbar(body);
+  std::vector<ZPunctum*> puncta = doc->getTbar(12918474);
+  std::cout << toc() << "ms" << std::endl;
+
+  std::cout << puncta.size() << "tbar found" << std::endl;
 
   delete doc;
 #endif

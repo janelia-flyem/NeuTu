@@ -16,7 +16,7 @@
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
-  m_garbageJustDumped(false)
+  m_garbageJustDumped(false), m_showingSynapse(true)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -377,6 +377,22 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     endObjectModifiedMode();
     notifyObjectModified();
 
+    //Add synapse
+    if (m_showingSynapse) {
+      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
+      for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+           iter != puncta.end(); ++iter) {
+        ZPunctum *punctum = *iter;
+        punctum->setRadius(30);
+        punctum->setColor(255, 255, 0);
+        punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+        addObject(punctum, false);
+      }
+      endObjectModifiedMode();
+      notifyObjectModified();
+    }
+
 //    removeObject(tree->getSource(), true);
 //    removeObject(tree, true);
   }
@@ -390,11 +406,19 @@ void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
 {
-  QString threadId = QString("addBody(%1)").arg(bodyId);
+  QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
     TStackObjectList objList = getObjectGroup().findSameSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+
+    objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       removeObject(*iter, false);

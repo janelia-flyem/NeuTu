@@ -113,9 +113,26 @@ std::string ZStackObjectSourceFactory::MakeFlyEmTBarSource()
   return "#.FlyEMSynapse.TBar";
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmTBarSource(uint64_t bodyId)
+{
+  ZString source = MakeFlyEmTBarSource() + "#";
+  source.appendNumber(bodyId);
+
+  return source;
+}
+
+
 std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource()
 {
   return "#.FlyEMSynapse.Psd";
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource(uint64_t bodyId)
+{
+  ZString source = MakeFlyEmPsdSource() + "#";
+  source.appendNumber(bodyId);
+
+  return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()

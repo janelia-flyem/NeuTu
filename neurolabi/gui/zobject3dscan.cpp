@@ -2685,6 +2685,12 @@ double ZObject3dScan::getSpread(int z) const
   return 0.0;
 }
 
+
+bool ZObject3dScan::contains(const ZIntPoint &pt)
+{
+  return contains(pt.getX(), pt.getY(), pt.getZ());
+}
+
 bool ZObject3dScan::contains(int x, int y, int z)
 {
   canonize();

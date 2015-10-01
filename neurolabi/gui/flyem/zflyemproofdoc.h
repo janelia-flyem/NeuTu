@@ -105,6 +105,8 @@ public:
   void selectBody(const InputIterator &first, const InputIterator &last);
 
   std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
+
 
   void downloadSynapseFunc();
 

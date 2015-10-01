@@ -5348,8 +5348,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             ZSwcPath originalPath(root, leaf);
             if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
               originalPath.smooth(true);
-              originalPath.smoothZ();
             }
+            originalPath.smoothZ();
 
             if (SwcTreeNode::hasChild(begin)) {
               if (SwcTreeNode::hasOverlap(begin, prevNode)) {
@@ -5376,7 +5376,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             tree.setDataFromNode(begin);
 
 //            Swc_Tree_Remove_Zigzag(tree.data());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
             tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 

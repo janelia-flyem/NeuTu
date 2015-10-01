@@ -302,6 +302,7 @@ public:
    * \return true iff (\a x, \a y, \a z) is a part of the object.
    */
   bool contains(int x, int y, int z);
+  bool contains(const ZIntPoint &pt);
 
   /*!
    * \brief Get minimal Z
