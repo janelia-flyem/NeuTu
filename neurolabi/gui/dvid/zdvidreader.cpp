@@ -768,6 +768,22 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
   return bodySet;
 }
 
+std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
+{
+  QStringList annotationList = readKeys(
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           getDvidTarget().getBodyLabelName()).c_str());
+
+  std::set<uint64_t> bodySet;
+  foreach (const QString &idStr, annotationList) {
+    uint64_t bodyId = ZString(idStr.toStdString()).firstUint64();
+    bodySet.insert(bodyId);
+  }
+
+  return bodySet;
+}
+
 bool ZDvidReader::hasKey(const QString &dataName, const QString &key)
 {
   return !readKeyValue(dataName, key).isEmpty();

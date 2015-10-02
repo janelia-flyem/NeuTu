@@ -38,9 +38,9 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
-  void writeSwc(int bodyId, ZSwcTree *tree);
-  void writeThumbnail(int bodyId, ZStack *stack);
-  void writeThumbnail(int bodyId, Stack *stack);
+  void writeSwc(uint64_t bodyId, ZSwcTree *tree);
+  void writeThumbnail(uint64_t bodyId, ZStack *stack);
+  void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 

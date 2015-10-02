@@ -53,9 +53,11 @@ std::string NeuTube::GetCurrentUserName()
 #endif
   std::string userName = qgetenv("USER").data();
 
+  /*
   if (userName == "plazas") { //temporary hack
     userName = "takemuras";
   }
+  */
 
   return userName;
 }
@@ -63,7 +65,9 @@ std::string NeuTube::GetCurrentUserName()
 bool NeuTube::IsAdminUser()
 {
 #if defined(_FLYEM_)
-  if (NeuTube::GetCurrentUserName() == "takemuras") {
+  if (NeuTube::GetCurrentUserName() == "takemuras" ||
+      NeuTube::GetCurrentUserName() == "shinomiyak" ||
+      NeuTube::GetCurrentUserName() == "jah") {
     return true;
   }
 #endif
