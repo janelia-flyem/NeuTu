@@ -756,6 +756,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(goToBodyBottom()));
   connect(getCompletePresenter(), SIGNAL(goingToBodyTop()),
           this, SLOT(goToBodyTop()));
+  connect(getCompletePresenter(), SIGNAL(selectingBody()),
+          this, SLOT(selectBody()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -854,7 +856,10 @@ void ZFlyEmProofMvc::customInit()
 
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
-  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)), m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
+          this, SLOT(prepareBodyMap(ZJsonValue)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -873,6 +878,13 @@ void ZFlyEmProofMvc::customInit()
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
+}
+
+void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+{
+  getCompleteDocument()->prepareBodyMap(bodyInfoObj);
+
+  emit nameColorMapReady(true);
 }
 
 void ZFlyEmProofMvc::goToBodyBottom()
@@ -945,16 +957,23 @@ void ZFlyEmProofMvc::selectBody()
 {
   bool ok;
 
-  QString text = QInputDialog::getText(this, tr("Go To"),
-                                       tr("Body:"), QLineEdit::Normal,
+  QString text = QInputDialog::getText(this, tr("Select"),
+                                       tr("Select Body:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();
-      std::vector<int> bodyArray = str.toIntegerArray();
-      if (bodyArray.size() == 1) {
-        selectBody((uint64_t) bodyArray[0]);
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      if (!bodyArray.empty()) {
+        getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        updateBodySelection();
       }
+#if 0
+      for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
+           iter != bodyArray.end(); ++iter) {
+        selectBody(*iter);
+      }
+#endif
     }
   }
 }
@@ -1841,7 +1860,7 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_PUNCTA, visible);
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_SLICED_PUNCTA, visible);
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
@@ -2047,10 +2066,13 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
 void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 {
+  /*
   ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
   if (slice != NULL) {
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
+  */
+  getCompleteDocument()->selectBody(bodyId);
   updateBodySelection();
 }
 

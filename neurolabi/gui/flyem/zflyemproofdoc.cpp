@@ -4,6 +4,7 @@
 #include <QList>
 #include <QTimer>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -25,6 +26,7 @@
 #include "zstring.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
+#include "zslicedpuncta.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -453,34 +455,50 @@ void ZFlyEmProofDoc::downloadBookmark()
   }
 }
 
-void ZFlyEmProofDoc::downloadSynapse()
+void ZFlyEmProofDoc::downloadSynapseFunc()
 {
   if (getDvidTarget().isValid()) {
+    emit messageGenerated(ZWidgetMessage("Downloading synapses ..."));
+
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
     reader.read(url.getSynapseAnnotationUrl().c_str());
+
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
       FlyEm::ZSynapseAnnotationArray synapseArray;
       synapseArray.loadJson(jsonObj);
       const double radius = 5.0;
-      std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+      std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
 
-      ZPuncta *tbar = new ZPuncta;
+      ZSlicedPuncta *tbar = new ZSlicedPuncta;
       tbar->addPunctum(puncta.begin(), puncta.end());
       decorateTBar(tbar);
 
-      addObject(tbar);
+      emit addingObject(tbar, true);
+      emit messageGenerated(ZWidgetMessage("TBars ready."));
+//      addObject(tbar);
 
-      ZPuncta *psd = new ZPuncta;
-      puncta = synapseArray.toPsdPuncta(radius / 2.0);
+      ZSlicedPuncta *psd = new ZSlicedPuncta;
+      puncta = synapseArray.toPsdBall(radius / 2.0);
       psd->addPunctum(puncta.begin(), puncta.end());
       decoratePsd(psd);
 
-      addObject(psd);
+      emit addingObject(psd, true);
+
+      emit messageGenerated(ZWidgetMessage("All synapses ready."));
+
+//      addObject(psd);
+    } else {
+      emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
   }
+}
+
+void ZFlyEmProofDoc::downloadSynapse()
+{
+  QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
@@ -505,6 +523,25 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
   puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
+
+void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 255, 0));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 0, 255));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
 
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
@@ -699,32 +736,46 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi()
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
 {
-  ZRect2d rect = getRect2dRoi();
+//  ZRect2d rect = getRect2dRoi();
+
+  ZUndoCommand *command = new ZUndoCommand("Update ROI");
 
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  /*
   ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
   if (roi == NULL) {
-    roi = new ZIntCuboidObj;
-    roi->setColor(QColor(255, 255, 255));
-    roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
-    addObject(roi);
-  }
+  */
+  ZIntCuboidObj* roi = new ZIntCuboidObj;
+  roi->setColor(QColor(255, 255, 255));
+  roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+  roi->clear();
 
-  if (rect.isValid()) {
-    int sz = iround(sqrt(rect.getWidth() * rect.getWidth() +
-                             rect.getHeight() * rect.getHeight()) / 2.0);
-    roi->setFirstCorner(rect.getFirstX(), rect.getFirstY(), rect.getZ() - sz);
-    roi->setLastCorner(rect.getLastX(), rect.getLastY(), rect.getZ() + sz);
-  } else {
-    roi->clear();
-  }
+  executeRemoveObjectCommand(getSplitRoi());
 
+  new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
+//    addObject(roi);
+//  }
+
+  if (rect != NULL) {
+    if (rect->isValid()) {
+      int sz = iround(sqrt(rect->getWidth() * rect->getWidth() +
+                           rect->getHeight() * rect->getHeight()) / 2.0);
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
+      roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    }
+  }
   m_splitSource.reset();
-  removeRect2dRoi();
 
-  processObjectModified(roi);
+  removeObject(rect, true);
+
+  pushUndoCommand(command);
+
+//  new ZStackDocCommand::ObjectEdit::RemoveObje
+//  removeRect2dRoi();
+
+//  processObjectModified(roi);
 
   endObjectModifiedMode();
   notifyObjectModified();
@@ -761,6 +812,18 @@ void ZFlyEmProofDoc::deprecateSplitSource()
   m_splitSource.reset();
 }
 
+void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+{
+  if (m_bodyColorMap.get() == NULL) {
+    m_bodyColorMap =
+        ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
+    m_bodyColorMap->setDvidTarget(getDvidTarget());
+  }
+  m_bodyColorMap->prepareNameMap(bodyInfoObj);
+
+  emit bodyMapReady();
+}
+
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
@@ -778,6 +841,14 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 
     processObjectModified(getDvidLabelSlice());
     notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
 }
 

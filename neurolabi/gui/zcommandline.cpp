@@ -26,6 +26,8 @@
 #include "neutubeconfig.h"
 #include "zrandomgenerator.h"
 #include "zneurontracer.h"
+#include "zneurontracerconfig.h"
+#include "dvid/zdvidurl.h"
 
 using namespace std;
 
@@ -421,23 +423,33 @@ int ZCommandLine::runTraceNeuron()
     return 1;
   }
 
-  ZNeuronTracerConfig::getInstance().load(m_configDir + "/json/trace_config.json");
+  if (m_configJson.hasKey("trace")) {
+    ZNeuronTracerConfig::getInstance().loadJsonObject(
+          ZJsonObject(m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
+  } else {
+    ZNeuronTracerConfig::getInstance().load(m_configDir + "/trace_config.json");
+  }
+
+  ZStack signal;
+  signal.load(m_input[0]);
 
   ZNeuronTracer tracer;
+//  tracer.initTraceWorkspace(&signal);
+//  tracer.initConnectionTestWorkspace();
+
+#if 0
   if (m_configJson.hasKey("trace")) {
     tracer.loadJsonObject(
           ZJsonObject(
             m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
   }
+#endif
 
-  int level = 1;
+  int level = 0;
   if (Is_Arg_Matched(const_cast<char*>("--level"))) {
     level = Get_Int_Arg(const_cast<char*>("--level"));
   }
   tracer.setTraceLevel(level);
-
-  ZStack signal;
-  signal.load(m_input[0]);
 
   ZSwcTree *tree = tracer.trace(&signal);
 
@@ -554,10 +566,42 @@ int ZCommandLine::runSkeletonize()
     ZDvidWriter writer;
     writer.open(target);
 
+    ZDvidUrl dvidUrl(target);
+
+    ZSwcTree testTree;
+    testTree.setDataFromNode(SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1));
+    writer.writeSwc(0, &testTree);
+    if (writer.getStatusCode() != 200) {
+      std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
+      std::cout << writer.getStandardOutput().toStdString() << std::endl;
+      std::cout << "Cannot access " << dvidUrl.getSkeletonUrl()
+                << std::endl;
+      std::cout << "Please create the keyvalue data for skeletons first:"
+                << std::endl;
+      std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
+                   "-d '{\"dataname\": \""
+                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
+                                      ZDvidData::ROLE_BODY_LABEL,
+                                      target.getBodyLabelName())
+                << "\", " << "\"typename\": \"keyvalue\"}' "
+                << "http://emdata1.int.janelia.org:8500/api/repo/86e1/instance"
+                << std::endl;
+
+      return 1;
+    }
+
     std::set<uint64_t> bodyIdSet;
 
     if (m_input.size() == 1) {
       bodyIdSet = reader.readBodyId(100000);
+      if (bodyIdSet.empty()) {
+        bodyIdSet = reader.readAnnnotatedBodySet();
+        if (bodyIdSet.empty()) {
+          std::cout << "Done: No annotated body found in the database."
+                    << std::endl;
+          return 1;
+        }
+      }
     } else {
       bodyIdSet = loadBodySet(m_input[1]);
     }
@@ -882,14 +926,14 @@ std::string ZCommandLine::extractIncludePath(
 }
 
 void ZCommandLine::expandConfig(
-    const std::string &configFilePath, const std::string &key)
+    const std::string &configFilePath, const std::string &objKey)
 {
-  if (m_configJson.hasKey(key.c_str())) {
-    std::string includeFilePath = extractIncludePath(configFilePath, key);
+  if (m_configJson.hasKey(objKey.c_str())) {
+    std::string includeFilePath = extractIncludePath(configFilePath, objKey);
 
     if (!includeFilePath.empty()) {
       if (fexist(includeFilePath.c_str())) {
-        ZJsonObject subJson(m_configJson.value(key.c_str()));
+        ZJsonObject subJson(m_configJson.value(objKey.c_str()));
         ZJsonObject includeJson;
         includeJson.load(includeFilePath.c_str());
 

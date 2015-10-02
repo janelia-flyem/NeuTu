@@ -114,7 +114,8 @@ using namespace std;
 
 ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
-  m_isReadyForPaint(true), m_isSegmentationReady(false)
+  m_isReadyForPaint(true), m_isSegmentationReady(false),
+  m_changingSaveState(true)
 {
   m_stack = NULL;
   m_sparseStack = NULL;
@@ -282,6 +283,10 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
 
+  connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
+          this, SLOT(addObject(ZStackObject*,bool)));
+  connect(this, SIGNAL(addingObject(ZStackObject*)),
+          this, SLOT(addObject(ZStackObject*)));
   /*
   connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
   connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
@@ -760,15 +765,15 @@ bool ZStackDoc::isSaved(ZStackObject::EType type) const
 
 void ZStackDoc::setSaved(ZStackObject::EType type, bool state)
 {
-  if (state == true) {
-    m_unsavedSet.remove(type);
-  } else {
-    m_unsavedSet.insert(type);
+  if (m_changingSaveState) {
+    if (state == true) {
+      m_unsavedSet.remove(type);
+    } else {
+      m_unsavedSet.insert(type);
+    }
+
+    emit cleanChanged(isSwcSavingRequired());
   }
-
-
-
-  emit cleanChanged(isSwcSavingRequired());
 
 #if 0
   ZUndoCommand* command = const_cast<ZUndoCommand*>(getLastUndoCommand());
@@ -4251,6 +4256,8 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
   bool obj3dScanLoaded = false;
   //bool apoLoaded = false;
 
+//  m_changingSaveState = false;
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
@@ -4291,6 +4298,8 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
   if (networkLoaded) {
     emit swcNetworkModified();
   }
+
+//  m_changingSaveState = true;
 
   /*
   if (swcLoaded) {
@@ -4338,6 +4347,9 @@ bool ZStackDoc::loadFile(const QString &filePath)
     return false;
   }
 
+  bool succ = true;
+
+  m_changingSaveState = false;
   switch (ZFileType::fileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
@@ -4414,22 +4426,24 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
     if (!importSynapseAnnotation(filePath.toStdString())) {
-      return false;
+      succ = false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
     if (!importPuncta(filePath.toStdString().c_str())) {
-      return false;
+      succ = false;
     }
     break;
   default:
-    return false;
+    succ = false;
     break;
   }
 
-  return true;
+  m_changingSaveState = true;
+
+  return succ;
 }
 
 void ZStackDoc::deprecateDependent(EComponent component)
@@ -6860,6 +6874,19 @@ bool ZStackDoc::executeAddObjectCommand(ZStackObject *obj, bool uniqueSource)
   return false;
 }
 
+bool ZStackDoc::executeRemoveObjectCommand(ZStackObject *obj)
+{
+  if (obj != NULL) {
+    ZStackDocCommand::ObjectEdit::RemoveObject *command =
+        new ZStackDocCommand::ObjectEdit::RemoveObject(this, obj);
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::executeRemoveSelectedObjectCommand()
 {
   if (hasObjectSelected()) {
@@ -8806,15 +8833,16 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate()
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
 {
-  processObjectModified(getObjectGroup().findFirstSameSource(
-                          ZStackObject::TYPE_RECT2D,
-                          ZStackObjectSourceFactory::MakeRectRoiSource()));
+  if (rect != NULL) {
+    removeObject(rect, false);
+    executeAddObjectCommand(rect);
+    processObjectModified(rect);
+  }
 }
 
 void ZStackDoc::removeRect2dRoi()
 {
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
-

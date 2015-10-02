@@ -17,6 +17,7 @@ class ZFlyEmBookmark;
 class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
+class ZSlicedPuncta;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -98,6 +99,11 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
+
+  void selectBody(uint64_t bodyId);
+  template <typename InputIterator>
+  void selectBody(const InputIterator &first, const InputIterator &last);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -105,7 +111,7 @@ public:
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
-  void updateSplitRoi();
+  void updateSplitRoi(ZRect2d *rect);
 
 signals:
   void bodyMerged();
@@ -113,6 +119,7 @@ signals:
   void userBookmarkModified();
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
+  void bodyMapReady();
 
 public slots:
   void updateDvidLabelObject();
@@ -121,8 +128,10 @@ public slots:
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
+  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
+  void downloadSynapseFunc();
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
 
@@ -131,6 +140,9 @@ private:
 
   void decorateTBar(ZPuncta *puncta);
   void decoratePsd(ZPuncta *puncta);
+
+  void decorateTBar(ZSlicedPuncta *puncta);
+  void decoratePsd(ZSlicedPuncta *puncta);
 
   void init();
   void initTimer();
@@ -153,6 +165,15 @@ private:
 
   //ZFlyEmBodySplitProject m_splitProject;
 };
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::selectBody(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    selectBody(*iter);
+  }
+}
 
 namespace ZFlyEmProofDocCommand {
 class MergeBody : public ZUndoCommand

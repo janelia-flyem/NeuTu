@@ -74,7 +74,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="loadingLabel">
+      <widget class="QLabel" name="statusLabel">
        <property name="text">
         <string/>
        </property>

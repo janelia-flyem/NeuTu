@@ -42,7 +42,7 @@ public:
     m_splitWindowMode = state;
   }
 
-  void processRectRoiUpdate();
+  void processRectRoiUpdate(ZRect2d *rect);
 
   ZKeyOperationConfig* getKeyConfig();
   void configKeyMap();
@@ -59,6 +59,7 @@ signals:
   void deselectingAllBody();
   void runningSplit();
   void goingToBody();
+  void selectingBody();
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void mergingBody();

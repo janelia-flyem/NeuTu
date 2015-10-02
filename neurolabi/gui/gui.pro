@@ -573,7 +573,10 @@ HEADERS += mainwindow.h \
     ztask.h \
     flyem/zflyemqualityanalyzertask.h \
     zstackobjectpainter.h \
-    flyem/zflyemkeyoperationconfig.h
+    flyem/zflyemkeyoperationconfig.h \
+    zslicedpuncta.h \
+    flyem/zflyembookmarkwidget.h \
+    zmultiscalepixmap.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -643,7 +646,8 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
-    dialogs/zflyemsplitcommitdialog.ui
+    dialogs/zflyemsplitcommitdialog.ui \
+    flyem/zflyembookmarkwidget.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1002,7 +1006,10 @@ SOURCES += main.cpp \
     ztask.cpp \
     flyem/zflyemqualityanalyzertask.cpp \
     zstackobjectpainter.cpp \
-    flyem/zflyemkeyoperationconfig.cpp
+    flyem/zflyemkeyoperationconfig.cpp \
+    zslicedpuncta.cpp \
+    flyem/zflyembookmarkwidget.cpp \
+    zmultiscalepixmap.cpp
 
 OTHER_FILES += \
     extlib.pri \

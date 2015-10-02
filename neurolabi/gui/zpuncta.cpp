@@ -70,6 +70,11 @@ void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
 
 void ZPuncta::clear()
 {
+  for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
+       iter != m_puncta.end(); ++iter) {
+    delete *iter;
+  }
+
   m_puncta.clear();
   m_isSorted = false;
 }

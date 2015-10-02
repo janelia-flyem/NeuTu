@@ -17770,7 +17770,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/KCandMBON/MBON/affine";
 
@@ -17812,4 +17812,22 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZObject3dScan oldRoi;
+  oldRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+
+  ZObject3dScan newRoi;
+  newRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/deeper_roi.sobj");
+
+  ZObject3dScan patchRoi = oldRoi.getSlice(351);
+  patchRoi.concat(newRoi.getSlice(353));
+
+
+  patchRoi = patchRoi.interpolateSlice(352);
+  patchRoi.save(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(
+        patchRoi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
+#endif
 }
