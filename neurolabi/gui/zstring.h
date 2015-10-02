@@ -51,6 +51,7 @@ public:
   static int lastInteger(const std::string &str);
   double firstDouble();
   double lastDouble();
+  uint64_t firstUint64();
   std::string firstQuotedWord();
 
   std::vector<int> toIntegerArray();

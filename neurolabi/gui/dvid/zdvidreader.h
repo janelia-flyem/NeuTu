@@ -84,6 +84,7 @@ public:
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
+  std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
