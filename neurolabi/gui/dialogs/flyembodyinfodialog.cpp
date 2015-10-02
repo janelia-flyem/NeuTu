@@ -227,6 +227,8 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
               ZDvidData::ROLE_BODY_LABEL,
               target.getBodyLabelName()).c_str();
 
+        // get all the keys rather than testing whether each body ID
+        //  has a name individually
         QStringList keyList = reader.readKeys(bodyAnnotationName);
         QSet<uint64_t> bodySet;
         foreach (const QString &str, keyList) {
@@ -248,18 +250,6 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             ZJsonObject bkmk(bookmarks.at(i), false);
 
-            // as noted above, reader doesn't have "hasKey", so we search the range
-            // also, ZJsonValue doesn't have toString, so we go via int
-            /*
-            if (reader.readKeys(
-                  ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-                  QString::number(bkmk.value("body ID").toInteger()),
-                  QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
-                  */
-            /*
-            if (reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-                              QString::number(bkmk.value("body ID").toInteger()))) {
-                              */
             uint64_t bodyId = bkmk.value("body ID").toInteger();
             if (bodySet.contains(bodyId)) {
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName,
