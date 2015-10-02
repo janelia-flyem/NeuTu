@@ -215,12 +215,14 @@ void ZSwcTree::save(const char *filePath)
     }
 
     ZSwcTree::DepthFirstIterator iter(this);
-    iter.begin();
+//    iter.begin();
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();
-      fprintf(fp, "%d %d %g %g %g %g %d\n",
-          tn->node.id, tn->node.type, tn->node.x, tn->node.y,
-          tn->node.z, tn->node.d, tn->node.parent_id);
+      if (SwcTreeNode::isRegular(tn)) {
+        fprintf(fp, "%d %d %g %g %g %g %d\n",
+                tn->node.id, tn->node.type, tn->node.x, tn->node.y,
+                tn->node.z, tn->node.d, tn->node.parent_id);
+      }
     }
 
     fclose(fp);

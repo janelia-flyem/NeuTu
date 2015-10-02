@@ -17841,7 +17841,7 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
   doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
   doc->downloadSynapseFunc();
@@ -17858,5 +17858,35 @@ void ZTest::test(MainWindow *host)
   std::cout << puncta.size() << "tbar found" << std::endl;
 
   delete doc;
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  ZSwcResampler resampler;
+  resampler.ignoreInterRedundant(true);
+  resampler.optimalDownsample(&tree);
+
+  resampler.denseInterpolate(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 1, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(10, 0, 3.9), 2);
+  SwcTreeNode::setParent(tn, root);
+
+  tree.setDataFromNode(root);
+
+  ZSwcResampler resampler;
+  resampler.denseInterpolate(&tree);
+
+  tree.resortId();
+  tree.print();
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+//  tree.load(GET_TEST_DATA_DIR + "/benchmark/");
 #endif
 }

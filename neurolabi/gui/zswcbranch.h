@@ -53,7 +53,9 @@ public:
   void resample(double step);
 
   std::vector<ZWeightedPoint> radiusSamplePoint();
+  std::vector<ZWeightedPoint> denseSamplePoint();
   void radiusResample();
+  void denseInterpolate();
 
   //void upsample(double step, int maxNewNodeNumber);
 

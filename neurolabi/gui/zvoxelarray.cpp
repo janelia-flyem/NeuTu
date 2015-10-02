@@ -172,6 +172,7 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
   tree->root = tn;
   treeWrapper.setData(tree);
   ZSwcResampler sampler;
+  sampler.ignoreInterRedundant(true);
   sampler.optimalDownsample(&treeWrapper);
   treeWrapper.setData(NULL, ZSwcTree::LEAVE_ALONE);
 

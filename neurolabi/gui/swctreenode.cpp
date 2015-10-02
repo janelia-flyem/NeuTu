@@ -1286,6 +1286,30 @@ void SwcTreeNode::average(const Swc_Tree_Node *tn1,
   }
 }
 
+void SwcTreeNode::weightedAverage(const Swc_Tree_Node *tn1,
+                          const Swc_Tree_Node *tn2, Swc_Tree_Node *out)
+{
+  double w1 = weight(tn1);
+  double w2 = weight(tn2);
+
+  if (w1 == 0.0 && w2 == 0.0) {
+    if (isRegular(tn1) && isRegular(tn2) && isRegular(out)) {
+      setRadius(out, (radius(tn1) + radius(tn2)) * 0.5);
+      setX(out, (x(tn1) + x(tn2)) * 0.5);
+      setY(out, (y(tn1) + y(tn2)) * 0.5);
+      setZ(out, (z(tn1) + z(tn2)) * 0.5);
+    }
+  } else {
+    double w = w1 + w2;
+    if (isRegular(tn1) && isRegular(tn2) && isRegular(out)) {
+      setRadius(out, (radius(tn1) * w1 + radius(tn2) * w2) / w);
+      setX(out, (x(tn1) * w1 + x(tn2) * w2) / w);
+      setY(out, (y(tn1) * w1 + y(tn2) * w2) / w);
+      setZ(out, (z(tn1) * w1 + z(tn2) * w2) / w);
+    }
+  }
+}
+
 void SwcTreeNode::interpolate(
     const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, double lambda,
     Swc_Tree_Node *out)
@@ -1576,19 +1600,27 @@ bool SwcTreeNode::isWithin(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2)
       SwcTreeNode::radius(tn2);
 }
 
-void SwcTreeNode::mergeToParent(Swc_Tree_Node *tn, bool reservingGeometry)
+void SwcTreeNode::mergeToParent(Swc_Tree_Node *tn, EMergeOption option)
 {
   if (tn != NULL) {
-    if (reservingGeometry) {
-      ZPoint center = SwcTreeNode::center(tn);
-      double r = SwcTreeNode::radius(tn);
-      Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
-      Swc_Tree_Node_Merge_To_Parent(tn);
-      SwcTreeNode::setPos(parent, center);
-      SwcTreeNode::setRadius(parent, r);
-    } else {
-      Swc_Tree_Node_Merge_To_Parent(tn);
+    Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+
+    switch (option) {
+    case MERGE_W_CHILD:
+      copyProperty(tn, parent);
+      break;
+    case MERGE_AVERAGE:
+      average(tn, parent, parent);
+      break;
+    case MERGE_WEIGHTED_AVERAGE:
+      weightedAverage(tn, parent, parent);
+      parent->weight += 1.0;
+      break;
+    default:
+      break;
     }
+
+    Swc_Tree_Node_Merge_To_Parent(tn);
   }
 }
 

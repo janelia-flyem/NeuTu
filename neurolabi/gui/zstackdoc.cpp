@@ -5352,7 +5352,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             originalPath.smoothZ();
 
             if (SwcTreeNode::hasChild(begin)) {
-              if (SwcTreeNode::hasOverlap(begin, prevNode)) {
+              if (SwcTreeNode::hasSignificantOverlap(begin, prevNode)) {
                 begin = SwcTreeNode::firstChild(begin);
               }
             }
@@ -5369,8 +5369,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             }
 
             ZSwcResampler resampler;
-            resampler.setDistanceScale(3.0);
-            resampler.setRadiusScale(1.1);
+            resampler.ignoreInterRedundant(true);
+
+//            resampler.setDistanceScale(3.0);
+//            resampler.setRadiusScale(0.0);
 
             ZSwcTree tree;
             tree.setDataFromNode(begin);
@@ -5380,13 +5382,32 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-            resampler.optimalDownsample(&tree);
+
+//            resampler.denseInterpolate(&tree);
+
             begin = tree.firstRegularRoot();
 
             leaf = begin;
             while (SwcTreeNode::firstChild(leaf) != NULL) {
               leaf = SwcTreeNode::firstChild(leaf);
               SwcTreeNode::correctTurn(leaf);
+            }
+
+            resampler.optimalDownsample(&tree);
+            begin = tree.firstRegularRoot();
+
+            int count = 1;
+            leaf = begin;
+            while (SwcTreeNode::firstChild(leaf) != NULL) {
+              leaf = SwcTreeNode::firstChild(leaf);
+              ++count;
+            }
+
+            if (count == 2) {
+              if (SwcTreeNode::hasSignificantOverlap(leaf, begin)) {
+                SwcTreeNode::mergeToParent(leaf, SwcTreeNode::MERGE_AVERAGE);
+                leaf = begin;
+              }
             }
 
             message = QString("%1 nodes are added").arg(tree.size(begin));

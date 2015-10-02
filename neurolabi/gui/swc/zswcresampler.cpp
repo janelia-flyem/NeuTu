@@ -14,6 +14,7 @@ void ZSwcResampler::init()
 {
   m_radiusScale = 1.2;
   m_distanceScale = 2.0;
+  m_ignoringInterRedundant = false;
 }
 
 int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
@@ -29,30 +30,46 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
     //std::cout << "before: " << next <<std::endl;
 
     ++checked;
-    if (SwcTreeNode::isContinuation(tn)) {
-      Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
-      Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+    Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+//    Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
 
+    if (SwcTreeNode::isRegular(tn) && SwcTreeNode::isRegular(parent)) {
       bool redundant = false;
-      bool mergingToChild = false;
-      if (SwcTreeNode::isWithin(tn, parent) || SwcTreeNode::isWithin(tn, child)) {
+      SwcTreeNode::EMergeOption option = SwcTreeNode::MERGE_W_PARENT;
+
+      if (SwcTreeNode::isWithin(tn, parent)) {
         redundant = true;
-        if (SwcTreeNode::isWithin(tn, child)) {
-          mergingToChild = true;
+      } else if (SwcTreeNode::isWithin(parent, tn)) {
+        redundant = true;
+        option = SwcTreeNode::MERGE_W_CHILD;
+      } else {
+        if (SwcTreeNode::isContinuation(tn) || SwcTreeNode::isContinuation((parent))) {
+          if (SwcTreeNode::hasSignificantOverlap(tn, parent)) {
+            redundant = true;
+            option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+          }
         }
       }
 
       if (!redundant) {
-        redundant = isInterRedundant(tn, parent);
+        if (!m_ignoringInterRedundant) {
+          if (SwcTreeNode::isContinuation(tn)) {
+            redundant = isInterRedundant(tn, parent);
+
+          }
+        } else {
+          if (SwcTreeNode::isContinuation(tn) && SwcTreeNode::hasOverlap(tn, parent)) {
+            redundant = isInterRedundant(tn, parent);
+            option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+          }
+        }
       }
 
       if (redundant) {
-        next = next->next;
-        if (mergingToChild) {
-          SwcTreeNode::copyProperty(tn, parent);
+        if (next != NULL) {
+          next = next->next;
         }
-
-        SwcTreeNode::mergeToParent(tn);
+        SwcTreeNode::mergeToParent(tn, option);
         ++count;
       }
     }
@@ -73,7 +90,7 @@ int ZSwcResampler::optimalDownsample(ZSwcTree *tree)
   while ((subn = suboptimalDownsample(tree)) > 0) {
     n += subn;
   }
-  n += optimizeCriticalParent(tree);
+//  n += optimizeCriticalParent(tree);
 
   tree->deprecate(ZSwcTree::ALL_COMPONENT);
   return n;
@@ -110,8 +127,10 @@ int ZSwcResampler::optimizeCriticalParent(ZSwcTree *tree)
           }
         }
 
-        if (!redundant) {
-          redundant = isInterRedundant(parent, tn);
+        if (!m_ignoringInterRedundant) {
+          if (!redundant) {
+            redundant = isInterRedundant(parent, tn);
+          }
         }
       }
 
@@ -199,5 +218,15 @@ void ZSwcResampler::radiusResample(ZSwcTree *tree)
   for (int i = 1; i <= n; i++) {
     ZSwcBranch *branch = tree->extractBranch(i);
     branch->radiusResample();
+  }
+}
+
+void ZSwcResampler::denseInterpolate(ZSwcTree *tree)
+{
+  int n = Swc_Tree_Label_Branch_All(tree->data());
+
+  for (int i = 1; i <= n; i++) {
+    ZSwcBranch *branch = tree->extractBranch(i);
+    branch->denseInterpolate();
   }
 }
