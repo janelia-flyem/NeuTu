@@ -594,6 +594,8 @@ bool hasSignificantOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 bool isTurn(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
             const Swc_Tree_Node *tn3);
 
+double maxBendingEnergy(const Swc_Tree_Node *tn);
+
 /*!
  * \brief Normalized dot product between two node edges
  *

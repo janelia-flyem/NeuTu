@@ -670,7 +670,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     //tic();
     if (m_objectCanvas != NULL) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
       m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
       if (m_objectCanvas->isVisible()) {

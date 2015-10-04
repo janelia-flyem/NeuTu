@@ -1457,7 +1457,7 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZPainter &painter, ZStackObject::ETarget target)
 {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     qDebug() << painter.getTransform();
 #endif
 

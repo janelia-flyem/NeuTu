@@ -46,7 +46,11 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
         if (SwcTreeNode::isContinuation(tn) || SwcTreeNode::isContinuation((parent))) {
           if (SwcTreeNode::hasSignificantOverlap(tn, parent)) {
             redundant = true;
-            option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+            if (SwcTreeNode::isLeaf(tn)) {
+              option = SwcTreeNode::MERGE_W_CHILD;
+            } else {
+              option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+            }
           }
         }
       }
@@ -60,7 +64,11 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
         } else {
           if (SwcTreeNode::isContinuation(tn) && SwcTreeNode::hasOverlap(tn, parent)) {
             redundant = isInterRedundant(tn, parent);
-            option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+            if (SwcTreeNode::isBranchPoint(parent) || SwcTreeNode::isRoot(parent)) {
+              option = SwcTreeNode::MERGE_W_PARENT;
+            } else {
+              option = SwcTreeNode::MERGE_WEIGHTED_AVERAGE;
+            }
           }
         }
       }
@@ -87,6 +95,15 @@ int ZSwcResampler::optimalDownsample(ZSwcTree *tree)
 {
   int n = 0;
   int subn = 0;
+
+  tree->updateIterator();
+  Swc_Tree_Node *tn = tree->begin();
+  while (tn != NULL) {
+    SwcTreeNode::setWeight(tn, 1.0);
+    tn = tn->next;
+  }
+
+
   while ((subn = suboptimalDownsample(tree)) > 0) {
     n += subn;
   }

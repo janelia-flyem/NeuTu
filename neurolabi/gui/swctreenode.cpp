@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <list>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -106,16 +107,20 @@ void SwcTreeNode::setNode(Swc_Tree_Node *tn, int id, int type, double x,
 
 void SwcTreeNode::setPos(Swc_Tree_Node *tn, double x, double y, double z)
 {
-  tn->node.x = x;
-  tn->node.y = y;
-  tn->node.z = z;
+  if (tn != NULL) {
+    tn->node.x = x;
+    tn->node.y = y;
+    tn->node.z = z;
+  }
 }
 
 void SwcTreeNode::setPos(Swc_Tree_Node *tn, const ZPoint &pt)
 {
-  tn->node.x = pt.x();
-  tn->node.y = pt.y();
-  tn->node.z = pt.z();
+  if (tn != NULL) {
+    tn->node.x = pt.x();
+    tn->node.y = pt.y();
+    tn->node.z = pt.z();
+  }
 }
 
 double SwcTreeNode::radius(const Swc_Tree_Node *tn)
@@ -1862,4 +1867,54 @@ void SwcTreeNode::correctTurn(Swc_Tree_Node *tn)
     SwcTreeNode::setZ(tn, z);
     SwcTreeNode::setRadius(tn, r);
   }
+}
+
+double SwcTreeNode::maxBendingEnergy(const Swc_Tree_Node *tn)
+{
+  double e = 0.0;
+
+  std::list<ZPoint> pointList;
+  int count = 0;
+
+  if (isRegular(tn) && !isBranchPoint(tn)) {
+    pointList.insert(pointList.end(), center(tn));
+    ++count;
+    if (childNumber(tn) == 1) {
+      pointList.insert(pointList.end(), center(firstChild(tn)));
+      ++count;
+      if (childNumber(firstChild(tn)) == 1) {
+        pointList.insert(pointList.end(), center(firstChild(firstChild(tn))));
+        ++count;
+      }
+    }
+    if (!isRoot(tn)) {
+      pointList.insert(pointList.begin(), center(parent(tn)));
+      ++count;
+      if (!isRoot(parent(tn))) {
+        pointList.insert(pointList.begin(), center(parent(parent(tn))));
+        ++count;
+      }
+    }
+  }
+
+  if (count > 2) {
+    std::vector<ZPoint> pointArray;
+    pointArray.insert(pointArray.begin(), pointList.begin(), pointList.end());
+    ZPoint v1 = pointArray[1] - pointArray[0];
+    ZPoint v2 = pointArray[2] - pointArray[1];
+    e = v1.cosAngle(v2);
+
+    for (size_t i = 3; i < pointArray.size(); ++i) {
+      v1 = v2;
+      v2 = pointArray[i] - pointArray[i - 1];
+      double tmpE = v1.cosAngle(v2);
+      if (tmpE < e) {
+        e = tmpE;
+      }
+    }
+
+    e = 1.0 - e;
+  }
+
+  return e;
 }

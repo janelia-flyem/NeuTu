@@ -17867,7 +17867,7 @@ void ZTest::test(MainWindow *host)
   resampler.ignoreInterRedundant(true);
   resampler.optimalDownsample(&tree);
 
-  resampler.denseInterpolate(&tree);
+//  resampler.denseInterpolate(&tree);
 
   tree.save(GET_TEST_DATA_DIR + "/test2.swc");
 #endif
@@ -17888,5 +17888,38 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 //  tree.load(GET_TEST_DATA_DIR + "/benchmark/");
+#endif
+
+#if 0
+//  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(2, 0, 0), 1);
+  SwcTreeNode::setParent(tn, root);
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(-2, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(ZPoint(6, 2, 0), 1);
+  SwcTreeNode::setParent(tn3, tn2);
+  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(ZPoint(8, 3, 4), 1);
+  SwcTreeNode::setParent(tn4, tn3);
+
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(root) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn2) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn3) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn4) << std::endl;
+
+//  tree.setDataFromNode(root);
+
+
+#endif
+
+#if 0
+  QColor color(255, 153, 0);
+  std::cout << color.hueF() << std::endl;
+  std::cout << color.saturationF() << std::endl;
+
+  color.setHsv(color.hue(), color.saturation()/2, color.value());
+  std::cout << color.red() << " " << color.green() << " " << color.blue() << std::endl;
+
 #endif
 }

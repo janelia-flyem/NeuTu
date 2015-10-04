@@ -5348,6 +5348,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             ZSwcPath originalPath(root, leaf);
             if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
               originalPath.smooth(true);
+            } else {
+              originalPath.smoothRadius(true);
             }
             originalPath.smoothZ();
 
@@ -5367,9 +5369,6 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               Swc_Tree_Node *tn = *iter;
               tn->tree_state = prevNode->tree_state;
             }
-
-            ZSwcResampler resampler;
-            resampler.ignoreInterRedundant(true);
 
 //            resampler.setDistanceScale(3.0);
 //            resampler.setRadiusScale(0.0);
@@ -5393,6 +5392,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               SwcTreeNode::correctTurn(leaf);
             }
 
+            ZSwcResampler resampler;
+            resampler.ignoreInterRedundant(true);
             resampler.optimalDownsample(&tree);
             begin = tree.firstRegularRoot();
 
@@ -7113,6 +7114,10 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
       }
 #endif
     }
+
+    ZSwcResampler resampler;
+    resampler.ignoreInterRedundant(true);
+    resampler.optimalDownsample(tree);;
 
     ZSwcPath path(branchRoot, tree->firstLeaf());
 
