@@ -10,6 +10,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "zstackdoc.h"
+#include "zflyembookmarkview.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -106,12 +107,16 @@ FlyEmProofControlForm::createSortingProxy(ZFlyEmBookmarkListModel *model)
 
 ZFlyEmBookmarkView* FlyEmProofControlForm::getUserBookmarkView() const
 {
-  return ui->userBookmarkView;
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_USER);
+//  return ui->userBookmarkView;
 }
 
 ZFlyEmBookmarkView* FlyEmProofControlForm::getAssignedBookmarkView() const
 {
-  return ui->bookmarkView;
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+//  return ui->bookmarkView;
 }
 
 void FlyEmProofControlForm::createMenu()
