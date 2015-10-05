@@ -4169,6 +4169,18 @@ bool ZStackDoc::invert()
   return false;
 }
 
+bool ZStackDoc::subtractBackground()
+{
+  ZStack *mainStack = getStack();
+  if (mainStack != NULL) {
+    ZStackProcessor::subtractBackground(mainStack);
+    notifyStackModified();
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::enhanceLine()
 {
   ZStack *mainStack = getStack();

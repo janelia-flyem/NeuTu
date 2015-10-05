@@ -7271,3 +7271,11 @@ void MainWindow::MessageProcessor::processMessage(
 }
 
 
+
+void MainWindow::on_actionSubtract_Background_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame != NULL) {
+    frame->subtractBackground();
+  }
+}

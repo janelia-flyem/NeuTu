@@ -471,6 +471,7 @@ public: //Image processing
   bool enhanceLine();
   bool watershed();
   bool invert();
+  bool subtractBackground();
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();

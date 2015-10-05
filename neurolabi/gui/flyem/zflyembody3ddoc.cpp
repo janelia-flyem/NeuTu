@@ -16,7 +16,7 @@
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
-  m_garbageJustDumped(false), m_showingSynapse(true)
+  m_showingSynapse(true), m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);

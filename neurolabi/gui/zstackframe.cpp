@@ -1401,6 +1401,13 @@ void ZStackFrame::invertStack()
   }
 }
 
+void ZStackFrame::subtractBackground()
+{
+  if (m_doc->hasStackData()) {
+    m_doc->subtractBackground();
+  }
+}
+
 void ZStackFrame::detachParentFrame()
 {
   if (m_parentFrame != NULL) {
