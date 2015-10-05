@@ -1,5 +1,7 @@
 #include "zdvidtileensemble.h"
 #include <QRect>
+#include <QElapsedTimer>
+
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
@@ -99,12 +101,14 @@ void ZDvidTileEnsemble::update(
     if (!tile_locs_array.empty()) {
       libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
                                        getDvidTarget().getUuid());
-#ifdef _DEBUG_2
       std::cout << "Reading tiles ..." << std::endl;
-#endif
+      QElapsedTimer timer;
+      timer.start();
       const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
+      std::cout << "Tile reading time: " << timer.elapsed() << std::endl;
+
       size_t dataIndex = 0;
 
 //      QThreadFutureMap futureMap;
