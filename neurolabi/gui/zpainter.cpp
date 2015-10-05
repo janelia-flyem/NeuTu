@@ -375,6 +375,10 @@ bool ZPainter::isVisible(const QRect &rect) const
 
 bool ZPainter::isVisible(const QRectF &rect) const
 {
+  if (m_canvasRange.isEmpty()) {
+    return true;
+  }
+
   QRectF calrRect = rect.normalized();
   calrRect.setLeft(calrRect.left() - 0.5);
   calrRect.setRight(calrRect.right() + 0.5);

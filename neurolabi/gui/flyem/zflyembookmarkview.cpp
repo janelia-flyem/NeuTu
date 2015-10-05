@@ -20,6 +20,21 @@ void ZFlyEmBookmarkView::init()
   setFocusPolicy(Qt::NoFocus);
 
   createMenu();
+  connectSignalSlot();
+}
+
+void ZFlyEmBookmarkView::connectSignalSlot()
+{
+  connect(this, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(processDouleClick(QModelIndex)));
+}
+
+void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = getBookmark(index);
+  if (bookmark != NULL) {
+    emit locatingBookmark(bookmark);
+  }
 }
 
 void ZFlyEmBookmarkView::setBookmarkModel(ZFlyEmBookmarkListModel *model)

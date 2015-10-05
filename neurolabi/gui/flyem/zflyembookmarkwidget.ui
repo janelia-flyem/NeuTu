@@ -15,27 +15,44 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="bookmarkTab">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <property name="elideMode">
+      <enum>Qt::ElideRight</enum>
+     </property>
+     <widget class="QWidget" name="assignedBookmarkTab">
       <attribute name="title">
        <string>Assigned Bookmark</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="ZFlyEmBookmarkView" name="tableView"/>
+        <widget class="ZFlyEmBookmarkView" name="assignedBookmarkView">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="userBookmarkTab">
       <attribute name="title">
        <string>User Bookmark</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="ZFlyEmBookmarkView" name="userBookmarkTableView"/>
+        <widget class="ZFlyEmBookmarkView" name="userBookmarkView">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -47,7 +64,7 @@
   <customwidget>
    <class>ZFlyEmBookmarkView</class>
    <extends>QTableView</extends>
-   <header>flyem/zflyembookmarkview.h</header>
+   <header location="global">flyem/zflyembookmarkview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

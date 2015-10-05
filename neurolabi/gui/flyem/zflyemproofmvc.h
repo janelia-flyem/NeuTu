@@ -316,6 +316,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
   connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodySplitProject*)),
           panel, SLOT(clearBookmarkTable(ZFlyEmBodySplitProject*)));
+  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
+          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));

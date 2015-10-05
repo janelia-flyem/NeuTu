@@ -107,7 +107,7 @@ void ZDvidTileEnsemble::update(
       const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
-      std::cout << "Tile reading time: " << timer.elapsed() << std::endl;
+      std::cout << data.size() << "x tile reading time: " << timer.elapsed() << std::endl;
 
       size_t dataIndex = 0;
 
