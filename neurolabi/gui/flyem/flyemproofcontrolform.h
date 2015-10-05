@@ -10,6 +10,7 @@ class ZDvidTarget;
 class ZFlyEmBodyMergeProject;
 class ZStackDoc;
 class QSortFilterProxyModel;
+class ZFlyEmBookmarkView;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -22,6 +23,9 @@ class FlyEmProofControlForm : public QWidget
 public:
   explicit FlyEmProofControlForm(QWidget *parent = 0);
   ~FlyEmProofControlForm();
+
+  ZFlyEmBookmarkView* getUserBookmarkView() const;
+  ZFlyEmBookmarkView* getAssignedBookmarkView() const;
 
 signals:
   void segmentVisibleChanged(bool visible);
@@ -73,7 +77,7 @@ private:
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
-  ZFlyEmBookmarkListModel m_bookmarkList;
+  ZFlyEmBookmarkListModel m_assignedBookmarkList;
   ZFlyEmBookmarkListModel m_userBookmarkList;
 
   QAction *m_nameColorAction;
