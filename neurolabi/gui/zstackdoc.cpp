@@ -3133,21 +3133,12 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 
 void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
-  //QMutexLocker locker(&m_mutex);
-
   if (obj != NULL) {
     bufferObjectModified(obj);
     m_playerList.removePlayer(obj);
     m_objectGroup.removeObject(obj, deleteObject);
     notifyObjectModified();
   }
-
-  /*
-  notifyObjectModified();
-  notifyPlayerChanged(role);
-  */
-
-//  return role;
 }
 
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)

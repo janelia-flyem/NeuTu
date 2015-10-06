@@ -20,6 +20,14 @@ ZFlyEmBookmark::ZFlyEmBookmark() :
   useCosmeticPen(true);
 }
 
+ZFlyEmBookmark::~ZFlyEmBookmark()
+{
+#ifdef _DEBUG_
+  std::cout << "Deconstructing " << this << ": bookmark " << ", "
+            << getSource() << std::endl;
+#endif
+}
+
 void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
