@@ -578,16 +578,19 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 #ifdef _DEBUG_
     std::cout << objList.size() << " bookmarks" << std::endl;
 #endif
+    std::vector<ZStackObject*> removed;
+
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
           std::cout << "Removing bookmark: " << bookmark << std::endl;
 #endif
-          removeObject(*iter, true);
+          removeObject(*iter, false);
+          removed.push_back(*iter);
         }
       }
     }
@@ -635,6 +638,10 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
           }
         }
       }
+    }
+    for (std::vector<ZStackObject*>::iterator iter = removed.begin();
+         iter != removed.end(); ++iter) {
+      delete *iter;
     }
   }
   endObjectModifiedMode();

@@ -12,6 +12,7 @@ class ZFlyEmBookmark : public ZStackBall
 {
 public:
   ZFlyEmBookmark();
+  ~ZFlyEmBookmark();
 
   enum EBookmarkType {
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
