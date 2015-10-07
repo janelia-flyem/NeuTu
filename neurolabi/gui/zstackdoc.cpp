@@ -886,7 +886,7 @@ void ZStackDoc::swcTreeReduceNodeNumber(double lengthThre)
 
 void ZStackDoc::addSizeForSelectedSwcNode(double dr)
 {
-  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcTreeNodeSet();
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
 
   if (!nodeSet.empty()) {
     static const double minRadius = 0.5;
@@ -3592,20 +3592,29 @@ void ZStackDoc::setSwcTreeNodeSelected(Swc_Tree_Node *tn, bool select)
   }
 }
 
-std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcTreeNodeSet() const
+std::set<Swc_Tree_Node*> ZStackDoc::getUnselectedSwcNodeSet() const
 {
   std::set<Swc_Tree_Node*> swcNodeSet;
 
-  QList<ZSwcTree*> treeList = getSwcList();
-  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter){
-    ZSwcTree *tree = *iter;
-    swcNodeSet.insert(
-          tree->getSelectedNode().begin(), tree->getSelectedNode().end());
+  TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    ZSwcTree::DepthFirstIterator treeIter(tree);
+    treeIter.excludeVirtual(true);
+
+    while (treeIter.hasNext()) {
+      Swc_Tree_Node *tn = treeIter.next();
+      if (!tree->isNodeSelected(tn)) {
+        swcNodeSet.insert(tn);
+      }
+    }
   }
 
   return swcNodeSet;
 }
+
 
 QList<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeList(const ZSwcTree *tree)
 {
@@ -3636,6 +3645,23 @@ QList<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeList() const
 
   return swcNodeList;
 }
+
+/*
+std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcTreeNodeSet() const
+{
+  std::set<Swc_Tree_Node*> swcNodeSet;
+
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter){
+    ZSwcTree *tree = *iter;
+    swcNodeSet.insert(
+          tree->getSelectedNode().begin(), tree->getSelectedNode().end());
+  }
+
+  return swcNodeSet;
+}
+*/
 
 std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
 {
@@ -6317,6 +6343,78 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
       m_swcList[0]->print();
 #endif
       deselectAllSwcTreeNodes();
+      //m_selectedSwcTreeNodes.clear();
+//      blockSignals(false);
+
+//      notifySwcModified();
+//      processObjectModified(targetSet);
+
+      deprecateTraceMask();
+    } else {
+      delete allCommand;
+    }
+
+    succ = true;
+
+    endObjectModifiedMode();
+    notifyObjectModified();
+  }
+
+  notifyStatusMessageUpdated(message);
+
+  return succ;
+}
+
+bool ZStackDoc::executeDeleteUnselectedSwcNodeCommand()
+{
+  bool succ = false;
+  QString message;
+
+  if (hasSelectedSwcNode()) {
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//    QSet<ZStackObject::ETarget> targetSet;
+
+    ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+//    TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+
+    std::set<Swc_Tree_Node*> nodeSet;
+
+    TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZSwcTree* tree = dynamic_cast<ZSwcTree*>(*iter);
+      if (tree->hasSelectedNode()) {
+        ZSwcTree::DepthFirstIterator treeIter(tree);
+        treeIter.excludeVirtual(true);
+
+        while (treeIter.hasNext()) {
+          Swc_Tree_Node *tn = treeIter.next();
+          if (!tree->isNodeSelected(tn)) {
+            nodeSet.insert(tn);
+          }
+        }
+      } else {
+        new ZStackDocCommand::SwcEdit::RemoveSwc(this, tree, allCommand);
+      }
+    }
+
+
+//    std::set<Swc_Tree_Node*> nodeSet = getUnselectedSwcNodeSet();
+
+    new ZStackDocCommand::SwcEdit::DeleteSwcNodeSet(this, nodeSet, allCommand);
+    new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, allCommand);
+
+    if (allCommand->childCount() > 0) {
+      message = QString("%1 node(s) are deleted").arg(nodeSet.size());
+      allCommand->setText(QObject::tr("Delete Selected Node"));
+//      blockSignals(true);
+      pushUndoCommand(allCommand);
+#ifdef _DEBUG_2
+      m_swcList[0]->print();
+#endif
+//      deselectAllSwcTreeNodes();
       //m_selectedSwcTreeNodes.clear();
 //      blockSignals(false);
 

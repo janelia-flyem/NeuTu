@@ -3649,6 +3649,7 @@ void ZSwcTree::ExtIterator::init(const ZSwcTree *tree)
 {
   m_tree = const_cast<ZSwcTree*>(tree);
   m_currentNode = NULL;
+  m_excludingVirtual = false;
 }
 
 
@@ -3696,6 +3697,11 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
   m_currentNode = NULL;
   if (m_tree != NULL) {
     m_currentNode = m_tree->begin();
+    if (m_excludingVirtual) {
+      if (SwcTreeNode::isVirtual(m_currentNode)) {
+        m_currentNode = m_currentNode->next;
+      }
+    }
   }
 
   return m_currentNode;
@@ -3708,7 +3714,16 @@ bool ZSwcTree::DepthFirstIterator::hasNext() const
   }
 
   if (m_currentNode == NULL) {
-    return (m_tree->begin() != NULL);
+    Swc_Tree_Node *first = m_tree->begin();
+    if (first == NULL) {
+      return false;
+    } else {
+      if (m_excludingVirtual) {
+        return first->next != NULL;
+      } else {
+        return first != NULL;
+      }
+    }
   }
 
   return m_currentNode->next != NULL;
@@ -3721,7 +3736,7 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   }
 
   if (m_currentNode == NULL) {
-    m_currentNode = m_tree->begin();
+    begin();
   } else {
     m_currentNode = m_tree->next();
   }

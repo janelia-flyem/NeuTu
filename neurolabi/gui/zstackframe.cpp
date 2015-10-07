@@ -1649,7 +1649,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 void ZStackFrame::zoomToSelectedSwcNodes()
 {
   if (document()->hasSelectedSwcNode()) {
-    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcTreeNodeSet();
+    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcNodeSet();
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 

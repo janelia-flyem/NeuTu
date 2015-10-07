@@ -29,6 +29,10 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   menu->addAction(ZActionFactory::makeAction(
                     ZActionFactory::ACTION_DELETE_SWC_NODE, doc, parentWidget));
 
+  menu->addAction(
+        ZActionFactory::makeAction(
+          ZActionFactory::ACTION_DELETE_UNSELECTED_SWC_NODE, doc, parentWidget));
+
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_DELETE_SWC_NODE));
   //menu->addAction(doc->getAction(ZStackDoc::ACTION_BREAK_SWC_NODE));
   QAction *action = ZActionFactory::makeAction(

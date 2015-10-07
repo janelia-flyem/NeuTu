@@ -700,7 +700,7 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
 const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
 {
   std::set<Swc_Tree_Node*> nodeSet =
-      buddyDocument()->getSelectedSwcTreeNodeSet();
+      buddyDocument()->getSelectedSwcNodeSet();
   if (!nodeSet.empty()) {
     return *(nodeSet.begin());
   }
@@ -2330,7 +2330,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
   {
     if (buddyDocument()->hasSelectedSwcNode()) {
       std::set<Swc_Tree_Node*> nodeSet =
-          buddyDocument()->getSelectedSwcTreeNodeSet();
+          buddyDocument()->getSelectedSwcNodeSet();
       Swc_Tree_Node *prevNode = *(nodeSet.begin());
       if (prevNode != NULL) {
         Swc_Tree_Node *tn = op.getHitObject<Swc_Tree_Node>();

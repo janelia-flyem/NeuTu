@@ -274,12 +274,15 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
 
-  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+//  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+
+  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+  std::set<Swc_Tree_Node*> getUnselectedSwcNodeSet() const;
 
   static QList<Swc_Tree_Node*> getSelectedSwcNodeList(
       const ZSwcTree *tree);
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
-  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+
 
   //ZStackViewParam getSelectedSwcNodeView() const;
 
@@ -962,6 +965,7 @@ public slots: //undoable commands
   virtual bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
   virtual bool executeTranslateSelectedSwcNode();
   virtual bool executeDeleteSwcNodeCommand();
+  virtual bool executeDeleteUnselectedSwcNodeCommand();
   virtual bool executeConnectSwcNodeCommand();
   virtual bool executeChangeSelectedSwcNodeSize();
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);

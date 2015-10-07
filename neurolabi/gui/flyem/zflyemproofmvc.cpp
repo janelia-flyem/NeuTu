@@ -43,6 +43,7 @@
 #include "flyem/zflyemexternalneurondoc.h"
 #include "zfiletype.h"
 #include "z3dpunctafilter.h"
+#include "z3dswcfilter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -54,7 +55,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   exitCurrentDoc();
 
-  m_bodyViewWindow->close();
+  closeAllAssociatedWindow();
+//  m_bodyViewWindow->close();
 //  delete m_coarseBodyWindow;
 //  delete m_bodyWindow;
 //  delete m_splitWindow;
@@ -98,7 +100,8 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->setCentralWidget(m_bodyViewers);
   m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
 
-  connect(m_bodyViewWindow, SIGNAL(closed()), m_bodyViewers, SLOT(closeAllWindows()));
+  connect(m_bodyViewWindow, SIGNAL(closed()),
+          m_bodyViewers, SLOT(closeAllWindows()));
 
   m_bodyWindowFactory =
       QSharedPointer<ZWindowFactory>(new ZFlyEmBodyWindowFactory);
@@ -208,6 +211,11 @@ void ZFlyEmProofMvc::detachSkeletonWindow()
   m_skeletonWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachObjectWindow()
+{
+  m_objectWindow = NULL;
+}
+
 void ZFlyEmProofMvc::detachExternalNeuronWindow()
 {
   m_externalNeuronWindow = NULL;
@@ -230,6 +238,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
               this, SLOT(detachExternalNeuronWindow()));
     } else if (window == m_skeletonWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachSkeletonWindow()));
+    } else if (window == m_objectWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this->getView(), SLOT(setView(ZStackViewParam)));
@@ -1636,6 +1646,22 @@ void ZFlyEmProofMvc::showFineBody3d()
   m_bodyViewWindow->raise();
 }
 
+void ZFlyEmProofMvc::showObjectWindow()
+{
+  if (m_objectWindow == NULL) {
+    ZWindowFactory factory;
+    factory.setDeleteOnClose(true);
+    factory.setVisible(Z3DWindow::LAYER_PUNCTA, false);
+    m_objectWindow =
+        factory.make3DWindow(m_doc, Z3DWindow::INIT_EXCLUDE_VOLUME);
+    m_objectWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    setWindowSignalSlot(m_objectWindow);
+  }
+
+  m_objectWindow->show();
+  m_objectWindow->raise();
+}
+
 void ZFlyEmProofMvc::showSkeletonWindow()
 {
 //  m_mergeProject.showBody3d();
@@ -1660,10 +1686,26 @@ void ZFlyEmProofMvc::closeBodyWindow(int index)
 }
 */
 
+void ZFlyEmProofMvc::close3DWindow(Z3DWindow *window)
+{
+  if (window != NULL) {
+    window->close();
+  }
+}
+
 void ZFlyEmProofMvc::closeBodyWindow(Z3DWindow *window)
 {
   if (window != NULL) {
     window->close();
+  }
+}
+
+void ZFlyEmProofMvc::closeAllAssociatedWindow()
+{
+  close3DWindow(m_objectWindow);
+  close3DWindow(m_externalNeuronWindow);
+  if (m_bodyViewWindow != NULL) {
+    m_bodyViewWindow->close();
   }
 }
 

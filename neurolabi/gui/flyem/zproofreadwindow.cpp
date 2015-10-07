@@ -179,6 +179,10 @@ void ZProofreadWindow::createMenu()
   connect(m_openSkeletonAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showSkeletonWindow()));
 
+  m_openObject3dAction = new QAction("3D Objects", this);
+  connect(m_openObject3dAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showObjectWindow()));
+
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
@@ -190,7 +194,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addSeparator();
-  m_viewMenu->addAction(m_openSkeletonAction);
+  m_viewMenu->addAction(m_openObject3dAction);
   m_viewMenu->addAction(m_openExtNeuronWindowAction);
 
 //  menu->addAction(new QAction("test", menu));
