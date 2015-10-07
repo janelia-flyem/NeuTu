@@ -105,6 +105,11 @@ bool ZDvidReader::startService()
   return true;
 }
 
+bool ZDvidReader::isReady() const
+{
+  return getDvidTarget().isValid();
+}
+
 bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {

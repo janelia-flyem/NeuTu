@@ -1588,10 +1588,10 @@ void ZStackFrame::loadRoi(bool isExclusive)
     QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
     if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).lower() + ".tif").c_str());
     } else if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).upper() + ".tif").c_str());
     }
 
     if (fileInfo.exists()) {

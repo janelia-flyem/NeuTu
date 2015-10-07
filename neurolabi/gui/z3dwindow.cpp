@@ -3979,6 +3979,42 @@ void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
   getRendererBase(layer)->setOpacity(opacity);
 }
 
+void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    getGraphFilter()->setVisible(visible);
+    break;
+  case LAYER_SWC:
+    getSwcFilter()->setVisible(visible);
+    break;
+  case LAYER_PUNCTA:
+    getPunctaFilter()->setVisible(visible);
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+}
+
+bool Z3DWindow::isVisible(ERendererLayer layer) const
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    return getGraphFilter()->isVisible();
+    break;
+  case LAYER_SWC:
+    return getSwcFilter()->isVisible();
+    break;
+  case LAYER_PUNCTA:
+    return getPunctaFilter()->isVisible();
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+
+  return true;
+}
+
 void Z3DWindow::setZScale(double scale)
 {
   setZScale(LAYER_GRAPH, scale);

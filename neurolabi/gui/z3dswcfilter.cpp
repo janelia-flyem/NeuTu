@@ -335,6 +335,17 @@ void Z3DSwcFilter::initSubclassTypeColor()
   }
 }
 
+void Z3DSwcFilter::setVisible(bool v)
+{
+  m_showSwcs.set(v);
+}
+
+bool Z3DSwcFilter::isVisible() const
+{
+  return m_showSwcs.get();
+}
+
+
 void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
   if (pm && !m_pickingObjectsRegistered) {

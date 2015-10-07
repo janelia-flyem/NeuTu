@@ -211,17 +211,20 @@ void ZFlyEmProofDoc::annotateBody(
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
-  m_bodyColorMap.reset();
+  if (m_dvidReader.open(target)) {
+    m_dvidTarget = target;
+    m_bodyColorMap.reset();
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
+  }
 }
 
 void ZFlyEmProofDoc::updateTileData()
 {
-  ZDvidReader reader;
-  if (reader.open(m_dvidTarget)) {
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  if (m_dvidReader.isReady()) {
+    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
     if (dvidInfo.isValid()) {
-
       ZStack *stack = ZStackFactory::makeVirtualStack(
             ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates()));
@@ -306,6 +309,13 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
+  if (m_dvidReader.isReady()) {
+    ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
+    if (annotation.isFinalized()) {
+      return false;
+    }
+  }
+
   return !m_bodyMerger.isMerged(bodyId);
 }
 
@@ -510,7 +520,13 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadSynapse()
 {
-  QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
+  const QString threadId = "downloadSynapse";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
+    m_futureMap[threadId] = future;
+  }
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)

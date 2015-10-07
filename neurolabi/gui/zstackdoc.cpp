@@ -157,6 +157,10 @@ ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
 
 ZStackDoc::~ZStackDoc()
 {
+  if (m_futureMap.hasThreadAlive()) {
+    m_futureMap.waitForFinished();
+  }
+
   deprecate(STACK);
   deprecate(SPARSE_STACK);
 

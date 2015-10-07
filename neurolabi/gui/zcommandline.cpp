@@ -637,7 +637,10 @@ int ZCommandLine::runSkeletonize()
     for (size_t i = 0; i < bodyIdArray.size(); ++i) {
       uint64_t bodyId = bodyIdArray[rank[i] - 1];
       if (excluded.count(bodyId) == 0) {
-        ZSwcTree *tree = reader.readSwc(bodyId);
+        ZSwcTree *tree = NULL;
+        if (!m_forceUpdate) {
+          tree = reader.readSwc(bodyId);
+        }
         if (tree == NULL) {
           ZObject3dScan obj = reader.readBody(bodyId);
           tree = skeletonizer.makeSkeleton(obj);
@@ -730,7 +733,8 @@ int ZCommandLine::run(int argc, char *argv[])
     "[<input:string> ...]",
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
-    "[--skeletonize]", "[--trace] [--level <int>]","[--separate <string>]",
+    "[--skeletonize] [--force]",
+    "[--trace] [--level <int>]","[--separate <string>]",
     "[--test]", "[--verbose]",
     0
   };
@@ -773,6 +777,11 @@ int ZCommandLine::run(int argc, char *argv[])
 
     m_blockFile = ZJsonParser::stringValue(m_configJson["block_file"]);
     m_referenceBlockFile = ZJsonParser::stringValue(m_configJson["block_reference"]);
+  }
+
+  m_forceUpdate = false;
+  if (Is_Arg_Matched(const_cast<char*>("--force"))) {
+    m_forceUpdate = true;
   }
 
 //  ZArgumentProcessor::processArguments(argc, argv, Spec);

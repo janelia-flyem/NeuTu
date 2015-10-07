@@ -52,6 +52,13 @@ public:
    */
   int getStatusCode() const;
 
+  /*!
+   * \brief Check if the reader is ready to use
+   *
+   * \return true iff the reader is ready.
+   */
+  bool isReady() const;
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);

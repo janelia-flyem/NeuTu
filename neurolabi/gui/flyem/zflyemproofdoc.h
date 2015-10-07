@@ -159,6 +159,7 @@ private:
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_dvidReader;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;

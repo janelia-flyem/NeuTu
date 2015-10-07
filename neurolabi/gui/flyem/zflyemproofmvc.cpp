@@ -105,6 +105,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindowFactory->setDeleteOnClose(true);
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
+  m_bodyWindowFactory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
 
   m_bodyViewWindow->m_stayOnTopAction =
       m_bodyViewWindow->toolBar->addAction("Pin");
@@ -253,6 +254,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
 
   connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -294,6 +296,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(m_bodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
 
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -311,6 +314,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(m_skeletonWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
 
   connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -696,8 +700,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getSupervisor()->setDvidTarget(target);
     }
 
-    getCompleteDocument()->downloadSynapse();
-    getCompleteDocument()->downloadBookmark();
+    if (target.isValid()) {
+      getCompleteDocument()->downloadSynapse();
+      getCompleteDocument()->downloadBookmark();
+    }
+
     getProgressSignal()->advanceProgress(0.5);
 
     emit dvidTargetChanged(target);

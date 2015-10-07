@@ -1209,11 +1209,10 @@ private:
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
 
-  QThreadFutureMap m_futureMap;
-
 protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
+  QThreadFutureMap m_futureMap;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

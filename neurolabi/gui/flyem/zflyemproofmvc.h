@@ -65,6 +65,8 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId);
 
+  ZDvidTarget getDvidTarget() const;
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -87,7 +89,6 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
-  ZDvidTarget getDvidTarget() const;
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
