@@ -61,7 +61,7 @@ ZPixmap* ZMultiscalePixmap::getPixmap(int level)
 
     ZPixmap *pixmap = new ZPixmap(m_originalSize / scale);
     pixmap->setVisible(m_visible);
-    pixmap->setOffset(m_offset.x(), m_offset.y());
+    pixmap->setOffset(m_offset.x() / scale, m_offset.y() / scale);
     if (scale > 1) {
       pixmap->setScale(1.0 / scale, 1.0 / scale);
     }

@@ -211,34 +211,35 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
     for (std::set<uint64_t>::const_iterator iter = annotationSet.begin();
          iter != annotationSet.end(); ++iter) {
       uint64_t bodyId = *iter;
-      ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
-      std::string name = annotation.getName();
+      if (bodyId > 0) {
+        ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+        std::string name = annotation.getName();
 
-      bool goodNeuron = true;
-      if (dvidFilter.namedBodyOnly() && name.empty()) {
-        goodNeuron = false;
-      }
-
-      if (goodNeuron) {
-        std::string type;
-        if (!annotation.getType().empty()) {
-          type = annotation.getType();
-        } else if (!name.empty()) {
-          type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
+        bool goodNeuron = true;
+        if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
         }
 
-        ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
-        neuron.setId(bodyId);
-        neuron.setName(name);
-        neuron.setType(type);
-        neuron.setModelPath(m_source);
-        neuron.setVolumePath(m_source);
-        neuron.setThumbnailPath(m_source);
-        neuron.setResolution(m_swcResolution);
-        neuron.setSynapseAnnotation(getSynapseAnnotation());
-        neuron.setSynapseScale(10 * m_swcResolution[0] + 1);
-      }
+        if (goodNeuron) {
+          std::string type;
+          if (!annotation.getType().empty()) {
+            type = annotation.getType();
+          } else if (!name.empty()) {
+            type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
+          }
 
+          ZFlyEmNeuron &neuron = m_neuronArray[realSize++];
+          neuron.setId(bodyId);
+          neuron.setName(name);
+          neuron.setType(type);
+          neuron.setModelPath(m_source);
+          neuron.setVolumePath(m_source);
+          neuron.setThumbnailPath(m_source);
+          neuron.setResolution(m_swcResolution);
+          neuron.setSynapseAnnotation(getSynapseAnnotation());
+          neuron.setSynapseScale(10 * m_swcResolution[0] + 1);
+        }
+      }
     }
   }
   m_neuronArray.resize(realSize);

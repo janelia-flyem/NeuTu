@@ -45,6 +45,7 @@ public:
 
 signals:
   void punctumSelected(ZPunctum*, bool append);
+  void visibleChanged(bool);
 
 protected slots:
   virtual void prepareColor();

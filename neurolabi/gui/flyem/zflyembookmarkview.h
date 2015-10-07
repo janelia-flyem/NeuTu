@@ -26,14 +26,19 @@ public:
 signals:
   void bookmarkChecked(QString key, bool checking);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void locatingBookmark(const ZFlyEmBookmark*);
 
 public slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
 
+private slots:
+  void processDouleClick(const QModelIndex &index);
+
 private:
   void init();
   void createMenu();
+  void connectSignalSlot();
 
 protected:
   void contextMenuEvent(QContextMenuEvent *);

@@ -99,6 +99,17 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
+
+  void selectBody(uint64_t bodyId);
+  template <typename InputIterator>
+  void selectBody(const InputIterator &first, const InputIterator &last);
+
+  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
+
+
+  void downloadSynapseFunc();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -126,7 +137,6 @@ public slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
-  void downloadSynapseFunc();
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
 
@@ -160,6 +170,15 @@ private:
 
   //ZFlyEmBodySplitProject m_splitProject;
 };
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::selectBody(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    selectBody(*iter);
+  }
+}
 
 namespace ZFlyEmProofDocCommand {
 class MergeBody : public ZUndoCommand

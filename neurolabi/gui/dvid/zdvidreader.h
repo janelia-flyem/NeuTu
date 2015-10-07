@@ -84,6 +84,7 @@ public:
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
+  std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
@@ -119,6 +120,7 @@ public:
   int readMaxBodyId();
 
   uint64_t readBodyIdAt(int x, int y, int z);
+  uint64_t readBodyIdAt(const ZIntPoint &pt);
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
@@ -142,6 +144,7 @@ public:
 
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
+  ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
 
 signals:
   void readingDone();

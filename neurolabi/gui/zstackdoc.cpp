@@ -4169,6 +4169,18 @@ bool ZStackDoc::invert()
   return false;
 }
 
+bool ZStackDoc::subtractBackground()
+{
+  ZStack *mainStack = getStack();
+  if (mainStack != NULL) {
+    ZStackProcessor::subtractBackground(mainStack);
+    notifyStackModified();
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::enhanceLine()
 {
   ZStack *mainStack = getStack();
@@ -5348,11 +5360,13 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             ZSwcPath originalPath(root, leaf);
             if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
               originalPath.smooth(true);
-              originalPath.smoothZ();
+            } else {
+              originalPath.smoothRadius(true);
             }
+            originalPath.smoothZ();
 
             if (SwcTreeNode::hasChild(begin)) {
-              if (SwcTreeNode::hasOverlap(begin, prevNode)) {
+              if (SwcTreeNode::hasSignificantOverlap(begin, prevNode)) {
                 begin = SwcTreeNode::firstChild(begin);
               }
             }
@@ -5368,20 +5382,45 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               tn->tree_state = prevNode->tree_state;
             }
 
-            ZSwcResampler resampler;
-            resampler.setDistanceScale(1.5);
+//            resampler.setDistanceScale(3.0);
+//            resampler.setRadiusScale(0.0);
 
             ZSwcTree tree;
             tree.setDataFromNode(begin);
 
 //            Swc_Tree_Remove_Zigzag(tree.data());
-            resampler.optimalDownsample(&tree);
+#ifdef _DEBUG_2
+            tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+
+//            resampler.denseInterpolate(&tree);
+
             begin = tree.firstRegularRoot();
 
             leaf = begin;
             while (SwcTreeNode::firstChild(leaf) != NULL) {
               leaf = SwcTreeNode::firstChild(leaf);
               SwcTreeNode::correctTurn(leaf);
+            }
+
+            ZSwcResampler resampler;
+            resampler.ignoreInterRedundant(true);
+            resampler.optimalDownsample(&tree);
+            begin = tree.firstRegularRoot();
+
+            int count = 1;
+            leaf = begin;
+            while (SwcTreeNode::firstChild(leaf) != NULL) {
+              leaf = SwcTreeNode::firstChild(leaf);
+              ++count;
+            }
+
+            if (count == 2) {
+              if (SwcTreeNode::hasSignificantOverlap(leaf, begin)) {
+                SwcTreeNode::mergeToParent(leaf, SwcTreeNode::MERGE_AVERAGE);
+                leaf = begin;
+              }
             }
 
             message = QString("%1 nodes are added").arg(tree.size(begin));
@@ -7087,6 +7126,10 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
       }
 #endif
     }
+
+    ZSwcResampler resampler;
+    resampler.ignoreInterRedundant(true);
+    resampler.optimalDownsample(tree);;
 
     ZSwcPath path(branchRoot, tree->firstLeaf());
 
@@ -8846,4 +8889,3 @@ void ZStackDoc::removeRect2dRoi()
 {
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
-

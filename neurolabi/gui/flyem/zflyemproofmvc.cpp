@@ -42,6 +42,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemexternalneurondoc.h"
 #include "zfiletype.h"
+#include "z3dpunctafilter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -252,8 +253,10 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
-  setWindowSignalSlot(m_coarseBodyWindow);
 
+  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
+  setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -291,6 +294,9 @@ void ZFlyEmProofMvc::makeBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+  connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_bodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -305,6 +311,9 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -756,6 +765,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(goToBodyBottom()));
   connect(getCompletePresenter(), SIGNAL(goingToBodyTop()),
           this, SLOT(goToBodyTop()));
+  connect(getCompletePresenter(), SIGNAL(selectingBody()),
+          this, SLOT(selectBody()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -955,16 +966,23 @@ void ZFlyEmProofMvc::selectBody()
 {
   bool ok;
 
-  QString text = QInputDialog::getText(this, tr("Go To"),
-                                       tr("Body:"), QLineEdit::Normal,
+  QString text = QInputDialog::getText(this, tr("Select"),
+                                       tr("Select Body:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();
-      std::vector<int> bodyArray = str.toIntegerArray();
-      if (bodyArray.size() == 1) {
-        selectBody((uint64_t) bodyArray[0]);
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      if (!bodyArray.empty()) {
+        getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        updateBodySelection();
       }
+#if 0
+      for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
+           iter != bodyArray.end(); ++iter) {
+        selectBody(*iter);
+      }
+#endif
     }
   }
 }
@@ -2057,10 +2075,13 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
 void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 {
+  /*
   ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
   if (slice != NULL) {
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
+  */
+  getCompleteDocument()->selectBody(bodyId);
   updateBodySelection();
 }
 

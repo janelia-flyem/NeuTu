@@ -3395,7 +3395,7 @@ void MainWindow::test()
   frame->document()->addObject(puncta);
 #endif
 
-#if 0
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -7271,3 +7271,11 @@ void MainWindow::MessageProcessor::processMessage(
 }
 
 
+
+void MainWindow::on_actionSubtract_Background_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame != NULL) {
+    frame->subtractBackground();
+  }
+}

@@ -542,7 +542,91 @@ void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
+{
+  std::vector<ZPunctum*> puncta;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
 
+  if (tbar != NULL) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+//      ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+      ZIntCuboid box = body.getBoundBox();
+      int minZ = box.getFirstCorner().getZ();
+      int maxZ = box.getLastCorner().getZ();
+
+//      ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+      for (int z = minZ; z <= maxZ; ++z) {
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+//            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+//            if (coarseBody.contains(blockIndex)) {
+              if (body.contains(pt)) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+//            }
+          }
+        }
+      }
+    }
+  }
+
+  return puncta;
+}
+
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
+{
+  std::vector<ZPunctum*> puncta;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
+
+  if (tbar != NULL) {
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(getDvidTarget())) {
+      ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+      int minZ = box.getFirstCorner().getZ();
+      int maxZ = box.getLastCorner().getZ();
+
+      ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+      for (int z = minZ; z <= maxZ; ++z) {
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              if (reader.readBodyIdAt(pt) == bodyId) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return puncta;
+}
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
@@ -841,6 +925,14 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 
     processObjectModified(getDvidLabelSlice());
     notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
 }
 

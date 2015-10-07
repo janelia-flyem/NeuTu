@@ -25,15 +25,15 @@
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
 {
-  m_eventLoop = new QEventLoop(this);
-  m_dvidClient = new ZDvidClient(this);
-  m_timer = new QTimer(this);
+//  m_eventLoop = new QEventLoop(this);
+//  m_dvidClient = new ZDvidClient(this);
+//  m_timer = new QTimer(this);
 }
 
 bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-  m_dvidClient->reset();
+//  m_dvidClient->reset();
   m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
   if (serverAddress.isEmpty()) {
@@ -44,8 +44,8 @@ bool ZDvidWriter::open(
     return false;
   }
 
-  m_dvidClient->setServer(serverAddress, port);
-  m_dvidClient->setUuid(uuid);
+//  m_dvidClient->setServer(serverAddress, port);
+//  m_dvidClient->setUuid(uuid);
 
   return true;
 }
@@ -57,8 +57,8 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_dvidTarget = target;
-  m_dvidClient->reset();
-  m_dvidClient->setDvidTarget(target);
+//  m_dvidClient->reset();
+//  m_dvidClient->setDvidTarget(target);
 
   return true;
 }
@@ -70,9 +70,9 @@ bool ZDvidWriter::open(const QString &sourceString)
   return open(target);
 }
 
-void ZDvidWriter::writeSwc(int bodyId, ZSwcTree *tree)
+void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
 {
-  if (tree != NULL && bodyId > 0) {
+  if (tree != NULL) {
     QString tmpPath = QString("%1/%2.swc").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(bodyId);
@@ -98,9 +98,9 @@ void ZDvidWriter::writeSwc(int bodyId, ZSwcTree *tree)
   }
 }
 
-void ZDvidWriter::writeThumbnail(int bodyId, ZStack *stack)
+void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
 {
-  if (stack != NULL && bodyId > 0) {
+  if (stack != NULL) {
     QString tmpPath = QString("%1/%2.mraw").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(bodyId);
@@ -122,9 +122,9 @@ void ZDvidWriter::writeThumbnail(int bodyId, ZStack *stack)
   }
 }
 
-void ZDvidWriter::writeThumbnail(int bodyId, Stack *stack)
+void ZDvidWriter::writeThumbnail(uint64_t bodyId, Stack *stack)
 {
-  if (stack != NULL && bodyId > 0) {
+  if (stack != NULL) {
     Mc_Stack mstack;
     C_Stack::view(stack, &mstack);
     ZStack stackObj(&mstack, NULL);

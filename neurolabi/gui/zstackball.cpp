@@ -286,6 +286,7 @@ void ZStackBall::displayHelper(
     rect.setHeight(adjustedRadius + adjustedRadius);
 
     painter->setBrush(Qt::NoBrush);
+    pen.setWidthF(pen.widthF() * 0.5);
     painter->setPen(pen);
 
 #if 0 //for future versions

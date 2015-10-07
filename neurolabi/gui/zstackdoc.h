@@ -471,6 +471,7 @@ public: //Image processing
   bool enhanceLine();
   bool watershed();
   bool invert();
+  bool subtractBackground();
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
@@ -916,6 +917,7 @@ public:
   inline Swc_Tree_Node* getLastAddedSwcNode() const {
     return m_lastAddedSwcNode;
   }*/
+
 
 public slots: //undoable commands
   /*!

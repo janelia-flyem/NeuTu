@@ -215,12 +215,14 @@ void ZSwcTree::save(const char *filePath)
     }
 
     ZSwcTree::DepthFirstIterator iter(this);
-    iter.begin();
+//    iter.begin();
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();
-      fprintf(fp, "%d %d %g %g %g %g %d\n",
-          tn->node.id, tn->node.type, tn->node.x, tn->node.y,
-          tn->node.z, tn->node.d, tn->node.parent_id);
+      if (SwcTreeNode::isRegular(tn)) {
+        fprintf(fp, "%d %d %g %g %g %g %d\n",
+                tn->node.id, tn->node.type, tn->node.x, tn->node.y,
+                tn->node.z, tn->node.d, tn->node.parent_id);
+      }
     }
 
     fclose(fp);
@@ -3242,8 +3244,8 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(255, 153, 0, 255);
-    m_terminalFocusColor = QColor(255, 153, 0);
+    m_terminalColor = QColor(200, 200, 0, 255);
+    m_terminalFocusColor = QColor(200, 200, 0);
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
@@ -3254,8 +3256,8 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     break;
   case COLOR_ROI_CURVE:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(255, 153, 0, 255);
-    m_terminalFocusColor = QColor(255, 153, 0);
+    m_terminalColor = QColor(200, 200, 0, 255);
+    m_terminalFocusColor = QColor(200, 200, 0);
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 128);

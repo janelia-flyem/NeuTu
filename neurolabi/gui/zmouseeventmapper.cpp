@@ -345,7 +345,9 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       } else {
         if (getDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
-          op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
+          if (event.getModifiers() == Qt::ShiftModifier) {
+            op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
+          }
         }
       }
     }

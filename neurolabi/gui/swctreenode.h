@@ -402,7 +402,12 @@ void setParent(Swc_Tree_Node *tn, Swc_Tree_Node *parent,
 void setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child);
 void detachParent(Swc_Tree_Node *tn);
 void adoptChildren(Swc_Tree_Node *newParent, Swc_Tree_Node *oldParent);
-void mergeToParent(Swc_Tree_Node *tn);
+
+enum EMergeOption {
+  MERGE_W_PARENT, MERGE_W_CHILD, MERGE_AVERAGE, MERGE_WEIGHTED_AVERAGE
+};
+
+void mergeToParent(Swc_Tree_Node *tn, EMergeOption option = MERGE_W_PARENT);
 
 //Destructors
 //Delete <tn> and all its descendents
@@ -589,6 +594,8 @@ bool hasSignificantOverlap(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 bool isTurn(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
             const Swc_Tree_Node *tn3);
 
+double maxBendingEnergy(const Swc_Tree_Node *tn);
+
 /*!
  * \brief Normalized dot product between two node edges
  *
@@ -626,6 +633,8 @@ bool biggerThanWeight(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 //Interaction
 void average(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+             Swc_Tree_Node *out);
+void weightedAverage(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
 
 /*!

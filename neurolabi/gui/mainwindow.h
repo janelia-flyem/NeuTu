@@ -458,6 +458,8 @@ private slots:
 
   void on_actionProof_triggered();
 
+  void on_actionSubtract_Background_triggered();
+
 private:
   void createActions();
   void createFileActions();
