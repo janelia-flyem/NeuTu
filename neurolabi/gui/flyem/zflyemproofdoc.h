@@ -73,6 +73,9 @@ public:
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
+  void addSelectedBody(
+      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
@@ -99,7 +102,6 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
-
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
@@ -118,6 +120,7 @@ public:
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect);
+  void selectBodyInRoi(int z, bool appending);
 
 signals:
   void bodyMerged();
@@ -165,10 +168,6 @@ private:
   ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
-//  mutable ZIntCuboid m_splitRoi;
-
-
-  //ZFlyEmBodySplitProject m_splitProject;
 };
 
 template <typename InputIterator>

@@ -25,9 +25,15 @@
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
 {
+  init();
 //  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
 //  m_timer = new QTimer(this);
+}
+
+void ZDvidWriter::init()
+{
+  m_statusCode = 0;
 }
 
 bool ZDvidWriter::open(

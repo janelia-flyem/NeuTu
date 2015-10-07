@@ -90,6 +90,18 @@ void ZFlyEmProofDoc::setSelectedBody(
   }
 }
 
+void ZFlyEmProofDoc::addSelectedBody(
+    std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+{
+  if (getDvidLabelSlice() != NULL) {
+    if (!selected.empty()) {
+      getDvidLabelSlice()->addSelection(
+            selected.begin(), selected.end(), labelType);
+      emit bodySelectionChanged();
+    }
+  }
+}
+
 void ZFlyEmProofDoc::setSelectedBody(
     uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
@@ -845,6 +857,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
 
   executeRemoveObjectCommand(getSplitRoi());
 
+  roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
 //    addObject(roi);
 //  }
@@ -940,6 +953,25 @@ void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
   ZDvidLabelSlice *slice = getDvidLabelSlice();
   if (slice != NULL) {
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
+void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
+{
+  ZRect2d rect = getRect2dRoi();
+
+  if (rect.isValid()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      std::set<uint64_t> bodySet = reader.readBodyId(
+            rect.getFirstX(), rect.getFirstY(), z,
+            rect.getWidth(), rect.getHeight(), 1);
+      if (appending) {
+        addSelectedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+      } else {
+        setSelectedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+      }
+    }
   }
 }
 

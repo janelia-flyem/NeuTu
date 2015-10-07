@@ -767,6 +767,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(goToBodyTop()));
   connect(getCompletePresenter(), SIGNAL(selectingBody()),
           this, SLOT(selectBody()));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
+          this, SLOT(selectBodyInRoi(bool)));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -1370,6 +1372,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         getDocument()->addObject(body, true);
         m_splitProject.setBodyId(bodyId);
 
+        getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
         labelSlice->setVisible(false);
         labelSlice->setHittable(false);
         body->setVisible(true);
@@ -1478,6 +1482,7 @@ void ZFlyEmProofMvc::exitSplit()
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_ROI);
 //    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
@@ -2161,6 +2166,11 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       updateUserBookmarkTable();
     }
   }
+}
+
+void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
+{
+  getCompleteDocument()->selectBodyInRoi(getView()->getCurrentZ(), appending);
 }
 
 void ZFlyEmProofMvc::updateUserBookmarkTable()

@@ -23,6 +23,13 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 {
   if (p != NULL || ignoreNull) {
     int z = iround(p->getZ()) - m_zStart;
+
+#ifdef _DEBUG_
+    if (z == 9447) {
+      std::cout << "debug here" << std::endl;
+    }
+#endif
+
     if (m_puncta.size() <= z) {
       m_puncta.resize(z + 1);
     }

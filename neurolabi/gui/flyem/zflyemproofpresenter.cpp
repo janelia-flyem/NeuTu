@@ -73,6 +73,7 @@ void ZFlyEmProofPresenter::configKeyMap()
         m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
   config->configure(
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+  config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
   config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
 }
 
@@ -249,6 +250,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_BOOKMARK_ANNOTATE:
     emit annotatingBookmark(op.getHitObject<ZFlyEmBookmark>());
+    break;
+  case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
+    emit selectingBodyInRoi(true);
     break;
   default:
     break;

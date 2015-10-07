@@ -65,9 +65,6 @@ public:
 
   QMainWindow* getMainWindow() const;
 
-  //void emitMessage(const QString &msg, bool appending = true);
-  //void emitError(const QString &msg, bool appending = true);
-
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
 protected: // Events

@@ -129,6 +129,7 @@ private:
   bool runCommand(QProcess &process);
 
   void parseStandardOutput();
+  void init();
 
 private:
 //  QEventLoop *m_eventLoop;

@@ -109,6 +109,7 @@ public slots:
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
+  void selectBodyInRoi(bool appending);
 
   void showBody3d();
   void showSplit3d();

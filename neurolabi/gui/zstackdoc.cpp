@@ -3699,15 +3699,19 @@ ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
   }
 }
 */
-void ZStackDoc::deselectAllObject()
+void ZStackDoc::deselectAllObject(bool recursive)
 {
   //m_selectedSwcTreeNodes.clear();
-  deselectAllSwcTreeNodes();
+  if (recursive) {
+    deselectAllSwcTreeNodes();
+  }
 
-  QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
-  foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
-    if (labelSlice->isHittable()) {
-      labelSlice->deselectAll();
+  if (recursive) {
+    QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
+    foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
+      if (labelSlice->isHittable()) {
+        labelSlice->deselectAll();
+      }
     }
   }
 
@@ -8870,6 +8874,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
 {
   if (rect != NULL) {
+    rect->setRole(ZStackObjectRole::ROLE_ROI);
     removeObject(rect, false);
     executeAddObjectCommand(rect);
     processObjectModified(rect);

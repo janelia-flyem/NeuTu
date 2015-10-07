@@ -633,7 +633,7 @@ public:
   template <class InputIterator>
   void setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllSwcTreeNodes();
-  void deselectAllObject();
+  void deselectAllObject(bool recursive = true);
   void deselectAllObject(ZStackObject::EType type);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;

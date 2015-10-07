@@ -145,6 +145,7 @@ void ZStackPresenter::configKeyMap()
         m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
   config->configure(
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+  config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
 }
 
 void ZStackPresenter::clearData()
@@ -1077,6 +1078,24 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
   return taken;
 }
 
+bool ZStackPresenter::processKeyPressEventForObject(QKeyEvent *event)
+{
+  bool taken = false;
+
+  ZStackOperator::EOperation opId =
+      m_objectKeyOperationMap.getOperation(event->key(), event->modifiers());
+  if (isOperatable(opId)) {
+    ZStackOperator op;
+    op.setOperation(opId);
+    if (!op.isNull()) {
+      taken = true;
+      process(op);
+    }
+  }
+
+  return taken;
+}
+
 bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
 {
   bool taken = false;
@@ -1189,15 +1208,21 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     return processed;
   }
 
+  if (processKeyPressEventForObject(event)) {
+    return processed;
+  }
+
   if (processKeyPressEventForStack(event)) {
     return processed;
   }
 
   switch (event->key()) {
+  /*
   case Qt::Key_Backspace:
   case Qt::Key_Delete:
     buddyDocument()->executeRemoveSelectedObjectCommand();
     break;
+    */
   case Qt::Key_P:
     if (event->modifiers() == Qt::ControlModifier) {
       if (interactiveContext().isProjectView()) {
@@ -2503,7 +2528,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED);
     break;
   case ZStackOperator::OP_OBJECT_SELECT_SINGLE:
-    buddyDocument()->deselectAllObject();
+    buddyDocument()->deselectAllObject(false);
     if (op.getHitObject<ZStackObject>() != NULL) {
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
@@ -2511,7 +2536,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
-    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    buddyDocument()->deselectAllObject(false);
+//    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
     if (op.getHitObject<ZStackObject>() != NULL) {
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
@@ -2879,6 +2905,9 @@ void ZStackPresenter::process(const ZStackOperator &op)
         buddyView()->paintActiveDecoration();
       }
     }
+    break;
+  case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
+    buddyDocument()->executeRemoveSelectedObjectCommand();
     break;
 #if 0
   case ZStackOperator::OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE:
