@@ -1,9 +1,16 @@
 #!/bin/bash
 
-dataDir=../data
+cd ..
+neurolabiDir=$PWD
+dataDir=data
 cd $dataDir
 fileList=`find bigneuron | grep 'v3dpbd$'`
-neuTube=../neuTube/neuTube.app/Contents/MacOS/neuTube
+if [ `uname` == 'Linux' ]
+then
+  neuTube=$neurolabiDir/neuTube_Release/neuTube
+else
+  neuTube=../neuTube/neuTube.app/Contents/MacOS/neuTube
+fi
 for file in $fileList
 do
   filePath=$PWD/$file
