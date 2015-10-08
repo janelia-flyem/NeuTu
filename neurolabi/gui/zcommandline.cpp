@@ -434,6 +434,7 @@ int ZCommandLine::runTraceNeuron()
   signal.load(m_input[0]);
 
   ZNeuronTracer tracer;
+  tracer.setIntensityField(&signal);
 //  tracer.initTraceWorkspace(&signal);
 //  tracer.initConnectionTestWorkspace();
 
