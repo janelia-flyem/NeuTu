@@ -235,6 +235,7 @@ public:
       const std::vector<std::vector<double> > &selected);
 
   void invertStack();
+  void subtractBackground();
   void removeChildFrame(ZStackFrame *frame);
   void detachParentFrame();
   void removeAllChildFrame();

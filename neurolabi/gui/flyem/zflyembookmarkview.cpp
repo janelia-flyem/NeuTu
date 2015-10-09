@@ -14,9 +14,43 @@ ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
 
 void ZFlyEmBookmarkView::init()
 {
+  m_bookmarkModel = NULL;
+  m_proxy = NULL;
+
   setFocusPolicy(Qt::NoFocus);
 
   createMenu();
+  connectSignalSlot();
+}
+
+void ZFlyEmBookmarkView::connectSignalSlot()
+{
+  connect(this, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(processDouleClick(QModelIndex)));
+}
+
+void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = getBookmark(index);
+  if (bookmark != NULL) {
+    emit locatingBookmark(bookmark);
+  }
+}
+
+void ZFlyEmBookmarkView::setBookmarkModel(ZFlyEmBookmarkListModel *model)
+{
+  m_bookmarkModel = model;
+
+  if (m_proxy == NULL) {
+    m_proxy = new QSortFilterProxyModel(this);
+    m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    setModel(m_proxy);
+    setSortingEnabled(true);
+  }
+
+  m_proxy->setSourceModel(m_bookmarkModel);
 }
 
 void ZFlyEmBookmarkView::createMenu()
@@ -57,13 +91,31 @@ void ZFlyEmBookmarkView::keyPressEvent(QKeyEvent *event)
 
 ZFlyEmBookmarkListModel* ZFlyEmBookmarkView::getModel() const
 {
-  return qobject_cast<ZFlyEmBookmarkListModel*>(model());
+  return m_bookmarkModel;
+//  return qobject_cast<ZFlyEmBookmarkListModel*>(model());
+}
+
+const ZFlyEmBookmark* ZFlyEmBookmarkView::getBookmark(
+    const QModelIndex &viewIndex) const
+{
+  QModelIndex index = viewIndex;
+  if (m_proxy != NULL) {
+    index = m_proxy->mapToSource(viewIndex);
+  }
+
+  if (getModel() != NULL) {
+    return getModel()->getBookmark(index.row());
+  }
+
+  return NULL;
 }
 
 void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
 {
   QItemSelectionModel *sel = selectionModel();
-  QModelIndexList selected = sel->selectedIndexes();
+  QItemSelection sourceSelection = m_proxy->mapSelectionToSource(sel->selection());
+
+  QModelIndexList selected = sourceSelection.indexes();
 
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
@@ -83,4 +135,11 @@ void ZFlyEmBookmarkView::checkCurrentBookmark()
 void ZFlyEmBookmarkView::uncheckCurrentBookmark()
 {
   checkCurrentBookmark(false);
+}
+
+void ZFlyEmBookmarkView::sort()
+{
+  if (m_proxy != NULL) {
+    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+  }
 }

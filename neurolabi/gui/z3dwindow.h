@@ -165,7 +165,8 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
-
+  void setVisible(ERendererLayer layer, bool visible);
+  bool isVisible(ERendererLayer layer) const;
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -178,8 +179,8 @@ public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler();
   Z3DCameraParameter* getCamera();
   inline Z3DCanvasRenderer* getCanvasRenderer() { return m_canvasRenderer; }
-  inline Z3DPunctaFilter* getPunctaFilter() { return m_punctaFilter; }
-  inline Z3DSwcFilter* getSwcFilter() { return m_swcFilter; }
+  inline Z3DPunctaFilter* getPunctaFilter() const { return m_punctaFilter; }
+  inline Z3DSwcFilter* getSwcFilter() const { return m_swcFilter; }
   inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
   inline Z3DCanvas* getCanvas() { return m_canvas; }
   inline const Z3DCanvas* getCanvas() const { return m_canvas; }
@@ -187,9 +188,9 @@ public: //Components
   Z3DRendererBase* getRendererBase(ERendererLayer layer);
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
-  inline Z3DGraphFilter* getGraphFilter() { return m_graphFilter; }
-  inline Z3DCompositor* getCompositor() { return m_compositor; }
-  inline Z3DVolumeSource *getVolumeSource() { return m_volumeSource; }
+  inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
+  inline Z3DCompositor* getCompositor() const { return m_compositor; }
+  inline Z3DVolumeSource *getVolumeSource() const { return m_volumeSource; }
   inline Z3DAxis *getAxis() { return m_axis; }
   const std::vector<double>& getBoundBox() const { return m_boundBox; }
 

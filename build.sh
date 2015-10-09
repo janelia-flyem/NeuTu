@@ -13,10 +13,17 @@ then
   exit 1
 fi
 
-if [ $1 == */qmake ]
+echo $1 |grep '/qmake$'
+
+if [ $? -eq 0 ]
 then
   QMAKE=$1
   shift
+  if [ $# -lt 1 ]
+  then
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+    exit 1
+  fi
   QMAKE_SPEC=$1
   shift
 else

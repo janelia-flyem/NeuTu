@@ -248,6 +248,7 @@ using namespace std;
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
+#include "flyem/zflyemproofdoc.h"
 
 using namespace std;
 
@@ -17565,9 +17566,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(200014980);
-  bodyArray.push_back(4434956);
-  bodyArray.push_back(103577490);
+  bodyArray.push_back(200015305);
   bodyArray.push_back(63800311);
 
   std::vector<ZIntPoint> posArray;
@@ -17744,7 +17743,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir =
       GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/neurons_affine";
   std::string baseName = "MBON-a2sc_affreg";
@@ -17774,19 +17773,28 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   std::string dataDir =
-      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/affreg";
-  std::string baseName = "KC_abap_warped";
+      GET_TEST_DATA_DIR + "/flyem/MB/light/2015alphalobe/KCandMBON/MBON/affine";
 
-  ZSwcTree tree;
-  tree.load(dataDir + "/" + baseName + ".swc");
+  QList<std::string> baseNameList;
+  baseNameList << "MBON-b1-a_affreg";
+//  baseNameList << "KC_abs_aligned";
+//  baseNameList << "MBON-a_3_affreg";
+//  baseNameList << "MBON-a_3_aligned";
+//  baseNameList << "MBON-a2sc_affreg";
+//  baseNameList << "MBON-a2sc_aligned";
 
-  tree.rescale(20, 20, 20, false);
-  tree.changeRadius(0, 10.0);
+  foreach (const std::string &baseName, baseNameList) {
+    ZSwcTree tree;
+    tree.load(dataDir + "/" + baseName + ".swc");
 
-  ZSwcResampler sampler;
-  sampler.radiusResample(&tree);
+    tree.rescale(20, 20, 20, false);
+    tree.changeRadius(0, 20.0);
 
-  tree.save(dataDir + "/" + baseName + "_scalesampled.swc");
+    ZSwcResampler sampler;
+    sampler.radiusResample(&tree);
+
+    tree.save(dataDir + "/" + baseName + "_scaled.swc");
+  }
 #endif
 
 #if 0
@@ -17805,4 +17813,113 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZObject3dScan oldRoi;
+  oldRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+
+  ZObject3dScan newRoi;
+  newRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/deeper_roi.sobj");
+
+  ZObject3dScan patchRoi = oldRoi.getSlice(351);
+  patchRoi.concat(newRoi.getSlice(353));
+
+
+  patchRoi = patchRoi.interpolateSlice(352);
+  patchRoi.save(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(
+        patchRoi, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/sample.swc");
+  ZSwcResampler resampler;
+  resampler.optimalDownsample(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
+  doc->downloadSynapseFunc();
+
+  ZDvidReader reader;
+
+//  reader.open(doc->getDvidTarget());
+//  ZObject3dScan body = reader.readBody(12918474);
+  tic();
+//  std::vector<ZPunctum*> puncta = doc->getTbar(body);
+  std::vector<ZPunctum*> puncta = doc->getTbar(12918474);
+  std::cout << toc() << "ms" << std::endl;
+
+  std::cout << puncta.size() << "tbar found" << std::endl;
+
+  delete doc;
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  ZSwcResampler resampler;
+  resampler.ignoreInterRedundant(true);
+  resampler.optimalDownsample(&tree);
+
+//  resampler.denseInterpolate(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 1, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(10, 0, 3.9), 2);
+  SwcTreeNode::setParent(tn, root);
+
+  tree.setDataFromNode(root);
+
+  ZSwcResampler resampler;
+  resampler.denseInterpolate(&tree);
+
+  tree.resortId();
+  tree.print();
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+//  tree.load(GET_TEST_DATA_DIR + "/benchmark/");
+#endif
+
+#if 0
+//  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(2, 0, 0), 1);
+  SwcTreeNode::setParent(tn, root);
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(-2, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(ZPoint(6, 2, 0), 1);
+  SwcTreeNode::setParent(tn3, tn2);
+  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(ZPoint(8, 3, 4), 1);
+  SwcTreeNode::setParent(tn4, tn3);
+
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(root) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn2) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn3) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn4) << std::endl;
+
+//  tree.setDataFromNode(root);
+
+
+#endif
+
+#if 0
+  QColor color(255, 153, 0);
+  std::cout << color.hueF() << std::endl;
+  std::cout << color.saturationF() << std::endl;
+
+  color.setHsv(color.hue(), color.saturation()/2, color.value());
+  std::cout << color.red() << " " << color.green() << " " << color.blue() << std::endl;
+
+#endif
 }

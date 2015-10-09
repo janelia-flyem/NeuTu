@@ -3,7 +3,7 @@
     "include": "skeletonize.json"
   },
   "trace": {
-    "include": "trace.json"
+    "include": "trace_config.json"
   }
 }
 

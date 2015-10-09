@@ -46,6 +46,19 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  /*!
+   * \brief Get the status code of the latest request (NOT functioning yet)
+   * \return
+   */
+  int getStatusCode() const;
+
+  /*!
+   * \brief Check if the reader is ready to use
+   *
+   * \return true iff the reader is ready.
+   */
+  bool isReady() const;
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(int bodyId);
   ZObject3dScan readBody(int bodyId);
@@ -65,25 +78,18 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
-#if 0
-  /*!
-   * \brief Read a stack of labels (Obsolete)
-   *
-   *  Obsolete function. Use readLabels64() instead.
-   */
-  ZStack* readBodyLabel(
-      int x0, int y0, int z0, int width, int height, int depth);
-#endif
-
   QString readInfo(const QString &dataName) const;
 
   std::set<uint64_t> readBodyId(
-      int x0, int y0, int z0, int width, int height, int depth);
+      int x0, int y0, int z0, int width, int height, int depth,
+      bool ignoringZero = true);
   std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
-                              const ZIntPoint &lastCorner);
+                                const ZIntPoint &lastCorner,
+                                bool ignoringZero = true);
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
+  std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key);
   QByteArray readKeyValue(const QString &dataName, const QString &key);
@@ -119,6 +125,7 @@ public:
   int readMaxBodyId();
 
   uint64_t readBodyIdAt(int x, int y, int z);
+  uint64_t readBodyIdAt(const ZIntPoint &pt);
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
@@ -142,6 +149,7 @@ public:
 
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
+  ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
 
 signals:
   void readingDone();
@@ -160,6 +168,8 @@ private:
   void waitForReading();
   bool startService();
 
+  void init();
+
 protected:
   QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
@@ -167,6 +177,7 @@ protected:
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
+  int m_statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService *m_service;
 #endif

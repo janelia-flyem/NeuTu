@@ -17,6 +17,7 @@ class ZFlyEmBookmark;
 class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
+class ZSlicedPuncta;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -72,6 +73,9 @@ public:
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
+  void addSelectedBody(
+      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
@@ -98,6 +102,16 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
+  void selectBody(uint64_t bodyId);
+  template <typename InputIterator>
+  void selectBody(const InputIterator &first, const InputIterator &last);
+
+  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
+
+
+  void downloadSynapseFunc();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -105,7 +119,8 @@ public:
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
-  void updateSplitRoi();
+  void updateSplitRoi(ZRect2d *rect);
+  void selectBodyInRoi(int z, bool appending);
 
 signals:
   void bodyMerged();
@@ -113,6 +128,7 @@ signals:
   void userBookmarkModified();
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
+  void bodyMapReady();
 
 public slots:
   void updateDvidLabelObject();
@@ -121,6 +137,7 @@ public slots:
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
+  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
 
 protected:
   void autoSave();
@@ -132,6 +149,9 @@ private:
   void decorateTBar(ZPuncta *puncta);
   void decoratePsd(ZPuncta *puncta);
 
+  void decorateTBar(ZSlicedPuncta *puncta);
+  void decoratePsd(ZSlicedPuncta *puncta);
+
   void init();
   void initTimer();
   void initAutoSave();
@@ -139,6 +159,7 @@ private:
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_dvidReader;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
@@ -148,11 +169,16 @@ private:
   ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
-//  mutable ZIntCuboid m_splitRoi;
-
-
-  //ZFlyEmBodySplitProject m_splitProject;
 };
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::selectBody(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    selectBody(*iter);
+  }
+}
 
 namespace ZFlyEmProofDocCommand {
 class MergeBody : public ZUndoCommand

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+dataDir=../data
+cd $dataDir
+fileList=`find bigneuron | grep 'v3dpbd$'`
+neuTube=../neuTube/neuTube.app/Contents/MacOS/neuTube
+for file in $fileList
+do
+  filePath=$PWD/$file
+  echo $filePath
+  outfile="$filePath".neutube_autotrace.swc
+  if [ ! -f $outfile ]
+  then
+    $neuTube --command --trace $filePath -o $outfile
+  fi
+done
+ 

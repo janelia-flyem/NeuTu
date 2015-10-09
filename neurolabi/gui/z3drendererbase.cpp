@@ -232,6 +232,10 @@ Z3DRendererBase::~Z3DRendererBase()
   }
 }
 
+#if !defined(M_LOG2E)
+#  define M_LOG2E 1.44269504088896340735992468100189214
+#endif
+
 void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye eye)
 {
   shader.setLogUniformLocationError(false);

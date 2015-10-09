@@ -58,6 +58,157 @@ bool ZUndoCommand::isSaved(NeuTube::EDocumentableType type) const
   return false;
 }
 
+ZStackDocCommand::SwcEdit::ChangeSwcCommand::ChangeSwcCommand(
+    ZStackDoc *doc, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc)
+{
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcCommand::~ChangeSwcCommand()
+{
+  for (std::set<Swc_Tree_Node*>::const_iterator iter = m_garbageSet.begin();
+       iter != m_garbageSet.end(); ++iter) {
+    delete *iter;
+  }
+
+  for (std::set<Swc_Tree_Node*>::const_iterator iter = m_removedNodeSet.begin();
+       iter != m_removedNodeSet.end(); ++iter) {
+    delete *iter;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::redo()
+{
+  ZUndoCommand::redo();
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::recover()
+{
+  m_garbageSet.insert(m_newNodeSet.begin(), m_newNodeSet.end());
+  m_newNodeSet.clear();
+  m_removedNodeSet.clear();
+  for (std::map<Swc_Tree_Node*, Swc_Tree_Node>::iterator
+       iter = m_backupSet.begin(); iter != m_backupSet.end(); ++iter) {
+    *(iter->first) = iter->second;
+  }
+  m_backupSet.clear();
+
+  m_doc->deprecateTraceMask();
+
+  m_doc->processSwcModified();
+  m_doc->notifyObjectModified();
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::undo()
+{
+  recover();
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::backup(Swc_Tree_Node *tn)
+{
+  if (tn != NULL) {
+    if (m_backupSet.count(tn) == 0) {
+      m_backupSet[tn] = *tn;
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::backupChildren(
+    Swc_Tree_Node *tn)
+{
+  if (tn != NULL) {
+    Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+    while (child != NULL) {
+      backup(child);
+      child = SwcTreeNode::nextSibling(child);
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::backupChildren(
+    Swc_Tree_Node *tn, EOperation op, ERole role)
+{
+  if (tn != NULL) {
+    Swc_Tree_Node *child = SwcTreeNode::firstChild(tn);
+    while (child != NULL) {
+      backup(child, op, role);
+      child = SwcTreeNode::nextSibling(child);
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::backup(
+    Swc_Tree_Node *tn, EOperation op, ERole role)
+{
+  if (tn == NULL) {
+    return;
+  }
+
+  backup(tn);
+
+  switch (op) {
+  case OP_SET_FIRST_CHILD:
+    switch (role) {
+    case ROLE_CHILD:
+      backup(SwcTreeNode::parent(tn));
+      backup(SwcTreeNode::nextSibling(tn));
+      backup(SwcTreeNode::prevSibling(tn));
+      break;
+    case ROLE_PARENT:
+      backup(SwcTreeNode::firstChild(tn));
+      break;
+    default:
+      break;
+    }
+    break;
+  case OP_SET_PARENT:
+    switch (role) {
+    case ROLE_CHILD:
+      backup(SwcTreeNode::parent(tn));
+      backup(SwcTreeNode::nextSibling(tn));
+      backup(SwcTreeNode::prevSibling(tn));
+      break;
+    case ROLE_PARENT:
+      backup(SwcTreeNode::lastChild(tn));
+      break;
+    default:
+      break;
+    }
+    break;
+  case OP_DETACH_PARENT:
+    backup(SwcTreeNode::parent(tn));
+    backup(SwcTreeNode::nextSibling(tn));
+    backup(SwcTreeNode::prevSibling(tn));
+    break;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::addNewNode(Swc_Tree_Node *tn)
+{
+  m_newNodeSet.insert(tn);
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcCommand::recordRemovedNode(Swc_Tree_Node *tn)
+{
+  m_removedNodeSet.insert(tn);
+}
+
+///////////////////////////////////////////////
+class ChangeSwcCommand : public ZUndoCommand
+{
+public:
+  ChangeSwcCommand(ZStackDoc *doc);
+  virtual ~ChangeSwcCommand();
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  std::map<Swc_Tree_Node*, Swc_Tree_Node> m_backupSet;
+  std::set<Swc_Tree_Node*> m_newNodeSet;
+  std::set<Swc_Tree_Node*> m_garbageSet;
+};
+
 ZStackDocCommand::SwcEdit::TranslateRoot::TranslateRoot(
     ZStackDoc *doc, double x, double y, double z, QUndoCommand *parent)
   :ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z)
@@ -387,18 +538,37 @@ ZStackDocCommand::SwcEdit::RemoveSubtree::~RemoveSubtree()
 
 
 ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
-    ZStackDoc *doc, QUndoCommand *parent) : CompositeCommand(doc, parent)
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
 {
   setText(QObject::tr("Merge swc nodes"));
+}
 
+void ZStackDocCommand::SwcEdit::MergeSwcNode::undo()
+{
+  recover();
+  m_doc->deselectAllSwcTreeNodes();
+  m_doc->setSwcTreeNodeSelected(
+        m_selectedNodeSet.begin(), m_selectedNodeSet.end(), true);
+//  m_selectedNodeSet.clear();
+}
+
+void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
+{
   Swc_Tree_Node *coreNode = NULL;
 
-  std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
+  std::set<Swc_Tree_Node*> nodeSet = m_selectedNodeSet;
+  if (nodeSet.empty()) {
+    nodeSet = m_doc->getSelectedSwcNodeSet();
+    m_selectedNodeSet = m_doc->getSelectedSwcNodeSet();
+    m_doc->deselectAllSwcTreeNodes();
+  }
+
   if (nodeSet.size() > 1) {
     ZPoint center = SwcTreeNode::centroid(nodeSet);
     double radius = SwcTreeNode::maxRadius(nodeSet);
 
     coreNode = SwcTreeNode::makePointer(center, radius);
+    addNewNode(coreNode);
 #ifdef _DEBUG_
     std::cout << coreNode << " created." << std::endl;
 #endif
@@ -420,8 +590,13 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
       while (child != NULL) {
         Swc_Tree_Node *nextChild = SwcTreeNode::nextSibling(child);
         if (nodeSet.count(child) == 0) {
-          new SwcEdit::SetParent(m_doc, child, coreNode, false, this);
-          //SwcTreeNode::setParent(child, coreNode);
+
+//          new SwcEdit::SetParent(m_doc, child, coreNode, false, this);
+          backup(child, OP_SET_FIRST_CHILD, ROLE_CHILD);
+
+          SwcTreeNode::setFirstChild(coreNode, child);
+//          SwcTreeNode::setParent(child, coreNode);
+
           //childSet.insert(childSet.end(), child);
         }
         child = nextChild;
@@ -432,36 +607,63 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
       for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
            iter != nodeSet.end(); ++iter) {
         if (SwcTreeNode::isVirtual(SwcTreeNode::parent(*iter))) {
-          new SwcEdit::SetParent(
-                m_doc, coreNode, SwcTreeNode::parent(*iter), false, this);
-          //SwcTreeNode::setParent(coreNode, parent(*iter));
+//          new SwcEdit::SetParent(
+//                m_doc, coreNode, SwcTreeNode::parent(*iter), false, this);
+//          SwcTreeNode::setParent(coreNode, parent(*iter));
+
+          Swc_Tree_Node *parentNode = SwcTreeNode::parent(*iter);
+          backup(parentNode, OP_SET_FIRST_CHILD, ROLE_PARENT);
+//          backup(parentNode);
+//          backup(SwcTreeNode::firstChild(parentNode));
+          SwcTreeNode::setFirstChild(SwcTreeNode::parent(*iter), coreNode);
           break;
         }
       }
     } else if (parentSet.size() > 1) {
       for (set<Swc_Tree_Node*>::iterator iter = parentSet.begin();
            iter != parentSet.end(); ++iter) {
-        //SwcTreeNode::setParent(*iter, coreNode);
-        new SwcEdit::SetParent(m_doc, *iter, coreNode, false, this);
+//        SwcTreeNode::setParent(*iter, coreNode);
+//        backup(*iter);
+//        backup(SwcTreeNode::parent(*iter));
+//        backup(SwcTreeNode::nextSibling(*iter));
+//        backup(SwcTreeNode::prevSibling(*iter));
+        backup(*iter, OP_SET_FIRST_CHILD, ROLE_CHILD);
+        SwcTreeNode::setFirstChild(coreNode, *iter);
+//        new SwcEdit::SetParent(m_doc, *iter, coreNode, false, this);
       }
     } else {
+      Swc_Tree_Node *parentNode = *parentSet.begin();
+//      backup(parentNode);
+//      backup(SwcTreeNode::firstChild(parentNode));
+      backup(parentNode, OP_SET_FIRST_CHILD, ROLE_PARENT);
+      SwcTreeNode::setFirstChild(parentNode, coreNode);
       //SwcTreeNode::setParent(coreNode, *parentSet.begin());
-      new SwcEdit::SetParent(m_doc, coreNode, *parentSet.begin(), false, this);
+//      new SwcEdit::SetParent(m_doc, coreNode, *parentSet.begin(), false, this);
     }
 
-    for (set<Swc_Tree_Node*>::iterator
-         iter = nodeSet.begin();
+    for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
          iter != nodeSet.end(); ++iter) {
       //new SwcEdit::SetParent(m_doc, *iter, NULL, this);
       if (SwcTreeNode::parent(*iter) != NULL) { //orphan node aready handled by SetParent
-        new SwcEdit::DeleteSwcNode(m_doc, *iter, SwcTreeNode::root(*iter), this);
+        Swc_Tree_Node *root = SwcTreeNode::root(*iter);
+
+        backup(*iter, OP_DETACH_PARENT);
+        backupChildren(*iter, OP_SET_FIRST_CHILD, ROLE_CHILD);
+        backup(root, OP_SET_FIRST_CHILD, ROLE_PARENT);
+
+        SwcTreeNode::detachParent(*iter);
+
+//        new SwcEdit::DeleteSwcNode(m_doc, *iter, SwcTreeNode::root(*iter), this);
       }
     }
 
-    m_doc->blockSignals(true);
-    m_doc->deselectAllSwcTreeNodes();
-    m_doc->blockSignals(false);
     //m_doc->selectedSwcTreeNodes()->clear();
+
+    m_doc->processSwcModified();
+    m_doc->notifyObjectModified();
+
+    m_doc->deprecateTraceMask();
+
     if (coreNode != NULL) {
       m_doc->selectSwcTreeNode(coreNode);
     }
@@ -938,7 +1140,8 @@ ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::~SwcPathLabeTraceMask() {}
 
 void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::undo()
 {
-  m_branch.labelStack(m_doc->getTraceWorkspace()->trace_mask, 0);
+//  m_branch.labelStack(m_doc->getTraceWorkspace()->trace_mask, 0);
+  m_doc->deprecateTraceMask();
 }
 
 void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::redo()
@@ -1303,7 +1506,7 @@ void ZStackDocCommand::SwcEdit::TraceSwcBranch::undo()
 #endif
 
 ZStackDocCommand::ObjectEdit::RemoveSelected::RemoveSelected(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), doc(doc)
 {
   setText(QObject::tr("remove selected objects"));
 }
@@ -1410,6 +1613,33 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
     */
   }
   notifyObjectChanged(m_selectedObject);
+}
+
+ZStackDocCommand::ObjectEdit::RemoveObject::RemoveObject(
+    ZStackDoc *doc, ZStackObject *obj, QUndoCommand *parent) :
+  ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_isInDoc(true)
+{
+  setText(QObject::tr("Remove object"));
+}
+
+ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
+{
+  if (!m_isInDoc) {
+    delete m_obj;
+  }
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
+{
+  m_obj->setSelected(false);
+  m_doc->removeObject(m_obj, false);
+  m_isInDoc = false;
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
+{
+  m_doc->addObject(m_obj, false);
+  m_isInDoc = true;
 }
 
 ZStackDocCommand::TubeEdit::Trace::Trace(

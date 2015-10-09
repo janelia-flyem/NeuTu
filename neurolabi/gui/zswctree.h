@@ -693,12 +693,17 @@ public:
     virtual bool hasNext() const = 0;
     virtual Swc_Tree_Node *next() = 0;
 
+    void excludeVirtual(bool on) {
+      m_excludingVirtual = on;
+    }
+
   protected:
      void init(const ZSwcTree *tree);
 
   protected:
     ZSwcTree *m_tree;
     Swc_Tree_Node *m_currentNode;
+    bool m_excludingVirtual;
   };
 
   class RegularRootIterator : public ExtIterator {

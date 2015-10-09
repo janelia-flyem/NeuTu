@@ -42,7 +42,13 @@ public:
     m_distanceScale = scale;
   }
 
+  void ignoreInterRedundant(bool on) {
+    m_ignoringInterRedundant = on;
+  }
+
   void radiusResample(ZSwcTree *tree);
+  void denseInterpolate(ZSwcTree *tree);
+
 
 private:
   void init();
@@ -66,6 +72,7 @@ private:
 private:
    double m_radiusScale;
    double m_distanceScale;
+   bool m_ignoringInterRedundant;
 };
 
 #endif // ZSWCRESAMPLER_H

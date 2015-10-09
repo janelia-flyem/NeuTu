@@ -176,6 +176,7 @@
      <addaction name="actionExtract_Channel"/>
      <addaction name="actionInvert"/>
      <addaction name="actionMake_Projection"/>
+     <addaction name="actionSubtract_Background"/>
      <addaction name="menuFilter"/>
      <addaction name="menuBinary_Morphology"/>
      <addaction name="menuSegmentation"/>
@@ -1415,6 +1416,11 @@
   <action name="actionBigNeuron_Trace">
    <property name="text">
     <string>BigNeuron Trace</string>
+   </property>
+  </action>
+  <action name="actionSubtract_Background">
+   <property name="text">
+    <string>Subtract Background</string>
    </property>
   </action>
  </widget>

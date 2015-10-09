@@ -20,6 +20,14 @@ ZFlyEmBookmark::ZFlyEmBookmark() :
   useCosmeticPen(true);
 }
 
+ZFlyEmBookmark::~ZFlyEmBookmark()
+{
+#ifdef _DEBUG_
+  std::cout << "Deconstructing " << this << ": bookmark " << ", "
+            << getSource() << std::endl;
+#endif
+}
+
 void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
@@ -125,6 +133,7 @@ void ZFlyEmBookmark::display(
         ZIntPoint center = getLocation();
         int width = decorationText.size() * 50;
         int height = 50;
+        painter.setPen(QColor(0, 0, 0));
         painter.drawText(center.getX(), center.getY(), width, height,
                          Qt::AlignLeft, decorationText);
 //        painter.restore();

@@ -35,6 +35,41 @@ private:
 
 namespace ZStackDocCommand {
 namespace SwcEdit {
+class ChangeSwcCommand : public ZUndoCommand
+{
+public:
+  ChangeSwcCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcCommand();
+  void undo();
+  void redo();
+
+  enum EOperation {
+    OP_SET_PARENT, OP_SET_FIRST_CHILD, OP_DETACH_PARENT
+  };
+
+  enum ERole {
+    ROLE_NONE, ROLE_CHILD, ROLE_PARENT
+  };
+
+protected:
+  void backup(Swc_Tree_Node *tn);
+  void backup(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
+  void backupChildren(Swc_Tree_Node *tn);
+  void backupChildren(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
+
+  void addNewNode(Swc_Tree_Node *tn);
+  void recordRemovedNode(Swc_Tree_Node *tn);
+
+  void recover();
+
+protected:
+  ZStackDoc *m_doc;
+  std::map<Swc_Tree_Node*, Swc_Tree_Node> m_backupSet;
+  std::set<Swc_Tree_Node*> m_newNodeSet;
+  std::set<Swc_Tree_Node*> m_removedNodeSet;
+  std::set<Swc_Tree_Node*> m_garbageSet;
+};
+
 class TranslateRoot : public ZUndoCommand
 {
 public:
@@ -162,11 +197,17 @@ private:
   bool m_nodeInDoc;
 };
 
-class MergeSwcNode : public CompositeCommand
+class MergeSwcNode : public ChangeSwcCommand
 {
 public:
   MergeSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~MergeSwcNode();
+
+  void redo();
+  void undo();
+
+private:
+  std::set<Swc_Tree_Node*> m_selectedNodeSet;
 };
 
 class ChangeSwcNodeGeometry : public ZUndoCommand
@@ -487,7 +528,23 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveSelected : public QUndoCommand
+class RemoveObject : public ZUndoCommand
+{
+public:
+  RemoveObject(ZStackDoc *doc, ZStackObject *obj,
+               QUndoCommand *parent = NULL);
+  virtual ~RemoveObject();
+
+  void undo();
+  void redo();
+
+private:
+  ZStackDoc *m_doc;
+  ZStackObject *m_obj;
+  bool m_isInDoc;
+};
+
+class RemoveSelected : public ZUndoCommand
 {
 public:
   RemoveSelected(ZStackDoc *doc, QUndoCommand *parent = NULL);

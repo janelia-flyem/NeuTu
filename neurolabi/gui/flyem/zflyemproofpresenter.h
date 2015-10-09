@@ -42,9 +42,10 @@ public:
     m_splitWindowMode = state;
   }
 
-  void processRectRoiUpdate();
+  void processRectRoiUpdate(ZRect2d *rect);
 
   ZKeyOperationConfig* getKeyConfig();
+  void configKeyMap();
 
 private:
   void tryAddBookmarkMode();
@@ -56,8 +57,10 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
+  void selectingBodyInRoi(bool appending);
   void runningSplit();
   void goingToBody();
+  void selectingBody();
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void mergingBody();

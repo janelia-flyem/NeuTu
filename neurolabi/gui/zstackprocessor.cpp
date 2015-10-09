@@ -836,6 +836,14 @@ void ZStackProcessor::invert(ZStack *stack)
   }
 }
 
+void ZStackProcessor::subtractBackground(ZStack *stack)
+{
+  for (int c = 0; c < stack->channelNumber(); ++c) {
+    int commonIntensity = Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
+    Stack_Subc(stack->c_stack(c), commonIntensity);
+  }
+}
+
 Stack* ZStackProcessor::GaussianSmooth(
     Stack *stack, double sx, double sy, double sz)
 {

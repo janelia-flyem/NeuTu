@@ -1404,7 +1404,45 @@ FlyEm::ZSynapseAnnotationArray::toPsdPuncta(
   return puncta;
 }
 
+std::vector<ZStackBall*>
+FlyEm::ZSynapseAnnotationArray::toTBarBall(
+    double radius, double minConfidence) const
+{
+  std::vector<ZStackBall*> puncta;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isTBar() && synapse->confidence() >= minConfidence) {
+      ZStackBall *punctum = new ZStackBall;
+      punctum->setColor(255, 0, 0);
+      punctum->setCenter(synapse->pos());
+      punctum->setRadius(radius);
+      punctum->setSource(synapse->getPunctumSource());
+      puncta.push_back(punctum);
+    }
+  }
 
+  return puncta;
+}
+
+std::vector<ZStackBall*>
+FlyEm::ZSynapseAnnotationArray::toPsdBall(
+    double radius, double minConfidence) const
+{
+  std::vector<ZStackBall*> puncta;
+  for (const SynapseLocation *synapse = beginSynapseLocation();
+       synapse != NULL; synapse = nextSynapseLocation()) {
+    if (synapse->isPartner() && synapse->confidence() >= minConfidence) {
+      ZStackBall *punctum = new ZStackBall;
+      punctum->setColor(0, 0, 255);
+      punctum->setCenter(synapse->pos());
+      punctum->setRadius(radius);
+      punctum->setSource(synapse->getPunctumSource());
+      puncta.push_back(punctum);
+    }
+  }
+
+  return puncta;
+}
 #endif
 
 ZWeightedPointArray ZSynapseAnnotationArray::toTBarPointArray(

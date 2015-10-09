@@ -1185,7 +1185,7 @@ void Z3DWindow::customizeContextMenu()
     m_translateSwcNodeAction->setVisible(false);
     //m_selectSwcNodeDownstreamAction->setVisible(false);
     //m_changeSwcNodeTypeAction->setVisible(false);
-    m_mergeSwcNodeAction->setVisible(false);
+//    m_mergeSwcNodeAction->setVisible(false);
     m_changeSwcNodeSizeAction->setVisible(false);
     //m_setSwcRootAction->setVisible(false);
     //m_changeSwcTypeAction->setVisible(false);
@@ -2207,19 +2207,6 @@ void Z3DWindow::markPunctum()
   m_doc->markPunctum(m_lastClickedPosInVolume[0], m_lastClickedPosInVolume[1], m_lastClickedPosInVolume[2]);
 }
 
-void Z3DWindow::locatePunctumIn2DView()
-{
-  QList<ZPunctum*> punctumList =
-      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
-  if (punctumList.size() == 1) {
-    if (m_doc->getParentFrame() != NULL) {
-      ZPunctum* punc = *(punctumList.begin());
-      m_doc->getParentFrame()->viewRoi(
-            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
-    }
-  }
-}
-
 void Z3DWindow::takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
 {
   if (!m_canvasRenderer->renderToImage(filename, width, height, sst)) {
@@ -2980,6 +2967,33 @@ void Z3DWindow::locateSwcNodeIn2DView()
       param.setZ(iround(cz));
       emit locating2DViewTriggered(param);
     }
+  }
+}
+
+void Z3DWindow::locatePunctumIn2DView()
+{
+  QList<ZPunctum*> punctumList =
+      m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (punctumList.size() == 1) {
+    ZPunctum* punc = *(punctumList.begin());
+    ZStackViewParam param(NeuTube::COORD_STACK);
+
+    double radius = punc->radius();
+    const int minRadius = 400;
+    if (radius < minRadius) {
+      radius = minRadius;
+    }
+
+    double cx = punc->x();
+    double cy = punc->y();
+    double cz = punc->z();
+    param.setViewPort(iround(cx - radius), iround(cy - radius),
+                      iround(cx + radius), iround(cy + radius));
+    param.setZ(iround(cz));
+
+    emit locating2DViewTriggered(param);
+    //      m_doc->getParentFrame()->viewRoi(
+    //            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
   }
 }
 
@@ -3963,6 +3977,42 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
 {
   getRendererBase(layer)->setOpacity(opacity);
+}
+
+void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    getGraphFilter()->setVisible(visible);
+    break;
+  case LAYER_SWC:
+    getSwcFilter()->setVisible(visible);
+    break;
+  case LAYER_PUNCTA:
+    getPunctaFilter()->setVisible(visible);
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+}
+
+bool Z3DWindow::isVisible(ERendererLayer layer) const
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    return getGraphFilter()->isVisible();
+    break;
+  case LAYER_SWC:
+    return getSwcFilter()->isVisible();
+    break;
+  case LAYER_PUNCTA:
+    return getPunctaFilter()->isVisible();
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+
+  return true;
 }
 
 void Z3DWindow::setZScale(double scale)

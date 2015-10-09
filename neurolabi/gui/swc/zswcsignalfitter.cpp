@@ -59,7 +59,15 @@ void ZSwcSignalFitter::fitSignal(
   Swc_Tree_Node *tmptn = NULL;
   while ((tmptn = Swc_Tree_Next(tree)) != NULL) {
     if (!SwcTreeNode::isRoot(tmptn)) {
+      ZPoint oldCenter = SwcTreeNode::center(tmptn);
+      double oldBend = SwcTreeNode::maxBendingEnergy(tmptn);
       fitSignal(tmptn, stack, channel);
+      double newBend = SwcTreeNode::maxBendingEnergy(tmptn);
+      if (newBend > 1.0) {
+        if (newBend - oldBend > 0.5) {
+          SwcTreeNode::setPos(tmptn, oldCenter);
+        }
+      }
     }
   }
 }

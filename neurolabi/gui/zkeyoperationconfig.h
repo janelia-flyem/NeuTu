@@ -16,6 +16,7 @@ public:
 protected:
   static void ConfigureActiveStrokeMap(ZKeyOperationMap &map);
   static void ConfigureSwcNodeMap(ZKeyOperationMap &map);
+  static void ConfigureObjectMap(ZKeyOperationMap &map);
   static void ConfigureStackMap(ZKeyOperationMap &map);
 };
 

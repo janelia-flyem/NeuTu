@@ -16,6 +16,7 @@ class ZGraph;
 class ZPunctum;
 class ZWeightedPointArray;
 class ZPointArray;
+class ZStackBall;
 
 namespace FlyEm {
 
@@ -195,6 +196,13 @@ public:
 
   std::vector<ZPunctum*> toPsdPuncta(
       double radius, double minConfidence = 0.0) const;
+
+  std::vector<ZStackBall*> toTBarBall(
+      double radius, double minConfidence = 0.0) const;
+
+  std::vector<ZStackBall*> toPsdBall(
+      double radius, double minConfidence = 0.0) const;
+
 #endif
 
   ZWeightedPointArray toTBarPointArray(double radius,

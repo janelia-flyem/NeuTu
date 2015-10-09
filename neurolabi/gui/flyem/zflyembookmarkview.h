@@ -6,7 +6,7 @@
 
 class ZFlyEmBookmarkListModel;
 class ZFlyEmBookmark;
-//class QSortFilterProxyModel;
+class QSortFilterProxyModel;
 
 class ZFlyEmBookmarkView : public QTableView
 {
@@ -16,19 +16,29 @@ public:
 
   ZFlyEmBookmarkListModel* getModel() const;
 
+  void setBookmarkModel(ZFlyEmBookmarkListModel *model);
   void checkCurrentBookmark(bool checking);
+
+  const ZFlyEmBookmark* getBookmark(const QModelIndex &viewIndex) const;
+
+  void sort();
 
 signals:
   void bookmarkChecked(QString key, bool checking);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void locatingBookmark(const ZFlyEmBookmark*);
 
 public slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
 
+private slots:
+  void processDouleClick(const QModelIndex &index);
+
 private:
   void init();
   void createMenu();
+  void connectSignalSlot();
 
 protected:
   void contextMenuEvent(QContextMenuEvent *);
@@ -37,7 +47,8 @@ protected:
 
 private:
   QMenu *m_contextMenu;
-//  QSortFilterProxyModel* m_proxy;
+  ZFlyEmBookmarkListModel *m_bookmarkModel;
+  QSortFilterProxyModel* m_proxy;
 };
 
 #endif // ZFLYEMBOOKMARKVIEW_H

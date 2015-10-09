@@ -85,6 +85,7 @@ private:
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
+  QAction *m_openObject3dAction;
 
   QToolBar *m_toolBar;
 

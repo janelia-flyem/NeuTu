@@ -8,6 +8,7 @@
 
 #ifdef _QT_GUI_USED_
 #include <QPainter>
+#include <QPaintDevice>
 #endif
 
 #include "zpoint.h"
@@ -40,6 +41,8 @@ public:
   bool begin(ZPixmap *pixmap);
   bool begin(QPaintDevice *device);
   bool end();
+
+  QPaintDevice* device();
 
   void save();
   void restore();
@@ -150,7 +153,8 @@ public:
   void setOpacity(double alpha);
   void setRange(const QRect &r) { m_canvasRange = r; }
 
-  bool isVisible(const QRectF &rect);
+  bool isVisible(const QRectF &rect) const;
+  bool isVisible(const QRect &rect) const;
 #endif
 
   /*

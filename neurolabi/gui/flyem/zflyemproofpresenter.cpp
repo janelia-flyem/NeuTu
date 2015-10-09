@@ -63,6 +63,20 @@ ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
   return m_keyConfig;
 }
 
+void ZFlyEmProofPresenter::configKeyMap()
+{
+  ZKeyOperationConfig *config = getKeyConfig();
+
+  config->configure(
+        m_activeStrokeOperationMap, ZKeyOperation::OG_ACTIVE_STROKE);
+  config->configure(
+        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
+  config->configure(
+        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
+  config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
+  config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+}
+
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 {
   bool processed = false;
@@ -117,6 +131,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F1:
     emit goingToBody();
+    processed = true;
+    break;
+  case Qt::Key_F2:
+    emit selectingBody();
     processed = true;
     break;
   default:
@@ -233,6 +251,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
   case ZStackOperator::OP_BOOKMARK_ANNOTATE:
     emit annotatingBookmark(op.getHitObject<ZFlyEmBookmark>());
     break;
+  case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
+    emit selectingBodyInRoi(true);
+    break;
   default:
     break;
   }
@@ -251,14 +272,14 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
   m_highTileContrast = high;
 }
 
-void ZFlyEmProofPresenter::processRectRoiUpdate()
+void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect)
 {
   if (isSplitOn()) {
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
-      doc->updateSplitRoi();
+      doc->updateSplitRoi(rect);
     }
   } else {
-    buddyDocument()->processRectRoiUpdate();
+    buddyDocument()->processRectRoiUpdate(rect);
   }
 }

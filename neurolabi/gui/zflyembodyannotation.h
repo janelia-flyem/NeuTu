@@ -59,6 +59,8 @@ public:
 
   std::string toString() const;
 
+  bool isFinalized() const;
+
 private:
   uint64_t m_bodyId;
   std::string m_status;

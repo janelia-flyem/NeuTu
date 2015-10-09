@@ -47,7 +47,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "3716",
+      "uuid": "6680",
       "name": "FIB19 (emdata2)",
       "comment": "branched from f5ff",
       "body_label": "segmentation-labelvol",
@@ -436,7 +436,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "9875",
+      "uuid": "b0f7",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",

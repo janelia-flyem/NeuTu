@@ -48,6 +48,11 @@ ZPainter::ZPainter(ZPixmap *pixmap) : m_z(0)
   begin(pixmap);
 }
 
+QPaintDevice* ZPainter::device()
+{
+  return m_painter.device();
+}
+
 bool ZPainter::isActive() const
 {
   return m_painter.isActive();
@@ -60,8 +65,8 @@ bool ZPainter::begin(ZImage *image)
   if (m_painter.begin(image)) {
     QTransform transform;
     const ZStTransform &imageTransform = image->getTransform();
-    transform.scale(imageTransform.getSx(), imageTransform.getSy());
     transform.translate(imageTransform.getTx(), imageTransform.getTy());
+    transform.scale(imageTransform.getSx(), imageTransform.getSy());
     m_painter.setTransform(transform);
     return true;
   }
@@ -76,8 +81,9 @@ bool ZPainter::begin(ZPixmap *image)
   if (m_painter.begin(image)) {
     QTransform t;
     const ZStTransform &imageTransform = image->getTransform();
-    t.scale(imageTransform.getSx(), imageTransform.getSy());
     t.translate(imageTransform.getTx(), imageTransform.getTy());
+    t.scale(imageTransform.getSx(), imageTransform.getSy());
+
     m_painter.setTransform(t);
 
 #ifdef _DEBUG_2
@@ -355,34 +361,31 @@ void ZPainter::drawPoints(const std::vector<QPointF> &pointArray)
 
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
-  bool painting = true;
-  if (m_canvasRange.isValid()) {
-    QRectF rect(QPoint(x1, y1), QPoint(x2, y2));
-
-    if (!(rect.contains(m_canvasRange.topLeft()) ||
-        rect.contains(m_canvasRange.bottomRight()) ||
-        m_canvasRange.contains(rect.topLeft()) ||
-        m_canvasRange.contains(rect.bottomRight()))) {
-      painting = false;
-    }
-  }
-
-  if (painting) {
+  if (isVisible(QRectF(x1, y1, x2, y2))) {
     m_painter.drawLine(x1, y1, x2, y2);
     setPainted(true);
   }
 //  drawLine(QPointF(x1, y1), QPointF(x2, y2));
 }
 
-bool ZPainter::isVisible(const QRectF &rect)
+bool ZPainter::isVisible(const QRect &rect) const
 {
-  bool visible = true;
-  if (m_canvasRange.isValid()) {
-    visible = rect.contains(m_canvasRange.topLeft()) ||
-        rect.contains(m_canvasRange.bottomRight()) ||
-        m_canvasRange.contains(rect.topLeft()) ||
-        m_canvasRange.contains(rect.bottomRight());
+  return isVisible(QRectF(rect));
+}
+
+bool ZPainter::isVisible(const QRectF &rect) const
+{
+  if (m_canvasRange.isEmpty()) {
+    return true;
   }
+
+  QRectF calrRect = rect.normalized();
+  calrRect.setLeft(calrRect.left() - 0.5);
+  calrRect.setRight(calrRect.right() + 0.5);
+  calrRect.setTop(calrRect.top() - 0.5);
+  calrRect.setBottom(calrRect.bottom() + 0.5);
+
+  bool visible = m_canvasRange.intersects(calrRect);
 
   return visible;
 }
@@ -390,6 +393,7 @@ bool ZPainter::isVisible(const QRectF &rect)
 void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
 {
   QRectF rect(pt1, pt2);
+
   if (isVisible(rect)) {
     m_painter.drawLine(pt1, pt2);
     setPainted(true);

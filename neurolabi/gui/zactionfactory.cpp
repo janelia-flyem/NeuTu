@@ -77,6 +77,13 @@ QAction* ZActionFactory::makeAction(
     action->setIcon(QIcon(":/images/delete.png"));
     doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeDeleteSwcNodeCommand()));
     break;
+  case ACTION_DELETE_UNSELECTED_SWC_NODE:
+    action = new QAction("Delete Unselected", parent);
+    action->setStatusTip("Delete unselected nodes");
+//    action->setIcon(QIcon(":/images/delete.png"));
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(executeDeleteUnselectedSwcNodeCommand()));
+    break;
   case ACTION_INSERT_SWC_NODE:
     action = new QAction("Insert", parent);
     action->setStatusTip("Insert a node between two adjacent nodes");

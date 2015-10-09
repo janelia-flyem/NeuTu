@@ -4,6 +4,7 @@
 #include <QList>
 #include <QTimer>
 #include <QDir>
+#include <QtConcurrentRun>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -25,6 +26,7 @@
 #include "zstring.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
+#include "zslicedpuncta.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -85,6 +87,18 @@ void ZFlyEmProofDoc::setSelectedBody(
     getDvidLabelSlice()->setSelection(selected, labelType);
 
     emit bodySelectionChanged();
+  }
+}
+
+void ZFlyEmProofDoc::addSelectedBody(
+    std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+{
+  if (getDvidLabelSlice() != NULL) {
+    if (!selected.empty()) {
+      getDvidLabelSlice()->addSelection(
+            selected.begin(), selected.end(), labelType);
+      emit bodySelectionChanged();
+    }
   }
 }
 
@@ -197,17 +211,20 @@ void ZFlyEmProofDoc::annotateBody(
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
-  m_bodyColorMap.reset();
+  if (m_dvidReader.open(target)) {
+    m_dvidTarget = target;
+    m_bodyColorMap.reset();
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
+  }
 }
 
 void ZFlyEmProofDoc::updateTileData()
 {
-  ZDvidReader reader;
-  if (reader.open(m_dvidTarget)) {
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  if (m_dvidReader.isReady()) {
+    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
     if (dvidInfo.isValid()) {
-
       ZStack *stack = ZStackFactory::makeVirtualStack(
             ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates()));
@@ -292,6 +309,13 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
+  if (m_dvidReader.isReady()) {
+    ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
+    if (annotation.isFinalized()) {
+      return false;
+    }
+  }
+
   return !m_bodyMerger.isMerged(bodyId);
 }
 
@@ -453,33 +477,55 @@ void ZFlyEmProofDoc::downloadBookmark()
   }
 }
 
-void ZFlyEmProofDoc::downloadSynapse()
+void ZFlyEmProofDoc::downloadSynapseFunc()
 {
   if (getDvidTarget().isValid()) {
+    emit messageGenerated(ZWidgetMessage("Downloading synapses ..."));
+
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
     reader.read(url.getSynapseAnnotationUrl().c_str());
+
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
       FlyEm::ZSynapseAnnotationArray synapseArray;
       synapseArray.loadJson(jsonObj);
       const double radius = 5.0;
-      std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
+      std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
 
-      ZPuncta *tbar = new ZPuncta;
+      ZSlicedPuncta *tbar = new ZSlicedPuncta;
       tbar->addPunctum(puncta.begin(), puncta.end());
       decorateTBar(tbar);
 
-      addObject(tbar);
+      emit addingObject(tbar, true);
+      emit messageGenerated(ZWidgetMessage("TBars ready."));
+//      addObject(tbar);
 
-      ZPuncta *psd = new ZPuncta;
-      puncta = synapseArray.toPsdPuncta(radius / 2.0);
+      ZSlicedPuncta *psd = new ZSlicedPuncta;
+      puncta = synapseArray.toPsdBall(radius / 2.0);
       psd->addPunctum(puncta.begin(), puncta.end());
       decoratePsd(psd);
 
-      addObject(psd);
+      emit addingObject(psd, true);
+
+      emit messageGenerated(ZWidgetMessage("All synapses ready."));
+
+//      addObject(psd);
+    } else {
+      emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
+  }
+}
+
+void ZFlyEmProofDoc::downloadSynapse()
+{
+  const QString threadId = "downloadSynapse";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
+    m_futureMap[threadId] = future;
   }
 }
 
@@ -506,6 +552,109 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
+void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 255, 0));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
+{
+  puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
+  puncta->pushCosmeticPen(true);
+  puncta->pushColor(QColor(0, 0, 255));
+  puncta->pushVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER |
+                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
+{
+  std::vector<ZPunctum*> puncta;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
+
+  if (tbar != NULL) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+//      ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+      ZIntCuboid box = body.getBoundBox();
+      int minZ = box.getFirstCorner().getZ();
+      int maxZ = box.getLastCorner().getZ();
+
+//      ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+      for (int z = minZ; z <= maxZ; ++z) {
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+//            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+//            if (coarseBody.contains(blockIndex)) {
+              if (body.contains(pt)) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+//            }
+          }
+        }
+      }
+    }
+  }
+
+  return puncta;
+}
+
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
+{
+  std::vector<ZPunctum*> puncta;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
+
+  if (tbar != NULL) {
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(getDvidTarget())) {
+      ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+      int minZ = box.getFirstCorner().getZ();
+      int maxZ = box.getLastCorner().getZ();
+
+      ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+      for (int z = minZ; z <= maxZ; ++z) {
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              if (reader.readBodyIdAt(pt) == bodyId) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return puncta;
+}
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
@@ -541,16 +690,19 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 #ifdef _DEBUG_
     std::cout << objList.size() << " bookmarks" << std::endl;
 #endif
+    std::vector<ZStackObject*> removed;
+
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
           std::cout << "Removing bookmark: " << bookmark << std::endl;
 #endif
-          removeObject(*iter, true);
+          removeObject(*iter, false);
+          removed.push_back(*iter);
         }
       }
     }
@@ -598,6 +750,10 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
           }
         }
       }
+    }
+    for (std::vector<ZStackObject*>::iterator iter = removed.begin();
+         iter != removed.end(); ++iter) {
+      delete *iter;
     }
   }
   endObjectModifiedMode();
@@ -699,32 +855,47 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi()
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
 {
-  ZRect2d rect = getRect2dRoi();
+//  ZRect2d rect = getRect2dRoi();
+
+  ZUndoCommand *command = new ZUndoCommand("Update ROI");
 
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  /*
   ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
   if (roi == NULL) {
-    roi = new ZIntCuboidObj;
-    roi->setColor(QColor(255, 255, 255));
-    roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
-    addObject(roi);
-  }
+  */
+  ZIntCuboidObj* roi = new ZIntCuboidObj;
+  roi->setColor(QColor(255, 255, 255));
+  roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+  roi->clear();
 
-  if (rect.isValid()) {
-    int sz = iround(sqrt(rect.getWidth() * rect.getWidth() +
-                             rect.getHeight() * rect.getHeight()) / 2.0);
-    roi->setFirstCorner(rect.getFirstX(), rect.getFirstY(), rect.getZ() - sz);
-    roi->setLastCorner(rect.getLastX(), rect.getLastY(), rect.getZ() + sz);
-  } else {
-    roi->clear();
-  }
+  executeRemoveObjectCommand(getSplitRoi());
 
+  roi->setRole(ZStackObjectRole::ROLE_ROI);
+  new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
+//    addObject(roi);
+//  }
+
+  if (rect != NULL) {
+    if (rect->isValid()) {
+      int sz = iround(sqrt(rect->getWidth() * rect->getWidth() +
+                           rect->getHeight() * rect->getHeight()) / 2.0);
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
+      roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    }
+  }
   m_splitSource.reset();
-  removeRect2dRoi();
 
-  processObjectModified(roi);
+  removeObject(rect, true);
+
+  pushUndoCommand(command);
+
+//  new ZStackDocCommand::ObjectEdit::RemoveObje
+//  removeRect2dRoi();
+
+//  processObjectModified(roi);
 
   endObjectModifiedMode();
   notifyObjectModified();
@@ -761,6 +932,18 @@ void ZFlyEmProofDoc::deprecateSplitSource()
   m_splitSource.reset();
 }
 
+void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+{
+  if (m_bodyColorMap.get() == NULL) {
+    m_bodyColorMap =
+        ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
+    m_bodyColorMap->setDvidTarget(getDvidTarget());
+  }
+  m_bodyColorMap->prepareNameMap(bodyInfoObj);
+
+  emit bodyMapReady();
+}
+
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
@@ -778,6 +961,33 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 
     processObjectModified(getDvidLabelSlice());
     notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
+void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
+{
+  ZRect2d rect = getRect2dRoi();
+
+  if (rect.isValid()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      std::set<uint64_t> bodySet = reader.readBodyId(
+            rect.getFirstX(), rect.getFirstY(), z,
+            rect.getWidth(), rect.getHeight(), 1);
+      if (appending) {
+        addSelectedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+      } else {
+        setSelectedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+      }
+    }
   }
 }
 

@@ -10,6 +10,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyembodymergeproject.h"
 #include "zstackdoc.h"
+#include "zflyembookmarkview.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -58,49 +59,31 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   connect(ui->skeletonViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(skeletonViewTriggered()));
 
-  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
-          this, SLOT(locateAssignedBookmark(QModelIndex)));
-  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
-  connect(ui->userBookmarkView, SIGNAL(doubleClicked(QModelIndex)),
-          this, SLOT(locateUserBookmark(QModelIndex)));
-  connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
           */
 
-
-/*
-  ui->helpWidget->setOpenExternalLinks(true);
-  ui->helpWidget->setSource(
-        QUrl((GET_DOC_DIR + "/flyem_proofread_help.html").c_str()));
-*/
-
-  /*
-  QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
-  proxy->setSourceModel(&m_userBookmarkList);
-  proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-  proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-  proxy->setFilterKeyColumn(-1);
-  */
-
-  m_userBookmarkProxy = createSortingProxy(&m_userBookmarkList);
-  ui->userBookmarkView->setModel(&m_userBookmarkList);
-//  ui->userBookmarkView->setSortingEnabled(true);
-
-//  ui->userBookmarkView->setModel(&m_userBookmarkList);
-
-  m_bookmarkProxy = createSortingProxy(&m_bookmarkList);
-  ui->bookmarkView->setModel(&m_bookmarkList);
+//  m_userBookmarkProxy = createSortingProxy(&m_userBookmarkList);
+  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
+//  m_bookmarkProxy = createSortingProxy(&m_bookmarkList);
+//  ui->bookmarkView->setModel(&m_bookmarkList);
 //  ui->bookmarkView->setSortingEnabled(true);
 
-  ui->bookmarkView->resizeColumnsToContents();
-  ui->userBookmarkView->resizeColumnsToContents();
+  getAssignedBookmarkView()->resizeColumnsToContents();
+  getUserBookmarkView()->resizeColumnsToContents();
 
   createMenu();
 }
@@ -122,6 +105,20 @@ FlyEmProofControlForm::createSortingProxy(ZFlyEmBookmarkListModel *model)
   return proxy;
 }
 
+ZFlyEmBookmarkView* FlyEmProofControlForm::getUserBookmarkView() const
+{
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_USER);
+//  return ui->userBookmarkView;
+}
+
+ZFlyEmBookmarkView* FlyEmProofControlForm::getAssignedBookmarkView() const
+{
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+//  return ui->bookmarkView;
+}
+
 void FlyEmProofControlForm::createMenu()
 {
   m_mainMenu = new QMenu(this);
@@ -137,6 +134,7 @@ void FlyEmProofControlForm::createMenu()
   connect(queryBodyAction, SIGNAL(triggered()), this, SLOT(goToBody()));
 
   QAction *selectBodyAction = new QAction("Select Body", this);
+  selectBodyAction->setShortcut(Qt::Key_F2);
   m_mainMenu->addAction(selectBodyAction);
   connect(selectBodyAction, SIGNAL(triggered()), this, SLOT(selectBody()));
 
@@ -146,20 +144,28 @@ void FlyEmProofControlForm::createMenu()
   normalColorAction->setCheckable(true);
   normalColorAction->setChecked(true);
 
-  QAction *nameColorAction = new QAction("Name", this);
-  nameColorAction->setCheckable(true);
+  m_nameColorAction = new QAction("Name", this);
+  m_nameColorAction->setCheckable(true);
+  m_nameColorAction->setEnabled(false);
 
   colorActionGroup->addAction(normalColorAction);
-  colorActionGroup->addAction(nameColorAction);
+  colorActionGroup->addAction(m_nameColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addAction(normalColorAction);
-  colorMenu->addAction(nameColorAction);
+  colorMenu->addAction(m_nameColorAction);
 
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::enableNameColorMap(bool on)
+{
+  if (m_nameColorAction != NULL) {
+    m_nameColorAction->setEnabled(on);
+  }
 }
 
 void FlyEmProofControlForm::changeColorMap(QAction *action)
@@ -247,8 +253,11 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
+  getUserBookmarkView()->sort();
+  /*
   m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
                             m_userBookmarkProxy->sortOrder());
+                            */
 //  ui->userBookmarkView->resizeColumnsToContents();
 }
 
@@ -256,7 +265,7 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 {
   if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
-    m_bookmarkList.clear();
+    m_assignedBookmarkList.clear();
 //    project->clearBookmarkDecoration();
 
     if (project->getDocument() != NULL) {
@@ -268,12 +277,15 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
         if (/*bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&*/
             !bookmark->isCustom()) {
-          m_bookmarkList.append(bookmark);
+          m_assignedBookmarkList.append(bookmark);
         }
       }
     }
+    getAssignedBookmarkView()->sort();
+    /*
     m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
                           m_bookmarkProxy->sortOrder());
+                          */
 //    ui->bookmarkView->resizeColumnsToContents();
 //    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
   }
@@ -281,23 +293,28 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 
 void FlyEmProofControlForm::clearBookmarkTable(ZFlyEmBodyMergeProject */*project*/)
 {
-  m_bookmarkList.clear();
+  m_assignedBookmarkList.clear();
+}
+
+void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingTo(bookmark->getLocation().getX(),
+                   bookmark->getLocation().getY(),
+                   bookmark->getLocation().getZ());
+  }
 }
 
 void FlyEmProofControlForm::locateAssignedBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
+  const ZFlyEmBookmark *bookmark = getAssignedBookmarkView()->getBookmark(index);
 
-  emit zoomingTo(bookmark->getLocation().getX(),
-                 bookmark->getLocation().getY(),
-                 bookmark->getLocation().getZ());
+  locateBookmark(bookmark);
 }
 
 void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
 {
-  const ZFlyEmBookmark *bookmark = m_userBookmarkList.getBookmark(index.row());
+  const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
-  emit zoomingTo(bookmark->getLocation().getX(),
-                 bookmark->getLocation().getY(),
-                 bookmark->getLocation().getZ());
+  locateBookmark(bookmark);
 }

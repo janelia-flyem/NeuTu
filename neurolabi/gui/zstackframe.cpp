@@ -55,6 +55,7 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
   setAcceptDrops(true);
   m_settingDlg = new SettingDialog(this);
+  m_settingDlg->setTracingParameter();
   m_manageObjsDlg = NULL;
 
   //m_presenter = new ZStackPresenter(this);
@@ -320,10 +321,6 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(notifyViewChanged(ZStackViewParam)));
-  /*
-  connect(presenter(), SIGNAL(rectRoiUpdated()),
-        m_doc.get(), SLOT(processRectRoiUpdate()));
-        */
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -1404,6 +1401,13 @@ void ZStackFrame::invertStack()
   }
 }
 
+void ZStackFrame::subtractBackground()
+{
+  if (m_doc->hasStackData()) {
+    m_doc->subtractBackground();
+  }
+}
+
 void ZStackFrame::detachParentFrame()
 {
   if (m_parentFrame != NULL) {
@@ -1584,10 +1588,10 @@ void ZStackFrame::loadRoi(bool isExclusive)
     QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
     if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).lower() + ".tif").c_str());
     } else if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).upper() + ".tif").c_str());
     }
 
     if (fileInfo.exists()) {
@@ -1645,7 +1649,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 void ZStackFrame::zoomToSelectedSwcNodes()
 {
   if (document()->hasSelectedSwcNode()) {
-    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcTreeNodeSet();
+    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcNodeSet();
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 

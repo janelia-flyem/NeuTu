@@ -25,12 +25,15 @@ public:
   bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
   bool removeColumns(int col, int count, const QModelIndex &parent = QModelIndex());
 
+  QModelIndex index(int row, int column,
+                    const QModelIndex &parent = QModelIndex()) const;
+
   void clear();
   void append(const ZFlyEmBookmark *bookmark);
   void update(int row);
 
-  const ZFlyEmBookmark* getBookmark(int row) const;
-  ZFlyEmBookmark* getBookmark(int row);
+  const ZFlyEmBookmark* getBookmark(int index) const;
+  ZFlyEmBookmark* getBookmark(int index);
   const ZFlyEmBookmarkPtrArray& getBookmarkArray() const;
 
 //  void appendBookmark(const ZFlyEmBookmark &bookmark);

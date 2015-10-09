@@ -117,6 +117,17 @@ vector<uint64_t> ZString::toUint64Array()
   return valueArray;
 }
 
+uint64_t ZString::firstUint64()
+{
+  uint64_t v = 0;
+  vector<uint64_t> valueArray = toUint64Array();
+  if (!valueArray.empty()) {
+    v = valueArray[0];
+  }
+
+  return v;
+}
+
 vector<double> ZString::toDoubleArray()
 {
   int n;
@@ -138,14 +149,21 @@ double ZString::firstDouble()
 {
   vector<double> valueArray = toDoubleArray();
 
-  return valueArray[0];
+  if (!valueArray.empty()) {
+    return valueArray[0];
+  }
+
+  return 0.0;
 }
 
 double ZString::lastDouble()
 {
   vector<double> valueArray = toDoubleArray();
+  if (!valueArray.empty()) {
+    return valueArray.back();
+  }
 
-  return valueArray.back();
+  return 0.0;
 }
 
 std::vector<std::string> ZString::toWordArray(const string &delim)
@@ -312,7 +330,7 @@ void ZString::toUpper()
   std::transform(begin(), end(), begin(), ::toupper);
 }
 
-std::string ZString::toLower() const
+std::string ZString::lower() const
 {
   std::string str = *this;
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -320,7 +338,7 @@ std::string ZString::toLower() const
   return str;
 }
 
-std::string ZString::toUpper() const
+std::string ZString::upper() const
 {
   std::string str = *this;
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);

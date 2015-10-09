@@ -10,6 +10,7 @@ class ZDvidTarget;
 class ZFlyEmBodyMergeProject;
 class ZStackDoc;
 class QSortFilterProxyModel;
+class ZFlyEmBookmarkView;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -22,6 +23,9 @@ class FlyEmProofControlForm : public QWidget
 public:
   explicit FlyEmProofControlForm(QWidget *parent = 0);
   ~FlyEmProofControlForm();
+
+  ZFlyEmBookmarkView* getUserBookmarkView() const;
+  ZFlyEmBookmarkView* getAssignedBookmarkView() const;
 
 signals:
   void segmentVisibleChanged(bool visible);
@@ -62,7 +66,9 @@ private slots:
   void selectBody();
   void locateAssignedBookmark(const QModelIndex &index);
   void locateUserBookmark(const QModelIndex &index);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
+  void enableNameColorMap(bool on);
 
 private:
   void createMenu();
@@ -71,11 +77,13 @@ private:
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
-  ZFlyEmBookmarkListModel m_bookmarkList;
+  ZFlyEmBookmarkListModel m_assignedBookmarkList;
   ZFlyEmBookmarkListModel m_userBookmarkList;
 
-  QSortFilterProxyModel *m_bookmarkProxy;
-  QSortFilterProxyModel *m_userBookmarkProxy;
+  QAction *m_nameColorAction;
+
+//  QSortFilterProxyModel *m_bookmarkProxy;
+//  QSortFilterProxyModel *m_userBookmarkProxy;
 
 //  ZDvidDialog *m_dvidDlg;
 };

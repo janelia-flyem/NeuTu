@@ -274,12 +274,15 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
 
-  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+//  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+
+  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+  std::set<Swc_Tree_Node*> getUnselectedSwcNodeSet() const;
 
   static QList<Swc_Tree_Node*> getSelectedSwcNodeList(
       const ZSwcTree *tree);
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
-  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+
 
   //ZStackViewParam getSelectedSwcNodeView() const;
 
@@ -471,6 +474,7 @@ public: //Image processing
   bool enhanceLine();
   bool watershed();
   bool invert();
+  bool subtractBackground();
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
@@ -530,16 +534,6 @@ public:
   void addStackPatchP(ZStackPatch *patch, bool uniqueSource = true);
   void addStrokeP(ZStroke2d *obj);
   void addSparseObjectP(ZSparseObject *obj);
-
-  /*!
-   * \brief Add an object
-   * \param obj
-   * \param role
-   * \param uniqueSource Replace the object with the same nonempty source if it
-   *        is true. Note that if there are multiple objects with the same source
-   *        existing in the doc, only the first one is replaced.
-   */
-  void addObject(ZStackObject *obj, bool uniqueSource = true);
 
   /*!
    * \brief Add an object in a quick way
@@ -642,7 +636,7 @@ public:
   template <class InputIterator>
   void setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllSwcTreeNodes();
-  void deselectAllObject();
+  void deselectAllObject(bool recursive = true);
   void deselectAllObject(ZStackObject::EType type);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
@@ -917,7 +911,7 @@ public:
     return m_progressSignal;
   }
 
-  virtual void processRectRoiUpdate();
+  virtual void processRectRoiUpdate(ZRect2d *rect);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -927,9 +921,21 @@ public:
     return m_lastAddedSwcNode;
   }*/
 
+
 public slots: //undoable commands
+  /*!
+   * \brief Add an object
+   * \param obj
+   * \param role
+   * \param uniqueSource Replace the object with the same nonempty source if it
+   *        is true. Note that if there are multiple objects with the same source
+   *        existing in the doc, only the first one is replaced.
+   */
+  void addObject(ZStackObject *obj, bool uniqueSource = true);
+
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
+  virtual bool executeRemoveObjectCommand(ZStackObject *obj);
   virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
@@ -959,6 +965,7 @@ public slots: //undoable commands
   virtual bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
   virtual bool executeTranslateSelectedSwcNode();
   virtual bool executeDeleteSwcNodeCommand();
+  virtual bool executeDeleteUnselectedSwcNodeCommand();
   virtual bool executeConnectSwcNodeCommand();
   virtual bool executeChangeSelectedSwcNodeSize();
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
@@ -1045,6 +1052,7 @@ public slots:
 //  void processRectRoiUpdateSlot();
 
 signals:
+  void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
@@ -1203,12 +1211,12 @@ private:
   QStack<EObjectModifiedMode> m_objectModifiedMode;
 
   QSet<ZStackObject::EType> m_unsavedSet;
-
-  QThreadFutureMap m_futureMap;
+  bool m_changingSaveState;
 
 protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
+  QThreadFutureMap m_futureMap;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

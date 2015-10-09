@@ -37,6 +37,7 @@ public:
   void removeIsolatedObject(ZStack *stack, int r, int dr);
 
   static void invert(ZStack *stack);
+  static void subtractBackground(ZStack *stack);
 
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
   //
@@ -46,6 +47,8 @@ public:
 
   static void RemoveBranchPoint(Stack *stack, int nnbr);
   static Stack* GaussianSmooth(Stack *stack, double sx, double sy, double sz);
+  //Slicewise smoothing
+  static Stack* GaussianSmooth(Stack *stack, double sx, double sy);
 
   static void ShrinkSkeleton(Stack *stack, int level);
 

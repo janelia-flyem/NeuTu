@@ -172,6 +172,7 @@
 #include "zwidgetmessage.h"
 #include "zstackarray.h"
 #include "flyem/zflyembodyannotationdialog.h"
+#include "zslicedpuncta.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -3286,8 +3287,8 @@ void MainWindow::test()
   future2.resume();
 #endif
 
-#if 0
-  ZStackDoc *doc = new ZStackDoc(NULL, NULL);
+#if  0
+  ZStackDoc *doc = new ZStackDoc(NULL);
   doc->loadFile(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
 
     ZStackMvc *stackWidget =
@@ -3377,6 +3378,24 @@ void MainWindow::test()
 #endif
 
 #if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  addStackFrame(frame);
+  presentStackFrame(frame);
+
+  ZSlicedPuncta *puncta = new ZSlicedPuncta;
+  ZPunctum *p = new ZPunctum;
+  p->set(100, 100, 100, 3.0);
+  puncta->addPunctum(p);
+
+  p = new ZPunctum;
+  p->set(100, 100, 50, 3.0);
+  puncta->addPunctum(p);
+
+  frame->document()->addObject(puncta);
+#endif
+
+#if 1
   m_progress->setRange(0, 2);
   m_progress->setLabelText(QString("Testing ..."));
   int currentProgress = 0;
@@ -3406,7 +3425,7 @@ void MainWindow::test()
 
 #endif
 
-#if 1
+#if 0
   ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
   dlg->setStatus("Finalized");
   dlg->exec();
@@ -7252,3 +7271,11 @@ void MainWindow::MessageProcessor::processMessage(
 }
 
 
+
+void MainWindow::on_actionSubtract_Background_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame != NULL) {
+    frame->subtractBackground();
+  }
+}

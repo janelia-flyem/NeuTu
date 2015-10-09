@@ -37,6 +37,8 @@ public:
 
   void setImage(ZImage *image);
   void setObjectCanvas(ZPixmap *canvas);
+  ZPixmap* getObjectCanvas() { return m_objectCanvas; }
+  ZPixmap* getTileCanvas() { return m_tileCanvas; }
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
   void setActiveDecorationCanvas(ZPixmap *canvas);

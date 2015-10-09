@@ -215,12 +215,14 @@ void ZSwcTree::save(const char *filePath)
     }
 
     ZSwcTree::DepthFirstIterator iter(this);
-    iter.begin();
+//    iter.begin();
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();
-      fprintf(fp, "%d %d %g %g %g %g %d\n",
-          tn->node.id, tn->node.type, tn->node.x, tn->node.y,
-          tn->node.z, tn->node.d, tn->node.parent_id);
+      if (SwcTreeNode::isRegular(tn)) {
+        fprintf(fp, "%d %d %g %g %g %g %d\n",
+                tn->node.id, tn->node.type, tn->node.x, tn->node.y,
+                tn->node.z, tn->node.d, tn->node.parent_id);
+      }
     }
 
     fclose(fp);
@@ -3242,8 +3244,8 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(255, 153, 0, 255);
-    m_terminalFocusColor = QColor(255, 153, 0);
+    m_terminalColor = QColor(200, 200, 0, 255);
+    m_terminalFocusColor = QColor(200, 200, 0);
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
@@ -3254,8 +3256,8 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
     break;
   case COLOR_ROI_CURVE:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(255, 153, 0, 255);
-    m_terminalFocusColor = QColor(255, 153, 0);
+    m_terminalColor = QColor(200, 200, 0, 255);
+    m_terminalFocusColor = QColor(200, 200, 0);
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 128);
@@ -3647,6 +3649,7 @@ void ZSwcTree::ExtIterator::init(const ZSwcTree *tree)
 {
   m_tree = const_cast<ZSwcTree*>(tree);
   m_currentNode = NULL;
+  m_excludingVirtual = false;
 }
 
 
@@ -3694,6 +3697,11 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
   m_currentNode = NULL;
   if (m_tree != NULL) {
     m_currentNode = m_tree->begin();
+    if (m_excludingVirtual) {
+      if (SwcTreeNode::isVirtual(m_currentNode)) {
+        m_currentNode = m_currentNode->next;
+      }
+    }
   }
 
   return m_currentNode;
@@ -3706,7 +3714,16 @@ bool ZSwcTree::DepthFirstIterator::hasNext() const
   }
 
   if (m_currentNode == NULL) {
-    return (m_tree->begin() != NULL);
+    Swc_Tree_Node *first = m_tree->begin();
+    if (first == NULL) {
+      return false;
+    } else {
+      if (m_excludingVirtual) {
+        return first->next != NULL;
+      } else {
+        return first != NULL;
+      }
+    }
   }
 
   return m_currentNode->next != NULL;
@@ -3719,7 +3736,7 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   }
 
   if (m_currentNode == NULL) {
-    m_currentNode = m_tree->begin();
+    begin();
   } else {
     m_currentNode = m_tree->next();
   }

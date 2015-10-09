@@ -21,6 +21,7 @@
 #include "zjsonobject.h"
 #include "zswctree.h"
 #include "swc/zswcsignalfitter.h"
+#include "zneurontracerconfig.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -162,200 +163,6 @@ ZSwcTree *ZNeuronConstructor::reconstruct(
 }
 
 
-/////////////////////ZNeuronTracerConfig///////////////////////////
-
-const char *ZNeuronTracerConfig::m_levelKey = "level";
-const char *ZNeuronTracerConfig::m_minimalAutoScoreKey = "minimalScoreAuto";
-const char *ZNeuronTracerConfig::m_minimalManualScoreKey = "minimalScoreManual";
-const char *ZNeuronTracerConfig::m_minimalSeedScoreKey = "minimalScoreSeed";
-const char *ZNeuronTracerConfig::m_minimal2dScoreKey = "minimalScore2d";
-const char *ZNeuronTracerConfig::m_refitKey = "refit";
-const char *ZNeuronTracerConfig::m_spTestKey = "spTest";
-const char *ZNeuronTracerConfig::m_crossoverTestKey = "crossoverTest";
-const char *ZNeuronTracerConfig::m_tuneEndKey = "tuneEnd";
-const char *ZNeuronTracerConfig::m_edgePathKey = "edgePath";
-const char *ZNeuronTracerConfig::m_seedMethodKey = "seedMethod";
-const char *ZNeuronTracerConfig::m_recoverKey = "recover";
-const char *ZNeuronTracerConfig::m_enhanceLineKey = "enhanceMask";
-
-ZNeuronTracerConfig::ZNeuronTracerConfig()
-{
-  init();
-}
-
-void ZNeuronTracerConfig::init()
-{
-  m_minAutoScore = 0.3;
-  m_minManualScore = 0.3;
-  m_seedScore = 0.35;
-  m_2dScore = 0.5;
-  m_refit = false;
-  m_spTest = true;
-  m_crossoverTest = false;
-  m_tuneEnd = true;
-  m_edgePath = false;
-  m_enhanceMask = false;
-  m_seedMethod = 1;
-  m_recover = 2;
-}
-
-void ZNeuronTracerConfig::print() const
-{
-  std::cout << "Minimal score (auto): " << m_minAutoScore << std::endl;
-  std::cout << "Minimal score (manual): " << m_minManualScore << std::endl;
-  std::cout << "Minimal score (seed): " << m_seedScore << std::endl;
-  std::cout << "Minimal score (2d): " << m_2dScore << std::endl;
-
-  std::cout << "Refit: " << m_refit << std::endl;
-  std::cout << "Sp test: " << m_spTest << std::endl;
-  std::cout << "Crossover test: " << m_crossoverTest << std::endl;
-  std::cout << "Tuning end: " << m_tuneEnd << std::endl;
-  std::cout << "Using edge path: " << m_edgePath << std::endl;
-  std::cout << "Enhance line: " << m_enhanceMask << std::endl;
-  std::cout << "Seeding method: " << m_seedMethod << std::endl;
-  std::cout << "Recovering: " << m_recover << std::endl;
-
-  std::cout << "Levels: " << std::endl;
-  for (std::map<int, ZJsonObject>::const_iterator iter = m_levelMap.begin();
-       iter != m_levelMap.end(); ++iter) {
-    std::cout << iter->first << std::endl;
-    const ZJsonObject &obj = iter->second;
-    std::cout << obj.dumpString(2) << std::endl;
-  }
-}
-
-void ZNeuronTracerConfig::load(const std::string &configPath)
-{
-  if (fexist(configPath.c_str())) {
-    ZJsonObject obj;
-    obj.load(configPath);
-
-    loadJsonObject(obj);
-  }
-}
-
-ZJsonObject ZNeuronTracerConfig::getLevelJson(int level) const
-{
-  ZJsonObject obj;
-  if (m_levelMap.empty()) {
-    std::cout << "Warning: no level configuration available. "
-                 "Default parameters will be used." << std::endl;
-  } else {
-    if (m_levelMap.count(level) > 0) {
-      obj = m_levelMap.at(level);
-    } else {
-      std::cout << " The level " << level << " is not available." << std::endl;
-      if (level < 1) {
-        level = 1;
-      } else if (level > 9) {
-        level = 9;
-      }
-
-      obj = m_levelMap.begin()->second;
-      for (std::map<int, ZJsonObject>::const_iterator iter = m_levelMap.begin();
-           iter != m_levelMap.end(); ++iter) {
-        if (level > iter->first) {
-          std::cout << "Use level " << iter->first << " instead." << std::endl;
-          obj = iter->second;
-          break;
-        }
-      }
-    }
-  }
-
-  return obj;
-}
-
-void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
-{
-#ifdef _DEBUG_2
-  std::cout << jsonObj.dumpString() << std::endl;
-#endif
-  if (jsonObj.hasKey("tag")) {
-    if (eqstr(ZJsonParser::stringValue(jsonObj["tag"]), "trace configuration")) {
-      if (jsonObj.hasKey("default")) {
-        ZJsonObject defaultObj(const_cast<json_t*>(jsonObj["default"]),
-            ZJsonValue::SET_INCREASE_REF_COUNT);
-        if (defaultObj.hasKey(m_minimalAutoScoreKey)) {
-          m_minAutoScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalAutoScoreKey]);
-        }
-
-        if (defaultObj.hasKey(m_minimalManualScoreKey)) {
-          m_minManualScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalManualScoreKey]);
-        }
-
-        if (defaultObj.hasKey(m_minimalSeedScoreKey)) {
-          m_seedScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalSeedScoreKey]);
-        }
-
-        if (defaultObj.hasKey(m_minimal2dScoreKey)) {
-          m_2dScore = ZJsonParser::numberValue(defaultObj[m_minimal2dScoreKey]);
-        }
-
-        if (defaultObj.hasKey(m_refitKey)) {
-          m_refit = ZJsonParser::booleanValue(defaultObj[m_refitKey]);
-        }
-
-        if (defaultObj.hasKey(m_spTestKey)) {
-          m_spTest = ZJsonParser::booleanValue(defaultObj[m_spTestKey]);
-        }
-
-        if (defaultObj.hasKey(m_crossoverTestKey)) {
-          m_crossoverTest =
-              ZJsonParser::booleanValue(defaultObj[m_crossoverTestKey]);
-        }
-
-        if (defaultObj.hasKey(m_tuneEndKey)) {
-          m_tuneEnd =
-              ZJsonParser::booleanValue(defaultObj[m_tuneEndKey]);
-        }
-
-        if (defaultObj.hasKey(m_edgePathKey)) {
-          m_edgePath =
-              ZJsonParser::booleanValue(defaultObj[m_edgePathKey]);
-        }
-
-        if (defaultObj.hasKey(m_seedMethodKey)) {
-          m_seedMethod =
-              ZJsonParser::integerValue(defaultObj[m_seedMethodKey]);
-        }
-
-        if (defaultObj.hasKey(m_recoverKey)) {
-          m_recover =
-              ZJsonParser::integerValue(defaultObj[m_recoverKey]);
-        }
-
-        if (defaultObj.hasKey(m_enhanceLineKey)) {
-          m_enhanceMask =
-              ZJsonParser::booleanValue(defaultObj[m_enhanceLineKey]);
-        }
-      }
-
-      if (jsonObj.hasKey("level")) {
-        const char *key;
-        json_t *value;
-        json_t *obj = const_cast<json_t*>(jsonObj["level"]);
-        json_object_foreach(obj, key, value) {
-          if (strlen(key) == 1) {
-            if (key[0] >= '1' && key[0] <= '9') {
-              int level = key[0] - '0';
-              ZJsonObject levelObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
-              m_levelMap[level] = levelObj;
-#ifdef _DEBUG_
-              std::cout << "Tracing leve config: " << key[0] << std::endl;
-              levelObj.print();
-#endif
-            }
-          }
-        }
-      }
-    }
-  }
-}
-/////////////////////////////////////////////
 
 //////////////////////////ZNeuronTracer///////////////////////////////
 
@@ -413,6 +220,7 @@ void ZNeuronTracer::config()
   if (m_connWorkspace != NULL) {
     m_connWorkspace->sp_test = config.spTest();
     m_connWorkspace->crossover_test = config.crossoverTest();
+    m_connWorkspace->dist_thre = config.getMaxEucDist();
   }
 }
 
@@ -518,18 +326,45 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
   Kill_Locseg_Chain(locseg_chain);
 
   ZSwcPath path;
-  for (int i = 0; i < n; ++i) {
-    Swc_Tree_Node *tn = SwcTreeNode::makePointer(circles[i].center[0],
-        circles[i].center[1], circles[i].center[2], circles[i].radius);
-    if (!path.empty()) {
-      SwcTreeNode::setParent(tn, path.back());
+  if (n > 0) {
+//    bool hit = false;
+    int start = 0;
+    int end = n;
+    if (Trace_Workspace_Mask_Value(m_traceWorkspace, circles[0].center) > 0) {
+      for (int i = 1; i < n; ++i) {
+        start = i - 1;
+        if (Trace_Workspace_Mask_Value(m_traceWorkspace, circles[i].center) == 0) {
+          break;
+        }
+      }
     }
-    SwcTreeNode::translate(tn, stackOffset);
-    path.push_back(tn);
+
+    if (n > 1) {
+      if (Trace_Workspace_Mask_Value(m_traceWorkspace, circles[n - 1].center) > 0) {
+        for (int i = n - 2; i >= 0; --i) {
+          end = i + 2;
+          if (Trace_Workspace_Mask_Value(m_traceWorkspace, circles[i].center) == 0) {
+            break;
+          }
+        }
+      }
+    }
+
+    for (int i = start; i < end; ++i) {
+      Swc_Tree_Node *tn = SwcTreeNode::makePointer(circles[i].center[0],
+          circles[i].center[1], circles[i].center[2], circles[i].radius);
+      if (!path.empty()) {
+        SwcTreeNode::setParent(tn, path.back());
+      }
+      SwcTreeNode::translate(tn, stackOffset);
+      path.push_back(tn);
+    }
   }
 
   /* free <circles> */
-  free(circles);
+  if (circles != NULL) {
+    free(circles);
+  }
 
   return path;
 }
@@ -570,6 +405,15 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   setTraceScoreThreshold(TRACING_INTERACTIVE);
 
   ZIntPoint stackOffset = getStack()->getOffset();
+
+  ZPoint targetPos(x2, y2, z2);
+
+  x1 = iround(x1);
+  y1 = iround(y1);
+  z1 = iround(z1);
+  x2 = iround(x2);
+  y2 = iround(y2);
+  z2 = iround(z2);
 
   x1 -= stackOffset.getX();
   y1 -= stackOffset.getY();
@@ -676,8 +520,10 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     int height = getStack()->height();
     int depth = getStack()->depth();
 
-    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, width, height, depth);
-    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, width, height, depth);
+    int startIndex = C_Stack::indexFromCoord(
+          x1, y1, z1, width, height, depth);
+    int endIndex = C_Stack::indexFromCoord(
+          x2, y2, z2, width, height, depth);
 
     path = stackGraph.computeShortestPath(
           getIntensityData(), startIndex, endIndex, m_vertexOption);
@@ -710,10 +556,26 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
           tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
   }
 
+#ifdef _DEBUG_2
+  Swc_Tree_Resort_Id(tree);
+  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test.swc").c_str(), tree);
+#endif
+
   ZSwcSignalFitter fitter;
   fitter.setBackground(m_backgroundType);
   fitter.setFixingTerminal(true);
   fitter.fitSignal(tree, getStack(), getSignalChannel());
+
+#ifdef _DEBUG_2
+  Swc_Tree_Resort_Id(tree);
+  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test2.swc").c_str(), tree);
+#endif
+
+  Swc_Tree_Node *leaf = tree->root;
+  while (SwcTreeNode::firstChild(leaf) != NULL) {
+    leaf = SwcTreeNode::firstChild(leaf);
+  }
+  SwcTreeNode::setPos(leaf, targetPos);
 
   return tree;
 }
@@ -1032,7 +894,9 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
 
   std::vector<Locseg_Chain*> goodChainArray;
 
-  double minIntensity = Infinity;
+//  double minIntensity = Infinity;
+  double minIntensity = 0.0;
+  int count = 0;
 
   size_t index = 0;
   for (std::vector<Locseg_Chain*>::iterator iter = chainArray.begin();
@@ -1042,17 +906,23 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
           chain, stack, 1.0, STACK_FIT_CORRCOEF);
     intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
     //intensityArray[index] = Locseg_Chain_Min_Seg_Signal(chain, stack, 1.0);
-    if (scoreArray[index] >= 0.6) {
+    if (scoreArray[index] >= 0.5) {
+      minIntensity += intensityArray[index];
+      ++count;
       //intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
       //STACK_FIT_LOW_MEAN_SIGNAL
-      if (intensityArray[index] < minIntensity) {
-        minIntensity = intensityArray[index];
-      }
+//      if (intensityArray[index] < minIntensity) {
+//        minIntensity = intensityArray[index];
+//      }
     }
   }
 
+  if (count > 0) {
+    minIntensity /= count;
+  }
+
   for (index = 0; index < chainArray.size(); ++index) {
-    if (scoreArray[index] >= 0.6 || intensityArray[index] >= minIntensity) {
+    if (scoreArray[index] >= 0.5 || intensityArray[index] >= minIntensity) {
       goodChainArray.push_back(chainArray[index]);
     } else {
       delete chainArray[index];
@@ -1165,8 +1035,6 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   /* <chainArray> allocated */
 
   std::vector<Locseg_Chain*> chainArray = trace(stack, locsegArray, scoreArray);
-  chainArray = screenChain(stack, chainArray);
-  advanceProgress(0.3);
 
   if (m_recover > 0) {
     std::vector<Locseg_Chain*> newChainArray = recover(stack);
@@ -1174,6 +1042,9 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
           chainArray.end(), newChainArray.begin(), newChainArray.end());
   }
   advanceProgress(0.1);
+
+  chainArray = screenChain(stack, chainArray);
+  advanceProgress(0.3);
 
   /* <mask2> freed */
 //  C_Stack::kill(mask);
@@ -1371,12 +1242,14 @@ void ZNeuronTracer::setStackOffset(const ZIntPoint &pt)
 
 void ZNeuronTracer::setTraceLevel(int level)
 {
-  config();
-
   initTraceWorkspace(m_stack);
   initConnectionTestWorkspace();
 
-  loadJsonObject(ZNeuronTracerConfig::getInstance().getLevelJson(level));
+  config();
+
+  if (level > 0) {
+    loadJsonObject(ZNeuronTracerConfig::getInstance().getLevelJson(level));
+  }
 
 #if 0
   if (m_traceWorkspace == NULL) {

@@ -21,6 +21,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
   void prepareNameMap();
+  void prepareNameMap(const ZJsonValue &bodyInfoObj);
   void updateNameMap(const ZFlyEmBodyAnnotation &annotation);
   void updateNameMap(uint64_t bodyId, const QString &name);
 
@@ -28,6 +29,7 @@ private:
   QHash<QString, QColor> m_colorMap;
   QHash<uint64_t, QString> m_nameMap;
   ZDvidReader m_reader;
+  bool m_isMapReady;
 };
 
 #endif // ZFLYEMBODYCOLORSCHEME_H
