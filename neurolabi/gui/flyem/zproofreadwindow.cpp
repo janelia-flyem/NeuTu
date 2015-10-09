@@ -237,7 +237,11 @@ void ZProofreadWindow::createToolbar()
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 {
   m_controlGroup->setCurrentIndex(1);
-  dump(QString("Body %1 loaded for split.").arg(bodyId), false);
+
+  dump(ZWidgetMessage(
+         QString("Body %1 loaded for split.").arg(bodyId),
+         NeuTube::MSG_INFORMATION,
+         ZWidgetMessage::TARGET_TEXT));
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
@@ -277,19 +281,29 @@ void ZProofreadWindow::exitSplit()
 {
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
-  dump("Back from splitting mode.", false);
+  dump(ZWidgetMessage(
+         "Back from splitting mode.", NeuTube::MSG_INFORMATION,
+         ZWidgetMessage::TARGET_TEXT));
 }
 
-void ZProofreadWindow::dump(const QString &message, bool appending)
+void ZProofreadWindow::dump(const QString &message, bool appending,
+                            bool logging)
 {
 //  qDebug() << message;
-  LINFO() << message;
+  if (logging) {
+    LINFO() << message;
+  }
 
   m_messageWidget->dump(message, appending);
 }
 
-void ZProofreadWindow::dumpError(const QString &message, bool appending)
+void ZProofreadWindow::dumpError(
+    const QString &message, bool appending, bool logging)
 {
+  if (logging) {
+    LERROR() << message;
+  }
+
   m_messageWidget->dumpError(message, appending);
 }
 
@@ -298,7 +312,7 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
-    dump(msg.toHtmlString(), msg.isAppending());
+    dump(msg.toHtmlString(), msg.isAppending(), false);
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
@@ -385,5 +399,28 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 {
   if (event->mimeData()->hasFormat("text/uri-list")) {
     event->acceptProposedAction();
+  }
+}
+
+void ZProofreadWindow::logMessage(const QString &msg)
+{
+  LINFO() << msg;
+}
+
+void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
+{
+  switch (msg.getType()) {
+  case NeuTube::MSG_INFORMATION:
+    LINFO() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_WARNING:
+    LWARN() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_ERROR:
+    LERROR() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_DEBUG:
+    LDEBUG() << msg.toPlainString();
+    break;
   }
 }

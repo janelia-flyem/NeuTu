@@ -44,8 +44,9 @@ public slots:
   void presentSplitInterface(uint64_t bodyId);
   void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending = true);
-  void dumpError(const QString &message, bool appending = true);
+  void dump(const QString &message, bool appending = true, bool logging = true);
+  void dumpError(const QString &message, bool appending = true,
+                 bool logging = true);
   void dump(const ZWidgetMessage &msg);
 
   void startProgress();
@@ -66,6 +67,9 @@ private:
 
   void createMenu();
   void createToolbar();
+
+  void logMessage(const QString &msg);
+  void logMessage(const ZWidgetMessage &msg);
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
