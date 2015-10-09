@@ -722,9 +722,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   }
   getProgressSignal()->endProgress();
 
-  emit messageGenerated(ZWidgetMessage("Database loaded.",
-                                       NeuTube::MSG_INFORMATION,
-                                       ZWidgetMessage::TARGET_STATUS_BAR));
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Database %1 loaded.").arg(
+            getDvidTarget().getSourceString(false).c_str()),
+          NeuTube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_STATUS_BAR));
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
