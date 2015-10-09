@@ -80,6 +80,16 @@ void ZBiocytinProjectionDoc::processRectRoiUpdate()
   }
 }
 
+void ZBiocytinProjectionDoc::processRectRoiUpdate(ZRect2d *rect)
+{
+  if (rect != NULL) {
+    if (rect->isValid()) {
+      selectSwcNode(*rect);
+      removeObject(rect);
+    }
+  }
+}
+
 bool ZBiocytinProjectionDoc::executeAddSwcBranchCommand(
     ZSwcTree *tree, double minConnDist)
 {

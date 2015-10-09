@@ -288,6 +288,7 @@ void ZProofreadWindow::dump(const QString &message, bool appending)
 {
 //  qDebug() << message;
   m_messageWidget->dump(message, appending);
+  LINFO() << message;
 }
 
 void ZProofreadWindow::dumpError(const QString &message, bool appending)
