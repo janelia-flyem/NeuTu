@@ -25,7 +25,7 @@ public:
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
-    WORKING_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
+    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
   };
 
   static NeutubeConfig& getInstance() {
@@ -312,6 +312,7 @@ private:
   bool m_isStereoOn;
   //std::string m_autoSaveDir;
   std::string m_workDir;
+  std::string m_logDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;

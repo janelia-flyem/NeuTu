@@ -283,6 +283,8 @@ void ZProofreadWindow::exitSplit()
 void ZProofreadWindow::dump(const QString &message, bool appending)
 {
 //  qDebug() << message;
+  LINFO() << message;
+
   m_messageWidget->dump(message, appending);
 }
 
