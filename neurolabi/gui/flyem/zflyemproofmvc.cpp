@@ -72,6 +72,7 @@ void ZFlyEmProofMvc::init()
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
+  m_objectWindow = NULL;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -1017,6 +1018,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
       if (reader.open(getDvidTarget())) {
         uint64_t bodyId = selected.front();
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        m_mergeProject.recordAnnotation(bodyId, annotation);
         ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
         if (annotation.isEmpty()) {
@@ -1028,6 +1030,11 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
       }
 
     }
+
+    std::vector<uint64_t> deselected =
+        labelSlice->getSelector().getDeselectedList();
+    m_mergeProject.removeSelectedAnnotation(
+          deselected.begin(), deselected.end());
   }
 }
 

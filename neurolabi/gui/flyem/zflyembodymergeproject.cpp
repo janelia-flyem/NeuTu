@@ -1573,3 +1573,14 @@ void ZFlyEmBodyMergeProject::setBookmarkVisible(bool visible)
 {
   m_isBookmarkVisible = visible;
 }
+
+void ZFlyEmBodyMergeProject::removeSelectedAnnotation(uint64_t bodyId)
+{
+  m_annotationMap.remove(bodyId);
+}
+
+void ZFlyEmBodyMergeProject::recordAnnotation(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
+{
+  m_annotationMap[bodyId] = anno;
+}
