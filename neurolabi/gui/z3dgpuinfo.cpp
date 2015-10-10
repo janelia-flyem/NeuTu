@@ -259,7 +259,7 @@ void Z3DGpuInfo::logGpuInfo() const
     return;
   }
 
-#ifdef __APPLE__
+#ifdef __APPLE__2
   QProcess dispInfo;
   dispInfo.start("system_profiler", QStringList() << "SPDisplaysDataType");
 

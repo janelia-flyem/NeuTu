@@ -331,6 +331,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+
   if (m_bodySplitProjectDialog != NULL) {
     m_bodySplitProjectDialog->clear();
   }

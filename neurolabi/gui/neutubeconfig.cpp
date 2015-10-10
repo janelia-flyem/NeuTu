@@ -6,6 +6,7 @@
 #include "zxmldoc.h"
 #include "zstring.h"
 #include "zlogmessagereporter.h"
+#include "neutube.h"
 
 using namespace std;
 
@@ -265,9 +266,18 @@ std::string NeutubeConfig::getPath(Config_Item item) const
 #endif
     }
     return m_workDir;
+  case LOG_DIR:
+    if (m_logDir.empty()) {
+      ZString dir = getPath(WORKING_DIR);
+      if (dir.startsWith("/groups/flyem/")) {
+        dir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
+      }
+      return dir;
+    }
+    return m_logDir;
   case LOG_FILE:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(WORKING_DIR).c_str()).filePath("log.txt").toStdString();
+    return QDir(getPath(LOG_DIR).c_str()).filePath("log.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log.txt");
 #endif
