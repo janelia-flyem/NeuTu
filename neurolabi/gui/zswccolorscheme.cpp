@@ -94,7 +94,7 @@ void ZSwcColorScheme::buildJinTypeColorTable()
   m_colorTable.clear();
   m_colorTable.push_back(QColor(Qt::white));
   m_colorTable.push_back(QColor(Qt::blue));
-  m_colorTable.push_back(QColor(Qt::black));
+  m_colorTable.push_back(QColor(QColor(200, 153, 0)));
   m_colorTable.push_back(QColor(Qt::green));
   m_colorTable.push_back(QColor(Qt::red));
   m_colorTable.push_back(QColor(Qt::gray));

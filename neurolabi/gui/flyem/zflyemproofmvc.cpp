@@ -1021,12 +1021,13 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
       if (reader.open(getDvidTarget())) {
         uint64_t bodyId = selected.front();
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-        m_mergeProject.recordAnnotation(bodyId, annotation);
+
         ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
         if (annotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
+          getCompleteDocument()->recordAnnotation(bodyId, annotation);
           msg.setMessage(annotation.toString().c_str());
         }
         emit messageGenerated(msg);
@@ -1036,7 +1037,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
     std::vector<uint64_t> deselected =
         labelSlice->getSelector().getDeselectedList();
-    m_mergeProject.removeSelectedAnnotation(
+    getCompleteDocument()->removeSelectedAnnotation(
           deselected.begin(), deselected.end());
   }
 }

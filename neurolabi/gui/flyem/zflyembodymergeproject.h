@@ -13,7 +13,6 @@
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
 #include "zflyembookmarkarray.h"
-#include "zflyembodyannotation.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -115,12 +114,6 @@ public:
 
   void setBookmarkVisible(bool visible);
 
-  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
-  void removeSelectedAnnotation(uint64_t bodyId);
-  template <typename InputIterator>
-  void removeSelectedAnnotation(
-      const InputIterator &first, const InputIterator &last);
-
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -207,7 +200,6 @@ private:
 //  bool m_isBookmarkVisible;
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap;
 //  QSet<uint64_t> m_currentSelected;
 
   ZProgressSignal *m_progressSignal;
@@ -217,15 +209,6 @@ template <typename T>
 T* ZFlyEmBodyMergeProject::getDocument() const
 {
   return qobject_cast<T*>(getDocument());
-}
-
-template <typename InputIterator>
-void ZFlyEmBodyMergeProject::removeSelectedAnnotation(
-    const InputIterator &first, const InputIterator &last)
-{
-  for (InputIterator iter = first; iter != last; ++iter) {
-    removeSelectedAnnotation(*iter);
-  }
 }
 
 #endif // ZFLYEMBODYMERGEPROJECT_H
