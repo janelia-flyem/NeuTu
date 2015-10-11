@@ -47,7 +47,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "6680",
+      "uuid": "94b2",
       "name": "FIB19 (emdata2)",
       "comment": "branched from f5ff",
       "body_label": "segmentation-labelvol",
