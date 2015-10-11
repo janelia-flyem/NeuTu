@@ -4997,6 +4997,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 */
         if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
           Biocytin::SwcProcessor::SmoothRadius(wholeTree);
@@ -5009,10 +5010,6 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
-
-        if (stackFrame != NULL) {
-          wholeTree->translate(stackFrame->document()->getStackOffset());
-        }
 
         const double distThre = 30;
 
