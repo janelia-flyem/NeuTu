@@ -3244,7 +3244,7 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(200, 200, 0, 255);
+    m_terminalColor = QColor(200, 200, 100, 255);
     m_terminalFocusColor = QColor(200, 200, 0);
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);

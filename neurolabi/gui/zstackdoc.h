@@ -488,6 +488,7 @@ private:
   void removeObjectP(InputIterator first, InputIterator last, bool deleting);
 
   void updateSwc();
+  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);

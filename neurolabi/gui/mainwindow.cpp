@@ -331,6 +331,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+
   if (m_bodySplitProjectDialog != NULL) {
     m_bodySplitProjectDialog->clear();
   }
@@ -4995,6 +4997,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 */
         if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
           Biocytin::SwcProcessor::SmoothRadius(wholeTree);
@@ -5007,10 +5010,6 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
-
-        if (stackFrame != NULL) {
-          wholeTree->translate(stackFrame->document()->getStackOffset());
-        }
 
         const double distThre = 30;
 

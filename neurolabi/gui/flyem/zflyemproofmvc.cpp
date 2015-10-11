@@ -72,6 +72,7 @@ void ZFlyEmProofMvc::init()
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
+  m_objectWindow = NULL;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -721,9 +722,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   }
   getProgressSignal()->endProgress();
 
-  emit messageGenerated(ZWidgetMessage("Database loaded.",
-                                       NeuTube::MSG_INFORMATION,
-                                       ZWidgetMessage::TARGET_STATUS_BAR));
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Database %1 loaded.").arg(
+            getDvidTarget().getSourceString(false).c_str()),
+          NeuTube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_STATUS_BAR));
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
@@ -1017,17 +1021,24 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
       if (reader.open(getDvidTarget())) {
         uint64_t bodyId = selected.front();
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
         ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
         if (annotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
+          getCompleteDocument()->recordAnnotation(bodyId, annotation);
           msg.setMessage(annotation.toString().c_str());
         }
         emit messageGenerated(msg);
       }
 
     }
+
+    std::vector<uint64_t> deselected =
+        labelSlice->getSelector().getDeselectedList();
+    getCompleteDocument()->removeSelectedAnnotation(
+          deselected.begin(), deselected.end());
   }
 }
 

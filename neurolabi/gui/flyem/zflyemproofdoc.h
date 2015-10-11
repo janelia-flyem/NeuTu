@@ -2,6 +2,7 @@
 #define ZFLYEMPROOFDOC_H
 
 #include <QString>
+#include <QMap>
 
 #include "zstackdoc.h"
 #include "zflyembodymerger.h"
@@ -10,6 +11,7 @@
 #include "zsharedpointer.h"
 //#include "zflyembodysplitproject.h"
 #include "flyem/zflyembodycolorscheme.h"
+#include "zflyembodyannotation.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -112,6 +114,12 @@ public:
 
   void downloadSynapseFunc();
 
+  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+  void removeSelectedAnnotation(uint64_t bodyId);
+  template <typename InputIterator>
+  void removeSelectedAnnotation(
+      const InputIterator &first, const InputIterator &last);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -167,6 +175,7 @@ private:
   QString m_mergeAutoSavePath;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
+  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 };
@@ -177,6 +186,15 @@ void ZFlyEmProofDoc::selectBody(
 {
   for (InputIterator iter = first; iter != last; ++iter) {
     selectBody(*iter);
+  }
+}
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::removeSelectedAnnotation(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    removeSelectedAnnotation(*iter);
   }
 }
 

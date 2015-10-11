@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QDir>
 #include <QtConcurrentRun>
+#include <QMessageBox>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -27,6 +28,7 @@
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboidobj.h"
 #include "zslicedpuncta.h"
+#include "zdialogfactory.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -134,54 +136,77 @@ std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
   return finalSet;
 }
 
+void ZFlyEmProofDoc::removeSelectedAnnotation(uint64_t bodyId)
+{
+  m_annotationMap.remove(bodyId);
+}
+
+void ZFlyEmProofDoc::recordAnnotation(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
+{
+  m_annotationMap[bodyId] = anno;
+}
+
+
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  bool okToContinue = true;
 
-  ZFlyEmBodyMerger::TLabelSet labelSet;
-  for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
-       iter != sliceList.end(); ++iter) {
-    const ZDvidLabelSlice *labelSlice = *iter;
-    const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
+  if (m_annotationMap.size() > 1) {
+    okToContinue = ZDialogFactory::Ask(
+          "Conflict to Resolve",
+          "You are about to merge multiple annotations. Do you want to continue?",
+          NULL);
+  }
 
-    if (selected.size() > 1){
-      for (std::set<uint64_t>::const_iterator iter = selected.begin();
-           iter != selected.end(); ++iter) {
-        if (supervisor != NULL) {
-          if (supervisor->checkOut(*iter)) {
-            labelSet.insert(*iter);
-          } else {
-            labelSet.clear();
-            std::string owner = supervisor->getOwner(*iter);
-            if (owner.empty()) {
-              //            owner = "unknown user";
-              emit messageGenerated(
-                    ZWidgetMessage(
-                      QString("Failed to merge. Is the librarian sever (%2) ready?").
-                      arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
-                      NeuTube::MSG_ERROR));
+  if (okToContinue) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+    ZFlyEmBodyMerger::TLabelSet labelSet;
+    for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      const ZDvidLabelSlice *labelSlice = *iter;
+      const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
+
+      if (selected.size() > 1){
+        for (std::set<uint64_t>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          if (supervisor != NULL) {
+            if (supervisor->checkOut(*iter)) {
+              labelSet.insert(*iter);
             } else {
-              emit messageGenerated(
-                    ZWidgetMessage(
-                      QString("Failed to merge. %1 has been locked by %2").
-                      arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+              labelSet.clear();
+              std::string owner = supervisor->getOwner(*iter);
+              if (owner.empty()) {
+                //            owner = "unknown user";
+                emit messageGenerated(
+                      ZWidgetMessage(
+                        QString("Failed to merge. Is the librarian sever (%2) ready?").
+                        arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
+                        NeuTube::MSG_ERROR));
+              } else {
+                emit messageGenerated(
+                      ZWidgetMessage(
+                        QString("Failed to merge. %1 has been locked by %2").
+                        arg(*iter).arg(owner.c_str()), NeuTube::MSG_ERROR));
+              }
+              break;
             }
-            break;
+          } else {
+            labelSet.insert(*iter);
           }
-        } else {
-          labelSet.insert(*iter);
         }
       }
     }
-  }
 
-  if (!labelSet.empty()) {
-    m_bodyMerger.pushMap(labelSet);
-    m_bodyMerger.undo();
+    if (!labelSet.empty()) {
+      m_bodyMerger.pushMap(labelSet);
+      m_bodyMerger.undo();
 
-    ZFlyEmProofDocCommand::MergeBody *command =
-        new ZFlyEmProofDocCommand::MergeBody(this);
-    pushUndoCommand(command);
+      ZFlyEmProofDocCommand::MergeBody *command =
+          new ZFlyEmProofDocCommand::MergeBody(this);
+      pushUndoCommand(command);
+    }
   }
 }
 
