@@ -17091,11 +17091,13 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
 
-  stack.load(GET_TEST_DATA_DIR + "/biocytin/DH070613C2X100-40.tif");
+  stack.load(GET_TEST_DATA_DIR + "/bigneuron/gold166_trainingsubset79/"
+             "checked6_chick_uw/DONE_09-2902-04R-01C-60x_merge_c1/"
+             "09-2902-04R-01C-60x_merge_c1.v3dpbd");
 
   Stack *stackData = NULL;
 
@@ -17109,7 +17111,10 @@ void ZTest::test(MainWindow *host)
     }
   }
 
-  if (C_Stack::mode(stackData) > C_Stack::min(stackData)) {
+  int intensityMode = C_Stack::mode(stackData);
+  int intensityMean = C_Stack::mean(stackData);
+
+  if (intensityMode > intensityMean) {
     std::cout << "Bright field detected." << std::endl;
     Stack_Invert_Value(stackData);
   } else {
@@ -17860,7 +17865,7 @@ void ZTest::test(MainWindow *host)
   delete doc;
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/test.swc");
   ZSwcResampler resampler;
