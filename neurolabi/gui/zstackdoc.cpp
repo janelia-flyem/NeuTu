@@ -5960,26 +5960,46 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return succ;
 }
 
+bool ZStackDoc::estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter)
+{
+  ZSwcSignalFitter fitter;
+  fitter.setBackground(getStackBackground());
+
+  int channel = 0;
+  if (getStack()->channelNumber() == 3 &&
+      getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+    channel = 1;
+  }
+
+  bool succ = false;
+
+  for (int iter = 0; iter < maxIter; ++iter) {
+    bool currentStat = fitter.fitSignal(tn, getStack(), channel);
+    if (currentStat) {
+      succ = true;
+    } else { //Fitting failed. No need to continue.
+      break;
+    }
+  }
+
+  return succ;
+}
+
 void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
 {
   if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count / maxIter;
-    ZSwcSignalFitter fitter;
-    fitter.setBackground(getStackBackground());
+//    ZSwcSignalFitter fitter;
+//    fitter.setBackground(getStackBackground());
 
     for (int iter = 0; iter < maxIter; ++iter) {
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        fitter.fitSignal(tn, getStack(), 0);
-        /*
         if (SwcTreeNode::isRegular(tn)) {
-          if (!SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground())) {
-            SwcTreeNode::fitSignal(
-                  tn, getStack()->c_stack(), getStackBackground(), 2);
-          }
+          estimateSwcNodeRadius(tn, maxIter);
         }
-        */
+//        fitter.fitSignal(tn, getStack(), 0);
         advanceProgress(step);
       }
     }
@@ -6003,6 +6023,7 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     startProgress();
 
+    /*
     ZSwcSignalFitter fitter;
     fitter.setBackground(getStackBackground());
 
@@ -6011,32 +6032,15 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
         getTag() == NeuTube::Document::BIOCYTIN_STACK) {
       channel = 1;
     }
+    */
 
     QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
     double step = 1.0 / nodeList.size();
     for (QList<Swc_Tree_Node*>::iterator iter = nodeList.begin();
          iter != nodeList.end(); ++iter) {
       Swc_Tree_Node newNode = *(*iter);
-#if 0
-      ZIntPoint offset = getStackOffset();
-      SwcTreeNode::translate(&newNode, -offset.getX(), -offset.getY(),
-                             -offset.getZ());
-      Stack *stack = getStack()->c_stack();
-      if (getStack()->channelNumber() == 3 &&
-          getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-        stack = getStack()->c_stack(1);
-      }
-
-
-      bool succ = SwcTreeNode::fitSignal(&newNode, stack,
-                                         getStackBackground());
-      if (!succ) {
-        succ = SwcTreeNode::fitSignal(&newNode, stack,
-                                      getStackBackground(), 2);
-      }
-#endif
-
-      bool succ = fitter.fitSignal(&newNode, getStack(), channel);
+      bool succ = estimateSwcNodeRadius(&newNode, 1);
+//      bool succ = fitter.fitSignal(&newNode, getStack(), channel);
       if (succ) {
         //SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
           //                     offset.getZ());

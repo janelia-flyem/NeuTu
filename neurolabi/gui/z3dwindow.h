@@ -503,6 +503,8 @@ private:
 
   bool m_isClean;   //already cleanup?
 
+  bool m_blockingTraceMenu;
+
   glm::ivec3 m_lastClickedPosInVolume;
 
   Z3DTakeScreenShotWidget *m_screenShotWidget;
