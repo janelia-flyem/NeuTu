@@ -1279,7 +1279,11 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
     window = factory.make3DWindow(doc, mode);
-    window->setWindowTitle(windowTitle());
+    QString title = windowTitle();
+    if (title.endsWith(" *")) {
+      title.resize(title.size()-2);
+    }
+    window->setWindowTitle(title);
 
     doc->registerUser(window);
 

@@ -2677,6 +2677,7 @@ void ZStackDoc::loadSwc(const QString &filePath)
 {
   ZSwcTree *tree = new ZSwcTree();
   tree->load(filePath.toLocal8Bit().constData());
+//  executeAddObjectCommand(obj);
   addObject(tree);
 }
 
@@ -3663,6 +3664,27 @@ std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcTreeNodeSet() const
 }
 */
 
+QMap<const Swc_Tree_Node *, const ZSwcTree *>
+ZStackDoc::getSelectedSwcNodeMap() const
+{
+  QMap<const Swc_Tree_Node*, const ZSwcTree*> swcMap;
+
+  TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    const std::set<Swc_Tree_Node*> &nodeSet = tree->getSelectedNode();
+    for (std::set<Swc_Tree_Node*>::const_iterator nodeIter = nodeSet.begin();
+         nodeIter != nodeSet.end(); ++nodeIter) {
+      const Swc_Tree_Node *tn = *nodeIter;
+      swcMap[tn] = tree;
+    }
+  }
+
+  return swcMap;
+}
+
 std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
 {
   std::set<Swc_Tree_Node*> swcNodeSet;
@@ -3671,8 +3693,8 @@ std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
-    swcNodeSet.insert(tree->getSelectedNode().begin(),
-                      tree->getSelectedNode().end());
+    const std::set<Swc_Tree_Node*> &nodeSet = tree->getSelectedNode();
+    swcNodeSet.insert(nodeSet.begin(), nodeSet.end());
   }
 
   return swcNodeSet;
@@ -4392,7 +4414,12 @@ bool ZStackDoc::loadFile(const QString &filePath)
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
-    loadSwc(filePath);
+  {
+    ZSwcTree *tree = new ZSwcTree();
+    tree->load(filePath.toStdString());
+    executeAddObjectCommand(tree);
+  }
+//    loadSwc(filePath);
     break;
   case ZFileType::LOCSEG_CHAIN_FILE:
     loadLocsegChain(filePath);
@@ -6488,8 +6515,23 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   QUndoCommand *command =
       new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-  new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
-  new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, false, command);
+
+  Swc_Tree_Node *upNode = tn1;
+  Swc_Tree_Node *downNode = tn2;
+
+  ZSwcTree *tree1 = nodeToSwcTree(tn1);
+  ZSwcTree *tree2 = nodeToSwcTree(tn2);
+
+  if (tree1 != tree2) {
+    //Check source
+    if (ZFileType::fileType(tree2->getSource()) == ZFileType::SWC_FILE) {
+      upNode = tn2;
+      downNode = tn1;
+    }
+  }
+
+  new ZStackDocCommand::SwcEdit::SetRoot(this, downNode, command);
+  new ZStackDocCommand::SwcEdit::SetParent(this, downNode, upNode, false, command);
   new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
 
   pushUndoCommand(command);
@@ -7348,6 +7390,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
       if (tree->hasGoodSourceName()) {
         tree->resortId();
         tree->save(tree->getSource().c_str());
+        setSaved(ZStackObject::TYPE_SWC, true);
         emit statusMessageUpdated(QString(tree->getSource().c_str()) + " saved.");
       } else {
         ZString stackSource = stackSourcePath();

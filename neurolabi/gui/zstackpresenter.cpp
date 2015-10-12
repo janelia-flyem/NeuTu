@@ -1280,8 +1280,12 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_S:
     if (event->modifiers() == Qt::ShiftModifier) {
       moveViewPort(0, -10);
-    } else {
+    } else if (event->modifiers() == Qt::NoModifier) {
       moveViewPort(0, -1);
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      if (getParentFrame() != NULL) {
+        buddyDocument()->saveSwc(getParentFrame());
+      }
     }
     break;
 
