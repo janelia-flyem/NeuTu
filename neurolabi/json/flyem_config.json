@@ -456,6 +456,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "5515",
+      "name": "MB_Training",
+      "comment": "training node",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "rivlinp", "cheathamn"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "eafc",
       "name": "MB_Practice",
       "comment": "MB seg for practice(branched from 66ba)",
