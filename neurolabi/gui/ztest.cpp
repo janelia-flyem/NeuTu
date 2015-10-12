@@ -17930,7 +17930,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStackDoc doc;
   ZSwcTree *tree = new ZSwcTree;
   std::cout << "Tree: " << tree << std::endl;
@@ -17970,6 +17970,18 @@ void ZTest::test(MainWindow *host)
     std::cout << iter.key() << " " << iter.value() << std::endl;
   }
 
+#endif
+
+#if 1
+  tic();
+  std::vector<int> vec;
+  vec.resize(10000000);
+//  int *vec = new int[10000000];
+  for (int i = 0; i < 5000000; ++i) {
+    vec[i] = i;
+  }
+//  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
 #endif
 
   std::cout << "Done." << std::endl;

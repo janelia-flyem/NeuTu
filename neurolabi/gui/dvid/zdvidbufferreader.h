@@ -38,6 +38,10 @@ public:
 
   void readQt(const QString &url, bool outputUrl = true);
 
+  void tryCompress(bool compress) {
+    m_tryingCompress = compress;
+  }
+
 signals:
   void readingDone();
   void readingCanceled();
@@ -67,6 +71,7 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+  bool m_tryingCompress;
 //  QTimer *m_timer;
 };
 
