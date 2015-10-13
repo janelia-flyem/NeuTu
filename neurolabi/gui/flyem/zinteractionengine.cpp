@@ -72,6 +72,9 @@ void ZInteractionEngine::processMouseReleaseEvent(
       exitPaintStroke();
       event->accept();
     }
+    if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF) {
+      exitSwcEdit();
+    }
     m_mouseRightButtonPressed = false;
   }
 }
@@ -246,6 +249,11 @@ void ZInteractionEngine::exitPaintRect()
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
 //  m_rect.setVisible(false);
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitSwcEdit()
+{
+  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
 }
 
 void ZInteractionEngine::exitPaintStroke()
