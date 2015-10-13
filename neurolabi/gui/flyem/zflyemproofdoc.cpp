@@ -681,6 +681,74 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
   return puncta;
 }
 
+std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
+{
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
+  ZSlicedPuncta  *psd = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource()));
+
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(getDvidTarget())) {
+    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+    int minZ = box.getFirstCorner().getZ();
+    int maxZ = box.getLastCorner().getZ();
+
+    ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    for (int z = minZ; z <= maxZ; ++z) {
+      if (tbar != NULL) {
+        std::vector<ZPunctum*> &puncta = synapse.first;
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              if (reader.readBodyIdAt(pt) == bodyId) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+            }
+          }
+        }
+      }
+      if (psd != NULL) {
+        std::vector<ZPunctum*> &puncta = synapse.second;
+        QList<ZStackBall*> ballList = psd->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              if (reader.readBodyIdAt(pt) == bodyId) {
+                puncta.push_back(
+                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return synapse;
+}
+
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
   if (!filePath.empty()) {

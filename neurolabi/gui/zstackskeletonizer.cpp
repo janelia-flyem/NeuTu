@@ -84,6 +84,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
     ZIntCuboid box = obj.getBoundBox();
+    std::cout << "Downsampling " << m_downsampleInterval[0] + 1 << " x "
+              << m_downsampleInterval[1] + 1 << " x "
+              << m_downsampleInterval[2] + 1 << std::endl;
     newObj.downsampleMax(m_downsampleInterval[0],
                          m_downsampleInterval[1], m_downsampleInterval[2]);
     int offset[3] = {0, 0, 0};
