@@ -17972,7 +17972,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   tic();
   std::vector<int> vec;
   vec.resize(10000000);
@@ -17981,6 +17981,17 @@ void ZTest::test(MainWindow *host)
     vec[i] = i;
   }
 //  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 1
+  tic();
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    reader.readBody(14307133);
+    reader.readBody(15933492);
+  }
   ptoc();
 #endif
 

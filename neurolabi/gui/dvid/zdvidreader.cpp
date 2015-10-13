@@ -190,6 +190,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
+//  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
   reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
@@ -209,11 +210,20 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
-  reader.tryCompress(true);
+//  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
+
+  QElapsedTimer timer;
+  timer.start();
+
   reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
+
+  std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+  timer.start();
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
+  std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
 
   result->setLabel(bodyId);
 
