@@ -16,7 +16,7 @@
 
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
-  m_status(ZDvidBufferReader::READ_NULL)
+  m_status(ZDvidBufferReader::READ_NULL), m_tryingCompress(false)
 {
   m_networkManager = new QNetworkAccessManager(this);
 
@@ -55,7 +55,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputUrl)
             target.getAddressWithPort(), target.getUuid());
       std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
       libdvid::BinaryDataPtr data = service.custom_request(
-            endPoint, libdvid::BinaryDataPtr(), libdvid::GET);
+            endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;

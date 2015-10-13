@@ -280,6 +280,8 @@ int ZTest::runUnitTest(int argc, char *argv[])
 
 void ZTest::test(MainWindow *host)
 {
+  std::cout << "Start testing ..." << std::endl;
+
   UNUSED_PARAMETER(host);
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
@@ -17091,7 +17093,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
 
@@ -17927,4 +17929,71 @@ void ZTest::test(MainWindow *host)
   std::cout << color.red() << " " << color.green() << " " << color.blue() << std::endl;
 
 #endif
+
+#if 0
+  ZStackDoc doc;
+  ZSwcTree *tree = new ZSwcTree;
+  std::cout << "Tree: " << tree << std::endl;
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  tree->setDataFromNode(tn);
+
+  tree->selectNode(tn, true);
+  std::cout << "  Node: " << tn << std::endl;
+
+  doc.addObject(tree);
+
+  //Add another tree
+  tree = new ZSwcTree;
+  std::cout << "Tree: " << tree << std::endl;
+  tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  tree->setDataFromNode(tn);
+  tree->selectNode(tn, true);
+  std::cout << "  Node: " << tn << std::endl;
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+
+  tn2 = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+  tree->selectNode(tn2, true);
+  std::cout << "  Node: " << tn2 << std::endl;
+
+  doc.addObject(tree);
+
+  QMap<const Swc_Tree_Node *, const ZSwcTree *> swcMap =
+      doc.getSelectedSwcNodeMap();
+
+  if (swcMap.isEmpty()) {
+    std::cout << "Empty swc map" << std::endl;
+  }
+  for (QMap<const Swc_Tree_Node *, const ZSwcTree *>::const_iterator
+       iter = swcMap.begin(); iter != swcMap.end(); ++iter) {
+    std::cout << iter.key() << " " << iter.value() << std::endl;
+  }
+
+#endif
+
+#if 0
+  tic();
+  std::vector<int> vec;
+  vec.resize(10000000);
+//  int *vec = new int[10000000];
+  for (int i = 0; i < 5000000; ++i) {
+    vec[i] = i;
+  }
+//  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 1
+  tic();
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    reader.readBody(14307133);
+    reader.readBody(15933492);
+  }
+  ptoc();
+#endif
+
+  std::cout << "Done." << std::endl;
 }

@@ -283,6 +283,7 @@ public: //attributes
       const ZSwcTree *tree);
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
 
+  QMap<const Swc_Tree_Node*, const ZSwcTree*> getSelectedSwcNodeMap() const;
 
   //ZStackViewParam getSelectedSwcNodeView() const;
 
