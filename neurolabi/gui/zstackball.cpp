@@ -280,13 +280,22 @@ void ZStackBall::displayHelper(
 
   if (drawingBoundBox) {
     QRectF rect;
-    rect.setLeft(m_center.x() - adjustedRadius);
-    rect.setTop(m_center.y() - adjustedRadius);
-    rect.setWidth(adjustedRadius + adjustedRadius);
-    rect.setHeight(adjustedRadius + adjustedRadius);
+    double halfSize = adjustedRadius;
+    if (m_usingCosmeticPen) {
+      halfSize += 0.5;
+    }
+    rect.setLeft(m_center.x() - halfSize);
+    rect.setTop(m_center.y() - halfSize);
+    rect.setWidth(halfSize * 2);
+    rect.setHeight(halfSize * 2);
 
     painter->setBrush(Qt::NoBrush);
     pen.setWidthF(pen.widthF() * 0.5);
+    if (visible) {
+      pen.setStyle(Qt::SolidLine);
+    } else {
+      pen.setStyle(Qt::DotLine);
+    }
     painter->setPen(pen);
 
 #if 0 //for future versions
