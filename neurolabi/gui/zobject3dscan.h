@@ -203,7 +203,11 @@ public:
   void upSample(int xIntv, int yIntv, int zIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
+  Stack* toStackWithMargin(int *offset, int v, int margin) const;
+
   ZStack* toStackObject(int v = 1) const;
+  ZStack* toStackObjectWithMargin(int v, int margin) const;
+
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 

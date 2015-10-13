@@ -1017,10 +1017,59 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
   return stack;
 }
 
+Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
+{
+  if (isEmpty()) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = getBoundBox();
+  if (offset != NULL) {
+    offset[0] = boundBox.getFirstCorner().getX();
+    offset[1] = boundBox.getFirstCorner().getY();
+    offset[2] = boundBox.getFirstCorner().getZ();
+  }
+
+#if 0
+  std::cout << "Stack size: " << boundBox.getWidth() << "x"
+            << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
+#endif
+
+  Stack *stack = C_Stack::make(GREY, boundBox.getWidth() + margin * 2,
+                               boundBox.getHeight() + margin * 2,
+                               boundBox.getDepth() + margin * 2);
+  C_Stack::setZero(stack);
+
+
+  int drawingOffet[3];
+  drawingOffet[0] = -boundBox.getFirstCorner().getX() + margin;
+  drawingOffet[1] = -boundBox.getFirstCorner().getY() + margin;
+  drawingOffet[2] = -boundBox.getFirstCorner().getZ() + margin;
+
+  drawStack(stack, v, drawingOffet);
+
+  return stack;
+}
+
 ZStack* ZObject3dScan::toStackObject(int v) const
 {
   int offset[3] = {0, 0, 0};
   Stack *stack = toStack(offset, v);
+
+  ZStack *stackObject = new ZStack;
+
+  if (stack != NULL) {
+    stackObject->load(stack);
+    stackObject->setOffset(offset[0], offset[1], offset[2]);
+  }
+
+  return stackObject;
+}
+
+ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
+{
+  int offset[3] = {0, 0, 0};
+  Stack *stack = toStackWithMargin(offset, v, margin);
 
   ZStack *stackObject = new ZStack;
 
@@ -2460,6 +2509,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
       return false;
     }
 
+//    addStripeFast(coord[2], coord[1]);
+//    addSegmentFast(coord[0], coord[0] + runLength - 1);
     addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
   }
 

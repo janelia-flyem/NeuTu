@@ -249,6 +249,7 @@ using namespace std;
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
 #include "flyem/zflyemproofdoc.h"
+#include "zswcfactory.h"
 
 using namespace std;
 
@@ -17980,19 +17981,49 @@ void ZTest::test(MainWindow *host)
   for (int i = 0; i < 5000000; ++i) {
     vec[i] = i;
   }
-//  std::cout << vec.size() << " elements" << std::endl;
+  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  tic();
+  Int_Arraylist *arrayList = Int_Arraylist_New(0, 0);
+  for (int i = 0; i < 5000000; ++i) {
+    Int_Arraylist_Add(arrayList, i);
+  }
+  std::cout << arrayList->length << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  tic();
+  std::vector<int> vec;
+  vec.reserve(10000000);
+  for (int i = 0; i < 5000000; ++i) {
+    vec.push_back(i);
+  }
+  std::cout << vec.size() << " elements" << std::endl;
   ptoc();
 #endif
 
 #if 1
-  tic();
+//  tic();
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;
+  ZObject3dScan obj1;
   if (reader.open(dvidTarget)) {
-    reader.readBody(14307133);
+    reader.readBody(14307133, &obj1);
+
     reader.readBody(15933492);
   }
+
+  tic();
+  ZSwcTree *tree = ZSwcFactory::CreateSurfaceSwc(obj1);
+  std::cout << tree->size() << " nodes." << std::endl;
   ptoc();
+
+  delete tree;
+//  ptoc();
 #endif
 
   std::cout << "Done." << std::endl;
