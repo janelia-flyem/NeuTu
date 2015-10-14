@@ -49,6 +49,7 @@ private:
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
+    bool dvidBookmarksPresent(ZDvidTarget target);
     void importBookmarksDvid(ZDvidTarget target);
     void setStatusLabel(QString label);
     void clearStatusLabel();

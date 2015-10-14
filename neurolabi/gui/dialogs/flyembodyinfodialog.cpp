@@ -103,7 +103,17 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         // clear the model regardless at this point
         m_model->clear();
         setStatusLabel("Loading...");
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+
+        // we can load this info from different sources, depending on
+        //  what's available in DVID
+
+        // is the synapse file present?
+        if (dvidBookmarksPresent(target)) {
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+        } else {
+            // nothing else yet, coming soon...
+            emit loadCompleted();
+        }
     }
 }
 
@@ -167,41 +177,45 @@ void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
     updateStatusLabel();
 }
 
-void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
-#ifdef _DEBUG_
-    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
-#endif
-
-    if (!target.isValid()) {
-        emit loadCompleted();
-        return;
-    }
-
-    // following example in ZFlyEmProofMvc::syncDvidBookmarks()
+bool FlyEmBodyInfoDialog::dvidBookmarksPresent(ZDvidTarget target) {
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(target)) {
-
         // check for data name and key
         if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body annotations" << std::endl;
             #endif
-            emit loadCompleted();
-            return;
+            return false;
         }
 
         // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
         //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
         if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), 
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body_synapses key" << std::endl;
             #endif
-            emit loadCompleted();
-            return;
+            return false;
         }
+        return true;
+    } else {
+        return false;
+    }
+}
 
+void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
+#ifdef _DEBUG_
+    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
+#endif
+
+    // this method assumes DVID target is valid, and necessary DVID keys
+    //  are present
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
         const QByteArray &bookmarkData = reader.readKeyValue(
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
