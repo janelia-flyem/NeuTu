@@ -521,7 +521,11 @@ void ZSwcTree::display(ZPainter &painter, int slice,
           double deltaZ = dmin2(fabs(dz1), fabs(dz2));
           double alphaRatio = 1.0 / deltaZ;
           if (alphaRatio >= 0.1) {
-            lineColor.setAlphaF(lineColor.alphaF() * alphaRatio);
+            double alpha = lineColor.alphaF() * alphaRatio;
+            if (alpha > 1.0) {
+              alpha = 1.0;
+            }
+            lineColor.setAlphaF(alpha);
             painter.setPen(lineColor);
             painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                              QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
@@ -3248,8 +3252,13 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(200, 200, 100, 255);
-    m_terminalFocusColor = QColor(200, 200, 0);
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      m_terminalColor = QColor(200, 200, 0, 255);
+      m_terminalFocusColor = QColor(200, 200, 128);
+    } else {
+      m_terminalColor = QColor(255, 220, 100, 255);
+      m_terminalFocusColor = QColor(255, 220, 0);
+    }
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
