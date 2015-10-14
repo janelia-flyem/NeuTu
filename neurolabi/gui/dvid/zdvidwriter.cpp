@@ -502,7 +502,8 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 
 bool ZDvidWriter::runCommand(const QString &command)
 {
-  qDebug() << command;
+  LINFO() << command;
+//  qDebug() << command;
 
   QProcess process;
   process.start(command);
