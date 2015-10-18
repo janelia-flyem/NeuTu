@@ -937,7 +937,14 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
+  if (stack == NULL) {
+    return NULL;
+  }
+
   startProgress();
+
+  stack = C_Stack::clone(stack);
+  ZStackProcessor::subtractBackground(stack, 0.5, 3);
 
   ZSwcTree *tree = NULL;
 
@@ -1074,6 +1081,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   std::cout << "Done!" << std::endl;
   endProgress();
+
+  C_Stack::kill(stack);
 
   return tree;
 }

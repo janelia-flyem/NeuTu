@@ -57,6 +57,40 @@ TEST(ZStackObjectGroup, Selection) {
   objectGroup.getSelector()->print();
 }
 
+TEST(ZStackObjectGroup, ZOrder)
+{
+  ZStackObjectGroup objectGroup;
+  ZObject3d *obj2 = new ZObject3d;
+
+  objectGroup.add(obj2, false);
+
+  ASSERT_EQ(obj2->getZOrder(), 1);
+
+  ZObject3d *obj3 = new ZObject3d;
+  objectGroup.add(obj3, false);
+  ASSERT_EQ(obj3->getZOrder(), 2);
+
+  ZObject3d *obj4 = new ZObject3d;
+  objectGroup.add(obj4, 100, false);
+  ASSERT_EQ(obj4->getZOrder(), 100);
+
+  ZObject3d *obj5 = new ZObject3d;
+  objectGroup.add(obj5, false);
+  ASSERT_EQ(obj5->getZOrder(), 101);
+
+  objectGroup.compressZOrder();
+
+  ASSERT_EQ(obj2->getZOrder(), 1);
+  ASSERT_EQ(obj3->getZOrder(), 2);
+  ASSERT_EQ(obj4->getZOrder(), 3);
+  ASSERT_EQ(obj5->getZOrder(), 4);
+
+  ZObject3d *obj6 = new ZObject3d;
+  objectGroup.add(obj6, false);
+  ASSERT_EQ(obj6->getZOrder(), 5);
+
+}
+
 #endif
 
 #endif // ZSTACKOBJECTGROUPTEST_H

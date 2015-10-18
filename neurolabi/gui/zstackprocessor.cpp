@@ -844,6 +844,39 @@ void ZStackProcessor::subtractBackground(ZStack *stack)
   }
 }
 
+void ZStackProcessor::subtractBackground(
+    Stack *stackData, double minFr, int maxIter)
+{
+  ZIntHistogram *hist = C_Stack::hist(stackData, NULL);
+  int maxV = hist->getMaxValue();
+  int commonIntensity = 0;
+  for (int iter = 0; iter < maxIter; ++iter) {
+    int mode = hist->getMode(commonIntensity + 1, maxV);
+    if (mode == maxV) {
+      break;
+    }
+    //      int commonIntensity =
+    //          Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
+
+    commonIntensity = mode;
+    double fgRatio = (double) hist->getUpperCount(commonIntensity + 1) /
+        C_Stack::voxelNumber(stackData);
+    if (fgRatio < minFr) {
+      break;
+    }
+  }
+  Stack_Subc(stackData, commonIntensity);
+  delete hist;
+}
+
+void ZStackProcessor::subtractBackground(ZStack *stack, double minFr, int maxIter)
+{
+  for (int c = 0; c < stack->channelNumber(); ++c) {
+    Stack *stackData = stack->c_stack(c);
+    subtractBackground(stackData, minFr, maxIter);
+  }
+}
+
 Stack* ZStackProcessor::GaussianSmooth(
     Stack *stack, double sx, double sy, double sz)
 {

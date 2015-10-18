@@ -170,6 +170,10 @@
        <property name="text">
         <string>Merge</string>
        </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/merge.png</normaloff>:/images/merge.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
@@ -208,6 +212,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

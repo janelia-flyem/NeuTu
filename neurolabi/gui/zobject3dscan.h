@@ -87,9 +87,9 @@ public:
 
   void print() const;
 
-  void save(const char *filePath);
-  void save(const char *filePath) const;
-  void save(const std::string &filePath) const;
+  bool save(const char *filePath);
+  bool save(const char *filePath) const;
+  bool save(const std::string &filePath) const;
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 

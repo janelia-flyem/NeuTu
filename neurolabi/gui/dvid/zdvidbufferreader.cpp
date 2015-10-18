@@ -49,7 +49,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputUrl)
   ZDvidTarget target;
   target.setFromUrl(url.toStdString());
 
-  if (!target.getUuid().empty()) {
+  if (target.isValid()) {
     try {
       libdvid::DVIDNodeService service(
             target.getAddressWithPort(), target.getUuid());

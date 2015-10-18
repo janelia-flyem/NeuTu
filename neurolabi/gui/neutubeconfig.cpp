@@ -2,6 +2,11 @@
 
 #include <iostream>
 
+#ifdef _QT_GUI_USED_
+#include <QDir>
+#include <QsLog.h>
+#endif
+
 #include "tz_cdefs.h"
 #include "zxmldoc.h"
 #include "zstring.h"
@@ -252,11 +257,23 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case DOCUMENT:
     return m_docUrl;
   case TMP_DATA:
+  {
+    std::string tmpDir;
 #if _QT_GUI_USED_
-    return QDir::tempPath().toStdString();
+    std::string user = NeuTube::GetCurrentUserName();
+    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z/" + user;
+    QDir tmpDirObj(tmpDir.c_str());
+    if (!tmpDirObj.exists()) {
+      if (!tmpDirObj.mkpath(tmpDir.c_str())) {
+        LERROR() << "Failed to make tmp directory: " << tmpDir;
+        tmpDir = "";
+      }
+    }
 #else
-    return "/tmp";
+    tmpDir = "/tmp";
 #endif
+    return tmpDir;
+  }
   case WORKING_DIR:
     if (m_workDir.empty()) {
 #ifdef _QT_GUI_USED_

@@ -8,6 +8,7 @@
 #include "tz_mc_stack.h"
 #include "tz_cuboid_i.h"
 #include "tz_stack_watershed.h"
+#include "zinthistogram.h"
 
 //! Functions for C-compatible stack
 /*!
@@ -251,6 +252,7 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+ZIntHistogram* hist(const Stack *stack, ZIntHistogram *out);
 double mean(const Stack *stack);
 double mode(const Stack *stack);
 

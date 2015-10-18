@@ -173,6 +173,7 @@
 #include "zstackarray.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zslicedpuncta.h"
+#include "neutubeconfig.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -7235,6 +7236,14 @@ void MainWindow::on_actionProof_triggered()
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->showMaximized();
+
+  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
+    window->dump(
+          ZWidgetMessage("Failed to initialize tmp directory. "
+                         "Some editing functions (especially split) will not work. "
+                         "Please check the permission or disk space.",
+                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+  }
 }
 
 void MainWindow::runRoutineCheck()

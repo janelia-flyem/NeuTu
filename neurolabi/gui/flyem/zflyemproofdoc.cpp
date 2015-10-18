@@ -144,7 +144,11 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(uint64_t bodyId)
 void ZFlyEmProofDoc::recordAnnotation(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
 {
-  m_annotationMap[bodyId] = anno;
+  if (m_annotationMap.count(bodyId) == 0) {
+    m_annotationMap[bodyId] = anno;
+  } else {
+    m_annotationMap[bodyId].mergeAnnotation(anno);
+  }
 }
 
 
@@ -152,10 +156,26 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  if (m_annotationMap.size() > 1) {
+  QMap<uint64_t, QString> nameMap;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!anno.getName().empty()) {
+      nameMap[iter.key()] = anno.getName().c_str();
+    }
+  }
+  if (nameMap.size() > 1) {
+    QString detail = "<p>Details: </p>";
+    detail += "<ul>";
+    for (QMap<uint64_t, QString>::const_iterator iter = nameMap.begin();
+         iter != nameMap.end(); ++iter) {
+      detail += QString("<li>%1: %2</li>").arg(iter.key()).arg(iter.value());
+    }
+    detail += "</ul>";
     okToContinue = ZDialogFactory::Ask(
           "Conflict to Resolve",
-          "You are about to merge multiple annotations. Do you want to continue?",
+          "You are about to merge multiple names. Do you want to continue?" +
+          detail,
           NULL);
   }
 

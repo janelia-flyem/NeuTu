@@ -58,11 +58,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(
        iter != stackArray.end(); ++iter) {
     const ZStack* stack = *iter;
     ZSwcTree *tree = makeSkeleton(*stack);
-    if (!tree->isEmpty()) {
-      wholeTree->merge(tree, true);
-      ++count;
-    } else {
-      delete tree;
+    if (tree != NULL) {
+      if (!tree->isEmpty()) {
+        wholeTree->merge(tree, true);
+        ++count;
+      } else {
+        delete tree;
+      }
     }
   }
 

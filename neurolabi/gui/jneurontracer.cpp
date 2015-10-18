@@ -4,6 +4,8 @@
 #include "biocytin/swcprocessor.h"
 #include "swc/zswcresampler.h"
 #include "neutubeconfig.h"
+#include "tz_stack_stat.h"
+#include "tz_stack_math.h"
 
 const double HUGE_NUMBER=1e30;
 const double HUGE_NUMBER2=1e30;
@@ -11,7 +13,15 @@ const double HUGE_NUMBER2=1e30;
 JNeuronTracer::JNeuronTracer()
 {
   m_splitNumber = 1;
+  m_maskData = NULL;
   //  m_background = NeuTube::IMAGE_BACKGROUND_BRIGHT;
+}
+
+JNeuronTracer::~JNeuronTracer()
+{
+  if (m_maskData != NULL) {
+    C_Stack::kill(m_maskData);
+  }
 }
 
 static int getIndex3DZfirst(int i, int j, int k, int nx, int ny, int /*nz*/)
@@ -245,7 +255,10 @@ Stack* JNeuronTracer::makeMask(const Stack *stack)
   imFlat = (float *) malloc(nxy * sizeof(float));
   bw = (float *) malloc(nxy * sizeof(float));
 
+
   Stack *floatStack = C_Stack::translate(const_cast<Stack*>(stack), FLOAT32, 0);
+
+
   im3d = C_Stack::guardedArrayFloat32(floatStack);
 
   Stack *result = C_Stack::make(GREY, C_Stack::width(stack),
@@ -323,13 +336,32 @@ Stack* JNeuronTracer::makeMask(const Stack *stack)
     //      printf("Saving maximum projection for slab %d to %s...\n",islab,outName);
     //      createGrayTiffStackFromFloatArray(nx,ny,1,imFlat,outName);
 
+#if 0
+    Stack *tmpStack = Scale_Float_Stack(
+          imFlat, C_Stack::width(stack), C_Stack::height(stack), 1, GREY);
+    Stack_Invert_Value(tmpStack);
+    int commonIntensity = Stack_Common_Intensity(tmpStack, 0, 65535);
+    Stack_Subc(tmpStack, commonIntensity);
+
+    size_t area = C_Stack::area(tmpStack);
+    for (size_t i = 0; i < area; ++i) {
+      imFlat[i] = tmpStack->array[i];
+    }
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", tmpStack);
+#endif
+
+    C_Stack::kill(tmpStack);
+#endif
 
     //create mask.
     createMask2D(nx,ny,imFlat,bw);
 
 #ifdef _DEBUG_2
     {
-      Stack *checkStack = C_Stack::make(bw, GREY, width, height, 1);
+      Stack *checkStack = C_Stack::make(
+            bw, GREY, C_Stack::width(stack), C_Stack::height(stack), 1);
       C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", checkStack);
       C_Stack::kill(checkStack);
     }
@@ -816,18 +848,23 @@ void JNeuronTracer::setResolution(const ZResolution &resolution)
 
 ZSwcTree* JNeuronTracer::trace(const Stack *stack, bool doResampleAfterTracing)
 {
-  Stack *maskData = makeMask(stack);
+  Stack *maskData = m_maskData;
 
-#ifdef _DEBUG_2
-  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", maskData);
-#endif
+  bool newMask = false;
+  if (maskData == NULL) {
+    maskData = makeMask(stack);
+    newMask = true;
+  }
+
 
   ZStackSkeletonizer skeletonizer;
   skeletonizer.setMinObjSize(10);
 
   ZSwcTree *wholeTree = skeletonizer.makeSkeleton(maskData);
 
-  C_Stack::kill(maskData);
+  if (newMask) {
+    C_Stack::kill(maskData);
+  }
 
   if (wholeTree != NULL) {
     ZSwcPositionAdjuster adjuster;

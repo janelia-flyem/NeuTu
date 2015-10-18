@@ -136,6 +136,19 @@ int* C_Stack::hist(const Stack* stack)
   return Stack_Hist(stack);
 }
 
+ZIntHistogram* C_Stack::hist(const Stack *stack, ZIntHistogram *out)
+{
+  if (out == NULL) {
+    out = new ZIntHistogram;
+  }
+
+  int *h = hist(stack);
+
+  out->setData(h);
+
+  return out;
+}
+
 void C_Stack::setZero(Stack *stack)
 {
   Zero_Stack(stack);

@@ -43,6 +43,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "zdialogfactory.h"
+#include "zobject3dfactory.h"
 
 using namespace std;
 
@@ -1499,9 +1500,11 @@ void ZStackFrame::importMask(const QString &filePath)
 
   if (stack != NULL) {
     if (stack->channelNumber() == 1 && stack->kind() == GREY) {
-      ZObject3d *obj = new ZObject3d;
+      ZObject3dScan *obj = ZObject3dFactory::MakeObject3dScan(*stack, NULL);
+      obj->setSource(stack->sourcePath());
       obj->setColor(QColor(255, 0, 0, 128));
-      if (obj->loadStack(stack->c_stack(0))) {
+//      if (obj->loadStack(stack->c_stack(0))) {
+      if (!obj->isEmpty()) {
         obj->translate(document()->getStackOffset());
         /*
         obj->translate(iround(document()->getStackOffset().getX()),

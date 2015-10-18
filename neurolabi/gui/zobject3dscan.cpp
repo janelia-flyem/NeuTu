@@ -629,21 +629,22 @@ bool ZObject3dScan::load(const char *filePath)
   return load(std::string(filePath));
 }
 
-void ZObject3dScan::save(const char *filePath)
+bool ZObject3dScan::save(const char *filePath)
 {
-  save(string(filePath));
+  return save(string(filePath));
 }
 
-void ZObject3dScan::save(const char *filePath) const
+bool ZObject3dScan::save(const char *filePath) const
 {
-  save(string(filePath));
+  return save(string(filePath));
 }
 
-void ZObject3dScan::save(const string &filePath) const
+bool ZObject3dScan::save(const string &filePath) const
 {
 #ifdef _DEBUG_
   std::cout << "Saving " << filePath << std::endl;
 #endif
+  bool succ = false;
   FILE *fp = fopen(filePath.c_str(), "wb");
   if (fp != NULL) {
     int stripeNumber = (int) getStripeNumber();
@@ -653,9 +654,12 @@ void ZObject3dScan::save(const string &filePath) const
       iter->write(fp);
     }
     fclose(fp);
+    succ = true;
   } else {
     RECORD_WARNING(true, "Cannont open file " + filePath);
   }
+
+  return succ;
 }
 
 size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)

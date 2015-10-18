@@ -1016,7 +1016,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
   if (labelSlice != NULL){
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
-    if (selected.size() == 1) {
+    if (selected.size() > 0) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         uint64_t bodyId = selected.front();
@@ -1027,7 +1027,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         if (annotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
-          getCompleteDocument()->recordAnnotation(bodyId, annotation);
+          getCompleteDocument()->recordAnnotation(
+                getMappedBodyId(bodyId), annotation);
           msg.setMessage(annotation.toString().c_str());
         }
         emit messageGenerated(msg);
@@ -1037,8 +1038,13 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
     std::vector<uint64_t> deselected =
         labelSlice->getSelector().getDeselectedList();
+    std::set<uint64_t> mappedSet;
+    for (std::vector<uint64_t>::const_iterator iter = deselected.begin();
+         iter != deselected.end(); ++iter) {
+      mappedSet.insert(getMappedBodyId(*iter));
+    }
     getCompleteDocument()->removeSelectedAnnotation(
-          deselected.begin(), deselected.end());
+          mappedSet.begin(), mappedSet.end());
   }
 }
 

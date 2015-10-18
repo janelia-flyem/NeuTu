@@ -4220,7 +4220,7 @@ bool ZStackDoc::subtractBackground()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::subtractBackground(mainStack);
+    ZStackProcessor::subtractBackground(mainStack, 0.5, 3);
     notifyStackModified();
     return true;
   }
@@ -6748,6 +6748,9 @@ bool ZStackDoc::executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist)
   bool succ = false;
 
   if (tree != NULL) {
+    if (tree->isEmpty()) {
+      return false;
+    }
     if (hasSwc()) {
       QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 

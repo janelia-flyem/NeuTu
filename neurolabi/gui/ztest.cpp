@@ -18006,7 +18006,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
 //  tic();
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
   ZDvidReader reader;
@@ -18024,6 +18024,66 @@ void ZTest::test(MainWindow *host)
 
   delete tree;
 //  ptoc();
+#endif
+
+#if 0
+  Biocytin::SwcProcessor processor;
+  ZResolution resolution;
+  resolution.setVoxelSize(1, 1, 8);
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  processor.setResolution(resolution);
+  processor.breakZJump(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  JNeuronTracer tracer;
+  ZResolution resolution;
+  resolution.setVoxelSize(1, 1, 8);
+  tracer.setResolution(resolution);
+//  Stack *mask = tracer.makeMask(stack.c_stack());
+
+  std::string filePath = GET_TEST_DATA_DIR +
+      "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-36.tif";
+
+  ZStack stack;
+  stack.load(filePath);
+
+  Stack *stackData = stack.c_stack(1);
+
+  int intensityMode = C_Stack::mode(stackData);
+  int intensityMean = C_Stack::mean(stackData);
+
+  if (intensityMode > intensityMean) {
+    std::cout << "Bright field detected." << std::endl;
+    Stack_Invert_Value(stackData);
+  } else {
+    std::cout << "Dark field detected." << std::endl;
+  }
+
+  Stack *mask = C_Stack::readSc(
+        GET_TEST_DATA_DIR +
+        "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-36.Proj.Mask.tif");
+  Stack_Binarize(mask);
+  tracer.setMask(mask);
+
+  ZSwcTree *tree = tracer.trace(stackData);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
+  ZIntHistogram *hist = C_Stack::hist(stack, NULL);
+  hist->print();
+
+  std::cout << "Mode: " << hist->getMode() << std::endl;
+  std::cout << "Mode started from 38: " << hist->getMode(38, hist->getMaxValue())
+            << std::endl;
+  std::cout << "Uc: " << hist->getUpperCount(220) << std::endl;
+  std::cout << "Lc: " << hist->getLowerCount(40) << std::endl;
+
+  delete hist;
 #endif
 
   std::cout << "Done." << std::endl;
