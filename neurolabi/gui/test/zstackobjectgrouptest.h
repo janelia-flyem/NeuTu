@@ -89,6 +89,20 @@ TEST(ZStackObjectGroup, ZOrder)
   objectGroup.add(obj6, false);
   ASSERT_EQ(obj6->getZOrder(), 5);
 
+  ZObject3d *obj7 = new ZObject3d;
+  obj7->setSource("obj7");
+  objectGroup.add(obj7, 3, false);
+  ASSERT_EQ(obj7->getZOrder(), 3);
+
+  ZObject3d *obj8 = new ZObject3d;
+  obj8->setSource("obj8");
+  objectGroup.add(obj8, true);
+  ASSERT_EQ(6, obj8->getZOrder());
+
+  ZObject3d *obj9 = new ZObject3d;
+  obj9->setSource("obj7");
+  objectGroup.add(obj9, true);
+  ASSERT_EQ(3, obj9->getZOrder());
 }
 
 #endif

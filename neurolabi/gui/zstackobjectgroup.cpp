@@ -428,15 +428,19 @@ void ZStackObjectGroup::add(ZStackObject *obj, bool uniqueSource)
     if (m_currentZOrder >= ZSTACKOBECTGROUP_MAX_ZORDER) {
       compressZOrder();
     }
+    int zOrder = obj->getZOrder();
     if (uniqueSource) {
       QList<ZStackObject*> objList = findSameSource(obj);
       if (!objList.isEmpty()) {
-        obj->setZOrder(objList.front()->getZOrder());
+        zOrder = objList.front()->getZOrder();
         removeObject(objList.begin(), objList.end(), true);
+      } else {
+        zOrder = ++m_currentZOrder;
       }
     } else {
-      obj->setZOrder(++m_currentZOrder);
+      zOrder = ++m_currentZOrder;
     }
+    obj->setZOrder(zOrder);
     append(obj);
     getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
   }

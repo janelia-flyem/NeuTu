@@ -250,6 +250,7 @@ using namespace std;
 #include "zstackview.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zswcfactory.h"
+#include "biocytin/zbiocytinprojmaskfactory.h"
 
 using namespace std;
 
@@ -18084,6 +18085,63 @@ void ZTest::test(MainWindow *host)
   std::cout << "Lc: " << hist->getLowerCount(40) << std::endl;
 
   delete hist;
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStroke2d *stroke = new ZStroke2d;
+  stroke->setLabel(1);
+  stroke->append(10, 10);
+  stroke->setWidth(5);
+  stroke->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  stroke->setZ(0);
+
+  ZStroke2d *eraser = new ZStroke2d;
+  eraser->setEraser(true);
+  eraser->append(11, 11);
+  eraser->setWidth(5);
+  eraser->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  eraser->setZ(0);
+
+  ZStroke2d *stroke2 = new ZStroke2d;
+  stroke2->setLabel(1);
+  stroke2->append(12, 12);
+  stroke2->setWidth(5);
+  stroke2->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  stroke2->setZ(0);
+
+  frame->document()->addObject(stroke);
+  frame->document()->addObject(eraser);
+  frame->document()->addObject(stroke2);
+
+  ZBiocytinProjMaskFactory maskFactory;
+
+  ZStack *stack = maskFactory.MakeMask(frame->view(), 1);
+
+  ZStackFrame *frame2 = ZStackFrame::Make(NULL);
+  frame2->loadStack(stack);
+  host->addStackFrame(frame2);
+  host->presentStackFrame(frame2);
+
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#if 0
+  ZStack *stack = frame->document()->getStack()->clone();
+  //stack->setOffset(20, 30, 0);
+  ZStackPatch *patch = new ZStackPatch(stack);
+  patch->setScale(0.2, 0.2);
+  patch->setFinalOffset(20, 30);
+  frame->document()->addObject(patch);
+
+  ZRect2d *rect = new ZRect2d(30, 40, 100, 200);
+  rect->setPenetrating(true);
+  rect->setColor(0, 255, 0);
+  frame->document()->addObject(rect);
+#endif
 #endif
 
   std::cout << "Done." << std::endl;

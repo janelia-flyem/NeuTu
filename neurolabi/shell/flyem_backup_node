@@ -3,6 +3,7 @@
 if [ $# -lt 2 ]
 then
   echo './flyem_backup_node <address> <node> [<name>]'
+  exit
 fi
 
 address=$1
