@@ -2292,10 +2292,13 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
     buddyDocument()->notifySwcTreeNodeSelectionChanged();
 
-    if (buddyDocument()->getSelectedSwcNodeNumber() == 1 &&
-        buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION &&
-        NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      enterSwcExtendMode();
+    if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
+      if (buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION) {
+        if (NeutubeConfig::getInstance().getApplication() == "Biocytin" ||
+            buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+          enterSwcExtendMode();
+        }
+      }
     }
 //    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;

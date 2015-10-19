@@ -934,6 +934,7 @@ public slots: //undoable commands
    *        existing in the doc, only the first one is replaced.
    */
   void addObject(ZStackObject *obj, bool uniqueSource = true);
+  void addObject(ZStackObject *obj, int zOrder, bool uniqueSource);
 
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);

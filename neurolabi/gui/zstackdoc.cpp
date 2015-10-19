@@ -6970,6 +6970,17 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
   addObjectFast(obj);
 }
 
+void ZStackDoc::addObject(ZStackObject *obj, int zOrder, bool uniqueSource)
+{
+  addObject(obj, uniqueSource);
+  obj->setZOrder(zOrder);
+  //QMutexLocker locker(&m_mutex);
+
+//  m_objectGroup.add(obj, zOrder, uniqueSource);
+//  processObjectModified(obj);
+//  notifyObjectModified();
+}
+
 void ZStackDoc::notifyPlayerChanged(const ZStackObjectRole &role)
 {
   notifyPlayerChanged(role.getRole());

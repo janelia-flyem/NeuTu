@@ -249,14 +249,16 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-        if (bookmark->getBodyId() == project->getBodyId()) {
+//        if (bookmark->getBodyId() == project->getBodyId()) {
           if (bookmark->isCustom()) {
             m_userBookmarkList.append(bookmark);
           } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-            m_assignedBookmarkList.append(bookmark);
+            if (bookmark->getBodyId() == project->getBodyId()) {
+              m_assignedBookmarkList.append(bookmark);
+            }
           }
         }
-      }
+//      }
     }
   }
 }

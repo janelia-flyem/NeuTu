@@ -1144,8 +1144,8 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
       buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
     double zoomRatio = getZoomRatio();
     int level = 0;
-    if (zoomRatio > 0) {
-      level = (int) std::floor(1.0 / (zoomRatio + 1));
+    if (zoomRatio < 0.5 && zoomRatio > 0) {
+      level = (int) std::floor(1.0 / zoomRatio - 1);
     }
 //    level  = 0;
     ZPixmap *pixmap = m_objectCanvas.getPixmap(level);

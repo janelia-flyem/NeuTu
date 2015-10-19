@@ -245,6 +245,9 @@ void ZFlyEmProofDoc::annotateBody(
     }
   }
   if (writer.getStatusCode() == 200) {
+    if (getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED).count(bodyId) > 0) {
+      m_annotationMap[bodyId] = annotation;
+    }
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
@@ -288,7 +291,7 @@ void ZFlyEmProofDoc::updateTileData()
       labelSlice->setDvidTarget(getDvidTarget());
       labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
       labelSlice->setBodyMerger(&m_bodyMerger);
-      addObject(labelSlice, true);
+      addObject(labelSlice, 0, true);
     }
   }
 }
