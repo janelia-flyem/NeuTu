@@ -18087,7 +18087,7 @@ void ZTest::test(MainWindow *host)
   delete hist;
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
   host->addStackFrame(frame);
@@ -18129,7 +18129,7 @@ void ZTest::test(MainWindow *host)
 
 //  stack->save(GET_TEST_DATA_DIR + "/test.tif");
 
-#if 0
+#  if 0
   ZStack *stack = frame->document()->getStack()->clone();
   //stack->setOffset(20, 30, 0);
   ZStackPatch *patch = new ZStackPatch(stack);
@@ -18141,7 +18141,58 @@ void ZTest::test(MainWindow *host)
   rect->setPenetrating(true);
   rect->setColor(0, 255, 0);
   frame->document()->addObject(rect);
+#  endif
 #endif
+
+#if 0
+  ZDvidBufferReader reader;
+
+  ZJsonArray queryObj;
+
+  ZJsonArray coordObj;
+  coordObj.append(10);
+  coordObj.append(20);
+  coordObj.append(30);
+
+  ZJsonArray coordObj2;
+  coordObj2.append(3970);
+  coordObj2.append(5450);
+  coordObj2.append(7313);
+
+  queryObj.append(coordObj);
+  queryObj.append(coordObj2);
+
+  QString queryForm = queryObj.dumpString(0).c_str();
+
+  std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+
+  QByteArray payload;
+  payload.append(queryForm);
+
+  reader.read("http://emdata1.int.janelia.org:8500/api/node/86e1/labels/labels",
+              payload, true);
+
+  QString labels = QString(reader.getBuffer());
+  std::cout << labels.toStdString() << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    std::vector<ZIntPoint> ptArray;
+    ptArray.push_back(ZIntPoint(3970, 5450, 7313));
+    ptArray.push_back(ZIntPoint(4281, 5003, 7313));
+
+    std::vector<uint64_t> bodySet = reader.readBodyIdAt(ptArray);
+    for (std::vector<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      std::cout << *iter << std::endl;
+    }
+  }
+
+
 #endif
 
   std::cout << "Done." << std::endl;

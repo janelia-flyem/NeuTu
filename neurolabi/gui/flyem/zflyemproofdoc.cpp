@@ -682,6 +682,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 
       for (int z = minZ; z <= maxZ; ++z) {
         QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        std::vector<ZIntPoint> ptArray;
         for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
              iter != ballList.end(); ++iter) {
           ZStackBall *ball = *iter;
@@ -690,10 +691,23 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
             ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
 
             if (coarseBody.contains(blockIndex)) {
+              ptArray.push_back(pt);
+#if 0
               if (reader.readBodyIdAt(pt) == bodyId) {
                 puncta.push_back(
                       new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
               }
+#endif
+            }
+          }
+        }
+        if (!ptArray.empty()) {
+          std::vector<uint64_t> idArray = reader.readBodyIdAt(ptArray);
+          for (size_t i = 0; i < idArray.size(); ++i) {
+            if (idArray[i] == bodyId) {
+              ZStackBall *ball = ballList[i];
+              puncta.push_back(
+                    new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
             }
           }
         }
@@ -726,10 +740,10 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 
     ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-
+    std::vector<ZIntPoint> tbarPtArray;
+    std::vector<ZIntPoint> psdPtArray;
     for (int z = minZ; z <= maxZ; ++z) {
       if (tbar != NULL) {
-        std::vector<ZPunctum*> &puncta = synapse.first;
         QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
         for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
              iter != ballList.end(); ++iter) {
@@ -739,16 +753,13 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
             ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
 
             if (coarseBody.contains(blockIndex)) {
-              if (reader.readBodyIdAt(pt) == bodyId) {
-                puncta.push_back(
-                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
-              }
+              tbarPtArray.push_back(pt);
             }
           }
         }
       }
+
       if (psd != NULL) {
-        std::vector<ZPunctum*> &puncta = synapse.second;
         QList<ZStackBall*> ballList = psd->getPunctaOnSlice(z);
         for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
              iter != ballList.end(); ++iter) {
@@ -758,15 +769,36 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
             ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
 
             if (coarseBody.contains(blockIndex)) {
-              if (reader.readBodyIdAt(pt) == bodyId) {
-                puncta.push_back(
-                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
-              }
+              psdPtArray.push_back(pt);
             }
           }
         }
       }
     }
+    if (!tbarPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.first;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(tbarPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = tbarPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+    if (!psdPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.second;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(psdPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = psdPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
   }
 
   return synapse;

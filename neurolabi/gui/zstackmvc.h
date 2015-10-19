@@ -88,6 +88,9 @@ protected:
   virtual void createPresenter();
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
+//  virtual void focusInEvent(QFocusEvent * event);
+//  virtual void focusOutEvent(QFocusEvent * event);
+//  virtual void changeEvent(QEvent * event);
 
 private:
   void createView();

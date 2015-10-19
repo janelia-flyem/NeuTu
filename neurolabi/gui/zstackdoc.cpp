@@ -8982,9 +8982,9 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
     if (state) {
-      tree->addVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+      tree->addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
     } else {
-      tree->removeVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
     }
     bufferObjectModified(tree->getTarget());
   }

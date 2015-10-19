@@ -125,6 +125,8 @@ void ZProofreadWindow::init()
   statusBar()->showMessage("Load a database to start proofreading");
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
+
+  m_defaultPal = palette();
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -427,4 +429,45 @@ void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
     LDEBUG() << msg.toPlainString();
     break;
   }
+}
+
+void ZProofreadWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ActivationChange) {
+    displayActiveHint(isActiveWindow());
+  }
+}
+
+void ZProofreadWindow::displayActiveHint(bool on)
+{
+//  setAutoFillBackground(on);
+#if 1
+  if (on) {
+    setPalette(m_defaultPal);
+  } else {
+    QPalette pal(m_defaultPal);
+//    QColor color = pal.background().color();
+//    color.setAlpha(200);
+    pal.setColor(QPalette::Background, QColor(200, 164, 164, 200));
+    setPalette(pal);
+  }
+#if 0
+  (palette());
+
+  // set black background
+  Pal.setColor(QPalette::Background, Qt::black);
+  m_pMyWidget->setAutoFillBackground(true);
+  m_pMyWidget->setPalette(Pal);
+
+  if (on) {
+//    setWindowOpacity(1.0);
+    setStyleSheet("background-color:black;");
+  } else {
+//    setWindowOpacity(0.8);
+    setStyleSheet("background-color:blue;");
+  }
+
+  setPalette(pal);
+#endif
+#endif
 }

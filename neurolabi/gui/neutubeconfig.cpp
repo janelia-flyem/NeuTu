@@ -259,7 +259,7 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case TMP_DATA:
   {
     std::string tmpDir;
-#if _QT_GUI_USED_
+#if defined(_QT_GUI_USED_)
     std::string user = NeuTube::GetCurrentUserName();
     tmpDir = QDir::tempPath().toStdString() + "/.neutube.z/" + user;
     QDir tmpDirObj(tmpDir.c_str());
@@ -286,9 +286,11 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case LOG_DIR:
     if (m_logDir.empty()) {
       ZString dir = getPath(WORKING_DIR);
+#if defined(_QT_GUI_USED_)
       if (dir.startsWith("/groups/flyem/")) {
         dir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
       }
+#endif
       return dir;
     }
     return m_logDir;

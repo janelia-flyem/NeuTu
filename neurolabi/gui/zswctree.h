@@ -93,10 +93,10 @@ public:
     OPERATION_SELECT_FLOOD
   };
 
-  typedef uint32_t TVisualEffect;
+//  typedef uint32_t TVisualEffect;
 
-  const static TVisualEffect VE_NONE;
-  const static TVisualEffect VE_FULL_SKELETON;
+//  const static TVisualEffect VE_NONE;
+//  const static TVisualEffect VE_FULL_SKELETON;
 
   /** @name Constructors
    */
@@ -205,9 +205,9 @@ public:
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
-  bool hasVisualEffect(TVisualEffect ve) const;
-  void addVisualEffect(TVisualEffect ve);
-  void removeVisualEffect(TVisualEffect ve);
+//  bool hasVisualEffect(TVisualEffect ve) const;
+//  void addVisualEffect(TVisualEffect ve);
+//  void removeVisualEffect(TVisualEffect ve);
 
   /*!
    * \brief save Save swc
@@ -774,7 +774,7 @@ private:
 private:
   Swc_Tree *m_tree;
   EStructrualMode m_smode;
-  TVisualEffect m_visualEffect;
+//  TVisualEffect m_visualEffect;
 
   mutable bool m_iteratorReady; /* When this option is on, any iterator option changing
                            internal linked list

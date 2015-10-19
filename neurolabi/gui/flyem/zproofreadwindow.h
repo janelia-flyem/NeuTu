@@ -2,6 +2,8 @@
 #define ZPROOFREADWINDOW_H
 
 #include <QMainWindow>
+#include <QPalette>
+
 #include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
@@ -57,6 +59,7 @@ public slots:
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
+  void changeEvent(QEvent * event);
 
 private:
   void init();
@@ -70,6 +73,8 @@ private:
 
   void logMessage(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
+
+  void displayActiveHint(bool on);
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
@@ -95,6 +100,8 @@ private:
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
+
+  QPalette m_defaultPal;
 };
 
 

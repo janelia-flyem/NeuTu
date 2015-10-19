@@ -126,6 +126,7 @@ public:
 
   uint64_t readBodyIdAt(int x, int y, int z);
   uint64_t readBodyIdAt(const ZIntPoint &pt);
+  std::vector<uint64_t> readBodyIdAt(const std::vector<ZIntPoint> &ptArray);
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 

@@ -12,6 +12,7 @@ const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
 const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
 const std::string ZDvidUrl::m_labelCommand = "label";
+const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
 
 ZDvidUrl::ZDvidUrl()
@@ -574,6 +575,13 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
   url.appendNumber(y);
   url += "_";
   url.appendNumber(z);
+
+  return url;
+}
+
+std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
+{
+  ZString url = getLabels64Url() + "/" + m_labelArrayCommand;
 
   return url;
 }
