@@ -178,7 +178,7 @@ private:
   QString m_mergeAutoSavePath;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap;
+  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 };

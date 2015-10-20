@@ -144,11 +144,14 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(uint64_t bodyId)
 void ZFlyEmProofDoc::recordAnnotation(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
 {
+  m_annotationMap[bodyId] = anno;
+  /*
   if (m_annotationMap.count(bodyId) == 0) {
     m_annotationMap[bodyId] = anno;
   } else {
     m_annotationMap[bodyId].mergeAnnotation(anno);
   }
+  */
 }
 
 
@@ -156,20 +159,34 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  QMap<uint64_t, QString> nameMap;
+  QMap<uint64_t, QVector<QString> > nameMap;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     const ZFlyEmBodyAnnotation& anno = iter.value();
     if (!anno.getName().empty()) {
-      nameMap[iter.key()] = anno.getName().c_str();
+      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
+
+      if (!nameMap.contains(mappedBodyId)) {
+        nameMap[mappedBodyId] = QVector<QString>();
+      }
+      nameMap[mappedBodyId].append(anno.getName().c_str());
+//      nameMap[iter.key()] = anno.getName().c_str();
     }
   }
   if (nameMap.size() > 1) {
     QString detail = "<p>Details: </p>";
     detail += "<ul>";
-    for (QMap<uint64_t, QString>::const_iterator iter = nameMap.begin();
+    for (QMap<uint64_t, QVector<QString> >::const_iterator iter = nameMap.begin();
          iter != nameMap.end(); ++iter) {
-      detail += QString("<li>%1: %2</li>").arg(iter.key()).arg(iter.value());
+      const QVector<QString> &nameArray = iter.value();
+      detail += QString("<li>%1:").arg(iter.key());
+      foreach (const QString &name, nameArray) {
+        detail += " \"" + name + "\"";
+      }
+
+//      detail += QString("<li>%1: %2</li>").arg(iter.key()).arg(iter.value());
+
+      detail += "</li>";
     }
     detail += "</ul>";
     okToContinue = ZDialogFactory::Ask(
@@ -245,7 +262,7 @@ void ZFlyEmProofDoc::annotateBody(
     }
   }
   if (writer.getStatusCode() == 200) {
-    if (getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED).count(bodyId) > 0) {
+    if (getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL).count(bodyId) > 0) {
       m_annotationMap[bodyId] = annotation;
     }
     emit messageGenerated(

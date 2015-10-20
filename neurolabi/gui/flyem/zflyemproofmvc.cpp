@@ -1019,17 +1019,30 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     if (selected.size() > 0) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
-        uint64_t bodyId = selected.front();
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation finalAnnotation;
+        for (std::vector<uint64_t>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
+          if (!annotation.isEmpty()) {
+            getCompleteDocument()->recordAnnotation(bodyId, annotation);
+            finalAnnotation.mergeAnnotation(annotation);
+          }
+        }
 
         ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
-        if (annotation.isEmpty()) {
+        if (finalAnnotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
-          getCompleteDocument()->recordAnnotation(
-                getMappedBodyId(bodyId), annotation);
-          msg.setMessage(annotation.toString().c_str());
+          msg.setMessage(finalAnnotation.toString().c_str());
+        }
+
+        if (finalAnnotation.isEmpty()) {
+          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
+        } else {
+          msg.setMessage(finalAnnotation.toString().c_str());
         }
         emit messageGenerated(msg);
       }
@@ -1038,13 +1051,13 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
     std::vector<uint64_t> deselected =
         labelSlice->getSelector().getDeselectedList();
-    std::set<uint64_t> mappedSet;
-    for (std::vector<uint64_t>::const_iterator iter = deselected.begin();
-         iter != deselected.end(); ++iter) {
-      mappedSet.insert(getMappedBodyId(*iter));
-    }
+//    std::set<uint64_t> mappedSet;
+//    for (std::vector<uint64_t>::const_iterator iter = deselected.begin();
+//         iter != deselected.end(); ++iter) {
+//      mappedSet.insert(getMappedBodyId(*iter));
+//    }
     getCompleteDocument()->removeSelectedAnnotation(
-          mappedSet.begin(), mappedSet.end());
+          deselected.begin(), deselected.end());
   }
 }
 
