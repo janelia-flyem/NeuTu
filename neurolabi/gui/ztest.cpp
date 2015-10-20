@@ -18176,7 +18176,7 @@ void ZTest::test(MainWindow *host)
   std::cout << labels.toStdString() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
 
   ZDvidReader reader;
@@ -18191,7 +18191,44 @@ void ZTest::test(MainWindow *host)
       std::cout << *iter << std::endl;
     }
   }
+#endif
 
+#if 1
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "c077", 7000);
+  dvidTarget.setBodyLabelName("segmentation-labelvol");
+  dvidTarget.setLabelBlockName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    ZDvidWriter writer;
+    writer.open(dvidTarget);
+    QByteArray out = reader.readKeyValue("annotations", "body_synapses");
+    ZJsonObject obj;
+    obj.decodeString(out.constData());
+
+    if (obj.hasKey("data")) {
+      ZJsonArray dataJson(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      std::cout << dataJson.size() << " annotations found." << std::endl;
+      for (size_t i = 0; i < dataJson.size(); ++i) {
+        ZJsonObject annoJson(dataJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        uint64_t bodyId = ZJsonParser::integerValue(annoJson["body ID"]);
+        std::string name = ZJsonParser::stringValue(annoJson["name"]);
+        std::string comment = ZJsonParser::stringValue(annoJson["comment"]);
+        std::string user = ZJsonParser::stringValue(annoJson["user"]);
+
+
+        std::cout << bodyId << " " << name << std::endl;
+
+        ZFlyEmBodyAnnotation anno = reader.readBodyAnnotation(bodyId);
+        if (anno.getName().empty() || anno.getName() == "name") {
+          anno.setName(name);
+          anno.setComment(comment);
+          anno.setUser(user);
+          writer.writeBodyAnntation(anno);
+        }
+      }
+    }
+  }
 
 #endif
 
