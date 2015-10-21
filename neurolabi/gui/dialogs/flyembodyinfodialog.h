@@ -30,6 +30,7 @@ signals:
 
 private slots:
     void onCloseButton();
+    void onRefreshButton();
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
