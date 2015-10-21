@@ -2346,6 +2346,50 @@ void ZObject3dScan::exportDvidObject(const string &filePath) const
   fclose(fp);
 }
 
+#if _QT_GUI_USED_
+QByteArray ZObject3dScan::toDvidPayload() const
+{
+  QByteArray buffer;
+
+  tz_uint8 flag = 0;
+  buffer.append((char*) (&flag), 1);
+
+  tz_uint8 numberOfDimensions = 3;
+  buffer.append((char*) (&numberOfDimensions), 1);
+
+  tz_uint8 dimOfRun = 0;
+  buffer.append((char*) (&dimOfRun), 1);
+
+  tz_uint8 reserved = 0;
+  buffer.append((char*) (&reserved), 1);
+
+  tz_uint32 numberOfVoxels = getVoxelNumber();
+  buffer.append((char*) (&numberOfVoxels), 4);
+
+  tz_uint32 numberOfSpans = getSegmentNumber();
+  buffer.append((char*) (&numberOfSpans), 4);
+
+  //For each segment
+  ConstSegmentIterator iter(this);
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    tz_int32 coord[3];
+    coord[0] = seg.getStart();
+    coord[1] = seg.getY();
+    coord[2] = seg.getZ();
+    buffer.append((char*) (coord), 12);
+//    fwrite(coord, 4, 3, fp);
+
+    tz_int32 runLength = seg.getEnd() - seg.getStart() + 1;
+//    fwrite(&runLength, 4, 1, fp);
+    buffer.append((char*) (&runLength), 4);
+  }
+
+  return buffer;
+//  fclose(fp);
+}
+#endif
+
 bool ZObject3dScan::importDvidObject(const std::string &filePath)
 {
   clear();

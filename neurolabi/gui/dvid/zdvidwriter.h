@@ -19,6 +19,9 @@
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
+namespace libdvid{
+class DVIDNodeService;
+}
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
@@ -32,6 +35,7 @@ class ZDvidWriter : public QObject
   Q_OBJECT
 public:
   explicit ZDvidWriter(QObject *parent = 0);
+  ~ZDvidWriter();
 
   bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
@@ -130,6 +134,7 @@ private:
 
   void parseStandardOutput();
   void init();
+  bool startService();
 
 private:
 //  QEventLoop *m_eventLoop;
@@ -140,6 +145,10 @@ private:
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;
   int m_statusCode;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDNodeService *m_service;
+#endif
 };
 
 #endif // ZDVIDWRITER_H
