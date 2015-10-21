@@ -56,6 +56,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
@@ -416,6 +417,13 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
     } else {
         // but we need to clear the loading message if we can't read from DVID
         emit loadCompleted();
+    }
+}
+
+void FlyEmBodyInfoDialog::onRefreshButton() {
+    if (m_currentDvidTarget.isValid()) {
+        ui->filterLineEdit->clear();
+        dvidTargetChanged(m_currentDvidTarget);
     }
 }
 
