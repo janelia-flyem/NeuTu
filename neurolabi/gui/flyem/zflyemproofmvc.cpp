@@ -2136,8 +2136,8 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
         ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
         if (slice != NULL) {
-          slice->clearSelection();
           slice->recordSelection();
+          slice->clearSelection();
           slice->addSelection(
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);
