@@ -53,7 +53,7 @@
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "tiles-jpg",
-      "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa"]
+      "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd"]
     },
     {
       "address": "emdata2.int.janelia.org",
