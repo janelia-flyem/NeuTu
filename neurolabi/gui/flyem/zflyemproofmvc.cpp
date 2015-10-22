@@ -997,7 +997,9 @@ void ZFlyEmProofMvc::selectBody()
       ZString str = text.toStdString();
       std::vector<uint64_t> bodyArray = str.toUint64Array();
       if (!bodyArray.empty()) {
+        getCompleteDocument()->recordBodySelection();
         getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        getCompleteDocument()->processBodySelection();
         updateBodySelection();
       }
 #if 0

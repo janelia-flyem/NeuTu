@@ -108,6 +108,9 @@ public:
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
+  void recordBodySelection();
+  void processBodySelection();
+
   std::vector<ZPunctum*> getTbar(uint64_t bodyId);
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
