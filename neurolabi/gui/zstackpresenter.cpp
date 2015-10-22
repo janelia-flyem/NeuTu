@@ -2625,6 +2625,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
                    arg(obj->getSource().c_str()).arg(obj->getLabel()));
         interactionEvent.setEvent(ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED);
       } else if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+        buddyDocument()->deselectAllObject(false);
+        buddyDocument()->deselectAllSwcTreeNodes();
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
         ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
         labelSlice->recordSelection();

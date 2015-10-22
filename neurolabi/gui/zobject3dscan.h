@@ -7,6 +7,10 @@
 #include <map>
 #include <utility>
 
+#ifdef _QT_GUI_USED_
+#include <QByteArray>
+#endif
+
 #include "zqtheader.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
@@ -26,7 +30,7 @@ class ZJsonArray;
  * \brief The class of RLE object
  *
  * A RLE object is the run-length encoded representatino of a 3D object, which
- * is defined as a set of voxels.This class encodes an object along the X,
+ * is defined as a set of voxels. This class encodes an object along the X,
  * direction, i.e. a contiguous list of voxels (x_1, y, z), ..., (x_n, y, z) are
  * encoded as ((x_1, x_n), y, z).
  */
@@ -125,6 +129,10 @@ public:
   bool importDvidObject(const std::string &filePath);
 
   void exportDvidObject(const std::string &filePath) const;
+
+#ifdef _QT_GUI_USED_
+  QByteArray toDvidPayload() const;
+#endif
 
   /*!
    * \brief Import object from a byte array

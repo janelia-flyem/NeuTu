@@ -20,6 +20,12 @@ void ZFlyEmKeyOperationConfig::configure(
   case ZKeyOperation::OG_FLYEM_BOOKMARK:
     ConfigureFlyEmBookmarkMap(map);
     break;
+  case ZKeyOperation::OG_SWC_TREE_NODE:
+  {
+    QMap<int, ZStackOperator::EOperation> &plainKeyMap = *(map.getPlainMap());
+    plainKeyMap.remove(Qt::Key_F);
+  }
+    break;
   default:
     break;
   }

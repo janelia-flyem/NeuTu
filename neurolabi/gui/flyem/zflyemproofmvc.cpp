@@ -997,7 +997,9 @@ void ZFlyEmProofMvc::selectBody()
       ZString str = text.toStdString();
       std::vector<uint64_t> bodyArray = str.toUint64Array();
       if (!bodyArray.empty()) {
+        getCompleteDocument()->recordBodySelection();
         getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        getCompleteDocument()->processBodySelection();
         updateBodySelection();
       }
 #if 0
@@ -2024,7 +2026,9 @@ void ZFlyEmProofMvc::deselectAllBody()
   if (reader.open(getDvidTarget())) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     if (slice != NULL) {
+      slice->recordSelection();
       slice->deselectAll();
+      slice->processSelection();
       updateBodySelection();
     }
   }
@@ -2136,8 +2140,8 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
         ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
         if (slice != NULL) {
-          slice->clearSelection();
           slice->recordSelection();
+          slice->clearSelection();
           slice->addSelection(
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);

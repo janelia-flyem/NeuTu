@@ -18176,7 +18176,7 @@ void ZTest::test(MainWindow *host)
   std::cout << labels.toStdString() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
 
   ZDvidReader reader;
@@ -18191,7 +18191,137 @@ void ZTest::test(MainWindow *host)
       std::cout << *iter << std::endl;
     }
   }
+#endif
 
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    ZObject3dScan obj;
+    obj.addSegment(7312, 5809, 4329, 4339);
+    uint64_t newBodyId = writer.writeSplit(obj, 8189115, 1);
+    std::cout << "New body: " << newBodyId << std::endl;
+  }
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan bf2 = bf;
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
+//  Bbf.print();
+
+  ZObject3dScan bs;
+  bf.subobject(ZIntCuboid(ZIntPoint(201, 824, 335), ZIntPoint(324, 938, 470)), &bs);
+//  bs.addSegment(1, 1, 1, 1);
+//  bs.addSegment(2, 16, 5, 32);
+
+  ZObject3dScan bf_bs = bf;
+  bf_bs.subtract(bs);
+
+  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
+
+  ZObject3dScan Bsc = Bbf;
+  Bsc.subtract(Bbf_bs);
+
+  ZObject3dScan bBsc = Bsc;
+  bBsc.translate(-dvidInfo.getStartBlockIndex());
+  bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
+                dvidInfo.getBlockSize().getY() - 1,
+                dvidInfo.getBlockSize().getZ() - 1);
+  bBsc.translate(dvidInfo.getStartCoordinates());
+
+  std::cout << "Block subtraction size: " << bBsc.getVoxelNumber() << std::endl;
+  bf.subtract(bBsc);
+
+  ZObject3dScan bsr = bs;
+  bsr.subtract(bBsc);
+
+  bf.subtract(bsr);
+
+  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  bf2.subtract(bs);
+
+
+  bf.canonize();
+  bf2.canonize();
+
+  if (bf.equalsLiterally(bf2)) {
+    std::cout << "Testing passed." << std::endl;
+  } else {
+    std::cout << "Testing failed: Object inconsistent." << std::endl;
+  }
+//  obj.subtract(ZObject3dFactory::MakeObject3dScan(
+//  block.subtract(
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  QByteArray payload = bf.toDvidPayload();
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/test.dvid").c_str(), "wb");
+
+  fwrite(payload.constData(), payload.size(), 1, fp);
+
+  fclose(fp);
+
+  ZObject3dScan bf2;
+  bf2.importDvidObject(GET_TEST_DATA_DIR + "/test.dvid");
+  if (bf.equalsLiterally(bf2)) {
+    std::cout << "Testing passed." << std::endl;
+  } else {
+    std::cout << "Testing failed: Object inconsistent." << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "c077", 7000);
+  dvidTarget.setBodyLabelName("segmentation-labelvol");
+  dvidTarget.setLabelBlockName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    ZDvidWriter writer;
+    writer.open(dvidTarget);
+    QByteArray out = reader.readKeyValue("annotations", "body_synapses");
+    ZJsonObject obj;
+    obj.decodeString(out.constData());
+
+    if (obj.hasKey("data")) {
+      ZJsonArray dataJson(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      std::cout << dataJson.size() << " annotations found." << std::endl;
+      for (size_t i = 0; i < dataJson.size(); ++i) {
+        ZJsonObject annoJson(dataJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        uint64_t bodyId = ZJsonParser::integerValue(annoJson["body ID"]);
+        std::string name = ZJsonParser::stringValue(annoJson["name"]);
+        std::string comment = ZJsonParser::stringValue(annoJson["comment"]);
+        std::string user = ZJsonParser::stringValue(annoJson["user"]);
+
+
+        std::cout << bodyId << " " << name << std::endl;
+
+        ZFlyEmBodyAnnotation anno = reader.readBodyAnnotation(bodyId);
+        if (anno.getName().empty() || anno.getName() == "name") {
+          anno.setName(name);
+          anno.setComment(comment);
+          anno.setUser(user);
+          writer.writeBodyAnntation(anno);
+        }
+      }
+    }
+  }
 
 #endif
 
