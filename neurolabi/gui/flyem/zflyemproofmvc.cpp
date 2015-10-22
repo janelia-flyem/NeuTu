@@ -2026,7 +2026,9 @@ void ZFlyEmProofMvc::deselectAllBody()
   if (reader.open(getDvidTarget())) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     if (slice != NULL) {
+      slice->recordSelection();
       slice->deselectAll();
+      slice->processSelection();
       updateBodySelection();
     }
   }
