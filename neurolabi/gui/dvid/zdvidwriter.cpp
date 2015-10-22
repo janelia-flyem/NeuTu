@@ -250,7 +250,7 @@ void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
 }
 
 void ZDvidWriter::writeJsonString(
-    const std::string url, const std::string &jsonString)
+    const std::string &url, const std::string &jsonString)
 {
   QString annotationString = jsonString.c_str();
 
@@ -290,7 +290,7 @@ void ZDvidWriter::writeJsonString(
 }
 
 
-void ZDvidWriter::writeJson(const std::string url, const ZJsonValue &value,
+void ZDvidWriter::writeJson(const std::string &url, const ZJsonValue &value,
                             const std::string &emptyValueString)
 {
   if (value.isEmpty()) {
@@ -538,6 +538,32 @@ bool ZDvidWriter::runCommand(QProcess &process)
   return succ;
 }
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
+{
+  LINFO() << "HTTP POST: " << url;
+  m_statusCode = 0;
+  std::string response;
+  try {
+    std::string endPoint = ZDvidUrl::GetEndPoint(url);
+    libdvid::BinaryDataPtr libdvidPayload =
+        libdvid::BinaryData::create_binary_data(payload.constData(), payload.length());
+    std::cout << libdvidPayload->get_data().size() << std::endl;
+    libdvid::BinaryDataPtr data = m_service->custom_request(
+          endPoint, libdvidPayload, libdvid::POST);
+
+    response = data->get_data();
+    m_statusCode = 200;
+//    m_buffer.append(data->get_data().c_str(), data->length());
+//    m_status = READ_OK;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+
+  return response;
+}
+#endif
+
 uint64_t ZDvidWriter::writeSplit(
     const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label)
 {
@@ -556,7 +582,9 @@ uint64_t ZDvidWriter::writeSplit(
     std::string url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel);
     std::string endPoint = ZDvidUrl::GetEndPoint(url);
     QByteArray payload = obj.toDvidPayload();
+#if 0
     std::cout << payload.length() << std::endl;
+#endif
     libdvid::BinaryDataPtr libdvidPayload =
         libdvid::BinaryData::create_binary_data(payload.constData(), payload.length());
     std::cout << libdvidPayload->get_data().size() << std::endl;

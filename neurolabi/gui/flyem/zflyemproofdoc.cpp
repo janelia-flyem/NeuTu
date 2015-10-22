@@ -1203,3 +1203,19 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->notifyBodyUnmerged();
 //  m_doc->notifyObject3dScanModified();
 }
+
+void ZFlyEmProofDoc::recordBodySelection()
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->recordSelection();
+  }
+}
+
+void ZFlyEmProofDoc::processBodySelection()
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->processSelection();
+  }
+}

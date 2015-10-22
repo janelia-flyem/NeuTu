@@ -122,15 +122,19 @@ public:
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 //  void writeJson(const std::string url, const ZJsonValue &value);
-  void writeJson(const std::string url, const ZJsonValue &value,
+  void writeJson(const std::string &url, const ZJsonValue &value,
                  const std::string &emptyValueString);
-  void writeJsonString(const std::string url, const std::string &jsonString);
+  void writeJsonString(const std::string &url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);
 
   bool runCommand(const QString &command, const QStringList &argList);
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  std::string post(const std::string &url, const QByteArray &payload);
+#endif
 
   void parseStandardOutput();
   void init();
