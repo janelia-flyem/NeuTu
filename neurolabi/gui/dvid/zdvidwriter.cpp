@@ -565,33 +565,32 @@ std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
 #endif
 
 uint64_t ZDvidWriter::writeSplit(
-    const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label)
+    const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label,
+    uint64_t newBodyId)
 {
   return writeSplit(
-        m_dvidTarget.getBodyLabelName(), obj, oldLabel, label);
+        m_dvidTarget.getBodyLabelName(), obj, oldLabel, label, newBodyId);
 }
 
 uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
-    uint64_t oldLabel, uint64_t label)
+    uint64_t oldLabel, uint64_t label, uint64_t newBodyId)
 {
-  uint64_t newBodyId = 0;
+//  uint64_t newBodyId = 0;
   m_statusCode = 0;
 #if defined(_ENABLE_LIBDVIDCPP_)
+  UNUSED_PARAMETER(label);
   try {
-    std::string url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel);
-    std::string endPoint = ZDvidUrl::GetEndPoint(url);
-    QByteArray payload = obj.toDvidPayload();
-#if 0
-    std::cout << payload.length() << std::endl;
-#endif
-    libdvid::BinaryDataPtr libdvidPayload =
-        libdvid::BinaryData::create_binary_data(payload.constData(), payload.length());
-    std::cout << libdvidPayload->get_data().size() << std::endl;
-    libdvid::BinaryDataPtr data = m_service->custom_request(
-          endPoint, libdvidPayload, libdvid::POST);
+    std::string url;
+    if (newBodyId == 0) {
+      url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel);
+    } else {
+      url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel, newBodyId);
+    }
 
-    const std::string &response = data->get_data();
+    QByteArray payload = obj.toDvidPayload();
+    ZString response = post(url, payload);
+
     if (!response.empty()) {
 #ifdef _DEBUG_
       std::cout << response << std::endl;
@@ -607,7 +606,6 @@ uint64_t ZDvidWriter::writeSplit(
 //    m_status = READ_OK;
   } catch (std::exception &e) {
     std::cout << e.what() << std::endl;
-
   }
 #else
   //POST <api URL>/node/<UUID>/<data name>/split/<label>
@@ -633,6 +631,61 @@ uint64_t ZDvidWriter::writeSplit(
     if (m_jsonOutput.hasKey("label")) {
       newBodyId = ZJsonParser::integerValue(m_jsonOutput["label"]);
     }
+  }
+#endif
+
+  return newBodyId;
+}
+
+uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
+    const ZObject3dScan &bs, uint64_t oldLabel)
+{
+  uint64_t newBodyId = 0;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+  if (reader.open(m_dvidTarget)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  } else {
+    LERROR() << "DVID connection error.";
+    return 0;
+  }
+
+  ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
+
+  ZObject3dScan bf_bs = bf;
+  bf_bs.subtract(bs);
+
+  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
+
+  ZObject3dScan Bsc = Bbf;
+  Bsc.subtract(Bbf_bs);
+
+  //Upload Bsc
+  if (!Bsc.isEmpty()) {
+    newBodyId = writeCoarseSplit(Bsc, oldLabel);
+    if (newBodyId == 0) {
+      LERROR() << "Failed to write coarse split.";
+      return 0;
+    }
+
+    ZObject3dScan bBsc = Bsc;
+    bBsc.translate(-dvidInfo.getStartBlockIndex());
+    bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
+                  dvidInfo.getBlockSize().getY() - 1,
+                  dvidInfo.getBlockSize().getZ() - 1);
+    bBsc.translate(dvidInfo.getStartCoordinates());
+
+    ZObject3dScan bsr = bs;
+    bsr.subtract(bBsc);
+
+    //Upload remaining part
+    if (!bsr.isEmpty()) {
+      writeSplit(bsr, oldLabel, 0/*, newBodyId*/);
+    }
+  } else {
+    newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #endif
 

@@ -18195,13 +18195,22 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  uint64_t bodyId = 8189115;
+  ZObject3dScan bf = reader.readBody(bodyId);
+
   ZDvidWriter writer;
   if (writer.open(target)) {
     ZObject3dScan obj;
-    obj.addSegment(7312, 5809, 4329, 4339);
-    uint64_t newBodyId = writer.writeSplit(obj, 8189115, 1);
+    obj.addSegment(7312, 5811, 4329, 4335);
+    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
     std::cout << "New body: " << newBodyId << std::endl;
   }
+
+  std::cout << "Status code: " << writer.getStatusCode() << std::endl;
 #endif
 
 #if 0
