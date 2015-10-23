@@ -81,6 +81,9 @@ public:
   inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
 
+  void setVisible(bool v);
+  bool isVisible() const;
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);

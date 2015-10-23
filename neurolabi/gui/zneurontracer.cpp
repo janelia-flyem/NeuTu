@@ -554,28 +554,17 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (tree != NULL) {
     Swc_Tree_Translate(
           tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
+    ZSwcSignalFitter fitter;
+    fitter.setBackground(m_backgroundType);
+    fitter.setFixingTerminal(true);
+    fitter.fitSignal(tree, getStack(), getSignalChannel());
+
+    Swc_Tree_Node *leaf = tree->root;
+    while (SwcTreeNode::firstChild(leaf) != NULL) {
+      leaf = SwcTreeNode::firstChild(leaf);
+    }
+    SwcTreeNode::setPos(leaf, targetPos);
   }
-
-#ifdef _DEBUG_2
-  Swc_Tree_Resort_Id(tree);
-  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test.swc").c_str(), tree);
-#endif
-
-  ZSwcSignalFitter fitter;
-  fitter.setBackground(m_backgroundType);
-  fitter.setFixingTerminal(true);
-  fitter.fitSignal(tree, getStack(), getSignalChannel());
-
-#ifdef _DEBUG_2
-  Swc_Tree_Resort_Id(tree);
-  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test2.swc").c_str(), tree);
-#endif
-
-  Swc_Tree_Node *leaf = tree->root;
-  while (SwcTreeNode::firstChild(leaf) != NULL) {
-    leaf = SwcTreeNode::firstChild(leaf);
-  }
-  SwcTreeNode::setPos(leaf, targetPos);
 
   return tree;
 }
@@ -948,7 +937,14 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
+  if (stack == NULL) {
+    return NULL;
+  }
+
   startProgress();
+
+  stack = C_Stack::clone(stack);
+  ZStackProcessor::subtractBackground(stack, 0.5, 3);
 
   ZSwcTree *tree = NULL;
 
@@ -1085,6 +1081,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   std::cout << "Done!" << std::endl;
   endProgress();
+
+  C_Stack::kill(stack);
 
   return tree;
 }

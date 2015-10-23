@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QString>
+#include <QMap>
+
 #include "zsharedpointer.h"
 #include "zstackdoc.h"
 #include "z3dwindow.h"
@@ -36,6 +38,8 @@ public:
   void setWindowTitle(const QString &title);
   void setParentWidget(QWidget *parentWidget);
   void setWindowGeometry(const QRect &rect);
+
+  void setVisible(Z3DWindow::ERendererLayer layer, bool visible);
 
   inline void setControlPanelVisible(bool visible) {
     m_showControlPanel = visible;
@@ -76,6 +80,8 @@ private:
   NeuTube3D::EVolumeRenderingMode m_volumeMode;
 
   bool m_deleteOnClose;
+
+  QMap<Z3DWindow::ERendererLayer, bool> m_layerVisible;
 };
 
 #endif // ZWINDOWFACTORY_H

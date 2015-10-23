@@ -274,12 +274,16 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
 
-  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+//  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
+
+  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+  std::set<Swc_Tree_Node*> getUnselectedSwcNodeSet() const;
 
   static QList<Swc_Tree_Node*> getSelectedSwcNodeList(
       const ZSwcTree *tree);
   QList<Swc_Tree_Node*> getSelectedSwcNodeList() const;
-  std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
+
+  QMap<const Swc_Tree_Node*, const ZSwcTree*> getSelectedSwcNodeMap() const;
 
   //ZStackViewParam getSelectedSwcNodeView() const;
 
@@ -485,6 +489,7 @@ private:
   void removeObjectP(InputIterator first, InputIterator last, bool deleting);
 
   void updateSwc();
+  bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
 
 public: /* tracing routines */
   ZLocsegChain* fitseg(int x, int y, int z, double r = 3.0);
@@ -633,7 +638,7 @@ public:
   template <class InputIterator>
   void setSwcTreeNodeSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllSwcTreeNodes();
-  void deselectAllObject();
+  void deselectAllObject(bool recursive = true);
   void deselectAllObject(ZStackObject::EType type);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
@@ -929,6 +934,7 @@ public slots: //undoable commands
    *        existing in the doc, only the first one is replaced.
    */
   void addObject(ZStackObject *obj, bool uniqueSource = true);
+  void addObject(ZStackObject *obj, int zOrder, bool uniqueSource);
 
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
@@ -962,6 +968,7 @@ public slots: //undoable commands
   virtual bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
   virtual bool executeTranslateSelectedSwcNode();
   virtual bool executeDeleteSwcNodeCommand();
+  virtual bool executeDeleteUnselectedSwcNodeCommand();
   virtual bool executeConnectSwcNodeCommand();
   virtual bool executeChangeSelectedSwcNodeSize();
   virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node *tn);
@@ -1209,11 +1216,10 @@ private:
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
 
-  QThreadFutureMap m_futureMap;
-
 protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
+  QThreadFutureMap m_futureMap;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

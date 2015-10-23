@@ -173,6 +173,7 @@
 #include "zstackarray.h"
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zslicedpuncta.h"
+#include "neutubeconfig.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -331,6 +332,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+
   if (m_bodySplitProjectDialog != NULL) {
     m_bodySplitProjectDialog->clear();
   }
@@ -4995,6 +4998,7 @@ void MainWindow::on_actionMask_SWC_triggered()
         }
 */
         if (stackFrame != NULL) {
+          wholeTree->translate(stackFrame->document()->getStackOffset());
           swcFrame->document()->estimateSwcRadius(wholeTree);
 
           Biocytin::SwcProcessor::SmoothRadius(wholeTree);
@@ -5007,10 +5011,6 @@ void MainWindow::on_actionMask_SWC_triggered()
 
         ZSwcResampler resampler;
         resampler.optimalDownsample(wholeTree);
-
-        if (stackFrame != NULL) {
-          wholeTree->translate(stackFrame->document()->getStackOffset());
-        }
 
         const double distThre = 30;
 
@@ -7236,6 +7236,14 @@ void MainWindow::on_actionProof_triggered()
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->showMaximized();
+
+  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
+    window->dump(
+          ZWidgetMessage("Failed to initialize tmp directory. "
+                         "Some editing functions (especially split) will not work. "
+                         "Please check the permission or disk space.",
+                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+  }
 }
 
 void MainWindow::runRoutineCheck()

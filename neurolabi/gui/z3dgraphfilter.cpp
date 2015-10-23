@@ -66,6 +66,11 @@ void Z3DGraphFilter::setVisible(bool v)
   m_showGraph.set(v);
 }
 
+bool Z3DGraphFilter::isVisible() const
+{
+  return m_showGraph.get();
+}
+
 void Z3DGraphFilter::render(Z3DEye eye)
 {
   if (m_graph.isEmpty()) {

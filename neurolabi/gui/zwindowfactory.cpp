@@ -124,6 +124,11 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->setGeometry(m_windowGeometry);
     }
 
+    for (QMap<Z3DWindow::ERendererLayer, bool>::const_iterator
+         iter = m_layerVisible.begin(); iter != m_layerVisible.end(); ++iter) {
+      window->setVisible(iter.key(), iter.value());
+    }
+
     if (!isControlPanelVisible()) {
       window->hideControlPanel();
     }
@@ -187,4 +192,9 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
 void ZWindowFactory::configure(Z3DWindow */*window*/)
 {
 
+}
+
+void ZWindowFactory::setVisible(Z3DWindow::ERendererLayer layer, bool visible)
+{
+  m_layerVisible[layer] = visible;
 }

@@ -248,10 +248,10 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (event.getModifiers() == Qt::ControlModifier) {
           op.setOperation(ZStackOperator::OP_SWC_EXTEND);
         } else {
-          if (op.getHitObject() != NULL) {
-            if (op.getHitObject()->isSelectable()) {
+          if (op.getHitObject<Swc_Tree_Node>() != NULL) {
+//            if (op.getHitObject()->isSelectable()) {
               processSelectionOperation(op, event);
-            }
+//            }
           }
 
           if (op.isNull()) {

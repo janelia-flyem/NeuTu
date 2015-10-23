@@ -51,8 +51,8 @@ ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
 
 const int ZSwcTree::m_nodeStateCosmetic = 1;
 
-const ZSwcTree::TVisualEffect ZSwcTree::VE_NONE = 0;
-const ZSwcTree::TVisualEffect ZSwcTree::VE_FULL_SKELETON = 1;
+//const ZSwcTree::TVisualEffect ZSwcTree::VE_NONE = 0;
+//const ZSwcTree::TVisualEffect ZSwcTree::VE_FULL_SKELETON = 1;
 
 ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
 {
@@ -61,7 +61,8 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
-  m_visualEffect = VE_FULL_SKELETON;
+  addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+//  m_visualEffect = VE_FULL_SKELETON;
 
   setTarget(GetDefaultTarget());
 }
@@ -451,6 +452,7 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #endif
 }
 
+#if 0
 bool ZSwcTree::hasVisualEffect(TVisualEffect ve) const
 {
   return (m_visualEffect & ve) > 0;
@@ -464,6 +466,7 @@ void ZSwcTree::removeVisualEffect(TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
+#endif
 
 void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style) const
@@ -510,7 +513,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       }
 
       painter.setPen(pen);
-      if (hasVisualEffect(VE_FULL_SKELETON)) {
+      if (hasVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON)) {
         painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                          QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
                                  SwcTreeNode::y(SwcTreeNode::parent(tn))));
@@ -521,7 +524,11 @@ void ZSwcTree::display(ZPainter &painter, int slice,
           double deltaZ = dmin2(fabs(dz1), fabs(dz2));
           double alphaRatio = 1.0 / deltaZ;
           if (alphaRatio >= 0.1) {
-            lineColor.setAlphaF(lineColor.alphaF() * alphaRatio);
+            double alpha = lineColor.alphaF() * alphaRatio;
+            if (alpha > 1.0) {
+              alpha = 1.0;
+            }
+            lineColor.setAlphaF(alpha);
             painter.setPen(lineColor);
             painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                              QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
@@ -697,11 +704,15 @@ void ZSwcTree::display(ZPainter &painter, int slice,
                SwcTreeNode::radius(tn));
 
     circle.setColor(255, 255, 0);
-    circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
-                           NeuTube::Display::Sphere::VE_NO_FILL |
+    circle.setVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL |
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
                            NeuTube::Display::Sphere::VE_DASH_PATTERN);
     circle.useCosmeticPen(m_usingCosmeticPen);
+    circle.display(painter, slice, BOUNDARY);
+
+    circle.useCosmeticPen(true);
+    circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
+                           NeuTube::Display::Sphere::VE_NO_CIRCLE);
     circle.display(painter, slice, BOUNDARY);
   }
 
@@ -3244,8 +3255,13 @@ void ZSwcTree::setColorScheme(EColorScheme scheme)
   switch (scheme) {
   case COLOR_NORMAL:
     m_rootColor = QColor(164, 164, 255, 255);
-    m_terminalColor = QColor(200, 200, 0, 255);
-    m_terminalFocusColor = QColor(200, 200, 0);
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      m_terminalColor = QColor(200, 200, 0, 255);
+      m_terminalFocusColor = QColor(200, 200, 128);
+    } else {
+      m_terminalColor = QColor(255, 220, 100, 255);
+      m_terminalFocusColor = QColor(255, 220, 0);
+    }
     m_branchPointColor = QColor(164, 255, 164, 255);
     m_nodeColor = QColor(255, 164, 164, 255);
     m_planeSkeletonColor = QColor(255, 128, 128, 100);
@@ -3649,6 +3665,7 @@ void ZSwcTree::ExtIterator::init(const ZSwcTree *tree)
 {
   m_tree = const_cast<ZSwcTree*>(tree);
   m_currentNode = NULL;
+  m_excludingVirtual = false;
 }
 
 
@@ -3696,6 +3713,11 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
   m_currentNode = NULL;
   if (m_tree != NULL) {
     m_currentNode = m_tree->begin();
+    if (m_excludingVirtual) {
+      if (SwcTreeNode::isVirtual(m_currentNode)) {
+        m_currentNode = m_currentNode->next;
+      }
+    }
   }
 
   return m_currentNode;
@@ -3708,7 +3730,16 @@ bool ZSwcTree::DepthFirstIterator::hasNext() const
   }
 
   if (m_currentNode == NULL) {
-    return (m_tree->begin() != NULL);
+    Swc_Tree_Node *first = m_tree->begin();
+    if (first == NULL) {
+      return false;
+    } else {
+      if (m_excludingVirtual) {
+        return first->next != NULL;
+      } else {
+        return first != NULL;
+      }
+    }
   }
 
   return m_currentNode->next != NULL;
@@ -3721,7 +3752,7 @@ Swc_Tree_Node* ZSwcTree::DepthFirstIterator::next()
   }
 
   if (m_currentNode == NULL) {
-    m_currentNode = m_tree->begin();
+    begin();
   } else {
     m_currentNode = m_tree->next();
   }

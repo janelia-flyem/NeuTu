@@ -230,6 +230,8 @@ int main(int argc, char *argv[])
     qApp->installEventFilter(new MacEventFilter(qApp));
 #endif
 
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+
     // init 3D
     //std::cout << "Initializing 3D ..." << std::endl;
     RECORD_INFORMATION("Initializing 3D ...");

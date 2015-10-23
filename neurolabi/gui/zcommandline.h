@@ -57,6 +57,7 @@ private:
   int m_blockOffset[3];
   bool m_fullOverlapScreen;
   bool m_isVerbose;
+  bool m_forceUpdate;
   ZMessageReporter m_reporter;
 };
 

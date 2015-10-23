@@ -57,6 +57,7 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
+  void selectingBodyInRoi(bool appending);
   void runningSplit();
   void goingToBody();
   void selectingBody();

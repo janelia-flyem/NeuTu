@@ -199,11 +199,19 @@ void Z3DSwcFilter::initTopologyColor()
 {
   // topology colors (root, branch point, leaf, others)
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Root Color", glm::vec4(0, 0, 255/255.f, 1.f)));
+        new ZVec4Parameter("Root Color", glm::vec4(0, 0, 1.0, 1.f)));
   m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Branch Point Color", glm::vec4(0, 255/255.f, 0, 1.f)));
-  m_colorsForDifferentTopology.push_back(
-        new ZVec4Parameter("Leaf Color", glm::vec4(200/255.f, 200.f/255.f, 0, 1.f)));
+        new ZVec4Parameter("Branch Point Color", glm::vec4(0, 1.0, 0, 1.f)));
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_colorsForDifferentTopology.push_back(
+          new ZVec4Parameter("Leaf Color",
+                             glm::vec4(200/255.f, 200.f/255.f, 0, 1.f)));
+  } else {
+    m_colorsForDifferentTopology.push_back(
+          new ZVec4Parameter("Leaf Color",
+                             glm::vec4(1.0, 200.f/255.f, 0, 1.f)));
+  }
+
   m_colorsForDifferentTopology.push_back(
         new ZVec4Parameter("Other", glm::vec4(255/255.f, 0, 0, 1.f)));
   for (size_t i=0; i<m_colorsForDifferentTopology.size(); i++) {
@@ -334,6 +342,17 @@ void Z3DSwcFilter::initSubclassTypeColor()
     connect(m_colorsForSubclassType[i], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
   }
 }
+
+void Z3DSwcFilter::setVisible(bool v)
+{
+  m_showSwcs.set(v);
+}
+
+bool Z3DSwcFilter::isVisible() const
+{
+  return m_showSwcs.get();
+}
+
 
 void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
 {

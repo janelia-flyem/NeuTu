@@ -38,6 +38,8 @@ public:
 
   static void invert(ZStack *stack);
   static void subtractBackground(ZStack *stack);
+  static void subtractBackground(ZStack *stack, double minFr, int maxIter);
+  static void subtractBackground(Stack *stack, double minFr, int maxIter);
 
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
   //

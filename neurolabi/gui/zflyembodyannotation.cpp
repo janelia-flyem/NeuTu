@@ -178,3 +178,8 @@ std::string ZFlyEmBodyAnnotation::toString() const
 
   return stream.str();
 }
+
+bool ZFlyEmBodyAnnotation::isFinalized() const
+{
+  return (ZString(getStatus()).lower() == "finalized");
+}

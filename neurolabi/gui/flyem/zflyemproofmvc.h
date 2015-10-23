@@ -65,6 +65,8 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId);
 
+  ZDvidTarget getDvidTarget() const;
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -87,7 +89,6 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
-  ZDvidTarget getDvidTarget() const;
   void launchSplit(uint64_t bodyId);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
@@ -109,6 +110,7 @@ public slots:
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
+  void selectBodyInRoi(bool appending);
 
   void showBody3d();
   void showSplit3d();
@@ -116,6 +118,7 @@ public slots:
   void showFineBody3d();
   void showSkeletonWindow();
   void showExternalNeuronWindow();
+  void showObjectWindow();
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
@@ -169,10 +172,13 @@ protected slots:
   void detachBodyWindow();
   void detachSplitWindow();
   void detachSkeletonWindow();
+  void detachObjectWindow();
   void detachExternalNeuronWindow();
 //  void closeBodyWindow(int index);
+  void close3DWindow(Z3DWindow *window);
   void closeBodyWindow(Z3DWindow *window);
   void closeAllBodyWindow();
+  void closeAllAssociatedWindow();
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
@@ -240,6 +246,7 @@ private:
   Z3DWindow *m_skeletonWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
+  Z3DWindow *m_objectWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
   ZDvidInfo m_dvidInfo;

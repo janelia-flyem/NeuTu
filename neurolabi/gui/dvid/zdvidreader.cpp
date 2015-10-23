@@ -29,6 +29,18 @@
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
 {
+  init();
+}
+
+ZDvidReader::~ZDvidReader()
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  delete m_service;
+#endif
+}
+
+void ZDvidReader::init()
+{
   m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
   m_timer = new QTimer(this);
@@ -46,13 +58,13 @@ ZDvidReader::ZDvidReader(QObject *parent) :
 //  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
 //  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
+
+  m_statusCode = 0;
 }
 
-ZDvidReader::~ZDvidReader()
+int ZDvidReader::getStatusCode() const
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-  delete m_service;
-#endif
+  return m_statusCode;
 }
 
 void ZDvidReader::slotTest()
@@ -91,6 +103,11 @@ bool ZDvidReader::startService()
 #endif
 
   return true;
+}
+
+bool ZDvidReader::isReady() const
+{
+  return getDvidTarget().isValid();
 }
 
 bool ZDvidReader::open(
@@ -173,6 +190,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
+//  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
   reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
@@ -192,10 +210,20 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
+//  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
+
+  QElapsedTimer timer;
+  timer.start();
+
   reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
+
+  std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+  timer.start();
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
+  std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
 
   result->setLabel(bodyId);
 
@@ -627,23 +655,26 @@ QString ZDvidReader::readInfo(const QString &dataName) const
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner, bool ignoringZero)
 {
   return readBodyId(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
                     lastCorner.getX() - firstCorner.getX() + 1,
                     lastCorner.getY() - firstCorner.getY() + 1,
-                    lastCorner.getZ() - firstCorner.getZ() + 1);
+                    lastCorner.getZ() - firstCorner.getZ() + 1,
+                    ignoringZero);
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    int x0, int y0, int z0, int width, int height, int depth)
+    int x0, int y0, int z0, int width, int height, int depth, bool ignoringZero)
 {
   ZArray *array = readLabels64(x0, y0, z0, width, height, depth);
 
   uint64_t *dataArray = array->getDataPointer<uint64_t>();
   std::set<uint64_t> bodySet;
   for (size_t i = 0; i < array->getElementNumber(); ++i) {
-    bodySet.insert(dataArray[i]);
+    if (!ignoringZero || dataArray[i] > 0) {
+      bodySet.insert(dataArray[i]);
+    }
   }
 #if 0
   ZStack *stack = readBodyLabel(x0, y0, z0, width, height, depth);
@@ -1424,6 +1455,53 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
   }
 
   return bodyId;
+}
+
+std::vector<uint64_t> ZDvidReader::readBodyIdAt(
+    const std::vector<ZIntPoint> &ptArray)
+{
+  std::vector<uint64_t> bodyArray;
+
+  if (!ptArray.empty()) {
+    ZDvidBufferReader bufferReader;
+    ZDvidUrl dvidUrl(m_dvidTarget);
+
+    ZJsonArray queryObj;
+
+    for (std::vector<ZIntPoint>::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      ZJsonArray coordObj;
+      coordObj.append(pt.getX());
+      coordObj.append(pt.getY());
+      coordObj.append(pt.getZ());
+
+      queryObj.append(coordObj);
+    }
+
+    QString queryForm = queryObj.dumpString(0).c_str();
+
+#ifdef _DEBUG_
+    std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+    QByteArray payload;
+    payload.append(queryForm);
+
+    bufferReader.read(dvidUrl.getLocalBodyIdArrayUrl().data(), payload, true);
+
+    ZJsonArray infoJson;
+    infoJson.decodeString(bufferReader.getBuffer().data());
+
+    if (infoJson.size() == ptArray.size()) {
+      for (size_t i = 0; i < infoJson.size(); ++i) {
+        uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
+        bodyArray.push_back(bodyId);
+      }
+    }
+  }
+
+  return bodyArray;
 }
 
 ZObject3dScan ZDvidReader::readRoi(const std::string dataName)

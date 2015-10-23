@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QList>
+#include <QMap>
+
 #include "dvid/zdvidtarget.h"
 #include "tz_stdint.h"
 #include "zstackobjectselector.h"

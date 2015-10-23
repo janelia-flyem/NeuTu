@@ -490,6 +490,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   , m_graphBoundBox(6)
   , m_boundBox(6)
   , m_isClean(false)
+  , m_blockingTraceMenu(false)
   , m_screenShotWidget(NULL)
   , m_widgetsGroup(NULL)
   , m_settingsDockWidget(NULL)
@@ -1755,6 +1756,12 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
 
 void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
 {
+  if (!append) {
+    if (m_doc->hasSelectedSwc()) {
+      m_blockingTraceMenu = true;
+    }
+  }
+
   if (p == NULL) {
     if (!append)
       m_doc->deselectAllSwcs();
@@ -1773,9 +1780,17 @@ void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
 
 void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
 {
+  if (!append) {
+    if (m_doc->hasSelectedSwcNode()) {
+      m_blockingTraceMenu = true;
+    }
+  }
+
   if (p == NULL) {
     if (!append) {
-      m_doc->deselectAllSwcTreeNodes();
+      if (m_doc->hasSelectedSwcNode()) {
+        m_doc->deselectAllSwcTreeNodes();
+      }
     }
     return;
   }
@@ -1890,12 +1905,16 @@ void Z3DWindow::pointInVolumeLeftClicked(
   //  if (m_toogleExtendSelectedSwcNodeAction->isChecked() && m_doc->selectedSwcTreeNodes()->size() == 1) {
   //    return;
   //  }
-  if (hasVolume() && channelNumber() == 1 &&
-      !m_toogleAddSwcNodeModeAction->isChecked() &&
-      !m_toggleMoveSelectedObjectsAction->isChecked() &&
-      !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
-      NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
-    m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
+  if (m_blockingTraceMenu) {
+    m_blockingTraceMenu = false;
+  } else {
+    if (hasVolume() && channelNumber() == 1 &&
+        !m_toogleAddSwcNodeModeAction->isChecked() &&
+        !m_toggleMoveSelectedObjectsAction->isChecked() &&
+        !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
+        NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
+      m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
+    }
   }
 }
 
@@ -1922,30 +1941,6 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
 
   QList<QAction*> actions;
 
-  if (m_doc->hasSelectedSwcNode()) {
-    updateContextMenu("swcnode");
-    //m_contextMenuGroup["swcnode"]->popup(m_canvas->mapToGlobal(pt));
-    QList<QAction*> acts = m_contextMenuGroup["swcnode"]->actions();
-    if (actions.empty()) {
-      actions = acts;
-    } else {
-      while (true) {
-        int i;
-        for (i=0; i<actions.size(); ++i) {
-          if (!acts.contains(actions[i])) {
-            break;
-          }
-        }
-        if (i == actions.size())
-          break;
-        else {
-          actions.removeAt(i);
-          continue;
-        }
-      }
-    }
-  }
-
   if (m_doc->hasSelectedSwc() > 0) {
     //m_contextMenuGroup["swc"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swc"]->actions();
@@ -1967,7 +1962,32 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
         }
       }
     }
+  } else {
+    if (m_doc->hasSelectedSwcNode()) {
+      updateContextMenu("swcnode");
+      //m_contextMenuGroup["swcnode"]->popup(m_canvas->mapToGlobal(pt));
+      QList<QAction*> acts = m_contextMenuGroup["swcnode"]->actions();
+      if (actions.empty()) {
+        actions = acts;
+      } else {
+        while (true) {
+          int i;
+          for (i=0; i<actions.size(); ++i) {
+            if (!acts.contains(actions[i])) {
+              break;
+            }
+          }
+          if (i == actions.size())
+            break;
+          else {
+            actions.removeAt(i);
+            continue;
+          }
+        }
+      }
+    }
   }
+
 
   if (m_doc->hasSelectedPuncta() > 0) {
     updateContextMenu("puncta");
@@ -3977,6 +3997,42 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
 {
   getRendererBase(layer)->setOpacity(opacity);
+}
+
+void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    getGraphFilter()->setVisible(visible);
+    break;
+  case LAYER_SWC:
+    getSwcFilter()->setVisible(visible);
+    break;
+  case LAYER_PUNCTA:
+    getPunctaFilter()->setVisible(visible);
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+}
+
+bool Z3DWindow::isVisible(ERendererLayer layer) const
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    return getGraphFilter()->isVisible();
+    break;
+  case LAYER_SWC:
+    return getSwcFilter()->isVisible();
+    break;
+  case LAYER_PUNCTA:
+    return getPunctaFilter()->isVisible();
+    break;
+  case LAYER_VOLUME:
+    break;
+  }
+
+  return true;
 }
 
 void Z3DWindow::setZScale(double scale)

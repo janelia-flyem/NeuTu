@@ -43,6 +43,9 @@ public:
     m_colorMode.select(mode.c_str());
   }
 
+  void setVisible(bool v);
+  bool isVisible() const;
+
 signals:
   void punctumSelected(ZPunctum*, bool append);
   void visibleChanged(bool);

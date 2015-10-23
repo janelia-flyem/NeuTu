@@ -95,6 +95,16 @@ void Z3DPunctaFilter::process(Z3DEye)
   }
 }
 
+void Z3DPunctaFilter::setVisible(bool v)
+{
+  m_showPuncta.set(v);
+}
+
+bool Z3DPunctaFilter::isVisible() const
+{
+  return m_showPuncta.get();
+}
+
 void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)
 {
   m_origPunctaList = punctaList;

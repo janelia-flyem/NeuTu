@@ -380,15 +380,32 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     //Add synapse
     if (m_showingSynapse) {
       beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
-      for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-           iter != puncta.end(); ++iter) {
-        ZPunctum *punctum = *iter;
-        punctum->setRadius(30);
-        punctum->setColor(255, 255, 0);
-        punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-        addObject(punctum, false);
+//      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
+      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
+          getDataDocument()->getSynapse(bodyId);
+      {
+        std::vector<ZPunctum*> &puncta = synapse.first;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(255, 255, 0);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          addObject(punctum, false);
+        }
       }
+      {
+        std::vector<ZPunctum*> &puncta = synapse.second;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(128, 128, 128);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          addObject(punctum, false);
+        }
+      }
+
       endObjectModifiedMode();
       notifyObjectModified();
     }

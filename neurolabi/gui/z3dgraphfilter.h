@@ -44,6 +44,7 @@ public:
   bool isReady(Z3DEye eye) const;
 
   void setVisible(bool v);
+  bool isVisible() const;
 
 public slots:
   void prepareColor();

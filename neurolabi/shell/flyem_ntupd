@@ -27,4 +27,8 @@ else
 fi
 
 $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/build
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+then
+  $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/build_debug
+fi
  

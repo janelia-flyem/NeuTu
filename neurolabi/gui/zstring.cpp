@@ -330,7 +330,7 @@ void ZString::toUpper()
   std::transform(begin(), end(), begin(), ::toupper);
 }
 
-std::string ZString::toLower() const
+std::string ZString::lower() const
 {
   std::string str = *this;
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -338,7 +338,7 @@ std::string ZString::toLower() const
   return str;
 }
 
-std::string ZString::toUpper() const
+std::string ZString::upper() const
 {
   std::string str = *this;
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);

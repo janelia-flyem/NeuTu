@@ -95,6 +95,7 @@ public:
   std::string getBoundBoxUrl(int z) const;
 
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
+  std::string getLocalBodyIdArrayUrl() const;
 
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
@@ -161,6 +162,7 @@ private:
   static const std::string m_splitCommand;
   static const std::string m_coarseSplitCommand;
   static const std::string m_labelCommand;
+  static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
 };
 
