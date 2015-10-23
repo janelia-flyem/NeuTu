@@ -20,6 +20,8 @@ then
   chmod a+w $downloadDir
 fi
 
+./flyem_setup_linux_conda
+
 if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]
 then
   qtsrc='qt-everywhere-opensource-src-4.8.5'
@@ -48,21 +50,14 @@ then
   GIT_CMD=/usr/local/git/bin/git
 fi
 
+master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 if [ ! -d $downloadDir/neutube ]
 then
-  $GIT_CMD clone /groups/flyem/home/zhaot/Work/neutube_ws/.git neutube
+  $GIT_CMD clone $master_dir/.git neutube
+  cd $downloadDir/neutube
   $GIT_CMD checkout flyem_release
 fi
 
-if [ ! -d $downloadDir/buildem ]
-then
-  $GIT_CMD clone http://github.com/janelia-flyem/buildem.git
-fi
- 
-if [ ! -d $downloadDir/libdvid-cpp ]
-then
-  $GIT_CMD clone https://github.com/janelia-flyem/libdvid-cpp.git
-fi
 
 CMAKE_CMD=cmake
 if [ -f /usr/local/cmake/bin/cmake ]
@@ -70,32 +65,22 @@ then
   CMAKE_CMD=/usr/local/cmake/bin/cmake
 fi
 
-cd $downloadDir/libdvid-cpp
-$GIT_CMD pull
-if [ ! -d build ]
-then
-  mkdir build
-  cd build
-  $CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
-  make
-else
-  cd build
-fi
-
-$CMAKE_CMD .. -DBUILDEM_DIR=$downloadDir/buildem
-make
-make
-
 updateFile=$install_dir/bin/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
+echo 'master_dir=/groups/flyem/home/zhaot/Work/neutube_ws' >> $updateFile
+echo 'if [ $# -eq 1 ]' >> $updateFile
+echo 'then' >> $updateFile
+echo '  branch=$1' >> $updateFile
+echo 'fi' >> $updateFile
 echo "cd $downloadDir/neutube" >> $updateFile
-echo "$GIT_CMD pull" >> $updateFile
-#if [ -d $downloadDir/buildem ]
-#then
-#  ext_qmake_args="-q BUILDEM_DIR=$downloadDir/buildem"
-#fi
-#echo "sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem $ext_qmake_args" >> $updateFile
+echo 'if [ -z $branch ]' >> $updateFile
+echo 'then' >> $updateFile
+echo "  $GIT_CMD pull" >> $updateFile
+echo 'else' >> $updateFile
+echo "  $GIT_CMD pull origin \$GIT_CMD" >> $updateFile
+echo "fi" >> $updateFile
+
 echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir" >> $updateFile
 if [ -f $install_dir/bin/ntupd_post ]
 then
@@ -111,7 +96,8 @@ if [ ! -f $run_script ]
 then
   touch $run_script
   echo '#!/bin/bash' > $run_script
-  echo "export LD_LIBRARY_PATH=$downloadDir/buildem/lib:$LD_LIBRARY_PATH" >> $run_script
+  echo "dvidlib=/opt/Download/miniconda/envs/dvidenv/lib"
+  echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
   chmod a+x $run_script
 fi
