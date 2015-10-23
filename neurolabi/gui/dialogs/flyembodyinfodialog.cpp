@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 
 #include <QtGui>
 #include <QMessageBox>
@@ -46,8 +47,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    init();
+    // office phone number = random seed
+    qsrand(2094656);
 
+
+    // first table manages list of bodies
     m_bodyModel = createModel(ui->bodyTableView);
 
     m_bodyProxy = new QSortFilterProxyModel(this);
@@ -58,14 +62,24 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_bodyProxy->setFilterKeyColumn(-1);
     ui->bodyTableView->setModel(m_bodyProxy);
 
+
+    // second table manages list of color filters, which 
+    //  as a whole constitute the color map
+    m_filterModel = createFilterModel(ui->filterTableView);
+
+    m_filterProxy = new QSortFilterProxyModel(m_filterModel);
+    m_filterProxy->setSourceModel(m_filterModel);
+    ui->filterTableView->setModel(m_filterProxy);
+
+
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
-    connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
-    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
+    connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
+    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -131,9 +145,10 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
     m_quitting = true;
 }
 
-QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
-    setHeaders(model);
+QStandardItemModel* FlyEmBodyInfoDialog::createFilterModel(QObject* parent) {
+    QStandardItemModel* model = new QStandardItemModel(0, 2, parent);
+    model->setHorizontalHeaderItem(0, new QStandardItem(QString("Filter")));
+    model->setHorizontalHeaderItem(1, new QStandardItem(QString("Color")));
     return model;
 }
 
@@ -143,6 +158,12 @@ void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(2, new QStandardItem(QString("# pre")));
     model->setHorizontalHeaderItem(3, new QStandardItem(QString("# post")));
     model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
+}
+
+QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
+    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
+    setHeaders(model);
+    return model;
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
@@ -427,7 +448,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
     if (m_currentDvidTarget.isValid()) {
-        ui->filterLineEdit->clear();
+        ui->bodyFilterField->clear();
         dvidTargetChanged(m_currentDvidTarget);
     }
 }
@@ -520,7 +541,44 @@ void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
 
 void FlyEmBodyInfoDialog::onSaveColorFilter() {
 
+    if (ui->bodyFilterField->text().size() > 0) {
+        // no duplicates
+        if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, 0).size() == 0) {
+            updateColorFilter(ui->bodyFilterField->text());
+        }
+    }
+
 }
+
+void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
+    std::cout << "updating color filter " << filter.toStdString() << std::endl;
+
+    QStandardItem * filterTextItem = new QStandardItem(filter);
+
+    QStandardItem * filterColorItem = new QStandardItem();
+
+
+    // not that random right now
+    // could also use QColor.fromHsv() (etc)
+    int randomR = 0;
+    int randomG = 120;
+    int randomB = 120;
+    filterColorItem->setData(QColor(randomR, randomG, randomB), Qt::BackgroundRole);
+
+
+
+
+    m_filterModel->appendRow(filterTextItem);
+    m_filterModel->setItem(m_filterModel->rowCount() - 1, 1, filterColorItem);
+
+
+
+    ui->filterTableView->resizeColumnsToContents();
+    ui->filterTableView->setColumnWidth(0, 450);
+
+
+}
+
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {

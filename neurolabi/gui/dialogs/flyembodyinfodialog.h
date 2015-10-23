@@ -43,12 +43,15 @@ private slots:
 private:
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
+    QStandardItemModel* m_filterModel;
     QSortFilterProxyModel* m_bodyProxy;
+    QSortFilterProxyModel* m_filterProxy;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
+    QStandardItemModel* createFilterModel(QObject*);
     void setHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent(ZDvidTarget target);
@@ -58,6 +61,7 @@ private:
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
+    void updateColorFilter(QString filter, QString oldFilter = "");
 };
 
 #endif // FLYEMBODYINFODIALOG_H
