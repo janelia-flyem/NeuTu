@@ -37,12 +37,13 @@ private slots:
     void updateStatusLabel();
     void updateStatusAfterLoading();
     void filterUpdated(QString filterText);
-    void applicationQuitting();
+    void applicationQuitting();    
+    void onSaveColorFilter();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
-    QStandardItemModel* m_model;
-    QSortFilterProxyModel* m_proxy;
+    QStandardItemModel* m_bodyModel;
+    QSortFilterProxyModel* m_bodyProxy;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;

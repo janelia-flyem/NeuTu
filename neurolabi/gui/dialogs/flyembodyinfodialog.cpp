@@ -24,7 +24,7 @@
 
 /*
  * this dialog displays a list of bodies and their properties; data is
- * loaded from a static json bookmarks file
+ * loaded from DVID
  *
  * to add/remove/alter columns in table:
  * -- in createModel(), change ncol
@@ -32,6 +32,10 @@
  * -- in updateModel(), adjust data load and initial sort order
  *
  * I really should be creating model and headers from a constant headers list
+ *
+ * at some point, it would be good to separate the load logic into
+ * its own class
+ *
  *
  * djo, 7/15
  *
@@ -44,20 +48,21 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     init();
 
-    m_model = createModel(ui->tableView);
+    m_bodyModel = createModel(ui->bodyTableView);
 
-    m_proxy = new QSortFilterProxyModel(this);
-    m_proxy->setSourceModel(m_model);
-    m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    m_bodyProxy = new QSortFilterProxyModel(this);
+    m_bodyProxy->setSourceModel(m_bodyModel);
+    m_bodyProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_bodyProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     // -1 = filter on all columns!  ALL!  no column left behind!
-    m_proxy->setFilterKeyColumn(-1);
-    ui->tableView->setModel(m_proxy);
+    m_bodyProxy->setFilterKeyColumn(-1);
+    ui->bodyTableView->setModel(m_bodyProxy);
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
-    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
+    connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
+    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
@@ -80,7 +85,7 @@ void FlyEmBodyInfoDialog::init()
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
   if (modelIndex.column() == 0) {
-    QStandardItem *item = m_model->itemFromIndex(m_proxy->mapToSource(modelIndex));
+    QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
 #ifdef _DEBUG_
@@ -103,7 +108,7 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     // if target isn't null, trigger load in thread
     if (target.isValid()) {
         // clear the model regardless at this point
-        m_model->clear();
+        m_bodyModel->clear();
         setStatusLabel("Loading...");
 
         // we can load this info from different sources, depending on
@@ -151,21 +156,21 @@ void FlyEmBodyInfoDialog::clearStatusLabel() {
 void FlyEmBodyInfoDialog::updateStatusLabel() {
     qlonglong nPre = 0;
     qlonglong nPost = 0;
-    for (qlonglong i=0; i<m_proxy->rowCount(); i++) {
-        nPre += m_proxy->data(m_proxy->index(i, 2)).toLongLong();
-        nPost += m_proxy->data(m_proxy->index(i, 3)).toLongLong();
+    for (qlonglong i=0; i<m_bodyProxy->rowCount(); i++) {
+        nPre += m_bodyProxy->data(m_bodyProxy->index(i, 2)).toLongLong();
+        nPost += m_bodyProxy->data(m_bodyProxy->index(i, 3)).toLongLong();
     }
 
     // have I mentioned how much I despise C++ strings?
     std::ostringstream outputStream;
-    outputStream << "Showing " << m_proxy->rowCount() << "/" << m_model->rowCount() << " bodies, ";
+    outputStream << "Showing " << m_bodyProxy->rowCount() << "/" << m_bodyModel->rowCount() << " bodies, ";
     outputStream << nPre << "/" <<  m_totalPre << " pre-syn, ";
     outputStream << nPost << "/" <<  m_totalPost << " post-syn";
     setStatusLabel(QString::fromStdString(outputStream.str()));
 }
 
 void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
-    if (m_model->rowCount() > 0) {
+    if (m_bodyModel->rowCount() > 0) {
         updateStatusLabel();
     } else {
         clearStatusLabel();
@@ -173,12 +178,12 @@ void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
 }
 
 void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
-    m_proxy->setFilterFixedString(filterText);
+    m_bodyProxy->setFilterFixedString(filterText);
 
     // turns out you need to explicitly tell it to resort after the filter
     //  changes; if you don't, and new filter shows more items, those items
     //  will appear somewhere lower than the existing items
-    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+    m_bodyProxy->sort(m_bodyProxy->sortColumn(), m_bodyProxy->sortOrder());
     updateStatusLabel();
 }
 
@@ -448,14 +453,14 @@ void FlyEmBodyInfoDialog::onCloseButton() {
  *    }
  */
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
-    m_model->clear();
-    setHeaders(m_model);
+    m_bodyModel->clear();
+    setHeaders(m_bodyModel);
 
     m_totalPre = 0;
     m_totalPost = 0;
 
     ZJsonArray bookmarks(data);
-    m_model->setRowCount(bookmarks.size());
+    m_bodyModel->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
@@ -464,11 +469,11 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
-        m_model->setItem(i, 0, bodyIDItem);
+        m_bodyModel->setItem(i, 0, bodyIDItem);
 
         if (bkmk.hasKey("name")) {
             const char* name = ZJsonParser::stringValue(bkmk["name"]);
-            m_model->setItem(i, 1, new QStandardItem(QString(name)));
+            m_bodyModel->setItem(i, 1, new QStandardItem(QString(name)));
         }
 
         if (bkmk.hasKey("body T-bars")) {
@@ -476,7 +481,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPre += nPre;
             QStandardItem * preSynapseItem = new QStandardItem();
             preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-            m_model->setItem(i, 2, preSynapseItem);
+            m_bodyModel->setItem(i, 2, preSynapseItem);
         }
 
         if (bkmk.hasKey("body PSDs")) {
@@ -484,22 +489,22 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPost += nPost;
             QStandardItem * postSynapseItem = new QStandardItem();
             postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-            m_model->setItem(i, 3, postSynapseItem);
+            m_bodyModel->setItem(i, 3, postSynapseItem);
         }
 
         // note that this routine expects "body status", not "status";
         //  historical side-effect of the original file format we read from
         if (bkmk.hasKey("body status")) {
             const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-            m_model->setItem(i, 4, new QStandardItem(QString(status)));
+            m_bodyModel->setItem(i, 4, new QStandardItem(QString(status)));
         }
     }
     // the resize isn't reliable, so set the name column wider by hand
-    ui->tableView->resizeColumnsToContents();
-    ui->tableView->setColumnWidth(1, 150);
+    ui->bodyTableView->resizeColumnsToContents();
+    ui->bodyTableView->setColumnWidth(1, 150);
 
     // currently initially sorting on # pre-synaptic sites
-    ui->tableView->sortByColumn(2, Qt::DescendingOrder);
+    ui->bodyTableView->sortByColumn(2, Qt::DescendingOrder);
 
     emit loadCompleted();
 }
@@ -511,6 +516,10 @@ void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
     errorBox.setStandardButtons(QMessageBox::Ok);
     errorBox.setIcon(QMessageBox::Warning);
     errorBox.exec();
+}
+
+void FlyEmBodyInfoDialog::onSaveColorFilter() {
+
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
