@@ -187,6 +187,7 @@ protected slots:
   void updateSplitBody();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void clearBodyMergeStage();
 
 protected:
   void customInit();
@@ -299,6 +300,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),
           panel, SLOT(enableNameColorMap(bool)));
+  connect(panel, SIGNAL(clearingBodyMergeStage()),
+          this, SLOT(clearBodyMergeStage()));
 }
 
 template <typename T>

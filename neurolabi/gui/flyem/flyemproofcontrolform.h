@@ -48,6 +48,7 @@ signals:
   void bookmarkChecked(ZFlyEmBookmark*);
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
+  void clearingBodyMergeStage();
 
 public slots:
   void setInfo(const QString &info);
@@ -69,6 +70,7 @@ private slots:
   void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
+  void clearBodyMergeStage();
 
 private:
   void createMenu();
