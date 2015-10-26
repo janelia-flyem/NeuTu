@@ -198,9 +198,10 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
 
   ZDoubleVector voxelSizeArray(voxelArray.size());
 
+  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
   //Retrieve voxel size
   for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
-    voxelSizeArray[i] = -voxelArray[i].value();
+    voxelSizeArray[i] = -voxelData[i].value();
   }
 
   std::vector<int> indexArray;
@@ -210,11 +211,11 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
 
   for (size_t i = 1; i < voxelArray.size(); ++i) {
     size_t currentVoxelIndex = indexArray[i];
-    const ZVoxel &currentVoxel = voxelArray[currentVoxelIndex];
+    const ZVoxel &currentVoxel = voxelData[currentVoxelIndex];
     for (size_t j = 0; j < i; ++j) {
       size_t prevVoxelIndex = indexArray[j];
       if (sampled[prevVoxelIndex]) {
-        const ZVoxel &prevVoxel = voxelArray[prevVoxelIndex];
+        const ZVoxel &prevVoxel = voxelData[prevVoxelIndex];
         double dist = currentVoxel.distanceTo(prevVoxel);
         if (dist < prevVoxel.value()) {
           sampled[currentVoxelIndex] = false;
@@ -230,9 +231,9 @@ ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
     if (sampled[i]) {
       Swc_Tree_Node *tn = SwcTreeNode::makePointer();
       SwcTreeNode::setPos(
-            tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
+            tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
       SwcTreeNode::setRadius(
-            tn, voxelArray[i].value() + radiusAdjustment);
+            tn, voxelData[i].value() + radiusAdjustment);
       Swc_Tree_Node_Set_Parent(tn, prevTn);
       prevTn = tn;
     }
@@ -256,7 +257,8 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   Swc_Tree *tree = New_Swc_Tree();
 
-  ZVoxel prevVoxel = voxelArray[startIndex];
+  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
+  ZVoxel prevVoxel = voxelData[startIndex];
 
   Swc_Tree_Node *tn = New_Swc_Tree_Node();
   SwcTreeNode::setPos(tn, prevVoxel.x(), prevVoxel.y(), prevVoxel.z());
@@ -265,7 +267,7 @@ ZSwcTree* ZSwcGenerator::createSwc(
   Swc_Tree_Node *prevTn = tn;
 
   for (size_t i = startIndex + 1; i < endIndex; i++) {
-    double dist = voxelArray[i].distanceTo(prevVoxel);
+    double dist = voxelData[i].distanceTo(prevVoxel);
     bool sampling = true;
 
     if (option == SPARSE_SAMPLING) {
@@ -277,20 +279,20 @@ ZSwcTree* ZSwcGenerator::createSwc(
     if (sampling) {
       tn = New_Swc_Tree_Node();
 
-      SwcTreeNode::setPos(tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
-      SwcTreeNode::setRadius(tn, voxelArray[i].value());
+      SwcTreeNode::setPos(tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
+      SwcTreeNode::setRadius(tn, voxelData[i].value());
       Swc_Tree_Node_Set_Parent(prevTn, tn);
       prevTn = tn;
-      prevVoxel = voxelArray[i];
+      prevVoxel = voxelData[i];
     }
   }
 
   if (endIndex - startIndex > 0) { //last node
     tn = New_Swc_Tree_Node();
 
-    SwcTreeNode::setPos(tn, voxelArray[endIndex].x(), voxelArray[endIndex].y(),
-                        voxelArray[endIndex].z());
-    SwcTreeNode::setRadius(tn, voxelArray[endIndex].value());
+    SwcTreeNode::setPos(tn, voxelData[endIndex].x(), voxelData[endIndex].y(),
+                        voxelData[endIndex].z());
+    SwcTreeNode::setRadius(tn, voxelData[endIndex].value());
     Swc_Tree_Node_Set_Parent(prevTn, tn);
     /*
     if (SwcTreeNode::hasOverlap(prevTn, tn) && SwcTreeNode::hasChild(prevTn)) {

@@ -10,6 +10,6 @@ if [ -z $branch ]
 then
   /usr/bin/git pull
 else
-  /usr/bin/git pull origin branch
+  /usr/bin/git pull origin $branch
 fi
 /opt/Download/neutube/neurolabi/shell/flyem_ntupd
