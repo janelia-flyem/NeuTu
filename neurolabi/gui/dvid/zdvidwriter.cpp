@@ -157,13 +157,18 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, Stack *stack)
 void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
+    std::string url = ZDvidUrl(m_dvidTarget).getBodyAnnotationUrl(
+          bodyId, m_dvidTarget.getBodyLabelName());
+#if defined(_ENABLE_LIBDVIDCPP_)
+    post(url, obj);
+#else
     QString command = QString(
           "curl -i -X POST -H \"Content-Type: application/json\" "
           "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
-        arg(ZDvidUrl(m_dvidTarget).getBodyAnnotationUrl(
-              bodyId, m_dvidTarget.getBodyLabelName()).c_str());
+        arg(url.c_str());
 
     runCommand(command);
+#endif
   }
 }
 
@@ -539,15 +544,19 @@ bool ZDvidWriter::runCommand(QProcess &process)
 }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
+std::string ZDvidWriter::post(
+    const std::string &url, const char *payload, int length)
 {
   LINFO() << "HTTP POST: " << url;
   m_statusCode = 0;
   std::string response;
   try {
     std::string endPoint = ZDvidUrl::GetEndPoint(url);
-    libdvid::BinaryDataPtr libdvidPayload =
-        libdvid::BinaryData::create_binary_data(payload.constData(), payload.length());
+    libdvid::BinaryDataPtr libdvidPayload;
+    if (payload != NULL && length > 0) {
+      libdvidPayload =
+        libdvid::BinaryData::create_binary_data(payload, length);
+    }
     std::cout << libdvidPayload->get_data().size() << std::endl;
     libdvid::BinaryDataPtr data = m_service->custom_request(
           endPoint, libdvidPayload, libdvid::POST);
@@ -561,6 +570,17 @@ std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
   }
 
   return response;
+}
+
+std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
+{
+  return post(url, payload.constData(), payload.length());
+}
+
+std::string ZDvidWriter::post(const std::string &url, const ZJsonObject &obj)
+{
+  std::string payload = obj.dumpString(0);
+  return post(url, payload.c_str(), payload.size());
 }
 #endif
 
@@ -643,50 +663,56 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
   uint64_t newBodyId = 0;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZDvidInfo dvidInfo;
-  ZDvidReader reader;
-  if (reader.open(m_dvidTarget)) {
-    dvidInfo = reader.readGrayScaleInfo();
-  } else {
-    LERROR() << "DVID connection error.";
-    return 0;
-  }
-
-  ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
-
-  ZObject3dScan bf_bs = bf;
-  bf_bs.subtract(bs);
-
-  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
-
-  ZObject3dScan Bsc = Bbf;
-  Bsc.subtract(Bbf_bs);
-
-  //Upload Bsc
-  if (!Bsc.isEmpty()) {
-    newBodyId = writeCoarseSplit(Bsc, oldLabel);
-    if (newBodyId == 0) {
-      LERROR() << "Failed to write coarse split.";
+  if (bs.getVoxelNumber() >= 100000) {
+    ZDvidInfo dvidInfo;
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+      dvidInfo = reader.readGrayScaleInfo();
+    } else {
+      LERROR() << "DVID connection error.";
       return 0;
     }
 
-    ZObject3dScan bBsc = Bsc;
-    bBsc.translate(-dvidInfo.getStartBlockIndex());
-    bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
-                  dvidInfo.getBlockSize().getY() - 1,
-                  dvidInfo.getBlockSize().getZ() - 1);
-    bBsc.translate(dvidInfo.getStartCoordinates());
+    ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
 
-    ZObject3dScan bsr = bs;
-    bsr.subtract(bBsc);
+    ZObject3dScan bf_bs = bf;
+    bf_bs.subtract(bs);
 
-    //Upload remaining part
-    if (!bsr.isEmpty()) {
-      writeSplit(bsr, oldLabel, 0/*, newBodyId*/);
+    ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
+
+    ZObject3dScan Bsc = Bbf;
+    Bsc.subtract(Bbf_bs);
+
+    //Upload Bsc
+    if (!Bsc.isEmpty()) {
+      newBodyId = writeCoarseSplit(Bsc, oldLabel);
+      if (newBodyId == 0) {
+        LERROR() << "Failed to write coarse split.";
+        return 0;
+      }
+
+      ZObject3dScan bBsc = Bsc;
+      bBsc.translate(-dvidInfo.getStartBlockIndex());
+      bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
+                    dvidInfo.getBlockSize().getY() - 1,
+                    dvidInfo.getBlockSize().getZ() - 1);
+      bBsc.translate(dvidInfo.getStartCoordinates());
+
+      ZObject3dScan bsr = bs;
+      bsr.subtract(bBsc);
+
+      //Upload remaining part
+      if (!bsr.isEmpty()) {
+        writeSplit(bsr, oldLabel, 0/*, newBodyId*/);
+      }
+    } else {
+      newBodyId = writeSplit(bs, oldLabel, 0);
     }
   } else {
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
+#else
+  newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
   return newBodyId;
@@ -694,6 +720,36 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
 
 uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel)
 {
+  m_statusCode = 0;
+  uint64_t newBodyId= 0;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    std::string url;
+    if (newBodyId == 0) {
+      url = ZDvidUrl(m_dvidTarget).getCoarseSplitUrl(
+            m_dvidTarget.getBodyLabelName(), oldLabel);
+    } else {
+//      url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel, newBodyId);
+    }
+
+    QByteArray payload = obj.toDvidPayload();
+    ZString response = post(url, payload);
+
+    if (!response.empty()) {
+#ifdef _DEBUG_
+      std::cout << response << std::endl;
+#endif
+      ZJsonObject obj;
+      obj.decodeString(response.c_str());
+      if (obj.hasKey("label")) {
+        newBodyId = ZJsonParser::integerValue(obj["label"]);
+        m_statusCode = 200;
+      }
+    }
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#else
   QString tmpPath = QString("%1/%2_coarse.dvid").
       //arg((GET_TEST_DATA_DIR + "/backup").c_str()).
       arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
@@ -713,12 +769,12 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
 
 //  qDebug() << command;
 
-  uint64_t newBodyId = 0;
   if (runCommand(command)) {
     if (m_jsonOutput.hasKey("label")) {
       newBodyId = ZJsonParser::integerValue(m_jsonOutput["label"]);
     }
   }
+#endif
 
   return newBodyId;
 }

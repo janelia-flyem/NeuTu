@@ -18199,14 +18199,14 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
-  uint64_t bodyId = 8189115;
+  uint64_t bodyId = 200011365;
   ZObject3dScan bf = reader.readBody(bodyId);
 
   ZDvidWriter writer;
   if (writer.open(target)) {
     ZObject3dScan obj;
-    obj.addSegment(7312, 5811, 4329, 4335);
-    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
+    obj.addSegment(7312, 5812, 4329, 4335);
+    uint64_t newBodyId = writer.writeSplitMultires(bf, bf, bodyId);
     std::cout << "New body: " << newBodyId << std::endl;
   }
 

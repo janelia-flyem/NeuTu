@@ -138,6 +138,8 @@ private:
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::string post(const std::string &url, const QByteArray &payload);
+  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const ZJsonObject &payload);
 #endif
 
   void parseStandardOutput();
