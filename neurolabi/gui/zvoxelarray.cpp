@@ -33,14 +33,16 @@ void ZVoxelArray::prepend(const ZVoxel &voxel)
 
 void ZVoxelArray::addValue(double delta)
 {
-  for (vector<ZVoxel>::iterator iter = m_voxelArray.begin(); iter != m_voxelArray.end(); ++iter) {
+  for (vector<ZVoxel>::iterator iter = m_voxelArray.begin();
+       iter != m_voxelArray.end(); ++iter) {
     (*iter).setValue((*iter).value() + delta);
   }
 }
 
 void ZVoxelArray::minimizeValue(double v)
 {
-  for (vector<ZVoxel>::iterator iter = m_voxelArray.begin(); iter != m_voxelArray.end(); ++iter) {
+  for (vector<ZVoxel>::iterator iter = m_voxelArray.begin();
+       iter != m_voxelArray.end(); ++iter) {
     iter->setValue(min(iter->value(), v));
   }
 }

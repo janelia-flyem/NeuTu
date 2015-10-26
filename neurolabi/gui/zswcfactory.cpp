@@ -200,7 +200,7 @@ ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
 
   ZDoubleVector voxelSizeArray(voxelArray.size());
 
-  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
+  const ZVoxelArray::TVector &voxelData = voxelArray.getInternalData();
   //Retrieve voxel size
   for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
     voxelSizeArray[i] = -voxelData[i].value();
@@ -260,7 +260,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(
   Swc_Tree *tree = New_Swc_Tree();
 
 
-  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
+  const ZVoxelArray::TVector &voxelData = voxelArray.getInternalData();
   ZVoxel prevVoxel = voxelData[startIndex];
 
   Swc_Tree_Node *tn = New_Swc_Tree_Node();

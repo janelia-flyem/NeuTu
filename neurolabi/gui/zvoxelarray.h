@@ -14,6 +14,8 @@ class ZVoxelArray
 public:
   ZVoxelArray();
 
+  typedef std::vector<ZVoxel> TVector;
+
 public:
   /*!
    * \brief Append a voxel to the end
@@ -81,6 +83,10 @@ public:
     return m_voxelArray.empty();
   }
 
+  bool isEmpty() const{
+    return m_voxelArray.empty();
+  }
+
 public:
   void setStackValue(Stack *stack) const;
   void labelStack(Stack *stack, double value) const;
@@ -92,16 +98,16 @@ public:
 
   void print() const;
 
-  std::vector<ZVoxel>& getInternalData() {
+  TVector& getInternalData() {
     return m_voxelArray;
   }
 
-  const std::vector<ZVoxel>& getInternalData() const {
+  const TVector& getInternalData() const {
     return m_voxelArray;
   }
 
 private:
-  std::vector<ZVoxel> m_voxelArray;
+  TVector m_voxelArray;
 };
 
 #endif // ZVOXELARRAY_H
