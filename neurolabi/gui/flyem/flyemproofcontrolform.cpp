@@ -158,6 +158,13 @@ void FlyEmProofControlForm::createMenu()
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
+#ifdef _DEBUG_
+  QMenu *developerMenu = m_mainMenu->addMenu("Developer");
+  QAction *clearMergeAction = new QAction("Clear All Merges", this);
+  connect(clearMergeAction, SIGNAL(triggered()),
+          this, SLOT(clearBodyMergeStage()));
+  developerMenu->addAction(clearMergeAction);
+#endif
 //  colorMenu->setEnabled(false);
 }
 
@@ -173,6 +180,11 @@ void FlyEmProofControlForm::changeColorMap(QAction *action)
   if (action != NULL) {
     emit changingColorMap(action->text());
   }
+}
+
+void FlyEmProofControlForm::clearBodyMergeStage()
+{
+  emit clearingBodyMergeStage();
 }
 
 void FlyEmProofControlForm::selectBody()

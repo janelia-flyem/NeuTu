@@ -154,10 +154,53 @@ void ZFlyEmProofDoc::recordAnnotation(
   */
 }
 
+void ZFlyEmProofDoc::cleanBodyAnnotationMap()
+{
+  std::set<uint64_t> selected = getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  std::vector<uint64_t> keysToRemove;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    uint64_t bodyId = iter.key();
+    if (selected.count(bodyId) == 0) {
+      LWARN() << "In consistent body selection: " << bodyId;
+      keysToRemove.push_back(bodyId);
+    }
+  }
+
+  for (std::vector<uint64_t>::const_iterator iter = keysToRemove.begin();
+       iter != keysToRemove.end(); ++iter) {
+    m_annotationMap.remove(*iter);
+  }
+}
+
+void ZFlyEmProofDoc::verifyBodyAnnotationMap()
+{
+  std::set<uint64_t> selected = getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    uint64_t bodyId = iter.key();
+    if (selected.count(bodyId) == 0) {
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Inconsistent body selection: %1").arg(bodyId),
+              NeuTube::MSG_WARNING));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::clearBodyMergeStage()
+{
+  clearBodyMerger();
+  saveMergeOperation();
+  notifyBodyUnmerged();
+}
+
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
+
+  cleanBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator

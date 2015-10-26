@@ -1061,6 +1061,11 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     getCompleteDocument()->removeSelectedAnnotation(
           deselected.begin(), deselected.end());
   }
+
+#ifdef _DEBUG_
+  getCompleteDocument()->verifyBodyAnnotationMap();
+#endif
+
 }
 
 
@@ -1457,6 +1462,11 @@ void ZFlyEmProofMvc::updateSplitBody()
     }
     updateBodyWindow();
   }
+}
+
+void ZFlyEmProofMvc::clearBodyMergeStage()
+{
+  getCompleteDocument()->clearBodyMergeStage();
 }
 
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
