@@ -7,9 +7,11 @@ else
   install_dir=/opt
 fi
 
+echo $PATH
+
 downloadDir=$install_dir/Download
 cd $downloadDir
-condaDir=/opt/Download/miniconda
+condaDir=$install_dir/Download/miniconda
 if [ ! -d $condaDir ]
 then
   wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh

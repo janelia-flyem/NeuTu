@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 scriptDir=$(dirname `readlink -f "$0"`)
 echo $scriptDir
 master_dir=$(dirname "$(dirname $scriptDir)")
@@ -31,7 +32,7 @@ then
   chmod a+w $downloadDir
 fi
 
-./flyem_setup_linux_conda
+./flyem_setup_linux_conda $install_dir
 
 if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]
 then
@@ -40,7 +41,7 @@ then
   then
     if [ ! -f $downloadDir/$qtsrc.tar.gz ]
     then
-      cp /groups/flyem/home/zhaot/Downloads/$qtsrc.tar.gz $downloadDir
+      cp $master_dir/$qtsrc.tar.gz $downloadDir
     fi
     cd $downloadDir
     tar -xvf $qtsrc.tar.gz
