@@ -153,7 +153,8 @@ public:
   void setOpacity(double alpha);
   void setRange(const QRect &r) { m_canvasRange = r; }
 
-  bool isVisible(const QRectF &rect);
+  bool isVisible(const QRectF &rect) const;
+  bool isVisible(const QRect &rect) const;
 #endif
 
   /*

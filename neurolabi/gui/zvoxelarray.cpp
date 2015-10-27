@@ -8,6 +8,7 @@
 #include "tz_geo3d_utils.h"
 #include "zswctree.h"
 #include "swc/zswcresampler.h"
+#include "neutubeconfig.h"
 
 using namespace std;
 
@@ -170,10 +171,23 @@ Swc_Tree* ZVoxelArray::toSwcTree(size_t startIndex, size_t endIndex) const
   }
 
   tree->root = tn;
+
+#ifdef _DEBUG_2
+  Swc_Tree_Resort_Id(tree);
+  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test.swc").c_str(), tree);
+#endif
+
   treeWrapper.setData(tree);
   ZSwcResampler sampler;
+  sampler.ignoreInterRedundant(true);
   sampler.optimalDownsample(&treeWrapper);
   treeWrapper.setData(NULL, ZSwcTree::LEAVE_ALONE);
+
+#ifdef _DEBUG_2
+  Swc_Tree_Resort_Id(tree);
+  Write_Swc_Tree((GET_TEST_DATA_DIR + "/test2.swc").c_str(), tree);
+#endif
+
 
   return tree;
 }

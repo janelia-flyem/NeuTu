@@ -25,15 +25,21 @@
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
 {
-  m_eventLoop = new QEventLoop(this);
-  m_dvidClient = new ZDvidClient(this);
-  m_timer = new QTimer(this);
+  init();
+//  m_eventLoop = new QEventLoop(this);
+//  m_dvidClient = new ZDvidClient(this);
+//  m_timer = new QTimer(this);
+}
+
+void ZDvidWriter::init()
+{
+  m_statusCode = 0;
 }
 
 bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-  m_dvidClient->reset();
+//  m_dvidClient->reset();
   m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
   if (serverAddress.isEmpty()) {
@@ -44,8 +50,8 @@ bool ZDvidWriter::open(
     return false;
   }
 
-  m_dvidClient->setServer(serverAddress, port);
-  m_dvidClient->setUuid(uuid);
+//  m_dvidClient->setServer(serverAddress, port);
+//  m_dvidClient->setUuid(uuid);
 
   return true;
 }
@@ -57,8 +63,8 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_dvidTarget = target;
-  m_dvidClient->reset();
-  m_dvidClient->setDvidTarget(target);
+//  m_dvidClient->reset();
+//  m_dvidClient->setDvidTarget(target);
 
   return true;
 }
@@ -496,7 +502,8 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 
 bool ZDvidWriter::runCommand(const QString &command)
 {
-  qDebug() << command;
+  LINFO() << command;
+//  qDebug() << command;
 
   QProcess process;
   process.start(command);

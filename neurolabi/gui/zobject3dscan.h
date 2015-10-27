@@ -87,9 +87,9 @@ public:
 
   void print() const;
 
-  void save(const char *filePath);
-  void save(const char *filePath) const;
-  void save(const std::string &filePath) const;
+  bool save(const char *filePath);
+  bool save(const char *filePath) const;
+  bool save(const std::string &filePath) const;
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 
@@ -203,7 +203,11 @@ public:
   void upSample(int xIntv, int yIntv, int zIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
+  Stack* toStackWithMargin(int *offset, int v, int margin) const;
+
   ZStack* toStackObject(int v = 1) const;
+  ZStack* toStackObjectWithMargin(int v, int margin) const;
+
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
@@ -302,6 +306,7 @@ public:
    * \return true iff (\a x, \a y, \a z) is a part of the object.
    */
   bool contains(int x, int y, int z);
+  bool contains(const ZIntPoint &pt);
 
   /*!
    * \brief Get minimal Z

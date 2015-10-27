@@ -406,6 +406,15 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   ZIntPoint stackOffset = getStack()->getOffset();
 
+  ZPoint targetPos(x2, y2, z2);
+
+  x1 = iround(x1);
+  y1 = iround(y1);
+  z1 = iround(z1);
+  x2 = iround(x2);
+  y2 = iround(y2);
+  z2 = iround(z2);
+
   x1 -= stackOffset.getX();
   y1 -= stackOffset.getY();
   z1 -= stackOffset.getZ();
@@ -511,8 +520,10 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     int height = getStack()->height();
     int depth = getStack()->depth();
 
-    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, width, height, depth);
-    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, width, height, depth);
+    int startIndex = C_Stack::indexFromCoord(
+          x1, y1, z1, width, height, depth);
+    int endIndex = C_Stack::indexFromCoord(
+          x2, y2, z2, width, height, depth);
 
     path = stackGraph.computeShortestPath(
           getIntensityData(), startIndex, endIndex, m_vertexOption);
@@ -543,12 +554,17 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (tree != NULL) {
     Swc_Tree_Translate(
           tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
-  }
+    ZSwcSignalFitter fitter;
+    fitter.setBackground(m_backgroundType);
+    fitter.setFixingTerminal(true);
+    fitter.fitSignal(tree, getStack(), getSignalChannel());
 
-  ZSwcSignalFitter fitter;
-  fitter.setBackground(m_backgroundType);
-  fitter.setFixingTerminal(true);
-  fitter.fitSignal(tree, getStack(), getSignalChannel());
+    Swc_Tree_Node *leaf = tree->root;
+    while (SwcTreeNode::firstChild(leaf) != NULL) {
+      leaf = SwcTreeNode::firstChild(leaf);
+    }
+    SwcTreeNode::setPos(leaf, targetPos);
+  }
 
   return tree;
 }
@@ -921,7 +937,14 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
+  if (stack == NULL) {
+    return NULL;
+  }
+
   startProgress();
+
+  stack = C_Stack::clone(stack);
+  ZStackProcessor::subtractBackground(stack, 0.5, 3);
 
   ZSwcTree *tree = NULL;
 
@@ -1058,6 +1081,8 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   std::cout << "Done!" << std::endl;
   endProgress();
+
+  C_Stack::kill(stack);
 
   return tree;
 }

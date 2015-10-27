@@ -9,6 +9,7 @@
 #include <QtCore>
 #endif
 
+#include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zstring.h"
@@ -55,6 +56,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
@@ -103,7 +105,20 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         // clear the model regardless at this point
         m_model->clear();
         setStatusLabel("Loading...");
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+
+        // we can load this info from different sources, depending on
+        //  what's available in DVID
+
+        // is the synapse file present?
+        if (dvidBookmarksPresent(target)) {
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+        } else if (bodies3Present(target)) {
+            // this is the current expected fallback method...
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+        } else {
+            // ...but sometimes, we've got nothing
+            emit loadCompleted();
+        }
     }
 }
 
@@ -167,41 +182,63 @@ void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
     updateStatusLabel();
 }
 
-void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
-#ifdef _DEBUG_
-    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
-#endif
-
-    if (!target.isValid()) {
-        emit loadCompleted();
-        return;
-    }
-
-    // following example in ZFlyEmProofMvc::syncDvidBookmarks()
+bool FlyEmBodyInfoDialog::dvidBookmarksPresent(ZDvidTarget target) {
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(target)) {
-
         // check for data name and key
         if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body annotations" << std::endl;
             #endif
-            emit loadCompleted();
-            return;
+            return false;
         }
 
         // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
         //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
         if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), 
+            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have body_synapses key" << std::endl;
             #endif
-            emit loadCompleted();
-            return;
+            return false;
         }
+        return true;
+    } else {
+        return false;
+    }
+}
 
+bool FlyEmBodyInfoDialog::bodies3Present(ZDvidTarget target) {
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
+        // check for data name and key
+        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+            ZDvidData::ROLE_BODY_LABEL, target.getBodyLabelName()))) {
+            #ifdef _DEBUG_
+                std::cout << "UUID doesn't have bodies3 annotations" << std::endl;
+            #endif
+            return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
+#ifdef _DEBUG_
+    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
+#endif
+
+    // this method assumes DVID target is valid, and necessary DVID keys
+    //  are present
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
         const QByteArray &bookmarkData = reader.readKeyValue(
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
@@ -227,6 +264,8 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
               ZDvidData::ROLE_BODY_LABEL,
               target.getBodyLabelName()).c_str();
 
+        // get all the keys rather than testing whether each body ID
+        //  has a name individually
         QStringList keyList = reader.readKeys(bodyAnnotationName);
         QSet<uint64_t> bodySet;
         foreach (const QString &str, keyList) {
@@ -248,18 +287,6 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             ZJsonObject bkmk(bookmarks.at(i), false);
 
-            // as noted above, reader doesn't have "hasKey", so we search the range
-            // also, ZJsonValue doesn't have toString, so we go via int
-            /*
-            if (reader.readKeys(
-                  ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-                  QString::number(bkmk.value("body ID").toInteger()),
-                  QString::number(bkmk.value("body ID").toInteger())).size() > 0) {
-                  */
-            /*
-            if (reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-                              QString::number(bkmk.value("body ID").toInteger()))) {
-                              */
             uint64_t bodyId = bkmk.value("body ID").toInteger();
             if (bodySet.contains(bodyId)) {
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName,
@@ -286,6 +313,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
         emit dataChanged(jsonDataObject.value("data"));
+    } else {
+        // but we need to clear the loading message if we can't read from DVID
+        emit loadCompleted();
     }
 }
 
@@ -326,6 +356,77 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     return true;
 }
 
+void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
+    // this method is a lot like importBookmarksDvid; where that method
+    //  (1) reads a json file from dvid, then (2) adds name,= & status 
+    //  from different DVID call, this one just goes straight to step 
+    //  two; as a result, a lot of the code is copied from there 
+    //  (and should probably be refactored to remove duplication)
+
+    // DVID target assumed to be valid 
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
+        // we need to construct a json structure from scratch to
+        //  match what we'd get out of the bookmarks annotation file;
+        //  probably this should be refactored 
+
+        // get all the bodies that have annotations in this UUID        
+        // note that this list contains body IDs in strings, *plus*
+        //  some other nonnumeric strings (!!)
+
+        QString bodyAnnotationName = ZDvidData::GetName(
+              ZDvidData::ROLE_BODY_ANNOTATION,
+              ZDvidData::ROLE_BODY_LABEL,
+              target.getBodyLabelName()).c_str();
+        QStringList keyList = reader.readKeys(bodyAnnotationName);
+
+        ZJsonArray bodies;
+        bool ok;
+        qlonglong bodyID;
+        foreach (const QString &bodyIDstr, keyList) {
+            // skip the few non-numeric keys mixed in there
+            bodyID = bodyIDstr.toLongLong(&ok);
+            if (ok) {
+                // get body annotations and transform to what we need
+                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);
+                ZJsonObject bodyData;
+                bodyData.decodeString(temp.data());
+
+                // remove name if empty
+                if (bodyData.hasKey("name") && strlen(ZJsonParser::stringValue(bodyData["name"])) == 0) {
+                    bodyData.removeKey("name");
+                }
+
+                // remove status if empty; change status > body status
+                if (bodyData.hasKey("status")) {
+                    if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                        bodyData.setEntry("body status", bodyData["status"]);
+                    } 
+                    // don't really need to remove this, but why not
+                    bodyData.removeKey("status");
+                }
+
+                bodies.append(bodyData);
+            } 
+        }
+
+        // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
+        emit dataChanged(bodies);
+    } else {
+        // but we need to clear the loading message if we can't read from DVID
+        emit loadCompleted();
+    }
+}
+
+void FlyEmBodyInfoDialog::onRefreshButton() {
+    if (m_currentDvidTarget.isValid()) {
+        ui->filterLineEdit->clear();
+        dvidTargetChanged(m_currentDvidTarget);
+    }
+}
+
 void FlyEmBodyInfoDialog::onCloseButton() {
     close();
 }
@@ -333,6 +434,18 @@ void FlyEmBodyInfoDialog::onCloseButton() {
 /*
  * update the data model from json; input should be the
  * "data" part of our standard bookmarks json file
+ *
+ * input should be json array of dictionaries looking
+ * like this (all values basically optional except 
+ * body ID, extras ignored):
+ * 
+ *    {
+ *      "name": "neuron name",
+ *      "body status": "Not examined",
+ *      "body PSDs": 0,
+ *      "body T-bars": 1,
+ *      "body ID": 15379594
+ *    }
  */
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     m_model->clear();
@@ -358,17 +471,21 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_model->setItem(i, 1, new QStandardItem(QString(name)));
         }
 
-        int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
-        m_totalPre += nPre;
-        QStandardItem * preSynapseItem = new QStandardItem();
-        preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-        m_model->setItem(i, 2, preSynapseItem);
+        if (bkmk.hasKey("body T-bars")) {
+            int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
+            m_totalPre += nPre;
+            QStandardItem * preSynapseItem = new QStandardItem();
+            preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
+            m_model->setItem(i, 2, preSynapseItem);
+        }
 
-        int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
-        m_totalPost += nPost;
-        QStandardItem * postSynapseItem = new QStandardItem();
-        postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-        m_model->setItem(i, 3, postSynapseItem);
+        if (bkmk.hasKey("body PSDs")) {
+            int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
+            m_totalPost += nPost;
+            QStandardItem * postSynapseItem = new QStandardItem();
+            postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
+            m_model->setItem(i, 3, postSynapseItem);
+        }
 
         // note that this routine expects "body status", not "status";
         //  historical side-effect of the original file format we read from

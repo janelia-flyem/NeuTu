@@ -25,7 +25,9 @@ public:
     READ_BAD_RESPONSE
   };
 
-  void read(const QString &url, bool outputUrl = true);
+  void read(const QString &url, bool outputingUrl = true);
+  void read(const QString &url, const QByteArray &payload,
+            bool outputingUrl = true);
   void readHead(const QString &url);
   bool isReadable(const QString &url);
   bool hasHead(const QString &url);
@@ -37,6 +39,10 @@ public:
   }
 
   void readQt(const QString &url, bool outputUrl = true);
+
+  void tryCompress(bool compress) {
+    m_tryingCompress = compress;
+  }
 
 signals:
   void readingDone();
@@ -67,6 +73,7 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+  bool m_tryingCompress;
 //  QTimer *m_timer;
 };
 

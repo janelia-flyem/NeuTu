@@ -35,6 +35,8 @@ public:
   void pushColor(const QColor &color);
   void pushVisualEffect(NeuTube::Display::TVisualEffect effect);
 
+  QList<ZStackBall*> getPunctaOnSlice(int z);
+
 private:
   QVector<QList<ZStackBall*> > m_puncta;
   int m_zStart;

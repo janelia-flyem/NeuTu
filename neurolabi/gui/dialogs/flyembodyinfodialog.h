@@ -30,6 +30,7 @@ signals:
 
 private slots:
     void onCloseButton();
+    void onRefreshButton();
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
     void onJsonLoadError(QString message);
@@ -49,7 +50,10 @@ private:
     QStandardItemModel* createModel(QObject*);
     void setHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
+    bool dvidBookmarksPresent(ZDvidTarget target);
+    bool bodies3Present(ZDvidTarget target);
     void importBookmarksDvid(ZDvidTarget target);
+    void importBodiesDvid(ZDvidTarget target);
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();

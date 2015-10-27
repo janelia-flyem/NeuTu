@@ -264,7 +264,9 @@ bool Z3DApplication::initializeGL()
     //LINFO() << "GLEW version:" << (const char*)(glewGetString(GLEW_VERSION));
     RECORD_TITLED_INFORMATION(
           "GLEW version:", (const char*)(glewGetString(GLEW_VERSION)));
+#ifdef _DEBUG_
     Z3DGpuInfoInstance.logGpuInfo();
+#endif
     if (Z3DGpuInfoInstance.isSupported()) {
       m_glInitialized = true;
       return m_glInitialized;

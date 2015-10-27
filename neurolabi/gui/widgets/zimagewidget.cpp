@@ -242,8 +242,8 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     int height = iround(screenSize().height() / wRatio);
     int margin = (height - viewPort.height()) / 2;
     int top = newViewPort.top() - margin;
-    if (top < 0) {
-      top = 0;
+    if (top < m_canvasRegion.top()) {
+      top = m_canvasRegion.top();
     }
     newViewPort.setTop(top);
 
@@ -255,8 +255,8 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     int margin = (width - viewPort.width()) / 2;
 
     int left = newViewPort.left() - margin;
-    if (left < 0) {
-      left = 0;
+    if (left < m_canvasRegion.left()) {
+      left = m_canvasRegion.left();
     }
     newViewPort.setLeft(left);
 
@@ -341,7 +341,7 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio < getMaxZoomRatio()) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio *= 1.2;
+      zoomRatio *= 1.1;
     } else {
       zoomRatio *= 1.1;
     }
@@ -368,7 +368,7 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
   if (zoomRatio > 1) {
     int currentViewArea = m_viewPort.width() * m_viewPort.height();
     if (currentViewArea > VIEW_PORT_AREA_THRESHOLD) {
-      zoomRatio /= 1.2;
+      zoomRatio /= 1.1;
     } else {
       zoomRatio /= 1.1;
     }

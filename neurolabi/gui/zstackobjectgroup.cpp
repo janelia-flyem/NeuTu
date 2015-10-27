@@ -2,7 +2,7 @@
 
 #include <QMutexLocker>
 
-ZStackObjectGroup::ZStackObjectGroup()
+ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
 {
 }
 
@@ -417,39 +417,85 @@ TStackObjectList ZStackObjectGroup::findSameClass(
 
 void ZStackObjectGroup::add(const ZStackObject *obj, bool uniqueSource)
 {
+  add(const_cast<ZStackObject*>(obj), uniqueSource);
+}
+
+#define ZSTACKOBECTGROUP_MAX_ZORDER INT_MAX
+
+void ZStackObjectGroup::add(ZStackObject *obj, bool uniqueSource)
+{
   if (obj != NULL) {
+    if (m_currentZOrder >= ZSTACKOBECTGROUP_MAX_ZORDER) {
+      compressZOrder();
+    }
+    int zOrder = obj->getZOrder();
     if (uniqueSource) {
       QList<ZStackObject*> objList = findSameSource(obj);
-      removeObject(objList.begin(), objList.end(), true);
+      if (!objList.isEmpty()) {
+        zOrder = objList.front()->getZOrder();
+        removeObject(objList.begin(), objList.end(), true);
+      } else {
+        zOrder = ++m_currentZOrder;
+      }
+    } else {
+      zOrder = ++m_currentZOrder;
     }
-    append(const_cast<ZStackObject*>(obj));
+    obj->setZOrder(zOrder);
+    append(obj);
     getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
   }
 }
 
+void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
+{
+  if (obj != NULL) {
+    if (uniqueSource) {
+      QList<ZStackObject*> objList = findSameSource(obj);
+      if (!objList.isEmpty()) {
+        removeObject(objList.begin(), objList.end(), true);
+      }
+    }
+    obj->setZOrder(zOrder);
+    if (zOrder > m_currentZOrder) {
+      m_currentZOrder = zOrder;
+    }
+    append(obj);
+    getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
+  }
+}
+
+#if 0
 QList<ZStackObject*> ZStackObjectGroup::addU(const ZStackObject *obj)
 {
   QList<ZStackObject*> objList;
   if (obj != NULL) {
+    obj = const_cast<ZStackObject*>(obj);
     objList = findSameSource(obj);
+    if (!objList.empty()) {
+      obj->setZOrder(objList.front()->getZOrder());
+    }
     removeObject(objList.begin(), objList.end(), false);
-    append(const_cast<ZStackObject*>(obj));
+    append(obj);
     getObjectList(obj->getType()).append(const_cast<ZStackObject*>(obj));
   }
 
   return objList;
 }
+#endif
 
-void ZStackObjectGroup::addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex)
+#if 0
+void ZStackObjectGroup::addInFront(
+    ZStackObject *obj, bool uniqueSource, QMutex *mutex)
 {
   QMutexLocker locker(mutex);
 
   if (obj != NULL) {
-    int maxOrder = getMaxZOrder();
+    m_currentZOrder = getMaxZOrder();
     obj->setZOrder(maxOrder + 1);
     add(obj, uniqueSource);
   }
 }
+#endif
 
 bool ZStackObjectGroup::hasObject(ZStackObject::EType type) const
 {
@@ -543,4 +589,26 @@ void ZStackObjectGroup::resetSelection()
 QList<ZStackObject::EType> ZStackObjectGroup::getAllType() const
 {
   return m_sortedGroup.keys();
+}
+
+void ZStackObjectGroup::compressZOrder()
+{
+  std::set<int> zOrderSet;
+  for (const_iterator iter = begin(); iter != end(); ++iter) {
+    ZStackObject *obj = *iter;
+    zOrderSet.insert(obj->getZOrder());
+  }
+
+  QMap<int, int> zOrderMap;
+  int index = 1;
+  for (std::set<int>::const_iterator iter = zOrderSet.begin();
+       iter != zOrderSet.end(); ++iter, ++index) {
+    zOrderMap[*iter] = index;
+    m_currentZOrder = index;
+  }
+
+  for (const_iterator iter = begin(); iter != end(); ++iter) {
+    ZStackObject *obj = *iter;
+    obj->setZOrder(zOrderMap[obj->getZOrder()]);
+  }
 }

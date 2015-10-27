@@ -12,6 +12,8 @@ public:
 
   void setParentDoc(ZSharedPointer<ZStackDoc> doc);
 
+  void processRectRoiUpdate(ZRect2d *rect);
+
 signals:
 
 public slots:

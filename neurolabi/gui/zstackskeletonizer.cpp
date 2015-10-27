@@ -58,11 +58,13 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(
        iter != stackArray.end(); ++iter) {
     const ZStack* stack = *iter;
     ZSwcTree *tree = makeSkeleton(*stack);
-    if (!tree->isEmpty()) {
-      wholeTree->merge(tree, true);
-      ++count;
-    } else {
-      delete tree;
+    if (tree != NULL) {
+      if (!tree->isEmpty()) {
+        wholeTree->merge(tree, true);
+        ++count;
+      } else {
+        delete tree;
+      }
     }
   }
 
@@ -84,6 +86,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
     ZIntCuboid box = obj.getBoundBox();
+    std::cout << "Downsampling " << m_downsampleInterval[0] + 1 << " x "
+              << m_downsampleInterval[1] + 1 << " x "
+              << m_downsampleInterval[2] + 1 << std::endl;
     newObj.downsampleMax(m_downsampleInterval[0],
                          m_downsampleInterval[1], m_downsampleInterval[2]);
     int offset[3] = {0, 0, 0};

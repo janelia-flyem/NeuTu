@@ -3,6 +3,8 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <iostream>
+#include "flyem/zflyembookmarkwidget.h"
+#include "flyem/zflyembookmarkview.h"
 #include "ui_flyemsplitcontrolform.h"
 #include "zdialogfactory.h"
 #include "zstring.h"
@@ -15,14 +17,29 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  ui->bookmarkView->setModel(&m_bookmarkList);
-  ui->bookmarkView->resizeColumnsToContents();
+  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
+  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+
+//  ui->bookmarkView->setModel(&m_bookmarkList);
+//  ui->bookmarkView->resizeColumnsToContents();
   setupWidgetBehavior();
 }
 
 FlyEmSplitControlForm::~FlyEmSplitControlForm()
 {
   delete ui;
+}
+
+ZFlyEmBookmarkView* FlyEmSplitControlForm::getAssignedBookmarkView() const
+{
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+}
+
+ZFlyEmBookmarkView* FlyEmSplitControlForm::getUserBookmarkView() const
+{
+  return ui->bookmarkWidget->getBookmarkView(
+        ZFlyEmBookmarkWidget::SOURCE_USER);
 }
 
 void FlyEmSplitControlForm::setupWidgetBehavior()
@@ -47,26 +64,33 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SLOT(commitResult()));
   connect(ui->bodyIdSpinBox, SIGNAL(valueConfirmed(int)),
           this, SLOT(changeSplit()));
-  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
-          this, SLOT(loadBookmark()));
-  connect(ui->bookmarkView, SIGNAL(doubleClicked(QModelIndex)),
-          this, SLOT(locateBookmark(QModelIndex)));
-  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
+//  connect(ui->loadBookmarkButton, SIGNAL(clicked()),
+//          this, SLOT(loadBookmark()));
+  connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(ui->bookmarkView, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
+  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+          this, SIGNAL(bookmarkChecked(QString, bool)));
+  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+  connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
+          this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
-  connect(ui->synapsePushButton, SIGNAL(clicked()),
-          this, SIGNAL(loadingSynapse()));
+
+//  connect(ui->synapsePushButton, SIGNAL(clicked()),
+//          this, SIGNAL(loadingSynapse()));
 
   ui->viewSplitPushButton->setEnabled(false);
-  ui->loadBookmarkButton->hide();
-  ui->synapsePushButton->hide();
+//  ui->loadBookmarkButton->hide();
+//  ui->synapsePushButton->hide();
   ui->view3dBodyPushButton->hide();
   ui->viewSplitPushButton->hide();
-  ui->sideView->hide();
-  ui->sideViewLabel->hide();
+//  ui->sideView->hide();
+//  ui->sideViewLabel->hide();
 
 //  ui->commitPushButton->setEnabled(false);
   createMenu();
@@ -114,13 +138,13 @@ void FlyEmSplitControlForm::createMenu()
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
 {
-  QItemSelectionModel *sel = ui->bookmarkView->selectionModel();
+  QItemSelectionModel *sel = getAssignedBookmarkView()->selectionModel();
   QModelIndexList selected = sel->selectedIndexes();
 
   foreach (const QModelIndex &index, selected) {
-    ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
+    ZFlyEmBookmark *bookmark = m_assignedBookmarkList.getBookmark(index.row());
     bookmark->setChecked(checking);
-    m_bookmarkList.update(index.row());
+    m_assignedBookmarkList.update(index.row());
   }
 }
 
@@ -134,6 +158,16 @@ void FlyEmSplitControlForm::uncheckCurrentBookmark()
   checkCurrentBookmark(false);
 }
 
+void FlyEmSplitControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    emit zoomingTo(bookmark->getLocation().getX(),
+                   bookmark->getLocation().getY(),
+                   bookmark->getLocation().getZ());
+  }
+}
+
+
 
 void FlyEmSplitControlForm::changeSplit()
 {
@@ -143,6 +177,7 @@ void FlyEmSplitControlForm::changeSplit()
 void FlyEmSplitControlForm::setSplit(uint64_t bodyId)
 {
   ui->bodyIdSpinBox->setValue(bodyId);
+  m_currentBodyId = bodyId;
 }
 
 void FlyEmSplitControlForm::goToPosition()
@@ -200,60 +235,32 @@ void FlyEmSplitControlForm::commitResult()
 
 void FlyEmSplitControlForm::clearBookmarkTable(ZFlyEmBodySplitProject */*project*/)
 {
-  m_bookmarkList.clear();
+  m_assignedBookmarkList.clear();
 }
 
 void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
     if (project->getDocument() != NULL) {
-      m_bookmarkList.clear();
+      m_assignedBookmarkList.clear();
+      m_userBookmarkList.clear();
       const TStackObjectList &objList = project->getDocument()->
           getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-        if (bookmark->getBodyId() == project->getBodyId() &&
-            !bookmark->isCustom() &&
-            bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-          m_bookmarkList.append(bookmark);
-        }
-      }
-    }
-  }
-#if 0
-  if (project != NULL) {
-//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
-    m_bookmarkList.clear();
-    if (project->getBodyId() > 0) {
-      project->clearBookmarkDecoration();
-
-      const ZFlyEmBookmarkArray *bookmarkArray = project->getBookmarkArray();
-      if (bookmarkArray != NULL) {
-//        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
-        for (ZFlyEmBookmarkArray::const_iterator iter = bookmarkArray->begin();
-             iter != bookmarkArray->end(); ++iter) {
-          const ZFlyEmBookmark &bookmark = *iter;
-          if (bookmark.getBodyId() == project->getBodyId() &&
-              bookmark.getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-            m_bookmarkList.append(bookmark);
+//        if (bookmark->getBodyId() == project->getBodyId()) {
+          if (bookmark->isCustom()) {
+            m_userBookmarkList.append(bookmark);
+          } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+            if (bookmark->getBodyId() == project->getBodyId()) {
+              m_assignedBookmarkList.append(bookmark);
+            }
           }
         }
-      }
-
-      project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
+//      }
     }
   }
-#endif
-}
-
-void FlyEmSplitControlForm::locateBookmark(const QModelIndex &index)
-{
-  const ZFlyEmBookmark *bookmark = m_bookmarkList.getBookmark(index.row());
-
-  emit zoomingTo(bookmark->getLocation().getX(),
-                 bookmark->getLocation().getY(),
-                 bookmark->getLocation().getZ());
 }
 
 void FlyEmSplitControlForm::loadBookmark()
@@ -266,7 +273,7 @@ void FlyEmSplitControlForm::loadBookmark()
 
 void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 {
-  ui->bodyIdSpinBox->setValue(bodyId);
+  setSplit(bodyId);
   QString text;
   if (bodyId == 0) {
     text += "<p>No body loaded.</p>";
@@ -276,3 +283,22 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
   ui->infoWidget->setText(text);
 }
 
+void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
+{
+  m_userBookmarkList.clear();
+  if (doc != NULL) {
+    const TStackObjectList &objList =
+        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+      if (bookmark != NULL) {
+        if (bookmark->isCustom() &&
+            bookmark->getBodyId() == m_currentBodyId) {
+          m_userBookmarkList.append(bookmark);
+        }
+      }
+    }
+  }
+  getUserBookmarkView()->sort();
+}

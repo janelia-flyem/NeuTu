@@ -95,6 +95,10 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
       opable = false;
     }
     break;
+  case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
+    if (!doc->getRect2dRoi().isValid()) {
+      opable = false;
+    }
   default:
     break;
   }

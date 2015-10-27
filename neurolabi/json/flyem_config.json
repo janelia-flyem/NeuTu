@@ -36,7 +36,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "6cac",
+      "uuid": "fa60",
       "name": "FIB25 (0802 export)",
       "body_label": "bodies0802",
       "label_block": "labels0802",
@@ -47,12 +47,23 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "97b4",
+      "uuid": "906c",
       "name": "FIB19 (emdata2)",
-      "comment": "branched from f5ff",
+      "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
+      "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "906c",
+      "name": "FIB19_jpg (emdata2)",
+      "comment": "Faster but lowres tile version for FIB19 production",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "tiles-jpg",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa"]
     },
     {
@@ -346,6 +357,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "5515",
+      "name": "MB_Training",
+      "comment": "training node",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "rivlinp", "cheathamn"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",
@@ -452,6 +473,16 @@
       "body_label": "bodies3",
       "label_block": "labels3",
       "user_name": ["xxx"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "5515",
+      "name": "MB_Training",
+      "comment": "training node",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "rivlinp", "cheathamn"]
     },
     {
       "address": "emdata1.int.janelia.org",

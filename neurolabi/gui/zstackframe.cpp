@@ -43,6 +43,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "zdialogfactory.h"
+#include "zobject3dfactory.h"
 
 using namespace std;
 
@@ -1279,7 +1280,11 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
     window = factory.make3DWindow(doc, mode);
-    window->setWindowTitle(windowTitle());
+    QString title = windowTitle();
+    if (title.endsWith(" *")) {
+      title.resize(title.size()-2);
+    }
+    window->setWindowTitle(title);
 
     doc->registerUser(window);
 
@@ -1401,6 +1406,13 @@ void ZStackFrame::invertStack()
   }
 }
 
+void ZStackFrame::subtractBackground()
+{
+  if (m_doc->hasStackData()) {
+    m_doc->subtractBackground();
+  }
+}
+
 void ZStackFrame::detachParentFrame()
 {
   if (m_parentFrame != NULL) {
@@ -1488,9 +1500,11 @@ void ZStackFrame::importMask(const QString &filePath)
 
   if (stack != NULL) {
     if (stack->channelNumber() == 1 && stack->kind() == GREY) {
-      ZObject3d *obj = new ZObject3d;
+      ZObject3dScan *obj = ZObject3dFactory::MakeObject3dScan(*stack, NULL);
+      obj->setSource(stack->sourcePath());
       obj->setColor(QColor(255, 0, 0, 128));
-      if (obj->loadStack(stack->c_stack(0))) {
+//      if (obj->loadStack(stack->c_stack(0))) {
+      if (!obj->isEmpty()) {
         obj->translate(document()->getStackOffset());
         /*
         obj->translate(iround(document()->getStackOffset().getX()),
@@ -1581,10 +1595,10 @@ void ZStackFrame::loadRoi(bool isExclusive)
     QFileInfo fileInfo((sourcePath + suffix + ".tif").c_str());
     if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toLower() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).lower() + ".tif").c_str());
     } else if (!fileInfo.exists()) {
       fileInfo.setFile(
-            (sourcePath + static_cast<const ZString&>(suffix).toUpper() + ".tif").c_str());
+            (sourcePath + static_cast<const ZString&>(suffix).upper() + ".tif").c_str());
     }
 
     if (fileInfo.exists()) {
@@ -1642,7 +1656,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 void ZStackFrame::zoomToSelectedSwcNodes()
 {
   if (document()->hasSelectedSwcNode()) {
-    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcTreeNodeSet();
+    std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcNodeSet();
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
     ZPoint center = cuboid.center();
 

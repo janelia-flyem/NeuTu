@@ -67,14 +67,16 @@ public:
   QList<ZStackObject*> findSameSource(
       const InputIterator begin, const InputIterator end) const;
 
+  void add(ZStackObject *obj, bool uniqueSource);
   void add(const ZStackObject *obj, bool uniqueSource);
-  QList<ZStackObject*> addU(const ZStackObject *obj);
+  void add(ZStackObject *obj, int zOrder, bool uniqueSource);
+//  QList<ZStackObject*> addU(const ZStackObject *obj);
 
   template <typename InputIterator>
   void add(const InputIterator begin, const InputIterator end,
            bool uniqueSource, QMutex *mutex = NULL);
 
-  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
+//  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
 
   /*!
    * \brief Take an object
@@ -137,12 +139,15 @@ public:
 
   QList<ZStackObject::EType> getAllType() const;
 
+  void compressZOrder();
+
 private:
   bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
 
 private:
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
+  int m_currentZOrder;
 
   ZStackObjectSelector m_selector;
 };

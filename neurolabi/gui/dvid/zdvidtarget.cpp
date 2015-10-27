@@ -109,6 +109,11 @@ void ZDvidTarget::setPort(int port)
 
 void ZDvidTarget::setFromUrl(const std::string &url)
 {
+  if (url.empty()) {
+    clear();
+    return;
+  }
+
   ZString zurl(url);
   if (zurl.startsWith("http:")) {
     zurl.replace("http://", "");

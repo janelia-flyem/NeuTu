@@ -157,6 +157,10 @@ ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
 
 ZStackDoc::~ZStackDoc()
 {
+  if (m_futureMap.hasThreadAlive()) {
+    m_futureMap.waitForFinished();
+  }
+
   deprecate(STACK);
   deprecate(SPARSE_STACK);
 
@@ -882,7 +886,7 @@ void ZStackDoc::swcTreeReduceNodeNumber(double lengthThre)
 
 void ZStackDoc::addSizeForSelectedSwcNode(double dr)
 {
-  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcTreeNodeSet();
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
 
   if (!nodeSet.empty()) {
     static const double minRadius = 0.5;
@@ -2673,6 +2677,7 @@ void ZStackDoc::loadSwc(const QString &filePath)
 {
   ZSwcTree *tree = new ZSwcTree();
   tree->load(filePath.toLocal8Bit().constData());
+//  executeAddObjectCommand(obj);
   addObject(tree);
 }
 
@@ -3133,21 +3138,12 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 
 void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
-  //QMutexLocker locker(&m_mutex);
-
   if (obj != NULL) {
     bufferObjectModified(obj);
     m_playerList.removePlayer(obj);
     m_objectGroup.removeObject(obj, deleteObject);
     notifyObjectModified();
   }
-
-  /*
-  notifyObjectModified();
-  notifyPlayerChanged(role);
-  */
-
-//  return role;
 }
 
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
@@ -3597,20 +3593,29 @@ void ZStackDoc::setSwcTreeNodeSelected(Swc_Tree_Node *tn, bool select)
   }
 }
 
-std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcTreeNodeSet() const
+std::set<Swc_Tree_Node*> ZStackDoc::getUnselectedSwcNodeSet() const
 {
   std::set<Swc_Tree_Node*> swcNodeSet;
 
-  QList<ZSwcTree*> treeList = getSwcList();
-  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter){
-    ZSwcTree *tree = *iter;
-    swcNodeSet.insert(
-          tree->getSelectedNode().begin(), tree->getSelectedNode().end());
+  TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    ZSwcTree::DepthFirstIterator treeIter(tree);
+    treeIter.excludeVirtual(true);
+
+    while (treeIter.hasNext()) {
+      Swc_Tree_Node *tn = treeIter.next();
+      if (!tree->isNodeSelected(tn)) {
+        swcNodeSet.insert(tn);
+      }
+    }
   }
 
   return swcNodeSet;
 }
+
 
 QList<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeList(const ZSwcTree *tree)
 {
@@ -3642,6 +3647,44 @@ QList<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeList() const
   return swcNodeList;
 }
 
+/*
+std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcTreeNodeSet() const
+{
+  std::set<Swc_Tree_Node*> swcNodeSet;
+
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter){
+    ZSwcTree *tree = *iter;
+    swcNodeSet.insert(
+          tree->getSelectedNode().begin(), tree->getSelectedNode().end());
+  }
+
+  return swcNodeSet;
+}
+*/
+
+QMap<const Swc_Tree_Node *, const ZSwcTree *>
+ZStackDoc::getSelectedSwcNodeMap() const
+{
+  QMap<const Swc_Tree_Node*, const ZSwcTree*> swcMap;
+
+  TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
+    const std::set<Swc_Tree_Node*> &nodeSet = tree->getSelectedNode();
+    for (std::set<Swc_Tree_Node*>::const_iterator nodeIter = nodeSet.begin();
+         nodeIter != nodeSet.end(); ++nodeIter) {
+      const Swc_Tree_Node *tn = *nodeIter;
+      swcMap[tn] = tree;
+    }
+  }
+
+  return swcMap;
+}
+
 std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
 {
   std::set<Swc_Tree_Node*> swcNodeSet;
@@ -3650,8 +3693,8 @@ std::set<Swc_Tree_Node*> ZStackDoc::getSelectedSwcNodeSet() const
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     const ZSwcTree* tree = dynamic_cast<const ZSwcTree*>(*iter);
-    swcNodeSet.insert(tree->getSelectedNode().begin(),
-                      tree->getSelectedNode().end());
+    const std::set<Swc_Tree_Node*> &nodeSet = tree->getSelectedNode();
+    swcNodeSet.insert(nodeSet.begin(), nodeSet.end());
   }
 
   return swcNodeSet;
@@ -3708,15 +3751,19 @@ ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
   }
 }
 */
-void ZStackDoc::deselectAllObject()
+void ZStackDoc::deselectAllObject(bool recursive)
 {
   //m_selectedSwcTreeNodes.clear();
-  deselectAllSwcTreeNodes();
+  if (recursive) {
+    deselectAllSwcTreeNodes();
+  }
 
-  QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
-  foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
-    if (labelSlice->isHittable()) {
-      labelSlice->deselectAll();
+  if (recursive) {
+    QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
+    foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
+      if (labelSlice->isHittable()) {
+        labelSlice->deselectAll();
+      }
     }
   }
 
@@ -4169,6 +4216,18 @@ bool ZStackDoc::invert()
   return false;
 }
 
+bool ZStackDoc::subtractBackground()
+{
+  ZStack *mainStack = getStack();
+  if (mainStack != NULL) {
+    ZStackProcessor::subtractBackground(mainStack, 0.5, 3);
+    notifyStackModified();
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::enhanceLine()
 {
   ZStack *mainStack = getStack();
@@ -4355,7 +4414,12 @@ bool ZStackDoc::loadFile(const QString &filePath)
 #ifdef _FLYEM_2
     removeAllObject();
 #endif
-    loadSwc(filePath);
+  {
+    ZSwcTree *tree = new ZSwcTree();
+    tree->load(filePath.toStdString());
+    executeAddObjectCommand(tree);
+  }
+//    loadSwc(filePath);
     break;
   case ZFileType::LOCSEG_CHAIN_FILE:
     loadLocsegChain(filePath);
@@ -5348,11 +5412,13 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             ZSwcPath originalPath(root, leaf);
             if (getTag() == NeuTube::Document::BIOCYTIN_STACK) {
               originalPath.smooth(true);
-              originalPath.smoothZ();
+            } else {
+              originalPath.smoothRadius(true);
             }
+            originalPath.smoothZ();
 
             if (SwcTreeNode::hasChild(begin)) {
-              if (SwcTreeNode::hasOverlap(begin, prevNode)) {
+              if (SwcTreeNode::hasSignificantOverlap(begin, prevNode)) {
                 begin = SwcTreeNode::firstChild(begin);
               }
             }
@@ -5368,20 +5434,45 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
               tn->tree_state = prevNode->tree_state;
             }
 
-            ZSwcResampler resampler;
-            resampler.setDistanceScale(1.5);
+//            resampler.setDistanceScale(3.0);
+//            resampler.setRadiusScale(0.0);
 
             ZSwcTree tree;
             tree.setDataFromNode(begin);
 
 //            Swc_Tree_Remove_Zigzag(tree.data());
-            resampler.optimalDownsample(&tree);
+#ifdef _DEBUG_2
+            tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+
+//            resampler.denseInterpolate(&tree);
+
             begin = tree.firstRegularRoot();
 
             leaf = begin;
             while (SwcTreeNode::firstChild(leaf) != NULL) {
               leaf = SwcTreeNode::firstChild(leaf);
               SwcTreeNode::correctTurn(leaf);
+            }
+
+            ZSwcResampler resampler;
+            resampler.ignoreInterRedundant(true);
+            resampler.optimalDownsample(&tree);
+            begin = tree.firstRegularRoot();
+
+            int count = 1;
+            leaf = begin;
+            while (SwcTreeNode::firstChild(leaf) != NULL) {
+              leaf = SwcTreeNode::firstChild(leaf);
+              ++count;
+            }
+
+            if (count == 2) {
+              if (SwcTreeNode::hasSignificantOverlap(leaf, begin)) {
+                SwcTreeNode::mergeToParent(leaf, SwcTreeNode::MERGE_AVERAGE);
+                leaf = begin;
+              }
             }
 
             message = QString("%1 nodes are added").arg(tree.size(begin));
@@ -5896,26 +5987,46 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
   return succ;
 }
 
+bool ZStackDoc::estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter)
+{
+  ZSwcSignalFitter fitter;
+  fitter.setBackground(getStackBackground());
+
+  int channel = 0;
+  if (getStack()->channelNumber() == 3 &&
+      getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+    channel = 1;
+  }
+
+  bool succ = false;
+
+  for (int iter = 0; iter < maxIter; ++iter) {
+    bool currentStat = fitter.fitSignal(tn, getStack(), channel);
+    if (currentStat) {
+      succ = true;
+    } else { //Fitting failed. No need to continue.
+      break;
+    }
+  }
+
+  return succ;
+}
+
 void ZStackDoc::estimateSwcRadius(ZSwcTree *tree, int maxIter)
 {
   if (tree != NULL) {
     startProgress();
     int count = tree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
     double step = 1.0 / count / maxIter;
-    ZSwcSignalFitter fitter;
-    fitter.setBackground(getStackBackground());
+//    ZSwcSignalFitter fitter;
+//    fitter.setBackground(getStackBackground());
 
     for (int iter = 0; iter < maxIter; ++iter) {
       for (Swc_Tree_Node *tn = tree->begin(); tn != NULL; tn = tree->next()) {
-        fitter.fitSignal(tn, getStack(), 0);
-        /*
         if (SwcTreeNode::isRegular(tn)) {
-          if (!SwcTreeNode::fitSignal(tn, getStack()->c_stack(), getStackBackground())) {
-            SwcTreeNode::fitSignal(
-                  tn, getStack()->c_stack(), getStackBackground(), 2);
-          }
+          estimateSwcNodeRadius(tn, maxIter);
         }
-        */
+//        fitter.fitSignal(tn, getStack(), 0);
         advanceProgress(step);
       }
     }
@@ -5939,6 +6050,7 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     startProgress();
 
+    /*
     ZSwcSignalFitter fitter;
     fitter.setBackground(getStackBackground());
 
@@ -5947,32 +6059,15 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
         getTag() == NeuTube::Document::BIOCYTIN_STACK) {
       channel = 1;
     }
+    */
 
     QList<Swc_Tree_Node*> nodeList = getSelectedSwcNodeList();
     double step = 1.0 / nodeList.size();
     for (QList<Swc_Tree_Node*>::iterator iter = nodeList.begin();
          iter != nodeList.end(); ++iter) {
       Swc_Tree_Node newNode = *(*iter);
-#if 0
-      ZIntPoint offset = getStackOffset();
-      SwcTreeNode::translate(&newNode, -offset.getX(), -offset.getY(),
-                             -offset.getZ());
-      Stack *stack = getStack()->c_stack();
-      if (getStack()->channelNumber() == 3 &&
-          getTag() == NeuTube::Document::BIOCYTIN_STACK) {
-        stack = getStack()->c_stack(1);
-      }
-
-
-      bool succ = SwcTreeNode::fitSignal(&newNode, stack,
-                                         getStackBackground());
-      if (!succ) {
-        succ = SwcTreeNode::fitSignal(&newNode, stack,
-                                      getStackBackground(), 2);
-      }
-#endif
-
-      bool succ = fitter.fitSignal(&newNode, getStack(), channel);
+      bool succ = estimateSwcNodeRadius(&newNode, 1);
+//      bool succ = fitter.fitSignal(&newNode, getStack(), channel);
       if (succ) {
         //SwcTreeNode::translate(&newNode, offset.getX(), offset.getY(),
           //                     offset.getZ());
@@ -6301,6 +6396,78 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
   return succ;
 }
 
+bool ZStackDoc::executeDeleteUnselectedSwcNodeCommand()
+{
+  bool succ = false;
+  QString message;
+
+  if (hasSelectedSwcNode()) {
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//    QSet<ZStackObject::ETarget> targetSet;
+
+    ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
+        new ZStackDocCommand::SwcEdit::CompositeCommand(this);
+//    TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
+
+    std::set<Swc_Tree_Node*> nodeSet;
+
+    TStackObjectList objList = getObjectList(ZStackObject::TYPE_SWC);
+
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZSwcTree* tree = dynamic_cast<ZSwcTree*>(*iter);
+      if (tree->hasSelectedNode()) {
+        ZSwcTree::DepthFirstIterator treeIter(tree);
+        treeIter.excludeVirtual(true);
+
+        while (treeIter.hasNext()) {
+          Swc_Tree_Node *tn = treeIter.next();
+          if (!tree->isNodeSelected(tn)) {
+            nodeSet.insert(tn);
+          }
+        }
+      } else {
+        new ZStackDocCommand::SwcEdit::RemoveSwc(this, tree, allCommand);
+      }
+    }
+
+
+//    std::set<Swc_Tree_Node*> nodeSet = getUnselectedSwcNodeSet();
+
+    new ZStackDocCommand::SwcEdit::DeleteSwcNodeSet(this, nodeSet, allCommand);
+    new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, allCommand);
+
+    if (allCommand->childCount() > 0) {
+      message = QString("%1 node(s) are deleted").arg(nodeSet.size());
+      allCommand->setText(QObject::tr("Delete Selected Node"));
+//      blockSignals(true);
+      pushUndoCommand(allCommand);
+#ifdef _DEBUG_2
+      m_swcList[0]->print();
+#endif
+//      deselectAllSwcTreeNodes();
+      //m_selectedSwcTreeNodes.clear();
+//      blockSignals(false);
+
+//      notifySwcModified();
+//      processObjectModified(targetSet);
+
+      deprecateTraceMask();
+    } else {
+      delete allCommand;
+    }
+
+    succ = true;
+
+    endObjectModifiedMode();
+    notifyObjectModified();
+  }
+
+  notifyStatusMessageUpdated(message);
+
+  return succ;
+}
+
 bool ZStackDoc::executeConnectSwcNodeCommand()
 {
   bool succ = false;
@@ -6348,8 +6515,23 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   QUndoCommand *command =
       new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-  new ZStackDocCommand::SwcEdit::SetRoot(this, tn2, command);
-  new ZStackDocCommand::SwcEdit::SetParent(this, tn2, tn1, false, command);
+
+  Swc_Tree_Node *upNode = tn1;
+  Swc_Tree_Node *downNode = tn2;
+
+  ZSwcTree *tree1 = nodeToSwcTree(tn1);
+  ZSwcTree *tree2 = nodeToSwcTree(tn2);
+
+  if (tree1 != tree2) {
+    //Check source
+    if (ZFileType::fileType(tree2->getSource()) == ZFileType::SWC_FILE) {
+      upNode = tn2;
+      downNode = tn1;
+    }
+  }
+
+  new ZStackDocCommand::SwcEdit::SetRoot(this, downNode, command);
+  new ZStackDocCommand::SwcEdit::SetParent(this, downNode, upNode, false, command);
   new ZStackDocCommand::SwcEdit::RemoveEmptyTreePost(this, command);
 
   pushUndoCommand(command);
@@ -6566,6 +6748,9 @@ bool ZStackDoc::executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist)
   bool succ = false;
 
   if (tree != NULL) {
+    if (tree->isEmpty()) {
+      return false;
+    }
     if (hasSwc()) {
       QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
@@ -6783,6 +6968,17 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
   }
 
   addObjectFast(obj);
+}
+
+void ZStackDoc::addObject(ZStackObject *obj, int zOrder, bool uniqueSource)
+{
+  addObject(obj, uniqueSource);
+  obj->setZOrder(zOrder);
+  //QMutexLocker locker(&m_mutex);
+
+//  m_objectGroup.add(obj, zOrder, uniqueSource);
+//  processObjectModified(obj);
+//  notifyObjectModified();
 }
 
 void ZStackDoc::notifyPlayerChanged(const ZStackObjectRole &role)
@@ -7088,6 +7284,10 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 #endif
     }
 
+    ZSwcResampler resampler;
+    resampler.ignoreInterRedundant(true);
+    resampler.optimalDownsample(tree);;
+
     ZSwcPath path(branchRoot, tree->firstLeaf());
 
 
@@ -7204,6 +7404,7 @@ void ZStackDoc::saveSwc(QWidget *parentWidget)
       if (tree->hasGoodSourceName()) {
         tree->resortId();
         tree->save(tree->getSource().c_str());
+        setSaved(ZStackObject::TYPE_SWC, true);
         emit statusMessageUpdated(QString(tree->getSource().c_str()) + " saved.");
       } else {
         ZString stackSource = stackSourcePath();
@@ -8781,9 +8982,9 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
     if (state) {
-      tree->addVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+      tree->addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
     } else {
-      tree->removeVisualEffect(ZSwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
     }
     bufferObjectModified(tree->getTarget());
   }
@@ -8836,6 +9037,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
 {
   if (rect != NULL) {
+    rect->setRole(ZStackObjectRole::ROLE_ROI);
     removeObject(rect, false);
     executeAddObjectCommand(rect);
     processObjectModified(rect);

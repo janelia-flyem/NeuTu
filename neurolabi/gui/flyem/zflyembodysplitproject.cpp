@@ -882,8 +882,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   emitMessage(QString("Backup ... %1").arg(getBodyId()));
 
   std::string backupDir =
-      NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE);
-  body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj");
+      NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA);
+  if (body.save(backupDir + "/" + getSeedKey(getBodyId()) + ".sobj") == false) {
+    emit messageGenerated(
+          ZWidgetMessage(
+            "Failed to backup the body: "
+            "could be caused full disk or permission problem.",
+            NeuTube::MSG_WARNING));
+  }
   getProgressSignal()->advanceProgress(0.05);
 
 //  size_t minObjSize = 20;

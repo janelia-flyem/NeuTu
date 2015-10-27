@@ -2,6 +2,8 @@
 #define ZPROOFREADWINDOW_H
 
 #include <QMainWindow>
+#include <QPalette>
+
 #include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
@@ -44,8 +46,9 @@ public slots:
   void presentSplitInterface(uint64_t bodyId);
   void updateDvidTargetWidget(const ZDvidTarget &target);
 
-  void dump(const QString &message, bool appending = true);
-  void dumpError(const QString &message, bool appending = true);
+  void dump(const QString &message, bool appending = true, bool logging = true);
+  void dumpError(const QString &message, bool appending = true,
+                 bool logging = true);
   void dump(const ZWidgetMessage &msg);
 
   void startProgress();
@@ -56,6 +59,7 @@ public slots:
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
+  void changeEvent(QEvent * event);
 
 private:
   void init();
@@ -66,6 +70,11 @@ private:
 
   void createMenu();
   void createToolbar();
+
+  void logMessage(const QString &msg);
+  void logMessage(const ZWidgetMessage &msg);
+
+  void displayActiveHint(bool on);
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
@@ -85,11 +94,14 @@ private:
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
+  QAction *m_openObject3dAction;
 
   QToolBar *m_toolBar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
+
+  QPalette m_defaultPal;
 };
 
 

@@ -2,6 +2,7 @@
 #define ZFLYEMPROOFDOC_H
 
 #include <QString>
+#include <QMap>
 
 #include "zstackdoc.h"
 #include "zflyembodymerger.h"
@@ -10,6 +11,7 @@
 #include "zsharedpointer.h"
 //#include "zflyembodysplitproject.h"
 #include "flyem/zflyembodycolorscheme.h"
+#include "zflyembodyannotation.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -73,6 +75,9 @@ public:
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
+  void addSelectedBody(
+      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
@@ -99,10 +104,36 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void useBodyNameMap(bool on);
 
-
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
+
+  void recordBodySelection();
+  void processBodySelection();
+
+  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
+  std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
+
+  std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
+  getSynapse(uint64_t bodyId);
+
+
+  void downloadSynapseFunc();
+
+  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+  void removeSelectedAnnotation(uint64_t bodyId);
+  template <typename InputIterator>
+  void removeSelectedAnnotation(
+      const InputIterator &first, const InputIterator &last);
+
+  void verifyBodyAnnotationMap();
+
+  /*!
+   * \brief Remove unselected bodies from annotation map.
+   *
+   * This is a temporary solution to inconsistent selection update.
+   */
+  void cleanBodyAnnotationMap();
 
 public:
   void notifyBodyMerged();
@@ -112,6 +143,7 @@ public:
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect);
+  void selectBodyInRoi(int z, bool appending);
 
 signals:
   void bodyMerged();
@@ -129,9 +161,9 @@ public slots:
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void clearBodyMergeStage();
 
 protected:
-  void downloadSynapseFunc();
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
 
@@ -151,6 +183,7 @@ private:
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_dvidReader;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
@@ -158,12 +191,9 @@ private:
   QString m_mergeAutoSavePath;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
+  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
-//  mutable ZIntCuboid m_splitRoi;
-
-
-  //ZFlyEmBodySplitProject m_splitProject;
 };
 
 template <typename InputIterator>
@@ -172,6 +202,15 @@ void ZFlyEmProofDoc::selectBody(
 {
   for (InputIterator iter = first; iter != last; ++iter) {
     selectBody(*iter);
+  }
+}
+
+template <typename InputIterator>
+void ZFlyEmProofDoc::removeSelectedAnnotation(
+    const InputIterator &first, const InputIterator &last)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    removeSelectedAnnotation(*iter);
   }
 }
 

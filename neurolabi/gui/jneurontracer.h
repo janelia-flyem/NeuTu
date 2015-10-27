@@ -18,6 +18,7 @@ class JNeuronTracer
 {
 public:
   JNeuronTracer();
+  ~JNeuronTracer();
 
   /*!
    * \brief Auto trace
@@ -27,6 +28,10 @@ public:
   ZSwcTree* trace(const Stack *stack, bool doResampleAfterTracing = true);
   Stack* makeMask(const Stack *stack);
   void setResolution(const ZResolution &resolution);
+
+  void setMask(Stack *mask) {
+    m_maskData = mask;
+  }
 
 private:
   //gaussian filter in 2d, modified from Vaa3D plugin gaussianfilter.
@@ -40,6 +45,7 @@ private:
 //  NeuTube::EImageBackground m_background;
   int m_splitNumber;
   ZResolution m_resolution;
+  Stack *m_maskData;
 
 };
 
