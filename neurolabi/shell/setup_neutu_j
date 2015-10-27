@@ -1,4 +1,8 @@
 #!/bin/bash
+scriptDir=$(dirname `readlink -f "$0"`)
+echo $scriptDir
+master_dir=$(dirname "$(dirname $scriptDir)")
+echo $master_dir
 
 if test $# -eq 0
 then
@@ -58,7 +62,7 @@ then
   GIT_CMD=/usr/local/git/bin/git
 fi
 
-master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
+#master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 if [ ! -d $downloadDir/neutube ]
 then
   $GIT_CMD clone $master_dir/.git neutube
@@ -77,7 +81,9 @@ fi
 updateFile=$install_dir/bin/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
-echo 'master_dir=/groups/flyem/home/zhaot/Work/neutube_ws' >> $updateFile
+echo "PATH=$PATH" >> $updateFile
+echo "which gcc" >> $updateFile
+echo "master_dir=$master_dir" >> $updateFile
 echo 'if [ $# -eq 1 ]' >> $updateFile
 echo 'then' >> $updateFile
 echo '  branch=$1' >> $updateFile
@@ -90,7 +96,7 @@ echo 'else' >> $updateFile
 echo "  $GIT_CMD pull origin \$GIT_CMD" >> $updateFile
 echo "fi" >> $updateFile
 
-echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir" >> $updateFile
+echo "$downloadDir/neutube/neurolabi/shell/flyem_ntupd $install_dir \$master_dir" >> $updateFile
 if [ -f $install_dir/bin/ntupd_post ]
 then
   echo "$install_dir/bin/ntupd_post $install_dir" >> $updateFile
@@ -101,14 +107,11 @@ chmod a+x $updateFile
 $install_dir/bin/ntupd
 
 run_script=$install_dir/bin/neutu
-if [ ! -f $run_script ]
-then
-  touch $run_script
-  echo '#!/bin/bash' > $run_script
-  echo "dvidlib=/opt/Download/miniconda/envs/dvidenv/lib"
-  echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
-  echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
-  chmod a+x $run_script
-fi
+touch $run_script
+echo '#!/bin/bash' > $run_script
+echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
+echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
+echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+chmod a+x $run_script
 
 

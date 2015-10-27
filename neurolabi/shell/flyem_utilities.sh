@@ -21,7 +21,7 @@ function flyem_neutu_update {
   fi
 
   build_dir=build
-  if [ $debug_config == 'debug']
+  if [ $debug_config == 'debug' ]
   then
     build_dir=build_debug
   fi
