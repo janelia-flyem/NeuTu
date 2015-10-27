@@ -1,6 +1,4 @@
 #!/bin/bash
-echo '===================='
-which gcc
 master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 source $master_dir/neurolabi/shell/flyem_ntupd
 if [ $# -ge 1 ]
