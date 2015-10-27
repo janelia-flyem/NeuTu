@@ -1,6 +1,7 @@
 #!/bin/bash
+which gcc
 master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
-source $master_dir/neurolabi/shell/flyem_ntupd
+source $master_dir/neurolabi/shell/flyem_utilities.sh
 if [ $# -ge 1 ]
 then
   install_dir=$1
