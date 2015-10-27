@@ -560,6 +560,8 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+
+  cleanBodyAnnotationMap();
 }
 
 void ZFlyEmProofDoc::downloadBookmark()

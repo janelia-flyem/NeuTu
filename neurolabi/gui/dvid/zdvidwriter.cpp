@@ -547,6 +547,9 @@ bool ZDvidWriter::runCommand(QProcess &process)
 std::string ZDvidWriter::post(
     const std::string &url, const char *payload, int length)
 {
+#ifdef _DEBUG_
+  std::cout << "HTTP POST: " << url << std::endl;
+#endif
   LINFO() << "HTTP POST: " << url;
   m_statusCode = 0;
   std::string response;
@@ -703,7 +706,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
 
       //Upload remaining part
       if (!bsr.isEmpty()) {
-        writeSplit(bsr, oldLabel, 0/*, newBodyId*/);
+        writeSplit(bsr, oldLabel, 0, newBodyId);
       }
     } else {
       newBodyId = writeSplit(bs, oldLabel, 0);

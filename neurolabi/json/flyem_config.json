@@ -176,6 +176,17 @@
       "user_name": ["zhaot", "yuy", "yy"]
     },
     {
+      "address": "emdata2.int.janelia.org",
+      "port": 7100,
+      "uuid": "86e1",
+      "name": "MB_zhaot_backup",
+      "comment": "MB seg (after runniing splits in node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "librarian": "emdata2.int.janelia.org:9100",
+      "user_name": ["zhaot"]
+    },
+    {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
