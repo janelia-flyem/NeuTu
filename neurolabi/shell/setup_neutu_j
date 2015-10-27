@@ -10,7 +10,7 @@ echo "Installing NeuTu under $install_dir"
 
 if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
 then
-  PATH=/opt/gcc482/bin:$PATH
+  export PATH=/opt/gcc482/bin:$PATH
   echo $PATH
   which gcc
 fi
