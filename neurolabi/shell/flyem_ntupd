@@ -1,5 +1,5 @@
 #!/bin/bash
-echo '********'
+echo '===================='
 which gcc
 master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 source $master_dir/neurolabi/shell/flyem_ntupd
