@@ -8,6 +8,13 @@ else
 fi
 echo "Installing NeuTu under $install_dir"
 
+if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+then
+  PATH=/opt/gcc482/bin:$PATH
+  echo $PATH
+  which gcc
+fi
+
 if [ ! -d $install_dir/bin ]
 then
   mkdir $install_dir/bin
@@ -41,6 +48,7 @@ then
   make install
 fi
 
+
 cd $downloadDir
 
 GIT_CMD=/usr/bin/git
@@ -64,6 +72,7 @@ if [ -f /usr/local/cmake/bin/cmake ]
 then
   CMAKE_CMD=/usr/local/cmake/bin/cmake
 fi
+
 
 updateFile=$install_dir/bin/ntupd
 touch $updateFile
