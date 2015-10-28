@@ -42,6 +42,8 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemexternalneurondoc.h"
 #include "zfiletype.h"
+#include "z3dpunctafilter.h"
+#include "z3dswcfilter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -53,7 +55,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
   exitCurrentDoc();
 
-  m_bodyViewWindow->close();
+  closeAllAssociatedWindow();
+//  m_bodyViewWindow->close();
 //  delete m_coarseBodyWindow;
 //  delete m_bodyWindow;
 //  delete m_splitWindow;
@@ -69,6 +72,7 @@ void ZFlyEmProofMvc::init()
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
+  m_objectWindow = NULL;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -97,13 +101,15 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->setCentralWidget(m_bodyViewers);
   m_bodyViewWindow->resize(QDesktopWidget().availableGeometry(0).size()*0.7);
 
-  connect(m_bodyViewWindow, SIGNAL(closed()), m_bodyViewers, SLOT(closeAllWindows()));
+  connect(m_bodyViewWindow, SIGNAL(closed()),
+          m_bodyViewers, SLOT(closeAllWindows()));
 
   m_bodyWindowFactory =
       QSharedPointer<ZWindowFactory>(new ZFlyEmBodyWindowFactory);
   m_bodyWindowFactory->setDeleteOnClose(true);
   m_bodyWindowFactory->setControlPanelVisible(false);
   m_bodyWindowFactory->setObjectViewVisible(false);
+  m_bodyWindowFactory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
 
   m_bodyViewWindow->m_stayOnTopAction =
       m_bodyViewWindow->toolBar->addAction("Pin");
@@ -206,6 +212,11 @@ void ZFlyEmProofMvc::detachSkeletonWindow()
   m_skeletonWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachObjectWindow()
+{
+  m_objectWindow = NULL;
+}
+
 void ZFlyEmProofMvc::detachExternalNeuronWindow()
 {
   m_externalNeuronWindow = NULL;
@@ -228,6 +239,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
               this, SLOT(detachExternalNeuronWindow()));
     } else if (window == m_skeletonWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachSkeletonWindow()));
+    } else if (window == m_objectWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this->getView(), SLOT(setView(ZStackViewParam)));
@@ -252,8 +265,11 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
-  setWindowSignalSlot(m_coarseBodyWindow);
+  doc->showSynapse(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
 
+  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
+  setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -291,6 +307,10 @@ void ZFlyEmProofMvc::makeBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(m_bodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+
+  connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_bodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -305,6 +325,10 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(m_skeletonWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -687,17 +711,23 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getSupervisor()->setDvidTarget(target);
     }
 
-    getCompleteDocument()->downloadSynapse();
-    getCompleteDocument()->downloadBookmark();
+    if (target.isValid()) {
+      getCompleteDocument()->downloadSynapse();
+      getCompleteDocument()->downloadBookmark();
+    }
+
     getProgressSignal()->advanceProgress(0.5);
 
     emit dvidTargetChanged(target);
   }
   getProgressSignal()->endProgress();
 
-  emit messageGenerated(ZWidgetMessage("Database loaded.",
-                                       NeuTube::MSG_INFORMATION,
-                                       ZWidgetMessage::TARGET_STATUS_BAR));
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Database %1 loaded.").arg(
+            getDvidTarget().getSourceString(false).c_str()),
+          NeuTube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_STATUS_BAR));
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
@@ -758,6 +788,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(goToBodyTop()));
   connect(getCompletePresenter(), SIGNAL(selectingBody()),
           this, SLOT(selectBody()));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
+          this, SLOT(selectBodyInRoi(bool)));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -965,7 +997,9 @@ void ZFlyEmProofMvc::selectBody()
       ZString str = text.toStdString();
       std::vector<uint64_t> bodyArray = str.toUint64Array();
       if (!bodyArray.empty()) {
+        getCompleteDocument()->recordBodySelection();
         getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        getCompleteDocument()->processBodySelection();
         updateBodySelection();
       }
 #if 0
@@ -984,23 +1018,54 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
   if (labelSlice != NULL){
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
-    if (selected.size() == 1) {
+    if (selected.size() > 0) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
-        uint64_t bodyId = selected.front();
-        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        ZFlyEmBodyAnnotation finalAnnotation;
+        for (std::vector<uint64_t>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
+          if (!annotation.isEmpty()) {
+            getCompleteDocument()->recordAnnotation(bodyId, annotation);
+            finalAnnotation.mergeAnnotation(annotation);
+          }
+        }
+
         ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
-        if (annotation.isEmpty()) {
+        if (finalAnnotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
         } else {
-          msg.setMessage(annotation.toString().c_str());
+          msg.setMessage(finalAnnotation.toString().c_str());
+        }
+
+        if (finalAnnotation.isEmpty()) {
+          msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
+        } else {
+          msg.setMessage(finalAnnotation.toString().c_str());
         }
         emit messageGenerated(msg);
       }
 
     }
+
+    std::vector<uint64_t> deselected =
+        labelSlice->getSelector().getDeselectedList();
+//    std::set<uint64_t> mappedSet;
+//    for (std::vector<uint64_t>::const_iterator iter = deselected.begin();
+//         iter != deselected.end(); ++iter) {
+//      mappedSet.insert(getMappedBodyId(*iter));
+//    }
+    getCompleteDocument()->removeSelectedAnnotation(
+          deselected.begin(), deselected.end());
   }
+
+#ifdef _DEBUG_
+  getCompleteDocument()->verifyBodyAnnotationMap();
+#endif
+
 }
 
 
@@ -1361,6 +1426,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         getDocument()->addObject(body, true);
         m_splitProject.setBodyId(bodyId);
 
+        getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
         labelSlice->setVisible(false);
         labelSlice->setHittable(false);
         body->setVisible(true);
@@ -1395,6 +1462,11 @@ void ZFlyEmProofMvc::updateSplitBody()
     }
     updateBodyWindow();
   }
+}
+
+void ZFlyEmProofMvc::clearBodyMergeStage()
+{
+  getCompleteDocument()->clearBodyMergeStage();
 }
 
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
@@ -1469,6 +1541,7 @@ void ZFlyEmProofMvc::exitSplit()
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_ROI);
 //    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
@@ -1615,6 +1688,22 @@ void ZFlyEmProofMvc::showFineBody3d()
   m_bodyViewWindow->raise();
 }
 
+void ZFlyEmProofMvc::showObjectWindow()
+{
+  if (m_objectWindow == NULL) {
+    ZWindowFactory factory;
+    factory.setDeleteOnClose(true);
+    factory.setVisible(Z3DWindow::LAYER_PUNCTA, false);
+    m_objectWindow =
+        factory.make3DWindow(m_doc, Z3DWindow::INIT_EXCLUDE_VOLUME);
+    m_objectWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    setWindowSignalSlot(m_objectWindow);
+  }
+
+  m_objectWindow->show();
+  m_objectWindow->raise();
+}
+
 void ZFlyEmProofMvc::showSkeletonWindow()
 {
 //  m_mergeProject.showBody3d();
@@ -1639,10 +1728,26 @@ void ZFlyEmProofMvc::closeBodyWindow(int index)
 }
 */
 
+void ZFlyEmProofMvc::close3DWindow(Z3DWindow *window)
+{
+  if (window != NULL) {
+    window->close();
+  }
+}
+
 void ZFlyEmProofMvc::closeBodyWindow(Z3DWindow *window)
 {
   if (window != NULL) {
     window->close();
+  }
+}
+
+void ZFlyEmProofMvc::closeAllAssociatedWindow()
+{
+  close3DWindow(m_objectWindow);
+  close3DWindow(m_externalNeuronWindow);
+  if (m_bodyViewWindow != NULL) {
+    m_bodyViewWindow->close();
   }
 }
 
@@ -1931,7 +2036,9 @@ void ZFlyEmProofMvc::deselectAllBody()
   if (reader.open(getDvidTarget())) {
     ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
     if (slice != NULL) {
+      slice->recordSelection();
       slice->deselectAll();
+      slice->processSelection();
       updateBodySelection();
     }
   }
@@ -2043,8 +2150,8 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 
         ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
         if (slice != NULL) {
-          slice->clearSelection();
           slice->recordSelection();
+          slice->clearSelection();
           slice->addSelection(
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);
@@ -2152,6 +2259,11 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       updateUserBookmarkTable();
     }
   }
+}
+
+void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
+{
+  getCompleteDocument()->selectBodyInRoi(getView()->getCurrentZ(), appending);
 }
 
 void ZFlyEmProofMvc::updateUserBookmarkTable()

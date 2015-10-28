@@ -576,7 +576,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemkeyoperationconfig.h \
     zslicedpuncta.h \
     flyem/zflyembookmarkwidget.h \
-    zmultiscalepixmap.h
+    zmultiscalepixmap.h \
+    biocytin/zbiocytinprojmaskfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1009,7 +1010,8 @@ SOURCES += main.cpp \
     flyem/zflyemkeyoperationconfig.cpp \
     zslicedpuncta.cpp \
     flyem/zflyembookmarkwidget.cpp \
-    zmultiscalepixmap.cpp
+    zmultiscalepixmap.cpp \
+    biocytin/zbiocytinprojmaskfactory.cpp
 
 OTHER_FILES += \
     extlib.pri \

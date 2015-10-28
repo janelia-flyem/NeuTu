@@ -629,21 +629,22 @@ bool ZObject3dScan::load(const char *filePath)
   return load(std::string(filePath));
 }
 
-void ZObject3dScan::save(const char *filePath)
+bool ZObject3dScan::save(const char *filePath)
 {
-  save(string(filePath));
+  return save(string(filePath));
 }
 
-void ZObject3dScan::save(const char *filePath) const
+bool ZObject3dScan::save(const char *filePath) const
 {
-  save(string(filePath));
+  return save(string(filePath));
 }
 
-void ZObject3dScan::save(const string &filePath) const
+bool ZObject3dScan::save(const string &filePath) const
 {
 #ifdef _DEBUG_
   std::cout << "Saving " << filePath << std::endl;
 #endif
+  bool succ = false;
   FILE *fp = fopen(filePath.c_str(), "wb");
   if (fp != NULL) {
     int stripeNumber = (int) getStripeNumber();
@@ -653,9 +654,12 @@ void ZObject3dScan::save(const string &filePath) const
       iter->write(fp);
     }
     fclose(fp);
+    succ = true;
   } else {
     RECORD_WARNING(true, "Cannont open file " + filePath);
   }
+
+  return succ;
 }
 
 size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
@@ -1017,10 +1021,59 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
   return stack;
 }
 
+Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
+{
+  if (isEmpty()) {
+    return NULL;
+  }
+
+  ZIntCuboid boundBox = getBoundBox();
+  if (offset != NULL) {
+    offset[0] = boundBox.getFirstCorner().getX();
+    offset[1] = boundBox.getFirstCorner().getY();
+    offset[2] = boundBox.getFirstCorner().getZ();
+  }
+
+#if 0
+  std::cout << "Stack size: " << boundBox.getWidth() << "x"
+            << boundBox.getHeight() << "x" << boundBox.getDepth() << std::endl;
+#endif
+
+  Stack *stack = C_Stack::make(GREY, boundBox.getWidth() + margin * 2,
+                               boundBox.getHeight() + margin * 2,
+                               boundBox.getDepth() + margin * 2);
+  C_Stack::setZero(stack);
+
+
+  int drawingOffet[3];
+  drawingOffet[0] = -boundBox.getFirstCorner().getX() + margin;
+  drawingOffet[1] = -boundBox.getFirstCorner().getY() + margin;
+  drawingOffet[2] = -boundBox.getFirstCorner().getZ() + margin;
+
+  drawStack(stack, v, drawingOffet);
+
+  return stack;
+}
+
 ZStack* ZObject3dScan::toStackObject(int v) const
 {
   int offset[3] = {0, 0, 0};
   Stack *stack = toStack(offset, v);
+
+  ZStack *stackObject = new ZStack;
+
+  if (stack != NULL) {
+    stackObject->load(stack);
+    stackObject->setOffset(offset[0], offset[1], offset[2]);
+  }
+
+  return stackObject;
+}
+
+ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
+{
+  int offset[3] = {0, 0, 0};
+  Stack *stack = toStackWithMargin(offset, v, margin);
 
   ZStack *stackObject = new ZStack;
 
@@ -2293,6 +2346,50 @@ void ZObject3dScan::exportDvidObject(const string &filePath) const
   fclose(fp);
 }
 
+#if _QT_GUI_USED_
+QByteArray ZObject3dScan::toDvidPayload() const
+{
+  QByteArray buffer;
+
+  tz_uint8 flag = 0;
+  buffer.append((char*) (&flag), 1);
+
+  tz_uint8 numberOfDimensions = 3;
+  buffer.append((char*) (&numberOfDimensions), 1);
+
+  tz_uint8 dimOfRun = 0;
+  buffer.append((char*) (&dimOfRun), 1);
+
+  tz_uint8 reserved = 0;
+  buffer.append((char*) (&reserved), 1);
+
+  tz_uint32 numberOfVoxels = getVoxelNumber();
+  buffer.append((char*) (&numberOfVoxels), 4);
+
+  tz_uint32 numberOfSpans = getSegmentNumber();
+  buffer.append((char*) (&numberOfSpans), 4);
+
+  //For each segment
+  ConstSegmentIterator iter(this);
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    tz_int32 coord[3];
+    coord[0] = seg.getStart();
+    coord[1] = seg.getY();
+    coord[2] = seg.getZ();
+    buffer.append((char*) (coord), 12);
+//    fwrite(coord, 4, 3, fp);
+
+    tz_int32 runLength = seg.getEnd() - seg.getStart() + 1;
+//    fwrite(&runLength, 4, 1, fp);
+    buffer.append((char*) (&runLength), 4);
+  }
+
+  return buffer;
+//  fclose(fp);
+}
+#endif
+
 bool ZObject3dScan::importDvidObject(const std::string &filePath)
 {
   clear();
@@ -2460,6 +2557,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
       return false;
     }
 
+//    addStripeFast(coord[2], coord[1]);
+//    addSegmentFast(coord[0], coord[0] + runLength - 1);
     addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
   }
 
@@ -2683,6 +2782,12 @@ double ZObject3dScan::getSpread(int z) const
   }
 
   return 0.0;
+}
+
+
+bool ZObject3dScan::contains(const ZIntPoint &pt)
+{
+  return contains(pt.getX(), pt.getY(), pt.getZ());
 }
 
 bool ZObject3dScan::contains(int x, int y, int z)

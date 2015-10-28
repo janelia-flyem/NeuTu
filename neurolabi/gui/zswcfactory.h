@@ -66,6 +66,8 @@ public:
 private:
   static ZSwcTree* CreateSwcByRegionSampling(const ZVoxelArray &voxelArray,
                                              double radiusAdjustment = 0.0);
+  static ZSwcTree* CreateSurfaceSwcFast(
+      const ZStack &stack, int sparseLevel = 1);
 };
 
 #endif // ZSWCFACTORY_H

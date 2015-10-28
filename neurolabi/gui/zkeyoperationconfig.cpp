@@ -21,6 +21,9 @@ void ZKeyOperationConfig::configure(
   case ZKeyOperation::OG_ACTIVE_STROKE:
     ConfigureActiveStrokeMap(map);
     break;
+  case ZKeyOperation::OG_STACK_OBJECT:
+    ConfigureObjectMap(map);
+    break;
   default:
     break;
   }
@@ -61,6 +64,15 @@ void ZKeyOperationConfig::ConfigureActiveStrokeMap(ZKeyOperationMap &map)
 
   QMap<int, ZStackOperator::EOperation> &shiftKeyMap = *(map.getShiftMap());
   shiftKeyMap[Qt::Key_E] = ZStackOperator::OP_ACTIVE_STROKE_ESTIMATE_SIZE;
+}
+
+void ZKeyOperationConfig::ConfigureObjectMap(ZKeyOperationMap &map)
+{
+  QMap<int, ZStackOperator::EOperation> &plainKeyMap = *(map.getPlainMap());
+  plainKeyMap[Qt::Key_Backspace] = ZStackOperator::OP_OBJECT_DELETE_SELECTED;
+  plainKeyMap[Qt::Key_Delete] = ZStackOperator::OP_OBJECT_DELETE_SELECTED;
+  plainKeyMap[Qt::Key_X] = ZStackOperator::OP_OBJECT_DELETE_SELECTED;
+  plainKeyMap[Qt::Key_S] = ZStackOperator::OP_OBJECT_SELECT_IN_ROI;
 }
 
 void ZKeyOperationConfig::ConfigureSwcNodeMap(ZKeyOperationMap &map)

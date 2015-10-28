@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cmath>
 
 #include "zswcbranch.h"
 #include "tz_error.h"
@@ -323,6 +324,54 @@ std::vector<ZWeightedPoint> ZSwcBranch::radiusSamplePoint()
   return sampleArray;
 }
 
+std::vector<ZWeightedPoint> ZSwcBranch::denseSamplePoint()
+{
+  vector<ZWeightedPoint> sampleArray;
+
+  updateIterator();
+
+  sampleArray.push_back(
+        ZWeightedPoint(SwcTreeNode::x(m_begin), SwcTreeNode::y(m_begin),
+                       SwcTreeNode::z(m_begin), SwcTreeNode::radius(m_begin)));
+
+  Swc_Tree_Node *tn = m_begin->next;
+  while (tn != NULL) {
+    Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+    double r0 = SwcTreeNode::radius(parent);
+    double r1 = SwcTreeNode::radius(tn);
+
+//    double curLength = 0;
+    double dist = SwcTreeNode::distance(tn, parent);
+    double maxLength = dist - r1;
+
+    if ((r0 > 0.0 || r1 > 0.0) && (r0 + r1) < dist) {
+      double slope = (r1 - r0) / dist;
+      double r = r0;
+      double curLength = (r + r0) / (1.0 - slope);
+
+      while (curLength < maxLength) {
+        double x = 0;
+        double y = 0;
+        double z = 0;
+        double lambda = curLength / dist;
+        SwcTreeNode::interpolate(tn, parent, lambda, &x, &y, &z, &r);
+        sampleArray.push_back(ZWeightedPoint(x, y, z, r));
+        curLength = (curLength + r0 + r) / (1.0 - slope);
+      }
+    }
+    sampleArray.push_back(
+          ZWeightedPoint(SwcTreeNode::x(tn), SwcTreeNode::y(tn),
+                         SwcTreeNode::z(tn), SwcTreeNode::radius(tn)));
+    tn = tn->next;
+  }
+
+  sampleArray.push_back(
+        ZWeightedPoint(SwcTreeNode::x(m_end), SwcTreeNode::y(m_end),
+                       SwcTreeNode::z(m_end), SwcTreeNode::radius(m_end)));
+
+  return sampleArray;
+}
+
 vector<ZPoint> ZSwcBranch::sample(double step)
 {
   vector<ZPoint> sampleArray;
@@ -436,6 +485,45 @@ void ZSwcBranch::radiusResample()
 
   if (len > 0) {
     vector<ZWeightedPoint> pointArray = radiusSamplePoint();
+    int newNodeNumber = pointArray.size();
+
+    if (newNodeNumber > 2) {
+      int n = newNodeNumber - nodeNumber();
+      if (n > 0) {
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Add_Break(m_end, 0.5);
+        }
+      } else if (n < 0) {
+        n = -n;
+        for (int i = 0; i < n; i++) {
+          Swc_Tree_Node_Merge_To_Parent(m_end->parent);
+        }
+      }
+
+      Swc_Tree_Node *tn = m_end;
+
+//      TZ_ASSERT(pointArray.size() > 1, "Invalide point number");
+
+      size_t startIndex = newNodeNumber - 1;
+
+      for (size_t i = startIndex; i > 0; i--) {
+        SwcTreeNode::setPos(tn, pointArray[i]);
+        SwcTreeNode::setRadius(tn, pointArray[i].weight());
+        tn = tn->parent;
+        //      double pos[3];
+        //      pointArray[i].toArray(pos);
+        //      Swc_Tree_Node_Set_Pos(tn, pos);
+      }
+    }
+  }
+}
+
+void ZSwcBranch::denseInterpolate()
+{
+  double len = computeLength();
+
+  if (len > 0) {
+    vector<ZWeightedPoint> pointArray = denseSamplePoint();
     int newNodeNumber = pointArray.size();
 
     if (newNodeNumber > 2) {

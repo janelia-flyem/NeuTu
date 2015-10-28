@@ -406,6 +406,15 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
 
   ZIntPoint stackOffset = getStack()->getOffset();
 
+  ZPoint targetPos(x2, y2, z2);
+
+  x1 = iround(x1);
+  y1 = iround(y1);
+  z1 = iround(z1);
+  x2 = iround(x2);
+  y2 = iround(y2);
+  z2 = iround(z2);
+
   x1 -= stackOffset.getX();
   y1 -= stackOffset.getY();
   z1 -= stackOffset.getZ();
@@ -511,8 +520,10 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
     int height = getStack()->height();
     int depth = getStack()->depth();
 
-    int startIndex = C_Stack::indexFromCoord(x1, y1, z1, width, height, depth);
-    int endIndex = C_Stack::indexFromCoord(x2, y2, z2, width, height, depth);
+    int startIndex = C_Stack::indexFromCoord(
+          x1, y1, z1, width, height, depth);
+    int endIndex = C_Stack::indexFromCoord(
+          x2, y2, z2, width, height, depth);
 
     path = stackGraph.computeShortestPath(
           getIntensityData(), startIndex, endIndex, m_vertexOption);
@@ -530,12 +541,13 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   double length = voxelArray.getCurveLength();
   double dist = 0.0;
 
+  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
   for (size_t i = 0; i < path.size(); ++i) {
     double ratio = dist / length;
     double r = r1 * ratio + r2 * (1 - ratio);
     voxelArray.setValue(i, r);
     if (i < path.size() - 1) {
-      dist += voxelArray[i].distanceTo(voxelArray[i+1]);
+      dist += voxelData[i].distanceTo(voxelData[i+1]);
     }
   }
 
@@ -543,12 +555,17 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (tree != NULL) {
     Swc_Tree_Translate(
           tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
-  }
+    ZSwcSignalFitter fitter;
+    fitter.setBackground(m_backgroundType);
+    fitter.setFixingTerminal(true);
+    fitter.fitSignal(tree, getStack(), getSignalChannel());
 
-  ZSwcSignalFitter fitter;
-  fitter.setBackground(m_backgroundType);
-  fitter.setFixingTerminal(true);
-  fitter.fitSignal(tree, getStack(), getSignalChannel());
+    Swc_Tree_Node *leaf = tree->root;
+    while (SwcTreeNode::firstChild(leaf) != NULL) {
+      leaf = SwcTreeNode::firstChild(leaf);
+    }
+    SwcTreeNode::setPos(leaf, targetPos);
+  }
 
   return tree;
 }

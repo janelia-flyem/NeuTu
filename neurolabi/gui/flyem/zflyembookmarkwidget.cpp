@@ -23,9 +23,9 @@ ZFlyEmBookmarkView* ZFlyEmBookmarkWidget::getBookmarkView(EBookmarkSource source
 {
   switch (source) {
   case SOURCE_ASSIGNED:
-    return qobject_cast<ZFlyEmBookmarkView*>(ui->tabWidget->widget(0));
+    return qobject_cast<ZFlyEmBookmarkView*>(ui->assignedBookmarkView);
   case SOURCE_USER:
-    return qobject_cast<ZFlyEmBookmarkView*>(ui->tabWidget->widget(1));
+    return qobject_cast<ZFlyEmBookmarkView*>(ui->userBookmarkView);
   }
 
   return NULL;

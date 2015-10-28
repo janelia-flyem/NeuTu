@@ -101,6 +101,9 @@ public:
 
   void processEventFunc();
 
+public slots:
+  void showSynapse(bool on) { m_showingSynapse = on; }
+
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
   ZSwcTree* getBodyModel(uint64_t bodyId);
@@ -136,6 +139,7 @@ private:
   EBodyType m_bodyType;
 
   bool m_quitting;
+  bool m_showingSynapse;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

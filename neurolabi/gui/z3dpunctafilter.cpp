@@ -50,6 +50,9 @@ Z3DPunctaFilter::Z3DPunctaFilter()
 
   addParameter(m_useSameSizeForAllPuncta);
 
+  connect(&m_showPuncta, SIGNAL(valueChanged(bool)),
+          this, SIGNAL(visibleChanged(bool)));
+
   m_selectPunctumEvent = new ZEventListenerParameter("Select Puncta", true, false, this);
   m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
@@ -90,6 +93,16 @@ void Z3DPunctaFilter::process(Z3DEye)
   if (m_dataIsInvalid) {
     prepareData();
   }
+}
+
+void Z3DPunctaFilter::setVisible(bool v)
+{
+  m_showPuncta.set(v);
+}
+
+bool Z3DPunctaFilter::isVisible() const
+{
+  return m_showPuncta.get();
 }
 
 void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)

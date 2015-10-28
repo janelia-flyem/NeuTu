@@ -362,6 +362,7 @@ protected:
   bool processKeyPressEventForSwc(QKeyEvent *event);
   bool processKeyPressEventForStroke(QKeyEvent *event);
   bool processKeyPressEventForStack(QKeyEvent *event);
+  bool processKeyPressEventForObject(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
   QPointF mapFromWidgetToStack(const QPoint &pos);
@@ -461,6 +462,7 @@ protected:
   ZKeyOperationMap m_activeStrokeOperationMap;
   ZKeyOperationMap m_swcKeyOperationMap;
   ZKeyOperationMap m_stackKeyOperationMap;
+  ZKeyOperationMap m_objectKeyOperationMap;
   ZKeyOperationConfig *m_keyConfig;
 
 //  ZKeyEventSwcMapper m_swcKeyMapper;

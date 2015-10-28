@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QMimeData>
+#include <QEvent>
 
 #include "zstackdoc.h"
 #include "zstackview.h"
@@ -304,3 +305,46 @@ void ZStackMvc::dropEvent(QDropEvent *event)
     getDocument()->loadFileList(nonImageUrls);
   }
 }
+
+#if 0
+void ZStackMvc::focusInEvent(QFocusEvent *event)
+{
+#ifdef _DEBUG_
+  std::cout << "MVC in focus" << std::endl;
+  emit messageGenerated(
+        ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+                       ZWidgetMessage::TARGET_STATUS_BAR));
+#endif
+}
+
+void ZStackMvc::focusOutEvent(QFocusEvent *event)
+{
+#ifdef _DEBUG_
+  std::cout << "MVC out focus" << std::endl;
+  emit messageGenerated(
+        ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+                       ZWidgetMessage::TARGET_STATUS_BAR));
+#endif
+}
+
+void ZStackMvc::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ActivationChange) {
+    if (isActiveWindow()) {
+#ifdef _DEBUG_
+      std::cout << "MVC in focus" << std::endl;
+      emit messageGenerated(
+            ZWidgetMessage("MVC in focus", NeuTube::MSG_INFORMATION,
+                           ZWidgetMessage::TARGET_STATUS_BAR));
+#endif
+    } else {
+#ifdef _DEBUG_
+      std::cout << "MVC out focus" << std::endl;
+      emit messageGenerated(
+            ZWidgetMessage("MVC out focus", NeuTube::MSG_INFORMATION,
+                           ZWidgetMessage::TARGET_STATUS_BAR));
+#endif
+    }
+  }
+}
+#endif

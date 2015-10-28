@@ -96,6 +96,7 @@ private:
   void exitPaintStroke();
   void enterPaintRect();
   void exitPaintRect();
+  void exitSwcEdit();
   void saveStroke();
   void commitData();
 

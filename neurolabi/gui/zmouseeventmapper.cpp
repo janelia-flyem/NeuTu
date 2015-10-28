@@ -248,10 +248,10 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (event.getModifiers() == Qt::ControlModifier) {
           op.setOperation(ZStackOperator::OP_SWC_EXTEND);
         } else {
-          if (op.getHitObject() != NULL) {
-            if (op.getHitObject()->isSelectable()) {
+          if (op.getHitObject<Swc_Tree_Node>() != NULL) {
+//            if (op.getHitObject()->isSelectable()) {
               processSelectionOperation(op, event);
-            }
+//            }
           }
 
           if (op.isNull()) {
@@ -345,7 +345,9 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       } else {
         if (getDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
-          op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
+          if (event.getModifiers() == Qt::ShiftModifier) {
+            op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
+          }
         }
       }
     }

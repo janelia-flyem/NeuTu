@@ -1,0 +1,15 @@
+#!/bin/bash
+master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
+if [ $# -eq 1 ]
+then
+  branch=$1
+fi
+
+cd /opt/Download/neutube
+if [ -z $branch ]
+then
+  /usr/bin/git pull
+else
+  /usr/bin/git pull origin $branch
+fi
+/opt/Download/neutube/neurolabi/shell/flyem_ntupd

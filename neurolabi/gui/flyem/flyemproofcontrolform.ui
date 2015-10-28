@@ -170,6 +170,10 @@
        <property name="text">
         <string>Merge</string>
        </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/merge.png</normaloff>:/images/merge.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
@@ -189,52 +193,27 @@
     </layout>
    </item>
    <item>
-    <widget class="QTabWidget" name="bookmarkWidget">
-     <property name="currentIndex">
-      <number>1</number>
+    <widget class="ZFlyEmBookmarkWidget" name="bookmarkWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Assigned Bookmark</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="ZFlyEmBookmarkView" name="bookmarkView">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>User Bookmark</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="ZFlyEmBookmarkView" name="userBookmarkView">
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ZFlyEmBookmarkView</class>
-   <extends>QTableView</extends>
-   <header>flyem/zflyembookmarkview.h</header>
+   <class>ZFlyEmBookmarkWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">flyem/zflyembookmarkwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

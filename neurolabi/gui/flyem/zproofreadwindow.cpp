@@ -125,6 +125,8 @@ void ZProofreadWindow::init()
   statusBar()->showMessage("Load a database to start proofreading");
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
+
+  m_defaultPal = palette();
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -179,6 +181,10 @@ void ZProofreadWindow::createMenu()
   connect(m_openSkeletonAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showSkeletonWindow()));
 
+  m_openObject3dAction = new QAction("3D Objects", this);
+  connect(m_openObject3dAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showObjectWindow()));
+
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
@@ -190,7 +196,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addSeparator();
-  m_viewMenu->addAction(m_openSkeletonAction);
+  m_viewMenu->addAction(m_openObject3dAction);
   m_viewMenu->addAction(m_openExtNeuronWindowAction);
 
 //  menu->addAction(new QAction("test", menu));
@@ -237,7 +243,11 @@ void ZProofreadWindow::createToolbar()
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 {
   m_controlGroup->setCurrentIndex(1);
-  dump(QString("Body %1 loaded for split.").arg(bodyId), false);
+
+  dump(ZWidgetMessage(
+         QString("Body %1 loaded for split.").arg(bodyId),
+         NeuTube::MSG_INFORMATION,
+         ZWidgetMessage::TARGET_TEXT));
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
@@ -277,17 +287,29 @@ void ZProofreadWindow::exitSplit()
 {
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
-  dump("Back from splitting mode.", false);
+  dump(ZWidgetMessage(
+         "Back from splitting mode.", NeuTube::MSG_INFORMATION,
+         ZWidgetMessage::TARGET_TEXT));
 }
 
-void ZProofreadWindow::dump(const QString &message, bool appending)
+void ZProofreadWindow::dump(const QString &message, bool appending,
+                            bool logging)
 {
 //  qDebug() << message;
+  if (logging) {
+    LINFO() << message;
+  }
+
   m_messageWidget->dump(message, appending);
 }
 
-void ZProofreadWindow::dumpError(const QString &message, bool appending)
+void ZProofreadWindow::dumpError(
+    const QString &message, bool appending, bool logging)
 {
+  if (logging) {
+    LERROR() << message;
+  }
+
   m_messageWidget->dumpError(message, appending);
 }
 
@@ -296,7 +318,7 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   switch (msg.getTarget()) {
   case ZWidgetMessage::TARGET_TEXT:
   case ZWidgetMessage::TARGET_TEXT_APPENDING:
-    dump(msg.toHtmlString(), msg.isAppending());
+    dump(msg.toHtmlString(), msg.isAppending(), false);
     break;
   case ZWidgetMessage::TARGET_DIALOG:
     QMessageBox::information(this, "Notice", msg.toHtmlString());
@@ -384,4 +406,68 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
   if (event->mimeData()->hasFormat("text/uri-list")) {
     event->acceptProposedAction();
   }
+}
+
+void ZProofreadWindow::logMessage(const QString &msg)
+{
+  LINFO() << msg;
+}
+
+void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
+{
+  switch (msg.getType()) {
+  case NeuTube::MSG_INFORMATION:
+    LINFO() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_WARNING:
+    LWARN() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_ERROR:
+    LERROR() << msg.toPlainString();
+    break;
+  case NeuTube::MSG_DEBUG:
+    LDEBUG() << msg.toPlainString();
+    break;
+  }
+}
+
+void ZProofreadWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ActivationChange) {
+    displayActiveHint(isActiveWindow());
+  }
+}
+
+void ZProofreadWindow::displayActiveHint(bool on)
+{
+//  setAutoFillBackground(on);
+#if 1
+  if (on) {
+    setPalette(m_defaultPal);
+  } else {
+    QPalette pal(m_defaultPal);
+//    QColor color = pal.background().color();
+//    color.setAlpha(200);
+    pal.setColor(QPalette::Background, QColor(200, 164, 164, 200));
+    setPalette(pal);
+  }
+#if 0
+  (palette());
+
+  // set black background
+  Pal.setColor(QPalette::Background, Qt::black);
+  m_pMyWidget->setAutoFillBackground(true);
+  m_pMyWidget->setPalette(Pal);
+
+  if (on) {
+//    setWindowOpacity(1.0);
+    setStyleSheet("background-color:black;");
+  } else {
+//    setWindowOpacity(0.8);
+    setStyleSheet("background-color:blue;");
+  }
+
+  setPalette(pal);
+#endif
+#endif
 }

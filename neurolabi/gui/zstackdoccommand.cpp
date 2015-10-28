@@ -18,6 +18,8 @@
 #include "zdocumentable.h"
 #include "zdocplayer.h"
 #include "neutubeconfig.h"
+#include "zstring.h"
+#include "zfiletype.h"
 
 using namespace std;
 
@@ -1245,6 +1247,9 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
   ZGraph *graph = connector.buildConnection(nodeSet);
 
+  QMap<const Swc_Tree_Node*, const ZSwcTree*> swcMap =
+      doc->getSelectedSwcNodeMap();
+
   if (graph->size() > 0) {
     std::vector<Swc_Tree_Node*> nodeArray;
     for (set<Swc_Tree_Node*>::iterator iter = nodeSet.begin();
@@ -1257,8 +1262,19 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
         int e1 = graph->edgeStart(i);
         int e2 = graph->edgeEnd(i);
         TZ_ASSERT(e1 != e2, "Invalid edge");
-        new SetRoot(doc, nodeArray[e2], this);
-        new SetParent(doc, nodeArray[e2], nodeArray[e1], false, this);
+
+        Swc_Tree_Node *upNode = nodeArray[e1];
+        Swc_Tree_Node *downNode = nodeArray[e2];
+
+        //Check source
+        if (ZFileType::fileType(swcMap[downNode]->getSource()) ==
+            ZFileType::SWC_FILE) {
+          upNode = nodeArray[e2];
+          downNode = nodeArray[e1];
+        }
+
+        new SetRoot(doc, downNode, this);
+        new SetParent(doc, downNode, upNode, false, this);
       }
     }
     new RemoveEmptyTreePost(doc, this);

@@ -65,9 +65,6 @@ public:
 
   QMainWindow* getMainWindow() const;
 
-  //void emitMessage(const QString &msg, bool appending = true);
-  //void emitError(const QString &msg, bool appending = true);
-
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
 protected: // Events
@@ -91,6 +88,9 @@ protected:
   virtual void createPresenter();
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
+//  virtual void focusInEvent(QFocusEvent * event);
+//  virtual void focusOutEvent(QFocusEvent * event);
+//  virtual void changeEvent(QEvent * event);
 
 private:
   void createView();

@@ -72,8 +72,8 @@ public:
   void toLower();
   void toUpper();
 
-  std::string toLower() const;
-  std::string toUpper() const;
+  std::string lower() const;
+  std::string upper() const;
 
   void appendNumber(int num, int pad = 0);
   void appendNumber(uint64_t num, int pad = 0);

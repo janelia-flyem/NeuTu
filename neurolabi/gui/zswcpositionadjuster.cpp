@@ -85,12 +85,13 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
 
       if (!voxelArray.empty()) {
         size_t currentIndex = 0;
+        const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
         for (ZSwcPath::iterator iter = swcPath.begin(); iter != swcPath.end(); ++iter) {
           size_t index = voxelArray.findClosest(
                 SwcTreeNode::x(*iter), SwcTreeNode::y(*iter));
           if (index > currentIndex || currentIndex == 0) {
-            SwcTreeNode::setPos(*iter, voxelArray[index].x(), voxelArray[index].y(),
-                                voxelArray[index].z());
+            SwcTreeNode::setPos(*iter, voxelData[index].x(), voxelData[index].y(),
+                                voxelData[index].z());
             currentIndex = index;
           }
         }

@@ -19,6 +19,9 @@
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
+namespace libdvid{
+class DVIDNodeService;
+}
 
 class ZFlyEmNeuron;
 class ZClosedCurve;
@@ -32,6 +35,7 @@ class ZDvidWriter : public QObject
   Q_OBJECT
 public:
   explicit ZDvidWriter(QObject *parent = 0);
+  ~ZDvidWriter();
 
   bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
@@ -85,9 +89,13 @@ public:
   std::string createBranch();
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
-                  uint64_t oldLabel, uint64_t label);
+                  uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
-                      uint64_t oldLabel, uint64_t label);
+                      uint64_t oldLabel, uint64_t label,
+                      uint64_t newBodyId = 0);
+
+  uint64_t writeSplitMultires(
+      const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
 
   uint64_t writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel);
 
@@ -118,9 +126,9 @@ public:
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 //  void writeJson(const std::string url, const ZJsonValue &value);
-  void writeJson(const std::string url, const ZJsonValue &value,
+  void writeJson(const std::string &url, const ZJsonValue &value,
                  const std::string &emptyValueString);
-  void writeJsonString(const std::string url, const std::string &jsonString);
+  void writeJsonString(const std::string &url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);
 
@@ -128,17 +136,29 @@ private:
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+  std::string post(const std::string &url, const QByteArray &payload);
+  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const ZJsonObject &payload);
+#endif
+
   void parseStandardOutput();
+  void init();
+  bool startService();
 
 private:
-  QEventLoop *m_eventLoop;
-  ZDvidClient *m_dvidClient;
-  QTimer *m_timer;
+//  QEventLoop *m_eventLoop;
+//  ZDvidClient *m_dvidClient;
+//  QTimer *m_timer;
   ZDvidTarget m_dvidTarget;
   QString m_errorOutput;
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;
   int m_statusCode;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDNodeService *m_service;
+#endif
 };
 
 #endif // ZDVIDWRITER_H

@@ -14,7 +14,7 @@
 #include "zmatrix.h"
 #include "zswctree.h"
 #include "zpoint.h"
-#include "tz_int_arraylist.h"
+//#include "tz_int_arraylist.h"
 #include "zinttree.h"
 #include "zswcfeatureanalyzer.h"
 #include "zswcdisttrunkanalyzer.h"

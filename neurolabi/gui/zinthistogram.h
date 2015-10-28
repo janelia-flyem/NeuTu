@@ -19,11 +19,31 @@ public:
   const int* c_hist() const { return m_hist; }
   int* c_hist() { return m_hist; }
 
+  void setData(int *hist);
+
   void clear();
 
   ZIntHistogram& operator= (const ZIntHistogram &hist);
 
   int getCount(int v) const;
+  int getMode(int minV, int maxV) const;
+  int getMode() const;
+
+  /*!
+   * \brief Get lower count
+   * #{x | I(x) <= v}
+   * \param v
+   * \return
+   */
+  int getLowerCount(int v) const;
+
+  /*!
+   * \brief Get upper count
+   * #{x | I(x) >= v}
+   * \param v
+   * \return
+   */
+  int getUpperCount(int v) const;
 
   int getMinValue() const;
   int getMaxValue() const;

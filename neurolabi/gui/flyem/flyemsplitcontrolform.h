@@ -8,6 +8,8 @@
 
 class QMenu;
 class ZFlyEmBodySplitProject;
+class ZFlyEmBookmarkView;
+class ZStackDoc;
 
 namespace Ui {
 class FlyEmSplitControlForm;
@@ -20,6 +22,9 @@ class FlyEmSplitControlForm : public QWidget
 public:
   explicit FlyEmSplitControlForm(QWidget *parent = 0);
   ~FlyEmSplitControlForm();
+
+  ZFlyEmBookmarkView* getUserBookmarkView() const;
+  ZFlyEmBookmarkView* getAssignedBookmarkView() const;
 
 signals:
   void exitingSplit();
@@ -52,6 +57,7 @@ public slots:
   void selectSeed();
   void selectAllSeed();
   void cropCoarseBody3D();
+  void updateUserBookmarkTable(ZStackDoc *doc);
 
 private slots:
   void slotTest();
@@ -60,7 +66,8 @@ private slots:
   void commitResult();
   void updateBookmarkTable(ZFlyEmBodySplitProject *project);
   void clearBookmarkTable(ZFlyEmBodySplitProject *project);
-  void locateBookmark(const QModelIndex &index);
+//  void locateBookmark(const QModelIndex &index);
+  void locateBookmark(const ZFlyEmBookmark *bookmark);
   void loadBookmark();
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
@@ -72,7 +79,9 @@ private:
 
 private:
   Ui::FlyEmSplitControlForm *ui;
-  ZFlyEmBookmarkListModel m_bookmarkList;
+  ZFlyEmBookmarkListModel m_assignedBookmarkList;
+  ZFlyEmBookmarkListModel m_userBookmarkList;
+  uint64_t m_currentBodyId;
   //ZFlyEmBodySplitProject m_project;
   QMenu *m_mainMenu;
 };

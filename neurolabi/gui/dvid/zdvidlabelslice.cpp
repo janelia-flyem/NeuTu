@@ -509,8 +509,9 @@ void ZDvidLabelSlice::recordSelection()
 
 void ZDvidLabelSlice::processSelection()
 {
-  m_selector.reset();
+  m_selector.reset(m_selectedOriginal, m_prevSelectedOriginal);
 
+#if 0
   for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
        iter != m_selectedOriginal.end(); ++iter) {
     if (m_prevSelectedOriginal.count(*iter) == 0) {
@@ -524,6 +525,7 @@ void ZDvidLabelSlice::processSelection()
       m_selector.deselectObject(*iter);
     }
   }
+#endif
 }
 
 QColor ZDvidLabelSlice::getCustomColor(uint64_t label) const

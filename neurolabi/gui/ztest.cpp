@@ -35,7 +35,7 @@ using namespace std;
 #include "tz_stack_stat.h"
 #include "tz_stack_attribute.h"
 #include "zspgrowparser.h"
-#include "zvoxelarray.h"
+//#include "zvoxelarray.h"
 #include "tz_stack_objlabel.h"
 #include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
@@ -219,6 +219,7 @@ using namespace std;
 #include "test/zsparsestacktest.h"
 #include "test/zimagetest.h"
 #include "test/z3dgraphtest.h"
+#include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zcircle.h"
@@ -248,6 +249,10 @@ using namespace std;
 #include "flyem/zflyemsupervisor.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
+#include "flyem/zflyemproofdoc.h"
+#include "zswcfactory.h"
+#include "biocytin/zbiocytinprojmaskfactory.h"
+
 
 using namespace std;
 
@@ -279,6 +284,8 @@ int ZTest::runUnitTest(int argc, char *argv[])
 
 void ZTest::test(MainWindow *host)
 {
+  std::cout << "Start testing ..." << std::endl;
+
   UNUSED_PARAMETER(host);
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
@@ -17094,7 +17101,9 @@ void ZTest::test(MainWindow *host)
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/00001.tif");
 
-  stack.load(GET_TEST_DATA_DIR + "/biocytin/DH070613C2X100-40.tif");
+  stack.load(GET_TEST_DATA_DIR + "/bigneuron/gold166_trainingsubset79/"
+             "checked6_chick_uw/DONE_09-2902-04R-01C-60x_merge_c1/"
+             "09-2902-04R-01C-60x_merge_c1.v3dpbd");
 
   Stack *stackData = NULL;
 
@@ -17108,7 +17117,10 @@ void ZTest::test(MainWindow *host)
     }
   }
 
-  if (C_Stack::mode(stackData) > C_Stack::min(stackData)) {
+  int intensityMode = C_Stack::mode(stackData);
+  int intensityMean = C_Stack::mean(stackData);
+
+  if (intensityMode > intensityMean) {
     std::cout << "Bright field detected." << std::endl;
     Stack_Invert_Value(stackData);
   } else {
@@ -17812,7 +17824,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan oldRoi;
   oldRoi.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
 
@@ -17830,4 +17842,511 @@ void ZTest::test(MainWindow *host)
         patchRoi, ZJsonFactory::OBJECT_SPARSE);
   array.dump(GET_TEST_DATA_DIR + "/flyem/MB/deeper_patch_roi.json");
 #endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/sample.swc");
+  ZSwcResampler resampler;
+  resampler.optimalDownsample(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
+  doc->downloadSynapseFunc();
+
+  ZDvidReader reader;
+
+//  reader.open(doc->getDvidTarget());
+//  ZObject3dScan body = reader.readBody(12918474);
+  tic();
+//  std::vector<ZPunctum*> puncta = doc->getTbar(body);
+  std::vector<ZPunctum*> puncta = doc->getTbar(12918474);
+  std::cout << toc() << "ms" << std::endl;
+
+  std::cout << puncta.size() << "tbar found" << std::endl;
+
+  delete doc;
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  ZSwcResampler resampler;
+  resampler.ignoreInterRedundant(true);
+  resampler.optimalDownsample(&tree);
+
+//  resampler.denseInterpolate(&tree);
+
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 1, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(10, 0, 3.9), 2);
+  SwcTreeNode::setParent(tn, root);
+
+  tree.setDataFromNode(root);
+
+  ZSwcResampler resampler;
+  resampler.denseInterpolate(&tree);
+
+  tree.resortId();
+  tree.print();
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+//  tree.load(GET_TEST_DATA_DIR + "/benchmark/");
+#endif
+
+#if 0
+//  ZSwcTree tree;
+  Swc_Tree_Node *root = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(2, 0, 0), 1);
+  SwcTreeNode::setParent(tn, root);
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(-2, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(ZPoint(6, 2, 0), 1);
+  SwcTreeNode::setParent(tn3, tn2);
+  Swc_Tree_Node *tn4 = SwcTreeNode::makePointer(ZPoint(8, 3, 4), 1);
+  SwcTreeNode::setParent(tn4, tn3);
+
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(root) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn2) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn3) << std::endl;
+  std::cout << "Bending energy: " << SwcTreeNode::maxBendingEnergy(tn4) << std::endl;
+
+//  tree.setDataFromNode(root);
+
+
+#endif
+
+#if 0
+  QColor color(255, 153, 0);
+  std::cout << color.hueF() << std::endl;
+  std::cout << color.saturationF() << std::endl;
+
+  color.setHsv(color.hue(), color.saturation()/2, color.value());
+  std::cout << color.red() << " " << color.green() << " " << color.blue() << std::endl;
+
+#endif
+
+#if 0
+  ZStackDoc doc;
+  ZSwcTree *tree = new ZSwcTree;
+  std::cout << "Tree: " << tree << std::endl;
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  tree->setDataFromNode(tn);
+
+  tree->selectNode(tn, true);
+  std::cout << "  Node: " << tn << std::endl;
+
+  doc.addObject(tree);
+
+  //Add another tree
+  tree = new ZSwcTree;
+  std::cout << "Tree: " << tree << std::endl;
+  tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  tree->setDataFromNode(tn);
+  tree->selectNode(tn, true);
+  std::cout << "  Node: " << tn << std::endl;
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+
+  tn2 = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+  SwcTreeNode::setParent(tn2, tn);
+  tree->selectNode(tn2, true);
+  std::cout << "  Node: " << tn2 << std::endl;
+
+  doc.addObject(tree);
+
+  QMap<const Swc_Tree_Node *, const ZSwcTree *> swcMap =
+      doc.getSelectedSwcNodeMap();
+
+  if (swcMap.isEmpty()) {
+    std::cout << "Empty swc map" << std::endl;
+  }
+  for (QMap<const Swc_Tree_Node *, const ZSwcTree *>::const_iterator
+       iter = swcMap.begin(); iter != swcMap.end(); ++iter) {
+    std::cout << iter.key() << " " << iter.value() << std::endl;
+  }
+
+#endif
+
+#if 0
+  tic();
+  std::vector<int> vec;
+  vec.resize(10000000);
+//  int *vec = new int[10000000];
+  for (int i = 0; i < 5000000; ++i) {
+    vec[i] = i;
+  }
+  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  tic();
+  Int_Arraylist *arrayList = Int_Arraylist_New(0, 0);
+  for (int i = 0; i < 5000000; ++i) {
+    Int_Arraylist_Add(arrayList, i);
+  }
+  std::cout << arrayList->length << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  tic();
+  std::vector<int> vec;
+  vec.reserve(10000000);
+  for (int i = 0; i < 5000000; ++i) {
+    vec.push_back(i);
+  }
+  std::cout << vec.size() << " elements" << std::endl;
+  ptoc();
+#endif
+
+#if 0
+//  tic();
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidReader reader;
+  ZObject3dScan obj1;
+  if (reader.open(dvidTarget)) {
+    reader.readBody(14307133, &obj1);
+
+    reader.readBody(15933492);
+  }
+
+  tic();
+  ZSwcTree *tree = ZSwcFactory::CreateSurfaceSwc(obj1);
+  std::cout << tree->size() << " nodes." << std::endl;
+  ptoc();
+
+  delete tree;
+//  ptoc();
+#endif
+
+#if 0
+  Biocytin::SwcProcessor processor;
+  ZResolution resolution;
+  resolution.setVoxelSize(1, 1, 8);
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  processor.setResolution(resolution);
+  processor.breakZJump(&tree);
+  tree.save(GET_TEST_DATA_DIR + "/test2.swc");
+#endif
+
+#if 0
+  JNeuronTracer tracer;
+  ZResolution resolution;
+  resolution.setVoxelSize(1, 1, 8);
+  tracer.setResolution(resolution);
+//  Stack *mask = tracer.makeMask(stack.c_stack());
+
+  std::string filePath = GET_TEST_DATA_DIR +
+      "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-36.tif";
+
+  ZStack stack;
+  stack.load(filePath);
+
+  Stack *stackData = stack.c_stack(1);
+
+  int intensityMode = C_Stack::mode(stackData);
+  int intensityMean = C_Stack::mean(stackData);
+
+  if (intensityMode > intensityMean) {
+    std::cout << "Bright field detected." << std::endl;
+    Stack_Invert_Value(stackData);
+  } else {
+    std::cout << "Dark field detected." << std::endl;
+  }
+
+  Stack *mask = C_Stack::readSc(
+        GET_TEST_DATA_DIR +
+        "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-36.Proj.Mask.tif");
+  Stack_Binarize(mask);
+  tracer.setMask(mask);
+
+  ZSwcTree *tree = tracer.trace(stackData);
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
+  ZIntHistogram *hist = C_Stack::hist(stack, NULL);
+  hist->print();
+
+  std::cout << "Mode: " << hist->getMode() << std::endl;
+  std::cout << "Mode started from 38: " << hist->getMode(38, hist->getMaxValue())
+            << std::endl;
+  std::cout << "Uc: " << hist->getUpperCount(220) << std::endl;
+  std::cout << "Lc: " << hist->getLowerCount(40) << std::endl;
+
+  delete hist;
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStroke2d *stroke = new ZStroke2d;
+  stroke->setLabel(1);
+  stroke->append(10, 10);
+  stroke->setWidth(5);
+  stroke->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  stroke->setZ(0);
+
+  ZStroke2d *eraser = new ZStroke2d;
+  eraser->setEraser(true);
+  eraser->append(11, 11);
+  eraser->setWidth(5);
+  eraser->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  eraser->setZ(0);
+
+  ZStroke2d *stroke2 = new ZStroke2d;
+  stroke2->setLabel(1);
+  stroke2->append(12, 12);
+  stroke2->setWidth(5);
+  stroke2->setRole(ZStackObjectRole::ROLE_SKELETON_MASK);
+  stroke2->setZ(0);
+
+  frame->document()->addObject(stroke);
+  frame->document()->addObject(eraser);
+  frame->document()->addObject(stroke2);
+
+  ZBiocytinProjMaskFactory maskFactory;
+
+  ZStack *stack = maskFactory.MakeMask(frame->view(), 1);
+
+  ZStackFrame *frame2 = ZStackFrame::Make(NULL);
+  frame2->loadStack(stack);
+  host->addStackFrame(frame2);
+  host->presentStackFrame(frame2);
+
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#  if 0
+  ZStack *stack = frame->document()->getStack()->clone();
+  //stack->setOffset(20, 30, 0);
+  ZStackPatch *patch = new ZStackPatch(stack);
+  patch->setScale(0.2, 0.2);
+  patch->setFinalOffset(20, 30);
+  frame->document()->addObject(patch);
+
+  ZRect2d *rect = new ZRect2d(30, 40, 100, 200);
+  rect->setPenetrating(true);
+  rect->setColor(0, 255, 0);
+  frame->document()->addObject(rect);
+#  endif
+#endif
+
+#if 0
+  ZDvidBufferReader reader;
+
+  ZJsonArray queryObj;
+
+  ZJsonArray coordObj;
+  coordObj.append(10);
+  coordObj.append(20);
+  coordObj.append(30);
+
+  ZJsonArray coordObj2;
+  coordObj2.append(3970);
+  coordObj2.append(5450);
+  coordObj2.append(7313);
+
+  queryObj.append(coordObj);
+  queryObj.append(coordObj2);
+
+  QString queryForm = queryObj.dumpString(0).c_str();
+
+  std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+
+  QByteArray payload;
+  payload.append(queryForm);
+
+  reader.read("http://emdata1.int.janelia.org:8500/api/node/86e1/labels/labels",
+              payload, true);
+
+  QString labels = QString(reader.getBuffer());
+  std::cout << labels.toStdString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "86e1", 8500);
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    std::vector<ZIntPoint> ptArray;
+    ptArray.push_back(ZIntPoint(3970, 5450, 7313));
+    ptArray.push_back(ZIntPoint(4281, 5003, 7313));
+
+    std::vector<uint64_t> bodySet = reader.readBodyIdAt(ptArray);
+    for (std::vector<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      std::cout << *iter << std::endl;
+    }
+  }
+#endif
+
+#if 0
+  ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan bs = reader.readBody(15083387);
+  bs.save(GET_TEST_DATA_DIR + "/split.sobj");
+#endif
+
+#if 1
+  ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  uint64_t bodyId = 14727583;
+  ZObject3dScan bf = reader.readBody(bodyId);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    ZObject3dScan obj;
+    obj.load(GET_TEST_DATA_DIR + "/split.sobj");
+//    ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(
+//          ZIntCuboid(ZIntPoint(4128, 5370, 7731), ZIntPoint(4160, 5399, 7768)));
+//    obj.addSegment(7725, 5387, 4139, 4145);
+    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
+    std::cout << "New body: " << newBodyId << std::endl;
+  }
+
+  std::cout << "Status code: " << writer.getStatusCode() << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan bf2 = bf;
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+  if (reader.open(target)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  }
+
+  ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
+//  Bbf.print();
+
+  ZObject3dScan bs;
+  bf.subobject(ZIntCuboid(ZIntPoint(201, 824, 335), ZIntPoint(324, 938, 470)), &bs);
+//  bs.addSegment(1, 1, 1, 1);
+//  bs.addSegment(2, 16, 5, 32);
+
+  ZObject3dScan bf_bs = bf;
+  bf_bs.subtract(bs);
+
+  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
+
+  ZObject3dScan Bsc = Bbf;
+  Bsc.subtract(Bbf_bs);
+
+  ZObject3dScan bBsc = Bsc;
+  bBsc.translate(-dvidInfo.getStartBlockIndex());
+  bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
+                dvidInfo.getBlockSize().getY() - 1,
+                dvidInfo.getBlockSize().getZ() - 1);
+  bBsc.translate(dvidInfo.getStartCoordinates());
+
+  std::cout << "Block subtraction size: " << bBsc.getVoxelNumber() << std::endl;
+  bf.subtract(bBsc);
+
+  ZObject3dScan bsr = bs;
+  bsr.subtract(bBsc);
+
+  bf.subtract(bsr);
+
+  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  bf2.subtract(bs);
+
+
+  bf.canonize();
+  bf2.canonize();
+
+  if (bf.equalsLiterally(bf2)) {
+    std::cout << "Testing passed." << std::endl;
+  } else {
+    std::cout << "Testing failed: Object inconsistent." << std::endl;
+  }
+//  obj.subtract(ZObject3dFactory::MakeObject3dScan(
+//  block.subtract(
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  QByteArray payload = bf.toDvidPayload();
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/test.dvid").c_str(), "wb");
+
+  fwrite(payload.constData(), payload.size(), 1, fp);
+
+  fclose(fp);
+
+  ZObject3dScan bf2;
+  bf2.importDvidObject(GET_TEST_DATA_DIR + "/test.dvid");
+  if (bf.equalsLiterally(bf2)) {
+    std::cout << "Testing passed." << std::endl;
+  } else {
+    std::cout << "Testing failed: Object inconsistent." << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget dvidTarget("emdata2.int.janelia.org", "c077", 7000);
+  dvidTarget.setBodyLabelName("segmentation-labelvol");
+  dvidTarget.setLabelBlockName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    ZDvidWriter writer;
+    writer.open(dvidTarget);
+    QByteArray out = reader.readKeyValue("annotations", "body_synapses");
+    ZJsonObject obj;
+    obj.decodeString(out.constData());
+
+    if (obj.hasKey("data")) {
+      ZJsonArray dataJson(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      std::cout << dataJson.size() << " annotations found." << std::endl;
+      for (size_t i = 0; i < dataJson.size(); ++i) {
+        ZJsonObject annoJson(dataJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+        uint64_t bodyId = ZJsonParser::integerValue(annoJson["body ID"]);
+        std::string name = ZJsonParser::stringValue(annoJson["name"]);
+        std::string comment = ZJsonParser::stringValue(annoJson["comment"]);
+        std::string user = ZJsonParser::stringValue(annoJson["user"]);
+
+
+        std::cout << bodyId << " " << name << std::endl;
+
+        ZFlyEmBodyAnnotation anno = reader.readBodyAnnotation(bodyId);
+        if (anno.getName().empty() || anno.getName() == "name") {
+          anno.setName(name);
+          anno.setComment(comment);
+          anno.setUser(user);
+          writer.writeBodyAnntation(anno);
+        }
+      }
+    }
+  }
+
+#endif
+
+  std::cout << "Done." << std::endl;
 }

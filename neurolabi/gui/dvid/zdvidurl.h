@@ -95,6 +95,7 @@ public:
   std::string getBoundBoxUrl(int z) const;
 
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
+  std::string getLocalBodyIdArrayUrl() const;
 
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
@@ -117,6 +118,9 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+  std::string getSplitUrl(
+      const std::string &dataName, uint64_t originalLabel,
+      uint64_t newLabel) const;
   std::string getCoarseSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
 
@@ -161,6 +165,7 @@ private:
   static const std::string m_splitCommand;
   static const std::string m_coarseSplitCommand;
   static const std::string m_labelCommand;
+  static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
 };
 

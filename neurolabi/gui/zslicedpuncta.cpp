@@ -23,6 +23,13 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 {
   if (p != NULL || ignoreNull) {
     int z = iround(p->getZ()) - m_zStart;
+
+#ifdef _DEBUG_
+    if (z == 9447) {
+      std::cout << "debug here" << std::endl;
+    }
+#endif
+
     if (m_puncta.size() <= z) {
       m_puncta.resize(z + 1);
     }
@@ -166,6 +173,16 @@ void ZSlicedPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
       p->setVisualEffect(effect);
     }
   }
+}
+
+QList<ZStackBall*> ZSlicedPuncta::getPunctaOnSlice(int z)
+{
+  int index = z - m_zStart;
+  if (index >= 0 && index < m_puncta.size()) {
+    return m_puncta[index];
+  }
+
+  return QList<ZStackBall*>();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZSlicedPuncta)
