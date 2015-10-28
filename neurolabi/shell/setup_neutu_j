@@ -41,7 +41,14 @@ then
   then
     if [ ! -f $downloadDir/$qtsrc.tar.gz ]
     then
-      cp $master_dir/$qtsrc.tar.gz $downloadDir
+      qtSource=$master_dir/$qtsrc.tar.gz
+      if [ -f $qtSource ]
+      then
+        cp $qtSource $downloadDir
+      else
+        echo "Failed to find $qtSource"
+        echo "Please copy the qt package to $qtSource first"
+      fi
     fi
     cd $downloadDir
     tar -xvf $qtsrc.tar.gz

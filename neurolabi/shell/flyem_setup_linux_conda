@@ -18,8 +18,11 @@ then
   bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
 fi
 
-CONDA_ROOT=`$condaDir/bin/conda info --root`
-source ${CONDA_ROOT}/bin/activate root
-$condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+if [ ! -d $condaDir/envs/dvidenv ]
+then
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  source ${CONDA_ROOT}/bin/activate root
+  $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+fi
 
 
