@@ -12,6 +12,10 @@ else
   install_dir=$1
 fi
 echo "Installing NeuTu under $install_dir"
+if [ ! -d $install_dir ]
+then
+  mkdir -p $install_dir
+fi
 
 if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
 then
@@ -42,12 +46,18 @@ then
     if [ ! -f $downloadDir/$qtsrc.tar.gz ]
     then
       qtSource=$master_dir/$qtsrc.tar.gz
+      if [ ! -f $qtSource ]
+      then
+        wget https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -O $qtSource
+      fi
+
       if [ -f $qtSource ]
       then
         cp $qtSource $downloadDir
       else
         echo "Failed to find $qtSource"
         echo "Please copy the qt package to $qtSource first"
+        exit 1
       fi
     fi
     cd $downloadDir
@@ -73,9 +83,9 @@ fi
 #master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 if [ ! -d $downloadDir/neutube ]
 then
-  $GIT_CMD clone $master_dir/.git neutube
+  $GIT_CMD clone -b flyem_release $master_dir/.git neutube
   cd $downloadDir/neutube
-  $GIT_CMD checkout flyem_release
+  #$GIT_CMD checkout flyem_release
 fi
 
 
