@@ -83,11 +83,15 @@ fi
 #master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 if [ ! -d $downloadDir/neutube ]
 then
+  cd $master_dir
   if [ `git branch --list flyem_release` ]
   then
+    cd $downloadDir
     $GIT_CMD clone -b flyem_release $master_dir/.git neutube
   else
+    cd $downloadDir
     echo 'WARNING: no flyem_release branch found. Using current branch'
+    $GIT_CMD clone $master_dir/.git neutube
   fi
   cd $downloadDir/neutube
   #$GIT_CMD checkout flyem_release
