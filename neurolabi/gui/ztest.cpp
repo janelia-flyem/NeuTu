@@ -35,7 +35,7 @@ using namespace std;
 #include "tz_stack_stat.h"
 #include "tz_stack_attribute.h"
 #include "zspgrowparser.h"
-#include "zvoxelarray.h"
+//#include "zvoxelarray.h"
 #include "tz_stack_objlabel.h"
 #include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
@@ -219,6 +219,7 @@ using namespace std;
 #include "test/zsparsestacktest.h"
 #include "test/zimagetest.h"
 #include "test/z3dgraphtest.h"
+#include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zcircle.h"
@@ -251,6 +252,7 @@ using namespace std;
 #include "flyem/zflyemproofdoc.h"
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
+
 
 using namespace std;
 
@@ -18193,15 +18195,36 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan bs = reader.readBody(15083387);
+  bs.save(GET_TEST_DATA_DIR + "/split.sobj");
+#endif
+
 #if 1
-  ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
+  ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  uint64_t bodyId = 14727583;
+  ZObject3dScan bf = reader.readBody(bodyId);
+
   ZDvidWriter writer;
   if (writer.open(target)) {
     ZObject3dScan obj;
-    obj.addSegment(7312, 5809, 4329, 4339);
-    uint64_t newBodyId = writer.writeSplit(obj, 8189115, 1);
+    obj.load(GET_TEST_DATA_DIR + "/split.sobj");
+//    ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(
+//          ZIntCuboid(ZIntPoint(4128, 5370, 7731), ZIntPoint(4160, 5399, 7768)));
+//    obj.addSegment(7725, 5387, 4139, 4145);
+    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
     std::cout << "New body: " << newBodyId << std::endl;
   }
+
+  std::cout << "Status code: " << writer.getStatusCode() << std::endl;
 #endif
 
 #if 0

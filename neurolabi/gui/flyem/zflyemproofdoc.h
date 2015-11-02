@@ -126,6 +126,15 @@ public:
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
 
+  void verifyBodyAnnotationMap();
+
+  /*!
+   * \brief Remove unselected bodies from annotation map.
+   *
+   * This is a temporary solution to inconsistent selection update.
+   */
+  void cleanBodyAnnotationMap();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -152,6 +161,7 @@ public slots:
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void clearBodyMergeStage();
 
 protected:
   void autoSave();

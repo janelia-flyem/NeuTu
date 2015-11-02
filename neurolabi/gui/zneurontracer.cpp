@@ -541,12 +541,13 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   double length = voxelArray.getCurveLength();
   double dist = 0.0;
 
+  const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
   for (size_t i = 0; i < path.size(); ++i) {
     double ratio = dist / length;
     double r = r1 * ratio + r2 * (1 - ratio);
     voxelArray.setValue(i, r);
     if (i < path.size() - 1) {
-      dist += voxelArray[i].distanceTo(voxelArray[i+1]);
+      dist += voxelData[i].distanceTo(voxelData[i+1]);
     }
   }
 
@@ -937,14 +938,7 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
-  if (stack == NULL) {
-    return NULL;
-  }
-
   startProgress();
-
-  stack = C_Stack::clone(stack);
-  ZStackProcessor::subtractBackground(stack, 0.5, 3);
 
   ZSwcTree *tree = NULL;
 
@@ -1081,8 +1075,6 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   std::cout << "Done!" << std::endl;
   endProgress();
-
-  C_Stack::kill(stack);
 
   return tree;
 }

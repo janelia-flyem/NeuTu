@@ -1,9 +1,11 @@
-#include "zcolormapeditor.h"
-#include "zcolormap.h"
+#include <vector>
 #include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif
+
+#include "zcolormapeditor.h"
+#include "zcolormap.h"
 #include "QsLog.h"
 
 ZColorMapWidget::ZColorMapWidget(ZColorMapParameter *colorMap, QWidget *parent) :

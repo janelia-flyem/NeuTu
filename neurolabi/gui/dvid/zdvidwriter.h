@@ -89,9 +89,13 @@ public:
   std::string createBranch();
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
-                  uint64_t oldLabel, uint64_t label);
+                  uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
-                      uint64_t oldLabel, uint64_t label);
+                      uint64_t oldLabel, uint64_t label,
+                      uint64_t newBodyId = 0);
+
+  uint64_t writeSplitMultires(
+      const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
 
   uint64_t writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel);
 
@@ -134,6 +138,8 @@ private:
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::string post(const std::string &url, const QByteArray &payload);
+  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const ZJsonObject &payload);
 #endif
 
   void parseStandardOutput();

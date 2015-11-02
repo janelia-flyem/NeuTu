@@ -464,16 +464,15 @@ std::string ZDvidUrl::getSplitUrl(
     const std::string &dataName, uint64_t originalLabel) const
 {
   return getSplitUrl(dataName, originalLabel, m_splitCommand);
-#if 0
-  std::ostringstream stream;
-  if (m_splitCommand.empty()) {
-    stream << getDataUrl(dataName) << "/" << originalLabel;
-  } else {
-    stream << getDataUrl(dataName) << "/" << m_splitCommand << "/" << originalLabel;
-  }
+}
 
-  return stream.str();
-#endif
+std::string ZDvidUrl::getSplitUrl(
+    const std::string &dataName, uint64_t originalLabel, uint64_t newLabel) const
+{
+  std::ostringstream stream;
+  stream << newLabel;
+
+  return getSplitUrl(dataName, originalLabel) + "?splitlabel=" + stream.str();
 }
 
 std::string ZDvidUrl::getCoarseSplitUrl(
