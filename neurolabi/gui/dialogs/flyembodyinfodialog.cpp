@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QMessageBox>
+#include <QColor>
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -554,16 +555,20 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     std::cout << "updating color filter " << filter.toStdString() << std::endl;
 
     QStandardItem * filterTextItem = new QStandardItem(filter);
-
     QStandardItem * filterColorItem = new QStandardItem();
 
+    // not very random, not very fancy:
+    // int randomR = qrand() % 256;
+    // int randomG = qrand() % 256;
+    // int randomB = qrand() % 256;
+    // filterColorItem->setData(QColor(randomR, randomG, randomB), Qt::BackgroundRole);
 
-    // not that random right now
-    // could also use QColor.fromHsv() (etc)
-    int randomR = 0;
-    int randomG = 120;
-    int randomB = 120;
-    filterColorItem->setData(QColor(randomR, randomG, randomB), Qt::BackgroundRole);
+    // Raveler's palette: h, s, v = (random.uniform(0, 6.283), random.uniform(0.3, 1.0), 
+    //  random.uniform(0.3, 0.8))
+    int randomH = qrand() % 360;
+    int randomS = qrand() % 256;
+    int randomV = qrand() % 256;
+    filterColorItem->setData(QColor::fromHsv(randomH, randomS, randomV), Qt::BackgroundRole);
 
 
 
