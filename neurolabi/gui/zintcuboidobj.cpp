@@ -131,4 +131,9 @@ bool ZIntCuboidObj::isValid() const
   return !m_cuboid.isEmpty();
 }
 
+void ZIntCuboidObj::join(const ZIntCuboid &cuboid)
+{
+  m_cuboid.join(cuboid);
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

@@ -1448,6 +1448,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
+    /*
+    QColor color =
+        getCompleteDocument()->getDvidSparseStack()->getObjectMask()->getColor();
+    getCompleteDocument()->getDvidSparseStack()->loadBody(
+          m_splitProject.getBodyId());
+    getCompleteDocument()->getDvidSparseStack()->setMaskColor(color);
+    */
 #if 0
     uint64_t bodyId = m_splitProject.getBodyId();
     getDocument()->removeObject(

@@ -56,6 +56,8 @@ public:
 
   ZDvidSparseStack* getCrop(const ZIntCuboid &box) const;
 
+  void deprecateStackBuffer();
+
 
 private:
   void initBlockGrid();

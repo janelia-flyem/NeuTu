@@ -42,7 +42,7 @@ public:
     m_splitWindowMode = state;
   }
 
-  void processRectRoiUpdate(ZRect2d *rect);
+  void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
   ZKeyOperationConfig* getKeyConfig();
   void configKeyMap();
