@@ -839,6 +839,14 @@ static void prepareBodyUpload(
   oldBodyIdList << label;
 }
 
+static void prepareBodyUpload(const ZObject3dScan &obj,
+                              QList<ZObject3dScan> &objList,
+                              QList<uint64_t> &oldBodyIdList, uint64_t label)
+{
+  objList.append(obj);
+  oldBodyIdList.append(label);
+}
+
 void ZFlyEmBodySplitProject::updateSplitDocument()
 {
   if (getDocument<ZFlyEmProofDoc>() != NULL) {
@@ -879,6 +887,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZObject3dScan body = *wholeBody;
 
+#if 0
   emitMessage(QString("Backup ... %1").arg(getBodyId()));
 
   std::string backupDir =
@@ -891,6 +900,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
             NeuTube::MSG_WARNING));
   }
   getProgressSignal()->advanceProgress(0.05);
+#endif
 
 //  size_t minObjSize = 20;
 
@@ -923,7 +933,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   int maxNum = 1;
   QStringList filePathList;
+  QList<ZObject3dScan> splitList;
   QList<uint64_t> oldBodyIdList;
+
+  ZObject3dScan mainBody;
 
   emitMessage(QString("Processing splits ..."));
   if (stack != NULL) { //Process splits
@@ -977,15 +990,20 @@ void ZFlyEmBodySplitProject::commitResultFunc(
               }
 
               if (!isAdopted) {
-                prepareBodyUpload(subobj, filePathList, oldBodyIdList, maxNum,
-                                  getBodyId(), obj->getLabel());
+                prepareBodyUpload(
+                      subobj, splitList, oldBodyIdList, obj->getLabel());
+//                prepareBodyUpload(subobj, filePathList, oldBodyIdList, maxNum,
+//                                  getBodyId(), obj->getLabel());
               }
             }
           } else {
-            prepareBodyUpload(currentBody, filePathList, oldBodyIdList, maxNum,
-                              getBodyId(), obj->getLabel());
+            prepareBodyUpload(currentBody, splitList, oldBodyIdList, obj->getLabel());
+//            prepareBodyUpload(currentBody, filePathList, oldBodyIdList, maxNum,
+//                              getBodyId(), obj->getLabel());
           }
         }
+      } else {
+        mainBody.concat(*obj);
       }
       delete obj;
 
@@ -994,7 +1012,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     }
   }
 
-  if (!body.isEmpty() && minObjSize > 0) {
+  if (!body.isEmpty() /*&& minObjSize > 0*/) {
     std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
 
 #ifdef _DEBUG_2
@@ -1007,11 +1025,34 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       dp = 0.2 / objArray.size();
     }
 
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+    for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
-      if (obj.getVoxelNumber() < minObjSize) {
-        smallBodyGroup.concat(obj);
+      ZObject3dScan &obj = *iter;
+
+      //Check single connect for bound box split
+      //Any component only connected to one split part?
+      int count = 0;
+      int splitIndex = 0;
+
+      if (!obj.isAdjacentTo(mainBody)) {
+        for (int index = 0; index < splitList.size(); ++index) {
+          if (obj.isAdjacentTo(splitList[index])) {
+            ++count;
+            if (count > 1) {
+              break;
+            }
+            splitIndex = index;
+          }
+        }
+      }
+
+      if (count == 1) {
+        ZObject3dScan &split = splitList[splitIndex];
+        split.concat(obj);
+      } else {
+        if (obj.getVoxelNumber() < minObjSize) {
+          smallBodyGroup.concat(obj);
+        }
       }
 
       getProgressSignal()->advanceProgress(dp);
@@ -1031,23 +1072,45 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   double dp = 0.2;
 
-  if (!filePathList.empty()) {
+  if (!splitList.empty()) {
     dp = 0.2 / filePathList.size();
   } else {
     emitError("Warning: No splits generated for upload! "
               "Please contact the developer as soon as possible.");
   }
 
+  /*
+  if (!filePathList.empty()) {
+    dp = 0.2 / filePathList.size();
+  } else {
+    emitError("Warning: No splits generated for upload! "
+              "Please contact the developer as soon as possible.");
+  }
+  */
+
   QList<uint64_t> newBodyIdList;
 
   ZDvidWriter writer;
   writer.open(getDvidTarget());
-  foreach (QString objFile, filePathList) {
-    ZObject3dScan obj;
-    obj.load(objFile.toStdString());
+//  foreach (QString objFile, filePathList) {
+  foreach (const ZObject3dScan &obj, splitList) {
+//    const ZObject3dScan &obj = splitList
+//    ZObject3dScan obj;
+//    obj.load(objFile.toStdString());
+    /*
+    uint64_t newBodyId = writer.writeSplitMultires(*wholeBody, obj, getBodyId());
+    ++bodyIndex;
+    */
+
+    /*
     uint64_t newBodyId = writer.writeSplit(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
+          */
+
     wholeBody->subtract(obj);
+
+    uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
+    ++bodyIndex;
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;

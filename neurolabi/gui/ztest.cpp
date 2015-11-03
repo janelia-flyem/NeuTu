@@ -18200,7 +18200,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
-  ZObject3dScan bs = reader.readBody(15083387);
+  ZObject3dScan bs = reader.readBody(15950033);
   bs.save(GET_TEST_DATA_DIR + "/split.sobj");
 #endif
 
@@ -18210,7 +18210,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
-  uint64_t bodyId = 14727583;
+  uint64_t bodyId = 14316509;
   ZObject3dScan bf = reader.readBody(bodyId);
 
   ZDvidWriter writer;
@@ -18220,7 +18220,13 @@ void ZTest::test(MainWindow *host)
 //    ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(
 //          ZIntCuboid(ZIntPoint(4128, 5370, 7731), ZIntPoint(4160, 5399, 7768)));
 //    obj.addSegment(7725, 5387, 4139, 4145);
-    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
+    ZObject3dScan bm = bf;
+    bm.subtract(obj);
+    tic();
+    uint64_t newBodyId = writer.writePartition(bm, obj, bodyId);
+//    uint64_t newBodyId = writer.writeSplit(obj, bodyId, 1);
+//    uint64_t newBodyId = writer.writeSplitMultires(bf, obj, bodyId);
+    ptoc();
     std::cout << "New body: " << newBodyId << std::endl;
   }
 
@@ -18231,31 +18237,85 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 
+  ZObject3dScan *bs = bf.subobject(ZIntCuboid(ZIntPoint(276, 895, 400),
+                                              ZIntPoint(821, 1091, 642)));
+
+  tic();
+  bf.subtractSliently(*bs);
+  ptoc();
+
+  delete bs;
+
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
   ZObject3dScan bf2 = bf;
 
   ZDvidInfo dvidInfo;
-  ZDvidReader reader;
+  dvidInfo.setStackSize(10000, 10000, 10000);
+  dvidInfo.setStartBlockIndex(0, 0, 0);
+  dvidInfo.setEndBlockIndex(300, 300, 300);
 
+  /*
+  ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "86e1", 8500);
   if (reader.open(target)) {
     dvidInfo = reader.readGrayScaleInfo();
   }
+  */
+
+  tic();
 
   ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
+  std::cout << "Full object block count: " << Bbf.getVoxelNumber() << std::endl;
 //  Bbf.print();
+//  Bbf.save(GET_TEST_DATA_DIR + "/test.sobj");
 
   ZObject3dScan bs;
-  bf.subobject(ZIntCuboid(ZIntPoint(201, 824, 335), ZIntPoint(324, 938, 470)), &bs);
+  bs = bf.getSlice(419, 642);
+
+  ZObject3dScan dbs = bs;
+  dbs.dilate();
+  ZObject3dScan Bdbs = dvidInfo.getBlockIndex(dbs);
+  ZObject3dScan Bbs = dvidInfo.getBlockIndex(bs);
+
+  ZObject3dScan Bbb = Bdbs;
+  Bbb.subtractSliently(Bbs);
+
+  Bbb.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZObject3dScan Bsc = Bbs;
+  Bsc.subtractSliently(Bbb);
+
+
+
+  /*
+  ZObject3dScan Bbs = dvidInfo.getBlockIndex(bs);
+  ZObject3dScan Bbf_bs = Bbf;
+  Bbf_bs.subtract(Bbs);
+
+  Bbf_bs.concat(Bbf.intersect(Bbs));
+  */
+//  Bbf_bs.print();
+
+//  bf.subobject(ZIntCuboid(ZIntPoint(201, 824, 335), ZIntPoint(324, 938, 470)), &bs);
 //  bs.addSegment(1, 1, 1, 1);
 //  bs.addSegment(2, 16, 5, 32);
 
+
+  /*
   ZObject3dScan bf_bs = bf;
   bf_bs.subtract(bs);
-
   ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
+  */
 
-  ZObject3dScan Bsc = Bbf;
-  Bsc.subtract(Bbf_bs);
+//  std::cout << "B(bf-bs) size: " << Bbf_bs.getVoxelNumber() << std::endl;
+
+//  ZObject3dScan Bsc = Bbf;
+//  Bsc.subtract(Bbf_bs);
 
   ZObject3dScan bBsc = Bsc;
   bBsc.translate(-dvidInfo.getStartBlockIndex());
@@ -18272,7 +18332,9 @@ void ZTest::test(MainWindow *host)
 
   bf.subtract(bsr);
 
-  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
+  ptoc();
+
+//  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
 
   bf2.subtract(bs);
 
@@ -18345,6 +18407,25 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+
+#endif
+
+#if 0
+  std::string dataDir =
+      GET_TEST_DATA_DIR +
+      "/flyem/MB/light/2015alphalobe/SS01240/GMR_SS01240-20140801_32_F1/align";
+  std::string baseName = "C2-Aligned63xScale-EM";
+
+  ZSwcTree tree;
+  tree.load(dataDir + "/" + baseName + ".swc");
+
+  tree.rescale(20, 20, 20, false);
+  tree.changeRadius(0, 20);
+
+//  ZSwcResampler sampler;
+//  sampler.radiusResample(&tree);
+
+  tree.save(dataDir + "/" + baseName + "_scaled.swc");
 
 #endif
 

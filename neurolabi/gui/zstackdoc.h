@@ -913,7 +913,7 @@ public:
     return m_progressSignal;
   }
 
-  virtual void processRectRoiUpdate(ZRect2d *rect);
+  virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;

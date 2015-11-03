@@ -2142,12 +2142,12 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect)
+void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
-  buddyDocument()->processRectRoiUpdate(rect);
+  buddyDocument()->processRectRoiUpdate(rect, appending);
 }
 
-void ZStackPresenter::acceptRectRoi()
+void ZStackPresenter::acceptRectRoi(bool appending)
 {
   ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_RECT2D,
@@ -2155,7 +2155,7 @@ void ZStackPresenter::acceptRectRoi()
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect != NULL) {
     rect->setColor(QColor(255, 255, 255));
-    processRectRoiUpdate(rect);
+    processRectRoiUpdate(rect, appending);
   }
 
 //  exitRectEdit();
@@ -2778,8 +2778,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
   }
     break;
+  case ZStackOperator::OP_RECT_ROI_APPEND:
+    acceptRectRoi(true);
+    exitRectEdit();
+    break;
   case ZStackOperator::OP_RECT_ROI_ACCEPT:
-    acceptRectRoi();
+    acceptRectRoi(false);
     exitRectEdit();
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:

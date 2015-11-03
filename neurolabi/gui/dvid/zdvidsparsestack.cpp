@@ -361,4 +361,9 @@ ZDvidSparseStack* ZDvidSparseStack::getCrop(const ZIntCuboid &box) const
   return stack;
 }
 
+void ZDvidSparseStack::deprecateStackBuffer()
+{
+  m_sparseStack.deprecate(ZSparseStack::STACK);
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSparseStack)

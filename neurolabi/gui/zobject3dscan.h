@@ -80,6 +80,7 @@ public:
 
   void addStripe(int z, int y, bool canonizing = true);
   void addStripeFast(int z, int y);
+  void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
   void addSegmentFast(int x1, int x2);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
@@ -196,8 +197,9 @@ public:
   void concat(const ZObject3dScan &obj);
 
   ZObject3dScan subtract(const ZObject3dScan &obj);
+  void subtractSliently(const ZObject3dScan &obj);
 
-  ZObject3dScan intersect(const ZObject3dScan &obj);
+  ZObject3dScan intersect(const ZObject3dScan &obj) const;
 
   /*!
    * \brief Extract voxels within a cuboid
@@ -521,6 +523,7 @@ public:
 private:
   void addForeground(ZStack *stack);
   void addForegroundSlice8(ZStack *stack);
+  int subtractForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
 
