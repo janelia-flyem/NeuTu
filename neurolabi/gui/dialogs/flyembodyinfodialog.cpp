@@ -71,7 +71,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_filterProxy = new QSortFilterProxyModel(m_filterModel);
     m_filterProxy->setSourceModel(m_filterModel);
     ui->filterTableView->setModel(m_filterProxy);
-
+    ui->filterTableView->setColumnWidth(0, 450);
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
@@ -312,6 +312,12 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 return;
             }
 
+            #ifdef _DEBUG_
+                if (i % 100 == 0) {
+                   std::cout << "processing bookmark " << i << std::endl;
+                }
+            #endif
+
             ZJsonObject bkmk(bookmarks.at(i), false);
 
             uint64_t bodyId = bkmk.value("body ID").toInteger();
@@ -321,11 +327,12 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 
-                #ifdef _DEBUG_
-                    std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
-                    std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
-                    std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
-                #endif
+                // this is way too wordy to leave on all the time, even in debug
+                // #ifdef _DEBUG_
+                //     std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
+                //     std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
+                //     std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
+                // #endif
 
                 // now push the value back in; don't put empty strings in (messes with sorting)
                 // updateModel expects "body status", not "status" (matches original file version)
