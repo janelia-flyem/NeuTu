@@ -11,7 +11,9 @@ ZFlyEmBodyColorScheme::ZFlyEmBodyColorScheme()
   m_colorMap["MBON"] = QColor(255, 0, 255);
   m_colorMap["PPL1"] = QColor(0, 255, 255);
   m_colorMap["KC-alpha prime"] = QColor(255, 255, 0);
-  m_colorMap["non-KC"] = QColor(255, 140, 0);
+  m_colorMap["KC-any"] = QColor(255, 140, 0);
+  m_colorMap["MB-APL"] = QColor(140, 255, 0);
+  m_colorMap["MB-DPM"] = QColor(140, 255, 0);
   m_isMapReady = false;
 }
 
