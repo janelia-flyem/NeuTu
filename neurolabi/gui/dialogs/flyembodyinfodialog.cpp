@@ -564,10 +564,10 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     // filterColorItem->setData(QColor(randomR, randomG, randomB), Qt::BackgroundRole);
 
     // Raveler's palette: h, s, v = (random.uniform(0, 6.283), random.uniform(0.3, 1.0), 
-    //  random.uniform(0.3, 0.8))
+    //  random.uniform(0.3, 0.8)); that approximately translates to:
     int randomH = qrand() % 360;
-    int randomS = qrand() % 256;
-    int randomV = qrand() % 256;
+    int randomS = 76 + qrand() % 180;
+    int randomV = 76 + qrand() % 128;
     filterColorItem->setData(QColor::fromHsv(randomH, randomS, randomV), Qt::BackgroundRole);
 
 
