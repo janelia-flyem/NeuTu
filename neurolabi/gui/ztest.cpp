@@ -17568,8 +17568,8 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 0
-  ZDvidTarget target("emdata1.int.janelia.org", "98759", 8500);
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "b0f7d", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
 
@@ -17577,8 +17577,10 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   std::vector<uint64_t> bodyArray;
-  bodyArray.push_back(200015305);
-  bodyArray.push_back(63800311);
+  bodyArray.push_back(1248607);
+  bodyArray.push_back(1413886);
+  bodyArray.push_back(6503274);
+  bodyArray.push_back(8067132);
 
   std::vector<ZIntPoint> posArray;
 
@@ -18204,7 +18206,7 @@ void ZTest::test(MainWindow *host)
   bs.save(GET_TEST_DATA_DIR + "/split.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata2.int.janelia.org", "86e1", 7100);
 
   ZDvidReader reader;
