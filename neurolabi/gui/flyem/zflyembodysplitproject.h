@@ -102,6 +102,7 @@ public:
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       const ZIntPoint &dsIntv, size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
+  void decomposeBody();
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -116,6 +117,7 @@ public:
 
   void setMinObjSize(size_t s) { m_minObjSize = s; }
   void keepMainSeed(bool keeping) { m_keepingMainSeed = keeping; }
+  void enableCca(bool state) { m_runningCca = state; }
 
   std::string getSplitStatusName() const;
   std::string getSplitLabelName() const;
@@ -228,6 +230,7 @@ private:
 
   size_t m_minObjSize;
   bool m_keepingMainSeed;
+  bool m_runningCca;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

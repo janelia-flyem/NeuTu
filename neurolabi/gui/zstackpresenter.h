@@ -35,6 +35,7 @@ class ZInteractionEvent;
 class ZStackOperator;
 class ZStackMvc;
 class ZKeyOperationConfig;
+class ZStackDocMenuFactory;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -75,7 +76,7 @@ public:
     ACTION_SPLIT_DATA, ACTION_SHOW_BODY_IN_3D,
     ACTION_BODY_SPLIT_START, ACTION_ADD_SPLIT_SEED,
     ACTION_BODY_ANNOTATION, ACTION_BODY_CHECKIN, ACTION_BODY_CHECKOUT,
-    ACTION_BODY_FORCE_CHECKIN
+    ACTION_BODY_FORCE_CHECKIN, ACTION_BODY_DECOMPOSE
   };
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
@@ -243,6 +244,8 @@ public:
   virtual ZKeyOperationConfig* getKeyConfig();
   virtual void configKeyMap();
 
+  virtual ZStackDocMenuFactory* getMenuFactory();
+
 public: //test functions
   void testBiocytinProjectionMask();
 
@@ -305,6 +308,7 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
+  void notifyBodyDecomposeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
@@ -343,6 +347,7 @@ signals:
   void exitingRectEdit();
   void acceptingRectRoi();
   void rectRoiUpdated();
+  void bodyDecomposeTriggered();
 
 protected:
   void init();
@@ -470,6 +475,8 @@ protected:
   //ZMouseEventMoveMapper m_moveMapper;
 
   ZMouseEventProcessor m_mouseEventProcessor;
+
+  ZStackDocMenuFactory *m_menuFactory;
 
   int m_zOrder;
 

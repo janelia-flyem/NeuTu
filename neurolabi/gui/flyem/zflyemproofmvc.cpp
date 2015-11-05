@@ -790,6 +790,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBody()));
   connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
           this, SLOT(selectBodyInRoi(bool)));
+  connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
+          this, SLOT(decomposeBody()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -1815,6 +1817,18 @@ void ZFlyEmProofMvc::commitMerge()
   }
 }
 
+void ZFlyEmProofMvc::decomposeBody()
+{
+  const QString threadId = "ZFlyEmBodySplitProject::decomposeBody";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(
+          &m_splitProject, &ZFlyEmBodySplitProject::decomposeBody);
+    m_futureMap[threadId] = future;
+  }
+}
+
 void ZFlyEmProofMvc::commitCurrentSplit()
 {
   if (!getDocument()->isSegmentationReady()) {
@@ -1830,6 +1844,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   if (m_splitCommitDlg->exec()) {
     m_splitProject.setMinObjSize(m_splitCommitDlg->getGroupSize());
     m_splitProject.keepMainSeed(m_splitCommitDlg->keepingMainSeed());
+    m_splitProject.enableCca(m_splitCommitDlg->runningCca());
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();

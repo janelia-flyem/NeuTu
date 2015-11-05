@@ -133,6 +133,7 @@ public slots:
   void goToBodyTop();
   void selectBody();
   void processLabelSliceSelectionChange();
+  void decomposeBody();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
