@@ -374,8 +374,8 @@ protected:
   void process(const ZStackOperator &op);
 
   void acceptActiveStroke();
-  void acceptRectRoi();
-  virtual void processRectRoiUpdate(ZRect2d *rect);
+  void acceptRectRoi(bool appending);
+  virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
 protected:
   //ZStackFrame *m_parent;

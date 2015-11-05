@@ -9034,7 +9034,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

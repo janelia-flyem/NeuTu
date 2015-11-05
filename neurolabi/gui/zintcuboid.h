@@ -25,6 +25,8 @@ public:
     m_firstCorner.set(x, y, z);
   }
 
+  ZIntPoint getCorner(int index) const;
+
   inline void setLastCorner(const ZIntPoint &corner) {
     m_lastCorner = corner;
   }
@@ -103,6 +105,8 @@ public:
   bool isEmpty() const;
 
   bool equals(const ZIntCuboid &cuboid) const;
+
+  bool hasOverlap(const ZIntCuboid &box) const;
 
   //double distanceTo(const ZIntPoint &pt);
 

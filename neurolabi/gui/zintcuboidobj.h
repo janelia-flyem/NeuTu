@@ -38,6 +38,8 @@ public:
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }
 
+  void join(const ZIntCuboid &cuboid);
+
 
 public:
   ZIntCuboid m_cuboid;

@@ -142,7 +142,7 @@ public:
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
-  void updateSplitRoi(ZRect2d *rect);
+  void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending);
 
 signals:

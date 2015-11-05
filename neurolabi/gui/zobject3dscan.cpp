@@ -279,6 +279,11 @@ void ZObject3dScan::addStripeFast(int z, int y)
   m_stripeArray.push_back(stripe);
 }
 
+void ZObject3dScan::addStripeFast(const ZObject3dStripe &stripe)
+{
+  m_stripeArray.push_back(stripe);
+}
+
 void ZObject3dScan::addStripe(const ZObject3dStripe &stripe, bool canonizing)
 {
   bool lastStripeMergable = false;
@@ -1851,14 +1856,14 @@ ZObject3dScan ZObject3dScan::getSlice(int z) const
       }
 
       for (index = startIndex; index <= pi; ++index) {
-        slice.addStripe(m_stripeArray[index], false);
+        slice.addStripeFast(m_stripeArray[index]);
       }
 
       index = pi;
       while (++index < stripeNumber) {
         pz = m_stripeArray[index].getZ();
         if (z == pz) {
-          slice.addStripe(m_stripeArray[index], false);
+          slice.addStripe(m_stripeArray[index]);
         } else {
           break;
         }
@@ -2614,6 +2619,38 @@ void ZObject3dScan::addForegroundSlice8(ZStack *stack)
   }
 }
 
+int ZObject3dScan::subtractForegroundSlice8(ZStack *stack)
+{
+  ConstSegmentIterator iterator(this);
+  int z0 = stack->getOffset().getZ();
+  int y0 = stack->getOffset().getY();
+  int x0 = stack->getOffset().getX();
+  size_t stride_y = stack->width();
+  uint8_t *stackArray = stack->array8();
+
+  int count = 0;
+  while (iterator.hasNext()) {
+    const ZObject3dScan::Segment &seg = iterator.next();
+    int z = seg.getZ() - z0;
+    if (z == 0) {
+      int y = seg.getY() - y0;
+      if (y >= 0 && y < stack->height()) {
+        int startX = imax2(0, seg.getStart() - x0);
+        int endX = imin2(seg.getEnd() - x0, stack->width() - 1);
+        for (int x = startX; x <= endX; ++x) {
+          size_t offset = stride_y * y +  x;
+          if (stackArray[offset] > 0) {
+            stackArray[offset] -= 1;
+            ++count;
+          }
+        }
+      }
+    }
+  }
+
+  return count;
+}
+
 ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
 {
   int minZ = getMinZ();
@@ -2654,10 +2691,56 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   return subtracted;
 }
 
-ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj)
+void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
 {
-  int minZ = getMinZ();
-  int maxZ = getMaxZ();
+  int minZ = std::max(getMinZ(), obj.getMinZ());
+  int maxZ = std::min(getMaxZ(), obj.getMaxZ());
+
+//  ZObject3dScan subtracted;
+  ZObject3dScan remained;
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZObject3dScan slice = getSlice(z);
+    ZObject3dScan slice2 = obj.getSlice(z);
+
+    if (slice2.isEmpty()) {
+      remained.concat(slice);
+    } else if (!slice.isEmpty()) {
+      ZIntCuboid box1 = slice.getBoundBox();
+      ZIntCuboid box2 = slice2.getBoundBox();
+      bool processed = false;
+      if (box1.hasOverlap(box2)) {
+        ZStack *plane = slice.toStackObject();
+        if (slice2.subtractForegroundSlice8(plane) > 0) {
+          std::vector<ZObject3dScan*> objArray = extractAllObject(*plane);
+          for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+               iter != objArray.end(); ++iter) {
+            ZObject3dScan *obj = *iter;
+            if (obj->getLabel() == 1) {
+              remained.concat(*obj);
+            }
+            delete obj;
+          }
+          processed = true;
+        }
+        delete plane;
+      }
+
+      if (!processed) {
+        remained.concat(slice);
+      }
+    }
+  }
+
+//  remained.canonize();
+
+  this->copyDataFrom(remained);
+}
+
+ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
+{
+  int minZ = std::max(getMinZ(), obj.getMinZ());
+  int maxZ = std::min(getMaxZ(), obj.getMaxZ());
 
   ZObject3dScan result;
 

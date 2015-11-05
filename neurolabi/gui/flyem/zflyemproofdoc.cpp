@@ -1065,7 +1065,7 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
 //  ZRect2d rect = getRect2dRoi();
 
@@ -1081,7 +1081,6 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
   roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
   roi->clear();
 
-  executeRemoveObjectCommand(getSplitRoi());
 
   roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
@@ -1097,6 +1096,15 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
     }
   }
   m_splitSource.reset();
+
+  if (appending) {
+    ZIntCuboidObj *oldRoi = getSplitRoi();
+    if (oldRoi != NULL) {
+      roi->join(oldRoi->getCuboid());
+    }
+  }
+
+  executeRemoveObjectCommand(getSplitRoi());
 
   removeObject(rect, true);
 

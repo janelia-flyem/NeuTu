@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QElapsedTimer>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
@@ -665,6 +666,9 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
 {
   uint64_t newBodyId = 0;
 
+  QElapsedTimer timer;
+  timer.start();
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   if (bs.getVoxelNumber() >= 100000) {
     ZDvidInfo dvidInfo;
@@ -679,16 +683,20 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
     ZObject3dScan Bbf = dvidInfo.getBlockIndex(bf);
 
     ZObject3dScan bf_bs = bf;
-    bf_bs.subtract(bs);
+    bf_bs.subtractSliently(bs);
 
     ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bf_bs);
 
     ZObject3dScan Bsc = Bbf;
-    Bsc.subtract(Bbf_bs);
+    Bsc.subtractSliently(Bbf_bs);
+
+    std::cout << "Subract time: " << timer.elapsed() << std::endl;
 
     //Upload Bsc
     if (!Bsc.isEmpty()) {
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
+
+      std::cout << "Coarse time: " << timer.elapsed() << std::endl;
       if (newBodyId == 0) {
         LERROR() << "Failed to write coarse split.";
         return 0;
@@ -702,11 +710,93 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
       bBsc.translate(dvidInfo.getStartCoordinates());
 
       ZObject3dScan bsr = bs;
-      bsr.subtract(bBsc);
+      bsr.subtractSliently(bBsc);
+
+      std::cout << "Coarse processing time: " << timer.elapsed() << std::endl;
 
       //Upload remaining part
       if (!bsr.isEmpty()) {
         writeSplit(bsr, oldLabel, 0, newBodyId);
+        std::cout << "Fine time: " << timer.elapsed() << std::endl;
+      }
+    } else {
+      newBodyId = writeSplit(bs, oldLabel, 0);
+    }
+  } else {
+    newBodyId = writeSplit(bs, oldLabel, 0);
+  }
+#else
+  newBodyId = writeSplit(bs, oldLabel, 0);
+#endif
+
+  return newBodyId;
+}
+
+uint64_t ZDvidWriter::writePartition(
+    const ZObject3dScan &bm, const ZObject3dScan &bs, uint64_t oldLabel)
+{
+  uint64_t newBodyId = 0;
+
+  QElapsedTimer timer;
+  timer.start();
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (bs.getVoxelNumber() >= 100000) {
+    ZDvidInfo dvidInfo;
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+      dvidInfo = reader.readGrayScaleInfo();
+    } else {
+      LERROR() << "DVID connection error.";
+      return 0;
+    }
+
+    ZObject3dScan Bsc = dvidInfo.getBlockIndex(bs);
+    ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bm);
+
+//    ZObject3dScan Bsc = Bbf;
+    Bsc.subtractSliently(Bbf_bs);
+
+    std::cout << "Subract time: " << timer.elapsed() << std::endl;
+
+    //Upload Bsc
+    if (!Bsc.isEmpty()) {
+      newBodyId = writeCoarseSplit(Bsc, oldLabel);
+
+      std::cout << "Coarse time: " << timer.elapsed() << std::endl;
+      if (newBodyId == 0) {
+        LERROR() << "Failed to write coarse split.";
+        return 0;
+      }
+
+      ZObject3dScan Bbs = dvidInfo.getBlockIndex(bs);
+      Bbs.subtractSliently(Bsc);
+      ZObject3dScan bBbs = Bbs;
+      bBbs.translate(-dvidInfo.getStartBlockIndex());
+      bBbs.upSample(dvidInfo.getBlockSize().getX() - 1,
+                    dvidInfo.getBlockSize().getY() - 1,
+                    dvidInfo.getBlockSize().getZ() - 1);
+      bBbs.translate(dvidInfo.getStartCoordinates());
+
+      ZObject3dScan bsr = bs.intersect(bBbs);
+#if 0
+      ZObject3dScan bBsc = Bsc;
+      bBsc.translate(-dvidInfo.getStartBlockIndex());
+      bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
+                    dvidInfo.getBlockSize().getY() - 1,
+                    dvidInfo.getBlockSize().getZ() - 1);
+      bBsc.translate(dvidInfo.getStartCoordinates());
+
+      ZObject3dScan bsr = bs;
+      bsr.subtractSliently(bBsc);
+#endif
+
+      std::cout << "Coarse processing time: " << timer.elapsed() << std::endl;
+
+      //Upload remaining part
+      if (!bsr.isEmpty()) {
+        writeSplit(bsr, oldLabel, 0, newBodyId);
+        std::cout << "Fine time: " << timer.elapsed() << std::endl;
       }
     } else {
       newBodyId = writeSplit(bs, oldLabel, 0);
