@@ -9,6 +9,7 @@
 #include <QImage>
 #include <QDateTime>
 #include <QPainter>
+#include <QElapsedTimer>
 #include <QProcess>
 #include <iostream>
 #include <ostream>
@@ -17568,7 +17569,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "b0f7d", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
@@ -18429,6 +18430,43 @@ void ZTest::test(MainWindow *host)
 
   tree.save(dataDir + "/" + baseName + "_scaled.swc");
 
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+  reader.open(target);
+#endif
+
+#if 1
+  libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
+  std::cout << "Reading tiles ..." << std::endl;
+
+  while (1) {
+    QElapsedTimer timer;
+    timer.start();
+    std::vector<std::vector<int> > tile_locs_array(6);
+    for (size_t i = 0; i < tile_locs_array.size(); ++i) {
+      std::vector<int> loc(3);
+      loc[0] = 3 + i;
+      loc[1] = 3 + i;
+      loc[2] = 9259;
+      tile_locs_array[i] = loc;
+    }
+
+    try {
+      const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
+            service, "tiles", libdvid::XY, 0,
+            tile_locs_array);
+      std::cout << data.size() << "x tile reading time: "
+                << timer.elapsed() << std::endl;
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+//      break;
+    }
+
+  }
 #endif
 
   std::cout << "Done." << std::endl;
