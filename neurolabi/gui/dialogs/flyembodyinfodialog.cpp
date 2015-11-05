@@ -50,6 +50,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // office phone number = random seed
     qsrand(2094656);
+    m_quitting = false;
 
 
     // first table manages list of bodies
@@ -68,10 +69,18 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     //  as a whole constitute the color map
     m_filterModel = createFilterModel(ui->filterTableView);
 
-    m_filterProxy = new QSortFilterProxyModel(m_filterModel);
+    m_filterProxy = new QSortFilterProxyModel(this);
     m_filterProxy->setSourceModel(m_filterModel);
     ui->filterTableView->setModel(m_filterProxy);
     ui->filterTableView->setColumnWidth(0, 450);
+
+    // this proxy is used to build color schemes; it's not hooked
+    //  to a table view; match the filter settings of the body filter!
+    m_schemeBuilderProxy = new QSortFilterProxyModel(this);
+    m_schemeBuilderProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    // -1 = filter on all columns!  ALL!  no column left behind!
+    m_schemeBuilderProxy->setFilterKeyColumn(-1);
+    m_schemeBuilderProxy->setSourceModel(m_bodyModel);
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
@@ -559,8 +568,6 @@ void FlyEmBodyInfoDialog::onSaveColorFilter() {
 }
 
 void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
-    std::cout << "updating color filter " << filter.toStdString() << std::endl;
-
     QStandardItem * filterTextItem = new QStandardItem(filter);
     QStandardItem * filterColorItem = new QStandardItem();
 
@@ -589,10 +596,39 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     ui->filterTableView->setColumnWidth(0, 450);
 
 
+    updateColorScheme();
+
+
 }
 
+void FlyEmBodyInfoDialog::updateColorScheme() {
+    // loop over filters in filter table; attach filter to our scheme builder
+    //  proxy; loop over the filtered body IDs and throw them and the color into
+    //  the color scheme
+    // std::cout << "filters found:" << std::endl;
+    for (int i=0; i<m_filterProxy->rowCount(); i++) {
+        QString filterString = m_filterProxy->data(m_filterProxy->index(i, 0)).toString();
+        // std::cout << filterString.toStdString() << std::endl;
+        m_schemeBuilderProxy->setFilterFixedString(filterString);
+
+        // std::cout << "bodies in filter: " << m_schemeBuilderProxy->rowCount() << std::endl;
+        QColor color = m_filterProxy->data(m_filterProxy->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
+            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, 0)).toLongLong();
+            m_colorScheme.setBodyColor(bodyId, color);
+        }
+    }
+
+    emit colorMapChanged(m_colorScheme);
+
+    // test: print it out
+    // m_colorScheme.print();
+
+}
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
     delete ui;
 }
+
+

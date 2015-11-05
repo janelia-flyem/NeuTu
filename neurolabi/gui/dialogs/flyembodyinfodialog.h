@@ -6,6 +6,7 @@
 
 #include "dvid/zdvidtarget.h"
 #include "zjsonobject.h"
+#include "flyem/zflyemsequencercolorscheme.h"
 
 namespace Ui {
 class FlyEmBodyInfoDialog;
@@ -27,6 +28,7 @@ signals:
   void dataChanged(ZJsonValue object);
   void jsonLoadError(QString message);
   void loadCompleted();
+  void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
 
 private slots:
     void onCloseButton();
@@ -46,6 +48,8 @@ private:
     QStandardItemModel* m_filterModel;
     QSortFilterProxyModel* m_bodyProxy;
     QSortFilterProxyModel* m_filterProxy;
+    QSortFilterProxyModel* m_schemeBuilderProxy;
+    ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
@@ -62,6 +66,7 @@ private:
     void clearStatusLabel();
     void init();
     void updateColorFilter(QString filter, QString oldFilter = "");
+    void updateColorScheme();
 };
 
 #endif // FLYEMBODYINFODIALOG_H
