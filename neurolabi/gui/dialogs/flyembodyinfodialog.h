@@ -41,6 +41,7 @@ private slots:
     void filterUpdated(QString filterText);
     void applicationQuitting();    
     void onSaveColorFilter();
+    void onFilterTableClicked(const QModelIndex &index);
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
