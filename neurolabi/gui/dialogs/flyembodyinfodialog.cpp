@@ -88,8 +88,9 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
-    connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
+    connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
+    connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onFilterTableDoubleClicked(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
@@ -209,7 +210,7 @@ void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
     }
 }
 
-void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
+void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
     m_bodyProxy->setFilterFixedString(filterText);
 
     // turns out you need to explicitly tell it to resort after the filter
@@ -579,6 +580,12 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     int randomV = 76 + qrand() % 128;
     filterColorItem->setData(QColor::fromHsv(randomH, randomS, randomV), Qt::BackgroundRole);
 
+    // table rows are selectable, but selecting changes how color is rendered;
+    //  so disallow selection of color items
+    Qt::ItemFlags flags = filterColorItem->flags();
+    flags &= ~Qt::ItemIsSelectable;
+    filterColorItem->setFlags(flags);
+
     m_filterModel->appendRow(filterTextItem);
     m_filterModel->setItem(m_filterModel->rowCount() - 1, 1, filterColorItem);
 
@@ -591,9 +598,9 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
 void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyIndex) {
     QModelIndex modelIndex = m_filterProxy->mapToSource(proxyIndex);
     if (proxyIndex.column() == 0) {
-        // double-click on filter text; edit it
-        // coming soon
-        std::cout << "pretending to edit filter at (visible) row " << proxyIndex.row() << std::endl;
+        // double-click on filter text; move to body list
+        QString filterString = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 0)).toString();
+        ui->bodyFilterField->setText(filterString);
     } else if (proxyIndex.column() == 1) {
         // double-click on color; change it
         QColor currentColor = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 1), Qt::BackgroundRole).value<QColor>();
@@ -601,11 +608,26 @@ void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyInd
         if (newColor.isValid()) {
             QStandardItem * filterColorItem = new QStandardItem();
             filterColorItem->setData(newColor, Qt::BackgroundRole);
+            // see updateColorFilter() for flag details:
+            Qt::ItemFlags flags = filterColorItem->flags();
+            flags &= ~Qt::ItemIsSelectable;
+            filterColorItem->setFlags(flags);
             m_filterModel->setItem(modelIndex.row(), 1, filterColorItem);
             updateColorScheme();
         }
     }
 }
+
+void FlyEmBodyInfoDialog::moveToBodyList() {
+    // moves selected color filter to body list
+    if (ui->filterTableView->selectionModel()->hasSelection()) {
+        // we only allow single row selections; get the filter string
+        //  from the selected row; only one, so take the first index thereof:
+        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QString filterString = m_filterModel->data(m_filterProxy->mapToSource(viewIndex)).toString();
+        ui->bodyFilterField->setText(filterString);
+        }
+    }
 
 void FlyEmBodyInfoDialog::updateColorScheme() {
     // loop over filters in filter table; attach filter to our scheme builder

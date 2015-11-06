@@ -38,10 +38,11 @@ private slots:
     void onJsonLoadError(QString message);
     void updateStatusLabel();
     void updateStatusAfterLoading();
-    void filterUpdated(QString filterText);
+    void bodyFilterUpdated(QString filterText);
     void applicationQuitting();    
     void onSaveColorFilter();
     void onFilterTableDoubleClicked(const QModelIndex &index);
+    void moveToBodyList();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;

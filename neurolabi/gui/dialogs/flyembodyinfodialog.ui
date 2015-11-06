@@ -150,7 +150,10 @@
       <set>QAbstractItemView::EditKeyPressed</set>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::NoSelection</enum>
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <property name="sortingEnabled">
       <bool>true</bool>
@@ -179,9 +182,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="toBodyListButton">
        <property name="text">
-        <string>Buttons go here</string>
+        <string>To body list</string>
        </property>
       </widget>
      </item>
