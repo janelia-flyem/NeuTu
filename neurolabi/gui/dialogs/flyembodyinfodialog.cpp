@@ -49,7 +49,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui->setupUi(this);
 
     // office phone number = random seed
-    qsrand(2094656);
+    qsrand(5712094656);
     m_quitting = false;
 
 
@@ -90,7 +90,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
-    connect(ui->filterTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onFilterTableClicked(QModelIndex)));
+    connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onFilterTableDoubleClicked(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -572,12 +572,6 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     QStandardItem * filterTextItem = new QStandardItem(filter);
     QStandardItem * filterColorItem = new QStandardItem();
 
-    // not very random, not very fancy:
-    // int randomR = qrand() % 256;
-    // int randomG = qrand() % 256;
-    // int randomB = qrand() % 256;
-    // filterColorItem->setData(QColor(randomR, randomG, randomB), Qt::BackgroundRole);
-
     // Raveler's palette: h, s, v = (random.uniform(0, 6.283), random.uniform(0.3, 1.0), 
     //  random.uniform(0.3, 0.8)); that approximately translates to:
     int randomH = qrand() % 360;
@@ -594,14 +588,14 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     updateColorScheme();
 }
 
-void FlyEmBodyInfoDialog::onFilterTableClicked(const QModelIndex &proxyIndex) {
+void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyIndex) {
     QModelIndex modelIndex = m_filterProxy->mapToSource(proxyIndex);
     if (proxyIndex.column() == 0) {
-        // clicked on filter text; edit it
+        // double-click on filter text; edit it
         // coming soon
         std::cout << "pretending to edit filter at (visible) row " << proxyIndex.row() << std::endl;
     } else if (proxyIndex.column() == 1) {
-        // clicked on color; change it
+        // double-click on color; change it
         QColor currentColor = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 1), Qt::BackgroundRole).value<QColor>();
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
@@ -631,7 +625,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
     emit colorMapChanged(m_colorScheme);
 
     // test: print it out
-    m_colorScheme.print();
+    // m_colorScheme.print();
 
 }
 
