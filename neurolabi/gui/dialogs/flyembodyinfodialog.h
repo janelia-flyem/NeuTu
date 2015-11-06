@@ -43,6 +43,7 @@ private slots:
     void onSaveColorFilter();
     void onFilterTableDoubleClicked(const QModelIndex &index);
     void moveToBodyList();
+    void onDeleteButton();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;

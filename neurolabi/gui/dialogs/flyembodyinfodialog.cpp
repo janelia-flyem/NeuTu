@@ -91,6 +91,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
+    connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onFilterTableDoubleClicked(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
@@ -615,6 +616,16 @@ void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyInd
             m_filterModel->setItem(modelIndex.row(), 1, filterColorItem);
             updateColorScheme();
         }
+    }
+}
+
+void FlyEmBodyInfoDialog::onDeleteButton() {
+    if (ui->filterTableView->selectionModel()->hasSelection()) {
+        // we only allow single row selections; get the filter string
+        //  from the selected row; only one, so take the first index thereof:
+        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QModelIndex modelIndex = m_filterProxy->mapToSource(viewIndex);
+        m_filterModel->removeRow(modelIndex.row());
     }
 }
 
