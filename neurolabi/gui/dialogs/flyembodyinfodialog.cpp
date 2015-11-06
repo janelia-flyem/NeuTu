@@ -626,6 +626,7 @@ void FlyEmBodyInfoDialog::onDeleteButton() {
         QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
         QModelIndex modelIndex = m_filterProxy->mapToSource(viewIndex);
         m_filterModel->removeRow(modelIndex.row());
+        updateColorScheme();
     }
 }
 
