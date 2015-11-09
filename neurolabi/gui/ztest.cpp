@@ -253,7 +253,8 @@ using namespace std;
 #include "flyem/zflyemproofdoc.h"
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
-
+#include "zsleeper.h"
+#include "dvid/zdvidtileensemble.h"
 
 using namespace std;
 
@@ -18439,10 +18440,13 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 #endif
 
-#if 1
+#if 0
   libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
   std::cout << "Reading tiles ..." << std::endl;
 
+  ZSleeper sleeper;
+
+  int count = 0;
   while (1) {
     QElapsedTimer timer;
     timer.start();
@@ -18466,6 +18470,29 @@ void ZTest::test(MainWindow *host)
 //      break;
     }
 
+    std::cout << "#Reading: " << ++count << std::endl;
+    if (count % 2600 == 0) {
+      sleeper.sleep(60);
+    }
+  }
+#endif
+
+#if 1
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidTileEnsemble ensemble;
+  ensemble.setDvidTarget(target);
+
+  std::vector<ZDvidTileInfo::TIndex> tileIndices;
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
+
+  while (1) {
+    ensemble.update(tileIndices, 0, 9259);
   }
 #endif
 

@@ -8435,6 +8435,9 @@ void ZStackDoc::localSeededWatershed()
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
+#ifdef _DEBUG_2
+          signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
           dsIntv = sparseStack->getDownsampleInterval();
         }
       }

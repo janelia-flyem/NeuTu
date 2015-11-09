@@ -1406,28 +1406,20 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       getProgressSignal()->advanceProgress(0.1);
 
-      if (body == NULL) {
-        body = reader.readDvidSparseStack(bodyId);
-      }
+      if (reader.hasCoarseSparseVolume(bodyId)) {
+        if (body == NULL) {
+          body = reader.readDvidSparseStackAsync(bodyId);
+          body->setZOrder(0);
+          body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+          body->setColor(labelSlice->getColor(
+                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+          body->setSelectable(false);
+          getDocument()->addObject(body, true);
+//          body->setLabel(bodyId);
+          //        body->getObjectMask()->setLabel(bodyId);
+        }
 
-      if (body->isEmpty()) {
-        delete body;
-        body = NULL;
-
-        QString msg = QString("Invalid body id: %1").arg(bodyId);
-        emit messageGenerated(
-              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-        emit errorGenerated(msg);
-      } else {
-        body->setZOrder(0);
-        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setMaskColor(labelSlice->getColor(
-                             bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-        body->setSelectable(false);
-        body->getObjectMask()->setLabel(bodyId);
-        getDocument()->addObject(body, true);
         m_splitProject.setBodyId(bodyId);
-
         getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
         labelSlice->setVisible(false);
@@ -1438,7 +1430,13 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         getProgressSignal()->advanceProgress(0.1);
 
         emit splitBodyLoaded(bodyId);
+      } else {
+        QString msg = QString("Invalid body id: %1").arg(bodyId);
+        emit messageGenerated(
+              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+        emit errorGenerated(msg);
       }
+
 
 //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
 

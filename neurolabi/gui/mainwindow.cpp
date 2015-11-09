@@ -6684,13 +6684,13 @@ bool MainWindow::initBodySplitProject()
     }
     if (!bodyIdArray.empty()) {
       int bodyId = bodyIdArray[0];
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       tic();
 #endif
       ZSparseStack *spStack = reader.readSparseStack(bodyId);
 
       if (spStack != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         ptoc();
         std::cout << "Voxel number: " << spStack->getObjectMask()->getVoxelNumber()
                   << std::endl;
