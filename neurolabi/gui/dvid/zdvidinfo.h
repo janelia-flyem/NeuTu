@@ -104,6 +104,10 @@ public:
 
   bool isValid() const;
 
+  void setStackSize(int width, int height, int depth);
+  void setStartBlockIndex(int x, int y, int z);
+  void setEndBlockIndex(int x, int y, int z);
+
 private:
   std::vector<int> m_stackSize;
   //std::vector<double> m_voxelResolution;

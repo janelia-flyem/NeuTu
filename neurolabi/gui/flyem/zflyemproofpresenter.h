@@ -42,10 +42,14 @@ public:
     m_splitWindowMode = state;
   }
 
-  void processRectRoiUpdate(ZRect2d *rect);
+  void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
   ZKeyOperationConfig* getKeyConfig();
   void configKeyMap();
+
+//  void createBodyContextMenu();
+
+  ZStackDocMenuFactory* getMenuFactory();
 
 private:
   void tryAddBookmarkMode();

@@ -96,6 +96,8 @@ public:
 
   uint64_t writeSplitMultires(
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
+  uint64_t writePartition(const ZObject3dScan &bm, const ZObject3dScan &bs,
+                          uint64_t oldLabel);
 
   uint64_t writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel);
 

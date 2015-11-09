@@ -8435,6 +8435,9 @@ void ZStackDoc::localSeededWatershed()
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
+#ifdef _DEBUG_2
+          signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
           dsIntv = sparseStack->getDownsampleInterval();
         }
       }
@@ -9034,7 +9037,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

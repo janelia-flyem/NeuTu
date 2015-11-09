@@ -13,6 +13,7 @@ ZDvidTileEnsemble::ZDvidTileEnsemble()
   setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
   m_highContrast = false;
+  m_view = NULL;
 }
 
 ZDvidTileEnsemble::~ZDvidTileEnsemble()

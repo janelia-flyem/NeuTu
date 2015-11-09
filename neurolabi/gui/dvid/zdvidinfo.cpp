@@ -409,3 +409,20 @@ ZIntPoint ZDvidInfo::getEndCoordinates() const
 
   return pt;
 }
+
+void ZDvidInfo::setStackSize(int width, int height, int depth)
+{
+  m_stackSize[0] = width;
+  m_stackSize[1] = height;
+  m_stackSize[2] = depth;
+}
+
+void ZDvidInfo::setStartBlockIndex(int x, int y, int z)
+{
+  m_startBlockIndex.set(x, y, z);
+}
+
+void ZDvidInfo::setEndBlockIndex(int x, int y, int z)
+{
+  m_endBlockIndex.set(x, y, z);
+}

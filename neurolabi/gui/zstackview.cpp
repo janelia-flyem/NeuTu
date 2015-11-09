@@ -1374,10 +1374,6 @@ void ZStackView::paintStackBuffer()
           slice->getOffset().setZ(0);
 
           m_image->setData(slice, 0, true);
-          /*
-          buddyDocument()->getSparseStack()->getObjectMask()->display(
-                m_imagePainter, sliceIndex(), ZStackObject::BOUNDARY);
-                */
           delete slice;
         }
       }

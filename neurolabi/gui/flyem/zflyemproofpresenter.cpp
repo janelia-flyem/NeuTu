@@ -11,6 +11,7 @@
 #include "zflyemproofdoc.h"
 #include "zkeyoperationconfig.h"
 #include "flyem/zflyemkeyoperationconfig.h"
+#include "flyem/zflyemproofdocmenufactory.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -52,6 +53,16 @@ ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
         */
 
   return presenter;
+}
+
+ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
+{
+  if (m_menuFactory == NULL) {
+    m_menuFactory = new ZFlyEmProofDocMenuFactory;
+    m_menuFactory->setAdminState(NeuTube::IsAdminUser());
+  }
+
+  return m_menuFactory;
 }
 
 ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
@@ -272,14 +283,26 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
   m_highTileContrast = high;
 }
 
-void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect)
+void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (isSplitOn()) {
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
-      doc->updateSplitRoi(rect);
+      doc->updateSplitRoi(rect, appending);
     }
   } else {
-    buddyDocument()->processRectRoiUpdate(rect);
+    buddyDocument()->processRectRoiUpdate(rect, appending);
   }
 }
+
+/*
+void ZFlyEmProofPresenter::createBodyContextMenu()
+{
+  if (m_bodyContextMenu == NULL) {
+//    ZStackDocMenuFactory menuFactory;
+//    menuFactory.setAdminState(NeuTube::IsAdminUser());
+    m_bodyContextMenu =
+        getMenuFactory()->makeBodyContextMenu(this, getParentWidget(), NULL);
+  }
+}
+*/
