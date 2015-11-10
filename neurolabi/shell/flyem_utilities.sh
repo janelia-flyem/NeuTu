@@ -73,7 +73,7 @@ function update_neutu {
   flyem_neutu_update $install_dir
   if [ -d $target_dir/neurolabi/build_debug ]
   then
-    flyem_neutu_update $1 debug
+    flyem_neutu_update $install_dir debug
   fi
 }
 
