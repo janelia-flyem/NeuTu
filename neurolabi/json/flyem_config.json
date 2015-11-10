@@ -529,13 +529,13 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "fa60",
+      "uuid": "e402",
       "name": "FIB25_new",
-      "comment": "created from raveler",
+      "comment": "branched from fa60",
       "body_label": "bodies1104",
       "label_block": "labels1104",
       "multires_tile": "graytiles",
-      "user_name": ["zhaot"]
+      "user_name": ["zhaot", "takemuras"]
     }
   ]
 }
