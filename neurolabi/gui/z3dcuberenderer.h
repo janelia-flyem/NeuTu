@@ -119,18 +119,15 @@ public:
     float x,y,z; // center offsets
 };
 
-/// Z3DTriangleRenderer
-class Z3DTriangleRenderer : public Z3DPrimitiveRenderer
+/// Z3DCubeRenderer
+class Z3DCubeRenderer : public Z3DPrimitiveRenderer
 {
   Q_OBJECT
 public:
-  // default use display list and lighting for opengl mode
-  explicit Z3DTriangleRenderer(QObject *parent = 0);
-  virtual ~Z3DTriangleRenderer();
+  explicit Z3DCubeRenderer(QObject *parent = 0);
+  virtual ~Z3DCubeRenderer();
 
-  void setData(std::vector<glm::vec4> *pointAndRadiusInput, std::vector<glm::vec4> *specularAndShininessInput = NULL);
-  void setDataColors(std::vector<glm::vec4> *pointColorsInput);
-  void setDataPickingColors(std::vector<glm::vec4> *pointPickingColorsInput = NULL);
+  void addCube(int sx, int sy, int sz, int tx, int ty, int tz, QVector4D color);
 
 protected:
   virtual void compile();
@@ -144,12 +141,8 @@ protected:
   virtual void render(Z3DEye eye);
   virtual void renderPicking(Z3DEye eye);
 
-  void appendDefaultColors();
-
-  Z3DShaderGroup m_sphereShaderGrp;
-
-  ZIntParameter m_cube;
-  ZBoolParameter m_useDynamicMaterial;
+  Z3DShaderGroup m_cubeShaderGrp;
+  Z3DShaderGroup m_screenShaderGrp;
 
 private:
   std::vector<glm::vec4> m_pointAndRadius;
@@ -159,15 +152,24 @@ private:
   std::vector<GLfloat> m_allFlags;
   std::vector<GLuint> m_indexs;
 
-  //std::vector<GLuint> m_VBOs;
-  //std::vector<GLuint> m_pickingVBOs;
+  std::vector<Cube> m_cubes;
+
+  Quadrilateral screen;
+  GLuint m_vao, m_vbo;
+  GLuint m_fbo;
+  GLuint m_db;
+  GLuint m_rt;
+
   std::vector<GLuint> m_VAOs;
   std::vector<GLuint> m_pickingVAOs;
-  std::vector<std::vector<GLuint> > m_VBOs;
-  std::vector<std::vector<GLuint> > m_pickingVBOs;
+  std::vector<GLuint> m_VBOs;
+  std::vector<GLuint> m_pickingVBOs;
+
   bool m_dataChanged;
   bool m_pickingDataChanged;
   size_t m_oneBatchNumber;
+
+  size_t m_numCubes;
 };
 
 #endif // Z3DCUBERENDERER_H
