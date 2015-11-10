@@ -56,6 +56,8 @@ public:
                        const std::string jsonString);
   void writeJson(const std::string &dataName, const std::string &key,
                  const ZJsonValue &obj);
+  void writeJson(const std::string &url, const ZJsonValue &value,
+                 const std::string &emptyValueString = "");
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
@@ -128,8 +130,6 @@ public:
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 //  void writeJson(const std::string url, const ZJsonValue &value);
-  void writeJson(const std::string &url, const ZJsonValue &value,
-                 const std::string &emptyValueString);
   void writeJsonString(const std::string &url, const std::string &jsonString);
 
   ZJsonValue getLocMessage(const std::string &message);

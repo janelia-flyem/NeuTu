@@ -525,6 +525,17 @@
       "label_block": "segmentation",
       "multires_tile": "graytiles",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "shinomiyak", "olbrisd"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "fa60",
+      "name": "FIB25_new",
+      "comment": "created from raveler",
+      "body_label": "bodies1104",
+      "label_block": "labels1104",
+      "multires_tile": "graytiles",
+      "user_name": ["zhaot"]
     }
   ]
 }

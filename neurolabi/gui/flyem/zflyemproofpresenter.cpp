@@ -271,6 +271,8 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
 
   getAction(ZStackPresenter::ACTION_BODY_SPLIT_START)->setVisible(
         !isSplitWindow());
+  getAction(ZStackPresenter::ACTION_BODY_DECOMPOSE)->setVisible(
+        isSplitWindow());
 }
 
 bool ZFlyEmProofPresenter::highTileContrast() const

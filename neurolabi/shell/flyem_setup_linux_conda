@@ -14,8 +14,14 @@ cd $downloadDir
 condaDir=$install_dir/Download/miniconda
 if [ ! -d $condaDir ]
 then
-  wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-  bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+  if [ `uname` == 'Darwin' ]
+  then
+    curl -O https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
+    bash Miniconda-latest-MacOSX-x86_64.sh -p $condaDir
+  else
+    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+    bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+  fi
 fi
 
 if [ ! -d $condaDir/envs/dvidenv ]

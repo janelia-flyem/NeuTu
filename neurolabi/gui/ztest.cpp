@@ -18496,7 +18496,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan wholeRoi;
   wholeRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/whole_roi.json");
 
@@ -18513,6 +18513,25 @@ void ZTest::test(MainWindow *host)
   ZJsonArray json = factory.MakeJsonArray(wholeRoi);
 
   json.dump(GET_TEST_DATA_DIR + "/flyem/AL/whole_sub_glomerulus_roi.json");
+#endif
+
+#if 1
+  ZJsonObject jsonObj;
+  jsonObj.load(GET_TEST_DATA_DIR +
+               "/flyem/FIB/fib25/annotations-synapse-shinya1-13_20151104-dvid.json");
+
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fa60", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setLabelBlockName("labels1104");
+
+  ZDvidUrl url(target);
+
+  if (writer.open(target)) {
+    writer.writeJson(url.getSynapseAnnotationUrl(), jsonObj);
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;
