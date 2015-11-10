@@ -791,7 +791,13 @@ void ZFlyEmBodySplitProject::decomposeBody()
   getProgressSignal()->startProgress("Decomposing body");
   emitMessage("Uploading results ...");
 
-  ZObject3dScan *wholeBody = getDocument()->getSparseStackMask();
+  ZObject3dScan *wholeBody = NULL;
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
+    wholeBody = doc->getBodyForSplit()->getObjectMask();
+  } else {
+    wholeBody = getDocument()->getSparseStackMask();
+  }
 
   getProgressSignal()->advanceProgress(0.1);
   emitMessage(QString("Identifying isolated objects ..."));

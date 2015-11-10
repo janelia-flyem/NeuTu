@@ -18477,7 +18477,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "86e1", 7100);
@@ -18494,6 +18494,25 @@ void ZTest::test(MainWindow *host)
   while (1) {
     ensemble.update(tileIndices, 0, 9259);
   }
+#endif
+
+#if 1
+  ZObject3dScan wholeRoi;
+  wholeRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/whole_roi.json");
+
+  std::cout << "Whole size: " << wholeRoi.getVoxelNumber() << std::endl;
+
+  ZObject3dScan glomRoi;
+  glomRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/glomerulus_roi.json");
+
+  std::cout << "Glom size: " << glomRoi.getVoxelNumber() << std::endl;
+
+  wholeRoi.subtractSliently(glomRoi);
+
+  ZJsonFactory factory;
+  ZJsonArray json = factory.MakeJsonArray(wholeRoi);
+
+  json.dump(GET_TEST_DATA_DIR + "/flyem/AL/whole_sub_glomerulus_roi.json");
 #endif
 
   std::cout << "Done." << std::endl;
