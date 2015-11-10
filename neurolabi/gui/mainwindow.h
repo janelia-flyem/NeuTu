@@ -460,6 +460,8 @@ private slots:
 
   void on_actionSubtract_Background_triggered();
 
+  void on_actionImport_Sparsevol_Json_triggered();
+
 private:
   void createActions();
   void createFileActions();

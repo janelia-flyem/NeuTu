@@ -293,8 +293,7 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
       if (bookmark != NULL) {
-        if (bookmark->isCustom() &&
-            bookmark->getBodyId() == m_currentBodyId) {
+        if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
         }
       }
