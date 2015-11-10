@@ -14,10 +14,10 @@ fi
 
 source $master_dir/neurolabi/shell/flyem_utilities.sh
 
-flyem_neutu_update $1
-if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
+flyem_neutu_update $install_dir
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
 then
-  flyem_neutu_update $1 debug
+  flyem_neutu_update $install_dir debug
 fi
 
 
