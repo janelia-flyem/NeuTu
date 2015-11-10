@@ -1,8 +1,8 @@
-// triangle renderer for rendering triangles, quads, and cubes
+// cube renderer for rendering triangles, quads, and cubes
 // Yang Yu, 11/11/2015
 
-#ifndef Z3DTRIANGLERENDERER_H
-#define Z3DTRIANGLERENDERER_H
+#ifndef Z3DCUBERENDERER_H
+#define Z3DCUBERENDERER_H
 
 #include "z3dprimitiverenderer.h"
 #include "z3dshadergroup.h"
@@ -170,4 +170,4 @@ private:
   size_t m_oneBatchNumber;
 };
 
-#endif // Z3DTRIANGLERENDERER_H
+#endif // Z3DCUBERENDERER_H

@@ -1,8 +1,8 @@
-// triangle renderer for rendering triangles, quads, and cubes
+// cube renderer for rendering triangles, quads, and cubes
 // Yang Yu, 11/11/2015
 
 #include "zglew.h"
-#include "z3dtrianglerenderer.h"
+#include "z3dcuberenderer.h"
 
 #include "z3dgpuinfo.h"
 #include "zglmutils.h"

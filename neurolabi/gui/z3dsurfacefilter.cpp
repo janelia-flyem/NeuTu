@@ -2,7 +2,7 @@
 #include "z3dlinerenderer.h"
 #include "z3dsphererenderer.h"
 #include "z3dconerenderer.h"
-#include "z3dtrianglerenderer.h"
+#include "z3dcuberenderer.h"
 #include "neutubeconfig.h"
 
 using namespace std;
