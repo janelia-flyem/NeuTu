@@ -9,6 +9,7 @@
 #include <QImage>
 #include <QDateTime>
 #include <QPainter>
+#include <QElapsedTimer>
 #include <QProcess>
 #include <iostream>
 #include <ostream>
@@ -252,7 +253,8 @@ using namespace std;
 #include "flyem/zflyemproofdoc.h"
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
-
+#include "zsleeper.h"
+#include "dvid/zdvidtileensemble.h"
 
 using namespace std;
 
@@ -17568,7 +17570,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "b0f7d", 8500);
   target.setLabelBlockName("labels3");
   target.setBodyLabelName("bodies3");
@@ -18428,6 +18430,107 @@ void ZTest::test(MainWindow *host)
 //  sampler.radiusResample(&tree);
 
   tree.save(dataDir + "/" + baseName + "_scaled.swc");
+
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+  reader.open(target);
+#endif
+
+#if 0
+  libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
+  std::cout << "Reading tiles ..." << std::endl;
+
+  ZSleeper sleeper;
+
+  int count = 0;
+  while (1) {
+    QElapsedTimer timer;
+    timer.start();
+    std::vector<std::vector<int> > tile_locs_array(6);
+    for (size_t i = 0; i < tile_locs_array.size(); ++i) {
+      std::vector<int> loc(3);
+      loc[0] = 3 + i;
+      loc[1] = 3 + i;
+      loc[2] = 9259;
+      tile_locs_array[i] = loc;
+    }
+
+    try {
+      const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
+            service, "tiles", libdvid::XY, 0,
+            tile_locs_array);
+      std::cout << data.size() << "x tile reading time: "
+                << timer.elapsed() << std::endl;
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+//      break;
+    }
+
+    std::cout << "#Reading: " << ++count << std::endl;
+    if (count % 2600 == 0) {
+      sleeper.sleep(60);
+    }
+  }
+#endif
+
+#if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidTileEnsemble ensemble;
+  ensemble.setDvidTarget(target);
+
+  std::vector<ZDvidTileInfo::TIndex> tileIndices;
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
+
+  while (1) {
+    ensemble.update(tileIndices, 0, 9259);
+  }
+#endif
+
+#if 0
+  ZObject3dScan wholeRoi;
+  wholeRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/whole_roi.json");
+
+  std::cout << "Whole size: " << wholeRoi.getVoxelNumber() << std::endl;
+
+  ZObject3dScan glomRoi;
+  glomRoi.importDvidRoi(GET_TEST_DATA_DIR + "/flyem/AL/glomerulus_roi.json");
+
+  std::cout << "Glom size: " << glomRoi.getVoxelNumber() << std::endl;
+
+  wholeRoi.subtractSliently(glomRoi);
+
+  ZJsonFactory factory;
+  ZJsonArray json = factory.MakeJsonArray(wholeRoi);
+
+  json.dump(GET_TEST_DATA_DIR + "/flyem/AL/whole_sub_glomerulus_roi.json");
+#endif
+
+#if 1
+  ZJsonObject jsonObj;
+  jsonObj.load(GET_TEST_DATA_DIR +
+               "/flyem/FIB/fib25/annotations-synapse-shinya1-13_20151104-dvid.json");
+
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fa60", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setLabelBlockName("labels1104");
+
+  ZDvidUrl url(target);
+
+  if (writer.open(target)) {
+    writer.writeJson(url.getSynapseAnnotationUrl(), jsonObj);
+  }
 
 #endif
 

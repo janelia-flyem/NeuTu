@@ -31,7 +31,7 @@ else
   if [ `uname` == 'Darwin' ]; then
     QMAKE_SPEC=$1/mkspecs/macx-g++
   else
-    QMAKE_SPEC=$1/mkspecs/linux-g++-64
+    QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
 fi
 

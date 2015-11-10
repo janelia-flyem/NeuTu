@@ -13,11 +13,16 @@ function flyem_neutu_update {
   fi
 
   condaEnv=$install_dir/Download/miniconda/envs/dvidenv
+  if [ `uname` == 'Darwin' ]; then
+    QMAKE_SPEC=$install_dir/Trolltech/Qt4.8.5/mkspecs/macx-g++
+  else
+    QMAKE_SPEC=$install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++
+  fi
   if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
   then
-    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q CONDA_ENV=$condaEnv -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $QMAKE_SPEC -e flyem -q CONDA_ENV=$condaEnv -c $debug_config
   else
-    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $QMAKE_SPEC -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config
   fi
 
   build_dir=build

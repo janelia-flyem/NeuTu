@@ -1184,6 +1184,10 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
 
   ZGraph *graph = new ZGraph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT);
 
+#ifdef _DEBUG_
+  std::cout << "Canonizing ..." << std::endl;
+#endif
+
   canonize();
 
   const std::vector<size_t>& stripeNumberAccumulation =
@@ -1191,7 +1195,13 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
 
   const std::map<std::pair<int, int>, size_t> &stripeMap = getStripeMap();
 
-  for (size_t i = 0; i < getStripeNumber() - 1; ++i) {
+  size_t stripeNumber = getStripeNumber();
+  for (size_t i = 0; i < stripeNumber - 1; ++i) {
+#ifdef _DEBUG_
+    if (i % (getStripeNumber() / 10) == 0) {
+      std::cout << "  " << i + 1 << "/" << stripeNumber << std::endl;
+    }
+#endif
     //Check along Y
     for (int j = 0; j < m_stripeArray[i].getSegmentNumber(); ++j) {
       const int *stripe = m_stripeArray[i].getSegment(j);
@@ -1304,7 +1314,15 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
 {
   std::vector<ZObject3dScan> objArray;
 
+#ifdef _DEBUG_
+  std::cout << "Building connection graph ..." << std::endl;
+#endif
+
   ZGraph *graph = buildConnectionGraph();
+
+#ifdef _DEBUG_
+  std::cout << "Connection graph ready." << std::endl;
+#endif
 
   if (graph != NULL) {
     const std::vector<ZGraph*> &subGraph = graph->getConnectedSubgraph();
@@ -1312,8 +1330,11 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
     const std::map<size_t, std::pair<size_t, size_t> >&segMap =
         getIndexSegmentMap();
 
-
     std::vector<bool> isAdded(segMap.size(), false);
+
+#ifdef _DEBUG_
+  std::cout << "Extracting components ..." << std::endl;
+#endif
 
     for (std::vector<ZGraph*>::const_iterator iter = subGraph.begin();
          iter != subGraph.end(); ++iter) {
@@ -1333,8 +1354,15 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
       objArray.push_back(subobj);
     }
 
+#ifdef _DEBUG_
+    std::cout << objArray.size() << " components extracted." << std::endl;
+#endif
+
     delete graph;
 
+#ifdef _DEBUG_
+    std::cout << "Checking remains ..." << std::endl;
+#endif
     for (size_t i = 0; i < isAdded.size(); ++i) {
       if (!isAdded[i]) {
         ZObject3dScan subobj;
@@ -1344,6 +1372,10 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
         objArray.push_back(subobj);
       }
     }
+
+#ifdef _DEBUG_
+    std::cout << objArray.size() << " components extracted." << std::endl;
+#endif
   }
 
   return objArray;
@@ -2693,11 +2725,18 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
 
 void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
 {
-  int minZ = std::max(getMinZ(), obj.getMinZ());
-  int maxZ = std::min(getMaxZ(), obj.getMaxZ());
+  int originalMinZ = getMinZ();
+  int originalMaxZ = getMaxZ();
+
+  int minZ = std::max(originalMinZ, obj.getMinZ());
+  int maxZ = std::min(originalMaxZ, obj.getMaxZ());
 
 //  ZObject3dScan subtracted;
   ZObject3dScan remained;
+
+  if (originalMinZ < minZ) {
+    remained = getSlice(originalMinZ, minZ - 1);
+  }
 
   for (int z = minZ; z <= maxZ; ++z) {
     ZObject3dScan slice = getSlice(z);
@@ -2730,6 +2769,10 @@ void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
         remained.concat(slice);
       }
     }
+  }
+
+  if (originalMaxZ > maxZ) {
+    remained.concat(getSlice(maxZ + 1, originalMaxZ));
   }
 
 //  remained.canonize();
@@ -3139,6 +3182,14 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
   }
 
   return result;
+}
+
+bool ZObject3dScan::importDvidRoi(const string &filePath)
+{
+  ZJsonArray objJson;
+  objJson.load(filePath);
+
+  return importDvidRoi(objJson);
 }
 
 bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj)

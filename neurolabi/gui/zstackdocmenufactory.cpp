@@ -286,28 +286,10 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
-  }
-
-  if (presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_MERGE ||
-      presenter->buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-    QAction *action = presenter->getAction(
-          ZStackPresenter::ACTION_BODY_SPLIT_START);
-    menu->addAction(action);
-
-    menu->addAction(presenter->getAction(
-                      ZStackPresenter::ACTION_BODY_ANNOTATION));
-
-    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKOUT));
-    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_BODY_CHECKIN));
-
-    if (isAdmin()) {
-      menu->addAction(presenter->getAction(
-                        ZStackPresenter::ACTION_BODY_FORCE_CHECKIN));
-    }
   }
 
   return menu;

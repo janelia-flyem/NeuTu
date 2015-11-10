@@ -10,6 +10,7 @@ class ZTask : public QObject, public QRunnable
 
 public:
   explicit ZTask(QObject *parent = 0);
+  virtual ~ZTask();
 
   void run();
   virtual void execute() = 0;

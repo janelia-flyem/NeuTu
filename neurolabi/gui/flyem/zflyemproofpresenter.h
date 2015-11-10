@@ -47,6 +47,10 @@ public:
   ZKeyOperationConfig* getKeyConfig();
   void configKeyMap();
 
+//  void createBodyContextMenu();
+
+  ZStackDocMenuFactory* getMenuFactory();
+
 private:
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);

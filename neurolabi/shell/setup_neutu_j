@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
-scriptDir=$(dirname `readlink -f "$0"`)
+if [ `uname` == 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
 echo $scriptDir
 master_dir=$(dirname "$(dirname $scriptDir)")
 echo $master_dir
@@ -48,7 +52,12 @@ then
       qtSource=$master_dir/$qtsrc.tar.gz
       if [ ! -f $qtSource ]
       then
-        wget https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -O $qtSource
+        if [ `uname` == 'Darwin' ]
+        then
+          curl -L https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -o $qtSource
+        else
+          wget https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -O $qtSource
+        fi
       fi
 
       if [ -f $qtSource ]
@@ -138,7 +147,12 @@ touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
 echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
-echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+if [ `uname` == 'Darwin' ]
+then
+  echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
+else
+  echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+fi
 chmod a+x $run_script
 
 

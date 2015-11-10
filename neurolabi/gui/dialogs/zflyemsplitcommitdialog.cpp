@@ -6,6 +6,9 @@ ZFlyEmSplitCommitDialog::ZFlyEmSplitCommitDialog(QWidget *parent) :
   ui(new Ui::ZFlyEmSplitCommitDialog)
 {
   ui->setupUi(this);
+  QPalette p = ui->noticeTextEdit->palette();
+  p.setColor(QPalette::Base, QColor(128, 128, 128, 0));
+  ui->noticeTextEdit->setPalette(p);
 }
 
 ZFlyEmSplitCommitDialog::~ZFlyEmSplitCommitDialog()
@@ -25,4 +28,9 @@ int ZFlyEmSplitCommitDialog::getGroupSize() const
 bool ZFlyEmSplitCommitDialog::keepingMainSeed() const
 {
   return ui->keepingSeedCheckBox->isChecked();
+}
+
+bool ZFlyEmSplitCommitDialog::runningCca() const
+{
+  return ui->ccaCheckBox->isChecked();
 }

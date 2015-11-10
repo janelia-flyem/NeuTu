@@ -143,6 +143,7 @@ public:
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   bool importDvidRoi(const ZJsonArray &obj);
+  bool importDvidRoi(const std::string &filePath);
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width,
