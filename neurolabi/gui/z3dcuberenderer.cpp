@@ -1,9 +1,223 @@
+// triangle renderer for rendering triangles, quads, and cubes
+// Yang Yu, 11/11/2015
+
 #include "zglew.h"
 #include "z3dtrianglerenderer.h"
 
 #include "z3dgpuinfo.h"
 #include "zglmutils.h"
 
+//
+Mesh::Mesh()
+{
+
+}
+
+Mesh::~Mesh()
+{
+
+}
+
+void Mesh::setPositions(QVector3D a, QVector3D b)
+{
+    ePositions.append(a);
+    ePositions.append(b);
+}
+
+void Mesh::setPositions(QVector3D a, QVector3D b, QVector3D c)
+{
+    positions.append(a);
+    positions.append(b);
+    positions.append(c);
+}
+
+void Mesh::setPositions(QVector3D a, QVector3D b, QVector3D c, QVector3D d)
+{
+    setPositions(a,b,c);
+    setPositions(c,d,a);
+}
+
+void Mesh::setColor(QVector<QVector4D> &color, QVector4D c, int n)
+{
+    for(int i=0; i<n; i++)
+    {
+        color.append(c);
+    }
+}
+
+//
+Triangle::Triangle() : Mesh()
+{
+
+}
+
+Triangle::~Triangle()
+{
+
+}
+
+void Triangle::init(QVector3D a, QVector3D b, QVector3D c)
+{
+    QVector3D norm = QVector3D::crossProduct(b - a, c - b).normalized();
+
+    setPositions(a,b,c);
+
+    for(int i=0; i<3; i++)
+    {
+        normals.append(norm);
+    }
+}
+
+void Triangle::setColor(QVector4D c)
+{
+    Mesh::setColor(colors,c,3);
+}
+
+//
+Quadrilateral::Quadrilateral() : Triangle()
+{
+
+}
+
+Quadrilateral::~Quadrilateral()
+{
+
+}
+
+void Quadrilateral::init(QVector3D a, QVector3D b, QVector3D c, QVector3D d)
+{
+    QVector3D norm = QVector3D::crossProduct(b - a, c - b).normalized();
+
+    setPositions(a,b,c,d);
+
+    for(int i=0; i<4; i++)
+    {
+        normals.append(norm);
+    }
+}
+
+void Quadrilateral::setColor(QVector4D c)
+{
+    Mesh::setColor(colors,c,6);
+}
+
+//
+Cube::Cube() : Quadrilateral()
+{
+    QVector<QVector3D> norm;
+    QVector<QVector2D> texc;
+
+    norm << QVector3D(1.0f, 0.0f, 0.0f)   // +x
+         << QVector3D(-1.0f, 0.0f, 0.0f)  // -x
+         << QVector3D(0.0f, 1.0f, 0.0f)   // +y
+         << QVector3D(0.0f, -1.0f, 0.0f)  // -y
+         << QVector3D(0.0f, 0.0f, 1.0f)   // +z
+         << QVector3D(0.0f, 0.0f, -1.0f); // -z
+
+    texc << QVector2D(0, 0) << QVector2D(1, 0) << QVector2D(1, 1)  // a,b,c
+         << QVector2D(1, 1) << QVector2D(0, 1) << QVector2D(0, 0); // c,d,a
+
+    for (int i=0; i<6; i++)
+    {
+        for (int j=0; j<6; j++)
+        {
+            normals.append( norm[i] );
+            texCoords.append( texc[j] );
+        }
+    }
+}
+
+Cube::~Cube()
+{
+}
+
+void Cube::init(float sx, float sy, float sz, float tx, float ty, float tz)
+{
+    float cx = sx/2.0;
+    float cy = sy/2.0;
+    float cz = sz/2.0;
+
+    float l = -cx - tx;
+    float r = cx - tx;
+    float u = cy - ty;
+    float d = -cy - ty;
+    float f = -cz - tz;
+    float b = cz - tz;
+
+    x = tx;
+    y = ty;
+    z = tz;
+
+    //
+    points  << QVector3D( l, d, f )  // 0
+            << QVector3D( l, u, f )  // 1
+            << QVector3D( r, u, f )  // 2
+            << QVector3D( r, d, f )  // 3
+            << QVector3D( l, d, b )  // 4
+            << QVector3D( l, u, b )  // 5
+            << QVector3D( r, u, b )  // 6
+            << QVector3D( r, d, b ); // 7
+
+    //
+    faces();
+
+    //
+    edges();
+}
+
+void Cube::initIdentity()
+{
+    init(1,1,1,0,0,0);
+}
+
+void Cube::faces()
+{
+    // 12 triangles: 36 vertices and 36 colors
+
+    //
+    setPositions(points[7], points[3], points[2], points[6]); // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
+    setPositions(points[0], points[4], points[5], points[1]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
+    setPositions(points[1], points[5], points[6], points[2]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Y 	2 +y Up (Top)
+    setPositions(points[4], points[0], points[3], points[7]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 	3 -y Down (Bottom)
+    setPositions(points[6], points[5], points[4], points[7]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Z 	4 +z Back
+    setPositions(points[3], points[0], points[1], points[2]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 	5 -z Front
+
+}
+
+void Cube::edges()
+{
+    // 12 lines: 24 vertices and 24 colors
+
+    // edges of the top face
+    setPositions(points[0], points[1]);
+    setPositions(points[1], points[2]);
+    setPositions(points[2], points[3]);
+    setPositions(points[3], points[0]);
+
+    // edges of the bottom face
+    setPositions(points[4], points[5]);
+    setPositions(points[5], points[6]);
+    setPositions(points[6], points[7]);
+    setPositions(points[7], points[4]);
+
+    // edges connecting top face to bottom face
+    setPositions(points[1], points[5]);
+    setPositions(points[0], points[2]);
+    setPositions(points[2], points[6]);
+    setPositions(points[3], points[7]);
+}
+
+void Cube::setFaceColor(QVector4D c)
+{
+    Mesh::setColor(colors, c, 36);
+}
+
+void Cube::setEdgeColor(QVector4D c)
+{
+    Mesh::setColor(eColors, c, 24);
+}
+
+//
 Z3DTriangleRenderer::Z3DTriangleRenderer(QObject *parent)
   : Z3DPrimitiveRenderer(parent)
   , m_sphereShaderGrp()

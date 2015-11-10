@@ -230,7 +230,7 @@ HEADERS += mainwindow.h \
     z3dlinerenderer.h \
     z3dlinewithfixedwidthcolorrenderer.h \
     z3dconerenderer.h \
-    z3dtrianglerenderer.h \
+    z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
     z3daxis.h \
@@ -707,7 +707,7 @@ SOURCES += main.cpp \
     z3dlinerenderer.cpp \
     z3dlinewithfixedwidthcolorrenderer.cpp \
     z3dconerenderer.cpp \
-    z3dtrianglerenderer.cpp \
+    z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
     z3daxis.cpp \
