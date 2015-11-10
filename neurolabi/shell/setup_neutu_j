@@ -146,11 +146,12 @@ run_script=$install_dir/bin/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
-echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
 if [ `uname` == 'Darwin' ]
 then
+  echo "export DYLD_FALLBACK_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
 else
+  echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
 fi
 chmod a+x $run_script
