@@ -18515,7 +18515,7 @@ void ZTest::test(MainWindow *host)
   json.dump(GET_TEST_DATA_DIR + "/flyem/AL/whole_sub_glomerulus_roi.json");
 #endif
 
-#if 1
+#if 0
   ZJsonObject jsonObj;
   jsonObj.load(GET_TEST_DATA_DIR +
                "/flyem/FIB/fib25/annotations-synapse-shinya1-13_20151104-dvid.json");
@@ -18530,6 +18530,32 @@ void ZTest::test(MainWindow *host)
 
   if (writer.open(target)) {
     writer.writeJson(url.getSynapseAnnotationUrl(), jsonObj);
+  }
+
+#endif
+
+#if 1
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fa60", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setLabelBlockName("labels1104");
+
+
+  if (writer.open(target)) {
+    ZJsonObject jsonObj;
+    jsonObj.load(GET_TEST_DATA_DIR +
+                 "/flyem/FIB/fib25/20151104/annotations-body.json");
+
+    ZJsonArray arrayJson(jsonObj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+
+    for (size_t i = 0; i < arrayJson.size(); ++i) {
+      ZJsonObject annoJson(arrayJson.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+
+      ZFlyEmBodyAnnotation anno;
+      anno.loadJsonObject(annoJson);
+      writer.writeBodyAnntation(anno);
+    }
   }
 
 #endif

@@ -42,9 +42,15 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
-if [ ! -f $install_dir/Trolltech/Qt4.8.5/bin/qmake ]
+qtver=4.8.5
+if [ `uname` == 'Darwin' ]
 then
-  qtsrc='qt-everywhere-opensource-src-4.8.5'
+  qtver=4.8.4
+fi
+
+if [ ! -f $install_dir/Trolltech/Qt$qtver/bin/qmake ]
+then
+  qtsrc="qt-everywhere-opensource-src-$qtver"
   if [ ! -d $downloadDir/$qtsrc ]
   then
     if [ ! -f $downloadDir/$qtsrc.tar.gz ]
@@ -54,9 +60,9 @@ then
       then
         if [ `uname` == 'Darwin' ]
         then
-          curl -L https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -o $qtSource
+          curl -L https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -o $qtSource
         else
-          wget https://download.qt.io/archive/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz -O $qtSource
+          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource
         fi
       fi
 
@@ -74,7 +80,7 @@ then
   fi
 
   cd $downloadDir/$qtsrc
-  { echo o; yes; } | ./configure --prefix=$install_dir/Trolltech/Qt4.8.5 -no-webkit -qt-libpng
+  { echo o; yes; } | ./configure --prefix=$install_dir/Trolltech/Qt$qtver -no-webkit -qt-libpng
   make -j3
   make install
 fi
@@ -146,11 +152,12 @@ run_script=$install_dir/bin/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
-echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
 if [ `uname` == 'Darwin' ]
 then
+  echo "export DYLD_FALLBACK_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
 else
+  echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
 fi
 chmod a+x $run_script
