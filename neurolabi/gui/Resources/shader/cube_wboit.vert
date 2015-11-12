@@ -9,18 +9,22 @@ varying vec3 normal;
 varying vec4 color;
 varying float depth;
 
-uniform mat4 modelviewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat3 normalMatrix;
+uniform mat4 view_matrix;
+uniform mat4 projection_view_matrix;
+uniform mat3 normal_matrix;
+
+uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
 
 void main()
 {
-    normal = normalize( normalMatrix * vNormal);
-    position = vec3( modelviewMatrix * vec4(vPosition,1.0) );
+    vec4 vertex = vec4(vPosition*pos_scale,1.0);
+
+    normal = normalize( normal_matrix * vNormal);
+    position = vec3( view_matrix * vertex);
     color = vColor;
 
-    gl_Position = projectionMatrix * modelviewMatrix * vec4(vPosition,1.0);
+    gl_Position = projection_view_matrix * vertex;
 
     // eye coord
-    depth = -(modelviewMatrix * vec4(vPosition,1.0)).z;
+    depth = -(view_matrix * vertex).z;
 }

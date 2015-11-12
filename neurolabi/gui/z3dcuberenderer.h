@@ -15,21 +15,21 @@ public:
     ~Mesh();
 
 public:
-    void setPositions(QVector3D a, QVector3D b); // line
-    void setPositions(QVector3D a, QVector3D b, QVector3D c); // triangle
-    void setPositions(QVector3D a, QVector3D b, QVector3D c, QVector3D d); // quadrilateral
-    void setColor(QVector<QVector4D> &color, QVector4D c, int n);
+    void setPositions(glm::vec3 a, glm::vec3 b); // line
+    void setPositions(glm::vec3 a, glm::vec3 b, glm::vec3 c); // triangle
+    void setPositions(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d); // quadrilateral
+    void setColor(std::vector<glm::vec4> &color, glm::vec4 c, int n);
 
 public:
-    QVector<QVector3D> positions;
-    QVector<QVector4D> colors;
-    QVector<QVector3D> normals;
-    QVector<QVector2D> texCoords;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec4> colors;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texCoords;
 
-    QVector<QVector3D> ePositions;
-    QVector<QVector4D> eColors;
+    std::vector<glm::vec3> ePositions;
+    std::vector<glm::vec4> eColors;
 
-    QVector<unsigned int> indices;
+    std::vector<unsigned int> indices;
 };
 
 /// Triangle
@@ -40,8 +40,8 @@ public:
     ~Triangle();
 
 public:
-    void init(QVector3D a, QVector3D b, QVector3D c);
-    void setColor(QVector4D c);
+    void init(glm::vec3 a, glm::vec3 b, glm::vec3 c);
+    void setColor(glm::vec4 c);
 };
 
 /// Quadrilateral
@@ -59,8 +59,8 @@ public:
     ~Quadrilateral();
 
 public:
-    void init(QVector3D a, QVector3D b, QVector3D c, QVector3D d);
-    void setColor(QVector4D c);
+    void init(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d);
+    void setColor(glm::vec4 c);
 };
 
 
@@ -108,13 +108,13 @@ public:
     void faces();
     void edges();
 
-    void setFaceColor(QVector4D c);
-    void setEdgeColor(QVector4D c);
+    void setFaceColor(glm::vec4 c);
+    void setEdgeColor(glm::vec4 c);
 
 public:
-    QVector<QVector3D> points; // 8
-    QVector<QVector3D> ePositions; // 24
-    QVector<QVector4D> eColors; // 24
+    std::vector<glm::vec3> points; // 8
+    std::vector<glm::vec3> ePositions; // 24
+    std::vector<glm::vec4> eColors; // 24
 
     float x,y,z; // center offsets
 };
@@ -127,7 +127,7 @@ public:
   explicit Z3DCubeRenderer(QObject *parent = 0);
   virtual ~Z3DCubeRenderer();
 
-  void addCube(int sx, int sy, int sz, int tx, int ty, int tz, QVector4D color);
+  void addCube(int sx, int sy, int sz, int tx, int ty, int tz, glm::vec4 color);
 
 protected:
   virtual void compile();
@@ -154,7 +154,7 @@ private:
 
   std::vector<Cube> m_cubes;
 
-  Quadrilateral screen;
+  Quadrilateral m_screen;
   GLuint m_vao, m_vbo;
   GLuint m_fbo;
   GLuint m_db;
@@ -169,7 +169,7 @@ private:
   bool m_pickingDataChanged;
   size_t m_oneBatchNumber;
 
-  size_t m_numCubes;
+  size_t nCubes;
 };
 
 #endif // Z3DCUBERENDERER_H
