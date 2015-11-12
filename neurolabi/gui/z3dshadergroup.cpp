@@ -4,7 +4,7 @@
 #include "z3dgpuinfo.h"
 
 Z3DShaderGroup::Z3DShaderGroup()
-  : m_base(NULL), m_usingSpecialShader(true)
+  : m_base(NULL), m_usingSpecialShader(false)
 {
 }
 
@@ -120,7 +120,18 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
     shader->loadFromSourceFile(allshaders, m_header);
   } else {
     shader->bindFragDataLocation(0, "FragData0");
-    shader->loadFromSourceFile(m_normalShaderFiles, m_header);
+    QString header = m_header;
+    if (m_normalShaderFiles.back() == "cube_wboit.frag") {
+
+      if (GLEW_VERSION_3_0) {
+        header += "out vec4 FragData1;\n";
+      } else {
+        header += "#define FragData1 gl_FragData[1]\n";
+      }
+
+      shader->bindFragDataLocation(1, "FragData1");
+    }
+    shader->loadFromSourceFile(m_normalShaderFiles, header);
   }
 }
 

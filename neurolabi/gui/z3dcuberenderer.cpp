@@ -276,8 +276,9 @@ void Z3DCubeRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
   QStringList cubeShaders, screenShaders;
-  cubeShaders << "cube_wboit.vert" << "cube_wboit.frag" << "lighting.frag";
-  m_cubeShaderGrp.init(cubeShaders, generateHeader(), m_rendererBase);
+  cubeShaders << "cube_wboit.vert" << "lighting.frag" << "cube_wboit.frag";
+  m_cubeShaderGrp.init(QStringList(), generateHeader(), m_rendererBase,
+                       cubeShaders);
   m_cubeShaderGrp.addAllSupportedPostShaders();
 
 //  screenShaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";

@@ -143,7 +143,7 @@ bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
   qDebug() << Z3DGeometryFilter::isReady(eye);
   qDebug() << m_showCube.get();
-  qDebug() << m_cubeRenderer->isEmpty();
+  qDebug() << m_cubeArray.empty();
     return Z3DGeometryFilter::isReady(eye) && m_showCube.get() &&
-            !m_cubeRenderer->isEmpty();
+            !m_cubeArray.empty();
 }

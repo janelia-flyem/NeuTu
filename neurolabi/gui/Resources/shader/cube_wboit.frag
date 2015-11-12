@@ -24,7 +24,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
                             const in vec3 normalDirection, const in vec3 position, const in vec4 color, const in float alpha);
 
-void fragment_func(out vec4 fragColor, out float fragDepth)
+void main()
 {
     float alpha = color.a;
 
@@ -33,9 +33,9 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 
     // RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
     vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, color, alpha);
-    gl_FragData[0] = mixcolor(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+    FragData0 = mixcolor(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
 
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
-    gl_FragData[1].r = alpha * weight;
+    FragData1.r = alpha * weight;
 
 }
