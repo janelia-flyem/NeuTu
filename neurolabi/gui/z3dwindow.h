@@ -28,6 +28,7 @@ class Z3DSwcFilter;
 class Z3DVolumeSource;
 class Z3DVolumeRaycaster;
 class Z3DGraphFilter;
+class Z3DSurfaceFilter;
 class ZPunctum;
 class ZSwcTree;
 struct _Swc_Tree_Node;
@@ -189,6 +190,7 @@ public: //Components
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
   inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
+  inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
   inline Z3DCompositor* getCompositor() const { return m_compositor; }
   inline Z3DVolumeSource *getVolumeSource() const { return m_volumeSource; }
   inline Z3DAxis *getAxis() { return m_axis; }
@@ -200,6 +202,7 @@ public: //Bounding box
   void updateVolumeBoundBox();
   void updateSwcBoundBox();
   void updateGraphBoundBox();
+  void updateSurfaceBoundBox();
 //  void updateDecorationBoundBox();
   void updatePunctaBoundBox();
   void updateOverallBoundBox(std::vector<double> bound);
@@ -490,12 +493,14 @@ private:
   Z3DSwcFilter *m_swcFilter;
   Z3DVolumeSource *m_volumeSource;
   Z3DGraphFilter *m_graphFilter;
+  Z3DSurfaceFilter *m_surfaceFilter;
 //  Z3DGraphFilter *m_decorationFilter;
 
   std::vector<double> m_volumeBoundBox;
   std::vector<double> m_swcBoundBox;
   std::vector<double> m_punctaBoundBox;
   std::vector<double> m_graphBoundBox;
+  std::vector<double> m_surfaceBoundBox;
   std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
 

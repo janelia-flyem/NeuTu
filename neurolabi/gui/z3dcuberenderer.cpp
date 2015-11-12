@@ -269,7 +269,7 @@ void Z3DCubeRenderer::compile()
 {
   m_dataChanged = true;
   m_cubeShaderGrp.rebuild(generateHeader());
-  m_screenShaderGrp.rebuild(generateHeader());
+  //m_screenShaderGrp.rebuild(generateHeader());
 }
 
 void Z3DCubeRenderer::initialize()
@@ -280,9 +280,9 @@ void Z3DCubeRenderer::initialize()
   m_cubeShaderGrp.init(cubeShaders, generateHeader(), m_rendererBase);
   m_cubeShaderGrp.addAllSupportedPostShaders();
 
-  screenShaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
-  m_screenShaderGrp.init(screenShaders, generateHeader(), m_rendererBase);
-  m_screenShaderGrp.addAllSupportedPostShaders();
+//  screenShaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
+//  m_screenShaderGrp.init(screenShaders, generateHeader(), m_rendererBase);
+//  m_screenShaderGrp.addAllSupportedPostShaders();
 
   m_initialized = true;
 }
@@ -376,9 +376,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
   nCubes = m_cubes.size();
 
-  m_screenShaderGrp.bind();
-  Z3DShaderProgram &oit2DComposeShader = m_screenShaderGrp.get();
-  oit2DComposeShader.setUniformValue("pos_scale", getCoordScales());
+//  m_screenShaderGrp.bind();
+//  Z3DShaderProgram &oit2DComposeShader = m_screenShaderGrp.get();
+//  oit2DComposeShader.setUniformValue("pos_scale", getCoordScales());
 
   //
   float h = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
@@ -434,6 +434,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       }
 
       // compose pass
+#if 0
       GLint cloc_position = oit2DComposeShader.attributeLocation("vPosition");
       GLint cloc_accum = oit2DComposeShader.attributeLocation("accumTexture");
       GLint cloc_revealage = oit2DComposeShader.attributeLocation("revealageTexture");
@@ -479,6 +480,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       glUniform1i(cloc_revealage, 1);
 
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
 
       m_dataChanged = false;
     }
@@ -500,6 +502,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glDepthMask (GL_TRUE);
     glDisable (GL_BLEND);
 
+#if 0
     // compose pass
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
@@ -509,7 +512,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glBindVertexArray(0);
 
     glDisable (GL_BLEND);
-
+#endif
   } else {
     // w/o vao defined
   }
@@ -524,5 +527,5 @@ void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 
 bool Z3DCubeRenderer::isEmpty()
 {
-    return m_cubes.size()>0?true:false;
+    return m_cubes.empty();
 }

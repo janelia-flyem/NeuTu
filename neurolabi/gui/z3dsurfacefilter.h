@@ -2,6 +2,7 @@
 #define Z3DSURFACEFILTER_H
 
 #include <QObject>
+#include <vector>
 #include "z3dgeometryfilter.h"
 #include "tz_geo3d_scalar_field.h"
 #include "tz_graph.h"
@@ -51,6 +52,7 @@ public:
 private:
     ZBoolParameter m_showCube;
 
+    std::vector<Z3DCube> m_cubeArray;
     Z3DCubeRenderer *m_cubeRenderer;
 
     bool m_dataIsInvalid;

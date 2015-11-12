@@ -4,6 +4,7 @@ uniform vec4 scene_ambient;
 uniform vec4 material_ambient;
 uniform vec4 material_specular;
 uniform float material_shininess;
+uniform mat4 projection_matrix;
 
 varying vec3 position;
 varying vec3 normal;
@@ -23,7 +24,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
                             const in vec3 normalDirection, const in vec3 position, const in vec4 color, const in float alpha);
 
-void main()
+void fragment_func(out vec4 fragColor, out float fragDepth)
 {
     float alpha = color.a;
 

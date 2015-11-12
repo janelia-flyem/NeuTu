@@ -225,6 +225,8 @@ void Z3DCompositor::process(Z3DEye eye)
   if (m_renderGeometries.get()) {
     for (size_t i=0; i<filters.size(); ++i) {
       Z3DGeometryFilter* geomFilter = filters.at(i);
+      qDebug() << geomFilter->isReady(eye);
+      qDebug() << geomFilter->getOpacity();
       if (geomFilter->isReady(eye) && geomFilter->getOpacity() > 0.0) {
         if (geomFilter->isStayOnTop())
           onTopFilters.push_back(geomFilter);

@@ -18534,7 +18534,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "fa60", 7000);
@@ -18558,6 +18558,19 @@ void ZTest::test(MainWindow *host)
     }
   }
 
+#endif
+
+#if 1
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
+
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
+
+  window->show();
+  window->raise();
 #endif
 
   std::cout << "Done." << std::endl;

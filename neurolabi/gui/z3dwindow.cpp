@@ -75,6 +75,7 @@
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
+#include "z3dsurfacefilter.h"
 
 class Sleeper : public QThread
 {
@@ -645,6 +646,16 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
   }
 
+  m_surfaceFilter = new Z3DSurfaceFilter;
+  Z3DCube cube;
+  cube.x = 50;
+  cube.y = 50;
+  cube.z = 50;
+  cube.length = 20;
+  cube.color = glm::vec4(1.0, 0, 0, 0.5);
+
+  m_surfaceFilter->addData(cube);
+
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
   connect(getDocument(), SIGNAL(swcNetworkModified()),
@@ -740,6 +751,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
   m_canvas->addEventListenerToBack(m_compositor);  // for interaction
   m_canvas->addEventListenerToBack(m_graphFilter);
+  m_canvas->addEventListenerToBack(m_surfaceFilter);
 //  m_canvas->addEventListenerToBack(m_decorationFilter);
 
   // build network
@@ -752,7 +764,10 @@ void Z3DWindow::init(EInitMode mode)
   m_volumeRaycaster->getOutputPort("RightEyeImage")->connect(m_compositor->getInputPort("RightEyeImage"));
   m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+  m_graphFilter->getOutputPort("GeometryFilter")->connect(
+        m_compositor->getInputPort("GeometryFilters"));
+  m_surfaceFilter->getOutputPort("GeometryFilter")->connect(
+        m_compositor->getInputPort("GeometryFilters"));
 //  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
@@ -775,6 +790,7 @@ void Z3DWindow::init(EInitMode mode)
   updateSwcBoundBox();
   updatePunctaBoundBox();
   updateGraphBoundBox();
+  updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
 
@@ -1329,6 +1345,15 @@ void Z3DWindow::createDockWindows()
 #endif
   }
 
+  if (config.getZ3DWindowConfig().isGraphOn()) {
+#if defined(_FLYEM_)
+    //graph
+    wg = m_surfaceFilter->getWidgetsGroup();
+    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+    m_widgetsGroup->addChildGroup(wg);
+#endif
+  }
+
   if (config.getZ3DWindowConfig().isSwcsOn()) {
     //swc
     wg = m_swcFilter->getWidgetsGroup();
@@ -1557,6 +1582,19 @@ void Z3DWindow::updateGraphBoundBox()
   m_graphBoundBox = m_graphFilter->boundBox();
 }
 
+void Z3DWindow::updateSurfaceBoundBox()
+{
+  m_surfaceBoundBox.resize(6, 0);
+  m_surfaceBoundBox[0] = 0;
+  m_surfaceBoundBox[1] = 100;
+  m_surfaceBoundBox[2] = 0;
+  m_surfaceBoundBox[3] = 100;
+  m_surfaceBoundBox[4] = 0;
+  m_surfaceBoundBox[5] = 100;
+}
+
+
+
 /*
 void Z3DWindow::updateDecorationBoundBox()
 {
@@ -1611,6 +1649,8 @@ void Z3DWindow::cleanup()
     m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
+    delete m_surfaceFilter;
+    m_surfaceFilter = NULL;
 //    delete m_decorationFilter;
 //    m_decorationFilter = NULL;
     delete m_compositor;

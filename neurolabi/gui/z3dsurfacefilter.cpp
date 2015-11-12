@@ -17,6 +17,7 @@ Z3DCube::~Z3DCube()
 
 //
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
+  Z3DGeometryFilter(),
     m_showCube("Visible", true),
     m_cubeRenderer(NULL)
   , m_dataIsInvalid(false)
@@ -91,6 +92,12 @@ void Z3DSurfaceFilter::prepareData()
     if (!m_dataIsInvalid)
         return;
 
+//    m_cubeRenderer->clearCube();
+    for (size_t i = 0; i < m_cubeArray.size(); ++i) {
+      const Z3DCube &cube = m_cubeArray[i];
+      m_cubeRenderer->addCube(
+            cube.length, cube.length, cube.length, cube.x, cube.y, cube.z, cube.color);
+    }
 
 
     m_dataIsInvalid = false;
@@ -98,17 +105,18 @@ void Z3DSurfaceFilter::prepareData()
 
 void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 {
+  m_cubeArray.push_back(cube);
 
-    m_cubeRenderer->addCube(cube.length, cube.length, cube.length, cube.x, cube.y, cube.z, cube.color);
+//    m_cubeRenderer->addCube(cube.length, cube.length, cube.length, cube.x, cube.y, cube.z, cube.color);
 
     m_dataIsInvalid = true;
-    //invalidateResult();
+    invalidateResult();
 }
 
 ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 {
     if (!m_widgetsGroup) {
-        m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
+        m_widgetsGroup = new ZWidgetsGroup("Surface", NULL, 1);
         new ZWidgetsGroup(&m_showCube, m_widgetsGroup, 1);
 
         new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
@@ -133,6 +141,9 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
+  qDebug() << Z3DGeometryFilter::isReady(eye);
+  qDebug() << m_showCube.get();
+  qDebug() << m_cubeRenderer->isEmpty();
     return Z3DGeometryFilter::isReady(eye) && m_showCube.get() &&
             !m_cubeRenderer->isEmpty();
 }
