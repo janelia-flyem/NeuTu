@@ -29,4 +29,7 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
     fragColor1.r = alpha * weight;
 
+    //
+    fragDepth = gl_FragCoord.z;
+
 }
