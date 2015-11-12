@@ -122,54 +122,55 @@ public:
 /// Z3DCubeRenderer
 class Z3DCubeRenderer : public Z3DPrimitiveRenderer
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  explicit Z3DCubeRenderer(QObject *parent = 0);
-  virtual ~Z3DCubeRenderer();
+    explicit Z3DCubeRenderer(QObject *parent = 0);
+    virtual ~Z3DCubeRenderer();
 
-  void addCube(int sx, int sy, int sz, int tx, int ty, int tz, glm::vec4 color);
+    void addCube(int sx, int sy, int sz, int tx, int ty, int tz, glm::vec4 color);
+    bool isEmpty();
 
 protected:
-  virtual void compile();
-  virtual void initialize();
-  virtual void deinitialize();
-  virtual QString generateHeader();
+    virtual void compile();
+    virtual void initialize();
+    virtual void deinitialize();
+    virtual QString generateHeader();
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
+    virtual void renderUsingOpengl();
+    virtual void renderPickingUsingOpengl();
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye eye);
+    virtual void render(Z3DEye eye);
+    virtual void renderPicking(Z3DEye eye);
 
-  Z3DShaderGroup m_cubeShaderGrp;
-  Z3DShaderGroup m_screenShaderGrp;
+    Z3DShaderGroup m_cubeShaderGrp;
+    Z3DShaderGroup m_screenShaderGrp;
 
 private:
-  std::vector<glm::vec4> m_pointAndRadius;
-  std::vector<glm::vec4> m_specularAndShininess;
-  std::vector<glm::vec4> m_pointColors;
-  std::vector<glm::vec4> m_pointPickingColors;
-  std::vector<GLfloat> m_allFlags;
-  std::vector<GLuint> m_indexs;
+    std::vector<glm::vec4> m_pointAndRadius;
+    std::vector<glm::vec4> m_specularAndShininess;
+    std::vector<glm::vec4> m_pointColors;
+    std::vector<glm::vec4> m_pointPickingColors;
+    std::vector<GLfloat> m_allFlags;
+    std::vector<GLuint> m_indexs;
 
-  std::vector<Cube> m_cubes;
+    std::vector<Cube> m_cubes;
 
-  Quadrilateral m_screen;
-  GLuint m_vao, m_vbo;
-  GLuint m_fbo;
-  GLuint m_db;
-  GLuint m_rt;
+    Quadrilateral m_screen;
+    GLuint m_vao, m_vbo;
+    GLuint m_fbo;
+    GLuint m_db;
+    GLuint m_rt;
 
-  std::vector<GLuint> m_VAOs;
-  std::vector<GLuint> m_pickingVAOs;
-  std::vector<GLuint> m_VBOs;
-  std::vector<GLuint> m_pickingVBOs;
+    std::vector<GLuint> m_VAOs;
+    std::vector<GLuint> m_pickingVAOs;
+    std::vector<GLuint> m_VBOs;
+    std::vector<GLuint> m_pickingVBOs;
 
-  bool m_dataChanged;
-  bool m_pickingDataChanged;
-  size_t m_oneBatchNumber;
+    bool m_dataChanged;
+    bool m_pickingDataChanged;
+    size_t m_oneBatchNumber;
 
-  size_t nCubes;
+    size_t nCubes;
 };
 
 #endif // Z3DCUBERENDERER_H

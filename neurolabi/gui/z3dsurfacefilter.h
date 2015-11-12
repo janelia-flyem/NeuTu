@@ -5,83 +5,58 @@
 #include "z3dgeometryfilter.h"
 #include "tz_geo3d_scalar_field.h"
 #include "tz_graph.h"
-#include "z3dgraph.h"
 #include "zwidgetsgroup.h"
 
-class Z3DLineRenderer;
-class Z3DConeRenderer;
-class Z3DSphereRenderer;
 class Z3DCubeRenderer;
 class ZObject3d;
 
-class Z3DSurfaceFilter : public Z3DGeometryFilter
+//
+class Z3DCube
 {
-  Q_OBJECT
+public:
+    Z3DCube();
+    ~Z3DCube();
 
 public:
-  explicit Z3DSurfaceFilter();
-  virtual ~Z3DSurfaceFilter();
+    int length;
+    int x,y,z;
+    glm::vec4 color;
+};
 
-  virtual void initialize();
-  virtual void deinitialize();
+//
+class Z3DSurfaceFilter : public Z3DGeometryFilter
+{
+    Q_OBJECT
 
-  void prepareData();
-  void setData(const ZPointNetwork &pointCloud, ZNormColorMap *colorMap = NULL);
-  void setData(const Z3DGraph &graph);
-  void addData(const Z3DGraph &graph);
+public:
+    explicit Z3DSurfaceFilter();
+    virtual ~Z3DSurfaceFilter();
 
-  void setData(const ZObject3d &obj);
+    virtual void initialize();
+    virtual void deinitialize();
 
-  virtual void process(Z3DEye);
+    void prepareData();
+    void addData(const Z3DCube &cube);
 
-  virtual void render(Z3DEye eye);
+    virtual void process(Z3DEye);
 
-  std::vector<double> boundBox();
+    virtual void render(Z3DEye eye);
 
-  ZWidgetsGroup *getWidgetsGroup();
+    ZWidgetsGroup *getWidgetsGroup();
 
-  inline bool showingArrow() { return m_showingArrow; }
+    bool isReady(Z3DEye eye) const;
 
-  bool isReady(Z3DEye eye) const;
-
-  void setVisible(bool v);
-
-public slots:
-  void prepareColor();
+    void setVisible(bool v);
 
 private:
-  Z3DGraph m_graph;
+    ZBoolParameter m_showCube;
 
-  ZBoolParameter m_showGraph;
+    Z3DCubeRenderer *m_cubeRenderer;
 
-  Z3DLineRenderer *m_lineRenderer;
-  Z3DConeRenderer *m_coneRenderer;
-  Z3DConeRenderer *m_arrowRenderer;
-  Z3DSphereRenderer *m_sphereRenderer;
+    bool m_dataIsInvalid;
 
-  std::vector<glm::vec4> m_baseAndBaseRadius;
-  std::vector<glm::vec4> m_axisAndTopRadius;
+    ZWidgetsGroup *m_widgetsGroup;
 
-  std::vector<glm::vec4> m_arrowBaseAndBaseRadius;
-  std::vector<glm::vec4> m_arrowAxisAndTopRadius;
-
-  std::vector<glm::vec3> m_lines;
-  std::vector<glm::vec4> m_lineColors;
-  std::vector<glm::vec4> m_pointAndRadius;
-  std::vector<glm::vec4> m_pointColors;
-  std::vector<glm::vec4> m_lineStartColors;
-  std::vector<glm::vec4> m_lineEndColors;
-  std::vector<glm::vec4> m_arrowStartColors;
-  std::vector<glm::vec4> m_arrowEndColors;
-
-  bool m_dataIsInvalid;
-  ZIntSpanParameter m_xCut;
-  ZIntSpanParameter m_yCut;
-  ZIntSpanParameter m_zCut;
-
-  ZWidgetsGroup *m_widgetsGroup;
-
-  bool m_showingArrow;
 };
 
 #endif // Z3DSURFACEFILTER_H

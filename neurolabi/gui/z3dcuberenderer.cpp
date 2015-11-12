@@ -490,7 +490,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
-    for(int i=0; i<nCubes; i++)
+    for(size_t i=0; i<nCubes; i++)
     {
         glBindVertexArray( m_VAOs[i] );
         glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
@@ -520,4 +520,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
 void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 {
+}
+
+bool Z3DCubeRenderer::isEmpty()
+{
+    return m_cubes.size()>0?true:false;
 }
