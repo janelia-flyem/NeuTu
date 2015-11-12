@@ -11,7 +11,7 @@
 class Z3DLineRenderer;
 class Z3DConeRenderer;
 class Z3DSphereRenderer;
-class Z3DTriangleRenderer;
+class Z3DCubeRenderer;
 class ZObject3d;
 
 class Z3DSurfaceFilter : public Z3DGeometryFilter
