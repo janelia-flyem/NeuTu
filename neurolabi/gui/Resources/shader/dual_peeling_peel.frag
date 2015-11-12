@@ -29,13 +29,13 @@ uniform vec2 screen_dim_RCP;
 #define texture texture2D
 #endif
 
-void fragment_func(out vec4 fragColor, out float fragDepth);
+void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth);
 
 void main(void)
 {
 	float fragDepth;
 	vec4 color;
-	fragment_func(color, fragDepth);
+        fragment_func(color, vec4(0.0,0.0,0.0,0.0), fragDepth);
 
 	#ifdef USE_RECT_TEX
 	vec2 depthBlender = texture2DRect(DepthBlenderTex, gl_FragCoord.xy).xy;
