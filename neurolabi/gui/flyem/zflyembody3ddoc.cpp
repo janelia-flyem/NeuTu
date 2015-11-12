@@ -401,7 +401,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
           ZPunctum *punctum = *iter;
           punctum->setRadius(30);
           punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
           addObject(punctum, false);
         }
       }

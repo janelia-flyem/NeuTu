@@ -7148,6 +7148,11 @@ bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
   return executeTraceSwcBranchCommand(x, y, z);
 }
 
+void ZStackDoc::updatePunctaObjsModel(ZPunctum *punctum)
+{
+  punctaObjsModel()->updateData(punctum);
+}
+
 bool ZStackDoc::executeTraceSwcBranchCommand(
     double x, double y, double z)
 {

@@ -274,6 +274,8 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
 
+  void updatePunctaObjsModel(ZPunctum *punctum);
+
 //  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
 
   std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
