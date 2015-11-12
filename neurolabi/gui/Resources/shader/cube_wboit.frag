@@ -4,7 +4,6 @@ uniform vec4 scene_ambient;
 uniform vec4 material_ambient;
 uniform vec4 material_specular;
 uniform float material_shininess;
-uniform mat4 projection_matrix;
 
 varying vec3 position;
 varying vec3 normal;
@@ -33,9 +32,9 @@ void main()
 
     // RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
     vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, color, alpha);
-    FragData0 = mixcolor(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+    gl_FragData[0] = mixcolor(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
 
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
-    FragData1.r = alpha * weight;
+    gl_FragData[1].r = alpha * weight;
 
 }

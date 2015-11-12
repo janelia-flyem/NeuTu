@@ -114,9 +114,17 @@ void Z3DShaderGroup::rebuild(const QString &header)
 void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
 {
   if (m_normalShaderFiles.empty()) {
+
+      if (GLEW_VERSION_3_0) {
+        m_header += "out vec4 FragData1;\n";
+      } else {
+        m_header += "#define FragData1 gl_FragData[1]\n";
+      }
+
     QStringList allshaders(m_shaderFiles);
     allshaders << "common.frag";
     shader->bindFragDataLocation(0, "FragData0");
+    shader->bindFragDataLocation(1, "FragData1");
     shader->loadFromSourceFile(allshaders, m_header);
   } else {
     shader->bindFragDataLocation(0, "FragData0");
