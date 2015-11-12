@@ -239,5 +239,7 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
   fragColor0 = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
                                      normalDirection, ipoint, color, alpha);
 
+  fragColor1 = vec4(0.0,0.0,0.0,0.0);
+
 }
 

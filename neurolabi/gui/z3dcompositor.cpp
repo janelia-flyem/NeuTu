@@ -155,12 +155,21 @@ void Z3DCompositor::deinitialize()
       delete m_ddpRT;
       m_ddpRT = NULL;
     }
-    m_ddpBlendShader->removeAllShaders();
-    m_ddpFinalShader->removeAllShaders();
-    delete m_ddpBlendShader;
-    m_ddpBlendShader = NULL;
-    delete m_ddpFinalShader;
-    m_ddpFinalShader = NULL;
+
+    if(m_ddpBlendShader)
+    {
+        m_ddpBlendShader->removeAllShaders();
+        delete m_ddpBlendShader;
+        m_ddpBlendShader = NULL;
+    }
+
+    if(m_ddpFinalShader)
+    {
+        m_ddpFinalShader->removeAllShaders();
+        delete m_ddpFinalShader;
+        m_ddpFinalShader = NULL;
+    }
+
   }
 
   if (Z3DGpuInfoInstance.isWeightedAverageSupported()) {
@@ -168,9 +177,13 @@ void Z3DCompositor::deinitialize()
       delete m_waRT;
       m_waRT = NULL;
     }
-    m_waFinalShader->removeAllShaders();
-    delete m_waFinalShader;
-    m_waFinalShader = NULL;
+
+    if(m_waFinalShader)
+    {
+        m_waFinalShader->removeAllShaders();
+        delete m_waFinalShader;
+        m_waFinalShader = NULL;
+    }
   }
 
   Z3DRenderProcessor::deinitialize();

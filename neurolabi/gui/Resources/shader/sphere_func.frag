@@ -67,4 +67,6 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
                                      normalDirection, ipoint, color, alpha);
 #endif
 
+  fragColor1 = vec4(0.0,0.0,0.0,0.0);
+
 }

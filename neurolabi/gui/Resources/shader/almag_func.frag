@@ -79,4 +79,6 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
 
         fragColor0 = baseColor;
 	fragDepth = gl_FragCoord.z;
+
+        fragColor1 = vec4(0.0,0.0,0.0,0.0);
 }

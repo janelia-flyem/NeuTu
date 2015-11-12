@@ -16,4 +16,6 @@ void main(void)
         fragment_func(color, vec4(0.0,0.0,0.0,0.0), fragDepth);
 	FragData0.xy = vec2(-fragDepth, fragDepth);
 	FragData1.x = -fragDepth;
+
+        fragColor1 = vec4(0.0,0.0,0.0,0.0);
 }
