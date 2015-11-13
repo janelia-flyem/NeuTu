@@ -412,11 +412,11 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       for (size_t i=0; i<nCubes; ++i)
       {
           glBindVertexArray(m_VAOs[i]);
+          glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
 
           size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
           size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
           size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
-
 
           glBufferData( GL_ARRAY_BUFFER, size_position + size_normal + size_color, NULL, GL_STATIC_DRAW );
           glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
@@ -522,7 +522,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   }
 
   m_cubeShaderGrp.release();
-  m_screenShaderGrp.release();
+  //m_screenShaderGrp.release();
 }
 
 void Z3DCubeRenderer::renderPicking(Z3DEye eye)

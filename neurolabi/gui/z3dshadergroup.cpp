@@ -140,6 +140,8 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
     qDebug()<<"header"<<header;
 
   }
+
+  shader->printShaders();
 }
 
 void Z3DShaderGroup::buildDualDepthPeelingInitShader(Z3DShaderProgram *shader)
