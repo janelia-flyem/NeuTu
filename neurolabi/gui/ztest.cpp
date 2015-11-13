@@ -18534,7 +18534,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "fa60", 7000);
@@ -18558,6 +18558,16 @@ void ZTest::test(MainWindow *host)
     }
   }
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.removeBodyAnnotation(12587667);
+  }
 #endif
 
   std::cout << "Done." << std::endl;

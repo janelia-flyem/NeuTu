@@ -1093,6 +1093,9 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
                            rect->getHeight() * rect->getHeight()) / 2.0);
       roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
       roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    } else if (appending) {
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ());
+      roi->setLastCorner(roi->getFirstCorner());
     }
   }
   m_splitSource.reset();

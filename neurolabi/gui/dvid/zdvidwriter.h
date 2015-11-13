@@ -49,6 +49,7 @@ public:
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 
   void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
+  void removeBodyAnnotation(uint64_t bodyId);
 
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);

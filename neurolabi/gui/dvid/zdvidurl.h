@@ -148,6 +148,8 @@ public:
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
+  std::string getBodyAnnotationName() const;
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,

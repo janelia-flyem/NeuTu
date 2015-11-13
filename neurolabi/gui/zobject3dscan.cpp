@@ -1314,13 +1314,13 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
 {
   std::vector<ZObject3dScan> objArray;
 
-#ifdef _DEBUG_
+#if 1
   std::cout << "Building connection graph ..." << std::endl;
 #endif
 
   ZGraph *graph = buildConnectionGraph();
 
-#ifdef _DEBUG_
+#if 1
   std::cout << "Connection graph ready." << std::endl;
 #endif
 
@@ -1332,7 +1332,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
 
     std::vector<bool> isAdded(segMap.size(), false);
 
-#ifdef _DEBUG_
+#if 1
   std::cout << "Extracting components ..." << std::endl;
 #endif
 
@@ -1354,13 +1354,13 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
       objArray.push_back(subobj);
     }
 
-#ifdef _DEBUG_
+#if 1
     std::cout << objArray.size() << " components extracted." << std::endl;
 #endif
 
     delete graph;
 
-#ifdef _DEBUG_
+#if 1
     std::cout << "Checking remains ..." << std::endl;
 #endif
     for (size_t i = 0; i < isAdded.size(); ++i) {
@@ -1373,7 +1373,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
       }
     }
 
-#ifdef _DEBUG_
+#if 1
     std::cout << objArray.size() << " components extracted." << std::endl;
 #endif
   }
