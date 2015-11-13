@@ -31,7 +31,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
                             const in vec3 normalDirection, const in vec3 position, const in vec4 color, const in float alpha);
 
-void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth)
+void fragment_func(out vec4 fragColor, out float fragDepth)
 {
   vec3 rayOrigin = mix(vec3(0.0 ,0.0, 0.0), point, ortho);
   vec3 rayDirection = mix(normalize(point), vec3(0.0, 0.0, -1.0), ortho);
@@ -60,13 +60,11 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
   vec3 normalDirection = normalize(ipoint - sphere_center);
 
 #ifdef DYNAMIC_MATERIAL_PROPERTY
-  fragColor0 = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
+  fragColor = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
                                      normalDirection, ipoint, color, alpha);
 #else
-  fragColor0 = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
+  fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
                                      normalDirection, ipoint, color, alpha);
 #endif
-
-  fragColor1 = vec4(0.0,0.0,0.0,0.0);
 
 }

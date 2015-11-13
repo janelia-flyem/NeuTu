@@ -23,7 +23,7 @@ varying vec4 color;
 #define texture texture2D
 #endif
 
-void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth)
+void fragment_func(out vec4 fragColor, out float fragDepth)
 {
 	vec4 baseColor = vec4(color.xyz, 1.0);
 	float distanceFactor = texture(tex, texCoord0).a;
@@ -77,8 +77,6 @@ void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth
 	baseColor.a = baseColor.a * alpha;
 	baseColor.rgb *= baseColor.a;
 
-        fragColor0 = baseColor;
+        fragColor = baseColor;
 	fragDepth = gl_FragCoord.z;
-
-        fragColor1 = vec4(0.0,0.0,0.0,0.0);
 }

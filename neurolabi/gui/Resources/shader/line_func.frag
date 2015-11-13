@@ -7,10 +7,9 @@ in vec4 color;
 varying vec4 color;
 #endif
 
-void fragment_func(out vec4 fragColor0, out vec4 fragColor1, out float fragDepth)
+void fragment_func(out vec4 fragColor, out float fragDepth)
 {
   fragDepth = gl_FragCoord.z;
-  fragColor0 = no_alpha ? color : vec4(color.rgb * color.a * alpha, color.a * alpha);
-  fragColor1 = vec4(0.0,0.0,0.0,0.0);
+  fragColor = no_alpha ? color : vec4(color.rgb * color.a * alpha, color.a * alpha);
 }
 
