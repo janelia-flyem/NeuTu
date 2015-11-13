@@ -92,7 +92,7 @@ void Z3DSurfaceFilter::prepareData()
     if (!m_dataIsInvalid)
         return;
 
-//    m_cubeRenderer->clearCube();
+    //
     for (size_t i = 0; i < m_cubeArray.size(); ++i) {
       const Z3DCube &cube = m_cubeArray[i];
       m_cubeRenderer->addCube(

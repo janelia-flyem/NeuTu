@@ -13,7 +13,7 @@ uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
 uniform mat3 normal_matrix;
 
-uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
+uniform vec3 pos_scale;
 
 void main()
 {

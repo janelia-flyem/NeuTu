@@ -248,6 +248,9 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
 
   //
   m_screen.init(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(-1.0f, 1.0f, 0.0f));
+
+  //
+  m_cubes.clear();
 }
 
 Z3DCubeRenderer::~Z3DCubeRenderer()
@@ -365,7 +368,7 @@ void Z3DCubeRenderer::renderPickingUsingOpengl()
 void Z3DCubeRenderer::render(Z3DEye eye)
 {
 
-    qDebug()<<"render cube";
+    qDebug()<<"render cube"<<m_dataChanged;
 
   if (!m_initialized)
     return;
@@ -379,6 +382,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
 
   nCubes = m_cubes.size();
+
+  qDebug()<<"nCubes"<<nCubes;
 
 //  m_screenShaderGrp.bind();
 //  Z3DShaderProgram &oit2DComposeShader = m_screenShaderGrp.get();

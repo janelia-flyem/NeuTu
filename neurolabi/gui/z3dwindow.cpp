@@ -648,13 +648,21 @@ void Z3DWindow::init(EInitMode mode)
 
   m_surfaceFilter = new Z3DSurfaceFilter;
   Z3DCube cube;
-  cube.x = 50;
-  cube.y = 50;
-  cube.z = 50;
+  cube.x = 0;
+  cube.y = 0;
+  cube.z = 0;
   cube.length = 20;
   cube.color = glm::vec4(1.0, 0, 0, 0.5);
 
-  m_surfaceFilter->addData(cube);
+  m_surfaceFilter->addData(cube); // red cube 1
+
+  cube.x = 0;
+  cube.y = 25;
+  cube.z = 0;
+  cube.length = 20;
+  cube.color = glm::vec4(0.0, 1.0, 0.0, 0.5);
+
+  m_surfaceFilter->addData(cube); // green cube 2
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));

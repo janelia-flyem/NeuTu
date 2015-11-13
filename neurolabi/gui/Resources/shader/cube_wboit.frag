@@ -30,8 +30,8 @@ void main()
     // the object lies between -40 and -60 z coordinates
     float weight = pow(alpha + 0.01, 4.0) + max(0.01, min(3000.0, 0.3 / (0.00001 + pow(abs(depth) / 200.0, 4.0))));
 
-    // RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
-    vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, color, alpha);
+     //RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
+     vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, color, alpha);
 
 #if defined(FragData0)
     FragData0 = mixcolor(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
