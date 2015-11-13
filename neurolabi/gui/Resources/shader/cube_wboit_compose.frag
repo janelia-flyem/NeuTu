@@ -17,6 +17,10 @@ void main(void)
         discard;
     }
 
+#if defined(FragData0)
+    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), r);
+#else
     gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), r);
+#endif
 
 }
