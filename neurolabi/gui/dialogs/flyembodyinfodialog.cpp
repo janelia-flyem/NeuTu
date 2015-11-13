@@ -104,11 +104,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 }
 
-void FlyEmBodyInfoDialog::init()
-{
-    m_quitting = false;
-}
-
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
   if (modelIndex.column() == 0) {
