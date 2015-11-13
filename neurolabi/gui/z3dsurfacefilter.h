@@ -19,8 +19,8 @@ public:
     ~Z3DCube();
 
 public:
-    int length;
-    int x,y,z;
+    double length;
+    double x,y,z;
     glm::vec4 color;
 };
 
@@ -38,6 +38,8 @@ public:
 
     void prepareData();
     void addData(const Z3DCube &cube);
+
+    std::vector<double> boundBox();
 
     virtual void process(Z3DEye);
 

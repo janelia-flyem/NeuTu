@@ -102,7 +102,7 @@ public:
     ~Cube();
 
 public:
-    void init(float sx, float sy, float sz, float tx, float ty, float tz);
+    void init(double sx, double sy, double sz, double tx, double ty, double tz);
     void initIdentity();
 
     void faces();
@@ -127,7 +127,7 @@ public:
     explicit Z3DCubeRenderer(QObject *parent = 0);
     virtual ~Z3DCubeRenderer();
 
-    void addCube(int sx, int sy, int sz, int tx, int ty, int tz, glm::vec4 color);
+    void addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color);
     bool isEmpty();
 
 protected:

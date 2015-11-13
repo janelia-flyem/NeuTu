@@ -646,6 +646,7 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
   }
 
+  // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
   Z3DCube cube;
   cube.x = 0;
@@ -663,6 +664,8 @@ void Z3DWindow::init(EInitMode mode)
   cube.color = glm::vec4(0.0, 1.0, 0.0, 0.5);
 
   m_surfaceFilter->addData(cube); // green cube 2
+
+  updateSurfaceBoundBox(); // end hard code
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
@@ -1592,16 +1595,8 @@ void Z3DWindow::updateGraphBoundBox()
 
 void Z3DWindow::updateSurfaceBoundBox()
 {
-  m_surfaceBoundBox.resize(6, 0);
-  m_surfaceBoundBox[0] = 0;
-  m_surfaceBoundBox[1] = 100;
-  m_surfaceBoundBox[2] = 0;
-  m_surfaceBoundBox[3] = 100;
-  m_surfaceBoundBox[4] = 0;
-  m_surfaceBoundBox[5] = 100;
+    m_surfaceBoundBox = m_surfaceFilter->boundBox();
 }
-
-
 
 /*
 void Z3DWindow::updateDecorationBoundBox()
@@ -2848,6 +2843,7 @@ void Z3DWindow::updateOverallBoundBox()
   updateOverallBoundBox(m_punctaBoundBox);
   updateOverallBoundBox(m_graphBoundBox);
   updateOverallBoundBox(m_decorationBoundBox);
+  updateOverallBoundBox(m_surfaceBoundBox);
   if (m_boundBox[0] > m_boundBox[1] || m_boundBox[2] > m_boundBox[3] || m_boundBox[4] > m_boundBox[5]) {
     // nothing visible
     m_boundBox[0] = m_boundBox [2] = m_boundBox[4] = 0.0f;

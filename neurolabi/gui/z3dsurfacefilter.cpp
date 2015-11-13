@@ -105,12 +105,37 @@ void Z3DSurfaceFilter::prepareData()
 
 void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 {
-  m_cubeArray.push_back(cube);
-
-//    m_cubeRenderer->addCube(cube.length, cube.length, cube.length, cube.x, cube.y, cube.z, cube.color);
+    m_cubeArray.push_back(cube);
 
     m_dataIsInvalid = true;
     invalidateResult();
+}
+
+vector<double> Z3DSurfaceFilter::boundBox()
+{
+    vector<double> result(6, 0);
+
+    qDebug()<<"boundBox ... "<<m_cubeArray.size();
+
+    for (size_t i = 0; i < m_cubeArray.size(); ++i) {
+      const Z3DCube &cube = m_cubeArray[i];
+
+      float radius = cube.length / 2.0;
+
+      qDebug()<<"test ... "<<radius<<cube.x<<cube.y<<cube.z;
+
+      result[0] = min(result[0], cube.x - radius);
+      result[1] = max(result[1], cube.x + radius);
+      result[2] = min(result[2], cube.y - radius);
+      result[3] = max(result[3], cube.y + radius);
+      result[4] = min(result[4], cube.z - radius);
+      result[5] = max(result[5], cube.z + radius);
+    }
+
+    for(int i=0; i<6;i++)
+    std::cout<<"bound box ... "<<result[i]<<std::endl;
+
+    return result;
 }
 
 ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()

@@ -137,18 +137,18 @@ Cube::~Cube()
 {
 }
 
-void Cube::init(float sx, float sy, float sz, float tx, float ty, float tz)
+void Cube::init(double sx, double sy, double sz, double tx, double ty, double tz)
 {
-    float cx = sx/2.0;
-    float cy = sy/2.0;
-    float cz = sz/2.0;
+    double cx = sx/2.0;
+    double cy = sy/2.0;
+    double cz = sz/2.0;
 
-    float l = -cx - tx;
-    float r = cx - tx;
-    float u = cy - ty;
-    float d = -cy - ty;
-    float f = -cz - tz;
-    float b = cz - tz;
+    double l = -cx - tx;
+    double r = cx - tx;
+    double u = cy - ty;
+    double d = -cy - ty;
+    double f = -cz - tz;
+    double b = cz - tz;
 
     x = tx;
     y = ty;
@@ -257,7 +257,7 @@ Z3DCubeRenderer::~Z3DCubeRenderer()
 {
 }
 
-void Z3DCubeRenderer::addCube(int sx, int sy, int sz, int tx, int ty, int tz, glm::vec4 color)
+void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color)
 {
     Cube cube;
 
@@ -385,8 +385,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 //  oit2DComposeShader.setUniformValue("pos_scale", getCoordScales());
 
   //
-  float h = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
-  float w = m_rendererBase->getCamera().getAspectRatio() * h;
+  double h = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
+  double w = m_rendererBase->getCamera().getAspectRatio() * h;
 
   //
   if (m_hardwareSupportVAO) {
@@ -450,7 +450,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 //      glBufferData( GL_ARRAY_BUFFER, m_screen.positions.size()*sizeof(glm::vec3), &(m_screen.positions[0]), GL_STATIC_DRAW );
 
 //      glEnableVertexAttribArray( cloc_position );
-//      glVertexAttribPointer( cloc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
+//      glVertexAttribPointer( cloc_position, 3, GL_double, GL_FALSE, 0, (GLvoid*)(0) );
 
 //      //
 //      glBindVertexArray(0);
@@ -467,7 +467,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
 //      qDebug()<<"w "<<w<<h;
 
-//      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
+//      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_double, 0);
 
 //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
