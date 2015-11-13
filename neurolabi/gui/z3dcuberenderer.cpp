@@ -364,6 +364,9 @@ void Z3DCubeRenderer::renderPickingUsingOpengl()
 
 void Z3DCubeRenderer::render(Z3DEye eye)
 {
+
+    qDebug()<<"render cube";
+
   if (!m_initialized)
     return;
 

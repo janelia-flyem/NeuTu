@@ -193,6 +193,8 @@ void Z3DLineRenderer::renderPickingUsingOpengl()
 
 void Z3DLineRenderer::render(Z3DEye eye)
 {
+    qDebug()<<"render line";
+
   if (!m_initialized)
     return;
 
