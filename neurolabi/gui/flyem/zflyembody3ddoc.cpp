@@ -441,6 +441,15 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
       removeObject(*iter, false);
       dumpGarbage(*iter);
     }
+
+    objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+
     endObjectModifiedMode();
     notifyObjectModified();
   }
