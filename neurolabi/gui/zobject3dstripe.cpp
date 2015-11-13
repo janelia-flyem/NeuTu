@@ -656,3 +656,34 @@ void ZObject3dStripe::print(int indent) const
     std::cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << std::endl;
   }
 }
+
+ZObject3dStripe operator - (
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+{
+  ZObject3dStripe result;
+#if 0
+  if ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+      !s1.m_segmentArray.empty() && !s2.m_segmentArray.empty()) {
+    s1.canonize();
+    s2.canonize();
+
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentStart(1);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentStart(1);
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+
+    }
+  } else {
+    result = s1;
+  }
+#endif
+  return result;
+}
