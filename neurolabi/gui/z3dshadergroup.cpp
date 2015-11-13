@@ -125,6 +125,8 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
     QString header = m_header;
     if (m_normalShaderFiles.back() == "cube_wboit.frag") {
 
+        qDebug()<<"missing here???????????";
+
       if (GLEW_VERSION_3_0) {
         header += "out vec4 FragData1;\n";
       } else {
@@ -134,9 +136,10 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
       shader->bindFragDataLocation(1, "FragData1");
     }
     shader->loadFromSourceFile(m_normalShaderFiles, header);
-  }
 
-  shader->printShaders(); //
+    qDebug()<<"header"<<header;
+
+  }
 }
 
 void Z3DShaderGroup::buildDualDepthPeelingInitShader(Z3DShaderProgram *shader)

@@ -150,9 +150,6 @@ public:
   void setUniformValueArray(const QString& name, const glm::mat3* values, int count, bool transpose = false);
   void setUniformValueArray(const QString& name, const glm::mat4* values, int count, bool transpose = false);
 
-public:
-  void printShaders(){qDebug()<<m_fragSrcs;}
-
 protected:
   bool m_logUniformLocationError;
   // srcs read from file, withour header
