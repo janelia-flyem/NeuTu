@@ -238,25 +238,13 @@ Z3DRendererBase::~Z3DRendererBase()
 
 void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye eye)
 {
-    qDebug()<<"setGlobalShaderParameters";
-    shader.printShaders();
-
   shader.setLogUniformLocationError(false);
 
   shader.setUniformValue("screen_dim", glm::vec2(m_viewport.z, m_viewport.w));
   shader.setUniformValue("screen_dim_RCP", 1.f / glm::vec2(m_viewport.z, m_viewport.w));
 
-
-  qDebug()<<"CHECK_GL_ERROR 00";
-  CHECK_GL_ERROR;
-  qDebug()<<"CHECK_GL_ERROR 01";
-
   // camera position in world coordinates, and corresponding transformation matrices
   shader.setUniformValue("camera_position", m_camera.getEye());
-
-  qDebug()<<"CHECK_GL_ERROR 10";
-  CHECK_GL_ERROR;
-  qDebug()<<"CHECK_GL_ERROR 11";
 
   shader.setUniformValue("view_matrix", getViewMatrix(eye));
   shader.setUniformValue("view_matrix_inverse", getViewMatrixInverse(eye));
@@ -267,18 +255,10 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye
   shader.setUniformValue("viewport_matrix_inverse", getViewportMatrixInverse());
   shader.setUniformValue("projection_view_matrix", getProjectionMatrix(eye) * getViewMatrix(eye));
 
-  qDebug()<<"CHECK_GL_ERROR 20";
-  CHECK_GL_ERROR;
-  qDebug()<<"CHECK_GL_ERROR 21";
-
   shader.setUniformValue("gamma", 2.f);
 
   shader.setUniformValue("size_scale", getSizeScale());
   shader.setUniformValue("pos_scale", getCoordScales());
-
-  qDebug()<<"CHECK_GL_ERROR 30";
-  CHECK_GL_ERROR;
-  qDebug()<<"CHECK_GL_ERROR 31";
 
   for (int i=0; i<m_lightCount.get(); i++) {
     shader.setUniformValue(QString("lights[%1].position").arg(i), m_lightPositions[i]->get());
