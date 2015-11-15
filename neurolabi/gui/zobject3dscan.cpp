@@ -2282,6 +2282,21 @@ ZObject3dScan ZObject3dScan::getComplementObject()
   return compObj;
 }
 
+ZObject3dScan ZObject3dScan::getSurfaceObject() const
+{
+  int offset[3];
+  Stack *stack = toStack(offset);
+
+  Stack *surface = Stack_Perimeter(stack, NULL, 6);
+  ZObject3dScan surfaceObj;
+  surfaceObj.loadStack(surface);
+  surfaceObj.translate(offset[0], offset[1], offset[2]);
+  C_Stack::kill(stack);
+  C_Stack::kill(surface);
+
+  return surfaceObj;
+}
+
 ZObject3dScan ZObject3dScan::findHoleObject()
 {
   ZObject3dScan obj;
@@ -2721,6 +2736,48 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   this->copyDataFrom(remained);
 
   return subtracted;
+}
+
+ZObject3dScan operator - (
+    const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  const_cast<ZObject3dScan&>(obj1).canonize();
+  const_cast<ZObject3dScan&>(obj2).canonize();
+
+  size_t index1 = 0;
+  size_t index2 = 0;
+
+
+  ZObject3dScan remained;
+
+  while (index1 < obj1.m_stripeArray.size() &&
+         index2 < obj2.m_stripeArray.size()) {
+    const ZObject3dStripe &s1 = obj1.m_stripeArray[index1];
+    const ZObject3dStripe &s2 = obj2.m_stripeArray[index2];
+
+    if (s1.getY() == s2.getY() && s1.getZ() == s2.getZ()) {
+      ZObject3dStripe diff = s1 - s2;
+      if (!diff.isEmpty()) {
+        remained.m_stripeArray.push_back(diff);
+      }
+      ++index1;
+      ++index2;
+    } else if (s1.getZ() < s2.getZ() ||
+               (s1.getZ() == s2.getZ() && s1.getY() < s2.getY())) {
+      remained.m_stripeArray.push_back(obj1.m_stripeArray[index1]);
+      ++index1;
+    } else {
+      ++index2;
+    }
+  }
+
+  for (; index1 < obj1.m_stripeArray.size(); ++index1) {
+    remained.m_stripeArray.push_back(obj1.m_stripeArray[index1]);
+  }
+
+  remained.setCanonized(true);
+
+  return remained;
 }
 
 void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)

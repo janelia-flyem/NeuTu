@@ -18560,7 +18560,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "86e1", 7100);
 
@@ -18570,5 +18570,66 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZObject3dStripe s1;
+  s1.addSegment(0, 5);
+  s1.addSegment(7, 9);
+  s1.addSegment(11, 13);
+  s1.addSegment(17, 19);
+  s1.addSegment(25, 29);
+
+  ZObject3dStripe s2;
+  s2.addSegment(-5, -3);
+  s2.addSegment(-1, 0);
+  s2.addSegment(2, 3);
+  s2.addSegment(5, 7);
+  s2.addSegment(9, 13);
+  s2.addSegment(20, 25);
+
+  ZObject3dStripe s = s1 - s2;
+  s.print();
+
+#endif
+
+#if 1
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+
+  ZObject3dScan surfaceObj = bf.getSurfaceObject();
+  surfaceObj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan *bs = bf.subobject(ZIntCuboid(ZIntPoint(276, 895, 400),
+                                              ZIntPoint(821, 1091, 642)));
+
+  tic();
+  ZObject3dScan diff = bf - *bs;
+//  bf.subtractSliently(*bs);
+  ptoc();
+
+  std::cout << diff.isCanonizedActually() << std::endl;
+  std::cout << bf.isCanonizedActually() << std::endl;
+  std::cout << bs->isCanonizedActually() << std::endl;
+
+  tic();
+  bf.subtractSliently(*bs);
+  ptoc();
+
+  std::cout << diff.getVoxelNumber() << std::endl;
+  std::cout << bf.getVoxelNumber() << std::endl;
+
+  std::cout << bf.equalsLiterally(diff) << std::endl;
+
+  bf.subtractSliently(diff);
+//  bf.print();
+  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  delete bs;
+
+#endif
   std::cout << "Done." << std::endl;
 }
