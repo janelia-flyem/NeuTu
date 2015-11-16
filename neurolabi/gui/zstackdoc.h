@@ -812,29 +812,37 @@ public:
   void updatePreviewSwc();
   */
 
-  EObjectModifiedMode getObjectModifiedMode() const;
+  void clearObjectModifiedTypeBuffer(bool sync = false);
+  void clearObjectModifiedTargetBuffer(bool sync = false);
+  void clearObjectModifiedRoleBuffer(bool sync = false);
+
+  EObjectModifiedMode getObjectModifiedMode();
   void beginObjectModifiedMode(EObjectModifiedMode mode);
   void endObjectModifiedMode();
 
-  void notifyObjectModified();
+  void notifyObjectModified(bool sync = false);
   void notifyObjectModified(ZStackObject::EType type);
 
-  void bufferObjectModified(ZStackObject::EType type);
-  void bufferObjectModified(ZStackObject::ETarget target);
-  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet);
-  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
-  void bufferObjectModified(ZStackObject *obj);
-  void bufferObjectModified(const ZStackObjectRole &role);
-  void bufferObjectModified(ZStackObjectRole::TRole role);
+  void bufferObjectModified(ZStackObject::EType type, bool sync = false);
+  void bufferObjectModified(ZStackObject::ETarget target, bool sync = false);
+  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
+                            bool sync = false);
+  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+                            bool sync = false);
+  void bufferObjectModified(ZStackObject *obj, bool sync = false);
+  void bufferObjectModified(const ZStackObjectRole &role, bool sync = false);
+  void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = false);
 
 
-  void processObjectModified(ZStackObject::EType type);
-  void processObjectModified(ZStackObject::ETarget target);
-  void processObjectModified(const QSet<ZStackObject::EType> &typeSet);
-  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
-  void processObjectModified(ZStackObject *obj);
-  void processObjectModified(ZStackObjectRole::TRole role);
-  void processObjectModified(const ZStackObjectRole &role);
+  void processObjectModified(ZStackObject::EType type, bool sync = false);
+  void processObjectModified(ZStackObject::ETarget target, bool sync = false);
+  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
+                             bool sync = false);
+  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+                             bool sync = false);
+  void processObjectModified(ZStackObject *obj, bool sync = false);
+  void processObjectModified(ZStackObjectRole::TRole role, bool sync = false);
+  void processObjectModified(const ZStackObjectRole &role, bool sync = false);
 
   void processSwcModified();
 
@@ -1216,9 +1224,13 @@ private:
   ZProgressSignal *m_progressSignal;
 
   QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
+  QMutex m_objectModifiedTargetBufferMutex;
   QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
+  QMutex m_objectModifiedTypeBufferMutex;
   ZStackObjectRole m_objectModifiedRoleBuffer;
+  QMutex m_objectModifiedRoleBufferMutex;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
+  QMutex m_objectModifiedModeMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;

@@ -214,6 +214,7 @@ void Z3DGraphFilter::prepareColor()
     QColor color =node.color();
 
     if (node.radius() > 0) {
+      Q_ASSERT(index < m_pointColors.size());
       m_pointColors[index++] = glm::vec4(
             color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }

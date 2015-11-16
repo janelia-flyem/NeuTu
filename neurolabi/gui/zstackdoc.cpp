@@ -4920,81 +4920,151 @@ void ZStackDoc::notifyActiveViewModified()
   emit activeViewModified();
 }
 
-void ZStackDoc::notifyObjectModified()
+void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
+{
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    m_objectModifiedTypeBuffer.clear();
+  } else {
+    m_objectModifiedTypeBuffer.clear();
+  }
+}
+
+void ZStackDoc::clearObjectModifiedTargetBuffer(bool sync)
+{
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
+    m_objectModifiedTargetBuffer.clear();
+  } else {
+    m_objectModifiedTargetBuffer.clear();
+  }
+}
+
+void ZStackDoc::clearObjectModifiedRoleBuffer(bool sync)
+{
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
+    m_objectModifiedRoleBuffer.clear();
+  } else {
+    m_objectModifiedRoleBuffer.clear();
+  }
+}
+
+void ZStackDoc::notifyObjectModified(bool sync)
 {
 //  emit objectModified();
 
   if (getObjectModifiedMode() == OBJECT_MODIFIED_SIGNAL) {
     if (!m_objectModifiedTypeBuffer.empty()) {
-      processObjectModified(m_objectModifiedTypeBuffer);
+      processObjectModified(m_objectModifiedTypeBuffer, sync);
+      clearObjectModifiedTypeBuffer(sync);
+#if 0
+      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
       m_objectModifiedTypeBuffer.clear();
+#endif
     }
 
     if (!m_objectModifiedTargetBuffer.empty()) {
-      processObjectModified(m_objectModifiedTargetBuffer);
+      processObjectModified(m_objectModifiedTargetBuffer, sync);
+      clearObjectModifiedTypeBuffer(sync);
+      /*
+      QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
       m_objectModifiedTargetBuffer.clear();
+      */
     }
 
     if (!m_objectModifiedRoleBuffer.isNone()) {
-      processObjectModified(m_objectModifiedRoleBuffer.getRole());
-//      notifyPlayerChanged(m_objectModifiedRoleBuffer.getRole());
+      processObjectModified(m_objectModifiedRoleBuffer.getRole(), sync);
+      clearObjectModifiedRoleBuffer(sync);
+      /*
+      QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
       m_objectModifiedRoleBuffer.clear();
+      */
     }
   }
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::EType type)
+void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
-  m_objectModifiedTypeBuffer.insert(type);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    m_objectModifiedTypeBuffer.insert(type);
+  } else {
+    m_objectModifiedTypeBuffer.insert(type);
+  }
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role)
+void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role, bool sync)
 {
-  bufferObjectModified(role.getRole());
+  bufferObjectModified(role.getRole(), sync);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target)
+void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target, bool sync)
 {
-  m_objectModifiedTargetBuffer.insert(target);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
+    m_objectModifiedTargetBuffer.insert(target);
+  } else {
+    m_objectModifiedTargetBuffer.insert(target);
+  }
 }
 
-void ZStackDoc::bufferObjectModified(const QSet<ZStackObject::EType> &typeSet)
+void ZStackDoc::bufferObjectModified(
+    const QSet<ZStackObject::EType> &typeSet, bool sync)
 {
-  m_objectModifiedTypeBuffer.unite(typeSet);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    m_objectModifiedTypeBuffer.unite(typeSet);
+  } else {
+    m_objectModifiedTypeBuffer.unite(typeSet);
+  }
 }
 
-void ZStackDoc::bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet)
+void ZStackDoc::bufferObjectModified(
+    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
 {
-  m_objectModifiedTargetBuffer.unite(targetSet);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
+    m_objectModifiedTargetBuffer.unite(targetSet);
+  } else {
+    m_objectModifiedTargetBuffer.unite(targetSet);
+  }
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject *obj)
+void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
 {
-  bufferObjectModified(obj->getType());
-  bufferObjectModified(obj->getTarget());
-  bufferObjectModified(obj->getRole());
+  bufferObjectModified(obj->getType(), sync);
+  bufferObjectModified(obj->getTarget(), sync);
+  bufferObjectModified(obj->getRole(), sync);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role)
+void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
 {
-  m_objectModifiedRoleBuffer.addRole(role);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
+    m_objectModifiedRoleBuffer.addRole(role);
+  } else {
+    m_objectModifiedRoleBuffer.addRole(role);
+  }
 }
 
-void ZStackDoc::processObjectModified(ZStackObject *obj)
+void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 {
-  processObjectModified(obj->getType());
-  processObjectModified(obj->getTarget());
-  processObjectModified(obj->getRole());
+  processObjectModified(obj->getType(), sync);
+  processObjectModified(obj->getTarget(), sync);
+  processObjectModified(obj->getRole(), sync);
 }
 
-void ZStackDoc::processObjectModified(ZStackObject::ETarget target)
+void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case OBJECT_MODIFIED_SIGNAL:
     emit objectModified(target);
     break;
   case OBJECT_MODIFIED_CACHE:
-    m_objectModifiedTargetBuffer.insert(target);
+  {
+    bufferObjectModified(target, sync);
+  }
     break;
   default:
     break;
@@ -5002,28 +5072,30 @@ void ZStackDoc::processObjectModified(ZStackObject::ETarget target)
 }
 
 void ZStackDoc::processObjectModified(
-    const QSet<ZStackObject::ETarget> &targetSet)
+    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case OBJECT_MODIFIED_SIGNAL:
     emit objectModified(targetSet);
     break;
   case OBJECT_MODIFIED_CACHE:
-    m_objectModifiedTargetBuffer.unite(targetSet);
+  {
+    bufferObjectModified(targetSet, sync);
+  }
     break;
   default:
     break;
   }
 }
 
-void ZStackDoc::processObjectModified(ZStackObject::EType type)
+void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case OBJECT_MODIFIED_SIGNAL:
     notifyObjectModified(type);
     break;
   case OBJECT_MODIFIED_CACHE:
-    bufferObjectModified(type);
+    bufferObjectModified(type, sync);
 //    m_objectModifiedTargetBuffer.unite(targetSet);
     break;
   default:
@@ -5037,19 +5109,19 @@ void ZStackDoc::processSwcModified()
   processObjectModified(ZSwcTree::GetDefaultTarget());
 }
 
-void ZStackDoc::processObjectModified(const ZStackObjectRole &role)
+void ZStackDoc::processObjectModified(const ZStackObjectRole &role, bool sync)
 {
-  processObjectModified(role.getRole());
+  processObjectModified(role.getRole(), sync);
 }
 
-void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role)
+void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case OBJECT_MODIFIED_SIGNAL:
     notifyPlayerChanged(role);
     break;
   case OBJECT_MODIFIED_CACHE:
-    bufferObjectModified(role);
+    bufferObjectModified(role, sync);
 //    m_objectModifiedTargetBuffer.unite(targetSet);
     break;
   default:
@@ -5095,12 +5167,22 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 }
 
 
-void ZStackDoc::processObjectModified(const QSet<ZStackObject::EType> &typeSet)
+void ZStackDoc::processObjectModified(
+    const QSet<ZStackObject::EType> &typeSet, bool sync)
 {
-  for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
-       iter != typeSet.end(); ++iter) {
-    ZStackObject::EType type = *iter;
-    processObjectModified(type);
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
+         iter != typeSet.end(); ++iter) {
+      ZStackObject::EType type = *iter;
+      processObjectModified(type);
+    }
+  } else {
+    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
+         iter != typeSet.end(); ++iter) {
+      ZStackObject::EType type = *iter;
+      processObjectModified(type);
+    }
   }
 }
 
@@ -6946,7 +7028,7 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
 
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  notifyObjectModified(true);
 }
 
 void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
@@ -8953,21 +9035,28 @@ QString ZStackDoc::getTitle() const
   return title;
 }
 
-ZStackDoc::EObjectModifiedMode ZStackDoc::getObjectModifiedMode() const
+ZStackDoc::EObjectModifiedMode ZStackDoc::getObjectModifiedMode()
 {
+  QMutexLocker locker(&m_objectModifiedModeMutex);
+
   if (!m_objectModifiedMode.empty()) {
     return m_objectModifiedMode.top();
   }
 
   return OBJECT_MODIFIED_SIGNAL;
 }
+
 void ZStackDoc::beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode mode)
 {
+  QMutexLocker locker(&m_objectModifiedModeMutex);
+
   m_objectModifiedMode.push(mode);
 }
 
 void ZStackDoc::endObjectModifiedMode()
 {
+  QMutexLocker locker(&m_objectModifiedModeMutex);
+
   m_objectModifiedMode.pop();
 }
 

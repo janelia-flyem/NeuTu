@@ -344,7 +344,7 @@ void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
     }
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  notifyObjectModified(true);
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
@@ -391,7 +391,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     addObject(tree, true);
     processObjectModified(tree);
     endObjectModifiedMode();
-    notifyObjectModified();
+    notifyObjectModified(true);
 
     //Add synapse
     if (m_showingSynapse) {
@@ -423,7 +423,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
       }
 
       endObjectModifiedMode();
-      notifyObjectModified();
+      notifyObjectModified(true);
     }
 //    removeObject(tree->getSource(), true);
 //    removeObject(tree, true);
@@ -483,7 +483,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
     }
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    notifyObjectModified(true);
   }
 }
 
@@ -523,7 +523,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
     }
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    notifyObjectModified(true);
   }
 }
 
