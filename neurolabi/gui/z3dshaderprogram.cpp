@@ -433,6 +433,7 @@ void Z3DShaderProgram::setUniformValue(const QString &name, GLuint v1, GLuint v2
 //  setUniformValue(name, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3), static_cast<GLint>(v4));
 //}
 
+// vector
 void Z3DShaderProgram::setUniformValue(GLint loc, const glm::vec2 &value)
 {
   if (loc != -1) {
