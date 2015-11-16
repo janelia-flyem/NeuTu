@@ -109,6 +109,7 @@
 #include "swc/zswcresampler.h"
 #include "zswcforest.h"
 #include "swc/zswcsignalfitter.h"
+#include "zgraphobjsmodel.h"
 
 using namespace std;
 
@@ -132,6 +133,7 @@ ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   m_punctaObjsModel = new ZPunctaObjsModel(this, this);
   m_seedObjsModel = new ZDocPlayerObjsModel(
         this, ZStackObjectRole::ROLE_SEED, this);
+  m_graphObjsModel = new ZGraphObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
@@ -286,6 +288,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -3834,6 +3837,14 @@ void ZStackDoc::setPunctumVisible(ZPunctum *punctum, bool visible)
   if (punctum->isVisible() != visible) {
     punctum->setVisible(visible);
     emit punctumVisibleStateChanged();
+  }
+}
+
+void ZStackDoc::setGraphVisible(Z3DGraph *graph, bool visible)
+{
+  if (graph->isVisible() != visible) {
+    graph->setVisible(visible);
+    emit graphVisibleStateChanged();
   }
 }
 
@@ -8730,7 +8741,9 @@ Z3DGraph ZStackDoc::get3DGraphDecoration() const
   QList<const ZDocPlayer *> playerList =
       getPlayerList(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
   foreach(const ZDocPlayer *player, playerList) {
-    graph.append(player->get3DGraph());
+    if (player->getData()->isVisible()) {
+      graph.append(player->get3DGraph());
+    }
   }
 //  graph.
 

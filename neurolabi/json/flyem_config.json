@@ -178,11 +178,12 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7100,
-      "uuid": "86e1",
+      "uuid": "b0f7",
       "name": "MB_zhaot_backup",
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
+      "roi": "entire_mb",
       "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot"]
     },

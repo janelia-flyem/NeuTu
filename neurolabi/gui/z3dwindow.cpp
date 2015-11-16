@@ -664,8 +664,8 @@ void Z3DWindow::init(EInitMode mode)
           SIGNAL(punctumVisibleStateChanged()),
           m_punctaFilter, SLOT(updatePunctumVisibleState()));
   connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged()),
-          m_punctaFilter, SLOT(updatePunctumVisibleState()));
+          SIGNAL(graphVisibleStateChanged()),
+          this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
@@ -1665,7 +1665,10 @@ void Z3DWindow::update3DGraphDisplay()
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+    Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
+    if (graph->isVisible()) {
+      m_graphFilter->addData(*graph);
+    }
   }
   updateGraphBoundBox();
 //  updateDecorationBoundBox();

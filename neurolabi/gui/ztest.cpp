@@ -11975,9 +11975,6 @@ void ZTest::test(MainWindow *host)
   tic();
   obj2.dilate();
   ptoc();
-
-
-
 #endif
 
 #if 0
@@ -12070,7 +12067,20 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
-  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
+  Z3DGraphFactory factory;
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(QColor(255, 0, 0));
+  factory.setNodeRadiusHint(0);
+
+  std::vector<int> faceArray;
+  faceArray.push_back(0);
+  faceArray.push_back(1);
+  faceArray.push_back(2);
+  faceArray.push_back(3);
+  faceArray.push_back(4);
+  faceArray.push_back(5);
+
+  Z3DGraph *graphObj = factory.makeFaceGraph(box, faceArray);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
@@ -16561,6 +16571,13 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+  ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
+  jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
+#endif
+
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
@@ -18591,7 +18608,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan bf;
   bf.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
 

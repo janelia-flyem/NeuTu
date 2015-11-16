@@ -68,6 +68,7 @@ class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
 class ZDocPlayerObjsModel;
+class ZGraphObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
@@ -273,6 +274,7 @@ public: //attributes
   inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
+  inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -647,6 +649,7 @@ public:
 
   // show/hide objects and emit signals for 3D view and 2D view to sync
   void setPunctumVisible(ZPunctum* punctum, bool visible);
+  void setGraphVisible(Z3DGraph *graph, bool visible);
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
 
@@ -1101,6 +1104,7 @@ signals:
   void swcTreeNodeSelectionChanged();
 
   void punctumVisibleStateChanged();
+  void graphVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
@@ -1167,6 +1171,7 @@ private:
   ZSwcNodeObjsModel *m_swcNodeObjsModel;
   ZPunctaObjsModel *m_punctaObjsModel;
   ZDocPlayerObjsModel *m_seedObjsModel;
+  ZGraphObjsModel *m_graphObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;
