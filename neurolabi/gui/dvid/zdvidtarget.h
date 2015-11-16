@@ -152,6 +152,9 @@ public:
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
 
+  std::string getRoiName() const;
+  void setRoiName(const std::string &name);
+
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
@@ -172,6 +175,7 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
+  std::string m_roiName;
   std::set<std::string> m_userList;
   bool m_isSupervised;
   std::string m_supervisorServer;
@@ -192,6 +196,7 @@ private:
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
+  const static char* m_roiNameKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;

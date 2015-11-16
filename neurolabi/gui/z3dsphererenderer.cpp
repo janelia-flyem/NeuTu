@@ -275,28 +275,33 @@ void Z3DSphereRenderer::render(Z3DEye eye)
 
         glEnableVertexAttribArray(attr_a_vertex_radius);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[i][0]);
-        glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat), &(m_pointAndRadius[start]), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat),
+                     &(m_pointAndRadius[start]), GL_STATIC_DRAW);
         glVertexAttribPointer(attr_a_vertex_radius, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
         if (m_useDynamicMaterial.get() && !m_specularAndShininess.empty()) {
           glEnableVertexAttribArray(attr_a_specular_shininess);
           glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[i][3]);
-          glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat), &(m_specularAndShininess[start]), GL_STATIC_DRAW);
+          glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat),
+                       &(m_specularAndShininess[start]), GL_STATIC_DRAW);
           glVertexAttribPointer(attr_a_specular_shininess, 4, GL_FLOAT, GL_FALSE, 0, 0);
         }
 
         glEnableVertexAttribArray(attr_color);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[i][1]);
-        glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat), &(m_pointColors[start]), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size*4*sizeof(GLfloat),
+                     &(m_pointColors[start]), GL_STATIC_DRAW);
         glVertexAttribPointer(attr_color, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
         glEnableVertexAttribArray(attr_flags);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[i][2]);
-        glBufferData(GL_ARRAY_BUFFER, size*sizeof(GLfloat), &(m_allFlags[start]), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size*sizeof(GLfloat),
+                     &(m_allFlags[start]), GL_STATIC_DRAW);
         glVertexAttribPointer(attr_flags, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBOs[i][4]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size*6/4*sizeof(GLuint), &(m_indexs[0]), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size*6/4*sizeof(GLuint),
+                     &(m_indexs[0]), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);

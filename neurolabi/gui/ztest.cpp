@@ -11975,9 +11975,6 @@ void ZTest::test(MainWindow *host)
   tic();
   obj2.dilate();
   ptoc();
-
-
-
 #endif
 
 #if 0
@@ -12070,7 +12067,20 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
-  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
+  Z3DGraphFactory factory;
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(QColor(255, 0, 0));
+  factory.setNodeRadiusHint(0);
+
+  std::vector<int> faceArray;
+  faceArray.push_back(0);
+  faceArray.push_back(1);
+  faceArray.push_back(2);
+  faceArray.push_back(3);
+  faceArray.push_back(4);
+  faceArray.push_back(5);
+
+  Z3DGraph *graphObj = factory.makeFaceGraph(box, faceArray);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
@@ -16561,6 +16571,13 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
+  ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
+  jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
+#endif
+
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
@@ -18534,7 +18551,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "fa60", 7000);
@@ -18560,5 +18577,76 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "86e1", 7100);
+
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.removeBodyAnnotation(12587667);
+  }
+#endif
+
+#if 0
+  ZObject3dStripe s1;
+  s1.addSegment(0, 5);
+  s1.addSegment(7, 9);
+  s1.addSegment(11, 13);
+  s1.addSegment(17, 19);
+  s1.addSegment(25, 29);
+
+  ZObject3dStripe s2;
+  s2.addSegment(-5, -3);
+  s2.addSegment(-1, 0);
+  s2.addSegment(2, 3);
+  s2.addSegment(5, 7);
+  s2.addSegment(9, 13);
+  s2.addSegment(20, 25);
+
+  ZObject3dStripe s = s1 - s2;
+  s.print();
+
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block.sobj");
+
+  ZObject3dScan surfaceObj = bf.getSurfaceObject();
+  surfaceObj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZObject3dScan bf;
+  bf.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan *bs = bf.subobject(ZIntCuboid(ZIntPoint(276, 895, 400),
+                                              ZIntPoint(821, 1091, 642)));
+
+  tic();
+  ZObject3dScan diff = bf - *bs;
+//  bf.subtractSliently(*bs);
+  ptoc();
+
+  std::cout << diff.isCanonizedActually() << std::endl;
+  std::cout << bf.isCanonizedActually() << std::endl;
+  std::cout << bs->isCanonizedActually() << std::endl;
+
+  tic();
+  bf.subtractSliently(*bs);
+  ptoc();
+
+  std::cout << diff.getVoxelNumber() << std::endl;
+  std::cout << bf.getVoxelNumber() << std::endl;
+
+  std::cout << bf.equalsLiterally(diff) << std::endl;
+
+  bf.subtractSliently(diff);
+//  bf.print();
+  bf.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  delete bs;
+
+#endif
   std::cout << "Done." << std::endl;
 }

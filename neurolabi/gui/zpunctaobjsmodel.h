@@ -3,6 +3,8 @@
 
 #include <map>
 #include <vector>
+
+#include "zsharedpointer.h"
 #include "zobjsmodel.h"
 
 class ZStackDoc;

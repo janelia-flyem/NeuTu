@@ -183,6 +183,12 @@ void ZDvidWriter::writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation)
   writeAnnotation(annotation.getBodyId(), annotation.toJsonObject());
 }
 
+void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
+{
+  ZDvidUrl url(m_dvidTarget);
+  deleteKey(url.getBodyAnnotationName(), ZString::num2str(bodyId));
+}
+
 void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
