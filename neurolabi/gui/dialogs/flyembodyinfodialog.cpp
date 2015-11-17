@@ -100,6 +100,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
     connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
 
 }
@@ -203,6 +204,14 @@ void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
         updateStatusLabel();
     } else {
         clearStatusLabel();
+    }
+}
+
+void FlyEmBodyInfoDialog::updateBodyFilterAfterLoading() {
+    // if the user typed something into the filter box while
+    //  the body data was loading, we need to kick it to update:
+    if (ui->bodyFilterField->text().size() > 0) {
+        bodyFilterUpdated(ui->bodyFilterField->text());
     }
 }
 

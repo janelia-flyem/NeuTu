@@ -38,6 +38,7 @@ private slots:
     void onJsonLoadError(QString message);
     void updateStatusLabel();
     void updateStatusAfterLoading();
+    void updateBodyFilterAfterLoading();
     void bodyFilterUpdated(QString filterText);
     void applicationQuitting();    
     void onSaveColorFilter();
