@@ -238,8 +238,6 @@ void Z3DCompositor::process(Z3DEye eye)
   if (m_renderGeometries.get()) {
     for (size_t i=0; i<filters.size(); ++i) {
       Z3DGeometryFilter* geomFilter = filters.at(i);
-      qDebug() << geomFilter->isReady(eye);
-      qDebug() << geomFilter->getOpacity();
       if (geomFilter->isReady(eye) && geomFilter->getOpacity() > 0.0) {
         if (geomFilter->isStayOnTop())
           onTopFilters.push_back(geomFilter);
@@ -508,27 +506,47 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   CHECK_GL_ERROR;
 
-  for (size_t i=0; i<filters.size(); i++) {
-    Z3DGeometryFilter* geomFilter = filters.at(i);
-    if(!geomFilter->needBlending()) {
-      geomFilter->setCamera(m_camera.get());
-      geomFilter->setViewport(port.getSize());
-      geomFilter->render(eye);
-      CHECK_GL_ERROR;
-    }
-  }
+//  for (size_t i=0; i<filters.size(); i++) {
+//    Z3DGeometryFilter* geomFilter = filters.at(i);
+//    if(!geomFilter->needBlending()) {
+//      geomFilter->setCamera(m_camera.get());
+//      geomFilter->setViewport(port.getSize());
+//      geomFilter->render(eye);
+//      CHECK_GL_ERROR;
+//    }
+//  }
+//  for (size_t i=0; i<filters.size(); i++) {
+//    Z3DGeometryFilter* geomFilter = filters.at(i);
+//    if(geomFilter->needBlending()) {
+//      glEnable(GL_BLEND);
+//      glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+//      geomFilter->setCamera(m_camera.get());
+//      geomFilter->setViewport(port.getSize());
+//      geomFilter->render(eye);
+//      glBlendFunc(GL_ONE,GL_ZERO);
+//      glDisable(GL_BLEND);
+//      CHECK_GL_ERROR;
+//    }
+//  }
 
   for (size_t i=0; i<filters.size(); i++) {
     Z3DGeometryFilter* geomFilter = filters.at(i);
-    if(geomFilter->needBlending()) {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-      geomFilter->setCamera(m_camera.get());
-      geomFilter->setViewport(port.getSize());
-      geomFilter->render(eye);
-      glBlendFunc(GL_ONE,GL_ZERO);
-      glDisable(GL_BLEND);
-      CHECK_GL_ERROR;
+    if (geomFilter->needBlending()) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+        geomFilter->setCamera(m_camera.get());
+        geomFilter->setViewport(port.getSize());
+        geomFilter->render(eye);
+        glBlendFunc(GL_ONE,GL_ZERO);
+        glDisable(GL_BLEND);
+        CHECK_GL_ERROR;
+    }
+    else
+    {
+        geomFilter->setCamera(m_camera.get());
+        geomFilter->setViewport(port.getSize());
+        geomFilter->render(eye);
+        CHECK_GL_ERROR;
     }
   }
 

@@ -135,8 +135,6 @@ void Z3DBackgroundRenderer::renderPickingUsingOpengl()
 
 void Z3DBackgroundRenderer::render(Z3DEye eye)
 {
-    qDebug()<<"render background";
-
   m_backgroundShaderGrp.bind();
   Z3DShaderProgram &shader = m_backgroundShaderGrp.get();
   m_rendererBase->setGlobalShaderParameters(shader, eye);

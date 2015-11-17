@@ -143,7 +143,7 @@ protected:
     virtual void renderPicking(Z3DEye eye);
 
     Z3DShaderGroup m_cubeShaderGrp;
-    Z3DShaderGroup m_screenShaderGrp;
+    QGLShaderProgram *oit2DComposeProgram;
 
 private:
     std::vector<glm::vec4> m_pointAndRadius;
@@ -155,11 +155,12 @@ private:
 
     std::vector<Cube> m_cubes;
 
-    Quadrilateral m_screen;
-    GLuint m_vao, m_vbo;
+    QVector<QVector3D> m_screen;
+    GLuint m_vao;
+    GLint m_preFBO;
     GLuint m_fbo;
-    GLuint m_db;
-    GLuint m_rt;
+    GLuint m_renderbuffer;
+    GLuint m_texture;
 
     std::vector<GLuint> m_VAOs;
     std::vector<GLuint> m_pickingVAOs;

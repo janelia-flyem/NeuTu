@@ -175,8 +175,6 @@ QString Z3DFontRenderer::generateHeader()
 
 void Z3DFontRenderer::render(Z3DEye eye)
 {
-    qDebug()<<"render front";
-
   if (m_allFontNames.isEmpty()) {
     LERROR() << "Can not find any font.";
     return;

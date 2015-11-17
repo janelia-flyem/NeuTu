@@ -19,9 +19,9 @@ Z3DCube::~Z3DCube()
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
   Z3DGeometryFilter(),
     m_showCube("Visible", true),
-    m_cubeRenderer(NULL)
-  , m_dataIsInvalid(false)
-  , m_widgetsGroup(NULL)
+    m_cubeRenderer(NULL),
+    m_dataIsInvalid(false),
+    m_widgetsGroup(NULL)
 {
     addParameter(m_showCube);
 
@@ -30,6 +30,8 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
     m_showCube.set(config.isVisible());
     //  m_rendererBase->setRenderMethod("Old openGL");
     //  adjustWidgets();
+
+    setFilterName(QString("surfacefilter"));
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
