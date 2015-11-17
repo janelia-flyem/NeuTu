@@ -113,6 +113,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="exportBodiesButton">
+       <property name="text">
+        <string>Export bodies...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="clearFilterButton">
        <property name="text">
         <string>Clear</string>

@@ -86,6 +86,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
+    connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
@@ -564,17 +565,26 @@ void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
 }
 
 void FlyEmBodyInfoDialog::onSaveColorFilter() {
-
     if (ui->bodyFilterField->text().size() > 0) {
         // no duplicates
         if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, 0).size() == 0) {
             updateColorFilter(ui->bodyFilterField->text());
         }
     }
+}
 
+void FlyEmBodyInfoDialog::onExportBodies() {
+    // note that you can't specify a default name for a new file
+    QString filename = QFileDialog::getSaveFileName(this, "Export bodies");
+    if (!filename.isNull()) {
+        exportBodies(filename);
+    }
 }
 
 void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
+    // note: oldFilter currently unused; I was thinking about allowing an edit
+    //  to a filter that would replace an older filter but didn't implement it
+
     QStandardItem * filterTextItem = new QStandardItem(filter);
     QStandardItem * filterColorItem = new QStandardItem();
 
@@ -665,6 +675,41 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
     // test: print it out
     // m_colorScheme.print();
 
+}
+
+void FlyEmBodyInfoDialog::exportBodies(QString filename) {
+    QFile outputFile(filename);
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox errorBox;
+        errorBox.setText("Error");
+        errorBox.setInformativeText("Error opening file for export");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.exec();
+        return;
+    }
+
+    // tab-separated text file, with header
+    QTextStream outputStream(&outputFile);
+    for (int i=0; i<m_bodyModel->columnCount(); i++) {
+        if (i != 0) {
+            outputStream << "\t";
+        }
+        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
+    }
+    outputStream << "\n";
+
+    for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
+            if (i != 0) {
+                outputStream << "\t";
+            }
+            outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+        }
+        outputStream << "\n";
+    }
+
+    outputFile.close();
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

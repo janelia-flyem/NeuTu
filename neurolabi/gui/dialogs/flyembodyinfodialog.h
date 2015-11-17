@@ -45,6 +45,7 @@ private slots:
     void onFilterTableDoubleClicked(const QModelIndex &index);
     void moveToBodyList();
     void onDeleteButton();
+    void onExportBodies();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
@@ -71,6 +72,7 @@ private:
     void init();
     void updateColorFilter(QString filter, QString oldFilter = "");
     void updateColorScheme();
+    void exportBodies(QString filename);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
