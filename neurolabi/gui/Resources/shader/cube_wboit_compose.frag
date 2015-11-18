@@ -1,5 +1,5 @@
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
-
+#version 1.20
 // sum(rgb * a, a)
 uniform sampler2D accumTexture;
 // prod(1 - a)
