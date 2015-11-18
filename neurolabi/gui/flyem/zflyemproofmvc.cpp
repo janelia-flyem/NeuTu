@@ -2208,13 +2208,17 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 
 void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
-  m_mergeProject.update3DBodyViewPlane(viewParam);
-  m_splitProject.update3DViewPlane();
+  if (m_currentViewParam != viewParam) {
+    m_mergeProject.update3DBodyViewPlane(viewParam);
+    m_splitProject.update3DViewPlane();
 
-  updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
-  updateBodyWindowPlane(m_bodyWindow, viewParam);
-  updateBodyWindowPlane(m_skeletonWindow, viewParam);
-  updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+    updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
+    updateBodyWindowPlane(m_bodyWindow, viewParam);
+    updateBodyWindowPlane(m_skeletonWindow, viewParam);
+    updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+
+    m_currentViewParam = viewParam;
+  }
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)

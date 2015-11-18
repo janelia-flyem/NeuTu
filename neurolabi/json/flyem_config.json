@@ -76,6 +76,16 @@
       "user_name": ["takemuras", "zhaot"]
     },
     {
+      "address": "emrecon100.janelia.priv",
+      "port": 9000,
+      "uuid": "d10d",
+      "name": "AL7 (emrecon100)",
+      "comment": "AL child node for splitting",
+      "body_label": "bodies121714",
+      "multires_tile": "graytiles",
+      "label_block": "segmentation121714"
+    },
+    {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "f94a",

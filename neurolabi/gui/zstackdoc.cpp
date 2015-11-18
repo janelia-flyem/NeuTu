@@ -4958,28 +4958,16 @@ void ZStackDoc::notifyObjectModified(bool sync)
     if (!m_objectModifiedTypeBuffer.empty()) {
       processObjectModified(m_objectModifiedTypeBuffer, sync);
       clearObjectModifiedTypeBuffer(sync);
-#if 0
-      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-      m_objectModifiedTypeBuffer.clear();
-#endif
     }
 
     if (!m_objectModifiedTargetBuffer.empty()) {
       processObjectModified(m_objectModifiedTargetBuffer, sync);
       clearObjectModifiedTypeBuffer(sync);
-      /*
-      QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-      m_objectModifiedTargetBuffer.clear();
-      */
     }
 
     if (!m_objectModifiedRoleBuffer.isNone()) {
       processObjectModified(m_objectModifiedRoleBuffer.getRole(), sync);
       clearObjectModifiedRoleBuffer(sync);
-      /*
-      QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
-      m_objectModifiedRoleBuffer.clear();
-      */
     }
   }
 }
@@ -5175,13 +5163,13 @@ void ZStackDoc::processObjectModified(
     for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
          iter != typeSet.end(); ++iter) {
       ZStackObject::EType type = *iter;
-      processObjectModified(type);
+      processObjectModified(type, false);
     }
   } else {
     for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
          iter != typeSet.end(); ++iter) {
       ZStackObject::EType type = *iter;
-      processObjectModified(type);
+      processObjectModified(type, false);
     }
   }
 }
