@@ -19,6 +19,7 @@ const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
+const char* ZDvidTarget::m_synapseNameKey = "synapse";
 const char* ZDvidTarget::m_userNameKey = "user_name";
 const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
@@ -72,6 +73,7 @@ void ZDvidTarget::clear()
   m_multiscale2dName = "";
   m_grayScaleName = "";
   m_roiName = "";
+  m_synapseName = "";
   m_userList.clear();
 }
 
@@ -217,6 +219,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
   obj.setEntry(m_roiNameKey, m_roiName);
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  obj.setEntry(m_synapseNameKey, m_synapseName);
 
   return obj;
 }
@@ -261,6 +264,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     }
     if (obj.hasKey(m_roiNameKey)) {
       setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
+    }
+    if (obj.hasKey(m_synapseNameKey)) {
+      setRoiName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
     }
 
     if (obj.hasKey(m_userNameKey)) {
@@ -397,6 +403,16 @@ std::string ZDvidTarget::getRoiName() const
 void ZDvidTarget::setRoiName(const std::string &name)
 {
   m_roiName = name;
+}
+
+std::string ZDvidTarget::getSynapseName() const
+{
+  return m_synapseName;
+}
+
+void ZDvidTarget::setSynapseName(const std::string &name)
+{
+  m_synapseName = name;
 }
 
 /*
