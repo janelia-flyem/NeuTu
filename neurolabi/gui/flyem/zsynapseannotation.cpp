@@ -432,3 +432,39 @@ bool ZSynapseAnnotation::ZSynapseAnnotation::hasPartner(int bodyId) const
 
   return false;
 }
+
+ZJsonObject ZSynapseAnnotation::toDvidSynapseElementJson() const
+{
+  ZJsonObject obj;
+
+  ZJsonArray posJson;
+  posJson.append(getTBarRef()->x());
+  posJson.append(getTBarRef()->y());
+  posJson.append(getTBarRef()->z());
+
+  obj.setEntry("Pos", posJson);
+  obj.setEntry("Kind", "PreSyn");
+
+  ZJsonArray relsJson;
+
+  for (std::vector<SynapseLocation>::const_iterator iter = m_partnerArray.begin();
+       iter != m_partnerArray.end(); ++iter) {
+    const SynapseLocation &location = *iter;
+    ZJsonObject relJson;
+    relJson.setEntry("Rel", "PreSynTo");
+
+    ZJsonArray psdPosJson;
+    psdPosJson.append(location.x());
+    psdPosJson.append(location.y());
+    psdPosJson.append(location.z());
+    relJson.setEntry("To", psdPosJson);
+
+    relsJson.append(relJson);
+  }
+
+  if (!relsJson.isEmpty()) {
+    obj.setEntry("Rels", relsJson);
+  }
+
+  return obj;
+}

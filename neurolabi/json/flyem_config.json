@@ -399,6 +399,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "a8eb",
+      "name": "MB_Training_Natasha",
+      "comment": "training node",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "rivlinp", "cheathamn"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",

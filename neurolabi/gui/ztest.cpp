@@ -16571,7 +16571,7 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
   ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
@@ -18647,6 +18647,23 @@ void ZTest::test(MainWindow *host)
 
   delete bs;
 
+#endif
+
+#if 1
+  FlyEm::ZSynapseAnnotationArray sa;
+  sa.loadJson("/Users/zhaot/Work/neutube/neurolabi/cpp/psd/test/"
+              "synapse_annotation1.json");
+
+  ZJsonArray dvidSynapseJson;
+  for (FlyEm::ZSynapseAnnotationArray::const_iterator iter = sa.begin();
+       iter != sa.end(); ++iter) {
+    const FlyEm::ZSynapseAnnotation annotation = *iter;
+//    std::cout << annotation.toDvidSynapseElementJson().dumpString(2)
+//              << std::endl;
+    dvidSynapseJson.append(annotation.toDvidSynapseElementJson());
+  }
+
+  dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
   std::cout << "Done." << std::endl;
 }
