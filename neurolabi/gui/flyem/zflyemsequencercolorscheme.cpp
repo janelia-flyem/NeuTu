@@ -9,9 +9,7 @@
 
 ZFlyEmSequencerColorScheme::ZFlyEmSequencerColorScheme()
 {
-
-    setDefaultColor(QColor(128, 128, 128, 255));
-
+    setDefaultColor(QColor(0, 0, 0, 0));
 }
 
 QColor ZFlyEmSequencerColorScheme::getBodyColor(uint64_t bodyId) {
@@ -36,6 +34,7 @@ void ZFlyEmSequencerColorScheme::clear() {
     // doesn't reset default color
 }
 
+// for debugging
 void ZFlyEmSequencerColorScheme::print() {
     QHashIterator<uint64_t, QColor> colorMapIterator(m_colorMap);
     while (colorMapIterator.hasNext()) {
