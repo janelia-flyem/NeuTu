@@ -58,13 +58,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(
        iter != stackArray.end(); ++iter) {
     const ZStack* stack = *iter;
     ZSwcTree *tree = makeSkeleton(*stack);
-    if (tree != NULL) {
-      if (!tree->isEmpty()) {
-        wholeTree->merge(tree, true);
-        ++count;
-      } else {
-        delete tree;
-      }
+    if (!tree->isEmpty()) {
+      wholeTree->merge(tree, true);
+      ++count;
+    } else {
+      delete tree;
     }
   }
 
@@ -298,7 +296,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
           }
         }
 
-        ssize_t seedIndex = path[0].toIndex(
+        const std::vector<ZVoxel>& pathData = path.getInternalData();
+        ssize_t seedIndex = pathData[0].toIndex(
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;
@@ -677,7 +676,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
           }
         }
 
-        ssize_t seedIndex = path[0].toIndex(
+        ssize_t seedIndex = path.getInternalData()[0].toIndex(
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;

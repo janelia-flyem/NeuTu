@@ -274,6 +274,8 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
 
+  void updatePunctaObjsModel(ZPunctum *punctum);
+
 //  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
 
   std::set<Swc_Tree_Node*> getSelectedSwcNodeSet() const;
@@ -913,7 +915,7 @@ public:
     return m_progressSignal;
   }
 
-  virtual void processRectRoiUpdate(ZRect2d *rect);
+  virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;

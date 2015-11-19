@@ -7,14 +7,28 @@ else
   install_dir=/opt
 fi
 
+echo $PATH
+
 downloadDir=$install_dir/Download
 cd $downloadDir
-wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-condaDir=/opt/Download/miniconda
-bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+condaDir=$install_dir/Download/miniconda
+if [ ! -d $condaDir ]
+then
+  if [ `uname` == 'Darwin' ]
+  then
+    curl -O https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
+    bash Miniconda-latest-MacOSX-x86_64.sh -p $condaDir
+  else
+    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+    bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+  fi
+fi
 
-CONDA_ROOT=`$condaDir/bin/conda info --root`
-source ${CONDA_ROOT}/bin/activate root
-$condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+if [ ! -d $condaDir/envs/dvidenv ]
+then
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  source ${CONDA_ROOT}/bin/activate root
+  $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+fi
 
 

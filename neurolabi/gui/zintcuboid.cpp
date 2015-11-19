@@ -202,6 +202,62 @@ bool ZIntCuboid::equals(const ZIntCuboid &cuboid) const
       m_lastCorner.equals(cuboid.getLastCorner());
 }
 
+ZIntPoint ZIntCuboid::getCorner(int index) const
+{
+  switch (index) {
+  case 0:
+    return getFirstCorner();
+  case 1:
+    return ZIntPoint(getLastCorner().getX(),
+                     getFirstCorner().getY(),
+                     getFirstCorner().getZ());
+  case 2:
+    return ZIntPoint(getFirstCorner().getX(),
+                     getLastCorner().getY(),
+                     getFirstCorner().getZ());
+  case 3:
+    return ZIntPoint(getLastCorner().getX(),
+                     getLastCorner().getY(),
+                     getFirstCorner().getZ());
+  case 4:
+    return ZIntPoint(getFirstCorner().getX(),
+                     getFirstCorner().getY(),
+                     getLastCorner().getZ());
+  case 5:
+    return ZIntPoint(getLastCorner().getX(),
+                     getFirstCorner().getY(),
+                     getLastCorner().getZ());
+  case 6:
+    return ZIntPoint(getFirstCorner().getX(),
+                     getLastCorner().getY(),
+                     getLastCorner().getZ());
+  case 7:
+    return getLastCorner();
+  default:
+    break;
+  }
+
+  return ZIntPoint(0, 0, 0);
+}
+
+bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
+{
+  bool overlapped = false;
+  for (int i = 0; i < 8; ++i) {
+    if (contains(box.getCorner(i))) {
+      overlapped = true;
+      break;
+    }
+
+    if (box.contains(getCorner(i))) {
+      overlapped = true;
+      break;
+    }
+  }
+
+  return overlapped;
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

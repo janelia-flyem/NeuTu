@@ -735,3 +735,11 @@ std::string ZString::num2str(int n)
 
   return stream.str();
 }
+
+std::string ZString::num2str(uint64_t n)
+{
+  std::ostringstream stream;
+  stream << n;
+
+  return stream.str();
+}

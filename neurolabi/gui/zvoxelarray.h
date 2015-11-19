@@ -9,10 +9,12 @@
 /*!
  * \brief The voxel array class
  */
-class ZVoxelArray : public std::vector<ZVoxel>
+class ZVoxelArray
 {
 public:
   ZVoxelArray();
+
+  typedef std::vector<ZVoxel> TVector;
 
 public:
   /*!
@@ -50,10 +52,14 @@ public:
    */
   void minimizeValue(double v);
 
+  void clear() {
+    m_voxelArray.clear();
+  }
 
-  inline double value(size_t index) { return (*this)[index].value(); }
+
+  inline double value(size_t index) { return m_voxelArray[index].value(); }
   inline void setValue(size_t index, double v) {
-    (*this)[index].setValue(v);
+    m_voxelArray[index].setValue(v);
   }
 
   size_t findClosest(double x, double y);
@@ -69,6 +75,18 @@ public:
    */
   double getCurveLength() const;
 
+  inline size_t size() const {
+    return m_voxelArray.size();
+  }
+
+  bool empty() const {
+    return m_voxelArray.empty();
+  }
+
+  bool isEmpty() const{
+    return m_voxelArray.empty();
+  }
+
 public:
   void setStackValue(Stack *stack) const;
   void labelStack(Stack *stack, double value) const;
@@ -80,6 +98,16 @@ public:
 
   void print() const;
 
+  TVector& getInternalData() {
+    return m_voxelArray;
+  }
+
+  const TVector& getInternalData() const {
+    return m_voxelArray;
+  }
+
+private:
+  TVector m_voxelArray;
 };
 
 #endif // ZVOXELARRAY_H

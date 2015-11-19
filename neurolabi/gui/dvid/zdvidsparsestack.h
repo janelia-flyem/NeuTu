@@ -5,6 +5,7 @@
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "qthreadfuturemap.h"
 
 class ZIntCuboid;
 
@@ -36,12 +37,14 @@ public:
   ZIntCuboid getBoundBox() const;
   using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
-  void loadBody(int bodyId);
+  void loadBody(uint64_t bodyId, bool canonizing = false);
+  void loadBodyAsync(uint64_t bodyId);
   void setMaskColor(const QColor &color);
+  void setLabel(uint64_t bodyId);
 
   uint64_t getLabel() const;
 
-  const ZObject3dScan *getObjectMask() const;
+//  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
 
   const ZSparseStack* getSparseStack() const;
@@ -56,11 +59,21 @@ public:
 
   ZDvidSparseStack* getCrop(const ZIntCuboid &box) const;
 
+  void deprecateStackBuffer();
+
 
 private:
+  void init();
   void initBlockGrid();
   bool fillValue();
   bool fillValue(const ZIntCuboid &box);
+  QString getLoadBodyThreadId() const;
+  void pushMaskColor();
+  void pushLabel();
+  bool loadingObjectMask() const;
+  void finishObjectMaskLoading();
+  void syncObjectMask();
+  void pushAttribute();
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -70,7 +83,9 @@ private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
   bool m_isValueFilled;
+  uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
+  QThreadFutureMap m_futureMap;
 };
 
 #endif // ZDVIDSPARSESTACK_H

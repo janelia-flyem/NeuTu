@@ -7148,6 +7148,11 @@ bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
   return executeTraceSwcBranchCommand(x, y, z);
 }
 
+void ZStackDoc::updatePunctaObjsModel(ZPunctum *punctum)
+{
+  punctaObjsModel()->updateData(punctum);
+}
+
 bool ZStackDoc::executeTraceSwcBranchCommand(
     double x, double y, double z)
 {
@@ -8435,6 +8440,9 @@ void ZStackDoc::localSeededWatershed()
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
+#ifdef _DEBUG_2
+          signalStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
           dsIntv = sparseStack->getDownsampleInterval();
         }
       }
@@ -9034,7 +9042,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate(ZRect2d *rect)
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

@@ -560,6 +560,8 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+
+  cleanBodyAnnotationMap();
 }
 
 void ZFlyEmProofDoc::downloadBookmark()
@@ -1063,7 +1065,7 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
 //  ZRect2d rect = getRect2dRoi();
 
@@ -1079,7 +1081,6 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
   roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
   roi->clear();
 
-  executeRemoveObjectCommand(getSplitRoi());
 
   roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
@@ -1092,9 +1093,21 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
                            rect->getHeight() * rect->getHeight()) / 2.0);
       roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
       roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    } else if (appending) {
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ());
+      roi->setLastCorner(roi->getFirstCorner());
     }
   }
   m_splitSource.reset();
+
+  if (appending) {
+    ZIntCuboidObj *oldRoi = getSplitRoi();
+    if (oldRoi != NULL) {
+      roi->join(oldRoi->getCuboid());
+    }
+  }
+
+  executeRemoveObjectCommand(getSplitRoi());
 
   removeObject(rect, true);
 

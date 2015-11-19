@@ -445,6 +445,16 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(int bodyId)
   return spStack;
 }
 
+ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(int bodyId)
+{
+  ZDvidSparseStack *spStack = new ZDvidSparseStack;
+  spStack->setLabel(bodyId);
+  spStack->setDvidTarget(getDvidTarget());
+  spStack->loadBodyAsync(bodyId);
+
+  return spStack;
+}
+
 ZSparseStack* ZDvidReader::readSparseStack(int bodyId)
 {
   ZSparseStack *spStack = NULL;

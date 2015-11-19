@@ -117,6 +117,8 @@ void ZStackPresenter::init()
 
   m_keyConfig = NULL;
 
+  m_menuFactory = NULL;
+
   /*
   ZKeyOperationConfig::Configure(m_activeStrokeOperationMap,
                                  ZKeyOperation::OG_ACTIVE_STROKE);
@@ -134,6 +136,16 @@ ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
   }
 
   return m_keyConfig;
+}
+
+ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
+{
+  if (m_menuFactory == NULL) {
+    m_menuFactory = new ZStackDocMenuFactory;
+    m_menuFactory->setAdminState(NeuTube::IsAdminUser());
+  }
+
+  return m_menuFactory;
 }
 
 void ZStackPresenter::configKeyMap()
@@ -378,6 +390,13 @@ void ZStackPresenter::createBodyActions()
     m_actionMap[ACTION_BODY_CHECKOUT] = action;
   }
 
+  {
+    QAction *action = new QAction(tr("Decompose"), this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyDecomposeTriggered()));
+    m_actionMap[ACTION_BODY_DECOMPOSE] = action;
+  }
+
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
@@ -427,11 +446,11 @@ void ZStackPresenter::createActions()
 void ZStackPresenter::createSwcNodeContextMenu()
 {
   if (m_swcNodeContextMenu == NULL) {
-    ZStackDocMenuFactory menuFactory;
-    menuFactory.setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
-    m_swcNodeContextMenu = menuFactory.makeSwcNodeContextMenu(
+//    ZStackDocMenuFactory menuFactory;
+    getMenuFactory()->setSingleSwcNodeActionActivator(&m_singleSwcNodeActionActivator);
+    m_swcNodeContextMenu = getMenuFactory()->makeSwcNodeContextMenu(
           this, getParentWidget(), NULL);
-    menuFactory.makeSwcNodeContextMenu(
+    getMenuFactory()->makeSwcNodeContextMenu(
           buddyDocument(), getParentWidget(), m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
     m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
@@ -454,9 +473,9 @@ QMenu* ZStackPresenter::getSwcNodeContextMenu()
 void ZStackPresenter::createStrokeContextMenu()
 {
   if (m_strokePaintContextMenu == NULL) {
-    ZStackDocMenuFactory menuFactory;
+//    ZStackDocMenuFactory menuFactory;
     m_strokePaintContextMenu =
-        menuFactory.makeSrokePaintContextMenu(this, getParentWidget(), NULL);
+        getMenuFactory()->makeSrokePaintContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -469,13 +488,17 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
   return m_strokePaintContextMenu;
 }
 
+#include "flyem/zflyemproofdocmenufactory.h"
 void ZStackPresenter::createBodyContextMenu()
 {
+  if (dynamic_cast<ZFlyEmProofDocMenuFactory*>(getMenuFactory()) != NULL) {
+    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
+  }
+
   if (m_bodyContextMenu == NULL) {
-    ZStackDocMenuFactory menuFactory;
-    menuFactory.setAdminState(NeuTube::IsAdminUser());
+//    ZStackDocMenuFactory menuFactory;
     m_bodyContextMenu =
-        menuFactory.makeBodyContextMenu(this, getParentWidget(), NULL);
+        getMenuFactory()->makeBodyContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -491,9 +514,9 @@ QMenu* ZStackPresenter::getBodyContextMenu()
 void ZStackPresenter::createStackContextMenu()
 {
   if (m_stackContextMenu == NULL) {
-    ZStackDocMenuFactory menuFactory;
+//    ZStackDocMenuFactory menuFactory;
     m_stackContextMenu =
-        menuFactory.makeStackContextMenu(this, getParentWidget(), NULL);
+        getMenuFactory()->makeStackContextMenu(this, getParentWidget(), NULL);
   }
 }
 
@@ -2092,6 +2115,11 @@ void ZStackPresenter::notifyBodySplitTriggered()
   emit bodySplitTriggered();
 }
 
+void ZStackPresenter::notifyBodyDecomposeTriggered()
+{
+  emit bodyDecomposeTriggered();
+}
+
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
@@ -2142,12 +2170,12 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect)
+void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
-  buddyDocument()->processRectRoiUpdate(rect);
+  buddyDocument()->processRectRoiUpdate(rect, appending);
 }
 
-void ZStackPresenter::acceptRectRoi()
+void ZStackPresenter::acceptRectRoi(bool appending)
 {
   ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_RECT2D,
@@ -2155,7 +2183,7 @@ void ZStackPresenter::acceptRectRoi()
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect != NULL) {
     rect->setColor(QColor(255, 255, 255));
-    processRectRoiUpdate(rect);
+    processRectRoiUpdate(rect, appending);
   }
 
 //  exitRectEdit();
@@ -2778,8 +2806,12 @@ void ZStackPresenter::process(const ZStackOperator &op)
     }
   }
     break;
+  case ZStackOperator::OP_RECT_ROI_APPEND:
+    acceptRectRoi(true);
+    exitRectEdit();
+    break;
   case ZStackOperator::OP_RECT_ROI_ACCEPT:
-    acceptRectRoi();
+    acceptRectRoi(false);
     exitRectEdit();
     break;
   case ZStackOperator::OP_START_MOVE_IMAGE:

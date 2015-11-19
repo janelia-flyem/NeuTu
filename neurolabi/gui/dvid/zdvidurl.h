@@ -118,6 +118,9 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+  std::string getSplitUrl(
+      const std::string &dataName, uint64_t originalLabel,
+      uint64_t newLabel) const;
   std::string getCoarseSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
 
@@ -144,6 +147,8 @@ public:
    * \brief Get entry point of getting key value entries
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
+
+  std::string getBodyAnnotationName() const;
 
 private:
   std::string getSplitUrl(
