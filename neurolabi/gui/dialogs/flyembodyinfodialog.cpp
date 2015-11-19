@@ -88,6 +88,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
+    connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
         this, SLOT(activateBody(QModelIndex)));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
@@ -582,6 +583,13 @@ void FlyEmBodyInfoDialog::onExportBodies() {
     }
 }
 
+void FlyEmBodyInfoDialog::onSaveColorMap() {
+    QString filename = QFileDialog::getSaveFileName(this, "Save color scheme");
+    if (!filename.isNull()) {
+        saveColorMapDisk(filename);
+    }
+}
+
 void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
     // note: oldFilter currently unused; I was thinking about allowing an edit
     //  to a filter that would replace an older filter but didn't implement it
@@ -711,6 +719,27 @@ void FlyEmBodyInfoDialog::exportBodies(QString filename) {
     }
 
     outputFile.close();
+}
+
+void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
+    ZJsonArray colors;
+    for (int i=0; i<m_filterModel->rowCount(); i++) {
+        QString filterString = m_filterModel->data(m_filterModel->index(i, 0)).toString();
+        QColor color = m_filterModel->data(m_filterModel->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        ZJsonArray rgba;
+        rgba.append(color.red());
+        rgba.append(color.green());
+        rgba.append(color.blue());
+        rgba.append(color.alpha());
+
+        ZJsonObject entry;
+        entry.setEntry("filter", filterString.toStdString());
+        entry.setEntry("color", rgba);
+        colors.append(entry);
+    }
+    // direct to disk; in principle, we could return colors.dumpString() and write the
+    //  string to file manually; currently have no other use for the string, so don't bother for now
+    colors.dump(filename.toStdString());
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

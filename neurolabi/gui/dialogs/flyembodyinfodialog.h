@@ -46,6 +46,7 @@ private slots:
     void moveToBodyList();
     void onDeleteButton();
     void onExportBodies();
+    void onSaveColorMap();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
@@ -73,6 +74,7 @@ private:
     void updateColorFilter(QString filter, QString oldFilter = "");
     void updateColorScheme();
     void exportBodies(QString filename);
+    void saveColorMapDisk(QString filename);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
