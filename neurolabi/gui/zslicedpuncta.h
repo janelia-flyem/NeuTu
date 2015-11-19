@@ -5,6 +5,7 @@
 #include <QVector>
 
 #include "zstackobject.h"
+#include "zstackobjectselector.h"
 //#include "zpunctum.h"
 
 class ZStackBall;
@@ -40,6 +41,8 @@ public:
 private:
   QVector<QList<ZStackBall*> > m_puncta;
   int m_zStart;
+  static const int m_visibleRange;
+  mutable ZStackObjectSelector m_selector;
 };
 
 template<typename InputIterator>

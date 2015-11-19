@@ -177,7 +177,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
         break;
       case ZInteractiveContext::INTERACT_RECT_DRAW:
-        op.setOperation(ZStackOperator::OP_RECT_ROI_ACCEPT);
+        if (event.getModifiers() == Qt::ShiftModifier) {
+          op.setOperation(ZStackOperator::OP_RECT_ROI_APPEND);
+        } else {
+          op.setOperation(ZStackOperator::OP_RECT_ROI_ACCEPT);
+        }
 //        op.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
         break;
       case ZInteractiveContext::INTERACT_ADD_BOOKMARK:

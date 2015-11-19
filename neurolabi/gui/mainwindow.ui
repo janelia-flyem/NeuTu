@@ -276,6 +276,7 @@
       <addaction name="actionHDF5_Body"/>
       <addaction name="actionImportBoundBox"/>
       <addaction name="actionImportSeeds"/>
+      <addaction name="actionImport_Sparsevol_Json"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -1421,6 +1422,11 @@
   <action name="actionSubtract_Background">
    <property name="text">
     <string>Subtract Background</string>
+   </property>
+  </action>
+  <action name="actionImport_Sparsevol_Json">
+   <property name="text">
+    <string>Sparsevol Json</string>
    </property>
   </action>
  </widget>

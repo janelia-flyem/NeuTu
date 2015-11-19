@@ -6684,13 +6684,13 @@ bool MainWindow::initBodySplitProject()
     }
     if (!bodyIdArray.empty()) {
       int bodyId = bodyIdArray[0];
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       tic();
 #endif
       ZSparseStack *spStack = reader.readSparseStack(bodyId);
 
       if (spStack != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         ptoc();
         std::cout << "Voxel number: " << spStack->getObjectMask()->getVoxelNumber()
                   << std::endl;
@@ -7251,6 +7251,40 @@ void MainWindow::runRoutineCheck()
 
 }
 
+void MainWindow::on_actionSubtract_Background_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame != NULL) {
+    frame->subtractBackground();
+  }
+}
+
+void MainWindow::on_actionImport_Sparsevol_Json_triggered()
+{
+  QString fileName = getOpenFileName("Load Sparsevol", "*.json");
+  if (!fileName.isEmpty()) {
+    ZJsonArray objJson;
+    objJson.load(fileName.toStdString());
+    if (!objJson.isEmpty()) {
+      ZStackFrame *frame = ZStackFrame::Make(NULL);
+
+      ZSparseObject *obj = new ZSparseObject;
+      obj->importDvidRoi(objJson);
+      obj->setColor(255, 255, 255, 255);
+      frame->document()->addObject(obj);
+
+      ZIntCuboid cuboid = obj->getBoundBox();
+      ZStack *stack = ZStackFactory::makeVirtualStack(
+            cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+      stack->setOffset(cuboid.getFirstCorner());
+      frame->document()->loadStack(stack);
+
+      addStackFrame(frame);
+      presentStackFrame(frame);
+    }
+  }
+}
+
 /////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
@@ -7280,10 +7314,4 @@ void MainWindow::MessageProcessor::processMessage(
 
 
 
-void MainWindow::on_actionSubtract_Background_triggered()
-{
-  ZStackFrame *frame = activeStackFrame();
-  if (frame != NULL) {
-    frame->subtractBackground();
-  }
-}
+

@@ -31,7 +31,7 @@
 #include "neutubeconfig.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"

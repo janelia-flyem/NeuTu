@@ -47,7 +47,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "906c",
+      "uuid": "840d",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
@@ -58,7 +58,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "906c",
+      "uuid": "840d",
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
@@ -174,6 +174,17 @@
       "label_block": "labels",
       "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot", "yuy", "yy"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7100,
+      "uuid": "86e1",
+      "name": "MB_zhaot_backup",
+      "comment": "MB seg (after runniing splits in node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "librarian": "emdata2.int.janelia.org:9100",
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -367,6 +378,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "31cc",
+      "name": "MB_Training_Orphan",
+      "comment": "training node",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "rivlinp", "cheathamn"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
       "comment": "MB seg (branched from ccf)",
@@ -504,6 +525,17 @@
       "label_block": "segmentation",
       "multires_tile": "graytiles",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "shinomiyak", "olbrisd"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "e402",
+      "name": "FIB25_new",
+      "comment": "branched from fa60",
+      "body_label": "bodies1104",
+      "label_block": "labels1104",
+      "multires_tile": "graytiles",
+      "user_name": ["zhaot", "takemuras"]
     }
   ]
 }

@@ -7,6 +7,10 @@
 #include <map>
 #include <utility>
 
+#ifdef _QT_GUI_USED_
+#include <QByteArray>
+#endif
+
 #include "zqtheader.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
@@ -26,7 +30,7 @@ class ZJsonArray;
  * \brief The class of RLE object
  *
  * A RLE object is the run-length encoded representatino of a 3D object, which
- * is defined as a set of voxels.This class encodes an object along the X,
+ * is defined as a set of voxels. This class encodes an object along the X,
  * direction, i.e. a contiguous list of voxels (x_1, y, z), ..., (x_n, y, z) are
  * encoded as ((x_1, x_n), y, z).
  */
@@ -76,6 +80,7 @@ public:
 
   void addStripe(int z, int y, bool canonizing = true);
   void addStripeFast(int z, int y);
+  void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
   void addSegmentFast(int x1, int x2);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
@@ -126,6 +131,10 @@ public:
 
   void exportDvidObject(const std::string &filePath) const;
 
+#ifdef _QT_GUI_USED_
+  QByteArray toDvidPayload() const;
+#endif
+
   /*!
    * \brief Import object from a byte array
    */
@@ -134,6 +143,7 @@ public:
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   bool importDvidRoi(const ZJsonArray &obj);
+  bool importDvidRoi(const std::string &filePath);
 
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width,
@@ -188,8 +198,9 @@ public:
   void concat(const ZObject3dScan &obj);
 
   ZObject3dScan subtract(const ZObject3dScan &obj);
+  void subtractSliently(const ZObject3dScan &obj);
 
-  ZObject3dScan intersect(const ZObject3dScan &obj);
+  ZObject3dScan intersect(const ZObject3dScan &obj) const;
 
   /*!
    * \brief Extract voxels within a cuboid
@@ -513,6 +524,7 @@ public:
 private:
   void addForeground(ZStack *stack);
   void addForegroundSlice8(ZStack *stack);
+  int subtractForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
 

@@ -790,6 +790,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBody()));
   connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
           this, SLOT(selectBodyInRoi(bool)));
+  connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
+          this, SLOT(decomposeBody()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -1404,28 +1406,20 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       getProgressSignal()->advanceProgress(0.1);
 
-      if (body == NULL) {
-        body = reader.readDvidSparseStack(bodyId);
-      }
+      if (reader.hasCoarseSparseVolume(bodyId)) {
+        if (body == NULL) {
+          body = reader.readDvidSparseStackAsync(bodyId);
+          body->setZOrder(0);
+          body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+          body->setColor(labelSlice->getColor(
+                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+          body->setSelectable(false);
+          getDocument()->addObject(body, true);
+//          body->setLabel(bodyId);
+          //        body->getObjectMask()->setLabel(bodyId);
+        }
 
-      if (body->isEmpty()) {
-        delete body;
-        body = NULL;
-
-        QString msg = QString("Invalid body id: %1").arg(bodyId);
-        emit messageGenerated(
-              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-        emit errorGenerated(msg);
-      } else {
-        body->setZOrder(0);
-        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setMaskColor(labelSlice->getColor(
-                             bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-        body->setSelectable(false);
-        body->getObjectMask()->setLabel(bodyId);
-        getDocument()->addObject(body, true);
         m_splitProject.setBodyId(bodyId);
-
         getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
         labelSlice->setVisible(false);
@@ -1436,7 +1430,13 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         getProgressSignal()->advanceProgress(0.1);
 
         emit splitBodyLoaded(bodyId);
+      } else {
+        QString msg = QString("Invalid body id: %1").arg(bodyId);
+        emit messageGenerated(
+              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+        emit errorGenerated(msg);
       }
+
 
 //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
 
@@ -1448,6 +1448,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
+    /*
+    QColor color =
+        getCompleteDocument()->getDvidSparseStack()->getObjectMask()->getColor();
+    getCompleteDocument()->getDvidSparseStack()->loadBody(
+          m_splitProject.getBodyId());
+    getCompleteDocument()->getDvidSparseStack()->setMaskColor(color);
+    */
 #if 0
     uint64_t bodyId = m_splitProject.getBodyId();
     getDocument()->removeObject(
@@ -1807,6 +1815,18 @@ void ZFlyEmProofMvc::commitMerge()
   }
 }
 
+void ZFlyEmProofMvc::decomposeBody()
+{
+  const QString threadId = "ZFlyEmBodySplitProject::decomposeBody";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(
+          &m_splitProject, &ZFlyEmBodySplitProject::decomposeBody);
+    m_futureMap[threadId] = future;
+  }
+}
+
 void ZFlyEmProofMvc::commitCurrentSplit()
 {
   if (!getDocument()->isSegmentationReady()) {
@@ -1822,6 +1842,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   if (m_splitCommitDlg->exec()) {
     m_splitProject.setMinObjSize(m_splitCommitDlg->getGroupSize());
     m_splitProject.keepMainSeed(m_splitCommitDlg->keepingMainSeed());
+    m_splitProject.enableCca(m_splitCommitDlg->runningCca());
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();

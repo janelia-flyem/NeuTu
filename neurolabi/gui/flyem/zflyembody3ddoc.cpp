@@ -401,7 +401,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
           ZPunctum *punctum = *iter;
           punctum->setRadius(30);
           punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
           addObject(punctum, false);
         }
       }
@@ -441,6 +441,15 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
       removeObject(*iter, false);
       dumpGarbage(*iter);
     }
+
+    objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+
     endObjectModifiedMode();
     notifyObjectModified();
   }

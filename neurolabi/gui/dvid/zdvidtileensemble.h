@@ -38,7 +38,7 @@ public:
 
   void enhanceContrast(bool high);
 
-private:
+public:
   void update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
   void updateContrast();
