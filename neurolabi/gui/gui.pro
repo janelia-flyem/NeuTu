@@ -579,6 +579,7 @@ HEADERS += mainwindow.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
+    flyem/zflyemsequencercolorscheme.h \
     zpunctumselector.h \
     zgraphobjsmodel.h
 
@@ -1016,6 +1017,7 @@ SOURCES += main.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
+    flyem/zflyemsequencercolorscheme.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp
 
