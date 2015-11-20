@@ -721,8 +721,7 @@ void FlyEmBodyInfoDialog::exportBodies(QString filename) {
     outputFile.close();
 }
 
-void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
-    ZJsonArray colors;
+ZJsonArray FlyEmBodyInfoDialog::getColorMapAsJson(ZJsonArray colors) {
     for (int i=0; i<m_filterModel->rowCount(); i++) {
         QString filterString = m_filterModel->data(m_filterModel->index(i, 0)).toString();
         QColor color = m_filterModel->data(m_filterModel->index(i, 1), Qt::BackgroundRole).value<QColor>();
@@ -737,9 +736,12 @@ void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
         entry.setEntry("color", rgba);
         colors.append(entry);
     }
-    // direct to disk; in principle, we could return colors.dumpString() and write the
-    //  string to file manually; currently have no other use for the string, so don't bother for now
-    colors.dump(filename.toStdString());
+    return colors;
+}
+
+void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
+    ZJsonArray colors;
+    getColorMapAsJson(colors).dump(filename.toStdString());
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

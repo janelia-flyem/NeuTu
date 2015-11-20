@@ -5,6 +5,7 @@
 #include <QtGui>
 
 #include "dvid/zdvidtarget.h"
+#include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemsequencercolorscheme.h"
 
@@ -75,6 +76,7 @@ private:
     void updateColorScheme();
     void exportBodies(QString filename);
     void saveColorMapDisk(QString filename);
+    ZJsonArray getColorMapAsJson(ZJsonArray colors);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
