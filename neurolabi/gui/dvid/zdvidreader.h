@@ -153,6 +153,8 @@ public:
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
 
+  bool good() const;
+
 signals:
   void readingDone();
 

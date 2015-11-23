@@ -49,7 +49,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui->setupUi(this);
 
     // office phone number = random seed
-    qsrand(5712094656);
+    // Too big for uint. Area code removed.
+    qsrand(2094656);
     m_quitting = false;
 
 

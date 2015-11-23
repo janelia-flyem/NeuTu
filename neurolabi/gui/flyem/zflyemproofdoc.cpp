@@ -29,6 +29,8 @@
 #include "zintcuboidobj.h"
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
+#include "zflyemnamebodycolorscheme.h"
+#include "zflyemsequencercolorscheme.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -298,10 +300,14 @@ void ZFlyEmProofDoc::annotateBody(
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
     if (getDvidLabelSlice()->hasCustomColorMap()) {
-      m_bodyColorMap->updateNameMap(annotation);
-      getDvidLabelSlice()->assignColorMap();
-      processObjectModified(getDvidLabelSlice());
-      notifyObjectModified();
+      ZFlyEmNameBodyColorScheme *colorMap =
+          dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
+      if (colorMap != NULL) {
+        colorMap->updateNameMap(annotation);
+        getDvidLabelSlice()->assignColorMap();
+        processObjectModified(getDvidLabelSlice());
+        notifyObjectModified();
+      }
     }
   }
   if (writer.getStatusCode() == 200) {
@@ -321,7 +327,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidTarget = target;
-    m_bodyColorMap.reset();
+    m_activeBodyColorMap.reset();
   } else {
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
@@ -1155,27 +1161,31 @@ void ZFlyEmProofDoc::deprecateSplitSource()
 
 void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
 {
-  if (m_bodyColorMap.get() == NULL) {
-    m_bodyColorMap =
-        ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
-    m_bodyColorMap->setDvidTarget(getDvidTarget());
-  }
-  m_bodyColorMap->prepareNameMap(bodyInfoObj);
+  ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
+      getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
+  if (colorMap.get() != NULL) {
+    colorMap->prepareNameMap(bodyInfoObj);
 
-  emit bodyMapReady();
+    emit bodyMapReady();
+  }
 }
 
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
     if (on) {
-      if (m_bodyColorMap.get() == NULL) {
-        m_bodyColorMap =
-            ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
-        m_bodyColorMap->setDvidTarget(getDvidTarget());
-        m_bodyColorMap->prepareNameMap();
+      if (m_activeBodyColorMap.get() == NULL) {
+        ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
+            getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
+        if (colorMap.get() != NULL) {
+          colorMap->setDvidTarget(getDvidTarget());
+          colorMap->prepareNameMap();
+        }
+
+        m_activeBodyColorMap =
+            ZSharedPointer<ZFlyEmBodyColorScheme>(colorMap);
       }
-      getDvidLabelSlice()->setCustomColorMap(m_bodyColorMap);
+      getDvidLabelSlice()->setCustomColorMap(m_activeBodyColorMap);
     } else {
       getDvidLabelSlice()->removeCustomColorMap();
     }
@@ -1210,6 +1220,43 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
       }
     }
   }
+}
+
+ZSharedPointer<ZFlyEmBodyColorScheme>
+ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+{
+  if (!m_colorMapConfig.contains(type)) {
+    switch (type) {
+    case BODY_COLOR_NORMAL:
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>();
+      break;
+    case BODY_COLOR_NAME:
+    {
+      ZFlyEmNameBodyColorScheme *colorScheme = new ZFlyEmNameBodyColorScheme;
+      colorScheme->setDvidTarget(getDvidTarget());
+      m_colorMapConfig[type] =
+          ZSharedPointer<ZFlyEmBodyColorScheme>(colorScheme);
+    }
+      break;
+    case BODY_COLOR_SEQUENCER:
+      m_colorMapConfig[type] =
+          ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmSequencerColorScheme);
+      break;
+    }
+  }
+
+  return m_colorMapConfig[type];
+}
+
+template <typename T>
+ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+{
+  ZSharedPointer<ZFlyEmBodyColorScheme> colorScheme = getColorScheme(type);
+  if (colorScheme.get() != NULL) {
+    return Shared_Dynamic_Cast<T>(colorScheme);
+  }
+
+  return ZSharedPointer<T>();
 }
 
 //////////////////////////////////////////

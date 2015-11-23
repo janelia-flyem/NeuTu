@@ -767,7 +767,7 @@ const ZUndoCommand* ZStackDoc::getLastUndoCommand() const
 
 bool ZStackDoc::isSaved(ZStackObject::EType type) const
 {
-  return m_unsavedSet.contains(type);
+  return !m_unsavedSet.contains(type);
 }
 
 void ZStackDoc::setSaved(ZStackObject::EType type, bool state)

@@ -5,9 +5,9 @@
 #include <QHash>
 
 #include "tz_stdint.h"
+#include "zflyembodycolorscheme.h"
 
-
-class ZFlyEmSequencerColorScheme
+class ZFlyEmSequencerColorScheme : public ZFlyEmBodyColorScheme
 {
 public:
     ZFlyEmSequencerColorScheme();

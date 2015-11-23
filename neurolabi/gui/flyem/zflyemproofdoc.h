@@ -12,6 +12,7 @@
 //#include "zflyembodysplitproject.h"
 #include "flyem/zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
+#include "dvid/zdvidreader.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -28,6 +29,10 @@ public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
 
   static ZFlyEmProofDoc* Make();
+
+  enum EBodyColorMap {
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER
+  };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
 
@@ -180,6 +185,10 @@ private:
   void initTimer();
   void initAutoSave();
 
+  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
+  template<typename T>
+  ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
@@ -190,7 +199,8 @@ private:
 
   QString m_mergeAutoSavePath;
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
+  QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
