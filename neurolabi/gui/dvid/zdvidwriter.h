@@ -128,6 +128,8 @@ public:
 
   void writeUrl(const std::string &url, const std::string &method = "POST");
 
+  bool good() const;
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 //  void writeJson(const std::string url, const ZJsonValue &value);

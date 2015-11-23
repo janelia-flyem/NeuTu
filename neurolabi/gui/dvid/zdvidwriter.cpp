@@ -47,7 +47,7 @@ void ZDvidWriter::init()
 
 bool ZDvidWriter::startService()
 {
-#if _ENABLE_LIBDVIDCPP_
+#if defined(_ENABLE_LIBDVIDCPP_)
   try {
     delete m_service;
 
@@ -83,6 +83,15 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
 //  m_dvidClient->setDvidTarget(target);
 
   return startService();;
+}
+
+bool ZDvidWriter::good() const
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  return m_service != NULL;
+#else
+  return m_dvidTarget.isValid();
+#endif
 }
 
 bool ZDvidWriter::open(const QString &sourceString)

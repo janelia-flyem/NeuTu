@@ -105,7 +105,7 @@ void ZDvidTileEnsemble::update(
       std::cout << "Reading tiles ..." << std::endl;
       QElapsedTimer timer;
       timer.start();
-      const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
+      std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
       std::cout << data.size() << "x tile reading time: " << timer.elapsed() << std::endl;

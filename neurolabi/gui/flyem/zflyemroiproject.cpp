@@ -125,9 +125,8 @@ bool ZFlyEmRoiProject::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   ZDvidReader reader;
   if (reader.open(target)) {
-    ZDvidWriter writer;
-    if (writer.open(target)) {
-      writer.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE));
+    if (m_dvidWriter.open(target)) {
+      m_dvidWriter.createKeyvalue(ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE));
       m_dvidInfo = reader.readGrayScaleInfo();
       downloadAllRoi();
     }
@@ -444,13 +443,12 @@ bool ZFlyEmRoiProject::hasOpenedRoi() const
 
 int ZFlyEmRoiProject::uploadRoi(int z)
 {
-  ZDvidWriter writer;
   int count = 0;
-  if (writer.open(getDvidTarget())) {
+  if (m_dvidWriter.good()) {
     const ZClosedCurve *curve = m_curveArray[z];
     if (curve != NULL) {
       if (!isRoiCurveUploaded(z)) {
-        writer.writeRoiCurve(*curve, getRoiKey(z));
+        m_dvidWriter.writeRoiCurve(*curve, getRoiKey(z));
         setRoiUploaded(z, true);
         ++count;
       }

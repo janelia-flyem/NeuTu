@@ -1,0 +1,119 @@
+#!/bin/bash
+set -e
+if [ `uname` == 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+echo $scriptDir
+master_dir=$(dirname "$(dirname $scriptDir)")
+echo $master_dir
+
+if test $# -eq 0
+then
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+echo "Installing NeuTu under $install_dir"
+if [ ! -d $install_dir ]
+then
+  mkdir -p $install_dir
+fi
+
+
+if [ ! -d $install_dir/bin ]
+then
+  mkdir $install_dir/bin
+fi
+
+downloadDir=$install_dir/Download
+if [ ! -d $downloadDir ]
+then
+  mkdir $downloadDir
+  chmod a+w $downloadDir
+fi
+
+qtver=4.8.5
+if [ `uname` == 'Darwin' ]
+then
+  qtver=4.8.4
+fi
+
+if [ ! -f $install_dir/Trolltech/Qt$qtver/bin/qmake ]
+then
+  qtsrc="qt-everywhere-opensource-src-$qtver"
+  if [ ! -d $downloadDir/$qtsrc ]
+  then
+    if [ ! -f $downloadDir/$qtsrc.tar.gz ]
+    then
+      qtSource=$master_dir/$qtsrc.tar.gz
+      if [ ! -f $qtSource ]
+      then
+        if [ `uname` == 'Darwin' ]
+        then
+          curl -L https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -o $qtSource
+        else
+          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource
+        fi
+      fi
+
+      if [ -f $qtSource ]
+      then
+        cp $qtSource $downloadDir
+      else
+        echo "Failed to find $qtSource"
+        echo "Please copy the qt package to $qtSource first"
+        exit 1
+      fi
+    fi
+    cd $downloadDir
+    tar -xvf $qtsrc.tar.gz
+  fi
+
+  cd $downloadDir/$qtsrc
+  { echo o; yes; } | ./configure --prefix=$install_dir/Trolltech/Qt$qtver -no-webkit -qt-libpng
+  make -j3
+  make install
+fi
+
+
+cd $downloadDir
+
+GIT_CMD=/usr/bin/git
+if [ -f /usr/local/git/bin/git ]
+then
+  export PATH=/usr/local/git/bin:$PATH
+  GIT_CMD=/usr/local/git/bin/git
+fi
+
+#master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
+if [ ! -d $downloadDir/neutube ]
+then
+  cd $master_dir
+  if [ `git branch --list develop` ]
+  then
+    cd $downloadDir
+    $GIT_CMD clone -b develop $master_dir/.git neutube
+  else
+    cd $downloadDir
+    echo 'WARNING: no flyem_release branch found. Using current branch'
+    $GIT_CMD clone $master_dir/.git neutube
+  fi
+  cd $downloadDir/neutube
+fi
+
+sh build.sh $install_dir/Trolltech/Qt$qtver -e biocytin
+
+run_script=$install_dir/bin/neutu
+touch $run_script
+echo '#!/bin/bash' > $run_script
+if [ `uname` == 'Darwin' ]
+then
+  echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
+else
+  echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+fi
+chmod a+x $run_script
+
+

@@ -255,6 +255,7 @@ using namespace std;
 #include "biocytin/zbiocytinprojmaskfactory.h"
 #include "zsleeper.h"
 #include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidsynapse.h"
 
 using namespace std;
 
@@ -18503,13 +18504,14 @@ void ZTest::test(MainWindow *host)
   ensemble.setDvidTarget(target);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices;
-  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(10, 20));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(11, 20));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(13, 20));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(14, 10));
 
-  while (1) {
-    ensemble.update(tileIndices, 0, 9259);
+  for (int z = 0; z < 10000; ++z) {
+    std::cout << ">>>>>> z = " << z << std::endl;
+    ensemble.update(tileIndices, 0, z);
   }
 #endif
 
@@ -18649,7 +18651,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   FlyEm::ZSynapseAnnotationArray sa;
   sa.loadJson("/Users/zhaot/Work/neutube/neurolabi/cpp/psd/test/"
               "synapse_annotation1.json");
@@ -18665,5 +18667,22 @@ void ZTest::test(MainWindow *host)
 
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZDvidSynapse *synapse = new ZDvidSynapse;
+  synapse->setPosition(30, 30, 30);
+  synapse->setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse->setDefaultRadius();
+  synapse->setDefaultColor();
+
+  frame->document()->addObject(synapse);
+#endif
+
+
   std::cout << "Done." << std::endl;
 }

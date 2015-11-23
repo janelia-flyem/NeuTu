@@ -70,6 +70,8 @@ public:
 
   bool equals(const ZIntPoint &pt) const;
 
+  double distanceTo(double x, double y, double z) const;
+
 public:
   int m_x;
   int m_y;
