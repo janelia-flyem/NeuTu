@@ -2,6 +2,7 @@
 #define ZFLYEMBODYCOLORSCHEME_H
 
 #include "zobjectcolorscheme.h"
+#include "tz_stdint.h"
 
 class ZFlyEmBodyColorScheme : public ZObjectColorScheme
 {
