@@ -116,7 +116,7 @@ using namespace std;
 ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
   m_isReadyForPaint(true), m_isSegmentationReady(false),
-  m_changingSaveState(true)
+  m_changingSaveState(true), m_autoSaving(true)
 {
   m_stack = NULL;
   m_sparseStack = NULL;
@@ -582,7 +582,9 @@ void ZStackDoc::autoSave()
 
 void ZStackDoc::autoSaveSlot()
 {
-  autoSave();
+  if (m_autoSaving) {
+    autoSave();
+  }
 }
 
 void ZStackDoc::customNotifyObjectModified(ZStackObject::EType /*type*/)
@@ -6904,6 +6906,8 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
 {
   QUndoCommand *command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
 
+  bool succ = false;
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   const ZDocPlayerList& playerList = getPlayerList();
   for (ZDocPlayerList::const_iterator iter = playerList.begin();
@@ -6922,14 +6926,14 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
 
   if (command->childCount() > 0) {
     pushUndoCommand(command);
-    return true;
+    succ = true;
   } else {
     delete command;
   }
   endObjectModifiedMode();
   notifyObjectModified();
 
-  return false;
+  return succ;
 }
 
 bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)

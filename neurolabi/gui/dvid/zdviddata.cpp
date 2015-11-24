@@ -21,6 +21,7 @@ const char* ZDvidData::m_multiscale2dName = "tiles";
 const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 const char* ZDvidData::m_bookmarkName = "bookmarks";
 const char* ZDvidData::m_bodySynapsesName = "body_synapses";
+const char* ZDvidData::m_synapseName = "synapse";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -77,6 +78,8 @@ const char* ZDvidData::GetName(ERole role)
     return m_bookmarkName;
   case ROLE_BODY_SYNAPSES:
     return m_bodySynapsesName;
+  case ROLE_SYNAPSE:
+    return m_synapseName;
   }
 
   return m_emptyName;

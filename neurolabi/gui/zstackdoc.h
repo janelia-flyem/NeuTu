@@ -936,6 +936,7 @@ public:
     return m_lastAddedSwcNode;
   }*/
 
+  void enableAutoSaving(bool on) { m_autoSaving = on; }
 
 public slots: //undoable commands
   /*!
@@ -1216,6 +1217,7 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
+  bool m_autoSaving;
 
   //QMutex m_mutex;
 

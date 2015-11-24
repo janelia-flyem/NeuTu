@@ -407,6 +407,10 @@ void ZDvidTarget::setRoiName(const std::string &name)
 
 std::string ZDvidTarget::getSynapseName() const
 {
+  if (m_synapseName.empty()) {
+    return ZDvidData::GetName(ZDvidData::ROLE_SYNAPSE);
+  }
+
   return m_synapseName;
 }
 

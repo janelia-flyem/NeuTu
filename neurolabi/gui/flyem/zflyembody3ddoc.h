@@ -134,6 +134,9 @@ public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
 
+protected:
+  void autoSave() {}
+
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
   ZSwcTree* getBodyModel(uint64_t bodyId);

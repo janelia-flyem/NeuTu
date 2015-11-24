@@ -14,6 +14,8 @@ const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
+const std::string ZDvidUrl::m_synapseElementCommand = "element";
+const std::string ZDvidUrl::m_synapseElementsCommand = "elements";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -596,4 +598,31 @@ std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
   return getDataUrl(dataName) + "/" + m_roiCommand;
+}
+
+std::string ZDvidUrl::getSynapseUrl() const
+{
+  return getDataUrl(m_dvidTarget.getSynapseName());
+}
+
+std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseElementCommand << "/" << x
+         << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
 }

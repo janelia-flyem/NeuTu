@@ -26,6 +26,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   m_garbageTimer->setInterval(60000);
   m_garbageTimer->start();
 
+  enableAutoSaving(false);
+
   connectSignalSlot();
 }
 
