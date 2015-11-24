@@ -1159,7 +1159,7 @@ void ZFlyEmProofDoc::deprecateSplitSource()
   m_splitSource.reset();
 }
 
-void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+void ZFlyEmProofDoc::prepareNameBodyMap(const ZJsonValue &bodyInfoObj)
 {
   ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
       getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
@@ -1170,6 +1170,20 @@ void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
   }
 }
 
+void ZFlyEmProofDoc::updateSequencerBodyMap(
+    const ZFlyEmSequencerColorScheme &colorScheme)
+{
+  ZSharedPointer<ZFlyEmSequencerColorScheme> colorMap =
+      getColorScheme<ZFlyEmSequencerColorScheme>(BODY_COLOR_SEQUENCER);
+  if (colorMap.get() != NULL) {
+    *(colorMap.get()) = colorScheme;
+    if (isActive(BODY_COLOR_SEQUENCER)) {
+      updateBodyColor(BODY_COLOR_SEQUENCER);
+    }
+  }
+}
+
+#if 0
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
@@ -1186,6 +1200,22 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
             ZSharedPointer<ZFlyEmBodyColorScheme>(colorMap);
       }
       getDvidLabelSlice()->setCustomColorMap(m_activeBodyColorMap);
+    } else {
+      getDvidLabelSlice()->removeCustomColorMap();
+    }
+
+    processObjectModified(getDvidLabelSlice());
+    notifyObjectModified();
+  }
+}
+#endif
+
+void ZFlyEmProofDoc::updateBodyColor(EBodyColorMap type)
+{
+  if (getDvidLabelSlice() != NULL) {
+    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
+    if (colorMap.get() != NULL) {
+      getDvidLabelSlice()->setCustomColorMap(colorMap);
     } else {
       getDvidLabelSlice()->removeCustomColorMap();
     }
@@ -1257,6 +1287,30 @@ ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
   }
 
   return ZSharedPointer<T>();
+}
+
+void ZFlyEmProofDoc::activateBodyColorMap(const QString &option)
+{
+  if (option == "Name") {
+    activateBodyColorMap(BODY_COLOR_NAME);
+  } else if (option == "Sequencer") {
+    activateBodyColorMap(BODY_COLOR_SEQUENCER);
+  } else {
+    activateBodyColorMap(BODY_COLOR_NORMAL);
+  }
+}
+
+void ZFlyEmProofDoc::activateBodyColorMap(EBodyColorMap colorMap)
+{
+  if (!isActive(colorMap)) {
+    updateBodyColor(colorMap);
+    m_activeBodyColorMap = getColorScheme(colorMap);
+  }
+}
+
+bool ZFlyEmProofDoc::isActive(EBodyColorMap type)
+{
+  return m_activeBodyColorMap.get() == getColorScheme(type).get();
 }
 
 //////////////////////////////////////////

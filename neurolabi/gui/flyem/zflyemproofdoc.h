@@ -21,6 +21,7 @@ class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
+class ZFlyEmSequencerColorScheme;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -107,7 +108,7 @@ public:
   void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
-  void useBodyNameMap(bool on);
+//  void useBodyNameMap(bool on);
 
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
@@ -140,6 +141,9 @@ public:
    */
   void cleanBodyAnnotationMap();
 
+  void activateBodyColorMap(const QString &option);
+  void activateBodyColorMap(EBodyColorMap colorMap);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -165,8 +169,9 @@ public slots:
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
   void saveCustomBookmarkSlot();
   void deprecateSplitSource();
-  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
+  void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
 
 protected:
   void autoSave();
@@ -188,6 +193,10 @@ private:
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
   template<typename T>
   ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+
+  bool isActive(EBodyColorMap type);
+
+  void updateBodyColor(EBodyColorMap type);
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

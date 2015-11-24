@@ -67,6 +67,17 @@
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa"]
     },
     {
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "0acd",
+      "name": "FIB19_Practice",
+      "comment": "branched from 94b2",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "graytiles",
+      "user_name": ["shinomiyak", "zhaot", "rivlinp" ]
+    },
+    {
       "address": "emrecon100.janelia.priv",
       "uuid": "c329",
       "name": "FIB25-Tile",

@@ -148,12 +148,18 @@ void FlyEmProofControlForm::createMenu()
   m_nameColorAction->setCheckable(true);
   m_nameColorAction->setEnabled(false);
 
+  m_sequencerColorAction = new QAction("Sequencer", this);
+  m_sequencerColorAction->setCheckable(true);
+  m_sequencerColorAction->setEnabled(true);
+
   colorActionGroup->addAction(normalColorAction);
   colorActionGroup->addAction(m_nameColorAction);
+  colorActionGroup->addAction(m_sequencerColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addAction(normalColorAction);
   colorMenu->addAction(m_nameColorAction);
+  colorMenu->addAction(m_sequencerColorAction);
 
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));

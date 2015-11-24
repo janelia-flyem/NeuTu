@@ -896,6 +896,9 @@ void ZFlyEmProofMvc::customInit()
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
           this, SLOT(prepareBodyMap(ZJsonValue)));
+  connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+          getCompleteDocument(),
+          SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -918,7 +921,7 @@ void ZFlyEmProofMvc::customInit()
 
 void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
 {
-  getCompleteDocument()->prepareBodyMap(bodyInfoObj);
+  getCompleteDocument()->prepareNameBodyMap(bodyInfoObj);
 
   emit nameColorMapReady(true);
 }
@@ -2300,11 +2303,14 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
 
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {
+  getCompleteDocument()->activateBodyColorMap(option);
+  /*
   if (option == "Name") {
     getCompleteDocument()->useBodyNameMap(true);
   } else {
     getCompleteDocument()->useBodyNameMap(false);
   }
+  */
 }
 
 void ZFlyEmProofMvc::cropCoarseBody3D()
