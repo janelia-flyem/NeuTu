@@ -1,6 +1,8 @@
 #include "zdvidsynapse.h"
 #include <QtCore>
 #include "zpainter.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -126,5 +128,48 @@ bool ZDvidSynapse::hit(double x, double y)
   return d2 <= m_radius * m_radius;
 }
 
+void ZDvidSynapse::clear()
+{
+  m_position.set(0, 0, 0);
+  m_kind = KIND_UNKNOWN;
+  m_tagArray.clear();
+  setDefaultRadius();
+}
+
+void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
+{
+  clear();
+  if (obj.hasKey("Pos")) {
+    json_t *value = obj.value("Pos").getData();
+    m_position.setX(ZJsonParser::integerValue(value, 0));
+    m_position.setY(ZJsonParser::integerValue(value, 1));
+    m_position.setZ(ZJsonParser::integerValue(value, 2));
+
+    if (obj.hasKey("Kind")) {
+      setKind(ZJsonParser::stringValue(obj["kind"]));
+    }
+
+    if (obj.hasKey("Tags")) {
+      ZJsonArray tagJson(obj["Tags"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      for (size_t i = 0; i < tagJson.size(); ++i) {
+        m_tagArray.push_back(ZJsonParser::stringValue(tagJson.at(i), i));
+      }
+    }
+
+    setDefaultRadius();
+    setDefaultColor();
+  }
+}
+
+void ZDvidSynapse::setKind(const std::string &kind)
+{
+  if (kind == "PostSyn") {
+    setKind(KIND_POST_SYN);
+  } else if (kind == "PreSyn") {
+    setKind(KIND_PRE_SYN);
+  } else {
+    setKind(KIND_UNKNOWN);
+  }
+}
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

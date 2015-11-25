@@ -4,6 +4,8 @@
 #include "zstackobject.h"
 #include "zintpoint.h"
 
+class ZJsonObject;
+
 class ZDvidSynapse : public ZStackObject
 {
 public:
@@ -21,13 +23,19 @@ public:
   void setRadius(double r) { m_radius = r; }
 
   void setKind(EKind kind) { m_kind = kind; }
-  void setTag(const std::string &tag) { m_tag = tag; }
+//  void setTag(const std::string &tag) { m_tag = tag; }
+
+  void setKind(const std::string &kind);
 
   void setDefaultColor();
 
 
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
+
+  void loadJsonObject(const ZJsonObject &obj);
+
+  void clear();
 
 private:
   void init();
@@ -38,7 +46,7 @@ private:
   ZIntPoint m_position;
   double m_radius;
   EKind m_kind;
-  std::string m_tag;
+  std::vector<std::string> m_tagArray;
 };
 
 #endif // ZDVIDSYNAPSE_H

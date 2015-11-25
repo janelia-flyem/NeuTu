@@ -124,6 +124,10 @@ public:
   bool hasCustomColorMap() const;
   void assignColorMap();
 
+  ZImage* getPaintBuffer() {
+    return m_paintBuffer;
+  }
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);

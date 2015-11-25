@@ -35,6 +35,10 @@ public:
     m_highContrast = state;
   }
 
+  static void ProcessDataForDisplay(
+      const uint8_t *data, int length, int z, bool highContrast, ZDvidTile *tile);
+  static void ExecuteTask(ZDvidTileDecodeTask *task);
+
 private:
   ZDvidTile *m_tile;
   const uint8_t *m_data;

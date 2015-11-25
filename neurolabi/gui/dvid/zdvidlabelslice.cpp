@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QRect>
+#include <QtCore>
 
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
@@ -46,6 +47,36 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
+class ZDvidLabelSlicePaintTask {
+public:
+  ZDvidLabelSlicePaintTask(ZDvidLabelSlice *labelSlice, ZObject3dScan *obj)
+  {
+    m_labelSlice = labelSlice;
+    m_obj = obj;
+  }
+
+  static void ExecuteTask(ZDvidLabelSlicePaintTask &task) {
+    if (task.m_labelSlice->getSelectedOriginal().count(task.m_obj->getLabel()) > 0) {
+      task.m_obj->setSelected(true);
+    } else {
+      task.m_obj->setSelected(false);
+    }
+
+    //      obj.display(painter, slice, option);
+
+    if (!task.m_obj->isSelected()) {
+      task.m_labelSlice->getPaintBuffer()->setData(*(task.m_obj));
+    } else {
+      task.m_labelSlice->getPaintBuffer()->setData(
+            *(task.m_obj), QColor(255, 255, 255, 164));
+    }
+  }
+
+private:
+  ZDvidLabelSlice *m_labelSlice;
+  ZObject3dScan *m_obj;
+};
+
 void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
@@ -69,9 +100,16 @@ void ZDvidLabelSlice::display(
       m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
                                -m_currentViewParam.getViewPort().y());
 
+
+
+      QList<ZDvidLabelSlicePaintTask> taskList;
       for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
            iter != m_objArray.end(); ++iter) {
         ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
+#if 1
+        taskList.append(ZDvidLabelSlicePaintTask(
+                          const_cast<ZDvidLabelSlice*>(this), &obj));
+#else
         //if (m_selectedSet.count(obj.getLabel()) > 0) {
         if (m_selectedOriginal.count(obj.getLabel()) > 0) {
           obj.setSelected(true);
@@ -86,8 +124,10 @@ void ZDvidLabelSlice::display(
         } else {
           m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
         }
+#endif
       }
 
+      QtConcurrent::blockingMap(taskList, &ZDvidLabelSlicePaintTask::ExecuteTask);
       //    painter.save();
       //    painter.setOpacity(0.5);
 

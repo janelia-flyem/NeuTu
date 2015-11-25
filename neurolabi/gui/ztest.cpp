@@ -17,6 +17,7 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <QtCore>
 
 #ifdef __GLIBCXX__
 #include <tr1/memory>
@@ -18653,8 +18654,7 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   FlyEm::ZSynapseAnnotationArray sa;
-  sa.loadJson("/Users/zhaot/Work/neutube/neurolabi/cpp/psd/test/"
-              "synapse_annotation1.json");
+  sa.loadJson(GET_TEST_DATA_DIR + "/synapse.json");
 
   ZJsonArray dvidSynapseJson;
   for (FlyEm::ZSynapseAnnotationArray::const_iterator iter = sa.begin();
@@ -18662,13 +18662,18 @@ void ZTest::test(MainWindow *host)
     const FlyEm::ZSynapseAnnotation annotation = *iter;
 //    std::cout << annotation.toDvidSynapseElementJson().dumpString(2)
 //              << std::endl;
-    dvidSynapseJson.append(annotation.toDvidSynapseElementJson());
+
+    std::vector<ZJsonObject> objArray = annotation.toDvidSynapseElementJson();
+    for (std::vector<ZJsonObject>::iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      dvidSynapseJson.append(*iter);
+    }
   }
 
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -18683,6 +18688,32 @@ void ZTest::test(MainWindow *host)
   frame->document()->addObject(synapse);
 #endif
 
+#if 0
+  QStringList strings;
+  strings << "This" << "is" << "a" << "test";
+  QStringList result =
+      QtConcurrent::blockingMapped(strings, &QString::toLower);
+
+  qDebug() << result;
+#endif
+
+#if 1
+  QList<Stack*> stackList;
+
+  for (int i = 0; i < 5; ++i) {
+    Stack *stack = C_Stack::make(GREY, 100, 100, 10);
+    C_Stack::setZero(stack);
+    stackList.append(stack);
+  }
+
+  QFuture<double> result = QtConcurrent::mapped(stackList, &C_Stack::sum);
+  result.waitForFinished();
+
+  QFutureIterator<double> iter(result);
+  while (iter.hasNext()) {
+    qDebug() << iter.next();
+  }
+#endif
 
   std::cout << "Done." << std::endl;
 }

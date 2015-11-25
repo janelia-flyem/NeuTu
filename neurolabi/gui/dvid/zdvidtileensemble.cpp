@@ -1,6 +1,7 @@
 #include "zdvidtileensemble.h"
 #include <QRect>
 #include <QElapsedTimer>
+#include <QtCore>
 
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
@@ -98,7 +99,7 @@ void ZDvidTileEnsemble::update(
   }
 
   try  {
-    ZMultiTaskManager taskManager;
+//    ZMultiTaskManager taskManager;
     if (!tile_locs_array.empty()) {
       libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
                                        getDvidTarget().getUuid());
@@ -112,6 +113,31 @@ void ZDvidTileEnsemble::update(
 
       size_t dataIndex = 0;
 
+      QList<ZDvidTileDecodeTask*> taskList;
+      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+           iter != tileIndices.end(); ++iter) {
+        const ZDvidTileInfo::TIndex &index = *iter;
+        ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
+              resLevel, index);
+        if (tile != NULL) {
+          libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
+
+          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+          task->setZ(z);
+          task->setData(dataPtr->get_raw(), dataPtr->length());
+          task->setHighContrast(m_highContrast);
+          taskList.append(task);
+        }
+      }
+
+      QtConcurrent::blockingMap(taskList, &ZDvidTileDecodeTask::ExecuteTask);
+
+      for (QList<ZDvidTileDecodeTask*>::iterator iter = taskList.begin();
+           iter != taskList.end(); ++iter) {
+        delete *iter;
+      }
+
+#if 0
 //      QThreadFutureMap futureMap;
       QList<QFuture<void> > futureList;
 
@@ -148,7 +174,7 @@ void ZDvidTileEnsemble::update(
         iter->waitForFinished();
       }
 
-
+#endif
 //      taskManager.start();
 //      taskManager.waitForDone();
     }

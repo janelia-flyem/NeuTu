@@ -192,7 +192,7 @@ public:
 
   bool hasPartner(int bodyId) const;
 
-  ZJsonObject toDvidSynapseElementJson() const;
+  std::vector<ZJsonObject> toDvidSynapseElementJson() const;
 
 private:
   SynapseLocation m_tBar;
