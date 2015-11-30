@@ -82,8 +82,13 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
   setOffset(box.getFirstCorner());
 }
 
-ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
-  m_stack(NULL), m_dealloc(NULL)/*, m_isLSMFile(false)*/
+ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
+  m_stack(NULL)
+{
+  setData(stack, C_Stack::kill);
+}
+
+ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
   setData(stack, dealloc);
 }
@@ -158,11 +163,11 @@ size_t ZStack::getVoxelNumber(EStackUnit unit) const
   return 0;
 }
 
-void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *delloc)
+void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
   deprecate(MC_STACK);
   m_stack = stack;
-  m_dealloc = delloc;
+  m_dealloc = dealloc;
 }
 
 void ZStack::consume(Stack *stack)

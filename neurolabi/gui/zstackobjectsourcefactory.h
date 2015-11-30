@@ -33,6 +33,7 @@ public:
 
   static std::string MakeFlyEmSplitRoiSource();
   static std::string MakeFlyEmExtNeuronClass();
+  static std::string MakeStackBoundBoxSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

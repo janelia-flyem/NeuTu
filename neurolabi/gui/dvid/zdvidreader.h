@@ -145,6 +145,7 @@ public:
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
   ZJsonObject readJsonObject(const std::string &url);
+  ZJsonArray readJsonArray(const std::string &url);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

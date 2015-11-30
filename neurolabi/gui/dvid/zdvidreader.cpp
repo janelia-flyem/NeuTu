@@ -1571,3 +1571,18 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
 
   return obj;
 }
+
+ZJsonArray ZDvidReader::readJsonArray(const std::string &url)
+{
+  ZJsonArray obj;
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(url.c_str(), isVerbose());
+  const QByteArray &buffer = bufferReader.getBuffer();
+  if (!buffer.isEmpty()) {
+    obj.decodeString(buffer.constData());
+  }
+
+  return obj;
+}
+

@@ -517,7 +517,8 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
                             parameterList.at(1).toInt(),
                             parameterList.at(2).toInt());
         } else {
-          RECORD_WARNING_UNCOND("Image retrieval failed.");
+          qWarning() << "Image retrieval failed.";
+//          RECORD_WARNING_UNCOND("Image retrieval failed.");
           m_image.clear();
         }
       } else if (m_currentRequest.getType() == ZDvidRequest::DVID_GET_THUMBNAIL) {

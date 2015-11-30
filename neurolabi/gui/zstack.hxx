@@ -70,10 +70,15 @@ public:
                   deconstructed. \a delloc can be NULL to keep the stack data
                   in the memory even the object is deconstructed.
    */
-  ZStack(Mc_Stack *stack,
-         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+  ZStack(Mc_Stack *stack/*,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill*/);
 
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
+
+  /*! Obsolete. Do not use this constructor!
+   */
+  ZStack(Mc_Stack *stack,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
   //! Destructor
   virtual ~ZStack();
@@ -100,9 +105,11 @@ public: /* attributes */
 
   /*!
    * \brief Set stack data
+   *
+   * Be careful when you want to set \a dealloc to a non-default value.
    */
   void setData(Mc_Stack *stack,
-               C_Stack::Mc_Stack_Deallocator *delloc = C_Stack::kill);
+               C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
   /*!
    * \brief Set data from stack

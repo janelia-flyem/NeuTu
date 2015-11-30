@@ -1140,6 +1140,8 @@ protected:
   void removeRect2dRoi();
 
 private:
+  void init();
+
   void connectSignalSlot();
   void initNeuronTracer();
   //void initTraceWorkspace();

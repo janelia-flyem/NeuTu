@@ -150,3 +150,7 @@ std::string ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass()
   return "#.FlyEmExternalNeuron";
 }
 
+std::string ZStackObjectSourceFactory::MakeStackBoundBoxSource()
+{
+  return "#.StackBoundBox";
+}

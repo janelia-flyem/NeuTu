@@ -2059,21 +2059,28 @@ void MainWindow::createWorkDir()
       QDir dir(dlg.getWorkDir());
       NeutubeConfig::getInstance().setWorkDir(dir.absolutePath().toStdString());
       if (!dir.exists()) {
+        QString warningMsg;
         if (!dir.mkpath(dir.absolutePath())) {
-          QMessageBox::warning(
-                NULL, "Faile to Create the working directory",
-                 "Cannot create " + dlg.getWorkDir() +
-                 "Autosave will be disabled.",
-                 QMessageBox::Ok);
-          RECORD_WARNING_UNCOND("Failed to the working directory.");
+          warningMsg = "Faile to Create the working directory",
+              "Cannot create " + dlg.getWorkDir() +
+              "Autosave will be disabled.";
         } else {
           if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
-            dir.mkpath(NeutubeConfig::getInstance().getPath(
-                         NeutubeConfig::AUTO_SAVE).c_str());
+            if (!dir.mkpath(NeutubeConfig::getInstance().getPath(
+                         NeutubeConfig::AUTO_SAVE).c_str())) {
+              warningMsg = "Faile to Create the working directory",
+                  "Cannot create " + NeutubeConfig::getInstance().getPath(
+                    NeutubeConfig::AUTO_SAVE) +
+                  "Autosave will be disabled.";
+            }
           }
         }
+        if (!warningMsg.isEmpty()) {
+          QMessageBox::warning(NULL, warningMsg, "Initialization Error",
+                               QMessageBox::Ok);
+          qWarning() << warningMsg;
+        }
       }
-
     }
   }
 }

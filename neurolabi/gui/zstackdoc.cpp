@@ -113,11 +113,48 @@
 
 using namespace std;
 
-ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
-  /*m_lastAddedSwcNode(NULL),*/ m_resDlg(NULL), m_selectionSilent(false),
-  m_isReadyForPaint(true), m_isSegmentationReady(false),
-  m_changingSaveState(true), m_autoSaving(true)
+ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent)
 {
+  init();
+}
+
+ZStackDoc::~ZStackDoc()
+{
+  if (m_futureMap.hasThreadAlive()) {
+    m_futureMap.waitForFinished();
+  }
+
+  deprecate(STACK);
+  deprecate(SPARSE_STACK);
+
+  qDebug() << "ZStackDoc destroyed";
+
+  m_objectGroup.removeAllObject(true);
+
+  if (m_swcNetwork != NULL) {
+    delete m_swcNetwork;
+  }
+
+  delete m_undoStack;
+  delete m_labelField;
+  delete m_stackFactory;
+
+  if (m_resDlg != NULL) {
+    delete m_resDlg;
+  }
+
+  destroyReporter();
+}
+
+void ZStackDoc::init()
+{
+  m_resDlg = NULL;
+  m_selectionSilent = false;
+  m_isReadyForPaint = true;
+  m_isSegmentationReady = false;
+  m_changingSaveState = true;
+  m_autoSaving = true;
+
   m_stack = NULL;
   m_sparseStack = NULL;
   m_labelField = NULL;
@@ -155,34 +192,6 @@ ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent),
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
   m_progressSignal = new ZProgressSignal(this);
-}
-
-ZStackDoc::~ZStackDoc()
-{
-  if (m_futureMap.hasThreadAlive()) {
-    m_futureMap.waitForFinished();
-  }
-
-  deprecate(STACK);
-  deprecate(SPARSE_STACK);
-
-  qDebug() << "ZStackDoc destroyed";
-
-  m_objectGroup.removeAllObject(true);
-
-  if (m_swcNetwork != NULL) {
-    delete m_swcNetwork;
-  }
-
-  delete m_undoStack;
-  delete m_labelField;
-  delete m_stackFactory;
-
-  if (m_resDlg != NULL) {
-    delete m_resDlg;
-  }
-
-  destroyReporter();
 }
 
 void ZStackDoc::clearData()

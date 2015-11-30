@@ -4,6 +4,7 @@
 #include "zjsonparser.h"
 #include "zdviddata.h"
 #if _QT_APPLICATION_
+#include <QtDebug>
 #include "dvid/zdvidbufferreader.h"
 #endif
 
@@ -151,7 +152,11 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
   if (tokens.size() < 4 || tokens[0] != "http") {
+#if defined(_QT_APPLICATION_)
+    qWarning() << "Invalid source string for dvid target";
+#else
     RECORD_WARNING_UNCOND("Invalid source string");
+#endif
   } else {
     int port = -1;
     if (!tokens[2].empty()) {

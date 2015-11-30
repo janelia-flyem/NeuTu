@@ -18697,7 +18697,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << result;
 #endif
 
-#if 1
+#if 0
   QList<Stack*> stackList;
 
   for (int i = 0; i < 5; ++i) {
@@ -18713,6 +18713,18 @@ void ZTest::test(MainWindow *host)
   while (iter.hasNext()) {
     qDebug() << iter.next();
   }
+#endif
+
+#if 0
+  ZJsonObject tileJson;
+  tileJson.load(GET_TEST_DATA_DIR + "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-.tiles.json");
+  tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
+#endif
+
+#if 1
+  std::cout << "message testing ..." << std::endl;
+  qDebug() << "Debug message test";
+  qWarning() << "Warning message test";
 #endif
 
   std::cout << "Done." << std::endl;

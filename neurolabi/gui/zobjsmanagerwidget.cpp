@@ -291,15 +291,15 @@ void ZObjsManagerWidget::createWidget()
     m_seedObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_seedObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     tabs->addTab(m_seedObjsTreeView, "Seeds");
-
-    m_graphObjsTreeView = new QTreeView(this);
-    m_graphObjsTreeView->setSortingEnabled(false);
-    m_graphObjsTreeView->setExpandsOnDoubleClick(false);
-    m_graphObjsTreeView->setModel(m_doc->graphObjsModel());
-    m_graphObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    m_graphObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    tabs->addTab(m_graphObjsTreeView, "Graph");
   }
+
+  m_graphObjsTreeView = new QTreeView(this);
+  m_graphObjsTreeView->setSortingEnabled(false);
+  m_graphObjsTreeView->setExpandsOnDoubleClick(false);
+  m_graphObjsTreeView->setModel(m_doc->graphObjsModel());
+  m_graphObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  m_graphObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+  tabs->addTab(m_graphObjsTreeView, "Graph");
 
   QHBoxLayout *layout = new QHBoxLayout;
   layout->addWidget(tabs);

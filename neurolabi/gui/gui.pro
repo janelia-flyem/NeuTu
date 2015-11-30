@@ -583,7 +583,8 @@ HEADERS += mainwindow.h \
     zpunctumselector.h \
     zgraphobjsmodel.h \
     dvid/zdvidsynapse.h \
-    flyem/zflyemnamebodycolorscheme.h
+    flyem/zflyemnamebodycolorscheme.h \
+    dvid/zdvidsynapseensenmble.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1023,7 +1024,8 @@ SOURCES += main.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
     dvid/zdvidsynapse.cpp \
-    flyem/zflyemnamebodycolorscheme.cpp
+    flyem/zflyemnamebodycolorscheme.cpp \
+    dvid/zdvidsynapseensenmble.cpp
 
 OTHER_FILES += \
     extlib.pri \

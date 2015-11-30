@@ -49,37 +49,56 @@ ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
 class ZDvidLabelSlicePaintTask {
 public:
-  ZDvidLabelSlicePaintTask(ZDvidLabelSlice *labelSlice, ZObject3dScan *obj)
+  ZDvidLabelSlicePaintTask(ZDvidLabelSlice *labelSlice)
   {
     m_labelSlice = labelSlice;
-    m_obj = obj;
+  }
+
+  void setLabelSlice(ZDvidLabelSlice *slice) {
+    m_labelSlice = slice;
+  }
+
+  void addObject(ZObject3dScan *obj) {
+    m_objArray.append(obj);
   }
 
   static void ExecuteTask(ZDvidLabelSlicePaintTask &task) {
-    if (task.m_labelSlice->getSelectedOriginal().count(task.m_obj->getLabel()) > 0) {
-      task.m_obj->setSelected(true);
-    } else {
-      task.m_obj->setSelected(false);
-    }
+    for (QList<ZObject3dScan*>::iterator iter = task.m_objArray.begin();
+         iter != task.m_objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
 
-    //      obj.display(painter, slice, option);
+      if (task.m_labelSlice->getSelectedOriginal().count(obj->getLabel()) > 0) {
+        obj->setSelected(true);
+      } else {
+        obj->setSelected(false);
+      }
 
-    if (!task.m_obj->isSelected()) {
-      task.m_labelSlice->getPaintBuffer()->setData(*(task.m_obj));
-    } else {
-      task.m_labelSlice->getPaintBuffer()->setData(
-            *(task.m_obj), QColor(255, 255, 255, 164));
+      //      obj.display(painter, slice, option);
+
+      if (!obj->isSelected()) {
+        task.m_labelSlice->getPaintBuffer()->setData(*(obj));
+      } else {
+        task.m_labelSlice->getPaintBuffer()->setData(
+              *(obj), QColor(255, 255, 255, 164));
+      }
     }
   }
 
 private:
   ZDvidLabelSlice *m_labelSlice;
-  ZObject3dScan *m_obj;
+  QList<ZObject3dScan*> m_objArray;
 };
+
+#define ZDVIDLABELSLICE_MT 1
 
 void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
+#ifdef _DEBUG_
+      QElapsedTimer timer;
+      timer.start();
+#endif
+
   if (isVisible()) {
     if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
         m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
@@ -100,15 +119,21 @@ void ZDvidLabelSlice::display(
       m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
                                -m_currentViewParam.getViewPort().y());
 
-
-
+#if defined(ZDVIDLABELSLICE_MT)
       QList<ZDvidLabelSlicePaintTask> taskList;
-      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
-           iter != m_objArray.end(); ++iter) {
-        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-#if 1
+      const int taskCount = 4;
+      for (int i = 0; i < taskCount; ++i) {
         taskList.append(ZDvidLabelSlicePaintTask(
-                          const_cast<ZDvidLabelSlice*>(this), &obj));
+                          const_cast<ZDvidLabelSlice*>(this)));
+      }
+#endif
+
+      int count = 0;
+      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
+           iter != m_objArray.end(); ++iter, ++count) {
+        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
+#if defined(ZDVIDLABELSLICE_MT)
+        taskList[count % taskCount].addObject(&obj);
 #else
         //if (m_selectedSet.count(obj.getLabel()) > 0) {
         if (m_selectedOriginal.count(obj.getLabel()) > 0) {
@@ -127,7 +152,10 @@ void ZDvidLabelSlice::display(
 #endif
       }
 
+#if defined(ZDVIDLABELSLICE_MT)
       QtConcurrent::blockingMap(taskList, &ZDvidLabelSlicePaintTask::ExecuteTask);
+#endif
+
       //    painter.save();
       //    painter.setOpacity(0.5);
 
@@ -136,6 +164,9 @@ void ZDvidLabelSlice::display(
                         *m_paintBuffer);
     }
 
+#ifdef _DEBUG_
+      qDebug() << "Body buffer painting time: " << timer.elapsed();
+#endif
 //    painter.restore();
 
 #ifdef _DEBUG_2
