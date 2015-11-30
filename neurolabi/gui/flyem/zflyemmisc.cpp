@@ -22,6 +22,8 @@
 #include "zstackviewparam.h"
 #include "zintcuboidarray.h"
 #include "zobject3dfactory.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -201,6 +203,106 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
   return graph;
 }
 
+Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
+{
+  int sampleInterval = 1;
+
+//  int intv = 0;
+
+  Z3DGraph *graph = new Z3DGraph;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(
+        6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  Z3DGraphFactory factory;
+  factory.setNodeRadiusHint(0);
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(QColor(128, 64, 64));
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        if (k % sampleInterval == 0) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box = dvidInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+              Z3DGraph *subgraph = factory.makeFaceGraph(box, faceArray);
+              graph->append(*subgraph);
+              delete subgraph;
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+#if 0
+  Stack *surface = Stack_Perimeter(stack, NULL, 6);
+  C_Stack::kill(stack);
+
+  int width = C_Stack::width(surface);
+  int height = C_Stack::height(surface);
+  int depth = C_Stack::depth(surface);
+  size_t offset = 0;
+
+  C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test.tif", surface);
+
+  Z3DGraphFactory factory;
+  factory.setNodeRadiusHint(0);
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(QColor(128, 64, 64));
+  int sampleInterval = 5;
+  int intv = 0;
+  for (int k = 0; k < depth; ++k) {
+    for (int j = 0; j < height; ++j) {
+      for (int i = 0; i < width; ++i) {
+        if ((intv++) % sampleInterval == 0) {
+          if (surface->array[offset] > 0) {
+            ZIntCuboid box = dvidInfo.getBlockBox(
+                  i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+            Z3DGraph *subgraph = factory.makeBox(box);
+            graph->append(*subgraph);
+            delete subgraph;
+          }
+        }
+        ++offset;
+      }
+    }
+  }
+
+  C_Stack::kill(surface);
+#endif
+
+  return graph;
+}
+
 /*
 void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
 {
@@ -267,6 +369,20 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
     window->getDocument()->addObject(graph, true);
+#if 0
+    ZStackObject *replaced =
+        window->getDocument()->getObjectGroup().replaceFirstSameSource(graph);
+    if (replaced == NULL) {
+      window->getDocument()->addObject(graph, true);
+    } else {
+      window->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      window->getDocument()->bufferObjectModified(replaced);
+      window->getDocument()->bufferObjectModified(graph);
+      delete replaced;
+      window->getDocument()->endObjectModifiedMode();
+      window->getDocument()->notifyObjectModified();
+    }
+#endif
   }
 }
 
@@ -286,6 +402,26 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
 
     window->getDocument()->addObject(graph, true);
     window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+  }
+}
+
+void ZFlyEmMisc::Decorate3dBodyWindowRoi(
+    Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
+{
+  if (window != NULL) {
+    if (!dvidTarget.getRoiName().empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+        ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+        if (!roi.isEmpty()) {
+          Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
+          graph->setSource(
+                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+                  dvidTarget.getRoiName()));
+          window->getDocument()->addObject(graph, true);
+        }
+      }
+    }
   }
 }
 

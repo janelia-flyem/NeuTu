@@ -432,3 +432,56 @@ bool ZSynapseAnnotation::ZSynapseAnnotation::hasPartner(int bodyId) const
 
   return false;
 }
+
+std::vector<ZJsonObject> ZSynapseAnnotation::toDvidSynapseElementJson() const
+{
+  std::vector<ZJsonObject> result;
+
+  ZJsonObject obj;
+
+  ZJsonArray posJson;
+  posJson.append(getTBarRef()->x());
+  posJson.append(getTBarRef()->y());
+  posJson.append(getTBarRef()->z());
+
+  obj.setEntry("Pos", posJson);
+  obj.setEntry("Kind", "PreSyn");
+
+  result.push_back(obj);
+
+  ZJsonArray relsJson;
+
+  for (std::vector<SynapseLocation>::const_iterator iter = m_partnerArray.begin();
+       iter != m_partnerArray.end(); ++iter) {
+    const SynapseLocation &location = *iter;
+    ZJsonObject relJson;
+    relJson.setEntry("Rel", "PreSynTo");
+
+    ZJsonArray psdPosJson;
+    psdPosJson.append(location.x());
+    psdPosJson.append(location.y());
+    psdPosJson.append(location.z());
+    relJson.setEntry("To", psdPosJson);
+
+    relsJson.append(relJson);
+
+    //Make a postsyn object
+    ZJsonObject postSynJson;
+    postSynJson.setEntry("Pos", psdPosJson);
+    postSynJson.setEntry("Kind", "PostSyn");
+    ZJsonArray psdRelsJson;
+    ZJsonObject psdRelJson;
+    psdRelJson.setEntry("Rel", "PostSynTo");
+    psdRelJson.setEntry("To", posJson);
+    psdRelsJson.append(psdRelJson);
+    postSynJson.setEntry("Rels", psdRelsJson);
+
+    result.push_back(postSynJson);
+  }
+
+  if (!relsJson.isEmpty()) {
+    obj.setEntry("Rels", relsJson);
+  }
+
+  return result;
+}

@@ -766,10 +766,14 @@ private:
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus);
+                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
+
+#ifdef _QT_GUI_USED_
+  const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
+#endif
 
 private:
   Swc_Tree *m_tree;

@@ -275,6 +275,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_coarseBodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    ZFlyEmMisc::Decorate3dBodyWindowRoi(
+          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
   }
 
   /*
@@ -894,6 +896,9 @@ void ZFlyEmProofMvc::customInit()
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
           this, SLOT(prepareBodyMap(ZJsonValue)));
+  connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+          getCompleteDocument(),
+          SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -916,7 +921,7 @@ void ZFlyEmProofMvc::customInit()
 
 void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
 {
-  getCompleteDocument()->prepareBodyMap(bodyInfoObj);
+  getCompleteDocument()->prepareNameBodyMap(bodyInfoObj);
 
   emit nameColorMapReady(true);
 }
@@ -1131,7 +1136,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
     } else {
-      getCompleteDocument()->processObjectModified(slice);
+      getCompleteDocument()->processObjectModified(slice, true);
     }
     processLabelSliceSelectionChange();
   }
@@ -2206,13 +2211,17 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 
 void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
-  m_mergeProject.update3DBodyViewPlane(viewParam);
-  m_splitProject.update3DViewPlane();
+  if (m_currentViewParam != viewParam) {
+    m_mergeProject.update3DBodyViewPlane(viewParam);
+    m_splitProject.update3DViewPlane();
 
-  updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
-  updateBodyWindowPlane(m_bodyWindow, viewParam);
-  updateBodyWindowPlane(m_skeletonWindow, viewParam);
-  updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+    updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
+    updateBodyWindowPlane(m_bodyWindow, viewParam);
+    updateBodyWindowPlane(m_skeletonWindow, viewParam);
+    updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+
+    m_currentViewParam = viewParam;
+  }
 }
 
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
@@ -2294,11 +2303,14 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
 
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {
+  getCompleteDocument()->activateBodyColorMap(option);
+  /*
   if (option == "Name") {
     getCompleteDocument()->useBodyNameMap(true);
   } else {
     getCompleteDocument()->useBodyNameMap(false);
   }
+  */
 }
 
 void ZFlyEmProofMvc::cropCoarseBody3D()

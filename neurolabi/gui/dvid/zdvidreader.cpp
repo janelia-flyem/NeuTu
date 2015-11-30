@@ -36,6 +36,7 @@ ZDvidReader::~ZDvidReader()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   delete m_service;
+  m_service = NULL;
 #endif
 }
 
@@ -89,7 +90,7 @@ void ZDvidReader::endReading()
 
 bool ZDvidReader::startService()
 {
-#if _ENABLE_LIBDVIDCPP_
+#if defined(_ENABLE_LIBDVIDCPP_)
   try {
     delete m_service;
 
@@ -105,9 +106,18 @@ bool ZDvidReader::startService()
   return true;
 }
 
+bool ZDvidReader::good() const
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  return m_service != NULL;
+#else
+  return m_dvidTarget.isValid();
+#endif
+}
+
 bool ZDvidReader::isReady() const
 {
-  return getDvidTarget().isValid();
+  return good();
 }
 
 bool ZDvidReader::open(
@@ -1561,3 +1571,18 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
 
   return obj;
 }
+
+ZJsonArray ZDvidReader::readJsonArray(const std::string &url)
+{
+  ZJsonArray obj;
+
+  ZDvidBufferReader bufferReader;
+  bufferReader.read(url.c_str(), isVerbose());
+  const QByteArray &buffer = bufferReader.getBuffer();
+  if (!buffer.isEmpty()) {
+    obj.decodeString(buffer.constData());
+  }
+
+  return obj;
+}
+

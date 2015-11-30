@@ -48,6 +48,7 @@ public:
 
 public slots:
   void prepareColor();
+  void updateGraphVisibleState();
 
 private:
   Z3DGraph m_graph;

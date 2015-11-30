@@ -49,6 +49,7 @@ public:
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 
   void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
+  void removeBodyAnnotation(uint64_t bodyId);
 
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
@@ -126,6 +127,8 @@ public:
   }
 
   void writeUrl(const std::string &url, const std::string &method = "POST");
+
+  bool good() const;
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;

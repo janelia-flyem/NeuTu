@@ -98,6 +98,11 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource()
   return "#.FlyEMBoundBox";
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmRoiSource(const std::string &roiName)
+{
+  return "#.FlyemRoi#" + roiName;
+}
+
 std::string ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource()
 {
   return "#.FlyEMPlaneObject";
@@ -145,3 +150,7 @@ std::string ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass()
   return "#.FlyEmExternalNeuron";
 }
 
+std::string ZStackObjectSourceFactory::MakeStackBoundBoxSource()
+{
+  return "#.StackBoundBox";
+}

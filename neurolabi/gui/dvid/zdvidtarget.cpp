@@ -4,6 +4,7 @@
 #include "zjsonparser.h"
 #include "zdviddata.h"
 #if _QT_APPLICATION_
+#include <QtDebug>
 #include "dvid/zdvidbufferreader.h"
 #endif
 
@@ -19,9 +20,11 @@ const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
+const char* ZDvidTarget::m_synapseNameKey = "synapse";
 const char* ZDvidTarget::m_userNameKey = "user_name";
 const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
+const char* ZDvidTarget::m_roiNameKey = "roi";
 
 ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255)
 {
@@ -70,6 +73,8 @@ void ZDvidTarget::clear()
   m_labelBlockName = "";
   m_multiscale2dName = "";
   m_grayScaleName = "";
+  m_roiName = "";
+  m_synapseName = "";
   m_userList.clear();
 }
 
@@ -147,7 +152,11 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
   if (tokens.size() < 4 || tokens[0] != "http") {
+#if defined(_QT_APPLICATION_)
+    qWarning() << "Invalid source string for dvid target";
+#else
     RECORD_WARNING_UNCOND("Invalid source string");
+#endif
   } else {
     int port = -1;
     if (!tokens[2].empty()) {
@@ -213,7 +222,9 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
+  obj.setEntry(m_roiNameKey, m_roiName);
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  obj.setEntry(m_synapseNameKey, m_synapseName);
 
   return obj;
 }
@@ -256,6 +267,13 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_multiscale2dNameKey)) {
       setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
+    if (obj.hasKey(m_roiNameKey)) {
+      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
+    }
+    if (obj.hasKey(m_synapseNameKey)) {
+      setRoiName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
+    }
+
     if (obj.hasKey(m_userNameKey)) {
       ZJsonValue value = obj.value(m_userNameKey);
       if (value.isString()) {
@@ -380,6 +398,30 @@ void ZDvidTarget::setBodyLabelName(const std::string &name)
 void ZDvidTarget::setMultiscale2dName(const std::string &name)
 {
   m_multiscale2dName = name;
+}
+
+std::string ZDvidTarget::getRoiName() const
+{
+  return m_roiName;
+}
+
+void ZDvidTarget::setRoiName(const std::string &name)
+{
+  m_roiName = name;
+}
+
+std::string ZDvidTarget::getSynapseName() const
+{
+  if (m_synapseName.empty()) {
+    return ZDvidData::GetName(ZDvidData::ROLE_SYNAPSE);
+  }
+
+  return m_synapseName;
+}
+
+void ZDvidTarget::setSynapseName(const std::string &name)
+{
+  m_synapseName = name;
 }
 
 /*

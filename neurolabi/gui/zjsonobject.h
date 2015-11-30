@@ -74,6 +74,7 @@ public:
    * The function does nothing if the key is empty.
    */
   void setEntry(const char *key, const std::string &value);
+  void setEntry(const char *key, const char *value);
 
   /*!
    * \brief Set an entry of the object with an array

@@ -251,6 +251,8 @@ private:
   Z3DWindow *m_objectWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
+  ZStackViewParam m_currentViewParam;
+
   ZDvidInfo m_dvidInfo;
 };
 

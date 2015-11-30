@@ -88,7 +88,8 @@ QModelIndex ZPunctaObjsModel::getIndex(ZPunctum *punctum, int col) const
   if (pun2rIt != m_punctaToRow.end()) {
     std::map<QString, ZObjsItem*>::const_iterator s2pIt =
         m_punctaSourceToParent.find(punctum->getSource().c_str());
-    std::map<ZObjsItem*, int>::const_iterator p2rIt = m_punctaSourceParentToRow.find(s2pIt->second);
+    std::map<ZObjsItem*, int>::const_iterator p2rIt =
+        m_punctaSourceParentToRow.find(s2pIt->second);
     return index(pun2rIt->second, col, index(p2rIt->second, 0));
   }
   return QModelIndex();
@@ -229,6 +230,10 @@ void ZPunctaObjsModel::setModelIndexCheckState(const QModelIndex &index, Qt::Che
 
 bool ZPunctaObjsModel::needCheckbox(const QModelIndex &index) const
 {
+  if (index.isValid()) {
+    return true;
+  }
+
   QModelIndex idx = parent(index);
   if (idx.isValid() && static_cast<ZObjsItem*>(idx.internalPointer()) == m_rootItem) {
     return true;

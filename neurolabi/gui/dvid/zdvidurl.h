@@ -148,6 +148,13 @@ public:
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
+  std::string getBodyAnnotationName() const;
+
+  std::string getSynapseUrl() const;
+  std::string getSynapseUrl(int x, int y, int z) const;
+  std::string getSynapseUrl(int x, int y, int z,
+                            int width, int height, int depth) const;
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
@@ -167,6 +174,8 @@ private:
   static const std::string m_labelCommand;
   static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
+  static const std::string m_synapseElementCommand;
+  static const std::string m_synapseElementsCommand;
 };
 
 #endif // ZDVIDURL_H

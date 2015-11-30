@@ -16,6 +16,8 @@
 
 class ZGraph;
 class ZIntPoint;
+class ZSwcTree;
+class ZClosedCurve;
 
 namespace misc {
 
@@ -48,6 +50,8 @@ ZIntPoint getDsIntvFor3DVolume(double dsRatio);
 double computeConfidence(double v, double median, double p95);
 
 ZTree<int> *buildSegmentationTree(const Stack *stack);
+
+ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
 /*!
  * \brief Parse hdf5 path

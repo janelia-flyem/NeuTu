@@ -22,6 +22,7 @@ public:
   static std::string MakeSplitObjectSource();
   static std::string MakeNodeAdaptorSource();
   static std::string MakeFlyEmBoundBoxSource();
+  static std::string MakeFlyEmRoiSource(const std::string &roiName);
   static std::string MakeFlyEmPlaneObjectSource();
   static std::string MakeFlyEmSynapseSource();
   static std::string MakeFlyEmTBarSource();
@@ -32,6 +33,7 @@ public:
 
   static std::string MakeFlyEmSplitRoiSource();
   static std::string MakeFlyEmExtNeuronClass();
+  static std::string MakeStackBoundBoxSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

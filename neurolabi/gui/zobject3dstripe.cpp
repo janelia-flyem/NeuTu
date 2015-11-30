@@ -656,3 +656,91 @@ void ZObject3dStripe::print(int indent) const
     std::cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << std::endl;
   }
 }
+
+#define MOVE_SEGMENT(seg, nseg, s, start, end) \
+  ++seg;\
+  if (seg >= nseg) {\
+    break;\
+  }\
+  start = s.getSegmentStart(seg);\
+  end = s.getSegmentEnd(seg);
+
+#define MOVE_FIRST_SEGMENT \
+  ++seg1;\
+  if (seg1 >= nseg1) {\
+    break;\
+  }\
+  s1Start = s1.getSegmentStart(seg1);\
+  s1End = s1.getSegmentEnd(seg1);
+
+#define MOVE_SECOND_SEGMENT \
+  ++seg2;\
+  if (seg2 >= nseg2) {\
+    break;\
+  }\
+  s2Start = s2.getSegmentStart(seg2);\
+  s2End = s2.getSegmentEnd(seg2);
+
+
+ZObject3dStripe operator - (
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+{
+  ZObject3dStripe result;
+
+  if ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+      !s1.m_segmentArray.empty() && !s2.m_segmentArray.empty()) {
+    result.setY(s1.getY());
+    result.setZ(s2.getZ());
+
+    const_cast<ZObject3dStripe&>(s1).canonize();
+    const_cast<ZObject3dStripe&>(s2).canonize();
+
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+//    int currentStart = s1Start;
+//    int currentEnd = s1End;
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End < s1Start) {
+        MOVE_SECOND_SEGMENT;
+      } else if (s2Start <= s1Start) {
+        if (s2End >= s1End) {
+          MOVE_FIRST_SEGMENT;
+        } else {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        }
+      } else if (s2Start <= s1End) {
+        result.addSegment(s1Start, s2Start - 1, false);
+        if (s2End < s1End) {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        } else {
+          MOVE_FIRST_SEGMENT;
+        }
+      } else {
+        result.addSegment(s1Start, s1End, false);
+        MOVE_FIRST_SEGMENT;
+      }
+    }
+
+    while (seg1 < nseg1) {
+      result.addSegment(s1Start, s1End, false);
+      MOVE_FIRST_SEGMENT;
+    }
+
+    result.setCanonized(true);
+  } else {
+    result = s1;
+  }
+
+  return result;
+}
