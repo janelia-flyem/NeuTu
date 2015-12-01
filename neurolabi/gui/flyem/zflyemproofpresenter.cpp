@@ -12,6 +12,7 @@
 #include "zkeyoperationconfig.h"
 #include "flyem/zflyemkeyoperationconfig.h"
 #include "flyem/zflyemproofdocmenufactory.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -219,6 +220,11 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   updateCursor();
 }
 
+ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
+{
+  return qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+}
+
 void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
 {
   int x = 0;
@@ -264,6 +270,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
+    getCompleteDocument()->getDvidSynapseEnsemble()->selectHit(false);
     break;
   default:
     break;

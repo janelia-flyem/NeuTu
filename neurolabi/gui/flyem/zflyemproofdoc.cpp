@@ -31,6 +31,7 @@
 #include "zdialogfactory.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -382,6 +383,16 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
   return NULL;
 }
 
+ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
+{
+  QList<ZStackObject*> teList = getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+  if (!teList.empty()) {
+    return dynamic_cast<ZDvidSynapseEnsemble*>(teList[0]);
+  }
+
+  return NULL;
+}
+
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(
@@ -636,6 +647,14 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadSynapse()
 {
+  ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
+  synapseEnsemble->setDvidTarget(getDvidTarget());
+  synapseEnsemble->setSource(
+        ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+
+  addObject(synapseEnsemble);
+
+#if 0
   const QString threadId = "downloadSynapse";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
@@ -643,6 +662,7 @@ void ZFlyEmProofDoc::downloadSynapse()
         QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
     m_futureMap[threadId] = future;
   }
+#endif
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)

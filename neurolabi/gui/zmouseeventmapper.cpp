@@ -141,6 +141,15 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
       }
       break;
+    case ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_MULTIPLE);
+      }
+      break;
     default:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);
