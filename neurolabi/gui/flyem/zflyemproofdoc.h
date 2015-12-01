@@ -22,6 +22,7 @@ class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
+class ZDvidSynapseEnsemble;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -47,6 +48,8 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
+
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
 

@@ -146,7 +146,7 @@ void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
     m_position.setZ(ZJsonParser::integerValue(value, 2));
 
     if (obj.hasKey("Kind")) {
-      setKind(ZJsonParser::stringValue(obj["kind"]));
+      setKind(ZJsonParser::stringValue(obj["Kind"]));
     }
 
     if (obj.hasKey("Tags")) {
@@ -170,6 +170,28 @@ void ZDvidSynapse::setKind(const std::string &kind)
   } else {
     setKind(KIND_UNKNOWN);
   }
+}
+
+std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
+{
+  //"Kind": (x, y, z)
+  switch (synapse.getKind()) {
+  case ZDvidSynapse::KIND_POST_SYN:
+    stream << "PostSyn";
+    break;
+  case ZDvidSynapse::KIND_PRE_SYN:
+    stream << "PreSyn";
+    break;
+  default:
+    stream << "Unknown";
+    break;
+  }
+
+  stream << ": " << "(" << synapse.getPosition().getX() << ", "
+         << synapse.getPosition().getY() << ", "
+         << synapse.getPosition().getZ() << ")";
+
+  return stream;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

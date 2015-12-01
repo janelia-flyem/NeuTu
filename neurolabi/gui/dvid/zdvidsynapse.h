@@ -1,6 +1,8 @@
 #ifndef ZDVIDSYNAPSE_H
 #define ZDVIDSYNAPSE_H
 
+#include <iostream>
+
 #include "zstackobject.h"
 #include "zintpoint.h"
 
@@ -19,10 +21,14 @@ public:
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
 
+  const ZIntPoint& getPosition() const { return m_position; }
+
   void setDefaultRadius();
   void setRadius(double r) { m_radius = r; }
 
   void setKind(EKind kind) { m_kind = kind; }
+  EKind getKind() const { return m_kind; }
+
 //  void setTag(const std::string &tag) { m_tag = tag; }
 
   void setKind(const std::string &kind);
@@ -36,6 +42,9 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
 
   void clear();
+
+  friend std::ostream& operator<< (
+      std::ostream &stream, const ZDvidSynapse &synapse);
 
 private:
   void init();

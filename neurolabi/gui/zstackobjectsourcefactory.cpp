@@ -154,3 +154,8 @@ std::string ZStackObjectSourceFactory::MakeStackBoundBoxSource()
 {
   return "#.StackBoundBox";
 }
+
+std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
+{
+  return "#.DVIDSynapseEnsemble";
+}
