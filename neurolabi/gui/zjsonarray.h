@@ -24,6 +24,7 @@ public:
    * \brief Append an element
    */
   void append(const ZJsonValue &obj);
+  void setValue(size_t i, const ZJsonValue &obj);
 
   void append(int v);
   void append(int64_t v);
@@ -31,6 +32,8 @@ public:
   void append(double v);
   void append(const char *str);
   void append(const std::string &str);
+
+  void remove(size_t index);
 
   /*!
    * \brief Append an element.

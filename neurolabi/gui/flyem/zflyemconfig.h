@@ -16,7 +16,7 @@ public:
   void print() const;
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_emptyDvidTarget;
   }
 
   void loadConfig(const std::string &filePath);
@@ -26,9 +26,9 @@ public:
   }
 
 private:
-  ZDvidTarget m_dvidTarget;
+  ZDvidTarget m_emptyDvidTarget;
   std::vector<ZDvidTarget> m_dvidRepo;
-  std::string m_bodyLabelName;
+//  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;
 };
 

@@ -123,7 +123,8 @@ public:
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   virtual bool customKeyProcess(QKeyEvent *event);
-  virtual void processCustomOperator(const ZStackOperator &op);
+  virtual void processCustomOperator(const ZStackOperator &op,
+                                     ZInteractionEvent *e  = NULL);
 
   void createActions();
   void createTraceActions();

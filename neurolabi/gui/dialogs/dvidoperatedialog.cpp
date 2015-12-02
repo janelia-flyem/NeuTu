@@ -12,7 +12,8 @@ DvidOperateDialog::DvidOperateDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg = NULL;
+//  m_dvidDlg = new ZDvidDialog(this);
 }
 
 DvidOperateDialog::~DvidOperateDialog()
@@ -48,4 +49,9 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
             this, "Operation Failed", "Please specify a valid DVID target.");
     }
   }
+}
+
+void DvidOperateDialog::setDvidDialog(ZDvidDialog *dlg)
+{
+  m_dvidDlg = dlg;
 }

@@ -12,11 +12,11 @@ ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
 void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
-  m_reader.open(target);
-
-  m_dvidInfo = m_reader.readGrayScaleInfo();
-  m_startZ = m_dvidInfo.getStartCoordinates().getZ();
-  m_startY = m_dvidInfo.getStartCoordinates().getY();
+  if (m_reader.open(target)) {
+    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_startZ = m_dvidInfo.getStartCoordinates().getZ();
+    m_startY = m_dvidInfo.getStartCoordinates().getY();
+  }
 }
 
 void ZDvidSynapseEnsemble::download(int z)
@@ -77,6 +77,42 @@ void ZDvidSynapseEnsemble::removeSynapse(int x, int y, int z)
   getSynapseMap(y, z).remove(x);
 }
 
+void ZDvidSynapseEnsemble::addSynapse(const ZDvidSynapse &synapse)
+{
+  int zDiff = synapse.getPosition().getZ() - m_startZ;
+  if (zDiff < 0) {
+    if (!m_synapseEnsemble.isEmpty()) {
+      QVector<QVector<QMap<int, ZDvidSynapse> > > se = m_synapseEnsemble;
+      m_synapseEnsemble.clear();
+      m_synapseEnsemble.resize(se.size() - zDiff);
+      for (int i = 0; i < se.size(); ++i) {
+        m_synapseEnsemble[i - zDiff] = se[i];
+      }
+    }
+    m_startZ += zDiff;
+  }
+
+  int yDiff = synapse.getPosition().getY() - m_startY;
+  if (yDiff < 0) {
+    for (QVector<QVector<QMap<int, ZDvidSynapse> > >::iterator
+         iter = m_synapseEnsemble.begin(); iter != m_synapseEnsemble.end();
+         ++iter) {
+      QVector<QMap<int, ZDvidSynapse> > &slice = *iter;
+      if (!slice.isEmpty()) {
+        QVector<QMap<int, ZDvidSynapse> > oldSlice = slice;
+        slice.clear();
+        slice.resize(oldSlice.size() - yDiff);
+        for (int i = 0; i < oldSlice.size(); ++i) {
+          slice[i - yDiff] = oldSlice[i];
+        }
+      }
+    }
+    m_startY += yDiff;
+  }
+
+  getSynapse(synapse.getPosition()) = synapse;
+}
+
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
@@ -93,7 +129,8 @@ void ZDvidSynapseEnsemble::display(
       QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
       for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
            iter != synapseMap.end(); ++iter) {
-        iter.value().display(painter, slice, option);
+        const ZDvidSynapse &synapse = iter.value();
+        synapse.display(painter, slice, option);
       }
     }
   }
@@ -136,7 +173,7 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
   while (siter.hasNext()) {
     ZDvidSynapse &synapse = siter.next();
     if (synapse.hit(x, y, z)) {
-      m_hitPoint.set(x, y, z);
+      m_hitPoint = synapse.getPosition();
       return true;
     }
   }

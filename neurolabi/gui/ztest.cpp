@@ -257,6 +257,7 @@ using namespace std;
 #include "zsleeper.h"
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 using namespace std;
 
@@ -18721,10 +18722,40 @@ void ZTest::test(MainWindow *host)
   tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-#if 1
+#if 0
   std::cout << "message testing ..." << std::endl;
   qDebug() << "Debug message test";
   qWarning() << "Warning message test";
+#endif
+
+#if 1
+  ZDvidSynapse synapse;
+  synapse.setPosition(30, 30, 30);
+  synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+
+
+  ZDvidSynapseEnsemble se;
+  se.addSynapse(synapse);
+
+  synapse.setPosition(1, 2, 3);
+  se.addSynapse(synapse);
+
+  synapse.setPosition(1, 2, 30);
+  se.addSynapse(synapse);
+
+  synapse.setPosition(-1, 2, 30);
+  se.addSynapse(synapse);
+
+  synapse.setPosition(-1, 2, -1);
+  se.addSynapse(synapse);
+
+  synapse.setPosition(-1, -2, -1);
+  se.addSynapse(synapse);
+
+  std::cout << se;
+
 #endif
 
   std::cout << "Done." << std::endl;

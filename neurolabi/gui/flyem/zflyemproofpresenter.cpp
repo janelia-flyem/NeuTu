@@ -13,6 +13,7 @@
 #include "flyem/zflyemkeyoperationconfig.h"
 #include "flyem/zflyemproofdocmenufactory.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "zinteractionevent.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -246,7 +247,8 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   emit bookmarkAdded(bookmark);
 }
 
-void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
+void ZFlyEmProofPresenter::processCustomOperator(
+    const ZStackOperator &op, ZInteractionEvent *e)
 {
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
@@ -273,6 +275,9 @@ void ZFlyEmProofPresenter::processCustomOperator(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
     getCompleteDocument()->getDvidSynapseEnsemble()->selectHit(false);
+    if (e != NULL) {
+      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
     break;
   default:
     break;

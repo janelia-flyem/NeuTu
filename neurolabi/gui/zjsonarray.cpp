@@ -103,6 +103,16 @@ void ZJsonArray::append(const ZJsonValue &obj)
   append(obj.getValue());
 }
 
+void ZJsonArray::remove(size_t index)
+{
+  json_array_remove(m_data, index);
+}
+
+void ZJsonArray::setValue(size_t i, const ZJsonValue &obj)
+{
+  json_array_set(m_data, i, obj.getData());
+}
+
 std::vector<double> ZJsonArray::toNumberArray() const
 {
   std::vector<double> array;

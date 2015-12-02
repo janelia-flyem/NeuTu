@@ -33,7 +33,8 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(const ZStackOperator &op);
+  void processCustomOperator(
+      const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
     return m_splitWindowMode;

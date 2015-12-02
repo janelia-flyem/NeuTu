@@ -6,7 +6,7 @@
       "name": "FIB25-Hackathon",
       "background": 0,
       "comment": "FIB-25 export for hackathon",
-      "user_name": "zhaot"
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -14,14 +14,14 @@
       "name": "FIB25-Hackathon (internal)",
       "background": 0,
       "comment": "FIB-25 export for hackathon (internal access)",
-      "user_name": "zhaot"
+      "user_name": "[]"
     },
     {
       "address": "emdata.janelia.org",
       "uuid": "bf1",
       "name": "FIB-external",
       "comment": "One column data",
-      "user_name": "zhaot"
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -31,7 +31,7 @@
       "body_label": "segmentation012915nograph",
       "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
       "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1",
-      "user_name": "zhaot"
+      "user_name": "[]"
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -94,7 +94,8 @@
       "comment": "AL child node for splitting",
       "body_label": "bodies121714",
       "multires_tile": "graytiles",
-      "label_block": "segmentation121714"
+      "label_block": "segmentation121714",
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -103,7 +104,8 @@
       "name": "AL-7-split",
       "comment": "AL child node for splitting",
       "body_label": "bodies121714",
-      "label_block": "segmentation121714"
+      "label_block": "segmentation121714",
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -113,7 +115,7 @@
       "comment": "AL child node for testing split",
       "body_label": "bodies121714",
       "label_block": "segmentation121714",
-      "user_name": "zhaot"
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -183,7 +185,7 @@
       "comment": "MB seg (branched from fe38)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot"]
+      "user_name": "[]"
     },
     {
       "address": "emdata1.int.janelia.org",

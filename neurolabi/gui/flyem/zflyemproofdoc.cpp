@@ -330,6 +330,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
   } else {
+    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
@@ -339,27 +340,31 @@ void ZFlyEmProofDoc::updateTileData()
 {
   if (m_dvidReader.isReady()) {
     ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+    ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
-      ZStack *stack = ZStackFactory::makeVirtualStack(
-            ZIntCuboid(dvidInfo.getStartCoordinates(),
-                       dvidInfo.getEndCoordinates()));
-      loadStack(stack);
-
-      ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-      ensemble->setDvidTarget(getDvidTarget());
-      //    ensemble->attachView(stackWidget->getView());
-      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-      addObject(ensemble, true);
-
-      //  target.setBodyLabelName("labels");
-
-      ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
-      labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      labelSlice->setDvidTarget(getDvidTarget());
-      labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
-      labelSlice->setBodyMerger(&m_bodyMerger);
-      addObject(labelSlice, 0, true);
+      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
+                       dvidInfo.getEndCoordinates());
+    } else {
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
+
+    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    loadStack(stack);
+
+    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+    ensemble->setDvidTarget(getDvidTarget());
+    //    ensemble->attachView(stackWidget->getView());
+    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+    addObject(ensemble, true);
+
+    //  target.setBodyLabelName("labels");
+
+    ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+    labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    labelSlice->setDvidTarget(getDvidTarget());
+    labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
+    labelSlice->setBodyMerger(&m_bodyMerger);
+    addObject(labelSlice, 0, true);
   }
 }
 
