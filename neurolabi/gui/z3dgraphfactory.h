@@ -20,6 +20,7 @@ public:
 
   Z3DGraph* makeBox(const ZIntCuboid &box);
   Z3DGraph* makeBox(const ZCuboid &box);
+  Z3DGraph* makeBoundingBox(const ZIntCuboid &box, const std::vector<int> &faceArray);
 
   Z3DGraph* makeFaceGraph(
       const ZCuboid &box, const std::vector<int> &faceArray);
