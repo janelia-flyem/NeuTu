@@ -1333,11 +1333,15 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
     std::vector<bool> isAdded(segMap.size(), false);
 
 #if 1
-  std::cout << "Extracting components ..." << std::endl;
+    std::cout << "Extracting components ..." << std::endl;
 #endif
 
+    size_t index = 0;
     for (std::vector<ZGraph*>::const_iterator iter = subGraph.begin();
-         iter != subGraph.end(); ++iter) {
+         iter != subGraph.end(); ++iter, ++index) {
+#if 1
+      std::cout << "  " << index + 1 << "/" << subGraph.size() << std::endl;
+#endif
       ZObject3dScan subobj;
       for (int edgeIndex = 0; edgeIndex < (*iter)->getEdgeNumber(); ++edgeIndex) {
         int v1 = (*iter)->edgeStart(edgeIndex);

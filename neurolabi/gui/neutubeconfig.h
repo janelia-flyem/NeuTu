@@ -321,7 +321,7 @@ private:
   ZFlyEmConfig m_flyemConfig;
 #endif
 
-  ZMessageReporter *m_messageReporter;
+  ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
   QSettings m_settings;
