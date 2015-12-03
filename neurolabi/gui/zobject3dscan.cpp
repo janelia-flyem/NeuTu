@@ -1333,7 +1333,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
     std::vector<bool> isAdded(segMap.size(), false);
 
 #if 1
-  std::cout << "Extracting components ..." << std::endl;
+    std::cout << "Extracting components ..." << std::endl;
 #endif
 
     size_t index = 0;
