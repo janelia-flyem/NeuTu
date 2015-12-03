@@ -274,7 +274,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     emit selectingBodyInRoi(true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble()->selectHit(false);
+    getCompleteDocument()->getDvidSynapseEnsemble()->selectHitWithPartner(false);
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }

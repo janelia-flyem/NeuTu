@@ -133,6 +133,13 @@ void ZDvidSynapseEnsemble::display(
         synapse.display(painter, slice, option);
       }
     }
+
+    const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse = const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter);
+      synapse.display(painter, slice, option);
+    }
   }
 }
 
@@ -164,6 +171,51 @@ void ZDvidSynapseEnsemble::selectHit(bool appending)
   }
   m_selector.selectObject(m_hitPoint);
   getSynapse(m_hitPoint).setSelected(true);
+}
+
+void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
+{
+  selectHit(appending);
+  ZDvidSynapse &selectedSynapse = getSynapse(m_hitPoint);
+  selectedSynapse.clearPartner();
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray objArray = m_reader.readJsonArray(
+        dvidUrl.getSynapseUrl(m_hitPoint, 1, 1, 1));
+
+  if (!objArray.isEmpty()) {
+    ZJsonObject obj(objArray.value(0));
+    if (obj.hasKey("Rels")) {
+      ZJsonArray jsonArray(obj.value("Rels"));
+      if (jsonArray.size() > 0) {
+        for (size_t i = 0; i < jsonArray.size(); ++i) {
+          ZJsonObject partnerJson(jsonArray.value(i));
+          if (partnerJson.hasKey("To")) {
+            ZJsonArray posJson(partnerJson.value("To"));
+            std::vector<int> coords = posJson.toIntegerArray();
+            selectedSynapse.addPartner(coords[0], coords[1], coords[2]);
+#if 0
+            if (coords.size() == 3) {
+              ZJsonArray partnerJsonArray = m_reader.readJsonArray(
+                    dvidUrl.getSynapseUrl(coords[0], coords[1], coords[2], 1, 1, 1));
+
+              if (!partnerJsonArray.isEmpty()) {
+                ZJsonObject partnerJson(partnerJsonArray.value(0));
+                if (!partnerJson.isEmpty()) {
+                  ZDvidSynapse &synapse =
+                      getSynapse(coords[0], coords[1], coords[2]);
+                  synapse.loadJsonObject(partnerJson);
+                  m_selector.selectObject(synapse.getPosition());
+                  synapse.setSelected(true);
+                }
+              }
+            }
+#endif
+          }
+        }
+      }
+    }
+  }
 }
 
 bool ZDvidSynapseEnsemble::hit(double x, double y, double z)

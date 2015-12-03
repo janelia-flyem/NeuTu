@@ -34,6 +34,7 @@ public:
   QVector<QMap<int, ZDvidSynapse> >& getSlice(int z);
 
   void selectHit(bool appending);
+  void selectHitWithPartner(bool appending);
 
   const std::string& className() const;
 

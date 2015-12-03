@@ -2015,15 +2015,24 @@ void ZStackView::setView(const ZStackViewParam &param)
 
 void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
 {
+  bool hasActiveSlice = false;
+
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
-  foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->setVisible(false);
+  if (buddyPresenter()->isObjectVisible()) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      if (slice->isVisible()) {
+        slice->setVisible(false);
+        hasActiveSlice = true;
+      }
+    }
   }
 
-  redraw();
+  redraw(!hasActiveSlice);
 
-  foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->setVisible(true);
+  if (hasActiveSlice) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      slice->setVisible(true);
+    }
   }
 
   notifyViewChanged();

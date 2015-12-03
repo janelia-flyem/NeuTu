@@ -2,6 +2,8 @@
 #include <sstream>
 #include "dvid/zdviddata.h"
 #include "zstring.h"
+#include "zintpoint.h"
+
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -615,6 +617,11 @@ std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
   return stream.str();
 }
 
+std::string ZDvidUrl::getSynapseUrl(const ZIntPoint &pos) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ());
+}
+
 std::string ZDvidUrl::getSynapseUrl(
     int x, int y, int z, int width, int height, int depth) const
 {
@@ -625,4 +632,11 @@ std::string ZDvidUrl::getSynapseUrl(
          << x << "_" << y << "_" << z;
 
   return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(
+    const ZIntPoint &pos, int width, int height, int depth) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ(),
+                       width, height, depth);
 }

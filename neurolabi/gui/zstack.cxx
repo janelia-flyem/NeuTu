@@ -93,7 +93,7 @@ ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
   setData(stack, dealloc);
 }
 
-ZStack::ZStack(const ZStack &src)
+ZStack::ZStack(const ZStack &/*src*/)
 {
 //  init();
 
