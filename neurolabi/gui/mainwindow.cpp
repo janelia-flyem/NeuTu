@@ -2059,21 +2059,28 @@ void MainWindow::createWorkDir()
       QDir dir(dlg.getWorkDir());
       NeutubeConfig::getInstance().setWorkDir(dir.absolutePath().toStdString());
       if (!dir.exists()) {
+        QString warningMsg;
         if (!dir.mkpath(dir.absolutePath())) {
-          QMessageBox::warning(
-                NULL, "Faile to Create the working directory",
-                 "Cannot create " + dlg.getWorkDir() +
-                 "Autosave will be disabled.",
-                 QMessageBox::Ok);
-          RECORD_WARNING_UNCOND("Failed to the working directory.");
+          warningMsg = "Faile to Create the working directory",
+              "Cannot create " + dlg.getWorkDir() +
+              "Autosave will be disabled.";
         } else {
           if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
-            dir.mkpath(NeutubeConfig::getInstance().getPath(
-                         NeutubeConfig::AUTO_SAVE).c_str());
+            if (!dir.mkpath(NeutubeConfig::getInstance().getPath(
+                         NeutubeConfig::AUTO_SAVE).c_str())) {
+              warningMsg = "Faile to Create the working directory",
+                  "Cannot create " + NeutubeConfig::getInstance().getPath(
+                    NeutubeConfig::AUTO_SAVE) +
+                  "Autosave will be disabled.";
+            }
           }
         }
+        if (!warningMsg.isEmpty()) {
+          QMessageBox::warning(NULL, warningMsg, "Initialization Error",
+                               QMessageBox::Ok);
+          qWarning() << warningMsg;
+        }
       }
-
     }
   }
 }
@@ -2123,7 +2130,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (038953e3e85ca4fafaad0d6c45c67495f7fc9ee0)</p>";
+        " (d9302b6220c54f09ebc4a4b8efd1d5cec92a30e7)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());

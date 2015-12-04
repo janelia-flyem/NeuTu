@@ -7,6 +7,8 @@
 #include "zstackball.h"
 #include "tz_math.h"
 
+const int ZSlicedPuncta::m_visibleRange = 5.0;
+
 ZSlicedPuncta::ZSlicedPuncta()
 {
   m_type = ZStackObject::TYPE_SLICED_PUNCTA;
@@ -24,7 +26,7 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
   if (p != NULL || ignoreNull) {
     int z = iround(p->getZ()) - m_zStart;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (z == 9447) {
       std::cout << "debug here" << std::endl;
     }
@@ -48,8 +50,8 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) 
 
   int z = painter.getZ(slice);
 
-  int lowerIndex = std::max(0, z - m_zStart - 5);
-  int upperIndex = std::min(m_puncta.size() - 1, z + m_zStart + 5);
+  int lowerIndex = std::max(0, z - m_zStart - m_visibleRange);
+  int upperIndex = std::min(m_puncta.size() - 1, z + m_zStart + m_visibleRange);
 
 
   for (int index = lowerIndex; index <= upperIndex; ++index) {

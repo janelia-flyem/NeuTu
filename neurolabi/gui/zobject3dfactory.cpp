@@ -321,14 +321,14 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
       ZObject3dScan *obj = iter->second;
       obj->setLabel(iter->first);
 
-
       std::swap((*out)[index].getStripeArray(), obj->getStripeArray());
       (*out)[index].setLabel(obj->getLabel());
-
 //      out->push_back(*obj);
 
       delete obj;
     }
+
+    delete bodySet;
   } else {
     out = NULL;
   }

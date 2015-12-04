@@ -105,6 +105,8 @@ public:
     void init(double sx, double sy, double sz, double tx, double ty, double tz);
     void initIdentity();
 
+    void setVisible(bool v[6]);
+
     void faces();
     void edges();
 
@@ -117,6 +119,12 @@ public:
     std::vector<glm::vec4> eColors; // 24
 
     float x,y,z; // center offsets
+
+    bool b_visible[6];
+    size_t nVertices;
+
+    std::vector<glm::vec3> norm;
+    std::vector<glm::vec2> texc;
 };
 
 /// Z3DCubeRenderer
@@ -127,7 +135,8 @@ public:
     explicit Z3DCubeRenderer(QObject *parent = 0);
     virtual ~Z3DCubeRenderer();
 
-    void addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color);
+    void addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color, bool v[6]);
+    void addCube(double l, double x, double y, double z, glm::vec4 color, bool v[6]);
     bool isEmpty();
 
 protected:

@@ -26,6 +26,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   m_garbageTimer->setInterval(60000);
   m_garbageTimer->start();
 
+  enableAutoSaving(false);
+
   connectSignalSlot();
 }
 
@@ -95,6 +97,12 @@ void ZFlyEmBody3dDoc::processBodySetBuffer()
 //  m_bodySetBuffer.clear();
 }
 
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_CHANGE_COLOR = 1;
+
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_SYNAPSE = 2;
+
 void ZFlyEmBody3dDoc::BodyEvent::print() const
 {
   switch (m_action) {
@@ -130,10 +138,11 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
       case ACTION_ADD:
         m_action = ACTION_ADD;
         m_bodyColor = event.m_bodyColor;
-        m_refreshing |= event.m_refreshing;
+//        m_refreshing |= event.m_refreshing;
         break;
       case ACTION_UPDATE:
-        m_refreshing |= event.m_refreshing;
+        addUpdateFlag(event.getUpdateFlag());
+//        m_refreshing |= event.m_refreshing;
         break;
       case ACTION_REMOVE:
         m_action = ACTION_REMOVE;
@@ -144,7 +153,7 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
       break;
     case ACTION_ADD:
       if (event.getAction() == ACTION_ADD || event.getAction() == ACTION_UPDATE) {
-        m_refreshing |= event.m_refreshing;
+//        m_refreshing |= event.m_refreshing;
       }
       break;
     case ACTION_NULL:
@@ -184,7 +193,12 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
     addBodyFunc(event.getBodyId(), event.getBodyColor());
     break;
   case BodyEvent::ACTION_UPDATE:
-    updateBody(event.getBodyId(), event.getBodyColor());
+//    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
+      updateBody(event.getBodyId(), event.getBodyColor());
+//    }
+    if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
+      addSynapse(event.getBodyId());
+    }
     break;
   default:
     break;
@@ -202,6 +216,9 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
     break;
   case BodyEvent::ACTION_UPDATE:
     updateBody(event.getBodyId(), event.getBodyColor());
+    if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
+      addSynapse(event.getBodyId());
+    }
     break;
   default:
     break;
@@ -329,7 +346,7 @@ void ZFlyEmBody3dDoc::updateBody(uint64_t bodyId, const QColor &color)
     }
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  notifyObjectModified(true);
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
@@ -338,12 +355,13 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
 }
 
 
-void ZFlyEmBody3dDoc::addEvent(
-    BodyEvent::EAction action, uint64_t bodyId, QMutex *mutex)
+void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
+                               BodyEvent::TUpdateFlag flag, QMutex *mutex)
 {
   QMutexLocker locker(mutex);
 
   BodyEvent event(action, bodyId);
+  event.addUpdateFlag(flag);
   if (getDataDocument() != NULL) {
     ZDvidLabelSlice *labelSlice = getDataDocument()->getDvidLabelSlice();
 
@@ -375,7 +393,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     addObject(tree, true);
     processObjectModified(tree);
     endObjectModifiedMode();
-    notifyObjectModified();
+    notifyObjectModified(true);
 
     //Add synapse
     if (m_showingSynapse) {
@@ -401,17 +419,73 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
           ZPunctum *punctum = *iter;
           punctum->setRadius(30);
           punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
           addObject(punctum, false);
         }
       }
 
       endObjectModifiedMode();
-      notifyObjectModified();
+      notifyObjectModified(true);
     }
-
 //    removeObject(tree->getSource(), true);
 //    removeObject(tree, true);
+  }
+}
+
+void ZFlyEmBody3dDoc::addSynapse(bool on)
+{
+  if (on) {
+    for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
+         iter != m_bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_SYNAPSE);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::showSynapse(bool on)
+{
+  m_showingSynapse = on;
+  addSynapse(on);
+}
+
+void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
+{
+  if (m_showingSynapse) {
+    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
+
+    if (getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_PUNCTUM,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
+      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
+          getDataDocument()->getSynapse(bodyId);
+      {
+        std::vector<ZPunctum*> &puncta = synapse.first;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(255, 255, 0);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          addObject(punctum, false);
+        }
+      }
+      {
+        std::vector<ZPunctum*> &puncta = synapse.second;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(128, 128, 128);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+          addObject(punctum, false);
+        }
+      }
+    }
+
+    endObjectModifiedMode();
+    notifyObjectModified(true);
   }
 }
 
@@ -441,8 +515,17 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
       removeObject(*iter, false);
       dumpGarbage(*iter);
     }
+
+    objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+
     endObjectModifiedMode();
-    notifyObjectModified();
+    notifyObjectModified(true);
   }
 }
 

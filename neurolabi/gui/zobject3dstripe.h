@@ -107,6 +107,9 @@ public:
 
   std::vector<int>& getSegmentArray() { return m_segmentArray; }
 
+  friend ZObject3dStripe operator - (
+      const ZObject3dStripe &s1, const ZObject3dStripe &s2);
+
 private:
   std::vector<int> m_segmentArray;
   int m_y;

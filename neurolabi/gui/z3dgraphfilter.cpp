@@ -123,32 +123,32 @@ void Z3DGraphFilter::prepareData()
     Z3DGraphNode n1 = m_graph.getStartNode(i);
     Z3DGraphNode n2 = m_graph.getEndNode(i);
 
-    ZPoint startPos = ZPoint(n1.x(), n1.y(), n1.z());
-    ZPoint endPos = ZPoint(n2.x(), n2.y(), n2.z());
-    ZPoint vec = endPos - startPos;
-    ZPoint normalizedVec = vec;
-    normalizedVec.normalize();
-
-    startPos = startPos + normalizedVec * 0.8 * m_graph.getStartNode(i).radius();
-    endPos = endPos - normalizedVec * 0.8 * m_graph.getEndNode(i).radius();
-    vec = endPos - startPos;
-
-    glm::vec4 baseAndbRadius, axisAndtRadius;
-    baseAndbRadius = glm::vec4(startPos.x(), startPos.y(), startPos.z(),
-                               m_graph.getEdge(i).getWidth());
-    axisAndtRadius = glm::vec4(vec.x(), vec.y(), vec.z(),
-                               m_graph.getEdge(i).getWidth());
-
     if (m_graph.getEdge(i).shape() == GRAPH_CYLINDER) {
+      ZPoint startPos = ZPoint(n1.x(), n1.y(), n1.z());
+      ZPoint endPos = ZPoint(n2.x(), n2.y(), n2.z());
+      ZPoint vec = endPos - startPos;
+      ZPoint normalizedVec = vec;
+      normalizedVec.normalize();
+
+      startPos = startPos + normalizedVec * 0.8 * m_graph.getStartNode(i).radius();
+      endPos = endPos - normalizedVec * 0.8 * m_graph.getEndNode(i).radius();
+      vec = endPos - startPos;
+
+      glm::vec4 baseAndbRadius, axisAndtRadius;
+      baseAndbRadius = glm::vec4(startPos.x(), startPos.y(), startPos.z(),
+                                 m_graph.getEdge(i).getWidth());
+      axisAndtRadius = glm::vec4(vec.x(), vec.y(), vec.z(),
+                                 m_graph.getEdge(i).getWidth());
+
       m_baseAndBaseRadius.push_back(baseAndbRadius);
       m_axisAndTopRadius.push_back(axisAndtRadius);
     } else if (m_graph.getEdge(i).shape() == GRAPH_LINE) {
-      m_lines.push_back(baseAndbRadius.xyz());
-      m_lines.push_back(glm::vec3(baseAndbRadius.xyz()) +
-                        glm::vec3(axisAndtRadius.xyz()));
+      m_lines.push_back(glm::vec3(n1.x(), n1.y(), n1.z()));
+      m_lines.push_back(glm::vec3(n2.x(), n2.y(), n2.z()));
       edgeWidth.push_back(m_graph.getEdge(i).getWidth());
     }
 
+#if 0
     glm::vec4 arrowBaseAndbRadius, arrowAxisAndtRadius;
 
     ZPoint arrowPos = startPos * 0.6 + endPos * 0.4;
@@ -161,26 +161,31 @@ void Z3DGraphFilter::prepareData()
 
     m_arrowBaseAndBaseRadius.push_back(arrowBaseAndbRadius);
     m_arrowAxisAndTopRadius.push_back(arrowAxisAndtRadius);
+#endif
   }
 
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    ZPoint nodePos = m_graph.getNode(i).center();
-    if (nodePos.x() > xMax)
-      xMax = static_cast<int>(std::ceil(nodePos.x()));
-    if (nodePos.x() < xMin)
-      xMin = static_cast<int>(std::floor(nodePos.x()));
-    if (nodePos.y() > yMax)
-      yMax = static_cast<int>(std::ceil(nodePos.y()));
-    if (nodePos.y() < yMin)
-      yMin = static_cast<int>(std::floor(nodePos.y()));
-    if (nodePos.z() > zMax)
-      zMax = static_cast<int>(nodePos.z());
-    if (nodePos.z() < zMin)
-      zMin = static_cast<int>(nodePos.z());
+    Z3DGraphNode node = m_graph.getNode(i);
 
-    m_pointAndRadius.push_back(
-          glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
-                    m_graph.getNode(i).radius()));
+    if (node.radius() > 0.0) {
+      ZPoint nodePos = node.center();
+      if (nodePos.x() > xMax)
+        xMax = static_cast<int>(std::ceil(nodePos.x()));
+      if (nodePos.x() < xMin)
+        xMin = static_cast<int>(std::floor(nodePos.x()));
+      if (nodePos.y() > yMax)
+        yMax = static_cast<int>(std::ceil(nodePos.y()));
+      if (nodePos.y() < yMin)
+        yMin = static_cast<int>(std::floor(nodePos.y()));
+      if (nodePos.z() > zMax)
+        zMax = static_cast<int>(nodePos.z());
+      if (nodePos.z() < zMin)
+        zMin = static_cast<int>(nodePos.z());
+
+      m_pointAndRadius.push_back(
+            glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
+                      m_graph.getNode(i).radius()));
+    }
   }
 
   m_xCut.setRange(xMin, xMax);
@@ -191,7 +196,7 @@ void Z3DGraphFilter::prepareData()
   m_zCut.set(glm::ivec2(zMin, zMax));
 
   m_coneRenderer->setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
-  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
+//  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
   m_lineRenderer->setData(&m_lines);
   m_lineRenderer->setLineWidth(3.0);
   m_lineRenderer->setLineWidth(edgeWidth);
@@ -204,20 +209,27 @@ void Z3DGraphFilter::prepareData()
 
 void Z3DGraphFilter::prepareColor()
 {
-  m_pointColors.resize(m_graph.getNodeNumber());
+  m_pointColors.resize(m_pointAndRadius.size());
+  size_t index = 0;
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
     const Z3DGraphNode& node = m_graph.getNode(i);
     QColor color =node.color();
 
-    m_pointColors[i] = glm::vec4(
-          color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    if (node.radius() > 0) {
+      Q_ASSERT(index < m_pointColors.size());
+      m_pointColors[index++] = glm::vec4(
+            color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    }
   }
 
+  m_lineColors.clear();
+  m_lineStartColors.clear();
+  m_lineEndColors.clear();
   //m_lineColors.resize(m_graph.getEdgeNumber() * 2);
   //m_lineStartColors.resize(m_graph.getEdgeNumber());
   //m_lineEndColors.resize(m_graph.getEdgeNumber());
-  m_arrowStartColors.resize(m_graph.getEdgeNumber());
-  m_arrowEndColors.resize(m_graph.getEdgeNumber());
+//  m_arrowStartColors.resize(m_graph.getEdgeNumber());
+//  m_arrowEndColors.resize(m_graph.getEdgeNumber());
 
   for (size_t i = 0;i < m_graph.getEdgeNumber(); i++) {
 #if _DEBUG_2
@@ -270,13 +282,13 @@ void Z3DGraphFilter::prepareColor()
    // m_lineStartColors[i] = startColor;
     //m_lineEndColors[i] = endColor;
 
-    m_arrowStartColors[i] = startColor * 0.4f + endColor * 0.6f;
-    m_arrowStartColors[i][3] *= 0.5;
-    m_arrowEndColors[i] = m_arrowStartColors[i];
+//    m_arrowStartColors[i] = startColor * 0.4f + endColor * 0.6f;
+//    m_arrowStartColors[i][3] *= 0.5;
+//    m_arrowEndColors[i] = m_arrowStartColors[i];
   }
 
   m_coneRenderer->setDataColors(&m_lineStartColors, &m_lineEndColors);
-  m_arrowRenderer->setDataColors(&m_arrowStartColors, &m_arrowEndColors);
+//  m_arrowRenderer->setDataColors(&m_arrowStartColors, &m_arrowEndColors);
   m_lineRenderer->setDataColors(&m_lineColors);
   m_sphereRenderer->setDataColors(&m_pointColors);
 }
@@ -367,4 +379,11 @@ bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
   return Z3DGeometryFilter::isReady(eye) && m_showGraph.get() &&
       !m_graph.isEmpty();
+}
+
+void Z3DGraphFilter::updateGraphVisibleState()
+{
+//  getVisibleData();
+  m_dataIsInvalid = true;
+  invalidateResult();
 }

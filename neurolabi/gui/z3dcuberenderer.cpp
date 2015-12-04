@@ -104,9 +104,6 @@ void Quadrilateral::setColor(glm::vec4 c)
 //
 Cube::Cube() : Quadrilateral()
 {
-    std::vector<glm::vec3> norm;
-    std::vector<glm::vec2> texc;
-
     norm.push_back( glm::vec3(1.0f, 0.0f, 0.0f) );  // +x
     norm.push_back( glm::vec3(-1.0f, 0.0f, 0.0f) ); // -x
     norm.push_back( glm::vec3(0.0f, 1.0f, 0.0f) );  // +y
@@ -131,6 +128,13 @@ Cube::Cube() : Quadrilateral()
             texCoords.push_back( texc[j] );
         }
     }
+
+    //
+    for(int i=0; i<6; i++)
+        b_visible[i] = true;
+
+    //
+    nVertices = 0;
 }
 
 Cube::~Cube()
@@ -169,6 +173,19 @@ void Cube::init(double sx, double sy, double sz, double tx, double ty, double tz
 
     //
     edges();
+
+    //
+    for (int i=0; i<6; i++)
+    {
+        if(b_visible[i])
+        {
+            for (int j=0; j<6; j++)
+            {
+                normals.push_back( norm[i] );
+                texCoords.push_back( texc[j] );
+            }
+        }
+    }
 }
 
 void Cube::initIdentity()
@@ -181,12 +198,36 @@ void Cube::faces()
     // 12 triangles: 36 vertices and 36 colors
 
     //
-    setPositions(points[7], points[3], points[2], points[6]); // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
-    setPositions(points[0], points[4], points[5], points[1]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
-    setPositions(points[1], points[5], points[6], points[2]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Y 	2 +y Up (Top)
-    setPositions(points[4], points[0], points[3], points[7]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 	3 -y Down (Bottom)
-    setPositions(points[6], points[5], points[4], points[7]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Z 	4 +z Back
-    setPositions(points[3], points[0], points[1], points[2]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 	5 -z Front
+    if(b_visible[0])
+    {
+        setPositions(points[7], points[3], points[2], points[6]); // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
+        nVertices += 6;
+    }
+    if(b_visible[1])
+    {
+        setPositions(points[0], points[4], points[5], points[1]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
+        nVertices += 6;
+    }
+    if(b_visible[2])
+    {
+        setPositions(points[1], points[5], points[6], points[2]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Y 	2 +y Up (Top)
+        nVertices += 6;
+    }
+    if(b_visible[3])
+    {
+        setPositions(points[4], points[0], points[3], points[7]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 	3 -y Down (Bottom)
+        nVertices += 6;
+    }
+    if(b_visible[4])
+    {
+        setPositions(points[6], points[5], points[4], points[7]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Z 	4 +z Back
+        nVertices += 6;
+    }
+    if(b_visible[5])
+    {
+        setPositions(points[3], points[0], points[1], points[2]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 	5 -z Front
+        nVertices += 6;
+    }
 
 }
 
@@ -215,12 +256,18 @@ void Cube::edges()
 
 void Cube::setFaceColor(glm::vec4 c)
 {
-    Mesh::setColor(colors, c, 36);
+    Mesh::setColor(colors, c, nVertices);
 }
 
 void Cube::setEdgeColor(glm::vec4 c)
 {
     Mesh::setColor(eColors, c, 24);
+}
+
+void Cube::setVisible(bool v[6])
+{
+    for(int i=0; i<6; i++)
+        b_visible[i] = v[i];
 }
 
 //
@@ -260,14 +307,24 @@ Z3DCubeRenderer::~Z3DCubeRenderer()
 {
 }
 
-void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color)
+void Z3DCubeRenderer::addCube(double l, double x, double y, double z, glm::vec4 color, bool v[6])
+{
+    addCube(l,l,l,x,y,z,color,v);
+}
+
+void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color, bool v[6])
 {
     Cube cube;
 
-    cube.setFaceColor(color);
+    //
+    cube.setVisible(v);
     cube.init(sx,sy,sz,tx,ty,tz);
+    cube.setFaceColor(color);
+
+    //
     m_cubes.push_back(cube);
 
+    //
     m_dataChanged = true;
 }
 

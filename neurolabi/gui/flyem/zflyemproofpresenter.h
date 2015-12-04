@@ -5,6 +5,7 @@
 
 class QKeyEvent;
 class ZFlyEmBookmark;
+class ZFlyEmProofDoc;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -50,6 +51,9 @@ public:
 //  void createBodyContextMenu();
 
   ZStackDocMenuFactory* getMenuFactory();
+
+
+  ZFlyEmProofDoc* getCompleteDocument() const;
 
 private:
   void tryAddBookmarkMode();

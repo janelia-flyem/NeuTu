@@ -75,6 +75,10 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
     m_z = z;
   }
 
+#ifdef _DEBUG_2
+  modified = false;
+#endif
+
   if (modified) {
     updatePixmap();
   }

@@ -22,6 +22,7 @@ public:
     double length;
     double x,y,z;
     glm::vec4 color;
+    bool b_visible[6];
 };
 
 //

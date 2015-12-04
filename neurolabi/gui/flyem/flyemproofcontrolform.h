@@ -70,6 +70,7 @@ private slots:
   void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
+//  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
 
 private:
@@ -83,6 +84,7 @@ private:
   ZFlyEmBookmarkListModel m_userBookmarkList;
 
   QAction *m_nameColorAction;
+  QAction *m_sequencerColorAction;
 
 //  QSortFilterProxyModel *m_bookmarkProxy;
 //  QSortFilterProxyModel *m_userBookmarkProxy;

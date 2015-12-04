@@ -10,33 +10,33 @@ contains(TEMPLATE, app) {
 }
 
 win32 {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+    DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
-  CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-  }
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
 }
 
 unix {
-QMAKE_PATH = $(QMAKE)
-!exists($$QMAKE_PATH) {
-    QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-}
-message("qmake path: $$QMAKE_PATH")
-exists($$QMAKE_PATH) {
-    macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+    QMAKE_PATH = $(QMAKE)
+    !exists($$QMAKE_PATH) {
+        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
     }
+    message("qmake path: $$QMAKE_PATH")
+    exists($$QMAKE_PATH) {
+        macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+        }
 
-    unix:!macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        unix:!macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        }
     }
-}
-CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-#    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-}
-message($$DEPLOYMENT_COMMAND)
-message("Post link: $$QMAKE_POST_LINK")
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+    #    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
+    message($$DEPLOYMENT_COMMAND)
+    message("Post link: $$QMAKE_POST_LINK")
 }
 
 CONFIG(debug, debug|release) {
@@ -580,7 +580,13 @@ HEADERS += mainwindow.h \
     flyem/zflyembookmarkwidget.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
-    flyem/zflyemproofdocmenufactory.h
+    flyem/zflyemproofdocmenufactory.h \
+    flyem/zflyemsequencercolorscheme.h \
+    zpunctumselector.h \
+    zgraphobjsmodel.h \
+    dvid/zdvidsynapse.h \
+    flyem/zflyemnamebodycolorscheme.h \
+    dvid/zdvidsynapseensenmble.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1017,7 +1023,13 @@ SOURCES += main.cpp \
     flyem/zflyembookmarkwidget.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
-    flyem/zflyemproofdocmenufactory.cpp
+    flyem/zflyemproofdocmenufactory.cpp \
+    flyem/zflyemsequencercolorscheme.cpp \
+    zpunctumselector.cpp \
+    zgraphobjsmodel.cpp \
+    dvid/zdvidsynapse.cpp \
+    flyem/zflyemnamebodycolorscheme.cpp \
+    dvid/zdvidsynapseensenmble.cpp
 
 OTHER_FILES += \
     extlib.pri \

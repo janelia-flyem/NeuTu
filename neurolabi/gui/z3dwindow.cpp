@@ -53,7 +53,7 @@
 #include "zmoviescript.h"
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
@@ -701,8 +701,8 @@ for(int i=0; i<100; i++)
           SIGNAL(punctumVisibleStateChanged()),
           m_punctaFilter, SLOT(updatePunctumVisibleState()));
   connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged()),
-          m_punctaFilter, SLOT(updatePunctumVisibleState()));
+          SIGNAL(graphVisibleStateChanged()),
+          this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
@@ -1723,7 +1723,10 @@ void Z3DWindow::update3DGraphDisplay()
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+    Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
+    if (graph->isVisible()) {
+      m_graphFilter->addData(*graph);
+    }
   }
   updateGraphBoundBox();
 //  updateDecorationBoundBox();
@@ -2180,7 +2183,8 @@ void Z3DWindow::markSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2190,7 +2194,8 @@ void Z3DWindow::markSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2200,7 +2205,7 @@ void Z3DWindow::markSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2210,7 +2215,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2220,7 +2225,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2230,7 +2235,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 

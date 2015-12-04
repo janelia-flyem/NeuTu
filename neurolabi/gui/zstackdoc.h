@@ -68,6 +68,7 @@ class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
 class ZDocPlayerObjsModel;
+class ZGraphObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
@@ -273,6 +274,9 @@ public: //attributes
   inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
+  inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
+
+  void updatePunctaObjsModel(ZPunctum *punctum);
 
 //  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
 
@@ -645,6 +649,7 @@ public:
 
   // show/hide objects and emit signals for 3D view and 2D view to sync
   void setPunctumVisible(ZPunctum* punctum, bool visible);
+  void setGraphVisible(Z3DGraph *graph, bool visible);
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
 
@@ -807,29 +812,37 @@ public:
   void updatePreviewSwc();
   */
 
-  EObjectModifiedMode getObjectModifiedMode() const;
+  void clearObjectModifiedTypeBuffer(bool sync = true);
+  void clearObjectModifiedTargetBuffer(bool sync = true);
+  void clearObjectModifiedRoleBuffer(bool sync = true);
+
+  EObjectModifiedMode getObjectModifiedMode();
   void beginObjectModifiedMode(EObjectModifiedMode mode);
   void endObjectModifiedMode();
 
-  void notifyObjectModified();
+  void notifyObjectModified(bool sync = true);
   void notifyObjectModified(ZStackObject::EType type);
 
-  void bufferObjectModified(ZStackObject::EType type);
-  void bufferObjectModified(ZStackObject::ETarget target);
-  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet);
-  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
-  void bufferObjectModified(ZStackObject *obj);
-  void bufferObjectModified(const ZStackObjectRole &role);
-  void bufferObjectModified(ZStackObjectRole::TRole role);
+  void bufferObjectModified(ZStackObject::EType type, bool sync = true);
+  void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
+  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
+                            bool sync = true);
+  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+                            bool sync = true);
+  void bufferObjectModified(ZStackObject *obj, bool sync = true);
+  void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
+  void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
 
 
-  void processObjectModified(ZStackObject::EType type);
-  void processObjectModified(ZStackObject::ETarget target);
-  void processObjectModified(const QSet<ZStackObject::EType> &typeSet);
-  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet);
-  void processObjectModified(ZStackObject *obj);
-  void processObjectModified(ZStackObjectRole::TRole role);
-  void processObjectModified(const ZStackObjectRole &role);
+  void processObjectModified(ZStackObject::EType type, bool sync = true);
+  void processObjectModified(ZStackObject::ETarget target, bool sync = true);
+  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
+                             bool sync = true);
+  void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+                             bool sync = true);
+  void processObjectModified(ZStackObject *obj, bool sync = true);
+  void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
+  void processObjectModified(const ZStackObjectRole &role, bool sync = true);
 
   void processSwcModified();
 
@@ -923,6 +936,7 @@ public:
     return m_lastAddedSwcNode;
   }*/
 
+  void enableAutoSaving(bool on) { m_autoSaving = on; }
 
 public slots: //undoable commands
   /*!
@@ -1099,6 +1113,7 @@ signals:
   void swcTreeNodeSelectionChanged();
 
   void punctumVisibleStateChanged();
+  void graphVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
@@ -1125,6 +1140,8 @@ protected:
   void removeRect2dRoi();
 
 private:
+  void init();
+
   void connectSignalSlot();
   void initNeuronTracer();
   //void initTraceWorkspace();
@@ -1165,6 +1182,7 @@ private:
   ZSwcNodeObjsModel *m_swcNodeObjsModel;
   ZPunctaObjsModel *m_punctaObjsModel;
   ZDocPlayerObjsModel *m_seedObjsModel;
+  ZGraphObjsModel *m_graphObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;
@@ -1201,6 +1219,7 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
+  bool m_autoSaving;
 
   //QMutex m_mutex;
 
@@ -1209,9 +1228,13 @@ private:
   ZProgressSignal *m_progressSignal;
 
   QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
+  QMutex m_objectModifiedTargetBufferMutex;
   QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
+  QMutex m_objectModifiedTypeBufferMutex;
   ZStackObjectRole m_objectModifiedRoleBuffer;
+  QMutex m_objectModifiedRoleBufferMutex;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
+  QMutex m_objectModifiedModeMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;

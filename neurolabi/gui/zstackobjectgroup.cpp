@@ -399,6 +399,21 @@ TStackObjectList ZStackObjectGroup::findSameSource(
   return objList;
 }
 
+ZStackObject* ZStackObjectGroup::replaceFirstSameSource(ZStackObject *obj)
+{
+  TStackObjectList &objList = getObjectList(obj->getType());
+  for (ZStackObjectGroup::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *checkObj = *iter;
+    if (checkObj->fromSameSource(obj)) {
+      *iter = obj;
+      return checkObj;
+    }
+  }
+
+  return NULL;
+}
+
 TStackObjectList ZStackObjectGroup::findSameClass(
     ZStackObject::EType type, const std::string &objClass)
 {

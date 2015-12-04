@@ -306,7 +306,9 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram *shader, Z3DEye
 
 QString Z3DRendererBase::generateHeader() const
 {
-  QString glslVer = QString("%1%2").arg(Z3DGpuInfoInstance.getGlslMajorVersion()).arg(Z3DGpuInfoInstance.getGlslMinorVersion());
+  QString glslVer = QString("%1%2").
+      arg(Z3DGpuInfoInstance.getGlslMajorVersion()).
+      arg(Z3DGpuInfoInstance.getGlslMinorVersion());
   if (glslVer.length() < 3)
     glslVer += "0";
 

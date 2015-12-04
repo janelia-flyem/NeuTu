@@ -200,6 +200,9 @@ public:
   ZObject3dScan subtract(const ZObject3dScan &obj);
   void subtractSliently(const ZObject3dScan &obj);
 
+  friend ZObject3dScan operator - (
+      const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+
   ZObject3dScan intersect(const ZObject3dScan &obj) const;
 
   /*!
@@ -365,6 +368,8 @@ public:
    * with the original object.
    */
   ZObject3dScan getComplementObject();
+
+  ZObject3dScan getSurfaceObject() const;
 
   /*!
    * \brief Find all holes as a single object.

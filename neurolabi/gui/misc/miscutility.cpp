@@ -11,6 +11,9 @@
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_utilities.h"
+#include "zswctree.h"
+#include "zclosedcurve.h"
+
 
 using namespace std;
 
@@ -538,4 +541,18 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   }
 
   return dsIntv;
+}
+
+ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
+{
+  ZClosedCurve curve;
+  if (!tree.isEmpty()) {
+    Swc_Tree_Node *tn = tree.firstRegularRoot();
+    while (tn != NULL) {
+      curve.append(SwcTreeNode::center(tn));
+      tn = SwcTreeNode::firstChild(tn);
+    }
+  }
+
+  return curve;
 }

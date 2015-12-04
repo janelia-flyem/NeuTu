@@ -76,7 +76,9 @@ public:
     TYPE_FLYEM_BOOKMARK,
     TYPE_INT_CUBOID,
     TYPE_LINE_SEGMENT,
-    TYPE_SLICED_PUNCTA
+    TYPE_SLICED_PUNCTA,
+    TYPE_DVID_SYNAPSE,
+    TYPE_DVID_SYNAPE_ENSEMBLE
   };
 
   enum Palette_Color {
@@ -210,6 +212,9 @@ public:
 
   inline std::string getObjectId() const { return m_objectId; }
   inline void setObjectId(const std::string &id) { m_objectId = id; }
+
+  bool hasSameId(const ZStackObject *obj) const;
+  static bool hasSameId(const ZStackObject *obj1, const ZStackObject *obj2);
 
   inline std::string getObjectClass() const { return m_objectClass; }
   inline void setObjectClass(const std::string &id) { m_objectClass = id; }
