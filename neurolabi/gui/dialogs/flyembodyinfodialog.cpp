@@ -765,13 +765,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
     //  proxy; loop over the filtered body IDs and throw them and the color into
     //  the color scheme
 
-
-    // is this right?  thought I needed it to fix delete, but now
-    //  not seeing any colors?
     m_colorScheme.clear();
-
-
-
     for (int i=0; i<m_filterProxy->rowCount(); i++) {
         QString filterString = m_filterProxy->data(m_filterProxy->index(i, 0)).toString();
         m_schemeBuilderProxy->setFilterFixedString(filterString);
