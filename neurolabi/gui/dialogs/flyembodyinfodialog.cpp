@@ -609,29 +609,12 @@ void FlyEmBodyInfoDialog::onSaveColorMap() {
 void FlyEmBodyInfoDialog::onLoadColorMap() {
     QString filename = QFileDialog::getOpenFileName(this, "Load color map");
     if (!filename.isNull()) {
-
-
-        std::cout << "pretending to open " << filename.toStdString() << std::endl;
-
-
-        // read/parse file into json object
         ZJsonValue colors;
         if (colors.load(filename.toStdString())) {
-
-            // if not valid:
-            //  return
-            // (see validation for bookmark file load)
-
+            // validation is done later
             emit colorMapLoaded(colors);
-
         } else {
-            // error, do something
-            std::cout << "error loading " << filename.toStdString() << std::endl;
-
-
-
-            return;
-
+            emit jsonLoadColorMapError("Error opening or parsing color map file " + filename);
         }
     }
 }
@@ -781,6 +764,14 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
     // loop over filters in filter table; attach filter to our scheme builder
     //  proxy; loop over the filtered body IDs and throw them and the color into
     //  the color scheme
+
+
+    // is this right?  thought I needed it to fix delete, but now
+    //  not seeing any colors?
+    m_colorScheme.clear();
+
+
+
     for (int i=0; i<m_filterProxy->rowCount(); i++) {
         QString filterString = m_filterProxy->data(m_filterProxy->index(i, 0)).toString();
         m_schemeBuilderProxy->setFilterFixedString(filterString);
