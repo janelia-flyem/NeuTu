@@ -11,20 +11,20 @@ ZFlyEmConfig::ZFlyEmConfig()
 
 void ZFlyEmConfig::setDvidTarget(const std::string &repo)
 {
-  m_dvidTarget.setFromSourceString(repo);
+  m_emptyDvidTarget.setFromSourceString(repo);
 }
 
 void ZFlyEmConfig::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+  m_emptyDvidTarget = target;
 }
 
 void ZFlyEmConfig::print() const
 {
   std::cout << "FlyEM Configuration:" << std::endl;
-  if (m_dvidTarget.isValid()) {
+  if (m_emptyDvidTarget.isValid()) {
     std::cout << "  ";
-    m_dvidTarget.print();
+    m_emptyDvidTarget.print();
   } else {
     std::cout << "  No DVID repository." << std::endl;
   }
@@ -43,6 +43,7 @@ void ZFlyEmConfig::loadConfig(const std::string &filePath)
         ZDvidTarget target;
         target.loadJsonObject(dvidObj);
         if (target.isValid()) {
+          target.setEditable(false);
           m_dvidRepo.push_back(target);
         }
       }

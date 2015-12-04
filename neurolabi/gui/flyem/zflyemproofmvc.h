@@ -67,6 +67,8 @@ public:
 
   ZDvidTarget getDvidTarget() const;
 
+  void setDvidDialog(ZDvidDialog *dlg);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);

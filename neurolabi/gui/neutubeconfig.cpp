@@ -26,7 +26,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_softwareName = "NeuTu";
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
-  std::cout << m_settings.fileName().toStdString() << std::endl;
+//  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
 }
 /*

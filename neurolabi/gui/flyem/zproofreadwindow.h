@@ -13,6 +13,7 @@ class QProgressDialog;
 class ZProgressSignal;
 class ZDvidTarget;
 class ZWidgetMessage;
+class ZDvidDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -24,10 +25,13 @@ public:
   explicit ZProofreadWindow(QWidget *parent = 0);
 
   static ZProofreadWindow* Make(QWidget *parent = 0);
+  static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
   QProgressDialog* getProgressDialog() {
     return m_progressDlg;
   }
+
+  void setDvidDialog(ZDvidDialog *dvidDlg);
 
 signals:
   void splitTriggered(uint64_t bodyId);

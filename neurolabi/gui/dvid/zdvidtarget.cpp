@@ -26,13 +26,14 @@ const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255)
+ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255),
+  m_isEditable(true)
 {
 }
 
 ZDvidTarget::ZDvidTarget(
     const std::string &address, const std::string &uuid, int port) :
-  m_isSupervised(true), m_bgValue(255)
+  m_isSupervised(true), m_bgValue(255), m_isEditable(true)
 {
   set(address, uuid, port);
 }

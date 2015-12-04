@@ -134,6 +134,21 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
   return new ZProofreadWindow(parent);
 }
 
+ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
+{
+  ZProofreadWindow *window = new ZProofreadWindow(parent);
+  if (dvidDlg != NULL) {
+    window->setDvidDialog(dvidDlg);
+  }
+
+  return window;
+}
+
+void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
+{
+  m_mainMvc->setDvidDialog(dvidDlg);
+}
+
 void ZProofreadWindow::createMenu()
 {
   QMenu *fileMenu = new QMenu("File", this);

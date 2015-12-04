@@ -35,6 +35,7 @@
 #include "zlabeledspinboxwidget.h"
 #include "zbenchtimer.h"
 #include "zstackobjectpainter.h"
+#include "dvid/zdvidlabelslice.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -2014,7 +2015,16 @@ void ZStackView::setView(const ZStackViewParam &param)
 
 void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
 {
+  QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
+  foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->setVisible(false);
+  }
+
   redraw();
+
+  foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->setVisible(true);
+  }
 
   notifyViewChanged();
 }

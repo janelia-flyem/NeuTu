@@ -25,6 +25,8 @@ public:
 
   void removeSynapse(int x, int y, int z);
 
+  void addSynapse(const ZDvidSynapse &synapse);
+
   ZDvidSynapse &getSynapse(int x, int y, int z);
   ZDvidSynapse &getSynapse(const ZIntPoint &center);
 
