@@ -665,6 +665,21 @@ void Z3DWindow::init(EInitMode mode)
 
   m_surfaceFilter->addData(cube); // green cube 2
 
+for(int k=0; k<10; k++)
+  for(int j=0; j<100; j++)
+for(int i=0; i<100; i++)
+{
+    cube.x = j*25;
+    cube.y = i*25;
+    cube.z = k*25;
+    cube.length = 16;
+    cube.color = glm::vec4(0.0+0.01*k, 0.0+0.01*j, 0.0+0.01*i, 0.5);
+
+    m_surfaceFilter->addData(cube); //  cube i
+}
+
+
+
   updateSurfaceBoundBox(); // end hard code
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
