@@ -50,6 +50,10 @@ public:
     COMPONENT_ALL
   };
 
+  enum EAction {
+    ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
+  };
+
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
   void deprecateDependent(EComponent comp);
@@ -258,7 +262,7 @@ public:
   const std::map<std::pair<int, int>, size_t>& getStripeMap() const;
 
   std::vector<size_t> getConnectedObjectSize();
-  std::vector<ZObject3dScan> getConnectedComponent();
+  std::vector<ZObject3dScan> getConnectedComponent(EAction ppAction);
 
   inline bool isCanonized() const { return isEmpty() || m_isCanonized; }
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }

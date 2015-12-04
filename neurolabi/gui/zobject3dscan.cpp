@@ -42,7 +42,7 @@ using namespace std;
 
 void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 {
-  std::vector<ZObject3dScan> objArray = getConnectedComponent();
+  std::vector<ZObject3dScan> objArray = getConnectedComponent(ACTION_NONE);
 
 #ifdef _DEBUG_
   std::cout << "Number of components: " << objArray.size() << std::endl;
@@ -944,6 +944,9 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 
 bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 {
+  canonize();
+  obj.canonize();
+
   if (getVoxelNumber() < obj.getVoxelNumber()) {
     ZObject3dScan tmpObj = *this;
     tmpObj.dilate();
@@ -1289,7 +1292,7 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
   }
 #else
   if (!isEmpty()) {
-    std::vector<ZObject3dScan> objArray = getConnectedComponent();
+    std::vector<ZObject3dScan> objArray = getConnectedComponent(ACTION_NONE);
 
     sizeArray.resize(objArray.size());
     for (size_t i = 0; i < objArray.size(); ++i) {
@@ -1310,7 +1313,8 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
   return sizeArray;
 }
 
-std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
+std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
+    EAction ppAction)
 {
   std::vector<ZObject3dScan> objArray;
 
@@ -1354,7 +1358,22 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
         isAdded[v1] = true;
         isAdded[v2] = true;
       }
-      subobj.canonize();
+
+      switch (ppAction) {
+      case ACTION_CANONIZE:
+        subobj.canonize();
+        break;
+      case ACTION_SORT_YZ:
+        subobj.sort();
+        break;
+      default:
+        break;
+      }
+
+//      subobj.sort();
+//      subobj.setCanonized(true);
+//      TZ_ASSERT(subobj.isCanonizedActually(), "Inconsisten data assumption");
+//      subobj.canonize();
       objArray.push_back(subobj);
     }
 
@@ -2306,7 +2325,8 @@ ZObject3dScan ZObject3dScan::findHoleObject()
   ZObject3dScan obj;
 
   ZObject3dScan compObj = getComplementObject();
-  std::vector<ZObject3dScan> objList = compObj.getConnectedComponent();
+  std::vector<ZObject3dScan> objList =
+      compObj.getConnectedComponent(ACTION_CANONIZE);
 
   Cuboid_I boundBox;
   getBoundBox(&boundBox);
@@ -2332,7 +2352,8 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
   std::vector<ZObject3dScan> objArray;
 
   ZObject3dScan compObj = getComplementObject();
-  std::vector<ZObject3dScan> objList = compObj.getConnectedComponent();
+  std::vector<ZObject3dScan> objList =
+      compObj.getConnectedComponent(ACTION_NONE);
 
   Cuboid_I boundBox;
   getBoundBox(&boundBox);
@@ -2343,6 +2364,7 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
     subobj.getBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
+      subobj.canonize();
       objArray.push_back(subobj);
     }
   }

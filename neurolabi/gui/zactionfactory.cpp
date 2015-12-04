@@ -11,7 +11,7 @@ ZActionFactory::ZActionFactory()
 }
 
 QAction* ZActionFactory::makeAction(
-    EActionItem item, const ZStackDoc *doc, QWidget *parent,
+    EAction item, const ZStackDoc *doc, QWidget *parent,
     ZActionActivator *activator, bool positive)
 {
   QAction *action = NULL;
@@ -179,7 +179,7 @@ QAction* ZActionFactory::makeAction(
 }
 
 QAction* ZActionFactory::makeAction(
-    EActionItem item, const ZStackPresenter *presenter, QWidget *parent,
+    EAction item, const ZStackPresenter *presenter, QWidget *parent,
     ZActionActivator *activator, bool positive)
 {
   QAction *action = NULL;
@@ -243,6 +243,139 @@ QAction* ZActionFactory::makeAction(
 
   if (action != NULL && activator != NULL) {
     activator->registerAction(action, positive);
+  }
+
+  return action;
+}
+
+QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
+{
+  QAction *action = NULL;
+  switch (actionKey) {
+  case ACTION_SELECT_DOWNSTREAM:
+    action = new QAction("Downstream", parent);
+    action->setStatusTip("Select downstream nodes");
+    break;
+  case ACTION_SELECT_UPSTREAM:
+    action = new QAction("Upstream", parent);
+    action->setStatusTip("Select upstream nodes");
+    break;
+  case ACTION_SELECT_NEIGHBOR_SWC_NODE:
+    action = new QAction("Neighbors", parent);
+    action->setStatusTip(
+          "Select neighbors (nodes coonected directly) of the currently selected nodes");
+    break;
+  case ACTION_SELECT_SWC_BRANCH:
+    action = new QAction("Host branch", parent);
+    action->setStatusTip("Select branches containing the currently selected nodes");
+    break;
+  case ACTION_SELECT_CONNECTED_SWC_NODE:
+    action = new QAction("All connected nodes", parent);
+    action->setStatusTip("Select all nodes connected (directly or indirectly) "
+                         "of the currently selected nodes");
+    break;
+  case ACTION_SELECT_ALL_SWC_NODE:
+    action = new QAction("All nodes", parent);
+    action->setShortcut(QKeySequence::SelectAll);
+    action->setStatusTip("Selet all nodes");
+    break;
+  case ACTION_RESOLVE_CROSSOVER:
+    action = new QAction("Resolve crossover", parent);
+    action->setStatusTip("Create a crossover near the selected node if it is detected");
+    break;
+  case ACTION_REMOVE_TURN:
+    action = new QAction("Remove turn", parent);
+    action->setStatusTip("Remove a nearby sharp turn");
+    break;
+  case ACTION_MEASURE_SWC_NODE_LENGTH:
+    action = new QAction("Path length", parent);
+    break;
+  case ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
+    action = new QAction("Scaled Path length", parent);
+    break;
+  case ACTION_DELETE_SWC_NODE:
+    action = new QAction("Delete", parent);
+    action->setShortcut(Qt::Key_X);
+    action->setStatusTip("Delete selected nodes");
+    action->setIcon(QIcon(":/images/delete.png"));
+    break;
+  case ACTION_DELETE_UNSELECTED_SWC_NODE:
+    action = new QAction("Delete Unselected", parent);
+    action->setStatusTip("Delete unselected nodes");
+    break;
+  case ACTION_INSERT_SWC_NODE:
+    action = new QAction("Insert", parent);
+    action->setStatusTip("Insert a node between two adjacent nodes");
+    action->setShortcut(Qt::Key_I);
+    action->setIcon(QIcon(":/images/insert.png"));
+    break;
+  case ACTION_BREAK_SWC_NODE:
+    action = new QAction("Break", parent);
+    action->setStatusTip("Remove connections among the selected nodes");
+    action->setShortcut(Qt::Key_B);
+    action->setIcon(QIcon(":/images/cut.png"));
+    break;
+  case ACTION_CONNECT_SWC_NODE:
+    action = new QAction("Connect", parent);
+    action->setStatusTip("Connect selected nodes");
+    action->setShortcut(Qt::Key_C);
+    action->setIcon(QIcon(":/images/connect.png"));
+    break;
+  case ACTION_MERGE_SWC_NODE:
+    action = new QAction("Merge", parent);
+    action->setStatusTip("Merge selected nodes, which should form a single subtree");
+    action->setIcon(QIcon(":/images/merge.png"));
+    break;
+  case ACTION_TRANSLATE_SWC_NODE:
+    action = new QAction("Translate", parent);
+    break;
+  case ACTION_CHANGE_SWC_SIZE:
+    action = new QAction("Change size", parent);
+    break;
+  case ACTION_SET_SWC_ROOT:
+    action = new QAction("Set as root", parent);
+    action->setStatusTip("Set the selected node as a root");
+    break;
+  case ACTION_SET_BRANCH_POINT:
+    action = new QAction("Join isolated branch", parent);
+    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
+    break;
+  case ACTION_CONNECTED_ISOLATED_SWC:
+    action = new QAction("Join isolated brach (across trees)", parent);
+    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
+                         "The branch can be in another neuron.");
+    break;
+  case ACTION_RESET_BRANCH_POINT:
+    action = new QAction("Reset branch point", parent);
+    action->setStatusTip("Move a neighboring branch point to the selected node");
+    break;
+  case ACTION_SWC_Z_INTERPOLATION:
+    action = new QAction("Z", parent);
+    break;
+  case ACTION_SWC_RADIUS_INTERPOLATION:
+    action = new QAction("Radius", parent);
+    break;
+    //m_singleSwcNodeActionActivator.registerAction(action, false);
+  case ACTION_SWC_POSITION_INTERPOLATION:
+    action = new QAction("Position", parent);
+    break;
+    //m_singleSwcNodeActionActivator.registerAction(action, false);
+  case ACTION_SWC_INTERPOLATION:
+    action = new QAction("Position and Radius", parent);
+    break;
+  case ACTION_SWC_SUMMARIZE:
+    action = new QAction("Summary", parent);
+    break;
+  case ACTION_SYNAPSE_ADD:
+    action = new QAction("Add Synapse", parent);
+    action->setStatusTip("Add a synapse with mouse click");
+    break;
+  case ACTION_SYNAPSE_MOVE:
+    action = new QAction("Move Synapse", parent);
+    action->setStatusTip("Move a synapse with mouse click");
+    break;
+  default:
+    break;
   }
 
   return action;
