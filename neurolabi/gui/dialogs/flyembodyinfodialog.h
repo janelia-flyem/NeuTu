@@ -53,6 +53,7 @@ private slots:
     void onSaveColorMap();
     void onLoadColorMap();
     void onColorMapLoaded(ZJsonValue colors);
+    void updateColorScheme();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
@@ -79,7 +80,6 @@ private:
     void clearStatusLabel();
     void init();
     void updateColorFilter(QString filter, QString oldFilter = "");
-    void updateColorScheme();
     void exportBodies(QString filename);
     void saveColorMapDisk(QString filename);
     ZJsonArray getColorMapAsJson(ZJsonArray colors);
