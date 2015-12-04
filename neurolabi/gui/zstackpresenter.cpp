@@ -182,44 +182,63 @@ void ZStackPresenter::initInteractiveContext()
 
 void ZStackPresenter::createTraceActions()
 {
-  m_traceAction = new QAction(tr("trace"), this->parent());
-  m_traceAction->setStatusTip("Trace an individual branch");
-  m_traceAction->setToolTip("Trace an individual branch");
-  connect(m_traceAction, SIGNAL(triggered()), this, SLOT(traceTube()));
+  {
+    QAction *action =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_TRACE, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(traceTube()));
+  }
 
-  m_fitsegAction = new QAction(tr("fit"), this);
-  connect(m_fitsegAction, SIGNAL(triggered()), this, SLOT(fitSegment()));
+  {
+    QAction *action =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_FITSEG, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
+  }
 
-  m_dropsegAction = new QAction(tr("drop"), this);
-  connect(m_dropsegAction, SIGNAL(triggered()), this, SLOT(dropSegment()));
+  {
+    QAction *action =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_DROPSEG, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
+  }
 }
 
 void ZStackPresenter::createPunctaActions()
 {
-  m_markPunctaAction = new QAction(tr("mark Puncta"), this);
-  connect(m_markPunctaAction, SIGNAL(triggered()), this, SLOT(markPuncta()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PUNCTA_MARK, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
+  }
 
-  //m_deleteAllPunctaAction = new QAction(tr("Delete All Puncta"), this);
-  //connect(m_deleteAllPunctaAction, SIGNAL(triggered()), this, SLOT(deleteAllPuncta()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PUNCTA_ENLARGE, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+  }
 
-  m_enlargePunctaAction = new QAction(tr("Enlarge Puncta"), this);
-  connect(m_enlargePunctaAction, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PUNCTA_NARROW, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+  }
 
-  m_narrowPunctaAction = new QAction(tr("Narrow Puncta"), this);
-  connect(m_narrowPunctaAction, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PUNCTA_MEANSHIFT, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
+  }
 
-  m_meanshiftPunctaAction = new QAction(tr("Mean Shift Puncta"), this);
-  connect(m_meanshiftPunctaAction, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
-
-  m_meanshiftAllPunctaAction = new QAction(tr("Mean Shift All Puncta"), this);
-  connect(m_meanshiftAllPunctaAction, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+  }
 }
 
 //Doesn't work while connecting doc slots directly for unknown reason
 void ZStackPresenter::createDocDependentActions()
 {
   assert(buddyDocument());
-
+#if 0
   m_selectSwcConnectionAction = new QAction("Select Connection", this);
   connect(m_selectSwcConnectionAction, SIGNAL(triggered()), this,
           SLOT(selectSwcNodeConnection()));
@@ -243,158 +262,160 @@ void ZStackPresenter::createDocDependentActions()
   m_selectAllSwcNodeAction = new QAction("Select All Nodes", this);
   connect(m_selectAllSwcNodeAction, SIGNAL(triggered()), this,
           SLOT(selectAllSwcTreeNode()));
+#endif
 }
 
 void ZStackPresenter::createSwcActions()
 { 
   {
-    QAction *action = new QAction(tr("Add Neuron Node"), parent());
+    QAction *action =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_ADD_SWC_NODE, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(trySwcAddNodeMode()));
-    action->setStatusTip("Add an isolated neuron node.");
-    //  if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT) {
-    action->setShortcut(Qt::Key_G);
-    //  }
-    action->setIcon(QIcon(":/images/add.png"));
-    m_actionMap[ACTION_ADD_SWC_NODE] = action;
+    m_actionMap[ZActionFactory::ACTION_ADD_SWC_NODE] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Show Full Skeleton"), parent());
-    action->setCheckable(true);
-    action->setChecked(true);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_TOGGLE_SWC_SKELETON, this);
     connect(action, SIGNAL(triggered(bool)), this, SLOT(toggleSwcSkeleton(bool)));
-    m_actionMap[ACTION_TOGGLE_SWC_SKELETON] = action;
+    m_actionMap[ZActionFactory::ACTION_TOGGLE_SWC_SKELETON] = action;
   }
 
 
   if (getParentFrame() != NULL) {
-    QAction *action = new QAction(tr("Locate node(s) in 3D"), parent());
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D, this);
     connect(action, SIGNAL(triggered()),
             getParentFrame(), SLOT(locateSwcNodeIn3DView()));
-    action->setStatusTip("Located selected swc nodes in 3D view.");
-    m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+    m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
   }
 
-  m_swcConnectToAction = new QAction(tr("Connect to"), parent());
-  m_swcConnectToAction->setShortcut(Qt::Key_C);
-  m_swcConnectToAction->setStatusTip(
-        "Connect the currently selected node to another");
-  connect(m_swcConnectToAction, SIGNAL(triggered()),
-          this, SLOT(enterSwcConnectMode()));
-  m_swcConnectToAction->setIcon(QIcon(":/images/connect_to.png"));
-  m_actionMap[ACTION_CONNECT_TO_SWC_NODE] = m_swcConnectToAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_CONNECT_TO_SWC_NODE, parent());
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(enterSwcConnectMode()));
+    m_actionMap[ZActionFactory::ACTION_CONNECT_TO_SWC_NODE] = action;
+  }
 
-  m_swcExtendAction = new QAction(tr("Extend"), parent());
-  m_swcExtendAction->setShortcut(Qt::Key_Space);
-  m_swcExtendAction->setStatusTip(
-        "Extend the currently selected node with mouse click.");
-  connect(m_swcExtendAction, SIGNAL(triggered()),
-          this, SLOT(enterSwcExtendMode()));
-  m_swcExtendAction->setIcon(QIcon(":/images/extend.png"));
-  m_actionMap[ACTION_EXTEND_SWC_NODE] = m_swcExtendAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_EXTEND_SWC_NODE, parent());
+    connect(action, SIGNAL(triggered()), this, SLOT(enterSwcExtendMode()));
+    m_actionMap[ZActionFactory::ACTION_EXTEND_SWC_NODE] = action;
+  }
 
-  m_swcMoveSelectedAction =
-      new  QAction(tr("Move Selected (Shift+Mouse)"), this->parent());
-  m_swcMoveSelectedAction->setShortcut(Qt::Key_V);
-  m_swcMoveSelectedAction->setStatusTip("Move selected nodes with mouse.");
-  m_swcMoveSelectedAction->setIcon(QIcon(":/images/move.png"));
-  connect(m_swcMoveSelectedAction, SIGNAL(triggered()),
-          this, SLOT(enterSwcMoveMode()));
-  m_actionMap[ACTION_MOVE_SWC_NODE] = m_swcMoveSelectedAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_MOVE_SWC_NODE, this->parent());
+    connect(action, SIGNAL(triggered()), this, SLOT(enterSwcMoveMode()));
+    m_actionMap[ZActionFactory::ACTION_MOVE_SWC_NODE] = action;
+  }
 
-  m_swcLockFocusAction = new QAction(tr("Lock Focus"), this);
-  m_swcLockFocusAction->setIcon(QIcon(":/images/change_focus.png"));
-  connect(m_swcLockFocusAction, SIGNAL(triggered()),
-          this, SLOT(lockSelectedSwcNodeFocus()));
-  m_actionMap[ACTION_LOCK_SWC_NODE_FOCUS] = m_swcLockFocusAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_LOCK_SWC_NODE_FOCUS, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(lockSelectedSwcNodeFocus()));
+    m_actionMap[ZActionFactory::ACTION_LOCK_SWC_NODE_FOCUS] = action;
+  }
 
-  m_swcChangeFocusAction = new QAction(tr("Move to Current Plane"), parent());
-  m_swcChangeFocusAction->setShortcut(Qt::Key_F);
-  m_swcChangeFocusAction->setStatusTip(
-        "Move the centers of the selected nodes to the current plane.");
-  m_swcChangeFocusAction->setIcon(QIcon(":/images/change_focus.png"));
-  connect(m_swcChangeFocusAction, SIGNAL(triggered()),
-          this, SLOT(changeSelectedSwcNodeFocus()));
-  m_actionMap[ACTION_CHANGE_SWC_NODE_FOCUS] = m_swcChangeFocusAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS, parent());
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(changeSelectedSwcNodeFocus()));
+    m_actionMap[ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS] = action;
+  }
 
-  m_swcEstimateRadiusAction = new QAction(tr("Estimate Radius"), this);
-  connect(m_swcEstimateRadiusAction, SIGNAL(triggered()),
-          this, SLOT(estimateSelectedSwcRadius()));
-  m_actionMap[ACTION_ESTIMATE_SWC_NODE_RADIUS] = m_swcEstimateRadiusAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(estimateSelectedSwcRadius()));
+    m_actionMap[ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS] = action;
+  }
 
   m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_EXTEND_SWC_NODE], true);
-  /*
+        m_actionMap[ZActionFactory::ACTION_EXTEND_SWC_NODE], true);
   m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_SMART_EXTEND_SWC_NODE], true);
-        */
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_CONNECT_TO_SWC_NODE], true);
+        m_actionMap[ZActionFactory::ACTION_CONNECT_TO_SWC_NODE], true);
 }
 
 void ZStackPresenter::createStrokeActions()
 {
-  m_paintStrokeAction = new QAction(tr("Paint Mask"), this);
-  m_paintStrokeAction->setShortcut(tr("Ctrl+R"));
-  connect(m_paintStrokeAction, SIGNAL(triggered()),
-          this, SLOT(tryPaintStrokeMode()));
-  m_actionMap[ACTION_PAINT_STROKE] = m_paintStrokeAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_PAINT_STROKE, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
+    m_actionMap[ZActionFactory::ACTION_PAINT_STROKE] = action;
+  }
 
-  m_paintStrokeAction = new QAction(tr("Paint Seed"), this);
-  m_paintStrokeAction->setShortcut(tr("Ctrl+R"));
-  connect(m_paintStrokeAction, SIGNAL(triggered()),
-          this, SLOT(tryPaintStrokeMode()));
-  m_actionMap[ACTION_ADD_SPLIT_SEED] = m_paintStrokeAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_ADD_SPLIT_SEED, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(tryPaintStrokeMode()));
+    m_actionMap[ZActionFactory::ACTION_ADD_SPLIT_SEED] = action;
+  }
 
-  m_eraseStrokeAction = new QAction(tr("Erase Mask"), this);
-  m_eraseStrokeAction->setShortcut(tr("Ctrl+E"));
-  connect(m_eraseStrokeAction, SIGNAL(triggered()),
-          this, SLOT(tryEraseStrokeMode()));
-  m_actionMap[ACTION_ERASE_STROKE] = m_eraseStrokeAction;
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_ERASE_STROKE, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(tryEraseStrokeMode()));
+    m_actionMap[ZActionFactory::ACTION_ERASE_STROKE] = action;
+  }
 }
 
 void ZStackPresenter::createBodyActions()
 {
   {
-    QAction *action = new QAction(tr("Launch split"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_SPLIT_START, this);
     connect(action, SIGNAL(triggered()), this, SLOT(notifyBodySplitTriggered()));
-    m_actionMap[ACTION_BODY_SPLIT_START] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_SPLIT_START] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Annotate"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_ANNOTATION, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyAnnotationTriggered()));
-    m_actionMap[ACTION_BODY_ANNOTATION] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_ANNOTATION] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Unlock"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_CHECKIN, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckinTriggered()));
-    m_actionMap[ACTION_BODY_CHECKIN] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_CHECKIN] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Unlock (Administrator)"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_FORCE_CHECKIN, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyForceCheckinTriggered()));
-    m_actionMap[ACTION_BODY_FORCE_CHECKIN] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_FORCE_CHECKIN] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Lock"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_CHECKOUT, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyCheckoutTriggered()));
-    m_actionMap[ACTION_BODY_CHECKOUT] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_CHECKOUT] = action;
   }
 
   {
-    QAction *action = new QAction(tr("Decompose"), this);
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_DECOMPOSE, this);
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyDecomposeTriggered()));
-    m_actionMap[ACTION_BODY_DECOMPOSE] = action;
+    m_actionMap[ZActionFactory::ACTION_BODY_DECOMPOSE] = action;
   }
 
 //  action = new QAction(tr("Add split seed"), this);
@@ -411,20 +432,25 @@ void ZStackPresenter::createMainWindowActions()
 {
   QAction *action = getParentFrame()->getBodySplitAction();
   if (action != NULL) {
-    m_actionMap[ACTION_SPLIT_DATA] = action;
+    m_actionMap[ZActionFactory::ACTION_SPLIT_DATA] = action;
   }
 }
 
 void ZStackPresenter::createActions()
 {
-  m_deleteSelectedAction = new QAction(tr("Delete Selected Object"), this);
-  m_deleteSelectedAction->setIcon(QIcon(":/images/delete.png"));
-  connect(m_deleteSelectedAction, SIGNAL(triggered()),
-          this, SLOT(deleteSelected()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_DELETE_SELECTED, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+    m_actionMap[ZActionFactory::ACTION_DELETE_SELECTED] = action;
+  }
 
 
-  m_fitEllipseAction = new QAction(tr("fit ellipse"), this);
-  connect(m_fitEllipseAction, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_FIT_ELLIPSE, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+  }
 
 /*
   m_frontAction = new QAction(tr("Bring to front"), this);
@@ -453,8 +479,10 @@ void ZStackPresenter::createSwcNodeContextMenu()
     getMenuFactory()->makeSwcNodeContextMenu(
           buddyDocument(), getParentWidget(), m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
-    m_swcNodeContextMenu->addAction(m_actionMap[ACTION_ADD_SWC_NODE]);
-    m_swcNodeContextMenu->addAction(m_actionMap[ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
+    m_swcNodeContextMenu->addAction(
+          m_actionMap[ZActionFactory::ACTION_ADD_SWC_NODE]);
+    m_swcNodeContextMenu->addAction(
+          m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
 }
 
@@ -586,11 +614,11 @@ ZStackView* ZStackPresenter::buddyView() const
 
 void ZStackPresenter::addPunctaEditFunctionToRightMenu()
 {
-  updateRightMenu(m_enlargePunctaAction, false);
-  updateRightMenu(m_narrowPunctaAction, false);
-  updateRightMenu(m_meanshiftPunctaAction, false);
-  updateRightMenu(m_meanshiftAllPunctaAction, false);
-  updateRightMenu(m_deleteSelectedAction, false);
+  updateRightMenu(getAction(ZActionFactory::ACTION_PUNCTA_ENLARGE), false);
+  updateRightMenu(getAction(ZActionFactory::ACTION_PUNCTA_ENLARGE), false);
+  updateRightMenu(getAction(ZActionFactory::ACTION_PUNCTA_MEANSHIFT), false);
+  updateRightMenu(getAction(ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL), false);
+  updateRightMenu(getAction(ZActionFactory::ACTION_DELETE_SELECTED), false);
   //updateRightMenu(m_deleteAllPunctaAction, false);
 }
 
@@ -598,7 +626,7 @@ void ZStackPresenter::prepareView()
 {
   createDocDependentActions();
   if (NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
-    updateLeftMenu(m_traceAction);
+    updateLeftMenu(getAction(ZActionFactory::ACTION_TRACE));
   } else {
     updateLeftMenu(NULL);
   }
@@ -625,20 +653,20 @@ void ZStackPresenter::updateLeftMenu()
 {
   bool traceOnFlag = false;
   if (interactiveContext().tracingTube()) {
-    updateLeftMenu(this->m_traceAction, true);
+    updateLeftMenu(getAction(ZActionFactory::ACTION_TRACE), true);
     traceOnFlag = true;
   } else if (interactiveContext().fittingSegment()) {
-    updateLeftMenu(this->m_fitsegAction, true);
-    updateLeftMenu(this->m_dropsegAction, false);
-    updateLeftMenu(this->m_fitEllipseAction, false);
+    updateLeftMenu(getAction(ZActionFactory::ACTION_FITSEG), true);
+    updateLeftMenu(getAction(ZActionFactory::ACTION_DROPSEG), false);
+    updateLeftMenu(getAction(ZActionFactory::ACTION_FIT_ELLIPSE), false);
     traceOnFlag = true;
   }
 
   if (interactiveContext().markPuncta()) {
     if (traceOnFlag) {
-      updateLeftMenu(this->m_markPunctaAction, false);
+      updateLeftMenu(getAction(ZActionFactory::ACTION_PUNCTA_MARK), false);
     } else {
-      updateLeftMenu(this->m_markPunctaAction, true);
+      updateLeftMenu(getAction(ZActionFactory::ACTION_PUNCTA_MARK), true);
     }
   }
 }
@@ -1128,13 +1156,14 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       tryDrawRectMode();
       taken = true;
     } else {
-      if (m_paintStrokeAction->isEnabled()) {
+      QAction *action = getAction(ZActionFactory::ACTION_PAINT_STROKE);
+      if (action->isEnabled()) {
 //        if (isStrokeOn()) {
         if (interactiveContext().strokeEditMode() ==
             ZInteractiveContext::STROKE_DRAW) {
           exitStrokeEdit();
         } else {
-          m_paintStrokeAction->trigger();
+          action->trigger();
         }
         taken = true;
       }
@@ -1169,8 +1198,9 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
     break;
   case Qt::Key_E:
     if (event->modifiers() == Qt::ControlModifier) {
-      if (m_eraseStrokeAction->isEnabled()) {
-        m_eraseStrokeAction->trigger();
+      QAction *action = getAction(ZActionFactory::ACTION_ERASE_STROKE);
+      if (action->isEnabled()) {
+        action->trigger();
         taken = true;
       }
     }
@@ -2485,7 +2515,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
     buddyDocument()->executeConnectIsolatedSwc();
     break;
   case ZStackOperator::OP_SWC_SELECT_ALL_NODE:
-    m_selectAllSwcNodeAction->trigger();
+    getAction(ZActionFactory::ACTION_SELECT_ALL_SWC_NODE)->trigger();
+//    m_selectAllSwcNodeAction->trigger();
     break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
@@ -3118,7 +3149,7 @@ QWidget* ZStackPresenter::getParentWidget() const
 
 bool ZStackPresenter::isSwcFullSkeletonVisible() const
 {
-  return m_actionMap[ACTION_TOGGLE_SWC_SKELETON]->isChecked();
+  return m_actionMap[ZActionFactory::ACTION_TOGGLE_SWC_SKELETON]->isChecked();
 }
 
 void ZStackPresenter::testBiocytinProjectionMask()

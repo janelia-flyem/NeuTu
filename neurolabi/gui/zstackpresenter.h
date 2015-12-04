@@ -23,6 +23,7 @@
 #include "zsharedpointer.h"
 #include "zkeyoperationmap.h"
 #include "zstackball.h"
+#include "zactionfactory.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -64,6 +65,7 @@ public:
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
   };
 
+  /*
   enum EActionItem {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
@@ -78,6 +80,7 @@ public:
     ACTION_BODY_ANNOTATION, ACTION_BODY_CHECKIN, ACTION_BODY_CHECKOUT,
     ACTION_BODY_FORCE_CHECKIN, ACTION_BODY_DECOMPOSE
   };
+  */
 
   inline double greyScale(int c = 0) const {return m_greyScale[c];}
   inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
@@ -136,7 +139,7 @@ public:
   void createBodyActions();
   void createMainWindowActions();
 
-  inline QAction* getAction(EActionItem item) const {
+  inline QAction* getAction(ZActionFactory::EAction item) const {
     return m_actionMap[item];
   }
 
@@ -401,44 +404,44 @@ protected:
   int m_cursorRadius;
 
   //actions
-  QAction *m_traceAction;
-  QAction *m_fitsegAction;
-  QAction *m_fitEllipseAction;
-  QAction *m_dropsegAction;
-  QAction *m_markPunctaAction;
-  QAction *m_deleteSelectedAction;
-  //QAction *m_deleteAllPunctaAction;
-  QAction *m_enlargePunctaAction;
-  QAction *m_narrowPunctaAction;
-  QAction *m_meanshiftPunctaAction;
-  QAction *m_meanshiftAllPunctaAction;
+//  QAction *m_traceAction;
+//  QAction *m_fitsegAction;
+//  QAction *m_fitEllipseAction;
+//  QAction *m_dropsegAction;
+//  QAction *m_markPunctaAction;
+//  QAction *m_deleteSelectedAction;
+//  //QAction *m_deleteAllPunctaAction;
+//  QAction *m_enlargePunctaAction;
+//  QAction *m_narrowPunctaAction;
+//  QAction *m_meanshiftPunctaAction;
+//  QAction *m_meanshiftAllPunctaAction;
 
-  QAction *m_swcConnectToAction;
-  QAction *m_swcExtendAction;
-  //QAction *m_swcSmartExtendAction;
-  QAction *m_swcMoveSelectedAction;
-  //QAction *m_swcDeleteAction;
-  //QAction *m_swcConnectSelectedAction;
-  QAction *m_swcSelectConnectionAction;
-  QAction *m_swcLockFocusAction;
-  QAction *m_swcChangeFocusAction;
-  QAction *m_swcEstimateRadiusAction;
-  //QAction *m_swcSelectAllNodeAction;
-  //QAction *m_swcBreakSelectedAction;
+//  QAction *m_swcConnectToAction;
+//  QAction *m_swcExtendAction;
+//  //QAction *m_swcSmartExtendAction;
+//  QAction *m_swcMoveSelectedAction;
+//  //QAction *m_swcDeleteAction;
+//  //QAction *m_swcConnectSelectedAction;
+//  QAction *m_swcSelectConnectionAction;
+//  QAction *m_swcLockFocusAction;
+//  QAction *m_swcChangeFocusAction;
+//  QAction *m_swcEstimateRadiusAction;
+//  //QAction *m_swcSelectAllNodeAction;
+//  //QAction *m_swcBreakSelectedAction;
 
-  QAction *m_selectSwcNodeDownstreamAction;
-  QAction *m_selectSwcConnectionAction;
-  QAction *m_selectSwcNodeBranchAction;
-  QAction *m_selectSwcNodeUpstreamAction;
-  QAction *m_selectSwcNodeTreeAction;
-  QAction *m_selectAllConnectedSwcNodeAction;
-  QAction *m_selectAllSwcNodeAction;
+//  QAction *m_selectSwcNodeDownstreamAction;
+//  QAction *m_selectSwcConnectionAction;
+//  QAction *m_selectSwcNodeBranchAction;
+//  QAction *m_selectSwcNodeUpstreamAction;
+//  QAction *m_selectSwcNodeTreeAction;
+//  QAction *m_selectAllConnectedSwcNodeAction;
+//  QAction *m_selectAllSwcNodeAction;
 
-  QAction *m_paintStrokeAction;
-  QAction *m_eraseStrokeAction;
+//  QAction *m_paintStrokeAction;
+//  QAction *m_eraseStrokeAction;
 
   //  Action map
-  QMap<EActionItem, QAction*> m_actionMap;
+  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   QMenu *m_swcNodeContextMenu;
   QMenu *m_strokePaintContextMenu;

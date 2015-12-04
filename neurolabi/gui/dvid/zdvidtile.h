@@ -1,6 +1,9 @@
 #ifndef ZDVIDTILE_H
 #define ZDVIDTILE_H
 
+#include <QMutex>
+#include <QMutexLocker>
+
 #include "zimage.h"
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
@@ -72,7 +75,7 @@ private:
 
 private:
   ZImage *m_image;
-  ZPixmap m_pixmap;
+  ZPixmap *m_pixmap;
   int m_ix;
   int m_iy;
   int m_z;
@@ -80,6 +83,8 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+
+  QMutex m_pixmapMutex;
 
   ZStackView *m_view;
 };

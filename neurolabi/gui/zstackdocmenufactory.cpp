@@ -239,7 +239,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 
   //  if (GET_APPLICATION_NAME == "Biocytin") {
   menu->addAction(presenter->getAction(
-                    ZStackPresenter::ACTION_ESTIMATE_SWC_NODE_RADIUS));
+                    ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS));
 //  }
 
   return menu;
@@ -252,8 +252,8 @@ QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
     menu = new QMenu(NULL);
   }
 
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_PAINT_STROKE));
-  menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ERASE_STROKE));
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_PAINT_STROKE));
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_ERASE_STROKE));
 
   return menu;
 }
@@ -268,15 +268,15 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
   switch (presenter->buddyDocument()->getTag()) {
   case NeuTube::Document::FLYEM_SPLIT:
   case NeuTube::Document::SEGMENTATION_TARGET:
-    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_SPLIT_DATA));
+    menu->addAction(presenter->getAction(ZActionFactory::ACTION_SPLIT_DATA));
     menu->addAction(presenter->getAction(
-                      ZStackPresenter::ACTION_ADD_SPLIT_SEED));
+                      ZActionFactory::ACTION_ADD_SPLIT_SEED));
     break;
   case NeuTube::Document::NORMAL:
   case NeuTube::Document::BIOCYTIN_STACK:
-    menu->addAction(presenter->getAction(ZStackPresenter::ACTION_ADD_SWC_NODE));
+    menu->addAction(presenter->getAction(ZActionFactory::ACTION_ADD_SWC_NODE));
     menu->addAction(presenter->getAction(
-                      ZStackPresenter::ACTION_TOGGLE_SWC_SKELETON));
+                      ZActionFactory::ACTION_TOGGLE_SWC_SKELETON));
     break;
   default:
     break;

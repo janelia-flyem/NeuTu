@@ -179,7 +179,7 @@ void ZFlyEmProofPresenter::toggleHighlightMode()
 
 bool ZFlyEmProofPresenter::isSplitOn() const
 {
-  return m_paintStrokeAction->isEnabled();
+  return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
 void ZFlyEmProofPresenter::enableSplit()
@@ -196,7 +196,7 @@ void ZFlyEmProofPresenter::disableSplit()
 
 void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 {
-  m_paintStrokeAction->setEnabled(s);
+  getAction(ZActionFactory::ACTION_PAINT_STROKE)->setEnabled(s);
 }
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode()
@@ -283,9 +283,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   }
 
-  getAction(ZStackPresenter::ACTION_BODY_SPLIT_START)->setVisible(
+  getAction(ZActionFactory::ACTION_BODY_SPLIT_START)->setVisible(
         !isSplitWindow());
-  getAction(ZStackPresenter::ACTION_BODY_DECOMPOSE)->setVisible(
+  getAction(ZActionFactory::ACTION_BODY_DECOMPOSE)->setVisible(
         isSplitWindow());
 }
 

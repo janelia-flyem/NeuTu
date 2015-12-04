@@ -14,6 +14,7 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 
+
 };
 
 #endif // ZFLYEMPROOFDOCMENUFACTORY_H

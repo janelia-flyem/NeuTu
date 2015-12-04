@@ -167,6 +167,39 @@ QAction* ZActionFactory::makeAction(
     doc->connect(action, SIGNAL(triggered()),
                  doc, SLOT(showSwcSummary()));
     break;
+  case ACTION_TRACE:
+    action = new QAction("trace", parent);
+    action->setStatusTip("Trace an individual branch");
+    action->setToolTip("Trace an individual branch");
+    break;
+  case ACTION_FITSEG:
+    action = new QAction("fit", parent);
+    break;
+  case ACTION_DROPSEG:
+    action = new QAction("drop", parent);
+    break;
+  case ACTION_PUNCTA_MARK:
+    action = new QAction("Mark Puncta", parent);
+    break;
+  case ACTION_PUNCTA_ENLARGE:
+    action = new QAction("Enlarge Puncta", parent);
+    break;
+  case ACTION_PUNCTA_NARROW:
+    action = new QAction("Narrow Puncta", parent);
+    break;
+  case ACTION_PUNCTA_MEANSHIFT:
+    action = new QAction("Mean Shift Puncta", parent);
+    break;
+  case ACTION_PUNCTA_MEANSHIFT_ALL:
+    action = new QAction("Mean Shift All Puncta", parent);
+    break;
+  case ACTION_DELETE_SELECTED:
+    action = new QAction("Delete Selected Object", parent);
+    action->setIcon(QIcon(":/images/delete.png"));
+    break;
+  case ACTION_FIT_ELLIPSE:
+    action = new QAction("fit ellipse", parent);
+    break;
   default:
     break;
   }
@@ -212,8 +245,6 @@ QAction* ZActionFactory::makeAction(
     action->setShortcut(Qt::Key_Space);
     action->setStatusTip(
           "Extend the currently selected node with mouse click.");
-    presenter->connect(
-          action, SIGNAL(triggered()), presenter, SLOT(enterSwcExtendMode()));
     action->setIcon(QIcon(":/images/extend.png"));
     break;
   case ACTION_MOVE_SWC_NODE:
@@ -221,7 +252,6 @@ QAction* ZActionFactory::makeAction(
     action->setShortcut(Qt::Key_V);
     action->setStatusTip("Move selected nodes with mouse.");
     action->setIcon(QIcon(":/images/move.png"));
-    presenter->connect(action, SIGNAL(triggered()), presenter, SLOT(enterSwcMoveMode()));
     break;
   case ACTION_CHANGE_SWC_NODE_FOCUS:
     action = new QAction("Move to Current Plane", parent);
@@ -373,6 +403,82 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
     action->setStatusTip("Move a synapse with mouse click");
+    break;
+  case ACTION_SYNAPSE_DELETE:
+    action = new QAction("Delete Synapse", parent);
+    action->setStatusTip("Delete selected synapses");
+    break;
+  case ACTION_TOGGLE_SWC_SKELETON:
+    action = new QAction("Show Full Skeleton", parent);
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
+  case ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
+    action = new QAction("Locate node(s) in 3D", parent);
+    action->setStatusTip("Located selected swc nodes in 3D view.");
+    break;
+  case ACTION_CONNECT_TO_SWC_NODE:
+    action = new QAction("Connect to", parent);
+    action->setShortcut(Qt::Key_C);
+    action->setStatusTip("Connect the currently selected node to another");
+    action->setIcon(QIcon(":/images/connect_to.png"));
+    break;
+  case ACTION_EXTEND_SWC_NODE:
+    action = new QAction("Extend", parent);
+    action->setShortcut(Qt::Key_Space);
+    action->setStatusTip(
+          "Extend the currently selected node with mouse click.");
+    action->setIcon(QIcon(":/images/extend.png"));
+    break;
+  case ACTION_MOVE_SWC_NODE:
+    action = new QAction("Move Selected (Shift+Mouse)", parent);
+    action->setShortcut(Qt::Key_V);
+    action->setStatusTip("Move selected nodes with mouse.");
+    action->setIcon(QIcon(":/images/move.png"));
+    break;
+  case ACTION_LOCK_SWC_NODE_FOCUS:
+    action = new QAction("Lock Focus", parent);
+    action->setIcon(QIcon(":/images/change_focus.png"));
+    break;
+  case ACTION_CHANGE_SWC_NODE_FOCUS:
+    action = new QAction("Move to Current Plane", parent);
+    action->setShortcut(Qt::Key_F);
+    action->setStatusTip(
+          "Move the centers of the selected nodes to the current plane.");
+    action->setIcon(QIcon(":/images/change_focus.png"));
+    break;
+  case ACTION_ESTIMATE_SWC_NODE_RADIUS:
+    action = new QAction("Estimate Radius", parent);
+    break;
+  case ACTION_PAINT_STROKE:
+    action = new QAction("Paint Mask", parent);
+//    action->setShortcut("Ctrl+R");
+    break;
+  case ACTION_ADD_SPLIT_SEED:
+    action = new QAction("Paint Seed", parent);
+//    action->setShortcut("Ctrl+R");
+    break;
+  case ACTION_ERASE_STROKE:
+    action = new QAction("Erase Mask", parent);
+//    action->setShortcut("Ctrl+E");
+    break;
+  case ACTION_BODY_SPLIT_START:
+    action = new QAction("Launch split", parent);
+    break;
+  case ACTION_BODY_ANNOTATION:
+    action = new QAction("Annotate", parent);
+    break;
+  case ACTION_BODY_CHECKIN:
+    action = new QAction("Unlock", parent);
+    break;
+  case ACTION_BODY_FORCE_CHECKIN:
+    action = new QAction("Unlock (Administrator)", parent);
+    break;
+  case ACTION_BODY_CHECKOUT:
+    action = new QAction("Lock", parent);
+    break;
+  case ACTION_BODY_DECOMPOSE:
+    action = new QAction("Decompose", parent);
     break;
   default:
     break;
