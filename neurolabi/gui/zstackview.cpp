@@ -738,7 +738,7 @@ void ZStackView::redraw(bool updatingScreen)
 //  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
 #if defined(_FLYEM_)
-  std::cout << "paint time per frame: " << timer.restart() << std::endl;
+  qDebug() << "paint time per frame: " << timer.restart();
 #endif
 }
 

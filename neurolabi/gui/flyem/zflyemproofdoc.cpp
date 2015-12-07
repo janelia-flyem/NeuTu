@@ -398,6 +398,11 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
   return NULL;
 }
 
+bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
+{
+  return false;
+}
+
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(

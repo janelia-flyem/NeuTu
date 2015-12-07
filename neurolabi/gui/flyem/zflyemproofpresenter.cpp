@@ -39,6 +39,8 @@ void ZFlyEmProofPresenter::init()
   m_splitWindowMode = false;
   m_highTileContrast = false;
 
+  m_synapseContextMenu = NULL;
+
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
@@ -161,6 +163,34 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 
   return processed;
 }
+
+void ZFlyEmProofPresenter::createSynapseContextMenu()
+{
+  if (m_synapseContextMenu == NULL) {
+//    ZStackDocMenuFactory menuFactory;
+    m_synapseContextMenu =
+        getMenuFactory()->makeSynapseContextMenu(this, getParentWidget(), NULL);
+  }
+}
+
+QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
+{
+  if (m_synapseContextMenu == NULL) {
+    createSynapseContextMenu();
+  }
+
+  return m_synapseContextMenu;
+}
+
+QMenu* ZFlyEmProofPresenter::getContextMenu()
+{
+  if (getCompleteDocument()->hasDvidSynapseSelected()) {
+    return getSynapseContextMenu();
+  }
+
+  return getStackContextMenu();
+}
+
 
 bool ZFlyEmProofPresenter::isHighlight() const
 {

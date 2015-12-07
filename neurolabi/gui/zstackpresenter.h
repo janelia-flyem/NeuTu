@@ -139,9 +139,12 @@ public:
   void createBodyActions();
   void createMainWindowActions();
 
-  inline QAction* getAction(ZActionFactory::EAction item) const {
-    return m_actionMap[item];
-  }
+  QAction* getAction(ZActionFactory::EAction item) const;
+
+  virtual void makeAction(ZActionFactory::EAction item);
+//{
+//    return m_actionMap[item];
+//  }
 
   void createSwcNodeContextMenu();
   QMenu* getSwcNodeContextMenu();
@@ -154,6 +157,8 @@ public:
 
   void createBodyContextMenu();
   QMenu* getBodyContextMenu();
+
+  virtual QMenu* getContextMenu();
 
   bool isContextMenuOn();
 
@@ -480,6 +485,7 @@ protected:
 
   ZMouseEventProcessor m_mouseEventProcessor;
 
+  ZActionFactory *m_actionFactory;
   ZStackDocMenuFactory *m_menuFactory;
 
   int m_zOrder;

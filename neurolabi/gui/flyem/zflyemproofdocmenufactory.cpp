@@ -35,3 +35,22 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
 
   return menu;
 }
+
+QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
+    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+{
+  if (menu == NULL) {
+    menu = new QMenu(NULL);
+  }
+
+  QAction *action = presenter->getAction(
+        ZActionFactory::ACTION_SYNAPSE_ADD);
+  menu->addAction(action);
+
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_DELETE));
+
+  menu->addAction(presenter->getAction(
+                    ZActionFactory::ACTION_SYNAPSE_MOVE));
+
+  return menu;
+}

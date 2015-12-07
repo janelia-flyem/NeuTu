@@ -1,6 +1,7 @@
 #include "zactionfactory.h"
 #include <QWidget>
 #include <QObject>
+#include <QUndoStack>
 #include "zstackdoc.h"
 #include "zactionactivator.h"
 #include "zstackpresenter.h"
@@ -278,10 +279,35 @@ QAction* ZActionFactory::makeAction(
   return action;
 }
 
+QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
+{
+  return MakeAction(actionKey, parent);
+}
+
 QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
 {
   QAction *action = NULL;
   switch (actionKey) {
+  case ACTION_UNDO:
+  {
+    QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
+    if (undoStack != NULL) {
+      action = undoStack->createUndoAction(parent, "&Undo");
+      action->setIcon(QIcon(":/images/undo.png"));
+      action->setShortcuts(QKeySequence::Undo);
+    }
+  }
+    break;
+  case ACTION_REDO:
+  {
+    QUndoStack *undoStack = qobject_cast<QUndoStack*>(parent);
+    if (undoStack != NULL) {
+      action = undoStack->createRedoAction(parent, "&Redo");
+      action->setIcon(QIcon(":/images/redo.png"));
+      action->setShortcuts(QKeySequence::Redo);
+    }
+  }
+    break;
   case ACTION_SELECT_DOWNSTREAM:
     action = new QAction("Downstream", parent);
     action->setStatusTip("Select downstream nodes");

@@ -55,6 +55,8 @@ ZStackPresenter::~ZStackPresenter()
   delete m_strokePaintContextMenu;
   delete m_stackContextMenu;
   delete m_keyConfig;
+  delete m_actionFactory;
+  delete m_menuFactory;
 }
 
 ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
@@ -118,6 +120,7 @@ void ZStackPresenter::init()
   m_keyConfig = NULL;
 
   m_menuFactory = NULL;
+  m_actionFactory = new ZActionFactory;
 
   /*
   ZKeyOperationConfig::Configure(m_activeStrokeOperationMap,
@@ -158,6 +161,148 @@ void ZStackPresenter::configKeyMap()
   config->configure(
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
   config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
+}
+
+QAction* ZStackPresenter::getAction(ZActionFactory::EAction item) const
+{
+  QAction *action = NULL;
+
+  if (action == NULL) {
+    const_cast<ZStackPresenter&>(*this).makeAction(item);
+    if (m_actionMap.contains(item)) {
+      action = m_actionMap[item];
+    }
+    if (action == NULL) {
+      action = buddyDocument()->getAction(item);
+    }
+  }
+
+  return action;
+}
+
+void ZStackPresenter::makeAction(ZActionFactory::EAction item)
+{
+  if (!m_actionMap.contains(item)) {
+    QAction *action = m_actionFactory->makeAction(item, this);
+    m_actionMap[item] = action;
+
+    //Additional behaviors
+    if (action != NULL) {
+      switch (item) {
+      case ZActionFactory::ACTION_DELETE_SELECTED:
+        connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+        break;
+      case ZActionFactory::ACTION_FIT_ELLIPSE:
+        connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+        break;
+
+        //Puncta actions
+      case ZActionFactory::ACTION_PUNCTA_MARK:
+        connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
+        break;
+      case ZActionFactory::ACTION_PUNCTA_ENLARGE:
+        connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+        break;
+      case ZActionFactory::ACTION_PUNCTA_NARROW:
+        connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+        break;
+      case ZActionFactory::ACTION_PUNCTA_MEANSHIFT:
+        connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
+        break;
+      case ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL:
+        connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+        break;
+
+        //SWC actions
+      case ZActionFactory::ACTION_ADD_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(trySwcAddNodeMode()));
+        break;
+      case ZActionFactory::ACTION_TOGGLE_SWC_SKELETON:
+        connect(action, SIGNAL(triggered(bool)),
+                this, SLOT(toggleSwcSkeleton(bool)));
+        break;
+      case ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
+        connect(action, SIGNAL(triggered()),
+                getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+        break;
+      case ZActionFactory::ACTION_CONNECT_TO_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(enterSwcConnectMode()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_EXTEND_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(enterSwcExtendMode()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_MOVE_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(enterSwcMoveMode()));
+        break;
+      case ZActionFactory::ACTION_LOCK_SWC_NODE_FOCUS:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(lockSelectedSwcNodeFocus()));
+        break;
+      case ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(changeSelectedSwcNodeFocus()));
+        break;
+      case ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(estimateSelectedSwcRadius()));
+        break;
+
+        //Trace actions
+      case ZActionFactory::ACTION_TRACE:
+        connect(action, SIGNAL(triggered()), this, SLOT(traceTube()));
+        break;
+      case ZActionFactory::ACTION_FITSEG:
+        connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
+        break;
+      case ZActionFactory::ACTION_DROPSEG:
+        connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
+        break;
+
+        //stroke actions
+      case ZActionFactory::ACTION_PAINT_STROKE:
+        connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
+        break;
+      case ZActionFactory::ACTION_ADD_SPLIT_SEED:
+        connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
+        break;
+      case ZActionFactory::ACTION_ERASE_STROKE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(tryEraseStrokeMode()));
+        break;
+
+        //Body actions
+      case ZActionFactory::ACTION_BODY_ANNOTATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyAnnotationTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_SPLIT_START:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodySplitTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyForceCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKOUT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckoutTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_DECOMPOSE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyDecomposeTriggered()));
+        break;
+      default:
+        break;
+      }
+    }
+  }
 }
 
 void ZStackPresenter::clearData()
@@ -480,9 +625,11 @@ void ZStackPresenter::createSwcNodeContextMenu()
           buddyDocument(), getParentWidget(), m_swcNodeContextMenu);
     m_swcNodeContextMenu->addSeparator();
     m_swcNodeContextMenu->addAction(
-          m_actionMap[ZActionFactory::ACTION_ADD_SWC_NODE]);
+          getAction(ZActionFactory::ACTION_ADD_SWC_NODE));
+//          m_actionMap[ZActionFactory::ACTION_ADD_SWC_NODE]);
     m_swcNodeContextMenu->addAction(
-          m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
+          getAction(ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D));
+//          m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
 }
 
@@ -555,6 +702,11 @@ QMenu* ZStackPresenter::getStackContextMenu()
   }
 
   return m_stackContextMenu;
+}
+
+QMenu* ZStackPresenter::getContextMenu()
+{
+  return getStackContextMenu();
 }
 
 void ZStackPresenter::turnOnStroke()
@@ -1428,10 +1580,10 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Z:
     if (getParentMvc() != NULL) {
       if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
-        buddyDocument()->getRedoAction()->trigger();
+        buddyDocument()->getAction(ZActionFactory::ACTION_REDO)->trigger();
 //        buddyDocument()->undoStack()->redo();
       } else if (event->modifiers() == Qt::ControlModifier) {
-        buddyDocument()->getUndoAction()->trigger();
+        buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
 //        buddyDocument()->undoStack()->undo();
       }
     }
@@ -2522,8 +2674,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
     this->interactiveContext().restoreExploreMode();
     buddyView()->notifyViewPortChanged();
     break;
-  case ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU:
-    buddyView()->showContextMenu(getStackContextMenu(), currentWidgetPos);
+  case ZStackOperator::OP_SHOW_CONTEXT_MENU:
+    buddyView()->showContextMenu(getContextMenu(), currentWidgetPos);
     //status = CONTEXT_MENU_POPPED;
     break;
   case ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU:

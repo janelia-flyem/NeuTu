@@ -97,7 +97,9 @@ void ZDvidTile::updatePixmap()
 #if 1
 //  m_pixmap.cleanUp();
   if (m_pixmap != NULL) {
+#ifdef _DEBUG_
     std::cout << "Deleting " << m_pixmap << std::endl;
+#endif
     delete m_pixmap;
   }
   m_pixmap = new ZPixmap();
@@ -108,7 +110,9 @@ void ZDvidTile::updatePixmap()
   m_pixmap->cleanUp();
 #endif
   m_pixmap->convertFromImage(*m_image, Qt::ColorOnly);
+#ifdef _DEBUG_
   std::cout << "Has alpha: " << m_pixmap->hasAlphaChannel() << std::endl;
+#endif
   m_pixmap->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
   m_pixmap->setOffset(-getX(), -getY());
 }
@@ -323,9 +327,6 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z);
-//      m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-//      m_image->setOffset(-getX(), -getY());
-      //      setResolutionLevel(m_res.getLevel());
     }
 #endif
   }

@@ -12,7 +12,7 @@ class ZActionFactory
 {
 public:
   ZActionFactory();
-
+  virtual ~ZActionFactory() {}
 
   enum EAction {
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
@@ -48,7 +48,8 @@ public:
     ACTION_TRACE, ACTION_FITSEG, ACTION_DROPSEG, ACTION_FIT_ELLIPSE,
     ACTION_PUNCTA_MARK, ACTION_PUNCTA_ENLARGE, ACTION_PUNCTA_NARROW,
     ACTION_PUNCTA_MEANSHIFT, ACTION_PUNCTA_MEANSHIFT_ALL,
-    ACTION_DELETE_SELECTED
+    ACTION_DELETE_SELECTED,
+    ACTION_UNDO, ACTION_REDO
   };
 
   static QAction* makeAction(
@@ -60,6 +61,8 @@ public:
       ZActionActivator *activator = NULL, bool positive = true);
 
   static QAction *MakeAction(EAction actionKey, QObject *parent);
+
+  virtual QAction* makeAction(EAction actionKey, QObject *parent) const;
 };
 
 #endif // ZACTIONFACTORY_H
