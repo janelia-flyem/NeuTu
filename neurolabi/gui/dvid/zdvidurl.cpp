@@ -18,6 +18,7 @@ const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
 const std::string ZDvidUrl::m_synapseElementCommand = "element";
 const std::string ZDvidUrl::m_synapseElementsCommand = "elements";
+const std::string ZDvidUrl::m_synapseLabelCommand = "label";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -639,4 +640,14 @@ std::string ZDvidUrl::getSynapseUrl(
 {
   return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ(),
                        width, height, depth);
+}
+
+std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseLabelCommand << "/"
+         << label;
+
+  return stream.str();
 }

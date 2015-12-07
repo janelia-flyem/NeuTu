@@ -40,6 +40,8 @@ public:
 
   bool hit(double x, double y, double z);
 
+  void downloadForLabel(uint64_t label);
+
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);
 

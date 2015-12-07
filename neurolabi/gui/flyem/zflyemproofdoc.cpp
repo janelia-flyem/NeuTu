@@ -819,6 +819,31 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
+  ZDvidSynapseEnsemble se;
+  se.setDvidTarget(getDvidTarget());
+
+  se.downloadForLabel(bodyId);
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  std::vector<ZPunctum*> &tbar = synapse.first;
+  std::vector<ZPunctum*> &psd = synapse.second;
+
+
+
+  ZDvidSynapseEnsemble::SynapseIterator sIter(&se);
+  while (sIter.hasNext()) {
+    ZDvidSynapse &s = sIter.next();
+    if (s.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+      tbar.push_back(new ZPunctum(
+                       s.getPosition().getX(), s.getPosition().getY(),
+                       s.getPosition().getZ(), 50.0));
+    } else if (s.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+      psd.push_back(new ZPunctum(s.getPosition().getX(), s.getPosition().getY(),
+                                 s.getPosition().getZ(), 50.0));
+    }
+  }
+
+#if 0
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
   ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
         getObjectGroup().findFirstSameSource(
@@ -898,8 +923,9 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
     }
 
   }
-
+#endif
   return synapse;
+
 }
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)

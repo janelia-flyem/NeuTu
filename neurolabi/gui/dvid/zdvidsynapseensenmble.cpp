@@ -47,6 +47,25 @@ void ZDvidSynapseEnsemble::download(int z)
   }
 }
 
+void ZDvidSynapseEnsemble::downloadForLabel(uint64_t label)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label));
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (synapseJson.hasKey("Pos")) {
+      ZJsonArray posJson(synapseJson.value("Pos"));
+      int x = ZJsonParser::integerValue(posJson.at(0));
+      int y = ZJsonParser::integerValue(posJson.at(1));
+      int z = ZJsonParser::integerValue(posJson.at(2));
+
+      ZDvidSynapse& synapse = getSynapse(x, y, z);
+      synapse.loadJsonObject(synapseJson);
+    }
+  }
+}
+
 QVector<QMap<int, ZDvidSynapse> >& ZDvidSynapseEnsemble::getSlice(int z)
 {
   int zIndex = z - m_startZ;
