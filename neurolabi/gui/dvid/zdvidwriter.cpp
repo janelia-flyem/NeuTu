@@ -530,6 +530,11 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 bool ZDvidWriter::runCommand(const QString &command)
 {
   std::cout << command.toStdString() << std::endl;
+  if (command.length() <= 200) {
+    LINFO() << command;
+  } else {
+    LINFO() << command.left(200) << "...";
+  }
 //  qDebug() << command;
 
   QProcess process;
