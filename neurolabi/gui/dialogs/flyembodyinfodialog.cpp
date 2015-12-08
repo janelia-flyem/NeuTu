@@ -28,7 +28,7 @@
  * this dialog displays a list of bodies and their properties; data is
  * loaded from DVID
  *
- * to add/remove/alter columns in table:
+ * to add/remove/alter columns in body table:
  * -- in createModel(), change ncol
  * -- in setBodyHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
@@ -49,7 +49,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui->setupUi(this);
 
     // office phone number = random seed
-    // Too big for uint. Area code removed.
     qsrand(2094656);
     m_quitting = false;
 
@@ -419,7 +418,7 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
 
 void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
     // this method is a lot like importBookmarksDvid; where that method
-    //  (1) reads a json file from dvid, then (2) adds name,= & status 
+    //  (1) reads a json file from dvid, then (2) adds name, status 
     //  from different DVID call, this one just goes straight to step 
     //  two; as a result, a lot of the code is copied from there 
     //  (and should probably be refactored to remove duplication)
@@ -623,7 +622,7 @@ void FlyEmBodyInfoDialog::onLoadColorMap() {
 bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     // there's only so much we can do...but make an effort
 
-    // NOTE: this is the current hacky format; should be revised!
+    // NOTE: this format is a messy hack; should be revised!
 
     // it's an array
     if (!colors.isArray()) {
@@ -650,6 +649,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // we could keep going, but let's stop for now
+    // could also check:
     // key "color": array of four ints 0-255
     // key "filter": string
 
@@ -657,12 +657,10 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
 }
 
 void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
-    // validate; like DVID read, send error via signal
     if (!isValidColorMap(colors)) {
         // validator spits out its own errors
         return;
     }
-
 
     // clear existing color map and put in new values
     m_filterModel->clear();
