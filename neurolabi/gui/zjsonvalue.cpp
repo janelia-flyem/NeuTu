@@ -25,6 +25,14 @@ ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 #endif
 }
 
+ZJsonValue::ZJsonValue(const json_t *data, ESetDataOption option) : m_data(NULL)
+{
+  set(const_cast<json_t*>(data), option);
+#ifdef _DEBUG_2
+      std::cout << m_data << std::endl;
+#endif
+}
+
 ZJsonValue::ZJsonValue(const ZJsonValue &value) : m_data(NULL)
 {
   set(value.m_data, SET_INCREASE_REF_COUNT);

@@ -46,6 +46,9 @@ public:
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapse &synapse);
 
+  void clearPartner();
+  void addPartner(int x, int y, int z);
+
 private:
   void init();
   bool isVisible(int z);
@@ -56,6 +59,7 @@ private:
   double m_radius;
   EKind m_kind;
   std::vector<std::string> m_tagArray;
+  std::vector<ZIntPoint> m_partnerHint;
 };
 
 #endif // ZDVIDSYNAPSE_H

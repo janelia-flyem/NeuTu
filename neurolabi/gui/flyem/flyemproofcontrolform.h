@@ -46,6 +46,7 @@ signals:
   void selectingBody();
   void bookmarkChecked(QString, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void removingBookmark(ZFlyEmBookmark*);
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
   void clearingBodyMergeStage();

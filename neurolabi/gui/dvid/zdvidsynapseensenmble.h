@@ -34,10 +34,13 @@ public:
   QVector<QMap<int, ZDvidSynapse> >& getSlice(int z);
 
   void selectHit(bool appending);
+  void selectHitWithPartner(bool appending);
 
   const std::string& className() const;
 
   bool hit(double x, double y, double z);
+
+  void downloadForLabel(uint64_t label);
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);

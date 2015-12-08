@@ -14,6 +14,8 @@ class ProjectionDialog : public QDialog
 public:
   explicit ProjectionDialog(QWidget *parent = 0);
   ~ProjectionDialog();
+
+//  void updateWidget();
   
   int speedLevel() const;
   bool adjustingContrast() const;

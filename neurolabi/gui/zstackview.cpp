@@ -237,6 +237,7 @@ void ZStackView::connectSignalSlot()
           this, SIGNAL(currentSliceChanged(int)));
   */
 
+
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
 
@@ -540,8 +541,8 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen()
 {
-#ifdef _DEBUG_2
-  std::cout << "ZStackView::updateImageScreen" << std::endl;
+#ifdef _DEBUG_
+  std::cout << "ZStackView::updateImageScreen: index=" << m_depthControl->value() <<  std::endl;
 #endif
 
   updatePaintBundle();
@@ -738,7 +739,7 @@ void ZStackView::redraw(bool updatingScreen)
 //  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
 #if defined(_FLYEM_)
-  std::cout << "paint time per frame: " << timer.restart() << std::endl;
+  qDebug() << "paint time per frame: " << timer.restart();
 #endif
 }
 
@@ -2016,16 +2017,23 @@ void ZStackView::setView(const ZStackViewParam &param)
 void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
   qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
-
+  bool hasActiveSlice = false;
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
-  foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->setVisible(false);
+  if (buddyPresenter()->isObjectVisible()) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      if (slice->isVisible()) {
+        slice->setVisible(false);
+        hasActiveSlice = true;
+      }
+    }
   }
 
-  redraw();
+  redraw(!hasActiveSlice);
 
-  foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->setVisible(true);
+  if (hasActiveSlice) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      slice->setVisible(true);
+    }
   }
 
   notifyViewChanged();

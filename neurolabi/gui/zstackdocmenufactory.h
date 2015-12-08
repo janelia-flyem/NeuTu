@@ -38,6 +38,8 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   virtual QMenu* makeBodyContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+  virtual QMenu* makeSynapseContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 private:
   void init();

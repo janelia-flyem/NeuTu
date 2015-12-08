@@ -115,6 +115,19 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
       }
     }
 
+    if (mode == INTERACT_FREE) {
+      switch (synapseEditMode()) {
+      case SYNAPSE_ADD:
+        mode = INTERACT_ADD_SYNAPSE;
+        break;
+      case SYNAPSE_MOVE:
+        mode = INTERACT_MOVE_SYNAPSE;
+        break;
+      default:
+        break;
+      }
+    }
+
 //  } else {
 //    if (mode == INTERACT_FREE) {
 //    switch (exploreMode()) {

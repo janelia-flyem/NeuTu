@@ -93,7 +93,7 @@ ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
   setData(stack, dealloc);
 }
 
-ZStack::ZStack(const ZStack &src)
+ZStack::ZStack(const ZStack &/*src*/)
 {
 //  init();
 
@@ -1641,7 +1641,7 @@ bool ZStack::loadLSMInfo(const QString &filepath)
   fread(&ifd_offset, 4, 1, fp);
 
   fseek(fp, ifd_offset, SEEK_SET);
-  fread(&m_lsmInfo, sizeof(Cz_Lsminfo), 1, fp);
+  fread(&(m_lsmInfo.m_basicInfo), sizeof(Cz_Lsminfo), 1, fp);
 
   //m_channelColors.clear();
   initChannelColors();
@@ -1652,7 +1652,7 @@ bool ZStack::loadLSMInfo(const QString &filepath)
 
   if (m_lsmInfo.m_basicInfo.u32OffsetChannelColors != 0) {
     fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetChannelColors, SEEK_SET);
-    fread(&m_lsmInfo.m_lsmChannelInfo, sizeof(Lsm_Channel_Colors), 1, fp);
+    fread(&(m_lsmInfo.m_lsmChannelInfo), sizeof(Lsm_Channel_Colors), 1, fp);
 
     char *chStruct = new char[m_lsmInfo.m_lsmChannelInfo.s32BlockSize];
     fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetChannelColors, SEEK_SET);
@@ -1671,12 +1671,15 @@ bool ZStack::loadLSMInfo(const QString &filepath)
     }
 
     for (int ch=0; ch<m_lsmInfo.m_lsmChannelInfo.s32NumberColors; ++ch) {
-      QString chName;
-      if (m_lsmInfo.m_lsmChannelNames.size() > (size_t)ch)
-        chName = m_lsmInfo.m_lsmChannelNames[ch];
-      if (!chName.isEmpty())
-        m_channelColors[ch]->setName(chName);
-      m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+      if (m_lsmInfo.m_lsmChannelNames.size() > (size_t)ch &&
+          m_channelColors.size() > (size_t) ch) {
+        QString chName = m_lsmInfo.m_lsmChannelNames[ch];
+        if (!chName.isEmpty())
+          m_channelColors[ch]->setName(chName);
+        m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+      } else {
+        break;
+      }
     }
 
     delete[] chStruct;

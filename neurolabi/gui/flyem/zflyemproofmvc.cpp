@@ -2322,6 +2322,11 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
   */
 }
 
+void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  getCompleteDocument()->executeRemoveObjectCommand(bookmark);
+}
+
 void ZFlyEmProofMvc::cropCoarseBody3D()
 {
   if (m_coarseBodyWindow != NULL) {
@@ -2421,7 +2426,6 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   }
 #endif
 }
-
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 

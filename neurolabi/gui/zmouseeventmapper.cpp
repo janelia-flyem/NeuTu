@@ -470,8 +470,10 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
-        } else {
-          op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
+        }
+
+        if (op.isNull()) {
+          op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
         }
       } else {
 //        if (m_context->exploreMode())
