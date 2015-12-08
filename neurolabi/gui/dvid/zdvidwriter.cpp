@@ -772,7 +772,14 @@ uint64_t ZDvidWriter::writePartition(
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
+//      newBodyId = 0;//debugging
       if (newBodyId == 0) {
+        QString tmpPath = QString("%1/%2_Bsc.dvid").
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(oldLabel);
+        LINFO() << "Saving" << tmpPath << "for debugging.";
+        Bsc.exportDvidObject(tmpPath.toStdString());
+
         LERROR() << "Failed to write coarse split.";
         return 0;
       }
