@@ -2013,8 +2013,10 @@ void ZStackView::setView(const ZStackViewParam &param)
   updateView();
 }
 
-void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
+void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
+  qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
+
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->setVisible(false);
