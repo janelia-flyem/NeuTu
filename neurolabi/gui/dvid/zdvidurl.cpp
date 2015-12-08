@@ -213,6 +213,11 @@ std::string ZDvidUrl::getRepoUrl() const
   return getApiUrl() + "/repo/" + m_dvidTarget.getUuid();
 }
 
+std::string ZDvidUrl::getInfoUrl() const
+{
+  return getRepoUrl() + "/info";
+}
+
 std::string ZDvidUrl::getInstanceUrl() const
 {
   return getRepoUrl() + "/instance";

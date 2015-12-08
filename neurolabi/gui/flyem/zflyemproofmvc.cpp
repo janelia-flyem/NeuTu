@@ -53,6 +53,11 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
+  if (getDvidTarget().isValid()) {
+    LINFO() << "End using " << getDvidTarget().getUuid() << "@"
+            << getDvidTarget().getAddressWithPort();
+  }
+
   exitCurrentDoc();
 
   closeAllAssociatedWindow();
@@ -654,6 +659,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+  ZDvidReader reader;
+  if (!reader.open(target)) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the database.",
+                         NeuTube::MSG_WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
   exitCurrentDoc();
 
   getProgressSignal()->startProgress("Loading data ...");
@@ -702,10 +716,24 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      m_dvidInfo = reader.readGrayScaleInfo();
+
+    m_dvidInfo = reader.readGrayScaleInfo();
+
+    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
+        target.getAddressWithPort();
+
+    ZJsonObject infoJson = reader.readInfo();
+    if (infoJson.hasKey("Alias")) {
+      startLog += std::string("; Alias: ") +
+          ZJsonParser::stringValue(infoJson["Alias"]);
     }
+    if (infoJson.hasKey("Description")) {
+      startLog += std::string("; Description: ") +
+          ZJsonParser::stringValue(infoJson["Description"]);
+    }
+
+    LINFO() << startLog;
+
 
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(target);

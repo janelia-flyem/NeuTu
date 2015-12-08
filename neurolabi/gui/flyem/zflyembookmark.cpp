@@ -1,5 +1,6 @@
 #include "zflyembookmark.h"
 #include <iostream>
+#include <sstream>
 
 #include "zjsonobject.h"
 #include "tz_math.h"
@@ -201,6 +202,19 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       }
     }
   }
+}
+
+std::string ZFlyEmBookmark::toLogString() const
+{
+  std::ostringstream stream;
+  if (isCustom()) {
+    stream << "User ";
+  } else {
+    stream << "Assigned ";
+  }
+  stream << "bookmark @" << getCenter().toString() << " with ";
+  stream << "ID: " << getBodyId();
+  return stream.str();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

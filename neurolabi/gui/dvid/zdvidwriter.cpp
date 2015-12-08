@@ -529,7 +529,7 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 
 bool ZDvidWriter::runCommand(const QString &command)
 {
-  LINFO() << command;
+  std::cout << command.toStdString() << std::endl;
 //  qDebug() << command;
 
   QProcess process;
@@ -554,9 +554,6 @@ bool ZDvidWriter::runCommand(QProcess &process)
 std::string ZDvidWriter::post(
     const std::string &url, const char *payload, int length)
 {
-#ifdef _DEBUG_
-  std::cout << "HTTP POST: " << url << std::endl;
-#endif
   LINFO() << "HTTP POST: " << url;
   m_statusCode = 0;
   std::string response;
