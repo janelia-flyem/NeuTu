@@ -1671,12 +1671,16 @@ bool ZStack::loadLSMInfo(const QString &filepath)
     }
 
     for (int ch=0; ch<m_lsmChannelInfo.s32NumberColors; ++ch) {
-      QString chName;
-      if (m_lsmChannelNames.size() > (size_t)ch)
-        chName = m_lsmChannelNames[ch];
-      if (!chName.isEmpty())
-        m_channelColors[ch]->setName(chName);
-      m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+      if (m_lsmChannelNames.size() > (size_t)ch &&
+          m_channelColors.size() > (size_t) ch) {
+        QString chName = m_lsmChannelNames[ch];
+        if (!chName.isEmpty()) {
+          m_channelColors[ch]->setName(chName);
+        }
+        m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+      } else {
+        break;
+      }
     }
 
     delete[] chStruct;
