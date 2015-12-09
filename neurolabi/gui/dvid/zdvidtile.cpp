@@ -110,7 +110,7 @@ void ZDvidTile::updatePixmap()
   m_pixmap->cleanUp();
 #endif
   m_pixmap->convertFromImage(*m_image, Qt::ColorOnly);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Has alpha: " << m_pixmap->hasAlphaChannel() << std::endl;
 #endif
   m_pixmap->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());

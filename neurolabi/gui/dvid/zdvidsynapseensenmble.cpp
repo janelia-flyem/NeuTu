@@ -1,6 +1,7 @@
 #include "zdvidsynapseensenmble.h"
 #include "zdvidurl.h"
 #include "zpainter.h"
+#include "dvid/zdvidwriter.h"
 
 ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
 {
@@ -162,6 +163,21 @@ void ZDvidSynapseEnsemble::display(
   }
 }
 
+bool ZDvidSynapseEnsemble::deleteSynapse(int x, int y, int z)
+{
+  ZDvidWriter writer;
+  if (writer.open(m_dvidTarget)) {
+    writer.deleteSynapse(x, y, z);
+  }
+  QMap<int, ZDvidSynapse> &synapseMap = getSynapseMap(y, z);
+  if (synapseMap.contains(x)) {
+    synapseMap.remove(x);
+    return true;
+  }
+
+  return false;
+}
+
 ZDvidSynapse& ZDvidSynapseEnsemble::getSynapse(int x, int y, int z)
 {
   QMap<int, ZDvidSynapse> &synapseMap = getSynapseMap(y, z);
@@ -252,6 +268,11 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
   return false;
 }
 
+bool ZDvidSynapseEnsemble::hasSelected() const
+{
+  return !m_selector.getSelectedSet().empty();
+}
+
 std::ostream& operator<< (std::ostream &stream, const ZDvidSynapseEnsemble &se)
 {
   ZDvidSynapseEnsemble::SynapseIterator siter(&se);
@@ -325,3 +346,4 @@ ZDvidSynapse& ZDvidSynapseEnsemble::SynapseIterator::next()
 
   return const_cast<ZDvidSynapse&>(m_xIterator.next().value());
 }
+

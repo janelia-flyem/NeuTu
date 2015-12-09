@@ -45,6 +45,8 @@ public:
   static ZObject3dScan MakeObject3dScan(const ZIntCuboid &box);
 
   static ZStack* MakeBoundaryStack(const ZStack &stack);
+
+  static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
 };
 
 #endif // ZOBJECT3DFACTORY_H

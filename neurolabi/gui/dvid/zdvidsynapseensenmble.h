@@ -33,6 +33,8 @@ public:
   QMap<int, ZDvidSynapse>& getSynapseMap(int y, int z);
   QVector<QMap<int, ZDvidSynapse> >& getSlice(int z);
 
+  bool deleteSynapse(int x, int y, int z);
+
   void selectHit(bool appending);
   void selectHitWithPartner(bool appending);
 
@@ -41,6 +43,9 @@ public:
   bool hit(double x, double y, double z);
 
   void downloadForLabel(uint64_t label);
+
+  bool hasSelected() const;
+  const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);

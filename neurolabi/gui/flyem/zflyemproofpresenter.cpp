@@ -170,7 +170,14 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
 //    ZStackDocMenuFactory menuFactory;
     m_synapseContextMenu =
         getMenuFactory()->makeSynapseContextMenu(this, getParentWidget(), NULL);
+    connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
+            this, SLOT(deleteSelectedSynapse()));
   }
+}
+
+void ZFlyEmProofPresenter::deleteSelectedSynapse()
+{
+  getCompleteDocument()->deleteSelectedSynapse();
 }
 
 QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()

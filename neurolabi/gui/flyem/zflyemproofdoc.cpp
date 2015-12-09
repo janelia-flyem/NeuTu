@@ -327,6 +327,7 @@ void ZFlyEmProofDoc::annotateBody(
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
+    m_dvidWriter.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
   } else {
@@ -400,7 +401,29 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
 
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
-  return false;
+  return getDvidSynapseEnsemble()->hasSelected();
+}
+
+void ZFlyEmProofDoc::deleteSelectedSynapse()
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    bool changed = false;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      if (se->deleteSynapse(pt.getX(), pt.getY(), pt.getZ())) {
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      processObjectModified(getDvidSynapseEnsemble());
+      notifyObjectModified();
+    }
+  }
 }
 
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const

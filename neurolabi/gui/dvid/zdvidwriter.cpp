@@ -560,6 +560,31 @@ bool ZDvidWriter::runCommand(QProcess &process)
 }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+std::string ZDvidWriter::del(const std::string &url)
+{
+#ifdef _DEBUG_
+  std::cout << "HTTP DELETE: " << url << std::endl;
+  m_statusCode = 0;
+  std::string response;
+  try {
+    std::string endPoint = ZDvidUrl::GetEndPoint(url);
+    libdvid::BinaryDataPtr libdvidPayload;
+//    std::cout << libdvidPayload->get_data().size() << std::endl;
+    libdvid::BinaryDataPtr data = m_service->custom_request(
+          endPoint, libdvidPayload, libdvid::DELETE);
+
+    response = data->get_data();
+    m_statusCode = 200;
+//    m_buffer.append(data->get_data().c_str(), data->length());
+//    m_status = READ_OK;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+
+  return response;
+#endif
+}
+
 std::string ZDvidWriter::post(
     const std::string &url, const char *payload, int length)
 {
@@ -962,4 +987,10 @@ void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
 void ZDvidWriter::deleteAllCustomBookmark()
 {
   writeCustomBookmark(ZJsonArray());
+}
+
+void ZDvidWriter::deleteSynapse(int x, int y, int z)
+{
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getSynapseUrl(x, y, z));
 }

@@ -114,6 +114,8 @@ public:
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();
 
+  void deleteSynapse(int x, int y, int z);
+
   inline int getStatusCode() const {
     return m_statusCode;
   }
@@ -145,6 +147,7 @@ private:
   std::string post(const std::string &url, const QByteArray &payload);
   std::string post(const std::string &url, const char *payload, int length);
   std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string del(const std::string &url);
 #endif
 
   void parseStandardOutput();

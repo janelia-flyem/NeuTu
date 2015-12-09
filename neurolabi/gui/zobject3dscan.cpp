@@ -1199,10 +1199,13 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
   const std::map<std::pair<int, int>, size_t> &stripeMap = getStripeMap();
 
   size_t stripeNumber = getStripeNumber();
+  size_t round = stripeNumber / 10;
   for (size_t i = 0; i < stripeNumber - 1; ++i) {
 #ifdef _DEBUG_
-    if (i % (getStripeNumber() / 10) == 0) {
-      std::cout << "  " << i + 1 << "/" << stripeNumber << std::endl;
+    if (round > 0) {
+      if (i % round == 0) {
+        std::cout << "  " << i + 1 << "/" << stripeNumber << std::endl;
+      }
     }
 #endif
     //Check along Y
