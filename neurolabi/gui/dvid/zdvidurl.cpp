@@ -3,7 +3,7 @@
 #include "dvid/zdviddata.h"
 #include "zstring.h"
 #include "zintpoint.h"
-
+#include "zintcuboid.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -645,6 +645,12 @@ std::string ZDvidUrl::getSynapseUrl(
 {
   return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ(),
                        width, height, depth);
+}
+
+std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
+{
+  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+                       box.getDepth());
 }
 
 std::string ZDvidUrl::getSynapseUrl(uint64_t label) const

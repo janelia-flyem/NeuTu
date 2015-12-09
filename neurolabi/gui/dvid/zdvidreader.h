@@ -17,6 +17,7 @@
 #include "dvid/zdvidinfo.h"
 #include "zintcuboid.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidsynapse.h"
 
 class ZDvidFilter;
 class ZArray;
@@ -148,6 +149,9 @@ public:
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
+
+  std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
+  std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

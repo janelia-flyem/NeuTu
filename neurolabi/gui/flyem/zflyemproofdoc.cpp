@@ -842,6 +842,65 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(getDvidTarget())) {
+    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+//    int minZ = box.getFirstCorner().getZ();
+//    int maxZ = box.getLastCorner().getZ();
+
+    ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    std::vector<ZIntPoint> tbarPtArray;
+    std::vector<ZIntPoint> psdPtArray;
+    ZObject3dScan::ConstSegmentIterator segIter(&coarseBody);
+    while (segIter.hasNext()) {
+      const ZObject3dScan::Segment seg = segIter.next();
+      ZIntCuboid blockBox = dvidInfo.getBlockBox(
+            seg.getStart(), seg.getEnd(), seg.getY(), seg.getZ());
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(blockBox);
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+        ZIntPoint blockIndex = dvidInfo.getBlockIndex(synapse.getPosition());
+        if (box.contains(synapse.getPosition())) {
+          if (coarseBody.contains(blockIndex)) {
+            if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+              tbarPtArray.push_back(synapse.getPosition());
+            } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+              psdPtArray.push_back(synapse.getPosition());
+            }
+          }
+        }
+      }
+    }
+    if (!tbarPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.first;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(tbarPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = tbarPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+    if (!psdPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.second;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(psdPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = psdPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+  }
+
+#if 0
   ZDvidSynapseEnsemble se;
   se.setDvidTarget(getDvidTarget());
 
@@ -850,8 +909,6 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
   std::vector<ZPunctum*> &tbar = synapse.first;
   std::vector<ZPunctum*> &psd = synapse.second;
-
-
 
   ZDvidSynapseEnsemble::SynapseIterator sIter(&se);
   while (sIter.hasNext()) {
@@ -865,6 +922,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
                                  s.getPosition().getZ(), 50.0));
     }
   }
+#endif
 
 #if 0
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
