@@ -104,6 +104,8 @@ public:
 
   ZDvidInfo readGrayScaleInfo() const;
 
+  ZJsonObject readInfo() const;
+
   bool hasData(const std::string &key) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
@@ -144,8 +146,8 @@ public:
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
-  ZJsonObject readJsonObject(const std::string &url);
-  ZJsonArray readJsonArray(const std::string &url);
+  ZJsonObject readJsonObject(const std::string &url) const;
+  ZJsonArray readJsonArray(const std::string &url) const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

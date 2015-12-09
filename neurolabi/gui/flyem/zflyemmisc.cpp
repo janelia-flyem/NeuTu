@@ -401,7 +401,9 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
     window->getDocument()->addObject(graph, true);
-    window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+    if (window->isBackgroundOn()) {
+      window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+    }
   }
 }
 

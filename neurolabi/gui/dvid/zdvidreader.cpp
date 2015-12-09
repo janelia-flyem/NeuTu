@@ -638,6 +638,13 @@ bool ZDvidReader::isReadingDone()
   return m_isReadingDone;
 }
 
+ZJsonObject ZDvidReader::readInfo() const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonObject(url.getInfoUrl());
+}
+
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader reader;
@@ -1558,7 +1565,7 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
   return annotation;
 }
 
-ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
+ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 {
   ZJsonObject obj;
 
@@ -1572,7 +1579,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url)
   return obj;
 }
 
-ZJsonArray ZDvidReader::readJsonArray(const std::string &url)
+ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
 {
   ZJsonArray obj;
 

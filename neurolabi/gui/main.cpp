@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
   QsLogging::DestinationPtr fileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           sLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
+          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(50)));
   QsLogging::DestinationPtr debugDestination(
         QsLogging::DestinationFactory::MakeDebugOutputDestination());
   logger.addDestination(debugDestination);

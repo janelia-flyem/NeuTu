@@ -538,7 +538,12 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 
 bool ZDvidWriter::runCommand(const QString &command)
 {
-  LINFO() << command;
+  std::cout << command.toStdString() << std::endl;
+  if (command.length() <= 200) {
+    LINFO() << command;
+  } else {
+    LINFO() << command.left(200) << "...";
+  }
 //  qDebug() << command;
 
   QProcess process;
@@ -588,9 +593,6 @@ std::string ZDvidWriter::del(const std::string &url)
 std::string ZDvidWriter::post(
     const std::string &url, const char *payload, int length)
 {
-#ifdef _DEBUG_
-  std::cout << "HTTP POST: " << url << std::endl;
-#endif
   LINFO() << "HTTP POST: " << url;
   m_statusCode = 0;
   std::string response;
@@ -804,7 +806,14 @@ uint64_t ZDvidWriter::writePartition(
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
+//      newBodyId = 0;//debugging
       if (newBodyId == 0) {
+        QString tmpPath = QString("%1/%2_Bsc.dvid").
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(oldLabel);
+        LINFO() << "Saving" << tmpPath << "for debugging.";
+        Bsc.exportDvidObject(tmpPath.toStdString());
+
         LERROR() << "Failed to write coarse split.";
         return 0;
       }

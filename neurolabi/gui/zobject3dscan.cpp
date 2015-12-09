@@ -764,6 +764,8 @@ void ZObject3dScan::canonize()
   if (!isEmpty() && !isCanonized()) {
     sort();
 
+    std::cout << "Sorting done in canozing" << std::endl;
+
 #ifdef _DEBUG_2
   int count = 0;
   int ncount = 0;
@@ -796,6 +798,7 @@ void ZObject3dScan::canonize()
     }
 
     newStripeArray.resize(length);
+    std::cout << length << " stripes finalized." << std::endl;
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);
@@ -1348,6 +1351,8 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
          iter != subGraph.end(); ++iter, ++index) {
 #if 1
       std::cout << "  " << index + 1 << "/" << subGraph.size() << std::endl;
+      std::cout << "  Processing " << (*iter)->getEdgeNumber() << " edges"
+                << std::endl;
 #endif
       ZObject3dScan subobj;
       for (int edgeIndex = 0; edgeIndex < (*iter)->getEdgeNumber(); ++edgeIndex) {
@@ -1361,12 +1366,16 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
         isAdded[v1] = true;
         isAdded[v2] = true;
       }
-
+#if 1
+      std::cout << "  Edge processing done." << std::endl;
+#endif
       switch (ppAction) {
       case ACTION_CANONIZE:
+        std::cout << "  Canonizing ..." << std::endl;
         subobj.canonize();
         break;
       case ACTION_SORT_YZ:
+        std::cout << "  Sorting ..." << std::endl;
         subobj.sort();
         break;
       default:
@@ -1377,6 +1386,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
 //      subobj.setCanonized(true);
 //      TZ_ASSERT(subobj.isCanonizedActually(), "Inconsisten data assumption");
 //      subobj.canonize();
+
       objArray.push_back(subobj);
     }
 

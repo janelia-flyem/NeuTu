@@ -2467,6 +2467,11 @@ void Z3DWindow::changeBackground()
   tab->setCurrentIndex(index);
 }
 
+bool Z3DWindow::isBackgroundOn() const
+{
+  return m_compositor->showingBackground();
+}
+
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);

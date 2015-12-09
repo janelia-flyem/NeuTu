@@ -22,6 +22,7 @@ public:
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
   std::string getInfoUrl(const std::string &dataName) const;
+  std::string getInfoUrl() const;
   std::string getHelpUrl() const;
   std::string getServerInfoUrl() const;
   std::string getApiUrl() const;
