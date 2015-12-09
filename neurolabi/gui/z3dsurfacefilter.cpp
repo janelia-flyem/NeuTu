@@ -1,19 +1,7 @@
 #include "z3dsurfacefilter.h"
-#include "z3dcuberenderer.h"
 #include "neutubeconfig.h"
 
 using namespace std;
-
-//
-Z3DCube::Z3DCube()
-{
-
-}
-
-Z3DCube::~Z3DCube()
-{
-
-}
 
 //
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
@@ -97,10 +85,8 @@ void Z3DSurfaceFilter::prepareData()
     //
     for (size_t i = 0; i < m_cubeArray.size(); ++i) {
       const Z3DCube &cube = m_cubeArray[i];
-      m_cubeRenderer->addCube(
-            cube.length, cube.x, cube.y, cube.z, cube.color. cube.b_visible);
+      m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
     }
-
 
     m_dataIsInvalid = false;
 }

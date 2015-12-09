@@ -18573,6 +18573,7 @@ void ZTest::test(MainWindow *host)
 
   window->show();
   window->raise();
+#endif
 
 #if 0
   std::cout << "message testing ..." << std::endl;
