@@ -6,6 +6,8 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 
+class ZIntPoint;
+
 class ZDvidUrl
 {
 public:
@@ -152,8 +154,12 @@ public:
 
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
+  std::string getSynapseUrl(const ZIntPoint &pos) const;
+  std::string getSynapseUrl(const ZIntPoint &pos,
+                            int width, int height, int depth) const;
   std::string getSynapseUrl(int x, int y, int z,
                             int width, int height, int depth) const;
+  std::string getSynapseUrl(uint64_t label) const;
 
 private:
   std::string getSplitUrl(
@@ -176,6 +182,7 @@ private:
   static const std::string m_roiCommand;
   static const std::string m_synapseElementCommand;
   static const std::string m_synapseElementsCommand;
+  static const std::string m_synapseLabelCommand;
 };
 
 #endif // ZDVIDURL_H

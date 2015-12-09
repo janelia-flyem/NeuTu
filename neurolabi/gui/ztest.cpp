@@ -18442,7 +18442,8 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 #endif
 
-#if 0
+#if 1
+#if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
   std::cout << "Reading tiles ..." << std::endl;
 
@@ -18477,6 +18478,7 @@ void ZTest::test(MainWindow *host)
       sleeper.sleep(60);
     }
   }
+#endif
 #endif
 
 #if 0
@@ -18581,7 +18583,7 @@ void ZTest::test(MainWindow *host)
   qWarning() << "Warning message test";
 #endif
 
-#if 1
+#if 0
   ZDvidSynapse synapse;
   synapse.setPosition(30, 30, 30);
   synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);

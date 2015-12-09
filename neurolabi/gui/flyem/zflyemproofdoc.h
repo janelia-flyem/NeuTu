@@ -50,6 +50,8 @@ public:
   ZDvidLabelSlice* getDvidLabelSlice() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
 
+  bool hasDvidSynapseSelected() const;
+
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
 

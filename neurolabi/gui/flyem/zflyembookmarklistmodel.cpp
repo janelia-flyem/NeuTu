@@ -116,6 +116,14 @@ bool ZFlyEmBookmarkListModel::removeRows(
 {
   if (count > 0) {
     beginRemoveRows(parent, row, row + count - 1);
+
+    QVector<ZFlyEmBookmark*> removing;
+    for (int i = row; i < count; ++i) {
+      ZFlyEmBookmark *bookmark = getBookmark(i);
+      removing.append(bookmark);
+    }
+    m_bookmarkArray.remove(removing);
+
     endRemoveRows();
 
     return true;

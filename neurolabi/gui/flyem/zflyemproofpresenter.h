@@ -56,6 +56,11 @@ public:
 
   ZFlyEmProofDoc* getCompleteDocument() const;
 
+  void createSynapseContextMenu();
+  QMenu* getSynapseContextMenu();
+
+  QMenu* getContextMenu();
+
 private:
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
@@ -82,6 +87,8 @@ private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+
+  QMenu *m_synapseContextMenu;
 
   ZKeyOperationMap m_bookmarkKeyOperationMap;
 };

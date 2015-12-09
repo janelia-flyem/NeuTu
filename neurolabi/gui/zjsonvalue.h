@@ -26,6 +26,7 @@ public:
   ZJsonValue(json_t *data, bool asNew);
 
   ZJsonValue(json_t *data, ESetDataOption option);
+  ZJsonValue(const json_t *data, ESetDataOption option);
 
   /*!
    * \brief Constructor

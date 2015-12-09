@@ -71,6 +71,15 @@ void ZDvidSynapse::display(
     painter.setPen(pen);
     painter.drawRect(rect);
   }
+
+  if (isSelected()) {
+    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+         iter != m_partnerHint.end(); ++iter) {
+      ZIntPoint pos = *iter;
+      painter.drawLine(getPosition().getX(), getPosition().getY(),
+                       pos.getX(), pos.getY());
+    }
+  }
 }
 
 void ZDvidSynapse::setPosition(const ZIntPoint &pos)
@@ -192,6 +201,16 @@ std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
          << synapse.getPosition().getZ() << ")";
 
   return stream;
+}
+
+void ZDvidSynapse::clearPartner()
+{
+  m_partnerHint.clear();
+}
+
+void ZDvidSynapse::addPartner(int x, int y, int z)
+{
+  m_partnerHint.push_back(ZIntPoint(x, y, z));
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
