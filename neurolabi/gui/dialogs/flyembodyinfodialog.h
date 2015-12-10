@@ -26,6 +26,7 @@ public slots:
 
 signals:
   void bodyActivated(uint64_t bodyId);
+  void addBodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
   void jsonLoadBookmarksError(QString message);
   void jsonLoadColorMapError(QString message);

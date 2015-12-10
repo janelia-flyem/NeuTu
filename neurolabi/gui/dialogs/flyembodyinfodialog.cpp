@@ -121,7 +121,16 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
     std::cout << bodyId << " activated." << std::endl;
 #endif
 
-    emit bodyActivated(bodyId);
+    // double-click = select and goto
+    // shift-double-click = select and goto, but don't clear previous bodies from 3d views
+    Qt::KeyboardModifiers modifiers  = QApplication::queryKeyboardModifiers();
+    if (modifiers.testFlag(Qt::ShiftModifier)) {
+        emit addBodyActivated(bodyId);
+    } else {
+        // technically also catches alt, ctrl double-click
+        emit bodyActivated(bodyId);
+    }
+
   }
 }
 
