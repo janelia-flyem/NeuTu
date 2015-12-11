@@ -172,12 +172,20 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
         getMenuFactory()->makeSynapseContextMenu(this, getParentWidget(), NULL);
     connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
             this, SLOT(deleteSelectedSynapse()));
+    connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD), SIGNAL(triggered()),
+            this, SLOT(tryAddSynapseMode()));
   }
 }
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
   getCompleteDocument()->deleteSelectedSynapse();
+}
+
+void ZFlyEmProofPresenter::tryAddSynapseMode()
+{
+  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_ADD);
+  updateCursor();
 }
 
 QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
@@ -243,6 +251,11 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode()
   tryAddBookmarkMode(pos.x(), pos.y());
 }
 
+void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
+{
+  getCompleteDocument()->addSynapse(pt);
+}
+
 void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 {
   interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
@@ -287,6 +300,9 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
 void ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
+  const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
@@ -315,6 +331,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_ADD:
+    tryAddSynapse(currentStackPos.toIntPoint());
     break;
   default:
     break;

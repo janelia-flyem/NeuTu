@@ -18774,7 +18774,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
 
@@ -18798,7 +18798,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   while (1) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
-          ZIntCuboid(0, 0, 0, 100, 100, 100));
+          ZIntCuboid(0, 0, 0, 200, 200, 200));
     obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
     if (!obj.isCanonizedActually()) {
@@ -18821,7 +18821,33 @@ void ZTest::test(MainWindow *host)
       std::cout << "Bug found: Unmatched volume." << std::endl;
       break;
     }
+
+    for (size_t i = 0; i < objArray.size(); ++i) {
+      for (size_t j = 0; j < objArray.size(); ++j) {
+        if (i != j) {
+          ZObject3dScan &obj1 = objArray[i];
+          ZObject3dScan &obj2 = objArray[j];
+          if (obj1.isAdjacentTo(obj2)) {
+            std::cout << "Bug found: Adjacent disjoints." << std::endl;
+            break;
+          }
+        }
+      }
+    }
   }
+
+#endif
+
+#if 0
+  ZDvidSynapse synapse;
+  synapse.setPosition(1, 2, 3);
+  synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse.addPartner(4, 5, 6);
+  synapse.addPartner(7, 8, 9);
+  synapse.addTag("test");
+  synapse.addTag("test2");
+
+  std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

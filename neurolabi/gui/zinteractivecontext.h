@@ -104,6 +104,8 @@ public:
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
   inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
+  inline void setSynapseEditMode(SynapseEditMode mode) {
+    m_synapseEditMode = mode; }
   inline void setBookmarkEditMode(BookmarkEditMode mode)
   { m_bookmarkEditMode = mode; }
 

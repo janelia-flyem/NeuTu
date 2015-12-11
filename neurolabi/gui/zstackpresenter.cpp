@@ -2165,6 +2165,13 @@ void ZStackPresenter::exitBookmarkEdit()
   m_interactiveContext.setExitingEdit(true);
 }
 
+void ZStackPresenter::exitSynapseEdit()
+{
+  interactiveContext().setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+  updateCursor();
+  m_interactiveContext.setExitingEdit(true);
+}
+
 void ZStackPresenter::deleteSwcNode()
 {
   buddyDocument()->executeDeleteSwcNodeCommand();
@@ -2250,7 +2257,9 @@ void ZStackPresenter::updateCursor()
              ZInteractiveContext::SWC_EDIT_LOCK_FOCUS) {
     buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else if (interactiveContext().swcEditMode() ==
-             ZInteractiveContext::SWC_EDIT_ADD_NODE){
+             ZInteractiveContext::SWC_EDIT_ADD_NODE ||
+             interactiveContext().synapseEditMode() ==
+             ZInteractiveContext::SYNAPSE_ADD){
     if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
       buddyView()->setScreenCursor(Qt::PointingHandCursor);
     } else {
@@ -2718,6 +2727,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
     exitStrokeEdit();
     exitRectEdit();
     exitBookmarkEdit();
+    exitSynapseEdit();
     enterSwcSelectMode();
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:

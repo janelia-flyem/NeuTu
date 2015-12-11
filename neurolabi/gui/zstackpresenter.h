@@ -308,6 +308,7 @@ public slots:
   void tryDrawRectMode();
   void exitRectEdit();
   void exitBookmarkEdit();
+  void exitSynapseEdit();
 
   void selectDownstreamNode();
   void selectSwcNodeConnection(Swc_Tree_Node *lastSelected = NULL);

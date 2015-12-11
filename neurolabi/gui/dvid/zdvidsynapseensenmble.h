@@ -19,21 +19,30 @@ public:
   ZDvidSynapseEnsemble();
   virtual ~ZDvidSynapseEnsemble() {}
 
+  enum EDataScope {
+    DATA_GLOBAL, DATA_LOCAL, DATA_SYNC
+  };
+
   void setDvidTarget(const ZDvidTarget &target);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
-  void removeSynapse(int x, int y, int z);
+  bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
+  bool removeSynapse(int x, int y, int z, EDataScope scope);
 
-  void addSynapse(const ZDvidSynapse &synapse);
+  void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
+//  void commitSynapse(const ZIntPoint &pt);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
-  ZDvidSynapse &getSynapse(int x, int y, int z);
-  ZDvidSynapse &getSynapse(const ZIntPoint &center);
+  ZDvidSynapse &getSynapse(int x, int y, int z, EDataScope scope);
+  ZDvidSynapse &getSynapse(const ZIntPoint &center, EDataScope scope);
 
   QMap<int, ZDvidSynapse>& getSynapseMap(int y, int z);
   QVector<QMap<int, ZDvidSynapse> >& getSlice(int z);
 
-  bool deleteSynapse(int x, int y, int z);
+//  bool deleteSynapse(int x, int y, int z);
+
+  bool hasLocalSynapse(int x, int y, int z) const;
 
   void selectHit(bool appending);
   void selectHitWithPartner(bool appending);
@@ -73,9 +82,12 @@ public:
 
 private:
   void download(int z);
+  void update(int x, int y, int z);
+  void update(const ZIntPoint &pt);
 
 private:
   QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;
+  ZDvidSynapse m_emptySynapse;
 
   int m_startZ;
   int m_startY;

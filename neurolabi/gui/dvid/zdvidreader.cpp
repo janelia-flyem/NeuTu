@@ -1631,3 +1631,14 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 
   return synapseArray;
 }
+
+ZDvidSynapse ZDvidReader::readSynapse(int x, int y, int z)
+{
+  std::vector<ZDvidSynapse> synapseArray =
+      readSynapse(ZIntCuboid(x, y, z, x, y, z));
+  if (!synapseArray.empty()) {
+    return synapseArray[0];
+  }
+
+  return ZDvidSynapse();
+}

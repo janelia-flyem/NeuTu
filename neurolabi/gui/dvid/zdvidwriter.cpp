@@ -603,7 +603,7 @@ std::string ZDvidWriter::post(
       libdvidPayload =
         libdvid::BinaryData::create_binary_data(payload, length);
     }
-    std::cout << libdvidPayload->get_data().size() << std::endl;
+//    std::cout << libdvidPayload->get_data().size() << std::endl;
     libdvid::BinaryDataPtr data = m_service->custom_request(
           endPoint, libdvidPayload, libdvid::POST);
 
@@ -616,6 +616,11 @@ std::string ZDvidWriter::post(
   }
 
   return response;
+}
+
+std::string ZDvidWriter::post(const std::string &url)
+{
+  return post(url, NULL, 0);
 }
 
 std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
@@ -1002,4 +1007,19 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
   ZDvidUrl url(m_dvidTarget);
   del(url.getSynapseUrl(x, y, z));
+}
+
+void ZDvidWriter::writeSynapse(const ZDvidSynapse &synapse)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray synapseJson;
+  synapseJson.append(synapse.toJsonObject());
+
+  writeJson(url.getSynapseElementsUrl(), synapseJson);
+}
+
+void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
+{
+  ZDvidUrl url(m_dvidTarget);
+  post(url.getSynapseMoveUrl(from, to));
 }

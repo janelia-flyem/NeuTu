@@ -196,6 +196,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
         op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
         break;
+      case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
+        break;
       default:
         break;
       }

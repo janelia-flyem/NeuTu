@@ -582,7 +582,7 @@ void FlyEmBodyInfoDialog::onExportBodies() {
     }
 }
 
-void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
+void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*/) {
     // note: oldFilter currently unused; I was thinking about allowing an edit
     //  to a filter that would replace an older filter but didn't implement it
 

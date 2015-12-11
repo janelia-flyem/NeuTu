@@ -163,6 +163,9 @@ public:
                             int width, int height, int depth) const;
   std::string getSynapseUrl(const ZIntCuboid &box) const;
   std::string getSynapseUrl(uint64_t label) const;
+  std::string getSynapseElementsUrl() const;
+  std::string getSynapseMoveUrl(
+      const ZIntPoint &from, const ZIntPoint &to) const;
 
 private:
   std::string getSplitUrl(
@@ -186,6 +189,7 @@ private:
   static const std::string m_synapseElementCommand;
   static const std::string m_synapseElementsCommand;
   static const std::string m_synapseLabelCommand;
+  static const std::string m_synapseMoveCommand;
 };
 
 #endif // ZDVIDURL_H

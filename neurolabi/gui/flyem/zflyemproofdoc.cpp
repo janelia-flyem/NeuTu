@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QtConcurrentRun>
 #include <QMessageBox>
+#include <QElapsedTimer>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -148,13 +149,6 @@ void ZFlyEmProofDoc::recordAnnotation(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
 {
   m_annotationMap[bodyId] = anno;
-  /*
-  if (m_annotationMap.count(bodyId) == 0) {
-    m_annotationMap[bodyId] = anno;
-  } else {
-    m_annotationMap[bodyId].mergeAnnotation(anno);
-  }
-  */
 }
 
 void ZFlyEmProofDoc::cleanBodyAnnotationMap()
@@ -401,7 +395,27 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
 
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
-  return getDvidSynapseEnsemble()->hasSelected();
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    return getDvidSynapseEnsemble()->hasSelected();
+  }
+
+  return false;
+}
+
+void ZFlyEmProofDoc::addSynapse(const ZIntPoint &pt)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    ZDvidSynapse synapse;
+    synapse.setPosition(pt);
+    synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+    synapse.setDefaultRadius();
+    synapse.setDefaultColor();
+    se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    processObjectModified(se);
+    notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofDoc::deleteSelectedSynapse()
@@ -414,13 +428,13 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
     for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
-      if (se->deleteSynapse(pt.getX(), pt.getY(), pt.getZ())) {
+      if (se->removeSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL)) {
         changed = true;
       }
     }
 
     if (changed) {
-      processObjectModified(getDvidSynapseEnsemble());
+      processObjectModified(se);
       notifyObjectModified();
     }
   }
@@ -842,15 +856,22 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
+  QElapsedTimer timer;
+  timer.start();
+
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
   ZDvidReader reader;
   reader.setVerbose(false);
   if (reader.open(getDvidTarget())) {
-    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+//    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+//    qDebug() << "Bounding box reading time" << timer.restart();
 //    int minZ = box.getFirstCorner().getZ();
 //    int maxZ = box.getLastCorner().getZ();
 
     ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+
+    qDebug() << "Coarse body reading time" << timer.restart();
+
     ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     std::vector<ZIntPoint> tbarPtArray;
     std::vector<ZIntPoint> psdPtArray;
@@ -863,18 +884,15 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
         const ZDvidSynapse &synapse = *iter;
-        ZIntPoint blockIndex = dvidInfo.getBlockIndex(synapse.getPosition());
-        if (box.contains(synapse.getPosition())) {
-          if (coarseBody.contains(blockIndex)) {
-            if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
-              tbarPtArray.push_back(synapse.getPosition());
-            } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
-              psdPtArray.push_back(synapse.getPosition());
-            }
-          }
+        if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+          tbarPtArray.push_back(synapse.getPosition());
+        } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+          psdPtArray.push_back(synapse.getPosition());
         }
       }
     }
+    qDebug() << "Coarse body screening time" << timer.restart();
+
     if (!tbarPtArray.empty()) {
       std::vector<ZPunctum*> &puncta = synapse.first;
       std::vector<uint64_t> idArray = reader.readBodyIdAt(tbarPtArray);
@@ -898,6 +916,8 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
         }
       }
     }
+
+    qDebug() << "Final verifying time" << timer.elapsed();
   }
 
 #if 0

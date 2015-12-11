@@ -13,7 +13,7 @@ class ZDvidSynapse : public ZStackObject
 public:
   ZDvidSynapse();
 
-  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN };
+  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
@@ -28,6 +28,8 @@ public:
 
   void setKind(EKind kind) { m_kind = kind; }
   EKind getKind() const { return m_kind; }
+  static std::string GetKindName(EKind kind);
+  static EKind GetKind(const std::string &name);
 
 //  void setTag(const std::string &tag) { m_tag = tag; }
 
@@ -40,6 +42,7 @@ public:
   bool hit(double x, double y, double z);
 
   void loadJsonObject(const ZJsonObject &obj);
+  ZJsonObject toJsonObject() const;
 
   void clear();
 
@@ -48,10 +51,14 @@ public:
 
   void clearPartner();
   void addPartner(int x, int y, int z);
+  void addTag(const std::string &tag);
+
+  bool isValid() const;
 
 private:
   void init();
   bool isVisible(int z);
+  ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
 
 private:

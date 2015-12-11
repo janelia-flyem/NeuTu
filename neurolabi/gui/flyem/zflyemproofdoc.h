@@ -179,6 +179,7 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
+  void addSynapse(const ZIntPoint &pt);
 
 protected:
   void autoSave();

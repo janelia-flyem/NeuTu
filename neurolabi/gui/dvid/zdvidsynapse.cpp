@@ -3,6 +3,8 @@
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zjsonfactory.h"
+#include "zjsonarray.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -12,7 +14,7 @@ ZDvidSynapse::ZDvidSynapse()
 void ZDvidSynapse::init()
 {
   m_projectionVisible = false;
-  m_kind = KIND_UNKNOWN;
+  m_kind = KIND_INVALID;
   setDefaultRadius();
 }
 
@@ -140,9 +142,14 @@ bool ZDvidSynapse::hit(double x, double y)
 void ZDvidSynapse::clear()
 {
   m_position.set(0, 0, 0);
-  m_kind = KIND_UNKNOWN;
+  m_kind = KIND_INVALID;
   m_tagArray.clear();
   setDefaultRadius();
+}
+
+bool ZDvidSynapse::isValid() const
+{
+  return getKind() != KIND_INVALID;
 }
 
 void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
@@ -156,6 +163,8 @@ void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
 
     if (obj.hasKey("Kind")) {
       setKind(ZJsonParser::stringValue(obj["Kind"]));
+    } else {
+      setKind(KIND_UNKNOWN);
     }
 
     if (obj.hasKey("Tags")) {
@@ -211,6 +220,89 @@ void ZDvidSynapse::clearPartner()
 void ZDvidSynapse::addPartner(int x, int y, int z)
 {
   m_partnerHint.push_back(ZIntPoint(x, y, z));
+}
+
+void ZDvidSynapse::addTag(const std::string &tag)
+{
+  m_tagArray.push_back(tag);
+}
+
+std::string ZDvidSynapse::GetKindName(EKind kind)
+{
+  switch (kind) {
+  case ZDvidSynapse::KIND_POST_SYN:
+    return "PostSyn";
+  case ZDvidSynapse::KIND_PRE_SYN:
+    return "PreSyn";
+  default:
+    break;
+  }
+
+  return "Unknown";
+}
+
+ZDvidSynapse::EKind ZDvidSynapse::GetKind(const std::string &name)
+{
+  if (name == "PostSyn") {
+    return ZDvidSynapse::KIND_POST_SYN;
+  } else if (name == "PreSyn") {
+    return ZDvidSynapse::KIND_PRE_SYN;
+  }
+
+  return ZDvidSynapse::KIND_UNKNOWN;
+}
+
+ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
+{
+  std::string rel;
+  switch (getKind()) {
+  case ZDvidSynapse::KIND_POST_SYN:
+    rel = "PostSynTo";
+    break;
+  case ZDvidSynapse::KIND_PRE_SYN:
+    rel = "PreSynTo";
+    break;
+  default:
+    rel = "UnknownRelationship";
+  }
+
+  ZJsonObject relJson;
+  relJson.setEntry("Rel", rel);
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(pt);
+  relJson.setEntry("To", posJson);
+
+  return relJson;
+}
+
+ZJsonObject ZDvidSynapse::toJsonObject() const
+{
+  ZJsonObject obj;
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
+  obj.setEntry("Pos", posJson);
+  obj.setEntry("Kind", GetKindName(getKind()));
+  if (!m_partnerHint.empty()) {
+    ZJsonArray relArrayJson;
+    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+         iter != m_partnerHint.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      relArrayJson.append(makeRelJson(pt));
+    }
+    obj.setEntry("Rels", relArrayJson);
+  }
+
+  if (!m_tagArray.empty()) {
+    ZJsonArray tagJson;
+    for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
+         iter != m_tagArray.end(); ++iter) {
+      const std::string &tag = *iter;
+      tagJson.append(tag);
+    }
+    obj.setEntry("Tag", tagJson);
+  }
+
+  return obj;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
