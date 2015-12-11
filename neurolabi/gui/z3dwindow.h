@@ -288,6 +288,7 @@ public slots:
   void punctaChanged();
   void updateNetworkDisplay();
   void update3DGraphDisplay();
+  void update3DCubeDisplay();
 //  void updateDecorationDisplay();
   void updateDisplay();
 

@@ -51,6 +51,7 @@
 #include "zobjectcolorscheme.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "zactionfactory.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -120,6 +121,7 @@ public:
     SWC_DATA, PUNCTA_DATA, STACK_DATA, NETWORK_DATA
   };
 
+#if 0
   enum EActionItem {
     ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_MEASURE_SCALED_SWC_NODE_LENGTH,
     ACTION_SWC_SUMMARIZE,
@@ -138,7 +140,7 @@ public:
     ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
     ACTION_SWC_INTERPOLATION
   };
-
+#endif
   enum EObjectModifiedMode {
     OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
   };
@@ -312,10 +314,9 @@ public: //attributes
 
   //void setStackMask(ZStack *stack);
 
-  void createActions();
-  inline QAction* getAction(EActionItem item) const {
-    return m_actionMap[item];
-  }
+//  void createActions();
+  QAction* getAction(ZActionFactory::EAction item) const;
+  virtual void makeAction(ZActionFactory::EAction item);
 
   void updateSwcNodeAction();
 
@@ -865,6 +866,7 @@ public:
   void notifyStrokeModified();
   //void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notify3DCubeModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -904,8 +906,8 @@ public:
                               const std::set<ZStackObject*> &deselected);
 
 public:
-  inline QAction* getUndoAction() { return m_undoAction; }
-  inline QAction* getRedoAction() { return m_redoAction; }
+//  inline QAction* getUndoAction() { return m_undoAction; }
+//  inline QAction* getRedoAction() { return m_redoAction; }
 
   ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
     return &m_singleSwcNodeActionActivator;
@@ -1090,6 +1092,7 @@ signals:
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
+  void cube3dModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);
@@ -1202,11 +1205,11 @@ private:
   //Actions
   //  Undo/Redo
   QUndoStack *m_undoStack;
-  QAction *m_undoAction;
-  QAction *m_redoAction;
+//  QAction *m_undoAction;
+//  QAction *m_redoAction;
 
   //  Action map
-  QMap<EActionItem, QAction*> m_actionMap;
+  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1215,6 +1218,8 @@ private:
 
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
+
+  ZActionFactory *m_actionFactory;
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;

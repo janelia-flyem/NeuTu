@@ -35,6 +35,7 @@
 #include "zlabeledspinboxwidget.h"
 #include "zbenchtimer.h"
 #include "zstackobjectpainter.h"
+#include "dvid/zdvidlabelslice.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -235,6 +236,7 @@ void ZStackView::connectSignalSlot()
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SIGNAL(currentSliceChanged(int)));
   */
+
 
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
@@ -539,16 +541,19 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen()
 {
-#ifdef _DEBUG_2
-  std::cout << "ZStackView::updateImageScreen" << std::endl;
+#ifdef _DEBUG_
+  qDebug() << "ZStackView::updateImageScreen: index=" << this->getZ(NeuTube::COORD_STACK);
 #endif
 
   updatePaintBundle();
 
-  m_imageWidget->blockPaint(m_isRedrawBlocked ||
-                            !buddyDocument()->isReadyForPaint());
+  bool blockingPaint = m_isRedrawBlocked || !buddyDocument()->isReadyForPaint();
 
-//  qDebug() << m_imageWidget->screenSize();
+  m_imageWidget->blockPaint(blockingPaint);
+
+  qDebug() << "Blocking paint:" <<blockingPaint;
+  qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+//  m_imageWidget->repaint();
   m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
 }
 
@@ -737,7 +742,7 @@ void ZStackView::redraw(bool updatingScreen)
 //  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
 #if defined(_FLYEM_)
-  std::cout << "paint time per frame: " << timer.restart() << std::endl;
+  qDebug() << "paint time per frame: " << timer.restart();
 #endif
 }
 
@@ -2012,9 +2017,27 @@ void ZStackView::setView(const ZStackViewParam &param)
   updateView();
 }
 
-void ZStackView::processDepthSliderValueChange(int /*sliceIndex*/)
+void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
-  redraw();
+  qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
+  bool hasActiveSlice = false;
+  QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
+  if (buddyPresenter()->isObjectVisible()) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      if (slice->isVisible()) {
+        slice->setVisible(false);
+        hasActiveSlice = true;
+      }
+    }
+  }
+
+  redraw(!hasActiveSlice);
+
+  if (hasActiveSlice) {
+    foreach (ZDvidLabelSlice *slice, sliceList) {
+      slice->setVisible(true);
+    }
+  }
 
   notifyViewChanged();
 }
@@ -2030,6 +2053,9 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
   if (!isViewChangeEventBlocked()) {
+#ifdef _DEBUG_
+    std::cout << "BEFORE emit ZStackView::viewChanged" << std::endl;
+#endif
     emit viewChanged(param);
   }
 }

@@ -25,12 +25,20 @@ public:
 
   const ZDvidTarget& getDvidTarget();
 
+  void addDvidTarget(ZDvidTarget &target);
+
+  bool hasNameConflict(const std::string &name) const;
+  void saveCurrentTarget(bool cloning);
+
 public slots:
   void setServer(int index);
+  void saveCurrentTarget();
+  void saveCurrentTargetAs();
+  void deleteCurrentTarget();
 
 private:
   Ui::ZDvidDialog *ui;
-  std::vector<ZDvidTarget> m_dvidRepo;
+  QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
   const static char *m_dvidRepoKey;
 };

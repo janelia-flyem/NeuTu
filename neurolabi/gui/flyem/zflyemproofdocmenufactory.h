@@ -12,7 +12,8 @@ public:
 public:
   QMenu* makeBodyContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-
+  QMenu* makeSynapseContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 };
 

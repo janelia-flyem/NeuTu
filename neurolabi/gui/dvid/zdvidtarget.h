@@ -166,6 +166,9 @@ public:
   inline bool isSupervised() const { return m_isSupervised; }
   const std::string& getSupervisor() const { return m_supervisorServer; }
 
+  inline bool isEditable() const { return m_isEditable; }
+  void setEditable(bool on) { m_isEditable = on; }
+
 
 private:
   std::string m_address;
@@ -187,6 +190,8 @@ private:
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
+
+  bool m_isEditable;
 
   const static char* m_addressKey;
   const static char* m_portKey;

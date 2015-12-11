@@ -428,6 +428,7 @@ void MainWindow::initDialog()
   m_autoTraceDlg = new ZAutoTraceDialog(this);
 
   m_projDlg = new ProjectionDialog(this);
+
   m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
 
 #if defined(_FLYEM_)
@@ -454,6 +455,7 @@ void MainWindow::initDialog()
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
   m_dvidOpDlg = new DvidOperateDialog(this);
+  m_dvidOpDlg->setDvidDialog(m_dvidDlg);
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
@@ -1129,8 +1131,8 @@ void MainWindow::updateAction()
 
   if (frame != NULL) {
     if (frame->presenter() != NULL) {
-      undoAction = frame->document()->getUndoAction();
-      redoAction = frame->document()->getRedoAction();
+      undoAction = frame->document()->getAction(ZActionFactory::ACTION_UNDO);
+      redoAction = frame->document()->getAction(ZActionFactory::ACTION_REDO);
 //      qDebug() << undoAction->text();
 //      qDebug() << undoAction->isEnabled();
     }
@@ -2130,7 +2132,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (d9302b6220c54f09ebc4a4b8efd1d5cec92a30e7)</p>";
+        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());

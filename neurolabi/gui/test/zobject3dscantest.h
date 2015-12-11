@@ -711,7 +711,8 @@ TEST(ZObject3dScan, TestGetConnectedComponent) {
   ZObject3dScan obj;
   createObject(&obj);
 
-  std::vector<ZObject3dScan> objArray = obj.getConnectedComponent();
+  std::vector<ZObject3dScan> objArray =
+      obj.getConnectedComponent(ZObject3dScan::ACTION_NONE);
   EXPECT_EQ(2, (int) objArray.size());
   EXPECT_EQ(4, (int) objArray[0].getVoxelNumber());
   EXPECT_EQ(8, (int) objArray[1].getVoxelNumber());
@@ -722,7 +723,7 @@ TEST(ZObject3dScan, TestGetConnectedComponent) {
         "/benchmark/binary/2d/ring_n10.tif");
   obj.loadStack(stack);
 
-  objArray = obj.getConnectedComponent();
+  objArray = obj.getConnectedComponent(ZObject3dScan::ACTION_NONE);
   EXPECT_EQ(10, (int) objArray.size());
   EXPECT_EQ(352, (int) objArray[0].getVoxelNumber());
   EXPECT_EQ(279, (int) objArray[1].getVoxelNumber());
@@ -742,7 +743,7 @@ TEST(ZObject3dScan, TestGetConnectedComponent) {
         GET_TEST_DATA_DIR +
         "/benchmark/binary/3d/diadem_e1.tif");
   obj.loadStack(stack);
-  objArray = obj.getConnectedComponent();
+  objArray = obj.getConnectedComponent(ZObject3dScan::ACTION_NONE);
   EXPECT_EQ(43, (int) objArray.size());
   EXPECT_EQ(2, (int) objArray[0].getVoxelNumber());
   EXPECT_EQ(68236, (int) objArray[1].getVoxelNumber());

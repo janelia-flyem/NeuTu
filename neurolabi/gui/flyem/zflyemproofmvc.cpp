@@ -64,7 +64,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 
 void ZFlyEmProofMvc::init()
 {
-  m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
@@ -73,6 +73,11 @@ void ZFlyEmProofMvc::init()
 
   initBodyWindow();
   m_objectWindow = NULL;
+}
+
+void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
+{
+  m_dvidDlg = dlg;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -276,6 +281,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_coarseBodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
     ZFlyEmMisc::Decorate3dBodyWindowRoi(
+          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
           m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
   }
 
@@ -735,6 +742,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 void ZFlyEmProofMvc::setDvidTarget()
 {
 //  m_dvidDlg = new ZDvidDialog(this);
+  if (m_dvidDlg == NULL) {
+    m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
+  }
+
   if (m_dvidDlg->exec()) {
     const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
     setDvidTarget(target);
@@ -2313,6 +2324,11 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
   */
 }
 
+void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  getCompleteDocument()->executeRemoveObjectCommand(bookmark);
+}
+
 void ZFlyEmProofMvc::cropCoarseBody3D()
 {
   if (m_coarseBodyWindow != NULL) {
@@ -2412,7 +2428,6 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   }
 #endif
 }
-
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 

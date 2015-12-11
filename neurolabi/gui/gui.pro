@@ -586,7 +586,8 @@ HEADERS += mainwindow.h \
     zgraphobjsmodel.h \
     dvid/zdvidsynapse.h \
     flyem/zflyemnamebodycolorscheme.h \
-    dvid/zdvidsynapseensenmble.h
+    dvid/zdvidsynapseensenmble.h \
+    zcubearray.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1029,7 +1030,8 @@ SOURCES += main.cpp \
     zgraphobjsmodel.cpp \
     dvid/zdvidsynapse.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
-    dvid/zdvidsynapseensenmble.cpp
+    dvid/zdvidsynapseensenmble.cpp \
+    zcubearray.cpp
 
 OTHER_FILES += \
     extlib.pri \

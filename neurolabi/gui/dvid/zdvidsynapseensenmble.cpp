@@ -12,11 +12,11 @@ ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
 void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
-  m_reader.open(target);
-
-  m_dvidInfo = m_reader.readGrayScaleInfo();
-  m_startZ = m_dvidInfo.getStartCoordinates().getZ();
-  m_startY = m_dvidInfo.getStartCoordinates().getY();
+  if (m_reader.open(target)) {
+    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_startZ = m_dvidInfo.getStartCoordinates().getZ();
+    m_startY = m_dvidInfo.getStartCoordinates().getY();
+  }
 }
 
 void ZDvidSynapseEnsemble::download(int z)
@@ -32,6 +32,25 @@ void ZDvidSynapseEnsemble::download(int z)
           m_dvidInfo.getStartCoordinates().getX(),
           m_dvidInfo.getStartCoordinates().getY(),
           z, width, height, 1));
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (synapseJson.hasKey("Pos")) {
+      ZJsonArray posJson(synapseJson.value("Pos"));
+      int x = ZJsonParser::integerValue(posJson.at(0));
+      int y = ZJsonParser::integerValue(posJson.at(1));
+      int z = ZJsonParser::integerValue(posJson.at(2));
+
+      ZDvidSynapse& synapse = getSynapse(x, y, z);
+      synapse.loadJsonObject(synapseJson);
+    }
+  }
+}
+
+void ZDvidSynapseEnsemble::downloadForLabel(uint64_t label)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -77,6 +96,42 @@ void ZDvidSynapseEnsemble::removeSynapse(int x, int y, int z)
   getSynapseMap(y, z).remove(x);
 }
 
+void ZDvidSynapseEnsemble::addSynapse(const ZDvidSynapse &synapse)
+{
+  int zDiff = synapse.getPosition().getZ() - m_startZ;
+  if (zDiff < 0) {
+    if (!m_synapseEnsemble.isEmpty()) {
+      QVector<QVector<QMap<int, ZDvidSynapse> > > se = m_synapseEnsemble;
+      m_synapseEnsemble.clear();
+      m_synapseEnsemble.resize(se.size() - zDiff);
+      for (int i = 0; i < se.size(); ++i) {
+        m_synapseEnsemble[i - zDiff] = se[i];
+      }
+    }
+    m_startZ += zDiff;
+  }
+
+  int yDiff = synapse.getPosition().getY() - m_startY;
+  if (yDiff < 0) {
+    for (QVector<QVector<QMap<int, ZDvidSynapse> > >::iterator
+         iter = m_synapseEnsemble.begin(); iter != m_synapseEnsemble.end();
+         ++iter) {
+      QVector<QMap<int, ZDvidSynapse> > &slice = *iter;
+      if (!slice.isEmpty()) {
+        QVector<QMap<int, ZDvidSynapse> > oldSlice = slice;
+        slice.clear();
+        slice.resize(oldSlice.size() - yDiff);
+        for (int i = 0; i < oldSlice.size(); ++i) {
+          slice[i - yDiff] = oldSlice[i];
+        }
+      }
+    }
+    m_startY += yDiff;
+  }
+
+  getSynapse(synapse.getPosition()) = synapse;
+}
+
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
@@ -93,8 +148,16 @@ void ZDvidSynapseEnsemble::display(
       QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
       for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
            iter != synapseMap.end(); ++iter) {
-        iter.value().display(painter, slice, option);
+        const ZDvidSynapse &synapse = iter.value();
+        synapse.display(painter, slice, option);
       }
+    }
+
+    const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse = const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter);
+      synapse.display(painter, slice, option);
     }
   }
 }
@@ -129,6 +192,51 @@ void ZDvidSynapseEnsemble::selectHit(bool appending)
   getSynapse(m_hitPoint).setSelected(true);
 }
 
+void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
+{
+  selectHit(appending);
+  ZDvidSynapse &selectedSynapse = getSynapse(m_hitPoint);
+  selectedSynapse.clearPartner();
+
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray objArray = m_reader.readJsonArray(
+        dvidUrl.getSynapseUrl(m_hitPoint, 1, 1, 1));
+
+  if (!objArray.isEmpty()) {
+    ZJsonObject obj(objArray.value(0));
+    if (obj.hasKey("Rels")) {
+      ZJsonArray jsonArray(obj.value("Rels"));
+      if (jsonArray.size() > 0) {
+        for (size_t i = 0; i < jsonArray.size(); ++i) {
+          ZJsonObject partnerJson(jsonArray.value(i));
+          if (partnerJson.hasKey("To")) {
+            ZJsonArray posJson(partnerJson.value("To"));
+            std::vector<int> coords = posJson.toIntegerArray();
+            selectedSynapse.addPartner(coords[0], coords[1], coords[2]);
+#if 0
+            if (coords.size() == 3) {
+              ZJsonArray partnerJsonArray = m_reader.readJsonArray(
+                    dvidUrl.getSynapseUrl(coords[0], coords[1], coords[2], 1, 1, 1));
+
+              if (!partnerJsonArray.isEmpty()) {
+                ZJsonObject partnerJson(partnerJsonArray.value(0));
+                if (!partnerJson.isEmpty()) {
+                  ZDvidSynapse &synapse =
+                      getSynapse(coords[0], coords[1], coords[2]);
+                  synapse.loadJsonObject(partnerJson);
+                  m_selector.selectObject(synapse.getPosition());
+                  synapse.setSelected(true);
+                }
+              }
+            }
+#endif
+          }
+        }
+      }
+    }
+  }
+}
+
 bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 {
   SynapseIterator siter(this, z);
@@ -136,7 +244,7 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
   while (siter.hasNext()) {
     ZDvidSynapse &synapse = siter.next();
     if (synapse.hit(x, y, z)) {
-      m_hitPoint.set(x, y, z);
+      m_hitPoint = synapse.getPosition();
       return true;
     }
   }

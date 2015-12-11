@@ -330,6 +330,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
   } else {
+    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
@@ -339,27 +340,31 @@ void ZFlyEmProofDoc::updateTileData()
 {
   if (m_dvidReader.isReady()) {
     ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+    ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
-      ZStack *stack = ZStackFactory::makeVirtualStack(
-            ZIntCuboid(dvidInfo.getStartCoordinates(),
-                       dvidInfo.getEndCoordinates()));
-      loadStack(stack);
-
-      ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-      ensemble->setDvidTarget(getDvidTarget());
-      //    ensemble->attachView(stackWidget->getView());
-      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-      addObject(ensemble, true);
-
-      //  target.setBodyLabelName("labels");
-
-      ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
-      labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      labelSlice->setDvidTarget(getDvidTarget());
-      labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
-      labelSlice->setBodyMerger(&m_bodyMerger);
-      addObject(labelSlice, 0, true);
+      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
+                       dvidInfo.getEndCoordinates());
+    } else {
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
+
+    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    loadStack(stack);
+
+    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+    ensemble->setDvidTarget(getDvidTarget());
+    //    ensemble->attachView(stackWidget->getView());
+    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+    addObject(ensemble, true);
+
+    //  target.setBodyLabelName("labels");
+
+    ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+    labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    labelSlice->setDvidTarget(getDvidTarget());
+    labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
+    labelSlice->setBodyMerger(&m_bodyMerger);
+    addObject(labelSlice, 0, true);
   }
 }
 
@@ -391,6 +396,11 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
   }
 
   return NULL;
+}
+
+bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
+{
+  return false;
 }
 
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
@@ -809,6 +819,31 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
 ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
+  ZDvidSynapseEnsemble se;
+  se.setDvidTarget(getDvidTarget());
+
+  se.downloadForLabel(bodyId);
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  std::vector<ZPunctum*> &tbar = synapse.first;
+  std::vector<ZPunctum*> &psd = synapse.second;
+
+
+
+  ZDvidSynapseEnsemble::SynapseIterator sIter(&se);
+  while (sIter.hasNext()) {
+    ZDvidSynapse &s = sIter.next();
+    if (s.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+      tbar.push_back(new ZPunctum(
+                       s.getPosition().getX(), s.getPosition().getY(),
+                       s.getPosition().getZ(), 50.0));
+    } else if (s.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+      psd.push_back(new ZPunctum(s.getPosition().getX(), s.getPosition().getY(),
+                                 s.getPosition().getZ(), 50.0));
+    }
+  }
+
+#if 0
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
   ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
         getObjectGroup().findFirstSameSource(
@@ -888,8 +923,9 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
     }
 
   }
-
+#endif
   return synapse;
+
 }
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)

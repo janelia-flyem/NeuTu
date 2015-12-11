@@ -7,23 +7,9 @@
 #include "tz_geo3d_scalar_field.h"
 #include "tz_graph.h"
 #include "zwidgetsgroup.h"
+#include "z3dcuberenderer.h"
 
-class Z3DCubeRenderer;
 class ZObject3d;
-
-//
-class Z3DCube
-{
-public:
-    Z3DCube();
-    ~Z3DCube();
-
-public:
-    double length;
-    double x,y,z;
-    glm::vec4 color;
-    bool b_visible[6];
-};
 
 //
 class Z3DSurfaceFilter : public Z3DGeometryFilter
@@ -39,6 +25,7 @@ public:
 
     void prepareData();
     void addData(const Z3DCube &cube);
+    void addData(ZCubeArray *cubes);
 
     std::vector<double> boundBox();
 

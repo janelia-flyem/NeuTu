@@ -33,7 +33,8 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(const ZStackOperator &op);
+  void processCustomOperator(
+      const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
     return m_splitWindowMode;
@@ -54,6 +55,11 @@ public:
 
 
   ZFlyEmProofDoc* getCompleteDocument() const;
+
+  void createSynapseContextMenu();
+  QMenu* getSynapseContextMenu();
+
+  QMenu* getContextMenu();
 
 private:
   void tryAddBookmarkMode();
@@ -81,6 +87,8 @@ private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+
+  QMenu *m_synapseContextMenu;
 
   ZKeyOperationMap m_bookmarkKeyOperationMap;
 };
