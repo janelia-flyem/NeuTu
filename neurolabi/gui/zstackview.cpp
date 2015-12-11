@@ -553,8 +553,8 @@ void ZStackView::updateImageScreen()
 
   qDebug() << "Blocking paint:" <<blockingPaint;
   qDebug() << "Updating image widget" << m_imageWidget->screenSize();
-//  m_imageWidget->repaint();
-  m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
+  m_imageWidget->repaint();
+//  m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
 }
 
 QSize ZStackView::sizeHint() const
