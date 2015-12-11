@@ -303,6 +303,67 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
+{
+  int sampleInterval = 1;
+
+  ZCubeArray *cubes = new ZCubeArray;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  //
+  glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 0.75);
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        if (k % sampleInterval == 0) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box = dvidInfo.getBlockBox(i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              Z3DCube *cube = cubes->makeCube(box, color, faceArray);
+              cubes->append(*cube);
+              delete cube;
+
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  //
+  return cubes;
+}
+
+
 /*
 void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
 {
@@ -419,6 +480,26 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
                 ZStackObjectSourceFactory::MakeFlyEmRoiSource(
                   dvidTarget.getRoiName()));
           window->getDocument()->addObject(graph, true);
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+    Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
+{
+  if (window != NULL) {
+    if (!dvidTarget.getRoiName().empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+        ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+        if (!roi.isEmpty()) {
+          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+          cubes->setSource(
+                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+                  dvidTarget.getRoiName()));
+          window->getDocument()->addObject(cubes, true);
         }
       }
     }

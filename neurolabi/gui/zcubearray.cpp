@@ -317,7 +317,8 @@ Z3DCube::~Z3DCube()
 //
 ZCubeArray::ZCubeArray()
 {
-
+    m_type = ZStackObject::TYPE_3D_CUBE;
+    m_target = ZStackObject::TARGET_3D_ONLY;
 }
 
 ZCubeArray::~ZCubeArray()
@@ -365,3 +366,16 @@ Z3DCube* ZCubeArray::makeCube(const ZIntCuboid &box, glm::vec4 color, const std:
     //
     return cube;
 }
+
+void ZCubeArray::append(Z3DCube cube)
+{
+    m_cubeArray.push_back(cube);
+}
+
+void ZCubeArray::display(
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/) const
+{
+}
+
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
+

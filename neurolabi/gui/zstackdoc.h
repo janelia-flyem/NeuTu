@@ -866,6 +866,7 @@ public:
   void notifyStrokeModified();
   //void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notify3DCubeModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -1091,6 +1092,7 @@ signals:
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
+  void cube3dModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);

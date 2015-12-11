@@ -5070,6 +5070,11 @@ void ZStackDoc::notify3DGraphModified()
   emit graph3dModified();
 }
 
+void ZStackDoc::notify3DCubeModified()
+{
+  emit cube3dModified();
+}
+
 void ZStackDoc::notifyActiveViewModified()
 {
   emit activeViewModified();
@@ -5298,6 +5303,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     break;
   case ZStackObject::TYPE_3D_GRAPH:
     notify3DGraphModified();
+    break;
+  case ZStackObject::TYPE_3D_CUBE:
+    notify3DCubeModified();
     break;
   default:
 //    notifyObjectModified();
