@@ -206,9 +206,11 @@ void ZStackMvc::processViewChange()
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
+  qDebug() << "ZStackMvc::processViewChange" << viewParam.getZ();
   if (getPresenter()->isObjectVisible()) {
     QList<ZDocPlayer*> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    qDebug() << "#Player:" << playerList.size();
     if (!playerList.isEmpty()) {
       bool updated = false;
       foreach (const ZDocPlayer *player, playerList) {
@@ -218,6 +220,7 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
         }
       }
       if (updated) {
+        qDebug() << "Painting object in ZStackMvc::processViewChange";
         m_view->paintObject();
       }
     }
