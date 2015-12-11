@@ -623,6 +623,8 @@ void ZImageWidget::paintZoomHint()
 
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
+  std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
+
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
 
