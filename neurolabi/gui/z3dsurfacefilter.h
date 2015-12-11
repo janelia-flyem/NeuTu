@@ -25,6 +25,7 @@ public:
 
     void prepareData();
     void addData(const Z3DCube &cube);
+    void addData(ZCubeArray *cubes);
 
     std::vector<double> boundBox();
 

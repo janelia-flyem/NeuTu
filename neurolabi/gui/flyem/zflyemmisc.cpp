@@ -330,6 +330,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   //
   glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 0.75);
 
+  //
   for (k = 0; k <= cdepth; k ++) {
     for (j = 0; j <= cheight; j++) {
       for (i = 0; i <= cwidth; i++) {

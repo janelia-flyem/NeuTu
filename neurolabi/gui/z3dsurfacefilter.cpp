@@ -99,6 +99,14 @@ void Z3DSurfaceFilter::addData(const Z3DCube &cube)
     invalidateResult();
 }
 
+void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
+{
+    m_cubeArray = cubes->getCubeArray();
+
+    m_dataIsInvalid = true;
+    invalidateResult();
+}
+
 vector<double> Z3DSurfaceFilter::boundBox()
 {
     vector<double> result(6, 0);

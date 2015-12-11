@@ -372,6 +372,11 @@ void ZCubeArray::append(Z3DCube cube)
     m_cubeArray.push_back(cube);
 }
 
+std::vector<Z3DCube> ZCubeArray::getCubeArray()
+{
+    return m_cubeArray;
+}
+
 void ZCubeArray::display(
     ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/) const
 {
