@@ -1159,7 +1159,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     if (getCompletePresenter()->isHighlight()) {
       m_mergeProject.highlightSelectedObject(true);
     } else {
-      getCompleteDocument()->processObjectModified(slice);
+//      getCompleteDocument()->processObjectModified(slice);
     }
     processLabelSliceSelectionChange();
   }
