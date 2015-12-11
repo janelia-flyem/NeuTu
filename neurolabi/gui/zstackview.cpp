@@ -542,15 +542,18 @@ void ZStackView::updatePaintBundle()
 void ZStackView::updateImageScreen()
 {
 #ifdef _DEBUG_
-  std::cout << "ZStackView::updateImageScreen: index=" << m_depthControl->value() <<  std::endl;
+  qDebug() << "ZStackView::updateImageScreen: index=" << this->getZ(NeuTube::COORD_STACK);
 #endif
 
   updatePaintBundle();
 
-  m_imageWidget->blockPaint(m_isRedrawBlocked ||
-                            !buddyDocument()->isReadyForPaint());
+  bool blockingPaint = m_isRedrawBlocked || !buddyDocument()->isReadyForPaint();
 
-//  qDebug() << m_imageWidget->screenSize();
+  m_imageWidget->blockPaint(blockingPaint);
+
+  qDebug() << "Blocking paint:" <<blockingPaint;
+  qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+//  m_imageWidget->repaint();
   m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
 }
 
@@ -2050,6 +2053,9 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
   if (!isViewChangeEventBlocked()) {
+#ifdef _DEBUG_
+    std::cout << "BEFORE emit ZStackView::viewChanged" << std::endl;
+#endif
     emit viewChanged(param);
   }
 }
