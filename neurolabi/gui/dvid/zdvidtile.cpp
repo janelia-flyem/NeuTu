@@ -97,7 +97,7 @@ void ZDvidTile::updatePixmap()
 #if 1
 //  m_pixmap.cleanUp();
   if (m_pixmap != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Deleting " << m_pixmap << std::endl;
 #endif
     delete m_pixmap;

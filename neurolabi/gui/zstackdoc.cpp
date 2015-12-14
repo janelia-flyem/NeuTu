@@ -8967,6 +8967,66 @@ QList<ZDocPlayer *> ZStackDoc::getPlayerList(
   return m_playerList.getPlayerList(role);
 }
 
+void ZStackDoc::ActiveViewObjectUpdater::clearState()
+{
+  m_excludeSet.clear();
+  m_updatedTarget.clear();
+}
+
+void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
+    ZSharedPointer<ZStackDoc> doc, ZStackObject::EType type, bool on)
+{
+  if (doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (obj->getType() == type) {
+        player->enableUpdate(on);
+      }
+    }
+  }
+}
+
+void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
+{
+  m_updatedTarget.clear();
+  if (m_doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (!m_excludeSet.contains(obj->getType()) && obj->isVisible()) {
+        player->updateData(param);
+        m_updatedTarget.insert(obj->getTarget());
+      }
+    }
+  }
+}
+
+QSet<ZStackObject::ETarget>
+ZStackDoc::updateActiveViewObject(const ZStackViewParam &param)
+{
+  QSet<ZStackObject::ETarget> targetSet;
+
+  QList<ZDocPlayer *> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->getData()->isVisible()) {
+      player->updateData(param);
+      targetSet.insert(player->getData()->getTarget());
+    }
+  }
+
+  return targetSet;
+}
+
 
 bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {

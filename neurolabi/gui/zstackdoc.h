@@ -714,6 +714,8 @@ public:
   virtual ZSparseStack* getSparseStack();
   virtual ZObject3dScan* getSparseStackMask() const;
 
+  QSet<ZStackObject::ETarget>
+  updateActiveViewObject(const ZStackViewParam &param);
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -938,6 +940,34 @@ public:
   }*/
 
   void enableAutoSaving(bool on) { m_autoSaving = on; }
+
+  class ActiveViewObjectUpdater {
+  public:
+    ActiveViewObjectUpdater() {}
+    ActiveViewObjectUpdater(const ZSharedPointer<ZStackDoc> &doc) {
+      m_doc = doc; }
+    void exclude(ZStackObject::EType type) {
+      m_excludeSet.insert(type);
+    }
+    void clearState();
+
+    void update(const ZStackViewParam &param);
+    const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {
+      return m_updatedTarget;
+    }
+
+    void setDocument(const ZSharedPointer<ZStackDoc> &doc) {
+      m_doc = doc;
+    }
+
+    static void SetUpdateEnabled(
+        ZSharedPointer<ZStackDoc> doc, ZStackObject::EType type, bool on);
+
+  private:
+    ZSharedPointer<ZStackDoc> m_doc;
+    QSet<ZStackObject::EType> m_excludeSet;
+    QSet<ZStackObject::ETarget> m_updatedTarget;
+  };
 
 public slots: //undoable commands
   /*!

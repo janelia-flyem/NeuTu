@@ -206,6 +206,7 @@ void ZStackMvc::processViewChange()
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
+#if 0
   qDebug() << "ZStackMvc::processViewChange" << viewParam.getZ();
   if (getPresenter()->isObjectVisible()) {
     QList<ZDocPlayer*> playerList =
@@ -225,6 +226,7 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
       }
     }
   }
+#endif
 
   processViewChangeCustom(viewParam);
 }

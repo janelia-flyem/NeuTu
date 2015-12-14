@@ -24,7 +24,7 @@ def checkNeuTuDir(path):
         print 'WARNING: no flyem_release branch.'
             
 if __name__ == '__main__':
-    print 'Checking ...'
+    print '************Checking ...'
     print 'Operating system:', platform.system()
     
     if platform.system() == 'Darwin':
@@ -40,6 +40,8 @@ if __name__ == '__main__':
     if os.path.isdir(neutuDir):
         print 'Install NeuTu directory', '\'' + neutuDir + '\'', 'found.'
         checkNeuTuDir(neutuDir)
+        
+    print '************Done.'
     
 #             print dir(repo)
 #             if str(repo.head.commit) != codeInfo['head']:

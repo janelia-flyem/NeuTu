@@ -843,7 +843,7 @@ void ZStackPresenter::updateRightMenu(QMenu *submenu, bool clear)
 
 void ZStackPresenter::updateView() const
 {
-  buddyView()->redraw();
+  buddyView()->updateView();
 }
 
 /*
@@ -936,7 +936,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
     if (event->buttons() == Qt::NoButton) {
       m_skipMouseReleaseEvent = 0;
       this->interactiveContext().restoreExploreMode();
-      buddyView()->notifyViewPortChanged();
+//      buddyView()->notifyViewPortChanged();
     }
 
 //    --m_skipMouseReleaseEvent;
@@ -973,7 +973,7 @@ void ZStackPresenter::setViewPortCenter(int x, int y, int z)
         x - buddyView()->imageWidget()->viewPort().width() / 2,
         y - buddyView()->imageWidget()->viewPort().height() / 2);
   buddyView()->setSliceIndex(z);
-  buddyView()->updateImageScreen();
+  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 /*
@@ -1025,13 +1025,13 @@ void ZStackPresenter::moveImageToMouse(
 void ZStackPresenter::moveViewPort(int dx, int dy)
 {
   buddyView()->imageWidget()->moveViewPort(dx, dy);
-  buddyView()->updateImageScreen();
+  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackPresenter::moveViewPortTo(int x, int y)
 {
   buddyView()->setViewPortOffset(x, y);
-  buddyView()->updateImageScreen();
+  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackPresenter::increaseZoomRatio()
@@ -2681,7 +2681,10 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
-    buddyView()->notifyViewPortChanged();
+    buddyView()->processViewChange();
+//    buddyView()->notifyViewChanged();
+    buddyView()->updateView();
+//    buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_CONTEXT_MENU:
     buddyView()->showContextMenu(getContextMenu(), currentWidgetPos);
@@ -2922,10 +2925,11 @@ void ZStackPresenter::process(const ZStackOperator &op)
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
-    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE);
-    buddyView()->blockViewChangeEvent(true);
+    m_interactiveContext.setExploreMode(
+          ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE);
+//    buddyView()->blockViewChangeEvent(true);
     increaseZoomRatio(grabPosition.x(), grabPosition.y());
-    buddyView()->blockViewChangeEvent(false);
+//    buddyView()->blockViewChangeEvent(false);
   }
     break;
   case ZStackOperator::OP_ZOOM_OUT_GRAB_POS:
@@ -2935,14 +2939,16 @@ void ZStackPresenter::process(const ZStackOperator &op)
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
-    buddyView()->blockViewChangeEvent(true);
+//    buddyView()->blockViewChangeEvent(true);
     decreaseZoomRatio(grabPosition.x(), grabPosition.y());
-    buddyView()->blockViewChangeEvent(false);
+//    buddyView()->blockViewChangeEvent(false);
   }
     break;
   case ZStackOperator::OP_EXIT_ZOOM_MODE:
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
-    buddyView()->notifyViewChanged();
+    buddyView()->processViewChange();
+    buddyView()->imageWidget()->update();
+//    buddyView()->notifyViewChanged();
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

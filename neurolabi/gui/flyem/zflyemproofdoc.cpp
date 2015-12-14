@@ -347,6 +347,7 @@ void ZFlyEmProofDoc::updateTileData()
     loadStack(stack);
 
     ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     ensemble->setDvidTarget(getDvidTarget());
     //    ensemble->attachView(stackWidget->getView());
     ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
