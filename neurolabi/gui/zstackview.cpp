@@ -549,8 +549,8 @@ void ZStackView::updateImageScreen()
                             !buddyDocument()->isReadyForPaint());
 
 //  qDebug() << m_imageWidget->screenSize();
-//  m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
-  m_imageWidget->repaint();
+  m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
+//  m_imageWidget->repaint();
 }
 
 QSize ZStackView::sizeHint() const

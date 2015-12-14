@@ -10,6 +10,7 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "zfiletype.h"
+#include "widgets/zimagewidget.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -219,6 +220,7 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
       }
       if (updated) {
         m_view->paintObject();
+        m_view->imageWidget()->repaint();
       }
     }
   }
