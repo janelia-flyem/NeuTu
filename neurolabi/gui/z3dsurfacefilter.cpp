@@ -79,9 +79,6 @@ void Z3DSurfaceFilter::process(Z3DEye)
 
 void Z3DSurfaceFilter::prepareData()
 {
-    qDebug()<<"prepareData ... ..."<<m_cubeArray.size();
-
-
     if (!m_dataIsInvalid)
         return;
 

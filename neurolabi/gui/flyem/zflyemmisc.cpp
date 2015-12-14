@@ -328,7 +328,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   uint8_t *array = C_Stack::array8(stack);
 
   //
-  glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 0.75);
+  glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 0.5);
 
   //
   for (k = 0; k <= cdepth; k ++) {
@@ -498,11 +498,6 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
         ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
         if (!roi.isEmpty()) {
           ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
-
-          qDebug()<<"Decorate3dBodyWindowRoiCube ... "<<cubes->getCubeArray().size();
-          std::vector<Z3DCube> debugcubearray = cubes->getCubeArray();
-          qDebug()<<"Decorate3dBodyWindowRoiCube ... ..."<<debugcubearray[0].length<<debugcubearray[0].x<<debugcubearray[0].y<<debugcubearray[0].z;
-
           cubes->setSource(
                 ZStackObjectSourceFactory::MakeFlyEmRoiSource(
                   dvidTarget.getRoiName()));
