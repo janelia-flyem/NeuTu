@@ -79,13 +79,24 @@ void Z3DSurfaceFilter::process(Z3DEye)
 
 void Z3DSurfaceFilter::prepareData()
 {
+    qDebug()<<"prepareData ... ..."<<m_cubeArray.size();
+
+
     if (!m_dataIsInvalid)
         return;
 
     //
     for (size_t i = 0; i < m_cubeArray.size(); ++i) {
-      const Z3DCube &cube = m_cubeArray[i];
-      m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
+      Z3DCube cube = m_cubeArray[i];
+
+      if(cube.initByNodes)
+      {
+        m_cubeRenderer->addCube(&cube);
+      }
+      else
+      {
+        m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
+      }
     }
 
     m_dataIsInvalid = false;

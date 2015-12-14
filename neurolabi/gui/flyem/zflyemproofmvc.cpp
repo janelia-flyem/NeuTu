@@ -280,8 +280,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_coarseBodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
-    ZFlyEmMisc::Decorate3dBodyWindowRoi(
-          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+//    ZFlyEmMisc::Decorate3dBodyWindowRoi(
+//          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
     ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
           m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
   }

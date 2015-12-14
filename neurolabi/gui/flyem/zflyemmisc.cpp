@@ -345,7 +345,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
             if (!faceArray.empty()) {
               ZIntCuboid box = dvidInfo.getBlockBox(i + startCoord[0], j + startCoord[1], k + startCoord[2]);
               box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
-
               Z3DCube *cube = cubes->makeCube(box, color, faceArray);
               cubes->append(*cube);
               delete cube;
@@ -497,6 +496,11 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
         ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
         if (!roi.isEmpty()) {
           ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+
+          qDebug()<<"Decorate3dBodyWindowRoiCube ... "<<cubes->getCubeArray().size();
+          std::vector<Z3DCube> debugcubearray = cubes->getCubeArray();
+          qDebug()<<"Decorate3dBodyWindowRoiCube ... ..."<<debugcubearray[0].length<<debugcubearray[0].x<<debugcubearray[0].y<<debugcubearray[0].z;
+
           cubes->setSource(
                 ZStackObjectSourceFactory::MakeFlyEmRoiSource(
                   dvidTarget.getRoiName()));
