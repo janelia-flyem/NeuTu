@@ -61,12 +61,6 @@ public:
 
   QMenu* getContextMenu();
 
-private:
-  void tryAddBookmarkMode();
-  void tryAddBookmarkMode(double x, double y);
-  void addActiveStrokeAsBookmark();
-  void init();
-
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -82,6 +76,15 @@ signals:
   void goingToBodyTop();
 
 public slots:
+  void deleteSelectedSynapse();
+  void tryAddSynapseMode();
+
+private:
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void addActiveStrokeAsBookmark();
+  void init();
+  void tryAddSynapse(const ZIntPoint &pt);
 
 private:
   bool m_isHightlightMode;

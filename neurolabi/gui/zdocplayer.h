@@ -89,10 +89,13 @@ public:
     return m_data->getRole().getRole();
   }
 
+  void enableUpdate(bool on) { m_enableUpdate = on; }
+
   virtual void updateData(const ZStackViewParam &/*param*/) const {}
 
 protected:
   ZStackObject *m_data; //not owned by the player
+  bool m_enableUpdate;
   //TRole m_role;
 };
 

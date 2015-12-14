@@ -53,6 +53,11 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
+  if (getDvidTarget().isValid()) {
+    LINFO() << "End using " << getDvidTarget().getUuid() << "@"
+            << getDvidTarget().getAddressWithPort();
+  }
+
   exitCurrentDoc();
 
   closeAllAssociatedWindow();
@@ -127,33 +132,40 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   m_bodyViewWindow->resetCameraAction =
       m_bodyViewWindow->toolBar->addAction("X-Y View");
-  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
+  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(resetCamera()));
 
   m_bodyViewWindow->xzViewAction =
       m_bodyViewWindow->toolBar->addAction("X-Z View");
-  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
+  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(setXZView()));
 
   m_bodyViewWindow->yzViewAction =
       m_bodyViewWindow->toolBar->addAction("Y-Z View");
-  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
+  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(setYZView()));
 
   m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
-  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
+  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(resetCameraCenter()));
 
   m_bodyViewWindow->toolBar->addSeparator();
 
   m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
-  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
+  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(showGraph(bool)));
   m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
   m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
-  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
+  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
 
   m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
-  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(objectsPanel(bool)));
+  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(objectsPanel(bool)));
   m_bodyViewWindow->objectsAction->setCheckable(true);
   m_bodyViewWindow->objectsAction->setChecked(false);
 
@@ -663,6 +675,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+  ZDvidReader reader;
+  if (!reader.open(target)) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the database.",
+                         NeuTube::MSG_WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
   exitCurrentDoc();
 
   getProgressSignal()->startProgress("Loading data ...");
@@ -711,10 +732,24 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      m_dvidInfo = reader.readGrayScaleInfo();
+
+    m_dvidInfo = reader.readGrayScaleInfo();
+
+    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
+        target.getAddressWithPort();
+
+    ZJsonObject infoJson = reader.readInfo();
+    if (infoJson.hasKey("Alias")) {
+      startLog += std::string("; Alias: ") +
+          ZJsonParser::stringValue(infoJson["Alias"]);
     }
+    if (infoJson.hasKey("Description")) {
+      startLog += std::string("; Description: ") +
+          ZJsonParser::stringValue(infoJson["Description"]);
+    }
+
+    LINFO() << startLog;
+
 
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(target);

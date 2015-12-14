@@ -18442,7 +18442,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 #endif
 
-#if 1
+#if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
   std::cout << "Reading tiles ..." << std::endl;
@@ -18611,6 +18611,96 @@ void ZTest::test(MainWindow *host)
 
   std::cout << se;
 
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/flyem/MB/roi_fix/mbroi.sobj");
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/roi_test.sobj");
+
+  obj2.subtractSliently(obj1);
+
+  ZObject3dScan obj = obj2.getSlice(336, 421);
+
+  obj.save(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.sobj");
+
+  ZJsonArray objJson = ZJsonFactory::MakeJsonArray(obj);
+  objJson.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha_add.json");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/test.sobj");
+  std::vector<ZObject3dScan> objArray =
+      obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE);
+  size_t volume = 0;
+  for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter) {
+    const ZObject3dScan &subobj = *iter;
+    volume += subobj.getVoxelNumber();
+  }
+#endif
+
+#if 0
+  while (1) {
+    ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
+          ZIntCuboid(0, 0, 0, 200, 200, 200));
+    obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+    if (!obj.isCanonizedActually()) {
+      std::cout << "Bug found: Not canonized." << std::endl;
+      break;
+    }
+
+//    std::cout << "Canonized: " << obj.isCanonizedActually() << std::endl;
+
+    std::vector<ZObject3dScan> objArray =
+        obj.getConnectedComponent(ZObject3dScan::ACTION_CANONIZE);
+    size_t volume = 0;
+    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan &subobj = *iter;
+      volume += subobj.getVoxelNumber();
+    }
+
+    if (volume != obj.getVoxelNumber()) {
+      std::cout << "Bug found: Unmatched volume." << std::endl;
+      break;
+    }
+
+    for (size_t i = 0; i < objArray.size(); ++i) {
+      for (size_t j = 0; j < objArray.size(); ++j) {
+        if (i != j) {
+          ZObject3dScan &obj1 = objArray[i];
+          ZObject3dScan &obj2 = objArray[j];
+          if (obj1.isAdjacentTo(obj2)) {
+            std::cout << "Bug found: Adjacent disjoints." << std::endl;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+#endif
+
+#if 0
+  ZDvidSynapse synapse;
+  synapse.setPosition(1, 2, 3);
+  synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse.addPartner(4, 5, 6);
+  synapse.addPartner(7, 8, 9);
+  synapse.addTag("test");
+  synapse.addTag("test2");
+
+  std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

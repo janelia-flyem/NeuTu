@@ -29,6 +29,7 @@ class ZIntCuboid;
 class ZSwcTree;
 class QProcess;
 class ZFlyEmBookmark;
+class ZDvidSynapse;
 
 class ZDvidWriter : public QObject
 {
@@ -114,8 +115,16 @@ public:
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();
 
+  void deleteSynapse(int x, int y, int z);
+  void writeSynapse(const ZDvidSynapse &synapse);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+
   inline int getStatusCode() const {
     return m_statusCode;
+  }
+
+  inline bool isStatusOk() const {
+    return m_statusCode == 200;
   }
 
   inline const QString& getStandardOutput() const {
@@ -142,9 +151,11 @@ private:
   bool runCommand(QProcess &process);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+  std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload);
   std::string post(const std::string &url, const char *payload, int length);
   std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string del(const std::string &url);
 #endif
 
   void parseStandardOutput();

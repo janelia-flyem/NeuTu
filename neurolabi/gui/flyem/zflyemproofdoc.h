@@ -13,6 +13,7 @@
 #include "flyem/zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -177,6 +178,8 @@ public slots:
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void deleteSelectedSynapse();
+  void addSynapse(const ZIntPoint &pt);
 
 protected:
   void autoSave();
@@ -207,6 +210,7 @@ private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidWriter m_dvidWriter;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;

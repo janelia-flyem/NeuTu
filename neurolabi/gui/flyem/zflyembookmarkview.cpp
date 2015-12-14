@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
+#include "QsLog/QsLog.h"
 
 #include "zflyembookmarklistmodel.h"
 
@@ -27,6 +28,9 @@ void ZFlyEmBookmarkView::connectSignalSlot()
 {
   connect(this, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(processDouleClick(QModelIndex)));
+  connect(this, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(processSingleClick(QModelIndex)));
+
 }
 
 void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
@@ -34,6 +38,14 @@ void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
     emit locatingBookmark(bookmark);
+  }
+}
+
+void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = getBookmark(index);
+  if (bookmark != NULL) {
+    LINFO() << bookmark->toLogString() + " is clicked";
   }
 }
 
@@ -124,6 +136,12 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
     bookmark->setChecked(checking);
+    if (checking) {
+      LINFO() << bookmark->toLogString() << "is checked";
+    } else {
+      LINFO() << bookmark->toLogString() << "is unchecked";
+    }
+
     getModel()->update(index.row());
 
     emit bookmarkChecked(bookmark);

@@ -14,6 +14,7 @@
 ZDocPlayer::~ZDocPlayer()
 {
   m_data = NULL;
+  m_enableUpdate = true;
 }
 
 ZDocPlayer::ZDocPlayer(ZStackObject *data)
@@ -496,9 +497,11 @@ ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
 
 void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
-  ZDvidLabelSlice *obj = getCompleteData();
-  if (obj != NULL) {
-    obj->update(viewParam);
+  if (m_enableUpdate) {
+    ZDvidLabelSlice *obj = getCompleteData();
+    if (obj != NULL) {
+      obj->update(viewParam);
+    }
   }
 }
 
@@ -516,9 +519,11 @@ ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
 
 void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
-  ZDvidSparsevolSlice *obj = getCompleteData();
-  if (obj != NULL) {
-    obj->update(viewParam.getZ());
+  if (m_enableUpdate) {
+    ZDvidSparsevolSlice *obj = getCompleteData();
+    if (obj != NULL) {
+      obj->update(viewParam.getZ());
+    }
   }
 }
 

@@ -344,6 +344,7 @@ protected:
 
   NeuTube::Display::TVisualEffect m_visualEffect;
 
+  mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;
 };
 

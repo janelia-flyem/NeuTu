@@ -10,6 +10,7 @@
 class ZJsonArray;
 class ZJsonObject;
 class ZObject3dScan;
+class ZIntPoint;
 
 class ZJsonFactory
 {
@@ -22,6 +23,7 @@ public:
 
   static ZJsonArray MakeJsonArray(const ZObject3dScan &obj,
                                   EObjectForm form = OBJECT_SPARSE);
+  static ZJsonArray MakeJsonArray(const ZIntPoint &pt);
 
 #if defined(_QT_GUI_USED_)
   static ZJsonArray MakeJsonArray(const QMap<uint64_t, uint64_t> &map);

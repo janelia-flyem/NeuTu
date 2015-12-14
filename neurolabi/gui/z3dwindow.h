@@ -387,6 +387,7 @@ public slots:
   //void toogleExtendSelectedSwcNodeMode(bool checked);
   void toogleSmartExtendSelectedSwcNodeMode(bool checked);
   void changeBackground();
+  bool isBackgroundOn() const;
 
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);

@@ -351,7 +351,6 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     } else {
       zoom(zoomRatio);
     }
-
     update();
   }
 }

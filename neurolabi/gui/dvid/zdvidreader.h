@@ -17,6 +17,7 @@
 #include "dvid/zdvidinfo.h"
 #include "zintcuboid.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidsynapse.h"
 
 class ZDvidFilter;
 class ZArray;
@@ -104,6 +105,8 @@ public:
 
   ZDvidInfo readGrayScaleInfo() const;
 
+  ZJsonObject readInfo() const;
+
   bool hasData(const std::string &key) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
@@ -144,8 +147,12 @@ public:
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
-  ZJsonObject readJsonObject(const std::string &url);
-  ZJsonArray readJsonArray(const std::string &url);
+  ZJsonObject readJsonObject(const std::string &url) const;
+  ZJsonArray readJsonArray(const std::string &url) const;
+
+  std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
+  std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
+  ZDvidSynapse readSynapse(int x, int y, int z);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

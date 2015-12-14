@@ -3,6 +3,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
+#include "zintpoint.h"
 
 ZJsonFactory::ZJsonFactory()
 {
@@ -42,6 +43,16 @@ ZJsonArray ZJsonFactory::MakeJsonArray(
       break;
     }
   }
+
+  return array;
+}
+
+ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
+{
+  ZJsonArray array;
+  array.append(pt.getX());
+  array.append(pt.getY());
+  array.append(pt.getZ());
 
   return array;
 }

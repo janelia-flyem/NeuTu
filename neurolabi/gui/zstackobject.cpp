@@ -9,7 +9,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(NeuTube::Display::VE_NONE)
+  m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
 {
 }
 

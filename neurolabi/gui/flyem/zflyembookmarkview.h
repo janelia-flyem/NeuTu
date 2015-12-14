@@ -36,6 +36,7 @@ public slots:
 
 private slots:
   void processDouleClick(const QModelIndex &index);
+  void processSingleClick(const QModelIndex &index);
 
 private:
   void init();

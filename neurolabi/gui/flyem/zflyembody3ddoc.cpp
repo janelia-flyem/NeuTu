@@ -2,6 +2,7 @@
 
 #include <QtConcurrentRun>
 #include <QMutexLocker>
+#include <QElapsedTimer>
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
