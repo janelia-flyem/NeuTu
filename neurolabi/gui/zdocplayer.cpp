@@ -495,14 +495,17 @@ ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidLabelSlice*>(m_data);
 }
 
-void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
+  bool updated = false;
   if (m_enableUpdate) {
     ZDvidLabelSlice *obj = getCompleteData();
     if (obj != NULL) {
-      obj->update(viewParam);
+      updated = obj->update(viewParam);
     }
   }
+
+  return updated;
 }
 
 /////////////////////////////
@@ -517,14 +520,17 @@ ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidSparsevolSlice*>(m_data);
 }
 
-void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
+  bool updated = false;
   if (m_enableUpdate) {
     ZDvidSparsevolSlice *obj = getCompleteData();
     if (obj != NULL) {
-      obj->update(viewParam.getZ());
+      updated = obj->update(viewParam.getZ());
     }
   }
+
+  return updated;
 }
 
 ////////////////////////////

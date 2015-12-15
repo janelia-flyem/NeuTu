@@ -199,6 +199,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
         break;
+      case ZInteractiveContext::INTERACT_MOVE_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_MOVE);
+        break;
       default:
         break;
       }

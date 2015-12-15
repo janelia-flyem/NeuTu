@@ -1744,6 +1744,10 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         ZObject3dScan slice1 = getSlice(z0);
         ZObject3dScan slice2 = getSlice(z1);
 
+        ZIntPoint c1 = slice1.getCentroid().toIntPoint();
+        ZIntPoint c2 = slice2.getCentroid().toIntPoint();
+        slice2.translate(c1.getX() - c2.getX(), c1.getY() - c2.getY(), 0);
+
         {
           int stripeNumber = slice1.getStripeNumber();
           for (int i = 0; i < stripeNumber; ++i) {
@@ -1816,6 +1820,9 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         }
 
         slice.loadStack(*newStack);
+
+        slice.translate(iround((c2.getX() - c1.getX()) * beta),
+                        iround((c2.getY() - c1.getY()) * beta), 0 );
 
         delete stack1;
         delete stack2;

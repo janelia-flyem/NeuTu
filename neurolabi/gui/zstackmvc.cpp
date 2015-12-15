@@ -3,6 +3,8 @@
 #include <QMainWindow>
 #include <QMimeData>
 #include <QEvent>
+#include <QCoreApplication>
+#include <QKeyEvent>
 
 #include "zstackdoc.h"
 #include "zstackview.h"
@@ -258,6 +260,14 @@ QMainWindow* ZStackMvc::getMainWindow() const
 void ZStackMvc::dump(const QString &msg)
 {
   getView()->dump(msg);
+}
+
+void ZStackMvc::test()
+{
+  for (int i = 0; i < 5000; ++i) {
+    QKeyEvent *event = new QKeyEvent ( QEvent::KeyPress, Qt::Key_E, Qt::NoModifier);
+    QCoreApplication::postEvent (this, event);
+  }
 }
 
 /*

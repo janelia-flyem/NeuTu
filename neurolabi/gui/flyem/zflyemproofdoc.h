@@ -51,8 +51,6 @@ public:
   ZDvidLabelSlice* getDvidLabelSlice() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
 
-  bool hasDvidSynapseSelected() const;
-
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
 
@@ -159,6 +157,10 @@ public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending);
+
+public: //Synapse functions
+  bool hasDvidSynapseSelected() const;
+  void tryMoveSelectedSynapse(const ZIntPoint &dest);
 
 signals:
   void bodyMerged();

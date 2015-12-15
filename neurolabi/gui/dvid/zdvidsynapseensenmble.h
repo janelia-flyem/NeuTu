@@ -55,6 +55,7 @@ public:
 
   bool hasSelected() const;
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
+  ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);

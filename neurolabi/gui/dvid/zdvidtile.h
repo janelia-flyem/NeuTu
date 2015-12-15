@@ -3,6 +3,7 @@
 
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPixmap>
 
 #include "zimage.h"
 #include "zstackobject.h"
@@ -70,12 +71,11 @@ public:
 
   void enhanceContrast(bool high);
 
-private:
   void updatePixmap();
 
 private:
   ZImage *m_image;
-  ZPixmap *m_pixmap;
+  ZPixmap m_pixmap;
   int m_ix;
   int m_iy;
   int m_z;

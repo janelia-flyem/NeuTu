@@ -174,6 +174,8 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
             this, SLOT(deleteSelectedSynapse()));
     connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD), SIGNAL(triggered()),
             this, SLOT(tryAddSynapseMode()));
+    connect(getAction(ZActionFactory::ACTION_SYNAPSE_MOVE), SIGNAL(triggered()),
+            this, SLOT(tryMoveSynapseMode()));
   }
 }
 
@@ -185,6 +187,12 @@ void ZFlyEmProofPresenter::deleteSelectedSynapse()
 void ZFlyEmProofPresenter::tryAddSynapseMode()
 {
   m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_ADD);
+  updateCursor();
+}
+
+void ZFlyEmProofPresenter::tryMoveSynapseMode()
+{
+  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_MOVE);
   updateCursor();
 }
 
@@ -254,6 +262,13 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode()
 void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 {
   getCompleteDocument()->addSynapse(pt);
+}
+
+void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
+{
+  getCompleteDocument()->tryMoveSelectedSynapse(pt);
+  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+  updateCursor();
 }
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
@@ -334,6 +349,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
     tryAddSynapse(currentStackPos.toIntPoint());
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_MOVE:
+    tryMoveSynapse(currentStackPos.toIntPoint());
     break;
   default:
     break;

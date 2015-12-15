@@ -25,7 +25,8 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
   m_image = NULL;
-  m_pixmap = NULL;
+//  m_pixmap = NULL;
+//  m_pixmap = new ZPixmap();
 }
 
 ZDvidTile::~ZDvidTile()
@@ -43,8 +44,8 @@ void ZDvidTile::clear()
   delete m_image;
   m_image = NULL;
 
-  delete m_pixmap;
-  m_pixmap = NULL;
+//  delete m_pixmap;
+//  m_pixmap = NULL;
 }
 
 void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
@@ -93,7 +94,7 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
 void ZDvidTile::updatePixmap()
 {
   QMutexLocker locker(&m_pixmapMutex);
-
+#if 0
 #if 1
 //  m_pixmap.cleanUp();
   if (m_pixmap != NULL) {
@@ -109,12 +110,16 @@ void ZDvidTile::updatePixmap()
   }
   m_pixmap->cleanUp();
 #endif
-  m_pixmap->convertFromImage(*m_image, Qt::ColorOnly);
+#endif
+//  m_pixmap.setPixmap(QPixmap::fromImage(*m_image, Qt::ColorOnly);
+//  m_pixmap->
+  m_pixmap.fill(Qt::white);
+  m_pixmap.convertFromImage(*m_image, Qt::ColorOnly);
 #ifdef _DEBUG_2
   std::cout << "Has alpha: " << m_pixmap->hasAlphaChannel() << std::endl;
 #endif
-  m_pixmap->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-  m_pixmap->setOffset(-getX(), -getY());
+  m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
+  m_pixmap.setOffset(-getX(), -getY());
 }
 
 void ZDvidTile::enhanceContrast(bool high)
@@ -226,7 +231,7 @@ void ZDvidTile::display(
 //    tic();
     QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
-    painter.drawPixmap(getX(), getY(), *m_pixmap);
+    painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
 //    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
