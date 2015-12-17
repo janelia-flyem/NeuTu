@@ -714,8 +714,8 @@ public:
   virtual ZSparseStack* getSparseStack();
   virtual ZObject3dScan* getSparseStackMask() const;
 
-  QSet<ZStackObject::ETarget>
-  updateActiveViewObject(const ZStackViewParam &param);
+//  QSet<ZStackObject::ETarget>
+//  updateActiveViewObject(const ZStackViewParam &param);
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -949,6 +949,10 @@ public:
     void exclude(ZStackObject::EType type) {
       m_excludeSet.insert(type);
     }
+    void exclude(ZStackObject::ETarget target) {
+      m_excludeTarget.insert(target);
+    }
+
     void clearState();
 
     void update(const ZStackViewParam &param);
@@ -966,6 +970,7 @@ public:
   private:
     ZSharedPointer<ZStackDoc> m_doc;
     QSet<ZStackObject::EType> m_excludeSet;
+    QSet<ZStackObject::ETarget> m_excludeTarget;
     QSet<ZStackObject::ETarget> m_updatedTarget;
   };
 

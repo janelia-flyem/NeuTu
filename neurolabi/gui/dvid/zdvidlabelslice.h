@@ -27,7 +27,7 @@ public:
 
   void setMaxSize(int maxWidth, int maxHeight);
 
-  void update(const ZStackViewParam &viewParam);
+  bool update(const ZStackViewParam &viewParam);
   void update(int z);
   void update();
 
@@ -157,6 +157,7 @@ private:
   int m_maxHeight;
 
   bool m_selectionFrozen;
+  bool m_isFullView;
 };
 
 template <typename InputIterator>

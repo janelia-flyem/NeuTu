@@ -18850,5 +18850,30 @@ void ZTest::test(MainWindow *host)
   std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
 #endif
 
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/roi_ME_cell_body.sobj");
+
+
+
+  ZObject3dScan slice = obj.getSlice(112);
+  ZStack *stack = slice.toStackObject();
+
+  Stack *filled = Stack_Fill_2dhole(stack->c_stack(), NULL, 1, 1);
+  ZStack filledStack;
+  filledStack.consume(filled);
+  filledStack.setOffset(stack->getOffset());
+
+  slice.loadStack(filledStack);
+
+  slice.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 1
+  if (host != NULL) {
+    host->testFlyEmProofread();
+  }
+#endif
+
   std::cout << "Done." << std::endl;
 }

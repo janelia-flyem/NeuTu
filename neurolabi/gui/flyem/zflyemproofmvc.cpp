@@ -896,7 +896,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateBodySelection()));
   connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
-          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
+          this, SLOT(highlightSelectedObject(bool)));
+//          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
@@ -1060,6 +1061,18 @@ void ZFlyEmProofMvc::selectBody()
       }
 #endif
     }
+  }
+}
+
+void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
+{
+  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  if (labelSlice != NULL) {
+    if ((labelSlice->isVisible() == false) && (hl == false)) {
+      labelSlice->setVisible(true);
+      labelSlice->update(getView()->getViewParameter());
+    }
+    m_mergeProject.highlightSelectedObject(hl);
   }
 }
 

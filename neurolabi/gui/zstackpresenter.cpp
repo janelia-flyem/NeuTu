@@ -70,7 +70,7 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 void ZStackPresenter::init()
 {
   m_showObject = true;
-  m_isStrokeOn = false;
+//  m_isStrokeOn = false;
   m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
 
@@ -95,9 +95,12 @@ void ZStackPresenter::init()
 
   m_cursorRadius = 10;
 
+  m_stroke.setVisible(false);
   m_stroke.setPenetrating(true);
   m_stroke.hideStart(true);
   m_swcStroke.setPenetrating(true);
+  m_swcStroke.setVisible(false);
+
   m_activeDecorationList.append(&m_stroke);
   m_activeDecorationList.append(&m_swcStroke);
 
@@ -716,18 +719,18 @@ void ZStackPresenter::turnOnStroke()
   } else {
     m_stroke.useCosmeticPen(false);
   }
+  m_stroke.setVisible(true);
+//  m_isStrokeOn = true;
   buddyView()->paintActiveDecoration();
-  m_isStrokeOn = true;
 }
 
 void ZStackPresenter::turnOffStroke()
 {
   m_stroke.toggleLabel(false);
   m_stroke.clear();
-  if (isStrokeOn()) {
-    buddyView()->paintActiveDecoration();
-  }
-  m_isStrokeOn = false;
+//  m_isStrokeOn = false;
+  m_stroke.setVisible(false);
+  buddyView()->paintActiveDecoration();
 }
 
 
@@ -2259,7 +2262,9 @@ void ZStackPresenter::updateCursor()
   } else if (interactiveContext().swcEditMode() ==
              ZInteractiveContext::SWC_EDIT_ADD_NODE ||
              interactiveContext().synapseEditMode() ==
-             ZInteractiveContext::SYNAPSE_ADD){
+             ZInteractiveContext::SYNAPSE_ADD ||
+             interactiveContext().synapseEditMode() ==
+             ZInteractiveContext::SYNAPSE_MOVE){
     if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
       buddyView()->setScreenCursor(Qt::PointingHandCursor);
     } else {
@@ -3032,7 +3037,8 @@ void ZStackPresenter::process(const ZStackOperator &op)
             currentRawStackPos.x(), currentRawStackPos.y(),
             currentRawStackPos.z()));
 
-    if (isStrokeOn()) {
+//    if (isStrokeOn()) {
+    if (m_stroke.isVisible()) {
       if (m_interactiveContext.strokeEditMode() !=
           ZInteractiveContext::STROKE_DRAW) {
         m_stroke.setFilled(false);

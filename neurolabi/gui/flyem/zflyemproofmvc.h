@@ -170,6 +170,8 @@ public slots:
 
   void removeBookmark(ZFlyEmBookmark *bookmark);
 
+  void highlightSelectedObject(bool hl);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:

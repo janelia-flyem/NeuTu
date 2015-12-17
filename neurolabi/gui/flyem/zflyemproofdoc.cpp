@@ -404,6 +404,19 @@ bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
   return false;
 }
 
+void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      se->moveSynapse(*selectedSet.begin(), dest);
+      processObjectModified(se);
+      notifyObjectModified();
+    }
+  }
+}
+
 void ZFlyEmProofDoc::addSynapse(const ZIntPoint &pt)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();

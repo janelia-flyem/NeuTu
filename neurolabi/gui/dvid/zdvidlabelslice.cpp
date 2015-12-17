@@ -43,6 +43,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
   m_selectionFrozen = false;
+  m_isFullView = false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -236,30 +237,39 @@ void ZDvidLabelSlice::update(int z)
   viewParam.setZ(z);
 
   update(viewParam);
+
+  m_isFullView = false;
 }
 
 void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
 {
   forceUpdate(viewParam);
-
+  m_isFullView = true;
   m_currentViewParam = viewParam;
 }
 
-void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
+bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
-  ZStackViewParam newViewParam = viewParam;
-  int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
-//  const int maxWidth = 512;
-//  const int maxHeight = 512;
-  if (area > m_maxWidth * m_maxHeight) {
-    newViewParam.resize(m_maxWidth, m_maxHeight);
+  bool updated = false;
+  if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
+    ZStackViewParam newViewParam = viewParam;
+    int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
+    //  const int maxWidth = 512;
+    //  const int maxHeight = 512;
+    if (area > m_maxWidth * m_maxHeight) {
+      newViewParam.resize(m_maxWidth, m_maxHeight);
+    }
+
+    if (!m_currentViewParam.contains(newViewParam)) {
+      forceUpdate(newViewParam);
+      updated = true;
+
+      m_currentViewParam = newViewParam;
+    }
+    m_isFullView = false;
   }
 
-  if (!m_currentViewParam.contains(newViewParam)) {
-    forceUpdate(newViewParam);
-
-    m_currentViewParam = newViewParam;
-  }
+  return updated;
 }
 
 QColor ZDvidLabelSlice::getColor(

@@ -78,6 +78,7 @@ signals:
 public slots:
   void deleteSelectedSynapse();
   void tryAddSynapseMode();
+  void tryMoveSynapseMode();
 
 private:
   void tryAddBookmarkMode();
@@ -85,6 +86,7 @@ private:
   void addActiveStrokeAsBookmark();
   void init();
   void tryAddSynapse(const ZIntPoint &pt);
+  void tryMoveSynapse(const ZIntPoint &pt);
 
 private:
   bool m_isHightlightMode;

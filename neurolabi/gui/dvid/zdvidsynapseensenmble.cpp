@@ -219,6 +219,9 @@ void ZDvidSynapseEnsemble::addSynapse(
     QMap<int, ZDvidSynapse> &synapseMap =
         getSynapseMap(synapse.getPosition().getY(), synapse.getPosition().getZ());
     synapseMap[synapse.getPosition().getX()] = synapse;
+    if (synapse.isSelected()) {
+      getSelector().selectObject(synapse.getPosition());
+    }
   } else {
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {

@@ -8970,6 +8970,7 @@ QList<ZDocPlayer *> ZStackDoc::getPlayerList(
 void ZStackDoc::ActiveViewObjectUpdater::clearState()
 {
   m_excludeSet.clear();
+  m_excludeTarget.clear();
   m_updatedTarget.clear();
 }
 
@@ -9000,14 +9001,18 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
          iter != playerList.end(); ++iter) {
       ZDocPlayer *player = *iter;
       ZStackObject *obj = player->getData();
-      if (!m_excludeSet.contains(obj->getType()) && obj->isVisible()) {
-        player->updateData(param);
-        m_updatedTarget.insert(obj->getTarget());
+      if (!m_excludeSet.contains(obj->getType()) &&
+          !m_excludeTarget.contains(obj->getTarget()) &&
+          obj->isVisible()) {
+        if (player->updateData(param)) {
+          m_updatedTarget.insert(obj->getTarget());
+        }
       }
     }
   }
 }
 
+/*
 QSet<ZStackObject::ETarget>
 ZStackDoc::updateActiveViewObject(const ZStackViewParam &param)
 {
@@ -9026,7 +9031,7 @@ ZStackDoc::updateActiveViewObject(const ZStackViewParam &param)
 
   return targetSet;
 }
-
+*/
 
 bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {

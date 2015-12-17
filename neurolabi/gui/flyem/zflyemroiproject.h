@@ -113,6 +113,7 @@ public:
    */
   ZObject3dScan getRoiObject(int xIntv, int yIntv, int zIntv) const;
   ZObject3dScan getRoiObject() const;
+  ZObject3dScan getRoiSlice() const;
 
   int getFirstRoiZ() const;
   int getLastRoiZ() const;

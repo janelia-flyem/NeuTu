@@ -338,8 +338,8 @@ public slots:
    */
   void turnOffStroke();
 
-  inline bool isStrokeOn() { return m_isStrokeOn; }
-  inline bool isStrokeOff() { return !isStrokeOn(); }
+  inline bool isStrokeOn() { return m_stroke.isVisible(); }
+  inline bool isStrokeOff() { return isStrokeOn(); }
 
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
@@ -466,7 +466,7 @@ protected:
 
   ZStroke2d m_stroke;
   ZStroke2d m_swcStroke;
-  bool m_isStrokeOn;
+//  bool m_isStrokeOn;
 
   ZStackBall m_highlightDecoration;
   bool m_highlight;

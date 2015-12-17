@@ -14,6 +14,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
   m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
+  m_synapseEditMode = SYNAPSE_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
 }

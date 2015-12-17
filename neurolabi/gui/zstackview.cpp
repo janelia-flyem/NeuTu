@@ -2086,9 +2086,11 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData(
         ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
       updater.exclude(ZStackObject::TYPE_DVID_LABEL_SLICE);
     }
-
-    updater.update(param);
+  } else {
+    updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);
   }
+
+  updater.update(param);
 
   return updater.getUpdatedTargetSet();
 }
