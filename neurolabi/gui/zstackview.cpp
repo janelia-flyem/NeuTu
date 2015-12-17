@@ -1932,10 +1932,15 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
     imageWidget()->blockPaint(true);
     imageWidget()->increaseZoomRatio(x, y, usingRef);
 //    reloadCanvas();
-    reloadTileCanvas();
-    reloadObjectCanvas(true);
 
-    processViewChange();
+    if (buddyPresenter()->interactiveContext().exploreMode() !=
+        ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
+      reloadTileCanvas();
+      reloadObjectCanvas(true);
+
+      processViewChange();
+    }
+
 //    notifyViewChanged(NeuTube::View::EXPLORE_ZOOM);
 //    notifyViewPortChanged();
 
@@ -1947,16 +1952,20 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
 void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 {
   if (!isViewPortFronzen()) {
-    reloadCanvas();
+//    reloadCanvas();
 
 //    setViewPortFrozen(true);
     imageWidget()->blockPaint(true);
     imageWidget()->decreaseZoomRatio(x, y, usingRef);
 //    reloadCanvas();
-    reloadTileCanvas();
-    reloadObjectCanvas(true);
+    if (buddyPresenter()->interactiveContext().exploreMode() !=
+        ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
+      reloadTileCanvas();
+      reloadObjectCanvas(true);
 
-    processViewChange();
+      processViewChange();
+    }
+
 //    notifyViewChanged(NeuTube::View::EXPLORE_ZOOM);
     imageWidget()->blockPaint(false);
     imageWidget()->update();

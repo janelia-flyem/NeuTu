@@ -43,14 +43,18 @@ QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
     menu = new QMenu(NULL);
   }
 
-  QAction *action = presenter->getAction(
-        ZActionFactory::ACTION_SYNAPSE_ADD);
+  QAction *action = presenter->getAction(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
   menu->addAction(action);
 
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST));
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_DELETE));
-
-  menu->addAction(presenter->getAction(
-                    ZActionFactory::ACTION_SYNAPSE_MOVE));
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_MOVE));
 
   return menu;
+}
+
+QMenu* ZFlyEmProofDocMenuFactory::makeStackContextMenu(
+    ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
+{
+  return makeSynapseContextMenu(presenter, parentWidget, menu);
 }

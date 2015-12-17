@@ -18676,7 +18676,7 @@ void ZTest::test(MainWindow *host)
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-#if 0
+#if 1
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -18869,7 +18869,7 @@ void ZTest::test(MainWindow *host)
   slice.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   if (host != NULL) {
     host->testFlyEmProofread();
   }

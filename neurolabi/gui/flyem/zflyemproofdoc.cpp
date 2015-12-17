@@ -394,6 +394,11 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
   return NULL;
 }
 
+bool ZFlyEmProofDoc::hasDvidSynapse() const
+{
+  return getDvidSynapseEnsemble() != NULL;
+}
+
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
@@ -417,13 +422,14 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
   }
 }
 
-void ZFlyEmProofDoc::addSynapse(const ZIntPoint &pt)
+void ZFlyEmProofDoc::addSynapse(
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
   if (se != NULL) {
     ZDvidSynapse synapse;
     synapse.setPosition(pt);
-    synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+    synapse.setKind(kind);
     synapse.setDefaultRadius();
     synapse.setDefaultColor();
     se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
@@ -446,6 +452,7 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
         changed = true;
       }
     }
+    se->getSelector().deselectAll();
 
     if (changed) {
       processObjectModified(se);
@@ -708,12 +715,14 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadSynapse()
 {
-  ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
-  synapseEnsemble->setDvidTarget(getDvidTarget());
-  synapseEnsemble->setSource(
-        ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+  if (!getDvidTarget().getSynapseName().empty()) {
+    ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
+    synapseEnsemble->setDvidTarget(getDvidTarget());
+    synapseEnsemble->setSource(
+          ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
 
-  addObject(synapseEnsemble);
+    addObject(synapseEnsemble);
+  }
 
 #if 0
   const QString threadId = "downloadSynapse";

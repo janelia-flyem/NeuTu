@@ -169,7 +169,6 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
-
 private:
   std::string m_address;
   std::string m_uuid;

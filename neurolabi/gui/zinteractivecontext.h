@@ -67,7 +67,8 @@ public:
 
   enum SynapseEditMode {
     SYNAPSE_EDIT_OFF = 0,
-    SYNAPSE_ADD,
+    SYNAPSE_ADD_PRE,
+    SYNAPSE_ADD_POST,
     SYNAPSE_MOVE
   };
 

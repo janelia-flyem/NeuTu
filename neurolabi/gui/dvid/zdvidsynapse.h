@@ -1,7 +1,9 @@
 #ifndef ZDVIDSYNAPSE_H
 #define ZDVIDSYNAPSE_H
 
+
 #include <iostream>
+#include <QColor>
 
 #include "zstackobject.h"
 #include "zintpoint.h"
@@ -25,6 +27,8 @@ public:
 
   void setDefaultRadius();
   void setRadius(double r) { m_radius = r; }
+
+  double getRadius() const { return m_radius; }
 
   void setKind(EKind kind) { m_kind = kind; }
   EKind getKind() const { return m_kind; }
@@ -55,9 +59,13 @@ public:
 
   bool isValid() const;
 
+  static QColor GetDefaultColor(EKind kind);
+  static double GetDefaultRadius(EKind kind);
+
 private:
   void init();
-  bool isVisible(int z);
+  bool isVisible(int z) const;
+  double getRadius(int z) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
 

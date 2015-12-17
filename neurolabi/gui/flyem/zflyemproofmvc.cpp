@@ -44,6 +44,7 @@
 #include "zfiletype.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -2048,7 +2049,15 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_SLICED_PUNCTA, visible);
+  ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble();
+  if (se != NULL) {
+    se->setVisible(visible);
+    if (visible) {
+      se->download(getView()->getZ(NeuTube::COORD_STACK));
+    }
+    getCompleteDocument()->processObjectModified(se);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
@@ -2060,7 +2069,15 @@ void ZFlyEmProofMvc::showBookmark(bool visible)
 
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_DVID_LABEL_SLICE, visible);
+  ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->setVisible(visible);
+    if (visible) {
+      slice->update(getView()->getViewParameter());
+    }
+    getCompleteDocument()->processObjectModified(slice);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)

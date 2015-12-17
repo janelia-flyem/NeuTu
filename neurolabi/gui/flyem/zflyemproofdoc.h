@@ -14,6 +14,7 @@
 #include "zflyembodyannotation.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsynapse.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -160,6 +161,7 @@ public: //ROI functions
 
 public: //Synapse functions
   bool hasDvidSynapseSelected() const;
+  bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest);
 
 signals:
@@ -181,7 +183,7 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
-  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
 
 protected:
   void autoSave();

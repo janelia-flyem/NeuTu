@@ -57,12 +57,17 @@ public:
   void updateView() const;
 
   enum MouseButtonAction {
-    LEFT_RELEASE, RIGHT_RELEASE, LEFT_PRESS, RIGHT_PRESS, LEFT_DOUBLE_CLICK, MOVE
+    LEFT_RELEASE, RIGHT_RELEASE, LEFT_PRESS, RIGHT_PRESS, LEFT_DOUBLE_CLICK,
+    MOVE
   };
 
   enum EMouseEventProcessStatus {
     MOUSE_EVENT_PASSED, CONTEXT_MENU_POPPED, MOUSE_HIT_OBJECT,
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
+  };
+
+  enum EObjectRole {
+    ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK
   };
 
   /*
@@ -90,6 +95,7 @@ public:
   inline const QList<ZStackObject*>& getActiveDecorationList() const {
     return m_activeDecorationList;
   }
+
   inline const QList<ZStackObject*>& getHighlightDecorationList() const {
     return m_highlightDecorationList;
   }
@@ -194,7 +200,11 @@ public:
 
   void updateCursor();
 
-  inline const ZStroke2d& getStroke() const { return m_stroke; }
+  ZStackObject* getFirstOnActiveObject() const;
+  ZStackObject* getActiveObject(EObjectRole role) const;
+  template<typename T>
+  T* getActiveObject(EObjectRole role) const;
+//  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
   void setZoomRatio(int ratio);
 
@@ -330,16 +340,24 @@ public slots:
   /*!
    * \brief Turn on the active stroke
    */
-  void turnOnStroke();
+//  void turnOnStroke();
+  void turnOnActiveObject(EObjectRole role, bool refreshing = true);
 
 
   /*!
    * \brief Turn off the active stroke
    */
-  void turnOffStroke();
+//  void turnOffStroke();
+  void turnOffActiveObject();
+  void turnOffActiveObject(EObjectRole role);
 
-  inline bool isStrokeOn() { return m_stroke.isVisible(); }
-  inline bool isStrokeOff() { return isStrokeOn(); }
+  bool isActiveObjectOn(EObjectRole role) const;
+  bool isActiveObjectOn() const;
+
+  /*
+  inline bool isStrokeOn() const; { return m_stroke.isVisible(); }
+  inline bool isStrokeOff() const; { return isStrokeOn(); }
+  */
 
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
@@ -391,6 +409,8 @@ protected:
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
+
+  void addActiveObject(EObjectRole role, ZStackObject *obj);
 
 protected:
   //ZStackFrame *m_parent;
@@ -464,8 +484,9 @@ protected:
 //  QPointF m_grabPosition;
   ZPoint m_lastMouseDataCoord;
 
-  ZStroke2d m_stroke;
-  ZStroke2d m_swcStroke;
+  QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
+//  ZStroke2d m_stroke;
+//  ZStroke2d m_swcStroke;
 //  bool m_isStrokeOn;
 
   ZStackBall m_highlightDecoration;
@@ -496,5 +517,12 @@ protected:
 signals:
   void viewModeChanged();
 };
+
+
+template<typename T>
+T* ZStackPresenter::getActiveObject(EObjectRole role) const
+{
+  return dynamic_cast<T*>(getActiveObject(role));
+}
 
 #endif

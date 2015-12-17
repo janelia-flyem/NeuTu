@@ -422,9 +422,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SWC_SUMMARIZE:
     action = new QAction("Summary", parent);
     break;
-  case ACTION_SYNAPSE_ADD:
-    action = new QAction("Add Synapse", parent);
-    action->setStatusTip("Add a synapse with mouse click");
+  case ACTION_SYNAPSE_ADD_PRE:
+    action = new QAction("Add TBar", parent);
+    action->setStatusTip("Add a TBar with mouse click");
+    break;
+  case ACTION_SYNAPSE_ADD_POST:
+    action = new QAction("Add PSD", parent);
+    action->setStatusTip("Add a PSD with mouse click");
     break;
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);

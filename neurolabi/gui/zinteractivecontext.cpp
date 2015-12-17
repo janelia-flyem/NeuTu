@@ -119,7 +119,8 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
 
     if (mode == INTERACT_FREE) {
       switch (synapseEditMode()) {
-      case SYNAPSE_ADD:
+      case SYNAPSE_ADD_PRE:
+      case SYNAPSE_ADD_POST:
         mode = INTERACT_ADD_SYNAPSE;
         break;
       case SYNAPSE_MOVE:
