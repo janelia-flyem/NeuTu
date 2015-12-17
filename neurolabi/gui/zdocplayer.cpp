@@ -14,12 +14,12 @@
 ZDocPlayer::~ZDocPlayer()
 {
   m_data = NULL;
-  m_enableUpdate = true;
 }
 
 ZDocPlayer::ZDocPlayer(ZStackObject *data)
 {
   m_data = data;
+  m_enableUpdate = true;
 }
 
 bool ZDocPlayer::hasData(ZStackObject *data) const
