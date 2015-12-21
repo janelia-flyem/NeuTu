@@ -184,7 +184,8 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
-  getCompleteDocument()->deleteSelectedSynapse();
+  getCompleteDocument()->executeRemoveSynapseCommand();
+//  getCompleteDocument()->deleteSelectedSynapse();
 }
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()
@@ -313,12 +314,19 @@ void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 void ZFlyEmProofPresenter::tryAddSynapse(
     const ZIntPoint &pt, ZDvidSynapse::EKind kind)
 {
-  getCompleteDocument()->addSynapse(pt, kind);
+  ZDvidSynapse synapse;
+  synapse.setPosition(pt);
+  synapse.setKind(kind);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+  getCompleteDocument()->executeAddSynapseCommand(synapse);
+//  getCompleteDocument()->addSynapse(pt, kind);
 }
 
 void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
 {
-  getCompleteDocument()->tryMoveSelectedSynapse(pt);
+  getCompleteDocument()->executeMoveSynapseCommand(pt);
+//  getCompleteDocument()->tryMoveSelectedSynapse(pt);
   exitSynapseEdit();
 //  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
   updateCursor();

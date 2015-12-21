@@ -118,6 +118,8 @@ public:
   void deleteSynapse(int x, int y, int z);
   void writeSynapse(const ZDvidSynapse &synapse);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void writeSynapse(const ZJsonObject &synapseJson);
+  void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
 
   inline int getStatusCode() const {
     return m_statusCode;

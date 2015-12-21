@@ -196,6 +196,7 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
+      "synapse": "synapse",
       "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot", "yuy", "yy"]
     },
@@ -518,6 +519,7 @@
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
+      "synapse": "synapses",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
     },
     {

@@ -164,6 +164,11 @@ public: //Synapse functions
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest);
 
+public: //Commands
+  void executeRemoveSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();

@@ -1615,6 +1615,23 @@ std::vector<ZIntPoint> ZDvidReader::readSynapsePosition(
   return posArray;
 }
 
+ZJsonObject ZDvidReader::readSynapseJson(const ZIntPoint &pt) const
+{
+  return readSynapseJson(pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject synapseJson;
+  ZIntCuboid box(x, y, z, x, y, z);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
+  if (obj.size() > 0) {
+    synapseJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+
+  return synapseJson;
+}
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     const ZIntCuboid &box) const

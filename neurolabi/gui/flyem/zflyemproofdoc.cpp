@@ -33,6 +33,7 @@
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsynpasecommand.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -1554,5 +1555,52 @@ void ZFlyEmProofDoc::processBodySelection()
   ZDvidLabelSlice *slice = getDvidLabelSlice();
   if (slice != NULL) {
     slice->processSelection();
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      new ZStackDocCommand::DvidSynapseEdit::RemoveSynapse(
+            this, pt.getX(), pt.getY(), pt.getZ(), command);
+    }
+    se->getSelector().deselectAll();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeAddSynapseCommand(const ZDvidSynapse &synapse)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    QUndoCommand *command = new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
+          this, synapse);
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      QUndoCommand *command =
+          new ZStackDocCommand::DvidSynapseEdit::MoveSynapse(
+            this, *selectedSet.begin(), dest);
+      pushUndoCommand(command);
+    }
   }
 }
