@@ -780,6 +780,12 @@ uint64_t ZDvidWriter::writePartition(
         LINFO() << "Saving" << tmpPath << "for debugging.";
         Bsc.exportDvidObject(tmpPath.toStdString());
 
+        tmpPath = QString("%1/%2_bm.dvid").
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(oldLabel);
+        LINFO() << "Saving" << tmpPath << "for debugging.";
+        bm.exportDvidObject(tmpPath.toStdString());
+
         LERROR() << "Failed to write coarse split.";
         return 0;
       }
