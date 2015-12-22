@@ -245,14 +245,34 @@ void ZDvidSynapseEnsemble::display(
   if (slice >= 0) {
     const int sliceRange = 5;
 
+    int currentBlockZ = m_dvidInfo.getStartBlockIndex().getZ() - 1;
     for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
       int z = painter.getZ(slice + ds);
+      if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
+          z <= m_dvidInfo.getEndCoordinates().getZ()) {
+        QVector<QMap<int, ZDvidSynapse> > &synapseSlice =
+            const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z);
+        if (synapseSlice.empty()) {
+          int blockZ = m_dvidInfo.getBlockIndexZ(z);
+          if (blockZ != currentBlockZ) {
+            currentBlockZ = blockZ;
+            const_cast<ZDvidSynapseEnsemble&>(*this).download(z);
+            if (synapseSlice.isEmpty()) {
+              synapseSlice.push_back(QMap<int, ZDvidSynapse>());
+            }
+          }
+        }
+      }
+    }
 
+    for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
+      int z = painter.getZ(slice + ds);
+      if (z < m_dvidInfo.getStartCoordinates().getZ() ||
+          z > m_dvidInfo.getEndCoordinates().getZ()) {
+        continue;
+      }
       QVector<QMap<int, ZDvidSynapse> > &synapseSlice =
           const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z);
-      if (synapseSlice.empty()) {
-        const_cast<ZDvidSynapseEnsemble&>(*this).download(z);
-      }
 
       for (int i = 0; i < synapseSlice.size(); ++i) {
         QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
@@ -321,6 +341,28 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapse(
   return getSynapse(center.getX(), center.getY(), center.getZ(), scope);
 }
 
+bool ZDvidSynapseEnsemble::toggleHitSelect()
+{
+  bool selecting = true;
+
+  std::vector<ZIntPoint> selectedList = m_selector.getSelectedList();
+  for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
+       iter != selectedList.end(); ++iter) {
+    const ZIntPoint &pt = *iter;
+
+    if (pt == m_hitPoint) {
+      selecting = false;
+      break;
+    }
+  }
+
+  ZDvidSynapse &synapse = getSynapse(m_hitPoint, DATA_LOCAL);
+  synapse.setSelected(selecting);
+  m_selector.setSelection(m_hitPoint, selecting);
+
+  return selecting;
+}
+
 void ZDvidSynapseEnsemble::selectHit(bool appending)
 {
   if (!appending) {
@@ -342,15 +384,17 @@ void ZDvidSynapseEnsemble::selectHit(bool appending)
   }
 }
 
-void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
+void ZDvidSynapseEnsemble::toggleHitSelectWithPartner()
 {
-  selectHit(appending);
-  ZDvidSynapse &selectedSynapse = getSynapse(m_hitPoint, DATA_LOCAL);
-  if (!selectedSynapse.isValid()) {
-    return;
+  if (toggleHitSelect()) {
+    ZDvidSynapse &synapse = getSynapse(m_hitPoint, DATA_LOCAL);
+    updatePartner(synapse);
   }
+}
 
-  selectedSynapse.clearPartner();
+void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
+{
+  synapse.clearPartner();
 
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray objArray = m_reader.readJsonArray(
@@ -366,29 +410,23 @@ void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
           if (partnerJson.hasKey("To")) {
             ZJsonArray posJson(partnerJson.value("To"));
             std::vector<int> coords = posJson.toIntegerArray();
-            selectedSynapse.addPartner(coords[0], coords[1], coords[2]);
-#if 0
-            if (coords.size() == 3) {
-              ZJsonArray partnerJsonArray = m_reader.readJsonArray(
-                    dvidUrl.getSynapseUrl(coords[0], coords[1], coords[2], 1, 1, 1));
-
-              if (!partnerJsonArray.isEmpty()) {
-                ZJsonObject partnerJson(partnerJsonArray.value(0));
-                if (!partnerJson.isEmpty()) {
-                  ZDvidSynapse &synapse =
-                      getSynapse(coords[0], coords[1], coords[2]);
-                  synapse.loadJsonObject(partnerJson);
-                  m_selector.selectObject(synapse.getPosition());
-                  synapse.setSelected(true);
-                }
-              }
-            }
-#endif
+            synapse.addPartner(coords[0], coords[1], coords[2]);
           }
         }
       }
     }
   }
+}
+
+void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
+{
+  selectHit(appending);
+  ZDvidSynapse &selectedSynapse = getSynapse(m_hitPoint, DATA_LOCAL);
+  if (!selectedSynapse.isValid()) {
+    return;
+  }
+
+  updatePartner(selectedSynapse);
 }
 
 bool ZDvidSynapseEnsemble::hit(double x, double y, double z)

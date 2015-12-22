@@ -147,7 +147,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
       } else if (event.getModifiers() == Qt::ShiftModifier) {
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_MULTIPLE);
       } else if (event.getModifiers() == Qt::ControlModifier) {
-        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_MULTIPLE);
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE);
       }
       break;
     default:

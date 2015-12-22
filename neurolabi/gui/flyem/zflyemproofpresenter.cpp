@@ -416,6 +416,12 @@ void ZFlyEmProofPresenter::processCustomOperator(
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
     break;
+  case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
+    getCompleteDocument()->getDvidSynapseEnsemble()->toggleHitSelectWithPartner();
+    if (e != NULL) {
+      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+    break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
     tryAddSynapse(currentStackPos.toIntPoint());
     break;

@@ -7303,6 +7303,118 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
   }
 }
 
+void MainWindow::on_actionNeuroMorpho_triggered()
+{
+  std::string dataFolder =
+      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e402", 7000);
+  target.setBodyLabelName("bodies1104");
+  ZDvidReader reader;
+  reader.open(target);
+
+  //Load neuron list
+  int count = 0;
+  int swcCount = 0;
+
+  std::set<std::string> excludedType;
+  std::set<uint64_t> excludedId;
+
+  ZJsonObject configJson;
+  configJson.load(dataFolder + "/config.json");
+  if (configJson.hasKey("excluded")) {
+    ZJsonObject excludedJson(configJson.value("excluded"));
+    if (excludedJson.hasKey("type")) {
+      ZJsonArray excludeTypeJson(excludedJson.value("type"));
+      for (size_t i = 0; i < excludeTypeJson.size(); ++i) {
+        excludedType.insert(ZJsonParser::stringValue(excludeTypeJson.at(i)));
+      }
+    }
+    if (excludedJson.hasKey("id")) {
+      ZJsonArray excludeIdJson(excludedJson.value("id"));
+      for (size_t i = 0; i < excludeIdJson.size(); ++i) {
+        excludedId.insert(ZJsonParser::integerValue(excludeIdJson.at(i)));
+      }
+    }
+  }
+
+  std::vector<uint64_t> emptyBody;
+
+  ZString line;
+  FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
+  while (line.readLine(fp)) {
+    line.trim();
+    std::vector<std::string> fieldArray = line.tokenize(',');
+    if (fieldArray.size() != 5) {
+      std::cout << line << std::endl;
+    } else {
+      ZString type = fieldArray[2];
+      type.replace("\"", "");
+      //      type.replace("/", "_");
+      ZString name = fieldArray[1];
+      if (!type.empty() && !name.contains("?") && !type.contains("/") &&
+          !type.endsWith("like") && !type.startsWith("Mt") &&
+          excludedType.count(type) == 0) {
+        ZString bodyIdStr(fieldArray[0]);
+        uint64_t bodyId = bodyIdStr.firstUint64();
+        if (excludedId.count(bodyId) == 0) {
+          std::cout << bodyId << ": " << fieldArray[2] << std::endl;
+          QDir swcDir((dataFolder + "/swc").c_str());
+          if (!swcDir.exists(type.c_str())) {
+            std::cout << "Making directory "
+                      << swcDir.absolutePath().toStdString() + "/" + type
+                      << std::endl;
+            swcDir.mkdir(type.c_str());
+          }
+#if 1
+          ZSwcTree *tree = reader.readSwc(bodyId);
+          if (tree != NULL) {
+            if (!tree->isEmpty()) {
+              tree->addComment("");
+              tree->addComment("Imaging: FIB SEM");
+              tree->addComment("Unit: um");
+              tree->addComment("Neuron: fly medulla, " + type);
+              tree->addComment("Reference: Takemura et al. PNAS 112(44) (2015): 13711-13716.");
+
+              tree->rescale(0.01, 0.01, 0.01);
+              tree->setType(3);
+              name.replace("\"", "");
+              name.replace("?", "_");
+              name += "_";
+              name.appendNumber(bodyId);
+              tree->save(dataFolder + "/swc/" + type + "/" + name + ".swc");
+              ++swcCount;
+            } else {
+              emptyBody.push_back(bodyId);
+              std::cout << "WARING: empty tree" << std::endl;
+            }
+          } else {
+            emptyBody.push_back(bodyId);
+            std::cout << "WARING: null tree" << std::endl;
+          }
+#endif
+
+          ++count;
+        }
+      }
+    }
+  }
+  fclose(fp);
+
+  std::cout << count << " neurons valid." << std::endl;
+  std::cout << swcCount << " neurons saved." << std::endl;
+  std::cout << "Missing bodies:" << std::endl;
+  reader.setVerbose(false);
+  for (std::vector<uint64_t>::const_iterator iter = emptyBody.begin();
+       iter != emptyBody.end(); ++iter) {
+    ZObject3dScan body = reader.readBody(*iter);
+    std::cout << "  " << *iter << " " << body.getVoxelNumber()
+              << std::endl;
+  }
+}
+
+
 /////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
@@ -7328,38 +7440,4 @@ void MainWindow::MessageProcessor::processMessage(
       break;
     }
   }
-}
-
-void MainWindow::on_actionNeuroMorpho_triggered()
-{
-  std::string dataFolder =
-      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
-  //Load neuron list
-  int count = 0;
-
-  ZString line;
-  FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
-  while (line.readLine(fp)) {
-    line.trim();
-    std::vector<std::string> fieldArray = line.tokenize(',');
-    if (fieldArray.size() != 5) {
-      std::cout << line << std::endl;
-    } else {
-      ZString type = fieldArray[2];
-      if (type != "\"\"" && !type.contains("?")) {
-        ZString bodyIdStr(fieldArray[0]);
-        uint64_t bodyId = bodyIdStr.firstUint64();
-        std::cout << bodyId << ": " << fieldArray[2] << std::endl;
-        QDir typeDir((dataFolder + "/" + type).c_str());
-        if (!typeDir.exists()) {
-          typeDir.makeAbsolute();
-        }
-
-        ++count;
-      }
-    }
-  }
-  fclose(fp);
-
-  std::cout << count << " neurons saved." << std::endl;
 }

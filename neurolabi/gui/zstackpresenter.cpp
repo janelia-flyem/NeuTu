@@ -538,10 +538,12 @@ void ZStackPresenter::createSwcActions()
     m_actionMap[ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS] = action;
   }
 
+  /*
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ZActionFactory::ACTION_EXTEND_SWC_NODE], true);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ZActionFactory::ACTION_CONNECT_TO_SWC_NODE], true);
+        */
 }
 
 void ZStackPresenter::createStrokeActions()

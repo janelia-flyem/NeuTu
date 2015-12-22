@@ -44,8 +44,10 @@ public:
 
   bool hasLocalSynapse(int x, int y, int z) const;
 
+  bool toggleHitSelect();
   void selectHit(bool appending);
   void selectHitWithPartner(bool appending);
+  void toggleHitSelectWithPartner();
 
   const std::string& className() const;
 
@@ -85,6 +87,7 @@ public:
 private:
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
+  void updatePartner(ZDvidSynapse &synapse);
 
 private:
   QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;

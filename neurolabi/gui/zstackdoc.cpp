@@ -368,178 +368,6 @@ void ZStackDoc::notifyProgressAdvanced(double dp)
   emit progressAdvanced(dp);
 }
 
-#if 0
-void ZStackDoc::createActions()
-{
-  m_undoAction = m_undoStack->createUndoAction(this, tr("&Undo"));
-  m_undoAction->setIcon(QIcon(":/images/undo.png"));
-  m_undoAction->setShortcuts(QKeySequence::Undo);
-
-  m_redoAction = m_undoStack->createRedoAction(this, tr("&Redo"));
-  m_redoAction->setIcon(QIcon(":/images/redo.png"));
-  m_redoAction->setShortcuts(QKeySequence::Redo);
-
-  QAction *action = new QAction("Downstream", this);
-  action->setStatusTip("Select downstream nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
-  m_actionMap[ACTION_SELECT_DOWNSTREAM] = action;
-
-  action = new QAction("Upstream", this);
-  action->setStatusTip("Select upstream nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
-  m_actionMap[ACTION_SELECT_UPSTREAM] = action;
-
-  action = new QAction("Neighbors", this);
-  action->setStatusTip(
-        "Select neighbors (nodes coonected directly) of the currently selected nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectNeighborSwcNode()));
-  m_actionMap[ACTION_SELECT_NEIGHBOR_SWC_NODE] = action;
-
-  action = new QAction("Host branch", this);
-  action->setStatusTip("Select branches containing the currently selected nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
-  m_actionMap[ACTION_SELECT_SWC_BRANCH] = action;
-
-  action = new QAction("All connected nodes", this);
-  action->setStatusTip("Select all nodes connected (directly or indirectly) "
-                       "of the currently selected nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectConnectedNode()));
-  m_actionMap[ACTION_SELECT_CONNECTED_SWC_NODE] = action;
-
-  action = new QAction("All nodes", this);
-  action->setShortcut(QKeySequence::SelectAll);
-  action->setStatusTip("Selet all nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(selectAllSwcTreeNode()));
-  m_actionMap[ACTION_SELECT_ALL_SWC_NODE] = action;
-
-  action = new QAction("Resolve crossover", this);
-  action->setStatusTip("Create a crossover near the selected node if it is detected");
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(executeResolveCrossoverCommand()));
-  m_actionMap[ACTION_RESOLVE_CROSSOVER] = action;
-
-  action = new QAction("Remove turn", this);
-  action->setStatusTip("Remove a nearby sharp turn");
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(executeRemoveTurnCommand()));
-  m_actionMap[ACTION_REMOVE_TURN] = action;
-
-  action = new QAction("Path length", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(showSeletedSwcNodeLength()));
-  m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH] = action;
-
-  action = new QAction("Scaled Path length", this);
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(showSeletedSwcNodeScaledLength()));
-  m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH] = action;
-
-  action = new QAction("Delete", this);
-  action->setShortcut(Qt::Key_X);
-  action->setStatusTip("Delete selected nodes");
-  action->setIcon(QIcon(":/images/delete.png"));
-  connect(action, SIGNAL(triggered()), this, SLOT(executeDeleteSwcNodeCommand()));
-  m_actionMap[ACTION_DELETE_SWC_NODE] = action;
-
-  action = new QAction("Insert", this);
-  action->setStatusTip("Insert a node between two adjacent nodes");
-  action->setShortcut(Qt::Key_I);
-  action->setIcon(QIcon(":/images/insert.png"));
-  connect(action, SIGNAL(triggered()), this, SLOT(executeInsertSwcNode()));
-  m_actionMap[ACTION_INSERT_SWC_NODE] = action;
-
-  action = new QAction("Break", this);
-  action->setStatusTip("Delect connections among the selected nodes");
-  action->setShortcut(Qt::Key_B);
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(executeBreakSwcConnectionCommand()));
-  action->setIcon(QIcon(":/images/cut.png"));
-  m_actionMap[ACTION_BREAK_SWC_NODE] = action;
-
-  action = new QAction("Connect", this);
-  action->setStatusTip("Connect selected nodes");
-  action->setShortcut(Qt::Key_C);
-  action->setIcon(QIcon(":/images/connect.png"));
-  connect(action, SIGNAL(triggered()), this, SLOT(executeConnectSwcNodeCommand()));
-  m_actionMap[ACTION_CONNECT_SWC_NODE] = action;
-
-  action = new QAction("Merge", this);
-  action->setStatusTip("Merge selected nodes, which for a single tree");
-  connect(action, SIGNAL(triggered()), this, SLOT(executeMergeSwcNodeCommand()));
-  action->setIcon(QIcon(":/images/merge.png"));
-  m_actionMap[ACTION_MERGE_SWC_NODE] = action;
-
-  action = new QAction("Translate", this);
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(executeTranslateSelectedSwcNode()));
-  m_actionMap[ACTION_TRANSLATE_SWC_NODE] = action;
-
-  action = new QAction("Change size", this);
-  connect(action, SIGNAL(triggered()),
-          this, SLOT(executeChangeSelectedSwcNodeSize()));
-  m_actionMap[ACTION_CHANGE_SWC_SIZE] = action;
-
-  action = new QAction("Set as root", this);
-  action->setStatusTip("Set the selected node as a root");
-  connect(action, SIGNAL(triggered()), this, SLOT(executeSetRootCommand()));
-  m_actionMap[ACTION_SET_SWC_ROOT] = action;
-
-  action = new QAction("Join isolated branch", this);
-  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
-  connect(action, SIGNAL(triggered()), this, SLOT(executeSetBranchPoint()));
-  m_actionMap[ACTION_SET_BRANCH_POINT] = action;
-
-  action = new QAction("Join isolated brach (across trees)", this);
-  action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
-                       "The branch can be in another neuron.");
-  connect(action, SIGNAL(triggered()), this, SLOT(executeConnectIsolatedSwc()));
-  m_actionMap[ACTION_CONNECTED_ISOLATED_SWC] = action;
-
-  action = new QAction("Reset branch point", this);
-  action->setStatusTip("Move a neighboring branch point to the selected node");
-  connect(action, SIGNAL(triggered()), this, SLOT(executeResetBranchPoint()));
-  m_actionMap[ACTION_RESET_BRANCH_POINT] = action;
-
-  action = new QAction("Z", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcZCommand()));
-  m_actionMap[ACTION_SWC_Z_INTERPOLATION] = action;
-
-  action = new QAction("Radius", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcRadiusCommand()));
-  m_actionMap[ACTION_SWC_RADIUS_INTERPOLATION] = action;
-  //m_singleSwcNodeActionActivator.registerAction(action, false);
-
-  action = new QAction("Position", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcPositionCommand()));
-  m_actionMap[ACTION_SWC_POSITION_INTERPOLATION] = action;
-  //m_singleSwcNodeActionActivator.registerAction(action, false);
-
-  action = new QAction("Position and Radius", this);
-  connect(action, SIGNAL(triggered()), this, SLOT(executeInterpolateSwcCommand()));
-  m_actionMap[ACTION_SWC_INTERPOLATION] = action;
-  //m_singleSwcNodeActionActivator.registerAction(action, false);
-
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_MEASURE_SWC_NODE_LENGTH], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_MEASURE_SCALED_SWC_NODE_LENGTH], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_BREAK_SWC_NODE], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_CONNECT_SWC_NODE], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_MERGE_SWC_NODE], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_SET_SWC_ROOT], true);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_INSERT_SWC_NODE], false);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_SET_BRANCH_POINT], true);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_RESET_BRANCH_POINT], true);
-  m_singleSwcNodeActionActivator.registerAction(
-        m_actionMap[ACTION_CONNECTED_ISOLATED_SWC], true);
-}
-#endif
 
 void ZStackDoc::updateSwcNodeAction()
 {
@@ -1402,12 +1230,12 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
         connect(action, SIGNAL(triggered()),
                 this, SLOT(showSeletedSwcNodeLength()));
-        m_singleSwcNodeActionActivator.registerAction(action, true);
+        m_singleSwcNodeActionActivator.registerAction(action, false);
         break;
       case ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
         connect(action, SIGNAL(triggered()),
                 this, SLOT(showSeletedSwcNodeScaledLength()));
-        m_singleSwcNodeActionActivator.registerAction(action, true);
+        m_singleSwcNodeActionActivator.registerAction(action, false);
         break;
       case ZActionFactory::ACTION_DELETE_SWC_NODE:
         connect(action, SIGNAL(triggered()),
@@ -1435,7 +1263,7 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_MERGE_SWC_NODE:
         connect(action, SIGNAL(triggered()),
                 this, SLOT(executeMergeSwcNodeCommand()));
-        m_singleSwcNodeActionActivator.registerAction(action, true);
+        m_singleSwcNodeActionActivator.registerAction(action, false);
         break;
       case ZActionFactory::ACTION_TRANSLATE_SWC_NODE:
         connect(action, SIGNAL(triggered()),

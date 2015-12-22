@@ -18898,14 +18898,14 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Mi15-O") << std::endl;
-  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("L1-H") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Mi3-like_13852") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Dm158-lik") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Y3/Y24 O-like") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Y3/Y24-like") << std::endl;
   std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("TmY4-like-0") << std::endl;
 #endif
 
-#if 1
+#if 0
   std::string dataFolder =
       GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
 
@@ -18919,7 +18919,28 @@ void ZTest::test(MainWindow *host)
   int count = 0;
   int swcCount = 0;
 
-  std::set<ZString> excludedSet;
+  std::set<std::string> excludedType;
+  std::set<uint64_t> excludedId;
+
+  ZJsonObject configJson;
+  configJson.load(dataFolder + "/config.json");
+  if (configJson.hasKey("excluded")) {
+    ZJsonObject excludedJson(configJson.value("excluded"));
+    if (excludedJson.hasKey("type")) {
+      ZJsonArray excludeTypeJson(excludedJson.value("type"));
+      for (size_t i = 0; i < excludeTypeJson.size(); ++i) {
+        excludedType.insert(ZJsonParser::stringValue(excludeTypeJson.at(i)));
+      }
+    }
+    if (excludedJson.hasKey("id")) {
+      ZJsonArray excludeIdJson(excludedJson.value("id"));
+      for (size_t i = 0; i < excludeIdJson.size(); ++i) {
+        excludedId.insert(ZJsonParser::integerValue(excludeIdJson.at(i)));
+      }
+    }
+  }
+
+  std::vector<uint64_t> emptyBody;
 
   ZString line;
   FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
@@ -18931,46 +18952,52 @@ void ZTest::test(MainWindow *host)
     } else {
       ZString type = fieldArray[2];
       type.replace("\"", "");
-//      type.replace("/", "_");
-      if (!type.empty() && !type.contains("?") && !type.contains("/") &&
-          !type.endsWith("like") && excludedSet.count(type) == 0) {
+      //      type.replace("/", "_");
+      ZString name = fieldArray[1];
+      if (!type.empty() && !name.contains("?") && !type.contains("/") &&
+          !type.endsWith("like") && !type.startsWith("Mt") &&
+          excludedType.count(type) == 0) {
         ZString bodyIdStr(fieldArray[0]);
         uint64_t bodyId = bodyIdStr.firstUint64();
-        std::cout << bodyId << ": " << fieldArray[2] << std::endl;
-        QDir dataDir((dataFolder).c_str());
-        if (!dataDir.exists(type.c_str())) {
-          std::cout << "Making directory "
-                    << dataDir.absolutePath().toStdString() + "/" + type
-                    << std::endl;
-          dataDir.mkdir(type.c_str());
-        }
-#if 1
-        ZSwcTree *tree = reader.readSwc(bodyId);
-        if (tree != NULL) {
-          if (!tree->isEmpty()) {
-            tree->addComment("");
-            tree->addComment("Imaging: EM FIB");
-            tree->addComment("Unit: um");
-            tree->addComment("Neuron: fly medulla, " + type);
-            tree->addComment("Reference: Takemura et al. PNAS 112(44) (2015): 13711-13716.");
-
-            tree->rescale(25, 25, 25);
-            tree->setType(3);
-
-            ZString name = fieldArray[1];
-            name.replace("\"", "");
-            name.replace("?", "_");
-            tree->save(dataFolder + "/" + type + "/" + name + ".swc");
-            ++swcCount;
-          } else {
-            std::cout << "WARING: empty tree" << std::endl;
+        if (excludedId.count(bodyId) == 0) {
+          std::cout << bodyId << ": " << fieldArray[2] << std::endl;
+          QDir dataDir((dataFolder + "/swc").c_str());
+          if (!dataDir.exists(type.c_str())) {
+            std::cout << "Making directory "
+                      << dataDir.absolutePath().toStdString() + "/" + type
+                      << std::endl;
+            dataDir.mkdir(type.c_str());
           }
-        } else {
-          std::cout << "WARING: null tree" << std::endl;
-        }
+#if 1
+          ZSwcTree *tree = reader.readSwc(bodyId);
+          if (tree != NULL) {
+            if (!tree->isEmpty()) {
+              tree->addComment("");
+              tree->addComment("Imaging: FIB SEM");
+              tree->addComment("Unit: um");
+              tree->addComment("Neuron: fly medulla, " + type);
+              tree->addComment("Reference: Takemura et al. PNAS 112(44) (2015): 13711-13716.");
+
+              tree->rescale(0.01, 0.01, 0.01);
+              tree->setType(3);
+              name.replace("\"", "");
+              name.replace("?", "_");
+              name += "_";
+              name.appendNumber(bodyId);
+              tree->save(dataFolder + "/swc/" + type + "/" + name + ".swc");
+              ++swcCount;
+            } else {
+              emptyBody.push_back(bodyId);
+              std::cout << "WARING: empty tree" << std::endl;
+            }
+          } else {
+            emptyBody.push_back(bodyId);
+            std::cout << "WARING: null tree" << std::endl;
+          }
 #endif
 
-        ++count;
+          ++count;
+        }
       }
     }
   }
@@ -18978,6 +19005,15 @@ void ZTest::test(MainWindow *host)
 
   std::cout << count << " neurons valid." << std::endl;
   std::cout << swcCount << " neurons saved." << std::endl;
+  std::cout << "Missing bodies:" << std::endl;
+  reader.setVerbose(false);
+  for (std::vector<uint64_t>::const_iterator iter = emptyBody.begin();
+       iter != emptyBody.end(); ++iter) {
+    ZObject3dScan body = reader.readBody(*iter);
+    std::cout << "  " << *iter << " " << body.getVoxelNumber()
+              << std::endl;
+  }
+
 #endif
   std::cout << "Done." << std::endl;
 }
