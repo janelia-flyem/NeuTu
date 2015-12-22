@@ -258,6 +258,7 @@ using namespace std;
 #include "dvid/zdvidtileensemble.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "flyem/zflyemneuroninfo.h"
 
 using namespace std;
 
@@ -18676,7 +18677,7 @@ void ZTest::test(MainWindow *host)
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -18875,5 +18876,108 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "059e", 7000);
+  writer.open(target);
+  writer.deleteKey(QString("bodies0802_skeletons"), QString("0_swc"),
+                   QString("9_swc"));
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e402", 7000);
+  writer.open(target);
+
+  ZJsonObject obj;
+  obj.load(GET_APPLICATION_DIR + "/json/skeletonize_fib25_len40.json");
+  writer.writeJson("bodies1104_skeletons", "config.json", obj);
+#endif
+
+#if 0
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Mi15-O") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("L1-H") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Dm158-lik") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Y3/Y24 O-like") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("Y3/Y24-like") << std::endl;
+  std::cout << ZFlyEmNeuronInfo::GuessTypeFromName("TmY4-like-0") << std::endl;
+#endif
+
+#if 1
+  std::string dataFolder =
+      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e402", 7000);
+  target.setBodyLabelName("bodies1104");
+  ZDvidReader reader;
+  reader.open(target);
+
+  //Load neuron list
+  int count = 0;
+  int swcCount = 0;
+
+  std::set<ZString> excludedSet;
+
+  ZString line;
+  FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
+  while (line.readLine(fp)) {
+    line.trim();
+    std::vector<std::string> fieldArray = line.tokenize(',');
+    if (fieldArray.size() != 5) {
+      std::cout << line << std::endl;
+    } else {
+      ZString type = fieldArray[2];
+      type.replace("\"", "");
+//      type.replace("/", "_");
+      if (!type.empty() && !type.contains("?") && !type.contains("/") &&
+          !type.endsWith("like") && excludedSet.count(type) == 0) {
+        ZString bodyIdStr(fieldArray[0]);
+        uint64_t bodyId = bodyIdStr.firstUint64();
+        std::cout << bodyId << ": " << fieldArray[2] << std::endl;
+        QDir dataDir((dataFolder).c_str());
+        if (!dataDir.exists(type.c_str())) {
+          std::cout << "Making directory "
+                    << dataDir.absolutePath().toStdString() + "/" + type
+                    << std::endl;
+          dataDir.mkdir(type.c_str());
+        }
+#if 1
+        ZSwcTree *tree = reader.readSwc(bodyId);
+        if (tree != NULL) {
+          if (!tree->isEmpty()) {
+            tree->addComment("");
+            tree->addComment("Imaging: EM FIB");
+            tree->addComment("Unit: um");
+            tree->addComment("Neuron: fly medulla, " + type);
+            tree->addComment("Reference: Takemura et al. PNAS 112(44) (2015): 13711-13716.");
+
+            tree->rescale(25, 25, 25);
+            tree->setType(3);
+
+            ZString name = fieldArray[1];
+            name.replace("\"", "");
+            name.replace("?", "_");
+            tree->save(dataFolder + "/" + type + "/" + name + ".swc");
+            ++swcCount;
+          } else {
+            std::cout << "WARING: empty tree" << std::endl;
+          }
+        } else {
+          std::cout << "WARING: null tree" << std::endl;
+        }
+#endif
+
+        ++count;
+      }
+    }
+  }
+  fclose(fp);
+
+  std::cout << count << " neurons valid." << std::endl;
+  std::cout << swcCount << " neurons saved." << std::endl;
+#endif
   std::cout << "Done." << std::endl;
 }

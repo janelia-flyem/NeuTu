@@ -1116,11 +1116,11 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo() const
   return dvidInfo;
 }
 
-bool ZDvidReader::hasData(const std::string &key) const
+bool ZDvidReader::hasData(const std::string &dataName) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
-  return bufferReader.isReadable(dvidUrl.getInfoUrl(key).c_str());
+  return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
 }
 
 ZArray* ZDvidReader::readLabels64(

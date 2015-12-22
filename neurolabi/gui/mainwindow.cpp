@@ -7330,6 +7330,36 @@ void MainWindow::MessageProcessor::processMessage(
   }
 }
 
+void MainWindow::on_actionNeuroMorpho_triggered()
+{
+  std::string dataFolder =
+      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
+  //Load neuron list
+  int count = 0;
 
+  ZString line;
+  FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
+  while (line.readLine(fp)) {
+    line.trim();
+    std::vector<std::string> fieldArray = line.tokenize(',');
+    if (fieldArray.size() != 5) {
+      std::cout << line << std::endl;
+    } else {
+      ZString type = fieldArray[2];
+      if (type != "\"\"" && !type.contains("?")) {
+        ZString bodyIdStr(fieldArray[0]);
+        uint64_t bodyId = bodyIdStr.firstUint64();
+        std::cout << bodyId << ": " << fieldArray[2] << std::endl;
+        QDir typeDir((dataFolder + "/" + type).c_str());
+        if (!typeDir.exists()) {
+          typeDir.makeAbsolute();
+        }
 
+        ++count;
+      }
+    }
+  }
+  fclose(fp);
 
+  std::cout << count << " neurons saved." << std::endl;
+}

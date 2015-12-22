@@ -465,6 +465,8 @@ private slots:
 
   void on_actionImport_Sparsevol_Json_triggered();
 
+  void on_actionNeuroMorpho_triggered();
+
 private:
   void createActions();
   void createFileActions();

@@ -107,7 +107,7 @@ public:
 
   ZJsonObject readInfo() const;
 
-  bool hasData(const std::string &key) const;
+  bool hasData(const std::string &dataName) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;

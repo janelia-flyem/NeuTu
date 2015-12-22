@@ -52,8 +52,6 @@ ZStack::ZStack(int kind, int width, int height, int depth,
     stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
     delloc = Kill_Mc_Stack;
   }
-
-  m_dealloc = NULL;
   setData(stack, delloc);
 }
 
@@ -85,11 +83,15 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
 ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
   m_stack(NULL)
 {
+  init();
+
   setData(stack, C_Stack::kill);
 }
 
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
+  init();
+
   setData(stack, dealloc);
 }
 
