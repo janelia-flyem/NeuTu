@@ -153,6 +153,8 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
   ZDvidSynapse readSynapse(int x, int y, int z);
+  ZJsonObject readSynapseJson(int x, int y, int z) const;
+  ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

@@ -272,7 +272,7 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
     }
     if (obj.hasKey(m_synapseNameKey)) {
-      setRoiName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
+      setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
     }
 
     if (obj.hasKey(m_userNameKey)) {

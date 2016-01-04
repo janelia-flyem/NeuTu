@@ -57,7 +57,7 @@ public:
    *
    * \param obj an object to be selected
    */
-  void selectObject(T obj);
+  void selectObject(const T &obj);
 
   /*!
    * \brief Deselect an object
@@ -70,7 +70,7 @@ public:
    *
    * \param obj an object to be selected
    */
-  void deselectObject(T obj);
+  void deselectObject(const T &obj);
 
   void deselectAll();
 

@@ -1,6 +1,7 @@
 #include "zdvidsynapseensenmble.h"
 #include "zdvidurl.h"
 #include "zpainter.h"
+#include "tz_math.h"
 #include "dvid/zdvidwriter.h"
 
 ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
@@ -42,12 +43,16 @@ void ZDvidSynapseEnsemble::download(int z)
   int height = m_dvidInfo.getEndCoordinates().getY() -
       m_dvidInfo.getStartCoordinates().getY() + 1;
 
+  ZIntCuboid blockBox =
+      m_dvidInfo.getBlockBox(0, 0, m_dvidInfo.getBlockIndexZ(z));
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = m_reader.readJsonArray(
         dvidUrl.getSynapseUrl(
           m_dvidInfo.getStartCoordinates().getX(),
           m_dvidInfo.getStartCoordinates().getY(),
-          z, width, height, 1));
+          blockBox.getFirstCorner().getZ(),
+          width, height, blockBox.getDepth()));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -144,6 +149,7 @@ bool ZDvidSynapseEnsemble::removeSynapse(
   if (scope == ZDvidSynapseEnsemble::DATA_LOCAL) {
     if (hasLocalSynapse(x, y, z)) {
       getSynapseMap(y, z).remove(x);
+      getSelector().deselectObject(ZIntPoint(x, y, z));
 
       return true;
     }
@@ -219,6 +225,9 @@ void ZDvidSynapseEnsemble::addSynapse(
     QMap<int, ZDvidSynapse> &synapseMap =
         getSynapseMap(synapse.getPosition().getY(), synapse.getPosition().getZ());
     synapseMap[synapse.getPosition().getX()] = synapse;
+    if (synapse.isSelected()) {
+      getSelector().selectObject(synapse.getPosition());
+    }
   } else {
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {
@@ -234,29 +243,33 @@ void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
   if (slice >= 0) {
-    int z = painter.getZ(slice);
+    const int sliceRange = 5;
 
-    QVector<QMap<int, ZDvidSynapse> > &synapseSlice =
-        const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z);
-    if (synapseSlice.empty()) {
-      const_cast<ZDvidSynapseEnsemble&>(*this).download(z);
-    }
+    for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
+      int z = painter.getZ(slice + ds);
 
-    for (int i = 0; i < synapseSlice.size(); ++i) {
-      QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
-      for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
-           iter != synapseMap.end(); ++iter) {
-        const ZDvidSynapse &synapse = iter.value();
+      QVector<QMap<int, ZDvidSynapse> > &synapseSlice =
+          const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z);
+      if (synapseSlice.empty()) {
+        const_cast<ZDvidSynapseEnsemble&>(*this).download(z);
+      }
+
+      for (int i = 0; i < synapseSlice.size(); ++i) {
+        QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
+        for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
+             iter != synapseMap.end(); ++iter) {
+          const ZDvidSynapse &synapse = iter.value();
+          synapse.display(painter, slice, option);
+        }
+      }
+
+      const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        ZDvidSynapse &synapse =
+            const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
         synapse.display(painter, slice, option);
       }
-    }
-
-    const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
-    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-         iter != selected.end(); ++iter) {
-      ZDvidSynapse &synapse =
-          const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
-      synapse.display(painter, slice, option);
     }
   }
 }
@@ -380,13 +393,19 @@ void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
 
 bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 {
-  SynapseIterator siter(this, z);
+  const int sliceRange = 5;
 
-  while (siter.hasNext()) {
-    ZDvidSynapse &synapse = siter.next();
-    if (synapse.hit(x, y, z)) {
-      m_hitPoint = synapse.getPosition();
-      return true;
+  for (int slice = -sliceRange; slice <= sliceRange; ++slice) {
+    int cz = iround(z + slice);
+
+    SynapseIterator siter(this, cz);
+
+    while (siter.hasNext()) {
+      ZDvidSynapse &synapse = siter.next();
+      if (synapse.hit(x, y, z)) {
+        m_hitPoint = synapse.getPosition();
+        return true;
+      }
     }
   }
 

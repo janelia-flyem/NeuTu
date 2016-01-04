@@ -52,9 +52,11 @@ public:
   bool hit(double x, double y, double z);
 
   void downloadForLabel(uint64_t label);
+  void download(int z);
 
   bool hasSelected() const;
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
+  ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);
@@ -81,7 +83,6 @@ public:
   };
 
 private:
-  void download(int z);
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
 

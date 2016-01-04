@@ -33,6 +33,7 @@
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsynpasecommand.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -394,6 +395,11 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
   return NULL;
 }
 
+bool ZFlyEmProofDoc::hasDvidSynapse() const
+{
+  return getDvidSynapseEnsemble() != NULL;
+}
+
 bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
@@ -404,13 +410,27 @@ bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
   return false;
 }
 
-void ZFlyEmProofDoc::addSynapse(const ZIntPoint &pt)
+void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      se->moveSynapse(*selectedSet.begin(), dest);
+      processObjectModified(se);
+      notifyObjectModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::addSynapse(
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
   if (se != NULL) {
     ZDvidSynapse synapse;
     synapse.setPosition(pt);
-    synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+    synapse.setKind(kind);
     synapse.setDefaultRadius();
     synapse.setDefaultColor();
     se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
@@ -433,6 +453,7 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
         changed = true;
       }
     }
+    se->getSelector().deselectAll();
 
     if (changed) {
       processObjectModified(se);
@@ -695,12 +716,14 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadSynapse()
 {
-  ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
-  synapseEnsemble->setDvidTarget(getDvidTarget());
-  synapseEnsemble->setSource(
-        ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+  if (!getDvidTarget().getSynapseName().empty()) {
+    ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
+    synapseEnsemble->setDvidTarget(getDvidTarget());
+    synapseEnsemble->setSource(
+          ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
 
-  addObject(synapseEnsemble);
+    addObject(synapseEnsemble);
+  }
 
 #if 0
   const QString threadId = "downloadSynapse";
@@ -1532,5 +1555,52 @@ void ZFlyEmProofDoc::processBodySelection()
   ZDvidLabelSlice *slice = getDvidLabelSlice();
   if (slice != NULL) {
     slice->processSelection();
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      new ZStackDocCommand::DvidSynapseEdit::RemoveSynapse(
+            this, pt.getX(), pt.getY(), pt.getZ(), command);
+    }
+    se->getSelector().deselectAll();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeAddSynapseCommand(const ZDvidSynapse &synapse)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    QUndoCommand *command = new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
+          this, synapse);
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      QUndoCommand *command =
+          new ZStackDocCommand::DvidSynapseEdit::MoveSynapse(
+            this, *selectedSet.begin(), dest);
+      pushUndoCommand(command);
+    }
   }
 }

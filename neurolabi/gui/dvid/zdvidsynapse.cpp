@@ -5,6 +5,8 @@
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
+#include "tz_math.h"
+#include "zstackball.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -21,20 +23,50 @@ void ZDvidSynapse::init()
 void ZDvidSynapse::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
+#if 0
+  ZStackBall ball;
+  ball.setCenter(getPosition());
+  ball.setRadius(getRadius());
+  ball.setColor(getColor());
+  ball.setSelected(isSelected());
+  ball.setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+
+  ball.display(painter, slice, option);
+#endif
+
   bool visible = true;
+  int z = painter.getZ(slice);
 
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    int z = painter.getZ(slice);
-    visible = (z == m_position.getZ());
+    visible = isVisible(z);
   }
 
+  double radius = getRadius(z);
+
+  bool isFocused = (z == getPosition().getZ());
+
   if (visible) {
-    painter.setPen(getColor());
+    QColor color = getColor();
+    if (!isFocused) {
+      double alpha = radius / m_radius;
+      alpha *= alpha * 0.5;
+      alpha += 0.1;
+      color.setAlphaF(alpha * color.alphaF());
+    }
+
+    painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
+
+    if (isFocused) {
+      int x = getPosition().getX();
+      int y = getPosition().getY();
+      painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
+      painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
+    }
     painter.drawEllipse(QPointF(m_position.getX(), m_position.getY()),
-                        m_radius, m_radius);
+                        radius, radius);
   }
 
   QPen pen = painter.getPen();
@@ -73,7 +105,6 @@ void ZDvidSynapse::display(
     painter.setPen(pen);
     painter.drawRect(rect);
   }
-
   if (isSelected()) {
     for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
          iter != m_partnerHint.end(); ++iter) {
@@ -94,45 +125,66 @@ void ZDvidSynapse::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
-void ZDvidSynapse::setDefaultRadius()
+double ZDvidSynapse::GetDefaultRadius(EKind kind)
 {
-  switch (m_kind) {
+  switch (kind) {
   case KIND_POST_SYN:
-    setRadius(3.0);
-    break;
+    return 3.0;
   case KIND_PRE_SYN:
-    setRadius(5.0);
-    break;
+    return 5.0;
   default:
-    setRadius(5.0);
     break;
   }
+
+  return 5.0;
+}
+
+void ZDvidSynapse::setDefaultRadius()
+{
+  m_radius = GetDefaultRadius(m_kind);
+}
+
+QColor ZDvidSynapse::GetDefaultColor(EKind kind)
+{
+  switch (kind) {
+  case KIND_POST_SYN:
+    return QColor(0, 0, 255);
+  case KIND_PRE_SYN:
+    return QColor(0, 255, 0);
+  case KIND_UNKNOWN:
+    return QColor(0, 200, 200);
+  default:
+    break;
+  }
+
+  return QColor(128, 128, 128);
 }
 
 void ZDvidSynapse::setDefaultColor()
 {
-  switch (m_kind) {
-  case KIND_POST_SYN:
-    setColor(0, 0, 255);
-    break;
-  case KIND_PRE_SYN:
-    setColor(0, 255, 0);
-    break;
-  default:
-    setColor(0, 255, 255);
-    break;
-  }
+  setColor(GetDefaultColor(m_kind));
 }
 
 bool ZDvidSynapse::hit(double x, double y, double z)
 {
-  return m_position.distanceTo(x, y, z) <= m_radius;
+  if (isVisible(z)) {
+    double dx = x - m_position.getX();
+    double dy = y - m_position.getY();
+
+    double d2 = dx * dx * dy * dy;
+
+    double radius = getRadius(z);
+
+    return d2 <= radius * radius;
+  }
+
+  return false;
 }
 
 bool ZDvidSynapse::hit(double x, double y)
 {
   double dx = x - m_position.getX();
-  double dy = y = m_position.getY();
+  double dy = y - m_position.getY();
 
   double d2 = dx * dx * dy * dy;
 
@@ -303,6 +355,20 @@ ZJsonObject ZDvidSynapse::toJsonObject() const
   }
 
   return obj;
+}
+
+bool ZDvidSynapse::isVisible(int z) const
+{
+  int dz = abs(getPosition().getZ() - z);
+
+  return dz < iround(getRadius());
+}
+
+double ZDvidSynapse::getRadius(int z) const
+{
+  int dz = abs(getPosition().getZ() - z);
+
+  return std::max(0.0, getRadius() - dz);
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

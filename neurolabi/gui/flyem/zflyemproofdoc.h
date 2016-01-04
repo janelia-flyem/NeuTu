@@ -14,6 +14,7 @@
 #include "zflyembodyannotation.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsynapse.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -50,8 +51,6 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
-
-  bool hasDvidSynapseSelected() const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -160,6 +159,16 @@ public: //ROI functions
   void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending);
 
+public: //Synapse functions
+  bool hasDvidSynapseSelected() const;
+  bool hasDvidSynapse() const;
+  void tryMoveSelectedSynapse(const ZIntPoint &dest);
+
+public: //Commands
+  void executeRemoveSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -179,7 +188,7 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
-  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
 
 protected:
   void autoSave();

@@ -766,13 +766,15 @@ ZObject3dScan ZFlyEmRoiProject::getRoiObject(
       roiCurve = originalRoiCurve->clone();
     }
 
-    if (!roiCurve->isEmpty()) {
-      roiCurve->scale(1.0 / (1 + xIntv), 1.0 / (1 + yIntv), 1);
-      getFilledRoi(roiCurve, z, &sliceObj);
-      obj.concat(sliceObj);
-    }
+    if (roiCurve != NULL) {
+      if (!roiCurve->isEmpty()) {
+        roiCurve->scale(1.0 / (1 + xIntv), 1.0 / (1 + yIntv), 1);
+        getFilledRoi(roiCurve, z, &sliceObj);
+        obj.concat(sliceObj);
+      }
 
-    delete roiCurve;
+      delete roiCurve;
+    }
   }
 
   obj.downsampleMax(0, 0, zIntv);
@@ -800,6 +802,28 @@ ZObject3dScan ZFlyEmRoiProject::getRoiObject() const
     }
     if (getRoi(z) == NULL) {
       delete roiCurve;
+    }
+  }
+
+  return obj;
+}
+
+ZObject3dScan ZFlyEmRoiProject::getRoiSlice() const
+{
+  ZObject3dScan obj;
+
+  ZObject3dScan sliceObj;
+
+  int minZ = getFirstRoiZ();
+  int maxZ = getLastRoiZ();
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    const ZClosedCurve *roiCurve = getRoi(z);
+    if (roiCurve != NULL) {
+      if (!roiCurve->isEmpty()) {
+        getFilledRoi(roiCurve, z, &sliceObj);
+        obj.concat(sliceObj);
+      }
     }
   }
 

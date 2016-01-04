@@ -44,6 +44,7 @@
 #include "zfiletype.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -898,7 +899,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateBodySelection()));
   connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
-          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
+          this, SLOT(highlightSelectedObject(bool)));
+//          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
@@ -1062,6 +1064,18 @@ void ZFlyEmProofMvc::selectBody()
       }
 #endif
     }
+  }
+}
+
+void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
+{
+  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  if (labelSlice != NULL) {
+    if ((labelSlice->isVisible() == false) && (hl == false)) {
+      labelSlice->setVisible(true);
+      labelSlice->update(getView()->getViewParameter());
+    }
+    m_mergeProject.highlightSelectedObject(hl);
   }
 }
 
@@ -2037,7 +2051,15 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_SLICED_PUNCTA, visible);
+  ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble();
+  if (se != NULL) {
+    se->setVisible(visible);
+    if (visible) {
+      se->download(getView()->getZ(NeuTube::COORD_STACK));
+    }
+    getCompleteDocument()->processObjectModified(se);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
@@ -2049,7 +2071,15 @@ void ZFlyEmProofMvc::showBookmark(bool visible)
 
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_DVID_LABEL_SLICE, visible);
+  ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->setVisible(visible);
+    if (visible) {
+      slice->update(getView()->getViewParameter());
+    }
+    getCompleteDocument()->processObjectModified(slice);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)

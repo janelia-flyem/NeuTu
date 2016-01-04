@@ -6369,6 +6369,15 @@ void MainWindow::processArgument(const QString &arg)
   }
 }
 
+void MainWindow::testFlyEmProofread()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->showMaximized();
+
+  window->test();
+
+}
+
 void MainWindow::runBodySplit()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {

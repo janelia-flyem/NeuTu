@@ -80,9 +80,10 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   return tileMap[index];
 }
 
-void ZDvidTileEnsemble::update(
+bool ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
 {
+  bool updated = false;
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<std::vector<int> > tile_locs_array;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
@@ -113,6 +114,7 @@ void ZDvidTileEnsemble::update(
 
       size_t dataIndex = 0;
 
+      QList<ZDvidTile*> tileList;
       QList<ZDvidTileDecodeTask*> taskList;
       for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
            iter != tileIndices.end(); ++iter) {
@@ -127,15 +129,26 @@ void ZDvidTileEnsemble::update(
           task->setData(dataPtr->get_raw(), dataPtr->length());
           task->setHighContrast(m_highContrast);
           taskList.append(task);
+          tileList.append(tile);
         }
       }
 
       QtConcurrent::blockingMap(taskList, &ZDvidTileDecodeTask::ExecuteTask);
 
+#if 0
+      for (QList<ZDvidTile*>::iterator iter = tileList.begin();
+           iter != tileList.end(); ++iter) {
+        ZDvidTile *tile = *iter;
+        tile->updatePixmap();
+      }
+#endif
+
       for (QList<ZDvidTileDecodeTask*>::iterator iter = taskList.begin();
            iter != taskList.end(); ++iter) {
         delete *iter;
       }
+
+      updated = true;
 
 #if 0
 //      QThreadFutureMap futureMap;
@@ -204,6 +217,8 @@ void ZDvidTileEnsemble::update(
   taskManager.waitForDone();
   taskManager.clear();
 #endif
+
+  return updated;
 }
 
 void ZDvidTileEnsemble::display(

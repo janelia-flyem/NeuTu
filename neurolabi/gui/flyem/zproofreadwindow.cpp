@@ -22,6 +22,7 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "QsLog.h"
+#include "zstackpresenter.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -147,6 +148,17 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
 {
   m_mainMvc->setDvidDialog(dvidDlg);
+}
+
+void ZProofreadWindow::test()
+{
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "86e1", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+  m_mainMvc->setDvidTarget(target);
+  m_mainMvc->getPresenter()->setObjectVisible(false);
+  m_mainMvc->test();
 }
 
 void ZProofreadWindow::createMenu()

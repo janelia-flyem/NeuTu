@@ -14,6 +14,8 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   QMenu* makeSynapseContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+  QMenu* makeStackContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 };
 

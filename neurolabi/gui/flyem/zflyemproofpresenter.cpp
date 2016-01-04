@@ -43,6 +43,15 @@ void ZFlyEmProofPresenter::init()
 
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
+          this, SLOT(deleteSelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_PRE), SIGNAL(triggered()),
+          this, SLOT(tryAddPreSynapseMode()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST), SIGNAL(triggered()),
+          this, SLOT(tryAddPostSynapseMode()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_MOVE), SIGNAL(triggered()),
+          this, SLOT(tryMoveSynapseMode()));
+
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
@@ -170,22 +179,55 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
 //    ZStackDocMenuFactory menuFactory;
     m_synapseContextMenu =
         getMenuFactory()->makeSynapseContextMenu(this, getParentWidget(), NULL);
-    connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
-            this, SLOT(deleteSelectedSynapse()));
-    connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD), SIGNAL(triggered()),
-            this, SLOT(tryAddSynapseMode()));
   }
 }
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
-  getCompleteDocument()->deleteSelectedSynapse();
+  getCompleteDocument()->executeRemoveSynapseCommand();
+//  getCompleteDocument()->deleteSelectedSynapse();
 }
 
-void ZFlyEmProofPresenter::tryAddSynapseMode()
+void ZFlyEmProofPresenter::tryAddPreSynapseMode()
 {
-  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_ADD);
+  tryAddSynapseMode(ZDvidSynapse::KIND_PRE_SYN);
+}
+
+void ZFlyEmProofPresenter::tryAddPostSynapseMode()
+{
+  tryAddSynapseMode(ZDvidSynapse::KIND_POST_SYN);
+}
+
+void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
+{
+  turnOnActiveObject(ROLE_SYNAPSE, false);
+  switch (kind) {
+  case ZDvidSynapse::KIND_PRE_SYN:
+    m_interactiveContext.setSynapseEditMode(
+          ZInteractiveContext::SYNAPSE_ADD_PRE);
+    break;
+  case ZDvidSynapse::KIND_POST_SYN:
+    m_interactiveContext.setSynapseEditMode(
+          ZInteractiveContext::SYNAPSE_ADD_POST);
+    break;
+  default:
+    m_interactiveContext.setSynapseEditMode(
+          ZInteractiveContext::SYNAPSE_ADD_PRE);
+    break;
+  }
+  updateActiveObjectForSynapseAdd();
+  buddyView()->paintActiveDecoration();
+
   updateCursor();
+}
+
+void ZFlyEmProofPresenter::tryMoveSynapseMode()
+{
+  if (updateActiveObjectForSynapseMove()) {
+    turnOnActiveObject(ROLE_SYNAPSE);
+    m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_MOVE);
+    updateCursor();
+  }
 }
 
 QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
@@ -203,7 +245,11 @@ QMenu* ZFlyEmProofPresenter::getContextMenu()
     return getSynapseContextMenu();
   }
 
-  return getStackContextMenu();
+  if (getCompleteDocument()->hasDvidSynapse()) {
+    return getStackContextMenu();
+  }
+
+  return NULL;
 }
 
 
@@ -253,20 +299,54 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode()
 
 void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 {
-  getCompleteDocument()->addSynapse(pt);
+  switch (interactiveContext().synapseEditMode()) {
+  case ZInteractiveContext::SYNAPSE_ADD_PRE:
+    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN);
+    break;
+  case ZInteractiveContext::SYNAPSE_ADD_POST:
+    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN);
+    break;
+  default:
+    break;
+  }
+}
+
+void ZFlyEmProofPresenter::tryAddSynapse(
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
+{
+  ZDvidSynapse synapse;
+  synapse.setPosition(pt);
+  synapse.setKind(kind);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+  getCompleteDocument()->executeAddSynapseCommand(synapse);
+//  getCompleteDocument()->addSynapse(pt, kind);
+}
+
+void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeMoveSynapseCommand(pt);
+//  getCompleteDocument()->tryMoveSelectedSynapse(pt);
+  exitSynapseEdit();
+//  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+  updateCursor();
 }
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 {
   interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
-  m_stroke.setWidth(10.0);
+
+  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
+
+//  stroke->setWidth(10.0);
 
   buddyDocument()->mapToDataCoord(&x, &y, NULL);
-  m_stroke.set(x, y);
-  m_stroke.setEraser(false);
-  m_stroke.setFilled(false);
-  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
-  turnOnStroke();
+  stroke->set(x, y);
+//  m_stroke.setEraser(false);
+//  m_stroke.setFilled(false);
+//  m_stroke.setTarget(ZStackObject::TARGET_WIDGET);
+//  turnOnStroke();
+  turnOnActiveObject(ROLE_BOOKMARK);
   //buddyView()->paintActiveDecoration();
   updateCursor();
 }
@@ -280,21 +360,25 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
 {
   int x = 0;
   int y = 0;
-  m_stroke.getLastPoint(&x, &y);
-  double radius = m_stroke.getWidth() / 2.0;
 
-  ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-  bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
-  bookmark->setRadius(radius);
-  bookmark->setCustom(true);
-  bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
-  ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
-  if (doc != NULL) {
-    bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
+  if (stroke != NULL) {
+    stroke->getLastPoint(&x, &y);
+    double radius = stroke->getWidth() / 2.0;
+
+    ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+    bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    bookmark->setRadius(radius);
+    bookmark->setCustom(true);
+    bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
+    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+    if (doc != NULL) {
+      bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+    }
+    buddyDocument()->executeAddObjectCommand(bookmark);
+
+    emit bookmarkAdded(bookmark);
   }
-  buddyDocument()->executeAddObjectCommand(bookmark);
-
-  emit bookmarkAdded(bookmark);
 }
 
 void ZFlyEmProofPresenter::processCustomOperator(
@@ -335,6 +419,29 @@ void ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
     tryAddSynapse(currentStackPos.toIntPoint());
     break;
+  case ZStackOperator::OP_DVID_SYNAPSE_MOVE:
+    tryMoveSynapse(currentStackPos.toIntPoint());
+    break;
+  case ZStackOperator::OP_TRACK_MOUSE_MOVE:
+    if (m_interactiveContext.synapseEditMode() !=
+        ZInteractiveContext::SYNAPSE_EDIT_OFF) {
+      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
+      if (m_interactiveContext.synapseEditMode() ==
+          ZInteractiveContext::SYNAPSE_ADD_PRE ||
+          m_interactiveContext.synapseEditMode() ==
+                    ZInteractiveContext::SYNAPSE_ADD_POST) {
+        updateActiveObjectForSynapseAdd(currentStackPos);
+      } else if (m_interactiveContext.synapseEditMode() ==
+                 ZInteractiveContext::SYNAPSE_MOVE) {
+        updateActiveObjectForSynapseMove(currentStackPos);
+      }
+      stroke->setLast(currentStackPos.x(), currentStackPos.y());
+      if (e != NULL) {
+        e->setEvent(
+              ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
+      }
+    }
+    break;
   default:
     break;
   }
@@ -366,6 +473,71 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     buddyDocument()->processRectRoiUpdate(rect, appending);
   }
 }
+
+bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
+{
+  const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  return updateActiveObjectForSynapseMove(currentStackPos);
+}
+
+bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
+    const ZPoint &currentStackPos)
+{
+  ZDvidSynapseEnsemble *se =
+      getCompleteDocument()->getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint>& selectedSet =
+        se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      const ZIntPoint &pt = *(selectedSet.begin());
+      const ZDvidSynapse &synapse = se->getSynapse(
+            pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+      if (synapse.isValid()) {
+        ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
+        stroke->setColor(synapse.getColor());
+        stroke->setWidth(synapse.getRadius() * 2.0);
+        stroke->set(pt.getX(), pt.getY());
+        stroke->append(currentStackPos.x(), currentStackPos.y());
+
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
+{
+  const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  updateActiveObjectForSynapseAdd(currentStackPos);
+}
+
+void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
+    const ZPoint &currentStackPos)
+{
+  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
+  stroke->set(currentStackPos.x(), currentStackPos.y());
+
+  ZDvidSynapse::EKind kind  = ZDvidSynapse::KIND_UNKNOWN;
+  switch (interactiveContext().synapseEditMode()) {
+  case ZInteractiveContext::SYNAPSE_ADD_PRE:
+    kind = ZDvidSynapse::KIND_PRE_SYN;
+    break;
+  case ZInteractiveContext::SYNAPSE_ADD_POST:
+    kind = ZDvidSynapse::KIND_POST_SYN;
+    break;
+  default:
+    break;
+  }
+  QColor color = ZDvidSynapse::GetDefaultColor(kind);
+  color.setAlpha(200);
+  stroke->setColor(color);
+  stroke->setWidth(ZDvidSynapse::GetDefaultRadius(kind) * 2.0);
+}
+
 
 /*
 void ZFlyEmProofPresenter::createBodyContextMenu()

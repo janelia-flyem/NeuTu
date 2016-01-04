@@ -21,7 +21,7 @@ const char* ZDvidData::m_multiscale2dName = "tiles";
 const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 const char* ZDvidData::m_bookmarkName = "bookmarks";
 const char* ZDvidData::m_bodySynapsesName = "body_synapses";
-const char* ZDvidData::m_synapseName = "synapse";
+const char* ZDvidData::m_synapseName = ""; //No default
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 

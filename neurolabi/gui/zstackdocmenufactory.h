@@ -34,7 +34,7 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   QMenu* makeSrokePaintContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-  QMenu* makeStackContextMenu(
+  virtual QMenu* makeStackContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   virtual QMenu* makeBodyContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
