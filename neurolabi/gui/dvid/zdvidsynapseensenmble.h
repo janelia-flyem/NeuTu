@@ -34,6 +34,8 @@ public:
 //  void commitSynapse(const ZIntPoint &pt);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
+  void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
+
   ZDvidSynapse &getSynapse(int x, int y, int z, EDataScope scope);
   ZDvidSynapse &getSynapse(const ZIntPoint &center, EDataScope scope);
 
@@ -59,6 +61,8 @@ public:
   bool hasSelected() const;
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
   ZSelector<ZIntPoint>& getSelector() { return m_selector; }
+
+  void updatePartner(ZDvidSynapse &synapse);
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);
@@ -87,7 +91,6 @@ public:
 private:
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
-  void updatePartner(ZDvidSynapse &synapse);
 
 private:
   QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;

@@ -155,6 +155,9 @@ public:
   ZDvidSynapse readSynapse(int x, int y, int z);
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
+  template <typename InputIterator>
+  ZJsonArray readSynapseJson(
+      const InputIterator &first, const InputIterator &last);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }
@@ -197,5 +200,19 @@ protected:
 #endif
 
 };
+
+template <typename InputIterator>
+ZJsonArray ZDvidReader::readSynapseJson(
+    const InputIterator &first, const InputIterator &last)
+{
+  ZJsonArray synapseJsonArray;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    const ZIntPoint &pt = *iter;
+    ZJsonObject obj = readSynapseJson(pt);
+    synapseJsonArray.append(obj);
+  }
+
+  return synapseJsonArray;
+}
 
 #endif // ZDVIDREADER_H

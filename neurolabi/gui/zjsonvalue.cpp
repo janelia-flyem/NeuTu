@@ -128,6 +128,11 @@ bool ZJsonValue::isEmpty() const
   return m_data == NULL;
 }
 
+void ZJsonValue::set(const ZJsonValue &value)
+{
+  set(value.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
+}
+
 void ZJsonValue::set(json_t *data, bool asNew)
 {
   if (m_data != NULL) {
@@ -280,4 +285,9 @@ bool ZJsonValue::load(const string &filePath)
 #endif
 
   return false;
+}
+
+ZJsonValue ZJsonValue::clone() const
+{
+  return ZJsonValue(C_Json::clone(m_data), SET_AS_IT_IS);
 }

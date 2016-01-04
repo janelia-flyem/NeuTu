@@ -49,6 +49,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST));
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_DELETE));
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_MOVE));
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_LINK));
 
   return menu;
 }

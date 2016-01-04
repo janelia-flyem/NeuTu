@@ -166,6 +166,8 @@ public: //Synapse functions
 
 public: //Commands
   void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
   void executeAddSynapseCommand(const ZDvidSynapse &synapse);
   void executeMoveSynapseCommand(const ZIntPoint &dest);
 

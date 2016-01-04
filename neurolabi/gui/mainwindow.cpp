@@ -304,6 +304,8 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
   connect(this, SIGNAL(docReady(ZStackDocPtr)),
           this, SLOT(createStackFrame(ZStackDocPtr)));
+  connect(this, SIGNAL(fileOpenFailed(QString,QString)),
+          this, SLOT(reportFileOpenProblem(QString,QString)));
 
   m_messageManager = new ZMessageManager(this);
   m_messageManager->setProcessor(
@@ -379,6 +381,8 @@ void MainWindow::initDialog()
   connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgress(double)));
+  connect(this, SIGNAL(progressStarted(QString,int)),
+          SLOT(startProgress(QString,int)));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -1505,6 +1509,36 @@ void MainWindow::endProgress()
   m_progress->reset();
 }
 
+void MainWindow::openFileListFunc(const QStringList fileList)
+{
+  foreach (const QString &fileName, fileList){
+    emit progressStarted("Opening " + fileName + " ...", 100);
+    ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+    if (ZFileType::isNeutubeOpenable(fileType)) {
+      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        tag = NeuTube::Document::BIOCYTIN_STACK;
+      }
+
+      emit progressAdvanced(0.2);
+
+      ZStackDocPtr doc = ZStackDocFactory::Make(tag);
+      doc->loadFile(fileName);
+
+      emit progressAdvanced(0.3);
+
+      doc->moveToThread(QApplication::instance()->thread());
+      emit docReady(doc);
+
+      setCurrentFile(fileName);
+    } else {
+      emit progressDone();
+      emit fileOpenFailed(fileName, "Unrecognized file type.");
+      //    reportFileOpenProblem(fileName, "Unrecognized file type.");
+    }
+  }
+}
+
 void MainWindow::openFileFunc2(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
@@ -1528,7 +1562,8 @@ void MainWindow::openFileFunc2(const QString &fileName)
     setCurrentFile(fileName);
   } else {
     emit progressDone();
-    reportFileOpenProblem(fileName, "Unrecognized file type.");
+    emit fileOpenFailed(fileName, "Unrecognized file type.");
+//    reportFileOpenProblem(fileName, "Unrecognized file type.");
   }
 }
 
@@ -1558,6 +1593,8 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
 void MainWindow::openFile(const QStringList &fileNameList)
 {
+  QtConcurrent::run(this, &MainWindow::openFileListFunc, fileNameList);
+#if 0 //stack reading function is not thread-safe
   foreach (QString fileName, fileNameList) {
     m_progress->setRange(0, 5);
     m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
@@ -1568,6 +1605,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
         QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
    // res.waitForFinished();
   }
+#endif
 }
 
 void MainWindow::openFile(const QString &fileName)
@@ -6540,8 +6578,13 @@ ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
       //QApplication::processEvents();
   } else {
     emit progressDone();
-    frame->open3DWindow();
+    if (frame->document()->hasObject()) {
+      frame->open3DWindow();
+    } else {
+      reportFileOpenProblem("the file", "No content is recognized in the file.");
+    }
     delete frame;
+    frame = NULL;
   }
   /*
     if (!fileName.isEmpty()) {
@@ -7382,6 +7425,7 @@ void MainWindow::on_actionNeuroMorpho_triggered()
               name.replace("\"", "");
               name.replace("?", "_");
               name += "_";
+              name = "";
               name.appendNumber(bodyId);
               tree->save(dataFolder + "/swc/" + type + "/" + name + ".swc");
               ++swcCount;

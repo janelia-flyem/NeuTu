@@ -19015,5 +19015,101 @@ void ZTest::test(MainWindow *host)
   }
 
 #endif
+
+#if 0
+  ZJsonArray jsonArray;
+
+  ZDvidSynapse::AddRelation(jsonArray, ZIntPoint(1, 2, 3), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonArray, ZIntPoint(1, 2, 3), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonArray, ZIntPoint(3, 4, 5), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonArray, ZIntPoint(3, 4, 5), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonArray, ZIntPoint(3, 4, 9), "UnknownRelationship");
+
+  std::cout << jsonArray.dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZJsonArray jsonArray;
+
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(1, 2, 3), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(1, 2, 3), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 5), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 5), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 9), "UnknownRelationship"));
+
+  ZDvidSynapse::RemoveRelation(jsonArray, ZIntPoint(1, 2, 3));
+  ZDvidSynapse::RemoveRelation(jsonArray, ZIntPoint(3, 4, 5));
+  ZDvidSynapse::RemoveRelation(jsonArray, ZIntPoint(3, 4, 9));
+
+  std::cout << jsonArray.dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZJsonObject jsonObj;
+  ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(1, 2, 3), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(1, 2, 3), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(3, 4, 5), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(3, 4, 5), "PreSynTo");
+  ZDvidSynapse::AddRelation(jsonObj, ZIntPoint(3, 4, 9), "UnknownRelationship");
+
+  std::cout << jsonObj.dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZJsonObject jsonArray;
+
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(1, 2, 3), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(1, 2, 3), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 5), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 5), "PreSynTo"));
+  ZDvidSynapse::AddRelation(
+        jsonArray, ZDvidSynapse::MakeRelJson(ZIntPoint(3, 4, 9), "UnknownRelationship"));
+
+  std::cout << jsonArray.dumpString(2) << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata1.int.janelia.org", "86e1", 8500);
+  dvidTarget.setSynapseName("synapse");
+
+  ZDvidReader reader;
+  if (reader.open(dvidTarget)) {
+    std::vector<ZIntPoint> ptArray;
+    ptArray.push_back(ZIntPoint(4572, 6097, 7313));
+    ptArray.push_back(ZIntPoint(4562, 6115, 7313));
+    ptArray.push_back(ZIntPoint(4583, 6113, 7313));
+    ZJsonArray jsonArray = reader.readSynapseJson(ptArray.begin(), ptArray.end());
+    std::cout << jsonArray.dumpString(2) << std::endl;
+  }
+#endif
+
+#if 0
+  FILE *fp = fopen((GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc").c_str(), "r");
+  Swc_Node node;
+  std::cout << Swc_Node_Fscan(fp, &node) << std::endl;
+  Print_Swc_Node(&node);
+
+  std::cout << Swc_Node_Fscan(fp, &node) << std::endl;
+  Print_Swc_Node(&node);
+
+  fclose(fp);
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/test.swc");
+  tree.print();
+#endif
+
   std::cout << "Done." << std::endl;
 }

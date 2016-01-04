@@ -1558,6 +1558,71 @@ void ZFlyEmProofDoc::processBodySelection()
   }
 }
 
+void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
+{
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+    if (selected.size() > 1) {
+      ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
+          new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeLinkSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    std::vector<ZDvidSynapse> selectedPresyn;
+    std::vector<ZDvidSynapse> selectedPostsyn;
+
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        selectedPresyn.push_back(synapse);
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        selectedPostsyn.push_back(synapse);
+      }
+    }
+
+    if (selectedPresyn.size() == 1) {
+      ZDvidSynapse &presyn = selectedPresyn.front();
+      ZStackDocCommand::DvidSynapseEdit::LinkSynapse *linkCommand =
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+            this, presyn.getPosition(), command);
+      for (std::vector<ZDvidSynapse>::const_iterator
+           iter = selectedPostsyn.begin(); iter != selectedPostsyn.end();
+           ++iter) {
+        const ZDvidSynapse& postsyn = *iter;
+        linkCommand->addRelation(
+              postsyn.getPosition(), ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_PRESYN_TO));
+        new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+              this, postsyn.getPosition(), presyn.getPosition(),
+              ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
+              command);
+      }
+    }
+
+//    qDebug() << "#Commands: " << command->childCount();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
 void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 {
   QUndoCommand *command =

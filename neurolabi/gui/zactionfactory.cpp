@@ -424,19 +424,33 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
+    action->setIcon(QIcon(":/images/add.png"));
     action->setStatusTip("Add a TBar with mouse click");
     break;
   case ACTION_SYNAPSE_ADD_POST:
     action = new QAction("Add PSD", parent);
+    action->setIcon(QIcon(":/images/add_post.png"));
     action->setStatusTip("Add a PSD with mouse click");
     break;
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
+    action->setIcon(QIcon(":/images/move.png"));
     action->setStatusTip("Move a synapse with mouse click");
     break;
   case ACTION_SYNAPSE_DELETE:
     action = new QAction("Delete Synapse", parent);
+    action->setIcon(QIcon(":/images/delete.png"));
     action->setStatusTip("Delete selected synapses");
+    break;
+  case ACTION_SYNAPSE_LINK:
+    action = new QAction("Link Synapses", parent);
+    action->setIcon(QIcon(":/images/connect.png"));
+    action->setStatusTip("Link selected synapses");
+    break;
+  case ACTION_SYNAPSE_UNLINK:
+    action = new QAction("Unlink Synapses", parent);
+    action->setIcon(QIcon(":/images/cut.png"));
+    action->setStatusTip("Unlink selected synapses");
     break;
   case ACTION_TOGGLE_SWC_SKELETON:
     action = new QAction("Show Full Skeleton", parent);

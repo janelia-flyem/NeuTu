@@ -294,6 +294,25 @@ void ZDvidSynapseEnsemble::display(
   }
 }
 
+void ZDvidSynapseEnsemble::removeSynapseLink(
+    const ZIntPoint &v1, const ZIntPoint &v2)
+{
+  if (m_reader.good()) {
+    ZDvidWriter writer;
+    if (writer.open(m_dvidTarget)) {
+      ZJsonObject obj1 = m_reader.readSynapseJson(v1);
+      if (ZDvidSynapse::RemoveRelation(obj1, v2)) {
+        writer.writeSynapse(obj1);
+      }
+
+      ZJsonObject obj2 = m_reader.readSynapseJson(v2);
+      if (ZDvidSynapse::RemoveRelation(obj2, v1)) {
+        writer.writeSynapse(obj2);
+      }
+    }
+  }
+}
+
 void ZDvidSynapseEnsemble::moveSynapse(
     const ZIntPoint &from, const ZIntPoint &to)
 {
@@ -394,23 +413,25 @@ void ZDvidSynapseEnsemble::toggleHitSelectWithPartner()
 
 void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 {
-  synapse.clearPartner();
+  if (synapse.isValid()) {
+    synapse.clearPartner();
 
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray objArray = m_reader.readJsonArray(
-        dvidUrl.getSynapseUrl(m_hitPoint, 1, 1, 1));
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZJsonArray objArray = m_reader.readJsonArray(
+          dvidUrl.getSynapseUrl(synapse.getPosition(), 1, 1, 1));
 
-  if (!objArray.isEmpty()) {
-    ZJsonObject obj(objArray.value(0));
-    if (obj.hasKey("Rels")) {
-      ZJsonArray jsonArray(obj.value("Rels"));
-      if (jsonArray.size() > 0) {
-        for (size_t i = 0; i < jsonArray.size(); ++i) {
-          ZJsonObject partnerJson(jsonArray.value(i));
-          if (partnerJson.hasKey("To")) {
-            ZJsonArray posJson(partnerJson.value("To"));
-            std::vector<int> coords = posJson.toIntegerArray();
-            synapse.addPartner(coords[0], coords[1], coords[2]);
+    if (!objArray.isEmpty()) {
+      ZJsonObject obj(objArray.value(0));
+      if (obj.hasKey("Rels")) {
+        ZJsonArray jsonArray(obj.value("Rels"));
+        if (jsonArray.size() > 0) {
+          for (size_t i = 0; i < jsonArray.size(); ++i) {
+            ZJsonObject partnerJson(jsonArray.value(i));
+            if (partnerJson.hasKey("To")) {
+              ZJsonArray posJson(partnerJson.value("To"));
+              std::vector<int> coords = posJson.toIntegerArray();
+              synapse.addPartner(coords[0], coords[1], coords[2]);
+            }
           }
         }
       }

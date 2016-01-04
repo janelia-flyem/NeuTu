@@ -453,22 +453,6 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
 #endif
 }
 
-#if 0
-bool ZSwcTree::hasVisualEffect(TVisualEffect ve) const
-{
-  return (m_visualEffect & ve) > 0;
-}
-void ZSwcTree::addVisualEffect(TVisualEffect ve)
-{
-  m_visualEffect |= ve;
-}
-
-void ZSwcTree::removeVisualEffect(TVisualEffect ve)
-{
-  m_visualEffect &= ~ve;
-}
-#endif
-
 #ifdef _QT_GUI_USED_
 const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) const
 {

@@ -222,17 +222,17 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             ZStackDocHitTest hitManager;
 
             if (m_context->isObjectProjectView()) {
-              hitManager.hitTest(
-                    const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
+              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                                 stackPosition.x(), stackPosition.y());
             } else {
-              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
+              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                                 stackPosition);
             }
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
             bool selectionOn =
                 ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
-                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF)
-                 &&
+                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
             if (selectionOn) {

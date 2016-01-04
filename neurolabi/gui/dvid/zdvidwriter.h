@@ -119,6 +119,7 @@ public:
   void writeSynapse(const ZDvidSynapse &synapse);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
   void writeSynapse(const ZJsonObject &synapseJson);
+  void writeSynapse(const ZJsonArray &synapseJson);
   void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
 
   inline int getStatusCode() const {

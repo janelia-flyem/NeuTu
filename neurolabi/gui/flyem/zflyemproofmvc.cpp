@@ -1435,76 +1435,68 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
-  if (bodyId == 0) {
-    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
-    return;
-  }
+  ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+  /*
+      dynamic_cast<ZDvidSparseStack*>(
+        getDocument()->getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_DVID_SPARSE_STACK,
+          ZStackObjectSourceFactory::MakeSplitObjectSource()));
+          */
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    getProgressSignal()->startProgress("Launching split ...");
 
-  if (!getCompleteDocument()->isSplittable(bodyId)) {
-    QString msg = QString("%1 is not ready for split.").arg(bodyId);
-    emit messageGenerated(
-          ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-    emit errorGenerated(msg);
-  } else {
-    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
-          getDocument()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_DVID_SPARSE_STACK,
-            ZStackObjectSourceFactory::MakeSplitObjectSource()));
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-      getProgressSignal()->startProgress("Launching split ...");
+    getCompletePresenter()->setHighlightMode(false);
+    m_mergeProject.highlightSelectedObject(false);
 
-      getCompletePresenter()->setHighlightMode(false);
-      m_mergeProject.highlightSelectedObject(false);
-
-      if (body != NULL) {
-        if (body->getLabel() != bodyId) {
-          body = NULL;
-        }
+    if (body != NULL) {
+      if (body->getLabel() != bodyId) {
+        body = NULL;
       }
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      if (reader.hasCoarseSparseVolume(bodyId)) {
-        if (body == NULL) {
-          body = reader.readDvidSparseStackAsync(bodyId);
-          body->setZOrder(0);
-          body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-          body->setColor(labelSlice->getColor(
-                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-          body->setSelectable(false);
-          getDocument()->addObject(body, true);
-//          body->setLabel(bodyId);
-          //        body->getObjectMask()->setLabel(bodyId);
-        }
-
-        m_splitProject.setBodyId(bodyId);
-        getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
-
-        labelSlice->setVisible(false);
-        labelSlice->setHittable(false);
-        body->setVisible(true);
-        body->setProjectionVisible(false);
-
-        getProgressSignal()->advanceProgress(0.1);
-
-        emit splitBodyLoaded(bodyId);
-      } else {
-        QString msg = QString("Invalid body id: %1").arg(bodyId);
-        emit messageGenerated(
-              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-        emit errorGenerated(msg);
-      }
-
-
-//      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
-
-      getProgressSignal()->endProgress();
     }
+
+    getProgressSignal()->advanceProgress(0.1);
+
+    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+
+    getProgressSignal()->advanceProgress(0.1);
+
+    if (reader.hasCoarseSparseVolume(bodyId)) {
+      if (body == NULL) {
+        body = reader.readDvidSparseStackAsync(bodyId);
+        body->setZOrder(0);
+        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+        body->setColor(labelSlice->getColor(
+                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+        body->setHittable(false);
+        body->setSelectable(false);
+        getDocument()->addObject(body, true);
+        //          body->setLabel(bodyId);
+        //        body->getObjectMask()->setLabel(bodyId);
+      }
+
+      m_splitProject.setBodyId(bodyId);
+      getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
+      labelSlice->setVisible(false);
+      labelSlice->setHittable(false);
+      body->setVisible(true);
+      body->setProjectionVisible(false);
+
+      getProgressSignal()->advanceProgress(0.1);
+
+      emit splitBodyLoaded(bodyId);
+    } else {
+      QString msg = QString("Invalid body id: %1").arg(bodyId);
+      emit messageGenerated(
+            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+      emit errorGenerated(msg);
+    }
+
+
+    //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
+
+    getProgressSignal()->endProgress();
   }
 }
 
@@ -1568,7 +1560,12 @@ void ZFlyEmProofMvc::disableSplit()
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
-    if (checkOutBody(bodyId)) {
+    if (!getCompleteDocument()->isSplittable(bodyId)) {
+      QString msg = QString("%1 is not ready for split.").arg(bodyId);
+      emit messageGenerated(
+            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+      emit errorGenerated(msg);
+    } else if (checkOutBody(bodyId)) {
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif
@@ -1595,6 +1592,8 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
               QString("Failed to launch split. %1 has been locked by %2").
               arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
     }
+  } else {
+    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
   }
 }
 

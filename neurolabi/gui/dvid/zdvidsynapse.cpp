@@ -7,6 +7,7 @@
 #include "zjsonarray.h"
 #include "tz_math.h"
 #include "zstackball.h"
+#include "c_json.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -304,6 +305,18 @@ ZDvidSynapse::EKind ZDvidSynapse::GetKind(const std::string &name)
   return ZDvidSynapse::KIND_UNKNOWN;
 }
 
+ZJsonObject ZDvidSynapse::MakeRelJson(
+    const ZIntPoint &pt, const std::string &rel)
+{
+  ZJsonObject relJson;
+  relJson.setEntry("Rel", rel);
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(pt);
+  relJson.setEntry("To", posJson);
+
+  return relJson;
+}
+
 ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
 {
   std::string rel;
@@ -318,14 +331,148 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
     rel = "UnknownRelationship";
   }
 
-  ZJsonObject relJson;
-  relJson.setEntry("Rel", rel);
-
-  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(pt);
-  relJson.setEntry("To", posJson);
-
-  return relJson;
+  return MakeRelJson(pt, rel);
 }
+
+int ZDvidSynapse::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)
+{
+  int count = 0;
+  for (size_t i = 0; i < relJson.size(); ++i) {
+    if (AddRelation(json, ZJsonObject(relJson.value(i)))) {
+      ++count;
+    }
+  }
+
+  return count;
+}
+
+int ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonArray &relJson)
+{
+  int count = 0;
+  for (size_t i = 0; i < relJson.size(); ++i) {
+    if (AddRelation(json, ZJsonObject(relJson.value(i)))) {
+      ++count;
+    }
+  }
+
+  return count;
+}
+
+ZJsonArray ZDvidSynapse::GetRelationJson(ZJsonObject &json)
+{
+  ZJsonArray relArrayJson;
+  bool hasRels = false;
+  if (json.hasKey("Rels")) {
+    relArrayJson = ZJsonArray(json.value("Rels"));
+    if (!relArrayJson.isEmpty()) {
+      hasRels = true;
+    }
+  }
+
+  if (!hasRels) {
+    relArrayJson = ZJsonArray(C_Json::makeArray(), ZJsonValue::SET_AS_IT_IS);
+    json.setEntry("Rels", relArrayJson);
+  }
+
+  return relArrayJson;
+}
+
+bool ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
+{
+  if (relJson.isEmpty()) {
+    return false;
+  }
+
+  ZJsonArray relArrayJson = GetRelationJson(json);
+
+  return AddRelation(relArrayJson, relJson);
+}
+
+bool ZDvidSynapse::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)
+{
+  bool removed = false;
+
+  for (size_t i = 0; i < relArrayJson.size(); ++i) {
+    ZJsonObject toJson(relArrayJson.value(i));
+    ZIntPoint to = ZJsonParser::toIntPoint(toJson["To"]);
+    if (pt == to) {
+      relArrayJson.remove(i);
+      removed = true;
+      break;
+    }
+  }
+
+  return removed;
+}
+
+bool ZDvidSynapse::RemoveRelation(ZJsonObject &json, const ZIntPoint &pt)
+{
+  ZJsonArray relationArray = GetRelationJson(json);
+  return RemoveRelation(relationArray, pt);
+}
+
+bool ZDvidSynapse::AddRelation(
+    ZJsonArray &relArrayJson, const ZJsonObject &relJson)
+{
+  if (relJson.isEmpty()) {
+    return false;
+  }
+
+  ZIntPoint to = ZJsonParser::toIntPoint(relJson["To"]);
+
+  bool adding = true;
+  for (size_t i = 0; i < relArrayJson.size(); ++i) {
+    ZJsonObject toJson(relArrayJson.value(i));
+    ZIntPoint pt = ZJsonParser::toIntPoint(toJson["To"]);
+    if (pt == to) {
+      adding = false;
+      break;
+    }
+
+  }
+
+  if (adding) {
+    relArrayJson.append(relJson);
+  }
+
+  return adding;
+}
+
+bool ZDvidSynapse::AddRelation(
+    ZJsonArray &relArrayJson, const ZIntPoint &to, const std::string &rel)
+{
+  if (rel.empty()) {
+    return false;
+  }
+
+  bool adding = true;
+  for (size_t i = 0; i < relArrayJson.size(); ++i) {
+    ZIntPoint pt = ZJsonParser::toIntPoint(ZJsonObject(relArrayJson.value(i))["To"]);
+    if (pt == to) {
+      adding = false;
+      break;
+    }
+  }
+
+  if (adding) {
+    relArrayJson.append(MakeRelJson(to, rel));
+  }
+
+  return adding;
+}
+
+bool ZDvidSynapse::AddRelation(
+    ZJsonObject &json, const ZIntPoint &to, const std::string &rel)
+{
+  if (rel.empty()) {
+    return false;
+  }
+
+  ZJsonArray relArrayJson = GetRelationJson(json);
+
+  return AddRelation(relArrayJson, to, rel);
+}
+
 
 ZJsonObject ZDvidSynapse::toJsonObject() const
 {
@@ -372,3 +519,28 @@ double ZDvidSynapse::getRadius(int z) const
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
+
+
+///////////////
+ZJsonObject ZDvidSynapse::Relation::toJsonObject() const
+{
+  return ZDvidSynapse::MakeRelJson(m_to, GetName(m_relation));
+}
+
+std::string ZDvidSynapse::Relation::GetName(ZDvidSynapse::Relation::ERelation rel)
+{
+  switch (rel) {
+  case RELATION_POSTSYN_TO:
+    return "PostSynTo";
+  case RELATION_PRESYN_TO:
+    return "PreSynTo";
+  case RELATION_CONVERGENT_TO:
+    return "ConvergentTo";
+  case RELATION_GROUPED_WITH:
+    return "GroupedWith";
+  default:
+    break;
+  }
+
+  return "UnknownRelationship";
+}

@@ -1033,6 +1033,13 @@ void ZDvidWriter::writeSynapse(const ZJsonObject &synapseJson)
   writeJson(url.getSynapseElementsUrl(), synapseArrayJson);
 }
 
+void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+
+  writeJson(url.getSynapseElementsUrl(), synapseJson);
+}
+
 void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
 {
   ZDvidUrl url(m_dvidTarget);

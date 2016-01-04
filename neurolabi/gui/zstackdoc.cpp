@@ -8607,16 +8607,6 @@ void ZStackDoc::seededWatershed()
           signalStack = sparseStack->getStack();
           dsIntv = sparseStack->getDownsampleInterval();
         }
-        /*
-        ZStackObject *obj = getObjectGroup().findFirstSameSource(
-              ZStackObject::TYPE_DVID_SPARSE_STACK,
-              ZStackObjectSourceFactory::MakeSplitObjectSource());
-        ZDvidSparseStack *sparseStack = dynamic_cast<ZDvidSparseStack*>(obj);
-        if (sparseStack != NULL) {
-          signalStack = sparseStack->getStack();
-          dsIntv = sparseStack->getDownsampleInterval();
-        }
-        */
       }
     }
     getProgressSignal()->advanceProgress(0.1);

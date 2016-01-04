@@ -51,6 +51,10 @@ void ZFlyEmProofPresenter::init()
           this, SLOT(tryAddPostSynapseMode()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_MOVE), SIGNAL(triggered()),
           this, SLOT(tryMoveSynapseMode()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_LINK), SIGNAL(triggered()),
+          this, SLOT(linkSelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNLINK), SIGNAL(triggered()),
+          this, SLOT(unlinkSelectedSynapse()));
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
@@ -186,6 +190,16 @@ void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
   getCompleteDocument()->executeRemoveSynapseCommand();
 //  getCompleteDocument()->deleteSelectedSynapse();
+}
+
+void ZFlyEmProofPresenter::linkSelectedSynapse()
+{
+  getCompleteDocument()->executeLinkSynapseCommand();
+}
+
+void ZFlyEmProofPresenter::unlinkSelectedSynapse()
+{
+  getCompleteDocument()->executeUnlinkSynapseCommand();
 }
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()
