@@ -62,7 +62,8 @@ private:
   static const char *m_labelBlockName;
   static const char *m_multiscale2dName;
   static const char *m_mergeOperationName;
-  static const char *m_bookmarkName;
+  static const char *m_bookmarkKeyName;
+  static const char *m_bookmarkAnnotationName;
   static const char *m_bodySynapsesName;
   static const char *m_synapseName;
   //static const char *m_keyValueTypeName;

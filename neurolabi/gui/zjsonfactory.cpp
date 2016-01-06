@@ -5,6 +5,10 @@
 #include "zobject3dscan.h"
 #include "zintpoint.h"
 
+#ifdef _QT_GUI_USED_
+#include "flyem/zflyembookmark.h"
+#endif
+
 ZJsonFactory::ZJsonFactory()
 {
 }
@@ -58,6 +62,36 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
 }
 
 #if defined(_QT_GUI_USED_)
+ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
+{
+  ZJsonObject json;
+  ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().toIntPoint());
+  json.setEntry("Pos", posJson);
+  json.setEntry("Kind", "Bookmark");
+
+  ZJsonArray tagJson;
+  if (!bookmark.getUserName().isEmpty()) {
+    tagJson.append("user:" + bookmark.getUserName().toStdString());
+  }
+  if (!tagJson.isEmpty()) {
+    json.setEntry("Tags", tagJson);
+  }
+
+  ZJsonObject propJson;
+  propJson.setEntry("body ID", bookmark.getBodyId());
+  propJson.setEntry("time", bookmark.getTime().toStdString());
+  propJson.setEntry("status", bookmark.getStatus().toStdString());
+  propJson.setEntry("comment", bookmark.getComment().toStdString());
+  propJson.setEntry("type", bookmark.getTypeString().toStdString());
+  propJson.setEntry("checked", bookmark.isChecked());
+  propJson.setEntry("custom", bookmark.isCustom());
+  propJson.setEntry("user", bookmark.getUserName().toStdString());
+
+  json.setEntry("Prop", propJson);
+
+  return json;
+}
+
 ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)
 {
   ZJsonArray array;

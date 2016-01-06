@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QVector>
+#include <QCache>
 
 #include <iostream>
 
@@ -12,6 +13,7 @@
 #include "zdvidinfo.h"
 #include "zdvidsynapse.h"
 #include "zselector.h"
+#include "zjsonarray.h"
 
 class ZDvidSynapseEnsemble : public ZStackObject
 {
@@ -23,7 +25,51 @@ public:
     DATA_GLOBAL, DATA_LOCAL, DATA_SYNC
   };
 
+  enum EDataStatus {
+    STATUS_NORMAL, STATUS_NULL, STATUS_READY
+  };
+
+  enum EAdjustment {
+    ADJUST_NONE, ADJUST_EXTEND, ADJUST_FULL
+  };
+
   void setDvidTarget(const ZDvidTarget &target);
+
+  class SynapseMap : public QMap<int, ZDvidSynapse> {
+  public:
+    SynapseMap(EDataStatus status = STATUS_NORMAL);
+    bool isValid() const { return m_status != STATUS_NULL; }
+
+  private:
+    EDataStatus m_status;
+  };
+
+  class SynapseSlice : public QVector<SynapseMap> {
+  public:
+    SynapseSlice(EDataStatus status = STATUS_NORMAL);
+
+    void addSynapse(const ZDvidSynapse &synapse);
+    const SynapseMap& getMap(int y) const;
+    SynapseMap& getMap(int y);
+    SynapseMap& getMap(int y, EAdjustment adjust);
+
+    bool isValid() const { return m_status != STATUS_NULL; }
+    bool isReady() const { return m_status == STATUS_READY; }
+
+    void setStatus(EDataStatus status) {
+      m_status = status;
+    }
+
+    bool contains(int x, int y) const;
+
+    friend std::ostream& operator<< (
+        std::ostream &stream, const SynapseSlice &se);
+
+  private:
+    int m_startY;
+    EDataStatus m_status;
+    static SynapseMap m_emptyMap;
+  };
 
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
 
@@ -39,10 +85,19 @@ public:
   ZDvidSynapse &getSynapse(int x, int y, int z, EDataScope scope);
   ZDvidSynapse &getSynapse(const ZIntPoint &center, EDataScope scope);
 
-  QMap<int, ZDvidSynapse>& getSynapseMap(int y, int z);
-  QVector<QMap<int, ZDvidSynapse> >& getSlice(int z);
+  SynapseMap& getSynapseMap(int y, int z);
+  const SynapseMap &getSynapseMap(int y, int z) const;
+  SynapseMap& getSynapseMap(int y, int z, EAdjustment adjust);
+
+
+  const SynapseSlice& getSlice(int z) const;
+  SynapseSlice& getSlice(int z);
+  SynapseSlice& getSlice(int z, EAdjustment adjust);
 
 //  bool deleteSynapse(int x, int y, int z);
+
+  int getMinZ() const;
+  int getMaxZ() const;
 
   bool hasLocalSynapse(int x, int y, int z) const;
 
@@ -79,30 +134,35 @@ public:
     void skipEmptyIterator();
 
   private:
-    QVector<QVector<QMap<int, ZDvidSynapse> > > m_emptyZ;
-    QVector<QMap<int, ZDvidSynapse> > m_emptyY;
-    QMap<int, ZDvidSynapse> m_emptyX;
+    static QVector<SynapseSlice> m_emptyZ;
+    static QVector<SynapseMap> m_emptyY;
+    static QMap<int, ZDvidSynapse> m_emptyX;
 
-    QVectorIterator<QVector<QMap<int, ZDvidSynapse> > > m_zIterator;
-    QVectorIterator<QMap<int, ZDvidSynapse> > m_yIterator;
+    QVectorIterator<SynapseSlice> m_zIterator;
+    QVectorIterator<SynapseMap> m_yIterator;
     QMapIterator<int, ZDvidSynapse> m_xIterator;
   };
 
 private:
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
+  void updateFromCache(int z);
 
 private:
-  QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;
-  ZDvidSynapse m_emptySynapse;
+  QVector<SynapseSlice> m_synapseEnsemble;
+//  QVector<QVector<QMap<int, ZDvidSynapse> > > m_synapseEnsemble;
+  static ZDvidSynapse m_emptySynapse;
+  static SynapseSlice m_emptySlice;
 
   int m_startZ;
-  int m_startY;
+//  int m_startY;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZDvidInfo m_dvidInfo;
 
   ZSelector<ZIntPoint> m_selector;
+
+  mutable QCache<int, SynapseSlice> m_sliceCache;
 };
 
 #endif // ZDVIDSYNAPSEENSENMBLE_H

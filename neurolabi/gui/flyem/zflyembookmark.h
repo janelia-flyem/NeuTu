@@ -27,6 +27,8 @@ public:
   inline const QString& getComment() const { return m_comment; }
   inline ZIntPoint getLocation() const { return getCenter().toIntPoint(); }
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
+  QString getTypeString() const;
+
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
   inline void setComment(const QString &comment) { m_comment = comment; }
   inline void setUser(const QString &user) { m_userName = user; }
@@ -54,6 +56,10 @@ public:
 
   ZJsonObject toJsonObject(bool ignoringComment = false) const;
   void loadJsonObject(const ZJsonObject &jsonObj);
+
+  //For the new annotation API
+  ZJsonObject toDvidAnnotationJson() const;
+  void loadDvidAnnotation(const ZJsonObject &jsonObj);
 
   void print() const;
   std::string toLogString() const;

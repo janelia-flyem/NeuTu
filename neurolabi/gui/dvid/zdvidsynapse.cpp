@@ -172,7 +172,7 @@ bool ZDvidSynapse::hit(double x, double y, double z)
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
-    double d2 = dx * dx * dy * dy;
+    double d2 = dx * dx + dy * dy;
 
     double radius = getRadius(z);
 
@@ -187,7 +187,7 @@ bool ZDvidSynapse::hit(double x, double y)
   double dx = x - m_position.getX();
   double dy = y - m_position.getY();
 
-  double d2 = dx * dx * dy * dy;
+  double d2 = dx * dx + dy * dy;
 
   return d2 <= m_radius * m_radius;
 }
@@ -252,6 +252,9 @@ std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
     break;
   case ZDvidSynapse::KIND_PRE_SYN:
     stream << "PreSyn";
+    break;
+  case ZDvidSynapse::KIND_INVALID:
+    stream << "Invalid";
     break;
   default:
     stream << "Unknown";

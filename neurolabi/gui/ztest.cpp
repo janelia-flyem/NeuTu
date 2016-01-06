@@ -19077,7 +19077,7 @@ void ZTest::test(MainWindow *host)
   std::cout << jsonArray.dumpString(2) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget dvidTarget;
   dvidTarget.set("emdata1.int.janelia.org", "86e1", 8500);
   dvidTarget.setSynapseName("synapse");
@@ -19109,6 +19109,72 @@ void ZTest::test(MainWindow *host)
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/test.swc");
   tree.print();
+#endif
+
+#if 0
+  ZDvidSynapse synapse;
+  synapse.setPosition(30, 30, 30);
+  synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+
+
+  ZDvidSynapseEnsemble se;
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  synapse.setPosition(31, 30, 30);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  synapse.setPosition(31, 30, 29);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  synapse.setPosition(31, 30, 29);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  synapse.setPosition(31, 28, 29);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  synapse.setPosition(-1, -2, -3);
+  se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+  std::cout << se << std::endl;
+
+  //Check consistensy
+  for (int z = se.getMinZ(); z <= se.getMaxZ(); ++z) {
+    const ZDvidSynapseEnsemble::SynapseSlice &slice = se.getSlice(z);
+    if (!slice.isEmpty()) {
+      std::cout << slice << std::endl;
+    }
+  }
+
+
+  std::cout << se.getSynapse(0, 0, 0, ZDvidSynapseEnsemble::DATA_LOCAL)
+            << std::endl;
+
+  std::cout << se.getSynapse(-1, -2, -3, ZDvidSynapseEnsemble::DATA_LOCAL)
+            << std::endl;
+
+  std::cout << se.getSynapse(31, 28, 29, ZDvidSynapseEnsemble::DATA_LOCAL)
+            << std::endl;
+  std::cout << se.getSynapse(31, 28, 28, ZDvidSynapseEnsemble::DATA_LOCAL)
+            << std::endl;
+
+#endif
+
+#if 1
+  ZFlyEmBookmark bookmark;
+  bookmark.setCenter(1, 2, 3);
+  bookmark.setBodyId(1);
+  bookmark.setCustom(true);
+  bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+  bookmark.setUser("zhaot");
+
+  std::cout << bookmark.toDvidAnnotationJson().dumpString(2) << std::endl;
+
+  ZFlyEmBookmark bookmark2;
+  bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
+  std::cout << bookmark2.toDvidAnnotationJson().dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

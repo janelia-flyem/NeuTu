@@ -261,7 +261,7 @@ std::string NeutubeConfig::getPath(Config_Item item) const
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
     std::string user = NeuTube::GetCurrentUserName();
-    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z/" + user;
+    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {
       if (!tmpDirObj.mkpath(tmpDir.c_str())) {
