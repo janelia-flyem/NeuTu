@@ -111,6 +111,7 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  //For old bookmark management
   void writeBookmark(const ZFlyEmBookmark &bookmark);
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();

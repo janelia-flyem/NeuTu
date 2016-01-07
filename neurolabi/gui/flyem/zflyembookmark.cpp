@@ -40,6 +40,7 @@ void ZFlyEmBookmark::clear()
   m_comment.clear();
   m_status.clear();
   m_time.clear();
+  m_tags.clear();
 }
 
 void ZFlyEmBookmark::print() const
@@ -66,6 +67,13 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
   if (jsonObj.hasKey("Pos")) {
     std::vector<int> coordinates =
         ZJsonParser::integerArray(jsonObj["Pos"]);
+
+    if (jsonObj.hasKey("Tags")) {
+      ZJsonArray tagJson(jsonObj.value("Tags"));
+      for (size_t i = 0; i < tagJson.size(); ++i) {
+        addTag(ZJsonParser::stringValue(tagJson.at(i)));
+      }
+    }
 
     if (coordinates.size() == 3) {
       setLocation(coordinates[0], coordinates[1], coordinates[2]);
@@ -289,6 +297,26 @@ std::string ZFlyEmBookmark::toLogString() const
   stream << "bookmark @" << getCenter().toString() << " with ";
   stream << "ID: " << getBodyId();
   return stream.str();
+}
+
+void ZFlyEmBookmark::addTag(const char *tag)
+{
+  addTag(QString(tag));
+}
+
+void ZFlyEmBookmark::addTag(const std::string &tag)
+{
+  addTag(tag.c_str());
+}
+
+void ZFlyEmBookmark::addTag(const QString &tag)
+{
+  m_tags.append(tag);
+}
+
+void ZFlyEmBookmark::addUserTag()
+{
+  addTag("user:" + getUserName());
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

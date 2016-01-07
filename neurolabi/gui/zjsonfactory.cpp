@@ -70,9 +70,15 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   json.setEntry("Kind", "Bookmark");
 
   ZJsonArray tagJson;
+  foreach (const QString &tag, bookmark.getTags()) {
+    tagJson.append(tag.toStdString());
+  }
+
+  /*
   if (!bookmark.getUserName().isEmpty()) {
     tagJson.append("user:" + bookmark.getUserName().toStdString());
   }
+  */
   if (!tagJson.isEmpty()) {
     json.setEntry("Tags", tagJson);
   }

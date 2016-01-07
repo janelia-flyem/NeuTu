@@ -19169,6 +19169,7 @@ void ZTest::test(MainWindow *host)
   bookmark.setCustom(true);
   bookmark.setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
   bookmark.setUser("zhaot");
+  bookmark.addUserTag();
 
   std::cout << bookmark.toDvidAnnotationJson().dumpString(2) << std::endl;
 

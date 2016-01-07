@@ -585,7 +585,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidsynapse.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
-    dvid/zdvidsynpasecommand.h
+    dvid/zdvidsynpasecommand.h \
+    dvid/zdvidannotationcommand.h \
+    dvid/zflyembookmarkcommand.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1027,7 +1029,9 @@ SOURCES += main.cpp \
     dvid/zdvidsynapse.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \
-    dvid/zdvidsynpasecommand.cpp
+    dvid/zdvidsynpasecommand.cpp \
+    dvid/zdvidannotationcommand.cpp \
+    dvid/zflyembookmarkcommand.cpp
 
 OTHER_FILES += \
     extlib.pri \
