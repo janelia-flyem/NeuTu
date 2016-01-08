@@ -158,6 +158,8 @@ public:
   std::string getSynapseName() const;
   void setSynapseName(const std::string &name);
 
+  std::string getBookmarkName() const;
+
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 

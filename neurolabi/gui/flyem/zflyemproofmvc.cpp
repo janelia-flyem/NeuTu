@@ -651,7 +651,7 @@ void ZFlyEmProofMvc::clear()
 void ZFlyEmProofMvc::exitCurrentDoc()
 {
   if (getCompleteDocument() != NULL) {
-    getCompleteDocument()->saveCustomBookmark();
+//    getCompleteDocument()->saveCustomBookmark();
     getCompleteDocument()->saveMergeOperation();
   }
 }
@@ -1961,7 +1961,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         const QByteArray &bookmarkData = reader.readKeyValue(
-              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());
+              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), bookmark->getDvidKey());
         if (!bookmarkData.isEmpty()) {
           ZJsonObject obj;
           obj.decodeString(bookmarkData.data());
@@ -2386,9 +2386,27 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
   */
 }
 
-void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
+void ZFlyEmProofMvc::removeLocalBookmark(ZFlyEmBookmark *bookmark)
 {
-  getCompleteDocument()->executeRemoveObjectCommand(bookmark);
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      ZFlyEmProofDoc *doc = getCompleteDocument();
+
+      bookmark->setSelected(false);
+      doc->removeObject(bookmark, false);
+      emit userBookmarkUpdated(getDocument().get());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::addLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZFlyEmProofDoc *doc = getCompleteDocument();
+    doc->addObject(bookmark, false);
+
+    emit userBookmarkUpdated(getDocument().get());
+  }
 }
 
 void ZFlyEmProofMvc::cropCoarseBody3D()

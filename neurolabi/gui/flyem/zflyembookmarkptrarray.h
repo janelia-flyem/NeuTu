@@ -25,7 +25,10 @@ public:
   static ZFlyEmBookmark* findFirstBookmark(
       InputIterator first, InputIterator last, const QString &key);
 
-  void remove(const QVector<ZFlyEmBookmark*> &bookmarkArray);
+  int remove(const QVector<ZFlyEmBookmark*> &bookmarkArray);
+  bool remove(ZFlyEmBookmark *bookmark);
+
+  int findFirstIndex(ZFlyEmBookmark *bookmark) const;
 
 private:
   QList<ZFlyEmBookmark*> m_bookmarkArray;

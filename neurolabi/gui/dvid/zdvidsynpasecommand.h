@@ -17,6 +17,7 @@ public:
 
   void redo();
   void undo();
+
 protected:
   ZFlyEmProofDoc *m_doc;
   bool m_isExecuted;

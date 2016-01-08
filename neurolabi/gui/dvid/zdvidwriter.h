@@ -52,6 +52,7 @@ public:
   void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
   void removeBodyAnnotation(uint64_t bodyId);
 
+
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
@@ -111,10 +112,24 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonObject &annotationJson);
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonArray &annotationJson);
+  void deletePointAnnotation(const std::string &dataName, int x, int y, int z);
+  void deletePointAnnotation(const std::string &dataName, const ZIntPoint &pt);
+
   //For old bookmark management
   void writeBookmark(const ZFlyEmBookmark &bookmark);
+  void writeBookmark(const ZJsonObject &bookmarkJson);
+  void writeBookmark(const ZJsonArray &bookmarkJson);
+  void deleteBookmark(int x, int y, int z);
+  void deleteBookmark(const ZIntPoint &pt);
+
+  /*
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();
+  */
 
   void deleteSynapse(int x, int y, int z);
   void writeSynapse(const ZDvidSynapse &synapse);

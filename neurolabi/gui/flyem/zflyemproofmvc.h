@@ -168,7 +168,8 @@ public slots:
 
   void changeColorMap(const QString &option);
 
-  void removeBookmark(ZFlyEmBookmark *bookmark);
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
 
   void highlightSelectedObject(bool hl);
 
@@ -306,7 +307,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
+          this, SLOT(removeLocalBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),

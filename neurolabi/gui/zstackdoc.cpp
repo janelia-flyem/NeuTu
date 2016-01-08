@@ -4586,7 +4586,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y)
   return NULL;
 }
 
-#if 1
+#if 0
 Swc_Tree_Node* ZStackDoc::swcHitTest(double x, double y) const
 {
   Swc_Tree_Node *selected = NULL;
@@ -5407,6 +5407,10 @@ void ZStackDoc::setStackBc(double factor, double offset, int channel)
   }
 }
 
+void ZStackDoc::notify(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
+}
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)

@@ -6,6 +6,7 @@
 #include "zintpoint.h"
 
 #ifdef _QT_GUI_USED_
+#include <QString>
 #include "flyem/zflyembookmark.h"
 #endif
 
@@ -67,7 +68,7 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   ZJsonObject json;
   ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().toIntPoint());
   json.setEntry("Pos", posJson);
-  json.setEntry("Kind", "Bookmark");
+  json.setEntry("Kind", "Note");
 
   ZJsonArray tagJson;
   foreach (const QString &tag, bookmark.getTags()) {
@@ -84,7 +85,8 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   }
 
   ZJsonObject propJson;
-  propJson.setEntry("body ID", bookmark.getBodyId());
+  propJson.setEntry(
+        "body ID", QString("%1").arg(bookmark.getBodyId()).toStdString());
   propJson.setEntry("time", bookmark.getTime().toStdString());
   propJson.setEntry("status", bookmark.getStatus().toStdString());
   propJson.setEntry("comment", bookmark.getComment().toStdString());

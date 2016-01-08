@@ -669,7 +669,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     // we've passed validation at this point, so we know it's an array;
     //  iterate over each color, filter and insert into table;
     ZJsonArray colorArray(colors);
-    for (int i=0; i<colorArray.size(); i++) {
+    for (size_t i=0; i<colorArray.size(); i++) {
         ZJsonObject entry(colorArray.at(i), false);
 
         QString filter(ZJsonParser::stringValue(entry["filter"]));
@@ -689,7 +689,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     updateColorScheme();
 }
 
-void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString oldFilter) {
+void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*/) {
     // note: oldFilter currently unused; I was thinking about allowing an edit
     //  to a filter that would replace an older filter but didn't implement it
 

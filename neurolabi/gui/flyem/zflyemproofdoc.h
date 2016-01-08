@@ -102,7 +102,7 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
-  void saveCustomBookmark();
+//  void saveCustomBookmark();
   void downloadBookmark();
   inline void setCustomBookmarkSaveState(bool state) {
     m_isCustomBookmarkSaved = state;
@@ -184,7 +184,7 @@ public slots:
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
-  void saveCustomBookmarkSlot();
+//  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();

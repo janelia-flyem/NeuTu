@@ -259,6 +259,18 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   setInfo(target.toJsonObject().dumpString(2).c_str());
 }
 
+
+void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      m_userBookmarkList.removeBookmark(bookmark);
+    } else {
+      m_assignedBookmarkList.removeBookmark(bookmark);
+    }
+  }
+}
+
 void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
   m_userBookmarkList.clear();

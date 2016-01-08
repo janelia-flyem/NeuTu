@@ -722,7 +722,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(
   return bodySet;
 }
 
-std::set<uint64_t> ZDvidReader::readBodyId(const QString sizeRange)
+std::set<uint64_t> ZDvidReader::readBodyId(const QString /*sizeRange*/)
 {
   std::set<uint64_t> bodySet;
 #if 0
@@ -1531,7 +1531,38 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   return bodyArray;
 }
 
-ZObject3dScan ZDvidReader::readRoi(const std::string dataName)
+ZJsonArray ZDvidReader::readAnnotation(
+    const std::string &dataName, const std::string &tag) const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonArray(url.getAnnotationUrl(dataName, tag));
+}
+
+ZJsonArray ZDvidReader::readTaggedBookmark(const std::string &tag) const
+{
+  return readAnnotation(getDvidTarget().getBookmarkName(), tag);
+}
+
+ZJsonObject ZDvidReader::readBookmarkJson(int x, int y, int z) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject bookmarkJson;
+  ZIntCuboid box(x, y, z, x, y, z);
+  ZJsonArray obj = readJsonArray(dvidUrl.getBookmarkUrl(box));
+  if (obj.size() > 0) {
+    bookmarkJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+
+  return bookmarkJson;
+}
+
+ZJsonObject ZDvidReader::readBookmarkJson(const ZIntPoint &pt) const
+{
+  return readBookmarkJson(pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);

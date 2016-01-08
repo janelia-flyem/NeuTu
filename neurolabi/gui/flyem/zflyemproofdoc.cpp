@@ -83,8 +83,10 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
+  /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
+          */
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -652,7 +654,19 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
 
 void ZFlyEmProofDoc::downloadBookmark()
 {
-  if (getDvidTarget().isValid()) {
+  if (m_dvidReader.isReady()) {
+    ZJsonArray bookmarkJson =
+        m_dvidReader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (size_t i = 0; i < bookmarkJson.size(); ++i) {
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
+      bookmark->loadDvidAnnotation(bookmarkObj);
+      addObject(bookmark, true);
+    }
+    endObjectModifiedMode();
+    notifyObjectModified();
+
     ZDvidUrl url(getDvidTarget());
     ZDvidBufferReader reader;
     reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
@@ -666,6 +680,8 @@ void ZFlyEmProofDoc::downloadBookmark()
         ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
         bookmark->loadJsonObject(bookmarkObj);
         addObject(bookmark, true);
+        bookmark->addUserTag();
+        m_dvidWriter.writeBookmark(*bookmark);
       }
       endObjectModifiedMode();
       notifyObjectModified();
@@ -1179,6 +1195,7 @@ void ZFlyEmProofDoc::autoSave()
   backupMergeOperation();
 }
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {
   if (!m_isCustomBookmarkSaved) {
@@ -1186,7 +1203,9 @@ void ZFlyEmProofDoc::saveCustomBookmarkSlot()
     saveCustomBookmark();
   }
 }
+#endif
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmark()
 {
   ZDvidWriter writer;
@@ -1214,6 +1233,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
     }
   }
 }
+#endif
 
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {

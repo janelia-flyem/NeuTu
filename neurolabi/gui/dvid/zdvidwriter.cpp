@@ -993,14 +993,30 @@ void ZDvidWriter::parseStandardOutput()
 
 void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
 {
-  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+  writePointAnnotation(
+        m_dvidTarget.getBookmarkName(), bookmark.toDvidAnnotationJson());
+
+  /*
+  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
                   bookmark.getDvidKey().toStdString(),
                   bookmark.toJsonObject().dumpString(0));
+                  */
 }
 
+void ZDvidWriter::writeBookmark(const ZJsonArray &bookmarkJson)
+{
+  writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
+}
+
+void ZDvidWriter::writeBookmark(const ZJsonObject &bookmarkJson)
+{
+  writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
+}
+
+#if 0
 void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
 {
-  writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
             NeuTube::GetCurrentUserName(), bookmarkJson);
 }
 
@@ -1008,11 +1024,55 @@ void ZDvidWriter::deleteAllCustomBookmark()
 {
   writeCustomBookmark(ZJsonArray());
 }
+#endif
+
+void ZDvidWriter::deletePointAnnotation(
+    const std::string &dataName, int x, int y, int z)
+{
+  ZDvidUrl url(m_dvidTarget);
+
+  del(url.getAnnotationUrl(dataName, x, y, z));
+}
+
+void ZDvidWriter::deletePointAnnotation(
+    const std::string &dataName, const ZIntPoint &pt)
+{
+  deletePointAnnotation(dataName, pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZDvidWriter::deleteBookmark(int x, int y, int z)
+{
+  deletePointAnnotation(m_dvidTarget.getBookmarkName(), x, y, z);
+}
+
+void ZDvidWriter::deleteBookmark(const ZIntPoint &pt)
+{
+  deleteBookmark(pt.getX(), pt.getY(), pt.getZ());
+}
+
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
   ZDvidUrl url(m_dvidTarget);
   del(url.getSynapseUrl(x, y, z));
+}
+
+void ZDvidWriter::writePointAnnotation(
+    const std::string &dataName, const ZJsonObject &annotationJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray json;
+  json.append(annotationJson);
+
+  writePointAnnotation(dataName, json);
+}
+
+void ZDvidWriter::writePointAnnotation(
+    const std::string &dataName, const ZJsonArray &annotationJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+
+  writeJson(url.getAnnotationElementsUrl(dataName), annotationJson);
 }
 
 void ZDvidWriter::writeSynapse(const ZDvidSynapse &synapse)

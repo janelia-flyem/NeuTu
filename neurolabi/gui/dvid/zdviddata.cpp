@@ -75,8 +75,10 @@ const char* ZDvidData::GetName(ERole role)
     return m_multiscale2dName;
   case ROLE_MERGE_OPERATION:
     return m_mergeOperationName;
-  case ROLE_BOOKMARK:
+  case ROLE_BOOKMARK_KEY:
     return m_bookmarkKeyName;
+  case ROLE_BOOKMARK:
+    return m_bookmarkAnnotationName;
   case ROLE_BODY_SYNAPSES:
     return m_bodySynapsesName;
   case ROLE_SYNAPSE:

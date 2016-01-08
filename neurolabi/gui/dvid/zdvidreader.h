@@ -31,6 +31,9 @@ class ZSparseStack;
 class ZDvidVersionDag;
 class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
+class ZFlyEmBookmark;
+
+
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -143,12 +146,19 @@ public:
 
   ZObject3dScan readCoarseBody(uint64_t bodyId);
 
-  ZObject3dScan readRoi(const std::string dataName);
+  ZObject3dScan readRoi(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
+
+  ZJsonArray readAnnotation(
+      const std::string &dataName, const std::string &tag) const;
+
+  ZJsonArray readTaggedBookmark(const std::string &tag) const;
+  ZJsonObject readBookmarkJson(int x, int y, int z) const;
+  ZJsonObject readBookmarkJson(const ZIntPoint &pt) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
