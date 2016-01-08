@@ -3,6 +3,8 @@
 #include <QMainWindow>
 #include <QMimeData>
 #include <QEvent>
+#include <QCoreApplication>
+#include <QKeyEvent>
 
 #include "zstackdoc.h"
 #include "zstackview.h"
@@ -206,9 +208,12 @@ void ZStackMvc::processViewChange()
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
+#if 0
+  qDebug() << "ZStackMvc::processViewChange" << viewParam.getZ();
   if (getPresenter()->isObjectVisible()) {
     QList<ZDocPlayer*> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    qDebug() << "#Player:" << playerList.size();
     if (!playerList.isEmpty()) {
       bool updated = false;
       foreach (const ZDocPlayer *player, playerList) {
@@ -218,10 +223,12 @@ void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
         }
       }
       if (updated) {
+        qDebug() << "Painting object in ZStackMvc::processViewChange";
         m_view->paintObject();
       }
     }
   }
+#endif
 
   processViewChangeCustom(viewParam);
 }
@@ -253,6 +260,14 @@ QMainWindow* ZStackMvc::getMainWindow() const
 void ZStackMvc::dump(const QString &msg)
 {
   getView()->dump(msg);
+}
+
+void ZStackMvc::test()
+{
+  for (int i = 0; i < 5000; ++i) {
+    QKeyEvent *event = new QKeyEvent ( QEvent::KeyPress, Qt::Key_E, Qt::NoModifier);
+    QCoreApplication::postEvent (this, event);
+  }
 }
 
 /*

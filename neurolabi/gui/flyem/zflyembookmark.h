@@ -56,6 +56,7 @@ public:
   void loadJsonObject(const ZJsonObject &jsonObj);
 
   void print() const;
+  std::string toLogString() const;
 
   void setCustom(bool state);
 

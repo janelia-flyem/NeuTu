@@ -2,6 +2,8 @@
 #include <sstream>
 #include "dvid/zdviddata.h"
 #include "zstring.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -16,6 +18,8 @@ const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
 const std::string ZDvidUrl::m_synapseElementCommand = "element";
 const std::string ZDvidUrl::m_synapseElementsCommand = "elements";
+const std::string ZDvidUrl::m_synapseLabelCommand = "label";
+const std::string ZDvidUrl::m_synapseMoveCommand = "move";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -213,6 +217,11 @@ std::string ZDvidUrl::getThumbnailUrl(
 std::string ZDvidUrl::getRepoUrl() const
 {
   return getApiUrl() + "/repo/" + m_dvidTarget.getUuid();
+}
+
+std::string ZDvidUrl::getInfoUrl() const
+{
+  return getRepoUrl() + "/info";
 }
 
 std::string ZDvidUrl::getInstanceUrl() const
@@ -615,6 +624,11 @@ std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
   return stream.str();
 }
 
+std::string ZDvidUrl::getSynapseUrl(const ZIntPoint &pos) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ());
+}
+
 std::string ZDvidUrl::getSynapseUrl(
     int x, int y, int z, int width, int height, int depth) const
 {
@@ -623,6 +637,50 @@ std::string ZDvidUrl::getSynapseUrl(
   stream << getSynapseUrl() << "/" << m_synapseElementsCommand << "/"
          << width << "_" << height << "_" << depth << "/"
          << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseElementsUrl() const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseElementsCommand;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(
+    const ZIntPoint &pos, int width, int height, int depth) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ(),
+                       width, height, depth);
+}
+
+std::string ZDvidUrl::getSynapseMoveUrl(
+    const ZIntPoint &from, const ZIntPoint &to) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseMoveCommand << "/"
+         << from.getX() << "_" << from.getY() << "_" << from.getZ() << "/"
+         << to.getX() << "_" << to.getY() << "_" << to.getZ();
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
+{
+  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+                       box.getDepth());
+}
+
+std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_synapseLabelCommand << "/"
+         << label;
 
   return stream.str();
 }

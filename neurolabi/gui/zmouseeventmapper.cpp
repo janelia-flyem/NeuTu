@@ -196,6 +196,12 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
         op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
         break;
+      case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
+        break;
+      case ZInteractiveContext::INTERACT_MOVE_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_MOVE);
+        break;
       default:
         break;
       }
@@ -470,8 +476,10 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
-        } else {
-          op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
+        }
+
+        if (op.isNull()) {
+          op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
         }
       } else {
 //        if (m_context->exploreMode())

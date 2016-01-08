@@ -1,7 +1,9 @@
 #ifndef ZDVIDSYNAPSE_H
 #define ZDVIDSYNAPSE_H
 
+
 #include <iostream>
+#include <QColor>
 
 #include "zstackobject.h"
 #include "zintpoint.h"
@@ -13,7 +15,7 @@ class ZDvidSynapse : public ZStackObject
 public:
   ZDvidSynapse();
 
-  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN };
+  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option) const;
@@ -26,8 +28,12 @@ public:
   void setDefaultRadius();
   void setRadius(double r) { m_radius = r; }
 
+  double getRadius() const { return m_radius; }
+
   void setKind(EKind kind) { m_kind = kind; }
   EKind getKind() const { return m_kind; }
+  static std::string GetKindName(EKind kind);
+  static EKind GetKind(const std::string &name);
 
 //  void setTag(const std::string &tag) { m_tag = tag; }
 
@@ -40,15 +46,27 @@ public:
   bool hit(double x, double y, double z);
 
   void loadJsonObject(const ZJsonObject &obj);
+  ZJsonObject toJsonObject() const;
 
   void clear();
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapse &synapse);
 
+  void clearPartner();
+  void addPartner(int x, int y, int z);
+  void addTag(const std::string &tag);
+
+  bool isValid() const;
+
+  static QColor GetDefaultColor(EKind kind);
+  static double GetDefaultRadius(EKind kind);
+
 private:
   void init();
-  bool isVisible(int z);
+  bool isVisible(int z) const;
+  double getRadius(int z) const;
+  ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
 
 private:
@@ -56,6 +74,7 @@ private:
   double m_radius;
   EKind m_kind;
   std::vector<std::string> m_tagArray;
+  std::vector<ZIntPoint> m_partnerHint;
 };
 
 #endif // ZDVIDSYNAPSE_H

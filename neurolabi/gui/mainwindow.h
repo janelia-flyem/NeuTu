@@ -145,6 +145,9 @@ public:
 
   void processArgument(const QString &arg);
 
+public: //Testing routines
+  void testFlyEmProofread();
+
 signals:
   void dvidRequestCanceled();
   void progressDone();

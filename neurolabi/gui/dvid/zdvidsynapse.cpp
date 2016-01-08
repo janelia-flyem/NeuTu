@@ -3,6 +3,10 @@
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zjsonfactory.h"
+#include "zjsonarray.h"
+#include "tz_math.h"
+#include "zstackball.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -12,27 +16,57 @@ ZDvidSynapse::ZDvidSynapse()
 void ZDvidSynapse::init()
 {
   m_projectionVisible = false;
-  m_kind = KIND_UNKNOWN;
+  m_kind = KIND_INVALID;
   setDefaultRadius();
 }
 
 void ZDvidSynapse::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/) const
 {
+#if 0
+  ZStackBall ball;
+  ball.setCenter(getPosition());
+  ball.setRadius(getRadius());
+  ball.setColor(getColor());
+  ball.setSelected(isSelected());
+  ball.setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+
+  ball.display(painter, slice, option);
+#endif
+
   bool visible = true;
+  int z = painter.getZ(slice);
 
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    int z = painter.getZ(slice);
-    visible = (z == m_position.getZ());
+    visible = isVisible(z);
   }
 
+  double radius = getRadius(z);
+
+  bool isFocused = (z == getPosition().getZ());
+
   if (visible) {
-    painter.setPen(getColor());
+    QColor color = getColor();
+    if (!isFocused) {
+      double alpha = radius / m_radius;
+      alpha *= alpha * 0.5;
+      alpha += 0.1;
+      color.setAlphaF(alpha * color.alphaF());
+    }
+
+    painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
+
+    if (isFocused) {
+      int x = getPosition().getX();
+      int y = getPosition().getY();
+      painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
+      painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
+    }
     painter.drawEllipse(QPointF(m_position.getX(), m_position.getY()),
-                        m_radius, m_radius);
+                        radius, radius);
   }
 
   QPen pen = painter.getPen();
@@ -71,6 +105,14 @@ void ZDvidSynapse::display(
     painter.setPen(pen);
     painter.drawRect(rect);
   }
+  if (isSelected()) {
+    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+         iter != m_partnerHint.end(); ++iter) {
+      ZIntPoint pos = *iter;
+      painter.drawLine(getPosition().getX(), getPosition().getY(),
+                       pos.getX(), pos.getY());
+    }
+  }
 }
 
 void ZDvidSynapse::setPosition(const ZIntPoint &pos)
@@ -83,45 +125,66 @@ void ZDvidSynapse::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
-void ZDvidSynapse::setDefaultRadius()
+double ZDvidSynapse::GetDefaultRadius(EKind kind)
 {
-  switch (m_kind) {
+  switch (kind) {
   case KIND_POST_SYN:
-    setRadius(3.0);
-    break;
+    return 3.0;
   case KIND_PRE_SYN:
-    setRadius(5.0);
-    break;
+    return 5.0;
   default:
-    setRadius(5.0);
     break;
   }
+
+  return 5.0;
+}
+
+void ZDvidSynapse::setDefaultRadius()
+{
+  m_radius = GetDefaultRadius(m_kind);
+}
+
+QColor ZDvidSynapse::GetDefaultColor(EKind kind)
+{
+  switch (kind) {
+  case KIND_POST_SYN:
+    return QColor(0, 0, 255);
+  case KIND_PRE_SYN:
+    return QColor(0, 255, 0);
+  case KIND_UNKNOWN:
+    return QColor(0, 200, 200);
+  default:
+    break;
+  }
+
+  return QColor(128, 128, 128);
 }
 
 void ZDvidSynapse::setDefaultColor()
 {
-  switch (m_kind) {
-  case KIND_POST_SYN:
-    setColor(0, 0, 255);
-    break;
-  case KIND_PRE_SYN:
-    setColor(0, 255, 0);
-    break;
-  default:
-    setColor(0, 255, 255);
-    break;
-  }
+  setColor(GetDefaultColor(m_kind));
 }
 
 bool ZDvidSynapse::hit(double x, double y, double z)
 {
-  return m_position.distanceTo(x, y, z) <= m_radius;
+  if (isVisible(z)) {
+    double dx = x - m_position.getX();
+    double dy = y - m_position.getY();
+
+    double d2 = dx * dx * dy * dy;
+
+    double radius = getRadius(z);
+
+    return d2 <= radius * radius;
+  }
+
+  return false;
 }
 
 bool ZDvidSynapse::hit(double x, double y)
 {
   double dx = x - m_position.getX();
-  double dy = y = m_position.getY();
+  double dy = y - m_position.getY();
 
   double d2 = dx * dx * dy * dy;
 
@@ -131,9 +194,14 @@ bool ZDvidSynapse::hit(double x, double y)
 void ZDvidSynapse::clear()
 {
   m_position.set(0, 0, 0);
-  m_kind = KIND_UNKNOWN;
+  m_kind = KIND_INVALID;
   m_tagArray.clear();
   setDefaultRadius();
+}
+
+bool ZDvidSynapse::isValid() const
+{
+  return getKind() != KIND_INVALID;
 }
 
 void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
@@ -147,6 +215,8 @@ void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
 
     if (obj.hasKey("Kind")) {
       setKind(ZJsonParser::stringValue(obj["Kind"]));
+    } else {
+      setKind(KIND_UNKNOWN);
     }
 
     if (obj.hasKey("Tags")) {
@@ -192,6 +262,113 @@ std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
          << synapse.getPosition().getZ() << ")";
 
   return stream;
+}
+
+void ZDvidSynapse::clearPartner()
+{
+  m_partnerHint.clear();
+}
+
+void ZDvidSynapse::addPartner(int x, int y, int z)
+{
+  m_partnerHint.push_back(ZIntPoint(x, y, z));
+}
+
+void ZDvidSynapse::addTag(const std::string &tag)
+{
+  m_tagArray.push_back(tag);
+}
+
+std::string ZDvidSynapse::GetKindName(EKind kind)
+{
+  switch (kind) {
+  case ZDvidSynapse::KIND_POST_SYN:
+    return "PostSyn";
+  case ZDvidSynapse::KIND_PRE_SYN:
+    return "PreSyn";
+  default:
+    break;
+  }
+
+  return "Unknown";
+}
+
+ZDvidSynapse::EKind ZDvidSynapse::GetKind(const std::string &name)
+{
+  if (name == "PostSyn") {
+    return ZDvidSynapse::KIND_POST_SYN;
+  } else if (name == "PreSyn") {
+    return ZDvidSynapse::KIND_PRE_SYN;
+  }
+
+  return ZDvidSynapse::KIND_UNKNOWN;
+}
+
+ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
+{
+  std::string rel;
+  switch (getKind()) {
+  case ZDvidSynapse::KIND_POST_SYN:
+    rel = "PostSynTo";
+    break;
+  case ZDvidSynapse::KIND_PRE_SYN:
+    rel = "PreSynTo";
+    break;
+  default:
+    rel = "UnknownRelationship";
+  }
+
+  ZJsonObject relJson;
+  relJson.setEntry("Rel", rel);
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(pt);
+  relJson.setEntry("To", posJson);
+
+  return relJson;
+}
+
+ZJsonObject ZDvidSynapse::toJsonObject() const
+{
+  ZJsonObject obj;
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
+  obj.setEntry("Pos", posJson);
+  obj.setEntry("Kind", GetKindName(getKind()));
+  if (!m_partnerHint.empty()) {
+    ZJsonArray relArrayJson;
+    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+         iter != m_partnerHint.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      relArrayJson.append(makeRelJson(pt));
+    }
+    obj.setEntry("Rels", relArrayJson);
+  }
+
+  if (!m_tagArray.empty()) {
+    ZJsonArray tagJson;
+    for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
+         iter != m_tagArray.end(); ++iter) {
+      const std::string &tag = *iter;
+      tagJson.append(tag);
+    }
+    obj.setEntry("Tag", tagJson);
+  }
+
+  return obj;
+}
+
+bool ZDvidSynapse::isVisible(int z) const
+{
+  int dz = abs(getPosition().getZ() - z);
+
+  return dz < iround(getRadius());
+}
+
+double ZDvidSynapse::getRadius(int z) const
+{
+  int dz = abs(getPosition().getZ() - z);
+
+  return std::max(0.0, getRadius() - dz);
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

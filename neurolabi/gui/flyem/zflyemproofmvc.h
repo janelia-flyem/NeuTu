@@ -168,6 +168,10 @@ public slots:
 
   void changeColorMap(const QString &option);
 
+  void removeBookmark(ZFlyEmBookmark *bookmark);
+
+  void highlightSelectedObject(bool hl);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -301,6 +305,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),

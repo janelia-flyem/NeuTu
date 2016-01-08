@@ -20,14 +20,18 @@ void ZDvidSparsevolSlice::setDvidTarget(const ZDvidTarget &target)
   m_reader.open(target);
 }
 
-void ZDvidSparsevolSlice::update(int z)
+bool ZDvidSparsevolSlice::update(int z)
 {
+  bool updated = false;
   if (m_currentZ != z) {
     m_currentZ = z;
     if (z < getMinZ() || z > getMaxZ()) {
       m_reader.readBody(getLabel(), m_currentZ, this);
+      updated = true;
     }
   }
+
+  return updated;
 }
 
 void ZDvidSparsevolSlice::update()

@@ -41,6 +41,7 @@ public:
    */
   bool operator < (const ZIntPoint &pt) const;
   bool operator == (const ZIntPoint &pt) const;
+  bool operator != (const ZIntPoint &pt) const;
 
   ZIntPoint operator - () const;
 

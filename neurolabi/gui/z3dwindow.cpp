@@ -861,8 +861,8 @@ void Z3DWindow::createActions()
   m_redoAction->setShortcuts(QKeySequence::Redo);
   */
 
-  m_undoAction = m_doc->getUndoAction();
-  m_redoAction = m_doc->getRedoAction();
+  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
@@ -959,10 +959,10 @@ void Z3DWindow::createActions()
           */
 
   m_selectSwcNodeDownstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_DOWNSTREAM);
 
   m_selectSwcNodeUpstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_UPSTREAM);
 
   /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
@@ -970,7 +970,7 @@ void Z3DWindow::createActions()
           SLOT(selectBranchNode()));
           */
   m_selectSwcNodeBranchAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_SWC_BRANCH);
 
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
@@ -1049,10 +1049,10 @@ void Z3DWindow::createActions()
           */
 
   m_removeSwcTurnAction =
-      m_doc->getAction(ZStackDoc::ACTION_REMOVE_TURN);
+      m_doc->getAction(ZActionFactory::ACTION_REMOVE_TURN);
 
   m_resolveCrossoverAction =
-      m_doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER);
+      m_doc->getAction(ZActionFactory::ACTION_RESOLVE_CROSSOVER);
 
 }
 
@@ -2465,6 +2465,11 @@ void Z3DWindow::changeBackground()
   int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
   QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
+}
+
+bool Z3DWindow::isBackgroundOn() const
+{
+  return m_compositor->showingBackground();
 }
 
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)

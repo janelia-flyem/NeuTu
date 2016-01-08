@@ -28,6 +28,11 @@ int ZRandomGenerator::rndint(int maxValue)
   return rand() % maxValue + 1;
 }
 
+int ZRandomGenerator::rndint(int minValue, int maxValue)
+{
+  return minValue + rndint(maxValue - minValue + 1) - 1;
+}
+
 struct IntLessThan {
     bool operator() (const std::pair<int, int> &p1, const std::pair<int, int> &p2)
     {

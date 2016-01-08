@@ -3,6 +3,8 @@
 #include "zqtheader.h"
 
 #include <QRectF>
+#include <QPen>
+
 #include <math.h>
 #include "tz_math.h"
 #include "zintpoint.h"
@@ -16,6 +18,11 @@ ZStackBall::ZStackBall()
 ZStackBall::ZStackBall(double x, double y, double z, double r)
 {
   init(x, y, z, r);
+}
+
+ZStackBall::ZStackBall(const ZIntPoint &center, double r)
+{
+  init(center.getX(), center.getY(), center.getZ(), r);
 }
 
 void ZStackBall::init(double x, double y, double z, double r)
@@ -121,6 +128,8 @@ void ZStackBall::display(ZPainter &painter, int slice,
     }
   }
   displayHelper(&painter, slice, style);
+
+  m_prevDisplaySlice = slice;
 
 //  painter.setPen(oldPen);
 //  painter.setBrush(oldBrush);
@@ -267,6 +276,13 @@ void ZStackBall::displayHelper(
     color.setAlphaF(alpha);
     pen.setColor(color);
     pen.setCosmetic(true);
+    if (!visible && slice >= 0 && m_prevDisplaySlice >= 0) {
+      double prevdc = fabs(painter->getZ(m_prevDisplaySlice) - m_center.z());
+      double dc  = fabs(painter->getZ(slice) - m_center.z());
+      if (prevdc > dc) {
+        pen.setWidthF(pen.widthF() + 1.0);
+      }
+    }
   } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen = oldPen;

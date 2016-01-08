@@ -138,6 +138,7 @@ ZStackDoc::~ZStackDoc()
   delete m_undoStack;
   delete m_labelField;
   delete m_stackFactory;
+  delete m_actionFactory;
 
   if (m_resDlg != NULL) {
     delete m_resDlg;
@@ -164,6 +165,8 @@ void ZStackDoc::init()
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
 
+  m_actionFactory = new ZActionFactory;
+
   initNeuronTracer();
   m_swcObjsModel = new ZSwcObjsModel(this, this);
   m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
@@ -172,6 +175,9 @@ void ZStackDoc::init()
         this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
+
+//  m_undoAction = NULL;
+//  m_redoAction = NULL;
 
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
   connectSignalSlot();
@@ -184,7 +190,7 @@ void ZStackDoc::init()
     connect(timer, SIGNAL(timeout()), this, SLOT(autoSaveSlot()));
   }
 
-  createActions();
+//  createActions();
 
   setTag(NeuTube::Document::NORMAL);
   setStackBackground(NeuTube::IMAGE_BACKGROUND_DARK);
@@ -362,6 +368,7 @@ void ZStackDoc::notifyProgressAdvanced(double dp)
   emit progressAdvanced(dp);
 }
 
+#if 0
 void ZStackDoc::createActions()
 {
   m_undoAction = m_undoStack->createUndoAction(this, tr("&Undo"));
@@ -532,6 +539,7 @@ void ZStackDoc::createActions()
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ACTION_CONNECTED_ISOLATED_SWC], true);
 }
+#endif
 
 void ZStackDoc::updateSwcNodeAction()
 {
@@ -1340,6 +1348,142 @@ void ZStackDoc::loadReaderResult()
 #endif
 
   emit stackLoaded();
+}
+
+QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
+{
+  const_cast<ZStackDoc&>(*this).makeAction(item);
+
+  return m_actionMap[item];
+}
+
+void ZStackDoc::makeAction(ZActionFactory::EAction item)
+{
+  if (!m_actionMap.contains(item)) {
+    QAction *action = NULL;
+
+    if (item == ZActionFactory::ACTION_UNDO ||
+        item == ZActionFactory::ACTION_REDO) {
+      action = m_actionFactory->makeAction(item, m_undoStack);
+    } else {
+      action = m_actionFactory->makeAction(item, this);
+    }
+    m_actionMap[item] = action;
+
+    //Additional behaviors
+    if (action != NULL) {
+      switch (item) {
+      case ZActionFactory::ACTION_SELECT_DOWNSTREAM:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
+        break;
+      case ZActionFactory::ACTION_SELECT_UPSTREAM:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectUpstreamNode()));
+        break;
+      case ZActionFactory::ACTION_SELECT_NEIGHBOR_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectNeighborSwcNode()));
+        break;
+      case ZActionFactory::ACTION_SELECT_SWC_BRANCH:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectBranchNode()));
+        break;
+      case ZActionFactory::ACTION_SELECT_CONNECTED_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectConnectedNode()));
+        break;
+      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(selectAllSwcTreeNode()));
+        break;
+      case ZActionFactory::ACTION_RESOLVE_CROSSOVER:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeResolveCrossoverCommand()));
+        break;
+      case ZActionFactory::ACTION_REMOVE_TURN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeRemoveTurnCommand()));
+        break;
+      case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(showSeletedSwcNodeLength()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(showSeletedSwcNodeScaledLength()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_DELETE_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeDeleteSwcNodeCommand()));
+        break;
+      case ZActionFactory::ACTION_DELETE_UNSELECTED_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeDeleteUnselectedSwcNodeCommand()));
+        break;
+      case ZActionFactory::ACTION_INSERT_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeInsertSwcNode()));
+        m_singleSwcNodeActionActivator.registerAction(action, false);
+        break;
+      case ZActionFactory::ACTION_BREAK_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeBreakSwcConnectionCommand()));
+        m_singleSwcNodeActionActivator.registerAction(action, false);
+        break;
+      case ZActionFactory::ACTION_CONNECT_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeConnectSwcNodeCommand()));
+        m_singleSwcNodeActionActivator.registerAction(action, false);
+        break;
+      case ZActionFactory::ACTION_MERGE_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeMergeSwcNodeCommand()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_TRANSLATE_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeTranslateSelectedSwcNode()));
+        break;
+      case ZActionFactory::ACTION_CHANGE_SWC_SIZE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeChangeSelectedSwcNodeSize()));
+        break;
+      case ZActionFactory::ACTION_SET_SWC_ROOT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeSetBranchPoint()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_CONNECTED_ISOLATED_SWC:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeConnectIsolatedSwc()));
+        break;
+      case ZActionFactory::ACTION_RESET_BRANCH_POINT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeResetBranchPoint()));
+        m_singleSwcNodeActionActivator.registerAction(action, true);
+        break;
+      case ZActionFactory::ACTION_SWC_Z_INTERPOLATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeInterpolateSwcZCommand()));
+        break;
+      case ZActionFactory::ACTION_SWC_RADIUS_INTERPOLATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeInterpolateSwcRadiusCommand()));
+        break;
+      case ZActionFactory::ACTION_SWC_POSITION_INTERPOLATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeInterpolateSwcPositionCommand()));
+        break;
+      case ZActionFactory::ACTION_SWC_INTERPOLATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(executeInterpolateSwcCommand()));
+        break;
+      case ZActionFactory::ACTION_SWC_SUMMARIZE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(showSwcSummary()));
+        break;
+      default:
+        break;
+      }
+    }
+  }
 }
 
 void ZStackDoc::selectDownstreamNode()
@@ -7552,6 +7696,16 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 {
   projector.setProgressReporter(m_progressReporter);
 
+  ZStack *out = projector.project(getStack(), getStackBackground());
+  std::vector<ZStack*> projArray;
+  if (out != NULL) {
+    projArray.push_back(out);
+  }
+
+  return projArray;
+
+#if 0
+
   ZStack *out = new ZStack(
         getStack()->kind(), getStack()->width(), getStack()->height(),
         projector.getSlabNumber(),
@@ -7603,6 +7757,7 @@ std::vector<ZStack*> ZStackDoc::projectBiocytinStack(
 
 //  return out;
   return projArray;
+#endif
 }
 
 void ZStackDoc::selectAllSwcTreeNode()
@@ -8812,6 +8967,71 @@ QList<ZDocPlayer *> ZStackDoc::getPlayerList(
   return m_playerList.getPlayerList(role);
 }
 
+void ZStackDoc::ActiveViewObjectUpdater::clearState()
+{
+  m_excludeSet.clear();
+  m_excludeTarget.clear();
+  m_updatedTarget.clear();
+}
+
+void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
+    ZSharedPointer<ZStackDoc> doc, ZStackObject::EType type, bool on)
+{
+  if (doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (obj->getType() == type) {
+        player->enableUpdate(on);
+      }
+    }
+  }
+}
+
+void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
+{
+  m_updatedTarget.clear();
+  if (m_doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (!m_excludeSet.contains(obj->getType()) &&
+          !m_excludeTarget.contains(obj->getTarget()) &&
+          obj->isVisible()) {
+        if (player->updateData(param)) {
+          m_updatedTarget.insert(obj->getTarget());
+        }
+      }
+    }
+  }
+}
+
+/*
+QSet<ZStackObject::ETarget>
+ZStackDoc::updateActiveViewObject(const ZStackViewParam &param)
+{
+  QSet<ZStackObject::ETarget> targetSet;
+
+  QList<ZDocPlayer *> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+       iter != playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->getData()->isVisible()) {
+      player->updateData(param);
+      targetSet.insert(player->getData()->getTarget());
+    }
+  }
+
+  return targetSet;
+}
+*/
 
 bool ZStackDoc::hasPlayer(ZStackObjectRole::TRole role) const
 {
@@ -9147,7 +9367,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool appending)
+void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool /*appending*/)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

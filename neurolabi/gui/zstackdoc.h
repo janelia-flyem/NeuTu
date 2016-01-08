@@ -51,6 +51,7 @@
 #include "zobjectcolorscheme.h"
 #include "qthreadfuturemap.h"
 #include "zsharedpointer.h"
+#include "zactionfactory.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -120,6 +121,7 @@ public:
     SWC_DATA, PUNCTA_DATA, STACK_DATA, NETWORK_DATA
   };
 
+#if 0
   enum EActionItem {
     ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_MEASURE_SCALED_SWC_NODE_LENGTH,
     ACTION_SWC_SUMMARIZE,
@@ -138,7 +140,7 @@ public:
     ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
     ACTION_SWC_INTERPOLATION
   };
-
+#endif
   enum EObjectModifiedMode {
     OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
   };
@@ -312,10 +314,9 @@ public: //attributes
 
   //void setStackMask(ZStack *stack);
 
-  void createActions();
-  inline QAction* getAction(EActionItem item) const {
-    return m_actionMap[item];
-  }
+//  void createActions();
+  QAction* getAction(ZActionFactory::EAction item) const;
+  virtual void makeAction(ZActionFactory::EAction item);
 
   void updateSwcNodeAction();
 
@@ -713,6 +714,8 @@ public:
   virtual ZSparseStack* getSparseStack();
   virtual ZObject3dScan* getSparseStackMask() const;
 
+//  QSet<ZStackObject::ETarget>
+//  updateActiveViewObject(const ZStackViewParam &param);
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -904,8 +907,8 @@ public:
                               const std::set<ZStackObject*> &deselected);
 
 public:
-  inline QAction* getUndoAction() { return m_undoAction; }
-  inline QAction* getRedoAction() { return m_redoAction; }
+//  inline QAction* getUndoAction() { return m_undoAction; }
+//  inline QAction* getRedoAction() { return m_redoAction; }
 
   ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
     return &m_singleSwcNodeActionActivator;
@@ -937,6 +940,39 @@ public:
   }*/
 
   void enableAutoSaving(bool on) { m_autoSaving = on; }
+
+  class ActiveViewObjectUpdater {
+  public:
+    ActiveViewObjectUpdater() {}
+    ActiveViewObjectUpdater(const ZSharedPointer<ZStackDoc> &doc) {
+      m_doc = doc; }
+    void exclude(ZStackObject::EType type) {
+      m_excludeSet.insert(type);
+    }
+    void exclude(ZStackObject::ETarget target) {
+      m_excludeTarget.insert(target);
+    }
+
+    void clearState();
+
+    void update(const ZStackViewParam &param);
+    const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {
+      return m_updatedTarget;
+    }
+
+    void setDocument(const ZSharedPointer<ZStackDoc> &doc) {
+      m_doc = doc;
+    }
+
+    static void SetUpdateEnabled(
+        ZSharedPointer<ZStackDoc> doc, ZStackObject::EType type, bool on);
+
+  private:
+    ZSharedPointer<ZStackDoc> m_doc;
+    QSet<ZStackObject::EType> m_excludeSet;
+    QSet<ZStackObject::ETarget> m_excludeTarget;
+    QSet<ZStackObject::ETarget> m_updatedTarget;
+  };
 
 public slots: //undoable commands
   /*!
@@ -1202,11 +1238,11 @@ private:
   //Actions
   //  Undo/Redo
   QUndoStack *m_undoStack;
-  QAction *m_undoAction;
-  QAction *m_redoAction;
+//  QAction *m_undoAction;
+//  QAction *m_redoAction;
 
   //  Action map
-  QMap<EActionItem, QAction*> m_actionMap;
+  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1215,6 +1251,8 @@ private:
 
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
+
+  ZActionFactory *m_actionFactory;
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;

@@ -428,6 +428,7 @@ void MainWindow::initDialog()
   m_autoTraceDlg = new ZAutoTraceDialog(this);
 
   m_projDlg = new ProjectionDialog(this);
+
   m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
 
 #if defined(_FLYEM_)
@@ -1130,8 +1131,8 @@ void MainWindow::updateAction()
 
   if (frame != NULL) {
     if (frame->presenter() != NULL) {
-      undoAction = frame->document()->getUndoAction();
-      redoAction = frame->document()->getRedoAction();
+      undoAction = frame->document()->getAction(ZActionFactory::ACTION_UNDO);
+      redoAction = frame->document()->getAction(ZActionFactory::ACTION_REDO);
 //      qDebug() << undoAction->text();
 //      qDebug() << undoAction->isEnabled();
     }
@@ -2131,7 +2132,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (d9302b6220c54f09ebc4a4b8efd1d5cec92a30e7)</p>";
+        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -6366,6 +6367,15 @@ void MainWindow::processArgument(const QString &arg)
   if (arg.startsWith("neutu://")) {
     m_ui->actionProof->trigger();
   }
+}
+
+void MainWindow::testFlyEmProofread()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->showMaximized();
+
+  window->test();
+
 }
 
 void MainWindow::runBodySplit()

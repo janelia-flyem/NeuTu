@@ -204,3 +204,8 @@ string ZJsonArray::dumpString(int indent) const
 
   return ZJsonValue::dumpString(indent);
 }
+
+ZJsonValue ZJsonArray::value(size_t index) const
+{
+  return ZJsonValue(at(index), ZJsonValue::SET_INCREASE_REF_COUNT);
+}

@@ -801,7 +801,8 @@ void ZFlyEmBodySplitProject::decomposeBody()
 
   getProgressSignal()->advanceProgress(0.1);
   emitMessage(QString("Identifying isolated objects ..."));
-  std::vector<ZObject3dScan> objArray = wholeBody->getConnectedComponent();
+  std::vector<ZObject3dScan> objArray =
+      wholeBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
   getProgressSignal()->advanceProgress(0.2);
 
   QList<uint64_t> newBodyIdList;
@@ -824,11 +825,12 @@ void ZFlyEmBodySplitProject::decomposeBody()
     }
 
     index = 0;
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+    for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter, ++index) {
       if (index != maxIndex) {
-        const ZObject3dScan &obj = *iter;
-        wholeBody->subtract(obj);
+        ZObject3dScan &obj = *iter;
+        obj.canonize();
+        wholeBody->subtractSliently(obj);
         uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
         QString msg;
         if (newBodyId > 0) {
@@ -977,7 +979,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (minObjSize > 0) { //Isolated objects from the original body
     emitMessage(QString("Identifying isolated objects ..."));
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
     if (objArray.size() > 1) {
       body.clear();
       for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
@@ -1040,7 +1043,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         } else {
           if (!dsIntv.isZero()) {
             std::vector<ZObject3dScan> objArray =
-                currentBody.getConnectedComponent();
+                currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
             if (objArray.empty()) {
               emitError("Warning: Empty split detected after connect component analysis.");
             }
@@ -1081,7 +1084,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   }
 
   if (!body.isEmpty() && m_runningCca /*&& minObjSize > 0*/) { //Check isolated objects after split
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
 #ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -1177,7 +1181,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
           */
 
-    wholeBody->subtract(obj);
+    wholeBody->subtractSliently(obj);
 
     uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
     ++bodyIndex;

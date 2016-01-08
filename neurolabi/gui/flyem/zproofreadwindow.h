@@ -33,6 +33,9 @@ public:
 
   void setDvidDialog(ZDvidDialog *dvidDlg);
 
+public:
+  void test();
+
 signals:
   void splitTriggered(uint64_t bodyId);
 //  void splitTriggered();

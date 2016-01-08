@@ -25,6 +25,8 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
   m_image = NULL;
+//  m_pixmap = NULL;
+//  m_pixmap = new ZPixmap();
 }
 
 ZDvidTile::~ZDvidTile()
@@ -36,9 +38,14 @@ ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidTile)
 
 void ZDvidTile::clear()
 {
+  QMutexLocker locker(&m_pixmapMutex);
+
   m_dvidTarget.clear();
   delete m_image;
   m_image = NULL;
+
+//  delete m_pixmap;
+//  m_pixmap = NULL;
 }
 
 void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
@@ -86,8 +93,31 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
 
 void ZDvidTile::updatePixmap()
 {
-  m_pixmap.cleanUp();
-  m_pixmap.convertFromImage(*m_image);
+  QMutexLocker locker(&m_pixmapMutex);
+#if 0
+#if 1
+//  m_pixmap.cleanUp();
+  if (m_pixmap != NULL) {
+#ifdef _DEBUG_2
+    std::cout << "Deleting " << m_pixmap << std::endl;
+#endif
+    delete m_pixmap;
+  }
+  m_pixmap = new ZPixmap();
+#else
+  if (m_pixmap == NULL) {
+    m_pixmap = new ZPixmap();
+  }
+  m_pixmap->cleanUp();
+#endif
+#endif
+//  m_pixmap.setPixmap(QPixmap::fromImage(*m_image, Qt::ColorOnly);
+//  m_pixmap->
+  m_pixmap.fill(Qt::white);
+  m_pixmap.convertFromImage(*m_image, Qt::ColorOnly);
+#ifdef _DEBUG_2
+  std::cout << "Has alpha: " << m_pixmap->hasAlphaChannel() << std::endl;
+#endif
   m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
   m_pixmap.setOffset(-getX(), -getY());
 }
@@ -199,6 +229,8 @@ void ZDvidTile::display(
 //    QElapsedTimer timer;
 //    timer.start();
 //    tic();
+    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
+
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
@@ -300,9 +332,6 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z);
-//      m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
-//      m_image->setOffset(-getX(), -getY());
-      //      setResolutionLevel(m_res.getLevel());
     }
 #endif
   }

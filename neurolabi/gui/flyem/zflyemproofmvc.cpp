@@ -44,6 +44,7 @@
 #include "zfiletype.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -53,6 +54,11 @@ ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
 
 ZFlyEmProofMvc::~ZFlyEmProofMvc()
 {
+  if (getDvidTarget().isValid()) {
+    LINFO() << "End using " << getDvidTarget().getUuid() << "@"
+            << getDvidTarget().getAddressWithPort();
+  }
+
   exitCurrentDoc();
 
   closeAllAssociatedWindow();
@@ -127,33 +133,40 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   m_bodyViewWindow->resetCameraAction =
       m_bodyViewWindow->toolBar->addAction("X-Y View");
-  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCamera()));
+  connect(m_bodyViewWindow->resetCameraAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(resetCamera()));
 
   m_bodyViewWindow->xzViewAction =
       m_bodyViewWindow->toolBar->addAction("X-Z View");
-  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setXZView()));
+  connect(m_bodyViewWindow->xzViewAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(setXZView()));
 
   m_bodyViewWindow->yzViewAction =
       m_bodyViewWindow->toolBar->addAction("Y-Z View");
-  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()), m_bodyViewers, SLOT(setYZView()));
+  connect(m_bodyViewWindow->yzViewAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(setYZView()));
 
   m_bodyViewWindow->recenterAction = m_bodyViewWindow->toolBar->addAction("Center");
-  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()), m_bodyViewers, SLOT(resetCameraCenter()));
+  connect(m_bodyViewWindow->recenterAction, SIGNAL(triggered()),
+          m_bodyViewers, SLOT(resetCameraCenter()));
 
   m_bodyViewWindow->toolBar->addSeparator();
 
   m_bodyViewWindow->showGraphAction = m_bodyViewWindow->toolBar->addAction("Graph");
-  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(showGraph(bool)));
+  connect(m_bodyViewWindow->showGraphAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(showGraph(bool)));
   m_bodyViewWindow->showGraphAction->setCheckable(true);
   m_bodyViewWindow->showGraphAction->setChecked(true);
 
   m_bodyViewWindow->settingsAction = m_bodyViewWindow->toolBar->addAction("ControlSettings");
-  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
+  connect(m_bodyViewWindow->settingsAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(settingsPanel(bool)));
   m_bodyViewWindow->settingsAction->setCheckable(true);
   m_bodyViewWindow->settingsAction->setChecked(false);
 
   m_bodyViewWindow->objectsAction = m_bodyViewWindow->toolBar->addAction("Objects");
-  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)), m_bodyViewers, SLOT(objectsPanel(bool)));
+  connect(m_bodyViewWindow->objectsAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(objectsPanel(bool)));
   m_bodyViewWindow->objectsAction->setCheckable(true);
   m_bodyViewWindow->objectsAction->setChecked(false);
 
@@ -661,6 +674,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+  ZDvidReader reader;
+  if (!reader.open(target)) {
+    emit messageGenerated(
+          ZWidgetMessage("Failed to open the database.",
+                         NeuTube::MSG_WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
   exitCurrentDoc();
 
   getProgressSignal()->startProgress("Loading data ...");
@@ -709,10 +731,24 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
-    ZDvidReader reader;
-    if (reader.open(target)) {
-      m_dvidInfo = reader.readGrayScaleInfo();
+
+    m_dvidInfo = reader.readGrayScaleInfo();
+
+    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
+        target.getAddressWithPort();
+
+    ZJsonObject infoJson = reader.readInfo();
+    if (infoJson.hasKey("Alias")) {
+      startLog += std::string("; Alias: ") +
+          ZJsonParser::stringValue(infoJson["Alias"]);
     }
+    if (infoJson.hasKey("Description")) {
+      startLog += std::string("; Description: ") +
+          ZJsonParser::stringValue(infoJson["Description"]);
+    }
+
+    LINFO() << startLog;
+
 
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(target);
@@ -861,7 +897,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateBodySelection()));
   connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
-          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
+          this, SLOT(highlightSelectedObject(bool)));
+//          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
@@ -1025,6 +1062,18 @@ void ZFlyEmProofMvc::selectBody()
       }
 #endif
     }
+  }
+}
+
+void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
+{
+  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  if (labelSlice != NULL) {
+    if ((labelSlice->isVisible() == false) && (hl == false)) {
+      labelSlice->setVisible(true);
+      labelSlice->update(getView()->getViewParameter());
+    }
+    m_mergeProject.highlightSelectedObject(hl);
   }
 }
 
@@ -2000,7 +2049,15 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_SLICED_PUNCTA, visible);
+  ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble();
+  if (se != NULL) {
+    se->setVisible(visible);
+    if (visible) {
+      se->download(getView()->getZ(NeuTube::COORD_STACK));
+    }
+    getCompleteDocument()->processObjectModified(se);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
@@ -2012,7 +2069,15 @@ void ZFlyEmProofMvc::showBookmark(bool visible)
 
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::TYPE_DVID_LABEL_SLICE, visible);
+  ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+  if (slice != NULL) {
+    slice->setVisible(visible);
+    if (visible) {
+      slice->update(getView()->getViewParameter());
+    }
+    getCompleteDocument()->processObjectModified(slice);
+    getCompleteDocument()->notifyObjectModified();
+  }
 }
 
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
@@ -2322,6 +2387,11 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
   */
 }
 
+void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  getCompleteDocument()->executeRemoveObjectCommand(bookmark);
+}
+
 void ZFlyEmProofMvc::cropCoarseBody3D()
 {
   if (m_coarseBodyWindow != NULL) {
@@ -2421,7 +2491,6 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   }
 #endif
 }
-
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
 

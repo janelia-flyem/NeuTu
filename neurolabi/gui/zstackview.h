@@ -20,7 +20,9 @@
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
+//#include "zstackdoc.h"
 
+class ZStackDoc;
 class ZStackPresenter;
 class QSlider;
 class ZImageWidget;
@@ -34,7 +36,6 @@ class QMenu;
 class QPushButton;
 class QProgressBar;
 class QRadioButton;
-class ZStackDoc;
 class ZStack;
 class ZStackViewParam;
 class ZMessageManager;
@@ -71,12 +72,16 @@ public:
    */
   void reset(bool updatingScreen = true);
 
+  enum EUpdateOption {
+    UPDATE_NONE, UPDATE_QUEUED, UPDATE_DIRECT
+  };
+
   /*!
    * \brief Update image screen
    *
    * Update the screen by assuming that all the canvas buffers are ready.
    */
-  void updateImageScreen();
+  void updateImageScreen(EUpdateOption option);
 
   //void updateScrollControl();
 
@@ -178,6 +183,7 @@ public:
 
   //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
 
+  void paintObjectBuffer(ZStackObject::ETarget target);
   void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
@@ -223,7 +229,7 @@ public: //Message system implementation
 
 public slots:
   void updateView();
-  void redraw(bool updatingScreen = true);
+  void redraw(EUpdateOption option);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -280,7 +286,7 @@ public slots:
 signals:
   void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
-  void viewPortChanged();
+//  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
 
 public:
@@ -292,7 +298,8 @@ public:
   int getZ(NeuTube::ECoordinateSystem coordSys) const;
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
-      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
+      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
+      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   /*!
    * \brief Set the viewport offset
@@ -308,7 +315,10 @@ public:
   void addHorizontalWidget(QWidget *widget);
   void addHorizontalWidget(QSpacerItem *spacer);
 
-  void notifyViewPortChanged();
+//  void notifyViewPortChanged();
+
+  void processViewChange();
+  void processViewChange(const ZStackViewParam &param);
 
 
 public: //Change view parameters
@@ -316,7 +326,8 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
-  void notifyViewChanged();
+//  void notifyViewChanged(
+//      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
 
 private:
@@ -352,6 +363,8 @@ private:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   void notifyViewChanged(const ZStackViewParam &param);
+
+  QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
 
   void init();
 
@@ -408,6 +421,8 @@ private:
   bool m_depthFrozen;
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
+
+//  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 
 #endif

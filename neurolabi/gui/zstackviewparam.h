@@ -25,9 +25,14 @@ public:
     return m_viewPort;
   }
 
+  inline NeuTube::View::EExploreAction getExploreAction() const {
+    return m_action;
+  }
+
   void setZ(int z);
   void setViewPort(const QRect &rect);
   void setViewPort(int x0, int y0, int x1, int y1);
+  void setExploreAction(NeuTube::View::EExploreAction action);
 
   bool operator ==(const ZStackViewParam &param) const;
   bool operator !=(const ZStackViewParam &param) const;
@@ -39,11 +44,14 @@ public:
    */
   void resize(int width, int height);
 
+private:
+  void init(NeuTube::ECoordinateSystem coordSys);
 
 private:
   int m_z;
   QRect m_viewPort;
   NeuTube::ECoordinateSystem m_coordSys;
+  NeuTube::View::EExploreAction m_action;
 };
 
 #endif // ZSTACKVIEWPARAM_H
