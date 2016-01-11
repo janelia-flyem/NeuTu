@@ -80,7 +80,13 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
       ZJsonObject propJson(jsonObj.value("Prop"));
 
       if (!propJson.isEmpty()) {
-        uint64_t bodyId = ZJsonParser::integerValue(propJson["body ID"]);
+        uint64_t bodyId = 0;
+        if (ZJsonParser::isInteger(propJson["body ID"])) {
+          bodyId = ZJsonParser::integerValue(propJson["body ID"]);
+        } else {
+          bodyId = ZString(ZJsonParser::stringValue(propJson["body ID"])).
+              firstUint64();
+        }
         setBodyId(bodyId);
 
         ZString text = ZJsonParser::stringValue(propJson["text"]);
@@ -120,12 +126,23 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         setStatus(ZJsonParser::stringValue(propJson["status"]));
         setUser(ZJsonParser::stringValue(propJson["user"]));
 
+        /*
         if (propJson.hasKey("checked")) {
           setChecked(ZJsonParser::booleanValue(propJson["checked"]));
         }
+        */
 
         if (propJson.hasKey("custom")) {
-          setCustom(ZJsonParser::booleanValue(propJson["custom"]));
+          if (ZJsonParser::isBoolean(propJson["custom"])) {
+            setCustom(ZJsonParser::booleanValue(propJson["custom"]));
+          } else {
+            std::string custom = ZJsonParser::stringValue(propJson["custom"]);
+            if (custom == "1") {
+              setCustom(true);
+            } else {
+              setCustom(false);
+            }
+          }
         }
       }
     }

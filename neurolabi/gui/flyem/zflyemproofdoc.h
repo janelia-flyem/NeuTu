@@ -164,12 +164,22 @@ public: //Synapse functions
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest);
 
+public: //Bookmark functions
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void updateLocalBookmark(ZFlyEmBookmark *bookmark);
+
 public: //Commands
   void executeRemoveSynapseCommand();
   void executeLinkSynapseCommand();
   void executeUnlinkSynapseCommand();
   void executeAddSynapseCommand(const ZDvidSynapse &synapse);
   void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
 signals:
   void bodyMerged();

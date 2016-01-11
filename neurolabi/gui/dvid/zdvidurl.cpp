@@ -528,9 +528,29 @@ std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
-std::string ZDvidUrl::getBookmarkUrl() const
+std::string ZDvidUrl::getBookmarkKeyUrl() const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY));
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getBookmarkKeyUrl() << "/" << m_keyCommand << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
+{
+  return getBookmarkKeyUrl(pt.getX(), pt.getY(), pt.getZ());
+}
+
+std::string ZDvidUrl::getBookmarkUrl() const
+{
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK));
 }
 
 std::string ZDvidUrl::getBookmarkUrl(

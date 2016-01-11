@@ -763,7 +763,8 @@ string ZStack::save(const string &filepath) const
 
   if (!isVirtual()) {
     resultFilePath = filepath;
-    if (channelNumber() > 1 && kind() != GREY && kind() != GREY16) { //save as raw
+    if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
+        (getVoxelNumber() > 2147483648)) { //save as raw
       if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE ||
           ZFileType::fileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;

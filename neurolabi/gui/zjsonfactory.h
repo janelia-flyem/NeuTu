@@ -5,6 +5,8 @@
 #include <QMap>
 #endif
 
+#include <vector>
+
 #include "tz_stdint.h"
 
 class ZJsonArray;
@@ -28,6 +30,8 @@ public:
 
 #if defined(_QT_GUI_USED_)
   static ZJsonObject MakeAnnotationJson(const ZFlyEmBookmark &bookmark);
+  static ZJsonArray MakeJsonArray(
+      const std::vector<ZFlyEmBookmark*> &bookmarkArray);
   static ZJsonArray MakeJsonArray(const QMap<uint64_t, uint64_t> &map);
 #endif
 };

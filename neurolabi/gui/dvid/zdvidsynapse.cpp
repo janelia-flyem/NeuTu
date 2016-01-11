@@ -1,5 +1,7 @@
 #include "zdvidsynapse.h"
 #include <QtCore>
+#include <QPen>
+
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -8,6 +10,7 @@
 #include "tz_math.h"
 #include "zstackball.h"
 #include "c_json.h"
+#include "zlinesegmentobject.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -22,7 +25,7 @@ void ZDvidSynapse::init()
 }
 
 void ZDvidSynapse::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle option) const
 {
 #if 0
   ZStackBall ball;
@@ -71,6 +74,7 @@ void ZDvidSynapse::display(
   }
 
   QPen pen = painter.getPen();
+  pen.setCosmetic(m_usingCosmeticPen);
 
   bool drawingBoundBox = false;
   if (isSelected()) {
@@ -109,9 +113,20 @@ void ZDvidSynapse::display(
   if (isSelected()) {
     for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
          iter != m_partnerHint.end(); ++iter) {
+
+      ZLineSegmentObject line;
+      line.setStartPoint(getPosition());
+      line.setEndPoint(*iter);
+      line.setColor(QColor(164, 164, 0));
+      line.setFocusColor(QColor(255, 0, 255));
+      line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
+      line.display(painter, slice, option);
+
+      /*
       ZIntPoint pos = *iter;
       painter.drawLine(getPosition().getX(), getPosition().getY(),
                        pos.getX(), pos.getY());
+                       */
     }
   }
 }

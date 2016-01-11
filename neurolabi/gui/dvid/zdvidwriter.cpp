@@ -995,12 +995,26 @@ void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
 {
   writePointAnnotation(
         m_dvidTarget.getBookmarkName(), bookmark.toDvidAnnotationJson());
+  writeBookmarkKey(bookmark);
 
   /*
   writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
                   bookmark.getDvidKey().toStdString(),
                   bookmark.toJsonObject().dumpString(0));
                   */
+}
+
+void ZDvidWriter::writeBookmarkKey(const ZFlyEmBookmark &bookmark)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZJsonObject json;
+  if (bookmark.isChecked()) {
+    json.setEntry("checked", true);
+  }
+
+  writeJson(dvidUrl.getBookmarkKeyUrl(bookmark.getCenter().toIntPoint()),
+            json, "{}");
 }
 
 void ZDvidWriter::writeBookmark(const ZJsonArray &bookmarkJson)
@@ -1011,6 +1025,19 @@ void ZDvidWriter::writeBookmark(const ZJsonArray &bookmarkJson)
 void ZDvidWriter::writeBookmark(const ZJsonObject &bookmarkJson)
 {
   writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
+}
+
+void ZDvidWriter::writeBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  if (!bookmarkArray.empty()) {
+    ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(bookmarkArray);
+    writePointAnnotation(m_dvidTarget.getBookmarkName(), jsonArray);
+    for (std::vector<ZFlyEmBookmark*>::const_iterator
+         iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
+      writeBookmarkKey(*(*iter));
+    }
+  }
 }
 
 #if 0

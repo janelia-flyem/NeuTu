@@ -91,6 +91,11 @@ namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
 }
 
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
+}
+
 namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
 }

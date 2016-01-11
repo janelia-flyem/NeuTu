@@ -389,9 +389,11 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     if (doc != NULL) {
       bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
     }
-    buddyDocument()->executeAddObjectCommand(bookmark);
 
-    emit bookmarkAdded(bookmark);
+    getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+//    buddyDocument()->executeAddObjectCommand(bookmark);
+
+//    emit bookmarkAdded(bookmark);
   }
 }
 
@@ -411,6 +413,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     }
     break;
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
+    break;
+  case ZStackOperator::OP_BOOKMARK_DELETE:
+    getCompleteDocument()->executeRemoveBookmarkCommand();
     break;
   case ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE:
     tryAddBookmarkMode();

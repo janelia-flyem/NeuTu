@@ -159,6 +159,8 @@ public:
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
   ZJsonObject readBookmarkJson(const ZIntPoint &pt) const;
+  bool isBookmarkChecked(int x, int y, int z) const;
+  bool isBookmarkChecked(const ZIntPoint &pt) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;

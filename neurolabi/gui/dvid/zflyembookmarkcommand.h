@@ -3,9 +3,10 @@
 
 #include "zstackdoccommand.h"
 
+#include "flyem/zflyembookmark.h"
+
 class ZFlyEmProofDoc;
 class ZFlyEmProofMvc;
-class ZFlyEmBookmark;
 
 namespace ZStackDocCommand {
 namespace FlyEmBookmarkEdit {
@@ -43,17 +44,56 @@ private:
 class RemoveBookmark : public ZUndoCommand
 {
 public:
-  RemoveBookmark(ZFlyEmProofMvc *frame, ZFlyEmBookmark *bookmark,
+  RemoveBookmark(ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark,
                 QUndoCommand *parent = NULL);
   virtual ~RemoveBookmark();
   void undo();
   void redo();
 
+  bool hasRemoving() const {
+    return !m_bookmarkArray.empty();
+  }
+  void addRemoving(ZFlyEmBookmark *bookmark);
+
 private:
-  ZFlyEmProofMvc *m_frame;
-  ZFlyEmBookmark *m_bookmark;
-  ZJsonObject m_backup;
+  ZFlyEmProofDoc *m_doc;
+  std::vector<ZFlyEmBookmark*> m_bookmarkArray;
+//  ZJsonObject m_backup;
   bool m_isInDoc;
+};
+
+class AddBookmark : public ZUndoCommand
+{
+public:
+  AddBookmark(ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark,
+                QUndoCommand *parent = NULL);
+  virtual ~AddBookmark();
+  void undo();
+  void redo();
+
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  ZFlyEmBookmark *m_bookmark;
+  bool m_isInDoc;
+};
+
+class ChangeBookmark : public ZUndoCommand
+{
+public:
+  ChangeBookmark(ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark,
+                 const ZFlyEmBookmark &newBookmark,
+                 QUndoCommand *parent = NULL);
+  virtual ~ChangeBookmark();
+  void undo();
+  void redo();
+
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  ZFlyEmBookmark *m_bookmark;
+  ZFlyEmBookmark m_newBookmark;
+  ZFlyEmBookmark m_backup;
 };
 
 }

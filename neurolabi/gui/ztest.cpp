@@ -259,6 +259,7 @@ using namespace std;
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemneuroninfo.h"
+#include "zlinesegmentobject.h"
 
 using namespace std;
 
@@ -18677,7 +18678,7 @@ void ZTest::test(MainWindow *host)
   dvidSynapseJson.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-#if 0
+#if 1
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
   host->addStackFrame(frame);
@@ -18688,6 +18689,8 @@ void ZTest::test(MainWindow *host)
   synapse->setKind(ZDvidSynapse::KIND_PRE_SYN);
   synapse->setDefaultRadius();
   synapse->setDefaultColor();
+
+  synapse->addPartner(100, 100, 100);
 
   frame->document()->addObject(synapse);
 #endif
@@ -19162,7 +19165,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZFlyEmBookmark bookmark;
   bookmark.setCenter(1, 2, 3);
   bookmark.setBodyId(1);
@@ -19176,6 +19179,22 @@ void ZTest::test(MainWindow *host)
   ZFlyEmBookmark bookmark2;
   bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
   std::cout << bookmark2.toDvidAnnotationJson().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZLineSegmentObject *line = new ZLineSegmentObject;
+  line->setStartPoint(10, 10, 10);
+  line->setEndPoint(70, 70, 70);
+  line->setColor(QColor(255, 0, 0));
+//  line->setVisualEffect(NeuTube::Display::Line::VE_LINE_FADING_PROJ);
+  line->addVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
+
+  frame->document()->addObject(line);
 #endif
 
   std::cout << "Done." << std::endl;

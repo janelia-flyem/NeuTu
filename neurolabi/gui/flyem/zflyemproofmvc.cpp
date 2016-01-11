@@ -2311,7 +2311,8 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-    writer.writeBookmark(*bookmark);
+    writer.writeBookmarkKey(*bookmark);
+//    writer.writeBookmark(*bookmark);
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
                                            NeuTube::MSG_WARNING));
@@ -2357,6 +2358,14 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        writer.writeBookmark(bookmark->toDvidAnnotationJson());
+      }
+      if (!writer.isStatusOk()) {
+        emit messageGenerated(
+              ZWidgetMessage("Failed to save bookmark.", NeuTube::MSG_WARNING));
+      }
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
 
       updateUserBookmarkTable();

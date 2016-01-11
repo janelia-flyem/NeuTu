@@ -143,6 +143,10 @@ public:
 
   std::string getRoiUrl(const std::string &dataName) const;
 
+  std::string getBookmarkKeyUrl() const;
+  std::string getBookmarkKeyUrl(int x, int y, int z) const;
+  std::string getBookmarkKeyUrl(const ZIntPoint &pt) const;
+
   std::string getBookmarkUrl() const;
   std::string getBookmarkUrl(int x, int y, int z,
                              int width, int height, int depth) const;

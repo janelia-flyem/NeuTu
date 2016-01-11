@@ -1,10 +1,12 @@
 #include "zflyembookmarkcommand.h"
+
+#include <algorithm>
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "zwidgetmessage.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
-#include "flyem/zflyembookmark.h"
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -75,34 +77,49 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveRemoteBookmark::undo()
 
 //////////////////////////////////////////////////////////
 ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::RemoveBookmark(
-    ZFlyEmProofMvc *frame, ZFlyEmBookmark *bookmark, QUndoCommand *parent) :
+    ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark, QUndoCommand *parent) :
   ZUndoCommand(parent)
 {
-  m_frame = frame;
-  m_bookmark = bookmark;
+  m_doc = doc;
+  addRemoving(bookmark);
   m_isInDoc = true;
 }
 
 ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::~RemoveBookmark()
 {
   if (!m_isInDoc) {
-    delete m_bookmark;
+    for (std::vector<ZFlyEmBookmark*>::iterator iter = m_bookmarkArray.begin();
+         iter != m_bookmarkArray.end(); ++iter) {
+      delete *iter;
+    }
+  }
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::addRemoving(
+    ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    m_bookmarkArray.push_back(bookmark);
   }
 }
 
 void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
 {
-  if (m_bookmark != NULL) {
+  if (!m_bookmarkArray.empty() && m_doc != NULL) {
     ZDvidReader reader;
-    ZFlyEmProofDoc *doc = m_frame->getCompleteDocument();
-    if (reader.open(doc->getDvidTarget())) {
-      m_backup = reader.readBookmarkJson(m_bookmark->getCenter().toIntPoint());
+    if (reader.open(m_doc->getDvidTarget())) {
+//      m_backup = reader.readBookmarkJson(m_bookmark->getCenter().toIntPoint());
       ZDvidWriter writer;
-      if (writer.open(doc->getDvidTarget())) {
-        writer.deleteBookmark(m_bookmark->getCenter().toIntPoint());
+      if (writer.open(m_doc->getDvidTarget())) {
+        for (std::vector<ZFlyEmBookmark*>::iterator
+             iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
+             ++iter) {
+          ZFlyEmBookmark *bookmark = *iter;
+          writer.deleteBookmark(bookmark->getCenter().toIntPoint());
+        }
       }
 
-      m_frame->removeLocalBookmark(m_bookmark);
+      m_doc->removeLocalBookmark(m_bookmarkArray);
       m_isInDoc = false;
     }
   }
@@ -110,18 +127,120 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
 
 void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::undo()
 {
-  if (m_backup.hasKey("Pos")) {
+  if (!m_bookmarkArray.empty() && m_doc != NULL) {
     ZDvidWriter writer;
-    ZFlyEmProofDoc *doc = m_frame->getCompleteDocument();
-    if (writer.open(doc->getDvidTarget())) {
-      writer.writeBookmark(m_backup);
+    if (writer.open(m_doc->getDvidTarget())) {
+      writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
-        m_frame->addLocalBookmark(m_bookmark);
+        m_doc->addLocalBookmark(m_bookmarkArray);
         m_isInDoc = true;
       } else {
-        doc->notify(
-              ZWidgetMessage("Failed to undo bookmark deletion", NeuTube::MSG_WARNING));
+        m_doc->notify(ZWidgetMessage("Failed to undo bookmark deletion",
+                                     NeuTube::MSG_WARNING));
       }
     }
   }
 }
+
+////////////////////////////////////////////////////////////
+ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::AddBookmark(
+    ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark, QUndoCommand *parent) :
+  ZUndoCommand(parent)
+{
+  m_doc = doc;
+  m_bookmark = bookmark;
+  m_isInDoc = false;
+}
+
+ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::~AddBookmark()
+{
+  if (!m_isInDoc) {
+    delete m_bookmark;
+  }
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
+{
+  if (m_bookmark != NULL && m_doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(m_doc->getDvidTarget())) {
+      writer.writeBookmark(*m_bookmark);
+      if (writer.isStatusOk()) {
+        m_doc->addLocalBookmark(m_bookmark);
+        m_isInDoc = true;
+      } else {
+        m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
+                                     NeuTube::MSG_WARNING));
+      }
+    }
+  }
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
+{
+  if (m_bookmark != NULL && m_doc != NULL) {
+    ZDvidReader reader;
+    if (reader.open(m_doc->getDvidTarget())) {
+      ZDvidWriter writer;
+      if (writer.open(m_doc->getDvidTarget())) {
+        writer.deleteBookmark(m_bookmark->getCenter().toIntPoint());
+      }
+
+      m_doc->removeLocalBookmark(m_bookmark);
+      m_isInDoc = false;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////
+ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::ChangeBookmark(
+    ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark,
+    const ZFlyEmBookmark &newBookmark, QUndoCommand *parent) :
+  ZUndoCommand(parent)
+{
+  m_doc = doc;
+  m_bookmark = bookmark;
+  m_newBookmark = newBookmark;
+}
+
+ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::~ChangeBookmark()
+{
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
+{
+  if (m_bookmark != NULL && m_doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(m_doc->getDvidTarget())) {
+      writer.writeBookmark(m_newBookmark.toDvidAnnotationJson());
+      if (writer.isStatusOk()) {
+        m_backup = *m_bookmark;
+        *m_bookmark = m_newBookmark;
+        m_doc->updateLocalBookmark(m_bookmark);
+      } else {
+        m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
+                                     NeuTube::MSG_WARNING));
+      }
+    }
+  }
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::undo()
+{
+  if (m_bookmark != NULL && m_doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(m_doc->getDvidTarget())) {
+      writer.writeBookmark(m_backup.toDvidAnnotationJson());
+      if (writer.isStatusOk()) {
+        *m_bookmark = m_backup;
+        m_doc->updateLocalBookmark(m_bookmark);
+      } else {
+        m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
+                                     NeuTube::MSG_WARNING));
+      }
+    }
+  }
+}
+
+
+

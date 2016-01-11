@@ -1562,6 +1562,24 @@ ZJsonObject ZDvidReader::readBookmarkJson(const ZIntPoint &pt) const
   return readBookmarkJson(pt.getX(), pt.getY(), pt.getZ());
 }
 
+bool ZDvidReader::isBookmarkChecked(int x, int y, int z) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZJsonObject obj = readJsonObject(dvidUrl.getBookmarkKeyUrl(x, y, z));
+
+  if (obj.hasKey("checked")) {
+    return ZJsonParser::booleanValue(obj["checked"]);
+  }
+
+  return false;
+}
+
+bool ZDvidReader::isBookmarkChecked(const ZIntPoint &pt) const
+{
+  return isBookmarkChecked(pt.getX(), pt.getY(), pt.getZ());
+}
+
 ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
 {
   ZDvidBufferReader bufferReader;

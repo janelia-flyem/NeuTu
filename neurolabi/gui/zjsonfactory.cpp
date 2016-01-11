@@ -91,13 +91,30 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   propJson.setEntry("status", bookmark.getStatus().toStdString());
   propJson.setEntry("comment", bookmark.getComment().toStdString());
   propJson.setEntry("type", bookmark.getTypeString().toStdString());
-  propJson.setEntry("checked", bookmark.isChecked());
-  propJson.setEntry("custom", bookmark.isCustom());
+//  propJson.setEntry("checked", bookmark.isChecked());
+  if (bookmark.isCustom()) {
+    propJson.setEntry("custom", "1");
+  } else {
+    propJson.setEntry("custom", "0");
+  }
   propJson.setEntry("user", bookmark.getUserName().toStdString());
 
   json.setEntry("Prop", propJson);
 
   return json;
+}
+
+ZJsonArray ZJsonFactory::MakeJsonArray(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  ZJsonArray array;
+  for (std::vector<ZFlyEmBookmark*>::const_iterator
+       iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    array.append(MakeAnnotationJson(*bookmark));
+  }
+
+  return array;
 }
 
 ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)

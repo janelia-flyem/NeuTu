@@ -404,7 +404,7 @@ protected:
   bool estimateActiveStrokeWidth();
 
   void processEvent(ZInteractionEvent &event);
-  void process(const ZStackOperator &op);
+  void process(ZStackOperator &op);
 
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
