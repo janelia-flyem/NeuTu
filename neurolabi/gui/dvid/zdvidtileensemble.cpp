@@ -110,7 +110,13 @@ bool ZDvidTileEnsemble::update(
       std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
-      std::cout << data.size() << "x tile reading time: " << timer.elapsed() << std::endl;
+
+      qint64 tileReadingTime = timer.elapsed();
+
+      std::cout << data.size() << "x tile reading time: " << tileReadingTime << std::endl;
+      if (tileReadingTime > 3000) {
+        std::cout << "Tile reading hickup." << std::endl;
+      }
 
       size_t dataIndex = 0;
 
