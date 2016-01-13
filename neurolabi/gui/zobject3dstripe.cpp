@@ -1,4 +1,7 @@
 #include "zobject3dstripe.h"
+
+#include <cstring>
+
 #include "tz_error.h"
 #include "zerror.h"
 #include "tz_math.h"

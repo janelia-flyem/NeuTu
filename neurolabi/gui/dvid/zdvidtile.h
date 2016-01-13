@@ -44,7 +44,9 @@ public:
 
   void printInfo() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target,
+                     const ZDvidTileInfo &tileInfo);
+  void setTileInfo(const ZDvidTileInfo &tileInfo);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;

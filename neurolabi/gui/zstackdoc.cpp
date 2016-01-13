@@ -427,6 +427,7 @@ void ZStackDoc::autoSave()
 
 void ZStackDoc::autoSaveSlot()
 {
+  LINFO() << "Autosave triggered.";
   if (m_autoSaving) {
     autoSave();
   }

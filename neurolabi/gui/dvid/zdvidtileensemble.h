@@ -3,10 +3,12 @@
 
 #include <vector>
 
+#include "libdvidheader.h"
 #include "zstackobject.h"
 #include "zdvidtileinfo.h"
 #include "zdvidtarget.h"
 #include "zdvidtile.h"
+#include "zdvidreader.h"
 
 class ZStackView;
 
@@ -42,11 +44,14 @@ public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
   void updateContrast();
+  void updateTile(libdvid::Slice2D slice,
+                  int resLevel, const std::vector<int> &loc, int z, ZDvidTile *tile);
 
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
   ZStackView *m_view;
   bool m_highContrast;
 };
