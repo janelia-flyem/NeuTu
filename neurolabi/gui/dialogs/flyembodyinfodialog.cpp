@@ -89,8 +89,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
-    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)),
-        this, SLOT(activateBody(QModelIndex)));
+    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(activateBody(QModelIndex)));
+    connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
@@ -121,8 +121,33 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
     std::cout << bodyId << " activated." << std::endl;
 #endif
 
-    emit bodyActivated(bodyId);
+    // double-click = select and goto
+    // shift-double-click = select and goto, but don't clear previous bodies from 3d views
+    Qt::KeyboardModifiers modifiers  = QApplication::queryKeyboardModifiers();
+    if (modifiers.testFlag(Qt::ShiftModifier)) {
+        emit addBodyActivated(bodyId);
+    } else {
+        // technically also catches alt, ctrl double-click
+        emit bodyActivated(bodyId);
+    }
+
   }
+}
+
+void FlyEmBodyInfoDialog::onGotoBodies() {
+    if (ui->bodyTableView->selectionModel()->hasSelection()) {
+        QList<uint64_t> bodyIDList;
+        QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
+        foreach(QModelIndex modelIndex, indices) {
+            // if the item is in the first column (body ID), extract body ID, put in list
+            if (modelIndex.column() == 0) {
+                QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
+                bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
+            }
+        }
+
+        emit bodiesActivated(bodyIDList);
+    }
 }
 
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
