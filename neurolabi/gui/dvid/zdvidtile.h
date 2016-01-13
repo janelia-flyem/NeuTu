@@ -1,6 +1,10 @@
 #ifndef ZDVIDTILE_H
 #define ZDVIDTILE_H
 
+#include <QMutex>
+#include <QMutexLocker>
+#include <QPixmap>
+
 #include "zimage.h"
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
@@ -40,7 +44,9 @@ public:
 
   void printInfo() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target,
+                     const ZDvidTileInfo &tileInfo);
+  void setTileInfo(const ZDvidTileInfo &tileInfo);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -67,7 +73,6 @@ public:
 
   void enhanceContrast(bool high);
 
-private:
   void updatePixmap();
 
 private:
@@ -80,6 +85,8 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+
+  QMutex m_pixmapMutex;
 
   ZStackView *m_view;
 };

@@ -76,6 +76,10 @@ void ZFlyEmBookmarkView::createMenu()
   m_contextMenu->addAction(unCheckAction);
   connect(unCheckAction, SIGNAL(triggered()),
           this, SLOT(uncheckCurrentBookmark()));
+
+  QAction *deleteAction = new QAction("Delete Selected", this);
+  m_contextMenu->addAction(deleteAction);
+  connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteSelectedBookmark()));
 }
 
 void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
@@ -141,7 +145,27 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
     getModel()->update(index.row());
 
     emit bookmarkChecked(bookmark);
-//    emit bookmarkChecked(bookmark.getDvidKey(), checking);
+  }
+}
+
+void ZFlyEmBookmarkView::deleteSelectedBookmark()
+{
+  QItemSelectionModel *sel = selectionModel();
+  QItemSelection sourceSelection = m_proxy->mapSelectionToSource(sel->selection());
+
+  QModelIndexList selected = sourceSelection.indexes();
+
+  QList<ZFlyEmBookmark*> bookmarkList;
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
+
+    bookmarkList.append(bookmark);
+//    emit removingBookmark(bookmark);
+//    getModel()->removeRow(index.row());
+  }
+
+  if (!bookmarkList.empty()) {
+    emit removingBookmark(bookmarkList);
   }
 }
 

@@ -82,6 +82,8 @@ public slots:
 
   void dump(const QString &msg);
 
+  void test();
+
 protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
   virtual void customInit();

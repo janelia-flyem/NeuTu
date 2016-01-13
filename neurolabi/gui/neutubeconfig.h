@@ -295,6 +295,8 @@ private:
   std::string m_softwareName;
   std::string m_applicationDir;
   std::string m_docUrl;
+
+  //Obsolete FlyEM config
   std::string m_segmentationClassifierPath;
   std::string m_segmentationTrainingTestPath;
   std::string m_segmentationTrainingTruthPath;
@@ -302,9 +304,12 @@ private:
   std::string m_segmentationEvaluationTruthPath;
   std::string m_swcRepository;
   double m_segmentationClassifThreshold;
+  std::vector<std::string> m_bodyConnectionFeature;
+  //////////////////////
+
   std::string m_dataPath;
   std::string m_developPath;
-  std::vector<std::string> m_bodyConnectionFeature;
+
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;
   ObjManagerConfig m_objManagerConfig;

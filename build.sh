@@ -3,8 +3,6 @@
 #Example:
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
-set -e
-
 if [ $# -lt 1 ]
 then
   echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
@@ -34,6 +32,8 @@ else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
 fi
+
+set -e
 
 edition=general
 debug_config=release

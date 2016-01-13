@@ -1,12 +1,12 @@
 #include "zdvidtileensemble.h"
 #include <QRect>
 #include <QElapsedTimer>
+#include <QtCore>
 
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
-#include "libdvidheader.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -69,7 +69,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   if (tileMap.count(index) == 0) {
     ZDvidTile *tile = new ZDvidTile;
     tile->setTarget(m_target);
-    tile->setDvidTarget(m_dvidTarget);
+    tile->setDvidTarget(m_dvidTarget, m_tilingInfo);
     tile->setResolutionLevel(resLevel);
     tile->setTileIndex(index.first, index.second);
     tile->attachView(m_view);
@@ -79,9 +79,45 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   return tileMap[index];
 }
 
-void ZDvidTileEnsemble::update(
+struct UpdateTileParam {
+  ZDvidTileEnsemble *te;
+//  libdvid::DVIDNodeService *service;
+  libdvid::Slice2D slice;
+  int resLevel;
+  std::vector<int> loc;
+  int z;
+  ZDvidTile *tile;
+};
+
+void UpdateTileFunc(UpdateTileParam &param)
+{
+  param.te->updateTile(param.slice, param.resLevel, param.loc, param.z,
+        param.tile);
+}
+
+void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
+    int resLevel, const std::vector<int> &loc, int z, ZDvidTile *tile)
+{
+  libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
+                                   getDvidTarget().getUuid());
+  libdvid::BinaryDataPtr dataPtr = service.get_tile_slice_binary(
+        m_dvidTarget.getMultiscale2dName(), slice, resLevel, loc);
+  ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+  task->setZ(z);
+  task->setData(dataPtr->get_raw(), dataPtr->length());
+  task->setHighContrast(m_highContrast);
+  task->execute();
+  delete task;
+}
+
+bool ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
 {
+  if (!m_reader.good()) {
+    return false;
+  }
+
+  bool updated = false;
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<std::vector<int> > tile_locs_array;
   for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
@@ -98,20 +134,117 @@ void ZDvidTileEnsemble::update(
   }
 
   try  {
-    ZMultiTaskManager taskManager;
+#if 0
     if (!tile_locs_array.empty()) {
-      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
-                                       getDvidTarget().getUuid());
+
+      QVector<UpdateTileParam> paramList(tile_locs_array.size());
+      size_t dataIndex = 0;
+      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+           iter != tileIndices.end(); ++iter) {
+        const ZDvidTileInfo::TIndex &index = *iter;
+        ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
+              resLevel, index);
+        if (tile != NULL) {
+          UpdateTileParam &param = paramList[dataIndex];
+          param.te = this;
+//          param.service = &service;
+          param.resLevel = resLevel;
+          param.z = z;
+          param.tile = tile;
+          param.slice = libdvid::XY;
+          param.loc = tile_locs_array[dataIndex];
+          dataIndex++;
+        }
+      }
+
       std::cout << "Reading tiles ..." << std::endl;
       QElapsedTimer timer;
       timer.start();
-      const std::vector<libdvid::BinaryDataPtr> &data = get_tile_array_binary(
+      QtConcurrent::blockingMap(paramList, &UpdateTileFunc);
+      qint64 tileReadingTime = timer.elapsed();
+
+      std::cout << tile_locs_array.size() << "x tile reading time: "
+                << tileReadingTime << std::endl;
+    }
+#endif
+#if 1
+//    ZMultiTaskManager taskManager;
+    if (!tile_locs_array.empty()) {
+      std::cout << "Reading tiles ..." << std::endl;
+      QElapsedTimer timer;
+      timer.start();
+      /*
+      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
+                                       getDvidTarget().getUuid());
+      std::cout << "Connecting time: " << timer.elapsed() << std::endl;
+      */
+      /*
+      std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
             service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
             tile_locs_array);
-      std::cout << data.size() << "x tile reading time: " << timer.elapsed() << std::endl;
+            */
+
+      std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
+      for (size_t i = 0; i < tile_locs_array.size(); ++i) {
+        data[i] = m_reader.getService()->get_tile_slice_binary(
+              m_dvidTarget.getMultiscale2dName(),
+              libdvid::XY, resLevel, tile_locs_array[i]);
+      }
+
+
+      qint64 tileReadingTime = timer.elapsed();
+
+      std::cout << data.size() << "x tile reading time: " << tileReadingTime << std::endl;
+      if (tileReadingTime > 3000) {
+        std::cout << "Tile reading hickup." << std::endl;
+      }
 
       size_t dataIndex = 0;
 
+      QList<ZDvidTile*> tileList;
+      QList<ZDvidTileDecodeTask*> taskList;
+      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+           iter != tileIndices.end(); ++iter) {
+        const ZDvidTileInfo::TIndex &index = *iter;
+        ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
+              resLevel, index);
+        if (tile != NULL) {
+          libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
+
+          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
+          task->setZ(z);
+          task->setData(dataPtr->get_raw(), dataPtr->length());
+          task->setHighContrast(m_highContrast);
+          taskList.append(task);
+          tileList.append(tile);
+        }
+      }
+
+      timer.start();
+      QtConcurrent::blockingMap(taskList, &ZDvidTileDecodeTask::ExecuteTask);
+      qint64 tileDecodingTime = timer.elapsed();
+      std::cout <<"decoding time: " << tileDecodingTime << std::endl;
+      if (tileDecodingTime > 3000) {
+        std::cout << "Tile decoding hickup." << std::endl;
+      }
+
+
+#if 0
+      for (QList<ZDvidTile*>::iterator iter = tileList.begin();
+           iter != tileList.end(); ++iter) {
+        ZDvidTile *tile = *iter;
+        tile->updatePixmap();
+      }
+#endif
+
+      for (QList<ZDvidTileDecodeTask*>::iterator iter = taskList.begin();
+           iter != taskList.end(); ++iter) {
+        delete *iter;
+      }
+
+      updated = true;
+
+#if 0
 //      QThreadFutureMap futureMap;
       QList<QFuture<void> > futureList;
 
@@ -148,10 +281,12 @@ void ZDvidTileEnsemble::update(
         iter->waitForFinished();
       }
 
-
+#endif
 //      taskManager.start();
 //      taskManager.waitForDone();
     }
+#endif
+
 #ifdef _DEBUG_2
       std::cout << "Tiles ready." << std::endl;
 #endif
@@ -178,6 +313,8 @@ void ZDvidTileEnsemble::update(
   taskManager.waitForDone();
   taskManager.clear();
 #endif
+
+  return updated;
 }
 
 void ZDvidTileEnsemble::display(
@@ -242,9 +379,8 @@ void ZDvidTileEnsemble::display(
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {
   m_dvidTarget = dvidTarget;
-  ZDvidReader reader;
-  if (reader.open(dvidTarget)) {
-    m_tilingInfo = reader.readTileInfo(dvidTarget.getMultiscale2dName());
+  if (m_reader.open(dvidTarget)) {
+    m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
   }
 }
 

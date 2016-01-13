@@ -1,13 +1,20 @@
 #include "zstackviewparam.h"
 
-ZStackViewParam::ZStackViewParam() :
-  m_z(0), m_coordSys(NeuTube::COORD_RAW_STACK)
+ZStackViewParam::ZStackViewParam()
 {
+  init(NeuTube::COORD_RAW_STACK);
 }
 
-ZStackViewParam::ZStackViewParam(NeuTube::ECoordinateSystem coordSys) :
-  m_z(0), m_coordSys(coordSys)
+ZStackViewParam::ZStackViewParam(NeuTube::ECoordinateSystem coordSys)
 {
+  init(coordSys);
+}
+
+void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
+{
+  m_z = 0;
+  m_coordSys = coordSys;
+  m_action = NeuTube::View::EXPLORE_UNKNOWN;
 }
 
 void ZStackViewParam::setZ(int z)
@@ -24,6 +31,11 @@ void ZStackViewParam::setViewPort(int x0, int y0, int x1, int y1)
 {
   m_viewPort.setTopLeft(QPoint(x0, y0));
   m_viewPort.setBottomRight(QPoint(x1, y1));
+}
+
+void ZStackViewParam::setExploreAction(NeuTube::View::EExploreAction action)
+{
+  m_action = action;
 }
 
 bool ZStackViewParam::operator ==(const ZStackViewParam &param) const

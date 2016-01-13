@@ -29,6 +29,7 @@ class ZIntCuboid;
 class ZSwcTree;
 class QProcess;
 class ZFlyEmBookmark;
+class ZDvidSynapse;
 
 class ZDvidWriter : public QObject
 {
@@ -50,6 +51,7 @@ public:
 
   void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
   void removeBodyAnnotation(uint64_t bodyId);
+
 
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
@@ -110,12 +112,42 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonObject &annotationJson);
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonArray &annotationJson);
+  void deletePointAnnotation(const std::string &dataName, int x, int y, int z);
+  void deletePointAnnotation(const std::string &dataName, const ZIntPoint &pt);
+
+  //For old bookmark management
   void writeBookmark(const ZFlyEmBookmark &bookmark);
+  void writeBookmark(const ZJsonObject &bookmarkJson);
+  void writeBookmark(const ZJsonArray &bookmarkJson);
+  void writeBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
+  void writeBookmarkKey(const ZFlyEmBookmark &bookmark);
+
+  void deleteBookmark(int x, int y, int z);
+  void deleteBookmark(const ZIntPoint &pt);
+  void deleteBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
+
+  /*
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();
+  */
+
+  void deleteSynapse(int x, int y, int z);
+  void writeSynapse(const ZDvidSynapse &synapse);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void writeSynapse(const ZJsonObject &synapseJson);
+  void writeSynapse(const ZJsonArray &synapseJson);
+  void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
 
   inline int getStatusCode() const {
     return m_statusCode;
+  }
+
+  inline bool isStatusOk() const {
+    return m_statusCode == 200;
   }
 
   inline const QString& getStandardOutput() const {
@@ -127,6 +159,8 @@ public:
   }
 
   void writeUrl(const std::string &url, const std::string &method = "POST");
+
+  bool good() const;
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
@@ -140,9 +174,11 @@ private:
   bool runCommand(QProcess &process);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+  std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload);
   std::string post(const std::string &url, const char *payload, int length);
   std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string del(const std::string &url);
 #endif
 
   void parseStandardOutput();

@@ -67,6 +67,8 @@ public:
 
   ZDvidTarget getDvidTarget() const;
 
+  void setDvidDialog(ZDvidDialog *dlg);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -166,6 +168,14 @@ public slots:
 
   void changeColorMap(const QString &option);
 
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+
+  void removeBookmark(ZFlyEmBookmark *bookmark);
+  void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
+
+  void highlightSelectedObject(bool hl);
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -251,6 +261,8 @@ private:
   Z3DWindow *m_objectWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
+  ZStackViewParam m_currentViewParam;
+
   ZDvidInfo m_dvidInfo;
 };
 
@@ -297,6 +309,10 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),

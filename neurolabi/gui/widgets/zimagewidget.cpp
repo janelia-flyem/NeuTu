@@ -351,7 +351,6 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     } else {
       zoom(zoomRatio);
     }
-
     update();
   }
 }
@@ -623,6 +622,8 @@ void ZImageWidget::paintZoomHint()
 
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
+  std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
+
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
 

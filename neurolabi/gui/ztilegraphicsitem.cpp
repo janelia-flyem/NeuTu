@@ -31,10 +31,12 @@ bool ZTileGraphicsItem::loadJsonObject(const ZJsonObject &obj, QString tileFileP
       setPixmap(pmap);
 
       //_DEBUG_
+#ifdef _DEBUG_
       std::cout << m_tileInfo.getOffset().toString() << std::endl;
       std::cout << m_tileInfo.getImageSource() << std::endl;
       std::cout << image.width() << " " <<  image.height() << std::endl;
       std::cout << pmap.size().width() << " " <<  pixmap().size().height() << std::endl;
+#endif
 
       setToolTip(m_tileInfo.getSource().c_str());
       return true;

@@ -3,6 +3,7 @@
 #include "tz_error.h"
 #include "zerror.h"
 #include "zpoint.h"
+#include "tz_geo3d_utils.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
@@ -80,6 +81,11 @@ bool ZIntPoint::operator ==(const ZIntPoint &pt) const
   return getX() == pt.getX() && getY() == pt.getY() && getZ() == pt.getZ();
 }
 
+bool ZIntPoint::operator !=(const ZIntPoint &pt) const
+{
+  return getX() != pt.getX() || getY() != pt.getY() || getZ() != pt.getZ();
+}
+
 ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
   return ZIntPoint(pt1.getX() + pt2.getX(), pt1.getY() + pt2.getY(),
@@ -144,4 +150,9 @@ bool ZIntPoint::equals(const ZIntPoint &pt) const
 {
   return (getX() == pt.getX()) && (getY() == pt.getY()) &&
       (getZ() == pt.getZ());
+}
+
+double ZIntPoint::distanceTo(double x, double y, double z) const
+{
+  return Geo3d_Dist(m_x, m_y, m_z, x, y, z);
 }

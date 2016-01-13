@@ -1,7 +1,9 @@
 #include <iostream>
+#include <stdlib.h>
 
 #include <QtGui>
 #include <QMessageBox>
+#include <QColor>
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -24,14 +26,18 @@
 
 /*
  * this dialog displays a list of bodies and their properties; data is
- * loaded from a static json bookmarks file
+ * loaded from DVID
  *
- * to add/remove/alter columns in table:
+ * to add/remove/alter columns in body table:
  * -- in createModel(), change ncol
- * -- in setHeaders(), adjust headers
+ * -- in setBodyHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
  *
  * I really should be creating model and headers from a constant headers list
+ *
+ * at some point, it would be good to separate the load logic into
+ * its own class
+ *
  *
  * djo, 7/15
  *
@@ -42,25 +48,54 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    init();
+    // office phone number = random seed
+    qsrand(2094656);
+    m_quitting = false;
 
-    m_model = createModel(ui->tableView);
 
-    m_proxy = new QSortFilterProxyModel(this);
-    m_proxy->setSourceModel(m_model);
-    m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    // first table manages list of bodies
+    m_bodyModel = createModel(ui->bodyTableView);
+
+    m_bodyProxy = new QSortFilterProxyModel(this);
+    m_bodyProxy->setSourceModel(m_bodyModel);
+    m_bodyProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_bodyProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     // -1 = filter on all columns!  ALL!  no column left behind!
-    m_proxy->setFilterKeyColumn(-1);
-    ui->tableView->setModel(m_proxy);
+    m_bodyProxy->setFilterKeyColumn(-1);
+    ui->bodyTableView->setModel(m_bodyProxy);
+
+
+    // second table manages list of color filters, which 
+    //  as a whole constitute the color map
+    m_filterModel = createFilterModel(ui->filterTableView);
+
+    m_filterProxy = new QSortFilterProxyModel(this);
+    m_filterProxy->setSourceModel(m_filterModel);
+    ui->filterTableView->setModel(m_filterProxy);
+    ui->filterTableView->setColumnWidth(0, 450);
+
+    // this proxy is used to build color schemes; it's not hooked
+    //  to a table view; match the filter settings of the body filter!
+    m_schemeBuilderProxy = new QSortFilterProxyModel(this);
+    m_schemeBuilderProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    // -1 = filter on all columns!  ALL!  no column left behind!
+    m_schemeBuilderProxy->setFilterKeyColumn(-1);
+    m_schemeBuilderProxy->setSourceModel(m_bodyModel);
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
-    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)),
-        this, SLOT(activateBody(QModelIndex)));
-    connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), this, SLOT(filterUpdated(QString)));
-    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->filterLineEdit, SLOT(clear()));
+    connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
+    connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
+    connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
+    connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
+    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(activateBody(QModelIndex)));
+    connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
+    connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
+    connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
+    connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
+    connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
+    connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onFilterTableDoubleClicked(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -68,27 +103,51 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     qRegisterMetaType<ZJsonValue>("ZJsonValue");
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
-    connect(this, SIGNAL(jsonLoadError(QString)), this, SLOT(onJsonLoadError(QString)));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
+    connect(this, SIGNAL(loadCompleted()), this, SLOT(updateColorScheme()));
+    connect(this, SIGNAL(jsonLoadBookmarksError(QString)), this, SLOT(onjsonLoadBookmarksError(QString)));
+    connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
+    connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
 
-}
-
-void FlyEmBodyInfoDialog::init()
-{
-    m_quitting = false;
 }
 
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
   if (modelIndex.column() == 0) {
-    QStandardItem *item = m_model->itemFromIndex(m_proxy->mapToSource(modelIndex));
+    QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
 #ifdef _DEBUG_
     std::cout << bodyId << " activated." << std::endl;
 #endif
 
-    emit bodyActivated(bodyId);
+    // double-click = select and goto
+    // shift-double-click = select and goto, but don't clear previous bodies from 3d views
+    Qt::KeyboardModifiers modifiers  = QApplication::queryKeyboardModifiers();
+    if (modifiers.testFlag(Qt::ShiftModifier)) {
+        emit addBodyActivated(bodyId);
+    } else {
+        // technically also catches alt, ctrl double-click
+        emit bodyActivated(bodyId);
+    }
+
   }
+}
+
+void FlyEmBodyInfoDialog::onGotoBodies() {
+    if (ui->bodyTableView->selectionModel()->hasSelection()) {
+        QList<uint64_t> bodyIDList;
+        QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
+        foreach(QModelIndex modelIndex, indices) {
+            // if the item is in the first column (body ID), extract body ID, put in list
+            if (modelIndex.column() == 0) {
+                QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
+                bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
+            }
+        }
+
+        emit bodiesActivated(bodyIDList);
+    }
 }
 
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
@@ -103,7 +162,7 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
     // if target isn't null, trigger load in thread
     if (target.isValid()) {
         // clear the model regardless at this point
-        m_model->clear();
+        m_bodyModel->clear();
         setStatusLabel("Loading...");
 
         // we can load this info from different sources, depending on
@@ -126,18 +185,29 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
     m_quitting = true;
 }
 
-QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
-    setHeaders(model);
+QStandardItemModel* FlyEmBodyInfoDialog::createFilterModel(QObject* parent) {
+    QStandardItemModel* model = new QStandardItemModel(0, 2, parent);
+    setFilterHeaders(model);
     return model;
 }
 
-void FlyEmBodyInfoDialog::setHeaders(QStandardItemModel * model) {
+void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(1, new QStandardItem(QString("name")));
     model->setHorizontalHeaderItem(2, new QStandardItem(QString("# pre")));
     model->setHorizontalHeaderItem(3, new QStandardItem(QString("# post")));
     model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
+}
+
+void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
+    model->setHorizontalHeaderItem(0, new QStandardItem(QString("Filter")));
+    model->setHorizontalHeaderItem(1, new QStandardItem(QString("Color")));
+}
+
+QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
+    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
+    setBodyHeaders(model);
+    return model;
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
@@ -151,34 +221,42 @@ void FlyEmBodyInfoDialog::clearStatusLabel() {
 void FlyEmBodyInfoDialog::updateStatusLabel() {
     qlonglong nPre = 0;
     qlonglong nPost = 0;
-    for (qlonglong i=0; i<m_proxy->rowCount(); i++) {
-        nPre += m_proxy->data(m_proxy->index(i, 2)).toLongLong();
-        nPost += m_proxy->data(m_proxy->index(i, 3)).toLongLong();
+    for (qlonglong i=0; i<m_bodyProxy->rowCount(); i++) {
+        nPre += m_bodyProxy->data(m_bodyProxy->index(i, 2)).toLongLong();
+        nPost += m_bodyProxy->data(m_bodyProxy->index(i, 3)).toLongLong();
     }
 
     // have I mentioned how much I despise C++ strings?
     std::ostringstream outputStream;
-    outputStream << "Showing " << m_proxy->rowCount() << "/" << m_model->rowCount() << " bodies, ";
+    outputStream << "Showing " << m_bodyProxy->rowCount() << "/" << m_bodyModel->rowCount() << " bodies, ";
     outputStream << nPre << "/" <<  m_totalPre << " pre-syn, ";
     outputStream << nPost << "/" <<  m_totalPost << " post-syn";
     setStatusLabel(QString::fromStdString(outputStream.str()));
 }
 
 void FlyEmBodyInfoDialog::updateStatusAfterLoading() {
-    if (m_model->rowCount() > 0) {
+    if (m_bodyModel->rowCount() > 0) {
         updateStatusLabel();
     } else {
         clearStatusLabel();
     }
 }
 
-void FlyEmBodyInfoDialog::filterUpdated(QString filterText) {
-    m_proxy->setFilterFixedString(filterText);
+void FlyEmBodyInfoDialog::updateBodyFilterAfterLoading() {
+    // if the user typed something into the filter box while
+    //  the body data was loading, we need to kick it to update:
+    if (ui->bodyFilterField->text().size() > 0) {
+        bodyFilterUpdated(ui->bodyFilterField->text());
+    }
+}
+
+void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
+    m_bodyProxy->setFilterFixedString(filterText);
 
     // turns out you need to explicitly tell it to resort after the filter
     //  changes; if you don't, and new filter shows more items, those items
     //  will appear somewhere lower than the existing items
-    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+    m_bodyProxy->sort(m_bodyProxy->sortColumn(), m_bodyProxy->sortOrder());
     updateStatusLabel();
 }
 
@@ -285,6 +363,12 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 return;
             }
 
+            #ifdef _DEBUG_
+                if (i % 100 == 0) {
+                   std::cout << "processing bookmark " << i << std::endl;
+                }
+            #endif
+
             ZJsonObject bkmk(bookmarks.at(i), false);
 
             uint64_t bodyId = bkmk.value("body ID").toInteger();
@@ -294,11 +378,12 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 
-                #ifdef _DEBUG_
-                    std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
-                    std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
-                    std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
-                #endif
+                // this is way too wordy to leave on all the time, even in debug
+                // #ifdef _DEBUG_
+                //     std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
+                //     std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
+                //     std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
+                // #endif
 
                 // now push the value back in; don't put empty strings in (messes with sorting)
                 // updateModel expects "body status", not "status" (matches original file version)
@@ -328,25 +413,25 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     //  somewhere central
 
     if (!jsonObject.hasKey("data") || !jsonObject.hasKey("metadata")) {
-        emit jsonLoadError("This file is missing 'data' or 'metadata'. Are you sure this is a Fly EM JSON file?");
+        emit jsonLoadBookmarksError("This file is missing 'data' or 'metadata'. Are you sure this is a Fly EM JSON file?");
         return false;
     }
 
     ZJsonObject metadata = (ZJsonObject) jsonObject.value("metadata");
     if (!metadata.hasKey("description")) {
-        emit jsonLoadError("This file is missing 'metadata/description'. Are you sure this is a Fly EM JSON file?");
+        emit jsonLoadBookmarksError("This file is missing 'metadata/description'. Are you sure this is a Fly EM JSON file?");
         return false;
     }
 
     ZString description = ZJsonParser::stringValue(metadata["description"]);
     if (description != "bookmarks") {
-        emit jsonLoadError("This json file does not have description 'bookmarks'!");
+        emit jsonLoadBookmarksError("This json file does not have description 'bookmarks'!");
         return false;
     }
 
     ZJsonValue data = jsonObject.value("data");
     if (!data.isArray()) {
-        emit jsonLoadError("The data section in this json file is not an array!");
+        emit jsonLoadBookmarksError("The data section in this json file is not an array!");
         return false;
     }
 
@@ -358,7 +443,7 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
 
 void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
     // this method is a lot like importBookmarksDvid; where that method
-    //  (1) reads a json file from dvid, then (2) adds name,= & status 
+    //  (1) reads a json file from dvid, then (2) adds name, status 
     //  from different DVID call, this one just goes straight to step 
     //  two; as a result, a lot of the code is copied from there 
     //  (and should probably be refactored to remove duplication)
@@ -422,7 +507,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
     if (m_currentDvidTarget.isValid()) {
-        ui->filterLineEdit->clear();
+        ui->bodyFilterField->clear();
         dvidTargetChanged(m_currentDvidTarget);
     }
 }
@@ -448,14 +533,14 @@ void FlyEmBodyInfoDialog::onCloseButton() {
  *    }
  */
 void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
-    m_model->clear();
-    setHeaders(m_model);
+    m_bodyModel->clear();
+    setBodyHeaders(m_bodyModel);
 
     m_totalPre = 0;
     m_totalPost = 0;
 
     ZJsonArray bookmarks(data);
-    m_model->setRowCount(bookmarks.size());
+    m_bodyModel->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), false);
 
@@ -464,11 +549,11 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
-        m_model->setItem(i, 0, bodyIDItem);
+        m_bodyModel->setItem(i, 0, bodyIDItem);
 
         if (bkmk.hasKey("name")) {
             const char* name = ZJsonParser::stringValue(bkmk["name"]);
-            m_model->setItem(i, 1, new QStandardItem(QString(name)));
+            m_bodyModel->setItem(i, 1, new QStandardItem(QString(name)));
         }
 
         if (bkmk.hasKey("body T-bars")) {
@@ -476,7 +561,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPre += nPre;
             QStandardItem * preSynapseItem = new QStandardItem();
             preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-            m_model->setItem(i, 2, preSynapseItem);
+            m_bodyModel->setItem(i, 2, preSynapseItem);
         }
 
         if (bkmk.hasKey("body PSDs")) {
@@ -484,27 +569,27 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPost += nPost;
             QStandardItem * postSynapseItem = new QStandardItem();
             postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-            m_model->setItem(i, 3, postSynapseItem);
+            m_bodyModel->setItem(i, 3, postSynapseItem);
         }
 
         // note that this routine expects "body status", not "status";
         //  historical side-effect of the original file format we read from
         if (bkmk.hasKey("body status")) {
             const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-            m_model->setItem(i, 4, new QStandardItem(QString(status)));
+            m_bodyModel->setItem(i, 4, new QStandardItem(QString(status)));
         }
     }
     // the resize isn't reliable, so set the name column wider by hand
-    ui->tableView->resizeColumnsToContents();
-    ui->tableView->setColumnWidth(1, 150);
+    ui->bodyTableView->resizeColumnsToContents();
+    ui->bodyTableView->setColumnWidth(1, 150);
 
     // currently initially sorting on # pre-synaptic sites
-    ui->tableView->sortByColumn(2, Qt::DescendingOrder);
+    ui->bodyTableView->sortByColumn(2, Qt::DescendingOrder);
 
     emit loadCompleted();
 }
 
-void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
+void FlyEmBodyInfoDialog::onjsonLoadBookmarksError(QString message) {
     QMessageBox errorBox;
     errorBox.setText("Error loading body information");
     errorBox.setInformativeText(message);
@@ -513,7 +598,277 @@ void FlyEmBodyInfoDialog::onJsonLoadError(QString message) {
     errorBox.exec();
 }
 
+void FlyEmBodyInfoDialog::onjsonLoadColorMapError(QString message) {
+    QMessageBox errorBox;
+    errorBox.setText("Error loading color map");
+    errorBox.setInformativeText(message);
+    errorBox.setStandardButtons(QMessageBox::Ok);
+    errorBox.setIcon(QMessageBox::Warning);
+    errorBox.exec();
+}
+
+void FlyEmBodyInfoDialog::onSaveColorFilter() {
+    if (ui->bodyFilterField->text().size() > 0) {
+        // no duplicates
+        if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, 0).size() == 0) {
+            updateColorFilter(ui->bodyFilterField->text());
+        }
+    }
+}
+
+void FlyEmBodyInfoDialog::onExportBodies() {
+    // note that you can't specify a default name for a new file
+    QString filename = QFileDialog::getSaveFileName(this, "Export bodies");
+    if (!filename.isNull()) {
+        exportBodies(filename);
+    }
+}
+
+void FlyEmBodyInfoDialog::onSaveColorMap() {
+    QString filename = QFileDialog::getSaveFileName(this, "Save color map");
+    if (!filename.isNull()) {
+        saveColorMapDisk(filename);
+    }
+}
+
+void FlyEmBodyInfoDialog::onLoadColorMap() {
+    QString filename = QFileDialog::getOpenFileName(this, "Load color map");
+    if (!filename.isNull()) {
+        ZJsonValue colors;
+        if (colors.load(filename.toStdString())) {
+            // validation is done later
+            emit colorMapLoaded(colors);
+        } else {
+            emit jsonLoadColorMapError("Error opening or parsing color map file " + filename);
+        }
+    }
+}
+
+bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
+    // there's only so much we can do...but make an effort
+
+    // NOTE: this format is a messy hack; should be revised!
+
+    // it's an array
+    if (!colors.isArray()) {
+        emit jsonLoadColorMapError("Color map json file must contain an array");
+        return false;
+    }
+
+    ZJsonArray colorArray(colors);
+    if (colorArray.size() == 0) {
+        return true;
+    }
+
+    // look at first element and check its structure; it's an object
+    if (!ZJsonParser::isObject(colorArray.at(0))) {
+        emit jsonLoadColorMapError("Color map json file must contain an array of objects");
+        return false;
+    }
+
+    // has keys "color", "filter":
+    ZJsonObject first(colorArray.at(0), false);
+    if (!first.hasKey("color") || !first.hasKey("filter")) {
+        emit jsonLoadColorMapError("Color map json entries must have 'color' and 'filter' keys");
+        return false;
+    }
+
+    // we could keep going, but let's stop for now
+    // could also check:
+    // key "color": array of four ints 0-255
+    // key "filter": string
+
+    return true;
+}
+
+void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
+    if (!isValidColorMap(colors)) {
+        // validator spits out its own errors
+        return;
+    }
+
+    // clear existing color map and put in new values
+    m_filterModel->clear();
+    setFilterHeaders(m_filterModel);
+
+    // we've passed validation at this point, so we know it's an array;
+    //  iterate over each color, filter and insert into table;
+    ZJsonArray colorArray(colors);
+    for (size_t i=0; i<colorArray.size(); i++) {
+        ZJsonObject entry(colorArray.at(i), false);
+
+        QString filter(ZJsonParser::stringValue(entry["filter"]));
+        QStandardItem * filterTextItem = new QStandardItem(filter);
+        m_filterModel->appendRow(filterTextItem);
+
+        std::vector<int> rgba = ZJsonParser::integerArray(entry["color"]);
+        setFilterTableModelColor(QColor(rgba[0], rgba[1], rgba[2], rgba[3]), 
+            m_filterModel->rowCount() - 1);
+    }
+
+
+    // update the table view
+    ui->filterTableView->resizeColumnsToContents();
+    ui->filterTableView->setColumnWidth(0, 450);
+
+    updateColorScheme();
+}
+
+void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*/) {
+    // note: oldFilter currently unused; I was thinking about allowing an edit
+    //  to a filter that would replace an older filter but didn't implement it
+
+    QStandardItem * filterTextItem = new QStandardItem(filter);
+    m_filterModel->appendRow(filterTextItem);
+
+    // Raveler's palette: h, s, v = (random.uniform(0, 6.283), random.uniform(0.3, 1.0), 
+    //  random.uniform(0.3, 0.8)); that approximately translates to:
+    int randomH = qrand() % 360;
+    int randomS = 76 + qrand() % 180;
+    int randomV = 76 + qrand() % 128;
+    setFilterTableModelColor(QColor::fromHsv(randomH, randomS, randomV), m_filterModel->rowCount() - 1);
+
+    ui->filterTableView->resizeColumnsToContents();
+    ui->filterTableView->setColumnWidth(0, 450);
+
+    updateColorScheme();
+}
+
+void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyIndex) {
+    QModelIndex modelIndex = m_filterProxy->mapToSource(proxyIndex);
+    if (proxyIndex.column() == 0) {
+        // double-click on filter text; move to body list
+        QString filterString = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 0)).toString();
+        ui->bodyFilterField->setText(filterString);
+    } else if (proxyIndex.column() == 1) {
+        // double-click on color; change it
+        QColor currentColor = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 1), Qt::BackgroundRole).value<QColor>();
+        QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
+        if (newColor.isValid()) {
+            setFilterTableModelColor(newColor, modelIndex.row());
+            updateColorScheme();
+        }
+    }
+}
+
+void FlyEmBodyInfoDialog::setFilterTableModelColor(QColor color, int modelRow) {
+    QStandardItem * filterColorItem = new QStandardItem();
+    filterColorItem->setData(color, Qt::BackgroundRole);
+    // table rows are selectable, but selecting changes how color is rendered;
+    //  so disallow selection of color items
+    Qt::ItemFlags flags = filterColorItem->flags();
+    flags &= ~Qt::ItemIsSelectable;
+    filterColorItem->setFlags(flags);
+    m_filterModel->setItem(modelRow, 1, filterColorItem);
+}
+
+void FlyEmBodyInfoDialog::onDeleteButton() {
+    if (ui->filterTableView->selectionModel()->hasSelection()) {
+        // we only allow single row selections; get the filter string
+        //  from the selected row; only one, so take the first index thereof:
+        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QModelIndex modelIndex = m_filterProxy->mapToSource(viewIndex);
+        m_filterModel->removeRow(modelIndex.row());
+        updateColorScheme();
+    }
+}
+
+void FlyEmBodyInfoDialog::moveToBodyList() {
+    // moves selected color filter to body list
+    if (ui->filterTableView->selectionModel()->hasSelection()) {
+        // we only allow single row selections; get the filter string
+        //  from the selected row; only one, so take the first index thereof:
+        QModelIndex viewIndex = ui->filterTableView->selectionModel()->selectedRows(0).at(0);
+        QString filterString = m_filterModel->data(m_filterProxy->mapToSource(viewIndex)).toString();
+        ui->bodyFilterField->setText(filterString);
+        }
+    }
+
+void FlyEmBodyInfoDialog::updateColorScheme() {
+    // loop over filters in filter table; attach filter to our scheme builder
+    //  proxy; loop over the filtered body IDs and throw them and the color into
+    //  the color scheme
+
+    m_colorScheme.clear();
+    for (int i=0; i<m_filterProxy->rowCount(); i++) {
+        QString filterString = m_filterProxy->data(m_filterProxy->index(i, 0)).toString();
+        m_schemeBuilderProxy->setFilterFixedString(filterString);
+
+        QColor color = m_filterProxy->data(m_filterProxy->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
+            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, 0)).toLongLong();
+            m_colorScheme.setBodyColor(bodyId, color);
+        }
+    }
+
+    emit colorMapChanged(m_colorScheme);
+
+    // test: print it out
+    // m_colorScheme.print();
+
+}
+
+void FlyEmBodyInfoDialog::exportBodies(QString filename) {
+    QFile outputFile(filename);
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox errorBox;
+        errorBox.setText("Error");
+        errorBox.setInformativeText("Error opening file for export");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.exec();
+        return;
+    }
+
+    // tab-separated text file, with header
+    QTextStream outputStream(&outputFile);
+    for (int i=0; i<m_bodyModel->columnCount(); i++) {
+        if (i != 0) {
+            outputStream << "\t";
+        }
+        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
+    }
+    outputStream << "\n";
+
+    for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
+            if (i != 0) {
+                outputStream << "\t";
+            }
+            outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+        }
+        outputStream << "\n";
+    }
+
+    outputFile.close();
+}
+
+ZJsonArray FlyEmBodyInfoDialog::getColorMapAsJson(ZJsonArray colors) {
+    for (int i=0; i<m_filterModel->rowCount(); i++) {
+        QString filterString = m_filterModel->data(m_filterModel->index(i, 0)).toString();
+        QColor color = m_filterModel->data(m_filterModel->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        ZJsonArray rgba;
+        rgba.append(color.red());
+        rgba.append(color.green());
+        rgba.append(color.blue());
+        rgba.append(color.alpha());
+
+        ZJsonObject entry;
+        entry.setEntry("filter", filterString.toStdString());
+        entry.setEntry("color", rgba);
+        colors.append(entry);
+    }
+    return colors;
+}
+
+void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
+    ZJsonArray colors;
+    getColorMapAsJson(colors).dump(filename.toStdString());
+}
+
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
     delete ui;
 }
+
+

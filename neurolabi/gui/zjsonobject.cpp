@@ -240,6 +240,20 @@ void ZJsonObject::setEntry(const char *key, const string &value)
   }
 }
 
+void ZJsonObject::setEntry(const char *key, const char* value)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  if (value != NULL) {
+    if (strlen(value) > 0) {
+      setEntryWithoutKeyCheck(key, json_string(value), true);
+    }
+  }
+}
+
+
 void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
 {
   if (!isValidKey(key)) {

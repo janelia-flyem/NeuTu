@@ -27,7 +27,7 @@ public:
 
   void setMaxSize(int maxWidth, int maxHeight);
 
-  void update(const ZStackViewParam &viewParam);
+  bool update(const ZStackViewParam &viewParam);
   void update(int z);
   void update();
 
@@ -124,6 +124,10 @@ public:
   bool hasCustomColorMap() const;
   void assignColorMap();
 
+  ZImage* getPaintBuffer() {
+    return m_paintBuffer;
+  }
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
@@ -153,6 +157,7 @@ private:
   int m_maxHeight;
 
   bool m_selectionFrozen;
+  bool m_isFullView;
 };
 
 template <typename InputIterator>

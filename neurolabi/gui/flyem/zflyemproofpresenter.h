@@ -2,9 +2,11 @@
 #define ZFLYEMPROOFPRESENTER_H
 
 #include "zstackpresenter.h"
+#include "dvid/zdvidsynapse.h"
 
 class QKeyEvent;
 class ZFlyEmBookmark;
+class ZFlyEmProofDoc;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -32,7 +34,8 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(const ZStackOperator &op);
+  void processCustomOperator(
+      const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
     return m_splitWindowMode;
@@ -51,11 +54,12 @@ public:
 
   ZStackDocMenuFactory* getMenuFactory();
 
-private:
-  void tryAddBookmarkMode();
-  void tryAddBookmarkMode(double x, double y);
-  void addActiveStrokeAsBookmark();
-  void init();
+  ZFlyEmProofDoc* getCompleteDocument() const;
+
+  void createSynapseContextMenu();
+  QMenu* getSynapseContextMenu();
+
+  QMenu* getContextMenu();
 
 signals:
   void highlightingSelected(bool);
@@ -72,11 +76,33 @@ signals:
   void goingToBodyTop();
 
 public slots:
+  void deleteSelectedSynapse();
+  void linkSelectedSynapse();
+  void unlinkSelectedSynapse();
+  void tryAddSynapseMode(ZDvidSynapse::EKind kind);
+  void tryAddPreSynapseMode();
+  void tryAddPostSynapseMode();
+  void tryMoveSynapseMode();
+
+private:
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void addActiveStrokeAsBookmark();
+  void init();
+  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
+  void tryAddSynapse(const ZIntPoint &pt);
+  void tryMoveSynapse(const ZIntPoint &pt);
+  bool updateActiveObjectForSynapseMove();
+  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
+  void updateActiveObjectForSynapseAdd();
+  void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
 
 private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+
+  QMenu *m_synapseContextMenu;
 
   ZKeyOperationMap m_bookmarkKeyOperationMap;
 };

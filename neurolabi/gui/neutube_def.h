@@ -20,6 +20,14 @@ enum ETag {
 };
 }
 
+namespace View {
+enum EExploreAction {
+  EXPLORE_NONE, EXPLORE_MOVE, EXPLORE_ZOOM, EXPLORE_SLICE,
+  EXPLORE_ZOOM_DONE, EXPLORE_MOVE_DONE,
+  EXPLORE_UNKNOWN
+};
+}
+
 enum EImageBackground {
   IMAGE_BACKGROUND_BRIGHT, IMAGE_BACKGROUND_DARK
 };
@@ -81,6 +89,11 @@ static const TVisualEffect VE_FORCE_FILL = 512;
 
 namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
+}
+
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
 }
 
 namespace SparseObject {

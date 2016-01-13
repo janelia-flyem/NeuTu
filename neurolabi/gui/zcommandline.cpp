@@ -585,7 +585,7 @@ int ZCommandLine::runSkeletonize()
                                       ZDvidData::ROLE_BODY_LABEL,
                                       target.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
-                << "http://emdata1.int.janelia.org:8500/api/repo/86e1/instance"
+                << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
                 << std::endl;
 
       return 1;

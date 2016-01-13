@@ -13,6 +13,7 @@ class QProgressDialog;
 class ZProgressSignal;
 class ZDvidTarget;
 class ZWidgetMessage;
+class ZDvidDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -24,10 +25,16 @@ public:
   explicit ZProofreadWindow(QWidget *parent = 0);
 
   static ZProofreadWindow* Make(QWidget *parent = 0);
+  static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
   QProgressDialog* getProgressDialog() {
     return m_progressDlg;
   }
+
+  void setDvidDialog(ZDvidDialog *dvidDlg);
+
+public:
+  void test();
 
 signals:
   void splitTriggered(uint64_t bodyId);
@@ -70,6 +77,7 @@ private:
 
   void createMenu();
   void createToolbar();
+  void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
@@ -97,6 +105,7 @@ private:
   QAction *m_openObject3dAction;
 
   QToolBar *m_toolBar;
+  QToolBar *m_synapseToolbar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;

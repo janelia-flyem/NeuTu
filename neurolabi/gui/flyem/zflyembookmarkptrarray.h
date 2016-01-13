@@ -25,9 +25,13 @@ public:
   static ZFlyEmBookmark* findFirstBookmark(
       InputIterator first, InputIterator last, const QString &key);
 
+  int remove(const QVector<ZFlyEmBookmark*> &bookmarkArray);
+  bool remove(ZFlyEmBookmark *bookmark);
+
+  int findFirstIndex(ZFlyEmBookmark *bookmark) const;
 
 private:
-  QVector<ZFlyEmBookmark*> m_bookmarkArray;
+  QList<ZFlyEmBookmark*> m_bookmarkArray;
 };
 
 template <class InputIterator>
@@ -35,8 +39,7 @@ ZFlyEmBookmark* ZFlyEmBookmarkPtrArray::findFirstBookmark(
     InputIterator first, InputIterator last, const QString &key)
 {
   ZFlyEmBookmark* out = NULL;
-  for (QVector<ZFlyEmBookmark*>::const_iterator iter = first; iter != last;
-       ++iter) {
+  for (InputIterator iter = first; iter != last; ++iter) {
     ZFlyEmBookmark *bookmark = *iter;
     if (bookmark->getDvidKey() == key) {
       out = bookmark;

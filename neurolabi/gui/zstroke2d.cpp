@@ -40,6 +40,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_isFilled = stroke.m_isFilled;
   m_isPenetrating = m_isPenetrating;
   m_type = stroke.m_type;
+  m_hideStart = stroke.m_hideStart;
 }
 
 ZStroke2d::~ZStroke2d()

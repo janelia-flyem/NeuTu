@@ -50,6 +50,10 @@ public:
     COMPONENT_ALL
   };
 
+  enum EAction {
+    ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
+  };
+
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
   void deprecateDependent(EComponent comp);
@@ -200,6 +204,9 @@ public:
   ZObject3dScan subtract(const ZObject3dScan &obj);
   void subtractSliently(const ZObject3dScan &obj);
 
+  friend ZObject3dScan operator - (
+      const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+
   ZObject3dScan intersect(const ZObject3dScan &obj) const;
 
   /*!
@@ -255,7 +262,7 @@ public:
   const std::map<std::pair<int, int>, size_t>& getStripeMap() const;
 
   std::vector<size_t> getConnectedObjectSize();
-  std::vector<ZObject3dScan> getConnectedComponent();
+  std::vector<ZObject3dScan> getConnectedComponent(EAction ppAction);
 
   inline bool isCanonized() const { return isEmpty() || m_isCanonized; }
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
@@ -365,6 +372,8 @@ public:
    * with the original object.
    */
   ZObject3dScan getComplementObject();
+
+  ZObject3dScan getSurfaceObject() const;
 
   /*!
    * \brief Find all holes as a single object.

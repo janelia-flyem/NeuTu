@@ -41,6 +41,7 @@ public:
    */
   bool operator < (const ZIntPoint &pt) const;
   bool operator == (const ZIntPoint &pt) const;
+  bool operator != (const ZIntPoint &pt) const;
 
   ZIntPoint operator - () const;
 
@@ -69,6 +70,8 @@ public:
   bool isZero() const;
 
   bool equals(const ZIntPoint &pt) const;
+
+  double distanceTo(double x, double y, double z) const;
 
 public:
   int m_x;

@@ -42,7 +42,7 @@ using namespace std;
 
 void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 {
-  std::vector<ZObject3dScan> objArray = getConnectedComponent();
+  std::vector<ZObject3dScan> objArray = getConnectedComponent(ACTION_NONE);
 
 #ifdef _DEBUG_
   std::cout << "Number of components: " << objArray.size() << std::endl;
@@ -947,6 +947,9 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 
 bool ZObject3dScan::isAdjacentTo(ZObject3dScan &obj)
 {
+  canonize();
+  obj.canonize();
+
   if (getVoxelNumber() < obj.getVoxelNumber()) {
     ZObject3dScan tmpObj = *this;
     tmpObj.dilate();
@@ -1199,10 +1202,13 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
   const std::map<std::pair<int, int>, size_t> &stripeMap = getStripeMap();
 
   size_t stripeNumber = getStripeNumber();
+  size_t round = stripeNumber / 10;
   for (size_t i = 0; i < stripeNumber - 1; ++i) {
 #ifdef _DEBUG_
-    if (i % (getStripeNumber() / 10) == 0) {
-      std::cout << "  " << i + 1 << "/" << stripeNumber << std::endl;
+    if (round > 0) {
+      if (i % round == 0) {
+        std::cout << "  " << i + 1 << "/" << stripeNumber << std::endl;
+      }
     }
 #endif
     //Check along Y
@@ -1292,7 +1298,7 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
   }
 #else
   if (!isEmpty()) {
-    std::vector<ZObject3dScan> objArray = getConnectedComponent();
+    std::vector<ZObject3dScan> objArray = getConnectedComponent(ACTION_NONE);
 
     sizeArray.resize(objArray.size());
     for (size_t i = 0; i < objArray.size(); ++i) {
@@ -1313,7 +1319,8 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
   return sizeArray;
 }
 
-std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
+std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
+    EAction ppAction)
 {
   std::vector<ZObject3dScan> objArray;
 
@@ -1361,10 +1368,25 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent()
       }
 #if 1
       std::cout << "  Edge processing done." << std::endl;
-      std::cout << "  Canonizing ..." << std::endl;
 #endif
+      switch (ppAction) {
+      case ACTION_CANONIZE:
+        std::cout << "  Canonizing ..." << std::endl;
+        subobj.canonize();
+        break;
+      case ACTION_SORT_YZ:
+        std::cout << "  Sorting ..." << std::endl;
+        subobj.sort();
+        break;
+      default:
+        break;
+      }
 
-      subobj.canonize();
+//      subobj.sort();
+//      subobj.setCanonized(true);
+//      TZ_ASSERT(subobj.isCanonizedActually(), "Inconsisten data assumption");
+//      subobj.canonize();
+
       objArray.push_back(subobj);
     }
 
@@ -1722,6 +1744,10 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         ZObject3dScan slice1 = getSlice(z0);
         ZObject3dScan slice2 = getSlice(z1);
 
+        ZIntPoint c1 = slice1.getCentroid().toIntPoint();
+        ZIntPoint c2 = slice2.getCentroid().toIntPoint();
+        slice2.translate(c1.getX() - c2.getX(), c1.getY() - c2.getY(), 0);
+
         {
           int stripeNumber = slice1.getStripeNumber();
           for (int i = 0; i < stripeNumber; ++i) {
@@ -1794,6 +1820,9 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         }
 
         slice.loadStack(*newStack);
+
+        slice.translate(iround((c2.getX() - c1.getX()) * beta),
+                        iround((c2.getY() - c1.getY()) * beta), 0 );
 
         delete stack1;
         delete stack2;
@@ -2296,12 +2325,28 @@ ZObject3dScan ZObject3dScan::getComplementObject()
   return compObj;
 }
 
+ZObject3dScan ZObject3dScan::getSurfaceObject() const
+{
+  int offset[3];
+  Stack *stack = toStack(offset);
+
+  Stack *surface = Stack_Perimeter(stack, NULL, 6);
+  ZObject3dScan surfaceObj;
+  surfaceObj.loadStack(surface);
+  surfaceObj.translate(offset[0], offset[1], offset[2]);
+  C_Stack::kill(stack);
+  C_Stack::kill(surface);
+
+  return surfaceObj;
+}
+
 ZObject3dScan ZObject3dScan::findHoleObject()
 {
   ZObject3dScan obj;
 
   ZObject3dScan compObj = getComplementObject();
-  std::vector<ZObject3dScan> objList = compObj.getConnectedComponent();
+  std::vector<ZObject3dScan> objList =
+      compObj.getConnectedComponent(ACTION_CANONIZE);
 
   Cuboid_I boundBox;
   getBoundBox(&boundBox);
@@ -2327,7 +2372,8 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
   std::vector<ZObject3dScan> objArray;
 
   ZObject3dScan compObj = getComplementObject();
-  std::vector<ZObject3dScan> objList = compObj.getConnectedComponent();
+  std::vector<ZObject3dScan> objList =
+      compObj.getConnectedComponent(ACTION_NONE);
 
   Cuboid_I boundBox;
   getBoundBox(&boundBox);
@@ -2338,6 +2384,7 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
     subobj.getBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
+      subobj.canonize();
       objArray.push_back(subobj);
     }
   }
@@ -2735,6 +2782,48 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   this->copyDataFrom(remained);
 
   return subtracted;
+}
+
+ZObject3dScan operator - (
+    const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  const_cast<ZObject3dScan&>(obj1).canonize();
+  const_cast<ZObject3dScan&>(obj2).canonize();
+
+  size_t index1 = 0;
+  size_t index2 = 0;
+
+
+  ZObject3dScan remained;
+
+  while (index1 < obj1.m_stripeArray.size() &&
+         index2 < obj2.m_stripeArray.size()) {
+    const ZObject3dStripe &s1 = obj1.m_stripeArray[index1];
+    const ZObject3dStripe &s2 = obj2.m_stripeArray[index2];
+
+    if (s1.getY() == s2.getY() && s1.getZ() == s2.getZ()) {
+      ZObject3dStripe diff = s1 - s2;
+      if (!diff.isEmpty()) {
+        remained.m_stripeArray.push_back(diff);
+      }
+      ++index1;
+      ++index2;
+    } else if (s1.getZ() < s2.getZ() ||
+               (s1.getZ() == s2.getZ() && s1.getY() < s2.getY())) {
+      remained.m_stripeArray.push_back(obj1.m_stripeArray[index1]);
+      ++index1;
+    } else {
+      ++index2;
+    }
+  }
+
+  for (; index1 < obj1.m_stripeArray.size(); ++index1) {
+    remained.m_stripeArray.push_back(obj1.m_stripeArray[index1]);
+  }
+
+  remained.setCanonized(true);
+
+  return remained;
 }
 
 void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)

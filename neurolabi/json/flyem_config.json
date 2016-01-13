@@ -36,7 +36,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "fa60",
+      "uuid": "059e",
       "name": "FIB25 (0802 export)",
       "body_label": "bodies0802",
       "label_block": "labels0802",
@@ -47,18 +47,19 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "aeed",
+      "uuid": "d147",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
+      "synapse": "synapses",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn"]
     },
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "aeed",
+      "uuid": "d147",
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
@@ -195,6 +196,7 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
+      "synapse": "synapse",
       "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot", "yuy", "yy"]
     },
@@ -512,11 +514,12 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "b0f7",
+      "uuid": "3ca7",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
+      "synapse": "synapses",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
     },
     {
