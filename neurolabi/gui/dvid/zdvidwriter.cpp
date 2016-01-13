@@ -1077,6 +1077,16 @@ void ZDvidWriter::deleteBookmark(const ZIntPoint &pt)
   deleteBookmark(pt.getX(), pt.getY(), pt.getZ());
 }
 
+void ZDvidWriter::deleteBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark *>::const_iterator
+       iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    deleteBookmark(bookmark->getCenter().toIntPoint());
+  }
+}
+
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {

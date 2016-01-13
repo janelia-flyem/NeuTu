@@ -47,6 +47,7 @@ signals:
   void bookmarkChecked(QString, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
   void removingBookmark(ZFlyEmBookmark*);
+  void removingBookmark(QList<ZFlyEmBookmark*>);
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
   void clearingBodyMergeStage();

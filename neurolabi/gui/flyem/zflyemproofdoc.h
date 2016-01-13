@@ -179,6 +179,8 @@ public: //Commands
   void executeMoveSynapseCommand(const ZIntPoint &dest);
 
   void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
   void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
 signals:

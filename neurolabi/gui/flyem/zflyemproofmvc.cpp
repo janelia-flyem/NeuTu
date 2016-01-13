@@ -2395,6 +2395,22 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
   */
 }
 
+void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      ZFlyEmProofDoc *doc = getCompleteDocument();
+      doc->executeRemoveBookmarkCommand(bookmark);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::removeBookmark(const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+  doc->executeRemoveBookmarkCommand(bookmarkList);
+}
+
 void ZFlyEmProofMvc::removeLocalBookmark(ZFlyEmBookmark *bookmark)
 {
   if (bookmark != NULL) {

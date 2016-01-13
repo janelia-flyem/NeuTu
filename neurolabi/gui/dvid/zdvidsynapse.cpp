@@ -117,7 +117,7 @@ void ZDvidSynapse::display(
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);
-      line.setColor(QColor(164, 164, 0));
+      line.setColor(QColor(255, 255, 0));
       line.setFocusColor(QColor(255, 0, 255));
       line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option);

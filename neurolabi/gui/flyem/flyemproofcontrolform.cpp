@@ -74,6 +74,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
   connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
           this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));

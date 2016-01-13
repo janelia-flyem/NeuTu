@@ -68,13 +68,15 @@ public:
   AddBookmark(ZFlyEmProofDoc *doc, ZFlyEmBookmark *bookmark,
                 QUndoCommand *parent = NULL);
   virtual ~AddBookmark();
+
+  void addBookmark(ZFlyEmBookmark *bookmark);
+
   void undo();
   void redo();
 
-
 private:
   ZFlyEmProofDoc *m_doc;
-  ZFlyEmBookmark *m_bookmark;
+  std::vector<ZFlyEmBookmark*> m_bookmarkArray;
   bool m_isInDoc;
 };
 

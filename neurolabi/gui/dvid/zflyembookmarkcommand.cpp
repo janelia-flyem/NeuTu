@@ -148,25 +148,38 @@ ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::AddBookmark(
   ZUndoCommand(parent)
 {
   m_doc = doc;
-  m_bookmark = bookmark;
+  if (bookmark != NULL) {
+    m_bookmarkArray.push_back(bookmark);
+  }
   m_isInDoc = false;
 }
 
 ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::~AddBookmark()
 {
   if (!m_isInDoc) {
-    delete m_bookmark;
+    for (std::vector<ZFlyEmBookmark*>::iterator iter = m_bookmarkArray.begin();
+         iter != m_bookmarkArray.end(); ++iter) {
+      delete *iter;
+    }
+  }
+}
+
+void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::addBookmark(
+    ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    m_bookmarkArray.push_back(bookmark);
   }
 }
 
 void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
 {
-  if (m_bookmark != NULL && m_doc != NULL) {
+  if (!m_bookmarkArray.empty() && m_doc != NULL) {
     ZDvidWriter writer;
     if (writer.open(m_doc->getDvidTarget())) {
-      writer.writeBookmark(*m_bookmark);
+      writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
-        m_doc->addLocalBookmark(m_bookmark);
+        m_doc->addLocalBookmark(m_bookmarkArray);
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
@@ -178,15 +191,15 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
 
 void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
 {
-  if (m_bookmark != NULL && m_doc != NULL) {
+  if (!m_bookmarkArray.empty() && m_doc != NULL) {
     ZDvidReader reader;
     if (reader.open(m_doc->getDvidTarget())) {
       ZDvidWriter writer;
       if (writer.open(m_doc->getDvidTarget())) {
-        writer.deleteBookmark(m_bookmark->getCenter().toIntPoint());
+        writer.deleteBookmark(m_bookmarkArray);
       }
 
-      m_doc->removeLocalBookmark(m_bookmark);
+      m_doc->removeLocalBookmark(m_bookmarkArray);
       m_isInDoc = false;
     }
   }

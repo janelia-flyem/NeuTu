@@ -1205,7 +1205,7 @@ void ZFlyEmProofDoc::autoSave()
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {
   if (!m_isCustomBookmarkSaved) {
-    LINFO() << "Saving user bookmarks ...";
+    std::cout << "Saving user bookmarks ..." << std::endl;
     saveCustomBookmark();
   }
 }
@@ -1651,12 +1651,27 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
 
 void ZFlyEmProofDoc::executeRemoveBookmarkCommand()
 {
+  QList<ZFlyEmBookmark*> bookmarkList =
+      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  executeRemoveBookmarkCommand(bookmarkList);
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark)
+{
+  ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
+      new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, bookmark);
+  if (command->hasRemoving()) {
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(
+    const QList<ZFlyEmBookmark *> &bookmarkList)
+{
   ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
       new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL);
-  QList<ZFlyEmBookmark*> m_bookmarkList =
-      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
-  for (QList<ZFlyEmBookmark*>::iterator iter = m_bookmarkList.begin();
-       iter != m_bookmarkList.end(); ++iter) {
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
     command->addRemoving(*iter);
   }
 
