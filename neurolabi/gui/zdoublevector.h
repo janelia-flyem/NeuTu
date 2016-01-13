@@ -18,6 +18,7 @@ public:
   inline double* dataArray() { return &((*this)[0]); }
   inline const double* dataArray() const { return &((*this)[0]); }
   double sum() const;
+  double mean() const;
   double min(size_t *index = 0);
   double max(size_t *index = 0);
   double var() const;
