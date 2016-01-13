@@ -165,6 +165,12 @@ public:
 
   bool good() const;
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDNodeService> getService() const {
+    return m_service;
+  }
+#endif
+
 signals:
   void readingDone();
 
@@ -193,7 +199,7 @@ protected:
   bool m_verbose;
   int m_statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService *m_service;
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif
 
 };

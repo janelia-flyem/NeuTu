@@ -7266,7 +7266,7 @@ void MainWindow::on_actionProof_triggered()
 
 void MainWindow::runRoutineCheck()
 {
-
+  LINFO() << "Running routine check ...";
 }
 
 void MainWindow::on_actionSubtract_Background_triggered()

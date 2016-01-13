@@ -1182,7 +1182,7 @@ void ZFlyEmProofDoc::autoSave()
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {
   if (!m_isCustomBookmarkSaved) {
-    std::cout << "Saving user bookmarks ..." << std::endl;
+    LINFO() << "Saving user bookmarks ...";
     saveCustomBookmark();
   }
 }
