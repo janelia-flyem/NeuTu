@@ -16642,12 +16642,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 0
-  ZImage image(10000, 10000);
-  int height = image.height();
-  int width = image.width();
+#if 1
+  int height = 512;
+  int width = 512;
 
-  uint8_t *data = new uint8_t[10000*10000];
+  ZImage image(width, height);
+
+  uint8_t *data = new uint8_t[width*height];
   int index = 0;
   tic();
   for (int y = 0; y < height; ++y) {
@@ -16657,12 +16658,16 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
 
-  image.setData(data);
-
-  ZPixmap pixmap(10000, 10000);
   tic();
+  image.setData(data);
+  ptoc();
+
+  tic();
+  ZPixmap pixmap(width, height);
   pixmap.fromImage(image);
   ptoc();
+
+  delete data;
 #endif
 
 #if 0
@@ -18873,7 +18878,7 @@ void ZTest::test(MainWindow *host)
   slice.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   if (host != NULL) {
     host->testFlyEmProofread();
   }

@@ -51,6 +51,7 @@ signals:
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
   void clearingBodyMergeStage();
+  void exportingSelectedBody();
 
 public slots:
   void setInfo(const QString &info);
@@ -75,6 +76,7 @@ private slots:
   void enableNameColorMap(bool on);
 //  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
+  void exportSelectedBody();
 
 private:
   void createMenu();

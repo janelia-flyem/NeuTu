@@ -1532,6 +1532,27 @@ void ZFlyEmProofMvc::updateSplitBody()
   }
 }
 
+void ZFlyEmProofMvc::exportSelectedBody()
+{
+  QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+  if (!fileName.isEmpty()) {
+    std::set<uint64_t> idSet =
+        m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+    ZObject3dScan obj;
+
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+           iter != idSet.end(); ++iter) {
+        ZObject3dScan subobj = reader.readBody(*iter);
+        obj.concat(subobj);
+      }
+    }
+    obj.canonize();
+    obj.save(fileName.toStdString());
+  }
+}
+
 void ZFlyEmProofMvc::clearBodyMergeStage()
 {
   getCompleteDocument()->clearBodyMergeStage();

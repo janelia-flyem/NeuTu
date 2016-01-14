@@ -176,8 +176,18 @@ void FlyEmProofControlForm::createMenu()
   connect(clearMergeAction, SIGNAL(triggered()),
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
+
+  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
+  developerMenu->addAction(exportBodyAction);
 #endif
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::exportSelectedBody()
+{
+  emit exportingSelectedBody();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
