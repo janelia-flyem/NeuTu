@@ -197,7 +197,7 @@ bool ZDvidTileEnsemble::update(
 
       std::cout << data.size() << "x tile reading time: " << tileReadingTime << std::endl;
       if (tileReadingTime > 3000) {
-        std::cout << "Tile reading hickup." << std::endl;
+        LWARN() << "Tile reading hickup.";
       }
 
       size_t dataIndex = 0;
@@ -226,7 +226,7 @@ bool ZDvidTileEnsemble::update(
       qint64 tileDecodingTime = timer.elapsed();
       std::cout <<"decoding time: " << tileDecodingTime << std::endl;
       if (tileDecodingTime > 3000) {
-        std::cout << "Tile decoding hickup." << std::endl;
+        LWARN() << "Tile decoding hickup.";
       }
 
 

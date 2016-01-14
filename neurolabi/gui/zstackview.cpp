@@ -755,7 +755,7 @@ void ZStackView::redraw(EUpdateOption option)
 
   qDebug() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    std::cout << "Debugging for hiccup." << std::endl;
+    LWARN() << "Debugging for hiccup.";
   }
 #endif
 }

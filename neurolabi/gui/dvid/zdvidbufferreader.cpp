@@ -61,13 +61,20 @@ void ZDvidBufferReader::read(
 
   if (target.isValid()) {
     try {
-      libdvid::DVIDNodeService service(
-            target.getAddressWithPort(), target.getUuid());
       std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
       libdvid::BinaryDataPtr libdvidPayload =
           libdvid::BinaryData::create_binary_data(payload.data(), payload.length());
-      libdvid::BinaryDataPtr data = service.custom_request(
+      libdvid::BinaryDataPtr data;
+
+      if (m_service.get() != NULL) {
+        data = m_service->custom_request(
+              endPoint, libdvidPayload, libdvid::POST, m_tryingCompress);
+      } else {
+        libdvid::DVIDNodeService service(
+              target.getAddressWithPort(), target.getUuid());
+        data = service.custom_request(
             endPoint, libdvidPayload, libdvid::POST, m_tryingCompress);
+      }
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;
