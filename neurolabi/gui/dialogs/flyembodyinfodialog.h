@@ -92,7 +92,21 @@ private:
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
 
-    enum tabs { COLORS_TAB, CONNECTIONS_TAB };
+    enum Tabs {
+        COLORS_TAB,
+        CONNECTIONS_TAB
+        };
+    enum BodyTableColumns {
+        BODY_ID_COLUMN,
+        BODY_NAME_COLUMN,
+        BODY_NPRE_COLUMN,
+        BODY_NPOST_COLUMN,
+        BODY_STATUS_COLUMN
+    };
+    enum FilterTableColumns {
+        FILTER_NAME_COLUMN,
+        FILTER_COLOR_COLUMN
+    };
 };
 
 #endif // FLYEMBODYINFODIALOG_H
