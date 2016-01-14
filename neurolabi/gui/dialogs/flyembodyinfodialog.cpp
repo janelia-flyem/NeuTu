@@ -59,6 +59,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_quitting = false;
 
 
+    // top body list stuff
+
     // first table manages list of bodies
     m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
     setBodyHeaders(m_bodyModel);
@@ -71,6 +73,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_bodyProxy->setFilterKeyColumn(-1);
     ui->bodyTableView->setModel(m_bodyProxy);
 
+
+    // color filter stuff
 
     // second table manages list of color filters, which 
     //  as a whole constitute the color map
@@ -89,6 +93,17 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // -1 = filter on all columns!  ALL!  no column left behind!
     m_schemeBuilderProxy->setFilterKeyColumn(-1);
     m_schemeBuilderProxy->setSourceModel(m_bodyModel);
+
+
+    // connections table stuff
+    // table holding bodies that are input to the chosen body
+    m_inputBodyModel = new QStandardItemModel(0, 3, ui->inputBodyTableView);
+    setInputBodyHeaders(m_inputBodyModel);
+    m_inputBodyProxy = new QSortFilterProxyModel(this);
+    m_inputBodyProxy->setSourceModel(m_inputBodyModel);
+    ui->inputBodyTableView->setModel(m_inputBodyProxy);
+    // set needed col width here
+
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
@@ -211,6 +226,12 @@ void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(FILTER_NAME_COLUMN, new QStandardItem(QString("Filter")));
     model->setHorizontalHeaderItem(FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
+}
+
+void FlyEmBodyInfoDialog::setInputBodyHeaders(QStandardItemModel * model) {
+    model->setHorizontalHeaderItem(IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
+    model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("name")));
+    model->setHorizontalHeaderItem(IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
