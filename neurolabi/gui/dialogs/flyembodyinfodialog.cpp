@@ -32,7 +32,7 @@
  * -- in createModel(), change ncol
  * -- in setBodyHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
- *
+ * -- in enum in .h file, add new column constant
  *
  * notes:
  * -- I really should be creating model and headers from a constant headers list
@@ -119,11 +119,9 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
 {
-    if (modelIndex.column() == 0) {
-        // body ID column:
+    if (modelIndex.column() == BODY_ID_COLUMN) {
         activateBody(modelIndex);
-    } else if (modelIndex.column() == 2 || modelIndex.column() == 3) {
-        // pre/post synapse count columns:
+    } else if (modelIndex.column() == BODY_NPRE_COLUMN || modelIndex.column() == BODY_NPOST_COLUMN) {
         gotoPrePost(modelIndex);
     }
 }
@@ -155,7 +153,7 @@ void FlyEmBodyInfoDialog::onGotoBodies() {
         QModelIndexList indices = ui->bodyTableView->selectionModel()->selectedIndexes();
         foreach(QModelIndex modelIndex, indices) {
             // if the item is in the first column (body ID), extract body ID, put in list
-            if (modelIndex.column() == 0) {
+            if (modelIndex.column() == BODY_ID_COLUMN) {
                 QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
                 bodyIDList.append(item->data(Qt::DisplayRole).toULongLong());
             }
@@ -207,16 +205,16 @@ QStandardItemModel* FlyEmBodyInfoDialog::createFilterModel(QObject* parent) {
 }
 
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(0, new QStandardItem(QString("Body ID")));
-    model->setHorizontalHeaderItem(1, new QStandardItem(QString("name")));
-    model->setHorizontalHeaderItem(2, new QStandardItem(QString("# pre")));
-    model->setHorizontalHeaderItem(3, new QStandardItem(QString("# post")));
-    model->setHorizontalHeaderItem(4, new QStandardItem(QString("status")));
+    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
+    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem(QString("name")));
+    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem(QString("# pre")));
+    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem(QString("# post")));
+    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem(QString("status")));
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(0, new QStandardItem(QString("Filter")));
-    model->setHorizontalHeaderItem(1, new QStandardItem(QString("Color")));
+    model->setHorizontalHeaderItem(FILTER_NAME_COLUMN, new QStandardItem(QString("Filter")));
+    model->setHorizontalHeaderItem(FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
 }
 
 QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
@@ -237,8 +235,8 @@ void FlyEmBodyInfoDialog::updateStatusLabel() {
     qlonglong nPre = 0;
     qlonglong nPost = 0;
     for (qlonglong i=0; i<m_bodyProxy->rowCount(); i++) {
-        nPre += m_bodyProxy->data(m_bodyProxy->index(i, 2)).toLongLong();
-        nPost += m_bodyProxy->data(m_bodyProxy->index(i, 3)).toLongLong();
+        nPre += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPRE_COLUMN)).toLongLong();
+        nPost += m_bodyProxy->data(m_bodyProxy->index(i, BODY_NPOST_COLUMN)).toLongLong();
     }
 
     // have I mentioned how much I despise C++ strings?
@@ -564,11 +562,11 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
-        m_bodyModel->setItem(i, 0, bodyIDItem);
+        m_bodyModel->setItem(i, BODY_ID_COLUMN, bodyIDItem);
 
         if (bkmk.hasKey("name")) {
             const char* name = ZJsonParser::stringValue(bkmk["name"]);
-            m_bodyModel->setItem(i, 1, new QStandardItem(QString(name)));
+            m_bodyModel->setItem(i, BODY_NAME_COLUMN, new QStandardItem(QString(name)));
         }
 
         if (bkmk.hasKey("body T-bars")) {
@@ -576,7 +574,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPre += nPre;
             QStandardItem * preSynapseItem = new QStandardItem();
             preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
-            m_bodyModel->setItem(i, 2, preSynapseItem);
+            m_bodyModel->setItem(i, BODY_NPRE_COLUMN, preSynapseItem);
         }
 
         if (bkmk.hasKey("body PSDs")) {
@@ -584,22 +582,22 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             m_totalPost += nPost;
             QStandardItem * postSynapseItem = new QStandardItem();
             postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
-            m_bodyModel->setItem(i, 3, postSynapseItem);
+            m_bodyModel->setItem(i, BODY_NPOST_COLUMN, postSynapseItem);
         }
 
         // note that this routine expects "body status", not "status";
         //  historical side-effect of the original file format we read from
         if (bkmk.hasKey("body status")) {
             const char* status = ZJsonParser::stringValue(bkmk["body status"]);
-            m_bodyModel->setItem(i, 4, new QStandardItem(QString(status)));
+            m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
         }
     }
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();
-    ui->bodyTableView->setColumnWidth(1, 150);
+    ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
 
     // currently initially sorting on # pre-synaptic sites
-    ui->bodyTableView->sortByColumn(2, Qt::DescendingOrder);
+    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
 
     emit loadCompleted();
 }
@@ -625,7 +623,7 @@ void FlyEmBodyInfoDialog::onjsonLoadColorMapError(QString message) {
 void FlyEmBodyInfoDialog::onSaveColorFilter() {
     if (ui->bodyFilterField->text().size() > 0) {
         // no duplicates
-        if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, 0).size() == 0) {
+        if (m_filterModel->findItems(ui->bodyFilterField->text(), Qt::MatchExactly, FILTER_NAME_COLUMN).size() == 0) {
             updateColorFilter(ui->bodyFilterField->text());
         }
     }
@@ -724,7 +722,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
 
     // update the table view
     ui->filterTableView->resizeColumnsToContents();
-    ui->filterTableView->setColumnWidth(0, 450);
+    ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
 
     updateColorScheme();
 }
@@ -744,7 +742,7 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
     setFilterTableModelColor(QColor::fromHsv(randomH, randomS, randomV), m_filterModel->rowCount() - 1);
 
     ui->filterTableView->resizeColumnsToContents();
-    ui->filterTableView->setColumnWidth(0, 450);
+    ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
 
     // activate the tab, and dispatch the changed info
     ui->tabWidget->setCurrentIndex(COLORS_TAB);
@@ -753,13 +751,15 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
 
 void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyIndex) {
     QModelIndex modelIndex = m_filterProxy->mapToSource(proxyIndex);
-    if (proxyIndex.column() == 0) {
+    if (proxyIndex.column() == FILTER_NAME_COLUMN) {
         // double-click on filter text; move to body list
-        QString filterString = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 0)).toString();
+        QString filterString = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(),
+            FILTER_NAME_COLUMN)).toString();
         ui->bodyFilterField->setText(filterString);
-    } else if (proxyIndex.column() == 1) {
+    } else if (proxyIndex.column() == FILTER_COLOR_COLUMN) {
         // double-click on color; change it
-        QColor currentColor = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(), 1), Qt::BackgroundRole).value<QColor>();
+        QColor currentColor = m_filterProxy->data(m_filterProxy->index(proxyIndex.row(),
+            FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
             setFilterTableModelColor(newColor, modelIndex.row());
@@ -776,7 +776,7 @@ void FlyEmBodyInfoDialog::setFilterTableModelColor(QColor color, int modelRow) {
     Qt::ItemFlags flags = filterColorItem->flags();
     flags &= ~Qt::ItemIsSelectable;
     filterColorItem->setFlags(flags);
-    m_filterModel->setItem(modelRow, 1, filterColorItem);
+    m_filterModel->setItem(modelRow, FILTER_COLOR_COLUMN, filterColorItem);
 }
 
 void FlyEmBodyInfoDialog::onDeleteButton() {
@@ -808,12 +808,12 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
 
     m_colorScheme.clear();
     for (int i=0; i<m_filterProxy->rowCount(); i++) {
-        QString filterString = m_filterProxy->data(m_filterProxy->index(i, 0)).toString();
+        QString filterString = m_filterProxy->data(m_filterProxy->index(i, FILTER_NAME_COLUMN)).toString();
         m_schemeBuilderProxy->setFilterFixedString(filterString);
 
-        QColor color = m_filterProxy->data(m_filterProxy->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        QColor color = m_filterProxy->data(m_filterProxy->index(i, FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
         for (int j=0; j<m_schemeBuilderProxy->rowCount(); j++) {
-            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, 0)).toLongLong();
+            qulonglong bodyId = m_schemeBuilderProxy->data(m_schemeBuilderProxy->index(j, BODY_ID_COLUMN)).toLongLong();
             m_colorScheme.setBodyColor(bodyId, color);
         }
     }
@@ -862,8 +862,8 @@ void FlyEmBodyInfoDialog::exportBodies(QString filename) {
 
 ZJsonArray FlyEmBodyInfoDialog::getColorMapAsJson(ZJsonArray colors) {
     for (int i=0; i<m_filterModel->rowCount(); i++) {
-        QString filterString = m_filterModel->data(m_filterModel->index(i, 0)).toString();
-        QColor color = m_filterModel->data(m_filterModel->index(i, 1), Qt::BackgroundRole).value<QColor>();
+        QString filterString = m_filterModel->data(m_filterModel->index(i, FILTER_NAME_COLUMN)).toString();
+        QColor color = m_filterModel->data(m_filterModel->index(i, FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
         ZJsonArray rgba;
         rgba.append(color.red());
         rgba.append(color.green());
@@ -887,11 +887,11 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // grab the body ID; same row, first column
     QModelIndex index = m_bodyProxy->mapToSource(modelIndex);
-    QStandardItem *item = m_bodyModel->item(index.row(), 0);
+    QStandardItem *item = m_bodyModel->item(index.row(), BODY_ID_COLUMN);
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
     // get name, too, if it's there, then update label
-    QStandardItem *item2 = m_bodyModel->item(index.row(), 1);
+    QStandardItem *item2 = m_bodyModel->item(index.row(), BODY_NAME_COLUMN);
     if (item2) {
         updateBodyConnectionLabel(bodyId, item2->data(Qt::DisplayRole).toString());
     } else {
