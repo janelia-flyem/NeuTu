@@ -746,6 +746,8 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
     ui->filterTableView->resizeColumnsToContents();
     ui->filterTableView->setColumnWidth(0, 450);
 
+    // activate the tab, and dispatch the changed info
+    ui->tabWidget->setCurrentIndex(COLORS_TAB);
     updateColorScheme();
 }
 
