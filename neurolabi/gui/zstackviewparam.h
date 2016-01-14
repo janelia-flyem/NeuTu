@@ -21,6 +21,8 @@ public:
     return m_z;
   }
 
+  int getArea() const;
+
   inline const QRect& getViewPort() const {
     return m_viewPort;
   }

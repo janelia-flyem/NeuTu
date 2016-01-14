@@ -15,6 +15,9 @@
 #include "zselector.h"
 #include "zjsonarray.h"
 
+class ZStackView;
+class ZIntCuboid;
+
 class ZDvidSynapseEnsemble : public ZStackObject
 {
 public:
@@ -26,7 +29,7 @@ public:
   };
 
   enum EDataStatus {
-    STATUS_NORMAL, STATUS_NULL, STATUS_READY
+    STATUS_NORMAL, STATUS_NULL, STATUS_PARTIAL_READY, STATUS_READY
   };
 
   enum EAdjustment {
@@ -55,10 +58,13 @@ public:
 
     bool isValid() const { return m_status != STATUS_NULL; }
     bool isReady() const { return m_status == STATUS_READY; }
+    bool isReady(const QRect &rect) const;
 
     void setStatus(EDataStatus status) {
       m_status = status;
     }
+
+    void setDataRect(const QRect &rect);
 
     bool contains(int x, int y) const;
 
@@ -68,6 +74,7 @@ public:
   private:
     int m_startY;
     EDataStatus m_status;
+    QRect m_dataRect;
     static SynapseMap m_emptyMap;
   };
 
@@ -119,6 +126,8 @@ public:
 
   void updatePartner(ZDvidSynapse &synapse);
 
+  void attachView(ZStackView *view);
+
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapseEnsemble &se);
 
@@ -144,6 +153,8 @@ public:
   };
 
 private:
+  void init();
+  void update(const ZIntCuboid &box);
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
   void updateFromCache(int z);
@@ -161,6 +172,9 @@ private:
   ZDvidInfo m_dvidInfo;
 
   ZSelector<ZIntPoint> m_selector;
+
+  ZStackView *m_view;
+  int m_maxPartialArea;
 
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };

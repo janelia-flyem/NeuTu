@@ -756,6 +756,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     if (target.isValid()) {
       getCompleteDocument()->downloadSynapse();
+      ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble();
+      if (se != NULL) {
+        se->attachView(getView());
+      }
+
       getCompleteDocument()->downloadBookmark();
     }
 

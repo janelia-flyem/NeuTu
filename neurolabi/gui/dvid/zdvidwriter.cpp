@@ -773,6 +773,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
+  UNUSED_PARAMETER(&bf);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -870,6 +871,7 @@ uint64_t ZDvidWriter::writePartition(
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
+  UNUSED_PARAMETER(&bm);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -1056,9 +1058,15 @@ void ZDvidWriter::deleteAllCustomBookmark()
 void ZDvidWriter::deletePointAnnotation(
     const std::string &dataName, int x, int y, int z)
 {
+#if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(m_dvidTarget);
-
   del(url.getAnnotationUrl(dataName, x, y, z));
+#else
+  UNUSED_PARAMETER(&dataName);
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
 }
 
 void ZDvidWriter::deletePointAnnotation(
@@ -1090,8 +1098,14 @@ void ZDvidWriter::deleteBookmark(
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
+#if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(m_dvidTarget);
   del(url.getSynapseUrl(x, y, z));
+#else
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
 }
 
 void ZDvidWriter::writePointAnnotation(
@@ -1139,6 +1153,11 @@ void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
 
 void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
 {
+#if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(m_dvidTarget);
   post(url.getSynapseMoveUrl(from, to));
+#else
+  UNUSED_PARAMETER(&from);
+  UNUSED_PARAMETER(&to);
+#endif
 }

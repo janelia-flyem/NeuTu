@@ -78,7 +78,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
 
   return tileMap[index];
 }
-
+#if defined(_ENABLE_LIBDVIDCPP_)
 struct UpdateTileParam {
   ZDvidTileEnsemble *te;
 //  libdvid::DVIDNodeService *service;
@@ -109,6 +109,7 @@ void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
   task->execute();
   delete task;
 }
+#endif
 
 bool ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
@@ -173,24 +174,24 @@ bool ZDvidTileEnsemble::update(
       std::cout << "Reading tiles ..." << std::endl;
       QElapsedTimer timer;
       timer.start();
-      /*
-      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
-                                       getDvidTarget().getUuid());
+//      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
+//                                       getDvidTarget().getUuid());
       std::cout << "Connecting time: " << timer.elapsed() << std::endl;
-      */
-      /*
-      std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
-            service, m_dvidTarget.getMultiscale2dName(), libdvid::XY, resLevel,
-            tile_locs_array);
-            */
 
+#define DVID_TILE_THREAD_FETCH 1
+
+#if DVID_TILE_THREAD_FETCH
+      std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
+            *(m_reader.getService()), m_dvidTarget.getMultiscale2dName(),
+            libdvid::XY, resLevel, tile_locs_array);
+#else
       std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
       for (size_t i = 0; i < tile_locs_array.size(); ++i) {
         data[i] = m_reader.getService()->get_tile_slice_binary(
               m_dvidTarget.getMultiscale2dName(),
               libdvid::XY, resLevel, tile_locs_array[i]);
       }
-
+#endif
 
       qint64 tileReadingTime = timer.elapsed();
 

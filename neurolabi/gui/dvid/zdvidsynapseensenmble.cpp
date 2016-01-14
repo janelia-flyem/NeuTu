@@ -1,8 +1,12 @@
 #include "zdvidsynapseensenmble.h"
+
+#include<QRect>
+
 #include "zdvidurl.h"
 #include "zpainter.h"
 #include "tz_math.h"
 #include "dvid/zdvidwriter.h"
+#include "zstackview.h"
 
 
 ZDvidSynapseEnsemble::SynapseSlice
@@ -11,9 +15,7 @@ ZDvidSynapse ZDvidSynapseEnsemble::m_emptySynapse;
 
 ZDvidSynapseEnsemble::ZDvidSynapseEnsemble()
 {
-  m_startZ = 0;
-//  m_startY = 0;
-  m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
+  init();
 }
 
 void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
@@ -23,6 +25,29 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
     m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getZ();
 //    m_startY = m_dvidInfo.getStartCoordinates().getY();
+  }
+}
+
+void ZDvidSynapseEnsemble::init()
+{
+  m_startZ = 0;
+  m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
+  m_view = NULL;
+  m_maxPartialArea = 1024 * 1024;
+}
+
+void ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(box));
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (synapseJson.hasKey("Pos")) {
+      ZDvidSynapse synapse;
+      synapse.loadJsonObject(synapseJson);
+      addSynapse(synapse, DATA_LOCAL);
+    }
   }
 }
 
@@ -41,41 +66,73 @@ void ZDvidSynapseEnsemble::update(const ZIntPoint &pt)
   update(pt.getX(), pt.getY(), pt.getZ());
 }
 
+void ZDvidSynapseEnsemble::attachView(ZStackView *view)
+{
+  m_view = view;
+}
+
 void ZDvidSynapseEnsemble::download(int z)
 {
-  int width = m_dvidInfo.getEndCoordinates().getX() -
-      m_dvidInfo.getStartCoordinates().getX() + 1;
-  int height = m_dvidInfo.getEndCoordinates().getY() -
-      m_dvidInfo.getStartCoordinates().getY() + 1;
+  int currentArea = 0;
+  if (m_view != NULL) {
+    currentArea = m_view->getViewParameter().getArea();
+  }
 
   ZIntCuboid blockBox =
       m_dvidInfo.getBlockBox(0, 0, m_dvidInfo.getBlockIndexZ(z));
 
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(
-        dvidUrl.getSynapseUrl(
-          m_dvidInfo.getStartCoordinates().getX(),
-          m_dvidInfo.getStartCoordinates().getY(),
-          blockBox.getFirstCorner().getZ(),
-          width, height, blockBox.getDepth()));
-
-  for (size_t i = 0; i < obj.size(); ++i) {
-    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    if (synapseJson.hasKey("Pos")) {
-//      ZJsonArray posJson(synapseJson.value("Pos"));
-//      int x = ZJsonParser::integerValue(posJson.at(0));
-//      int y = ZJsonParser::integerValue(posJson.at(1));
-//      int z = ZJsonParser::integerValue(posJson.at(2));
-
-      ZDvidSynapse synapse;
-      synapse.loadJsonObject(synapseJson);
-      addSynapse(synapse, DATA_LOCAL);
+  if (currentArea > 0 && currentArea < m_maxPartialArea) {
+    QRect viewPort = m_view->getViewParameter().getViewPort();
+    ZIntCuboid box(viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
+                   viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
+    update(box);
+    for (int cz = blockBox.getFirstCorner().getZ();
+         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+      SynapseSlice &slice = getSlice(cz, ADJUST_FULL);
+      slice.setDataRect(viewPort);
+      slice.setStatus(STATUS_PARTIAL_READY);
     }
-  }
+  } else {
+    int width = m_dvidInfo.getEndCoordinates().getX() -
+        m_dvidInfo.getStartCoordinates().getX() + 1;
+    int height = m_dvidInfo.getEndCoordinates().getY() -
+        m_dvidInfo.getStartCoordinates().getY() + 1;
+    ZIntCuboid box;
 
-  for (int cz = blockBox.getFirstCorner().getZ();
-       cz <= blockBox.getLastCorner().getZ(); ++cz) {
-    getSlice(cz, ADJUST_FULL).setStatus(STATUS_READY);
+    box.setFirstCorner(m_dvidInfo.getStartCoordinates().getX(),
+                       m_dvidInfo.getStartCoordinates().getY(),
+                       blockBox.getFirstCorner().getZ());
+    box.setSize(width, height, blockBox.getDepth());
+
+    update(box);
+#if 0
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZJsonArray obj = m_reader.readJsonArray(
+          dvidUrl.getSynapseUrl(
+            m_dvidInfo.getStartCoordinates().getX(),
+            m_dvidInfo.getStartCoordinates().getY(),
+            blockBox.getFirstCorner().getZ(),
+            width, height, blockBox.getDepth()));
+
+    for (size_t i = 0; i < obj.size(); ++i) {
+      ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (synapseJson.hasKey("Pos")) {
+        //      ZJsonArray posJson(synapseJson.value("Pos"));
+        //      int x = ZJsonParser::integerValue(posJson.at(0));
+        //      int y = ZJsonParser::integerValue(posJson.at(1));
+        //      int z = ZJsonParser::integerValue(posJson.at(2));
+
+        ZDvidSynapse synapse;
+        synapse.loadJsonObject(synapseJson);
+        addSynapse(synapse, DATA_LOCAL);
+      }
+    }
+#endif
+
+    for (int cz = blockBox.getFirstCorner().getZ();
+         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+      getSlice(cz, ADJUST_FULL).setStatus(STATUS_READY);
+    }
   }
 }
 
@@ -343,7 +400,13 @@ void ZDvidSynapseEnsemble::display(
           z <= m_dvidInfo.getEndCoordinates().getZ()) {
         SynapseSlice &synapseSlice =
             const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z, ADJUST_FULL);
-        if (!synapseSlice.isReady()) {
+        bool isReady = synapseSlice.isReady();
+
+        if (!isReady && m_view != NULL) {
+          isReady =
+              synapseSlice.isReady(m_view->getViewPort(NeuTube::COORD_STACK));
+        }
+        if (!isReady) {
           int blockZ = m_dvidInfo.getBlockIndexZ(z);
           if (blockZ != currentBlockZ) {
             currentBlockZ = blockZ;
@@ -692,6 +755,25 @@ bool ZDvidSynapseEnsemble::SynapseSlice::contains(int x, int y) const
 
   return false;
 }
+
+bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
+{
+  if (m_status == STATUS_READY) {
+    return true;
+  }
+
+  if (m_status == STATUS_PARTIAL_READY) {
+    return m_dataRect == rect;
+  }
+
+  return false;
+}
+
+void ZDvidSynapseEnsemble::SynapseSlice::setDataRect(const QRect &rect)
+{
+  m_dataRect = rect;
+}
+
 
 ZDvidSynapseEnsemble::SynapseMap&
 ZDvidSynapseEnsemble::SynapseSlice::getMap(int y)

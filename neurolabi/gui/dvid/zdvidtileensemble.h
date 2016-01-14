@@ -44,8 +44,10 @@ public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
   void updateContrast();
+#if defined(_ENABLE_LIBDVIDCPP_)
   void updateTile(libdvid::Slice2D slice,
                   int resLevel, const std::vector<int> &loc, int z, ZDvidTile *tile);
+#endif
 
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
