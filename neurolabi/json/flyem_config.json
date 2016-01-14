@@ -572,6 +572,7 @@
       "body_label": "bodies1104",
       "label_block": "labels1104",
       "multires_tile": "graytiles",
+      "synapse": "synapses",
       "user_name": ["zhaot", "takemuras"]
     }
   ]

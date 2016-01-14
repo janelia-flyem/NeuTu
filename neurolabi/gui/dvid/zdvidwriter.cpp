@@ -567,7 +567,6 @@ bool ZDvidWriter::runCommand(QProcess &process)
 #if defined(_ENABLE_LIBDVIDCPP_)
 std::string ZDvidWriter::del(const std::string &url)
 {
-#ifdef _DEBUG_
   std::cout << "HTTP DELETE: " << url << std::endl;
   m_statusCode = 0;
   std::string response;
@@ -587,7 +586,6 @@ std::string ZDvidWriter::del(const std::string &url)
   }
 
   return response;
-#endif
 }
 
 std::string ZDvidWriter::post(
