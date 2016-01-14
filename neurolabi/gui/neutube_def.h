@@ -40,6 +40,14 @@ enum EAxis {
   X_AXIS, Y_AXIS, Z_AXIS
 };
 
+enum EPLANE {
+  PLANE_XY, PLANE_ZX, PLANE_YZ
+};
+
+enum EAxisSystem {
+  AXIS_NORMAL, AXIS_SHIFTED
+};
+
 enum ECoordinateSystem {
   COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
   COORD_WORLD, COORD_CANVAS
