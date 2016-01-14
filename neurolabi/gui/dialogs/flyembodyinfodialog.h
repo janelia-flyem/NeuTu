@@ -60,11 +60,33 @@ private slots:
     void onGotoBodies();
 
 private:
+    enum Tabs {
+        COLORS_TAB,
+        CONNECTIONS_TAB
+        };
+    enum BodyTableColumns {
+        BODY_ID_COLUMN,
+        BODY_NAME_COLUMN,
+        BODY_NPRE_COLUMN,
+        BODY_NPOST_COLUMN,
+        BODY_STATUS_COLUMN
+    };
+    enum FilterTableColumns {
+        FILTER_NAME_COLUMN,
+        FILTER_COLOR_COLUMN
+    };
+    enum IOBodyTableColumns {
+        IOBODY_ID_COLUMN,
+        IOBODY_NAME_COLUMN,
+        IOBODY_NUMBER_COLUMN
+    };
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
+    QStandardItemModel* m_inputBodyModel;
     QSortFilterProxyModel* m_bodyProxy;
     QSortFilterProxyModel* m_filterProxy;
+    QSortFilterProxyModel* m_inputBodyProxy;
     QSortFilterProxyModel* m_schemeBuilderProxy;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
@@ -89,22 +111,7 @@ private:
     void setFilterTableModelColor(QColor color, int modelRow);
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
-
-    enum Tabs {
-        COLORS_TAB,
-        CONNECTIONS_TAB
-        };
-    enum BodyTableColumns {
-        BODY_ID_COLUMN,
-        BODY_NAME_COLUMN,
-        BODY_NPRE_COLUMN,
-        BODY_NPOST_COLUMN,
-        BODY_STATUS_COLUMN
-    };
-    enum FilterTableColumns {
-        FILTER_NAME_COLUMN,
-        FILTER_COLOR_COLUMN
-    };
+    void setInputBodyHeaders(QStandardItemModel *model);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
