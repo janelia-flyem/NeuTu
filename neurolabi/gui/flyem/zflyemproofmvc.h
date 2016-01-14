@@ -110,7 +110,9 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
+  void locateBody(uint64_t bodyId, bool appending);
   void locateBody(uint64_t bodyId);
+  void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending);
 

@@ -16659,7 +16659,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 
   tic();
-  image.setData(data);
+  image.setData(data, 0);
   ptoc();
 
   tic();

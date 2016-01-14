@@ -8,6 +8,7 @@
 #include "zglmutils.h"
 #include "zintpoint.h"
 #include "zsttransform.h"
+#include "neutube.h"
 
 class ZStack;
 class ZObject3dScan;
@@ -44,6 +45,8 @@ public:
 
   void setData(const ZStack *stack, int z, bool ignoringZero = false,
                bool offsetAdjust = true);
+  void setData(const ZStack *stack, int z, NeuTube::EAxis sliceAxis,
+               bool ignoringZero = false, bool offsetAdjust = true);
 
   void setData(const color_t *data, int alpha = 255);
   void setCData(const color_t *data, double scale, double offset);

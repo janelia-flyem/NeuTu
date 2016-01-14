@@ -943,6 +943,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
+  connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
+          this, SLOT(addLocateBody(uint64_t)));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
@@ -1595,6 +1597,9 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif
+
+//      launchSplitFunc(bodyId);
+
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
@@ -2247,7 +2252,7 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 #endif
 }
 
-void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
     ZDvidReader reader;
@@ -2276,7 +2281,9 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
         ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
-          slice->clearSelection();
+          if (!appending) {
+            slice->clearSelection();
+          }
           slice->addSelection(
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);
@@ -2294,6 +2301,16 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
       }
     }
   }
+}
+
+void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+{
+  locateBody(bodyId, false);
+}
+
+void ZFlyEmProofMvc::addLocateBody(uint64_t bodyId)
+{
+  locateBody(bodyId, true);
 }
 
 void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
