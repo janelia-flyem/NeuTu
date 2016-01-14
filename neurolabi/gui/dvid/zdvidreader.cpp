@@ -201,7 +201,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
-  reader.setService(m_service);
+  //reader.setService(m_service);
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
   reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
@@ -222,7 +222,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
-  reader.setService(m_service);
+  //reader.setService(m_service);
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
 
