@@ -204,6 +204,7 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, int z, ZObject3dScan *result)
 #if defined(_ENABLE_LIBDVIDCPP_)
 //  reader.setService(m_service);
 #endif
+
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
   reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
@@ -224,9 +225,11 @@ ZObject3dScan *ZDvidReader::readBody(int bodyId, ZObject3dScan *result)
   }
 
   ZDvidBufferReader reader;
+
 #if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
+//  reader.setService(m_service);
 #endif
+
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
 

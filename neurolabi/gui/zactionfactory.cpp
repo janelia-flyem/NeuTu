@@ -2,6 +2,8 @@
 #include <QWidget>
 #include <QObject>
 #include <QUndoStack>
+#include <QString>
+
 #include "zstackdoc.h"
 #include "zactionactivator.h"
 #include "zstackpresenter.h"
@@ -446,13 +448,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_LINK:
     action = new QAction("Link Synapses", parent);
-    action->setShortcut(Qt::Key_C);
+    action->setShortcut(QObject::tr("Ctrl+C"));
     action->setIcon(QIcon(":/images/connect.png"));
     action->setStatusTip("Link selected synapses");
     break;
   case ACTION_SYNAPSE_UNLINK:
     action = new QAction("Unlink Synapses", parent);
-    action->setShortcut(Qt::Key_B);
+    action->setShortcut(QObject::tr("Ctrl+B"));
     action->setIcon(QIcon(":/images/cut.png"));
     action->setStatusTip("Unlink selected synapses");
     break;
