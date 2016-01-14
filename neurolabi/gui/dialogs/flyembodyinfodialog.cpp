@@ -33,10 +33,16 @@
  * -- in setBodyHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
  *
- * I really should be creating model and headers from a constant headers list
  *
- * at some point, it would be good to separate the load logic into
- * its own class
+ * notes:
+ * -- I really should be creating model and headers from a constant headers list
+ *
+ * -- at some point, it would be good to separate the load logic into its own class
+ *
+ * -- in fact, a lot of things need to be separated out; I wrote this when I
+ *      was just learning Qt, and using the designer on top of that, so
+ *      I didn't create new widgets to compose due to lack of
+ *      experience and time; that's why everthing is in this one class
  *
  *
  * djo, 7/15
@@ -89,7 +95,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
-    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(activateBody(QModelIndex)));
+    connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
     connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
@@ -111,9 +117,19 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 }
 
+void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
+{
+    if (modelIndex.column() == 0) {
+        // body ID column:
+        activateBody(modelIndex);
+    } else if (modelIndex.column() == 2 || modelIndex.column() == 3) {
+        // pre/post synapse count columns:
+        gotoPrePost(modelIndex);
+    }
+}
+
 void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
 {
-  if (modelIndex.column() == 0) {
     QStandardItem *item = m_bodyModel->itemFromIndex(m_bodyProxy->mapToSource(modelIndex));
     uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
 
@@ -131,7 +147,6 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
         emit bodyActivated(bodyId);
     }
 
-  }
 }
 
 void FlyEmBodyInfoDialog::onGotoBodies() {
@@ -864,6 +879,45 @@ ZJsonArray FlyEmBodyInfoDialog::getColorMapAsJson(ZJsonArray colors) {
 void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
     ZJsonArray colors;
     getColorMapAsJson(colors).dump(filename.toStdString());
+}
+
+void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
+
+    // grab the body ID; same row, first column
+    QModelIndex index = m_bodyProxy->mapToSource(modelIndex);
+    QStandardItem *item = m_bodyModel->item(index.row(), 0);
+    uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
+
+    // get name, too, if it's there, then update label
+    QStandardItem *item2 = m_bodyModel->item(index.row(), 1);
+    if (item2) {
+        updateBodyConnectionLabel(bodyId, item2->data(Qt::DisplayRole).toString());
+    } else {
+        updateBodyConnectionLabel(bodyId, "");
+    }
+
+    // activate tab
+    ui->tabWidget->setCurrentIndex(CONNECTIONS_TAB);
+
+    // clear model and update so it's blank?
+
+    // loading message?
+
+    // trigger retrieval of synapse partners
+
+}
+
+void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bodyName) {
+
+    std::ostringstream outputStream;
+    outputStream << "Connections for ";
+    if (bodyName.size() > 0) {
+        outputStream << bodyName.toStdString() << " (ID " << bodyID << ")";
+    } else {
+        outputStream << "body ID " << bodyID;
+    }
+    ui->connectionBodyLabel->setText(QString::fromStdString(outputStream.str()));
+
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

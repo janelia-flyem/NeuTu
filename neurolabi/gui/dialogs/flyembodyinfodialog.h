@@ -38,6 +38,7 @@ signals:
 private slots:
     void onCloseButton();
     void onRefreshButton();
+    void onDoubleClickBodyTable(QModelIndex modelIndex);
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
     void onjsonLoadBookmarksError(QString message);
@@ -88,6 +89,10 @@ private:
     ZJsonArray getColorMapAsJson(ZJsonArray colors);
     bool isValidColorMap(ZJsonValue colors);
     void setFilterTableModelColor(QColor color, int modelRow);
+    void gotoPrePost(QModelIndex modelIndex);
+    void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
+
+    enum tabs { COLORS_TAB, CONNECTIONS_TAB };
 };
 
 #endif // FLYEMBODYINFODIALOG_H
