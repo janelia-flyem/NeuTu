@@ -29,7 +29,7 @@
  * loaded from DVID
  *
  * to add/remove/alter columns in body table:
- * -- in createModel(), change ncol
+ * -- when creating model, change # columns
  * -- in setBodyHeaders(), adjust headers
  * -- in updateModel(), adjust data load and initial sort order
  * -- in enum in .h file, add new column constant
@@ -60,7 +60,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 
     // first table manages list of bodies
-    m_bodyModel = createModel(ui->bodyTableView);
+    m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
+    setBodyHeaders(m_bodyModel);
 
     m_bodyProxy = new QSortFilterProxyModel(this);
     m_bodyProxy->setSourceModel(m_bodyModel);
@@ -73,7 +74,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // second table manages list of color filters, which 
     //  as a whole constitute the color map
-    m_filterModel = createFilterModel(ui->filterTableView);
+    m_filterModel = new QStandardItemModel(0, 2, ui->filterTableView);
+    setFilterHeaders(m_filterModel);
 
     m_filterProxy = new QSortFilterProxyModel(this);
     m_filterProxy->setSourceModel(m_filterModel);
@@ -198,12 +200,6 @@ void FlyEmBodyInfoDialog::applicationQuitting() {
     m_quitting = true;
 }
 
-QStandardItemModel* FlyEmBodyInfoDialog::createFilterModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 2, parent);
-    setFilterHeaders(model);
-    return model;
-}
-
 void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem(QString("name")));
@@ -215,12 +211,6 @@ void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(FILTER_NAME_COLUMN, new QStandardItem(QString("Filter")));
     model->setHorizontalHeaderItem(FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
-}
-
-QStandardItemModel* FlyEmBodyInfoDialog::createModel(QObject* parent) {
-    QStandardItemModel* model = new QStandardItemModel(0, 5, parent);
-    setBodyHeaders(model);
-    return model;
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {

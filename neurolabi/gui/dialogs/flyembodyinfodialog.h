@@ -71,8 +71,6 @@ private:
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
-    QStandardItemModel* createModel(QObject*);
-    QStandardItemModel* createFilterModel(QObject*);
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
