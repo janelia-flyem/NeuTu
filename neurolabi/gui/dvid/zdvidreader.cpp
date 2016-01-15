@@ -1322,7 +1322,75 @@ bool ZDvidReader::hasSparseVolume() const
   //return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
 }
 
-bool ZDvidReader::hasSparseVolume(int bodyId) const
+bool ZDvidReader::hasBody(uint64_t bodyId) const
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service.get() != NULL) {
+    try {
+      return m_service->body_exists(m_dvidTarget.getBodyLabelName(), bodyId);
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+      return false;
+    }
+  }
+#else
+  return hasSparseVolume(bodyId);
+#endif
+
+  return false;
+}
+
+ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
+{
+  ZIntPoint location;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service.get() != NULL) {
+    try {
+      libdvid::PointXYZ dpt =
+          m_service->get_body_location(
+            m_dvidTarget.getBodyLabelName(), bodyId);
+      location.set(dpt.x, dpt.y, dpt.z);
+    } catch (std::exception &e) {
+      std::cout << e.what() << std::endl;
+    }
+  } else {
+    ZObject3dScan body = readCoarseBody(bodyId);
+    if (!body.isEmpty()) {
+      ZDvidInfo dvidInfo = readGrayScaleInfo();
+
+      ZObject3dScan objSlice = body.getMedianSlice();
+      ZVoxel voxel = objSlice.getMarker();
+  //        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+      ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+      pt -= dvidInfo.getStartBlockIndex();
+      pt *= dvidInfo.getBlockSize();
+      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                      dvidInfo.getBlockSize().getY() / 2, 0);
+      pt += dvidInfo.getStartCoordinates();
+    }
+  }
+#else
+  ZObject3dScan body = readCoarseBody(bodyId);
+  if (!body.isEmpty()) {
+    ZDvidInfo dvidInfo = readGrayScaleInfo();
+
+    ZObject3dScan objSlice = body.getMedianSlice();
+    ZVoxel voxel = objSlice.getMarker();
+//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+    ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+    pt -= dvidInfo.getStartBlockIndex();
+    pt *= dvidInfo.getBlockSize();
+    pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                    dvidInfo.getBlockSize().getY() / 2, 0);
+    pt += dvidInfo.getStartCoordinates();
+  }
+#endif
+
+  return location;
+}
+
+bool ZDvidReader::hasSparseVolume(uint64_t bodyId) const
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -1479,7 +1547,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   return dag;
 }
 
-ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId)
+ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
 {
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)

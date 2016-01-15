@@ -118,8 +118,11 @@ public:
                        int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
-  bool hasSparseVolume(int bodyId) const;
+  bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(int bodyId) const;
+  bool hasBody(uint64_t bodyId) const;
+
+  ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
   bool hasCoarseSparseVolume(int bodyId) const;
 
@@ -144,7 +147,7 @@ public:
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
 
-  ZObject3dScan readCoarseBody(uint64_t bodyId);
+  ZObject3dScan readCoarseBody(uint64_t bodyId) const;
 
   ZObject3dScan readRoi(const std::string &dataName);
 

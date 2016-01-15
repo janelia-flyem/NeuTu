@@ -945,6 +945,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(locateBody(uint64_t)));
   connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
           this, SLOT(addLocateBody(uint64_t)));
+  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(locateBody(QList<uint64_t>)));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
@@ -2250,6 +2252,55 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 
   return idSet;
 #endif
+}
+
+
+void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
+{
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      QList<uint64_t> goodIdList;
+      QList<uint64_t> badIdList;
+      foreach(uint64_t bodyId, bodyIdList) {
+        if (reader.hasBody(bodyId)) {
+          goodIdList.append(bodyId);
+        } else {
+          badIdList.append(bodyId);
+        }
+      }
+
+      if (!badIdList.isEmpty()) {
+        std::ostringstream stream;
+        stream << "Cannot find body: ";
+        foreach (uint64_t badId, badIdList) {
+          stream << badId;
+        }
+
+        ZWidgetMessage(stream.str().c_str(), NeuTube::MSG_WARNING);
+      }
+
+      if (!goodIdList.isEmpty()) {
+        uint64_t goodId = goodIdList.front();
+        ZIntPoint pt = reader.readBodyLocation(goodId);
+        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        if (slice != NULL) {
+          slice->recordSelection();
+          slice->clearSelection();
+          foreach(uint64_t bodyId, goodIdList) {
+            slice->addSelection(
+                  slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+                  NeuTube::BODY_LABEL_MAPPED);
+          }
+          slice->processSelection();
+          processLabelSliceSelectionChange();
+        }
+        updateBodySelection();
+
+        zoomTo(pt);
+      }
+    }
+  }
 }
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
