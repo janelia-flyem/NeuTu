@@ -131,6 +131,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadBookmarksError(QString)), this, SLOT(onjsonLoadBookmarksError(QString)));
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
+    connect(this, SIGNAL(inputBodiesLoaded(ZJsonValue)), this, SLOT(onInputBodiesLoaded(ZJsonValue)));
 
 }
 
@@ -909,15 +910,16 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
         updateBodyConnectionLabel(bodyId, "");
     }
 
-    // activate tab
+    // activate tab & clear model
     ui->tabWidget->setCurrentIndex(CONNECTIONS_TAB);
+    m_inputBodyModel->clear();
 
-    // clear model and update so it's blank?
-
-    // loading message?
+    // loading message would go here
 
     // trigger retrieval of synapse partners
-
+    if (m_currentDvidTarget.isValid()) {
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget);
+    }
 }
 
 void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bodyName) {
@@ -930,6 +932,80 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
         outputStream << "body ID " << bodyID;
     }
     ui->connectionBodyLabel->setText(QString::fromStdString(outputStream.str()));
+
+}
+
+void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
+    std::cout << "pretending to retrieve input/output bodies from DVID" << std::endl;
+
+
+
+    // dummy implementation: just return some hard-coded stuff until the API is hooked up
+
+
+    ZJsonArray bodies;
+
+    ZJsonObject body1;
+    body1.setEntry("body ID", 1234);
+    body1.setEntry("name", "Mi17");
+    body1.setEntry("number", 4);
+    bodies.append(body1);
+
+    ZJsonObject body2;
+    body2.setEntry("body ID", 4321);
+    // body2.setEntry("name", "Mi17");
+    body2.setEntry("number", 1);
+    bodies.append(body2);
+
+    ZJsonObject body3;
+    body3.setEntry("body ID", 73746);
+    body3.setEntry("name", "MB-23");
+    body3.setEntry("number", 2);
+    bodies.append(body3);
+
+
+    emit inputBodiesLoaded(bodies);
+
+}
+
+void FlyEmBodyInfoDialog::onInputBodiesLoaded(ZJsonValue bodiesData) {
+    std::cout << "pretending to populate input bodies table" << std::endl;
+
+    m_inputBodyModel->clear();
+    setInputBodyHeaders(m_inputBodyModel);
+
+    ZJsonArray bodies(bodiesData);
+    m_inputBodyModel->setRowCount(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        ZJsonObject body(bodies.at(i), false);
+
+        // carefully set data for column items so they will sort
+        //  properly (eg, IDs numerically, not lexically)
+        qulonglong bodyID = ZJsonParser::integerValue(body["body ID"]);
+        QStandardItem * bodyIDItem = new QStandardItem();
+        bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+        m_inputBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
+
+        if (body.hasKey("name")) {
+            const char* name = ZJsonParser::stringValue(body["name"]);
+            m_inputBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(QString(name)));
+        }
+
+        int number = ZJsonParser::integerValue(body["number"]);
+        QStandardItem * numberItem = new QStandardItem();
+        numberItem->setData(QVariant(number), Qt::DisplayRole);
+        m_inputBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
+
+
+    }
+
+
+    // the resize isn't reliable, so set the name column wider by hand
+    ui->inputBodyTableView->resizeColumnsToContents();
+    ui->inputBodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    ui->inputBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
+
+    // would remove "loading" status indicator here
 
 }
 

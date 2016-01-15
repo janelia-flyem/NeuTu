@@ -299,7 +299,17 @@
             </widget>
            </item>
            <item>
-            <widget class="QTableView" name="inputBodyTableView"/>
+            <widget class="QTableView" name="inputBodyTableView">
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
            </item>
           </layout>
          </item>
@@ -319,7 +329,17 @@
             </widget>
            </item>
            <item>
-            <widget class="QTableView" name="outputBodyTableView_2"/>
+            <widget class="QTableView" name="outputBodyTableView">
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
            </item>
           </layout>
          </item>
