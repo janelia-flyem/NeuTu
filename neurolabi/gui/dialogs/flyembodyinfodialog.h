@@ -34,6 +34,7 @@ signals:
   void loadCompleted();
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
+  void inputBodiesLoaded(ZJsonValue bodies);
 
 private slots:
     void onCloseButton();
@@ -57,7 +58,8 @@ private slots:
     void onLoadColorMap();
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
-    void onGotoBodies();
+    void onGotoBodies();    
+    void onInputBodiesLoaded(ZJsonValue bodies);
 
 private:
     enum Tabs {
@@ -112,6 +114,7 @@ private:
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
     void setInputBodyHeaders(QStandardItemModel *model);
+    void retrieveIOBodiesDvid(ZDvidTarget target);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
