@@ -74,6 +74,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
   connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
           this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
@@ -174,8 +176,18 @@ void FlyEmProofControlForm::createMenu()
   connect(clearMergeAction, SIGNAL(triggered()),
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
+
+  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
+  developerMenu->addAction(exportBodyAction);
 #endif
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::exportSelectedBody()
+{
+  emit exportingSelectedBody();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
@@ -257,6 +269,18 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
   setInfo(target.toJsonObject().dumpString(2).c_str());
+}
+
+
+void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      m_userBookmarkList.removeBookmark(bookmark);
+    } else {
+      m_assignedBookmarkList.removeBookmark(bookmark);
+    }
+  }
 }
 
 void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)

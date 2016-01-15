@@ -4,6 +4,7 @@
 #include "jansson.h"
 
 #include <string>
+#include <vector>
 
 namespace C_Json {
 json_t* makeObject();
@@ -46,7 +47,33 @@ bool isBoolean(const json_t *value);
 
 bool dump(const json_t *obj, const char *filePath);
 
+json_type type(const json_t *value);
 
+const char* stringValue(const json_t *value);
+double numberValue(const json_t *value);
+
+/*!
+ * \brief Integer value of a json value.
+ *
+ * \return 0 if \a value is not in integer type or it is NULL.
+ */
+int64_t integerValue(const json_t *value);
+bool booleanValue(const json_t *value);
+
+//It returns 0 if <array> is not an array
+size_t arraySize(const json_t *array);
+
+json_t* arrayValue(const json_t *array, size_t index);
+
+const char* stringValue(const json_t *value, size_t index);
+double numberValue(const json_t *value, size_t index);
+int integerValue(const json_t *value, size_t index);
+
+std::vector<int> integerArray(const json_t *value);
+
+void print(const char *key, json_t *value, int indent);
+
+json_t* clone(json_t *value);
 }
 
 #endif // C_JSON_H

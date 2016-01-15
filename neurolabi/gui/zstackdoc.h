@@ -5,11 +5,6 @@
 #ifndef _ZSTACKDOC_H_
 #define _ZSTACKDOC_H_
 
-/**@file zstackdoc.h
- * @brief Stack document
- * @author Ting Zhao
- */
-
 #include <QString>
 #include <QList>
 #include <QUrl>
@@ -121,26 +116,6 @@ public:
     SWC_DATA, PUNCTA_DATA, STACK_DATA, NETWORK_DATA
   };
 
-#if 0
-  enum EActionItem {
-    ACTION_MEASURE_SWC_NODE_LENGTH, ACTION_MEASURE_SCALED_SWC_NODE_LENGTH,
-    ACTION_SWC_SUMMARIZE,
-    ACTION_CHNAGE_SWC_NODE_SIZE, ACTION_TRANSLATE_SWC_NODE,
-    ACTION_SET_SWC_ROOT, ACTION_INSERT_SWC_NODE,
-    ACTION_RESET_BRANCH_POINT, ACTION_SET_BRANCH_POINT,
-    ACTION_CONNECTED_ISOLATED_SWC,
-    ACTION_DELETE_SWC_NODE, ACTION_CONNECT_SWC_NODE,
-    ACTION_MERGE_SWC_NODE, ACTION_BREAK_SWC_NODE,
-    ACTION_SELECT_DOWNSTREAM, ACTION_SELECT_UPSTREAM,
-    ACTION_SELECT_NEIGHBOR_SWC_NODE,
-    ACTION_SELECT_SWC_BRANCH, ACTION_SELECT_CONNECTED_SWC_NODE,
-    ACTION_SELECT_ALL_SWC_NODE,
-    ACTION_CHANGE_SWC_TYPE, ACTION_CHANGE_SWC_SIZE, ACTION_REMOVE_TURN,
-    ACTION_RESOLVE_CROSSOVER, ACTION_SWC_Z_INTERPOLATION,
-    ACTION_SWC_RADIUS_INTERPOLATION, ACTION_SWC_POSITION_INTERPOLATION,
-    ACTION_SWC_INTERPOLATION
-  };
-#endif
   enum EObjectModifiedMode {
     OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
   };
@@ -201,7 +176,6 @@ public: //attributes
   virtual void deprecateDependent(EComponent component);
   virtual void deprecate(EComponent component);
   virtual bool isDeprecated(EComponent component);
-
 
   virtual void clearData();
 
@@ -291,21 +265,6 @@ public: //attributes
 
   QMap<const Swc_Tree_Node*, const ZSwcTree*> getSelectedSwcNodeMap() const;
 
-  //ZStackViewParam getSelectedSwcNodeView() const;
-
-#if 0
-  inline std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() {
-    return &m_selectedSwcTreeNodes;}
-  inline const std::set<Swc_Tree_Node*>* selectedSwcTreeNodes() const {
-    return &m_selectedSwcTreeNodes;}
-#endif
-
-  /*
-  inline std::set<ZStroke2d*>* selectedStrokeList() {
-    return &m_selectedStroke;}
-  inline const std::set<ZStroke2d*>* selectedStrokeList() const {
-    return &m_selectedStroke;}
-    */
 
   inline ZSwcNetwork* swcNetwork() { return m_swcNetwork; }
   ZResolution stackResolution() const;
@@ -601,9 +560,9 @@ public:
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y);
 
-  Swc_Tree_Node *swcHitTest(double x, double y) const;
-  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
-  Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
+//  Swc_Tree_Node *swcHitTest(double x, double y) const;
+//  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
+//  Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
   Swc_Tree_Node *selectSwcTreeNode(int x, int y, int z, bool append = false);
   Swc_Tree_Node *selectSwcTreeNode(const ZPoint &pt, bool append = false);
 
@@ -906,6 +865,8 @@ public:
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
+
+  void notify(const ZWidgetMessage &msg);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }

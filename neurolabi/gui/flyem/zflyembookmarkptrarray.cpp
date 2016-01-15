@@ -34,11 +34,24 @@ ZFlyEmBookmark* const& ZFlyEmBookmarkPtrArray::operator [] (size_t index) const
   return m_bookmarkArray[index];
 }
 
-void ZFlyEmBookmarkPtrArray::remove(
+int ZFlyEmBookmarkPtrArray::remove(
     const QVector<ZFlyEmBookmark *> &bookmarkArray)
 {
+  int count = 0;
   for (QVector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
        iter != bookmarkArray.end(); ++iter) {
-    m_bookmarkArray.removeOne(*iter);
+    count += m_bookmarkArray.removeOne(*iter);
   }
+
+  return count;
+}
+
+bool ZFlyEmBookmarkPtrArray::remove(ZFlyEmBookmark *bookmark)
+{
+  return m_bookmarkArray.removeOne(bookmark);
+}
+
+int ZFlyEmBookmarkPtrArray::findFirstIndex(ZFlyEmBookmark *bookmark) const
+{
+  return m_bookmarkArray.indexOf(bookmark);
 }

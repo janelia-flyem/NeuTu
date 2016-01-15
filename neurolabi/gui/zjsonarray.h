@@ -78,6 +78,8 @@ public:
    */
   bool decode(const std::string &str);
 
+  bool isEmpty() const;
+
   std::string dumpString(int indent = 2) const;
 };
 

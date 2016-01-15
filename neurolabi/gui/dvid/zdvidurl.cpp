@@ -16,10 +16,11 @@ const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
-const std::string ZDvidUrl::m_synapseElementCommand = "element";
-const std::string ZDvidUrl::m_synapseElementsCommand = "elements";
-const std::string ZDvidUrl::m_synapseLabelCommand = "label";
-const std::string ZDvidUrl::m_synapseMoveCommand = "move";
+const std::string ZDvidUrl::m_annotationElementCommand = "element";
+const std::string ZDvidUrl::m_annotationElementsCommand = "elements";
+const std::string ZDvidUrl::m_annotationLabelCommand = "label";
+const std::string ZDvidUrl::m_annotationMoveCommand = "move";
+const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -527,14 +528,58 @@ std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
+std::string ZDvidUrl::getBookmarkKeyUrl() const
+{
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY));
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getBookmarkKeyUrl() << "/" << m_keyCommand << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
+{
+  return getBookmarkKeyUrl(pt.getX(), pt.getY(), pt.getZ());
+}
+
 std::string ZDvidUrl::getBookmarkUrl() const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK));
 }
 
+std::string ZDvidUrl::getBookmarkUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getBookmarkUrl() << "/" << m_annotationElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getBookmarkUrl(
+    const ZIntPoint &pt, int width, int height, int depth) const
+{
+  return getBookmarkUrl(pt.getX(), pt.getY(), pt.getZ(), width, height, depth);
+}
+
+std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
+{
+  return getBookmarkUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+                        box.getDepth());
+}
+
 std::string ZDvidUrl::getCustomBookmarkUrl(const std::string &userName) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), userName);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), userName);
 }
 
 std::string ZDvidUrl::getTileUrl(
@@ -609,6 +654,33 @@ std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
   return getDataUrl(dataName) + "/" + m_roiCommand;
 }
 
+std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName);
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, const std::string tag) const
+{
+  return getAnnotationUrl(dataName) + "/" + m_annotationTagCommand + "/" + tag;
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getAnnotationUrl(dataName) << "/"
+         << m_annotationElementCommand << "/" << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName)
+{
+  return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
+}
+
 std::string ZDvidUrl::getSynapseUrl() const
 {
   return getDataUrl(m_dvidTarget.getSynapseName());
@@ -618,7 +690,7 @@ std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_synapseElementCommand << "/" << x
+  stream << getSynapseUrl() << "/" << m_annotationElementCommand << "/" << x
          << "_" << y << "_" << z;
 
   return stream.str();
@@ -634,7 +706,7 @@ std::string ZDvidUrl::getSynapseUrl(
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_synapseElementsCommand << "/"
+  stream << getSynapseUrl() << "/" << m_annotationElementsCommand << "/"
          << width << "_" << height << "_" << depth << "/"
          << x << "_" << y << "_" << z;
 
@@ -645,7 +717,7 @@ std::string ZDvidUrl::getSynapseElementsUrl() const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_synapseElementsCommand;
+  stream << getSynapseUrl() << "/" << m_annotationElementsCommand;
 
   return stream.str();
 }
@@ -662,7 +734,7 @@ std::string ZDvidUrl::getSynapseMoveUrl(
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_synapseMoveCommand << "/"
+  stream << getSynapseUrl() << "/" << m_annotationMoveCommand << "/"
          << from.getX() << "_" << from.getY() << "_" << from.getZ() << "/"
          << to.getX() << "_" << to.getY() << "_" << to.getZ();
 
@@ -679,7 +751,7 @@ std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_synapseLabelCommand << "/"
+  stream << getSynapseUrl() << "/" << m_annotationLabelCommand << "/"
          << label;
 
   return stream.str();

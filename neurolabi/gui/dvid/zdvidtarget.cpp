@@ -420,6 +420,11 @@ std::string ZDvidTarget::getSynapseName() const
   return m_synapseName;
 }
 
+std::string ZDvidTarget::getBookmarkName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK);
+}
+
 void ZDvidTarget::setSynapseName(const std::string &name)
 {
   m_synapseName = name;

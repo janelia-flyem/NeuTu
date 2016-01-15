@@ -51,6 +51,10 @@ void ZFlyEmProofPresenter::init()
           this, SLOT(tryAddPostSynapseMode()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_MOVE), SIGNAL(triggered()),
           this, SLOT(tryMoveSynapseMode()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_LINK), SIGNAL(triggered()),
+          this, SLOT(linkSelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNLINK), SIGNAL(triggered()),
+          this, SLOT(unlinkSelectedSynapse()));
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
@@ -186,6 +190,16 @@ void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
   getCompleteDocument()->executeRemoveSynapseCommand();
 //  getCompleteDocument()->deleteSelectedSynapse();
+}
+
+void ZFlyEmProofPresenter::linkSelectedSynapse()
+{
+  getCompleteDocument()->executeLinkSynapseCommand();
+}
+
+void ZFlyEmProofPresenter::unlinkSelectedSynapse()
+{
+  getCompleteDocument()->executeUnlinkSynapseCommand();
 }
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()
@@ -375,9 +389,11 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     if (doc != NULL) {
       bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
     }
-    buddyDocument()->executeAddObjectCommand(bookmark);
 
-    emit bookmarkAdded(bookmark);
+    getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+//    buddyDocument()->executeAddObjectCommand(bookmark);
+
+//    emit bookmarkAdded(bookmark);
   }
 }
 
@@ -398,6 +414,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
     break;
+  case ZStackOperator::OP_BOOKMARK_DELETE:
+    getCompleteDocument()->executeRemoveBookmarkCommand();
+    break;
   case ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE:
     tryAddBookmarkMode();
     break;
@@ -412,6 +431,12 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
     getCompleteDocument()->getDvidSynapseEnsemble()->selectHitWithPartner(false);
+    if (e != NULL) {
+      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
+    getCompleteDocument()->getDvidSynapseEnsemble()->toggleHitSelectWithPartner();
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }

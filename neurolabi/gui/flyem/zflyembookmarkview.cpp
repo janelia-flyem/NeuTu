@@ -155,10 +155,17 @@ void ZFlyEmBookmarkView::deleteSelectedBookmark()
 
   QModelIndexList selected = sourceSelection.indexes();
 
+  QList<ZFlyEmBookmark*> bookmarkList;
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
-    emit removingBookmark(bookmark);
+
+    bookmarkList.append(bookmark);
+//    emit removingBookmark(bookmark);
 //    getModel()->removeRow(index.row());
+  }
+
+  if (!bookmarkList.empty()) {
+    emit removingBookmark(bookmarkList);
   }
 }
 

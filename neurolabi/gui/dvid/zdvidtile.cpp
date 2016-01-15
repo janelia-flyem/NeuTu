@@ -253,31 +253,7 @@ void ZDvidTile::display(
     //}
   }
 }
-#if 0
-void ZDvidTile::update(int x, int y, int z, int width, int height)
-{
 
-  bool updating = false;
-  if (m_stack == NULL) {
-    m_stack = ZStackFactory::makeZeroStack(GREY, width, height, 1);
-    m_stack->setOffset(x, y, z);
-    updating = true;
-  } else if (m_stack->getOffset().getZ() != z ||
-             m_stack->getOffset().getX() != x ||
-             m_stack->getOffset().getZ() != z ||
-             m_stack->width() != width || m_stack->height() != height) {
-    updating = true;
-  }
-
-  if (updating) {
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
-      Stack *stack = reader.readTile(x, y, z, width, heigth, m_res.getLevel());
-    }
-  }
-
-}
-#endif
 void ZDvidTile::setTileIndex(int ix, int iy)
 {
   m_ix = ix;
@@ -361,15 +337,23 @@ void ZDvidTile::setResolutionLevel(int level)
   m_res.setLevel(level);
 }
 
-void ZDvidTile::setDvidTarget(const ZDvidTarget &target)
+void ZDvidTile::setDvidTarget(
+    const ZDvidTarget &target, const ZDvidTileInfo &tileInfo)
 {
   m_dvidTarget = target;
+  setTileInfo(tileInfo);
+
   if (!m_tilingInfo.isValid()) {
     ZDvidReader reader;
     if (reader.open(target)) {
       m_tilingInfo = reader.readTileInfo(target.getMultiscale2dName());
     }
   }
+}
+
+void ZDvidTile::setTileInfo(const ZDvidTileInfo &tileInfo)
+{
+  m_tilingInfo = tileInfo;
 }
 
 int ZDvidTile::getX() const

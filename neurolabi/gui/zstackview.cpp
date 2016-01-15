@@ -550,6 +550,7 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     bool blockingPaint = m_isRedrawBlocked || !buddyDocument()->isReadyForPaint();
 
+
     m_imageWidget->blockPaint(blockingPaint);
 
     qDebug() << "Blocking paint:" <<blockingPaint;
@@ -736,13 +737,13 @@ void ZStackView::redraw(EUpdateOption option)
   buddyDocument()->blockSignals(false);
 
   paintStackBuffer();
-//  std::cout << "paint stack per frame: " << timer.restart() << std::endl;
+  std::cout << "paint stack per frame: " << timer.elapsed() << std::endl;
   paintMaskBuffer();
   paintTileCanvasBuffer();
-//  std::cout << "paint tile per frame: " << timer.restart() << std::endl;
+  std::cout << "paint tile per frame: " << timer.elapsed() << std::endl;
   paintActiveDecorationBuffer();
   paintObjectBuffer();
-//  std::cout << "paint object per frame: " << timer.restart() << std::endl;
+  std::cout << "paint object per frame: " << timer.elapsed() << std::endl;
 
   updateImageScreen(option);
 
@@ -750,7 +751,12 @@ void ZStackView::redraw(EUpdateOption option)
 //  std::cout << "Paint time per frame: " << timer.time() * 1000 << " ms" << std::endl;
 //  std::cout << "paint time per frame: " << toc() << std::endl;
 #if defined(_FLYEM_)
-  qDebug() << "paint time per frame: " << timer.restart();
+  qint64 paintTime = timer.elapsed();
+
+  qDebug() << "paint time per frame: " << paintTime;
+  if (paintTime > 3000) {
+    LWARN() << "Debugging for hiccup.";
+  }
 #endif
 }
 

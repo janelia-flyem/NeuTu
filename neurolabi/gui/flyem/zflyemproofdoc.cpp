@@ -34,6 +34,7 @@
 #include "zflyemsequencercolorscheme.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsynpasecommand.h"
+#include "dvid/zflyembookmarkcommand.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -83,8 +84,10 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
+  /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
+          */
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -652,23 +655,42 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
 
 void ZFlyEmProofDoc::downloadBookmark()
 {
-  if (getDvidTarget().isValid()) {
-    ZDvidUrl url(getDvidTarget());
-    ZDvidBufferReader reader;
-    reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
-    ZJsonArray jsonObj;
-    jsonObj.decodeString(reader.getBuffer());
-    if (!jsonObj.isEmpty()) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-      for (size_t i = 0; i < jsonObj.size(); ++i) {
-        ZJsonObject bookmarkObj =
-            ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-        ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-        bookmark->loadJsonObject(bookmarkObj);
-        addObject(bookmark, true);
+  if (m_dvidReader.isReady()) {
+    ZJsonArray bookmarkJson =
+        m_dvidReader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (size_t i = 0; i < bookmarkJson.size(); ++i) {
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
+      bookmark->loadDvidAnnotation(bookmarkObj);
+      if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        bookmark->setChecked(true);
       }
-      endObjectModifiedMode();
-      notifyObjectModified();
+      addObject(bookmark, true);
+    }
+    endObjectModifiedMode();
+    notifyObjectModified();
+
+    if (bookmarkJson.isEmpty()) {
+      ZDvidUrl url(getDvidTarget());
+      ZDvidBufferReader reader;
+      reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
+      ZJsonArray jsonObj;
+      jsonObj.decodeString(reader.getBuffer());
+      if (!jsonObj.isEmpty()) {
+        beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+        for (size_t i = 0; i < jsonObj.size(); ++i) {
+          ZJsonObject bookmarkObj =
+              ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+          ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+          bookmark->loadJsonObject(bookmarkObj);
+          addObject(bookmark, true);
+          bookmark->addUserTag();
+          m_dvidWriter.writeBookmark(*bookmark);
+        }
+        endObjectModifiedMode();
+        notifyObjectModified();
+      }
     }
   }
 }
@@ -1179,6 +1201,7 @@ void ZFlyEmProofDoc::autoSave()
   backupMergeOperation();
 }
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {
   if (!m_isCustomBookmarkSaved) {
@@ -1186,7 +1209,9 @@ void ZFlyEmProofDoc::saveCustomBookmarkSlot()
     saveCustomBookmark();
   }
 }
+#endif
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmark()
 {
   ZDvidWriter writer;
@@ -1214,6 +1239,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
     }
   }
 }
+#endif
 
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
@@ -1558,6 +1584,111 @@ void ZFlyEmProofDoc::processBodySelection()
   }
 }
 
+void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
+{
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+    if (selected.size() > 1) {
+      ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
+          new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeLinkSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    std::vector<ZDvidSynapse> selectedPresyn;
+    std::vector<ZDvidSynapse> selectedPostsyn;
+
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        selectedPresyn.push_back(synapse);
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        selectedPostsyn.push_back(synapse);
+      }
+    }
+
+    if (selectedPresyn.size() == 1) {
+      ZDvidSynapse &presyn = selectedPresyn.front();
+      ZStackDocCommand::DvidSynapseEdit::LinkSynapse *linkCommand =
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+            this, presyn.getPosition(), command);
+      for (std::vector<ZDvidSynapse>::const_iterator
+           iter = selectedPostsyn.begin(); iter != selectedPostsyn.end();
+           ++iter) {
+        const ZDvidSynapse& postsyn = *iter;
+        linkCommand->addRelation(
+              postsyn.getPosition(), ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_PRESYN_TO));
+        new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+              this, postsyn.getPosition(), presyn.getPosition(),
+              ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
+              command);
+      }
+    }
+
+//    qDebug() << "#Commands: " << command->childCount();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand()
+{
+  QList<ZFlyEmBookmark*> bookmarkList =
+      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  executeRemoveBookmarkCommand(bookmarkList);
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark)
+{
+  ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
+      new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, bookmark);
+  if (command->hasRemoving()) {
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(
+    const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
+      new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL);
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    command->addRemoving(*iter);
+  }
+
+  if (command->hasRemoving()) {
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *command =
+        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, bookmark);
+    pushUndoCommand(command);
+  }
+}
+
 void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 {
   QUndoCommand *command =
@@ -1602,5 +1733,65 @@ void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
             this, *selectedSet.begin(), dest);
       pushUndoCommand(command);
     }
+  }
+}
+
+void ZFlyEmProofDoc::removeLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      bookmark->setSelected(false);
+      removeObject(bookmark, false);
+      emit userBookmarkModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      processObjectModified(bookmark);
+      notifyObjectModified();
+      emit userBookmarkModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::removeLocalBookmark(
+    const std::vector<ZFlyEmBookmark*> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = *iter;
+    bookmark->setSelected(false);
+    removeObject(bookmark, false);
+  }
+
+  if (!bookmarkArray.empty()) {
+    emit userBookmarkModified();
+  }
+}
+
+void ZFlyEmProofDoc::addLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    addObject(bookmark, false);
+
+    emit userBookmarkModified();
+  }
+}
+
+void ZFlyEmProofDoc::addLocalBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = *iter;
+    addObject(bookmark, false);
+  }
+
+  if (!bookmarkArray.empty()) {
+    emit userBookmarkModified();
   }
 }

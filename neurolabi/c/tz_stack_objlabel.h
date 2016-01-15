@@ -21,6 +21,7 @@ __BEGIN_DECLS
 typedef struct _Objlabel_Workspace {
   int conn;             /**< connnectivity */
   int seed;             /**< an integer for passing or storing seed */
+  int max_label;      /**< depth of the label (8 or 16) */
   BOOL init_chord;      /**< initialize \a chord (TRUE) or not (FALSE). */
   BOOL recover_chord;   /**< recover \a chord (TRUE) or not (FALSE). */
   BOOL inc_label;       /**< Increment labels for new objects */
@@ -147,6 +148,9 @@ int Stack_Label_Objects_Ns(Stack *stack, IMatrix *chord,
  * <chord> is an integer matrix to store intermediate results. It can be NULL.
  */
 int Stack_Label_Large_Objects_N(Stack *stack, IMatrix *chord, 
+				int flag, int label, int minsize,
+				int n_nbr);
+int Stack_Label_Large_Objects_G(Stack *stack, IMatrix *chord, 
 				int flag, int label, int minsize,
 				int n_nbr);
 

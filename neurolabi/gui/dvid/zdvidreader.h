@@ -31,6 +31,9 @@ class ZSparseStack;
 class ZDvidVersionDag;
 class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
+class ZFlyEmBookmark;
+
+
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -107,7 +110,7 @@ public:
 
   ZJsonObject readInfo() const;
 
-  bool hasData(const std::string &key) const;
+  bool hasData(const std::string &dataName) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
@@ -115,8 +118,11 @@ public:
                        int width, int height, int depth) const;
 
   bool hasSparseVolume() const;
-  bool hasSparseVolume(int bodyId) const;
+  bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(int bodyId) const;
+  bool hasBody(uint64_t bodyId) const;
+
+  ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
   bool hasCoarseSparseVolume(int bodyId) const;
 
@@ -141,20 +147,32 @@ public:
   ZDvidVersionDag readVersionDag(const std::string &uuid) const;
   ZDvidVersionDag readVersionDag() const;
 
-  ZObject3dScan readCoarseBody(uint64_t bodyId);
+  ZObject3dScan readCoarseBody(uint64_t bodyId) const;
 
-  ZObject3dScan readRoi(const std::string dataName);
+  ZObject3dScan readRoi(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
 
+  ZJsonArray readAnnotation(
+      const std::string &dataName, const std::string &tag) const;
+
+  ZJsonArray readTaggedBookmark(const std::string &tag) const;
+  ZJsonObject readBookmarkJson(int x, int y, int z) const;
+  ZJsonObject readBookmarkJson(const ZIntPoint &pt) const;
+  bool isBookmarkChecked(int x, int y, int z) const;
+  bool isBookmarkChecked(const ZIntPoint &pt) const;
+
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
   ZDvidSynapse readSynapse(int x, int y, int z);
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
+  template <typename InputIterator>
+  ZJsonArray readSynapseJson(
+      const InputIterator &first, const InputIterator &last);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }
@@ -164,6 +182,12 @@ public:
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
 
   bool good() const;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDNodeService> getService() const {
+    return m_service;
+  }
+#endif
 
 signals:
   void readingDone();
@@ -193,9 +217,23 @@ protected:
   bool m_verbose;
   int m_statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService *m_service;
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif
 
 };
+
+template <typename InputIterator>
+ZJsonArray ZDvidReader::readSynapseJson(
+    const InputIterator &first, const InputIterator &last)
+{
+  ZJsonArray synapseJsonArray;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    const ZIntPoint &pt = *iter;
+    ZJsonObject obj = readSynapseJson(pt);
+    synapseJsonArray.append(obj);
+  }
+
+  return synapseJsonArray;
+}
 
 #endif // ZDVIDREADER_H

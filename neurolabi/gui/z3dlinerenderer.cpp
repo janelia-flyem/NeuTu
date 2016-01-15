@@ -55,7 +55,7 @@ void Z3DLineRenderer::initialize()
 {
   Z3DPrimitiveRenderer::initialize();
   QStringList allshaders;
-//  allshaders << "line.vert" << "line_func.frag";
+  allshaders << "line.vert" << "line_func.frag";
   QStringList normalShaders;
   normalShaders << "line.vert" << "line.frag";
   m_lineShaderGrp.init(allshaders, generateHeader(), m_rendererBase,

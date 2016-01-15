@@ -110,7 +110,10 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
+  void locateBody(uint64_t bodyId, bool appending);
   void locateBody(uint64_t bodyId);
+  void locateBody(QList<uint64_t> bodyIdList);
+  void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending);
 
@@ -168,7 +171,11 @@ public slots:
 
   void changeColorMap(const QString &option);
 
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+
   void removeBookmark(ZFlyEmBookmark *bookmark);
+  void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
 
   void highlightSelectedObject(bool hl);
 
@@ -195,6 +202,7 @@ protected slots:
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
+  void exportSelectedBody();
 
 protected:
   void customInit();
@@ -307,12 +315,16 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
           this, SLOT(removeBookmark(ZFlyEmBookmark*)));
+  connect(panel, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),
           panel, SLOT(enableNameColorMap(bool)));
   connect(panel, SIGNAL(clearingBodyMergeStage()),
           this, SLOT(clearBodyMergeStage()));
+  connect(panel, SIGNAL(exportingSelectedBody()),
+          this, SLOT(exportSelectedBody()));
 }
 
 template <typename T>

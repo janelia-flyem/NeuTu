@@ -77,6 +77,7 @@ private:
 
   void createMenu();
   void createToolbar();
+  void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
@@ -104,6 +105,7 @@ private:
   QAction *m_openObject3dAction;
 
   QToolBar *m_toolBar;
+  QToolBar *m_synapseToolbar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;

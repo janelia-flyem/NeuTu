@@ -28,6 +28,7 @@ signals:
   void bookmarkChecked(ZFlyEmBookmark*);
   void locatingBookmark(const ZFlyEmBookmark*);
   void removingBookmark(ZFlyEmBookmark*);
+  void removingBookmark(QList<ZFlyEmBookmark*> bookmarkList);
 
 public slots:
   void checkCurrentBookmark();

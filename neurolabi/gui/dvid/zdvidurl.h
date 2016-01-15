@@ -143,7 +143,17 @@ public:
 
   std::string getRoiUrl(const std::string &dataName) const;
 
+  std::string getBookmarkKeyUrl() const;
+  std::string getBookmarkKeyUrl(int x, int y, int z) const;
+  std::string getBookmarkKeyUrl(const ZIntPoint &pt) const;
+
   std::string getBookmarkUrl() const;
+  std::string getBookmarkUrl(int x, int y, int z,
+                             int width, int height, int depth) const;
+  std::string getBookmarkUrl(
+      const ZIntPoint &pt, int width, int height, int depth) const;
+   std::string getBookmarkUrl(const ZIntCuboid &box) const;
+
   std::string getCustomBookmarkUrl(const std::string &userName) const;
 
   static std::string GetEndPoint(const std::string &url);
@@ -153,6 +163,13 @@ public:
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
   std::string getBodyAnnotationName() const;
+
+  std::string getAnnotationUrl(const std::string &dataName) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, const std::string tag) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, int x, int y, int z) const;
+  std::string getAnnotationElementsUrl(const std::string &dataName);
 
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
@@ -186,10 +203,11 @@ private:
   static const std::string m_labelCommand;
   static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
-  static const std::string m_synapseElementCommand;
-  static const std::string m_synapseElementsCommand;
-  static const std::string m_synapseLabelCommand;
-  static const std::string m_synapseMoveCommand;
+  static const std::string m_annotationElementCommand;
+  static const std::string m_annotationElementsCommand;
+  static const std::string m_annotationLabelCommand;
+  static const std::string m_annotationMoveCommand;
+  static const std::string m_annotationTagCommand;
 };
 
 #endif // ZDVIDURL_H

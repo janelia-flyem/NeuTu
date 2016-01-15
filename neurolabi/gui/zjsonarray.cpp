@@ -45,7 +45,13 @@ ZJsonArray::~ZJsonArray()
 
 size_t ZJsonArray::size() const
 {
-  return json_array_size(m_data);
+  return C_Json::arraySize(m_data);
+//  return json_array_size(m_data);
+}
+
+bool ZJsonArray::isEmpty() const
+{
+  return size() == 0;
 }
 
 json_t* ZJsonArray::at(size_t index)

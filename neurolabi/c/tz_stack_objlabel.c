@@ -84,6 +84,7 @@ void Default_Objlabel_Workspace(Objlabel_Workspace *ow)
 {
   ow->conn = 26;
   ow->seed = -1;
+  ow->max_label = 65535;
   ow->init_chord = TRUE;
   ow->recover_chord = FALSE;
   ow->inc_label = FALSE;

@@ -377,7 +377,7 @@ bool ZStackBall::hit(double x, double y)
   double dx = x - m_center.x();
   double dy = y = m_center.y();
 
-  double d2 = dx * dx * dy * dy;
+  double d2 = dx * dx + dy * dy;
 
   return d2 <= m_r * m_r;
 }

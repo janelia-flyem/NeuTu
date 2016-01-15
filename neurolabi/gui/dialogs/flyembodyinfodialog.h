@@ -26,6 +26,8 @@ public slots:
 
 signals:
   void bodyActivated(uint64_t bodyId);
+  void bodiesActivated(QList<uint64_t> bodyIdList);
+  void addBodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
   void jsonLoadBookmarksError(QString message);
   void jsonLoadColorMapError(QString message);
@@ -54,6 +56,7 @@ private slots:
     void onLoadColorMap();
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
+    void onGotoBodies();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;

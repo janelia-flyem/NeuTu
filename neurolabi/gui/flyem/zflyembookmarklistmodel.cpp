@@ -150,6 +150,14 @@ void ZFlyEmBookmarkListModel::update(int row)
   emit dataChanged(index(row, 0), index(row, columnCount() - 1));
 }
 
+void ZFlyEmBookmarkListModel::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  int index = m_bookmarkArray.findFirstIndex(bookmark);
+  if (index>= 0) {
+    removeRow(index);
+  }
+}
+
 /*
 void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark &bookmark)
 {

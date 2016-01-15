@@ -43,6 +43,8 @@ public:
 
   virtual ~ZJsonValue();
 
+  ZJsonValue clone() const;
+
 public:
   inline json_t *getData() const { return m_data; }
   inline json_t *getValue() const { return m_data; }
@@ -74,6 +76,7 @@ public:
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
+  void set(const ZJsonValue &value);
 
   /*!
    * \brief Obsolete. Will be removed.
