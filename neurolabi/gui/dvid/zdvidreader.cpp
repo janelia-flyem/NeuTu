@@ -1531,7 +1531,9 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   ZDvidUrl dvidUrl(getDvidTarget());
 
   ZDvidBufferReader bufferReader;
+#if defined(_ENABLE_LIBDVIDCPP_)
   bufferReader.setService(m_service);
+#endif
   bufferReader.read(dvidUrl.getRepoInfoUrl().c_str(), isVerbose());
 
   QString str(bufferReader.getBuffer().data());
