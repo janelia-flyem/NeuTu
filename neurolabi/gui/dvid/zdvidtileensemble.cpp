@@ -178,7 +178,7 @@ bool ZDvidTileEnsemble::update(
 //                                       getDvidTarget().getUuid());
       std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
-#define DVID_TILE_THREAD_FETCH 1
+#define DVID_TILE_THREAD_FETCH 0
 
 #if DVID_TILE_THREAD_FETCH
       std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
