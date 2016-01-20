@@ -47,7 +47,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "d147",
+      "uuid": "b14d",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
@@ -59,7 +59,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "d147",
+      "uuid": "b14d",
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
