@@ -34,7 +34,7 @@ signals:
   void loadCompleted();
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
-  void inputBodiesLoaded(ZJsonValue bodies);
+  void ioBodiesLoaded(ZJsonValue bodies);
 
 private slots:
     void onCloseButton();
@@ -59,7 +59,7 @@ private slots:
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
     void onGotoBodies();    
-    void onInputBodiesLoaded(ZJsonValue bodies);
+    void onIOBodiesLoaded(ZJsonValue bodies);
 
 private:
     enum Tabs {
@@ -82,13 +82,17 @@ private:
         IOBODY_NAME_COLUMN,
         IOBODY_NUMBER_COLUMN
     };
+    enum InputOrOutput {
+        INPUT,
+        OUTPUT
+    };
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
-    QStandardItemModel* m_inputBodyModel;
+    QStandardItemModel* m_ioBodyModel;
     QSortFilterProxyModel* m_bodyProxy;
     QSortFilterProxyModel* m_filterProxy;
-    QSortFilterProxyModel* m_inputBodyProxy;
+    QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_schemeBuilderProxy;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
@@ -113,8 +117,8 @@ private:
     void setFilterTableModelColor(QColor color, int modelRow);
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
-    void setInputBodyHeaders(QStandardItemModel *model);
-    void retrieveIOBodiesDvid(ZDvidTarget target);
+    void setIOBodyHeaders(QStandardItemModel *model);
+    void retrieveIOBodiesDvid(ZDvidTarget target, int intputoroutput);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
