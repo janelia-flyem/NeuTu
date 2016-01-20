@@ -41,7 +41,7 @@ enum EAxis {
 };
 
 enum EPLANE {
-  PLANE_XY, PLANE_ZX, PLANE_YZ
+  PLANE_XY, PLANE_XZ, PLANE_YZ
 };
 
 enum EAxisSystem {

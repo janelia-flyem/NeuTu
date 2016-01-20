@@ -55,6 +55,7 @@ using namespace std;
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
+#include "dialogs/ztestdialog.h"
 #include "dialogs/parameterdialog.h"
 #include "zstring.h"
 #include "zdialogfactory.h"
@@ -260,6 +261,8 @@ using namespace std;
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
+#include "zstackmvc.h"
+#include "misc/zstackyzmvc.h"
 
 using namespace std;
 
@@ -16641,10 +16644,9 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-
-#if 1
-  int height = 512;
+#if 0
   int width = 512;
+  int height = 512;
 
   ZImage image(width, height);
 
@@ -16658,16 +16660,65 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
 
-  tic();
   image.setData(data, 0);
-  ptoc();
 
+  std::vector<QPixmap> pixmapArray(20);
+
+  size_t t = 0;
   tic();
-  ZPixmap pixmap(width, height);
-  pixmap.fromImage(image);
-  ptoc();
+  for (size_t i = 0; i < pixmapArray.size(); ++i) {
+    pixmapArray[i].fromImage(image);
+    t += toc();
+  }
 
-  delete data;
+  std::cout << "Pixmap time: " << t << " ms." << std::endl;
+
+#endif
+
+#if 0
+  size_t testCount = 20;
+  std::vector<int> sizeArray(testCount, 0); //single dimension
+  std::vector<uint64_t> initTimeArray(testCount, 0);
+  std::vector<uint64_t> pixmapTimeArray(testCount, 0);
+
+  int startSize = 512;
+  for (size_t i = 1; i <= testCount; ++i) {
+    int height = startSize * i;
+    int width = startSize * i;
+    sizeArray[i - 1] = width;
+
+    ZImage image(width, height);
+
+    uint8_t *data = new uint8_t[width*height];
+    int index = 0;
+    tic();
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        data[index++] = 0;
+      }
+    }
+    ptoc();
+
+    for (int j = 0; j < 10; ++j) {
+      tic();
+      image.setData(data, 0);
+      initTimeArray[i - 1] += toc();
+
+      tic();
+      ZPixmap pixmap(width, height);
+      pixmap.fromImage(image);
+      pixmapTimeArray[i - 1] += toc();
+    }
+
+    delete data;
+  }
+
+  std::ofstream stream((GET_TEST_DATA_DIR + "/test.txt").c_str());
+  for (size_t i = 0; i < testCount; ++i) {
+    stream << sizeArray[i] << ", " << initTimeArray[i] << ", "
+           << pixmapTimeArray[i] << std::endl;
+  }
+  stream.close();
 #endif
 
 #if 0
@@ -19200,6 +19251,26 @@ void ZTest::test(MainWindow *host)
   line->addVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
 
   frame->document()->addObject(line);
+#endif
+
+#if  1
+  ZStackDoc *doc = new ZStackDoc(NULL);
+  doc->loadFile(GET_TEST_DATA_DIR + "/system/emstack2.tif");
+
+    ZStackYZMvc *stackWidget =
+        ZStackYZMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+  //ZStackFrame *stackWidget = ZStackFrame::Make(
+  //      NULL, ZSharedPointer<ZStackDoc>(doc));
+
+  //stackWidget->setWindowFlags(Qt::Widget);
+
+  //stackWidget->consumeDocument(doc);
+
+  //stackWidget->load(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+  ZTestDialog *testDlg = new ZTestDialog(host);
+  testDlg->getMainLayout()->addWidget(stackWidget);
+  testDlg->show();
+  testDlg->raise();
 #endif
 
   std::cout << "Done." << std::endl;
