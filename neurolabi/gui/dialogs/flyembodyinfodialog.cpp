@@ -97,11 +97,11 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // connections table stuff
     // table holding bodies that are input to the chosen body
-    m_inputBodyModel = new QStandardItemModel(0, 3, ui->inputBodyTableView);
-    setInputBodyHeaders(m_inputBodyModel);
-    m_inputBodyProxy = new QSortFilterProxyModel(this);
-    m_inputBodyProxy->setSourceModel(m_inputBodyModel);
-    ui->inputBodyTableView->setModel(m_inputBodyProxy);
+    m_ioBodyModel = new QStandardItemModel(0, 3, ui->ioBodyTableView);
+    setIOBodyHeaders(m_ioBodyModel);
+    m_ioBodyProxy = new QSortFilterProxyModel(this);
+    m_ioBodyProxy->setSourceModel(m_ioBodyModel);
+    ui->ioBodyTableView->setModel(m_ioBodyProxy);
     // set needed col width here
 
 
@@ -131,7 +131,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadBookmarksError(QString)), this, SLOT(onjsonLoadBookmarksError(QString)));
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
-    connect(this, SIGNAL(inputBodiesLoaded(ZJsonValue)), this, SLOT(onInputBodiesLoaded(ZJsonValue)));
+    connect(this, SIGNAL(ioBodiesLoaded(ZJsonValue)), this, SLOT(onIOBodiesLoaded(ZJsonValue)));
 
 }
 
@@ -229,7 +229,7 @@ void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(FILTER_COLOR_COLUMN, new QStandardItem(QString("Color")));
 }
 
-void FlyEmBodyInfoDialog::setInputBodyHeaders(QStandardItemModel * model) {
+void FlyEmBodyInfoDialog::setIOBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("name")));
     model->setHorizontalHeaderItem(IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
@@ -910,15 +910,32 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
         updateBodyConnectionLabel(bodyId, "");
     }
 
+
+    // input or output, based on which cell was double-clicked:
+    int inputoroutput;
+    if (index.column() == BODY_NPRE_COLUMN) {
+        inputoroutput = INPUT;
+    } else {
+        inputoroutput = OUTPUT;
+    }
+
+    // then set label above table
+    // dummy, should factor this out:
+    if (inputoroutput == INPUT) {
+        ui->ioBodyTableLabel->setText("Inputs");
+    } else {
+        ui->ioBodyTableLabel->setText("Outputs");
+    }
+
     // activate tab & clear model
     ui->tabWidget->setCurrentIndex(CONNECTIONS_TAB);
-    m_inputBodyModel->clear();
+    m_ioBodyModel->clear();
 
     // loading message would go here
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget);
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, inputoroutput);
     }
 }
 
@@ -935,7 +952,7 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 
 }
 
-void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
+void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, int inputoroutput) {
     std::cout << "pretending to retrieve input/output bodies from DVID" << std::endl;
 
 
@@ -953,6 +970,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
 
     ZJsonObject body2;
     body2.setEntry("body ID", 4321);
+    // name is optional
     // body2.setEntry("name", "Mi17");
     body2.setEntry("number", 1);
     bodies.append(body2);
@@ -963,19 +981,30 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
     body3.setEntry("number", 2);
     bodies.append(body3);
 
-
-    emit inputBodiesLoaded(bodies);
+    emit ioBodiesLoaded(bodies);
 
 }
 
-void FlyEmBodyInfoDialog::onInputBodiesLoaded(ZJsonValue bodiesData) {
-    std::cout << "pretending to populate input bodies table" << std::endl;
+void FlyEmBodyInfoDialog::onIOBodiesLoaded(ZJsonValue bodiesData) {
 
-    m_inputBodyModel->clear();
-    setInputBodyHeaders(m_inputBodyModel);
+    m_ioBodyModel->clear();
+    setIOBodyHeaders(m_ioBodyModel);
 
     ZJsonArray bodies(bodiesData);
-    m_inputBodyModel->setRowCount(bodies.size());
+
+    // label above table: already says "Input" or "Output";
+    //  now add the total number in parentheses: eg, "Input (12)"
+    // should factor this out
+    std::ostringstream labelStream;
+    labelStream << ui->ioBodyTableLabel->text().toStdString();
+    labelStream << " (";
+    labelStream << bodies.size();
+    labelStream << ")";
+    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
+
+
+
+    m_ioBodyModel->setRowCount(bodies.size());
     for (size_t i = 0; i < bodies.size(); ++i) {
         ZJsonObject body(bodies.at(i), false);
 
@@ -984,26 +1013,24 @@ void FlyEmBodyInfoDialog::onInputBodiesLoaded(ZJsonValue bodiesData) {
         qulonglong bodyID = ZJsonParser::integerValue(body["body ID"]);
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
-        m_inputBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
+        m_ioBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
 
         if (body.hasKey("name")) {
             const char* name = ZJsonParser::stringValue(body["name"]);
-            m_inputBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(QString(name)));
+            m_ioBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(QString(name)));
         }
 
         int number = ZJsonParser::integerValue(body["number"]);
         QStandardItem * numberItem = new QStandardItem();
         numberItem->setData(QVariant(number), Qt::DisplayRole);
-        m_inputBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
-
+        m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
 
     }
 
-
     // the resize isn't reliable, so set the name column wider by hand
-    ui->inputBodyTableView->resizeColumnsToContents();
-    ui->inputBodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
-    ui->inputBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
+    ui->ioBodyTableView->resizeColumnsToContents();
+    ui->ioBodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    ui->ioBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
 
     // would remove "loading" status indicator here
 

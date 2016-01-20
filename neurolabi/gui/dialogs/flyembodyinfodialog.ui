@@ -289,7 +289,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QLabel" name="label_5">
+            <widget class="QLabel" name="ioBodyTableLabel">
              <property name="text">
               <string>Inputs</string>
              </property>
@@ -299,7 +299,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QTableView" name="inputBodyTableView">
+            <widget class="QTableView" name="ioBodyTableView">
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
