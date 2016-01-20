@@ -1115,9 +1115,9 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   }
 }
 
-int ZFlyEmBodyMergeProject::getSelectedBodyId() const
+uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
-  int bodyId = -1;
+  uint64_t bodyId = 0;
   if (m_dataFrame != NULL) {
     bodyId = m_dataFrame->getCompleteDocument()->getSelectedBodyId();
     /*
@@ -1136,7 +1136,7 @@ int ZFlyEmBodyMergeProject::getSelectedBodyId() const
 
 void ZFlyEmBodyMergeProject::notifySplit()
 {
-  int bodyId = getSelectedBodyId();
+  uint64_t bodyId = getSelectedBodyId();
   if (bodyId > 0) {
     emit splitSent(m_dvidTarget, bodyId);
   }

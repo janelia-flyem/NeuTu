@@ -99,7 +99,7 @@ public:
    *
    * \return The path of a certain body.
    */
-  std::string getBodyPath(int bodyId) const;
+  std::string getBodyPath(uint64_t bodyId) const;
 
   /*!
    * \brief Test if the target is valid

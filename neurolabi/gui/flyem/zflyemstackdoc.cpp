@@ -69,7 +69,7 @@ QString ZFlyEmStackDoc::dataInfo(int x, int y, int z) const
     TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
-    int bodyId =
+    uint64_t bodyId =
         FlyEm::ZSegmentationAnalyzer::channelCodeToId(
           segmentation->color(x, y, z));
 

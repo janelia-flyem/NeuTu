@@ -64,16 +64,16 @@ public:
   bool isReady() const;
 
   //ZSwcTree* readSwc(const QString &key);
-  ZSwcTree *readSwc(int bodyId);
-  ZObject3dScan readBody(int bodyId);
-  ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
-  ZObject3dScan* readBody(int bodyId, int z, ZObject3dScan *result);
+  ZSwcTree *readSwc(uint64_t bodyId);
+  ZObject3dScan readBody(uint64_t bodyId);
+  ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int z, ZObject3dScan *result);
 
-  ZStack* readThumbnail(int bodyId);
+  ZStack* readThumbnail(uint64_t bodyId);
 
-  ZSparseStack* readSparseStack(int bodyId);
-  ZDvidSparseStack* readDvidSparseStack(int bodyId);
-  ZDvidSparseStack* readDvidSparseStackAsync(int bodyId);
+  ZSparseStack* readSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
@@ -119,20 +119,20 @@ public:
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
-  bool hasBodyInfo(int bodyId) const;
+  bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
 
   ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
-  bool hasCoarseSparseVolume(int bodyId) const;
+  bool hasCoarseSparseVolume(uint64_t bodyId) const;
 
-  ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
+  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
 
-  int readMaxBodyId();
+  uint64_t readMaxBodyId();
 
   uint64_t readBodyIdAt(int x, int y, int z);
   uint64_t readBodyIdAt(const ZIntPoint &pt);

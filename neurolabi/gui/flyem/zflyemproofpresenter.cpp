@@ -385,6 +385,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
     bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
+    bookmark->addUserTag();
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
       bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));

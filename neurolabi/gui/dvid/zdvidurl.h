@@ -43,7 +43,7 @@ public:
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
-  getThumbnailUrl(int bodyId, const std::string &bodyLabelName) const;
+  getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const;
   std::string getThumbnailUrl(uint64_t bodyId) const;
 
   std::string getSp2bodyUrl() const;
@@ -53,9 +53,9 @@ public:
 //  std::string getSparsevolUrl(int bodyId) const;
 
   std::string getSparsevolUrl(const std::string &dataName) const;
-  std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
-  std::string getSparsevolUrl(int bodyId) const;
-  std::string getSparsevolUrl(int bodyId, int z) const;
+  std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getSparsevolUrl(uint64_t bodyId) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z) const;
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;

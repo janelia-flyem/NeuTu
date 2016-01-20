@@ -198,7 +198,7 @@ void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
   deleteKey(url.getBodyAnnotationName(), ZString::num2str(bodyId));
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
@@ -448,7 +448,7 @@ void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
   }
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId)
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
 {
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {
