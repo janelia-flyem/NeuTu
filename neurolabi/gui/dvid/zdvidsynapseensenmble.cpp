@@ -324,46 +324,17 @@ void ZDvidSynapseEnsemble::addSynapse(
     SynapseMap &synapseMap = getSynapseMap(synapse.getPosition().getY(),
                                            synapse.getPosition().getZ(),
                                            ADJUST_FULL);
-    synapseMap[synapse.getPosition().getX()] = synapse;
-/*
-    int zDiff = synapse.getPosition().getZ() - m_startZ;
-    if (zDiff < 0) {
-      if (!m_synapseEnsemble.isEmpty()) {
-        QVector<QVector<QMap<int, ZDvidSynapse> > > se = m_synapseEnsemble;
-        m_synapseEnsemble.clear();
-        m_synapseEnsemble.resize(se.size() - zDiff);
-        for (int i = 0; i < se.size(); ++i) {
-          m_synapseEnsemble[i - zDiff] = se[i];
-        }
-      }
-      m_startZ += zDiff;
-    }
 
-    int yDiff = synapse.getPosition().getY() - m_startY;
-    if (yDiff < 0) {
-      for (QVector<QVector<QMap<int, ZDvidSynapse> > >::iterator
-           iter = m_synapseEnsemble.begin(); iter != m_synapseEnsemble.end();
-           ++iter) {
-        QVector<QMap<int, ZDvidSynapse> > &slice = *iter;
-        if (!slice.isEmpty()) {
-          QVector<QMap<int, ZDvidSynapse> > oldSlice = slice;
-          slice.clear();
-          slice.resize(oldSlice.size() - yDiff);
-          for (int i = 0; i < oldSlice.size(); ++i) {
-            slice[i - yDiff] = oldSlice[i];
-          }
-        }
-      }
-      m_startY += yDiff;
-    }
-
-
-    QMap<int, ZDvidSynapse> &synapseMap =
-        getSynapseMap(synapse.getPosition().getY(), synapse.getPosition().getZ());
-    synapseMap[synapse.getPosition().getX()] = synapse;
-    */
-    if (synapse.isSelected()) {
+    ZDvidSynapse &targetSynapse = synapseMap[synapse.getPosition().getX()];
+    if (!targetSynapse.isSelected() && synapse.isSelected()) {
       getSelector().selectObject(synapse.getPosition());
+    }
+
+    bool isSelected = targetSynapse.isSelected();
+    targetSynapse = synapse;
+    targetSynapse.setSelected(isSelected);
+    if (isSelected) {
+      updatePartner(targetSynapse);
     }
   } else {
     ZDvidWriter writer;
