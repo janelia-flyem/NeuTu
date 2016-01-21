@@ -56,6 +56,9 @@ private:
   ZDvidReader m_reader;
   ZStackView *m_view;
   bool m_highContrast;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  std::vector<libdvid::DVIDNodeService*> m_serviceArray;
+#endif
 };
 
 #endif // ZDVIDTILEENSEMBLE_H

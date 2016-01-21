@@ -131,6 +131,16 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "aa61",
+      "name": "mb_training_namra_split",
+      "comment": "MB seg (branched from node 2635)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "ansarin"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "c348",
       "name": "MB_seg_TEST2",
       "comment": "MB seg (branched from Shinya's node 6f15)",
@@ -220,7 +230,17 @@
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "takemuras"]
+      "user_name": ["xxx"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "7ee9",
+      "name": "mb_training_namra_orphan",
+      "comment": "MB seg (branched from 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",

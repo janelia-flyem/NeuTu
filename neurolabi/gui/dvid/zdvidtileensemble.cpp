@@ -30,6 +30,14 @@ void ZDvidTileEnsemble::clear()
       delete tileIter->second;
     }
   }
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+    for (std::vector<libdvid::DVIDNodeService*>::iterator
+         iter = m_serviceArray.begin();
+         iter != m_serviceArray.end(); ++iter) {
+      delete *iter;
+    }
+#endif
 }
 
 void ZDvidTileEnsemble::enhanceContrast(bool high)
@@ -382,6 +390,16 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
   m_dvidTarget = dvidTarget;
   if (m_reader.open(dvidTarget)) {
     m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+    m_serviceArray.resize(36);
+    for (std::vector<libdvid::DVIDNodeService*>::iterator
+         iter = m_serviceArray.begin();
+         iter != m_serviceArray.end(); ++iter) {
+      *iter = new libdvid::DVIDNodeService(
+            dvidTarget.getAddressWithPort(), dvidTarget.getUuid());
+    }
+#endif
   }
 }
 
