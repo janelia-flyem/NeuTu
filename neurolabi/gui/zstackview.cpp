@@ -747,13 +747,16 @@ void ZStackView::redraw(EUpdateOption option)
   buddyDocument()->blockSignals(false);
 
   paintStackBuffer();
-  std::cout << "paint stack per frame: " << timer.elapsed() << std::endl;
+  qint64 stackPaintTime = timer.elapsed();
+  std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
   paintMaskBuffer();
   paintTileCanvasBuffer();
-  std::cout << "paint tile per frame: " << timer.elapsed() << std::endl;
+  qint64 tilePaintTime = timer.elapsed();
+  std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
   paintActiveDecorationBuffer();
   paintObjectBuffer();
-  std::cout << "paint object per frame: " << timer.elapsed() << std::endl;
+  qint64 objectPaintTime = timer.elapsed();
+  std::cout << "paint object per frame: " << objectPaintTime << std::endl;
 
   updateImageScreen(option);
 
@@ -765,7 +768,8 @@ void ZStackView::redraw(EUpdateOption option)
 
   qDebug() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    LWARN() << "Debugging for hiccup.";
+    LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
+            << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
   }
 #endif
 }
