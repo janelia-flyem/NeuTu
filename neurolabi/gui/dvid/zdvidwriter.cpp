@@ -325,11 +325,12 @@ void ZDvidWriter::writeJson(const std::string &url, const ZJsonValue &value,
 
 
 void ZDvidWriter::mergeBody(const std::string &dataName,
-                            int targetId, const std::vector<int> &bodyId)
+                            uint64_t targetId,
+                            const std::vector<uint64_t> &bodyId)
 {
   ZJsonArray jsonArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   jsonArray.append(targetId);
-  for (std::vector<int>::const_iterator iter = bodyId.begin();
+  for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
        iter != bodyId.end(); ++iter) {
     jsonArray.append(*iter);
   }

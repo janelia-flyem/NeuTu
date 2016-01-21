@@ -71,8 +71,8 @@ public:
   void writeBodyInfo(uint64_t bodyId);
   //void writeMaxBodyId(int bodyId);
 
-  void mergeBody(const std::string &dataName, int targetId,
-                 const std::vector<int> &bodyId);
+  void mergeBody(const std::string &dataName, uint64_t targetId,
+                 const std::vector<uint64_t> &bodyId);
 
   /*!
    * \brief Create a new keyvalue data in DVID.

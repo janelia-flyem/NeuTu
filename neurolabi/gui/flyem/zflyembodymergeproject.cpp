@@ -411,12 +411,12 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 }
 
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
-    int targetId, const std::vector<int> &bodyId)
+    uint64_t targetId, const std::vector<uint64_t> &bodyId)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(targetId);
-    for (std::vector<int>::const_iterator iter = bodyId.begin();
+    for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
          iter != bodyId.end(); ++iter) {
       if (*iter != targetId) {
         ZFlyEmBodyAnnotation subann = reader.readBodyAnnotation(*iter);
@@ -445,14 +445,14 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
       if (!labelMap.isEmpty()) {
         //reorganize the map
-        QMap<int, std::vector<int> > mergeMap;
-        foreach (int sourceId, labelMap.keys()) {
-          int targetId = labelMap.value(sourceId);
+        QMap<uint64_t, std::vector<uint64_t> > mergeMap;
+        foreach (uint64_t sourceId, labelMap.keys()) {
+          uint64_t targetId = labelMap.value(sourceId);
           if (mergeMap.contains(targetId)) {
-            std::vector<int> &idArray = mergeMap[targetId];
+            std::vector<uint64_t> &idArray = mergeMap[targetId];
             idArray.push_back(sourceId);
           } else {
-            mergeMap[targetId] = std::vector<int>();
+            mergeMap[targetId] = std::vector<uint64_t>();
             mergeMap[targetId].push_back(sourceId);
           }
         }
@@ -460,7 +460,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
         const std::set<uint64_t> &bodySet =
             getSelection(NeuTube::BODY_LABEL_ORIGINAL);
 
-        foreach (int targetId, mergeMap.keys()) {
+        foreach (uint64_t targetId, mergeMap.keys()) {
           dvidWriter.mergeBody(
                 m_dvidTarget.getBodyLabelName(),
                 targetId, mergeMap.value(targetId));

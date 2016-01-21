@@ -172,7 +172,8 @@ private:
 
   QString getSelectionMessage() const;
 
-  void mergeBodyAnnotation(int targetId, const std::vector<int> &bodyId);
+  void mergeBodyAnnotation(
+      uint64_t targetId, const std::vector<uint64_t> &bodyId);
 
   //void updateSelection();
 
