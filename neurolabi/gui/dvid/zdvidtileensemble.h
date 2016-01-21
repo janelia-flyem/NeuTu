@@ -46,7 +46,8 @@ public:
   void updateContrast();
 #if defined(_ENABLE_LIBDVIDCPP_)
   void updateTile(libdvid::Slice2D slice,
-                  int resLevel, const std::vector<int> &loc, int z, ZDvidTile *tile);
+                  int resLevel, const std::vector<int> &loc,
+                  int z, ZDvidTile *tile, libdvid::DVIDNodeService *service);
 #endif
 
 private:

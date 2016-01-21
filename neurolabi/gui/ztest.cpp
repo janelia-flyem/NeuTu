@@ -16675,7 +16675,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   size_t testCount = 20;
   std::vector<int> sizeArray(testCount, 0); //single dimension
   std::vector<uint64_t> initTimeArray(testCount, 0);
@@ -16706,7 +16706,7 @@ void ZTest::test(MainWindow *host)
 
       tic();
       ZPixmap pixmap(width, height);
-      pixmap.fromImage(image);
+      pixmap.convertFromImage(image);
       pixmapTimeArray[i - 1] += toc();
     }
 
@@ -19027,7 +19027,7 @@ void ZTest::test(MainWindow *host)
                       << std::endl;
             dataDir.mkdir(type.c_str());
           }
-#if 1
+#  if 1
           ZSwcTree *tree = reader.readSwc(bodyId);
           if (tree != NULL) {
             if (!tree->isEmpty()) {
@@ -19053,7 +19053,7 @@ void ZTest::test(MainWindow *host)
             emptyBody.push_back(bodyId);
             std::cout << "WARING: null tree" << std::endl;
           }
-#endif
+#  endif
 
           ++count;
         }

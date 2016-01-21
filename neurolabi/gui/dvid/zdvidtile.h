@@ -71,7 +71,7 @@ public:
 
 //  void setImageData(const uint8_t *data, int width, int height);
 
-  void enhanceContrast(bool high);
+  void enhanceContrast(bool high, bool updatingPixmap);
 
   void updatePixmap();
 
