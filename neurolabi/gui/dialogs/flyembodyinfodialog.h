@@ -82,9 +82,10 @@ private:
         IOBODY_NAME_COLUMN,
         IOBODY_NUMBER_COLUMN
     };
-    enum InputOrOutput {
-        INPUT,
-        OUTPUT
+    enum ConnectionTableState {
+        CT_NONE,
+        CT_INPUT,
+        CT_OUTPUT
     };
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
@@ -99,6 +100,7 @@ private:
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
+    int m_connectionsTableState;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
@@ -118,7 +120,7 @@ private:
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
     void setIOBodyHeaders(QStandardItemModel *model);
-    void retrieveIOBodiesDvid(ZDvidTarget target, int intputoroutput);
+    void retrieveIOBodiesDvid(ZDvidTarget target);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

@@ -96,6 +96,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 
     // connections table stuff
+    m_connectionsTableState = CT_NONE;
     // table holding bodies that are input to the chosen body
     m_ioBodyModel = new QStandardItemModel(0, 3, ui->ioBodyTableView);
     setIOBodyHeaders(m_ioBodyModel);
@@ -912,16 +913,15 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
 
     // input or output, based on which cell was double-clicked:
-    int inputoroutput;
     if (index.column() == BODY_NPRE_COLUMN) {
-        inputoroutput = INPUT;
+        m_connectionsTableState = CT_INPUT;
     } else {
-        inputoroutput = OUTPUT;
+        m_connectionsTableState = CT_OUTPUT;
     }
 
     // then set label above table
     // dummy, should factor this out:
-    if (inputoroutput == INPUT) {
+    if (m_connectionsTableState == CT_INPUT) {
         ui->ioBodyTableLabel->setText("Inputs");
     } else {
         ui->ioBodyTableLabel->setText("Outputs");
@@ -935,7 +935,7 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, inputoroutput);
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget);
     }
 }
 
@@ -952,7 +952,7 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 
 }
 
-void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, int inputoroutput) {
+void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
     std::cout << "pretending to retrieve input/output bodies from DVID" << std::endl;
 
 
