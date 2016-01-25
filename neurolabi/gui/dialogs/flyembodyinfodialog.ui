@@ -300,6 +300,9 @@
            </item>
            <item>
             <widget class="QTableView" name="ioBodyTableView">
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditKeyPressed</set>
+             </property>
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
@@ -321,7 +324,7 @@
            <item>
             <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>Outputs</string>
+              <string>Connections</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -329,7 +332,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QTableView" name="outputBodyTableView">
+            <widget class="QTableView" name="connectionsTableView">
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditKeyPressed</set>
+             </property>
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
