@@ -84,7 +84,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_filterProxy = new QSortFilterProxyModel(this);
     m_filterProxy->setSourceModel(m_filterModel);
     ui->filterTableView->setModel(m_filterProxy);
-    ui->filterTableView->setColumnWidth(0, 450);
+    ui->filterTableView->setColumnWidth(FILTER_NAME_COLUMN, 450);
 
     // this proxy is used to build color schemes; it's not hooked
     //  to a table view; match the filter settings of the body filter!
@@ -95,7 +95,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_schemeBuilderProxy->setSourceModel(m_bodyModel);
 
 
-    // connections table stuff
+    // connections tables stuff; table of bodies first
     m_connectionsTableState = CT_NONE;
     // table holding bodies that are input to the chosen body
     m_ioBodyModel = new QStandardItemModel(0, 3, ui->ioBodyTableView);
@@ -104,6 +104,15 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_ioBodyProxy->setSourceModel(m_ioBodyModel);
     ui->ioBodyTableView->setModel(m_ioBodyProxy);
     // set needed col width here
+
+    // table of connection sites (ie, synapses)
+    m_connectionsModel = new QStandardItemModel(0, 3, ui->connectionsTableView);
+    setConnectionsHeaders(m_connectionsModel);
+    m_connectionsProxy = new QSortFilterProxyModel(this);
+    m_connectionsProxy->setSourceModel(m_connectionsModel);
+    ui->connectionsTableView->setModel(m_connectionsProxy);
+    // set col width here?
+
 
 
     // UI connects
@@ -119,7 +128,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
     connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
-    connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onFilterTableDoubleClicked(QModelIndex)));
+    connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickFilterTable(QModelIndex)));
+    connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -133,6 +143,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
     connect(this, SIGNAL(ioBodiesLoaded(ZJsonValue)), this, SLOT(onIOBodiesLoaded(ZJsonValue)));
+    connect(this, SIGNAL(ioConnectionsLoaded(ZJsonValue)), this, SLOT(onIOConnectionsLoaded(ZJsonValue)));
 
 }
 
@@ -234,6 +245,12 @@ void FlyEmBodyInfoDialog::setIOBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(IOBODY_ID_COLUMN, new QStandardItem(QString("Body ID")));
     model->setHorizontalHeaderItem(IOBODY_NAME_COLUMN, new QStandardItem(QString("name")));
     model->setHorizontalHeaderItem(IOBODY_NUMBER_COLUMN, new QStandardItem(QString("#")));
+}
+
+void FlyEmBodyInfoDialog::setConnectionsHeaders(QStandardItemModel * model) {
+    model->setHorizontalHeaderItem(CONNECTIONS_X_COLUMN, new QStandardItem(QString("x")));
+    model->setHorizontalHeaderItem(CONNECTIONS_Y_COLUMN, new QStandardItem(QString("y")));
+    model->setHorizontalHeaderItem(CONNECTIONS_Z_COLUMN, new QStandardItem(QString("z")));
 }
 
 void FlyEmBodyInfoDialog::setStatusLabel(QString label) {
@@ -762,7 +779,7 @@ void FlyEmBodyInfoDialog::updateColorFilter(QString filter, QString /*oldFilter*
     updateColorScheme();
 }
 
-void FlyEmBodyInfoDialog::onFilterTableDoubleClicked(const QModelIndex &proxyIndex) {
+void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex) {
     QModelIndex modelIndex = m_filterProxy->mapToSource(proxyIndex);
     if (proxyIndex.column() == FILTER_NAME_COLUMN) {
         // double-click on filter text; move to body list
@@ -912,7 +929,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     }
 
 
-    // input or output, based on which cell was double-clicked:
+    // table shows inputs or outputs, based on whether the pre or post
+    //  cell was double-clicked:
     if (index.column() == BODY_NPRE_COLUMN) {
         m_connectionsTableState = CT_INPUT;
     } else {
@@ -1029,10 +1047,113 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded(ZJsonValue bodiesData) {
 
     // the resize isn't reliable, so set the name column wider by hand
     ui->ioBodyTableView->resizeColumnsToContents();
-    ui->ioBodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    ui->ioBodyTableView->setColumnWidth(IOBODY_NAME_COLUMN, 150);
     ui->ioBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
 
     // would remove "loading" status indicator here
+
+}
+
+void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
+
+    QModelIndex modelIndex = m_ioBodyProxy->mapToSource(proxyIndex);
+    if (proxyIndex.column() == IOBODY_ID_COLUMN || proxyIndex.column() == IOBODY_NAME_COLUMN) {
+        // double-click on ID, name = select in body table
+        std::cout << "pretending to select body in body table" << std::endl;
+    } else if (proxyIndex.column() == IOBODY_NUMBER_COLUMN) {
+        // double-click on number connections = show connections list
+        std::cout << "pretending to populate sites list" << std::endl;
+
+        m_connectionsModel->clear();
+
+        // trigger retrieval of synapses
+        if (m_currentDvidTarget.isValid()) {
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOConnectionsDvid, m_currentDvidTarget);
+        }
+    }
+
+}
+
+void FlyEmBodyInfoDialog::retrieveIOConnectionsDvid(ZDvidTarget target) {
+    std::cout << "pretending to retrieve input/output body connections from DVID" << std::endl;
+
+
+
+    // dummy implementation: just return some hard-coded stuff until the API is hooked up
+
+    ZJsonArray connections;
+
+
+    ZJsonArray conn1;
+    conn1.append(1);
+    conn1.append(2);
+    conn1.append(3);
+    connections.append(conn1);
+
+    ZJsonArray conn2;
+    conn2.append(14);
+    conn2.append(15);
+    conn2.append(16);
+    connections.append(conn2);
+
+    ZJsonArray conn3;
+    conn3.append(107);
+    conn3.append(108);
+    conn3.append(109);
+    connections.append(conn3);
+
+    emit ioConnectionsLoaded(connections);
+
+}
+
+void FlyEmBodyInfoDialog::onIOConnectionsLoaded(ZJsonValue connectionsData) {
+
+
+    std::cout << "in onIOConnectionsLoaded" << std::endl;
+
+    m_connectionsModel->clear();
+    setConnectionsHeaders(m_connectionsModel);
+
+    ZJsonArray connections(connectionsData);
+
+    m_connectionsModel->setRowCount(connections.size());
+    for (size_t i = 0; i < connections.size(); ++i) {
+        ZJsonArray conn(connections.at(i), false);
+
+
+        // are these things ints or floats?  do ints for now
+
+
+        // start with x, y, z; but should it be z, x, y?
+
+
+        int x = ZJsonParser::integerValue(conn.at(0));
+        QStandardItem * xItem = new QStandardItem();
+        xItem->setData(QVariant(x), Qt::DisplayRole);
+        m_connectionsModel->setItem(i, CONNECTIONS_X_COLUMN, xItem);
+
+        int y = ZJsonParser::integerValue(conn.at(1));
+        QStandardItem * yItem = new QStandardItem();
+        yItem->setData(QVariant(y), Qt::DisplayRole);
+        m_connectionsModel->setItem(i, CONNECTIONS_Y_COLUMN, yItem);
+
+        int z = ZJsonParser::integerValue(conn.at(2));
+        QStandardItem * zItem = new QStandardItem();
+        zItem->setData(QVariant(z), Qt::DisplayRole);
+        m_connectionsModel->setItem(i, CONNECTIONS_Z_COLUMN, zItem);
+
+    }
+
+    // the resize isn't reliable, so set the name column wider by hand
+    ui->connectionsTableView->resizeColumnsToContents();
+    ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
+
+
+
+
+
+
+
 
 }
 

@@ -35,6 +35,7 @@ signals:
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
   void ioBodiesLoaded(ZJsonValue bodies);
+  void ioConnectionsLoaded(ZJsonValue connections);
 
 private slots:
     void onCloseButton();
@@ -50,7 +51,7 @@ private slots:
     void bodyFilterUpdated(QString filterText);
     void applicationQuitting();    
     void onSaveColorFilter();
-    void onFilterTableDoubleClicked(const QModelIndex &index);
+    void onDoubleClickFilterTable(const QModelIndex &index);
     void moveToBodyList();
     void onDeleteButton();
     void onExportBodies();
@@ -59,7 +60,9 @@ private slots:
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
     void onGotoBodies();    
-    void onIOBodiesLoaded(ZJsonValue bodies);
+    void onIOBodiesLoaded(ZJsonValue bodies);    
+    void onIOConnectionsLoaded(ZJsonValue connections);    
+    void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
 
 private:
     enum Tabs {
@@ -87,14 +90,21 @@ private:
         CT_INPUT,
         CT_OUTPUT
     };
+    enum ConnectionsTableColumns {
+        CONNECTIONS_X_COLUMN,
+        CONNECTIONS_Y_COLUMN,
+        CONNECTIONS_Z_COLUMN
+    };
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
     QStandardItemModel* m_ioBodyModel;
+    QStandardItemModel* m_connectionsModel;
     QSortFilterProxyModel* m_bodyProxy;
     QSortFilterProxyModel* m_filterProxy;
-    QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_schemeBuilderProxy;
+    QSortFilterProxyModel* m_ioBodyProxy;
+    QSortFilterProxyModel* m_connectionsProxy;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
@@ -121,6 +131,8 @@ private:
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
     void setIOBodyHeaders(QStandardItemModel *model);
     void retrieveIOBodiesDvid(ZDvidTarget target);
+    void setConnectionsHeaders(QStandardItemModel *model);
+    void retrieveIOConnectionsDvid(ZDvidTarget target);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
