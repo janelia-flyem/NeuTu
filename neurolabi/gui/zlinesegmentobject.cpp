@@ -12,6 +12,26 @@ ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0), m_label(0)
   m_focusColor.setAlpha(0);
 }
 
+double ZLineSegmentObject::getLowerX() const
+{
+  return std::min(m_segment.getStartPoint().x(), m_segment.getEndPoint().x());
+}
+
+double ZLineSegmentObject::getUpperX() const
+{
+  return std::max(m_segment.getStartPoint().x(), m_segment.getEndPoint().x());
+}
+
+double ZLineSegmentObject::getLowerY() const
+{
+  return std::min(m_segment.getStartPoint().y(), m_segment.getEndPoint().y());
+}
+
+double ZLineSegmentObject::getUpperY() const
+{
+  return std::max(m_segment.getStartPoint().y(), m_segment.getEndPoint().y());
+}
+
 double ZLineSegmentObject::getLowerZ() const
 {
   return std::min(m_segment.getStartPoint().z(), m_segment.getEndPoint().z());
@@ -33,8 +53,13 @@ QPointF ZLineSegmentObject::getEndXY() const
 }
 
 void ZLineSegmentObject::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   int z = painter.getZ(slice);
 
   bool isProj = false;
@@ -47,7 +72,7 @@ void ZLineSegmentObject::display(
     focusColor = getColor();
   }
 
-  if (isSliceVisible(z)) {
+  if (isSliceVisible(z, sliceAxis)) {
     QPen pen = painter.getPen();
     pen.setWidthF(m_width);
 
@@ -120,7 +145,7 @@ void ZLineSegmentObject::display(
   }
 }
 
-bool ZLineSegmentObject::isSliceVisible(int z) const
+bool ZLineSegmentObject::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
 {
   if (isVisible()) {
     if (hasVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ) ||
@@ -128,7 +153,14 @@ bool ZLineSegmentObject::isSliceVisible(int z) const
       return true;
     }
 
-    return getLowerZ() <= z && getUpperZ() >= z;
+    switch (sliceAxis) {
+    case NeuTube::X_AXIS:
+      return getLowerX() <= z && getUpperX() >= z;
+    case NeuTube::Y_AXIS:
+      return getLowerY() <= z && getUpperY() >= z;
+    case NeuTube::Z_AXIS:
+      return getLowerZ() <= z && getUpperZ() >= z;
+    }
   }
 
   return false;

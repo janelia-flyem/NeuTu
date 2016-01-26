@@ -142,14 +142,19 @@ void ZStroke2d::setEraser(bool enabled)
   */
 }
 
-void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
+                        NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
   int z = slice + iround(painter.getZOffset());
 
-  if (!(isSliceVisible(z) || (slice < 0))) {
+  if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
 
@@ -236,8 +241,12 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
 }
 
 bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-                        EDisplaySliceMode sliceMode) const
+                        EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return false;
+  }
+
   //UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
 
@@ -682,9 +691,9 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
-bool ZStroke2d::isSliceVisible(int z) const
+bool ZStroke2d::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
 {
-  if (isVisible() && !isEmpty()) {
+  if (isVisible() && !isEmpty() && (sliceAxis == NeuTube::Z_AXIS)) {
     if (m_isPenetrating || m_z == z) {
       return true;
     }

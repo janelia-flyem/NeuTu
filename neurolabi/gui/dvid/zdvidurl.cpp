@@ -140,11 +140,30 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
-std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, int z) const
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, int z, NeuTube::EAxis axis) const
 {
-  ZString url = getSparsevolUrl(bodyId) + "?minz=";
-  url.appendNumber(z);
-  url += "&maxz=";
+  ZString url = getSparsevolUrl(bodyId);
+
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(z);
+    url += "&maxz=";
+    break;
+  case NeuTube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(z);
+    url += "&maxx=";
+    break;
+  case NeuTube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(z);
+    url += "&maxy=";
+    break;
+    break;
+  }
+
   url.appendNumber(z);
 
   return url;
@@ -152,9 +171,11 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, int z) const
 
 std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
 {
+  /*
   if (bodyId < 0) {
     return "";
   }
+  */
 
   ZString str;
   str.appendNumber(bodyId);
@@ -200,9 +221,11 @@ std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 
 std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
+  /*
   if (bodyId < 0) {
     return "";
   }
+  */
 
   ZString str;
   str.appendNumber(bodyId);

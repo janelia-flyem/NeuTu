@@ -11,6 +11,11 @@ ZMouseEventProcessor::ZMouseEventProcessor() :
   registerMapper();
 }
 
+ZMouseEventProcessor::~ZMouseEventProcessor()
+{
+  qDebug() << "ZMouseEventProcessor destroyed";
+}
+
 void ZMouseEventProcessor::registerMapper()
 {
   m_mapperList.append(&m_leftButtonReleaseMapper);

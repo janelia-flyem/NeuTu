@@ -24,7 +24,8 @@ ZStackObject::~ZStackObject()
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
-                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/) const
+                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
+                           NeuTube::EAxis /*sliceAxis*/) const
 {
   return false;
 }
@@ -131,12 +132,12 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, NeuTube::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, NeuTube::EAxis /*axis*/)
 {
   return false;
 }

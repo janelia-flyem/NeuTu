@@ -20,18 +20,19 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   bool contains(double x, double y) const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis sliceAxis) const;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode) const;
+               EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   virtual const std::string& className() const;
-  bool isSliceVisible(int z) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
   }
@@ -83,6 +84,7 @@ private:
   int m_height;
   int m_z;
   bool m_isPenetrating;
+  NeuTube::EAxis m_sliceAxis;
 };
 
 #endif // ZRECT2D_H

@@ -24,8 +24,8 @@ void ZDvidSynapse::init()
   setDefaultRadius();
 }
 
-void ZDvidSynapse::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
+                           NeuTube::EAxis sliceAxis) const
 {
 #if 0
   ZStackBall ball;
@@ -44,10 +44,10 @@ void ZDvidSynapse::display(
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    visible = isVisible(z);
+    visible = isVisible(z, sliceAxis);
   }
 
-  double radius = getRadius(z);
+  double radius = getRadius(z, sliceAxis);
 
   bool isFocused = (z == getPosition().getZ());
 
@@ -120,7 +120,7 @@ void ZDvidSynapse::display(
       line.setColor(QColor(255, 255, 0));
       line.setFocusColor(QColor(255, 0, 255));
       line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
-      line.display(painter, slice, option);
+      line.display(painter, slice, option, sliceAxis);
 
       /*
       ZIntPoint pos = *iter;
@@ -183,13 +183,13 @@ void ZDvidSynapse::setDefaultColor()
 
 bool ZDvidSynapse::hit(double x, double y, double z)
 {
-  if (isVisible(z)) {
+  if (isVisible(z, NeuTube::Z_AXIS)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z);
+    double radius = getRadius(z, NeuTube::Z_AXIS);
 
     return d2 <= radius * radius;
   }
@@ -522,16 +522,38 @@ ZJsonObject ZDvidSynapse::toJsonObject() const
   return obj;
 }
 
-bool ZDvidSynapse::isVisible(int z) const
+bool ZDvidSynapse::isVisible(int z, NeuTube::EAxis sliceAxis) const
 {
-  int dz = abs(getPosition().getZ() - z);
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
+    break;
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
+    break;
+  case NeuTube::Z_AXIS:
+    abs(getPosition().getZ() - z);
+    break;
+  }
 
   return dz < iround(getRadius());
 }
 
-double ZDvidSynapse::getRadius(int z) const
+double ZDvidSynapse::getRadius(int z, NeuTube::EAxis sliceAxis) const
 {
-  int dz = abs(getPosition().getZ() - z);
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
+    break;
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
+    break;
+  case NeuTube::Z_AXIS:
+    abs(getPosition().getZ() - z);
+    break;
+  }
 
   return std::max(0.0, getRadius() - dz);
 }

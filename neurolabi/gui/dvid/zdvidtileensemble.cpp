@@ -339,7 +339,8 @@ bool ZDvidTileEnsemble::update(
 }
 
 void ZDvidTileEnsemble::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
   if (m_view == NULL) {
     return;
@@ -392,7 +393,7 @@ void ZDvidTileEnsemble::display(
     ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
     if (tile != NULL) {
       tile->enhanceContrast(m_highContrast, true);
-      tile->display(painter, slice, option);
+      tile->display(painter, slice, option, sliceAxis);
     }
   }
 //  std::cout << "Draw image time: " << toc() << std::endl;

@@ -197,8 +197,13 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 }
 
 void ZDvidTile::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   bool isProj = false;
   int z = painter.getZOffset() + slice;
   if (slice < 0) {

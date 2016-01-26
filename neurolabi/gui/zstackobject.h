@@ -132,7 +132,8 @@ public:
    *    current slice -(\a slice + 1).
    */
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option) const = 0;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      NeuTube::EAxis sliceAxis) const = 0;
 
   /*!
    * For special painting when ZPainter cannot be created
@@ -142,7 +143,7 @@ public:
    */
   virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode) const;
+      EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -154,10 +155,10 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
-  virtual bool isSliceVisible(int z) const;
+  virtual bool isSliceVisible(int z, NeuTube::EAxis axis) const;
 
   virtual bool hit(double x, double y, double z);
-  virtual bool hit(double x, double y);
+  virtual bool hit(double x, double y, NeuTube::EAxis axis);
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!

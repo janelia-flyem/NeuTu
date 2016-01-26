@@ -93,7 +93,8 @@ private:
 #define ZDVIDLABELSLICE_MT 1
 
 void ZDvidLabelSlice::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
 #ifdef _DEBUG_
       QElapsedTimer timer;
@@ -113,7 +114,7 @@ void ZDvidLabelSlice::display(
           obj.setSelected(false);
         }
 
-        obj.display(painter, slice, option);
+        obj.display(painter, slice, option, sliceAxis);
       }
     } else {
       m_paintBuffer->clear();

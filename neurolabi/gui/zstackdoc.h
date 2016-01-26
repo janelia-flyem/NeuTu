@@ -410,7 +410,8 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString dataInfo(double cx, double cy, int z) const;
+  virtual QString rawDataInfo(
+      double cx, double cy, int z, NeuTube::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -558,7 +559,7 @@ public:
                                int s = 0);
 
   ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y);
+  ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;

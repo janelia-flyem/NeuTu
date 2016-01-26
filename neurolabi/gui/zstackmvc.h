@@ -11,6 +11,7 @@
 #endif
 
 #include "zsharedpointer.h"
+#include "neutube_def.h"
 //#include "zwidgetmessage.h"
 
 class ZStackDoc;
@@ -32,8 +33,11 @@ class ZStackMvc : public QWidget
   Q_OBJECT
 public:
   explicit ZStackMvc(QWidget *parent = 0);
+  virtual ~ZStackMvc();
 
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
+  static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
+                         NeuTube::EAxis axis);
 
   void attachDocument(ZStackDoc *doc);
   void attachDocument(ZSharedPointer<ZStackDoc> doc);
@@ -85,10 +89,13 @@ public slots:
   void test();
 
 protected:
-  static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
+  static void BaseConstruct(
+      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, NeuTube::EAxis axis);
   virtual void customInit();
   virtual void createPresenter();
+  void createPresenter(NeuTube::EAxis axis);
   virtual void createView();
+  virtual void createView(NeuTube::EAxis axis);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 //  virtual void focusInEvent(QFocusEvent * event);
@@ -98,7 +105,8 @@ protected:
 private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
-  void construct(ZSharedPointer<ZStackDoc> doc);
+  void construct(ZSharedPointer<ZStackDoc> doc,
+                 NeuTube::EAxis axis = NeuTube::Z_AXIS);
 
 protected:
   ZSharedPointer<ZStackDoc> m_doc;

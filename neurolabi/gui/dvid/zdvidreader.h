@@ -67,7 +67,8 @@ public:
   ZSwcTree *readSwc(uint64_t bodyId);
   ZObject3dScan readBody(uint64_t bodyId);
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
-  ZObject3dScan* readBody(uint64_t bodyId, int z, ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
+                          ZObject3dScan *result);
 
   ZStack* readThumbnail(uint64_t bodyId);
 

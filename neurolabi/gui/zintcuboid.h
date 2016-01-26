@@ -3,6 +3,7 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
+#include "neutube_def.h"
 
 class ZIntCuboid
 {
@@ -109,6 +110,10 @@ public:
   bool hasOverlap(const ZIntCuboid &box) const;
 
   //double distanceTo(const ZIntPoint &pt);
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+  int getDim(NeuTube::EAxis axis) const;
 
 private:
   ZIntPoint m_firstCorner;

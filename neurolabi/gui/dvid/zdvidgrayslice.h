@@ -13,7 +13,8 @@ public:
   ZDvidGraySlice();
   ~ZDvidGraySlice();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);

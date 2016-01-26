@@ -103,18 +103,18 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
 }
 
 void ZDvidSparseStack::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option, NeuTube::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
-    ZObject3dScan *obj =
-        m_dvidReader.readBody(getLabel(), painter.getZ(slice), NULL);
+    ZObject3dScan *obj = m_dvidReader.readBody(
+          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, NULL);
     obj->setColor(getColor());
-    obj->display(painter, slice, option);
+    obj->display(painter, slice, option, sliceAxis);
     delete obj;
   } else {
     ZObject3dScan *obj = const_cast<ZDvidSparseStack&>(*this).getObjectMask();
     if (obj != NULL) {
-      obj->display(painter, slice, option);
+      obj->display(painter, slice, option, sliceAxis);
     }
   }
 }
@@ -402,11 +402,11 @@ bool ZDvidSparseStack::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSparseStack::hit(double x, double y)
+bool ZDvidSparseStack::hit(double x, double y, NeuTube::EAxis axis)
 {
   ZObject3dScan *objectMask = getObjectMask();
   if (objectMask != NULL) {
-    if (objectMask->hit(x, y)) {
+    if (objectMask->hit(x, y, axis)) {
       m_hitPoint = objectMask->getHitPoint();
       return true;
     }

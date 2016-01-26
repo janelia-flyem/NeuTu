@@ -12,12 +12,17 @@ class ZLineSegmentObject : public ZStackObject
 {
 public:
   ZLineSegmentObject();
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
 
-  bool isSliceVisible(int z) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
 
 
+  double getLowerX() const;
+  double getUpperX() const;
+  double getLowerY() const;
+  double getUpperY() const;
   double getLowerZ() const;
   double getUpperZ() const;
 

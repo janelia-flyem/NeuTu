@@ -5,6 +5,7 @@
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
+#include "neutube_def.h"
 
 class ZIntPoint;
 class ZIntCuboid;
@@ -55,7 +56,7 @@ public:
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
-  std::string getSparsevolUrl(uint64_t bodyId, int z) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;

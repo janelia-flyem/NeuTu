@@ -189,11 +189,11 @@ void ZFlyEmProofMvc::initBodyWindow()
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc)
+    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, NeuTube::EAxis axis)
 {
   ZFlyEmProofMvc *frame = new ZFlyEmProofMvc(parent);
 
-  BaseConstruct(frame, doc);
+  BaseConstruct(frame, doc, axis);
 
   return frame;
 }

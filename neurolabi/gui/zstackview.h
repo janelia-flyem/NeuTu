@@ -150,6 +150,9 @@ public:
 
   //int threshold();
 
+  void setSliceAxis(NeuTube::EAxis axis);
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+
   /*!
    * \brief Get stack data from the buddy document
    */
@@ -282,6 +285,8 @@ public slots:
 
   void dump(const QString &msg);
 
+  void hideThresholdControl();
+
 
 signals:
   void currentSliceChanged(int);
@@ -331,6 +336,7 @@ public: //Change view parameters
   void highlightPosition(int x, int y, int z);
 
 protected:
+  ZIntCuboid getViewBoundBox() const;
   virtual int getDepth() const;
 
   void clearCanvas();
@@ -354,8 +360,6 @@ protected:
   void updatePaintBundle();
 
   void connectSignalSlot();
-
-  void hideThresholdControl();
 
   QSize getCanvasSize() const;
 
@@ -389,6 +393,8 @@ protected:
 //  ZPixmap *m_objectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
+
+  NeuTube::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;

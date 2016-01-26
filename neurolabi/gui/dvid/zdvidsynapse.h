@@ -19,7 +19,8 @@ public:
   enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
   const std::string& className() const;
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -108,8 +109,8 @@ private:
 
 private:
   void init();
-  bool isVisible(int z) const;
-  double getRadius(int z) const;
+  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
+  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
 private:

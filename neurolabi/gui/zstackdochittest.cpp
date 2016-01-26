@@ -9,9 +9,10 @@ ZStackDocHitTest::ZStackDocHitTest() : m_hitObject(NULL)
 {
 }
 
-bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y)
+bool ZStackDocHitTest::hitTest(
+    ZStackDoc *doc, double x, double y, NeuTube::EAxis axis)
 {
-  m_hitObject = doc->hitTest(x, y);
+  m_hitObject = doc->hitTest(x, y, axis);
   return m_hitObject != NULL;
 
 

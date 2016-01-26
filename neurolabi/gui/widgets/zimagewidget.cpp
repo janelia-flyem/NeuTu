@@ -36,6 +36,7 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_tileCanvas = NULL;
   m_objectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 ZImageWidget::~ZImageWidget()
@@ -547,7 +548,7 @@ void ZImageWidget::paintObject()
     for (;iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
-          obj->isSliceVisible(m_paintBundle->getZ())) {
+          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
         }
@@ -567,7 +568,7 @@ void ZImageWidget::paintObject()
       std::cout << obj << std::endl;
 #endif
       paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                        m_paintBundle->displayStyle());
+                        m_paintBundle->displayStyle(), m_sliceAxis);
       /*
       obj->display(painter, m_paintBundle->sliceIndex(),
                    m_paintBundle->displayStyle());
@@ -577,10 +578,10 @@ void ZImageWidget::paintObject()
     for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
-          obj->isSliceVisible(m_paintBundle->getZ())) {
+          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                            m_paintBundle->displayStyle());
+                            m_paintBundle->displayStyle(), m_sliceAxis);
           /*
           obj->display(painter, m_paintBundle->sliceIndex(),
                        m_paintBundle->displayStyle());
@@ -648,6 +649,9 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (m_image != NULL) {
       painter.drawImage(m_projRegion, *m_image, m_viewPort);
+#ifdef _DEBUG_2
+      m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
     }
 
     //tic();

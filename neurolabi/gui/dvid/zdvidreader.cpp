@@ -192,7 +192,8 @@ void ZDvidReader::waitForReading()
   }
 }
 
-ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, int z, ZObject3dScan *result)
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
 {
   if (result == NULL) {
     result = new ZObject3dScan;
@@ -207,7 +208,7 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, int z, ZObject3dScan *resu
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, axis).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 

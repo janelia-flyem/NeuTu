@@ -34,7 +34,8 @@ public:
   ~ZFlyEmProofMvc();
 
   static ZFlyEmProofMvc* Make(
-      QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc);
+      QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
+      NeuTube::EAxis axis = NeuTube::Z_AXIS);
   static ZFlyEmProofMvc* Make(const ZDvidTarget &target);
 
   ZFlyEmProofDoc* getCompleteDocument() const;

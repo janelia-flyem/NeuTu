@@ -20,6 +20,7 @@
 #include "zvoxel.h"
 #include "zstackdocument.h"
 #include "zobject3dstripe.h"
+#include "geometry/zgeometry.h"
 
 class ZObject3d;
 class ZGraph;
@@ -72,6 +73,9 @@ public:
    */
   size_t getVoxelNumber(int z) const;
 
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+
   /*!
    * \brief Get the voxel number on each slice
    * \return The ith element is the #voxel at slice i.
@@ -103,7 +107,7 @@ public:
   bool load(const std::string &filePath);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
@@ -152,6 +156,10 @@ public:
   template<class T>
   int scanArray(const T *array, int x, int y, int z, int width,
                 int x0 = 0);
+
+  template<class T>
+  int scanArray(const T *array, int x, int y, int z, int width, int dim,
+                int start, NeuTube::EAxis axis);
 
   /*!
    * \brief Draw a stack
@@ -280,11 +288,11 @@ public:
    *
    * Basically it is the same as translate(0, 0, \a dz);
    */
-  void addZ(int dz);
+//  void addZ(int dz);
 
   bool isCanonizedActually();
 
-  void duplicateAcrossZ(int depth);
+  void duplicateSlice(int depth);
 
   ZObject3dScan getSlice(int z) const;
   ZObject3dScan getMedianSlice() const;
@@ -294,7 +302,8 @@ public:
   ZObject3dScan getFirstSlice() const;
 
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option) const;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      NeuTube::EAxis sliceAxis) const;
   virtual const std::string& className() const;
 
   void dilate();
@@ -531,6 +540,7 @@ public:
   }
 
 private:
+  void init();
   void addForeground(ZStack *stack);
   void addForegroundSlice8(ZStack *stack);
   int subtractForegroundSlice8(ZStack *stack);
@@ -542,6 +552,7 @@ protected:
   bool m_isCanonized;
   uint64_t m_label;
   bool m_blockingEvent;
+  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
@@ -596,6 +607,56 @@ int ZObject3dScan::scanArray(
   }
 
   x += x0;
+//  addSegment(x, x + length - 1, false);
+
+  addSegmentFast(x, x + length - 1);
+
+  return length;
+}
+
+template<class T>
+int ZObject3dScan::scanArray(
+    const T *array, int x, int y, int z, int width, int dim, int start,
+    NeuTube::EAxis axis)
+{
+  if (array == NULL) {
+    return 0;
+  }
+
+  ZGeometry::shiftSliceAxis(x, y, z, axis);
+
+  if (x < 0 || x >= dim) {
+    return 0;
+  }
+
+  int length = 0;
+  size_t stride = 1;
+  if (axis == NeuTube::X_AXIS) {
+    stride = width;
+  }
+
+  T v = array[stride * x];
+
+  if (isEmpty()) {
+//    addStripe(z, y, false);
+    addStripeFast(z, y);
+    getStripeArray().back().getSegmentArray().reserve(8);
+  } else {
+    if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
+//      addStripe(z, y, false);
+      addStripeFast(z, y);
+      getStripeArray().back().getSegmentArray().reserve(8);
+    }
+  }
+
+  while (array[x + stride * length] == v) {
+    ++length;
+    if (x + length >= dim) {
+      break;
+    }
+  }
+
+  x += start;
 //  addSegment(x, x + length - 1, false);
 
   addSegmentFast(x, x + length - 1);
@@ -683,7 +744,8 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
 }
 
 template<class T>
-std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(const T *array, int width, int height, int depth, int x0, int y0, int z0,
+std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(
+    const T *array, int width, int height, int depth, int x0, int y0, int z0,
     int yStep, std::map<uint64_t, ZObject3dScan *> *bodySet)
 {
   if (bodySet == NULL) {

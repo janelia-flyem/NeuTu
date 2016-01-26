@@ -487,9 +487,14 @@ const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) cons
 #endif
 
 void ZSwcTree::display(ZPainter &painter, int slice,
-                       ZStackObject::EDisplayStyle style) const
+                       ZStackObject::EDisplayStyle style,
+                       NeuTube::EAxis axis) const
 {
   if (!isVisible()) {
+    return;
+  }
+
+  if (axis != NeuTube::Z_AXIS) {
     return;
   }
 
@@ -648,7 +653,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 //          }
           circle.setColor(nodeColor);
           circle.useCosmeticPen(m_usingCosmeticPen);
-          circle.display(painter, slice, style);
+          circle.display(painter, slice, style, axis);
 //          circle.displayHelper(&painter, stackFocus, style);
       }
         //}
@@ -670,7 +675,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         QColor brushColor = nodeColor;
         brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
         painter.setBrush(brushColor);
-        circle.display(painter, slice, style);
+        circle.display(painter, slice, style, axis);
 //        circle.displayHelper(&painter, stackFocus, style);
       }
         break;
@@ -699,12 +704,12 @@ void ZSwcTree::display(ZPainter &painter, int slice,
                            NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
                            NeuTube::Display::Sphere::VE_DASH_PATTERN);
     circle.useCosmeticPen(m_usingCosmeticPen);
-    circle.display(painter, slice, BOUNDARY);
+    circle.display(painter, slice, BOUNDARY, axis);
 
     circle.useCosmeticPen(true);
     circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
                            NeuTube::Display::Sphere::VE_NO_CIRCLE);
-    circle.display(painter, slice, BOUNDARY);
+    circle.display(painter, slice, BOUNDARY, axis);
   }
 
 //  painter.restore();

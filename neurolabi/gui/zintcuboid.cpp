@@ -258,6 +258,32 @@ bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
   return overlapped;
 }
 
+void ZIntCuboid::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxis(axis);
+  m_lastCorner.shiftSliceAxis(axis);
+}
+
+void ZIntCuboid::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxisInverse(axis);
+  m_lastCorner.shiftSliceAxisInverse(axis);
+}
+
+int ZIntCuboid::getDim(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return getWidth();
+  case NeuTube::Y_AXIS:
+    return getHeight();
+  case NeuTube::Z_AXIS:
+    return getDepth();
+  }
+
+  return 0;
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

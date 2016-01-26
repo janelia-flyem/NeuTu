@@ -203,7 +203,8 @@ public:
   bool isForest() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis axis) const;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);

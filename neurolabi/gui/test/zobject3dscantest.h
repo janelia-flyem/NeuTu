@@ -761,17 +761,17 @@ TEST(ZObject3dScan, duplicateAcrossZ)
 {
   ZObject3dScan obj;
   obj.addSegment(0, 0, 1, 2);
-  obj.duplicateAcrossZ(3);
+  obj.duplicateSlice(3);
 
   EXPECT_EQ(3, (int) obj.getStripeNumber());
   EXPECT_EQ(6, (int) obj.getVoxelNumber());
 
-  obj.duplicateAcrossZ(2);
+  obj.duplicateSlice(2);
   EXPECT_EQ(2, (int) obj.getStripeNumber());
   EXPECT_EQ(4, (int) obj.getVoxelNumber());
 
   obj.addSegment(0, 1, 3, 4);
-  obj.duplicateAcrossZ(3);
+  obj.duplicateSlice(3);
 
   EXPECT_EQ(6, (int) obj.getStripeNumber());
   EXPECT_EQ(12, (int) obj.getVoxelNumber());

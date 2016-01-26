@@ -16675,7 +16675,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   size_t testCount = 20;
   std::vector<int> sizeArray(testCount, 0); //single dimension
   std::vector<uint64_t> initTimeArray(testCount, 0);
@@ -19253,12 +19253,109 @@ void ZTest::test(MainWindow *host)
   frame->document()->addObject(line);
 #endif
 
-#if  1
+#if 0
+  ZObject3dScan obj;
+  for (int i = 0; i < 50; ++i) {
+    int z = 100 + i;
+    int y = 100 + i * 2;
+    int x1 = 30 + i;
+    int x2 = 30 + i * 2;
+    obj.addSegment(z, y, x1, x2);
+  }
+
+  obj.save(GET_TEST_DATA_DIR + "/benchmark/obj2.sobj");
+
+#endif
+
+#if 1
+  QDialog *dlg = new QDialog(host);
+  QGridLayout *layout = new QGridLayout(dlg);
+  dlg->setLayout(layout);
   ZStackDoc *doc = new ZStackDoc(NULL);
   doc->loadFile(GET_TEST_DATA_DIR + "/system/emstack2.tif");
 
-    ZStackYZMvc *stackWidget =
-        ZStackYZMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+  ZSharedPointer<ZStackDoc> sharedDoc(doc);
+
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/obj2.tif");
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::X_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::Y_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::Z_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  /*
+  for (int i = 0; i < 50; ++i) {
+    int z = 100 + i;
+    int y = 100 + i;
+    int x1 = 30 + i;
+    int x2 = 30 + i * 2;
+    obj->addSegment(z, y, x1, x2);
+  }
+
+  */
+//  obj->setSliceAxis(NeuTube::X_AXIS);
+//
+
+//  obj->save(GET_TEST_DATA_DIR + "/benchmark/obj1.sobj");
+
+
+
+
+
+  ZStackMvc *xyWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+  xyWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  xyWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  xyWidget->getView()->hideThresholdControl();
+  ZStackMvc *yzWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+  yzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  yzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  yzWidget->getView()->hideThresholdControl();
+  ZStackMvc *xzWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+  xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  xzWidget->getView()->hideThresholdControl();
+
+  layout->addWidget(xyWidget, 0, 0);
+  layout->addWidget(yzWidget, 0, 1);
+  layout->addWidget(xzWidget, 1, 0);
+
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setHorizontalSpacing(0);
+  layout->setVerticalSpacing(0);
+
+  dlg->show();
+
+#endif
+
+#if  0
+  ZStackDoc *doc = new ZStackDoc(NULL);
+  doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
+
+    ZStackMvc *stackWidget =
+        ZStackMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc), NeuTube::X_AXIS);
   //ZStackFrame *stackWidget = ZStackFrame::Make(
   //      NULL, ZSharedPointer<ZStackDoc>(doc));
 

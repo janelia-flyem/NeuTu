@@ -51,7 +51,7 @@ public:
   public:
     SynapseSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addSynapse(const ZDvidSynapse &synapse);
+    void addSynapse(const ZDvidSynapse &synapse, NeuTube::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
@@ -78,7 +78,8 @@ public:
     static SynapseMap m_emptyMap;
   };
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
@@ -175,6 +176,8 @@ private:
 
   ZStackView *m_view;
   int m_maxPartialArea;
+
+  NeuTube::EAxis m_sliceAxis;
 
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };

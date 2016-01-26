@@ -901,6 +901,8 @@ void ZStackPresenter::prepareView()
   m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
+  setSliceAxis(buddyView()->getSliceAxis());
+
 //  m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
 
@@ -2264,7 +2266,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   updateCursor();
 }
 
-void ZStackPresenter::enterDrawRectMode(double x, double y)
+void ZStackPresenter::enterDrawRectMode(double /*x*/, double /*y*/)
 {
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   interactiveContext().setRectEditMode(ZInteractiveContext::RECT_DRAW);
@@ -3200,9 +3202,9 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
-          buddyDocument()->dataInfo(
+          buddyDocument()->rawDataInfo(
             currentRawStackPos.x(), currentRawStackPos.y(),
-            currentRawStackPos.z()));
+            currentRawStackPos.z(), m_interactiveContext.getSliceAxis()));
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
@@ -3579,4 +3581,9 @@ ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
   }
 
   return m_activeObjectMap[role];
+}
+
+void ZStackPresenter::setSliceAxis(NeuTube::EAxis axis)
+{
+  m_interactiveContext.setSliceAxis(axis);
 }
