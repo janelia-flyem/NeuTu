@@ -1110,9 +1110,6 @@ void FlyEmBodyInfoDialog::retrieveIOConnectionsDvid(ZDvidTarget target) {
 
 void FlyEmBodyInfoDialog::onIOConnectionsLoaded(ZJsonValue connectionsData) {
 
-
-    std::cout << "in onIOConnectionsLoaded" << std::endl;
-
     m_connectionsModel->clear();
     setConnectionsHeaders(m_connectionsModel);
 
