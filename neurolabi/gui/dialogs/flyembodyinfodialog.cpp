@@ -1144,8 +1144,8 @@ void FlyEmBodyInfoDialog::onIOConnectionsLoaded(ZJsonValue connectionsData) {
 
     }
 
-    // the resize isn't reliable, so set the name column wider by hand
-    ui->connectionsTableView->resizeColumnsToContents();
+    // for this table, we want all columns same width, filling full width
+    ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
 
 
