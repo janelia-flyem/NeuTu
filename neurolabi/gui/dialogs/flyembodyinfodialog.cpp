@@ -1045,9 +1045,11 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded(ZJsonValue bodiesData) {
 
     }
 
-    // the resize isn't reliable, so set the name column wider by hand
-    ui->ioBodyTableView->resizeColumnsToContents();
-    ui->ioBodyTableView->setColumnWidth(IOBODY_NAME_COLUMN, 150);
+    // for some reason, this table gave me more trouble than the
+    //  others; set its column behaviors individually
+    ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
+    ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
+    ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
 
     // would remove "loading" status indicator here
