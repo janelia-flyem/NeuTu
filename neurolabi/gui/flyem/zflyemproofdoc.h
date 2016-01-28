@@ -231,7 +231,7 @@ private:
   void updateBodyColor(EBodyColorMap type);
   void addDvidLabelSlice(NeuTube::EAxis axis);
 
-private:
+protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;

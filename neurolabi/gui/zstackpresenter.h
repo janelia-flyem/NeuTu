@@ -210,6 +210,8 @@ public:
 
   void setZoomRatio(int ratio);
 
+  NeuTube::EAxis getSliceAxis() const;
+
   ZStackFrame* getParentFrame() const;
   ZStackMvc* getParentMvc() const;
   QWidget* getParentWidget() const;

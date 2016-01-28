@@ -19272,7 +19272,8 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZDvidReader reader;
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "86e1", 8500);
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
   if (reader.open(target)) {
     tic();
     ZStack *stack = reader.readGrayScale(4085, 5300, 7329,
@@ -19309,13 +19310,6 @@ void ZTest::test(MainWindow *host)
       doc->addObject(slice);
     }
 
-    {
-      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
-      se->setDvidTarget(target);
-//      se->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      doc->addObject(se);
-    }
-
     ZSharedPointer<ZStackDoc> sharedDoc(doc);
 
     ZStackMvc *xyWidget =
@@ -19323,16 +19317,38 @@ void ZTest::test(MainWindow *host)
     xyWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
     xyWidget->getView()->setContentsMargins(0, 0, 0, 0);
     xyWidget->getView()->hideThresholdControl();
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->attachView(xyWidget->getView());
+      doc->addObject(se);
+    }
+
     ZStackMvc *yzWidget =
         ZStackMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
     yzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
     yzWidget->getView()->setContentsMargins(0, 0, 0, 0);
     yzWidget->getView()->hideThresholdControl();
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->setSliceAxis(NeuTube::X_AXIS);
+      se->attachView(yzWidget->getView());
+      doc->addObject(se);
+    }
+
     ZStackMvc *xzWidget =
         ZStackMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
     xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
     xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
     xzWidget->getView()->hideThresholdControl();
+//    {
+//      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+//      se->setDvidTarget(target);
+//      se->setSliceAxis(NeuTube::Y_AXIS);
+//      se->attachView(xzWidget->getView());
+//      doc->addObject(se);
+//    }
 
     layout->addWidget(xyWidget, 0, 0);
     layout->addWidget(yzWidget, 0, 1);

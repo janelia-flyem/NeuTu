@@ -74,6 +74,10 @@ void ZDvidSynapseEnsemble::attachView(ZStackView *view)
 
 void ZDvidSynapseEnsemble::download(int z)
 {
+  if (m_dvidTarget.getSynapseName().empty()) {
+    return;
+  }
+
   int currentArea = 0;
   if (m_view != NULL) {
     currentArea = m_view->getViewParameter().getArea();
@@ -108,7 +112,7 @@ void ZDvidSynapseEnsemble::download(int z)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), lastCorner.getY(),
+    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
                        blockBox.getFirstCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
@@ -762,7 +766,10 @@ bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
   }
 
   if (m_status == STATUS_PARTIAL_READY) {
-    return m_dataRect == rect;
+//    qDebug() << "Data rect: " << m_dataRect;
+//    qDebug() << "New rect: " << rect;
+
+    return m_dataRect.contains(rect);
   }
 
   return false;

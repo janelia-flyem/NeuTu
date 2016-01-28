@@ -536,7 +536,8 @@ void ZImageWidget::paintObject()
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
     painter.setTransform(transform);
-    painter.setZOffset(m_paintBundle->getStackOffset().getZ());
+    painter.setZOffset(
+          m_paintBundle->getStackOffset().getSliceCoord(getSliceAxis()));
 
 //    painter.setStackOffset(m_paintBundle->getStackOffset());
     std::vector<const ZStackObject*> visibleObject;

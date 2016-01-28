@@ -589,7 +589,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     misc/zstackyzview.h \
-    misc/zstackyzmvc.h
+    misc/zstackyzmvc.h \
+    flyem/zflyemorthowindow.h \
+    flyem/zflyemorthodoc.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1035,7 +1037,9 @@ SOURCES += main.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp
+    misc/zstackyzmvc.cpp \
+    flyem/zflyemorthowindow.cpp \
+    flyem/zflyemorthodoc.cpp
 
 OTHER_FILES += \
     extlib.pri \

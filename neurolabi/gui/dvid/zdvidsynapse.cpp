@@ -48,6 +48,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
   double radius = getRadius(z, sliceAxis);
+  ZIntPoint center = m_position;
+  center.shiftSliceAxis(sliceAxis);
 
   bool isFocused = (z == getPosition().getZ());
 
@@ -69,7 +71,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }
-    painter.drawEllipse(QPointF(m_position.getX(), m_position.getY()),
+    painter.drawEllipse(QPointF(center.getX(), center.getY()),
                         radius, radius);
   }
 
@@ -95,8 +97,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     if (m_usingCosmeticPen) {
       halfSize += 0.5;
     }
-    rect.setLeft(m_position.getX() - halfSize);
-    rect.setTop(m_position.getY() - halfSize);
+    rect.setLeft(center.getX() - halfSize);
+    rect.setTop(center.getY() - halfSize);
     rect.setWidth(halfSize * 2);
     rect.setHeight(halfSize * 2);
 

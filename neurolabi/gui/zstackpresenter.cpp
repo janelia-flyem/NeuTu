@@ -2600,6 +2600,11 @@ bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
   return false;
 }
 
+NeuTube::EAxis ZStackPresenter::getSliceAxis() const
+{
+  return buddyView()->getSliceAxis();
+}
+
 void ZStackPresenter::process(ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
@@ -3081,6 +3086,7 @@ void ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
+    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
@@ -3166,12 +3172,15 @@ void ZStackPresenter::process(ZStackOperator &op)
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
             Qt::LeftButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
+      grabPosition.shiftSliceAxis(getSliceAxis());
+      ZPoint shiftedStackPos = currentStackPos;
+      shiftedStackPos.shiftSliceAxis(getSliceAxis());
 
-      int x0 = std::min(grabPosition.x(), currentStackPos.x());
-      int y0 = std::min(grabPosition.y(), currentStackPos.y());
+      int x0 = std::min(grabPosition.x(), shiftedStackPos.x());
+      int y0 = std::min(grabPosition.y(), shiftedStackPos.y());
 
-      int x1 = std::max(grabPosition.x(), currentStackPos.x());
-      int y1 = std::max(grabPosition.y(), currentStackPos.y());
+      int x1 = std::max(grabPosition.x(), shiftedStackPos.x());
+      int y1 = std::max(grabPosition.y(), shiftedStackPos.y());
 
       rect->setFirstCorner(x0, y0);
       rect->setLastCorner(x1, y1);
