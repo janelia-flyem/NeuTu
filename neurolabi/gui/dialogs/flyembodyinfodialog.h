@@ -130,7 +130,7 @@ private:
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
     void setIOBodyHeaders(QStandardItemModel *model);
-    void retrieveIOBodiesDvid(ZDvidTarget target);
+    void retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID);
     void setConnectionsHeaders(QStandardItemModel *model);
     void retrieveIOConnectionsDvid(ZDvidTarget target);
 };

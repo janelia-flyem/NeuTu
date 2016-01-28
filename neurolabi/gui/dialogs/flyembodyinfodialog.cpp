@@ -953,7 +953,7 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget);
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, bodyId);
     }
 }
 
@@ -970,14 +970,81 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 
 }
 
-void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target) {
-    std::cout << "pretending to retrieve input/output bodies from DVID" << std::endl;
+void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID) {
+
+
+    std::cout << "pretending to retrieve input/output bodies from DVID for body "
+              << bodyID << std::endl;
+
+
+    // better but still fake implementation:
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
+        // get body bounding box
+        //  ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
+        ZIntCuboid box = reader.readBodyBoundBox(bodyID);
+
+        std::cout << "got bbox with corners " << box.getFirstCorner().toString() << " and "
+                  << box.getLastCorner().toString() << std::endl;
+
+        // reduce z range; we don't need a lot of synapses for testing
+        box.setLastZ(box.getFirstCorner().getZ() + 20);
+
+
+        // get synapses in volume
+        std::vector<ZDvidSynapse> synapses = reader.readSynapse(box);
+        std::cout << "got " << synapses.size() << " synapses" << std::endl;
+
+        // how many pre/post?
+        int npre = 0;
+        int npost = 0;
+        for (int i=0; i<synapses.size(); i++) {
+            if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+                npre++;
+            } else {
+                npost++;
+            }
+        }
+        std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
+
+        // show a few
+        if (synapses.size() > 0) {
+            int nsyn = 5;
+            std::cout << "json for first " << nsyn << " synapses" << std::endl;
+            for (int i=0; i<nsyn; i++) {
+                std::cout << "synapse " << i << ":" << std::endl;
+                std::cout << synapses[i].toJsonObject().dumpString() << std::endl;
+            }
+        }
+
+
+        // at this point, we'll need to iterate over the list and find either
+        //  the pre or post sites depending on whether we are looking for inputs
+        //  or outputs
+        // then for each site, find the partner site, then find the body at the 
+        //  partner site; in a QMap, count the # of sites for each body
+
+        // the map maybe should actually be body:list of synapes, because
+        //  I'll need to be able to display the sites in the other table
+
+        // so what will I be passing to the next routine?  json object
+        //  maybe not enough; maybe shouldn't be passing stuff, but
+        //  just stuffing in an instance variable instead?  that makes
+        //  sense, because there's data that won't be simply stuffed into
+        //  a model and then accessed from there
+
+
+    }
+
+
+
+
 
 
 
     // dummy implementation: just return some hard-coded stuff until the API is hooked up
-
-
     ZJsonArray bodies;
 
     ZJsonObject body1;
