@@ -123,7 +123,7 @@ void ZImage::setData(const uint8 *data, int threshold)
 }
 
 void ZImage::setData(
-    const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
+    const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
     int slice, NeuTube::EAxis sliceAxis)
 {
   int imageWidth = width();

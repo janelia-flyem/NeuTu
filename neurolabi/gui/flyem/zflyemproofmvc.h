@@ -241,6 +241,7 @@ private:
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
+  ZDvidLabelSlice* getDvidLabelSlice();
 
 private:
   bool m_showSegmentation;

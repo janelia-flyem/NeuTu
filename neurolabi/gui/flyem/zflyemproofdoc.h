@@ -49,7 +49,8 @@ public:
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice() const;
+  ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
@@ -228,6 +229,7 @@ private:
   bool isActive(EBodyColorMap type);
 
   void updateBodyColor(EBodyColorMap type);
+  void addDvidLabelSlice(NeuTube::EAxis axis);
 
 private:
   ZFlyEmBodyMerger m_bodyMerger;

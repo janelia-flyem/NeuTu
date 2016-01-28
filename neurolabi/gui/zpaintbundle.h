@@ -2,6 +2,7 @@
 #define ZPAINTBUNDLE_H
 
 #include <QList>
+#include "neutube_def.h"
 #include "zstackdrawable.h"
 #include "swctreenode.h"
 #include "zstackball.h"
@@ -157,7 +158,7 @@ public:
   typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
   typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
-  ZPaintBundle();
+  ZPaintBundle(NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
 
   inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
   inline const_iterator end() const { return const_iterator(this, const_iterator::End); }
@@ -182,7 +183,11 @@ public:
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
 
-  inline int getZ() const { return m_sliceIndex + m_stackOffset.getZ(); }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+
+  inline int getZ() const {
+    return m_sliceIndex + m_stackOffset.getSliceCoord(m_sliceAxis);
+  }
 
   inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
   inline ZStackObject::EDisplayStyle displayStyle() const { return m_style; }
@@ -209,6 +214,7 @@ private:
   std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
   ZIntPoint m_stackOffset;
+  NeuTube::EAxis m_sliceAxis;
 };
 
 #endif // ZPAINTBUNDLE_H

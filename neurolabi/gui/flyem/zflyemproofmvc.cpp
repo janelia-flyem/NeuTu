@@ -548,7 +548,8 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
         }
 
         if (!body.isEmpty()) {
-          ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+          ZDvidLabelSlice *labelSlice =
+              getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
           if (labelSlice != NULL) {
             body.setColor(labelSlice->getColor(
                             label, NeuTube::BODY_LABEL_MAPPED));
@@ -1080,7 +1081,8 @@ void ZFlyEmProofMvc::selectBody()
 
 void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 {
-  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  ZDvidLabelSlice *labelSlice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
   if (labelSlice != NULL) {
     if ((labelSlice->isVisible() == false) && (hl == false)) {
       labelSlice->setVisible(true);
@@ -1092,7 +1094,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
-  ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+  ZDvidLabelSlice *labelSlice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
   if (labelSlice != NULL){
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
@@ -1197,7 +1200,8 @@ void ZFlyEmProofMvc::runSplit()
 void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *slice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     const std::set<uint64_t> &selected = slice->getSelectedOriginal();
     m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
     updateCoarseBodyWindow();
@@ -1470,7 +1474,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
     getProgressSignal()->advanceProgress(0.1);
 
-    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *labelSlice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
 
     getProgressSignal()->advanceProgress(0.1);
 
@@ -1639,7 +1644,8 @@ void ZFlyEmProofMvc::exitSplit()
   if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
 //    emitMessage("Exiting split ...");
-    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *labelSlice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
 
@@ -1870,7 +1876,8 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 {
   if (getCompleteDocument() != NULL) {
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *slice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
       slice->setMaxSize(width, height);
       getView()->paintObject();
@@ -1881,7 +1888,8 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 void ZFlyEmProofMvc::showFullSegmentation()
 {
   if (getCompleteDocument() != NULL) {
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *slice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
       slice->updateFullView(getView()->getViewParameter());
       getView()->paintObject();
@@ -2105,7 +2113,8 @@ void ZFlyEmProofMvc::showBookmark(bool visible)
 
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
-  ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+  ZDvidLabelSlice *slice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
   if (slice != NULL) {
     slice->setVisible(visible);
     if (visible) {
@@ -2116,13 +2125,18 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
   }
 }
 
+ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice()
+{
+  return getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
+}
+
 void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     uint64_t bodyId = reader.readBodyIdAt(x, y, z);
     if (bodyId > 0) {
-      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+      ZDvidLabelSlice *slice = getDvidLabelSlice();
       if (slice != NULL) {
         slice->recordSelection();
         slice->addSelection(
@@ -2141,7 +2155,7 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
   if (reader.open(getDvidTarget())) {
     uint64_t bodyId = reader.readBodyIdAt(x, y, z);
     if (bodyId > 0) {
-      ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+      ZDvidLabelSlice *slice = getDvidLabelSlice();
       if (slice != NULL) {
 //        uint64_t finalBodyId = getMappedBodyId(bodyId);
         slice->recordSelection();
@@ -2170,7 +2184,7 @@ void ZFlyEmProofMvc::deselectAllBody()
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *slice = getDvidLabelSlice();
     if (slice != NULL) {
       slice->recordSelection();
       slice->deselectAll();
@@ -2262,7 +2276,7 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
-    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *slice = getDvidLabelSlice();
     if (slice != NULL) {
       slice->recordSelection();
       slice->clearSelection();
@@ -2306,7 +2320,7 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
       if (!goodIdList.isEmpty()) {
         uint64_t goodId = goodIdList.front();
         ZIntPoint pt = reader.readBodyLocation(goodId);
-        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        ZDvidLabelSlice *slice = getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
           slice->clearSelection();
@@ -2352,7 +2366,7 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
         //    std::set<uint64_t> bodySet;
         //    bodySet.insert(bodyId);
 
-        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        ZDvidLabelSlice *slice = getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
           if (!appending) {

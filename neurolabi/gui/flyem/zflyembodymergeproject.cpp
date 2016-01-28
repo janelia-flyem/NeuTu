@@ -777,7 +777,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_MAPPED));
             }
@@ -975,7 +975,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(
                               label, NeuTube::BODY_LABEL_MAPPED));
@@ -1064,7 +1064,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL));
             }
@@ -1419,7 +1419,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL /*&& !m_currentSelected.empty()*/) {
-    ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice();
+    ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(!hl);
 //    doc->blockSignals(true);
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -1440,7 +1440,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
         obj->setLabel(bodyId);
 //        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(doc->getDvidLabelSlice()->getColor(
+        obj->setColor(doc->getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         doc->addObject(obj);
       }

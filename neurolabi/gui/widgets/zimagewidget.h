@@ -162,6 +162,10 @@ public:
     m_sliceAxis = axis;
   }
 
+  NeuTube::EAxis getSliceAxis() const {
+    return m_sliceAxis;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);

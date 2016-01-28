@@ -343,31 +343,6 @@ ZStack* ZDvidReader::readThumbnail(uint64_t bodyId)
   }
 
   return stack;
-
-
-#if 0
-  startReading();
-
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-  dvidBuffer->clearImageArray();
-
-  ZDvidRequest request;
-  request.setGetThumbnailRequest(bodyId);
-  m_dvidClient->appendRequest(request);
-  m_dvidClient->postNextRequest();
-
-
-  waitForReading();
-
-  const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
-
-  ZStack *stack = NULL;
-  if (!imageArray.isEmpty()) {
-    stack = imageArray[0]->clone();
-  }
-
-  return stack;
-#endif
 }
 
 ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
@@ -1157,6 +1132,13 @@ ZArray* ZDvidReader::readLabels64(
 {
   return readLabels64(getDvidTarget().getLabelBlockName(),
                      x0, y0, z0, width, height, depth);
+}
+
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
+{
+  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                      box.getFirstCorner().getZ(), box.getWidth(),
+                      box.getHeight(), box.getDepth());
 }
 
 ZIntPoint ZDvidReader::readBodyBottom(uint64_t bodyId) const

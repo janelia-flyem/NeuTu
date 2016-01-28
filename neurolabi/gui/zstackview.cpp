@@ -322,6 +322,7 @@ void ZStackView::setSliceAxis(NeuTube::EAxis axis)
 {
   m_sliceAxis = axis;
   m_imageWidget->setSliceAxis(axis);
+  m_paintBundle.setSliceAxis(axis);
 }
 
 void ZStackView::resetDepthControl()
@@ -2058,8 +2059,13 @@ QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
 {
   QRect rect = m_imageWidget->viewPort();
   if (coordSys == NeuTube::COORD_RAW_STACK) {
+    ZIntCuboid box = getViewBoundBox();
+    rect.translate(
+          QPoint(-box.getFirstCorner().getX(), -box.getLastCorner().getY()));
+    /*
     rect.translate(QPoint(-buddyDocument()->getStackOffset().getX(),
                           -buddyDocument()->getStackOffset().getY()));
+                          */
   }
 
   return rect;
@@ -2072,6 +2078,7 @@ ZStackViewParam ZStackView::getViewParameter(
   param.setZ(getZ(coordSys));
   param.setViewPort(getViewPort(coordSys));
   param.setExploreAction(action);
+  param.setSliceAxis(m_sliceAxis);
   //param.setViewPort(imageWidget()->viewPort());
 
   return param;
@@ -2092,12 +2099,14 @@ void ZStackView::reloadCanvas()
 
 void ZStackView::setView(const ZStackViewParam &param)
 {
+  ZIntCuboid box = getViewBoundBox();
+
   switch (param.getCoordinateSystem()) {
   case NeuTube::COORD_RAW_STACK:
   {
     QRect viewPort = param.getViewPort();
-    viewPort.translate(QPoint(buddyDocument()->getStackOffset().getX(),
-                              buddyDocument()->getStackOffset().getY()));
+    viewPort.translate(QPoint(box.getFirstCorner().getX(),
+                              box.getFirstCorner().getY()));
     m_imageWidget->setViewPort(param.getViewPort());
     setSliceIndex(param.getZ());
   }
@@ -2106,7 +2115,7 @@ void ZStackView::setView(const ZStackViewParam &param)
   {
     QRect viewPort = param.getViewPort();
     m_imageWidget->setViewPort(viewPort);
-    setSliceIndex(param.getZ() - buddyDocument()->getStackOffset().getZ());
+    setSliceIndex(param.getZ() - box.getFirstCorner().getZ());
   }
     break;
   default:

@@ -4108,7 +4108,7 @@ QString ZStackDoc::rawDataInfo(
       }
 
       if (getStack()->hasOffset()) {
-        info += QString("; (%1, %2, %3) - Data coordinates").
+        info += QString("; (%1, %2, %3)").
             arg(getStackOffset().getX() + wx).arg(getStackOffset().getY() + wy).
             arg(getStackOffset().getZ() + wz);
       }

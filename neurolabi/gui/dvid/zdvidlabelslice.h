@@ -33,6 +33,8 @@ public:
 
   void updateFullView(const ZStackViewParam &viewParam);
 
+  void setSliceAxis(NeuTube::EAxis sliceAxis);
+
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 
@@ -133,7 +135,8 @@ private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
-  void init(int maxWidth, int maxHeight);
+  void init(int maxWidth, int maxHeight,
+            NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
   QColor getCustomColor(uint64_t label) const;
 
 private:
@@ -159,6 +162,7 @@ private:
 
   bool m_selectionFrozen;
   bool m_isFullView;
+  NeuTube::EAxis m_sliceAxis;
 };
 
 template <typename InputIterator>

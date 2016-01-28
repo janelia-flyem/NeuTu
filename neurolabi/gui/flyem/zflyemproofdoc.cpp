@@ -93,8 +93,13 @@ void ZFlyEmProofDoc::connectSignalSlot()
 void ZFlyEmProofDoc::setSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
-  if (getDvidLabelSlice() != NULL) {
-    getDvidLabelSlice()->setSelection(selected, labelType);
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  if (!sliceList.isEmpty()) {
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      slice->setSelection(selected, labelType);
+    }
 
     emit bodySelectionChanged();
   }
@@ -103,10 +108,14 @@ void ZFlyEmProofDoc::setSelectedBody(
 void ZFlyEmProofDoc::addSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
-  if (getDvidLabelSlice() != NULL) {
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  if (!sliceList.isEmpty()) {
     if (!selected.empty()) {
-      getDvidLabelSlice()->addSelection(
-            selected.begin(), selected.end(), labelType);
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        slice->addSelection(selected.begin(), selected.end(), labelType);
+      }
       emit bodySelectionChanged();
     }
   }
@@ -298,13 +307,13 @@ void ZFlyEmProofDoc::annotateBody(
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
-    if (getDvidLabelSlice()->hasCustomColorMap()) {
+    if (getDvidLabelSlice(NeuTube::Z_AXIS)->hasCustomColorMap()) {
       ZFlyEmNameBodyColorScheme *colorMap =
           dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
       if (colorMap != NULL) {
         colorMap->updateNameMap(annotation);
-        getDvidLabelSlice()->assignColorMap();
-        processObjectModified(getDvidLabelSlice());
+        getDvidLabelSlice(NeuTube::Z_AXIS)->assignColorMap();
+        processObjectModified(getDvidLabelSlice(NeuTube::Z_AXIS));
         notifyObjectModified();
       }
     }
@@ -358,15 +367,24 @@ void ZFlyEmProofDoc::updateTileData()
     addObject(ensemble, true);
 
     //  target.setBodyLabelName("labels");
-
-    ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
-    labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    labelSlice->setDvidTarget(getDvidTarget());
-    labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
-    labelSlice->setBodyMerger(&m_bodyMerger);
-    addObject(labelSlice, 0, true);
+    addDvidLabelSlice(NeuTube::X_AXIS);
+    addDvidLabelSlice(NeuTube::Y_AXIS);
+    addDvidLabelSlice(NeuTube::Z_AXIS);
   }
 }
+
+void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
+{
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  labelSlice->setSliceAxis(axis);
+  labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  labelSlice->setDvidTarget(getDvidTarget());
+  labelSlice->setSource(
+        ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
+  labelSlice->setBodyMerger(&m_bodyMerger);
+  addObject(labelSlice, 0, true);
+}
+
 
 ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
 {
@@ -378,11 +396,21 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
   return NULL;
 }
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
+//QList<ZDvidLabelSlice*> ZFlyEmProofDoc::getDvidLabelSlice() const
+//{
+
+//}
+
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(NeuTube::EAxis axis) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
-  if (!teList.empty()) {
-    return teList[0];
+  std::string source = ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis);
+  for (QList<ZDvidLabelSlice*>::iterator iter = teList.begin();
+       iter != teList.end(); ++iter) {
+    ZDvidLabelSlice *te = *iter;
+    if (te->getSource() == source) {
+      return te;
+    }
   }
 
   return NULL;
@@ -491,7 +519,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice()->getColor(
+    slice->setColor(getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
                       slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
     //slice->updateSelection();
   }
@@ -1419,23 +1447,27 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 
 void ZFlyEmProofDoc::updateBodyColor(EBodyColorMap type)
 {
-  if (getDvidLabelSlice() != NULL) {
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
     if (colorMap.get() != NULL) {
-      getDvidLabelSlice()->setCustomColorMap(colorMap);
+      slice->setCustomColorMap(colorMap);
     } else {
-      getDvidLabelSlice()->removeCustomColorMap();
+      slice->removeCustomColorMap();
     }
 
-    processObjectModified(getDvidLabelSlice());
+    processObjectModified(slice);
     notifyObjectModified();
   }
 }
 
 void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice();
-  if (slice != NULL) {
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+//  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
 }
@@ -1570,7 +1602,7 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
 
 void ZFlyEmProofDoc::recordBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
   if (slice != NULL) {
     slice->recordSelection();
   }
@@ -1578,7 +1610,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 
 void ZFlyEmProofDoc::processBodySelection()
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
   if (slice != NULL) {
     slice->processSelection();
   }

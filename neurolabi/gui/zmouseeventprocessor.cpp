@@ -148,6 +148,7 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 {
   ZPoint pt(x, y, z);
   mapPositionFromWidgetToRawStack(pt.xRef(), pt.yRef());
+  pt.shiftSliceAxis(m_imageWidget->getSliceAxis());
 
   return pt;
 }

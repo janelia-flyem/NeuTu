@@ -7,6 +7,7 @@
 #include <QtDebug>
 #include "dvid/zdvidbufferreader.h"
 #endif
+#include "neutubeconfig.h"
 
 const char* ZDvidTarget::m_addressKey = "address";
 const char* ZDvidTarget::m_portKey = "port";
@@ -88,6 +89,10 @@ void ZDvidTarget::setServer(const std::string &address)
   } else {
     m_address = address;
   }
+
+#if defined(_FLYEM_)
+  m_address = GET_FLYEM_CONFIG.mapAddress(m_address);
+#endif
 }
 
 void ZDvidTarget::setUuid(const std::string &uuid)

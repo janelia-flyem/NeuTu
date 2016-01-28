@@ -1,4 +1,8 @@
 {
+  "ip": {
+    "emdata1.int.janelia.org": "10.40.4.158",
+    "emdata2.int.janelia.org": "10.40.4.163"
+  },
   "dvid repo": [
     {
       "address": "hackathon.janelia.org",

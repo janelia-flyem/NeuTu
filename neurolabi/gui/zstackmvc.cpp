@@ -60,7 +60,7 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
   createPresenter(axis);
   updateDocument();
 
-  //m_view->prepareDocument();
+  m_view->prepareDocument();
   m_presenter->prepareView();
 
   customInit();

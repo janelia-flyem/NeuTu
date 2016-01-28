@@ -161,6 +161,11 @@ public:
   int scanArray(const T *array, int x, int y, int z, int width, int dim,
                 int start, NeuTube::EAxis axis);
 
+  template<class T>
+  int scanArrayShift(
+      const T *array, int start, int y, int z, int stride, int dim);
+
+
   /*!
    * \brief Draw a stack
    * \param stack
@@ -254,10 +259,19 @@ public:
       std::map<uint64_t, ZObject3dScan*> *bodySet);
 
   template<class T>
+  static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
+      const T *array, int width, int height, int depth, NeuTube::EAxis axis);
+
+  template<class T>
+  static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
+      const T *array, int width, int height, int depth, NeuTube::EAxis axis);
+
+  template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllForegroundObject(
       const T *array, int width, int height, int depth, int x0, int y0, int z0,
       int yStep,
       std::map<uint64_t, ZObject3dScan*> *bodySet);
+
 
   //Foreground only
   static std::vector<ZObject3dScan*> extractAllObject(const ZStack &stack,
@@ -584,7 +598,6 @@ int ZObject3dScan::scanArray(
     return 0;
   }
 
-  int length = 0;
   T v = array[x];
 
   if (isEmpty()) {
@@ -599,14 +612,63 @@ int ZObject3dScan::scanArray(
     }
   }
 
-  while (array[x + length] == v) {
-    ++length;
-    if (x + length >= width) {
-      break;
+  int length = 1;
+  if (x < width - 1) {
+    while (array[x + length] == v) {
+      ++length;
+      if (x + length >= width) {
+        break;
+      }
     }
   }
 
   x += x0;
+//  addSegment(x, x + length - 1, false);
+
+  addSegmentFast(x, x + length - 1);
+
+  return length;
+}
+
+template<class T>
+int ZObject3dScan::scanArrayShift(
+    const T *array, int start, int y, int z, int stride, int dim)
+{
+  if (array == NULL) {
+    return 0;
+  }
+
+  int x = start;
+
+  if (x < 0 || x >= dim) {
+    return 0;
+  }
+
+  T v = array[x * stride];
+
+  if (isEmpty()) {
+//    addStripe(z, y, false);
+    addStripeFast(z, y);
+    getStripeArray().back().getSegmentArray().reserve(8);
+  } else {
+    if (m_stripeArray.back().getY() != y || m_stripeArray.back().getZ() != z) {
+//      addStripe(z, y, false);
+      addStripeFast(z, y);
+      getStripeArray().back().getSegmentArray().reserve(8);
+    }
+  }
+
+  int length = 1;
+  if (x < dim - 1) {
+    while (array[(x + length) * stride] == v) {
+      ++length;
+      if (x + length >= dim) {
+        break;
+      }
+    }
+  }
+
+//  x += x0;
 //  addSegment(x, x + length - 1, false);
 
   addSegmentFast(x, x + length - 1);
@@ -629,7 +691,6 @@ int ZObject3dScan::scanArray(
     return 0;
   }
 
-  int length = 0;
   size_t stride = 1;
   if (axis == NeuTube::X_AXIS) {
     stride = width;
@@ -649,10 +710,13 @@ int ZObject3dScan::scanArray(
     }
   }
 
-  while (array[x + stride * length] == v) {
-    ++length;
-    if (x + length >= dim) {
-      break;
+  int length = 1;
+  if (x < dim - 1) {
+    while (array[(x + length) * stride] == v) {
+      ++length;
+      if (x + length >= dim) {
+        break;
+      }
     }
   }
 
@@ -742,6 +806,106 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
 
   return bodySet;
 }
+
+
+template<class T>
+std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
+    const T *array, int width, int height, int depth, NeuTube::EAxis axis)
+{
+  std::map<uint64_t, ZObject3dScan *> *bodySet =
+      new std::map<uint64_t, ZObject3dScan*>;
+
+  int sw = width;
+  int sh = height;
+  int sd = depth;
+  size_t strideX = 1;
+  size_t strideY = width;
+  size_t strideZ = width * height;
+
+  ZGeometry::shiftSliceAxis(sw, sh, sd, axis);
+  ZGeometry::shiftSliceAxis(strideX, strideY, strideZ, axis);
+
+  const T *arrayOrigin = array;
+
+  ZObject3dScan *obj = NULL;
+  for (int z = 0; z < sd; ++z) {
+    for (int y = 0; y < sh; ++y) {
+      int x = 0;
+
+      array = arrayOrigin + z * strideZ + y * strideY;
+      while (x < sw) {
+        uint64_t v = array[x * strideX];
+        std::map<uint64_t, ZObject3dScan*>::iterator iter = bodySet->find(v);
+        if (iter == bodySet->end()) {
+          obj = new ZObject3dScan;
+          obj->setSliceAxis(axis);
+          obj->setLabel(v);
+          //(*bodySet)[v] = obj;
+          bodySet->insert(std::map<uint64_t, ZObject3dScan*>::value_type(v, obj));
+        } else {
+          obj = iter->second;
+        }
+        int length = obj->scanArrayShift(array, x, y, z, strideX, sw);
+
+        x += length;
+      }
+    }
+  }
+
+  return bodySet;
+}
+
+template<class T>
+std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(
+    const T *array, int width, int height, int depth, NeuTube::EAxis axis)
+{
+  std::map<uint64_t, ZObject3dScan *> *bodySet =
+      new std::map<uint64_t, ZObject3dScan*>;
+
+  int sw = width;
+  int sh = height;
+  int sd = depth;
+  size_t strideX = 1;
+  size_t strideY = width;
+  size_t strideZ = width * height;
+
+  ZGeometry::shiftSliceAxis(sw, sh, sd, axis);
+  ZGeometry::shiftSliceAxis(strideX, strideY, strideZ, axis);
+
+  const T *arrayOrigin = array;
+
+  ZObject3dScan *obj = NULL;
+  for (int z = 0; z < sd; ++z) {
+    for (int y = 0; y < sh; ++y) {
+      int x = 0;
+
+      array = arrayOrigin + z * strideZ + y * strideY;
+      while (x < sw) {
+        uint64_t v = array[x * strideX];
+        if (v > 0) {
+          std::map<uint64_t, ZObject3dScan*>::iterator iter = bodySet->find(v);
+          if (iter == bodySet->end()) {
+            obj = new ZObject3dScan;
+            obj->setSliceAxis(axis);
+            obj->setLabel(v);
+            //(*bodySet)[v] = obj;
+            bodySet->insert(std::map<uint64_t, ZObject3dScan*>::value_type(v, obj));
+          } else {
+            obj = iter->second;
+          }
+          int length = obj->scanArrayShift(array, x, y, z, strideX, sw);
+
+          x += length;
+        } else {
+          ++x;
+        }
+      }
+    }
+  }
+
+  return bodySet;
+}
+
 
 template<class T>
 std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(

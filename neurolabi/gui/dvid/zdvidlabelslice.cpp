@@ -28,7 +28,7 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
   delete m_labelArray;
 }
 
-void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
+void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAxis)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_LABEL_SLICE;
@@ -44,6 +44,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_labelArray = NULL;
   m_selectionFrozen = false;
   m_isFullView = false;
+  m_sliceAxis = sliceAxis;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -92,13 +93,22 @@ private:
 
 #define ZDVIDLABELSLICE_MT 1
 
+void ZDvidLabelSlice::setSliceAxis(NeuTube::EAxis sliceAxis)
+{
+  m_sliceAxis = sliceAxis;
+}
+
 void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     NeuTube::EAxis sliceAxis) const
 {
+  if (m_sliceAxis != sliceAxis) {
+    return;
+  }
+
 #ifdef _DEBUG_
-      QElapsedTimer timer;
-      timer.start();
+  QElapsedTimer timer;
+  timer.start();
 #endif
 
   if (isVisible()) {
@@ -184,7 +194,6 @@ void ZDvidLabelSlice::update()
   }
 }
 
-
 void ZDvidLabelSlice::forceUpdate()
 {
   forceUpdate(m_currentViewParam);
@@ -198,38 +207,54 @@ void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {
+  if (viewParam.getSliceAxis() != m_sliceAxis) {
+    return;
+  }
+
   m_objArray.clear();
   if (isVisible()) {
     int yStep = 1;
 
-//    ZDvidReader reader;
-//    if (reader.open(getDvidTarget())) {
-      QRect viewPort = viewParam.getViewPort();
+    //    ZDvidReader reader;
+    //    if (reader.open(getDvidTarget())) {
+    QRect viewPort = viewParam.getViewPort();
 
-      std::cout << "Deleting " << m_labelArray << std::endl;
+    std::cout << "Deleting " << m_labelArray << std::endl;
 
-      delete m_labelArray;
+    ZIntCuboid box;
+    box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
+    box.setSize(viewPort.width(), viewPort.height(), 1);
+    box.shiftSliceAxisInverse(m_sliceAxis);
+
+    delete m_labelArray;
+    /*
       m_labelArray = m_reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
+            */
+    m_labelArray = m_reader.readLabels64(box);
 
-      if (m_labelArray != NULL) {
-        ZObject3dFactory::MakeObject3dScanArray(*m_labelArray, yStep, &m_objArray, true);
+    if (m_labelArray != NULL) {
+//      ZObject3dFactory::MakeObject3dScanArray(
+//            *m_labelArray, yStep, &m_objArray, true);
+      ZObject3dFactory::MakeObject3dScanArray(
+            *m_labelArray, m_sliceAxis, true, &m_objArray);
 
-        m_objArray.translate(viewPort.left(), viewPort.top(),
-                             viewParam.getZ());
-        /*
+      m_objArray.translate(box.getFirstCorner().getX(),
+                           box.getFirstCorner().getY(),
+                           box.getFirstCorner().getZ());
+      /*
         if (m_bodyMerger != NULL) {
           updateLabel(*m_bodyMerger);
         }
         */
-        assignColorMap();
+      assignColorMap();
 
-//        delete labelArray;
-      }
+      //        delete labelArray;
     }
-//  }
+  }
+  //  }
 }
 
 void ZDvidLabelSlice::update(int z)
@@ -251,6 +276,10 @@ void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
 
 bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
+  if (viewParam.getSliceAxis() != m_sliceAxis) {
+    return false;
+  }
+
   bool updated = false;
   if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
     ZStackViewParam newViewParam = viewParam;

@@ -263,6 +263,8 @@ using namespace std;
 #include "zlinesegmentobject.h"
 #include "zstackmvc.h"
 #include "misc/zstackyzmvc.h"
+#include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemproofmvc.h"
 
 using namespace std;
 
@@ -19268,6 +19270,76 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "86e1", 8500);
+  if (reader.open(target)) {
+    tic();
+    ZStack *stack = reader.readGrayScale(4085, 5300, 7329,
+                                         256, 256, 256);
+    std::cout << "Stack reading time: " << toc() << "ms" << std::endl;
+
+    QDialog *dlg = new QDialog(host);
+    QGridLayout *layout = new QGridLayout(dlg);
+    dlg->setLayout(layout);
+    ZStackDoc *doc = new ZStackDoc(NULL);
+
+    doc->loadStack(stack);
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setSliceAxis(NeuTube::X_AXIS);
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setSliceAxis(NeuTube::Y_AXIS);
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    ZSharedPointer<ZStackDoc> sharedDoc(doc);
+
+    ZStackMvc *xyWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+    xyWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    xyWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    xyWidget->getView()->hideThresholdControl();
+    ZStackMvc *yzWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+    yzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    yzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    yzWidget->getView()->hideThresholdControl();
+    ZStackMvc *xzWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+    xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    xzWidget->getView()->hideThresholdControl();
+
+    layout->addWidget(xyWidget, 0, 0);
+    layout->addWidget(yzWidget, 0, 1);
+    layout->addWidget(xzWidget, 1, 0);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setHorizontalSpacing(0);
+    layout->setVerticalSpacing(0);
+
+    dlg->show();
+  }
+#endif
+
+#if 0
   QDialog *dlg = new QDialog(host);
   QGridLayout *layout = new QGridLayout(dlg);
   dlg->setLayout(layout);

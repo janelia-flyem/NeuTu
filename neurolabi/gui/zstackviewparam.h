@@ -2,7 +2,7 @@
 #define ZSTACKVIEWPARAM_H
 
 #include <QRect>
-#include "neutube.h"
+#include "neutube_def.h"
 
 /*!
  * \brief The class of stack view parameter
@@ -35,6 +35,8 @@ public:
   void setViewPort(const QRect &rect);
   void setViewPort(int x0, int y0, int x1, int y1);
   void setExploreAction(NeuTube::View::EExploreAction action);
+  void setSliceAxis(NeuTube::EAxis sliceAxis);
+  NeuTube::EAxis getSliceAxis() const;
 
   bool operator ==(const ZStackViewParam &param) const;
   bool operator !=(const ZStackViewParam &param) const;
@@ -54,6 +56,7 @@ private:
   QRect m_viewPort;
   NeuTube::ECoordinateSystem m_coordSys;
   NeuTube::View::EExploreAction m_action;
+  NeuTube::EAxis m_sliceAxis;
 };
 
 #endif // ZSTACKVIEWPARAM_H
