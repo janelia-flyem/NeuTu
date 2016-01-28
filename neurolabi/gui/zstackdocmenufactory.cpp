@@ -20,7 +20,7 @@ void ZStackDocMenuFactory::init()
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
-    ZStackDoc *doc, QWidget *parentWidget, QMenu *menu)
+    ZStackDoc *doc, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -90,7 +90,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
-    ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
+    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);

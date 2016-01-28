@@ -213,7 +213,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 
   m_objArray.clear();
   if (isVisible()) {
-    int yStep = 1;
+//    int yStep = 1;
 
     //    ZDvidReader reader;
     //    if (reader.open(getDvidTarget())) {

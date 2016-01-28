@@ -380,6 +380,10 @@ void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != getSliceAxis()) {
+    return;
+  }
+
   if (slice >= 0) {
     const int sliceRange = 5;
 

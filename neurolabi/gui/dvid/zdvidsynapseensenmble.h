@@ -102,6 +102,9 @@ public:
   SynapseSlice& getSlice(int z);
   SynapseSlice& getSlice(int z, EAdjustment adjust);
 
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+
 //  bool deleteSynapse(int x, int y, int z);
 
   int getMinZ() const;

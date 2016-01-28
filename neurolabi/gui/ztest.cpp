@@ -19309,6 +19309,13 @@ void ZTest::test(MainWindow *host)
       doc->addObject(slice);
     }
 
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+//      se->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(se);
+    }
+
     ZSharedPointer<ZStackDoc> sharedDoc(doc);
 
     ZStackMvc *xyWidget =
