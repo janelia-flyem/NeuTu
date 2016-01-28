@@ -426,3 +426,13 @@ void ZDvidInfo::setEndBlockIndex(int x, int y, int z)
 {
   m_endBlockIndex.set(x, y, z);
 }
+
+void ZDvidInfo::downsampleBlock(int xintv, int yintv, int zintv)
+{
+  m_startBlockIndex /= ZIntPoint(xintv + 1, yintv + 1, zintv + 1);
+  m_endBlockIndex /= ZIntPoint(xintv + 1, yintv + 1, zintv + 1) +
+      ZIntPoint(1, 1, 1);
+  m_blockSize[0] *= xintv + 1;
+  m_blockSize[1] *= yintv + 1;
+  m_blockSize[2] *= zintv + 1;
+}

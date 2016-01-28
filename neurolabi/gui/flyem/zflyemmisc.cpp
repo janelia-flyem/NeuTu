@@ -343,12 +343,12 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
               }
             }
             if (!faceArray.empty()) {
-              ZIntCuboid box = dvidInfo.getBlockBox(i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              ZIntCuboid box = dvidInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
               box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
               Z3DCube *cube = cubes->makeCube(box, color, faceArray);
               cubes->append(*cube);
               delete cube;
-
             }
           }
         }
@@ -497,7 +497,11 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
       if (reader.open(dvidTarget)) {
         ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
         if (!roi.isEmpty()) {
-          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+          ZDvidInfo info = dvidInfo;
+//          info.downsampleBlock(1, 1, 1);
+//          roi.downsample(1, 1, 1);
+
+          ZCubeArray *cubes = MakeRoiCube(roi, info);
           cubes->setSource(
                 ZStackObjectSourceFactory::MakeFlyEmRoiSource(
                   dvidTarget.getRoiName()));
