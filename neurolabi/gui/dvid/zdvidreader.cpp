@@ -1651,6 +1651,14 @@ ZJsonArray ZDvidReader::readAnnotation(
   return readJsonArray(url.getAnnotationUrl(dataName, tag));
 }
 
+ZJsonArray ZDvidReader::readAnnotation(
+    const std::string &dataName, uint64_t label) const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonArray(url.getAnnotationUrl(dataName, label));
+}
+
 ZJsonArray ZDvidReader::readTaggedBookmark(const std::string &tag) const
 {
   return readAnnotation(getDvidTarget().getBookmarkName(), tag);
@@ -1808,6 +1816,21 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
+
+  std::vector<ZDvidSynapse> synapseArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    synapseArray[i].loadJsonObject(synapseJson);
+  }
+
+  return synapseArray;
+}
+
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(uint64_t label) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(label));
 
   std::vector<ZDvidSynapse> synapseArray(obj.size());
 

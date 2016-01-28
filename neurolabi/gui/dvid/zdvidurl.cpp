@@ -200,9 +200,11 @@ std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 
 std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
+  /*
   if (bodyId < 0) {
     return "";
   }
+  */
 
   ZString str;
   str.appendNumber(bodyId);
@@ -662,6 +664,16 @@ std::string ZDvidUrl::getAnnotationUrl(
 {
   return getAnnotationUrl(dataName) + "/" + m_annotationTagCommand + "/" + tag;
 }
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, uint64_t label) const
+{
+  std::ostringstream stream;
+  stream << label;
+  return getAnnotationUrl(dataName) + "/" + m_annotationLabelCommand + "/" +
+      stream.str();
+}
+
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, int x, int y, int z) const

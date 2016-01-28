@@ -158,6 +158,12 @@ public:
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;
+  /*!
+   * \brief Read all point annotations within the given label.
+   * \param dataName Annotation data name
+   * \param label Annotation label
+   */
+  ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
 
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
@@ -167,6 +173,7 @@ public:
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
+  std::vector<ZDvidSynapse> readSynapse(uint64_t label) const;
   ZDvidSynapse readSynapse(int x, int y, int z);
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;

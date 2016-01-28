@@ -11,23 +11,31 @@
 #define INIT_PUNCTUM m_score(1.0)
 
 ZPunctum::ZPunctum()
-  : INIT_PUNCTUM
 {
-  setColor(255, 255, 0, 255);
-  setCenter(-1, -1, -1);
-  setRadius(2.0);
-  setMaxIntensity(255);
-  setMeanIntensity(255);
-  setSDevOfIntensity(0);
-  updateVolSize();
-  updateMass();
-  setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
-                  NeuTube::Display::Sphere::VE_DOT_CENTER);
-  m_type = ZStackObject::TYPE_PUNCTUM;
+  init(-1, -1, -1, 2.0);
 }
 
 ZPunctum::ZPunctum(double x, double y, double z, double r)
-  : INIT_PUNCTUM
+{
+  init(x, y, z, r);
+}
+
+ZPunctum::ZPunctum(const ZPoint &center, double r)
+{
+  init(center.x(), center.y(), center.z(), r);
+}
+
+ZPunctum::ZPunctum(const ZIntPoint &center, double r)
+{
+  init(center.getX(), center.getY(), center.getZ(), r);
+}
+
+
+ZPunctum::~ZPunctum()
+{
+}
+
+void ZPunctum::init(double x, double y, double z, double r)
 {
   setColor(255, 255, 0, 255);
   setCenter(x, y, z);
@@ -39,66 +47,8 @@ ZPunctum::ZPunctum(double x, double y, double z, double r)
   updateMass();
   setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
   m_type = ZStackObject::TYPE_PUNCTUM;
+  m_score = 1.0;
 }
-
-ZPunctum::~ZPunctum()
-{
-}
-
-//void ZPunctum::display(QImage *image, int n, Display_Style style) const
-//{
-//  if (!isVisible())
-//    return;
-
-//  if (style == NORMAL) {
-//    style = SOLID;
-//  }
-
-//  QPainter painter(image);
-//  if (m_selected == true) {
-//    painter.setPen(QPen(selectingColor(m_color)));
-//  } else {
-//    painter.setPen(QPen(m_color));
-//  }
-
-//  switch (style) {
-//  case SOLID: {
-//    if ((iround(m_z) == n) || (n == -1)) {
-//      int half_size = iround(m_radius - 0.5);
-//      int cx = iround(m_x);
-//      int cy = iround(m_y);
-//      painter.drawRect(cx - half_size, cy - half_size,
-//                       half_size * 2 + 1, half_size * 2 + 1);
-//    }
-//    break;
-//  }
-//  case SKELETON:
-//    break;
-//  case BOUNDARY: {
-//    double r = m_radius;
-//    bool visible = false;
-
-//    if ((iround(m_z) == n) || (n == -1)) {
-//      visible = true;
-//    } else if (fabs(m_z - n) < r) {
-//      r = sqrt(r * r - (m_z - n) * (m_z - n));
-//      visible = true;
-//    }
-
-//    if (visible) {
-//      if (m_selected == true) {
-//        painter.setPen(QPen(selectingColor(m_color)));
-//      } else {
-//        painter.setPen(QPen(m_color));
-//      }
-//      painter.drawEllipse(QPointF(m_x, m_y), r, r);
-//    }
-//    break;
-//  }
-//  default:
-//    break;
-//  }
-//}
 
 #if 0
 void ZPunctum::display(ZPainter &painter, int n, ZStackObject::Display_Style style) const
