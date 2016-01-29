@@ -47,7 +47,9 @@ public:
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
-  void loadJsonObject(const ZJsonObject &obj);
+  void loadJsonObject(
+      const ZJsonObject &obj,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER);
   ZJsonObject toJsonObject() const;
 
   void clear();

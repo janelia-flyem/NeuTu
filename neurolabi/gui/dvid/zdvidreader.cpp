@@ -1634,6 +1634,14 @@ ZJsonArray ZDvidReader::readAnnotation(
   return readJsonArray(url.getAnnotationUrl(dataName, tag));
 }
 
+ZJsonArray ZDvidReader::readAnnotation(
+    const std::string &dataName, uint64_t label) const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonArray(url.getAnnotationUrl(dataName, label));
+}
+
 ZJsonArray ZDvidReader::readTaggedBookmark(const std::string &tag) const
 {
   return readAnnotation(getDvidTarget().getBookmarkName(), tag);
@@ -1787,7 +1795,7 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box) const
+    const ZIntCuboid &box, NeuTube::FlyEM::ESynapseLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
@@ -1796,16 +1804,33 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    synapseArray[i].loadJsonObject(synapseJson);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
   }
 
   return synapseArray;
 }
 
-ZDvidSynapse ZDvidReader::readSynapse(int x, int y, int z)
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    uint64_t label, NeuTube::FlyEM::ESynapseLoadMode mode) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(label));
+
+  std::vector<ZDvidSynapse> synapseArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
+  }
+
+  return synapseArray;
+}
+
+ZDvidSynapse ZDvidReader::readSynapse(
+    int x, int y, int z, NeuTube::FlyEM::ESynapseLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
-      readSynapse(ZIntCuboid(x, y, z, x, y, z));
+      readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
     return synapseArray[0];
   }

@@ -687,6 +687,16 @@ std::string ZDvidUrl::getAnnotationUrl(
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, uint64_t label) const
+{
+  std::ostringstream stream;
+  stream << label;
+  return getAnnotationUrl(dataName) + "/" + m_annotationLabelCommand + "/" +
+      stream.str();
+}
+
+
+std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, int x, int y, int z) const
 {
   std::ostringstream stream;

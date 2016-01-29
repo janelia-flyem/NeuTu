@@ -222,7 +222,8 @@ bool ZDvidSynapse::isValid() const
   return getKind() != KIND_INVALID;
 }
 
-void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
+void ZDvidSynapse::loadJsonObject(
+    const ZJsonObject &obj, NeuTube::FlyEM::ESynapseLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -240,7 +241,28 @@ void ZDvidSynapse::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey("Tags")) {
       ZJsonArray tagJson(obj["Tags"], ZJsonValue::SET_INCREASE_REF_COUNT);
       for (size_t i = 0; i < tagJson.size(); ++i) {
-        m_tagArray.push_back(ZJsonParser::stringValue(tagJson.at(i), i));
+        m_tagArray.push_back(ZJsonParser::stringValue(tagJson.at(i)));
+      }
+    }
+
+    clearPartner();
+    if (mode == NeuTube::FlyEM::LOAD_PARTNER_LOCATION) {
+      if (obj.hasKey("Rels")) {
+        ZJsonArray jsonArray(obj.value("Rels"));
+        if (jsonArray.size() > 0) {
+          for (size_t i = 0; i < jsonArray.size(); ++i) {
+            ZJsonObject partnerJson(jsonArray.value(i));
+            if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
+              std::string rel = ZJsonParser::stringValue(partnerJson["Rel"]);
+              if ((getKind() == KIND_POST_SYN && rel == "PostSynTo") ||
+                  (getKind() == KIND_PRE_SYN && rel == "PreSynTo")) {
+                ZJsonArray posJson(partnerJson.value("To"));
+                std::vector<int> coords = posJson.toIntegerArray();
+                addPartner(coords[0], coords[1], coords[2]);
+              }
+            }
+          }
+        }
       }
     }
 
@@ -518,7 +540,7 @@ ZJsonObject ZDvidSynapse::toJsonObject() const
       const std::string &tag = *iter;
       tagJson.append(tag);
     }
-    obj.setEntry("Tag", tagJson);
+    obj.setEntry("Tags", tagJson);
   }
 
   return obj;

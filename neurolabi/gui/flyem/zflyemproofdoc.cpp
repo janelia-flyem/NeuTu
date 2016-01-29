@@ -935,6 +935,38 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
   ZDvidReader reader;
+//  reader.setVerbose(false);
+  const double radius = 50.0;
+  if (reader.open(getDvidTarget())) {
+    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+
+    std::vector<ZPunctum*> &tbar = synapse.first;
+    std::vector<ZPunctum*> &psd = synapse.second;
+
+    for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+         iter != synapseArray.end(); ++iter) {
+      const ZDvidSynapse &synapse = *iter;
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        tbar.push_back(new ZPunctum(synapse.getPosition(), radius));
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        psd.push_back(new ZPunctum(synapse.getPosition(), radius));
+      }
+    }
+    qDebug() << "Synapse loading time: " << timer.restart();
+  }
+
+  return synapse;
+}
+
+#if 0
+std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
+{
+  QElapsedTimer timer;
+  timer.start();
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZDvidReader reader;
   reader.setVerbose(false);
   if (reader.open(getDvidTarget())) {
 //    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
@@ -1102,6 +1134,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   return synapse;
 
 }
+#endif
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {

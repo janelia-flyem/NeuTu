@@ -173,6 +173,8 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, const std::string tag) const;
   std::string getAnnotationUrl(
+      const std::string &dataName, uint64_t label) const;
+  std::string getAnnotationUrl(
       const std::string &dataName, int x, int y, int z) const;
   std::string getAnnotationElementsUrl(const std::string &dataName);
 
