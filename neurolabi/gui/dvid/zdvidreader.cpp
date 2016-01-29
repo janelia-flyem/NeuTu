@@ -1812,7 +1812,7 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box) const
+    const ZIntCuboid &box, NeuTube::FlyEM::ESynapseLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
@@ -1821,13 +1821,14 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    synapseArray[i].loadJsonObject(synapseJson);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
   }
 
   return synapseArray;
 }
 
-std::vector<ZDvidSynapse> ZDvidReader::readSynapse(uint64_t label) const
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    uint64_t label, NeuTube::FlyEM::ESynapseLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(label));
@@ -1836,16 +1837,17 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(uint64_t label) const
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    synapseArray[i].loadJsonObject(synapseJson);
+    synapseArray[i].loadJsonObject(synapseJson, mode);
   }
 
   return synapseArray;
 }
 
-ZDvidSynapse ZDvidReader::readSynapse(int x, int y, int z)
+ZDvidSynapse ZDvidReader::readSynapse(
+    int x, int y, int z, NeuTube::FlyEM::ESynapseLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
-      readSynapse(ZIntCuboid(x, y, z, x, y, z));
+      readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
     return synapseArray[0];
   }

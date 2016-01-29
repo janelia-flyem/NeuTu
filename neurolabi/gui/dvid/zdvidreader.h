@@ -172,9 +172,15 @@ public:
   bool isBookmarkChecked(const ZIntPoint &pt) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
-  std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
-  std::vector<ZDvidSynapse> readSynapse(uint64_t label) const;
-  ZDvidSynapse readSynapse(int x, int y, int z);
+  std::vector<ZDvidSynapse> readSynapse(
+      const ZIntCuboid &box,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  std::vector<ZDvidSynapse> readSynapse(
+      uint64_t label,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  ZDvidSynapse readSynapse(
+      int x, int y, int z,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

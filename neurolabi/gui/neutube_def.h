@@ -110,6 +110,13 @@ static const TVisualEffect VE_FORCE_SOLID = 1;
 
 }
 
+namespace FlyEM {
+enum ESynapseLoadMode {
+  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION
+};
+}
+
+
 }
 
 
