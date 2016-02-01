@@ -18,6 +18,10 @@ public:
   ZDvidTileEnsemble();
   ~ZDvidTileEnsemble();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
+  }
+
   void clear();
   bool isEmpty() const;
 

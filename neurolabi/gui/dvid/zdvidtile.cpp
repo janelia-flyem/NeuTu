@@ -23,7 +23,7 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
   m_view(NULL)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_DVID_TILE;
+  m_type = GetType();
   m_image = NULL;
 //  m_pixmap.fill();
 //  m_pixmap = NULL;

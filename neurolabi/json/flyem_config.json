@@ -51,7 +51,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "b14d",
+      "uuid": "4ad1",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
@@ -63,7 +63,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "b14d",
+      "uuid": "4ad1",
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
@@ -210,7 +210,7 @@
       "comment": "MB seg (after runniing splits in node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "synapse": "synapse",
+      "synapse": "synapses",
       "librarian": "emdata2.int.janelia.org:9100",
       "user_name": ["zhaot", "yuy", "yy"]
     },

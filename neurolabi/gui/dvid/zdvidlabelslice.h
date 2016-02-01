@@ -25,6 +25,10 @@ public:
   ZDvidLabelSlice(int maxWidth, int maxHeight);
   ~ZDvidLabelSlice();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_LABEL_SLICE;
+  }
+
   void setMaxSize(int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);

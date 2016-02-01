@@ -10,6 +10,9 @@ public:
   explicit ZFlyEmOrthoDoc(QObject *parent = 0);
 
   void updateStack(const ZIntPoint &center);
+  void updateTileData();
+
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
 
 signals:
 
@@ -17,6 +20,8 @@ public slots:
 
 private:
   void init();
+  void initSynapseEnsemble();
+  void initSynapseEnsemble(NeuTube::EAxis axis);
 
 private:
   int m_width;

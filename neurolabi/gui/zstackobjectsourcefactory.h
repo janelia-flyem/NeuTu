@@ -36,6 +36,7 @@ public:
   static std::string MakeFlyEmExtNeuronClass();
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
+  static std::string MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis);
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

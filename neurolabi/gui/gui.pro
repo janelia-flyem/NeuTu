@@ -591,7 +591,8 @@ HEADERS += mainwindow.h \
     misc/zstackyzview.h \
     misc/zstackyzmvc.h \
     flyem/zflyemorthowindow.h \
-    flyem/zflyemorthodoc.h
+    flyem/zflyemorthodoc.h \
+    flyem/zflyemorthomvc.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1039,7 +1040,8 @@ SOURCES += main.cpp \
     misc/zstackyzview.cpp \
     misc/zstackyzmvc.cpp \
     flyem/zflyemorthowindow.cpp \
-    flyem/zflyemorthodoc.cpp
+    flyem/zflyemorthodoc.cpp \
+    flyem/zflyemorthomvc.cpp
 
 OTHER_FILES += \
     extlib.pri \

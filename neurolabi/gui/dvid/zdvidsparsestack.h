@@ -15,6 +15,10 @@ public:
   ZDvidSparseStack();
   ~ZDvidSparseStack();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+  }
+
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 

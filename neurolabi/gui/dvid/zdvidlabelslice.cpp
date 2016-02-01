@@ -31,7 +31,7 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAxis)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_DVID_LABEL_SLICE;
+  m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = -1;
   m_bodyMerger = NULL;

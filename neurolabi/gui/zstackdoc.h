@@ -657,6 +657,8 @@ public:
     return m_objectGroup.getObjectList(type);
   }
 
+  template<typename T>
+  QList<T*> getObjectList() const;
 
   inline const ZDocPlayerList& getPlayerList() const {
     return m_playerList;
@@ -1493,6 +1495,12 @@ void ZStackDoc::removeObjectP(
     notifyPlayerChanged(role);
   }
   */
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList() const
+{
+  return m_objectGroup.getObjectList<T>();
 }
 
 #if 0

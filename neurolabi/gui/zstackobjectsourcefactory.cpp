@@ -172,3 +172,21 @@ std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
 {
   return "#.DVIDSynapseEnsemble";
 }
+
+std::string
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
+{
+  std::string source = MakeDvidSynapseEnsembleSource();
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
+}

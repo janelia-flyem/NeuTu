@@ -39,8 +39,13 @@ void ZDvidSynapseEnsemble::init()
 
 void ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
 {
+  ZIntCuboid dataBox = box;
+  if (!m_dataRange.isEmpty()) {
+    dataBox.intersect(m_dataRange);
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(box));
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -369,6 +374,11 @@ void ZDvidSynapseEnsemble::addSynapse(
   }
 }
 
+void ZDvidSynapseEnsemble::setRange(const ZIntCuboid &dataRange)
+{
+  m_dataRange = dataRange;
+}
+
 void ZDvidSynapseEnsemble::updateFromCache(int z)
 {
   if (m_sliceCache.contains(z)) {
@@ -392,6 +402,17 @@ void ZDvidSynapseEnsemble::display(
     const int sliceRange = 5;
 
     int currentBlockZ = m_dvidInfo.getStartBlockIndex().getZ() - 1;
+
+    QRect rangeRect;
+    if (!m_dataRange.isEmpty()) {
+      ZIntCuboid range = m_dataRange;
+      range.shiftSliceAxis(getSliceAxis());
+
+      rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
+                                  range.getFirstCorner().getY()));
+      rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
+    }
+
     for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
       int z = painter.getZ(slice + ds);
       if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
@@ -401,8 +422,8 @@ void ZDvidSynapseEnsemble::display(
         bool isReady = synapseSlice.isReady();
 
         if (!isReady && m_view != NULL) {
-          isReady =
-              synapseSlice.isReady(m_view->getViewPort(NeuTube::COORD_STACK));
+          isReady = synapseSlice.isReady(
+                m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
         }
         if (!isReady) {
           int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -759,7 +780,8 @@ bool ZDvidSynapseEnsemble::SynapseSlice::contains(int x, int y) const
   return false;
 }
 
-bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
+bool ZDvidSynapseEnsemble::SynapseSlice::isReady(
+    const QRect &rect, const QRect &range) const
 {
   if (m_status == STATUS_READY) {
     return true;
@@ -769,7 +791,16 @@ bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
 //    qDebug() << "Data rect: " << m_dataRect;
 //    qDebug() << "New rect: " << rect;
 
-    return m_dataRect.contains(rect);
+    QRect dataRect = rect;
+    if (!range.isEmpty()) {
+      dataRect = rect.intersect(range);
+    }
+
+    if (!dataRect.isValid()) {
+      return false;
+    }
+
+    return m_dataRect.contains(dataRect);
   }
 
   return false;

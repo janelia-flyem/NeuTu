@@ -19269,7 +19269,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3ca7", 8500);
@@ -19334,6 +19334,7 @@ void ZTest::test(MainWindow *host)
       se->setDvidTarget(target);
       se->setSliceAxis(NeuTube::X_AXIS);
       se->attachView(yzWidget->getView());
+      se->setRange(stack->getBoundBox());
       doc->addObject(se);
     }
 
@@ -19479,6 +19480,12 @@ void ZTest::test(MainWindow *host)
     const ZDvidSynapse &synapse = *iter;
     std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
   }
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << obj.getVoxelNumber() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

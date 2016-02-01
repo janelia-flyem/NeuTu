@@ -25,6 +25,10 @@ public:
   ZDvidTile();
   ~ZDvidTile();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_TILE;
+  }
+
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;

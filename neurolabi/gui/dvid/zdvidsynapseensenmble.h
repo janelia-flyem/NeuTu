@@ -36,6 +36,10 @@ public:
     ADJUST_NONE, ADJUST_EXTEND, ADJUST_FULL
   };
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE;
+  }
+
   void setDvidTarget(const ZDvidTarget &target);
 
   class SynapseMap : public QMap<int, ZDvidSynapse> {
@@ -58,7 +62,7 @@ public:
 
     bool isValid() const { return m_status != STATUS_NULL; }
     bool isReady() const { return m_status == STATUS_READY; }
-    bool isReady(const QRect &rect) const;
+    bool isReady(const QRect &rect, const QRect &range) const;
 
     void setStatus(EDataStatus status) {
       m_status = status;
@@ -77,6 +81,8 @@ public:
     QRect m_dataRect;
     static SynapseMap m_emptyMap;
   };
+
+  void setRange(const ZIntCuboid &dataRange);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
@@ -181,6 +187,8 @@ private:
   int m_maxPartialArea;
 
   NeuTube::EAxis m_sliceAxis;
+
+  ZIntCuboid m_dataRange;
 
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };

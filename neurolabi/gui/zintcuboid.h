@@ -83,6 +83,9 @@ public:
   void expandX(int dx);
   void expandY(int dy);
 
+  //intersect
+  ZIntCuboid& intersect(const ZIntCuboid &cuboid);
+
   /*!
    * \brief Get the volume of the cuboid.
    *

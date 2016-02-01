@@ -87,6 +87,16 @@ ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
   return *this;
 }
 
+ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)
+{
+  for (int i = 0; i < 3; i++) {
+    m_firstCorner[i] = imax2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = imin2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  }
+
+  return *this;
+}
+
 void ZIntCuboid::joinX(int x)
 {
   if (x < m_firstCorner.getX()) {

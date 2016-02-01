@@ -202,16 +202,6 @@ void ZStackMvc::updateDocument()
 {
   UPDATE_DOC_SIGNAL_SLOT(connect);
 
-  /*
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-                                       */
-
   if (m_doc->hasStackData()) {
     if (m_presenter != NULL) {
       m_presenter->optimizeStackBc();
@@ -221,9 +211,6 @@ void ZStackMvc::updateDocument()
       m_view->reset();
     }
   }
-
-  //m_progressReporter.setProgressBar(m_view->progressBar());
-  //m_doc->setProgressReporter(&m_progressReporter);
 }
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)

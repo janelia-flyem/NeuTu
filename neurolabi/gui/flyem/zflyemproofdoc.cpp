@@ -307,16 +307,23 @@ void ZFlyEmProofDoc::annotateBody(
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
-    if (getDvidLabelSlice(NeuTube::Z_AXIS)->hasCustomColorMap()) {
-      ZFlyEmNameBodyColorScheme *colorMap =
-          dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
-      if (colorMap != NULL) {
-        colorMap->updateNameMap(annotation);
-        getDvidLabelSlice(NeuTube::Z_AXIS)->assignColorMap();
-        processObjectModified(getDvidLabelSlice(NeuTube::Z_AXIS));
-        notifyObjectModified();
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      if (slice->hasCustomColorMap()) {
+        ZFlyEmNameBodyColorScheme *colorMap =
+            dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
+        if (colorMap != NULL) {
+          colorMap->updateNameMap(annotation);
+          slice->assignColorMap();
+          processObjectModified(slice);
+        }
       }
     }
+
+    notifyObjectModified();
   }
   if (writer.getStatusCode() == 200) {
     if (getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL).count(bodyId) > 0) {
@@ -342,6 +349,25 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
+
+  updateDvidTargetForObject();
+
+#if 0
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    slice->setDvidTarget(m_dvidTarget);
+  }
+
+  QList<ZStackObject*> teList =
+      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+  for (QList<ZStackObject*>::iterator iter = teList.begin();
+       iter != teList.end(); ++iter) {
+    ZDvidSynapseEnsemble *te = dynamic_cast<ZDvidSynapseEnsemble*>(*iter);
+    te->setDvidTarget(m_dvidTarget);
+  }
+#endif
 }
 
 void ZFlyEmProofDoc::updateTileData()
@@ -359,17 +385,26 @@ void ZFlyEmProofDoc::updateTileData()
     ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
     loadStack(stack);
 
-    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    ensemble->setDvidTarget(getDvidTarget());
-    //    ensemble->attachView(stackWidget->getView());
-    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-    addObject(ensemble, true);
+    ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
 
-    //  target.setBodyLabelName("labels");
-    addDvidLabelSlice(NeuTube::X_AXIS);
-    addDvidLabelSlice(NeuTube::Y_AXIS);
-    addDvidLabelSlice(NeuTube::Z_AXIS);
+    if (ensemble == NULL) {
+      ensemble = new ZDvidTileEnsemble;
+      ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+      addObject(ensemble, true);
+    }
+
+    ensemble->setDvidTarget(getDvidTarget());
+
+    ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+
+    if (slice == NULL) {
+      addDvidLabelSlice(NeuTube::Z_AXIS);
+    } else{
+      slice->setDvidTarget(getDvidTarget());
+    }
+//    addDvidLabelSlice(NeuTube::Y_AXIS);
+//    addDvidLabelSlice(NeuTube::Z_AXIS);
   }
 }
 
@@ -395,6 +430,35 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
 
   return NULL;
 }
+
+template<typename T>
+static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
+{
+  QList<T*> objList = doc->getObjectList<T>();
+  for (typename QList<T*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    T *obj = *iter;
+    obj->setDvidTarget(doc->getDvidTarget());
+  }
+}
+
+void ZFlyEmProofDoc::updateDvidTargetForObject()
+{
+  /*
+  QList<ZDvidLabelSlice*> objList = getObjectList<ZDvidLabelSlice>();
+  for (QList<ZDvidLabelSlice*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZDvidLabelSlice *obj = *iter;
+    obj->setDvidTarget(getDvidTarget());
+  }
+  */
+  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
+  UpdateDvidTargetForObject<ZDvidSparseStack>(this);
+  UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
+  UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
+  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+}
+
 
 //QList<ZDvidLabelSlice*> ZFlyEmProofDoc::getDvidLabelSlice() const
 //{
@@ -424,6 +488,20 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble() const
   }
 
   return NULL;
+}
+
+QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
+{
+  QList<ZStackObject*> objList =
+      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+
+  QList<ZDvidSynapseEnsemble*> teList;
+  for (QList<ZStackObject*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    teList.append(dynamic_cast<ZDvidSynapseEnsemble*>(*iter));
+  }
+
+  return teList;
 }
 
 bool ZFlyEmProofDoc::hasDvidSynapse() const
@@ -468,6 +546,77 @@ void ZFlyEmProofDoc::addSynapse(
     processObjectModified(se);
     notifyObjectModified();
   }
+}
+
+void ZFlyEmProofDoc::removeSynapse(
+    const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->removeSynapse(pos, scope);
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::addSynapse(
+    const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->addSynapse(synapse, scope);
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->moveSynapse(from, to);
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::updateSynapsePartner(const ZIntPoint &pos)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->updatePartner(se->getSynapse(pos, ZDvidSynapseEnsemble::DATA_LOCAL));
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    for (std::set<ZIntPoint>::const_iterator iter = posArray.begin();
+         iter != posArray.end(); ++iter) {
+      se->updatePartner(
+            se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_LOCAL));
+    }
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
 }
 
 void ZFlyEmProofDoc::deleteSelectedSynapse()

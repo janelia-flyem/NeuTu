@@ -9,6 +9,7 @@
 #include "zstack.hxx"
 #include "zstackdochittest.h"
 #include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemproofdoc.h"
 
 ZMouseEventMapper::ZMouseEventMapper(
     ZInteractiveContext *context, ZStackDoc *doc) :
@@ -472,10 +473,13 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
         } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-          if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelected(
-                  NeuTube::BODY_LABEL_MAPPED).size() == 1) {
-              op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+          ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc.get());
+          if (doc != NULL) {
+            ZDvidLabelSlice *slice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
+            if (slice != NULL) {
+              if (slice->getSelected(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+                op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+              }
             }
           }
         }
