@@ -19269,7 +19269,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3ca7", 8500);
@@ -19343,13 +19343,13 @@ void ZTest::test(MainWindow *host)
     xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
     xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
     xzWidget->getView()->hideThresholdControl();
-//    {
-//      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
-//      se->setDvidTarget(target);
-//      se->setSliceAxis(NeuTube::Y_AXIS);
-//      se->attachView(xzWidget->getView());
-//      doc->addObject(se);
-//    }
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->setSliceAxis(NeuTube::Y_AXIS);
+      se->attachView(xzWidget->getView());
+      doc->addObject(se);
+    }
 
     layout->addWidget(xyWidget, 0, 0);
     layout->addWidget(yzWidget, 0, 1);
@@ -19482,7 +19482,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   std::cout << obj.getVoxelNumber() << std::endl;

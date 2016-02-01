@@ -634,6 +634,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     }
 
     painter.setRenderHint(QPainter::Antialiasing, true);
+//    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
     //Compute real viewport and projregion
 //#ifdef _DEBUG_

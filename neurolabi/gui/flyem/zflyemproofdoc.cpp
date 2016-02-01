@@ -408,6 +408,7 @@ void ZFlyEmProofDoc::updateTileData()
   }
 }
 
+
 void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
