@@ -1097,6 +1097,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       dp = 0.2 / objArray.size();
     }
 
+    mainBody.upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
     for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan &obj = *iter;
