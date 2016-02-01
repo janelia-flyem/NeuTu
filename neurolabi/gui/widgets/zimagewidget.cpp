@@ -70,7 +70,7 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
   m_mask[channel] = mask;
 
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
 //    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
   }
 }
@@ -79,7 +79,7 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 {
   m_tileCanvas = canvas;
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
   }
 }
 

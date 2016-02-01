@@ -135,7 +135,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "aa61",
+      "uuid": "3d33",
       "name": "mb_training_namra_split",
       "comment": "MB seg (branched from node 2635)",
       "body_label": "bodies",

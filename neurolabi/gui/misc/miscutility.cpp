@@ -203,7 +203,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     break;
   }
 
-  Stack *out = C_Stack::make(GREY, width, height, 1);
+  Stack *out = C_Stack::make(GREY, outWidth, outHeight, 1);
 
   C_Stack::setZero(out);
   size_t offset = 0;
