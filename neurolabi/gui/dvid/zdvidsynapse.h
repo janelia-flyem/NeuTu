@@ -103,7 +103,8 @@ public: //Json APIs
       const InputIterator &last, const std::string &rel);
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
-  static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
+  static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);  
+  std::vector<ZIntPoint> getPartners();
 
 private:
   static ZJsonArray GetRelationJson(ZJsonObject &json);

@@ -141,6 +141,11 @@ void ZDvidSynapse::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
+// temporary?
+std::vector<ZIntPoint> ZDvidSynapse::getPartners() {
+    return std::vector<ZIntPoint>(m_partnerHint);
+}
+
 double ZDvidSynapse::GetDefaultRadius(EKind kind)
 {
   switch (kind) {

@@ -5,6 +5,7 @@
 #include <QtGui>
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemsequencercolorscheme.h"
@@ -34,8 +35,8 @@ signals:
   void loadCompleted();
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
-  void ioBodiesLoaded(ZJsonValue bodies);
-  void ioConnectionsLoaded(ZJsonValue connections);
+  void ioBodiesLoaded();
+  void ioConnectionsLoaded();
 
 private slots:
     void onCloseButton();
@@ -60,8 +61,8 @@ private slots:
     void onColorMapLoaded(ZJsonValue colors);
     void updateColorScheme();
     void onGotoBodies();    
-    void onIOBodiesLoaded(ZJsonValue bodies);    
-    void onIOConnectionsLoaded(ZJsonValue connections);    
+    void onIOBodiesLoaded();
+    void onIOConnectionsLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
 
 private:
@@ -112,6 +113,7 @@ private:
     ZDvidTarget m_currentDvidTarget;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
+    QMap<uint64_t, QList<ZDvidSynapse> > m_connectionsSites;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
