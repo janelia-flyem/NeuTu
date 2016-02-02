@@ -18,6 +18,7 @@
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidsynapse.h"
 
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
@@ -142,8 +143,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadBookmarksError(QString)), this, SLOT(onjsonLoadBookmarksError(QString)));
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
-    connect(this, SIGNAL(ioBodiesLoaded(ZJsonValue)), this, SLOT(onIOBodiesLoaded(ZJsonValue)));
-    connect(this, SIGNAL(ioConnectionsLoaded(ZJsonValue)), this, SLOT(onIOConnectionsLoaded(ZJsonValue)));
+    connect(this, SIGNAL(ioBodiesLoaded()), this, SLOT(onIOBodiesLoaded()));
+    connect(this, SIGNAL(ioConnectionsLoaded()), this, SLOT(onIOConnectionsLoaded()));
 
 }
 
@@ -973,14 +974,12 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID) {
 
 
-    std::cout << "pretending to retrieve input/output bodies from DVID for body "
+    std::cout << "retrieving input/output bodies from DVID for body "
               << bodyID << std::endl;
 
 
     QElapsedTimer timer;
     timer.start();
-
-    // better but still fake implementation:
 
     ZDvidReader reader;
     reader.setVerbose(false);
@@ -988,22 +987,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
     std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
     if (reader.open(target)) {
-        std::cout << "getting bounding box: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-
-        // get body bounding box
-        ZIntCuboid box = reader.readBodyBoundBox(bodyID);
-
-        std::cout << "got bbox with corners " << box.getFirstCorner().toString() << " and "
-                  << box.getLastCorner().toString() << std::endl;
-
-        // reduce z range; we don't need a lot of synapses for testing
-        box.setLastZ(box.getFirstCorner().getZ() + 20);
-
-
-        // get synapses in volume
         std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
 
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(box);
         std::cout << "got " << synapses.size() << " synapses" << std::endl;
 
         std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
@@ -1020,6 +1006,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         }
         std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
 
+        /*
         // show a few
         if (synapses.size() > 0) {
             int nsyn = 5;
@@ -1029,111 +1016,118 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
                 std::cout << synapses[i].toJsonObject().dumpString() << std::endl;
             }
         }
-
+        */
 
         // at this point, we'll need to iterate over the list and find either
         //  the pre or post sites depending on whether we are looking for inputs
         //  or outputs
         // then for each site, find the partner site, then find the body at the 
-        //  partner site; in a QMap, count the # of sites for each body
+        //  partner site; in a QMap, keep a list of synapses for each partner body
+        //  (the qmap is an instance variable)
 
-        // the map maybe should actually be body:list of synapes, because
-        //  I'll need to be able to display the sites in the other table
-        //  (and it would be nice not to have to make another DVID call;
-        //  maybe don't need to do in other thread?)
+        std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        m_connectionsSites.clear();
+        for (int i=0; i<synapses.size(); i++) {
 
-        // so what will I be passing to the next routine?  json object
-        //  maybe not enough; maybe shouldn't be passing stuff, but
-        //  just stuffing in an instance variable instead?  that makes
-        //  sense, because there's data that won't be simply stuffed into
-        //  a model and then accessed from there
+            std::cout << "processing synapse " << synapses[i] << std::endl;
+            ZJsonObject obj = synapses[i].toJsonObject();
+            std::cout << "synapse json obj: " << obj.dumpString() << std::endl;
+
+            // if we are looking for input bodies, pick out the sites
+            //  that are post-synaptic, and vice versa:
+            if ( (m_connectionsTableState == CT_INPUT && synapses[i].getKind() == ZDvidSynapse::KIND_POST_SYN) ||
+                 (m_connectionsTableState == CT_OUTPUT && synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) )  {
+
+                // find the partner site and the body at that location
+                // note that there could be multiple partners for outputs
+
+                // currently Ting doesn't expose a method for retrieving relations
+                //  directly; I've patched in a getter to use, temporarily
+                std::vector<ZIntPoint> sites = synapses[i].getPartners();
+                for (int j=0; j<sites.size(); j++) {
+                    uint64_t partnerBodyID = reader.readBodyIdAt(sites[j]);
+                    if (!m_connectionsSites.contains(partnerBodyID)) {
+                        m_connectionsSites[partnerBodyID] = QList<ZDvidSynapse>();
+                    }
+                    m_connectionsSites[partnerBodyID].append(synapses[i]);
+                }
+
+            } else {
+                // there are other connection types we aren't handling right now; eg, convergent
+            }
+
+        }
+
+        /*
+        std::cout << "QMap keys:" << std::endl;
+        QList<uint64_t> keys = m_connectionsSites.keys();
+        for (int i=0; i<keys.size(); i++) {
+            std::cout << keys[i] << std::endl;
+        }
+        */
+
+        // since we're storing the info in a variable, we can emit a signal
+        //  with no arguments (change that)
 
 
     }
 
-
-
-
-
-    std::cout << "fake implementation: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-
-
-    // dummy implementation: just return some hard-coded stuff until the API is hooked up
-    ZJsonArray bodies;
-
-    ZJsonObject body1;
-    body1.setEntry("body ID", 1234);
-    body1.setEntry("name", "Mi17");
-    body1.setEntry("number", 4);
-    bodies.append(body1);
-
-    ZJsonObject body2;
-    body2.setEntry("body ID", 4321);
-    // name is optional
-    // body2.setEntry("name", "Mi17");
-    body2.setEntry("number", 1);
-    bodies.append(body2);
-
-    ZJsonObject body3;
-    body3.setEntry("body ID", 73746);
-    body3.setEntry("name", "MB-23");
-    body3.setEntry("number", 2);
-    bodies.append(body3);
-
-    emit ioBodiesLoaded(bodies);
+    emit ioBodiesLoaded();
 
     std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
 }
 
-void FlyEmBodyInfoDialog::onIOBodiesLoaded(ZJsonValue bodiesData) {
+void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     m_ioBodyModel->clear();
     setIOBodyHeaders(m_ioBodyModel);
 
-    ZJsonArray bodies(bodiesData);
 
-    // label above table: already says "Input" or "Output";
+    QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
+
+
+    // table label: already says "Input" or "Output";
     //  now add the total number in parentheses: eg, "Input (12)"
     // should factor this out
     std::ostringstream labelStream;
     labelStream << ui->ioBodyTableLabel->text().toStdString();
     labelStream << " (";
-    labelStream << bodies.size();
+    labelStream << partnerBodyIDs.size();
     labelStream << ")";
     ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
 
 
-
-    m_ioBodyModel->setRowCount(bodies.size());
-    for (size_t i = 0; i < bodies.size(); ++i) {
-        ZJsonObject body(bodies.at(i), false);
+    m_ioBodyModel->setRowCount(partnerBodyIDs.size());
+    for (int i=0; i<partnerBodyIDs.size(); i++) {
 
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
-        qulonglong bodyID = ZJsonParser::integerValue(body["body ID"]);
+
         QStandardItem * bodyIDItem = new QStandardItem();
-        bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+        bodyIDItem->setData(QVariant(partnerBodyIDs[i]), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
 
+        /*
+        // not sure where to get name now?
         if (body.hasKey("name")) {
             const char* name = ZJsonParser::stringValue(body["name"]);
             m_ioBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(QString(name)));
         }
+        */
 
-        int number = ZJsonParser::integerValue(body["number"]);
         QStandardItem * numberItem = new QStandardItem();
-        numberItem->setData(QVariant(number), Qt::DisplayRole);
+        numberItem->setData(QVariant(m_connectionsSites[partnerBodyIDs[i]].size()), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
-
     }
+
 
     // for some reason, this table gave me more trouble than the
     //  others; set its column behaviors individually
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
-    ui->ioBodyTableView->sortByColumn(IOBODY_ID_COLUMN, Qt::AscendingOrder);
+    ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
 
     // would remove "loading" status indicator here
 
@@ -1147,8 +1141,6 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         std::cout << "pretending to select body in body table" << std::endl;
     } else if (proxyIndex.column() == IOBODY_NUMBER_COLUMN) {
         // double-click on number connections = show connections list
-        std::cout << "pretending to populate sites list" << std::endl;
-
         m_connectionsModel->clear();
 
         // trigger retrieval of synapses
@@ -1160,42 +1152,23 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
 }
 
 void FlyEmBodyInfoDialog::retrieveIOConnectionsDvid(ZDvidTarget target) {
-    std::cout << "pretending to retrieve input/output body connections from DVID" << std::endl;
-
-
-
-    // dummy implementation: just return some hard-coded stuff until the API is hooked up
-
-    ZJsonArray connections;
-
-
-    ZJsonArray conn1;
-    conn1.append(1);
-    conn1.append(2);
-    conn1.append(3);
-    connections.append(conn1);
-
-    ZJsonArray conn2;
-    conn2.append(14);
-    conn2.append(15);
-    conn2.append(16);
-    connections.append(conn2);
-
-    ZJsonArray conn3;
-    conn3.append(107);
-    conn3.append(108);
-    conn3.append(109);
-    connections.append(conn3);
-
-    emit ioConnectionsLoaded(connections);
-
+    // currently the connections are already loaded and stored
+    //  by this point
+    emit ioConnectionsLoaded();
 }
 
-void FlyEmBodyInfoDialog::onIOConnectionsLoaded(ZJsonValue connectionsData) {
+void FlyEmBodyInfoDialog::onIOConnectionsLoaded() {
+
+
+    std::cout << "populating connections sites list" << std::endl;
+
 
     m_connectionsModel->clear();
     setConnectionsHeaders(m_connectionsModel);
 
+
+    /*
+    // old implementation:
     ZJsonArray connections(connectionsData);
 
     m_connectionsModel->setRowCount(connections.size());
@@ -1225,17 +1198,15 @@ void FlyEmBodyInfoDialog::onIOConnectionsLoaded(ZJsonValue connectionsData) {
         m_connectionsModel->setItem(i, CONNECTIONS_Z_COLUMN, zItem);
 
     }
+    */
+
+
+
+
 
     // for this table, we want all columns same width, filling full width
     ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
-
-
-
-
-
-
-
 
 }
 
