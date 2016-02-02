@@ -918,14 +918,14 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     // grab the body ID; same row, first column
     QModelIndex index = m_bodyProxy->mapToSource(modelIndex);
     QStandardItem *item = m_bodyModel->item(index.row(), BODY_ID_COLUMN);
-    uint64_t bodyId = item->data(Qt::DisplayRole).toULongLong();
+    m_connectionsBody = item->data(Qt::DisplayRole).toULongLong();
 
     // get name, too, if it's there, then update label
     QStandardItem *item2 = m_bodyModel->item(index.row(), BODY_NAME_COLUMN);
     if (item2) {
-        updateBodyConnectionLabel(bodyId, item2->data(Qt::DisplayRole).toString());
+        updateBodyConnectionLabel(m_connectionsBody, item2->data(Qt::DisplayRole).toString());
     } else {
-        updateBodyConnectionLabel(bodyId, "");
+        updateBodyConnectionLabel(m_connectionsBody, "");
     }
 
 
@@ -953,7 +953,7 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, bodyId);
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
     }
 }
 
@@ -977,13 +977,20 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
               << bodyID << std::endl;
 
 
+    QElapsedTimer timer;
+    timer.start();
+
     // better but still fake implementation:
 
     ZDvidReader reader;
     reader.setVerbose(false);
+
+    std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+
     if (reader.open(target)) {
+        std::cout << "getting bounding box: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+
         // get body bounding box
-        //  ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
         ZIntCuboid box = reader.readBodyBoundBox(bodyID);
 
         std::cout << "got bbox with corners " << box.getFirstCorner().toString() << " and "
@@ -994,8 +1001,12 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
 
         // get synapses in volume
+        std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(box);
         std::cout << "got " << synapses.size() << " synapses" << std::endl;
+
+        std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
         // how many pre/post?
         int npre = 0;
@@ -1028,6 +1039,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
         // the map maybe should actually be body:list of synapes, because
         //  I'll need to be able to display the sites in the other table
+        //  (and it would be nice not to have to make another DVID call;
+        //  maybe don't need to do in other thread?)
 
         // so what will I be passing to the next routine?  json object
         //  maybe not enough; maybe shouldn't be passing stuff, but
@@ -1042,6 +1055,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
 
 
+    std::cout << "fake implementation: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
 
     // dummy implementation: just return some hard-coded stuff until the API is hooked up
@@ -1067,6 +1081,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
     bodies.append(body3);
 
     emit ioBodiesLoaded(bodies);
+
+    std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
 }
 

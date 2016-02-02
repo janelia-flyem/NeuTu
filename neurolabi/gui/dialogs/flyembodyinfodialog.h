@@ -111,6 +111,7 @@ private:
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
     int m_connectionsTableState;
+    uint64_t m_connectionsBody;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
