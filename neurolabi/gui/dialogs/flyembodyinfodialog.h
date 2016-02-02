@@ -62,7 +62,6 @@ private slots:
     void updateColorScheme();
     void onGotoBodies();    
     void onIOBodiesLoaded();
-    void onIOConnectionsLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
 
 private:
@@ -113,7 +112,7 @@ private:
     ZDvidTarget m_currentDvidTarget;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
-    QMap<uint64_t, QList<ZDvidSynapse> > m_connectionsSites;
+    QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
@@ -135,7 +134,6 @@ private:
     void setIOBodyHeaders(QStandardItemModel *model);
     void retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID);
     void setConnectionsHeaders(QStandardItemModel *model);
-    void retrieveIOConnectionsDvid(ZDvidTarget target);
 };
 
 #endif // FLYEMBODYINFODIALOG_H
