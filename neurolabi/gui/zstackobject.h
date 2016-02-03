@@ -318,6 +318,9 @@ public:
   virtual void setVisualEffect(NeuTube::Display::TVisualEffect ve);
   bool hasVisualEffect(NeuTube::Display::TVisualEffect ve) const;
 
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+
 public:
   static bool isEmptyTree(const ZStackObject *obj);
   static bool isSameSource(const std::string &s1, const std::string &s2);
@@ -345,6 +348,7 @@ protected:
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
+  NeuTube::EAxis m_sliceAxis;
 
   NeuTube::Display::TVisualEffect m_visualEffect;
 

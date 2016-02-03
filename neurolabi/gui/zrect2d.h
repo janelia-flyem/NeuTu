@@ -84,7 +84,7 @@ private:
   int m_height;
   int m_z;
   bool m_isPenetrating;
-  NeuTube::EAxis m_sliceAxis;
+//  NeuTube::EAxis m_sliceAxis;
 };
 
 #endif // ZRECT2D_H

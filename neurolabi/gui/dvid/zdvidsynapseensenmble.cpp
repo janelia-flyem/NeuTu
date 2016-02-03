@@ -44,15 +44,17 @@ void ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
     dataBox.intersect(m_dataRange);
   }
 
-  ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
+  if (!dataBox.isEmpty()) {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
 
-  for (size_t i = 0; i < obj.size(); ++i) {
-    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-    if (synapseJson.hasKey("Pos")) {
-      ZDvidSynapse synapse;
-      synapse.loadJsonObject(synapseJson);
-      addSynapse(synapse, DATA_LOCAL);
+    for (size_t i = 0; i < obj.size(); ++i) {
+      ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (synapseJson.hasKey("Pos")) {
+        ZDvidSynapse synapse;
+        synapse.loadJsonObject(synapseJson);
+        addSynapse(synapse, DATA_LOCAL);
+      }
     }
   }
 }
@@ -490,22 +492,33 @@ void ZDvidSynapseEnsemble::removeSynapseLink(
 }
 
 void ZDvidSynapseEnsemble::moveSynapse(
-    const ZIntPoint &from, const ZIntPoint &to)
+    const ZIntPoint &from, const ZIntPoint &to, EDataScope scope)
 {
   if (from != to) {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
-      writer.moveSynapse(from, to);
-      if (writer.isStatusOk()) {
-        ZDvidSynapse &synapse = getSynapse(from, DATA_LOCAL);
-        if (synapse.isValid()) {
-          synapse.setPosition(to);
-          addSynapse(synapse, DATA_LOCAL);
-          removeSynapse(from, DATA_LOCAL);
-        } else {
-          update(to);
+    switch (scope) {
+    case DATA_GLOBAL:
+    {
+      ZDvidWriter writer;
+      if (writer.open(m_dvidTarget)) {
+        writer.moveSynapse(from, to);
+        if (writer.isStatusOk()) {
+          moveSynapse(from, to, DATA_LOCAL);
         }
       }
+    }
+    break;
+    case DATA_LOCAL:
+    {
+      ZDvidSynapse &synapse = getSynapse(from, DATA_LOCAL);
+      if (synapse.isValid()) {
+        synapse.setPosition(to);
+        addSynapse(synapse, DATA_LOCAL);
+        removeSynapse(from, DATA_LOCAL);
+      } else {
+        update(to);
+      }
+    }
+      break;
     }
   }
 }

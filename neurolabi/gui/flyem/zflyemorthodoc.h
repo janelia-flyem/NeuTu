@@ -10,7 +10,7 @@ public:
   explicit ZFlyEmOrthoDoc(QObject *parent = 0);
 
   void updateStack(const ZIntPoint &center);
-  void updateTileData();
+  void prepareDvidData();
 
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
 

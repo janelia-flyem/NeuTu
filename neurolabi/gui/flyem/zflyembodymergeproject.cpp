@@ -817,56 +817,6 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
   if (m_bodyWindow != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindowPlane(m_bodyWindow, dvidInfo, viewParam);
   }
-
-#if 0
-    ZRect2d rect;
-    ZStackDocHelper docHelper;
-    docHelper.extractCurrentZ(getDocument());
-    if (docHelper.hasCurrentZ()) {
-      rect.setZ(docHelper.getCurrentZ());
-      //    rect.setZ(getCurrentZ());
-      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
-                          dvidInfo.getStartCoordinates().getY());
-      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
-                         dvidInfo.getEndCoordinates().getY());
-      ZCuboid box;
-      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 2000.0;
-      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
-
-      if (viewParam.getViewPort().isValid()) {
-        Z3DGraphNode node1;
-        Z3DGraphNode node2;
-
-        node1.setColor(QColor(255, 0, 0));
-        node2.setColor(QColor(255, 0, 0));
-
-        double x = viewParam.getViewPort().center().x();
-        double y = viewParam.getViewPort().center().y();
-
-        double width = lineWidth * 0.3;
-        node1.set(x, rect.getFirstY(), rect.getZ(), width);
-        node2.set(x, rect.getLastY(), rect.getZ(), width);
-
-        graph->addNode(node1);
-        graph->addNode(node2);
-        graph->addEdge(node1, node2, GRAPH_LINE);
-
-        node1.set(rect.getFirstX(), y, rect.getZ(), width);
-        node2.set(rect.getLastX(), y, rect.getZ(), width);
-
-        graph->addNode(node1);
-        graph->addNode(node2);
-        graph->addEdge(node1, node2, GRAPH_LINE);
-      }
-
-      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
-      m_coarseBodyWindow->getDocument()->addObject(graph, true);
-    }
-
-  }
-#endif
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)

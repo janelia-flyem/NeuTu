@@ -12,6 +12,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
 {
   m_type = GetType();
+  setSliceAxis(NeuTube::Z_AXIS);
 }
 
 ZStackObject::~ZStackObject()

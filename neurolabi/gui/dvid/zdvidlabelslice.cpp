@@ -33,7 +33,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAx
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
-  m_hitLabel = -1;
+  m_hitLabel = 0;
   m_bodyMerger = NULL;
   setZOrder(0);
 
@@ -382,7 +382,7 @@ void ZDvidLabelSlice::selectHit(bool appending)
   }
 }
 
-void ZDvidLabelSlice::setSelection(std::set<uint64_t> &selected,
+void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
                                    NeuTube::EBodyLabelType labelType)
 {
   switch (labelType) {

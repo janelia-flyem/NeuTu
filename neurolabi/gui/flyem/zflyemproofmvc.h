@@ -49,7 +49,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
-  void setDvidTarget(const ZDvidTarget &target);
+  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
 
   void clear();
@@ -66,7 +66,7 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId);
 
-  ZDvidTarget getDvidTarget() const;
+  virtual ZDvidTarget getDvidTarget() const;
 
   void setDvidDialog(ZDvidDialog *dlg);
 
@@ -241,9 +241,8 @@ private:
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
-  ZDvidLabelSlice* getDvidLabelSlice();
-
-private:
+  ZDvidLabelSlice* getDvidLabelSlice() const;
+protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;

@@ -431,13 +431,15 @@ void ZFlyEmProofPresenter::processCustomOperator(
     emit selectingBodyInRoi(true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble()->selectHitWithPartner(false);
+    getCompleteDocument()->getDvidSynapseEnsemble(
+          buddyView()->getSliceAxis())->selectHitWithPartner(false);
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble()->toggleHitSelectWithPartner();
+    getCompleteDocument()->getDvidSynapseEnsemble(
+          buddyView()->getSliceAxis())->toggleHitSelectWithPartner();
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
@@ -510,8 +512,8 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
     const ZPoint &currentStackPos)
 {
-  ZDvidSynapseEnsemble *se =
-      getCompleteDocument()->getDvidSynapseEnsemble();
+  ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble(
+        buddyView()->getSliceAxis());
   if (se != NULL) {
     const std::set<ZIntPoint>& selectedSet =
         se->getSelector().getSelectedSet();

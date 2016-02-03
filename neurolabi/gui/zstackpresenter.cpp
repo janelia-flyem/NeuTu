@@ -2605,6 +2605,21 @@ NeuTube::EAxis ZStackPresenter::getSliceAxis() const
   return buddyView()->getSliceAxis();
 }
 
+static void SyncDvidLabelSliceSelection(
+    ZStackDoc *doc, ZDvidLabelSlice *labelSlice)
+{
+  QList<ZDvidLabelSlice*> sliceList = doc->getObjectList<ZDvidLabelSlice>();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *buddySlice = *iter;
+    if (buddySlice != labelSlice) {
+      const std::set<uint64_t> &selectedSet =
+          labelSlice->getSelectedOriginal();
+      buddySlice->setSelection(selectedSet, NeuTube::BODY_LABEL_ORIGINAL);
+    }
+  }
+}
+
 void ZStackPresenter::process(ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
@@ -2979,6 +2994,7 @@ void ZStackPresenter::process(ZStackOperator &op)
       labelSlice->recordSelection();
       labelSlice->selectHit();
       labelSlice->processSelection();
+      SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -2992,6 +3008,7 @@ void ZStackPresenter::process(ZStackOperator &op)
       labelSlice->recordSelection();
       labelSlice->selectHit(true);
       labelSlice->processSelection();
+      SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
     }
@@ -3006,6 +3023,7 @@ void ZStackPresenter::process(ZStackOperator &op)
         labelSlice->recordSelection();
         labelSlice->toggleHitSelection(true);
         labelSlice->processSelection();
+        SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
       }
@@ -3031,6 +3049,7 @@ void ZStackPresenter::process(ZStackOperator &op)
         labelSlice->recordSelection();
         op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
         labelSlice->processSelection();
+        SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
       }
@@ -3595,4 +3614,9 @@ ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
 void ZStackPresenter::setSliceAxis(NeuTube::EAxis axis)
 {
   m_interactiveContext.setSliceAxis(axis);
+  for (QList<ZStackObject*>::iterator iter = m_activeDecorationList.begin();
+       iter != m_activeDecorationList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    obj->setSliceAxis(axis);
+  }
 }

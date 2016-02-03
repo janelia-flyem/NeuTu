@@ -51,7 +51,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   ZIntPoint center = m_position;
   center.shiftSliceAxis(sliceAxis);
 
-  bool isFocused = (z == getPosition().getZ());
+  bool isFocused = (z == center.getZ());
 
   if (visible) {
     QColor color = getColor();
@@ -66,8 +66,8 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     painter.setBrush(Qt::NoBrush);
 
     if (isFocused) {
-      int x = getPosition().getX();
-      int y = getPosition().getY();
+      int x = center.getX();
+      int y = center.getY();
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }

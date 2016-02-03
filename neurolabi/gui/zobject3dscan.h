@@ -73,8 +73,8 @@ public:
    */
   size_t getVoxelNumber(int z) const;
 
-  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+//  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+//  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
   /*!
    * \brief Get the voxel number on each slice
@@ -566,7 +566,7 @@ protected:
   bool m_isCanonized;
   uint64_t m_label;
   bool m_blockingEvent;
-  NeuTube::EAxis m_sliceAxis;
+//  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;

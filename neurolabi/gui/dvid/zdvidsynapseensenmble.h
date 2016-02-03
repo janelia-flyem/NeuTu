@@ -92,7 +92,8 @@ public:
 
   void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
 //  void commitSynapse(const ZIntPoint &pt);
-  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,
+                   EDataScope scope);
 
   void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
 
@@ -108,8 +109,8 @@ public:
   SynapseSlice& getSlice(int z);
   SynapseSlice& getSlice(int z, EAdjustment adjust);
 
-  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+//  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+//  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
 //  bool deleteSynapse(int x, int y, int z);
 
@@ -186,7 +187,7 @@ private:
   ZStackView *m_view;
   int m_maxPartialArea;
 
-  NeuTube::EAxis m_sliceAxis;
+//  NeuTube::EAxis m_sliceAxis;
 
   ZIntCuboid m_dataRange;
 

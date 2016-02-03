@@ -24,6 +24,7 @@ ZStroke2d::ZStroke2d() :
 {
   setLabel(1);
   m_type = ZStackObject::TYPE_STROKE;
+  setSliceAxis(NeuTube::Z_AXIS);
   //setEraser(m_isEraser);
 }
 
@@ -41,6 +42,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_isPenetrating = m_isPenetrating;
   m_type = stroke.m_type;
   m_hideStart = stroke.m_hideStart;
+  m_sliceAxis = stroke.m_sliceAxis;
 }
 
 ZStroke2d::~ZStroke2d()
@@ -145,7 +147,7 @@ void ZStroke2d::setEraser(bool enabled)
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
                         NeuTube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != getSliceAxis()) {
     return;
   }
 

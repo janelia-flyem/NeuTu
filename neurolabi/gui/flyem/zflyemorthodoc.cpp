@@ -10,11 +10,10 @@ ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
 
 void ZFlyEmOrthoDoc::init()
 {
+  setTag(NeuTube::Document::FLYEM_ORTHO);
   m_width = 256;
   m_height = 256;
   m_depth = 256;
-
-  initSynapseEnsemble();
 }
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
@@ -22,6 +21,7 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
   se->setSource(ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(axis));
+  addObject(se);
 }
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble()
@@ -37,7 +37,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
     ZIntCuboid box;
     box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
     box.setSize(m_width, m_height, m_depth);
-    m_dvidReader.readGrayScale(box);
+//    m_dvidReader.readGrayScale(box);
     ZStack *stack = m_dvidReader.readGrayScale(box);
     loadStack(stack);
 
@@ -64,8 +64,12 @@ ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
   return NULL;
 }
 
-void ZFlyEmOrthoDoc::updateTileData()
+void ZFlyEmOrthoDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
+    initSynapseEnsemble();
+    addDvidLabelSlice(NeuTube::X_AXIS);
+    addDvidLabelSlice(NeuTube::Y_AXIS);
+    addDvidLabelSlice(NeuTube::Z_AXIS);
   }
 }

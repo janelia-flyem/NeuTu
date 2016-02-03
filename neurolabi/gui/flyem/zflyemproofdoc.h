@@ -52,7 +52,7 @@ public:
   ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -162,9 +162,10 @@ public: //ROI functions
   void selectBodyInRoi(int z, bool appending);
 
 public: //Synapse functions
+  std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest);
+  void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
@@ -219,6 +220,8 @@ protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
   void updateDvidTargetForObject();
+  virtual void prepareDvidData();
+  void addDvidLabelSlice(NeuTube::EAxis axis);
 
 private:
   void connectSignalSlot();
@@ -240,7 +243,6 @@ private:
   bool isActive(EBodyColorMap type);
 
   void updateBodyColor(EBodyColorMap type);
-  void addDvidLabelSlice(NeuTube::EAxis axis);
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;

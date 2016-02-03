@@ -10,14 +10,14 @@
 #include "zsttransform.h"
 
 ZRect2d::ZRect2d() : m_x0(0), m_y0(0), m_width(0), m_height(0), m_z(0),
-  m_isPenetrating(false), m_sliceAxis(NeuTube::Z_AXIS)
+  m_isPenetrating(false)
 {
   m_type = ZStackObject::TYPE_RECT2D;
 }
 
 ZRect2d::ZRect2d(int x0, int y0, int width, int height) :
   m_x0(x0), m_y0(y0), m_width(width), m_height(height), m_z(0),
-  m_isPenetrating(false), m_sliceAxis(NeuTube::Z_AXIS)
+  m_isPenetrating(false)
 {
   m_type = ZStackObject::TYPE_RECT2D;
 }

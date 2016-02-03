@@ -265,6 +265,9 @@ using namespace std;
 #include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemorthomvc.h"
+#include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemorthowindow.h"
 
 using namespace std;
 
@@ -19269,7 +19272,82 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+
+
+//  ZStackDoc *doc = new ZStackDoc(NULL);
+//  doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
+
+  ZFlyEmOrthoMvc *stackWidget = ZFlyEmOrthoMvc::Make(target, NeuTube::Z_AXIS);
+  stackWidget->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
+  //ZStackFrame *stackWidget = ZStackFrame::Make(
+  //      NULL, ZSharedPointer<ZStackDoc>(doc));
+
+  //stackWidget->setWindowFlags(Qt::Widget);
+
+  //stackWidget->consumeDocument(doc);
+
+  //stackWidget->load(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+  ZTestDialog *testDlg = new ZTestDialog(host);
+  testDlg->getMainLayout()->addWidget(stackWidget);
+  testDlg->show();
+  testDlg->raise();
+#endif
+
 #if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+
+  ZFlyEmOrthoWindow *window = new ZFlyEmOrthoWindow(target, host);
+  window->updateData(ZIntPoint(4085, 5300, 7329));
+
+  window->show();
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+
+  QDialog *dlg = new QDialog(host);
+  QGridLayout *layout = new QGridLayout(dlg);
+  dlg->setLayout(layout);
+
+  ZSharedPointer<ZFlyEmOrthoDoc> sharedDoc =
+      ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc);
+  sharedDoc->setDvidTarget(target);
+
+  ZFlyEmOrthoMvc *xyWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+//  xyWidget->setDvidTarget(target);
+  xyWidget->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
+
+  ZFlyEmOrthoMvc *yzWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+//  yzWidget->setDvidTarget(target);
+
+  ZFlyEmOrthoMvc *xzWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+//  xzWidget->setDvidTarget(target);
+
+
+  layout->addWidget(xyWidget, 0, 0);
+  layout->addWidget(yzWidget, 0, 1);
+  layout->addWidget(xzWidget, 1, 0);
+
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setHorizontalSpacing(0);
+  layout->setVerticalSpacing(0);
+
+  dlg->show();
+#endif
+
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3ca7", 8500);
@@ -19486,6 +19564,16 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/test.sobj");
   std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  tic();
+  obj.importDvidObject("/Users/zhaot/Downloads/513414-6");
+  ptoc();
+  obj.canonize();
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
 #endif
 
   std::cout << "Done." << std::endl;

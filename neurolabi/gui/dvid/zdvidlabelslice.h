@@ -60,7 +60,7 @@ public:
 
 
   void setSelection(
-      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
@@ -166,7 +166,7 @@ private:
 
   bool m_selectionFrozen;
   bool m_isFullView;
-  NeuTube::EAxis m_sliceAxis;
+//  NeuTube::EAxis m_sliceAxis;
 };
 
 template <typename InputIterator>

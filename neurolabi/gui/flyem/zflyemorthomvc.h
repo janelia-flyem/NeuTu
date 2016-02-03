@@ -3,16 +3,30 @@
 
 #include "flyem/zflyemproofmvc.h"
 
+class ZFlyEmOrthoDoc;
+
 class ZFlyEmOrthoMvc : public ZFlyEmProofMvc
 {
   Q_OBJECT
 public:
   explicit ZFlyEmOrthoMvc(QWidget *parent = 0);
 
+  static ZFlyEmOrthoMvc* Make(
+      QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
+      NeuTube::EAxis axis = NeuTube::Z_AXIS);
+  static ZFlyEmOrthoMvc* Make(const ZDvidTarget &target, NeuTube::EAxis axis);
+
+  ZFlyEmOrthoDoc* getCompleteDocument() const;
+
+  void setDvidTarget(const ZDvidTarget &target);
+  ZDvidTarget getDvidTarget() const;
+
 signals:
 
 public slots:
 
+private:
+  void init();
 };
 
 #endif // ZFLYEMORTHOMVC_H
