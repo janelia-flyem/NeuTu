@@ -77,6 +77,8 @@ signals:
 
 public slots:
   void deleteSelectedSynapse();
+  void linkSelectedSynapse();
+  void unlinkSelectedSynapse();
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);
   void tryAddPreSynapseMode();
   void tryAddPostSynapseMode();

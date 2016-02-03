@@ -99,7 +99,7 @@ public:
    *
    * \return The path of a certain body.
    */
-  std::string getBodyPath(int bodyId) const;
+  std::string getBodyPath(uint64_t bodyId) const;
 
   /*!
    * \brief Test if the target is valid
@@ -157,6 +157,8 @@ public:
 
   std::string getSynapseName() const;
   void setSynapseName(const std::string &name);
+
+  std::string getBookmarkName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);

@@ -25,6 +25,7 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = ZStackObject::TYPE_DVID_TILE;
   m_image = NULL;
+//  m_pixmap.fill();
 //  m_pixmap = NULL;
 //  m_pixmap = new ZPixmap();
 }
@@ -87,13 +88,13 @@ void ZDvidTile::loadDvidSlice(const uchar *buf, int length, int z)
 #endif
 
   if (modified) {
-    updatePixmap();
+//    updatePixmap();
   }
 }
 
 void ZDvidTile::updatePixmap()
 {
-  QMutexLocker locker(&m_pixmapMutex);
+//  QMutexLocker locker(&m_pixmapMutex);
 #if 0
 #if 1
 //  m_pixmap.cleanUp();
@@ -113,16 +114,21 @@ void ZDvidTile::updatePixmap()
 #endif
 //  m_pixmap.setPixmap(QPixmap::fromImage(*m_image, Qt::ColorOnly);
 //  m_pixmap->
-  m_pixmap.fill(Qt::white);
-  m_pixmap.convertFromImage(*m_image, Qt::ColorOnly);
+//  if (m_pixmap.width() != m_image->width()) {
+//    m_pixmap.fill(Qt::white);
+//  }
+  m_pixmap.detach(); //must be called before convertFromImage. Probably a bug in Qt.
+//  qDebug() << "Tile pixel type: " << m_image->format();
+  m_pixmap.convertFromImage(*m_image);
+//  m_pixmap.fromImage(*m_image);
 #ifdef _DEBUG_2
-  std::cout << "Has alpha: " << m_pixmap->hasAlphaChannel() << std::endl;
+  std::cout << "Has alpha: " << m_pixmap.hasAlphaChannel() << std::endl;
 #endif
   m_pixmap.setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
   m_pixmap.setOffset(-getX(), -getY());
 }
 
-void ZDvidTile::enhanceContrast(bool high)
+void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
 {
   if (high != hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
     if (high) {
@@ -134,7 +140,9 @@ void ZDvidTile::enhanceContrast(bool high)
     if (m_image != NULL) {
       m_image->enhanceContrast(
             hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
-      updatePixmap();
+      if (updatingPixmap) {
+        updatePixmap();
+      }
     }
   }
 }
@@ -229,7 +237,7 @@ void ZDvidTile::display(
 //    QElapsedTimer timer;
 //    timer.start();
 //    tic();
-    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
+//    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
@@ -253,31 +261,7 @@ void ZDvidTile::display(
     //}
   }
 }
-#if 0
-void ZDvidTile::update(int x, int y, int z, int width, int height)
-{
 
-  bool updating = false;
-  if (m_stack == NULL) {
-    m_stack = ZStackFactory::makeZeroStack(GREY, width, height, 1);
-    m_stack->setOffset(x, y, z);
-    updating = true;
-  } else if (m_stack->getOffset().getZ() != z ||
-             m_stack->getOffset().getX() != x ||
-             m_stack->getOffset().getZ() != z ||
-             m_stack->width() != width || m_stack->height() != height) {
-    updating = true;
-  }
-
-  if (updating) {
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
-      Stack *stack = reader.readTile(x, y, z, width, heigth, m_res.getLevel());
-    }
-  }
-
-}
-#endif
 void ZDvidTile::setTileIndex(int ix, int iy)
 {
   m_ix = ix;
@@ -361,15 +345,23 @@ void ZDvidTile::setResolutionLevel(int level)
   m_res.setLevel(level);
 }
 
-void ZDvidTile::setDvidTarget(const ZDvidTarget &target)
+void ZDvidTile::setDvidTarget(
+    const ZDvidTarget &target, const ZDvidTileInfo &tileInfo)
 {
   m_dvidTarget = target;
+  setTileInfo(tileInfo);
+
   if (!m_tilingInfo.isValid()) {
     ZDvidReader reader;
     if (reader.open(target)) {
       m_tilingInfo = reader.readTileInfo(target.getMultiscale2dName());
     }
   }
+}
+
+void ZDvidTile::setTileInfo(const ZDvidTileInfo &tileInfo)
+{
+  m_tilingInfo = tileInfo;
 }
 
 int ZDvidTile::getX() const

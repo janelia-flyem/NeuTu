@@ -17,6 +17,7 @@ public:
 
   void redo();
   void undo();
+
 protected:
   ZFlyEmProofDoc *m_doc;
   bool m_isExecuted;
@@ -65,6 +66,43 @@ private:
   ZIntPoint m_from;
   ZIntPoint m_to;
 };
+
+class LinkSynapse : public ZUndoCommand
+{
+public:
+  LinkSynapse(ZFlyEmProofDoc *doc, const ZIntPoint &from,
+              QUndoCommand *parent = NULL);
+  LinkSynapse(ZFlyEmProofDoc *doc, const ZIntPoint &from, const ZIntPoint &to,
+              const std::string &relation, QUndoCommand *parent = NULL);
+  virtual ~LinkSynapse();
+  void undo();
+  void redo();
+  void addRelation(const ZIntPoint &to, const std::string &relation);
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  ZIntPoint m_from;
+  ZJsonArray m_relJson;
+//  ZIntPoint m_to;
+//  std::string m_relation;
+  ZJsonObject m_synapseBackup;
+};
+
+class UnlinkSynapse : public ZUndoCommand
+{
+public:
+  UnlinkSynapse(ZFlyEmProofDoc *doc, const std::set<ZIntPoint> &ptSet,
+              QUndoCommand *parent = NULL);
+  virtual ~UnlinkSynapse();
+  void undo();
+  void redo();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
 
 }
 }

@@ -256,8 +256,8 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  inline void setComment(const std::string &comment) {
-    m_comment = comment;
+  inline void addComment(const std::string &comment) {
+    m_comment.push_back(comment);
   }
 
 public:
@@ -800,7 +800,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
-  std::string m_comment;
+  std::vector<std::string> m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

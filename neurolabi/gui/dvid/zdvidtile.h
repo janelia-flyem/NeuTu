@@ -44,7 +44,9 @@ public:
 
   void printInfo() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target,
+                     const ZDvidTileInfo &tileInfo);
+  void setTileInfo(const ZDvidTileInfo &tileInfo);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -69,7 +71,7 @@ public:
 
 //  void setImageData(const uint8_t *data, int width, int height);
 
-  void enhanceContrast(bool high);
+  void enhanceContrast(bool high, bool updatingPixmap);
 
   void updatePixmap();
 

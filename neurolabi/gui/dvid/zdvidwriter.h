@@ -52,6 +52,7 @@ public:
   void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
   void removeBodyAnnotation(uint64_t bodyId);
 
+
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
   void writeJsonString(const std::string &dataName, const std::string &key,
@@ -66,12 +67,12 @@ public:
 
   void createData(const std::string &type, const std::string &name);
 
-  void writeBodyInfo(int bodyId, const ZJsonObject &obj);
-  void writeBodyInfo(int bodyId);
+  void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
+  void writeBodyInfo(uint64_t bodyId);
   //void writeMaxBodyId(int bodyId);
 
-  void mergeBody(const std::string &dataName, int targetId,
-                 const std::vector<int> &bodyId);
+  void mergeBody(const std::string &dataName, uint64_t targetId,
+                 const std::vector<uint64_t> &bodyId);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -111,14 +112,34 @@ public:
                            const QMap<uint64_t, uint64_t> &bodyMap);
                            */
 
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonObject &annotationJson);
+  void writePointAnnotation(
+      const std::string &dataName, const ZJsonArray &annotationJson);
+  void deletePointAnnotation(const std::string &dataName, int x, int y, int z);
+  void deletePointAnnotation(const std::string &dataName, const ZIntPoint &pt);
+
+  //For old bookmark management
   void writeBookmark(const ZFlyEmBookmark &bookmark);
+  void writeBookmark(const ZJsonObject &bookmarkJson);
+  void writeBookmark(const ZJsonArray &bookmarkJson);
+  void writeBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
+  void writeBookmarkKey(const ZFlyEmBookmark &bookmark);
+
+  void deleteBookmark(int x, int y, int z);
+  void deleteBookmark(const ZIntPoint &pt);
+  void deleteBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
+
+  /*
   void writeCustomBookmark(const ZJsonValue &bookmarkJson);
   void deleteAllCustomBookmark();
+  */
 
   void deleteSynapse(int x, int y, int z);
   void writeSynapse(const ZDvidSynapse &synapse);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
   void writeSynapse(const ZJsonObject &synapseJson);
+  void writeSynapse(const ZJsonArray &synapseJson);
   void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
 
   inline int getStatusCode() const {

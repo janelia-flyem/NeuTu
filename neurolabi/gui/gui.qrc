@@ -113,5 +113,6 @@
         <file>Resources/shader/cube_wboit.frag</file>
         <file>Resources/shader/cube_wboit_compose.vert</file>
         <file>Resources/shader/cube_wboit_compose.frag</file>
+        <file>images/add_post.png</file>
     </qresource>
 </RCC>

@@ -653,7 +653,7 @@ void ZFlyEmProofMvc::clear()
 void ZFlyEmProofMvc::exitCurrentDoc()
 {
   if (getCompleteDocument() != NULL) {
-    getCompleteDocument()->saveCustomBookmark();
+//    getCompleteDocument()->saveCustomBookmark();
     getCompleteDocument()->saveMergeOperation();
   }
 }
@@ -758,6 +758,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     if (target.isValid()) {
       getCompleteDocument()->downloadSynapse();
+      ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble();
+      if (se != NULL) {
+        se->attachView(getView());
+      }
+
       getCompleteDocument()->downloadBookmark();
     }
 
@@ -940,6 +945,14 @@ void ZFlyEmProofMvc::customInit()
 
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
+  connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
+          this, SLOT(addLocateBody(uint64_t)));
+  /*
+  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(locateBody(QList<uint64_t>)));
+          */
+  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(selectBody(QList<uint64_t>)));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
@@ -1437,76 +1450,68 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
-  if (bodyId == 0) {
-    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
-    return;
-  }
+  ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+  /*
+      dynamic_cast<ZDvidSparseStack*>(
+        getDocument()->getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_DVID_SPARSE_STACK,
+          ZStackObjectSourceFactory::MakeSplitObjectSource()));
+          */
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    getProgressSignal()->startProgress("Launching split ...");
 
-  if (!getCompleteDocument()->isSplittable(bodyId)) {
-    QString msg = QString("%1 is not ready for split.").arg(bodyId);
-    emit messageGenerated(
-          ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-    emit errorGenerated(msg);
-  } else {
-    ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
-          getDocument()->getObjectGroup().findFirstSameSource(
-            ZStackObject::TYPE_DVID_SPARSE_STACK,
-            ZStackObjectSourceFactory::MakeSplitObjectSource()));
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-      getProgressSignal()->startProgress("Launching split ...");
+    getCompletePresenter()->setHighlightMode(false);
+    m_mergeProject.highlightSelectedObject(false);
 
-      getCompletePresenter()->setHighlightMode(false);
-      m_mergeProject.highlightSelectedObject(false);
-
-      if (body != NULL) {
-        if (body->getLabel() != bodyId) {
-          body = NULL;
-        }
+    if (body != NULL) {
+      if (body->getLabel() != bodyId) {
+        body = NULL;
       }
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      if (reader.hasCoarseSparseVolume(bodyId)) {
-        if (body == NULL) {
-          body = reader.readDvidSparseStackAsync(bodyId);
-          body->setZOrder(0);
-          body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-          body->setColor(labelSlice->getColor(
-                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-          body->setSelectable(false);
-          getDocument()->addObject(body, true);
-//          body->setLabel(bodyId);
-          //        body->getObjectMask()->setLabel(bodyId);
-        }
-
-        m_splitProject.setBodyId(bodyId);
-        getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
-
-        labelSlice->setVisible(false);
-        labelSlice->setHittable(false);
-        body->setVisible(true);
-        body->setProjectionVisible(false);
-
-        getProgressSignal()->advanceProgress(0.1);
-
-        emit splitBodyLoaded(bodyId);
-      } else {
-        QString msg = QString("Invalid body id: %1").arg(bodyId);
-        emit messageGenerated(
-              ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
-        emit errorGenerated(msg);
-      }
-
-
-//      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
-
-      getProgressSignal()->endProgress();
     }
+
+    getProgressSignal()->advanceProgress(0.1);
+
+    ZDvidLabelSlice *labelSlice = getCompleteDocument()->getDvidLabelSlice();
+
+    getProgressSignal()->advanceProgress(0.1);
+
+    if (reader.hasCoarseSparseVolume(bodyId)) {
+      if (body == NULL) {
+        body = reader.readDvidSparseStackAsync(bodyId);
+        body->setZOrder(0);
+        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+        body->setColor(labelSlice->getColor(
+                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+        body->setHittable(false);
+        body->setSelectable(false);
+        getDocument()->addObject(body, true);
+        //          body->setLabel(bodyId);
+        //        body->getObjectMask()->setLabel(bodyId);
+      }
+
+      m_splitProject.setBodyId(bodyId);
+      getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
+      labelSlice->setVisible(false);
+      labelSlice->setHittable(false);
+      body->setVisible(true);
+      body->setProjectionVisible(false);
+
+      getProgressSignal()->advanceProgress(0.1);
+
+      emit splitBodyLoaded(bodyId);
+    } else {
+      QString msg = QString("Invalid body id: %1").arg(bodyId);
+      emit messageGenerated(
+            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+      emit errorGenerated(msg);
+    }
+
+
+    //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
+
+    getProgressSignal()->endProgress();
   }
 }
 
@@ -1534,6 +1539,27 @@ void ZFlyEmProofMvc::updateSplitBody()
 //      updateCoarseBodyWindow(false, false, true);
     }
     updateBodyWindow();
+  }
+}
+
+void ZFlyEmProofMvc::exportSelectedBody()
+{
+  QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+  if (!fileName.isEmpty()) {
+    std::set<uint64_t> idSet =
+        m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+    ZObject3dScan obj;
+
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+           iter != idSet.end(); ++iter) {
+        ZObject3dScan subobj = reader.readBody(*iter);
+        obj.concat(subobj);
+      }
+    }
+    obj.canonize();
+    obj.save(fileName.toStdString());
   }
 }
 
@@ -1570,10 +1596,18 @@ void ZFlyEmProofMvc::disableSplit()
 void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
-    if (checkOutBody(bodyId)) {
+    if (!getCompleteDocument()->isSplittable(bodyId)) {
+      QString msg = QString("%1 is not ready for split.").arg(bodyId);
+      emit messageGenerated(
+            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+      emit errorGenerated(msg);
+    } else if (checkOutBody(bodyId)) {
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif
+
+//      launchSplitFunc(bodyId);
+
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
@@ -1597,6 +1631,8 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
               QString("Failed to launch split. %1 has been locked by %2").
               arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
     }
+  } else {
+    emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));
   }
 }
 
@@ -1964,7 +2000,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         const QByteArray &bookmarkData = reader.readKeyValue(
-              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), bookmark->getDvidKey());
+              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), bookmark->getDvidKey());
         if (!bookmarkData.isEmpty()) {
           ZJsonObject obj;
           obj.decodeString(bookmarkData.data());
@@ -2224,7 +2260,75 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 #endif
 }
 
-void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+
+void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
+{
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->recordSelection();
+      slice->clearSelection();
+      foreach(uint64_t bodyId, bodyIdList) {
+        slice->addSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_MAPPED);
+      }
+      slice->processSelection();
+      processLabelSliceSelectionChange();
+    }
+    updateBodySelection();
+  }
+}
+
+void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
+{
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      QList<uint64_t> goodIdList;
+      QList<uint64_t> badIdList;
+      foreach(uint64_t bodyId, bodyIdList) {
+        if (reader.hasBody(bodyId)) {
+          goodIdList.append(bodyId);
+        } else {
+          badIdList.append(bodyId);
+        }
+      }
+
+      if (!badIdList.isEmpty()) {
+        std::ostringstream stream;
+        stream << "Cannot find body: ";
+        foreach (uint64_t badId, badIdList) {
+          stream << badId;
+        }
+
+        ZWidgetMessage(stream.str().c_str(), NeuTube::MSG_WARNING);
+      }
+
+      if (!goodIdList.isEmpty()) {
+        uint64_t goodId = goodIdList.front();
+        ZIntPoint pt = reader.readBodyLocation(goodId);
+        ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+        if (slice != NULL) {
+          slice->recordSelection();
+          slice->clearSelection();
+          foreach(uint64_t bodyId, goodIdList) {
+            slice->addSelection(
+                  slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+                  NeuTube::BODY_LABEL_MAPPED);
+          }
+          slice->processSelection();
+          processLabelSliceSelectionChange();
+        }
+        updateBodySelection();
+
+        zoomTo(pt);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
     ZDvidReader reader;
@@ -2253,7 +2357,9 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
         ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
-          slice->clearSelection();
+          if (!appending) {
+            slice->clearSelection();
+          }
           slice->addSelection(
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);
@@ -2271,6 +2377,16 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
       }
     }
   }
+}
+
+void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+{
+  locateBody(bodyId, false);
+}
+
+void ZFlyEmProofMvc::addLocateBody(uint64_t bodyId)
+{
+  locateBody(bodyId, true);
 }
 
 void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
@@ -2314,7 +2430,8 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-    writer.writeBookmark(*bookmark);
+    writer.writeBookmarkKey(*bookmark);
+//    writer.writeBookmark(*bookmark);
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
                                            NeuTube::MSG_WARNING));
@@ -2360,6 +2477,14 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
     dlg.setFrom(bookmark);
     if (dlg.exec()) {
       dlg.annotate(bookmark);
+      ZDvidWriter writer;
+      if (writer.open(getDvidTarget())) {
+        writer.writeBookmark(bookmark->toDvidAnnotationJson());
+      }
+      if (!writer.isStatusOk()) {
+        emit messageGenerated(
+              ZWidgetMessage("Failed to save bookmark.", NeuTube::MSG_WARNING));
+      }
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
 
       updateUserBookmarkTable();
@@ -2391,7 +2516,41 @@ void ZFlyEmProofMvc::changeColorMap(const QString &option)
 
 void ZFlyEmProofMvc::removeBookmark(ZFlyEmBookmark *bookmark)
 {
-  getCompleteDocument()->executeRemoveObjectCommand(bookmark);
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      ZFlyEmProofDoc *doc = getCompleteDocument();
+      doc->executeRemoveBookmarkCommand(bookmark);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::removeBookmark(const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+  doc->executeRemoveBookmarkCommand(bookmarkList);
+}
+
+void ZFlyEmProofMvc::removeLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      ZFlyEmProofDoc *doc = getCompleteDocument();
+
+      bookmark->setSelected(false);
+      doc->removeObject(bookmark, false);
+      emit userBookmarkUpdated(getDocument().get());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::addLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZFlyEmProofDoc *doc = getCompleteDocument();
+    doc->addObject(bookmark, false);
+
+    emit userBookmarkUpdated(getDocument().get());
+  }
 }
 
 void ZFlyEmProofMvc::cropCoarseBody3D()

@@ -52,8 +52,6 @@ ZStack::ZStack(int kind, int width, int height, int depth,
     stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
     delloc = Kill_Mc_Stack;
   }
-
-  m_dealloc = NULL;
   setData(stack, delloc);
 }
 
@@ -85,11 +83,15 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
 ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
   m_stack(NULL)
 {
+  init();
+
   setData(stack, C_Stack::kill);
 }
 
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
+  init();
+
   setData(stack, dealloc);
 }
 
@@ -761,7 +763,8 @@ string ZStack::save(const string &filepath) const
 
   if (!isVirtual()) {
     resultFilePath = filepath;
-    if (channelNumber() > 1 && kind() != GREY && kind() != GREY16) { //save as raw
+    if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
+        (getVoxelNumber() > 2147483648)) { //save as raw
       if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE ||
           ZFileType::fileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;

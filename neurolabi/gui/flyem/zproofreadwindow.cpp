@@ -23,6 +23,7 @@
 #include "zwidgetmessage.h"
 #include "QsLog.h"
 #include "zstackpresenter.h"
+#include "flyem/zflyemproofpresenter.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -248,6 +249,33 @@ void ZProofreadWindow::createMenu()
   m_viewSegmentationAction->setEnabled(false);
 }
 
+void ZProofreadWindow::addSynapseActionToToolbar()
+{
+  m_synapseToolbar = new QToolBar(this);
+  m_synapseToolbar->setIconSize(QSize(24, 24));
+  m_synapseToolbar->addSeparator();
+  m_synapseToolbar->addWidget(new QLabel("Synapse"));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_PRE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_POST));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_DELETE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_MOVE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_LINK));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_UNLINK));
+  addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
+}
+
 void ZProofreadWindow::createToolbar()
 {
   m_toolBar = new QToolBar(this);
@@ -265,6 +293,8 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
+
+  addSynapseActionToToolbar();
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)

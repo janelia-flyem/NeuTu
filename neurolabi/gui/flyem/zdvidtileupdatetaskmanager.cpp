@@ -36,7 +36,7 @@ void ZDvidTileDecodeTask::ProcessDataForDisplay(
     std::cout << "1 tile loaded." << tile->getWidth() << "x" << tile->getHeight() << std::endl;
 #endif
     if (highContrast != tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
-      tile->enhanceContrast(highContrast);
+      tile->enhanceContrast(highContrast, false);
     }
   }
 }

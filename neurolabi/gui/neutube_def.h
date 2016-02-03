@@ -40,6 +40,14 @@ enum EAxis {
   X_AXIS, Y_AXIS, Z_AXIS
 };
 
+enum EPLANE {
+  PLANE_XY, PLANE_XZ, PLANE_YZ
+};
+
+enum EAxisSystem {
+  AXIS_NORMAL, AXIS_SHIFTED
+};
+
 enum ECoordinateSystem {
   COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
   COORD_WORLD, COORD_CANVAS
@@ -89,6 +97,11 @@ static const TVisualEffect VE_FORCE_FILL = 512;
 
 namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
+}
+
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
 }
 
 namespace SparseObject {

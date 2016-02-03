@@ -127,8 +127,17 @@ Stack *Stack_Locmax_Region(const Stack *stack, int conn)
     }								\
   }
 
+#define STACK_LOCMAX_REGION_UPDATE_FLAT(stack_array) \
+  for (i = 0; i < nvoxel; ++i) { \
+    if (stack_array[i] == 0) { \
+      result->array[i] = 0; \
+    }\
+  }
+
 #define STACK_LOCMAX_REGION_UPDATE_ALL(stack_array)			\
-  {									\
+  if (c < 0) { \
+    STACK_LOCMAX_REGION_UPDATE_FLAT(stack_array) \
+  } else {								\
     HOURGLASS_BEGIN("Finding local maxima", hg);			\
     do {								\
       if (counter == 0) {						\

@@ -102,7 +102,7 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
-  void saveCustomBookmark();
+//  void saveCustomBookmark();
   void downloadBookmark();
   inline void setCustomBookmarkSaveState(bool state) {
     m_isCustomBookmarkSaved = state;
@@ -164,10 +164,24 @@ public: //Synapse functions
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest);
 
+public: //Bookmark functions
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void updateLocalBookmark(ZFlyEmBookmark *bookmark);
+
 public: //Commands
   void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
   void executeAddSynapseCommand(const ZDvidSynapse &synapse);
   void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
 signals:
   void bodyMerged();
@@ -182,7 +196,7 @@ public slots:
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
-  void saveCustomBookmarkSlot();
+//  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();

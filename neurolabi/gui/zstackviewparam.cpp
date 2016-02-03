@@ -65,3 +65,8 @@ void ZStackViewParam::resize(int width, int height)
   m_viewPort.setSize(QSize(width, height));
   m_viewPort.moveCenter(oldCenter);
 }
+
+int ZStackViewParam::getArea() const
+{
+  return m_viewPort.width() * m_viewPort.height();
+}

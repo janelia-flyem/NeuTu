@@ -68,8 +68,8 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) co
   painter.drawRect(m_x0, m_y0, m_width, m_height);
 }
 
-bool ZRect2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-             EDisplaySliceMode sliceMode) const
+bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
+             EDisplaySliceMode /*sliceMode*/) const
 {
   bool painted = false;
 

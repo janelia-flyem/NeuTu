@@ -4,9 +4,12 @@
 #include "swctreenode.h"
 #include "zswcbranch.h"
 #include "zswcforest.h"
+#include "zswcdisttrunkanalyzer.h"
+#include "zdoublevector.h"
 
 ZSwcPruner::ZSwcPruner() : m_minLength(100.0), m_removingOrphan(false)
 {
+  m_minOrphanCount = 10;
 }
 
 Swc_Tree_Node* ZSwcPruner::getParentBranchPoint(
@@ -234,4 +237,50 @@ void ZSwcPruner::reduceTerminalBranch(Swc_Tree_Node *tn)
                            SwcTreeNode::weight(tn));
     SwcTreeNode::mergeToParent(parent);
   }
+}
+
+void ZSwcPruner::removeOrphanBlob(ZSwcTree *tree) const
+{
+  ZSwcForest *forest = tree->toSwcTreeArray();
+  ZSwcDistTrunkAnalyzer trunkAnalyzer;
+  trunkAnalyzer.setDistanceWeight(0, 1);
+
+  std::cout << forest->size() << " subtrees" << std::endl;
+
+  double minLength = m_minLength;
+
+  if (minLength == 0.0 && (int) forest->size() >= m_minOrphanCount) {
+    ZDoubleVector treeLength(forest->size());
+
+
+    for (size_t i = 0; i < forest->size(); ++i) {
+      ZSwcTree *subtree = forest->getSwcTree(i);
+      treeLength[i] = subtree->mainTrunk(&trunkAnalyzer).getLength();
+    }
+
+    minLength = treeLength.mean();
+    std::cout << "Mean length:  " << minLength << std::endl;
+  }
+
+  int count = 0;
+  for (size_t i = 0; i < forest->size(); ++i) {
+    ZSwcTree *subtree = forest->getSwcTree(i);
+    if (subtree->mainTrunk(&trunkAnalyzer).getLength() >= minLength) {
+      tree->merge(subtree);
+    } else {
+      delete subtree;
+      ++count;
+    }
+  }
+
+  std::cout << count << " trees removed." << std::endl;
+
+  forest->setDataOwner(false);
+  delete forest;
+  /*
+  ZSwcTree::RegularRootIterator rootIter(tree);
+  while (rootIter.hasNext()) {
+    Swc_Tree_Node *tn = rootIter.next();
+  }
+  */
 }

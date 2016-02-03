@@ -153,7 +153,7 @@ public:
   /*!
    * \brief Get stack data from the buddy document
    */
-  ZStack *stackData();
+  ZStack *stackData() const;
 
   //set up the view after the document is ready
   void prepareDocument();
@@ -176,7 +176,7 @@ public:
 
   bool isDepthChangable();
 
-  void paintStackBuffer();
+  virtual void paintStackBuffer();
   void paintMaskBuffer();
   void paintObjectBuffer();
   bool paintTileCanvasBuffer();
@@ -330,18 +330,21 @@ public: //Change view parameters
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
 
-private:
+protected:
+  virtual int getDepth() const;
+
   void clearCanvas();
   template<typename T>
   void resetCanvasWithStack(T &canvas, ZPainter *painter);
 
-  void resetCanvasWithStack(ZMultiscalePixmap &canvas, ZPainter *painter);
+  virtual void resetCanvasWithStack(
+      ZMultiscalePixmap &canvas, ZPainter *painter);
 
   void reloadTileCanvas();
   bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
-  void updateImageCanvas();
+  virtual void updateImageCanvas();
   void updateMaskCanvas();
   void clearObjectCanvas();
   void clearTileCanvas();
@@ -357,7 +360,7 @@ private:
   QSize getCanvasSize() const;
 
   //help functions
-  void paintSingleChannelStackSlice(ZStack *stack, int slice);
+  virtual void paintSingleChannelStackSlice(ZStack *stack, int slice);
   void paintMultipleChannelStackSlice(ZStack *stack, int slice);
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
@@ -373,7 +376,7 @@ private:
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
 
-private:
+protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;

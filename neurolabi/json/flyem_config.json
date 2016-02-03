@@ -36,7 +36,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "fa60",
+      "uuid": "059e",
       "name": "FIB25 (0802 export)",
       "body_label": "bodies0802",
       "label_block": "labels0802",
@@ -47,7 +47,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "d147",
+      "uuid": "b14d",
       "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
@@ -59,7 +59,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "d147",
+      "uuid": "b14d",
       "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
@@ -127,6 +127,16 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["xxx"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "aa61",
+      "name": "mb_training_namra_split",
+      "comment": "MB seg (branched from node 2635)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -220,7 +230,17 @@
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "takemuras"]
+      "user_name": ["xxx"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "7ee9",
+      "name": "mb_training_namra_orphan",
+      "comment": "MB seg (branched from 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -572,6 +592,7 @@
       "body_label": "bodies1104",
       "label_block": "labels1104",
       "multires_tile": "graytiles",
+      "synapse": "synapses",
       "user_name": ["zhaot", "takemuras"]
     }
   ]

@@ -538,10 +538,12 @@ void ZStackPresenter::createSwcActions()
     m_actionMap[ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS] = action;
   }
 
+  /*
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ZActionFactory::ACTION_EXTEND_SWC_NODE], true);
   m_singleSwcNodeActionActivator.registerAction(
         m_actionMap[ZActionFactory::ACTION_CONNECT_TO_SWC_NODE], true);
+        */
 }
 
 void ZStackPresenter::createStrokeActions()
@@ -2160,7 +2162,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   } else {
     stroke->setWidth(6.0);
   }
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   stroke->set(x, y);
 
   turnOnActiveObject(ROLE_SWC);
@@ -2248,7 +2250,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
 
 void ZStackPresenter::enterDrawStrokeMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
 
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
   stroke->set(x, y);
@@ -2264,14 +2266,14 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
 
 void ZStackPresenter::enterDrawRectMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   interactiveContext().setRectEditMode(ZInteractiveContext::RECT_DRAW);
   updateCursor();
 }
 
 void ZStackPresenter::enterEraseStrokeMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
   stroke->set(x, y);
 //  m_stroke.setFilled(true);
@@ -2596,7 +2598,7 @@ bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
   return false;
 }
 
-void ZStackPresenter::process(const ZStackOperator &op)
+void ZStackPresenter::process(ZStackOperator &op)
 {
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
@@ -3225,8 +3227,7 @@ void ZStackPresenter::process(const ZStackOperator &op)
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
         //turnOnStroke();
       }
-    } else {
-      processCustomOperator(op, &interactionEvent);
+      op.setOperation(ZStackOperator::OP_NULL);
     }
     break;
 
@@ -3331,7 +3332,11 @@ void ZStackPresenter::process(const ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
-    buddyDocument()->executeRemoveSelectedObjectCommand();
+    if (!buddyDocument()->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty()) {
+      op.setOperation(ZStackOperator::OP_BOOKMARK_DELETE);
+    } else {
+      buddyDocument()->executeRemoveSelectedObjectCommand();
+    }
     break;
 #if 0
   case ZStackOperator::OP_TRACK_MOUSE_MOVE_WITH_STROKE_TOGGLE:
@@ -3353,9 +3358,11 @@ void ZStackPresenter::process(const ZStackOperator &op)
     break;
 #endif
   default:
-    processCustomOperator(op, &interactionEvent);
+
     break;
   }
+
+  processCustomOperator(op, &interactionEvent);
 
   processEvent(interactionEvent);
 }
