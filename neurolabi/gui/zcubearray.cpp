@@ -199,7 +199,7 @@ int Cube::init(std::vector<glm::vec3> nodes)
     faces();
 
     //
-    edges();
+    //edges();
 
     //
     for (int i=0; i<6; i++)

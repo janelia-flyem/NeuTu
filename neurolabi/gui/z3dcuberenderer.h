@@ -63,6 +63,7 @@ private:
     size_t m_oneBatchNumber;
 
     size_t nCubes;
+    glm::vec4 m_color; // uniform
 };
 
 #endif // Z3DCUBERENDERER_H

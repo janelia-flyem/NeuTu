@@ -80,7 +80,8 @@ void Z3DCubeRenderer::addCube(Z3DCube *zcube)
         cube.init(zcube->length, zcube->length, zcube->length, zcube->x, zcube->y, zcube->z);
     }
 
-    cube.setFaceColor(zcube->color);
+    // cube.setFaceColor(zcube->color);
+    m_color = zcube->color;
 
     //
     m_cubes.push_back(cube);
@@ -214,6 +215,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   m_rendererBase->setGlobalShaderParameters(oit3DTransparentizeShader, eye);
   oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
   oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
+  oit3DTransparentizeShader.setUniformValue("vColor", m_color);
+
 
   nCubes = m_cubes.size();
 
@@ -247,7 +250,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       // oit pass
       GLint loc_position = oit3DTransparentizeShader.attributeLocation("vPosition");
       GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
-      GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
+      //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
       for (size_t i=0; i<nCubes; ++i)
       {
@@ -256,12 +259,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
           size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
           size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
-          size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
+          //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
 
-          glBufferData( GL_ARRAY_BUFFER, size_position + size_normal + size_color, NULL, GL_STATIC_DRAW );
+          glBufferData( GL_ARRAY_BUFFER, size_position + size_normal, NULL, GL_STATIC_DRAW );
           glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
           glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normals[0]) );
-          glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
+          //glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
 
           //
           glEnableVertexAttribArray( loc_position );
@@ -270,8 +273,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
           glEnableVertexAttribArray( loc_normal );
           glVertexAttribPointer( loc_normal, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
 
-          glEnableVertexAttribArray( loc_color );
-          glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
+          //glEnableVertexAttribArray( loc_color );
+          //glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
 
           glBindBuffer( GL_ARRAY_BUFFER, 0);
           glBindVertexArray(0);

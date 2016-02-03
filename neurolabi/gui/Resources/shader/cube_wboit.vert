@@ -2,13 +2,14 @@
 
 attribute vec3 vPosition;
 attribute vec3 vNormal;
-attribute vec4 vColor;
+//attribute vec4 vColor;
 
 varying vec3 position;
 varying vec3 normal;
 varying vec4 color;
 varying float depth;
 
+uniform vec4 vColor;
 uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
 uniform mat3 normal_matrix;
