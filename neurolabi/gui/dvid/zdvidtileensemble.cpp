@@ -110,8 +110,11 @@ void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
 {
 //  libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
 //                                   getDvidTarget().getUuid());
+//  QElapsedTimer timer;
+//  timer.start();
   libdvid::BinaryDataPtr dataPtr = service->get_tile_slice_binary(
         m_dvidTarget.getMultiscale2dName(), slice, resLevel, loc);
+//  std::cout << "Single tile reading time: " << timer.elapsed() << std::endl;
   ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
   task->setZ(z);
   task->setData(dataPtr->get_raw(), dataPtr->length());

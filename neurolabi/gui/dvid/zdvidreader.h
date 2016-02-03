@@ -158,6 +158,12 @@ public:
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;
+  /*!
+   * \brief Read all point annotations within the given label.
+   * \param dataName Annotation data name
+   * \param label Annotation label
+   */
+  ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
 
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
@@ -166,8 +172,15 @@ public:
   bool isBookmarkChecked(const ZIntPoint &pt) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
-  std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
-  ZDvidSynapse readSynapse(int x, int y, int z);
+  std::vector<ZDvidSynapse> readSynapse(
+      const ZIntCuboid &box,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  std::vector<ZDvidSynapse> readSynapse(
+      uint64_t label,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  ZDvidSynapse readSynapse(
+      int x, int y, int z,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

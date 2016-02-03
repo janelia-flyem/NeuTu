@@ -16657,7 +16657,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   size_t testCount = 20;
   std::vector<int> sizeArray(testCount, 0); //single dimension
   std::vector<uint64_t> initTimeArray(testCount, 0);
@@ -19234,7 +19234,7 @@ void ZTest::test(MainWindow *host)
   frame->document()->addObject(line);
 #endif
 
-#if  1
+#if  0
   ZStackDoc *doc = new ZStackDoc(NULL);
   doc->loadFile(GET_TEST_DATA_DIR + "/system/emstack2.tif");
 
@@ -19252,6 +19252,21 @@ void ZTest::test(MainWindow *host)
   testDlg->getMainLayout()->addWidget(stackWidget);
   testDlg->show();
   testDlg->raise();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1", "3ca7", 8500);
+  target.setSynapseName("mb6_synapses");
+  ZDvidReader reader;
+  reader.open(target);
+  std::vector<ZDvidSynapse> synapseArray =
+      reader.readSynapse(1, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+  for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+       iter != synapseArray.end(); ++iter) {
+    const ZDvidSynapse &synapse = *iter;
+    std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;
