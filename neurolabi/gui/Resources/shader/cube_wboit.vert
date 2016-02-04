@@ -1,7 +1,7 @@
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
 attribute vec3 vPosition;
-attribute int vNormal;
+attribute float vNormal;
 //attribute vec3 vNormal;
 //attribute vec4 vColor;
 
