@@ -47,7 +47,7 @@ private:
     std::vector<Cube> m_cubes;
 
     QVector<QVector3D> m_screen;
-    GLuint m_vao;
+    GLuint m_vao, m_vbo;
     GLint m_preFBO;
     GLuint m_fbo;
     GLuint m_renderbuffer;

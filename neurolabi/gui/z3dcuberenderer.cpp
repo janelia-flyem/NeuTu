@@ -108,10 +108,6 @@ void Z3DCubeRenderer::initialize()
   oit2DComposeProgram = new QGLShaderProgram;
   oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Vertex, ":/Resources/shader/cube_wboit_compose.vert");
   oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Fragment, ":/Resources/shader/cube_wboit_compose.frag");
-  if (!oit2DComposeProgram->link())
-  {
-      qWarning() << oit2DComposeProgram->log() << endl;
-  }
 
   //
   glGenFramebuffers(1, &m_fbo);
@@ -252,13 +248,15 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
       //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
+      qDebug()<<"nCubes ... "<<nCubes;
+
       for (size_t i=0; i<nCubes; ++i)
       {
           glBindVertexArray(m_VAOs[i]);
           glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
 
           size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
-          size_t size_normal = sizeof(int)*m_cubes[i].normalIndices.size();
+          size_t size_normal = sizeof(float)*m_cubes[i].normalIndices.size();
           //size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
           //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
 
@@ -272,7 +270,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
           glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
 
           glEnableVertexAttribArray( loc_normal );
-          glVertexAttribPointer( loc_normal, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
+          glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
 
           //glEnableVertexAttribArray( loc_color );
           //glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
@@ -288,8 +286,17 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     // vao
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray( m_vao );
-    oit2DComposeProgram->setAttributeArray("vPosition", m_screen.constData());
-    oit2DComposeProgram->enableAttributeArray("vPosition");
+    //oit2DComposeProgram->setAttributeArray("composeVertPos", m_screen.constData());
+    //oit2DComposeProgram->enableAttributeArray("composeVertPos");
+
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer( GL_ARRAY_BUFFER, m_vbo);
+    glBufferData( GL_ARRAY_BUFFER, m_screen.size()*sizeof(QVector3D), m_screen.constData(), GL_STATIC_DRAW);
+
+    GLint posLoc = glGetAttribLocation(oit2DComposeProgram->programId(), "composeVertPos");
+    glEnableVertexAttribArray(posLoc);
+    glVertexAttribPointer( posLoc, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
+
     glBindVertexArray(0);
 
     // fbo
@@ -314,6 +321,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+
+    //
+    if (!oit2DComposeProgram->link())
+    {
+        qWarning() << oit2DComposeProgram->log() << endl;
+    }
 
     // render
     // oit pass

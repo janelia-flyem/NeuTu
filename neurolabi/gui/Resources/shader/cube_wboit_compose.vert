@@ -1,12 +1,12 @@
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 #version 1.20
-attribute vec3 vPosition;
+attribute vec3 composeVertPos;
 
 varying vec2 vTexcoord;
 
 void main(void)
 {   
-    gl_Position = vec4(vPosition,1.0);
+    gl_Position = vec4(composeVertPos,1.0);
 
-    vTexcoord = (vPosition.xy+1.0)/2.0;
+    vTexcoord = (composeVertPos.xy+1.0)/2.0;
 }
