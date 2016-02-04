@@ -783,7 +783,7 @@ TEST(ZObject3dScan, TestScanArray) {
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR +
                                  "/benchmark/binary/3d/diadem_e1.tif");
 
-  std::map<int, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
+  std::map<uint64_t, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
         stack->array, C_Stack::width(stack), C_Stack::height(stack),
         C_Stack::depth(stack), 0, 1, NULL);
 

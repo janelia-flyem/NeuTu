@@ -242,12 +242,12 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   ZObject3dScanArray *objArray = NULL;
 
   if (stack.hasData()) {
-    std::map<int, ZObject3dScan*> *bodySet =
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
           stack.array8(), stack.width(), stack.height(), stack.depth(), 0, yStep,
           NULL);
     objArray = new ZObject3dScanArray;
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
       ZObject3dScan *obj = iter->second;
       if (iter->first > 0) {
@@ -270,11 +270,11 @@ std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
   if (stack.hasData()) {
     ZStack *mask = MakeBoundaryStack(stack);
 
-    std::map<int, ZObject3dScan*> *bodySet =
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
           mask->array8(), mask->width(), mask->height(), mask->depth(),
           0, yStep, NULL);
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
       ZObject3dScan *obj = iter->second;
       if (iter->first > 0) {
@@ -299,7 +299,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     out = new ZObject3dScanArray;
   }
 
-  std::map<int, ZObject3dScan*> *bodySet = NULL;
+  std::map<uint64_t, ZObject3dScan*> *bodySet = NULL;
 
   if (array.valueType() == mylib::UINT64_TYPE) {
     if (foreground) {
@@ -317,7 +317,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
   if (bodySet != NULL) {
     size_t index = 0;
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter, ++index) {
       ZObject3dScan *obj = iter->second;
       obj->setLabel(iter->first);

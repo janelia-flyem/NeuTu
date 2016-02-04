@@ -2162,7 +2162,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   } else {
     stroke->setWidth(6.0);
   }
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   stroke->set(x, y);
 
   turnOnActiveObject(ROLE_SWC);
@@ -2250,7 +2250,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
 
 void ZStackPresenter::enterDrawStrokeMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
 
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
   stroke->set(x, y);
@@ -2266,14 +2266,14 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
 
 void ZStackPresenter::enterDrawRectMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   interactiveContext().setRectEditMode(ZInteractiveContext::RECT_DRAW);
   updateCursor();
 }
 
 void ZStackPresenter::enterEraseStrokeMode(double x, double y)
 {
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
   stroke->set(x, y);
 //  m_stroke.setFilled(true);

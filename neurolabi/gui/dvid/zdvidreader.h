@@ -64,16 +64,16 @@ public:
   bool isReady() const;
 
   //ZSwcTree* readSwc(const QString &key);
-  ZSwcTree *readSwc(int bodyId);
-  ZObject3dScan readBody(int bodyId);
-  ZObject3dScan* readBody(int bodyId, ZObject3dScan *result);
-  ZObject3dScan* readBody(int bodyId, int z, ZObject3dScan *result);
+  ZSwcTree *readSwc(uint64_t bodyId);
+  ZObject3dScan readBody(uint64_t bodyId);
+  ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int z, ZObject3dScan *result);
 
-  ZStack* readThumbnail(int bodyId);
+  ZStack* readThumbnail(uint64_t bodyId);
 
-  ZSparseStack* readSparseStack(int bodyId);
-  ZDvidSparseStack* readDvidSparseStack(int bodyId);
-  ZDvidSparseStack* readDvidSparseStackAsync(int bodyId);
+  ZSparseStack* readSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth);
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
@@ -119,20 +119,20 @@ public:
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
-  bool hasBodyInfo(int bodyId) const;
+  bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
 
   ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
-  bool hasCoarseSparseVolume(int bodyId) const;
+  bool hasCoarseSparseVolume(uint64_t bodyId) const;
 
-  ZFlyEmNeuronBodyInfo readBodyInfo(int bodyId);
+  ZFlyEmNeuronBodyInfo readBodyInfo(uint64_t bodyId);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
 
-  int readMaxBodyId();
+  uint64_t readMaxBodyId();
 
   uint64_t readBodyIdAt(int x, int y, int z);
   uint64_t readBodyIdAt(const ZIntPoint &pt);
@@ -158,6 +158,12 @@ public:
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;
+  /*!
+   * \brief Read all point annotations within the given label.
+   * \param dataName Annotation data name
+   * \param label Annotation label
+   */
+  ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
 
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
@@ -166,8 +172,15 @@ public:
   bool isBookmarkChecked(const ZIntPoint &pt) const;
 
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
-  std::vector<ZDvidSynapse> readSynapse(const ZIntCuboid &box) const;
-  ZDvidSynapse readSynapse(int x, int y, int z);
+  std::vector<ZDvidSynapse> readSynapse(
+      const ZIntCuboid &box,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  std::vector<ZDvidSynapse> readSynapse(
+      uint64_t label,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  ZDvidSynapse readSynapse(
+      int x, int y, int z,
+      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

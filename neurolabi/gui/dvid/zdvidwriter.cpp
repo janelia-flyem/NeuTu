@@ -198,7 +198,7 @@ void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
   deleteKey(url.getBodyAnnotationName(), ZString::num2str(bodyId));
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
@@ -325,11 +325,12 @@ void ZDvidWriter::writeJson(const std::string &url, const ZJsonValue &value,
 
 
 void ZDvidWriter::mergeBody(const std::string &dataName,
-                            int targetId, const std::vector<int> &bodyId)
+                            uint64_t targetId,
+                            const std::vector<uint64_t> &bodyId)
 {
   ZJsonArray jsonArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   jsonArray.append(targetId);
-  for (std::vector<int>::const_iterator iter = bodyId.begin();
+  for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
        iter != bodyId.end(); ++iter) {
     jsonArray.append(*iter);
   }
@@ -448,7 +449,7 @@ void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
   }
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId)
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
 {
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {

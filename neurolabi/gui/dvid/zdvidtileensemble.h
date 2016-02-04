@@ -46,7 +46,8 @@ public:
   void updateContrast();
 #if defined(_ENABLE_LIBDVIDCPP_)
   void updateTile(libdvid::Slice2D slice,
-                  int resLevel, const std::vector<int> &loc, int z, ZDvidTile *tile);
+                  int resLevel, const std::vector<int> &loc,
+                  int z, ZDvidTile *tile, libdvid::DVIDNodeService *service);
 #endif
 
 private:
@@ -56,6 +57,9 @@ private:
   ZDvidReader m_reader;
   ZStackView *m_view;
   bool m_highContrast;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  std::vector<libdvid::DVIDNodeService*> m_serviceArray;
+#endif
 };
 
 #endif // ZDVIDTILEENSEMBLE_H

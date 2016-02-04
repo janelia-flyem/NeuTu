@@ -41,7 +41,7 @@ enum EAxis {
 };
 
 enum EPLANE {
-  PLANE_XY, PLANE_ZX, PLANE_YZ
+  PLANE_XY, PLANE_XZ, PLANE_YZ
 };
 
 enum EAxisSystem {
@@ -109,6 +109,13 @@ static const TVisualEffect VE_FORCE_SOLID = 1;
 }
 
 }
+
+namespace FlyEM {
+enum ESynapseLoadMode {
+  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION
+};
+}
+
 
 }
 

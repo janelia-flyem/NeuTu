@@ -202,7 +202,7 @@ void ZDvidTarget::print() const
   std::cout << getSourceString() << std::endl;
 }
 
-std::string ZDvidTarget::getBodyPath(int bodyId) const
+std::string ZDvidTarget::getBodyPath(uint64_t bodyId) const
 {
   return getSourceString() + ":" + ZString::num2str(bodyId);
 }

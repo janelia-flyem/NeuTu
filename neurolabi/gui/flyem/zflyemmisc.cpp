@@ -498,8 +498,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
         ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
         if (!roi.isEmpty()) {
           ZDvidInfo info = dvidInfo;
-//          info.downsampleBlock(1, 1, 1);
-//          roi.downsample(1, 1, 1);
+          info.downsampleBlock(1, 1, 1);
+          roi.downsample(1, 1, 1);
 
           ZCubeArray *cubes = MakeRoiCube(roi, info);
           cubes->setSource(

@@ -3256,7 +3256,7 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
     const ZStack &stack, int yStep)
 {
   std::vector<ZObject3dScan*> result;
-  std::map<int, ZObject3dScan*> *objMap = NULL;
+  std::map<uint64_t, ZObject3dScan*> *objMap = NULL;
 
   switch (stack.kind()) {
   case GREY:
@@ -3276,7 +3276,7 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
   }
 
   if (objMap != NULL) {
-    for (std::map<int, ZObject3dScan*>::iterator iter = objMap->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::iterator iter = objMap->begin();
          iter != objMap->end(); ++iter) {
       result.push_back(iter->second);
     }

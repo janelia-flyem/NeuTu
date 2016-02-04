@@ -470,14 +470,14 @@ int ZCommandLine::runImageSeparation()
   ZStack mask;
   mask.load(m_input[1]);
 
-  std::map<int, ZObject3dScan*> *objMap =
+  std::map<uint64_t, ZObject3dScan*> *objMap =
       ZObject3dScan::extractAllObject(
         mask.array8(), mask.width(), mask.height(),
         mask.depth(), 0, 1, NULL);
 
   std::cout << objMap->size() << " objects extracted." << std::endl;
 
-  for (std::map<int, ZObject3dScan*>::iterator iter = objMap->begin();
+  for (std::map<uint64_t, ZObject3dScan*>::iterator iter = objMap->begin();
        iter != objMap->end(); ++iter) {
     ZObject3dScan *obj = iter->second;
     if (iter->first > 0) {

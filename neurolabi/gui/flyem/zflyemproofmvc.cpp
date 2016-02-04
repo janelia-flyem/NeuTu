@@ -947,8 +947,12 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(locateBody(uint64_t)));
   connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
           this, SLOT(addLocateBody(uint64_t)));
+  /*
   connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
           this, SLOT(locateBody(QList<uint64_t>)));
+          */
+  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+          this, SLOT(selectBody(QList<uint64_t>)));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
   connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
@@ -2256,6 +2260,25 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 #endif
 }
 
+
+void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
+{
+  if (!getCompletePresenter()->isSplitWindow()) {
+    ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
+    if (slice != NULL) {
+      slice->recordSelection();
+      slice->clearSelection();
+      foreach(uint64_t bodyId, bodyIdList) {
+        slice->addSelection(
+              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
+              NeuTube::BODY_LABEL_MAPPED);
+      }
+      slice->processSelection();
+      processLabelSliceSelectionChange();
+    }
+    updateBodySelection();
+  }
+}
 
 void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
 {

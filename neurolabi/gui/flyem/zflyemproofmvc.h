@@ -116,6 +116,7 @@ public slots:
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending);
+  void selectBody(QList<uint64_t> bodyIdList);
 
   void showBody3d();
   void showSplit3d();

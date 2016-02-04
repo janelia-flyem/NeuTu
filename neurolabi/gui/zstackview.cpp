@@ -294,12 +294,22 @@ double ZStackView::getZoomRatio() const
       m_imageWidget->viewPort().width();
 }
 
+int ZStackView::getDepth() const
+{
+  ZStack *stack = stackData();
+  if (stack != NULL) {
+    return stack->depth();
+  }
+
+  return 0;
+}
+
 void ZStackView::resetDepthControl()
 {
   ZStack *stack = stackData();
   if (stack != NULL) {
-    m_depthControl->setRange(0, stack->depth() - 1);
-    m_depthControl->setValue(stack->depth() / 2);
+    m_depthControl->setRange(0, getDepth() - 1);
+    m_depthControl->setValue(getDepth() / 2);
   }
 }
 
@@ -353,14 +363,14 @@ void ZStackView::updateSlider()
 {
   if (stackData() != NULL) {
     int value = m_depthControl->value();
-    m_depthControl->setRangeQuietly(0, stackData()->depth() - 1);
+    m_depthControl->setRangeQuietly(0, getDepth() - 1);
     if (value >= stackData()->depth()) {
-      m_depthControl->setValueQuietly(stackData()->depth() - 1);
+      m_depthControl->setValueQuietly(getDepth() - 1);
     }
 
     m_zSpinBox->setRange(
           stackData()->getOffset().getZ(),
-          stackData()->getOffset().getZ() + stackData()->depth() - 1);
+          stackData()->getOffset().getZ() + getDepth() - 1);
   }
 }
 
@@ -441,7 +451,7 @@ QImage::Format ZStackView::stackKindToImageFormat(int kind)
   }
 }
 
-ZStack* ZStackView::stackData()
+ZStack* ZStackView::stackData() const
 {
   return (buddyDocument()) ? buddyDocument()->getStack() : NULL;
 }
@@ -737,13 +747,16 @@ void ZStackView::redraw(EUpdateOption option)
   buddyDocument()->blockSignals(false);
 
   paintStackBuffer();
-  std::cout << "paint stack per frame: " << timer.elapsed() << std::endl;
+  qint64 stackPaintTime = timer.elapsed();
+  std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
   paintMaskBuffer();
   paintTileCanvasBuffer();
-  std::cout << "paint tile per frame: " << timer.elapsed() << std::endl;
+  qint64 tilePaintTime = timer.elapsed();
+  std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
   paintActiveDecorationBuffer();
   paintObjectBuffer();
-  std::cout << "paint object per frame: " << timer.elapsed() << std::endl;
+  qint64 objectPaintTime = timer.elapsed();
+  std::cout << "paint object per frame: " << objectPaintTime << std::endl;
 
   updateImageScreen(option);
 
@@ -755,7 +768,8 @@ void ZStackView::redraw(EUpdateOption option)
 
   qDebug() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
-    LWARN() << "Debugging for hiccup.";
+    LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
+            << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
   }
 #endif
 }
