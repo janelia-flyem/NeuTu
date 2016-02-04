@@ -410,8 +410,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(
-      double cx, double cy, int z, NeuTube::EAxis axis) const;
+  virtual QString rawDataInfo(double cx, double cy, int z) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;

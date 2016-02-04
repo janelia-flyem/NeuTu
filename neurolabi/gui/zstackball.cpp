@@ -155,7 +155,7 @@ bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
 }
 
 bool ZStackBall::isCuttingPlane(
-    double n, NeuTube::EAxis sliceAxis, double zScale) const
+    double n, double zScale, NeuTube::EAxis sliceAxis) const
 {
   double z = m_center.getSliceCoord(sliceAxis);
 

@@ -361,7 +361,9 @@ void ZStackMvc::focusOutEvent(QFocusEvent *event)
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
+#endif
 
+#if 0
 void ZStackMvc::changeEvent(QEvent *event)
 {
   if (event->type() == QEvent::ActivationChange) {

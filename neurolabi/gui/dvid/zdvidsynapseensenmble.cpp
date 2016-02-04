@@ -359,10 +359,11 @@ void ZDvidSynapseEnsemble::addSynapse(
       getSelector().selectObject(synapse.getPosition());
     }
 
-    bool isSelected = targetSynapse.isSelected();
+    bool isSelected = targetSynapse.isSelected() || synapse.isSelected();
     targetSynapse = synapse;
-    targetSynapse.setSelected(isSelected);
+
     if (isSelected) {
+      targetSynapse.setSelected(isSelected);
       updatePartner(targetSynapse);
     }
   } else {
@@ -497,6 +498,7 @@ void ZDvidSynapseEnsemble::moveSynapse(
   if (from != to) {
     switch (scope) {
     case DATA_GLOBAL:
+    case DATA_SYNC:
     {
       ZDvidWriter writer;
       if (writer.open(m_dvidTarget)) {
@@ -648,8 +650,12 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 {
   const int sliceRange = 5;
 
+  ZIntPoint hitPoint(iround(x), iround(y), iround(z));
+
+  hitPoint.shiftSliceAxis(getSliceAxis());
+
   for (int slice = -sliceRange; slice <= sliceRange; ++slice) {
-    int cz = iround(z + slice);
+    int cz = iround(hitPoint.getZ() + slice);
 
     SynapseIterator siter(this, cz);
 

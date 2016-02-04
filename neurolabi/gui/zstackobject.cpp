@@ -149,6 +149,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
   return false;
 }
 
+void ZStackObject::setHitPoint(const ZIntPoint &pt)
+{
+  m_hitPoint = pt;
+}
+
 bool ZStackObject::fromSameSource(const ZStackObject *obj) const
 {
   bool sameSource = false;

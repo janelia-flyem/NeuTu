@@ -381,7 +381,9 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    pos.shiftSliceAxisInverse(getSliceAxis());
+    bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
     bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
@@ -431,11 +433,22 @@ void ZFlyEmProofPresenter::processCustomOperator(
     emit selectingBodyInRoi(true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble(
-          buddyView()->getSliceAxis())->selectHitWithPartner(false);
+  {
+    QList<ZDvidSynapseEnsemble*> seList =
+        getCompleteDocument()->getDvidSynapseEnsembleList();
+    ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+         iter != seList.end(); ++iter) {
+      ZDvidSynapseEnsemble *se = *iter;
+      se->setHitPoint(hitPoint);
+      getCompleteDocument()->getDvidSynapseEnsemble(
+            buddyView()->getSliceAxis())->selectHitWithPartner(false);
+    }
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
+  }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
     getCompleteDocument()->getDvidSynapseEnsemble(

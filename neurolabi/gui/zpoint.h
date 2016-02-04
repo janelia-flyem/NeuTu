@@ -122,6 +122,8 @@ public:
   };
 
   void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+
   double getSliceCoord(NeuTube::EAxis axis) const;
 
 private:

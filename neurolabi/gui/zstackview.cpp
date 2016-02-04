@@ -723,7 +723,10 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
           if (buddyPresenter()->interactiveContext().isProjectView()) {
             z = -1;
           }
-          setInfo(buddyDocument()->rawDataInfo(pos.x(), pos.y(), z, m_sliceAxis));
+
+          ZPoint pt = ZPoint(pos.x(), pos.y(), z);
+          pt.shiftSliceAxisInverse(getSliceAxis());
+          setInfo(buddyDocument()->rawDataInfo(pt.x(), pt.y(), pt.z()));
         }
       }
     }
@@ -1748,7 +1751,9 @@ void ZStackView::paintActiveDecorationBuffer()
 
     if (m_activeDecorationCanvas != NULL) {
       ZPainter painter(m_activeDecorationCanvas);
-      painter.setStackOffset(buddyDocument()->getStackOffset());
+      ZIntPoint pt = buddyDocument()->getStackOffset();
+      pt.shiftSliceAxis(getSliceAxis());
+      painter.setStackOffset(pt);
 
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {

@@ -572,6 +572,17 @@ void ZStackPresenter::createStrokeActions()
   }
 }
 
+void ZStackPresenter::createMiscActions()
+{
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_SHOW_ORTHO, this);
+    connect(action, SIGNAL(triggered()), this, SLOT(notifyOrthoViewTriggered()));
+    m_actionMap[ZActionFactory::ACTION_SHOW_ORTHO] = action;
+  }
+
+}
+
 void ZStackPresenter::createBodyActions()
 {
   {
@@ -784,6 +795,15 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
   turnOffActiveObject();
   ZStackObject *obj = getActiveObject(role);
   if (obj != NULL) {
+    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+    if (stroke != NULL) {
+      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+      ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+      currentStackPos.shiftSliceAxis(getSliceAxis());
+
+      stroke->setLast(currentStackPos.x(), currentStackPos.y());
+    }
+
     switch (role) {
     case ROLE_SWC:
       if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
@@ -1013,6 +1033,11 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
   }
 
   return buddyView()->imageWidget()->canvasCoordinate(QPoint(x, y));
+}
+
+ZPoint ZStackPresenter::getLastMousePosInStack()
+{
+  return m_mouseEventProcessor.getLatestStackPosition();
 }
 
 const Swc_Tree_Node* ZStackPresenter::getSelectedSwcNode() const
@@ -2464,6 +2489,13 @@ void ZStackPresenter::notifyBodySplitTriggered()
   emit bodySplitTriggered();
 }
 
+void ZStackPresenter::notifyOrthoViewTriggered()
+{
+  ZPoint pt = getLastMousePosInStack();
+
+  emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -3232,27 +3264,31 @@ void ZStackPresenter::process(ZStackOperator &op)
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
             currentRawStackPos.x(), currentRawStackPos.y(),
-            currentRawStackPos.z(), m_interactiveContext.getSliceAxis()));
+            currentRawStackPos.z()));
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
       ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
       //    if (isStrokeOn()) {
       if (stroke != NULL) {
+        ZPoint pt = currentStackPos;
+        pt.shiftSliceAxis(getSliceAxis());
         if (m_interactiveContext.swcEditMode() ==
             ZInteractiveContext::SWC_EDIT_EXTEND ||
             m_interactiveContext.swcEditMode() ==
             ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
           const Swc_Tree_Node *tn = getSelectedSwcNode();
           if (tn != NULL) {
-            stroke->set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
-            stroke->append(currentStackPos.x(), currentStackPos.y());
+            ZPoint prevPos = SwcTreeNode::center(tn);
+            prevPos.shiftSliceAxis(getSliceAxis());
+            stroke->set(prevPos.x(), prevPos.y());
+            stroke->append(pt.x(), pt.y());
           }
         } else if (m_interactiveContext.strokeEditMode() ==
                    ZInteractiveContext::STROKE_DRAW) {
           stroke->toggleLabel(op.togglingStrokeLabel());
         }
-        stroke->setLast(currentStackPos.x(), currentStackPos.y());
+        stroke->setLast(pt.x(), pt.y());
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
         //turnOnStroke();

@@ -41,7 +41,8 @@ public:
 
 private:
   void computePlaneInersection(QPointF &lineStart, QPointF &lineEnd,
-                               bool &visible, int ataFocus) const;
+                               bool &visible, int ataFocus,
+                               NeuTube::EAxis sliceAxis) const;
 
 private:
   ZLineSegment m_segment;

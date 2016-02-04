@@ -77,10 +77,8 @@ public:
   /*!
    * \brief Test if a circle is cut by a plane.
    */
-  static bool isCuttingPlane(double z, double r, double n,
-      double zScale = 1.0);
-  bool isCuttingPlane(double n, NeuTube::EAxis sliceAxis,
-                      double zScale = 1.0) const;
+  static bool isCuttingPlane(double z, double r, double n, double zScale);
+  bool isCuttingPlane(double n, double zScale, NeuTube::EAxis sliceAxis) const;
 
 #if 0
   inline void setVisualEffect(NeuTube::Display::TVisualEffect effect) {

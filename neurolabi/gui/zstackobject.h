@@ -305,6 +305,8 @@ public:
     m_isHittable = state;
   }
 
+  void setHitPoint(const ZIntPoint &pt);
+
   inline bool isProjectionVisible() const {
     return m_projectionVisible;
   }

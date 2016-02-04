@@ -378,6 +378,11 @@ void ZPoint::shiftSliceAxis(NeuTube::EAxis axis)
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
+void ZPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+}
+
 double ZPoint::getSliceCoord(NeuTube::EAxis axis) const
 {
   switch (axis) {

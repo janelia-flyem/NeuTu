@@ -1629,7 +1629,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
 
 //  bool painted = false;
 
-  if (sliceAxis != m_sliceAxis) {
+  if (sliceAxis != m_sliceAxis || getColor().alpha() == 0) {
     return;
   }
 

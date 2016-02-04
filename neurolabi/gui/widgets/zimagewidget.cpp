@@ -696,7 +696,6 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     paintObject();
     paintZoomHint();
-
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
@@ -860,6 +859,9 @@ void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+  if (!hasFocus()) {
+    setFocus();
+  }
   emit mouseMoved(event);
 }
 

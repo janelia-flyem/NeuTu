@@ -19299,7 +19299,7 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.set("emdata1.int.janelia.org", "372c", 8500);
   target.setSynapseName("synapses");
 
   ZFlyEmOrthoWindow *window = new ZFlyEmOrthoWindow(target, host);

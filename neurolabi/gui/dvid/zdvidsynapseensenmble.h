@@ -90,6 +90,16 @@ public:
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
 
+  /*!
+   * \brief Add a synapse
+   *
+   * Adding a synapse to the ensemble. If \a synapse is selected, the selection
+   * will be preserved. It will also overwrite the existing synapse at the same
+   * location, but old selections will always be preserved.
+   *
+   * \param synapse synapse to add
+   * \param scope Operation scope
+   */
   void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
 //  void commitSynapse(const ZIntPoint &pt);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,

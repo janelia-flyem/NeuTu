@@ -314,9 +314,9 @@ QColor ZDvidLabelSlice::getColor(
   QColor color;
   if (hasCustomColorMap()) {
     color = getCustomColor(label);
-//    if (color.alpha() != 0) {
+    if (color.alpha() != 0) {
       color.setAlpha(64);
-//    }
+    }
   } else {
     color = m_objColorSheme.getColor(
           abs((int) getMappedLabel((uint64_t) label, labelType)));

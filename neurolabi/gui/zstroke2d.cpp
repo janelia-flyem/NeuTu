@@ -245,7 +245,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
                         EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != getSliceAxis()) {
     return false;
   }
 
@@ -695,7 +695,7 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
 
 bool ZStroke2d::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
 {
-  if (isVisible() && !isEmpty() && (sliceAxis == NeuTube::Z_AXIS)) {
+  if (isVisible() && !isEmpty() && (sliceAxis == getSliceAxis())) {
     if (m_isPenetrating || m_z == z) {
       return true;
     }

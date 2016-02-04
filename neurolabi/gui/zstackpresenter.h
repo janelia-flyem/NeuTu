@@ -145,6 +145,7 @@ public:
   void createStrokeActions();
   void createDocDependentActions();
   void createBodyActions();
+  void createMiscActions();
   void createMainWindowActions();
 
   QAction* getAction(ZActionFactory::EAction item) const;
@@ -195,6 +196,8 @@ public:
   void setViewPortCenter(int x, int y, int z);
 
   const QPointF stackPositionFromMouse(MouseButtonAction mba);
+
+  ZPoint getLastMousePosInStack();
 
   QStringList toStringList() const;
 
@@ -337,7 +340,11 @@ public slots:
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
+
+  void notifyOrthoViewTriggered();
+
   void slotTest();
+
 
   void notifyUser(const QString &msg);
 
@@ -380,6 +387,7 @@ signals:
   void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void orthoViewTriggered(double x, double y, double z);
 
 protected:
   void init();
@@ -486,7 +494,7 @@ protected:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
 //  QPointF m_grabPosition;
-  ZPoint m_lastMouseDataCoord;
+//  ZPoint m_lastMouseDataCoord;
 
   QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
 //  ZStroke2d m_stroke;

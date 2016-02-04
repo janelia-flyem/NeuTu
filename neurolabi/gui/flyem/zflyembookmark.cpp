@@ -337,4 +337,9 @@ void ZFlyEmBookmark::addUserTag()
   addTag("user:" + getUserName());
 }
 
+void ZFlyEmBookmark::setLocation(const ZIntPoint &pt)
+{
+  setLocation(pt.getX(), pt.getY(), pt.getZ());
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

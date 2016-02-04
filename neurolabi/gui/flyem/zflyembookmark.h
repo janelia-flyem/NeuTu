@@ -43,6 +43,7 @@ public:
 //    m_location.set(x, y, z);
     setCenter(x, y, z);
   }
+  void setLocation(const ZIntPoint &pt);
 
   bool isChecked() const {
     return m_isChecked;

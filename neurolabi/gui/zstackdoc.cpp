@@ -4035,7 +4035,7 @@ void ZStackDoc::mergeAllChain()
 }
 
 QString ZStackDoc::rawDataInfo(
-    double cx, double cy, int z, NeuTube::EAxis axis) const
+    double cx, double cy, int z) const
 {
   QString info;
 
@@ -4046,7 +4046,7 @@ QString ZStackDoc::rawDataInfo(
   int wy = y;
   int wz = z;
 
-  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+//  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;

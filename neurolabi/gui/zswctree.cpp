@@ -1285,7 +1285,8 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
        iter != nodeArray.end(); ++iter) {
     const Swc_Tree_Node *tn = *iter;
     TZ_ASSERT(SwcTreeNode::isRegular(tn), "Unexpected virtual node.");
-    if (ZStackBall::isCuttingPlane(SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z)) {
+    if (ZStackBall::isCuttingPlane(
+          SwcTreeNode::z(tn), SwcTreeNode::radius(tn), z, 1.0)) {
       double dist = SwcTreeNode::distance(tn, x, y, z);
       if (dist < SwcTreeNode::radius(tn) + margin) {
         dist /= SwcTreeNode::radius(tn) + Regularize_Number;
