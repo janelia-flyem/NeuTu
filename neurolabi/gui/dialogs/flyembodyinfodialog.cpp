@@ -1005,18 +1005,6 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         }
         std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
 
-        /*
-        // show a few
-        if (synapses.size() > 0) {
-            int nsyn = 5;
-            std::cout << "json for first " << nsyn << " synapses" << std::endl;
-            for (int i=0; i<nsyn; i++) {
-                std::cout << "synapse " << i << ":" << std::endl;
-                std::cout << synapses[i].toJsonObject().dumpString() << std::endl;
-            }
-        }
-        */
-
         // at this point, we'll need to iterate over the list and find either
         //  the pre or post sites depending on whether we are looking for inputs
         //  or outputs
@@ -1054,21 +1042,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
             } else {
                 // there are other connection types we aren't handling right now; eg, convergent
             }
-
         }
-
-        /*
-        std::cout << "QMap keys:" << std::endl;
-        QList<uint64_t> keys = m_connectionsSites.keys();
-        for (int i=0; i<keys.size(); i++) {
-            std::cout << keys[i] << std::endl;
-        }
-        */
-
-        // since we're storing the info in a variable, we can emit a signal
-        //  with no arguments (change that)
-
-
     }
 
     emit ioBodiesLoaded();
@@ -1078,10 +1052,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 }
 
 void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
-
     m_ioBodyModel->clear();
     setIOBodyHeaders(m_ioBodyModel);
-
 
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
@@ -1102,7 +1074,6 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
-
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(partnerBodyIDs[i]), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
@@ -1141,7 +1112,11 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
 
     if (proxyIndex.column() == IOBODY_ID_COLUMN || proxyIndex.column() == IOBODY_NAME_COLUMN) {
         // double-click on ID, name = select in body table
-        std::cout << "pretending to select body ID " << bodyID << " in body table" << std::endl;
+        QList<QStandardItem*> results = m_bodyModel->findItems(item->data(Qt::DisplayRole).toString(), Qt::MatchExactly, BODY_ID_COLUMN);
+        if (results.size() > 0) {
+            ui->bodyTableView->selectRow(m_bodyProxy->mapFromSource(results.at(0)->index()).row());
+        }
+
     } else if (proxyIndex.column() == IOBODY_NUMBER_COLUMN) {
         // double-click on number connections = show connections list
         std::cout << "populating connections sites list" << std::endl;
@@ -1149,14 +1124,9 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         m_connectionsModel->clear();
         setConnectionsHeaders(m_connectionsModel);
         for (int i=0; i<m_connectionsSites[bodyID].size(); i++) {
-
-            // are these things ints or floats?  do ints for now
-
-
-            // start with x, y, z; but should it be z, x, y?
-
             ZIntPoint point = m_connectionsSites[bodyID][i];
 
+            // start with x, y, z; but should it be z, x, y?
             QStandardItem * xItem = new QStandardItem();
             xItem->setData(QVariant(point.getX()), Qt::DisplayRole);
             m_connectionsModel->setItem(i, CONNECTIONS_X_COLUMN, xItem);
@@ -1168,21 +1138,13 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
             QStandardItem * zItem = new QStandardItem();
             zItem->setData(QVariant(point.getZ()), Qt::DisplayRole);
             m_connectionsModel->setItem(i, CONNECTIONS_Z_COLUMN, zItem);
-
-
         }
 
         // for this table, we want all columns same width, filling full width
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
-
-
-
     }
-
 }
-
-
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
