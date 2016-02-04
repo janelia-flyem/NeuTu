@@ -258,12 +258,13 @@ void Z3DCubeRenderer::render(Z3DEye eye)
           glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
 
           size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
-          size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
+          size_t size_normal = sizeof(int)*m_cubes[i].normalIndices.size();
+          //size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
           //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
 
           glBufferData( GL_ARRAY_BUFFER, size_position + size_normal, NULL, GL_STATIC_DRAW );
           glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
-          glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normals[0]) );
+          glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normalIndices[0]) );
           //glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
 
           //

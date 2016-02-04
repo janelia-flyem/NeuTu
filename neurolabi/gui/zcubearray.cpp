@@ -104,6 +104,13 @@ Cube::Cube() : Quadrilateral()
     norm.push_back( glm::vec3(0.0f, 0.0f, 1.0f) );  // +z
     norm.push_back( glm::vec3(0.0f, 0.0f, -1.0f) ); // -z
 
+    normIndex.push_back(0);
+    normIndex.push_back(1);
+    normIndex.push_back(2);
+    normIndex.push_back(3);
+    normIndex.push_back(4);
+    normIndex.push_back(5);
+
     // a,b,c
     texc.push_back( glm::vec2(0, 0) );
     texc.push_back( glm::vec2(1, 0) );
@@ -113,14 +120,15 @@ Cube::Cube() : Quadrilateral()
     texc.push_back( glm::vec2(0, 1) );
     texc.push_back( glm::vec2(0, 0) );
 
-    for (int i=0; i<6; i++)
-    {
-        for (int j=0; j<6; j++)
-        {
-            normals.push_back( norm[i] );
-            texCoords.push_back( texc[j] );
-        }
-    }
+//    for (int i=0; i<6; i++)
+//    {
+//        for (int j=0; j<6; j++)
+//        {
+//            normals.push_back( norm[i] );
+//            texCoords.push_back( texc[j] );
+//            normalIndices.push_back(normIndex[i]);
+//        }
+//    }
 
     //
     for(int i=0; i<6; i++)
@@ -208,8 +216,9 @@ int Cube::init(std::vector<glm::vec3> nodes)
         {
             for (int j=0; j<6; j++)
             {
-                normals.push_back( norm[i] );
-                texCoords.push_back( texc[j] );
+//                normals.push_back( norm[i] );
+//                texCoords.push_back( texc[j] );
+                normalIndices.push_back(normIndex[i]);
             }
         }
     }

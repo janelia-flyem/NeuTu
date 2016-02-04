@@ -34,11 +34,12 @@ public:
     std::vector<glm::vec4> colors;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texCoords;
+    std::vector<int> normalIndices;
 
     std::vector<glm::vec3> ePositions;
     std::vector<glm::vec4> eColors;
 
-    std::vector<unsigned int> indices;
+    std::vector<int> indices;
 };
 
 /// Triangle
@@ -134,6 +135,7 @@ public:
 
     std::vector<glm::vec3> norm;
     std::vector<glm::vec2> texc;
+    std::vector<int> normIndex;
 };
 
 //
