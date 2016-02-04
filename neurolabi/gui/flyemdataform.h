@@ -161,13 +161,15 @@ private slots:
 
   void importSynapse();
 
+  void slotTest();
+
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* updateViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
-  void updateThumbnail(ZFlyEmNeuron *neuron);
+  void updateThumbnail(ZFlyEmNeuron *neuron, bool computing = true);
   void updateThumbnailLive(ZFlyEmNeuron *neuron);
-  void computeThumbnailFunc(ZFlyEmNeuron *neuron);
+  uint64_t computeThumbnailFunc(ZFlyEmNeuron *neuron);
   void saveVolumeRenderingFigure(
       ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
   Stack *loadThumbnailImage(ZFlyEmNeuron *neuron);
@@ -198,7 +200,10 @@ private:
   QGraphicsScene *m_thumbnailScene;
   //ZFlyEmNeuronImageFactory m_imageFactory;
 
-  QMap<QString, QFuture<void> > m_threadFutureMap;
+//  QMap<QString, QFuture<void> > m_threadFutureMap;
+
+  QMap<QString, QFuture<uint64_t> >m_bodyFutureMap;
+  QFutureWatcher<uint64_t> m_thumbnailFutureWatcher;
   QMenu *m_mainMenu;
   QMenu *m_exportMenu;
   QMenu *m_importMenu;

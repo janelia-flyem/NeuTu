@@ -20,6 +20,14 @@ enum ETag {
 };
 }
 
+namespace View {
+enum EExploreAction {
+  EXPLORE_NONE, EXPLORE_MOVE, EXPLORE_ZOOM, EXPLORE_SLICE,
+  EXPLORE_ZOOM_DONE, EXPLORE_MOVE_DONE,
+  EXPLORE_UNKNOWN
+};
+}
+
 enum EImageBackground {
   IMAGE_BACKGROUND_BRIGHT, IMAGE_BACKGROUND_DARK
 };
@@ -30,6 +38,14 @@ enum ESizeHintOption {
 
 enum EAxis {
   X_AXIS, Y_AXIS, Z_AXIS
+};
+
+enum EPLANE {
+  PLANE_XY, PLANE_XZ, PLANE_YZ
+};
+
+enum EAxisSystem {
+  AXIS_NORMAL, AXIS_SHIFTED
 };
 
 enum ECoordinateSystem {
@@ -83,11 +99,23 @@ namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
 }
 
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
+}
+
 namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
 }
 
 }
+
+namespace FlyEM {
+enum ESynapseLoadMode {
+  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION
+};
+}
+
 
 }
 

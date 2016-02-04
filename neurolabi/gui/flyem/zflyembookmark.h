@@ -2,6 +2,8 @@
 #define ZFLYEMBOOKMARK_H
 
 #include <QString>
+#include <QStringList>
+
 #include "zintpoint.h"
 #include "tz_stdint.h"
 #include "zstackball.h"
@@ -25,8 +27,11 @@ public:
   inline const QString& getUserName() const { return m_userName; }
   inline const QString& getStatus() const { return m_status; }
   inline const QString& getComment() const { return m_comment; }
+  inline const QStringList& getTags() const { return m_tags; }
   inline ZIntPoint getLocation() const { return getCenter().toIntPoint(); }
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
+  QString getTypeString() const;
+
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
   inline void setComment(const QString &comment) { m_comment = comment; }
   inline void setUser(const QString &user) { m_userName = user; }
@@ -55,11 +60,28 @@ public:
   ZJsonObject toJsonObject(bool ignoringComment = false) const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 
+  //For the new annotation API
+  ZJsonObject toDvidAnnotationJson() const;
+  void loadDvidAnnotation(const ZJsonObject &jsonObj);
+
   void print() const;
+  std::string toLogString() const;
 
   void setCustom(bool state);
 
   virtual const std::string& className() const;
+
+  void addTag(const char* tag);
+  void addTag(const std::string &tag);
+  void addTag(const QString &tag);
+
+  /*!
+   * \brief Add the tag associated with the user name.
+   *
+   * The format of the tag will be "user:<user_name>". If the bookmark has no
+   * user, the tag will be "user:".
+   */
+  void addUserTag();
 
   void clear();
 
@@ -69,6 +91,7 @@ private:
   QString m_time;
   QString m_status;
   QString m_comment;
+  QStringList m_tags;
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
   bool m_isChecked;

@@ -141,6 +141,15 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
       }
       break;
+    case ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE);
+      }
+      break;
     default:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);
@@ -187,6 +196,12 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_ADD_BOOKMARK:
         op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
         break;
+      case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
+        break;
+      case ZInteractiveContext::INTERACT_MOVE_SYNAPSE:
+        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_MOVE);
+        break;
       default:
         break;
       }
@@ -207,17 +222,17 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             ZStackDocHitTest hitManager;
 
             if (m_context->isObjectProjectView()) {
-              hitManager.hitTest(
-                    const_cast<ZStackDoc*>(getDocument()), stackPosition.x(), stackPosition.y());
+              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                                 stackPosition.x(), stackPosition.y());
             } else {
-              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
+              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                                 stackPosition);
             }
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
             bool selectionOn =
                 ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
-                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF)
-                 &&
+                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
             if (selectionOn) {
@@ -461,8 +476,10 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
               op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
             }
           }
-        } else {
-          op.setOperation(ZStackOperator::OP_SHOW_STACK_CONTEXT_MENU);
+        }
+
+        if (op.isNull()) {
+          op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
         }
       } else {
 //        if (m_context->exploreMode())

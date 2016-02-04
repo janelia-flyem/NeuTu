@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
+#include "QsLog/QsLog.h"
 
 #include "zflyembookmarklistmodel.h"
 
@@ -27,6 +28,9 @@ void ZFlyEmBookmarkView::connectSignalSlot()
 {
   connect(this, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(processDouleClick(QModelIndex)));
+  connect(this, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(processSingleClick(QModelIndex)));
+
 }
 
 void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
@@ -34,6 +38,14 @@ void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
     emit locatingBookmark(bookmark);
+  }
+}
+
+void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = getBookmark(index);
+  if (bookmark != NULL) {
+    LINFO() << bookmark->toLogString() + " is clicked";
   }
 }
 
@@ -64,6 +76,10 @@ void ZFlyEmBookmarkView::createMenu()
   m_contextMenu->addAction(unCheckAction);
   connect(unCheckAction, SIGNAL(triggered()),
           this, SLOT(uncheckCurrentBookmark()));
+
+  QAction *deleteAction = new QAction("Delete Selected", this);
+  m_contextMenu->addAction(deleteAction);
+  connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteSelectedBookmark()));
 }
 
 void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
@@ -120,10 +136,36 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
     bookmark->setChecked(checking);
+    if (checking) {
+      LINFO() << bookmark->toLogString() << "is checked";
+    } else {
+      LINFO() << bookmark->toLogString() << "is unchecked";
+    }
+
     getModel()->update(index.row());
 
     emit bookmarkChecked(bookmark);
-//    emit bookmarkChecked(bookmark.getDvidKey(), checking);
+  }
+}
+
+void ZFlyEmBookmarkView::deleteSelectedBookmark()
+{
+  QItemSelectionModel *sel = selectionModel();
+  QItemSelection sourceSelection = m_proxy->mapSelectionToSource(sel->selection());
+
+  QModelIndexList selected = sourceSelection.indexes();
+
+  QList<ZFlyEmBookmark*> bookmarkList;
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
+
+    bookmarkList.append(bookmark);
+//    emit removingBookmark(bookmark);
+//    getModel()->removeRow(index.row());
+  }
+
+  if (!bookmarkList.empty()) {
+    emit removingBookmark(bookmarkList);
   }
 }
 

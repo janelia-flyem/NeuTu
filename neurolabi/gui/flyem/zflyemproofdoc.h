@@ -12,6 +12,9 @@
 //#include "zflyembodysplitproject.h"
 #include "flyem/zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsynapse.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -20,6 +23,8 @@ class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
+class ZFlyEmSequencerColorScheme;
+class ZDvidSynapseEnsemble;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -28,6 +33,10 @@ public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
 
   static ZFlyEmProofDoc* Make();
+
+  enum EBodyColorMap {
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER
+  };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
 
@@ -41,6 +50,8 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice() const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
+
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
 
@@ -91,7 +102,7 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
-  void saveCustomBookmark();
+//  void saveCustomBookmark();
   void downloadBookmark();
   inline void setCustomBookmarkSaveState(bool state) {
     m_isCustomBookmarkSaved = state;
@@ -102,7 +113,7 @@ public:
   void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
-  void useBodyNameMap(bool on);
+//  void useBodyNameMap(bool on);
 
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
@@ -135,6 +146,9 @@ public:
    */
   void cleanBodyAnnotationMap();
 
+  void activateBodyColorMap(const QString &option);
+  void activateBodyColorMap(EBodyColorMap colorMap);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -144,6 +158,30 @@ public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending);
+
+public: //Synapse functions
+  bool hasDvidSynapseSelected() const;
+  bool hasDvidSynapse() const;
+  void tryMoveSelectedSynapse(const ZIntPoint &dest);
+
+public: //Bookmark functions
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void updateLocalBookmark(ZFlyEmBookmark *bookmark);
+
+public: //Commands
+  void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
 signals:
   void bodyMerged();
@@ -158,10 +196,13 @@ public slots:
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
-  void saveCustomBookmarkSlot();
+//  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
-  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
+  void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void deleteSelectedSynapse();
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
 
 protected:
   void autoSave();
@@ -180,17 +221,27 @@ private:
   void initTimer();
   void initAutoSave();
 
+  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
+  template<typename T>
+  ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+
+  bool isActive(EBodyColorMap type);
+
+  void updateBodyColor(EBodyColorMap type);
+
 private:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidWriter m_dvidWriter;
 
   bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
+  QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;

@@ -9,6 +9,12 @@
 #include <QString>
 #include <QNetworkReply>
 
+
+#include "zsharedpointer.h"
+namespace libdvid{
+class DVIDNodeService;
+}
+
 class QTimer;
 
 /*!
@@ -44,6 +50,10 @@ public:
     m_tryingCompress = compress;
   }
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+  void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
+#endif
+
 signals:
   void readingDone();
   void readingCanceled();
@@ -74,6 +84,9 @@ private:
   bool m_isReadingDone;
   EStatus m_status;
   bool m_tryingCompress;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
+#endif
 //  QTimer *m_timer;
 };
 

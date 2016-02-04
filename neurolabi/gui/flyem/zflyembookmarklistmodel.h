@@ -36,6 +36,8 @@ public:
   ZFlyEmBookmark* getBookmark(int index);
   const ZFlyEmBookmarkPtrArray& getBookmarkArray() const;
 
+  void removeBookmark(ZFlyEmBookmark *bookmark);
+
 //  void appendBookmark(const ZFlyEmBookmark &bookmark);
 
   //void load(const QString &filePath);

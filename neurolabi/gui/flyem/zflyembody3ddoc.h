@@ -36,15 +36,18 @@ public:
       ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE
     };
 
+    typedef uint64_t TUpdateFlag;
+
   public:
-    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), m_refreshing(false) {}
+    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
+    m_updateFlag(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
       m_action(action), m_bodyId(bodyId) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
     const QColor& getBodyColor() const { return m_bodyColor; }
-    bool isRefreshing() const { return m_refreshing; }
+//    bool isRefreshing() const { return m_refreshing; }
 
     void setAction(EAction action) { m_action = action; }
     void setBodyColor(const QColor &color) { m_bodyColor = color; }
@@ -53,12 +56,36 @@ public:
 
     void syncBodySelection();
 
+    bool updating(TUpdateFlag flag) const {
+      return (m_updateFlag & flag) > 0;
+    }
+
+    void addUpdateFlag(TUpdateFlag flag) {
+      m_updateFlag |= flag;
+    }
+
+    void removeUpdateFlag(TUpdateFlag flag) {
+      m_updateFlag &= ~flag;
+    }
+
+    TUpdateFlag getUpdateFlag() const {
+      return m_updateFlag;
+    }
+
     void print() const;
+
+  public:
+    static const TUpdateFlag UPDATE_CHANGE_COLOR;
+    static const TUpdateFlag UPDATE_ADD_SYNAPSE;
+
   private:
     EAction m_action;
     uint64_t m_bodyId;
     QColor m_bodyColor;
-    bool m_refreshing;
+//    bool m_refreshing;
+    TUpdateFlag m_updateFlag;
+
+
   };
 
   enum EBodyType {
@@ -72,8 +99,10 @@ public:
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
 
+  void addSynapse(uint64_t bodyId);
+
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
-                QMutex *mutex = NULL);
+                BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -102,7 +131,11 @@ public:
   void processEventFunc();
 
 public slots:
-  void showSynapse(bool on) { m_showingSynapse = on; }
+  void showSynapse(bool on);// { m_showingSynapse = on; }
+  void addSynapse(bool on);
+
+protected:
+  void autoSave() {}
 
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId);
@@ -112,6 +145,7 @@ private:
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color);
+
   void removeBodyFunc(uint64_t bodyId);
 
   void connectSignalSlot();
@@ -173,12 +207,12 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_REMOVE, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
   }
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_ADD, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
   }
 }
 

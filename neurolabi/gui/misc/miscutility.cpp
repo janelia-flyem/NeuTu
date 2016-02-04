@@ -11,6 +11,9 @@
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_utilities.h"
+#include "zswctree.h"
+#include "zclosedcurve.h"
+
 
 using namespace std;
 
@@ -200,7 +203,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     break;
   }
 
-  Stack *out = C_Stack::make(GREY, width, height, 1);
+  Stack *out = C_Stack::make(GREY, outWidth, outHeight, 1);
 
   C_Stack::setZero(out);
   size_t offset = 0;
@@ -538,4 +541,18 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   }
 
   return dsIntv;
+}
+
+ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
+{
+  ZClosedCurve curve;
+  if (!tree.isEmpty()) {
+    Swc_Tree_Node *tn = tree.firstRegularRoot();
+    while (tn != NULL) {
+      curve.append(SwcTreeNode::center(tn));
+      tn = SwcTreeNode::firstChild(tn);
+    }
+  }
+
+  return curve;
 }

@@ -983,7 +983,7 @@ QStringList ZStackFrame::toStringList() const
 
 void ZStackFrame::updateView()
 {
-  m_view->redraw();
+  m_view->redraw(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackFrame::undo()

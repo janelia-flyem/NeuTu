@@ -21,6 +21,8 @@ public:
 
   bool importTiles(const QString &path);
 
+  void updateStackBoundBox();
+
 signals:
 
 public slots:

@@ -256,8 +256,8 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  inline void setComment(const std::string &comment) {
-    m_comment = comment;
+  inline void addComment(const std::string &comment) {
+    m_comment.push_back(comment);
   }
 
 public:
@@ -766,10 +766,14 @@ private:
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus);
+                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
+
+#ifdef _QT_GUI_USED_
+  const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
+#endif
 
 private:
   Swc_Tree *m_tree;
@@ -796,7 +800,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
-  std::string m_comment;
+  std::vector<std::string> m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

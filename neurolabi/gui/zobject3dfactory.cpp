@@ -9,6 +9,7 @@
 #include "zstackfactory.h"
 #include "zclosedcurve.h"
 #include "zarray.h"
+#include "zrandomgenerator.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
@@ -241,12 +242,12 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   ZObject3dScanArray *objArray = NULL;
 
   if (stack.hasData()) {
-    std::map<int, ZObject3dScan*> *bodySet =
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
           stack.array8(), stack.width(), stack.height(), stack.depth(), 0, yStep,
           NULL);
     objArray = new ZObject3dScanArray;
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
       ZObject3dScan *obj = iter->second;
       if (iter->first > 0) {
@@ -269,11 +270,11 @@ std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
   if (stack.hasData()) {
     ZStack *mask = MakeBoundaryStack(stack);
 
-    std::map<int, ZObject3dScan*> *bodySet =
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
           mask->array8(), mask->width(), mask->height(), mask->depth(),
           0, yStep, NULL);
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter) {
       ZObject3dScan *obj = iter->second;
       if (iter->first > 0) {
@@ -298,7 +299,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     out = new ZObject3dScanArray;
   }
 
-  std::map<int, ZObject3dScan*> *bodySet = NULL;
+  std::map<uint64_t, ZObject3dScan*> *bodySet = NULL;
 
   if (array.valueType() == mylib::UINT64_TYPE) {
     if (foreground) {
@@ -316,19 +317,19 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
   if (bodySet != NULL) {
     size_t index = 0;
-    for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
          iter != bodySet->end(); ++iter, ++index) {
       ZObject3dScan *obj = iter->second;
       obj->setLabel(iter->first);
 
-
       std::swap((*out)[index].getStripeArray(), obj->getStripeArray());
       (*out)[index].setLabel(obj->getLabel());
-
 //      out->push_back(*obj);
 
       delete obj;
     }
+
+    delete bodySet;
   } else {
     out = NULL;
   }
@@ -382,6 +383,29 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
     }
   }
   obj.setCanonized(true);
+
+  return obj;
+}
+
+ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
+{
+  ZRandomGenerator rnd;
+
+  ZObject3dScan obj;
+  int nSeg = rnd.rndint(box.getHeight() * box.getDepth());
+  for (int i = 0; i < nSeg; ++i) {
+    int z = rnd.rndint(box.getFirstCorner().getZ(), box.getLastCorner().getZ());
+    int y = rnd.rndint(box.getFirstCorner().getY(), box.getLastCorner().getY());
+    int x1 =rnd.rndint(box.getFirstCorner().getX(), box.getLastCorner().getX());
+    int x2 =rnd.rndint(box.getFirstCorner().getX(), box.getLastCorner().getX());
+    if (x1 > x2) {
+      std::swap(x1, x2);
+    }
+
+    obj.addSegment(z, y, x1, x2, false);
+  }
+
+  obj.canonize();
 
   return obj;
 }

@@ -6,6 +6,9 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 
+class ZIntPoint;
+class ZIntCuboid;
+
 class ZDvidUrl
 {
 public:
@@ -20,6 +23,7 @@ public:
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
   std::string getInfoUrl(const std::string &dataName) const;
+  std::string getInfoUrl() const;
   std::string getHelpUrl() const;
   std::string getServerInfoUrl() const;
   std::string getApiUrl() const;
@@ -39,7 +43,7 @@ public:
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
-  getThumbnailUrl(int bodyId, const std::string &bodyLabelName) const;
+  getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const;
   std::string getThumbnailUrl(uint64_t bodyId) const;
 
   std::string getSp2bodyUrl() const;
@@ -49,9 +53,9 @@ public:
 //  std::string getSparsevolUrl(int bodyId) const;
 
   std::string getSparsevolUrl(const std::string &dataName) const;
-  std::string getSparsevolUrl(int bodyId, const std::string &dataName) const;
-  std::string getSparsevolUrl(int bodyId) const;
-  std::string getSparsevolUrl(int bodyId, int z) const;
+  std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getSparsevolUrl(uint64_t bodyId) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z) const;
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
@@ -139,7 +143,17 @@ public:
 
   std::string getRoiUrl(const std::string &dataName) const;
 
+  std::string getBookmarkKeyUrl() const;
+  std::string getBookmarkKeyUrl(int x, int y, int z) const;
+  std::string getBookmarkKeyUrl(const ZIntPoint &pt) const;
+
   std::string getBookmarkUrl() const;
+  std::string getBookmarkUrl(int x, int y, int z,
+                             int width, int height, int depth) const;
+  std::string getBookmarkUrl(
+      const ZIntPoint &pt, int width, int height, int depth) const;
+   std::string getBookmarkUrl(const ZIntCuboid &box) const;
+
   std::string getCustomBookmarkUrl(const std::string &userName) const;
 
   static std::string GetEndPoint(const std::string &url);
@@ -149,6 +163,28 @@ public:
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
   std::string getBodyAnnotationName() const;
+
+  std::string getAnnotationUrl(const std::string &dataName) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, const std::string tag) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, uint64_t label) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, int x, int y, int z) const;
+  std::string getAnnotationElementsUrl(const std::string &dataName);
+
+  std::string getSynapseUrl() const;
+  std::string getSynapseUrl(int x, int y, int z) const;
+  std::string getSynapseUrl(const ZIntPoint &pos) const;
+  std::string getSynapseUrl(const ZIntPoint &pos,
+                            int width, int height, int depth) const;
+  std::string getSynapseUrl(int x, int y, int z,
+                            int width, int height, int depth) const;
+  std::string getSynapseUrl(const ZIntCuboid &box) const;
+  std::string getSynapseUrl(uint64_t label) const;
+  std::string getSynapseElementsUrl() const;
+  std::string getSynapseMoveUrl(
+      const ZIntPoint &from, const ZIntPoint &to) const;
 
 private:
   std::string getSplitUrl(
@@ -169,6 +205,11 @@ private:
   static const std::string m_labelCommand;
   static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
+  static const std::string m_annotationElementCommand;
+  static const std::string m_annotationElementsCommand;
+  static const std::string m_annotationLabelCommand;
+  static const std::string m_annotationMoveCommand;
+  static const std::string m_annotationTagCommand;
 };
 
 #endif // ZDVIDURL_H

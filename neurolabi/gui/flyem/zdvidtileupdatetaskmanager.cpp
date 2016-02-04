@@ -24,17 +24,27 @@ ZDvidTileDecodeTask::ZDvidTileDecodeTask(QObject *parent, ZDvidTile *tile) :
 
 void ZDvidTileDecodeTask::execute()
 {
-  if (m_tile != NULL && m_data != NULL) {
-    m_tile->loadDvidSlice(m_data, m_length, m_z);
+  ProcessDataForDisplay(m_data, m_length, m_z, m_highContrast, m_tile);
+}
+
+void ZDvidTileDecodeTask::ProcessDataForDisplay(
+    const uint8_t *data, int length, int z, bool highContrast, ZDvidTile *tile)
+{
+  if (tile != NULL && data != NULL) {
+    tile->loadDvidSlice(data, length, z);
 #ifdef _DEBUG_2
-    std::cout << "1 tile loaded." << m_tile->getWidth() << "x" << m_tile->getHeight() << std::endl;
+    std::cout << "1 tile loaded." << tile->getWidth() << "x" << tile->getHeight() << std::endl;
 #endif
-    if (m_highContrast != m_tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
-      m_tile->enhanceContrast(m_highContrast);
+    if (highContrast != tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+      tile->enhanceContrast(highContrast, false);
     }
   }
 }
 
+void ZDvidTileDecodeTask::ExecuteTask(ZDvidTileDecodeTask *task)
+{
+  task->execute();
+}
 
 
 ////////////////////////////////////

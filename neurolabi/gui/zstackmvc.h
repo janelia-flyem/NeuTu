@@ -82,10 +82,13 @@ public slots:
 
   void dump(const QString &msg);
 
+  void test();
+
 protected:
   static void BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc);
   virtual void customInit();
   virtual void createPresenter();
+  virtual void createView();
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 //  virtual void focusInEvent(QFocusEvent * event);
@@ -93,7 +96,6 @@ protected:
 //  virtual void changeEvent(QEvent * event);
 
 private:
-  void createView();
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc);

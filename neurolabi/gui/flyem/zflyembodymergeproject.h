@@ -66,7 +66,7 @@ public:
   }
 
   //Obsolete functions
-  int getSelectedBodyId() const;
+  uint64_t getSelectedBodyId() const;
   void addSelected(uint64_t label);
   void removeSelected(uint64_t label);
 
@@ -172,7 +172,8 @@ private:
 
   QString getSelectionMessage() const;
 
-  void mergeBodyAnnotation(int targetId, const std::vector<int> &bodyId);
+  void mergeBodyAnnotation(
+      uint64_t targetId, const std::vector<uint64_t> &bodyId);
 
   //void updateSelection();
 

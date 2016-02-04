@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QRect>
+#include <QtCore>
 
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
@@ -42,13 +43,63 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight)
   m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
   m_selectionFrozen = false;
+  m_isFullView = false;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
+class ZDvidLabelSlicePaintTask {
+public:
+  ZDvidLabelSlicePaintTask(ZDvidLabelSlice *labelSlice)
+  {
+    m_labelSlice = labelSlice;
+  }
+
+  void setLabelSlice(ZDvidLabelSlice *slice) {
+    m_labelSlice = slice;
+  }
+
+  void addObject(ZObject3dScan *obj) {
+    m_objArray.append(obj);
+  }
+
+  static void ExecuteTask(ZDvidLabelSlicePaintTask &task) {
+    for (QList<ZObject3dScan*>::iterator iter = task.m_objArray.begin();
+         iter != task.m_objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+
+      if (task.m_labelSlice->getSelectedOriginal().count(obj->getLabel()) > 0) {
+        obj->setSelected(true);
+      } else {
+        obj->setSelected(false);
+      }
+
+      //      obj.display(painter, slice, option);
+
+      if (!obj->isSelected()) {
+        task.m_labelSlice->getPaintBuffer()->setData(*(obj));
+      } else {
+        task.m_labelSlice->getPaintBuffer()->setData(
+              *(obj), QColor(255, 255, 255, 164));
+      }
+    }
+  }
+
+private:
+  ZDvidLabelSlice *m_labelSlice;
+  QList<ZObject3dScan*> m_objArray;
+};
+
+#define ZDVIDLABELSLICE_MT 1
+
 void ZDvidLabelSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option) const
 {
+#ifdef _DEBUG_
+      QElapsedTimer timer;
+      timer.start();
+#endif
+
   if (isVisible()) {
     if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
         m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
@@ -69,9 +120,22 @@ void ZDvidLabelSlice::display(
       m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
                                -m_currentViewParam.getViewPort().y());
 
+#if defined(ZDVIDLABELSLICE_MT)
+      QList<ZDvidLabelSlicePaintTask> taskList;
+      const int taskCount = 4;
+      for (int i = 0; i < taskCount; ++i) {
+        taskList.append(ZDvidLabelSlicePaintTask(
+                          const_cast<ZDvidLabelSlice*>(this)));
+      }
+#endif
+
+      int count = 0;
       for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
-           iter != m_objArray.end(); ++iter) {
+           iter != m_objArray.end(); ++iter, ++count) {
         ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
+#if defined(ZDVIDLABELSLICE_MT)
+        taskList[count % taskCount].addObject(&obj);
+#else
         //if (m_selectedSet.count(obj.getLabel()) > 0) {
         if (m_selectedOriginal.count(obj.getLabel()) > 0) {
           obj.setSelected(true);
@@ -86,7 +150,12 @@ void ZDvidLabelSlice::display(
         } else {
           m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
         }
+#endif
       }
+
+#if defined(ZDVIDLABELSLICE_MT)
+      QtConcurrent::blockingMap(taskList, &ZDvidLabelSlicePaintTask::ExecuteTask);
+#endif
 
       //    painter.save();
       //    painter.setOpacity(0.5);
@@ -96,6 +165,9 @@ void ZDvidLabelSlice::display(
                         *m_paintBuffer);
     }
 
+#ifdef _DEBUG_
+      qDebug() << "Body buffer painting time: " << timer.elapsed();
+#endif
 //    painter.restore();
 
 #ifdef _DEBUG_2
@@ -165,30 +237,39 @@ void ZDvidLabelSlice::update(int z)
   viewParam.setZ(z);
 
   update(viewParam);
+
+  m_isFullView = false;
 }
 
 void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
 {
   forceUpdate(viewParam);
-
+  m_isFullView = true;
   m_currentViewParam = viewParam;
 }
 
-void ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
+bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
-  ZStackViewParam newViewParam = viewParam;
-  int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
-//  const int maxWidth = 512;
-//  const int maxHeight = 512;
-  if (area > m_maxWidth * m_maxHeight) {
-    newViewParam.resize(m_maxWidth, m_maxHeight);
+  bool updated = false;
+  if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
+    ZStackViewParam newViewParam = viewParam;
+    int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
+    //  const int maxWidth = 512;
+    //  const int maxHeight = 512;
+    if (area > m_maxWidth * m_maxHeight) {
+      newViewParam.resize(m_maxWidth, m_maxHeight);
+    }
+
+    if (!m_currentViewParam.contains(newViewParam)) {
+      forceUpdate(newViewParam);
+      updated = true;
+
+      m_currentViewParam = newViewParam;
+    }
+    m_isFullView = false;
   }
 
-  if (!m_currentViewParam.contains(newViewParam)) {
-    forceUpdate(newViewParam);
-
-    m_currentViewParam = newViewParam;
-  }
+  return updated;
 }
 
 QColor ZDvidLabelSlice::getColor(

@@ -65,6 +65,13 @@ public:
     RECT_DRAW
   };
 
+  enum SynapseEditMode {
+    SYNAPSE_EDIT_OFF = 0,
+    SYNAPSE_ADD_PRE,
+    SYNAPSE_ADD_POST,
+    SYNAPSE_MOVE
+  };
+
   enum ViewMode {
     VIEW_NORMAL,
     VIEW_PROJECT,
@@ -85,7 +92,7 @@ public:
     INTERACT_SWC_MOVE_NODE, INTERACT_OBJECT_MOVE, INTERACT_STROKE_DRAW,
     INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
     INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
-    INTERACT_ADD_BOOKMARK
+    INTERACT_ADD_BOOKMARK, INTERACT_ADD_SYNAPSE, INTERACT_MOVE_SYNAPSE
   };
 
 public:
@@ -98,6 +105,8 @@ public:
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
   inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
+  inline void setSynapseEditMode(SynapseEditMode mode) {
+    m_synapseEditMode = mode; }
   inline void setBookmarkEditMode(BookmarkEditMode mode)
   { m_bookmarkEditMode = mode; }
 
@@ -110,6 +119,7 @@ public:
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
   inline RectEditMode rectEditMode() const { return m_rectEditMode; }
   inline BookmarkEditMode bookmarkEditMode() const { return m_bookmarkEditMode; }
+  inline SynapseEditMode synapseEditMode() const { return m_synapseEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -159,6 +169,7 @@ private:
   StrokeEditMode m_strokeEditMode;
   RectEditMode m_rectEditMode;
   BookmarkEditMode m_bookmarkEditMode;
+  SynapseEditMode m_synapseEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   //ZImageWidget *m_imageWidget;

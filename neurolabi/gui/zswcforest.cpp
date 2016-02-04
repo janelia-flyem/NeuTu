@@ -10,13 +10,15 @@ ZSwcForest::ZSwcForest()
 {
   m_graph = NULL;
   m_workspace = NULL;
+  m_isDataOwner = true;
 }
 
 ZSwcForest::~ZSwcForest()
 {
-
-  for (ZSwcForest::iterator iter = begin(); iter != end(); ++iter) {
-    delete (*iter);
+  if (m_isDataOwner) {
+    for (ZSwcForest::iterator iter = begin(); iter != end(); ++iter) {
+      delete (*iter);
+    }
   }
 
   if (m_graph != NULL) {

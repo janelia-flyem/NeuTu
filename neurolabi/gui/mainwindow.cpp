@@ -304,6 +304,8 @@ MainWindow::MainWindow(QWidget *parent) :
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
   connect(this, SIGNAL(docReady(ZStackDocPtr)),
           this, SLOT(createStackFrame(ZStackDocPtr)));
+  connect(this, SIGNAL(fileOpenFailed(QString,QString)),
+          this, SLOT(reportFileOpenProblem(QString,QString)));
 
   m_messageManager = new ZMessageManager(this);
   m_messageManager->setProcessor(
@@ -379,6 +381,8 @@ void MainWindow::initDialog()
   connect(this, SIGNAL(progressDone()), m_progress, SLOT(reset()));
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgress(double)));
+  connect(this, SIGNAL(progressStarted(QString,int)),
+          SLOT(startProgress(QString,int)));
 
   m_bcDlg = new BcAdjustDialog(this);
   connect(m_bcDlg, SIGNAL(valueChanged()), this, SLOT(bcAdjust()));
@@ -428,6 +432,7 @@ void MainWindow::initDialog()
   m_autoTraceDlg = new ZAutoTraceDialog(this);
 
   m_projDlg = new ProjectionDialog(this);
+
   m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
 
 #if defined(_FLYEM_)
@@ -454,6 +459,7 @@ void MainWindow::initDialog()
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
   m_dvidOpDlg = new DvidOperateDialog(this);
+  m_dvidOpDlg->setDvidDialog(m_dvidDlg);
   m_synapseDlg = new SynapseImportDialog(this);
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
@@ -1129,8 +1135,8 @@ void MainWindow::updateAction()
 
   if (frame != NULL) {
     if (frame->presenter() != NULL) {
-      undoAction = frame->document()->getUndoAction();
-      redoAction = frame->document()->getRedoAction();
+      undoAction = frame->document()->getAction(ZActionFactory::ACTION_UNDO);
+      redoAction = frame->document()->getAction(ZActionFactory::ACTION_REDO);
 //      qDebug() << undoAction->text();
 //      qDebug() << undoAction->isEnabled();
     }
@@ -1503,6 +1509,36 @@ void MainWindow::endProgress()
   m_progress->reset();
 }
 
+void MainWindow::openFileListFunc(const QStringList fileList)
+{
+  foreach (const QString &fileName, fileList){
+    emit progressStarted("Opening " + fileName + " ...", 100);
+    ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+    if (ZFileType::isNeutubeOpenable(fileType)) {
+      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        tag = NeuTube::Document::BIOCYTIN_STACK;
+      }
+
+      emit progressAdvanced(0.2);
+
+      ZStackDocPtr doc = ZStackDocFactory::Make(tag);
+      doc->loadFile(fileName);
+
+      emit progressAdvanced(0.3);
+
+      doc->moveToThread(QApplication::instance()->thread());
+      emit docReady(doc);
+
+      setCurrentFile(fileName);
+    } else {
+      emit progressDone();
+      emit fileOpenFailed(fileName, "Unrecognized file type.");
+      //    reportFileOpenProblem(fileName, "Unrecognized file type.");
+    }
+  }
+}
+
 void MainWindow::openFileFunc2(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
@@ -1526,7 +1562,8 @@ void MainWindow::openFileFunc2(const QString &fileName)
     setCurrentFile(fileName);
   } else {
     emit progressDone();
-    reportFileOpenProblem(fileName, "Unrecognized file type.");
+    emit fileOpenFailed(fileName, "Unrecognized file type.");
+//    reportFileOpenProblem(fileName, "Unrecognized file type.");
   }
 }
 
@@ -1556,6 +1593,8 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
 void MainWindow::openFile(const QStringList &fileNameList)
 {
+  QtConcurrent::run(this, &MainWindow::openFileListFunc, fileNameList);
+#if 0 //stack reading function is not thread-safe
   foreach (QString fileName, fileNameList) {
     m_progress->setRange(0, 5);
     m_progress->setLabelText(QString("Loading %1 ...").arg(fileName));
@@ -1566,6 +1605,7 @@ void MainWindow::openFile(const QStringList &fileNameList)
         QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
    // res.waitForFinished();
   }
+#endif
 }
 
 void MainWindow::openFile(const QString &fileName)
@@ -2059,21 +2099,28 @@ void MainWindow::createWorkDir()
       QDir dir(dlg.getWorkDir());
       NeutubeConfig::getInstance().setWorkDir(dir.absolutePath().toStdString());
       if (!dir.exists()) {
+        QString warningMsg;
         if (!dir.mkpath(dir.absolutePath())) {
-          QMessageBox::warning(
-                NULL, "Faile to Create the working directory",
-                 "Cannot create " + dlg.getWorkDir() +
-                 "Autosave will be disabled.",
-                 QMessageBox::Ok);
-          RECORD_WARNING_UNCOND("Failed to the working directory.");
+          warningMsg = "Faile to Create the working directory",
+              "Cannot create " + dlg.getWorkDir() +
+              "Autosave will be disabled.";
         } else {
           if (NeutubeConfig::getInstance().isAutoSaveEnabled()) {
-            dir.mkpath(NeutubeConfig::getInstance().getPath(
-                         NeutubeConfig::AUTO_SAVE).c_str());
+            if (!dir.mkpath(NeutubeConfig::getInstance().getPath(
+                         NeutubeConfig::AUTO_SAVE).c_str())) {
+              warningMsg = "Faile to Create the working directory",
+                  "Cannot create " + NeutubeConfig::getInstance().getPath(
+                    NeutubeConfig::AUTO_SAVE) +
+                  "Autosave will be disabled.";
+            }
           }
         }
+        if (!warningMsg.isEmpty()) {
+          QMessageBox::warning(NULL, warningMsg, "Initialization Error",
+                               QMessageBox::Ok);
+          qWarning() << warningMsg;
+        }
       }
-
     }
   }
 }
@@ -2123,7 +2170,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (d9302b6220c54f09ebc4a4b8efd1d5cec92a30e7)</p>";
+        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -6360,6 +6407,15 @@ void MainWindow::processArgument(const QString &arg)
   }
 }
 
+void MainWindow::testFlyEmProofread()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->showMaximized();
+
+  window->test();
+
+}
+
 void MainWindow::runBodySplit()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
@@ -6522,8 +6578,13 @@ ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
       //QApplication::processEvents();
   } else {
     emit progressDone();
-    frame->open3DWindow();
+    if (frame->document()->hasObject()) {
+      frame->open3DWindow();
+    } else {
+      reportFileOpenProblem("the file", "No content is recognized in the file.");
+    }
     delete frame;
+    frame = NULL;
   }
   /*
     if (!fileName.isEmpty()) {
@@ -7248,7 +7309,7 @@ void MainWindow::on_actionProof_triggered()
 
 void MainWindow::runRoutineCheck()
 {
-
+  LINFO() << "Running routine check ...";
 }
 
 void MainWindow::on_actionSubtract_Background_triggered()
@@ -7285,6 +7346,119 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
   }
 }
 
+void MainWindow::on_actionNeuroMorpho_triggered()
+{
+  std::string dataFolder =
+      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e402", 7000);
+  target.setBodyLabelName("bodies1104");
+  ZDvidReader reader;
+  reader.open(target);
+
+  //Load neuron list
+  int count = 0;
+  int swcCount = 0;
+
+  std::set<std::string> excludedType;
+  std::set<uint64_t> excludedId;
+
+  ZJsonObject configJson;
+  configJson.load(dataFolder + "/config.json");
+  if (configJson.hasKey("excluded")) {
+    ZJsonObject excludedJson(configJson.value("excluded"));
+    if (excludedJson.hasKey("type")) {
+      ZJsonArray excludeTypeJson(excludedJson.value("type"));
+      for (size_t i = 0; i < excludeTypeJson.size(); ++i) {
+        excludedType.insert(ZJsonParser::stringValue(excludeTypeJson.at(i)));
+      }
+    }
+    if (excludedJson.hasKey("id")) {
+      ZJsonArray excludeIdJson(excludedJson.value("id"));
+      for (size_t i = 0; i < excludeIdJson.size(); ++i) {
+        excludedId.insert(ZJsonParser::integerValue(excludeIdJson.at(i)));
+      }
+    }
+  }
+
+  std::vector<uint64_t> emptyBody;
+
+  ZString line;
+  FILE *fp = fopen((dataFolder + "/neuron.csv").c_str(), "r");
+  while (line.readLine(fp)) {
+    line.trim();
+    std::vector<std::string> fieldArray = line.tokenize(',');
+    if (fieldArray.size() != 5) {
+      std::cout << line << std::endl;
+    } else {
+      ZString type = fieldArray[2];
+      type.replace("\"", "");
+      //      type.replace("/", "_");
+      ZString name = fieldArray[1];
+      if (!type.empty() && !name.contains("?") && !type.contains("/") &&
+          !type.endsWith("like") && !type.startsWith("Mt") &&
+          excludedType.count(type) == 0) {
+        ZString bodyIdStr(fieldArray[0]);
+        uint64_t bodyId = bodyIdStr.firstUint64();
+        if (excludedId.count(bodyId) == 0) {
+          std::cout << bodyId << ": " << fieldArray[2] << std::endl;
+          QDir swcDir((dataFolder + "/swc").c_str());
+          if (!swcDir.exists(type.c_str())) {
+            std::cout << "Making directory "
+                      << swcDir.absolutePath().toStdString() + "/" + type
+                      << std::endl;
+            swcDir.mkdir(type.c_str());
+          }
+#if 1
+          ZSwcTree *tree = reader.readSwc(bodyId);
+          if (tree != NULL) {
+            if (!tree->isEmpty()) {
+              tree->addComment("");
+              tree->addComment("Imaging: FIB SEM");
+              tree->addComment("Unit: um");
+              tree->addComment("Neuron: fly medulla, " + type);
+              tree->addComment("Reference: Takemura et al. PNAS 112(44) (2015): 13711-13716.");
+
+              tree->rescale(0.01, 0.01, 0.01);
+              tree->setType(3);
+              name.replace("\"", "");
+              name.replace("?", "_");
+              name += "_";
+              name = "";
+              name.appendNumber(bodyId);
+              tree->save(dataFolder + "/swc/" + type + "/" + name + ".swc");
+              ++swcCount;
+            } else {
+              emptyBody.push_back(bodyId);
+              std::cout << "WARING: empty tree" << std::endl;
+            }
+          } else {
+            emptyBody.push_back(bodyId);
+            std::cout << "WARING: null tree" << std::endl;
+          }
+#endif
+
+          ++count;
+        }
+      }
+    }
+  }
+  fclose(fp);
+
+  std::cout << count << " neurons valid." << std::endl;
+  std::cout << swcCount << " neurons saved." << std::endl;
+  std::cout << "Missing bodies:" << std::endl;
+  reader.setVerbose(false);
+  for (std::vector<uint64_t>::const_iterator iter = emptyBody.begin();
+       iter != emptyBody.end(); ++iter) {
+    ZObject3dScan body = reader.readBody(*iter);
+    std::cout << "  " << *iter << " " << body.getVoxelNumber()
+              << std::endl;
+  }
+}
+
+
 /////////////////////
 void MainWindow::MessageProcessor::processMessage(
     ZMessage *message, QWidget *host) const
@@ -7311,7 +7485,3 @@ void MainWindow::MessageProcessor::processMessage(
     }
   }
 }
-
-
-
-

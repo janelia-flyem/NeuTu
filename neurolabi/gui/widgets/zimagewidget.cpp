@@ -69,7 +69,7 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
   m_mask[channel] = mask;
 
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
 //    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
   }
 }
@@ -78,7 +78,7 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 {
   m_tileCanvas = canvas;
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
   }
 }
 
@@ -351,7 +351,6 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     } else {
       zoom(zoomRatio);
     }
-
     update();
   }
 }
@@ -623,6 +622,8 @@ void ZImageWidget::paintZoomHint()
 
 void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 {
+  std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
+
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
 

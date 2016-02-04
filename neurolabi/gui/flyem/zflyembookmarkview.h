@@ -27,13 +27,17 @@ signals:
   void bookmarkChecked(QString key, bool checking);
   void bookmarkChecked(ZFlyEmBookmark*);
   void locatingBookmark(const ZFlyEmBookmark*);
+  void removingBookmark(ZFlyEmBookmark*);
+  void removingBookmark(QList<ZFlyEmBookmark*> bookmarkList);
 
 public slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
+  void deleteSelectedBookmark();
 
 private slots:
   void processDouleClick(const QModelIndex &index);
+  void processSingleClick(const QModelIndex &index);
 
 private:
   void init();

@@ -5,7 +5,9 @@
 #include <QtGui>
 
 #include "dvid/zdvidtarget.h"
+#include "zjsonarray.h"
 #include "zjsonobject.h"
+#include "flyem/zflyemsequencercolorscheme.h"
 
 namespace Ui {
 class FlyEmBodyInfoDialog;
@@ -24,31 +26,54 @@ public slots:
 
 signals:
   void bodyActivated(uint64_t bodyId);
+  void bodiesActivated(QList<uint64_t> bodyIdList);
+  void addBodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
-  void jsonLoadError(QString message);
+  void jsonLoadBookmarksError(QString message);
+  void jsonLoadColorMapError(QString message);
   void loadCompleted();
+  void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
+  void colorMapLoaded(ZJsonValue colors);
 
 private slots:
     void onCloseButton();
     void onRefreshButton();
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
-    void onJsonLoadError(QString message);
+    void onjsonLoadBookmarksError(QString message);
+    void onjsonLoadColorMapError(QString message);
     void updateStatusLabel();
     void updateStatusAfterLoading();
-    void filterUpdated(QString filterText);
-    void applicationQuitting();
+    void updateBodyFilterAfterLoading();
+    void bodyFilterUpdated(QString filterText);
+    void applicationQuitting();    
+    void onSaveColorFilter();
+    void onFilterTableDoubleClicked(const QModelIndex &index);
+    void moveToBodyList();
+    void onDeleteButton();
+    void onExportBodies();
+    void onSaveColorMap();
+    void onLoadColorMap();
+    void onColorMapLoaded(ZJsonValue colors);
+    void updateColorScheme();
+    void onGotoBodies();
 
 private:
     Ui::FlyEmBodyInfoDialog *ui;
-    QStandardItemModel* m_model;
-    QSortFilterProxyModel* m_proxy;
+    QStandardItemModel* m_bodyModel;
+    QStandardItemModel* m_filterModel;
+    QSortFilterProxyModel* m_bodyProxy;
+    QSortFilterProxyModel* m_filterProxy;
+    QSortFilterProxyModel* m_schemeBuilderProxy;
+    ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
     QStandardItemModel* createModel(QObject*);
-    void setHeaders(QStandardItemModel*);
+    QStandardItemModel* createFilterModel(QObject*);
+    void setBodyHeaders(QStandardItemModel*);
+    void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent(ZDvidTarget target);
     bool bodies3Present(ZDvidTarget target);
@@ -57,6 +82,12 @@ private:
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
+    void updateColorFilter(QString filter, QString oldFilter = "");
+    void exportBodies(QString filename);
+    void saveColorMapDisk(QString filename);
+    ZJsonArray getColorMapAsJson(ZJsonArray colors);
+    bool isValidColorMap(ZJsonValue colors);
+    void setFilterTableModelColor(QColor color, int modelRow);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

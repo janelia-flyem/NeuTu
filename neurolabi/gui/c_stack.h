@@ -29,6 +29,14 @@ namespace C_Stack {
 */
 ssize_t offset(int x, int y, int z, int width, int height, int depth);
 
+/*!
+ * \brief Neighborhood check.
+ */
+int neighborTest(int conn, int width, int height, int depth, size_t index,
+                 int *isInBound);
+int neighborTest(int conn, int width, int height, int depth,
+                 int x, int y, int z, int *isInBound);
+
 //Functions for Stack
 
 //Stack deallocator, mainly used for constructing a ZStack object
@@ -326,10 +334,6 @@ void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 
-int neighborTest(int conn, int width, int height, int depth, size_t index,
-                 int *isInBound);
-int neighborTest(int conn, int width, int height, int depth,
-                 int x, int y, int z, int *isInBound);
 
 Stack* extractChannel(const Stack *stack, int c);
 

@@ -101,7 +101,7 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   } else {
     std::vector<std::string> keyList = obj.getAllKey();
     if (keyList.size() == 1) {
-      int bodyId = ZString(keyList.front()).firstInteger();
+      uint64_t bodyId = ZString(keyList.front()).firstUint64();
       if (bodyId > 0) {
         setBodyId(bodyId);
         ZJsonObject annotationJson(
