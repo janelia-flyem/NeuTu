@@ -133,6 +133,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickFilterTable(QModelIndex)));
     connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
+    connect(ui->connectionsTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOConnectionsTable(QModelIndex)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -1140,6 +1141,25 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
+}
+
+void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
+
+    QModelIndex modelIndex = m_connectionsProxy->mapToSource(proxyIndex);
+
+    QStandardItem *itemX = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_X_COLUMN);
+    int x = itemX->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemY = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Y_COLUMN);
+    int y = itemY->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemZ = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Z_COLUMN);
+    int z = itemZ->data(Qt::DisplayRole).toInt();
+
+    // ZIntPoint point(x, y, z);
+    // emit pointDisplayRequested(point);
+    emit pointDisplayRequested(x, y, z);
+
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

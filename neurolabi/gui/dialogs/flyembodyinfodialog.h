@@ -37,6 +37,7 @@ signals:
   void colorMapLoaded(ZJsonValue colors);
   void ioBodiesLoaded();
   void ioConnectionsLoaded();
+  void pointDisplayRequested(int, int, int);
 
 private slots:
     void onCloseButton();
@@ -63,6 +64,7 @@ private slots:
     void onGotoBodies();    
     void onIOBodiesLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
+    void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);
 
 private:
     enum Tabs {
