@@ -404,6 +404,14 @@ TEST(ZIntCuboid, hasOverlap)
   box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, -2, -2));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
+
+  box.setFirstCorner(ZIntPoint(231, 150, 291));
+  box.setLastCorner(ZIntPoint(246, 158, 291));
+
+  box2.setFirstCorner(ZIntPoint(232, 144, 291));
+  box2.setLastCorner(ZIntPoint(242, 159, 291));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
 }
 
 TEST(ZCuboid, intersectLine)
