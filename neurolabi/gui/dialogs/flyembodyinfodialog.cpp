@@ -74,6 +74,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     m_bodyProxy->setFilterKeyColumn(-1);
     ui->bodyTableView->setModel(m_bodyProxy);
 
+    // store body names for later use
+    m_bodyNames = QMap<uint64_t, QString>();
 
     // color filter stuff
 
@@ -400,6 +402,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
           }
         }
 
+        m_bodyNames.clear();
         for (size_t i = 0; i < bookmarks.size(); ++i) {
             // if application is quitting, return = exit thread
             if (m_quitting) {
@@ -435,6 +438,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
                 if (tempJson.hasKey("name") && strlen(ZJsonParser::stringValue(tempJson["name"])) > 0) {
                     bkmk.setEntry("name", tempJson["name"]);
+
+                    // store name for later use
+                    m_bodyNames[bodyId] = QString(ZJsonParser::stringValue(tempJson["name"]));
                     }
                 }
             }
@@ -1068,20 +1074,15 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
-
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(partnerBodyIDs[i]), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
 
-        /*
-        // not sure where to get name now?
-        if (body.hasKey("name")) {
-            const char* name = ZJsonParser::stringValue(body["name"]);
-            m_ioBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(QString(name)));
+        if (m_bodyNames.contains(partnerBodyIDs[i])) {
+            m_ioBodyModel->setItem(i, IOBODY_NAME_COLUMN, new QStandardItem(m_bodyNames[partnerBodyIDs[i]]));
         }
-        */
 
         QStandardItem * numberItem = new QStandardItem();
         numberItem->setData(QVariant(m_connectionsSites[partnerBodyIDs[i]].size()), Qt::DisplayRole);
