@@ -294,6 +294,12 @@ int ZIntCuboid::getDim(NeuTube::EAxis axis) const
   return 0;
 }
 
+ZIntPoint ZIntCuboid::getCenter() const
+{
+  return getFirstCorner() +
+      ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

@@ -46,6 +46,7 @@
 #include "z3dswcfilter.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
+#include "flyem/zflyemorthowindow.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -80,6 +81,7 @@ void ZFlyEmProofMvc::init()
 
   initBodyWindow();
   m_objectWindow = NULL;
+  m_orthoWindow = NULL;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -208,7 +210,15 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
   mvc->setDvidTarget(target);
 
+  connect(mvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+          mvc, SLOT(showOrthoWindow(double,double,double)));
+
   return mvc;
+}
+
+void ZFlyEmProofMvc::detachOrthoWindow()
+{
+  m_orthoWindow = NULL;
 }
 
 void ZFlyEmProofMvc::detachCoarseBodyWindow()
@@ -278,6 +288,12 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   return doc;
+}
+
+void ZFlyEmProofMvc::makeOrthoWindow()
+{
+  m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget());
+  connect(m_orthoWindow, SIGNAL(destroyed()), this, SLOT(detachOrthoWindow()));
 }
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
@@ -1853,6 +1869,16 @@ void ZFlyEmProofMvc::showObjectWindow()
   m_objectWindow->raise();
 }
 
+void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
+{
+  if (m_orthoWindow == NULL) {
+    makeOrthoWindow();
+  }
+  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+  m_orthoWindow->show();
+  m_orthoWindow->raise();
+}
+
 void ZFlyEmProofMvc::showSkeletonWindow()
 {
 //  m_mergeProject.showBody3d();
@@ -1877,6 +1903,13 @@ void ZFlyEmProofMvc::closeBodyWindow(int index)
 }
 */
 
+void ZFlyEmProofMvc::closeOrthoWindow()
+{
+  if (m_orthoWindow != NULL) {
+    m_orthoWindow->close();
+  }
+}
+
 void ZFlyEmProofMvc::close3DWindow(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -1898,6 +1931,7 @@ void ZFlyEmProofMvc::closeAllAssociatedWindow()
   if (m_bodyViewWindow != NULL) {
     m_bodyViewWindow->close();
   }
+  closeOrthoWindow();
 }
 
 void ZFlyEmProofMvc::closeAllBodyWindow()

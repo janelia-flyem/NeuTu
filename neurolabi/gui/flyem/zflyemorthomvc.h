@@ -21,6 +21,8 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   ZDvidTarget getDvidTarget() const;
 
+  void updateStack(const ZIntPoint &center);
+
 signals:
 
 public slots:

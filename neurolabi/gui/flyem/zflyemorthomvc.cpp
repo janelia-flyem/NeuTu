@@ -65,3 +65,9 @@ ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const
 {
   return getCompleteDocument()->getDvidTarget();
 }
+
+void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
+{
+  getCompleteDocument()->updateStack(center);
+  getView()->updateViewBox();
+}

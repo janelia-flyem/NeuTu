@@ -396,6 +396,22 @@ void ZStackView::updateSlider()
   }
 }
 
+void ZStackView::updateViewBox()
+{
+  updateSlider();
+  updateImageCanvas();
+  updateObjectCanvas();
+  updateTileCanvas();
+  updateActiveDecorationCanvas();
+
+  m_depthControl->setValue(m_depthControl->maximum() / 2);
+  processViewChange();
+
+//  ZIntCuboid box = getViewBoundBox();
+
+
+}
+
 void ZStackView::updateChannelControl()
 {
   QLayoutItem *child;
@@ -1286,47 +1302,6 @@ void ZStackView::updateObjectCanvas()
     canvas->cleanUp();
     m_objectCanvasPainter.begin(canvas);
   }
-
-#if 0
-  QSize canvasSize = getCanvasSize();
-
-  if (!canvasSize.isEmpty() &&
-      (buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS) ||
-      buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
-    if (m_objectCanvas != NULL) {
-      if (m_objectCanvas->width() != canvasSize.width() ||
-          m_objectCanvas->height() != canvasSize.height()) {
-        clearObjectCanvas();
-      }
-    }
-    if (m_objectCanvas == NULL) {
-//      m_objectCanvas = ZImage::createMask(canvasSize);
-      m_objectCanvas = new ZPixmap(canvasSize);
-      m_objectCanvas->setOffset(-buddyDocument()->getStackOffset().getX(),
-                                -buddyDocument()->getStackOffset().getY());
-      m_objectCanvas->cleanUp();
-      m_objectCanvasPainter.begin(m_objectCanvas);
-      m_objectCanvasPainter.setCompositionMode(
-            QPainter::CompositionMode_SourceOver);
-      m_imageWidget->setObjectCanvas(m_objectCanvas);
-//      m_imageWidget->setMask(m_objectCanvas, 1);
-    } else {
-      m_objectCanvasPainter.end();
-      m_objectCanvas->cleanUp();
-      m_objectCanvasPainter.begin(m_objectCanvas);
-//      m_objectCanvas->setAlphaChannel(
-#ifdef _DEBUG_2
-      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-//      m_objectCanvas->fill(0);
-    }
-    m_objectCanvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
-  } else {
-    if (m_objectCanvas != NULL) {
-      m_objectCanvas->setVisible(false);
-    }
-  }
-#endif
 }
 
 void ZStackView::updateTileCanvas()

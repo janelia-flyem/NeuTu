@@ -118,6 +118,8 @@ public:
   void shiftSliceAxisInverse(NeuTube::EAxis axis);
   int getDim(NeuTube::EAxis axis) const;
 
+  ZIntPoint getCenter() const;
+
 private:
   ZIntPoint m_firstCorner;
   ZIntPoint m_lastCorner;

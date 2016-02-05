@@ -13,5 +13,5 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
 
 void ZFlyEmOrthoWindow::updateData(const ZIntPoint &center)
 {
-  m_orthoWidget->getDocument()->updateStack(center);
+  m_orthoWidget->moveTo(center);
 }

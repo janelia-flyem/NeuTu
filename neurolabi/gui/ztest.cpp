@@ -19297,12 +19297,12 @@ void ZTest::test(MainWindow *host)
   testDlg->raise();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
   target.setSynapseName("synapses");
 
-  ZFlyEmOrthoWindow *window = new ZFlyEmOrthoWindow(target, host);
+  ZFlyEmOrthoWindow *window = new ZFlyEmOrthoWindow(target, NULL);
   window->updateData(ZIntPoint(4085, 5300, 7329));
 
   window->show();
@@ -19573,6 +19573,37 @@ void ZTest::test(MainWindow *host)
   ptoc();
   obj.canonize();
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 1
+  ZObject3dScan bm;
+  bm.importDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
+
+  ZObject3dScan bs;
+  bs.importDvidObject(GET_TEST_DATA_DIR + "/test_bs.dvid");
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "4ad1", 7000);
+  if (reader.open(dvidTarget)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  } else {
+    LERROR() << "DVID connection error.";
+  }
+
+  ZObject3dScan Bsc = dvidInfo.getBlockIndex(bs);
+  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bm);
+
+//  Bsc.subtractSliently(Bbf_bs);
+
+  Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc.dvid");
+  Bbf_bs.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bbf_bs.dvid");
+
+  Bsc.subtractSliently(Bbf_bs);
+
+  Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc_sub.dvid");
 
 #endif
 

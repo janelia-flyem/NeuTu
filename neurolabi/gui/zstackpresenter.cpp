@@ -681,6 +681,7 @@ void ZStackPresenter::createActions()
   //createTubeActions();
   createStrokeActions();
   createBodyActions();
+  createMiscActions();
 }
 
 void ZStackPresenter::createSwcNodeContextMenu()
@@ -2491,7 +2492,11 @@ void ZStackPresenter::notifyBodySplitTriggered()
 
 void ZStackPresenter::notifyOrthoViewTriggered()
 {
-  ZPoint pt = getLastMousePosInStack();
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+
+//  ZPoint pt = getLastMousePosInStack();
 
   emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
 }

@@ -788,6 +788,11 @@ uint64_t ZDvidWriter::writePartition(
   timer.start();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+#ifdef _DEBUG_
+  bm.exportDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
+  bs.exportDvidObject(GET_TEST_DATA_DIR + "/test_bs.dvid");
+#endif
+
   if (bs.getVoxelNumber() >= 100000) {
     ZDvidInfo dvidInfo;
     ZDvidReader reader;
@@ -809,6 +814,10 @@ uint64_t ZDvidWriter::writePartition(
     //Upload Bsc
     if (!Bsc.isEmpty()) {
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
+
+#ifdef _DEBUG_
+      Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test.dvid");
+#endif
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
 //      newBodyId = 0;//debugging

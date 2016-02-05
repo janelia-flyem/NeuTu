@@ -222,6 +222,8 @@ public:
   void setDepthFrozen(bool state);
   void blockViewChangeEvent(bool state);
 
+  void updateViewBox();
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:

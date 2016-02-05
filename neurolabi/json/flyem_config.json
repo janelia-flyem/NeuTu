@@ -212,6 +212,18 @@
     },
     {
       "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "a13c",
+      "name": "FIB19_zhaot",
+      "comment": "branched from 94b2",
+      "body_label": "segmentation-labelvol",
+      "label_block": "segmentation",
+      "multires_tile": "graytiles",
+      "synapse": "synapses",
+      "user_name": ["zhaot"]
+    },
+    {
+      "address": "emdata2.int.janelia.org",
       "port": 7100,
       "uuid": "b0f7",
       "name": "MB_zhaot_backup",
