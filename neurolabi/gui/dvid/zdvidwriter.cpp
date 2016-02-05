@@ -670,6 +670,8 @@ uint64_t ZDvidWriter::writeSplit(
       if (obj.hasKey("label")) {
         newBodyId = ZJsonParser::integerValue(obj["label"]);
         m_statusCode = 200;
+      } else {
+        newBodyId = 0;
       }
     }
 //    m_buffer.append(data->get_data().c_str(), data->length());
@@ -860,7 +862,7 @@ uint64_t ZDvidWriter::writePartition(
 
       //Upload remaining part
       if (!bsr.isEmpty()) {
-        writeSplit(bsr, oldLabel, 0, newBodyId);
+        newBodyId = writeSplit(bsr, oldLabel, 0, newBodyId);
         std::cout << "Fine time: " << timer.elapsed() << std::endl;
       }
     } else {
