@@ -242,7 +242,28 @@ ZIntPoint ZIntCuboid::getCorner(int index) const
 
 bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
 {
-  bool overlapped = false;
+  if (isEmpty() || box.isEmpty()) {
+    return false;
+  }
+
+
+  if (box.getFirstCorner().getX() > getLastCorner().getX() ||
+      box.getLastCorner().getX() < getFirstCorner().getX()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getY() > getLastCorner().getY() ||
+      box.getLastCorner().getY() < getFirstCorner().getY()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getZ() > getLastCorner().getZ() ||
+      box.getLastCorner().getZ() < getFirstCorner().getZ()) {
+    return false;
+  }
+
+
+#if 0
   for (int i = 0; i < 8; ++i) {
     if (contains(box.getCorner(i))) {
       overlapped = true;
@@ -254,8 +275,9 @@ bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
       break;
     }
   }
+#endif
 
-  return overlapped;
+  return true;
 }
 
 /*
