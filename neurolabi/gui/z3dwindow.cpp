@@ -648,22 +648,22 @@ void Z3DWindow::init(EInitMode mode)
 
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
-  Z3DCube cube;
-  cube.x = 0;
-  cube.y = 0;
-  cube.z = 0;
-  cube.length = 20;
-  cube.color = glm::vec4(1.0, 0, 0, 0.5);
+//  Z3DCube cube;
+//  cube.x = 0;
+//  cube.y = 0;
+//  cube.z = 0;
+//  cube.length = 20;
+//  cube.color = glm::vec4(1.0, 0, 0, 0.5);
 
-  m_surfaceFilter->addData(cube); // red cube 1
+//  m_surfaceFilter->addData(cube); // red cube 1
 
-  cube.x = 0;
-  cube.y = 25;
-  cube.z = 0;
-  cube.length = 20;
-  cube.color = glm::vec4(0.0, 1.0, 0.0, 0.5);
+//  cube.x = 0;
+//  cube.y = 25;
+//  cube.z = 0;
+//  cube.length = 20;
+//  cube.color = glm::vec4(0.0, 1.0, 0.0, 0.5);
 
-  m_surfaceFilter->addData(cube); // green cube 2
+//  m_surfaceFilter->addData(cube); // green cube 2
 
 
   updateSurfaceBoundBox(); // end hard code
