@@ -1015,10 +1015,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         m_connectionsSites.clear();
         for (int i=0; i<synapses.size(); i++) {
-
-            // std::cout << "processing synapse " << synapses[i] << std::endl;
             ZJsonObject obj = synapses[i].toJsonObject();
-            // std::cout << "synapse json obj: " << obj.dumpString() << std::endl;
 
             // if we are looking for input bodies, pick out the sites
             //  that are post-synaptic, and vice versa:
@@ -1119,8 +1116,6 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
 
     } else if (proxyIndex.column() == IOBODY_NUMBER_COLUMN) {
         // double-click on number connections = show connections list
-        std::cout << "populating connections sites list" << std::endl;
-
         m_connectionsModel->clear();
         setConnectionsHeaders(m_connectionsModel);
         for (int i=0; i<m_connectionsSites[bodyID].size(); i++) {
