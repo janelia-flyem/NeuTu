@@ -236,37 +236,37 @@ void Cube::faces()
     if(b_visible[0])
     {
         //setPositions(points[7], points[3], points[2], points[6]); // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
-        setPositions(points[7], points[3], points[1], points[5]);
+        setPositions(points[5], points[1], points[3], points[7]);
         nVertices += 6;
     }
     if(b_visible[1])
     {
         //setPositions(points[0], points[4], points[5], points[1]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
-        setPositions(points[2], points[6], points[4], points[0]);
+        setPositions(points[0], points[4], points[2], points[6]);
         nVertices += 6;
     }
     if(b_visible[2])
     {
         //setPositions(points[1], points[5], points[6], points[2]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Y 	2 +y Up (Top)
-        setPositions(points[6], points[2], points[3], points[7]);
+        setPositions(points[2], points[6], points[7], points[3]);
         nVertices += 6;
     }
     if(b_visible[3])
     {
         //setPositions(points[4], points[0], points[3], points[7]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 	3 -y Down (Bottom)
-        setPositions(points[0], points[4], points[5], points[1]);
+        setPositions(points[4], points[0], points[1], points[5]);
         nVertices += 6;
     }
     if(b_visible[4])
     {
         //setPositions(points[6], points[5], points[4], points[7]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Z 	4 +z Back
-        setPositions(points[5], points[4], points[6], points[7]);
+        setPositions(points[7], points[6], points[4], points[5]);
         nVertices += 6;
     }
     if(b_visible[5])
     {
         //setPositions(points[3], points[0], points[1], points[2]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 	5 -z Front
-        setPositions(points[3], points[2], points[0], points[1]);
+        setPositions(points[1], points[0], points[2], points[3]);
         nVertices += 6;
     }
 
