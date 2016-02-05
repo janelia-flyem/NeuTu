@@ -105,6 +105,7 @@ private:
     QSortFilterProxyModel* m_schemeBuilderProxy;
     QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_connectionsProxy;
+    QMap<uint64_t, QString> m_bodyNames;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
