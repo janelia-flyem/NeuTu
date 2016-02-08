@@ -240,10 +240,12 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
     }
   }
 
+  qDebug() << "frags ... " << fragSrcs.size();
+
   for (int i=0; i<fragSrcs.size(); ++i) {
     QString fragSrc = header + fragSrcs[i];
 
-//    qDebug() << fragSrc;
+    qDebug() << fragSrc;
 #ifdef _QT5_
     if (!addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc)) {
 #else

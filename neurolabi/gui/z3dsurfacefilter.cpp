@@ -20,7 +20,7 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
     //  adjustWidgets();
 
     setFilterName(QString("surfacefilter"));
-    setNeedBlending(true);
+    //setNeedBlending(true);
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()

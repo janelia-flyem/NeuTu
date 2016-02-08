@@ -668,6 +668,7 @@ void Z3DWindow::init(EInitMode mode)
 
   updateSurfaceBoundBox(); // end hard code
 
+
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
   connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
   connect(getDocument(), SIGNAL(swcNetworkModified()),

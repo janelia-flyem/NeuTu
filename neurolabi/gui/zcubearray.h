@@ -167,7 +167,7 @@ public:
   void append(Z3DCube cube);
   std::vector<Z3DCube> getCubeArray();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
   const std::string& className() const;
 
 private:
