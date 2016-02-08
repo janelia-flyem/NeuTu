@@ -218,12 +218,13 @@ void ZFlyEmBookmark::setCustom(bool state)
 }
 
 void ZFlyEmBookmark::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
-  ZStackBall::display(painter, slice, option);
+  ZStackBall::display(painter, slice, option, sliceAxis);
 
   if (isVisible()) {
-    if (isSliceVisible(painter.getZ(slice))) {
+    if (isSliceVisible(painter.getZ(slice), sliceAxis)) {
       QString decorationText;
       if (m_isCustom) {
         decorationText = "u";
@@ -334,6 +335,11 @@ void ZFlyEmBookmark::addTag(const QString &tag)
 void ZFlyEmBookmark::addUserTag()
 {
   addTag("user:" + getUserName());
+}
+
+void ZFlyEmBookmark::setLocation(const ZIntPoint &pt)
+{
+  setLocation(pt.getX(), pt.getY(), pt.getZ());
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

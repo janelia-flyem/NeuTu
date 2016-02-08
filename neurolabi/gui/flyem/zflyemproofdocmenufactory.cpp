@@ -51,6 +51,9 @@ QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_MOVE));
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_LINK));
 
+  menu->addSeparator();
+  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SHOW_ORTHO));
+
   return menu;
 }
 

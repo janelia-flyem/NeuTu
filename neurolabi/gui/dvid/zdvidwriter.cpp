@@ -670,6 +670,8 @@ uint64_t ZDvidWriter::writeSplit(
       if (obj.hasKey("label")) {
         newBodyId = ZJsonParser::integerValue(obj["label"]);
         m_statusCode = 200;
+      } else {
+        newBodyId = 0;
       }
     }
 //    m_buffer.append(data->get_data().c_str(), data->length());
@@ -788,6 +790,11 @@ uint64_t ZDvidWriter::writePartition(
   timer.start();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+#ifdef _DEBUG_
+  bm.exportDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
+  bs.exportDvidObject(GET_TEST_DATA_DIR + "/test_bs.dvid");
+#endif
+
   if (bs.getVoxelNumber() >= 100000) {
     ZDvidInfo dvidInfo;
     ZDvidReader reader;
@@ -809,6 +816,10 @@ uint64_t ZDvidWriter::writePartition(
     //Upload Bsc
     if (!Bsc.isEmpty()) {
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
+
+#ifdef _DEBUG_
+      Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test.dvid");
+#endif
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
 //      newBodyId = 0;//debugging
@@ -860,7 +871,7 @@ uint64_t ZDvidWriter::writePartition(
 
       //Upload remaining part
       if (!bsr.isEmpty()) {
-        writeSplit(bsr, oldLabel, 0, newBodyId);
+        newBodyId = writeSplit(bsr, oldLabel, 0, newBodyId);
         std::cout << "Fine time: " << timer.elapsed() << std::endl;
       }
     } else {

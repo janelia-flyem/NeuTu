@@ -11,6 +11,11 @@ ZMouseEventProcessor::ZMouseEventProcessor() :
   registerMapper();
 }
 
+ZMouseEventProcessor::~ZMouseEventProcessor()
+{
+  qDebug() << "ZMouseEventProcessor destroyed";
+}
+
 void ZMouseEventProcessor::registerMapper()
 {
   m_mapperList.append(&m_leftButtonReleaseMapper);
@@ -143,6 +148,7 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 {
   ZPoint pt(x, y, z);
   mapPositionFromWidgetToRawStack(pt.xRef(), pt.yRef());
+  pt.shiftSliceAxis(m_imageWidget->getSliceAxis());
 
   return pt;
 }

@@ -5,6 +5,7 @@
 #include "tz_error.h"
 #include "zerror.h"
 #include "tz_math.h"
+#include "geometry/zgeometry.h"
 
 int ZObject3dStripe::getMinX() const
 {
@@ -299,8 +300,111 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   }
 }
 
+void ZObject3dStripe::drawStack(Stack *stack, int v, NeuTube::EAxis axis,
+                                const int *offset) const
+{
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    drawStack(stack, v, offset);
+    break;
+  case NeuTube::X_AXIS:
+  case NeuTube::Y_AXIS:
+    if (C_Stack::kind(stack) == GREY || C_Stack::kind(stack) != GREY16) {
+      Image_Array ima;
+      ima.array = stack->array;
+      int dx = 0;
+      int dy = 0;
+      int dz = 0;
+      if (offset != NULL) {
+        dx = offset[0];
+        dy = offset[1];
+        dz = offset[2];
+        ZGeometry::shiftSliceAxis(dx, dy, dz, axis);
+      }
+
+      int y = getY();
+      int z = getZ();
+
+      if (offset != NULL) {
+        y += dy;
+        z += dz;
+      }
+
+      int shiftedWidth = C_Stack::width(stack);
+      int shiftedHeight = C_Stack::height(stack);
+      int shiftedDepth = C_Stack::depth(stack);
+      ZGeometry::shiftSliceAxis(shiftedWidth, shiftedHeight, shiftedDepth, axis);
+      if (y >= shiftedHeight) {
+        return;
+      }
+
+      if (z >= shiftedDepth) {
+        return;
+      }
+
+      size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+      size_t arrayOffset = 0;
+
+      int stride = 1;
+      if (axis == NeuTube::Y_AXIS) {
+        arrayOffset = C_Stack::width(stack) * y + area * z;
+      } else {
+        arrayOffset = area * y + z;
+        stride = C_Stack::width(stack);
+      }
+
+      switch (C_Stack::kind(stack)) {
+      case GREY:
+        ima.array8 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 255) ? 255 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array8[x * stride] = v;
+            }
+          }
+        }
+        break;
+      case GREY16:
+        ima.array16 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 65535) ? 65535 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array16[x * stride] = v;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+      }
+    } else {
+      RECORD_ERROR(true, "Unsupported kind");
+      return;
+    }
+
+    break;
+  }
+}
+
 void ZObject3dStripe::drawStack(
-    Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
+    Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+    const int *offset) const
 {
   if (C_Stack::kind(stack) != COLOR) {
     RECORD_ERROR(true, "Unsupported kind");

@@ -1635,7 +1635,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 #endif
 
     //obj->print();
-    obj->duplicateAcrossZ(document()->getStack()->depth());
+    obj->duplicateSlice(document()->getStack()->depth());
 
     obj->setColor(16, 16, 16, 64);
 

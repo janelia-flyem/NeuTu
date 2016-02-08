@@ -17,6 +17,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_synapseEditMode = SYNAPSE_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 

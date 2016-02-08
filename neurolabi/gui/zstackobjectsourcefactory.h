@@ -3,6 +3,7 @@
 
 #include <string>
 #include "tz_stdint.h"
+#include "neutube_def.h"
 
 class ZStackObjectSourceFactory
 {
@@ -17,7 +18,7 @@ public:
   static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
-  static std::string MakeDvidLabelSliceSource();
+  static std::string MakeDvidLabelSliceSource(NeuTube::EAxis axis);
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
   static std::string MakeNodeAdaptorSource();
@@ -35,6 +36,7 @@ public:
   static std::string MakeFlyEmExtNeuronClass();
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
+  static std::string MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis);
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

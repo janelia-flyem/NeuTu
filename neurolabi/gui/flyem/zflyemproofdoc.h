@@ -15,6 +15,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -24,7 +25,6 @@ class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
-class ZDvidSynapseEnsemble;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -42,15 +42,17 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  void updateTileData();
+  virtual void updateTileData();
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice() const;
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble() const;
+  ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
+  QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -160,9 +162,19 @@ public: //ROI functions
   void selectBodyInRoi(int z, bool appending);
 
 public: //Synapse functions
+  std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest);
+  void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
+
+  void removeSynapse(
+      const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
+  void addSynapse(
+      const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void updateSynapsePartner(const ZIntPoint &pos);
+  void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+
 
 public: //Bookmark functions
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -207,6 +219,9 @@ public slots:
 protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
+  void updateDvidTargetForObject();
+  virtual void prepareDvidData();
+  void addDvidLabelSlice(NeuTube::EAxis axis);
 
 private:
   void connectSignalSlot();
@@ -229,7 +244,7 @@ private:
 
   void updateBodyColor(EBodyColorMap type);
 
-private:
+protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;

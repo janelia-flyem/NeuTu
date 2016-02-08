@@ -15,7 +15,12 @@ public:
   ZDvidSparseStack();
   ~ZDvidSparseStack();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+  }
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -53,7 +58,7 @@ public:
   void downloadBodyMask();
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
 
   bool isEmpty() const;
 

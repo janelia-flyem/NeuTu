@@ -10,6 +10,8 @@
 #include <QMenu>
 #include <QVector>
 
+#include "neutube_def.h"
+
 class QPaintEvent;
 class ZPaintBundle;
 class ZImage;
@@ -156,6 +158,14 @@ public:
     return m_paintBlocked;
   }
 
+  void setSliceAxis(NeuTube::EAxis axis) {
+    m_sliceAxis = axis;
+  }
+
+  NeuTube::EAxis getSliceAxis() const {
+    return m_sliceAxis;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -212,6 +222,8 @@ private:
   bool m_isViewHintVisible;
   bool m_paintBlocked;
   QRect m_canvasRegion; //Whole canvas region
+
+  NeuTube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
 
   bool m_freeMoving;

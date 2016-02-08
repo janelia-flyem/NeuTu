@@ -82,3 +82,40 @@ ZPoint ZLineSegment::getInterpolation(double ds) const
 
   return m_start + getDirection() * ds;
 }
+
+void ZLineSegment::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  m_start.shiftSliceAxis(axis);
+  m_end.shiftSliceAxis(axis);
+}
+
+double ZLineSegment::getLowerX() const
+{
+  return std::min(getStartPoint().x(), getEndPoint().x());
+}
+
+double ZLineSegment::getUpperX() const
+{
+  return std::max(getStartPoint().x(), getEndPoint().x());
+}
+
+double ZLineSegment::getLowerY() const
+{
+  return std::min(getStartPoint().y(), getEndPoint().y());
+}
+
+double ZLineSegment::getUpperY() const
+{
+  return std::max(getStartPoint().y(), getEndPoint().y());
+}
+
+double ZLineSegment::getLowerZ() const
+{
+  return std::min(getStartPoint().z(), getEndPoint().z());
+}
+
+double ZLineSegment::getUpperZ() const
+{
+  return std::max(getStartPoint().z(), getEndPoint().z());
+}
+

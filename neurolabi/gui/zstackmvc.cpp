@@ -27,23 +27,40 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 }
 
+ZStackMvc::~ZStackMvc()
+{
+  qDebug() << "ZStackMvc destroyed";
+}
+
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
-  BaseConstruct(frame, doc);
+  BaseConstruct(frame, doc, NeuTube::Z_AXIS);
 
   return frame;
 }
 
-void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc)
+ZStackMvc* ZStackMvc::Make(
+    QWidget *parent, ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
+{
+  ZStackMvc *frame = new ZStackMvc(parent);
+
+  BaseConstruct(frame, doc, axis);
+//  frame->getView()->setSliceAxis(axis);
+//  frame->getPresenter()->setSliceAxis(axis);
+
+  return frame;
+}
+
+void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
 {
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
-  createView();
-  createPresenter();
+  createView(axis);
+  createPresenter(axis);
   updateDocument();
 
-  //m_view->prepareDocument();
+  m_view->prepareDocument();
   m_presenter->prepareView();
 
   customInit();
@@ -54,17 +71,23 @@ void ZStackMvc::customInit()
 
 }
 
-void ZStackMvc::BaseConstruct(ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc)
+void ZStackMvc::BaseConstruct(
+    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, NeuTube::EAxis axis)
 {
-  frame->construct(doc);
+  frame->construct(doc, axis);
 }
 
 void ZStackMvc::createView()
 {
+  createView(NeuTube::Z_AXIS);
+}
+
+void ZStackMvc::createView(NeuTube::EAxis axis)
+{
   if (m_doc.get() != NULL) {
-    //ZIntPoint size = m_doc->getStackSize();
     m_view = new ZStackView(qobject_cast<QWidget*>(this));
     m_layout->addWidget(m_view);
+    m_view->setSliceAxis(axis);
   }
 }
 
@@ -72,6 +95,14 @@ void ZStackMvc::createPresenter()
 {
   if (m_doc.get() != NULL) {
     m_presenter = ZStackPresenter::Make(this);
+  }
+}
+
+void ZStackMvc::createPresenter(NeuTube::EAxis axis)
+{
+  createPresenter();
+  if (m_presenter != NULL) {
+    m_presenter->setSliceAxis(axis);
   }
 }
 
@@ -171,16 +202,6 @@ void ZStackMvc::updateDocument()
 {
   UPDATE_DOC_SIGNAL_SLOT(connect);
 
-  /*
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-                                       */
-
   if (m_doc->hasStackData()) {
     if (m_presenter != NULL) {
       m_presenter->optimizeStackBc();
@@ -190,9 +211,6 @@ void ZStackMvc::updateDocument()
       m_view->reset();
     }
   }
-
-  //m_progressReporter.setProgressBar(m_view->progressBar());
-  //m_doc->setProgressReporter(&m_progressReporter);
 }
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)
@@ -343,7 +361,9 @@ void ZStackMvc::focusOutEvent(QFocusEvent *event)
                        ZWidgetMessage::TARGET_STATUS_BAR));
 #endif
 }
+#endif
 
+#if 0
 void ZStackMvc::changeEvent(QEvent *event)
 {
   if (event->type() == QEvent::ActivationChange) {

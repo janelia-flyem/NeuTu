@@ -73,9 +73,22 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
   return "#.DVIDTileEnsemble";
 }
 
-std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource()
+std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
+    NeuTube::EAxis axis)
 {
-  return "#.DVIDLabelSlice";
+  std::string source = "#.DVIDLabelSlice";
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
@@ -158,4 +171,22 @@ std::string ZStackObjectSourceFactory::MakeStackBoundBoxSource()
 std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
 {
   return "#.DVIDSynapseEnsemble";
+}
+
+std::string
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
+{
+  std::string source = MakeDvidSynapseEnsembleSource();
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
 }

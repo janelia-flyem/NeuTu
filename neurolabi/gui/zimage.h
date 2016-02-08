@@ -44,7 +44,8 @@ public:
   void setData(const uint8 *data, int threshold = -1);
 
   void setData(
-      const uint8 *data, int slice, int depth, NeuTube::EAxis sliceAxis);
+      const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
+      int slice, NeuTube::EAxis sliceAxis);
 
   void setData(const ZStack *stack, int z, bool ignoringZero = false,
                bool offsetAdjust = true);

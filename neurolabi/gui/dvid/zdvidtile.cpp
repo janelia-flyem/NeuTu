@@ -23,7 +23,7 @@ ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
   m_view(NULL)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_DVID_TILE;
+  m_type = GetType();
   m_image = NULL;
 //  m_pixmap.fill();
 //  m_pixmap = NULL;
@@ -197,8 +197,13 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z)
 }
 
 void ZDvidTile::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   bool isProj = false;
   int z = painter.getZOffset() + slice;
   if (slice < 0) {

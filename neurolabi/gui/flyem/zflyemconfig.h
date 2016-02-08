@@ -2,6 +2,7 @@
 #define ZFLYEMCONFIG_H
 
 #include <vector>
+#include <map>
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
 
@@ -25,11 +26,15 @@ public:
     return m_dvidRepo;
   }
 
+  std::string mapAddress(const std::string &address) const;
+
 private:
   ZDvidTarget m_emptyDvidTarget;
   std::vector<ZDvidTarget> m_dvidRepo;
+  std::map<std::string, std::string> m_addressMap;
 //  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;
+  const static char *m_ipKey;
 };
 
 #endif // ZFLYEMCONFIG_H

@@ -364,7 +364,8 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
   BodyEvent event(action, bodyId);
   event.addUpdateFlag(flag);
   if (getDataDocument() != NULL) {
-    ZDvidLabelSlice *labelSlice = getDataDocument()->getDvidLabelSlice();
+    ZDvidLabelSlice *labelSlice =
+        getDataDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
 
     if (labelSlice != NULL) {
       QColor color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);

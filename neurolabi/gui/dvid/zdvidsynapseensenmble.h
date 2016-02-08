@@ -36,6 +36,10 @@ public:
     ADJUST_NONE, ADJUST_EXTEND, ADJUST_FULL
   };
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE;
+  }
+
   void setDvidTarget(const ZDvidTarget &target);
 
   class SynapseMap : public QMap<int, ZDvidSynapse> {
@@ -51,14 +55,14 @@ public:
   public:
     SynapseSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addSynapse(const ZDvidSynapse &synapse);
+    void addSynapse(const ZDvidSynapse &synapse, NeuTube::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
 
     bool isValid() const { return m_status != STATUS_NULL; }
     bool isReady() const { return m_status == STATUS_READY; }
-    bool isReady(const QRect &rect) const;
+    bool isReady(const QRect &rect, const QRect &range) const;
 
     void setStatus(EDataStatus status) {
       m_status = status;
@@ -78,14 +82,28 @@ public:
     static SynapseMap m_emptyMap;
   };
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void setRange(const ZIntCuboid &dataRange);
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
 
+  /*!
+   * \brief Add a synapse
+   *
+   * Adding a synapse to the ensemble. If \a synapse is selected, the selection
+   * will be preserved. It will also overwrite the existing synapse at the same
+   * location, but old selections will always be preserved.
+   *
+   * \param synapse synapse to add
+   * \param scope Operation scope
+   */
   void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
 //  void commitSynapse(const ZIntPoint &pt);
-  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,
+                   EDataScope scope);
 
   void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
 
@@ -100,6 +118,9 @@ public:
   const SynapseSlice& getSlice(int z) const;
   SynapseSlice& getSlice(int z);
   SynapseSlice& getSlice(int z, EAdjustment adjust);
+
+//  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+//  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
 //  bool deleteSynapse(int x, int y, int z);
 
@@ -175,6 +196,10 @@ private:
 
   ZStackView *m_view;
   int m_maxPartialArea;
+
+//  NeuTube::EAxis m_sliceAxis;
+
+  ZIntCuboid m_dataRange;
 
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };

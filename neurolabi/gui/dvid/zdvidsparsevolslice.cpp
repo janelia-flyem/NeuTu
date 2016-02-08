@@ -3,7 +3,7 @@
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan(), m_currentZ(-1)
 {
-  m_type = ZStackObject::TYPE_DVID_SPARSEVOL_SLICE;
+  m_type = GetType();
   setHittable(false);
 }
 
@@ -26,7 +26,7 @@ bool ZDvidSparsevolSlice::update(int z)
   if (m_currentZ != z) {
     m_currentZ = z;
     if (z < getMinZ() || z > getMaxZ()) {
-      m_reader.readBody(getLabel(), m_currentZ, this);
+      m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, this);
       updated = true;
     }
   }
@@ -36,14 +36,15 @@ bool ZDvidSparsevolSlice::update(int z)
 
 void ZDvidSparsevolSlice::update()
 {
-  m_reader.readBody(getLabel(), m_currentZ, this);
+  m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, this);
 }
 
 void ZDvidSparsevolSlice::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
   if (slice >= 0) {
     const_cast<ZDvidSparsevolSlice&>(*this).update(painter.getZOffset() + slice);
-    ZObject3dScan::display(painter, slice, option);
+    ZObject3dScan::display(painter, slice, option, sliceAxis);
   }
 }

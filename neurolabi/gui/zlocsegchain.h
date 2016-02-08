@@ -34,8 +34,8 @@ public:
   virtual const std::string& className() const;
 
 public:
-  virtual void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
-  const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis sliceAxis) const;
 
 public: // I/O functions
   virtual void save(const char *filePath);

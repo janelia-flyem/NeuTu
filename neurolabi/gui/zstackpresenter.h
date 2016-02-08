@@ -120,6 +120,8 @@ public:
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
 
+  void setSliceAxis(NeuTube::EAxis axis);
+
   /*
   void updateZoomOffset(int cx, int cy, int r0);
   void updateZoomOffset(int cx, int cy, int wx, int wy);
@@ -143,6 +145,7 @@ public:
   void createStrokeActions();
   void createDocDependentActions();
   void createBodyActions();
+  void createMiscActions();
   void createMainWindowActions();
 
   QAction* getAction(ZActionFactory::EAction item) const;
@@ -194,6 +197,8 @@ public:
 
   const QPointF stackPositionFromMouse(MouseButtonAction mba);
 
+  ZPoint getLastMousePosInStack();
+
   QStringList toStringList() const;
 
   //void enterSwcEditMode();
@@ -207,6 +212,8 @@ public:
 //  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
   void setZoomRatio(int ratio);
+
+  NeuTube::EAxis getSliceAxis() const;
 
   ZStackFrame* getParentFrame() const;
   ZStackMvc* getParentMvc() const;
@@ -333,7 +340,11 @@ public slots:
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
+
+  void notifyOrthoViewTriggered();
+
   void slotTest();
+
 
   void notifyUser(const QString &msg);
 
@@ -376,6 +387,7 @@ signals:
   void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void orthoViewTriggered(double x, double y, double z);
 
 protected:
   void init();
@@ -482,7 +494,7 @@ protected:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
 //  QPointF m_grabPosition;
-  ZPoint m_lastMouseDataCoord;
+//  ZPoint m_lastMouseDataCoord;
 
   QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
 //  ZStroke2d m_stroke;

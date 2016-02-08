@@ -28,11 +28,12 @@ public:
                       EDisplayStyle style = NORMAL, int label = 0);
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
-  virtual void display(QImage *image, int n, Palette_Color color,
-                       EDisplayStyle style = NORMAL, int label = 0) const;
-  virtual void display(ZPainter &painter, int z, EDisplayStyle option,
-                       const QColor &color) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis axis) const;
+  void display(QImage *image, int n, Palette_Color color,
+               EDisplayStyle style = NORMAL, int label = 0) const;
+  void display(ZPainter &painter, int z, EDisplayStyle option,
+               const QColor &color) const;
   using ZStackObject::display; // fix warning -Woverloaded-virtual
 
   virtual void save(const char *filePath);

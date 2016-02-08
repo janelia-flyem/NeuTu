@@ -70,3 +70,13 @@ int ZStackViewParam::getArea() const
 {
   return m_viewPort.width() * m_viewPort.height();
 }
+
+void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
+{
+  m_sliceAxis = sliceAxis;
+}
+
+NeuTube::EAxis ZStackViewParam::getSliceAxis() const
+{
+  return m_sliceAxis;
+}

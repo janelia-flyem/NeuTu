@@ -410,7 +410,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString dataInfo(double cx, double cy, int z) const;
+  virtual QString rawDataInfo(double cx, double cy, int z) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -558,7 +558,7 @@ public:
                                int s = 0);
 
   ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y);
+  ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -656,6 +656,8 @@ public:
     return m_objectGroup.getObjectList(type);
   }
 
+  template<typename T>
+  QList<T*> getObjectList() const;
 
   inline const ZDocPlayerList& getPlayerList() const {
     return m_playerList;
@@ -1494,6 +1496,12 @@ void ZStackDoc::removeObjectP(
     notifyPlayerChanged(role);
   }
   */
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList() const
+{
+  return m_objectGroup.getObjectList<T>();
 }
 
 #if 0

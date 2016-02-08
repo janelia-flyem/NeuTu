@@ -36,6 +36,7 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_tileCanvas = NULL;
   m_objectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 ZImageWidget::~ZImageWidget()
@@ -69,7 +70,7 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
   m_mask[channel] = mask;
 
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
 //    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
   }
 }
@@ -78,7 +79,7 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 {
   m_tileCanvas = canvas;
   if (m_image == NULL) {
-    QSize maskSize = getMaskSize();
+//    QSize maskSize = getMaskSize();
   }
 }
 
@@ -535,7 +536,8 @@ void ZImageWidget::paintObject()
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
     painter.setTransform(transform);
-    painter.setZOffset(m_paintBundle->getStackOffset().getZ());
+    painter.setZOffset(
+          m_paintBundle->getStackOffset().getSliceCoord(getSliceAxis()));
 
 //    painter.setStackOffset(m_paintBundle->getStackOffset());
     std::vector<const ZStackObject*> visibleObject;
@@ -547,7 +549,7 @@ void ZImageWidget::paintObject()
     for (;iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
-          obj->isSliceVisible(m_paintBundle->getZ())) {
+          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() != ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           visibleObject.push_back(obj);
         }
@@ -567,7 +569,7 @@ void ZImageWidget::paintObject()
       std::cout << obj << std::endl;
 #endif
       paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                        m_paintBundle->displayStyle());
+                        m_paintBundle->displayStyle(), m_sliceAxis);
       /*
       obj->display(painter, m_paintBundle->sliceIndex(),
                    m_paintBundle->displayStyle());
@@ -577,10 +579,10 @@ void ZImageWidget::paintObject()
     for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
       const ZStackObject *obj = *iter;
       if (obj->getTarget() == ZStackObject::TARGET_WIDGET &&
-          obj->isSliceVisible(m_paintBundle->getZ())) {
+          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
         if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
           paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                            m_paintBundle->displayStyle());
+                            m_paintBundle->displayStyle(), m_sliceAxis);
           /*
           obj->display(painter, m_paintBundle->sliceIndex(),
                        m_paintBundle->displayStyle());
@@ -632,6 +634,7 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
     }
 
     painter.setRenderHint(QPainter::Antialiasing, true);
+//    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
     //Compute real viewport and projregion
 //#ifdef _DEBUG_
@@ -648,6 +651,9 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (m_image != NULL) {
       painter.drawImage(m_projRegion, *m_image, m_viewPort);
+#ifdef _DEBUG_2
+      m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
     }
 
     //tic();
@@ -690,7 +696,6 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     paintObject();
     paintZoomHint();
-
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
@@ -854,6 +859,9 @@ void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+  if (!hasFocus()) {
+    setFocus();
+  }
   emit mouseMoved(event);
 }
 

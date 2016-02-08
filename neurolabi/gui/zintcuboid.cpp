@@ -87,6 +87,16 @@ ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
   return *this;
 }
 
+ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)
+{
+  for (int i = 0; i < 3; i++) {
+    m_firstCorner[i] = imax2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = imin2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  }
+
+  return *this;
+}
+
 void ZIntCuboid::joinX(int x)
 {
   if (x < m_firstCorner.getX()) {
@@ -242,7 +252,28 @@ ZIntPoint ZIntCuboid::getCorner(int index) const
 
 bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
 {
-  bool overlapped = false;
+  if (isEmpty() || box.isEmpty()) {
+    return false;
+  }
+
+
+  if (box.getFirstCorner().getX() > getLastCorner().getX() ||
+      box.getLastCorner().getX() < getFirstCorner().getX()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getY() > getLastCorner().getY() ||
+      box.getLastCorner().getY() < getFirstCorner().getY()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getZ() > getLastCorner().getZ() ||
+      box.getLastCorner().getZ() < getFirstCorner().getZ()) {
+    return false;
+  }
+
+
+#if 0
   for (int i = 0; i < 8; ++i) {
     if (contains(box.getCorner(i))) {
       overlapped = true;
@@ -254,8 +285,41 @@ bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
       break;
     }
   }
+#endif
 
-  return overlapped;
+  return true;
+}
+
+void ZIntCuboid::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxis(axis);
+  m_lastCorner.shiftSliceAxis(axis);
+}
+
+void ZIntCuboid::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxisInverse(axis);
+  m_lastCorner.shiftSliceAxisInverse(axis);
+}
+
+int ZIntCuboid::getDim(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return getWidth();
+  case NeuTube::Y_AXIS:
+    return getHeight();
+  case NeuTube::Z_AXIS:
+    return getDepth();
+  }
+
+  return 0;
+}
+
+ZIntPoint ZIntCuboid::getCenter() const
+{
+  return getFirstCorner() +
+      ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
 }
 
 /*

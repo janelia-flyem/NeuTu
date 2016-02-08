@@ -207,12 +207,12 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_REMOVE, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
   }
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_ADD, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
   }
 }
 

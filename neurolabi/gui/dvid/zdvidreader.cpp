@@ -192,7 +192,8 @@ void ZDvidReader::waitForReading()
   }
 }
 
-ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, int z, ZObject3dScan *result)
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
 {
   if (result == NULL) {
     result = new ZObject3dScan;
@@ -207,7 +208,7 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, int z, ZObject3dScan *resu
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z).c_str(), isVerbose());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, axis).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
@@ -342,31 +343,6 @@ ZStack* ZDvidReader::readThumbnail(uint64_t bodyId)
   }
 
   return stack;
-
-
-#if 0
-  startReading();
-
-  ZDvidBuffer *dvidBuffer = m_dvidClient->getDvidBuffer();
-  dvidBuffer->clearImageArray();
-
-  ZDvidRequest request;
-  request.setGetThumbnailRequest(bodyId);
-  m_dvidClient->appendRequest(request);
-  m_dvidClient->postNextRequest();
-
-
-  waitForReading();
-
-  const QVector<ZStack*>& imageArray = dvidBuffer->getImageArray();
-
-  ZStack *stack = NULL;
-  if (!imageArray.isEmpty()) {
-    stack = imageArray[0]->clone();
-  }
-
-  return stack;
-#endif
 }
 
 ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
@@ -1156,6 +1132,13 @@ ZArray* ZDvidReader::readLabels64(
 {
   return readLabels64(getDvidTarget().getLabelBlockName(),
                      x0, y0, z0, width, height, depth);
+}
+
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
+{
+  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                      box.getFirstCorner().getZ(), box.getWidth(),
+                      box.getHeight(), box.getDepth());
 }
 
 ZIntPoint ZDvidReader::readBodyBottom(uint64_t bodyId) const

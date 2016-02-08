@@ -4034,30 +4034,56 @@ void ZStackDoc::mergeAllChain()
    }
 }
 
-QString ZStackDoc::dataInfo(double cx, double cy, int z) const
+QString ZStackDoc::rawDataInfo(
+    double cx, double cy, int z) const
 {
+  QString info;
+
   int x = iround(cx);
   int y = iround(cy);
 
-  QString info = QString("%1, %2").arg(x).arg(y);
+  int wx = x;
+  int wy = y;
+  int wz = z;
+
+//  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+
   if (x >= 0 && y >= 0) {
+    std::ostringstream stream;
+
+    stream << "(";
+    if (wx >= 0) {
+      stream << wx << ", ";
+    }
+    if (wy >= 0) {
+      stream << wy;
+    }
+    if (wz >= 0) {
+      stream << " , " << wz;
+    }
+
+    stream << ")";
+
+    info = stream.str().c_str();
+//    QString info = QString("%1, %2").arg(wx).arg(wy);
+
     if (z < 0) {
       info += " (MIP): ";
     } else {
-      info += QString(", %3: ").arg(z);
+      info += QString(": ");
     }
 
     if (getStack() != NULL) {
       if (!getStack()->isVirtual()) {
         if (getStack()->channelNumber() == 1) {
-          info += QString("%4").arg(getStack()->value(x, y, z));
+          info += QString("%4").arg(getStack()->value(wx, wy, wz));
         } else {
           info += QString("(");
           for (int i=0; i<getStack()->channelNumber(); i++) {
             if (i==0) {
-              info += QString("%1").arg(getStack()->value(x, y, z, i));
+              info += QString("%1").arg(getStack()->value(wx, wy, wz, i));
             } else {
-              info += QString(", %1").arg(getStack()->value(x, y, z, i));
+              info += QString(", %1").arg(getStack()->value(wx, wy, wz, i));
             }
           }
           info += QString(")");
@@ -4067,14 +4093,14 @@ QString ZStackDoc::dataInfo(double cx, double cy, int z) const
       if (stackMask() != NULL) {
         info += " | Mask: ";
         if (stackMask()->channelNumber() == 1) {
-          info += QString("%4").arg(stackMask()->value(x, y, z));
+          info += QString("%4").arg(stackMask()->value(wx, wy, wz));
         } else {
           info += QString("(");
           for (int i=0; i<stackMask()->channelNumber(); i++) {
             if (i==0) {
-              info += QString("%1").arg(stackMask()->value(x, y, z, i));
+              info += QString("%1").arg(stackMask()->value(wx, wy, wz, i));
             } else {
-              info += QString(", %1").arg(stackMask()->value(x, y, z, i));
+              info += QString(", %1").arg(stackMask()->value(wx, wy, wz, i));
             }
           }
           info += QString(")");
@@ -4082,9 +4108,9 @@ QString ZStackDoc::dataInfo(double cx, double cy, int z) const
       }
 
       if (getStack()->hasOffset()) {
-        info += QString("; (%1, %2, %3) - Data coordinates").
-            arg(getStackOffset().getX() + x).arg(getStackOffset().getY() + y).
-            arg(getStackOffset().getZ() + z);
+        info += QString("; (%1, %2, %3)").
+            arg(getStackOffset().getX() + wx).arg(getStackOffset().getY() + wy).
+            arg(getStackOffset().getZ() + wz);
       }
     }
   }
@@ -4568,7 +4594,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
   return NULL;
 }
 
-ZStackObject* ZStackDoc::hitTest(double x, double y)
+ZStackObject* ZStackDoc::hitTest(double x, double y, NeuTube::EAxis sliceAxis)
 {
   QList<ZStackObject*> sortedObjList = m_objectGroup;
   sort(sortedObjList.begin(), sortedObjList.end(),
@@ -4578,7 +4604,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y)
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->isHittable() && obj->isProjectionVisible()) {
-      if (obj->hit(x, y)) {
+      if (obj->hit(x, y, sliceAxis)) {
         return obj;
       }
     }
