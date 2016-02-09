@@ -210,7 +210,6 @@ int Cube::init(std::vector<glm::vec3> nodes)
     //edges();
 
     //
-    std::cout<<"~~~";
     for (int i=0; i<6; i++)
     {
         if(b_visible[i])
@@ -221,11 +220,8 @@ int Cube::init(std::vector<glm::vec3> nodes)
 //                texCoords.push_back( texc[j] );
                 normalIndices.push_back(normIndex[i]);
             }
-
-//            std::cout<<" "<<i<<" ";
         }
     }
-    std::cout<<"~~~"<<std::endl;
 
     //
     return 0;

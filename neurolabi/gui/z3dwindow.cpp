@@ -1738,10 +1738,14 @@ void Z3DWindow::update3DCubeDisplay()
     }
   }
 
+  qDebug()<<"update surface data";
+
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
+
+  qDebug()<<"update surface bbox";
 }
 
 void Z3DWindow::updateDisplay()
