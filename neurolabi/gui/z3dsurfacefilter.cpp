@@ -21,6 +21,7 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
     setFilterName(QString("surfacefilter"));
     //setNeedBlending(true);
+    setOpacity(0.1);
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
