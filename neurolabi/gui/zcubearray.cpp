@@ -210,6 +210,7 @@ int Cube::init(std::vector<glm::vec3> nodes)
     //edges();
 
     //
+    std::cout<<"~~~";
     for (int i=0; i<6; i++)
     {
         if(b_visible[i])
@@ -220,8 +221,11 @@ int Cube::init(std::vector<glm::vec3> nodes)
 //                texCoords.push_back( texc[j] );
                 normalIndices.push_back(normIndex[i]);
             }
+
+//            std::cout<<" "<<i<<" ";
         }
     }
+    std::cout<<"~~~"<<std::endl;
 
     //
     return 0;
@@ -233,13 +237,13 @@ void Cube::faces()
     // 12 triangles: 36 vertices and 36 colors
 
     //
-    if(b_visible[0])
+    if(b_visible[1])
     {
         //setPositions(points[7], points[3], points[2], points[6]); // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
         setPositions(points[5], points[1], points[3], points[7]);
         nVertices += 6;
     }
-    if(b_visible[1])
+    if(b_visible[0])
     {
         //setPositions(points[0], points[4], points[5], points[1]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
         setPositions(points[0], points[4], points[6], points[2]);
@@ -257,13 +261,13 @@ void Cube::faces()
         setPositions(points[4], points[0], points[1], points[5]);
         nVertices += 6;
     }
-    if(b_visible[4])
+    if(b_visible[5])
     {
         //setPositions(points[6], points[5], points[4], points[7]); // GL_TEXTURE_CUBE_MAP_POSITIVE_Z 	4 +z Back
         setPositions(points[7], points[6], points[4], points[5]);
         nVertices += 6;
     }
-    if(b_visible[5])
+    if(b_visible[4])
     {
         //setPositions(points[3], points[0], points[1], points[2]); // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 	5 -z Front
         setPositions(points[1], points[0], points[2], points[3]);
