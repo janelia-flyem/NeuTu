@@ -39,6 +39,7 @@
 #include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "z3dgraph.h"
+#include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
 #include "misc/miscutility.h"
@@ -65,6 +66,7 @@ class QWidget;
 class ZSwcNodeObjsModel;
 class ZDocPlayerObjsModel;
 class ZGraphObjsModel;
+class ZSurfaceObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
@@ -251,6 +253,7 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
   inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
+  inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -612,6 +615,7 @@ public:
   void setGraphVisible(Z3DGraph *graph, bool visible);
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
+  void setSurfaceVisible(ZCubeArray *cubearray, bool visible);
 
   void setTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
@@ -1115,6 +1119,7 @@ signals:
 
   void punctumVisibleStateChanged();
   void graphVisibleStateChanged();
+  void surfaceVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
@@ -1184,6 +1189,7 @@ private:
   ZPunctaObjsModel *m_punctaObjsModel;
   ZDocPlayerObjsModel *m_seedObjsModel;
   ZGraphObjsModel *m_graphObjsModel;
+  ZSurfaceObjsModel *m_surfaceObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;

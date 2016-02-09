@@ -584,6 +584,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemsequencercolorscheme.h \
     zpunctumselector.h \
     zgraphobjsmodel.h \
+    zsurfaceobjsmodel.h \
     dvid/zdvidsynapse.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
@@ -1039,6 +1040,7 @@ SOURCES += main.cpp \
     flyem/zflyemsequencercolorscheme.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
+    zsurfaceobjsmodel.cpp \
     dvid/zdvidsynapse.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \

@@ -110,6 +110,7 @@
 #include "zswcforest.h"
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
+#include "zsurfaceobjsmodel.h"
 
 using namespace std;
 
@@ -174,6 +175,7 @@ void ZStackDoc::init()
   m_seedObjsModel = new ZDocPlayerObjsModel(
         this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
+  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
 //  m_undoAction = NULL;
@@ -304,6 +306,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -3829,6 +3832,14 @@ void ZStackDoc::setGraphVisible(Z3DGraph *graph, bool visible)
   if (graph->isVisible() != visible) {
     graph->setVisible(visible);
     emit graphVisibleStateChanged();
+  }
+}
+
+void ZStackDoc::setSurfaceVisible(ZCubeArray *cubearray, bool visible)
+{
+  if (cubearray->isVisible() != visible) {
+    cubearray->setVisible(visible);
+    emit surfaceVisibleStateChanged();
   }
 }
 

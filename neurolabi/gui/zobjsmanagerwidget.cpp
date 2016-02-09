@@ -301,6 +301,14 @@ void ZObjsManagerWidget::createWidget()
   m_graphObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   tabs->addTab(m_graphObjsTreeView, "Graph");
 
+  m_surfaceObjsTreeView = new QTreeView(this);
+  m_surfaceObjsTreeView->setSortingEnabled(false);
+  m_surfaceObjsTreeView->setExpandsOnDoubleClick(false);
+  m_surfaceObjsTreeView->setModel(m_doc->graphObjsModel());
+  m_surfaceObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  m_surfaceObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+  tabs->addTab(m_surfaceObjsTreeView, "Surface");
+
   QHBoxLayout *layout = new QHBoxLayout;
   layout->addWidget(tabs);
   setLayout(layout);

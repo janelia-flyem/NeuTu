@@ -1,37 +1,37 @@
-#include "zgraphobjsmodel.h"
+#include "zsurfaceobjsmodel.h"
 
 #include <QFileInfo>
 
 #include "zstackdoc.h"
-#include "z3dgraph.h"
+#include "zcubearray.h"
 #include "zobjsitem.h"
 
 
-ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
+ZSurfaceObjsModel::ZSurfaceObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
 {
   updateModelData();
 }
 
-ZGraphObjsModel::~ZGraphObjsModel()
+ZSurfaceObjsModel::~ZSurfaceObjsModel()
 {
 
 }
 
-QModelIndex ZGraphObjsModel::getIndex(Z3DGraph *graph, int col) const
+QModelIndex ZSurfaceObjsModel::getIndex(ZCubeArray *cubearray, int col) const
 {
-  std::map<Z3DGraph*, int>::const_iterator pun2rIt = m_graphToRow.find(graph);
-  if (pun2rIt != m_graphToRow.end()) {
+  std::map<ZCubeArray*, int>::const_iterator pun2rIt = m_surfaceToRow.find(cubearray);
+  if (pun2rIt != m_surfaceToRow.end()) {
     std::map<QString, ZObjsItem*>::const_iterator s2pIt =
-        m_graphSourceToParent.find(graph->getSource().c_str());
+        m_surfaceSourceToParent.find(cubearray->getSource().c_str());
     std::map<ZObjsItem*, int>::const_iterator p2rIt =
-        m_graphSourceParentToRow.find(s2pIt->second);
+        m_surfaceSourceParentToRow.find(s2pIt->second);
     return index(pun2rIt->second, col, index(p2rIt->second, 0));
   }
   return QModelIndex();
 }
 
-Z3DGraph *ZGraphObjsModel::getGraph(const QModelIndex &index) const
+ZCubeArray *ZSurfaceObjsModel::getSurface(const QModelIndex &index) const
 {
   if (!index.isValid())
     return NULL;
@@ -39,13 +39,13 @@ Z3DGraph *ZGraphObjsModel::getGraph(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<Z3DGraph>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZCubeArray>(item->getActuralData());
 //    return static_cast<ZPunctum*>(item->getObj());
   else
     return NULL;
 }
 
-const std::vector<Z3DGraph *> *ZGraphObjsModel::getGraphList(
+const std::vector<ZCubeArray *> *ZSurfaceObjsModel::getSurfaceList(
     const QModelIndex &index) const
 {
   if (!index.isValid())
@@ -55,109 +55,109 @@ const std::vector<Z3DGraph *> *ZGraphObjsModel::getGraphList(
 
   if (item->parent() == m_rootItem) {
     std::map<ZObjsItem*, int>::const_iterator it;
-    it = m_graphSourceParentToRow.find(item);
-    if (it == m_graphSourceParentToRow.end()) {
+    it = m_surfaceSourceParentToRow.find(item);
+    if (it == m_surfaceSourceParentToRow.end()) {
       LERROR() << "Wrong Index";
     } else
-      return &(m_graphSeparatedByFile[it->second]);
+      return &(m_surfaceSeparatedByFile[it->second]);
   }
 
   return NULL;
 }
 
-void ZGraphObjsModel::updateData(Z3DGraph *graph)
+void ZSurfaceObjsModel::updateData(ZCubeArray *cubearray)
 {
-  QModelIndex index = getIndex(graph);
+  QModelIndex index = getIndex(cubearray);
   if (!index.isValid())
     return;
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
   QList<QVariant> &data = item->getItemData();
-  Z3DGraph *p = graph;
+  ZCubeArray *p = cubearray;
   QList<QVariant>::iterator beginit = data.begin();
   beginit++;
   data.erase(beginit, data.end());
   data << p->getSource().c_str();
-  emit dataChanged(index, getIndex(graph, item->parent()->columnCount()-1));
+  emit dataChanged(index, getIndex(cubearray, item->parent()->columnCount()-1));
 }
 
-void ZGraphObjsModel::updateModelData()
+void ZSurfaceObjsModel::updateModelData()
 {
   beginResetModel();
   delete m_rootItem;
   QList<QVariant> rootData;
-  rootData << "Graph" << "Source";
+  rootData << "Surface" << "Source";
 
   m_rootItem = new ZObjsItem(
-        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH)));
+        rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE)));
   setupModelData(m_rootItem);
   endResetModel();
 }
 
-void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
+void ZSurfaceObjsModel::setupModelData(ZObjsItem *parent)
 {
   QList<QVariant> data;
 
-  m_graphSourceToParent.clear();
-  m_graphSourceToCount.clear();
-  m_graphToRow.clear();
-  m_graphSourceParentToRow.clear();
-  m_graphSeparatedByFile.clear();
+  m_surfaceSourceToParent.clear();
+  m_surfaceSourceToCount.clear();
+  m_surfaceToRow.clear();
+  m_surfaceSourceParentToRow.clear();
+  m_surfaceSeparatedByFile.clear();
   int sourceParentRow = 0;
-  QList<ZStackObject*> graphList =
-      m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
-  int numDigit = numDigits(graphList.size()+1);
-  for (int i=0; i<graphList.size(); i++) {
+  QList<ZStackObject*> surfaceList =
+      m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
+  int numDigit = numDigits(surfaceList.size()+1);
+  for (int i=0; i<surfaceList.size(); i++) {
     data.clear();
-    Z3DGraph *p = dynamic_cast<Z3DGraph*>(graphList.at(i));
+    ZCubeArray *p = dynamic_cast<ZCubeArray*>(surfaceList.at(i));
     QFileInfo sourceInfo(p->getSource().c_str());
-    if (m_graphSourceToParent.find(p->getSource().c_str()) !=
-        m_graphSourceToParent.end()) {
-      ZObjsItem *sourceParent = m_graphSourceToParent[p->getSource().c_str()];
-      data << QString("Graph %1").
-              arg(m_graphSourceToCount[p->getSource().c_str()] + 1,
+    if (m_surfaceSourceToParent.find(p->getSource().c_str()) !=
+        m_surfaceSourceToParent.end()) {
+      ZObjsItem *sourceParent = m_surfaceSourceToParent[p->getSource().c_str()];
+      data << QString("Surface %1").
+              arg(m_surfaceSourceToCount[p->getSource().c_str()] + 1,
           numDigit, 10, QLatin1Char('0')) << sourceInfo.fileName();
-      m_graphToRow[p] = m_graphSourceToCount[p->getSource().c_str()];
-      m_graphSourceToCount[p->getSource().c_str()]++;
-      ZObjsItem *graph = new ZObjsItem(data, p, sourceParent);
-      graph->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
-      graph->setToolTip(QString("Graph from: %1").arg(p->getSource().c_str()));
-      sourceParent->appendChild(graph);
-      m_graphSeparatedByFile[m_graphSourceParentToRow[sourceParent]].push_back(
-            dynamic_cast<Z3DGraph*>(graphList.at(i)));
+      m_surfaceToRow[p] = m_surfaceSourceToCount[p->getSource().c_str()];
+      m_surfaceSourceToCount[p->getSource().c_str()]++;
+      ZObjsItem *cubearray = new ZObjsItem(data, p, sourceParent);
+      cubearray->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
+      cubearray->setToolTip(QString("Surface from: %1").arg(p->getSource().c_str()));
+      sourceParent->appendChild(cubearray);
+      m_surfaceSeparatedByFile[m_surfaceSourceParentToRow[sourceParent]].push_back(
+            dynamic_cast<ZCubeArray*>(surfaceList.at(i)));
     } else {
       data << sourceInfo.fileName() << "source";
-      m_graphSeparatedByFile.push_back(std::vector<Z3DGraph*>());
+      m_surfaceSeparatedByFile.push_back(std::vector<ZCubeArray*>());
       ZObjsItem *sourceParent = new ZObjsItem(data, NULL, parent);
-      sourceParent->setToolTip(QString("Graph source: %1").arg(p->getSource().c_str()));
-      m_graphSourceToParent[p->getSource().c_str()] = sourceParent;
-      m_graphSourceToCount[p->getSource().c_str()] = 0;
+      sourceParent->setToolTip(QString("Surface source: %1").arg(p->getSource().c_str()));
+      m_surfaceSourceToParent[p->getSource().c_str()] = sourceParent;
+      m_surfaceSourceToCount[p->getSource().c_str()] = 0;
       parent->appendChild(sourceParent);
-      m_graphSourceParentToRow[sourceParent] = sourceParentRow++;
+      m_surfaceSourceParentToRow[sourceParent] = sourceParentRow++;
 
       data.clear();
-      data << QString("graph %1").arg(m_graphSourceToCount[p->getSource().c_str()] + 1, numDigit, 10, QLatin1Char('0'))
+      data << QString("surface %1").arg(m_surfaceSourceToCount[p->getSource().c_str()] + 1, numDigit, 10, QLatin1Char('0'))
            << sourceInfo.fileName();
-      m_graphToRow[p] = m_graphSourceToCount[p->getSource().c_str()];
-      m_graphSourceToCount[p->getSource().c_str()]++;
-      ZObjsItem *graph = new ZObjsItem(data, p, sourceParent);
-      graph->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
+      m_surfaceToRow[p] = m_surfaceSourceToCount[p->getSource().c_str()];
+      m_surfaceSourceToCount[p->getSource().c_str()]++;
+      ZObjsItem *cubearray = new ZObjsItem(data, p, sourceParent);
+      cubearray->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
       sourceParent->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
-      graph->setToolTip(QString("graph from: %1").arg(p->getSource().c_str()));
-      sourceParent->appendChild(graph);
-      m_graphSeparatedByFile[m_graphSourceParentToRow[sourceParent]].push_back(
-            dynamic_cast<Z3DGraph*>(graphList.at(i)));
+      cubearray->setToolTip(QString("surface from: %1").arg(p->getSource().c_str()));
+      sourceParent->appendChild(cubearray);
+      m_surfaceSeparatedByFile[m_surfaceSourceParentToRow[sourceParent]].push_back(
+            dynamic_cast<ZCubeArray*>(surfaceList.at(i)));
     }
   }
 }
 
-void ZGraphObjsModel::setModelIndexCheckState(const QModelIndex &index, Qt::CheckState cs)
+void ZSurfaceObjsModel::setModelIndexCheckState(const QModelIndex &index, Qt::CheckState cs)
 {
   ZObjsModel::setModelIndexCheckState(index, cs);
-  if (getGraph(index) != NULL)
-    m_doc->setGraphVisible(getGraph(index), cs == Qt::Checked);
+  if (getSurface(index) != NULL)
+    m_doc->setSurfaceVisible(getSurface(index), cs == Qt::Checked);
 }
 
-bool ZGraphObjsModel::needCheckbox(const QModelIndex &index) const
+bool ZSurfaceObjsModel::needCheckbox(const QModelIndex &index) const
 {
   if (index.isValid()) {
     return true;
@@ -167,7 +167,7 @@ bool ZGraphObjsModel::needCheckbox(const QModelIndex &index) const
   if (idx.isValid() && static_cast<ZObjsItem*>(idx.internalPointer()) == m_rootItem) {
     return true;
   }
-  return getGraph(index) != NULL;
+  return getSurface(index) != NULL;
 }
 
 

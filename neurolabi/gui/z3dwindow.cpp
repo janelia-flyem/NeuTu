@@ -693,6 +693,9 @@ void Z3DWindow::init(EInitMode mode)
           SIGNAL(graphVisibleStateChanged()),
           this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
+          SIGNAL(surfaceVisibleStateChanged()),
+          this, SLOT(update3DCubeDisplay()));
+  connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
   connect(m_punctaFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
