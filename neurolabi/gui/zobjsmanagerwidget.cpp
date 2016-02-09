@@ -14,6 +14,7 @@
 #include "zpunctaobjsmodel.h"
 #include "zdocplayerobjsmodel.h"
 #include "zgraphobjsmodel.h"
+#include "zsurfaceobjsmodel.h"
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
 
@@ -304,7 +305,7 @@ void ZObjsManagerWidget::createWidget()
   m_surfaceObjsTreeView = new QTreeView(this);
   m_surfaceObjsTreeView->setSortingEnabled(false);
   m_surfaceObjsTreeView->setExpandsOnDoubleClick(false);
-  m_surfaceObjsTreeView->setModel(m_doc->graphObjsModel());
+  m_surfaceObjsTreeView->setModel(m_doc->surfaceObjsModel());
   m_surfaceObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   m_surfaceObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   tabs->addTab(m_surfaceObjsTreeView, "Surface");

@@ -117,6 +117,11 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
     invalidateResult();
 }
 
+void Z3DSurfaceFilter::clearData()
+{
+    m_cubeArray.clear();
+}
+
 vector<double> Z3DSurfaceFilter::boundBox()
 {
     vector<double> result(6, 0);
