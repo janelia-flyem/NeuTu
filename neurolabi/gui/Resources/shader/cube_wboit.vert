@@ -21,32 +21,185 @@ void main()
 {
     vec4 vertex = vec4(vPosition*pos_scale,1.0);
 
-    vec3 vertNormal;
+    vec3 vertNormal = vec3(0.0f, 0.0f, 0.0f);
 
-    if(vNormal==0)
+//    if(vNormal==0)
+//    {
+//        vertNormal = vec3(1.0f, 0.0f, 0.0f); // +x
+//    }
+//    else if(vNormal==1)
+//    {
+//        vertNormal = vec3(-1.0f, 0.0f, 0.0f); // -x
+//    }
+//    else if(vNormal==2)
+//    {
+//        vertNormal = vec3(0.0f, 1.0f, 0.0f); // +y
+//    }
+//    else if(vNormal==3)
+//    {
+//        vertNormal = vec3(0.0f, -1.0f, 0.0f); // -y
+//    }
+//    else if(vNormal==4)
+//    {
+//        vertNormal = vec3(0.0f, 0.0f, 1.0f); //+z
+//    }
+//    else if(vNormal==5)
+//    {
+//        vertNormal = vec3(0.0f, 0.0f, -1.0f); // -z
+//    }
+
+    float d,r;
+    if(vNormal>=32) // +z
     {
-        vertNormal = vec3(1.0f, 0.0f, 0.0f); // +x
+        vertNormal += vec3(0.0f, 0.0f, 1.0f);
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -z
+        {
+            vertNormal += vec3(0.0f, 0.0f, -1.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +y
+        {
+            vertNormal += vec3(0.0f, 1.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -y
+        {
+            vertNormal += vec3(0.0f, -1.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +x
+        {
+            vertNormal += vec3(1.0f, 0.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
+
     }
-    else if(vNormal==1)
+    else if(vNormal>=16) // -z
     {
-        vertNormal = vec3(-1.0f, 0.0f, 0.0f); // -x
+        vertNormal += vec3(0.0f, 0.0f, -1.0f);
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +y
+        {
+            vertNormal += vec3(0.0f, 1.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -y
+        {
+            vertNormal += vec3(0.0f, -1.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +x
+        {
+            vertNormal += vec3(1.0f, 0.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
     }
-    else if(vNormal==2)
+    else if(vNormal>=8) // +y
     {
-        vertNormal = vec3(0.0f, 1.0f, 0.0f); // +y
+        vertNormal += vec3(0.0f, 1.0f, 0.0f);
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -y
+        {
+            vertNormal += vec3(0.0f, -1.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +x
+        {
+            vertNormal += vec3(1.0f, 0.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
     }
-    else if(vNormal==3)
+    else if(vNormal>=4) // -y
     {
-        vertNormal = vec3(0.0f, -1.0f, 0.0f); // -y
+        vertNormal += vec3(0.0f, -1.0f, 0.0f);
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // +x
+        {
+            vertNormal += vec3(1.0f, 0.0f, 0.0f);
+        }
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
     }
-    else if(vNormal==4)
+    else if(vNormal>=2) // +x
     {
-        vertNormal = vec3(0.0f, 0.0f, 1.0f); //+z
+        vertNormal += vec3(1.0f, 0.0f, 0.0f);
+
+        d = vNormal/2.0f;
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
     }
-    else if(vNormal==5)
+    else // -x
     {
-        vertNormal = vec3(0.0f, 0.0f, -1.0f); // -z
+        r = mod(vNormal,2.0f);
+
+        if(r==1) // -x
+        {
+            vertNormal += vec3(-1.0f, 0.0f, 0.0f);
+        }
     }
+    vertNormal = normalize(vertNormal);
 
 
     normal = normalize( normal_matrix * vertNormal);

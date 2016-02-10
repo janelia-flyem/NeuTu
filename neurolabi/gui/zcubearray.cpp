@@ -210,15 +210,29 @@ int Cube::init(std::vector<glm::vec3> nodes)
     //edges();
 
     //
+    float idx = 0;
+    for (int i=0; i<6; i++)
+    {
+        if(b_visible[i])
+        {
+//            for (int j=0; j<6; j++)
+//            {
+////                normals.push_back( norm[i] );
+////                texCoords.push_back( texc[j] );
+//                normalIndices.push_back(normIndex[i]);
+//            }
+
+            idx += pow(2, i);
+        }
+    }
+
     for (int i=0; i<6; i++)
     {
         if(b_visible[i])
         {
             for (int j=0; j<6; j++)
             {
-//                normals.push_back( norm[i] );
-//                texCoords.push_back( texc[j] );
-                normalIndices.push_back(normIndex[i]);
+                normalIndices.push_back(idx);
             }
         }
     }

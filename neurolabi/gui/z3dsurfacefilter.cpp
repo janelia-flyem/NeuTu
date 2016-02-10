@@ -33,6 +33,8 @@ void Z3DSurfaceFilter::initialize()
 {
     Z3DGeometryFilter::initialize();
 
+    qDebug()<<"surfacefilter init";
+
     m_cubeRenderer = new Z3DCubeRenderer();
     m_rendererBase->addRenderer(m_cubeRenderer);
 
@@ -57,6 +59,11 @@ void Z3DSurfaceFilter::setVisible(bool v)
     m_showCube.set(v);
 }
 
+bool Z3DSurfaceFilter::isVisible() const
+{
+    return m_showCube.get();
+}
+
 void Z3DSurfaceFilter::render(Z3DEye eye)
 {
     if(m_cubeRenderer->isEmpty())
@@ -66,6 +73,8 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
 
     if (!m_showCube.get())
         return;
+
+    qDebug()<<"surfacefilter render";
 
     m_rendererBase->activateRenderer(m_cubeRenderer);
 
@@ -83,6 +92,8 @@ void Z3DSurfaceFilter::prepareData()
 {
     if (!m_dataIsInvalid)
         return;
+
+    qDebug() << "surfacefilter preparedata";
 
     //
     for (size_t i = 0; i < m_cubeArray.size(); ++i) {
@@ -170,9 +181,14 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-  qDebug() << Z3DGeometryFilter::isReady(eye);
-  qDebug() << m_showCube.get();
-  qDebug() << m_cubeArray.empty();
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() &&
-            !m_cubeArray.empty();
+  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
+  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
+  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
+    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_cubeArray.empty();
+}
+
+void Z3DSurfaceFilter::updateSurfaceVisibleState()
+{
+  m_dataIsInvalid = true;
+  invalidateResult();
 }

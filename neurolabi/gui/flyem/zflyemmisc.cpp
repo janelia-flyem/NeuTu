@@ -311,7 +311,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
   int startCoord[3];
-  Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+  Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // testing
 
   size_t offset = 0;
   int i, j, k;

@@ -541,7 +541,7 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
   for (size_t i=0; i<filters.size(); i++) {
     Z3DGeometryFilter* geomFilter = filters.at(i);
 
-    qDebug()<<geomFilter->getClassName();
+    qDebug()<<"renderGeomsBlendDelayed ... rendering "<<geomFilter->getClassName();
 
     if (geomFilter->needBlending()) {
         glEnable(GL_BLEND);
