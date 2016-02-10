@@ -946,15 +946,19 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // then set label above table
     // dummy, should factor this out:
+    ui->ioBodyTableLabel->setText("Loading");
+    /*
     if (m_connectionsTableState == CT_INPUT) {
         ui->ioBodyTableLabel->setText("Inputs");
     } else {
         ui->ioBodyTableLabel->setText("Outputs");
     }
+    */
 
     // activate tab & clear model
     ui->tabWidget->setCurrentIndex(CONNECTIONS_TAB);
     m_ioBodyModel->clear();
+    m_connectionsModel->clear();
 
     // loading message would go here
 
@@ -1062,12 +1066,14 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    // table label: already says "Input" or "Output";
-    //  now add the total number in parentheses: eg, "Input (12)"
+    // table label: "Input (123)" or "Output (123)"
     // should factor this out
     std::ostringstream labelStream;
-    labelStream << ui->ioBodyTableLabel->text().toStdString();
-    labelStream << " (";
+    if (m_connectionsTableState == CT_INPUT) {
+        labelStream << "Inputs (" ;
+    } else {
+        labelStream << "Outputs (" ;
+    }
     labelStream << partnerBodyIDs.size();
     labelStream << ")";
     ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
@@ -1156,10 +1162,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
     QStandardItem *itemZ = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Z_COLUMN);
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
-    // ZIntPoint point(x, y, z);
-    // emit pointDisplayRequested(point);
     emit pointDisplayRequested(x, y, z);
-
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
