@@ -166,6 +166,10 @@ public:
     return m_sliceAxis;
   }
 
+  void setHoverFocus(bool on) {
+    m_hoverFocus = on;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -227,6 +231,7 @@ private:
 //  QSize m_canvasSize;
 
   bool m_freeMoving;
+  bool m_hoverFocus;
 };
 
 #endif

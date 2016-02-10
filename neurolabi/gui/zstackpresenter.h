@@ -193,7 +193,7 @@ public:
   void addPunctaEditFunctionToRightMenu();
   //void addSwcEditFunctionToRightMenu();
 
-  void setViewPortCenter(int x, int y, int z);
+//  void setViewPortCenter(int x, int y, int z);
 
   const QPointF stackPositionFromMouse(MouseButtonAction mba);
 
@@ -211,7 +211,7 @@ public:
   T* getActiveObject(EObjectRole role) const;
 //  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
-  void setZoomRatio(int ratio);
+  void setZoomRatio(double ratio);
 
   NeuTube::EAxis getSliceAxis() const;
 

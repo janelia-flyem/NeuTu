@@ -134,9 +134,6 @@ public slots:
 
   void enhanceTileContrast(bool state);
 
-  void zoomTo(const ZIntPoint &pt);
-  void zoomTo(int x, int y, int z);
-  void zoomTo(int x, int y, int z, int width);
   void goToBody();
   void goToBodyBottom();
   void goToBodyTop();

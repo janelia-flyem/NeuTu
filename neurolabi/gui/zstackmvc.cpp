@@ -13,6 +13,8 @@
 #include "zwidgetmessage.h"
 #include "zfiletype.h"
 #include "widgets/zimagewidget.h"
+#include "zintpoint.h"
+#include "zstackviewlocator.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -116,6 +118,79 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
   m_doc = doc;
 }
 
+bool ZStackMvc::connectFunc(const QObject* obj1, const char *signal,
+                            const QObject *obj2, const char *slot)
+{
+  return connect(obj1, signal, obj2, slot);
+}
+
+void ZStackMvc::connectSignalSlot()
+{
+  updateSignalSlot(connectFunc);
+//  UPDATE_SIGNAL_SLOT(connect);
+}
+
+void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
+{
+//  connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
+  connectAction(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
+          this, SIGNAL(messageGenerated(ZWidgetMessage)));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
+          m_view, SLOT(updateChannelControl()));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
+          m_view, SLOT(updateThresholdSlider()));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
+          m_view, SLOT(updateSlider()));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
+          m_presenter, SLOT(updateStackBc()));
+  connectAction(m_doc.get(), SIGNAL(stackModified()),
+          m_view, SLOT(redraw()));
+  connectAction(m_doc.get(), SIGNAL(objectModified()),
+                m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
+          m_view, SLOT(paintObject(ZStackObject::ETarget)));
+  connectAction(m_doc.get(), SIGNAL(objectModified()),
+                m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
+          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
+//  connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
+//                this, SLOT(changeWindowTitle(bool)));
+  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
+                m_view, SLOT(paintObject()));
+//  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),
+//          this, SLOT(updateSwcExtensionHint()));
+  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
+                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
+                m_view, SLOT(paintObject()));
+  connectAction(
+        m_doc.get(), SIGNAL(objectSelectionChanged(
+                              QList<ZStackObject*>,QList<ZStackObject*>)),
+        m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));
+  connectAction(m_doc.get(),
+                SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
+                m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
+          m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
+          m_view, SLOT(paintObject()));
+  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
+          m_view, SLOT(paintObject()));
+//  connectAction(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
+//          this, SLOT(notifyUser(QString)));
+  connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
+                m_view, SLOT(paintStack()));
+  connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
+          this, SLOT(processViewChange(ZStackViewParam)));
+}
+
+void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
+{
+  updateDocSignalSlot(connectAction);
+//  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
+//                m_presenter, SLOT(processSliceChangeEvent(int)));
+}
+
+#if 0
 #define UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
   connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)), \
@@ -169,24 +244,20 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
   UPDATE_DOC_SIGNAL_SLOT(connect) \
   connect(m_view, SIGNAL(currentSliceChanged(int)),\
           m_presenter, SLOT(processSliceChangeEvent(int)));
-
+#endif
   //connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
 
-void ZStackMvc::connectSignalSlot()
-{
-  UPDATE_SIGNAL_SLOT(connect);
-}
 
 void ZStackMvc::disconnectAll()
 {
-  UPDATE_SIGNAL_SLOT(disconnect);
+  updateSignalSlot(disconnect);
 }
 
 void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
     if (m_doc.get() != NULL) {
-      UPDATE_DOC_SIGNAL_SLOT(disconnect);
+      updateSignalSlot(disconnect);
       m_doc->removeUser(this);
     }
 
@@ -200,7 +271,7 @@ void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 
 void ZStackMvc::updateDocument()
 {
-  UPDATE_DOC_SIGNAL_SLOT(connect);
+  updateDocSignalSlot(connectFunc);
 
   if (m_doc->hasStackData()) {
     if (m_presenter != NULL) {
@@ -225,32 +296,16 @@ void ZStackMvc::processViewChange()
   processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
 }
 
+void ZStackMvc::updateActiveViewData()
+{
+  processViewChangeCustom(getView()->getViewParameter(NeuTube::COORD_STACK));
+}
+
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
-#if 0
-  qDebug() << "ZStackMvc::processViewChange" << viewParam.getZ();
-  if (getPresenter()->isObjectVisible()) {
-    QList<ZDocPlayer*> playerList =
-        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    qDebug() << "#Player:" << playerList.size();
-    if (!playerList.isEmpty()) {
-      bool updated = false;
-      foreach (const ZDocPlayer *player, playerList) {
-        if (player->getData()->isVisible()) {
-          updated = true;
-          player->updateData(viewParam);
-        }
-      }
-      if (updated) {
-        qDebug() << "Painting object in ZStackMvc::processViewChange";
-        m_view->paintObject();
-        m_view->imageWidget()->repaint();
-      }
-    }
-  }
-#endif
-
   processViewChangeCustom(viewParam);
+
+  emit viewChanged();
 }
 
 QRect ZStackMvc::getViewGeometry() const
@@ -385,3 +440,76 @@ void ZStackMvc::changeEvent(QEvent *event)
   }
 }
 #endif
+
+void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
+{
+  bool depthChanged = (pt.getZ() == getView()->getCurrentZ());
+
+  getPresenter()->blockSignals(true);
+  getPresenter()->setZoomRatio(zoomRatio);
+  getPresenter()->blockSignals(false);
+
+  getView()->blockSignals(true);
+  getView()->setViewPortCenter(pt, NeuTube::AXIS_NORMAL);
+  getView()->blockSignals(false);
+
+  getView()->processViewChange(true, depthChanged);
+
+//  getView()->notifyViewChanged();
+}
+
+void ZStackMvc::zoomTo(int x, int y, int z, int width)
+{
+  ZGeometry::shiftSliceAxis(x, y, z, getView()->getSliceAxis());
+
+//  z -= getDocument()->getStackOffset().getSliceCoord(getView()->getSliceAxis());
+
+  ZStackViewLocator locator;
+  locator.setCanvasSize(getView()->imageWidget()->canvasSize().width(),
+                        getView()->imageWidget()->canvasSize().height());
+
+  QRect viewPort = locator.getRectViewPort(x, y, width);
+  getPresenter()->setZoomRatio(
+        locator.getZoomRatio(viewPort.width(), viewPort.height()));
+
+  getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+
+/*
+  getView()->imageWidget()->setViewPortOffset(
+        x - getView()->imageWidget()->viewPort().width() / 2,
+        y - getView()->imageWidget()->viewPort().height() / 2);
+  getView()->setSliceIndex(z);
+  */
+//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+
+//  getPresenter()->setViewPortCenter(x, y, z);
+
+  getView()->highlightPosition(x, y, z);
+}
+
+
+void ZStackMvc::zoomTo(const ZIntPoint &pt)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStackMvc::zoomTo(int x, int y, int z)
+{
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
+}
+
+ZIntPoint ZStackMvc::getViewCenter() const
+{
+  return getView()->getViewCenter();
+}
+
+double ZStackMvc::getZoomRatio() const
+{
+  return getView()->getZoomRatio();
+}
+

@@ -979,7 +979,7 @@ void ZStackPresenter::updateRightMenu(QMenu *submenu, bool clear)
 
 void ZStackPresenter::updateView() const
 {
-  buddyView()->updateView();
+  buddyView()->redraw();
 }
 
 /*
@@ -1108,6 +1108,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   }
 }
 
+/*
 void ZStackPresenter::setViewPortCenter(int x, int y, int z)
 {
   buddyView()->imageWidget()->setViewPortOffset(
@@ -1116,6 +1117,7 @@ void ZStackPresenter::setViewPortCenter(int x, int y, int z)
   buddyView()->setSliceIndex(z);
   buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
+*/
 
 /*
 void ZStackPresenter::moveImage(int mouseX, int mouseY)
@@ -1507,7 +1509,7 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   return taken;
 }
 
-void ZStackPresenter::setZoomRatio(int ratio)
+void ZStackPresenter::setZoomRatio(double ratio)
 {
   //m_zoomRatio = ratio;
   //CLIP_VALUE(m_zoomRatio, 1, 16);
@@ -2904,9 +2906,9 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
-    buddyView()->processViewChange();
+    buddyView()->processViewChange(false, false);
 //    buddyView()->notifyViewChanged();
-    buddyView()->updateView();
+    buddyView()->redraw();
 //    buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_CONTEXT_MENU:
@@ -3181,7 +3183,7 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_EXIT_ZOOM_MODE:
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
-    buddyView()->processViewChange();
+    buddyView()->processViewChange(true, false);
     buddyView()->imageWidget()->update();
 //    buddyView()->notifyViewChanged();
     break;

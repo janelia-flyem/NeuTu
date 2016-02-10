@@ -32,6 +32,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->layout()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->hideThresholdControl();
+  frame->getView()->setHoverFocus(true);
 
   return frame;
 }
@@ -71,3 +72,4 @@ void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
   getCompleteDocument()->updateStack(center);
   getView()->updateViewBox();
 }
+

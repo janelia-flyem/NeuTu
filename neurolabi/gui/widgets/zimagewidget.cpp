@@ -14,7 +14,7 @@
 #include "zstackobjectpainter.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
-  m_isViewHintVisible(true), m_freeMoving(false)
+  m_isViewHintVisible(true), m_freeMoving(false), m_hoverFocus(false)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -859,7 +859,7 @@ void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
-  if (!hasFocus()) {
+  if (!hasFocus() && m_hoverFocus) {
     setFocus();
   }
   emit mouseMoved(event);

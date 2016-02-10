@@ -294,6 +294,17 @@ void ZFlyEmProofMvc::makeOrthoWindow()
 {
   m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget());
   connect(m_orthoWindow, SIGNAL(destroyed()), this, SLOT(detachOrthoWindow()));
+  connect(m_orthoWindow, SIGNAL(bookmarkEdited(int, int, int)),
+          getCompleteDocument(), SLOT(downloadBookmark(int,int,int)));
+  connect(getCompleteDocument(), SIGNAL(bookmarkEdited(int,int,int)),
+          m_orthoWindow, SLOT(downloadBookmark(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(synapseEdited(int, int, int)),
+          getCompleteDocument(), SLOT(downloadBookmark(int,int,int)));
+  connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
+          m_orthoWindow, SLOT(downloadBookmark(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
+  m_orthoWindow->copyBookmarkFrom(getCompleteDocument());
 }
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
@@ -867,7 +878,7 @@ void ZFlyEmProofMvc::customInit()
 //          this, SLOT(processLabelSliceSelectionChange()));
 
   connect(getDocument().get(), SIGNAL(activeViewModified()),
-          this, SLOT(processViewChange()));
+          this, SLOT(updateActiveViewData()));
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           getView(), SLOT(paintObject()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
@@ -2032,37 +2043,6 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   }
 }
 
-void ZFlyEmProofMvc::zoomTo(int x, int y, int z, int width)
-{
-  z -= getDocument()->getStackOffset().getZ();
-
-  ZStackViewLocator locator;
-  locator.setCanvasSize(getView()->imageWidget()->canvasSize().width(),
-                        getView()->imageWidget()->canvasSize().height());
-
-  QRect viewPort = locator.getRectViewPort(x, y, width);
-  getPresenter()->setZoomRatio(
-        locator.getZoomRatio(viewPort.width(), viewPort.height()));
-  getPresenter()->setViewPortCenter(x, y, z);
-
-  getView()->highlightPosition(x, y, z);
-}
-
-
-void ZFlyEmProofMvc::zoomTo(const ZIntPoint &pt)
-{
-  zoomTo(pt.getX(), pt.getY(), pt.getZ());
-}
-
-void ZFlyEmProofMvc::zoomTo(int x, int y, int z)
-{
-  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
-  int width = imin3(800, viewPort.width(), viewPort.height());
-  if (width < 10) {
-    width = 200;
-  }
-  zoomTo(x, y, z, width);
-}
 
 void ZFlyEmProofMvc::syncDvidBookmark()
 {
@@ -2076,7 +2056,8 @@ void ZFlyEmProofMvc::syncDvidBookmark()
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         const QByteArray &bookmarkData = reader.readKeyValue(
-              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), bookmark->getDvidKey());
+              ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
+              bookmark->getDvidKey());
         if (!bookmarkData.isEmpty()) {
           ZJsonObject obj;
           obj.decodeString(bookmarkData.data());

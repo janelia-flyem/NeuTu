@@ -19576,7 +19576,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan bm;
   bm.importDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
 
@@ -19605,6 +19605,65 @@ void ZTest::test(MainWindow *host)
 
   Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc_sub.dvid");
 
+#endif
+
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "059e", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  ZIntCuboid box = obj.getBoundBox();
+  int xMax = (box.getFirstCorner().getX() + box.getLastCorner().getX()) / 2;
+
+  ZObject3dScan::ConstSegmentIterator iter(&obj);
+
+  ZObject3dScan newObj;
+
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    if (seg.getStart() <= xMax) {
+      int end = std::min(xMax, seg.getEnd());
+      newObj.addSegment(seg.getZ(), seg.getY(), seg.getStart(), end);
+    }
+  }
+
+//  newObj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(newObj);
+
+  array.dump(GET_TEST_DATA_DIR + "/test.json");
+
+#endif
+
+#if 1
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "e402", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+
+  ZObject3dScan obj2 = reader.readRoi("half_seven_column_roi");
+
+//  obj.subtractSliently(obj2);
+
+  ZObject3dScan obj3 = obj - obj2;
+  obj3.save(GET_TEST_DATA_DIR + "/test3.sobj");
+
+  if (obj2.hasOverlap(obj3)) {
+    std::cout << "Bad object subtraction." << std::endl;
+  }
+  obj2.concat(obj3);
+
+  obj.canonize();
+  obj2.canonize();
+  if (obj2.equalsLiterally(obj)) {
+    std::cout << "Good object subtraction." << std::endl;
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(obj3);
+
+    array.dump(GET_TEST_DATA_DIR + "/test3.json");
+  } else {
+    std::cout << "Bad object subtraction." << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

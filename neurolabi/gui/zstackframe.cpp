@@ -329,8 +329,8 @@ void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
-  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
-          m_presenter, SLOT(processSliceChangeEvent(int)));
+//  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
+//          m_presenter, SLOT(processSliceChangeEvent(int)));
 }
 
 bool ZStackFrame::connectFunc(const QObject* obj1, const char *signal,
@@ -1229,14 +1229,16 @@ void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 
 void ZStackFrame::setViewPortCenter(int x, int y, int z)
 {
-  presenter()->setViewPortCenter(x, y, z);
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_NORMAL);
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
 //  x -= document()->getStackOffset().getX();
 //  y -= document()->getStackOffset().getY();
-  z -= document()->getStackOffset().getZ();
+//  z -= document()->getStackOffset().getZ();
+  ZGeometry::shiftSliceAxis(x, y, z, view()->getSliceAxis());
 
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
@@ -1244,7 +1246,10 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
-  presenter()->setViewPortCenter(x, y, z);
+
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::hideObject()

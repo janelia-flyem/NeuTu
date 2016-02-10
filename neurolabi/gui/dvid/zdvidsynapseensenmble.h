@@ -145,6 +145,10 @@ public:
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
   ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
+  void update(const ZIntCuboid &box);
+  void update(int x, int y, int z);
+  void update(const ZIntPoint &pt);
+
   void updatePartner(ZDvidSynapse &synapse);
 
   void attachView(ZStackView *view);
@@ -175,9 +179,6 @@ public:
 
 private:
   void init();
-  void update(const ZIntCuboid &box);
-  void update(int x, int y, int z);
-  void update(const ZIntPoint &pt);
   void updateFromCache(int z);
 
 private:

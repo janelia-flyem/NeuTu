@@ -6,6 +6,8 @@
 class ZDvidTarget;
 class ZFlyEmOrthoWidget;
 class ZIntPoint;
+class ZFlyEmOrthoDoc;
+class ZFlyEmProofDoc;
 
 class ZFlyEmOrthoWindow : public QMainWindow
 {
@@ -13,10 +15,17 @@ class ZFlyEmOrthoWindow : public QMainWindow
 public:
   explicit ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent = 0);
 
+  ZFlyEmOrthoDoc *getDocument() const;
+  void copyBookmarkFrom(ZFlyEmProofDoc *doc);
+
 signals:
+  void bookmarkEdited(int x, int y, int z);
+  void synapseEdited(int x, int y, int z);
+  void zoomingTo(int x, int y, int z);
 
 public slots:
   void updateData(const ZIntPoint &center);
+  void downloadBookmark(int x, int y, int z);
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;
