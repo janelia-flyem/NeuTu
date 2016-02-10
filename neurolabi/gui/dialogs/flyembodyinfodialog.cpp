@@ -944,23 +944,14 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
         m_connectionsTableState = CT_OUTPUT;
     }
 
-    // then set label above table
-    // dummy, should factor this out:
+    // set labels above tables
     ui->ioBodyTableLabel->setText("Loading");
-    /*
-    if (m_connectionsTableState == CT_INPUT) {
-        ui->ioBodyTableLabel->setText("Inputs");
-    } else {
-        ui->ioBodyTableLabel->setText("Outputs");
-    }
-    */
+    ui->connectionsTableLabel->setText("Connections");
 
     // activate tab & clear model
     ui->tabWidget->setCurrentIndex(CONNECTIONS_TAB);
     m_ioBodyModel->clear();
     m_connectionsModel->clear();
-
-    // loading message would go here
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
@@ -1104,8 +1095,6 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
 
-    // would remove "loading" status indicator here
-
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
@@ -1147,6 +1136,16 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
+
+    std::ostringstream outputStream;
+    outputStream << "Connections for ";
+    if (m_bodyNames.contains(bodyID)) {
+        outputStream << m_bodyNames[bodyID].toStdString() << " (ID " << bodyID << ")";
+    } else {
+        outputStream << "body ID " << bodyID;
+    }
+    ui->connectionsTableLabel->setText(QString::fromStdString(outputStream.str()));
+
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
