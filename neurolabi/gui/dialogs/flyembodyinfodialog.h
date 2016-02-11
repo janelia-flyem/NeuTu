@@ -113,6 +113,7 @@ private:
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
+    bool m_connectionsLoading;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;

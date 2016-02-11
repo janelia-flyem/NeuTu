@@ -58,6 +58,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // office phone number = random seed
     qsrand(2094656);
     m_quitting = false;
+    m_connectionsLoading = false;
 
 
     // top body list stuff
@@ -922,6 +923,20 @@ void FlyEmBodyInfoDialog::saveColorMapDisk(QString filename) {
 
 void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
+    // this guard is not vital, but it's convenient; I suspect almost
+    //  everything will work, but I'm not 100% sure about some of the
+    //  instance variables
+    if (m_connectionsLoading) {
+        QMessageBox errorBox;
+        errorBox.setText("Still loading");
+        errorBox.setInformativeText("The previous body connections are still loading; please retry when they are finished.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.exec();
+        return;
+    }
+    m_connectionsLoading = true;
+
     // grab the body ID; same row, first column
     QModelIndex index = m_bodyProxy->mapToSource(modelIndex);
     QStandardItem *item = m_bodyModel->item(index.row(), BODY_ID_COLUMN);
@@ -1109,6 +1124,8 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
+
+    m_connectionsLoading = false;
 
 }
 
