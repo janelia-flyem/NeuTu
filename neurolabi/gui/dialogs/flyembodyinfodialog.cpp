@@ -63,6 +63,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // top body list stuff
 
+    // top body list stuff
+
     // first table manages list of bodies
     m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
     setBodyHeaders(m_bodyModel);
@@ -1166,32 +1168,6 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
-
-    std::ostringstream outputStream;
-    outputStream << "Connections for ";
-    if (m_bodyNames.contains(bodyID)) {
-        outputStream << m_bodyNames[bodyID].toStdString() << " (ID " << bodyID << ")";
-    } else {
-        outputStream << "body ID " << bodyID;
-    }
-    ui->connectionsTableLabel->setText(QString::fromStdString(outputStream.str()));
-
-}
-
-void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
-
-    QModelIndex modelIndex = m_connectionsProxy->mapToSource(proxyIndex);
-
-    QStandardItem *itemX = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_X_COLUMN);
-    int x = itemX->data(Qt::DisplayRole).toInt();
-
-    QStandardItem *itemY = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Y_COLUMN);
-    int y = itemY->data(Qt::DisplayRole).toInt();
-
-    QStandardItem *itemZ = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Z_COLUMN);
-    int z = itemZ->data(Qt::DisplayRole).toInt();
-
-    emit pointDisplayRequested(x, y, z);
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
