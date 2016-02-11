@@ -299,9 +299,9 @@ void ZFlyEmProofMvc::makeOrthoWindow()
   connect(getCompleteDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadBookmark(int, int, int)));
   connect(m_orthoWindow, SIGNAL(synapseEdited(int, int, int)),
-          getCompleteDocument(), SLOT(downloadBookmark(int,int,int)));
+          getCompleteDocument(), SLOT(downloadSynapse(int,int,int)));
   connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
-          m_orthoWindow, SLOT(downloadBookmark(int, int, int)));
+          m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
   m_orthoWindow->copyBookmarkFrom(getCompleteDocument());
@@ -685,6 +685,11 @@ void ZFlyEmProofMvc::exitCurrentDoc()
   }
 }
 
+void ZFlyEmProofMvc::syncMergeWithDvid()
+{
+  m_mergeProject.syncWithDvid();
+}
+
 void ZFlyEmProofMvc::setDvidTargetFromDialog()
 {
   getProgressSignal()->startProgress("Loading data ...");
@@ -874,6 +879,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBodyInRoi(bool)));
   connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
           this, SLOT(decomposeBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
+          this, SLOT(mergeSelected()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 

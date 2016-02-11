@@ -180,6 +180,8 @@ public slots:
 
   void highlightSelectedObject(bool hl);
 
+  void syncMergeWithDvid();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:

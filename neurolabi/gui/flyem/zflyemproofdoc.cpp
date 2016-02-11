@@ -611,6 +611,7 @@ void ZFlyEmProofDoc::removeSynapse(
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     se->removeSynapse(pos, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
 
@@ -1017,14 +1018,14 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
   QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     se->update(x, y, z);
     processObjectModified(se);
   }
-  endObjectModifiedMode();
+//  endObjectModifiedMode();
   notifyObjectModified();
 }
 
@@ -2107,6 +2108,12 @@ void ZFlyEmProofDoc::notifySynapseEdited(const ZDvidSynapse &synapse)
                      synapse.getPosition().getY(),
                      synapse.getPosition().getZ());
 }
+
+void ZFlyEmProofDoc::notifySynapseEdited(const ZIntPoint &synapse)
+{
+  emit synapseEdited(synapse.getX(), synapse.getY(), synapse.getZ());
+}
+
 
 void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
 {

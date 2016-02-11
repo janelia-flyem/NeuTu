@@ -2075,9 +2075,12 @@ ZStackViewParam ZStackView::getViewParameter(
 
 void ZStackView::setViewPortOffset(int x, int y)
 {
-  processViewChange(true, false);
-//  notifyViewChanged(NeuTube::View::EXPLORE_MOVE);
+  imageWidget()->blockPaint(true);
   imageWidget()->setViewPortOffset(x, y);
+  imageWidget()->blockPaint(false);
+  processViewChange(false, false);
+  redraw(UPDATE_DIRECT);
+//  notifyViewChanged(NeuTube::View::EXPLORE_MOVE);
 }
 
 void ZStackView::setViewPortCenter(

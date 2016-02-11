@@ -336,6 +336,7 @@ public slots:
 
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
+  void notifyBodyMergeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
@@ -387,6 +388,7 @@ signals:
   void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void bodyMergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
 
 protected:
@@ -485,6 +487,7 @@ protected:
   QMenu *m_strokePaintContextMenu;
   QMenu *m_stackContextMenu;
   QMenu *m_bodyContextMenu;
+  QMenu *m_contextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];

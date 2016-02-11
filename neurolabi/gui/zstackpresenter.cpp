@@ -156,6 +156,8 @@ void ZStackPresenter::init()
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
   m_bodyContextMenu = NULL;
+    m_contextMenu = NULL;
+
   createActions();
 
   //m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
@@ -630,6 +632,14 @@ void ZStackPresenter::createBodyActions()
     connect(action, SIGNAL(triggered()),
             this, SLOT(notifyBodyDecomposeTriggered()));
     m_actionMap[ZActionFactory::ACTION_BODY_DECOMPOSE] = action;
+  }
+
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_MERGE, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyMergeTriggered()));
+    m_actionMap[ZActionFactory::ACTION_BODY_MERGE] = action;
   }
 
 //  action = new QAction(tr("Add split seed"), this);
@@ -1174,7 +1184,7 @@ void ZStackPresenter::moveViewPort(int dx, int dy)
 void ZStackPresenter::moveViewPortTo(int x, int y)
 {
   buddyView()->setViewPortOffset(x, y);
-  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackPresenter::increaseZoomRatio()
@@ -2506,6 +2516,11 @@ void ZStackPresenter::notifyOrthoViewTriggered()
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
+}
+
+void ZStackPresenter::notifyBodyMergeTriggered()
+{
+  emit bodyMergeTriggered();
 }
 
 void ZStackPresenter::notifyBodyAnnotationTriggered()

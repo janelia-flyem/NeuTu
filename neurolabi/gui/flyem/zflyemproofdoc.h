@@ -185,6 +185,7 @@ public: //Bookmark functions
       const std::vector<ZFlyEmBookmark *> &bookmarkArray);
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
   void notifySynapseEdited(const ZDvidSynapse &synapse);
+  void notifySynapseEdited(const ZIntPoint &synapse);
   void updateLocalBookmark(ZFlyEmBookmark *bookmark);
   void copyBookmarkFrom(const ZFlyEmProofDoc *doc);
 

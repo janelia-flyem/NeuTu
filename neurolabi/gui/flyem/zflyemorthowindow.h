@@ -26,6 +26,7 @@ signals:
 public slots:
   void updateData(const ZIntPoint &center);
   void downloadBookmark(int x, int y, int z);
+  void downloadSynapse(int x, int y, int z);
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;

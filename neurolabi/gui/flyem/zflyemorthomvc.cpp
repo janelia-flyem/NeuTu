@@ -33,6 +33,9 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->hideThresholdControl();
   frame->getView()->setHoverFocus(true);
+  if (frame->getSupervisor() != NULL) {
+    frame->getSupervisor()->setDvidTarget(doc->getDvidTarget());
+  }
 
   return frame;
 }
@@ -55,10 +58,14 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());
 }
 
-void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &/*target*/)
+void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   if (getCompleteDocument() != NULL) {
     getView()->reset(false);
+  }
+
+  if (m_supervisor != NULL) {
+    m_supervisor->setDvidTarget(target);
   }
 }
 

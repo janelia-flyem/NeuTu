@@ -27,6 +27,11 @@ void ZFlyEmOrthoWindow::downloadBookmark(int x, int y, int z)
   getDocument()->downloadBookmark(x, y, z);
 }
 
+void ZFlyEmOrthoWindow::downloadSynapse(int x, int y, int z)
+{
+  getDocument()->downloadSynapse(x, y, z);
+}
+
 ZFlyEmOrthoDoc *ZFlyEmOrthoWindow::getDocument() const
 {
   return m_orthoWidget->getDocument();

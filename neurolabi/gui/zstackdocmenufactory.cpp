@@ -176,3 +176,12 @@ QMenu* ZStackDocMenuFactory::makeSynapseContextMenu(
   return menu;
 }
 
+QMenu* ZStackDocMenuFactory::makeContextMenu(
+    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+{
+  if (menu == NULL) {
+    menu = new QMenu(NULL);
+  }
+
+  return menu;
+}

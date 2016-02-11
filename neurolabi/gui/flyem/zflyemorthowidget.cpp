@@ -77,6 +77,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
 
   connect(getDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
+  connect(getDocument(), SIGNAL(synapseEdited(int,int,int)),
+          this, SIGNAL(synapseEdited(int,int,int)));
 
   connect(m_xyMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
