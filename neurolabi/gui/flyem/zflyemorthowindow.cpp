@@ -14,6 +14,8 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
           this, SIGNAL(synapseEdited(int,int,int)));
   connect(m_orthoWidget, SIGNAL(zoomingTo(int,int,int)),
           this, SIGNAL(zoomingTo(int,int,int)));
+  connect(m_orthoWidget, SIGNAL(bodyMergeEdited()),
+          this, SIGNAL(bodyMergeEdited()));
 }
 
 
@@ -39,4 +41,9 @@ ZFlyEmOrthoDoc *ZFlyEmOrthoWindow::getDocument() const
 void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
 {
   getDocument()->copyBookmarkFrom(doc);
+}
+
+void ZFlyEmOrthoWindow::syncMergeWithDvid()
+{
+  m_orthoWidget->syncMergeWithDvid();
 }

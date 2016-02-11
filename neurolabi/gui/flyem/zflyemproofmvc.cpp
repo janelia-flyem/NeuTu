@@ -304,6 +304,10 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
+  connect(m_orthoWindow, SIGNAL(bodyMergeEdited()),
+          this, SLOT(syncMergeWithDvid()));
+  connect(this, SIGNAL(bodyMergeEdited()),
+          m_orthoWindow, SLOT(syncMergeWithDvid()));
   m_orthoWindow->copyBookmarkFrom(getCompleteDocument());
 }
 
@@ -899,6 +903,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(updateCoarseBodyWindowColor()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           this, SLOT(updateCoarseBodyWindowColor()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
+          this, SIGNAL(bodyMergeEdited()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           this, SLOT(saveMergeOperation()));

@@ -875,6 +875,11 @@ void ZFlyEmProofDoc::notifyBodyUnmerged()
   emit bodyUnmerged();
 }
 
+void ZFlyEmProofDoc::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
+}
+
 void ZFlyEmProofDoc::clearBodyMerger()
 {
   getBodyMerger()->clear();
@@ -1869,6 +1874,7 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyMerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 
@@ -1895,6 +1901,7 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyUnmerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 

@@ -23,6 +23,7 @@ signals:
   void bookmarkEdited(int, int, int);
   void synapseEdited(int, int, int);
   void zoomingTo(int, int, int);
+  void bodyMergeEdited();
 
 public slots:
   void moveUp();
@@ -35,6 +36,7 @@ public slots:
   void syncView();
   void syncViewWith(ZFlyEmOrthoMvc *mvc);
   void locateMainWindow();
+  void syncMergeWithDvid();
 
 private:
   void init(const ZDvidTarget &target);
