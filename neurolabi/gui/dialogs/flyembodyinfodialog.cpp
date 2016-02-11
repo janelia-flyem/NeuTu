@@ -1013,11 +1013,17 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // then for each site, find the partner site, then find the body at the 
         //  partner site; in a QMap, keep a list of synapses for each partner body
         //  (the qmap is an instance variable)
+        // we only want to call dvid once, so we need to loop over synapses once
+        //  to find at which x, y, z locations the partners are, then call dvid
+        //  to get the bodies at those locations, then we can build the 
+        //  final connections map; it's about a 3x performance improvement over
+        //  calling dvid once per site
 
-        std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         m_connectionsSites.clear();
+
+        std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        std::vector<ZIntPoint> siteList;
         for (int i=0; i<synapses.size(); i++) {
-            ZJsonObject obj = synapses[i].toJsonObject();
 
             // if we are looking for input bodies, pick out the sites
             //  that are post-synaptic, and vice versa:
@@ -1031,15 +1037,25 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
                 //  directly; I've patched in a getter to use, temporarily
                 std::vector<ZIntPoint> sites = synapses[i].getPartners();
                 for (int j=0; j<sites.size(); j++) {
-                    uint64_t partnerBodyID = reader.readBodyIdAt(sites[j]);
-                    if (!m_connectionsSites.contains(partnerBodyID)) {
-                        m_connectionsSites[partnerBodyID] = QList<ZIntPoint>();
-                    }
-                    m_connectionsSites[partnerBodyID].append(sites[j]);
+                    siteList.push_back(sites[j]);
                 }
 
             } else {
                 // there are other connection types we aren't handling right now; eg, convergent
+            }
+        }
+
+        // get the body list from DVID
+        std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
+
+        // copy into the map
+        std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        for (int i=0; i<siteList.size(); i++) {
+            if (!m_connectionsSites.contains(bodyList[i])) {
+                m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
+            } else {
+            m_connectionsSites[bodyList[i]].append(siteList[i]);
             }
         }
     }
