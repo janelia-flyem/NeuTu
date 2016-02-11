@@ -990,25 +990,23 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID) {
 
 
-    std::cout << "retrieving input/output bodies from DVID for body "
-              << bodyID << std::endl;
+    // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
 
-
-    QElapsedTimer timer;
-    timer.start();
+    // I'm leaving all the timing prints commented out for future use
+    // QElapsedTimer timer;
+    // timer.start();
 
     ZDvidReader reader;
     reader.setVerbose(false);
 
-    std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
     if (reader.open(target)) {
-        std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
 
-        std::cout << "got " << synapses.size() << " synapses" << std::endl;
-
-        std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "got " << synapses.size() << " synapses" << std::endl;
+        // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
         // how many pre/post?
         int npre = 0;
@@ -1020,7 +1018,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
                 npost++;
             }
         }
-        std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
+        // std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
 
         // at this point, we'll need to iterate over the list and find either
         //  the pre or post sites depending on whether we are looking for inputs
@@ -1036,7 +1034,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
         m_connectionsSites.clear();
 
-        std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZIntPoint> siteList;
         for (int i=0; i<synapses.size(); i++) {
 
@@ -1061,11 +1059,11 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         }
 
         // get the body list from DVID
-        std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
 
         // copy into the map
-        std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         for (int i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
@@ -1076,7 +1074,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
     emit ioBodiesLoaded();
 
-    std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
 }
 
