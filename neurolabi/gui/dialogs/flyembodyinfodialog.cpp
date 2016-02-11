@@ -939,9 +939,9 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     // table shows inputs or outputs, based on whether the pre or post
     //  cell was double-clicked:
     if (index.column() == BODY_NPRE_COLUMN) {
-        m_connectionsTableState = CT_INPUT;
-    } else {
         m_connectionsTableState = CT_OUTPUT;
+    } else {
+        m_connectionsTableState = CT_INPUT;
     }
 
     // set labels above tables
@@ -1054,9 +1054,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         for (int i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
-            } else {
+            } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
-            }
         }
     }
 
