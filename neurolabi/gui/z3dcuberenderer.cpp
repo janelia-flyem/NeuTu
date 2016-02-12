@@ -202,13 +202,8 @@ void Z3DCubeRenderer::renderPickingUsingOpengl()
 
 void Z3DCubeRenderer::render(Z3DEye eye)
 {
-
-    qDebug()<<"cuberenderer render ...";
-
   if (!m_initialized)
     return;
-
-  qDebug()<<"cuberenderer initialized ...";
 
   //
   m_cubeShaderGrp.bind();
@@ -220,9 +215,6 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
   oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
   oit3DTransparentizeShader.setUniformValue("vColor", m_color);
-
-
-  qDebug()<<"cuberenderer setparas ...";
 
   nCubes = m_cubes.size();
 
