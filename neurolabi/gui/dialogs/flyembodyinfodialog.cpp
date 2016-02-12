@@ -1170,6 +1170,24 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
     }
 }
 
+void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
+
+    std::cout << "in onDoubleClickIOConnectionsTable at index " << proxyIndex.row() << ", " << proxyIndex.column() << std::endl;
+
+    QModelIndex modelIndex = m_connectionsProxy->mapToSource(proxyIndex);
+
+    QStandardItem *itemX = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_X_COLUMN);
+    int x = itemX->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemY = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Y_COLUMN);
+    int y = itemY->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemZ = m_connectionsModel->item(modelIndex.row(), CONNECTIONS_Z_COLUMN);
+    int z = itemZ->data(Qt::DisplayRole).toInt();
+
+    emit pointDisplayRequested(x, y, z);
+}
+
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
     delete ui;

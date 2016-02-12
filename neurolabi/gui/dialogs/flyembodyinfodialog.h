@@ -64,6 +64,7 @@ private slots:
     void onGotoBodies();    
     void onIOBodiesLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
+    void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
 
 private:
     enum Tabs {
