@@ -48,6 +48,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
   double radius = getRadius(z, sliceAxis);
+  if (radius <= 0.0) {
+        return;
+    }  
   ZIntPoint center = m_position;
   center.shiftSliceAxis(sliceAxis);
 
