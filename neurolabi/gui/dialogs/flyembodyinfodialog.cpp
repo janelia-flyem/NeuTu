@@ -1105,7 +1105,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
         QStandardItem * bodyIDItem = new QStandardItem();
-        bodyIDItem->setData(QVariant(partnerBodyIDs[i]), Qt::DisplayRole);
+        bodyIDItem->setData(QVariant(quint64(partnerBodyIDs[i])), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_ID_COLUMN, bodyIDItem);
 
         if (m_bodyNames.contains(partnerBodyIDs[i])) {
@@ -1113,7 +1113,9 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
         }
 
         QStandardItem * numberItem = new QStandardItem();
-        numberItem->setData(QVariant(m_connectionsSites[partnerBodyIDs[i]].size()), Qt::DisplayRole);
+        numberItem->setData(
+              QVariant(quint64(m_connectionsSites[partnerBodyIDs[i]].size())),
+            Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
 
