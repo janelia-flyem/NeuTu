@@ -611,6 +611,7 @@ void ZFlyEmProofDoc::removeSynapse(
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     se->removeSynapse(pos, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
 
@@ -874,6 +875,11 @@ void ZFlyEmProofDoc::notifyBodyUnmerged()
   emit bodyUnmerged();
 }
 
+void ZFlyEmProofDoc::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
+}
+
 void ZFlyEmProofDoc::clearBodyMerger()
 {
   getBodyMerger()->clear();
@@ -904,6 +910,31 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   notifyObjectModified();
 
   cleanBodyAnnotationMap();
+}
+
+void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
+{
+  if (m_dvidReader.isReady()) {
+    ZJsonObject bookmarkJson = m_dvidReader.readBookmarkJson(x, y, z);
+    ZFlyEmBookmark *bookmark = getBookmark(x, y, z);
+    if (!bookmarkJson.isEmpty()) {
+      bool newBookmark = false;
+      if (bookmark == NULL) {
+        bookmark = new ZFlyEmBookmark;
+        newBookmark = true;
+      }
+      bookmark->loadDvidAnnotation(bookmarkJson);
+      if (newBookmark) {
+        addLocalBookmark(bookmark);
+      } else {
+        updateLocalBookmark(bookmark);
+      }
+    } else {
+      if (bookmark != NULL) {
+        removeObject(bookmark, true);
+      }
+    }
+  }
 }
 
 void ZFlyEmProofDoc::downloadBookmark()
@@ -987,6 +1018,20 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
       emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
   }
+}
+
+void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
+{
+  QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+       iter != seList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->update(x, y, z);
+    processObjectModified(se);
+  }
+//  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadSynapse()
@@ -1829,6 +1874,7 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyMerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 
@@ -1855,6 +1901,7 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyUnmerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 
@@ -2048,6 +2095,50 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
+{
+  QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    addObject(bookmark->clone(), false);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::notifySynapseEdited(const ZDvidSynapse &synapse)
+{
+  emit synapseEdited(synapse.getPosition().getX(),
+                     synapse.getPosition().getY(),
+                     synapse.getPosition().getZ());
+}
+
+void ZFlyEmProofDoc::notifySynapseEdited(const ZIntPoint &synapse)
+{
+  emit synapseEdited(synapse.getX(), synapse.getY(), synapse.getZ());
+}
+
+
+void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZIntPoint center = bookmark->getCenter().toIntPoint();
+    emit bookmarkEdited(center.getX(), center.getY(), center.getZ());
+  }
+}
+
+void ZFlyEmProofDoc::notifyBookmarkEdited(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark *>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    notifyBookmarkEdited(*iter);
+  }
+}
+
 void ZFlyEmProofDoc::removeLocalBookmark(
     const std::vector<ZFlyEmBookmark*> &bookmarkArray)
 {
@@ -2084,4 +2175,23 @@ void ZFlyEmProofDoc::addLocalBookmark(
   if (!bookmarkArray.empty()) {
     emit userBookmarkModified();
   }
+}
+
+ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
+{
+  QList<ZFlyEmBookmark*> bookmarkList = getObjectList<ZFlyEmBookmark>();
+
+  ZFlyEmBookmark *bookmark = NULL;
+  for (QList<ZFlyEmBookmark*>::iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    bookmark = *iter;
+    if (iround(bookmark->getCenter().x()) == x &&
+        iround(bookmark->getCenter().y()) == y &&
+        iround(bookmark->getCenter().z()) == z) {
+      break;
+    }
+    bookmark = NULL;
+  }
+
+  return bookmark;
 }

@@ -255,6 +255,10 @@ QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
 
 QMenu* ZFlyEmProofPresenter::getContextMenu()
 {
+  m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
+
+  return m_contextMenu;
+  /*
   if (getCompleteDocument()->hasDvidSynapseSelected()) {
     return getSynapseContextMenu();
   }
@@ -264,6 +268,7 @@ QMenu* ZFlyEmProofPresenter::getContextMenu()
   }
 
   return NULL;
+  */
 }
 
 

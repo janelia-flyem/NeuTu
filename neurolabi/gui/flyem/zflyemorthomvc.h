@@ -20,8 +20,11 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
   ZDvidTarget getDvidTarget() const;
+  void updateDvidTargetFromDoc();
 
   void updateStack(const ZIntPoint &center);
+
+//  void syncView(const ZIntPoint &center, double zoomRatio);
 
 signals:
 
@@ -29,6 +32,7 @@ public slots:
 
 private:
   void init();
+
 };
 
 #endif // ZFLYEMORTHOMVC_H

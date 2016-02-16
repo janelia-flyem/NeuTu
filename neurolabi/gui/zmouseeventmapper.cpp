@@ -472,7 +472,12 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           }
         } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
-        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+        }
+
+        if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
+            m_doc->getTag() == NeuTube::Document::FLYEM_ORTHO) {
+          op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
+#if 0
           ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc.get());
           if (doc != NULL) {
             ZDvidLabelSlice *slice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -482,6 +487,7 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
               }
             }
           }
+#endif
         }
 
         if (op.isNull()) {

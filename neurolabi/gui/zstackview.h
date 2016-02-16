@@ -131,6 +131,7 @@ public:
    * The value will be clipped if \a slice is out of range.
    */
   void setSliceIndex(int slice);
+  void setSliceIndexQuietly(int slice);
 
   /*!
    * \brief Increase or descrease of the slice index with a certain step.
@@ -233,8 +234,8 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
-  void updateView();
-  void redraw(EUpdateOption option);
+//  void updateView();
+  void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -291,7 +292,7 @@ public slots:
 
 
 signals:
-  void currentSliceChanged(int);
+//  void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
@@ -316,6 +317,11 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
+  void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
+  void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
+
+  ZIntPoint getViewCenter() const;
+
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
 
@@ -324,8 +330,14 @@ public:
 
 //  void notifyViewPortChanged();
 
-  void processViewChange();
+  bool isViewChanged(const ZStackViewParam &param) const;
+  void processViewChange(bool redrawing, bool depthChanged);
   void processViewChange(const ZStackViewParam &param);
+
+  void setHoverFocus(bool on);
+
+  void notifyViewChanged(const ZStackViewParam &param);
+  void notifyViewChanged();
 
 
 public: //Change view parameters
@@ -370,8 +382,6 @@ protected:
   void paintMultipleChannelStackSlice(ZStack *stack, int slice);
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
-
-  void notifyViewChanged(const ZStackViewParam &param);
 
   QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
 

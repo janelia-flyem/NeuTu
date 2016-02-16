@@ -154,6 +154,7 @@ public:
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
+  void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
 
 public: //ROI functions
@@ -181,7 +182,22 @@ public: //Bookmark functions
   void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
   void addLocalBookmark(ZFlyEmBookmark *bookmark);
   void addLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void notifyBookmarkEdited(
+      const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
+  void notifySynapseEdited(const ZDvidSynapse &synapse);
+  void notifySynapseEdited(const ZIntPoint &synapse);
   void updateLocalBookmark(ZFlyEmBookmark *bookmark);
+  void copyBookmarkFrom(const ZFlyEmProofDoc *doc);
+
+  /*!
+   * \brief Find a bookmark at a certain location
+   *
+   * Return the pointer of the bookmark with the coordinates (\a x, \a y, \a z).
+   * It returns NULL if the bookmark cannot be found.
+   *
+   */
+  ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
 public: //Commands
   void executeRemoveSynapseCommand();
@@ -198,7 +214,11 @@ public: //Commands
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void bodyMergeEdited();
   void userBookmarkModified();
+  void bookmarkAdded(int x, int y, int z);
+  void bookmarkEdited(int x, int y, int z);
+  void synapseEdited(int x, int y, int z);
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
   void bodyMapReady();
@@ -207,6 +227,7 @@ public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+  void downloadSynapse(int x, int y, int z);
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
@@ -215,6 +236,8 @@ public slots:
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
+
+  void downloadBookmark(int x, int y, int z);
 
 protected:
   void autoSave();

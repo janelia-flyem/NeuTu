@@ -20,6 +20,7 @@ signals:
   void movingDown();
   void movingLeft();
   void movingRight();
+  void locatingMain();
 
 private:
   void connectSignalSlot();

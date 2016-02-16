@@ -61,7 +61,8 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
   ZDvidReader reader;
   if (reader.open(m_doc->getDvidTarget())) {
     m_synapseBackup = reader.readSynapseJson(m_synapse);
-    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    m_doc->notifySynapseEdited(m_synapse);
   }
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
@@ -86,6 +87,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         ZDvidSynapse synapse;
         synapse.loadJsonObject(m_synapseBackup);
         m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        m_doc->notifySynapseEdited(synapse);
       }
     }
   }
@@ -126,6 +128,7 @@ ZStackDocCommand::DvidSynapseEdit::AddSynapse::~AddSynapse()
 void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
 {
   m_doc->addSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+  m_doc->notifySynapseEdited(m_synapse);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -140,6 +143,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::undo()
 {
   m_doc->removeSynapse(
         m_synapse.getPosition(), ZDvidSynapseEnsemble::DATA_GLOBAL);
+  m_doc->notifySynapseEdited(m_synapse);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -168,6 +172,8 @@ ZStackDocCommand::DvidSynapseEdit::MoveSynapse::~MoveSynapse()
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 {
   m_doc->moveSynapse(m_from, m_to);
+  m_doc->notifySynapseEdited(m_from);
+  m_doc->notifySynapseEdited(m_to);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -181,6 +187,8 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
 {
   m_doc->moveSynapse(m_to, m_from);
+  m_doc->notifySynapseEdited(m_from);
+  m_doc->notifySynapseEdited(m_to);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {

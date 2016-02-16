@@ -65,7 +65,7 @@ void ZDvidSynapseEnsemble::update(int x, int y, int z)
   if (synapse.isValid()) {
     addSynapse(synapse, DATA_LOCAL);
   } else {
-    removeSynapse(synapse.getPosition(), DATA_LOCAL);
+    removeSynapse(x, y, z, DATA_LOCAL);
   }
 }
 

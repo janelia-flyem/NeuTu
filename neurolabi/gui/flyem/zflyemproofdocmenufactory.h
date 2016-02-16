@@ -17,6 +17,8 @@ public:
   QMenu* makeStackContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
+  QMenu* makeContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 };
 
 #endif // ZFLYEMPROOFDOCMENUFACTORY_H
