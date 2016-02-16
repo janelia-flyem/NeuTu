@@ -299,7 +299,9 @@ signals:
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
-  double getZoomRatio() const;
+  double getCanvasWidthZoomRatio() const;
+  double getCanvasHeightZoomRatio() const;
+  double getProjZoomRatio() const;
   void setInfo();
   bool isImageMovable() const;
 
