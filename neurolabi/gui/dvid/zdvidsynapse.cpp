@@ -48,6 +48,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
   double radius = getRadius(z, sliceAxis);
+  if (radius <= 0.0) {
+        return;
+    }  
   ZIntPoint center = m_position;
   center.shiftSliceAxis(sliceAxis);
 
@@ -141,6 +144,11 @@ void ZDvidSynapse::setPosition(const ZIntPoint &pos)
 void ZDvidSynapse::setPosition(int x, int y, int z)
 {
   m_position.set(x, y, z);
+}
+
+// temporary?
+std::vector<ZIntPoint> ZDvidSynapse::getPartners() {
+    return std::vector<ZIntPoint>(m_partnerHint);
 }
 
 double ZDvidSynapse::GetDefaultRadius(EKind kind)
