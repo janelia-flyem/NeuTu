@@ -914,7 +914,9 @@ void ZStackView::takeScreenshot(const QString &filename)
   QImageWriter writer(filename);
   writer.setCompression(1);
 
-  QImage image(m_imageWidget->projectSize(), QImage::Format_ARGB32);
+  QImage image(iround(m_imageWidget->projectSize().width()),
+               iround(m_imageWidget->projectSize().height()),
+               QImage::Format_ARGB32);
 
   m_imageWidget->setViewHintVisible(false);
   m_imageWidget->render(&image);
@@ -2044,6 +2046,12 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 
 //    notifyViewPortChanged();
   }
+}
+
+void ZStackView::zoomWithWidthAligned(int x0, int x1, int cy)
+{
+  imageWidget()->zoomWithWidthAligned(x0, x1, cy);
+  processViewChange(true, false);
 }
 
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const

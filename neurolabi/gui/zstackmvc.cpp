@@ -441,6 +441,15 @@ void ZStackMvc::changeEvent(QEvent *event)
 }
 #endif
 
+void ZStackMvc::zoomWithWidthAligned(int x0, int x1, int cy)
+{
+//  getView()->blockSignals(true);
+  getView()->zoomWithWidthAligned(x0, x1, cy);
+//  getView()->blockSignals(false);
+
+//  getView()->processViewChange(true, depthChanged);
+}
+
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 {
   bool depthChanged = (pt.getZ() == getView()->getCurrentZ());

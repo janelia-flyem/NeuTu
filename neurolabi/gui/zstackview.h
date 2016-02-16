@@ -347,6 +347,8 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
+
+  void zoomWithWidthAligned(int x0, int x1, int cy);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);

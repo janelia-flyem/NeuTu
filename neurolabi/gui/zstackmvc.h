@@ -96,6 +96,7 @@ public slots:
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
+  void zoomWithWidthAligned(int x0, int x1, int cy);
 
   void dump(const QString &msg);
 

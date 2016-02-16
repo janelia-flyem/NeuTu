@@ -103,7 +103,7 @@ void ZImageWidget::setViewPort(const QRect &rect)
   */
 }
 
-void ZImageWidget::setProjRegion(const QRect &rect)
+void ZImageWidget::setProjRegion(const QRectF &rect)
 {
   if (m_projRegion != rect) {
     m_projRegion = rect;
@@ -111,12 +111,58 @@ void ZImageWidget::setProjRegion(const QRect &rect)
   }
 }
 
-void ZImageWidget::setView(const QRect &viewPort, const QRect &projRegion)
+void ZImageWidget::setView(const QRect &viewPort, const QRectF &projRegion)
 {
   if ((m_viewPort != viewPort) || (m_projRegion != projRegion)) {
     m_viewPort = viewPort;
     m_projRegion = projRegion;
   }
+}
+
+void ZImageWidget::adjustViewPort(EViewPortAdjust option)
+{
+  m_viewPort = adjustViewPort(m_viewPort, option);
+}
+
+QRect ZImageWidget::adjustViewPort(const QRect &viewPort, EViewPortAdjust option)
+{
+  QRect newViewPort = viewPort;
+
+  if (option != VIEWPORT_NO_ADJUST) {
+    double wRatio = (double) viewPort.width() / screenSize().width();
+    double hRatio = (double) viewPort.height() / screenSize().height();
+
+    if (wRatio != hRatio) {
+      switch (option) {
+      case VIEWPORT_EXPAND:
+      if (wRatio < hRatio){ //expand width
+        double ratio = hRatio / wRatio;
+        int width = iround(ratio * viewPort.width());
+        newViewPort.setWidth(width);
+      } else { // expand height
+        double ratio = wRatio / hRatio;
+        int height = iround(ratio * viewPort.height());
+        newViewPort.setHeight(height);
+      }
+        break;
+      case VIEWPORT_SHRINK:
+      if (wRatio > hRatio){ //shrink width
+        double ratio = hRatio / wRatio;
+        int width = iround(ratio * viewPort.width());
+        newViewPort.setWidth(width);
+      } else { // shrink height
+        double ratio = wRatio / hRatio;
+        int height = iround(ratio * viewPort.height());
+        newViewPort.setHeight(height);
+      }
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  return newViewPort;
 }
 
 void ZImageWidget::maximizeViewPort()
@@ -126,23 +172,69 @@ void ZImageWidget::maximizeViewPort()
 
   int wMargin = screenSize().width() - projectRegion().width();
   if (wMargin > 1) {
-    int dw = iround(wRatio * wMargin);
+    int dw = std::ceil(wRatio * wMargin);
     if (dw > 0) {
       m_viewPort.setWidth(imin2(canvasSize().width(), m_viewPort.width() + dw));
-      m_projRegion.setWidth(iround(m_viewPort.width() / wRatio));
+      m_projRegion.setWidth(m_viewPort.width() / wRatio);
     }
   }
 
   int hMargin = screenSize().height() - projectRegion().height();
   if (hMargin > 1) {
-    int dh = iround(hRatio * hMargin);
+    int dh = std::ceil(hRatio * hMargin);
     if (dh > 0) {
       m_viewPort.setHeight(
             imin2(canvasSize().height(), m_viewPort.height() + dh));
-      m_projRegion.setHeight(iround(m_viewPort.height() / hRatio));
+      m_projRegion.setHeight(m_viewPort.height() / hRatio);
     }
   }
 }
+
+void ZImageWidget::alignProjRegion(double ratio)
+{
+  m_projRegion.setWidth(m_viewPort.width() * ratio);
+  m_projRegion.setHeight(m_viewPort.height() * ratio);
+}
+
+QRect ZImageWidget::alignViewPort(
+    const QRect &viewPort, double vx, double vy, double px, double py,
+    double ratio) const
+{
+  QRect newViewPort = viewPort;
+
+  vx -= m_canvasRegion.left();
+  vy -= m_canvasRegion.top();
+
+  px -= projectRegion().left();
+  px -= projectRegion().top();
+
+  double dx = px / ratio;
+  double dy = py / ratio;
+
+  int x0 = int(vx - dx);
+  int y0 = int(vy - dy);
+
+  if (x0 < 0) {
+    x0 = 0;
+  }
+
+  if (y0 < 0) {
+    y0 = 0;
+  }
+
+  if (x0 + newViewPort.width() > canvasSize().width()) {
+    x0 = canvasSize().width() - newViewPort.width();
+  }
+
+  if (y0 + newViewPort.height() > canvasSize().height()) {
+    y0 = canvasSize().height() - newViewPort.height();
+  }
+
+  newViewPort.moveTo(x0 + m_canvasRegion.left(), y0 + m_canvasRegion.top());
+
+  return newViewPort;
+}
+
 
 QRect ZImageWidget::alignViewPort(
     const QRect &viewPort, int vx, int vy, int px, int py) const
@@ -182,7 +274,35 @@ QRect ZImageWidget::alignViewPort(
   return newViewPort;
 }
 
-void ZImageWidget::zoom(double zoomRatio, const QPoint &ref)
+void ZImageWidget::adjustProjRegion(const QRect &viewPort)
+{
+  double wRatio = (double) screenSize().width() / viewPort.width();
+  double hRatio = (double) screenSize().height() / viewPort.height();
+
+  m_projRegion.setTopLeft(QPointF(0, 0));
+  if (screenSize().width() * viewPort.height() ==
+      screenSize().height() * viewPort.height()) {
+    m_projRegion.setSize(QSizeF(screenSize().width(), screenSize().height()));
+  } else {
+    if (wRatio > hRatio) { //height should be covered
+      double ratio = hRatio;
+      m_projRegion.setWidth(viewPort.width() * ratio);
+      m_projRegion.setHeight(screenSize().height());
+    } else {
+      double ratio = wRatio;
+      m_projRegion.setWidth(screenSize().width());
+      m_projRegion.setHeight(viewPort.height() * ratio);
+    }
+  }
+}
+
+void ZImageWidget::adjustProjRegion()
+{
+  adjustProjRegion(m_viewPort);
+}
+
+void ZImageWidget::zoom(
+    double zoomRatio, const QPointF &ref, EViewPortAdjust option)
 {
   if (zoomRatio < 1.0) {
     zoomRatio = 1.0;
@@ -193,18 +313,49 @@ void ZImageWidget::zoom(double zoomRatio, const QPoint &ref)
   viewPort.setHeight(iround(canvasSize().height() / zoomRatio));
 
 
-  double wRatio = (double) m_viewPort.width() / projectRegion().width();
-  double hRatio = (double) m_viewPort.height() / projectRegion().height();
+  double wRatio = m_viewPort.width() / projectRegion().width();
+  double hRatio = m_viewPort.height() / projectRegion().height();
 
-  int vx = iround(m_viewPort.left() + ref.x() * wRatio);
-  int vy = iround(m_viewPort.top() + ref.y() * hRatio);
+  double vx = m_viewPort.left() + ref.x() * wRatio;
+  double vy = m_viewPort.top() + ref.y() * hRatio;
 
   double ratio = dmin2((double) screenSize().width() / viewPort.width(),
                        (double) screenSize().height() / viewPort.height());
-  setProjRegion(QRect(0, 0, viewPort.width() * ratio,
-                      viewPort.height() * ratio));
+  setProjRegion(
+        QRectF(0, 0, viewPort.width() * ratio, viewPort.height() * ratio));
 
-  m_viewPort = alignViewPort(viewPort, vx, vy, ref.x(), ref.y());
+  m_viewPort = alignViewPort(viewPort, iround(vx), iround(vy),
+                             iround(ref.x()), iround(ref.y()));
+  adjustViewPort(option);
+}
+
+void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
+{
+  if (zoomRatio < 1.0) {
+    zoomRatio = 1.0;
+  }
+
+  QRect viewPort;
+  viewPort.setWidth(iround(canvasSize().width() / zoomRatio));
+  viewPort.setHeight(iround(canvasSize().height() / zoomRatio));
+
+
+  double wRatio = m_viewPort.width() / projectRegion().width();
+  double hRatio = m_viewPort.height() / projectRegion().height();
+
+  double vx = m_viewPort.left() + ref.x() * wRatio;
+  double vy = m_viewPort.top() + ref.y() * hRatio;
+
+  double ratio = dmin2((double) screenSize().width() / viewPort.width(),
+                       (double) screenSize().height() / viewPort.height());
+  setProjRegion(
+        QRectF(0, 0, viewPort.width() * ratio, viewPort.height() * ratio));
+
+  m_viewPort = alignViewPort(viewPort, iround(vx), iround(vy),
+                             iround(ref.x()), iround(ref.y()));
+
+//  ratio = (ref.x() - projectRegion().left()) / (vx - m_viewPort.left());
+//  alignProjRegion(ratio);
 
   maximizeViewPort();
 
@@ -240,8 +391,9 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
   double ratio = dmin2(wRatio, hRatio);
 
   if (wRatio < hRatio) { //height has some margin
+    //Compute adjusted height
     int height = iround(screenSize().height() / wRatio);
-    int margin = (height - viewPort.height()) / 2;
+    int margin = (height - viewPort.height()) / 2; //expand both sides
     int top = newViewPort.top() - margin;
     if (top < m_canvasRegion.top()) {
       top = m_canvasRegion.top();
@@ -249,13 +401,13 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     newViewPort.setTop(top);
 
     newViewPort.setHeight(
-          imin2(height,
+          std::min(height,
                 canvasSize().height() + m_canvasRegion.top() - newViewPort.top()));
-  } else if (hRatio < wRatio) {
-    int width = iround(screenSize().width() / hRatio);
-    int margin = (width - viewPort.width()) / 2;
+  } else if (hRatio < wRatio) { //width has some margin
+    double width = screenSize().width() / hRatio;
+    double margin = (width - viewPort.width()) / 2;
 
-    int left = newViewPort.left() - margin;
+    double left = newViewPort.left() - margin;
     if (left < m_canvasRegion.left()) {
       left = m_canvasRegion.left();
     }
@@ -266,9 +418,8 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
                 canvasSize().width() + m_canvasRegion.left() - newViewPort.left()));
   }
 
-  QRect projRect = QRect(
-        0, 0, iround(ratio * newViewPort.width()),
-        iround(ratio * newViewPort.height()));
+  QRectF projRect = QRectF(
+        0, 0, ratio * newViewPort.width(), ratio * newViewPort.height());
 
   setView(newViewPort, projRect);
 }
@@ -327,6 +478,19 @@ void ZImageWidget::setZoomRatio(double zoomRatio)
   zoomRatio = std::min(double(getMaxZoomRatio()), zoomRatio);
   zoom(zoomRatio);
   update();
+}
+
+void ZImageWidget::zoomWithWidthAligned(int x0, int x1, int cy)
+{
+  m_viewPort.setLeft(x0);
+  m_viewPort.setRight(x1);
+
+  double ratio = (double) screenSize().width() / m_viewPort.width();
+  int height = iround(ratio * screenSize().height());
+  m_viewPort.setTop(cy - (height - 1) / 2);
+  m_viewPort.setHeight(height);
+
+  adjustProjRegion();
 }
 
 #define VIEW_PORT_AREA_THRESHOLD 25000000
@@ -489,23 +653,22 @@ void ZImageWidget::zoom(double zoomRatio)
                           screenSize().height()));
     }
   } else {
-
-    QPoint ref;
+    QPointF ref;
     ref = m_projRegion.center();
 
     zoom(zoomRatio, ref);
-#if 0
-//    QRect viewPort;
-//    double r = static_cast<double>(viewPort.width()) / m_projRegion.width();
-    QPoint center = m_viewPort.center();
-    int w = canvasSize().width() / zoomRatio;
-    int h = canvasSize().height() / zoomRatio;
-    int x0 = center.x() - w / 2;
-    int y0 = center.y() - h / 2;
+  }
+}
 
-//    setValidViewPort(viewPort);
-    setView(zoomRatio, QPoint(x0, y0));
-#endif
+void ZImageWidget::zoom(double zoomRatio, EViewPortAdjust option)
+{
+  if (zoomRatio <= 1.0) {
+    zoom(zoomRatio);
+  } else {
+    QPointF ref;
+    ref = m_projRegion.center();
+
+    zoom(zoomRatio, ref, option);
   }
 }
 
@@ -716,7 +879,8 @@ QSize ZImageWidget::sizeHint() const
   if (m_projRegion.size().isEmpty()) {
     return minimumSizeHint();
   } else {
-    return m_projRegion.size();
+    return QSize(std::ceil(m_projRegion.width()),
+                 std::ceil(m_projRegion.height()));
   }
 }
 
@@ -795,7 +959,7 @@ QPointF ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
 
 QPointF ZImageWidget::worldCoordinate(QPoint widgetCoord) const
 {
-  QSize csize = projectSize();
+  QSizeF csize = projectSize();
   //QSize isize = canvasSize();
 
   QPointF pt;
