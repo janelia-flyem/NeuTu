@@ -148,6 +148,14 @@ void Z3DMainWindow::updateButtonObjects(bool v)
     }
 }
 
+void Z3DMainWindow::updateButtonROIs(bool v)
+{
+    if(roiAction)
+    {
+       roiAction->setChecked(v);
+    }
+}
+
 Z3DTabWidget* Z3DMainWindow::getCentralTab() const
 {
   return qobject_cast<Z3DTabWidget*>(centralWidget());
@@ -232,6 +240,8 @@ void Z3DTabWidget::resetCameraCenter()
 
 void Z3DTabWidget::showGraph(bool v)
 {
+    qDebug()<<"showGraph ... "<<v;
+
     int index = this->currentIndex();
 
     Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
@@ -246,6 +256,8 @@ void Z3DTabWidget::showGraph(bool v)
 
 void Z3DTabWidget::settingsPanel(bool v)
 {
+    qDebug()<<"settings ... "<<v;
+
     int index = this->currentIndex();
 
     Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
@@ -270,6 +282,21 @@ void Z3DTabWidget::objectsPanel(bool v)
         cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
         buttonStatus[getRealIndex(index)][2] = v;
+    }
+
+}
+
+void Z3DTabWidget::roiPanel(bool v)
+{
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+        cur3Dwin->setButtonStatus(3,v);
+        buttonStatus[getRealIndex(index)][3] = v;
     }
 
 }
@@ -373,6 +400,14 @@ void Z3DTabWidget::updateWindow(int index)
                             w->getObjectsDockWidget()->toggleViewAction()->trigger();
                             buttonStatus[cur][2] = buttonChecked;
                         }
+
+                        // ROIs
+                        buttonChecked = w->getButtonStatus(3);
+                        if(buttonChecked != preWin->getButtonStatus(3))
+                        {
+                            w->getROIsDockWidget()->toggleViewAction()->trigger();
+                            buttonStatus[cur][3] = buttonChecked;
+                        }
                     }
 
                 }
@@ -400,6 +435,14 @@ void Z3DTabWidget::updateWindow(int index)
                         w->getObjectsDockWidget()->toggleViewAction()->trigger();
                         buttonStatus[cur][2] = buttonChecked;
                     }
+
+                    // ROIs
+                    buttonChecked = w->getButtonStatus(3);
+                    if(buttonChecked != buttonStatus[preIndex][3])
+                    {
+                        w->getROIsDockWidget()->toggleViewAction()->trigger();
+                        buttonStatus[cur][3] = buttonChecked;
+                    }
                 }
             }
 
@@ -407,6 +450,7 @@ void Z3DTabWidget::updateWindow(int index)
             emit buttonShowGraphToggled(w->getButtonStatus(0));
             emit buttonSettingsToggled(w->getButtonStatus(1));
             emit buttonObjectsToggled(w->getButtonStatus(2));
+            emit buttonROIsToggled(w->getButtonStatus(3));
         }
 
         preIndex = cur;
@@ -435,7 +479,7 @@ void Z3DTabWidget::closeAllWindows()
 
 void Z3DTabWidget::closeWindow(int index)
 {
-    qDebug()<<"####"<<preIndex<<index<<getRealIndex(index);
+  qDebug()<<"####closeWindow"<<preIndex<<index<<getRealIndex(index);
 
   Z3DWindow *w = (Z3DWindow *)(widget(index));
   if (w != NULL) {
@@ -456,6 +500,12 @@ void Z3DTabWidget::closeWindow(int index)
     if(buttonChecked != false)
     {
         w->getObjectsDockWidget()->toggleViewAction()->trigger();
+    }
+
+    buttonChecked = w->getButtonStatus(3);
+    if(buttonChecked != false)
+    {
+        w->getROIsDockWidget()->toggleViewAction()->trigger();
     }
 
     windowStatus[getRealIndex(index)] = false;
@@ -1421,6 +1471,11 @@ void Z3DWindow::createDockWindows()
   m_objectsDockWidget->setWidget(omw);
   m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
 
+  m_roiDockWidget = new QDockWidget(tr("ROIs"), this);
+  m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
+
+  addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
   addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
   addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
 
@@ -4203,6 +4258,11 @@ QDockWidget* Z3DWindow::getSettingsDockWidget()
 QDockWidget* Z3DWindow::getObjectsDockWidget()
 {
     return m_objectsDockWidget;
+}
+
+QDockWidget* Z3DWindow::getROIsDockWidget()
+{
+    return m_roiDockWidget;
 }
 
 void Z3DWindow::setButtonStatus(int index, bool v)
