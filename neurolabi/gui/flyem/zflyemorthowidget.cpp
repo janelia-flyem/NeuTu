@@ -160,16 +160,22 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 
   switch (mvc->getView()->getSliceAxis()) {
   case NeuTube::Z_AXIS:
-    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
-    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+    m_yzMvc->zoomWithHeightAligned(mvc->getView());
+//    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+    m_xzMvc->zoomWithWidthAligned(mvc->getView());
+//    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
     break;
   case NeuTube::X_AXIS:
-    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
-    m_xzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getWidthZoomRatio());
+    m_xyMvc->zoomWithHeightAligned(mvc->getView());
+    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
+//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+//    m_xzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getWidthZoomRatio());
     break;
   case NeuTube::Y_AXIS:
-    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
-    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
+    m_xyMvc->zoomWithWidthAligned(mvc->getView());
+    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
+//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+//    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
     break;
   }
 

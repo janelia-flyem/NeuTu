@@ -97,6 +97,8 @@ public:
   void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
 
   void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 

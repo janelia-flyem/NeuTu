@@ -485,12 +485,58 @@ void ZImageWidget::zoomWithWidthAligned(int x0, int x1, int cy)
   m_viewPort.setLeft(x0);
   m_viewPort.setRight(x1);
 
-  double ratio = (double) screenSize().width() / m_viewPort.width();
+  double ratio = (double) m_viewPort.width() / screenSize().width();
   int height = iround(ratio * screenSize().height());
   m_viewPort.setTop(cy - (height - 1) / 2);
   m_viewPort.setHeight(height);
 
   adjustProjRegion();
+}
+
+void ZImageWidget::zoomWithWidthAligned(int x0, int x1, double pw, int cy)
+{
+  m_viewPort.setLeft(x0);
+  m_viewPort.setRight(x1);
+
+  m_projRegion.setLeft(0);
+  m_projRegion.setWidth(pw);
+
+  double ratio = m_viewPort.width() / m_projRegion.width();
+
+  int height = iround(ratio * screenSize().height());
+  m_viewPort.setTop(cy - (height - 1) / 2);
+  if (m_viewPort.top() < m_canvasRegion.top()) {
+    m_viewPort.setTop(m_canvasRegion.top());
+  }
+  m_viewPort.setHeight(height);
+
+  m_projRegion.setTop(0);
+  m_projRegion.setHeight(m_viewPort.height() / ratio);
+
+  update();
+}
+
+void ZImageWidget::zoomWithHeightAligned(int y0, int y1, double ph, int cx)
+{
+  m_viewPort.setTop(y0);
+  m_viewPort.setBottom(y1);
+
+  m_projRegion.setTop(0);
+  m_projRegion.setHeight(ph);
+
+  double ratio = m_viewPort.height() / m_projRegion.height();
+
+  int width = iround(ratio * screenSize().width());
+  m_viewPort.setLeft(cx - (width - 1) / 2);
+  if (m_viewPort.left() < m_canvasRegion.left()) {
+    m_viewPort.setLeft(m_canvasRegion.left());
+  }
+  m_viewPort.setWidth(width);
+
+  m_projRegion.setLeft(0);
+  m_projRegion.setWidth(m_viewPort.width() / ratio);
+
+  update();
 }
 
 #define VIEW_PORT_AREA_THRESHOLD 25000000

@@ -2054,6 +2054,28 @@ void ZStackView::zoomWithWidthAligned(int x0, int x1, int cy)
   processViewChange(true, false);
 }
 
+void ZStackView::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
+{
+  bool depthChanged = (cz == getCurrentZ());
+
+  blockSignals(true);
+  setZ(cz);
+  imageWidget()->zoomWithWidthAligned(x0, x1, pw, cy);
+  blockSignals(false);
+  processViewChange(true, depthChanged);
+}
+
+void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
+{
+  bool depthChanged = (cz == getCurrentZ());
+
+  blockSignals(true);
+  setZ(cz);
+  imageWidget()->zoomWithHeightAligned(y0, y1, ph, cx);
+  blockSignals(false);
+  processViewChange(true, depthChanged);
+}
+
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
@@ -2078,6 +2100,11 @@ QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
   }
 
   return rect;
+}
+
+QRectF ZStackView::getProjRegion() const
+{
+  return m_imageWidget->projectRegion();
 }
 
 ZStackViewParam ZStackView::getViewParameter(
