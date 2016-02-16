@@ -79,9 +79,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QPushButton" name="syncPushButton">
+    <widget class="QPushButton" name="locateToPushButton">
      <property name="text">
-      <string>Sync to Main Window</string>
+      <string>Locate in Main Window</string>
      </property>
     </widget>
    </item>

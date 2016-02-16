@@ -21,6 +21,8 @@ class ZStackViewParam;
 class ZProgressSignal;
 class ZWidgetMessage;
 class QMainWindow;
+class ZIntPoint;
+class ZPoint;
 
 /*!
  * \brief The MVC class for stack operation
@@ -71,6 +73,9 @@ public:
 
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
+  ZIntPoint getViewCenter() const;
+  double getZoomRatio() const;
+
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
 
@@ -79,10 +84,17 @@ signals:
   void objectChanged();
   void objectSelectionChanged();
   void messageGenerated(const ZWidgetMessage&);
+  void viewChanged();
 
 public slots:
+  void updateActiveViewData();
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
+
+  void zoomTo(const ZIntPoint &pt);
+  void zoomTo(int x, int y, int z);
+  void zoomTo(int x, int y, int z, int width);
+  void zoomTo(const ZIntPoint &pt, double zoomRatio);
 
   void dump(const QString &msg);
 
@@ -101,6 +113,16 @@ protected:
 //  virtual void focusInEvent(QFocusEvent * event);
 //  virtual void focusOutEvent(QFocusEvent * event);
 //  virtual void changeEvent(QEvent * event);
+
+  typedef bool FConnectAction(
+      const QObject*, const char *,
+      const QObject *, const char *);
+
+  static bool connectFunc(const QObject* obj1, const char *signal,
+                          const QObject *obj2, const char *slot);
+
+  void updateDocSignalSlot(FConnectAction connectAction);
+  void updateSignalSlot(FConnectAction connectAction);
 
 private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);

@@ -43,8 +43,10 @@ void ZMultiscalePixmap::setOffset(const QPoint &offset)
   for (std::vector<ZPixmap*>::iterator iter = m_pixmapArray.begin();
        iter != m_pixmapArray.end(); ++iter, ++level) {
     ZPixmap *pixmap = *iter;
-    int scale = getScale(level);
-    pixmap->setOffset(m_offset.x() / scale, m_offset.y() / scale);
+    if (pixmap != NULL) {
+      int scale = getScale(level);
+      pixmap->setOffset(m_offset.x() / scale, m_offset.y() / scale);
+    }
   }
 }
 

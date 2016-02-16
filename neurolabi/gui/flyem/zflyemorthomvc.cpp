@@ -32,6 +32,8 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->layout()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->setContentsMargins(0, 0, 0, 0);
   frame->getView()->hideThresholdControl();
+  frame->getView()->setHoverFocus(true);
+  frame->updateDvidTargetFromDoc();
 
   return frame;
 }
@@ -54,10 +56,21 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());
 }
 
-void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &/*target*/)
+void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
+{
+  getCompleteDocument()->setDvidTarget(target);
+  updateDvidTargetFromDoc();
+}
+
+void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 {
   if (getCompleteDocument() != NULL) {
     getView()->reset(false);
+    if (m_supervisor != NULL) {
+      m_supervisor->setDvidTarget(getCompleteDocument()->getDvidTarget());
+    }
+    m_mergeProject.setDvidTarget(getCompleteDocument()->getDvidTarget());
+    m_mergeProject.syncWithDvid();
   }
 }
 
@@ -71,3 +84,4 @@ void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
   getCompleteDocument()->updateStack(center);
   getView()->updateViewBox();
 }
+

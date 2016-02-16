@@ -85,6 +85,7 @@ signals:
   void dvidTargetChanged(ZDvidTarget);
   void userBookmarkUpdated(ZStackDoc *doc);
   void nameColorMapReady(bool ready);
+  void bodyMergeEdited();
 
 public slots:
   void mergeSelected();
@@ -134,9 +135,6 @@ public slots:
 
   void enhanceTileContrast(bool state);
 
-  void zoomTo(const ZIntPoint &pt);
-  void zoomTo(int x, int y, int z);
-  void zoomTo(int x, int y, int z, int width);
   void goToBody();
   void goToBodyBottom();
   void goToBodyTop();
@@ -182,6 +180,8 @@ public slots:
   void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
 
   void highlightSelectedObject(bool hl);
+
+  void syncMergeWithDvid();
 
 //  void toggleEdgeMode(bool edgeOn);
 

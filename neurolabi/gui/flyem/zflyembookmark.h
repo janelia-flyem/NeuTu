@@ -20,6 +20,10 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+  }
+
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 
@@ -86,6 +90,8 @@ public:
   void addUserTag();
 
   void clear();
+
+  ZFlyEmBookmark* clone() const;
 
 private:
   uint64_t m_bodyId;

@@ -25,7 +25,8 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           this, SIGNAL(movingLeft()));
   connect(ui->rightPushButton, SIGNAL(clicked()),
           this, SIGNAL(movingRight()));
-
+  connect(ui->locateToPushButton, SIGNAL(clicked()),
+          this, SIGNAL(locatingMain()));
 }
 
 

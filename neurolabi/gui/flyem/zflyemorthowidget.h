@@ -8,6 +8,8 @@ class ZFlyEmOrthoMvc;
 class ZFlyEmOrthoDoc;
 class FlyEmOrthoControlForm;
 class ZIntPoint;
+class ZStackView;
+class ZStackMvc;
 
 class ZFlyEmOrthoWidget : public QWidget
 {
@@ -18,6 +20,10 @@ public:
   ZFlyEmOrthoDoc *getDocument() const;
 
 signals:
+  void bookmarkEdited(int, int, int);
+  void synapseEdited(int, int, int);
+  void zoomingTo(int, int, int);
+  void bodyMergeEdited();
 
 public slots:
   void moveUp();
@@ -25,7 +31,12 @@ public slots:
   void moveLeft();
   void moveRight();
 
+  void moveTo(double x, double y, double z);
   void moveTo(const ZIntPoint &center);
+  void syncView();
+  void syncViewWith(ZFlyEmOrthoMvc *mvc);
+  void locateMainWindow();
+  void syncMergeWithDvid();
 
 private:
   void init(const ZDvidTarget &target);

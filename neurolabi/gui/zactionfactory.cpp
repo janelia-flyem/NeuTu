@@ -530,6 +530,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_DECOMPOSE:
     action = new QAction("Decompose", parent);
     break;
+  case ACTION_BODY_MERGE:
+    action = new QAction("Merge", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
