@@ -290,7 +290,19 @@ void ZStackView::setInfo()
   }
 }
 
-double ZStackView::getZoomRatio() const
+double ZStackView::getCanvasWidthZoomRatio() const
+{
+  return (double) m_imageWidget->canvasSize().width() /
+      m_imageWidget->viewPort().width();
+}
+
+double ZStackView::getCanvasHeightZoomRatio() const
+{
+  return (double) m_imageWidget->canvasSize().height() /
+      m_imageWidget->viewPort().height();
+}
+
+double ZStackView::getProjZoomRatio() const
 {
   return (double) m_imageWidget->projectSize().width() /
       m_imageWidget->viewPort().width();
@@ -1249,7 +1261,7 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
   if (!canvasSize.isEmpty() &&
       (buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS) ||
       buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
-    double zoomRatio = getZoomRatio();
+    double zoomRatio = getProjZoomRatio();
     int level = 0;
     if (zoomRatio < 0.5 && zoomRatio > 0) {
       level = (int) std::floor(1.0 / zoomRatio - 1);
@@ -1286,7 +1298,7 @@ void ZStackView::reloadTileCanvas()
 
   if (!canvasSize.isEmpty() &&
       buddyDocument()->hasDrawable(ZStackObject::TARGET_TILE_CANVAS)) {
-    double zoomRatio = getZoomRatio();
+    double zoomRatio = getProjZoomRatio();
     int level = 1;
     if (zoomRatio > 0) {
       level = (int) std::floor(1.0 / zoomRatio);

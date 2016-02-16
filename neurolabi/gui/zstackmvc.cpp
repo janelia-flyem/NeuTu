@@ -508,8 +508,13 @@ ZIntPoint ZStackMvc::getViewCenter() const
   return getView()->getViewCenter();
 }
 
-double ZStackMvc::getZoomRatio() const
+double ZStackMvc::getWidthZoomRatio() const
 {
-  return getView()->getZoomRatio();
+  return getView()->getCanvasWidthZoomRatio();
+}
+
+double ZStackMvc::getHeightZoomRatio() const
+{
+  return getView()->getCanvasHeightZoomRatio();
 }
 

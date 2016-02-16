@@ -74,7 +74,8 @@ public:
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
   ZIntPoint getViewCenter() const;
-  double getZoomRatio() const;
+  double getWidthZoomRatio() const;
+  double getHeightZoomRatio() const;
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

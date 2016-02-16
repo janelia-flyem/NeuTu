@@ -158,16 +158,19 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   disconnect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   disconnect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
 
-  if (m_xyMvc != mvc) {
-    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
-  }
-
-  if (m_yzMvc != mvc) {
-    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
-  }
-
-  if (m_xzMvc != mvc) {
-    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
+  switch (mvc->getView()->getSliceAxis()) {
+  case NeuTube::Z_AXIS:
+    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+    break;
+  case NeuTube::X_AXIS:
+    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+    m_xzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getWidthZoomRatio());
+    break;
+  case NeuTube::Y_AXIS:
+    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
+    break;
   }
 
   connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));

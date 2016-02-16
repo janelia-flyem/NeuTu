@@ -986,6 +986,7 @@ void ZFlyEmProofMvc::customInit()
   disableSplit();
 
 
+  // connections to body info dialog (aka "sequencer")
   connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
           this, SLOT(locateBody(uint64_t)));
   connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
@@ -1003,6 +1004,7 @@ void ZFlyEmProofMvc::customInit()
   connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
           getCompleteDocument(),
           SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+  connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)), this, SLOT(zoomTo(int,int,int)));
 
   /*
   QPushButton *button = new QPushButton(this);
