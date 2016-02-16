@@ -509,6 +509,9 @@ void ZImageWidget::zoomWithWidthAligned(int x0, int x1, double pw, int cy)
     m_viewPort.setTop(m_canvasRegion.top());
   }
   m_viewPort.setHeight(height);
+  if (m_viewPort.bottom() > m_canvasRegion.bottom()) {
+    m_viewPort.setBottom(m_canvasRegion.bottom());
+  }
 
   m_projRegion.setTop(0);
   m_projRegion.setHeight(m_viewPort.height() / ratio);
@@ -532,6 +535,9 @@ void ZImageWidget::zoomWithHeightAligned(int y0, int y1, double ph, int cx)
     m_viewPort.setLeft(m_canvasRegion.left());
   }
   m_viewPort.setWidth(width);
+  if (m_viewPort.right() > m_canvasRegion.right()) {
+    m_viewPort.setRight(m_canvasRegion.right());
+  }
 
   m_projRegion.setLeft(0);
   m_projRegion.setWidth(m_viewPort.width() / ratio);

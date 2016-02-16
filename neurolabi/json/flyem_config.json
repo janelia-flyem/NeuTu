@@ -77,7 +77,7 @@
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "user_name": ["shinomiyak", "zhaot", "rivlinp", "cheathamn" ]
+      "user_name": ["shinomiyak", "zhaot", "rivlinp", "cheathamn", "barthmarona" ]
     },
     {
       "address": "emrecon100.janelia.priv",
