@@ -240,33 +240,29 @@ void Z3DTabWidget::resetCameraCenter()
 
 void Z3DTabWidget::showGraph(bool v)
 {
-    qDebug()<<"showGraph ... "<<v;
-
     int index = this->currentIndex();
 
     Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
-        cur3Dwin->getGraphFilter()->setVisible(v);
         cur3Dwin->setButtonStatus(0,v);
         buttonStatus[getRealIndex(index)][0] = v;
+        cur3Dwin->getGraphFilter()->setVisible(v);
     }
 }
 
 void Z3DTabWidget::settingsPanel(bool v)
 {
-    qDebug()<<"settings ... "<<v;
-
     int index = this->currentIndex();
 
     Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
     if(cur3Dwin)
     {
-        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(1,v);
         buttonStatus[getRealIndex(index)][1] = v;
+        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
     }
 
 }
@@ -279,9 +275,9 @@ void Z3DTabWidget::objectsPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
         cur3Dwin->setButtonStatus(2,v);
         buttonStatus[getRealIndex(index)][2] = v;
+        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
     }
 
 }
@@ -294,9 +290,18 @@ void Z3DTabWidget::roiPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-        cur3Dwin->setButtonStatus(3,v);
-        buttonStatus[getRealIndex(index)][3] = v;
+        bool checked = cur3Dwin->getButtonStatus(3);
+        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
+
+        if(isHidden != v)
+            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(3,v);
+            buttonStatus[getRealIndex(index)][3] = v;
+            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+        }
     }
 
 }
