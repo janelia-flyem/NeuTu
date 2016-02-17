@@ -510,7 +510,18 @@ void ZImageWidget::zoomWithWidthAligned(int x0, int x1, double pw, int cy)
   }
   m_viewPort.setHeight(height);
   if (m_viewPort.bottom() > m_canvasRegion.bottom()) {
-    m_viewPort.setBottom(m_canvasRegion.bottom());
+    int bottom = m_viewPort.bottom();
+    if (m_viewPort.top() > m_canvasRegion.top()) {
+      int offset = std::min(m_viewPort.top() - m_canvasRegion.top(),
+                            m_viewPort.bottom() - m_canvasRegion.bottom());
+      m_viewPort.setTop(m_viewPort.top() - offset);
+      bottom -= offset;
+    }
+    if (bottom > m_canvasRegion.bottom()) {
+      bottom = m_canvasRegion.bottom();
+    }
+
+    m_viewPort.setBottom(bottom);
   }
 
   m_projRegion.setTop(0);
@@ -536,7 +547,18 @@ void ZImageWidget::zoomWithHeightAligned(int y0, int y1, double ph, int cx)
   }
   m_viewPort.setWidth(width);
   if (m_viewPort.right() > m_canvasRegion.right()) {
-    m_viewPort.setRight(m_canvasRegion.right());
+    int right = m_viewPort.right();
+    if (m_viewPort.left() > m_canvasRegion.left()) {
+      int offset = std::min(m_viewPort.left() - m_canvasRegion.left(),
+                            m_viewPort.right() - m_canvasRegion.right());
+      m_viewPort.setLeft(m_viewPort.left() - offset);
+      right -= offset;
+    }
+    if (right > m_canvasRegion.right()) {
+      right = m_canvasRegion.right();
+    }
+
+    m_viewPort.setRight(right);
   }
 
   m_projRegion.setLeft(0);
