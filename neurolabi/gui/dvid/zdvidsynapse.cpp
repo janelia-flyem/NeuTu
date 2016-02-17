@@ -48,9 +48,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
   double radius = getRadius(z, sliceAxis);
-  if (radius <= 0.0) {
-        return;
-    }  
+
   ZIntPoint center = m_position;
   center.shiftSliceAxis(sliceAxis);
 
@@ -74,8 +72,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }
-    painter.drawEllipse(QPointF(center.getX(), center.getY()),
-                        radius, radius);
+    if (radius > 0.0) {
+      painter.drawEllipse(QPointF(center.getX(), center.getY()),
+                          radius, radius);
+    }
   }
 
   QPen pen = painter.getPen();

@@ -27,7 +27,7 @@ void ZStackViewParam::setViewPort(const QRect &rect)
   m_viewPort = rect;
 }
 
-void ZStackViewParam::setViewPort(int x0, int y0, int x1, int y1)
+void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 {
   m_viewPort.setTopLeft(QPoint(x0, y0));
   m_viewPort.setBottomRight(QPoint(x1, y1));
