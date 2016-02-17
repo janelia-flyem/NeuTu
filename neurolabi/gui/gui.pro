@@ -598,7 +598,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
     flyem/zflyemorthowidget.h \
-    flyem/flyemorthocontrolform.h
+    flyem/flyemorthocontrolform.h \
+    zroiwidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1054,7 +1055,8 @@ SOURCES += main.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \
     flyem/zflyemorthowidget.cpp \
-    flyem/flyemorthocontrolform.cpp
+    flyem/flyemorthocontrolform.cpp \
+    zroiwidget.cpp
 
 OTHER_FILES += \
     extlib.pri \
