@@ -1,12 +1,11 @@
 #include "zroiwidget.h"
 
-ZROIWidget::ZROIWidget(QWidget *parent) : QTableWidget(parent), QDockWidget(parent)
-{
+//ZROIWidget::ZROIWidget(QWidget *parent) : QTableWidget(parent), QDockWidget(parent)
+//{
 
-}
+//}
 
-ZROIWidget::~ZROIWidget()
-{
+//ZROIWidget::~ZROIWidget()
+//{
 
-}
-
+//}

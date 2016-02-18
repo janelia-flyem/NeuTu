@@ -7,13 +7,14 @@
 #include "flyem/zflyemproofdoc.h"
 
 
-class ZROIWidget : public QTableWidget, public QDockWidget
-{
-    Q_OBJECT
-public:
-    ZROIWidget(QWidget *parent = 0);
-    ~ZROIWidget();
-};
+//class ZROIWidget : public QTableWidget, public QDockWidget
+//{
+//    Q_OBJECT
+//public:
+//    ZROIWidget(QWidget *parent = 0);
+//    ~ZROIWidget();
+
+//};
 
 
 #endif // ZROIWIDGET_H

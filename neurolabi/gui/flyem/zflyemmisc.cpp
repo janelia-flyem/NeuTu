@@ -496,6 +496,22 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
     if (!dvidTarget.getRoiName().empty()) {
       ZDvidReader reader;
       if (reader.open(dvidTarget)) {
+
+          // test
+          ZJsonObject meta = reader.readInfo();
+          std::vector<std::string> keys = meta.getAllKey();
+
+          for(int i=0; i<keys.size(); i++)
+          {
+              qDebug()<<keys.at(i);
+          }
+          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+
+
+
+
+
+
         ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
         if (!roi.isEmpty()) {
           ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
