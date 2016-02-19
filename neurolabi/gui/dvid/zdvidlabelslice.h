@@ -25,6 +25,10 @@ public:
   ZDvidLabelSlice(int maxWidth, int maxHeight);
   ~ZDvidLabelSlice();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_LABEL_SLICE;
+  }
+
   void setMaxSize(int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);
@@ -33,7 +37,10 @@ public:
 
   void updateFullView(const ZStackViewParam &viewParam);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void setSliceAxis(NeuTube::EAxis sliceAxis);
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -53,7 +60,7 @@ public:
 
 
   void setSelection(
-      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
@@ -132,7 +139,8 @@ private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
-  void init(int maxWidth, int maxHeight);
+  void init(int maxWidth, int maxHeight,
+            NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
   QColor getCustomColor(uint64_t label) const;
 
 private:
@@ -158,6 +166,7 @@ private:
 
   bool m_selectionFrozen;
   bool m_isFullView;
+//  NeuTube::EAxis m_sliceAxis;
 };
 
 template <typename InputIterator>

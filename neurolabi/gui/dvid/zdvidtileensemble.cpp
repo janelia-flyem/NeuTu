@@ -11,7 +11,7 @@
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
   setTarget(ZStackObject::TARGET_TILE_CANVAS);
-  m_type = ZStackObject::TYPE_DVID_TILE_ENSEMBLE;
+  m_type = GetType();
   m_highContrast = false;
   m_view = NULL;
 }
@@ -148,7 +148,7 @@ bool ZDvidTileEnsemble::update(
   }
 
   try  {
-#if 1
+#if 0
     if (!tile_locs_array.empty()) {
 
       QVector<UpdateTileParam> paramList(tile_locs_array.size());
@@ -201,7 +201,7 @@ bool ZDvidTileEnsemble::update(
 //                                       getDvidTarget().getUuid());
       std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
-#define DVID_TILE_THREAD_FETCH 0
+#define DVID_TILE_THREAD_FETCH 1
 
 #if DVID_TILE_THREAD_FETCH
       std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
@@ -342,7 +342,8 @@ bool ZDvidTileEnsemble::update(
 }
 
 void ZDvidTileEnsemble::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
   if (m_view == NULL) {
     return;
@@ -394,8 +395,8 @@ void ZDvidTileEnsemble::display(
     const ZDvidTileInfo::TIndex &index = *iter;
     ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
     if (tile != NULL) {
-      tile->enhanceContrast(m_highContrast, true);
-      tile->display(painter, slice, option);
+//      tile->enhanceContrast(m_highContrast, true);
+      tile->display(painter, slice, option, sliceAxis);
     }
   }
 //  std::cout << "Draw image time: " << toc() << std::endl;

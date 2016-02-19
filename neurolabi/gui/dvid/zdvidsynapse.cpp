@@ -24,8 +24,8 @@ void ZDvidSynapse::init()
   setDefaultRadius();
 }
 
-void ZDvidSynapse::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
+                           NeuTube::EAxis sliceAxis) const
 {
 #if 0
   ZStackBall ball;
@@ -44,12 +44,15 @@ void ZDvidSynapse::display(
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    visible = isVisible(z);
+    visible = isVisible(z, sliceAxis);
   }
 
-  double radius = getRadius(z);
+  double radius = getRadius(z, sliceAxis);
 
-  bool isFocused = (z == getPosition().getZ());
+  ZIntPoint center = m_position;
+  center.shiftSliceAxis(sliceAxis);
+
+  bool isFocused = (z == center.getZ());
 
   if (visible) {
     QColor color = getColor();
@@ -64,13 +67,25 @@ void ZDvidSynapse::display(
     painter.setBrush(Qt::NoBrush);
 
     if (isFocused) {
-      int x = getPosition().getX();
-      int y = getPosition().getY();
+      int x = center.getX();
+      int y = center.getY();
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }
-    painter.drawEllipse(QPointF(m_position.getX(), m_position.getY()),
-                        radius, radius);
+    if (radius > 0.0) {
+      painter.drawEllipse(QPointF(center.getX(), center.getY()),
+                          radius, radius);
+    }
+    if (!getUserName().empty()) {
+      QString decorationText = "u";
+      int width = decorationText.size() * 25;
+      int height = 25;
+      QColor oldColor = painter.getPen().color();
+      painter.setPen(QColor(0, 0, 0));
+      painter.drawText(center.getX(), center.getY(), width, height,
+                       Qt::AlignLeft, decorationText);
+      painter.setPen(oldColor);
+    }
   }
 
   QPen pen = painter.getPen();
@@ -95,8 +110,8 @@ void ZDvidSynapse::display(
     if (m_usingCosmeticPen) {
       halfSize += 0.5;
     }
-    rect.setLeft(m_position.getX() - halfSize);
-    rect.setTop(m_position.getY() - halfSize);
+    rect.setLeft(center.getX() - halfSize);
+    rect.setTop(center.getY() - halfSize);
     rect.setWidth(halfSize * 2);
     rect.setHeight(halfSize * 2);
 
@@ -120,7 +135,7 @@ void ZDvidSynapse::display(
       line.setColor(QColor(255, 255, 0));
       line.setFocusColor(QColor(255, 0, 255));
       line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
-      line.display(painter, slice, option);
+      line.display(painter, slice, option, sliceAxis);
 
       /*
       ZIntPoint pos = *iter;
@@ -141,18 +156,23 @@ void ZDvidSynapse::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
+// temporary?
+std::vector<ZIntPoint> ZDvidSynapse::getPartners() {
+    return std::vector<ZIntPoint>(m_partnerHint);
+}
+
 double ZDvidSynapse::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case KIND_POST_SYN:
-    return 3.0;
-  case KIND_PRE_SYN:
     return 5.0;
+  case KIND_PRE_SYN:
+    return 7.0;
   default:
     break;
   }
 
-  return 5.0;
+  return 7.0;
 }
 
 void ZDvidSynapse::setDefaultRadius()
@@ -183,13 +203,13 @@ void ZDvidSynapse::setDefaultColor()
 
 bool ZDvidSynapse::hit(double x, double y, double z)
 {
-  if (isVisible(z)) {
+  if (isVisible(z, NeuTube::Z_AXIS)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z);
+    double radius = getRadius(z, NeuTube::Z_AXIS);
 
     return d2 <= radius * radius;
   }
@@ -266,6 +286,10 @@ void ZDvidSynapse::loadJsonObject(
 
     setDefaultRadius();
     setDefaultColor();
+
+    if (obj.hasKey("Prop")) {
+      m_propertyJson.setValue(obj.value("Prop").clone());
+    }
   }
 }
 
@@ -541,22 +565,85 @@ ZJsonObject ZDvidSynapse::toJsonObject() const
     obj.setEntry("Tags", tagJson);
   }
 
+  if (!m_propertyJson.isEmpty()) {
+    ZJsonObject propJson = m_propertyJson.clone();
+    obj.setEntry("Prop", propJson);
+  }
+
   return obj;
 }
 
-bool ZDvidSynapse::isVisible(int z) const
+bool ZDvidSynapse::isVisible(int z, NeuTube::EAxis sliceAxis) const
 {
-  int dz = abs(getPosition().getZ() - z);
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
+    break;
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
+    break;
+  case NeuTube::Z_AXIS:
+    abs(getPosition().getZ() - z);
+    break;
+  }
 
   return dz < iround(getRadius());
 }
 
-double ZDvidSynapse::getRadius(int z) const
+double ZDvidSynapse::getRadius(int z, NeuTube::EAxis sliceAxis) const
 {
-  int dz = abs(getPosition().getZ() - z);
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
+    break;
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
+    break;
+  case NeuTube::Z_AXIS:
+    dz = abs(getPosition().getZ() - z);
+    break;
+  }
 
   return std::max(0.0, getRadius() - dz);
 }
+
+void ZDvidSynapse::setUserName(const std::string &name)
+{
+  m_propertyJson.setEntry("user", name);
+}
+
+std::string ZDvidSynapse::getUserName() const
+{
+  return ZJsonParser::stringValue(m_propertyJson["user"]);
+}
+
+void ZDvidSynapse::AddProperty(
+    ZJsonObject &json, const std::string &key, const std::string &value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  propJson.setEntry(key, value);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+int ZDvidSynapse::getX() const
+{
+  return getPosition().getX();
+}
+
+int ZDvidSynapse::getY() const
+{
+  return getPosition().getY();
+}
+
+int ZDvidSynapse::getZ() const
+{
+  return getPosition().getZ();
+}
+
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 

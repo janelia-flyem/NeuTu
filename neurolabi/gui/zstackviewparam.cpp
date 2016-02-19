@@ -27,7 +27,7 @@ void ZStackViewParam::setViewPort(const QRect &rect)
   m_viewPort = rect;
 }
 
-void ZStackViewParam::setViewPort(int x0, int y0, int x1, int y1)
+void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 {
   m_viewPort.setTopLeft(QPoint(x0, y0));
   m_viewPort.setBottomRight(QPoint(x1, y1));
@@ -69,4 +69,14 @@ void ZStackViewParam::resize(int width, int height)
 int ZStackViewParam::getArea() const
 {
   return m_viewPort.width() * m_viewPort.height();
+}
+
+void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
+{
+  m_sliceAxis = sliceAxis;
+}
+
+NeuTube::EAxis ZStackViewParam::getSliceAxis() const
+{
+  return m_sliceAxis;
 }

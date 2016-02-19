@@ -9,6 +9,7 @@
 #include "zstack.hxx"
 #include "zstackdochittest.h"
 #include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemproofdoc.h"
 
 ZMouseEventMapper::ZMouseEventMapper(
     ZInteractiveContext *context, ZStackDoc *doc) :
@@ -223,7 +224,8 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 
             if (m_context->isObjectProjectView()) {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition.x(), stackPosition.y());
+                                 stackPosition.x(), stackPosition.y(),
+                                 m_context->getSliceAxis());
             } else {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
                                  stackPosition);
@@ -321,7 +323,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   ZStackDocHitTest hitManager;
   if (event.getRawStackPosition().z() < 0) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
-                         getDocument()), stackPosition.x(), stackPosition.y());
+                         getDocument()), stackPosition.x(), stackPosition.y(),
+                       m_context->getSliceAxis());
   } else {
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
   }
@@ -469,13 +472,22 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
           }
         } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
-        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-          if (!m_doc->getDvidLabelSliceList().empty()) {
-            if (m_doc->getDvidLabelSliceList().front()->getSelected(
-                  NeuTube::BODY_LABEL_MAPPED).size() == 1) {
-              op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+        }
+
+        if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
+            m_doc->getTag() == NeuTube::Document::FLYEM_ORTHO) {
+          op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
+#if 0
+          ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc.get());
+          if (doc != NULL) {
+            ZDvidLabelSlice *slice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
+            if (slice != NULL) {
+              if (slice->getSelected(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+                op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
+              }
             }
           }
+#endif
         }
 
         if (op.isNull()) {

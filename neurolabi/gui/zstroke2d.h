@@ -41,9 +41,10 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode) const;
+               EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -125,7 +126,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;

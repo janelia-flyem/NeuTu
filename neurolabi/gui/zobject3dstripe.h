@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "c_stack.h"
+#include "neutube_def.h"
 
 /*!
  * \brief The class of RLE object stripe
@@ -32,6 +33,9 @@ public:
   void read(FILE *fp);
 
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
+  void drawStack(Stack *stack, int v, NeuTube::EAxis axis,
+                 const int *offset = NULL) const;
+
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
 

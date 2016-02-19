@@ -31,13 +31,13 @@ void ZDvidTileDecodeTask::ProcessDataForDisplay(
     const uint8_t *data, int length, int z, bool highContrast, ZDvidTile *tile)
 {
   if (tile != NULL && data != NULL) {
-    tile->loadDvidSlice(data, length, z);
+    tile->loadDvidSlice(data, length, z, highContrast);
 #ifdef _DEBUG_2
     std::cout << "1 tile loaded." << tile->getWidth() << "x" << tile->getHeight() << std::endl;
 #endif
-    if (highContrast != tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
-      tile->enhanceContrast(highContrast, false);
-    }
+//    if (highContrast != tile->hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+//      tile->enhanceContrast(highContrast, false);
+//    }
   }
 }
 

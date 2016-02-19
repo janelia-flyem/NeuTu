@@ -263,6 +263,11 @@ using namespace std;
 #include "zlinesegmentobject.h"
 #include "zstackmvc.h"
 #include "misc/zstackyzmvc.h"
+#include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemorthomvc.h"
+#include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemorthowindow.h"
 
 using namespace std;
 
@@ -19253,12 +19258,31 @@ void ZTest::test(MainWindow *host)
   frame->document()->addObject(line);
 #endif
 
-#if  0
-  ZStackDoc *doc = new ZStackDoc(NULL);
-  doc->loadFile(GET_TEST_DATA_DIR + "/system/emstack2.tif");
+#if 0
+  ZObject3dScan obj;
+  for (int i = 0; i < 50; ++i) {
+    int z = 100 + i;
+    int y = 100 + i * 2;
+    int x1 = 30 + i;
+    int x2 = 30 + i * 2;
+    obj.addSegment(z, y, x1, x2);
+  }
 
-    ZStackYZMvc *stackWidget =
-        ZStackYZMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc));
+  obj.save(GET_TEST_DATA_DIR + "/benchmark/obj2.sobj");
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+
+
+//  ZStackDoc *doc = new ZStackDoc(NULL);
+//  doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
+
+  ZFlyEmOrthoMvc *stackWidget = ZFlyEmOrthoMvc::Make(target, NeuTube::Z_AXIS);
+  stackWidget->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
   //ZStackFrame *stackWidget = ZStackFrame::Make(
   //      NULL, ZSharedPointer<ZStackDoc>(doc));
 
@@ -19273,7 +19297,255 @@ void ZTest::test(MainWindow *host)
   testDlg->raise();
 #endif
 
-#if 1
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setSynapseName("synapses");
+
+  ZFlyEmOrthoWindow *window = new ZFlyEmOrthoWindow(target, NULL);
+  window->updateData(ZIntPoint(4085, 5300, 7329));
+
+  window->show();
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+
+  QDialog *dlg = new QDialog(host);
+  QGridLayout *layout = new QGridLayout(dlg);
+  dlg->setLayout(layout);
+
+  ZSharedPointer<ZFlyEmOrthoDoc> sharedDoc =
+      ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc);
+  sharedDoc->setDvidTarget(target);
+
+  ZFlyEmOrthoMvc *xyWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+//  xyWidget->setDvidTarget(target);
+  xyWidget->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
+
+  ZFlyEmOrthoMvc *yzWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+//  yzWidget->setDvidTarget(target);
+
+  ZFlyEmOrthoMvc *xzWidget =
+      ZFlyEmOrthoMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+//  xzWidget->setDvidTarget(target);
+
+
+  layout->addWidget(xyWidget, 0, 0);
+  layout->addWidget(yzWidget, 0, 1);
+  layout->addWidget(xzWidget, 1, 0);
+
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setHorizontalSpacing(0);
+  layout->setVerticalSpacing(0);
+
+  dlg->show();
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "3ca7", 8500);
+  target.setSynapseName("synapses");
+  if (reader.open(target)) {
+    tic();
+    ZStack *stack = reader.readGrayScale(4085, 5300, 7329,
+                                         256, 256, 256);
+    std::cout << "Stack reading time: " << toc() << "ms" << std::endl;
+
+    QDialog *dlg = new QDialog(host);
+    QGridLayout *layout = new QGridLayout(dlg);
+    dlg->setLayout(layout);
+    ZStackDoc *doc = new ZStackDoc(NULL);
+
+    doc->loadStack(stack);
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setSliceAxis(NeuTube::X_AXIS);
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setSliceAxis(NeuTube::Y_AXIS);
+      slice->setDvidTarget(target);
+      slice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      doc->addObject(slice);
+    }
+
+    ZSharedPointer<ZStackDoc> sharedDoc(doc);
+
+    ZStackMvc *xyWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+    xyWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    xyWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    xyWidget->getView()->hideThresholdControl();
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->attachView(xyWidget->getView());
+      doc->addObject(se);
+    }
+
+    ZStackMvc *yzWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+    yzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    yzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    yzWidget->getView()->hideThresholdControl();
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->setSliceAxis(NeuTube::X_AXIS);
+      se->attachView(yzWidget->getView());
+      se->setRange(stack->getBoundBox());
+      doc->addObject(se);
+    }
+
+    ZStackMvc *xzWidget =
+        ZStackMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+    xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+    xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+    xzWidget->getView()->hideThresholdControl();
+    {
+      ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
+      se->setDvidTarget(target);
+      se->setSliceAxis(NeuTube::Y_AXIS);
+      se->attachView(xzWidget->getView());
+      doc->addObject(se);
+    }
+
+    layout->addWidget(xyWidget, 0, 0);
+    layout->addWidget(yzWidget, 0, 1);
+    layout->addWidget(xzWidget, 1, 0);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setHorizontalSpacing(0);
+    layout->setVerticalSpacing(0);
+
+    dlg->show();
+  }
+#endif
+
+#if 0
+  QDialog *dlg = new QDialog(host);
+  QGridLayout *layout = new QGridLayout(dlg);
+  dlg->setLayout(layout);
+
+  ZStackDoc *doc = new ZStackDoc(NULL);
+  doc->loadFile(GET_TEST_DATA_DIR + "/system/emstack2.tif");
+
+  ZSharedPointer<ZStackDoc> sharedDoc(doc);
+
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/obj2.tif");
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::X_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::Y_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  {
+    ZObject3dScan *obj = new ZObject3dScan;
+    obj->setSliceAxis(NeuTube::Z_AXIS);
+    obj->loadStack(stack);
+    obj->setColor(255, 0, 0);
+    doc->addObject(obj);
+  }
+
+  /*
+  for (int i = 0; i < 50; ++i) {
+    int z = 100 + i;
+    int y = 100 + i;
+    int x1 = 30 + i;
+    int x2 = 30 + i * 2;
+    obj->addSegment(z, y, x1, x2);
+  }
+
+  */
+//  obj->setSliceAxis(NeuTube::X_AXIS);
+//
+
+//  obj->save(GET_TEST_DATA_DIR + "/benchmark/obj1.sobj");
+
+
+
+
+
+  ZStackMvc *xyWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::Z_AXIS);
+  xyWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  xyWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  xyWidget->getView()->hideThresholdControl();
+  ZStackMvc *yzWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::X_AXIS);
+  yzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  yzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  yzWidget->getView()->hideThresholdControl();
+  ZStackMvc *xzWidget =
+      ZStackMvc::Make(NULL, sharedDoc, NeuTube::Y_AXIS);
+  xzWidget->getView()->layout()->setContentsMargins(0, 0, 0, 0);
+  xzWidget->getView()->setContentsMargins(0, 0, 0, 0);
+  xzWidget->getView()->hideThresholdControl();
+
+  layout->addWidget(xyWidget, 0, 0);
+  layout->addWidget(yzWidget, 0, 1);
+  layout->addWidget(xzWidget, 1, 0);
+
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setHorizontalSpacing(0);
+  layout->setVerticalSpacing(0);
+
+  dlg->show();
+
+#endif
+
+#if  0
+  ZStackDoc *doc = new ZStackDoc(NULL);
+  doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
+
+    ZStackMvc *stackWidget =
+        ZStackMvc::Make(NULL, ZSharedPointer<ZStackDoc>(doc), NeuTube::X_AXIS);
+  //ZStackFrame *stackWidget = ZStackFrame::Make(
+  //      NULL, ZSharedPointer<ZStackDoc>(doc));
+
+  //stackWidget->setWindowFlags(Qt::Widget);
+
+  //stackWidget->consumeDocument(doc);
+
+  //stackWidget->load(GET_TEST_DATA_DIR + "/benchmark/ball.tif");
+  ZTestDialog *testDlg = new ZTestDialog(host);
+  testDlg->getMainLayout()->addWidget(stackWidget);
+  testDlg->show();
+  testDlg->raise();
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata1", "3ca7", 8500);
   target.setSynapseName("mb6_synapses");
@@ -19285,6 +19557,112 @@ void ZTest::test(MainWindow *host)
        iter != synapseArray.end(); ++iter) {
     const ZDvidSynapse &synapse = *iter;
     std::cout << synapse.toJsonObject().dumpString(2) << std::endl;
+  }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  tic();
+  obj.importDvidObject("/Users/zhaot/Downloads/513414-6");
+  ptoc();
+  obj.canonize();
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
+#if 0
+  ZObject3dScan bm;
+  bm.importDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
+
+  ZObject3dScan bs;
+  bs.importDvidObject(GET_TEST_DATA_DIR + "/test_bs.dvid");
+
+  ZDvidInfo dvidInfo;
+  ZDvidReader reader;
+  ZDvidTarget dvidTarget;
+  dvidTarget.set("emdata2.int.janelia.org", "4ad1", 7000);
+  if (reader.open(dvidTarget)) {
+    dvidInfo = reader.readGrayScaleInfo();
+  } else {
+    LERROR() << "DVID connection error.";
+  }
+
+  ZObject3dScan Bsc = dvidInfo.getBlockIndex(bs);
+  ZObject3dScan Bbf_bs = dvidInfo.getBlockIndex(bm);
+
+//  Bsc.subtractSliently(Bbf_bs);
+
+  Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc.dvid");
+  Bbf_bs.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bbf_bs.dvid");
+
+  Bsc.subtractSliently(Bbf_bs);
+
+  Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test_Bsc_sub.dvid");
+
+#endif
+
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "059e", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  ZIntCuboid box = obj.getBoundBox();
+  int xMax = (box.getFirstCorner().getX() + box.getLastCorner().getX()) / 2;
+
+  ZObject3dScan::ConstSegmentIterator iter(&obj);
+
+  ZObject3dScan newObj;
+
+  while (iter.hasNext()) {
+    const ZObject3dScan::Segment &seg = iter.next();
+    if (seg.getStart() <= xMax) {
+      int end = std::min(xMax, seg.getEnd());
+      newObj.addSegment(seg.getZ(), seg.getY(), seg.getStart(), end);
+    }
+  }
+
+//  newObj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(newObj);
+
+  array.dump(GET_TEST_DATA_DIR + "/test.json");
+
+#endif
+
+#if 1
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "e402", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+
+  ZObject3dScan obj2 = reader.readRoi("half_seven_column_roi");
+
+//  obj.subtractSliently(obj2);
+
+  ZObject3dScan obj3 = obj - obj2;
+  obj3.save(GET_TEST_DATA_DIR + "/test3.sobj");
+
+  if (obj2.hasOverlap(obj3)) {
+    std::cout << "Bad object subtraction." << std::endl;
+  }
+  obj2.concat(obj3);
+
+  obj.canonize();
+  obj2.canonize();
+  if (obj2.equalsLiterally(obj)) {
+    std::cout << "Good object subtraction." << std::endl;
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(obj3);
+
+    array.dump(GET_TEST_DATA_DIR + "/test3.json");
+  } else {
+    std::cout << "Bad object subtraction." << std::endl;
   }
 #endif
 

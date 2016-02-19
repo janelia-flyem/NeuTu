@@ -10,11 +10,12 @@ public:
   ZIntCuboidObj();
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis sliceAxis) const;
   virtual const std::string& className() const;
 
-  bool isSliceVisible(int z) const;
-  bool isOnSlice(int z) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
+  bool isOnSlice(int z, NeuTube::EAxis sliceAxis) const;
 
   void clear();
 
@@ -33,7 +34,7 @@ public:
   int getHeight() const;
   int getDepth() const;
 
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }

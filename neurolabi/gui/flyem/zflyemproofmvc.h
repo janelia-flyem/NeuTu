@@ -22,6 +22,7 @@ class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
+class ZFlyEmOrthoWindow;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -34,7 +35,8 @@ public:
   ~ZFlyEmProofMvc();
 
   static ZFlyEmProofMvc* Make(
-      QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc);
+      QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
+      NeuTube::EAxis axis = NeuTube::Z_AXIS);
   static ZFlyEmProofMvc* Make(const ZDvidTarget &target);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
@@ -48,7 +50,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
-  void setDvidTarget(const ZDvidTarget &target);
+  virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
 
   void clear();
@@ -65,9 +67,13 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId);
 
-  ZDvidTarget getDvidTarget() const;
+  virtual ZDvidTarget getDvidTarget() const;
 
   void setDvidDialog(ZDvidDialog *dlg);
+
+  ZFlyEmBodyMergeProject* getMergeProject() {
+    return &m_mergeProject;
+  }
 
 signals:
   void launchingSplit(const QString &message);
@@ -83,6 +89,7 @@ signals:
   void dvidTargetChanged(ZDvidTarget);
   void userBookmarkUpdated(ZStackDoc *doc);
   void nameColorMapReady(bool ready);
+  void bodyMergeEdited();
 
 public slots:
   void mergeSelected();
@@ -125,15 +132,13 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showOrthoWindow(double x, double y, double z);
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
 
-  void zoomTo(const ZIntPoint &pt);
-  void zoomTo(int x, int y, int z);
-  void zoomTo(int x, int y, int z, int width);
   void goToBody();
   void goToBodyBottom();
   void goToBodyTop();
@@ -180,6 +185,8 @@ public slots:
 
   void highlightSelectedObject(bool hl);
 
+  void syncMergeWithDvid();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -189,7 +196,9 @@ protected slots:
   void detachSkeletonWindow();
   void detachObjectWindow();
   void detachExternalNeuronWindow();
+  void detachOrthoWindow();
 //  void closeBodyWindow(int index);
+  void closeOrthoWindow();
   void close3DWindow(Z3DWindow *window);
   void closeBodyWindow(Z3DWindow *window);
   void closeAllBodyWindow();
@@ -228,6 +237,7 @@ private:
   void makeSkeletonWindow();
   void makeSplitWindow();
   void makeExternalNeuronWindow();
+  void makeOrthoWindow();
 
   ZFlyEmBody3dDoc *makeBodyDoc(ZFlyEmBody3dDoc::EBodyType bodyType);
 
@@ -240,8 +250,8 @@ private:
   void setWindowSignalSlot(Z3DWindow *window);
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
-
-private:
+  ZDvidLabelSlice* getDvidLabelSlice() const;
+protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
@@ -264,6 +274,7 @@ private:
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
+  ZFlyEmOrthoWindow *m_orthoWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
   ZStackViewParam m_currentViewParam;

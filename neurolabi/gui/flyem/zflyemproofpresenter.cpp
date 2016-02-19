@@ -255,6 +255,10 @@ QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
 
 QMenu* ZFlyEmProofPresenter::getContextMenu()
 {
+  m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
+
+  return m_contextMenu;
+  /*
   if (getCompleteDocument()->hasDvidSynapseSelected()) {
     return getSynapseContextMenu();
   }
@@ -264,6 +268,7 @@ QMenu* ZFlyEmProofPresenter::getContextMenu()
   }
 
   return NULL;
+  */
 }
 
 
@@ -333,6 +338,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
+  synapse.setUserName(NeuTube::GetCurrentUserName());
   getCompleteDocument()->executeAddSynapseCommand(synapse);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
@@ -381,7 +387,9 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    bookmark->setLocation(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    pos.shiftSliceAxisInverse(getSliceAxis());
+    bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
     bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
@@ -431,13 +439,27 @@ void ZFlyEmProofPresenter::processCustomOperator(
     emit selectingBodyInRoi(true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_SINGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble()->selectHitWithPartner(false);
+  {
+    QList<ZDvidSynapseEnsemble*> seList =
+        getCompleteDocument()->getDvidSynapseEnsembleList();
+    ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+         iter != seList.end(); ++iter) {
+      ZDvidSynapseEnsemble *se = *iter;
+      se->setHitPoint(hitPoint);
+      se->selectHitWithPartner(false);
+//      getCompleteDocument()->getDvidSynapseEnsemble(
+//            buddyView()->getSliceAxis())->selectHitWithPartner(false);
+    }
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
+  }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble()->toggleHitSelectWithPartner();
+    getCompleteDocument()->getDvidSynapseEnsemble(
+          buddyView()->getSliceAxis())->toggleHitSelectWithPartner();
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
@@ -510,8 +532,8 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
     const ZPoint &currentStackPos)
 {
-  ZDvidSynapseEnsemble *se =
-      getCompleteDocument()->getDvidSynapseEnsemble();
+  ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble(
+        buddyView()->getSliceAxis());
   if (se != NULL) {
     const std::set<ZIntPoint>& selectedSet =
         se->getSelector().getSelectedSet();

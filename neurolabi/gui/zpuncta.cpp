@@ -36,9 +36,10 @@ void ZPuncta::sort() const
   }
 }
 
-void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
+                      NeuTube::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != NeuTube::Z_AXIS) {
     return;
   }
 
@@ -64,7 +65,7 @@ void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
   for (QList<ZPunctum*>::const_iterator iter = beginIter;
        iter != endIter; ++iter) {
     const ZPunctum* punctum = *iter;
-    punctum->display(painter, slice, option);
+    punctum->display(painter, slice, option, sliceAxis);
   }
 }
 

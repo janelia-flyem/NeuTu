@@ -67,7 +67,8 @@ public:
   ZSwcTree *readSwc(uint64_t bodyId);
   ZObject3dScan readBody(uint64_t bodyId);
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
-  ZObject3dScan* readBody(uint64_t bodyId, int z, ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
+                          ZObject3dScan *result);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -116,6 +117,11 @@ public:
                        int width, int height, int depth) const;
   ZArray* readLabels64(int x0, int y0, int z0,
                        int width, int height, int depth) const;
+  ZArray* readLabels64(const ZIntCuboid &box);
+  /*
+  ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
+                         int dim1, int dim2, int width, int height);
+                         */
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;

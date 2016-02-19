@@ -993,6 +993,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         }
       }
     }
+    LINFO() << "#Small body group voxels:" << smallBodyGroup.getVoxelNumber();
   }
 
   getProgressSignal()->advanceProgress(0.1);
@@ -1013,6 +1014,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
     emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
+    QString sizeMessage = "Object sizes: ";
+    for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan *obj = *iter;
+      sizeMessage +=
+          QString("%1: %2; ").arg(obj->getLabel()).arg(obj->getVoxelNumber());
+    }
+    emitMessage(sizeMessage);
 #ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -1033,15 +1042,18 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan *obj = *iter;
+//      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());??
       if (obj->getLabel() > 1) {
         obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
+        /* Subtract a split body.
+         * currentBody is the one to split; body becomes the remained part */
         ZObject3dScan currentBody = body.subtract(*obj);
 
         if (currentBody.isEmpty()) {
           emitError("Warning: Empty split detected.");
         } else {
-          if (!dsIntv.isZero()) {
+          if (!dsIntv.isZero()) { //Check isolations caused by downsampling
             std::vector<ZObject3dScan> objArray =
                 currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
             if (objArray.empty()) {

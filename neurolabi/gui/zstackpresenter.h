@@ -120,6 +120,8 @@ public:
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
 
+  void setSliceAxis(NeuTube::EAxis axis);
+
   /*
   void updateZoomOffset(int cx, int cy, int r0);
   void updateZoomOffset(int cx, int cy, int wx, int wy);
@@ -143,6 +145,7 @@ public:
   void createStrokeActions();
   void createDocDependentActions();
   void createBodyActions();
+  void createMiscActions();
   void createMainWindowActions();
 
   QAction* getAction(ZActionFactory::EAction item) const;
@@ -190,9 +193,11 @@ public:
   void addPunctaEditFunctionToRightMenu();
   //void addSwcEditFunctionToRightMenu();
 
-  void setViewPortCenter(int x, int y, int z);
+//  void setViewPortCenter(int x, int y, int z);
 
   const QPointF stackPositionFromMouse(MouseButtonAction mba);
+
+  ZPoint getLastMousePosInStack();
 
   QStringList toStringList() const;
 
@@ -206,7 +211,9 @@ public:
   T* getActiveObject(EObjectRole role) const;
 //  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
-  void setZoomRatio(int ratio);
+  void setZoomRatio(double ratio);
+
+  NeuTube::EAxis getSliceAxis() const;
 
   ZStackFrame* getParentFrame() const;
   ZStackMvc* getParentMvc() const;
@@ -297,6 +304,7 @@ public slots:
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
   void exitStrokeEdit();
+//  void exitSwcEdit();
   void deleteSwcNode();
   void lockSelectedSwcNodeFocus();
   void changeSelectedSwcNodeFocus();
@@ -329,11 +337,16 @@ public slots:
 
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
+  void notifyBodyMergeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
+
+  void notifyOrthoViewTriggered();
+
   void slotTest();
+
 
   void notifyUser(const QString &msg);
 
@@ -376,6 +389,8 @@ signals:
   void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void bodyMergeTriggered();
+  void orthoViewTriggered(double x, double y, double z);
 
 protected:
   void init();
@@ -473,6 +488,7 @@ protected:
   QMenu *m_strokePaintContextMenu;
   QMenu *m_stackContextMenu;
   QMenu *m_bodyContextMenu;
+  QMenu *m_contextMenu;
 
   //recorded information
   int m_mouseMovePosition[3];
@@ -482,7 +498,7 @@ protected:
   int m_mouseRightPressPosition[3];
   int m_mouseLeftDoubleClickPosition[3];
 //  QPointF m_grabPosition;
-  ZPoint m_lastMouseDataCoord;
+//  ZPoint m_lastMouseDataCoord;
 
   QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
 //  ZStroke2d m_stroke;

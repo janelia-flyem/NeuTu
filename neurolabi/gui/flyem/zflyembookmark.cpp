@@ -14,7 +14,7 @@ ZFlyEmBookmark::ZFlyEmBookmark() :
   m_bodyId(0), m_bookmarkType(TYPE_LOCATION), m_isChecked(false),
   m_isCustom(false), m_isInTable(true)
 {
-  m_type = ZStackObject::TYPE_FLYEM_BOOKMARK;
+  m_type = GetType();
   m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
@@ -64,7 +64,13 @@ ZJsonObject ZFlyEmBookmark::toDvidAnnotationJson() const
 void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 {
   clear();
-  if (jsonObj.hasKey("Pos")) {
+
+
+  if (!jsonObj.hasKey("Pos") || !jsonObj.hasKey("Kind")) {
+    return;
+  }
+
+  if (ZJsonParser::stringValue(jsonObj["Kind"]) == std::string("Note")) {
     std::vector<int> coordinates =
         ZJsonParser::integerArray(jsonObj["Pos"]);
 
@@ -218,12 +224,13 @@ void ZFlyEmBookmark::setCustom(bool state)
 }
 
 void ZFlyEmBookmark::display(
-    ZPainter &painter, int slice, EDisplayStyle option) const
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {
-  ZStackBall::display(painter, slice, option);
+  ZStackBall::display(painter, slice, option, sliceAxis);
 
   if (isVisible()) {
-    if (isSliceVisible(painter.getZ(slice))) {
+    if (isSliceVisible(painter.getZ(slice), sliceAxis)) {
       QString decorationText;
       if (m_isCustom) {
         decorationText = "u";
@@ -231,6 +238,7 @@ void ZFlyEmBookmark::display(
       if (!decorationText.isEmpty()) {
 //        painter.save();
         ZIntPoint center = getLocation();
+        center.shiftSliceAxis(sliceAxis);
         int width = decorationText.size() * 50;
         int height = 50;
         painter.setPen(QColor(0, 0, 0));
@@ -243,10 +251,13 @@ void ZFlyEmBookmark::display(
   }
 }
 
+
+
 void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 {
   clear();
 
+#if 1
   if (jsonObj["location"] != NULL) {
     std::vector<int> coordinates =
         ZJsonParser::integerArray(jsonObj["location"]);
@@ -301,6 +312,8 @@ void ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
       }
     }
   }
+#endif
+
 }
 
 std::string ZFlyEmBookmark::toLogString() const
@@ -334,6 +347,19 @@ void ZFlyEmBookmark::addTag(const QString &tag)
 void ZFlyEmBookmark::addUserTag()
 {
   addTag("user:" + getUserName());
+}
+
+void ZFlyEmBookmark::setLocation(const ZIntPoint &pt)
+{
+  setLocation(pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZFlyEmBookmark* ZFlyEmBookmark::clone() const
+{
+  ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+  *bookmark = *this;
+
+  return bookmark;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

@@ -131,6 +131,7 @@ public:
    * The value will be clipped if \a slice is out of range.
    */
   void setSliceIndex(int slice);
+  void setSliceIndexQuietly(int slice);
 
   /*!
    * \brief Increase or descrease of the slice index with a certain step.
@@ -149,6 +150,9 @@ public:
   int getCurrentZ() const;
 
   //int threshold();
+
+  void setSliceAxis(NeuTube::EAxis axis);
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 
   /*!
    * \brief Get stack data from the buddy document
@@ -219,6 +223,8 @@ public:
   void setDepthFrozen(bool state);
   void blockViewChangeEvent(bool state);
 
+  void updateViewBox();
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -228,8 +234,8 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
-  void updateView();
-  void redraw(EUpdateOption option);
+//  void updateView();
+  void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -282,16 +288,20 @@ public slots:
 
   void dump(const QString &msg);
 
+  void hideThresholdControl();
+
 
 signals:
-  void currentSliceChanged(int);
+//  void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
-  double getZoomRatio() const;
+  double getCanvasWidthZoomRatio() const;
+  double getCanvasHeightZoomRatio() const;
+  double getProjZoomRatio() const;
   void setInfo();
   bool isImageMovable() const;
 
@@ -301,6 +311,8 @@ public:
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
+  QRectF getProjRegion() const;
+
   /*!
    * \brief Set the viewport offset
    *
@@ -308,6 +320,11 @@ public:
    * the viewport. The real position will be adjusted to fit in the canvas.
    */
   void setViewPortOffset(int x, int y);
+
+  void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
+  void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
+
+  ZIntPoint getViewCenter() const;
 
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
@@ -317,8 +334,14 @@ public:
 
 //  void notifyViewPortChanged();
 
-  void processViewChange();
+  bool isViewChanged(const ZStackViewParam &param) const;
+  void processViewChange(bool redrawing, bool depthChanged);
   void processViewChange(const ZStackViewParam &param);
+
+  void setHoverFocus(bool on);
+
+  void notifyViewChanged(const ZStackViewParam &param);
+  void notifyViewChanged();
 
 
 public: //Change view parameters
@@ -326,11 +349,16 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
+
+  void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
 
 protected:
+  ZIntCuboid getViewBoundBox() const;
   virtual int getDepth() const;
 
   void clearCanvas();
@@ -355,8 +383,6 @@ protected:
 
   void connectSignalSlot();
 
-  void hideThresholdControl();
-
   QSize getCanvasSize() const;
 
   //help functions
@@ -364,8 +390,6 @@ protected:
   void paintMultipleChannelStackSlice(ZStack *stack, int slice);
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
-
-  void notifyViewChanged(const ZStackViewParam &param);
 
   QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
 
@@ -389,6 +413,8 @@ protected:
 //  ZPixmap *m_objectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
+
+  NeuTube::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;

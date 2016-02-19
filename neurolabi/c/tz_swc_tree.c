@@ -2331,17 +2331,24 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
         map[i].tree_node->node.parent_id = -1;
       }
 
-      if (map[map[i].tree_node->node.parent_id + 1].tree_node->first_child 
-	  == NULL) {
+      Swc_Tree_Node *sibling = 
+        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
+      if (sibling == NULL) {
 	map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
 	  map[i].tree_node;
       } else {
+        map[i].tree_node->next_sibling = sibling;
+        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
+          map[i].tree_node;
+        
+        /*
 	Swc_Tree_Node *sibling = 
 	  map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
 	while (sibling->next_sibling != NULL) {
 	  sibling = sibling->next_sibling;
 	}
 	sibling->next_sibling = map[i].tree_node;
+        */
       }
     }
   }

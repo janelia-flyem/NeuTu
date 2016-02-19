@@ -262,6 +262,31 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   return objArray;
 }
 
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZStack &stack, NeuTube::EAxis sliceAxis)
+{
+  ZObject3dScanArray *objArray = NULL;
+
+  if (stack.hasData()) {
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
+        ZObject3dScan::extractAllObject(
+          stack.array8(), stack.width(), stack.height(), stack.depth(), sliceAxis);
+    objArray = new ZObject3dScanArray;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->translate(stack.getOffset());
+        obj->setLabel(iter->first);
+        objArray->push_back(*obj);
+      }
+      delete obj;
+    }
+  }
+
+  return objArray;
+}
+
 std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
       const ZStack &stack, int yStep)
 {
@@ -324,6 +349,55 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
       std::swap((*out)[index].getStripeArray(), obj->getStripeArray());
       (*out)[index].setLabel(obj->getLabel());
+//      out->push_back(*obj);
+
+      delete obj;
+    }
+
+    delete bodySet;
+  } else {
+    out = NULL;
+  }
+
+  return out;
+}
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZArray &array, NeuTube::EAxis axis, bool foreground,
+    ZObject3dScanArray *out)
+{
+  if (out == NULL) {
+    out = new ZObject3dScanArray;
+  }
+
+  std::map<uint64_t, ZObject3dScan*> *bodySet = NULL;
+
+  if (array.valueType() == mylib::UINT64_TYPE) {
+    if (foreground) {
+      bodySet = ZObject3dScan::extractAllForegroundObject(
+            array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
+            array.dim(2), axis);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+            array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
+            array.dim(2), axis);
+    }
+  }
+
+  out->resize(bodySet->size());
+
+  if (bodySet != NULL) {
+    size_t index = 0;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter, ++index) {
+      ZObject3dScan *obj = iter->second;
+      obj->setLabel(iter->first);
+
+      ZObject3dScan &outObj = (*out)[index];
+
+      std::swap(outObj.getStripeArray(), obj->getStripeArray());
+      outObj.setLabel(obj->getLabel());
+      outObj.setSliceAxis(axis);
 //      out->push_back(*obj);
 
       delete obj;

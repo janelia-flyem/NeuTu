@@ -132,7 +132,8 @@ public:
    *    current slice -(\a slice + 1).
    */
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option) const = 0;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      NeuTube::EAxis sliceAxis) const = 0;
 
   /*!
    * For special painting when ZPainter cannot be created
@@ -142,7 +143,7 @@ public:
    */
   virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode) const;
+      EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -154,10 +155,10 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
-  virtual bool isSliceVisible(int z) const;
+  virtual bool isSliceVisible(int z, NeuTube::EAxis axis) const;
 
   virtual bool hit(double x, double y, double z);
-  virtual bool hit(double x, double y);
+  virtual bool hit(double x, double y, NeuTube::EAxis axis);
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
@@ -257,6 +258,10 @@ public:
     return m_type;
   }
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_UNIDENTIFIED;
+  }
+
   inline const ZStackObjectRole& getRole() const {
     return m_role;
   }
@@ -300,6 +305,8 @@ public:
     m_isHittable = state;
   }
 
+  void setHitPoint(const ZIntPoint &pt);
+
   inline bool isProjectionVisible() const {
     return m_projectionVisible;
   }
@@ -312,6 +319,9 @@ public:
   virtual void removeVisualEffect(NeuTube::Display::TVisualEffect ve);
   virtual void setVisualEffect(NeuTube::Display::TVisualEffect ve);
   bool hasVisualEffect(NeuTube::Display::TVisualEffect ve) const;
+
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
 public:
   static bool isEmptyTree(const ZStackObject *obj);
@@ -340,6 +350,7 @@ protected:
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
+  NeuTube::EAxis m_sliceAxis;
 
   NeuTube::Display::TVisualEffect m_visualEffect;
 

@@ -46,5 +46,5 @@ then
 fi
 
 cd $downloadDir/flyem-build-conda
-$downloadDir/miniconda/bin/conda install conda-build
+{ echo y; } | $downloadDir/miniconda/bin/conda install conda-build
 $downloadDir/miniconda/bin/conda build neutu -c flyem

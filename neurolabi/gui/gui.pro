@@ -589,7 +589,12 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     misc/zstackyzview.h \
-    misc/zstackyzmvc.h
+    misc/zstackyzmvc.h \
+    flyem/zflyemorthowindow.h \
+    flyem/zflyemorthodoc.h \
+    flyem/zflyemorthomvc.h \
+    flyem/zflyemorthowidget.h \
+    flyem/flyemorthocontrolform.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -660,7 +665,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
-    flyem/zflyembookmarkwidget.ui
+    flyem/zflyembookmarkwidget.ui \
+    flyem/flyemorthocontrolform.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1035,7 +1041,12 @@ SOURCES += main.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp
+    misc/zstackyzmvc.cpp \
+    flyem/zflyemorthowindow.cpp \
+    flyem/zflyemorthodoc.cpp \
+    flyem/zflyemorthomvc.cpp \
+    flyem/zflyemorthowidget.cpp \
+    flyem/flyemorthocontrolform.cpp
 
 OTHER_FILES += \
     extlib.pri \

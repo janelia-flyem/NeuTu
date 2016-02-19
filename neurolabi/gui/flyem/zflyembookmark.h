@@ -20,7 +20,12 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+  }
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
@@ -42,6 +47,7 @@ public:
 //    m_location.set(x, y, z);
     setCenter(x, y, z);
   }
+  void setLocation(const ZIntPoint &pt);
 
   bool isChecked() const {
     return m_isChecked;
@@ -84,6 +90,8 @@ public:
   void addUserTag();
 
   void clear();
+
+  ZFlyEmBookmark* clone() const;
 
 private:
   uint64_t m_bodyId;
