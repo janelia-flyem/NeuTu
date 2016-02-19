@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+  echo './flyem_backup_node <address> <node> [<name>]'
+  exit
+fi
+
+address=$1
+node=$2
+
+name=Production
+if [ $# -ge 3 ]
+then
+  name=$3
+fi
+
+http POST http://$address/api/node/$node/commit log:="[\"locked for backup\"]"
+date=`date`
+http POST http://$address/api/node/$node/branch log:="[\"$name node created at $date\"]"
+
+
+ 

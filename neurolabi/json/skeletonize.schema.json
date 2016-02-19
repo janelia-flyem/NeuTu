@@ -1,0 +1,42 @@
+{
+  "title": "Skeletonization Schema",
+  "type": "object",
+  "properties": {
+    "downsampleInterval": {
+      "description": "Downsampling the stack before running skeletonization",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "integer"}
+    },
+    "minimalLength": {
+      "description": "Minimal length of the resulted branches",
+      "type": "integer",
+      "minimum": 0
+    },
+    "keepingSingleObject": {
+      "description": "Keep an isolated object or not even if it is too small or short",
+      "type": "boolean"
+    },
+    "rebase": {
+      "description": "Reset the starting point to a terminal point?",
+      "type": "boolean"
+    },
+    "fillingHole": {
+      "description": "Reset the starting point to a terminal point?",
+      "type": "boolean"
+    },
+    "maximalDistance": {
+      "description": "Maximum distance to connect isolated branches.",
+      "type": "number",
+      "minimum": 0
+    },
+    "minimalObjectSize": {
+      "description": "Minimal size of objects to skeletonize.",
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
+
+

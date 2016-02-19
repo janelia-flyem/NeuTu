@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<neutube>
+  <dataPath>/Users/zhaot/Work/neutube/neurolabi/data</dataPath>
+  <Z3DWindow>
+    <Swcs status="on">
+      <Primitive>Sphere</Primitive>
+      <Color_Mode>Topology</Color_Mode>
+    </Swcs>
+    <Mesh status="off"></Mesh>
+    <Tensor status="off"></Tensor>
+    <PunctaManager status="off"></PunctaManager>
+    <ChainManager status="off"></ChainManager>
+  </Z3DWindow>
+  <Application>General</Application>
+</neutube>

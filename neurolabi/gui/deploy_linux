@@ -1,0 +1,12 @@
+#!/bin/sh
+
+qmakeCmd=$1
+buildDIR=$2
+DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+deployDIR=$DIR/../../neuTube
+
+if [ -e $deployDIR ]; then
+  rm -rf $deployDIR
+  mkdir $deployDIR
+fi
+

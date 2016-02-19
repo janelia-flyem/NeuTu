@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<neutube>
+  <docUrl>https://wiki.janelia.org/wiki/display/flyem/NeuTu</docUrl>
+  <dataPath>/Users/zhaot/Work/neutube/neurolabi/data</dataPath>
+  <MainWindow>
+    <tracing status="off"></tracing>
+  </MainWindow>
+  <Z3DWindow>
+    <Swcs status="on">
+      <Primitive>Normal</Primitive>
+      <Color_Mode>Individual</Color_Mode>
+    </Swcs>
+    <Tubes status="off"></Tubes>
+    <Tensor status="off"></Tensor>
+    <ChainManager status="off"></ChainManager>
+    <Background status="off"></Background>
+    <Axis status="off"></Axis>
+  </Z3DWindow>
+  <Application>FlyEM</Application>
+  <NativeFileDialog status="on"></NativeFileDialog>
+</neutube>

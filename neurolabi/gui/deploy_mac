@@ -1,0 +1,17 @@
+#!/bin/sh
+
+qmakeCmd=$1
+buildDIR=$2
+DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+deployDIR=$DIR/../../neuTube.app
+
+if [ -d $deployDIR ]; then
+  rm -rf $deployDIR
+fi
+
+cp -R $buildDIR/neuTube.app/ $deployDIR
+
+macdeployqtCmd="$( $qmakeCmd -query QT_INSTALL_BINS )"/macdeployqt
+
+$macdeployqtCmd $deployDIR
+

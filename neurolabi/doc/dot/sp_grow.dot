@@ -1,0 +1,63 @@
+digraph G {
+  "Shortest path growing" [shape = octagon];
+  start [shape = parallelogram, label = "Input: stack, seeds, parameters"];
+  end [shape = hexagon];
+  init1 [shape = box, label = "seeds --> Queue(recruited)"];
+  eachseed [label = "For each seed r in seeds"];
+  init2 [shape = box, label = "Update Heap(waiting)"];
+  init3 [shape = box, label = "stop = false"];
+  should_stop [shape = diamond, label = "stop == true"];
+  check_status [shape = box, label = "Update stop by checking current status"];
+  extract_waiting [shape = box, label = "Recruit root of Heap(waiting) r"];
+  n_recruited [shape = diamond, label = "n is recuited"];
+  r_null_flag [shape = diamond, label = "r has null flag"];
+  r_is_target [shape = diamond, label = "r is target"];
+  update_waiting [shape = box, label = "Update waiting"];
+  set_stop [shape = box, label = "stop = TRUE"];
+  dummy_stop [shape = circle, label = ""]; 
+  r_is_conductor [shape = diamond, label = "r is super conductor"];
+  grow_conductor [shape = box, label = "Grow super conductor"];
+  r_is_valid [shape = diamond, label = "r is a valid index"];
+  /*update_waiting [shape = box, label = "Unrecruited neighbors of r --> waiting"]*/
+
+  start -> init1;
+  init1 -> eachseed;
+  eachseed -> init2;
+  init2 -> eachseed
+  eachseed -> init3 [label = "done"];
+  init3 -> should_stop;
+  should_stop -> end [label = yes];
+  should_stop -> extract_waiting [label = no];
+  extract_waiting -> r_is_valid;
+  r_is_valid -> r_null_flag [label = yes];
+  r_is_valid -> set_stop [label = no];
+  r_null_flag -> update_waiting [label = yes];
+  r_null_flag -> r_is_target [label = "no"];
+  r_is_target -> set_stop [label = "yes"];
+  set_stop -> dummy_stop;
+  r_is_target -> r_is_conductor [label = no];
+  r_is_conductor -> grow_conductor [label = yes];
+  grow_conductor -> dummy_stop;
+  r_is_conductor -> dummy_stop [label = no];
+  update_waiting -> check_status;
+  check_status -> dummy_stop;
+  dummy_stop -> should_stop;
+
+  start_uw [shape = parallelogram, label = "Start: update waiting"];
+  end_uw [shape = hexagon, label = "End: update waiting"];
+  each_neighbor [label = "For each neighbor n of r"];
+  checked [shape = diamond, label = "n is checked"];
+  waiting [shape = diamond, label = "n is in waiting"];  
+  ud [shape = box, label = "Update distance value of n"];
+  rh [shape = box, label = "n --> waiting"];
+  dummy_uw [shape = circle, label = ""];
+  start_uw -> each_neighbor;
+  each_neighbor -> checked;
+  checked -> waiting [label = "yes"];
+  waiting -> ud [label = "yes"];
+  checked -> rh [label = "no"];
+  ud -> dummy_uw;
+  rh -> dummy_uw;
+  dummy_uw -> each_neighbor;
+  each_neighbor -> end_uw [label = "done"];
+}

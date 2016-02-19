@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function update_neutu {
+  target_dir=$1
+  branch=$2
+  source_dir=/groups/flyem/home/zhaot/Work/neutube_ws
+
+  if [ ! -d $target_dir ]
+  then
+    /opt/bin/git clone -b $branch $source_dir/.git $target_dir
+  fi
+
+  build_dir=$target_dir/neurolabi/build
+
+  cd $target_dir
+  /usr/bin/git pull origin $branch
+  sh build.sh /opt/Trolltech/Qt4.8.5/bin/qmake /opt/Trolltech/Qt4.8.5/mkspecs/linux-g++
+  $source_dir/neurolabi/shell/install_neutu /opt/Download/neutube /opt/NeuTu
+}
+
+
+
+ 
