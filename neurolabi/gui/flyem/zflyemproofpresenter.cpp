@@ -338,6 +338,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
+  synapse.setUserName(NeuTube::GetCurrentUserName());
   getCompleteDocument()->executeAddSynapseCommand(synapse);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
@@ -447,8 +448,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
          iter != seList.end(); ++iter) {
       ZDvidSynapseEnsemble *se = *iter;
       se->setHitPoint(hitPoint);
-      getCompleteDocument()->getDvidSynapseEnsemble(
-            buddyView()->getSliceAxis())->selectHitWithPartner(false);
+      se->selectHitWithPartner(false);
+//      getCompleteDocument()->getDvidSynapseEnsemble(
+//            buddyView()->getSliceAxis())->selectHitWithPartner(false);
     }
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);

@@ -272,21 +272,6 @@ bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
     return false;
   }
 
-
-#if 0
-  for (int i = 0; i < 8; ++i) {
-    if (contains(box.getCorner(i))) {
-      overlapped = true;
-      break;
-    }
-
-    if (box.contains(getCorner(i))) {
-      overlapped = true;
-      break;
-    }
-  }
-#endif
-
   return true;
 }
 

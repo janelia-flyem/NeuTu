@@ -3,6 +3,7 @@
 #include "zstackpresenter.h"
 #include "zflyemsupervisor.h"
 #include "zstackview.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
   ZFlyEmProofMvc(parent)

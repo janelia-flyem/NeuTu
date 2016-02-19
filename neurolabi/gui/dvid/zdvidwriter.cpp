@@ -264,10 +264,18 @@ void ZDvidWriter::writeJson(
 
 void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
 {
-  QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
-      arg(url.c_str());
+  /*
+  if (method == "POST") {
+    post(url);
+  } else if (method == "PUT") {
+    put(url);
+  } else {
+  */
+    QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
+        arg(url.c_str());
 
-  runCommand(command);
+    runCommand(command);
+//  }
 }
 
 void ZDvidWriter::writeJsonString(
@@ -617,9 +625,42 @@ std::string ZDvidWriter::post(
   return response;
 }
 
+std::string ZDvidWriter::put(
+    const std::string &url, const char *payload, int length)
+{
+  LINFO() << "HTTP PUT: " << url;
+  m_statusCode = 0;
+  std::string response;
+  try {
+    std::string endPoint = ZDvidUrl::GetEndPoint(url);
+    libdvid::BinaryDataPtr libdvidPayload;
+    if (payload != NULL && length > 0) {
+      libdvidPayload =
+        libdvid::BinaryData::create_binary_data(payload, length);
+    }
+//    std::cout << libdvidPayload->get_data().size() << std::endl;
+    libdvid::BinaryDataPtr data = m_service->custom_request(
+          endPoint, libdvidPayload, libdvid::PUT);
+
+    response = data->get_data();
+    m_statusCode = 200;
+//    m_buffer.append(data->get_data().c_str(), data->length());
+//    m_status = READ_OK;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+
+  return response;
+}
+
 std::string ZDvidWriter::post(const std::string &url)
 {
   return post(url, NULL, 0);
+}
+
+std::string ZDvidWriter::put(const std::string &url)
+{
+  return put(url, NULL, 0);
 }
 
 std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
@@ -1170,4 +1211,17 @@ void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
   UNUSED_PARAMETER(&from);
   UNUSED_PARAMETER(&to);
 #endif
+}
+
+void ZDvidWriter::addSynapseProperty(
+    const ZIntPoint &synapse, const std::string &key, const std::string &value)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZJsonObject synapseJson = reader.readSynapseJson(synapse);
+    if (!synapseJson.isEmpty()) {
+      ZDvidSynapse::AddProperty(synapseJson, key, value);
+      writeSynapse(synapseJson);
+    }
+  }
 }

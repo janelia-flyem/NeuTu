@@ -71,6 +71,10 @@ public:
 
   void setDvidDialog(ZDvidDialog *dlg);
 
+  ZFlyEmBodyMergeProject* getMergeProject() {
+    return &m_mergeProject;
+  }
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);

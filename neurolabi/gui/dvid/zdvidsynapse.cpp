@@ -76,6 +76,16 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
     }
+    if (!getUserName().empty()) {
+      QString decorationText = "u";
+      int width = decorationText.size() * 25;
+      int height = 25;
+      QColor oldColor = painter.getPen().color();
+      painter.setPen(QColor(0, 0, 0));
+      painter.drawText(center.getX(), center.getY(), width, height,
+                       Qt::AlignLeft, decorationText);
+      painter.setPen(oldColor);
+    }
   }
 
   QPen pen = painter.getPen();
@@ -155,14 +165,14 @@ double ZDvidSynapse::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case KIND_POST_SYN:
-    return 3.0;
-  case KIND_PRE_SYN:
     return 5.0;
+  case KIND_PRE_SYN:
+    return 7.0;
   default:
     break;
   }
 
-  return 5.0;
+  return 7.0;
 }
 
 void ZDvidSynapse::setDefaultRadius()
@@ -276,6 +286,10 @@ void ZDvidSynapse::loadJsonObject(
 
     setDefaultRadius();
     setDefaultColor();
+
+    if (obj.hasKey("Prop")) {
+      m_propertyJson.setValue(obj.value("Prop").clone());
+    }
   }
 }
 
@@ -551,6 +565,11 @@ ZJsonObject ZDvidSynapse::toJsonObject() const
     obj.setEntry("Tags", tagJson);
   }
 
+  if (!m_propertyJson.isEmpty()) {
+    ZJsonObject propJson = m_propertyJson.clone();
+    obj.setEntry("Prop", propJson);
+  }
+
   return obj;
 }
 
@@ -589,6 +608,42 @@ double ZDvidSynapse::getRadius(int z, NeuTube::EAxis sliceAxis) const
 
   return std::max(0.0, getRadius() - dz);
 }
+
+void ZDvidSynapse::setUserName(const std::string &name)
+{
+  m_propertyJson.setEntry("user", name);
+}
+
+std::string ZDvidSynapse::getUserName() const
+{
+  return ZJsonParser::stringValue(m_propertyJson["user"]);
+}
+
+void ZDvidSynapse::AddProperty(
+    ZJsonObject &json, const std::string &key, const std::string &value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  propJson.setEntry(key, value);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+int ZDvidSynapse::getX() const
+{
+  return getPosition().getX();
+}
+
+int ZDvidSynapse::getY() const
+{
+  return getPosition().getY();
+}
+
+int ZDvidSynapse::getZ() const
+{
+  return getPosition().getZ();
+}
+
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 

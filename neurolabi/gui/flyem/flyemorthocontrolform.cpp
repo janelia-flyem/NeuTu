@@ -1,5 +1,6 @@
 #include "flyemorthocontrolform.h"
 #include "ui_flyemorthocontrolform.h"
+#include "zwidgetmessage.h"
 
 FlyEmOrthoControlForm::FlyEmOrthoControlForm(QWidget *parent) :
   QWidget(parent),
@@ -17,6 +18,7 @@ FlyEmOrthoControlForm::~FlyEmOrthoControlForm()
 
 void FlyEmOrthoControlForm::connectSignalSlot()
 {
+  /*
   connect(ui->upPushButton, SIGNAL(clicked()),
           this, SIGNAL(movingUp()));
   connect(ui->downPushButton, SIGNAL(clicked()),
@@ -25,8 +27,17 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           this, SIGNAL(movingLeft()));
   connect(ui->rightPushButton, SIGNAL(clicked()),
           this, SIGNAL(movingRight()));
+          */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
 }
 
+ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const
+{
+  return ui->messageWidget;
+}
 
+void FlyEmOrthoControlForm::dump(const ZWidgetMessage &message)
+{
+  ui->messageWidget->dump(message.toHtmlString(), message.isAppending());
+}

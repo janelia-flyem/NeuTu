@@ -1,5 +1,7 @@
 #include "zflyemorthowindow.h"
 
+#include <QStatusBar>
+
 #include "flyem/zflyemorthowidget.h"
 #include "flyem/zflyemorthodoc.h"
 
@@ -16,6 +18,7 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
           this, SIGNAL(zoomingTo(int,int,int)));
   connect(m_orthoWidget, SIGNAL(bodyMergeEdited()),
           this, SIGNAL(bodyMergeEdited()));
+  statusBar()->showMessage("Orthogonal view ready.");
 }
 
 
@@ -46,4 +49,9 @@ void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
 void ZFlyEmOrthoWindow::syncMergeWithDvid()
 {
   m_orthoWidget->syncMergeWithDvid();
+}
+
+void ZFlyEmOrthoWindow::processMessage(const ZWidgetMessage &message)
+{
+  m_orthoWidget->processMessage(message);
 }

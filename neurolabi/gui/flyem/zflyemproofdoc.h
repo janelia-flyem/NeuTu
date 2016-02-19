@@ -94,7 +94,6 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
-  void saveMergeOperation();
   void downloadBodyMask();
   void clearBodyMerger();
 
@@ -238,6 +237,7 @@ public slots:
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
 
   void downloadBookmark(int x, int y, int z);
+  void saveMergeOperation();
 
 protected:
   void autoSave();

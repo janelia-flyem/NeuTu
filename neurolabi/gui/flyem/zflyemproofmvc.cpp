@@ -906,10 +906,10 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
           this, SIGNAL(bodyMergeEdited()));
 
-  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          this, SLOT(saveMergeOperation()));
-  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          this, SLOT(saveMergeOperation()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+//          getCompleteDocument(), SLOT(saveMergeOperation()));
+//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+//          getCompleteDocument(), SLOT(saveMergeOperation()));
 
   connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
           this, SLOT(updateUserBookmarkTable()));

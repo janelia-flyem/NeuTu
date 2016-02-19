@@ -21,69 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QFrame" name="frame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="1">
-      <widget class="QPushButton" name="downPushButton">
-       <property name="text">
-        <string>Down</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../gui.qrc">
-         <normaloff>:/images/move_down.png</normaloff>:/images/move_down.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="upPushButton">
-       <property name="text">
-        <string>Up</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../gui.qrc">
-         <normaloff>:/images/move_up.png</normaloff>:/images/move_up.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="rightPushButton">
-       <property name="text">
-        <string>Right</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../gui.qrc">
-         <normaloff>:/images/go-next.png</normaloff>:/images/go-next.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="leftPushButton">
-       <property name="text">
-        <string>Left</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../gui.qrc">
-         <normaloff>:/images/go-previous.png</normaloff>:/images/go-previous.png</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QPushButton" name="locateToPushButton">
-     <property name="text">
-      <string>Locate in Main Window</string>
-     </property>
-    </widget>
+    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -98,10 +36,23 @@
      </property>
     </spacer>
    </item>
+   <item>
+    <widget class="QPushButton" name="locateToPushButton">
+     <property name="text">
+      <string>Locate in Main Window</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
- <resources>
-  <include location="../gui.qrc"/>
- </resources>
+ <customwidgets>
+  <customwidget>
+   <class>ZFlyEmMessageWidget</class>
+   <extends>QWidget</extends>
+   <header>flyem/zflyemmessagewidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections/>
 </ui>

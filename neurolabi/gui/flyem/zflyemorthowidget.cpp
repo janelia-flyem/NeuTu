@@ -9,6 +9,7 @@
 #include "flyem/flyemorthocontrolform.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -40,10 +41,6 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   layout->addWidget(m_yzMvc, 0, 1);
   layout->addWidget(m_xzMvc, 1, 0);
 
-  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-
   m_controlForm = new FlyEmOrthoControlForm(this);
   layout->addWidget(m_controlForm);
 
@@ -68,6 +65,15 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoWidget::getDocument() const
 
 void ZFlyEmOrthoWidget::connectSignalSlot()
 {
+  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+
+  ZWidgetMessage::ConnectMessagePipe(getDocument(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
+
   connect(m_controlForm, SIGNAL(movingUp()), this, SLOT(moveUp()));
   connect(m_controlForm, SIGNAL(movingDown()), this, SLOT(moveDown()));
   connect(m_controlForm, SIGNAL(movingLeft()), this, SLOT(moveLeft()));
@@ -150,6 +156,18 @@ void ZFlyEmOrthoWidget::locateMainWindow()
 {
   ZIntPoint center = m_xyMvc->getViewCenter();
   emit zoomingTo(center.getX(), center.getY(), center.getZ());
+}
+
+void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
+{
+  switch (message.getTarget()) {
+  case ZWidgetMessage::TARGET_TEXT:
+  case ZWidgetMessage::TARGET_TEXT_APPENDING:
+    m_controlForm->dump(message);
+    break;
+  default:
+    break;
+  }
 }
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)

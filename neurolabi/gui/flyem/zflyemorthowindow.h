@@ -8,6 +8,7 @@ class ZFlyEmOrthoWidget;
 class ZIntPoint;
 class ZFlyEmOrthoDoc;
 class ZFlyEmProofDoc;
+class ZWidgetMessage;
 
 class ZFlyEmOrthoWindow : public QMainWindow
 {
@@ -29,6 +30,7 @@ public slots:
   void downloadBookmark(int x, int y, int z);
   void downloadSynapse(int x, int y, int z);
   void syncMergeWithDvid();
+  void processMessage(const ZWidgetMessage &message);
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;

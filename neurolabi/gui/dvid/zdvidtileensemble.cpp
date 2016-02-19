@@ -148,7 +148,7 @@ bool ZDvidTileEnsemble::update(
   }
 
   try  {
-#if 1
+#if 0
     if (!tile_locs_array.empty()) {
 
       QVector<UpdateTileParam> paramList(tile_locs_array.size());
@@ -201,7 +201,7 @@ bool ZDvidTileEnsemble::update(
 //                                       getDvidTarget().getUuid());
       std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
-#define DVID_TILE_THREAD_FETCH 0
+#define DVID_TILE_THREAD_FETCH 1
 
 #if DVID_TILE_THREAD_FETCH
       std::vector<libdvid::BinaryDataPtr> data = get_tile_array_binary(
@@ -395,7 +395,7 @@ void ZDvidTileEnsemble::display(
     const ZDvidTileInfo::TIndex &index = *iter;
     ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
     if (tile != NULL) {
-      tile->enhanceContrast(m_highContrast, true);
+//      tile->enhanceContrast(m_highContrast, true);
       tile->display(painter, slice, option, sliceAxis);
     }
   }
