@@ -9,6 +9,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemsequencercolorscheme.h"
+#include "zthreadfuturemap.h"
 
 namespace Ui {
 class FlyEmBodyInfoDialog;
@@ -117,6 +118,7 @@ private:
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
+    ZThreadFutureMap m_futureMap;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
