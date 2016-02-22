@@ -48,6 +48,7 @@ class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
 //class Z3DRendererBase;
+class ZROIWidget;
 
 class Z3DTabWidget : public QTabWidget
 {
@@ -229,7 +230,7 @@ public: //Bounding box
 
   QDockWidget * getSettingsDockWidget();
   QDockWidget * getObjectsDockWidget();
-  QDockWidget * getROIsDockWidget();
+  ZROIWidget * getROIsDockWidget();
 
 public:
   void setButtonStatus(int index, bool v);
@@ -525,7 +526,7 @@ private:
   QDockWidget *m_settingsDockWidget;
   QDockWidget *m_objectsDockWidget;
   QDockWidget *m_advancedSettingDockWidget;
-  QDockWidget *m_roiDockWidget;
+  ZROIWidget *m_roiDockWidget;
 
   bool m_isStereoView;
 

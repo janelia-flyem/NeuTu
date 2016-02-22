@@ -76,6 +76,7 @@
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
 #include "z3dsurfacefilter.h"
+#include "zroiwidget.h"
 
 class Sleeper : public QThread
 {
@@ -1476,7 +1477,7 @@ void Z3DWindow::createDockWindows()
   m_objectsDockWidget->setWidget(omw);
   m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
 
-  m_roiDockWidget = new QDockWidget(tr("ROIs"), this);
+  m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
   m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
   m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
 
@@ -4265,7 +4266,7 @@ QDockWidget* Z3DWindow::getObjectsDockWidget()
     return m_objectsDockWidget;
 }
 
-QDockWidget* Z3DWindow::getROIsDockWidget()
+ZROIWidget* Z3DWindow::getROIsDockWidget()
 {
     return m_roiDockWidget;
 }

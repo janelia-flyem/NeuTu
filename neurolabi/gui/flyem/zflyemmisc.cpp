@@ -499,27 +499,66 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
 
           // test
           ZJsonObject meta = reader.readInfo();
-          std::vector<std::string> keys = meta.getAllKey();
+//          std::vector<std::string> keys = meta.getAllKey();
 
-          for(int i=0; i<keys.size(); i++)
+//          for(int i=0; i<keys.size(); i++)
+//          {
+//              qDebug()<<keys.at(i);
+//          }
+//          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+
+
+          ZJsonValue datains = meta.value("DataInstances");
+          qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
+
+          if(datains.isObject())
           {
-              qDebug()<<keys.at(i);
+              ZJsonObject insList(datains.getData(), true);
+              std::vector<std::string> keys = insList.getAllKey();
+
+              for(int i=0; i<keys.size(); i++)
+              {
+                  //qDebug()<<keys.at(i);
+
+
+                  std::size_t found = keys.at(i).find("roi");
+
+                  if(found!=std::string::npos)
+                  {
+                    qDebug()<<" rois: "<<keys.at(i);
+                  }
+
+
+//                  ZJsonObject submeta(insList.value(keys.at(i).c_str()));
+//                  std::vector<std::string> subkeys = submeta.getAllKey();
+
+//                  for(int j=0; j<subkeys.size(); j++)
+//                  {
+//                      qDebug()<<" ... "<<subkeys.at(i);
+//                  }
+
+
+
+
+
+
+              }
+              qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
           }
-          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
 
 
 
 
 
 
-        ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
-        if (!roi.isEmpty()) {
-          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
-          cubes->setSource(
-                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
-                  dvidTarget.getRoiName()));
-          window->getDocument()->addObject(cubes, true);
-        }
+//       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+//        if (!roi.isEmpty()) {
+//          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+//          cubes->setSource(
+//                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+//                  dvidTarget.getRoiName()));
+//          window->getDocument()->addObject(cubes, true);
+//        }
       }
     }
   }

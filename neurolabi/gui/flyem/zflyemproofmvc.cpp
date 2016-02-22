@@ -47,6 +47,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "flyem/zflyemorthowindow.h"
+#include "zroiwidget.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -335,8 +336,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 //    ZFlyEmMisc::Decorate3dBodyWindowRoi(
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
-    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
-          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+//    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+    m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
   }
 
   /*

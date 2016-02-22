@@ -7,14 +7,30 @@
 #include "flyem/zflyemproofdoc.h"
 
 
-//class ZROIWidget : public QTableWidget, public QDockWidget
-//{
-//    Q_OBJECT
-//public:
-//    ZROIWidget(QWidget *parent = 0);
-//    ~ZROIWidget();
+class ZROIWidget : public QDockWidget
+{
+    Q_OBJECT
 
-//};
+public:
+    ZROIWidget(QWidget *parent = 0);
+    ZROIWidget(const QString & title, QWidget * parent = 0, Qt::WindowFlags flags = 0);
+    ~ZROIWidget();
+
+public:
+    void getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget);
+    void makeGUI();
+
+public:
+    //
+    Z3DWindow *m_window;
+    ZDvidInfo m_dvidInfo;
+    ZDvidTarget m_dvidTarget;
+
+    //
+    std::vector<std::string> roiList;
+
+
+};
 
 
 #endif // ZROIWIDGET_H
