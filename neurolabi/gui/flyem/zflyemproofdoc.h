@@ -105,9 +105,9 @@ public:
 
 //  void saveCustomBookmark();
   void downloadBookmark();
-  inline void setCustomBookmarkSaveState(bool state) {
-    m_isCustomBookmarkSaved = state;
-  }
+//  inline void setCustomBookmarkSaveState(bool state) {
+//    m_isCustomBookmarkSaved = state;
+//  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
 
@@ -273,7 +273,7 @@ protected:
   ZDvidReader m_dvidReader;
   ZDvidWriter m_dvidWriter;
 
-  bool m_isCustomBookmarkSaved;
+//  bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;

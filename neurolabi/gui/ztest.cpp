@@ -19637,7 +19637,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   reader.open("emdata2.int.janelia.org", "e402", 7000);
   ZObject3dScan obj = reader.readRoi("seven_column_roi");
@@ -19664,6 +19664,81 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Bad object subtraction." << std::endl;
   }
+#endif
+
+#if 0
+  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
+
+  double x = 1.4;
+  double y = 2.3;
+  double z = 3.2;
+
+  double v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_NN);
+  std::cout << v << std::endl;
+
+  v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_AVERAGE);
+  std::cout << v << std::endl;
+
+  v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_UNIFORM);
+  std::cout << v << std::endl;
+
+#endif
+
+#if 1
+  ZStack stack;
+//  stack.load(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
+  stack.load(
+        GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  ZIntCuboid box = stack.getBoundBox();
+
+  int ix0 = box.getFirstCorner().getX();
+  int iy0 = box.getFirstCorner().getY();
+  int iz0 = box.getFirstCorner().getZ();
+
+  double ratio = 20.0 / 32.0;
+  double inverseRatio = 32.0 / 20.0;
+
+  box.setFirstCorner((box.getFirstCorner().toPoint() * ratio).toIntPoint());
+  box.setLastCorner((box.getLastCorner().toPoint() * ratio).toIntPoint());
+
+  ZStack newStack(GREY, box, 1);
+
+  size_t offset = 0;
+  box = newStack.getBoundBox();
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  Stack *oldStack = stack.c_stack();
+  uint8_t *array = newStack.array8();
+
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      for (int x = x0; x <= x1; ++x) {
+        double v = misc::SampleStack(
+              oldStack, x * inverseRatio - ix0,
+              y * inverseRatio - iy0,
+              z * inverseRatio - iz0,
+              misc::SAMPLE_STACK_NN);
+        if (std::isnan(v)) {
+          v = 0;
+        }
+
+        array[offset] = iround(v);
+        offset++;
+      }
+    }
+  }
+
+  newStack.save(GET_TEST_DATA_DIR + "/test.tif");
+
 #endif
 
   std::cout << "Done." << std::endl;

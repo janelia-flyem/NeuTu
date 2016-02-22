@@ -468,7 +468,7 @@ HEADERS += mainwindow.h \
     dvid/libdvidheader.h \
     dialogs/dvidoperatedialog.h \
     z3dwindowfactory.h \
-    qthreadfuturemap.h \
+    zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
     zkeyeventmapper.h \
@@ -594,7 +594,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
     flyem/zflyemorthowidget.h \
-    flyem/flyemorthocontrolform.h
+    flyem/flyemorthocontrolform.h \
+    dvid/zdvidannotation.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -920,7 +921,7 @@ SOURCES += main.cpp \
     zsleeper.cpp \
     dialogs/dvidoperatedialog.cpp \
     z3dwindowfactory.cpp \
-    qthreadfuturemap.cpp \
+    zthreadfuturemap.cpp \
     zstackball.cpp \
     zstackdochittest.cpp \
     zkeyeventmapper.cpp \
@@ -1046,7 +1047,8 @@ SOURCES += main.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \
     flyem/zflyemorthowidget.cpp \
-    flyem/flyemorthocontrolform.cpp
+    flyem/flyemorthocontrolform.cpp \
+    dvid/zdvidannotation.cpp
 
 OTHER_FILES += \
     extlib.pri \

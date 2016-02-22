@@ -35,6 +35,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsynpasecommand.h"
 #include "dvid/zflyembookmarkcommand.h"
+#include "dvid/zdvidannotation.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -61,7 +62,7 @@ void ZFlyEmProofDoc::initTimer()
 
 void ZFlyEmProofDoc::initAutoSave()
 {
-  m_isCustomBookmarkSaved = true;
+//  m_isCustomBookmarkSaved = true;
 
   QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
         NeutubeConfig::AUTO_SAVE).c_str());
@@ -954,6 +955,10 @@ void ZFlyEmProofDoc::downloadBookmark()
       bookmark->loadDvidAnnotation(bookmarkObj);
       if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
         bookmark->setChecked(true);
+        ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
+//        bookmarkObj.setProperty("checked", "1");
+        m_dvidWriter.writeBookmark(bookmarkObj);
+        m_dvidWriter.deleteBookmarkKey(*bookmark);
       }
       addObject(bookmark, true);
     }
@@ -975,6 +980,9 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
+          if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+            bookmark->setChecked(true);
+          }
           m_dvidWriter.writeBookmark(*bookmark);
         }
         endObjectModifiedMode();
@@ -1063,7 +1071,7 @@ void ZFlyEmProofDoc::downloadSynapse()
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
 {
-  m_isCustomBookmarkSaved = false;
+//  m_isCustomBookmarkSaved = false;
 }
 
 void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
@@ -1581,7 +1589,7 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
   case ZStackObject::TYPE_FLYEM_BOOKMARK:
-    m_isCustomBookmarkSaved = false;
+//    m_isCustomBookmarkSaved = false;
     emit userBookmarkModified();
     break;
   default:

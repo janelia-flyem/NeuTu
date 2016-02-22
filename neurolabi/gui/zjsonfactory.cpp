@@ -91,7 +91,9 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   propJson.setEntry("status", bookmark.getStatus().toStdString());
   propJson.setEntry("comment", bookmark.getComment().toStdString());
   propJson.setEntry("type", bookmark.getTypeString().toStdString());
-//  propJson.setEntry("checked", bookmark.isChecked());
+  if (bookmark.isChecked()) {
+    propJson.setEntry("checked", "1");
+  }
   if (bookmark.isCustom()) {
     propJson.setEntry("custom", "1");
   } else {

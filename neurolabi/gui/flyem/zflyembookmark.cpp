@@ -132,22 +132,21 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         setStatus(ZJsonParser::stringValue(propJson["status"]));
         setUser(ZJsonParser::stringValue(propJson["user"]));
 
-        /*
         if (propJson.hasKey("checked")) {
-          setChecked(ZJsonParser::booleanValue(propJson["checked"]));
+          if (ZJsonParser::isBoolean(propJson["checked"])) {
+            setChecked(ZJsonParser::booleanValue(propJson["checked"]));
+          } else {
+            std::string checked = ZJsonParser::stringValue(propJson["checked"]);
+            setChecked(checked == "1");
+          }
         }
-        */
 
         if (propJson.hasKey("custom")) {
           if (ZJsonParser::isBoolean(propJson["custom"])) {
             setCustom(ZJsonParser::booleanValue(propJson["custom"]));
           } else {
             std::string custom = ZJsonParser::stringValue(propJson["custom"]);
-            if (custom == "1") {
-              setCustom(true);
-            } else {
-              setCustom(false);
-            }
+            setCustom(custom == "1");
           }
         }
       }

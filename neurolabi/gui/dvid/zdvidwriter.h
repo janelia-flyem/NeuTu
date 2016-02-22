@@ -129,6 +129,7 @@ public:
   void writeBookmark(const ZJsonArray &bookmarkJson);
   void writeBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
   void writeBookmarkKey(const ZFlyEmBookmark &bookmark);
+  void deleteBookmarkKey(const ZFlyEmBookmark &bookmark);
 
   void deleteBookmark(int x, int y, int z);
   void deleteBookmark(const ZIntPoint &pt);

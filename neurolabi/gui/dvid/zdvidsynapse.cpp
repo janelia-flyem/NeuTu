@@ -11,6 +11,7 @@
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
+#include "dvid/zdvidannotation.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -622,11 +623,7 @@ std::string ZDvidSynapse::getUserName() const
 void ZDvidSynapse::AddProperty(
     ZJsonObject &json, const std::string &key, const std::string &value)
 {
-  ZJsonObject propJson = json.value("Prop");
-  propJson.setEntry(key, value);
-  if (!propJson.hasKey("Prop")) {
-    json.setEntry("Prop", propJson);
-  }
+  ZDvidAnnotation::AddProperty(json, key, value);
 }
 
 int ZDvidSynapse::getX() const

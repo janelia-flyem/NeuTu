@@ -19,7 +19,7 @@
 #include "zkeyeventswcmapper.h"
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zkeyoperationmap.h"
 #include "zstackball.h"
@@ -528,7 +528,7 @@ protected:
 
   int m_zOrder;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 
 signals:
   void viewModeChanged();

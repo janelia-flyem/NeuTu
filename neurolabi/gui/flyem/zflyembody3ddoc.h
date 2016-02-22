@@ -13,7 +13,7 @@
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidinfo.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 
 class ZFlyEmProofDoc;
@@ -180,7 +180,7 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
 
