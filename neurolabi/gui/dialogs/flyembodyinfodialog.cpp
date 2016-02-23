@@ -1014,7 +1014,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // how many pre/post?
         int npre = 0;
         int npost = 0;
-        for (int i=0; i<synapses.size(); i++) {
+        for (size_t i=0; i<synapses.size(); i++) {
             if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
                 npre++;
             } else {
@@ -1039,7 +1039,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
         // std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZIntPoint> siteList;
-        for (int i=0; i<synapses.size(); i++) {
+        for (size_t i=0; i<synapses.size(); i++) {
 
             // if we are looking for input bodies, pick out the sites
             //  that are post-synaptic, and vice versa:
@@ -1052,7 +1052,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
                 // currently Ting doesn't expose a method for retrieving relations
                 //  directly; I've patched in a getter to use, temporarily
                 std::vector<ZIntPoint> sites = synapses[i].getPartners();
-                for (int j=0; j<sites.size(); j++) {
+                for (size_t j=0; j<sites.size(); j++) {
                     siteList.push_back(sites[j]);
                 }
 
@@ -1071,7 +1071,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
         // copy into the map
         // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        for (int i=0; i<siteList.size(); i++) {
+        for (size_t i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
             } 
