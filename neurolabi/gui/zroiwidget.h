@@ -30,12 +30,14 @@ public:
 
 public slots:
     void updateROIRendering(int row, int column);
+    void updateROIRendering(QTableWidgetItem* item);
 
 public:
     //
     Z3DWindow *m_window;
     ZDvidInfo m_dvidInfo;
     ZDvidTarget m_dvidTarget;
+    ZDvidReader reader;
 
     //
     std::vector<std::string> roiList;

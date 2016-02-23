@@ -1,10 +1,25 @@
+
+#include <vector>
+#include <string>
+#include <iostream>
+
 #include <QtGui>
+#include <QWidget>
+#include <QCheckBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+
+#include "flyem/zflyemmisc.h"
+#include "zstackobjectsourcefactory.h"
+#include "z3dwindow.h"
 
 #include "zroiwidget.h"
 
 ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 {
-
+    roiList.clear();
 }
 
 ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags flags) : QDockWidget(title, parent, flags)
@@ -26,55 +41,42 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
     //
     if (window != NULL)
     {
-        if (!dvidTarget.getRoiName().empty())
+        //if (!dvidTarget.getRoiName().empty()){
+        if (reader.open(dvidTarget))
         {
-            ZDvidReader reader;
-            if (reader.open(dvidTarget))
+            ZJsonObject meta = reader.readInfo();
+
+            //
+            ZJsonValue datains = meta.value("DataInstances");
+
+            if(datains.isObject())
             {
-                ZJsonObject meta = reader.readInfo();
+                ZJsonObject insList(datains.getData(), true);
+                std::vector<std::string> keys = insList.getAllKey();
 
-                //
-                ZJsonValue datains = meta.value("DataInstances");
-
-                if(datains.isObject())
+                for(std::size_t i=0; i<keys.size(); i++)
                 {
-                    ZJsonObject insList(datains.getData(), true);
-                    std::vector<std::string> keys = insList.getAllKey();
+                    std::size_t found = keys.at(i).find("roi");
 
-                    for(int i=0; i<keys.size(); i++)
+                    if(found!=std::string::npos)
                     {
-                        std::size_t found = keys.at(i).find("roi");
+                        qDebug()<<" rois: "<<keys.at(i);
 
-                        if(found!=std::string::npos)
-                        {
-                            qDebug()<<" rois: "<<keys.at(i);
-
-                            roiList.push_back(keys.at(i));
-                        }
+                        roiList.push_back(keys.at(i));
                     }
-                    qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<roiList.size();
                 }
-
-                //       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
-                //        if (!roi.isEmpty()) {
-                //          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
-                //          cubes->setSource(
-                //                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
-                //                  dvidTarget.getRoiName()));
-                //          window->getDocument()->addObject(cubes, true);
-                //        }
-
-                //
-                makeGUI();
+                qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<roiList.size();
             }
-        } // dvid target is not empty
+
+            //
+            makeGUI();
+        }
+        //} // dvid target is not empty
     } // window is not null
 }
 
 void ZROIWidget::makeGUI()
 {
-    qDebug()<<"~~~~~~~~~makeGUI";
-
     if(roiList.empty())
         return;
 
@@ -90,38 +92,78 @@ void ZROIWidget::makeGUI()
     tw_ROIs->setShowGrid(false);
 
     //
-    qDebug()<<"~~~~~ "<<roiList.size();
-
-    //
-    for (int i = 0; i < roiList.size(); ++i)
+    for (std::size_t i = 0; i < roiList.size(); ++i)
     {
         QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
-        //roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
+        roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
+        roiNameItem->setCheckState(Qt::Unchecked);
+
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("red"));
-        //colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         //colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
 
         int row = tw_ROIs->rowCount();
         tw_ROIs->insertRow(row);
         tw_ROIs->setItem(row, 0, roiNameItem);
         tw_ROIs->setItem(row, 1, colorItem);
-
-        qDebug()<<"insert one row"<<i;
     }
 
     //
     this->setWidget(tw_ROIs);
 
-
     //
-    connect(tw_ROIs, SIGNAL(cellActivated(int,int)), this, SLOT(updateROIRendering(int,int)));
+    //connect(tw_ROIs, SIGNAL(cellActivated(int,int)), this, SLOT(updateROIRendering(int,int)));
+    connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROIRendering(int,int)));
+    //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 }
 
-void ZROIWidget::updateROIRendering(int row, int /* column */)
+void ZROIWidget::updateROIRendering(int row, int column)
 {
     QTableWidgetItem *item = tw_ROIs->item(row, 0);
 
-    qDebug()<<"render ROI: "<<item->text();
+    qDebug()<<"render ROI: "<<item->text()<<item->checkState()<<column;
+
+    if(column==0)
+    {
+        //
+        if(item->checkState()==Qt::Checked)
+        {
+            item->setCheckState(Qt::Unchecked);
+        }
+        else
+        {
+            item->setCheckState(Qt::Checked);
+
+            ZObject3dScan roi = reader.readRoi(item->text().toStdString());
+            if (!roi.isEmpty())
+            {
+                qDebug()<<"roi is not empty";
+
+                ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(roi, m_dvidInfo);
+                cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( item->text().toStdString() ));
+
+                if(m_window != NULL)
+                {
+                    m_window->getDocument()->addObject(cubes, true);
+                    qDebug()<<"add cubes for rendering";
+                }
+            }
+
+        }
+    }
+    else if(column==1)
+    {
+        // edit color
+    }
+
+}
+
+void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
+{
+    qDebug()<<"to render ROI: "<<item->text()<<item->checkState();
+
+
+    qDebug()<<tw_ROIs->selectedItems();
 }
 
 
