@@ -1078,9 +1078,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
         emit ioBodiesLoaded();
+    } else {
+        emit ioBodiesNotLoaded();
     }
-
-    emit ioBodiesNotLoaded();
 
     // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
