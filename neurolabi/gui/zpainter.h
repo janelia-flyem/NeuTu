@@ -151,7 +151,7 @@ public:
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
   void setOpacity(double alpha);
-  void setRange(const QRect &r) { m_canvasRange = r; }
+  void setRange(const QRectF &r) { m_canvasRange = r; }
 
   bool isVisible(const QRectF &rect) const;
   bool isVisible(const QRect &rect) const;

@@ -1610,7 +1610,8 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
     QByteArray payload;
     payload.append(queryForm);
 
-    bufferReader.read(dvidUrl.getLocalBodyIdArrayUrl().data(), payload, true);
+    bufferReader.read(
+          dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
 
     ZJsonArray infoJson;
     infoJson.decodeString(bufferReader.getBuffer().data());

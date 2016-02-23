@@ -40,8 +40,8 @@ public:
   void setTileIndex(int ix, int iy);
   void setResolutionLevel(int level);
 
-  void loadDvidSlice(const QByteArray &buffer, int z);
-  void loadDvidSlice(const uchar *buf, int length, int z);
+  void loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast);
+  void loadDvidSlice(const uchar *buf, int length, int z, bool highContrast);
 
 //  void setTileOffset(int x, int y, int z);
 

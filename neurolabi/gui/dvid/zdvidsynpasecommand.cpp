@@ -6,6 +6,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
+#include "zwidgetmessage.h"
 
 
 ZStackDocCommand::DvidSynapseEdit::CompositeCommand::CompositeCommand(
@@ -63,6 +64,9 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
     m_synapseBackup = reader.readSynapseJson(m_synapse);
     m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
     m_doc->notifySynapseEdited(m_synapse);
+    QString msg = QString("Synapse removed at (%1, %2, %3)").
+        arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+    m_doc->notify(msg);
   }
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
@@ -88,6 +92,9 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         synapse.loadJsonObject(m_synapseBackup);
         m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
         m_doc->notifySynapseEdited(synapse);
+        QString msg = QString("Synapse removal undone at (%1, %2, %3)").
+            arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+        m_doc->notify(msg);
       }
     }
   }
@@ -129,6 +136,9 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
 {
   m_doc->addSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
   m_doc->notifySynapseEdited(m_synapse);
+  QString msg = QString("Synapse added at (%1, %2, %3)").
+      arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+  m_doc->notify(msg);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -144,6 +154,9 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::undo()
   m_doc->removeSynapse(
         m_synapse.getPosition(), ZDvidSynapseEnsemble::DATA_GLOBAL);
   m_doc->notifySynapseEdited(m_synapse);
+  QString msg = QString("New synapse removed by undo at (%1, %2, %3)").
+      arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+  m_doc->notify(msg);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -174,6 +187,10 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
   m_doc->moveSynapse(m_from, m_to);
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
+  QString msg = QString("Synapse moved from (%1, %2, %3) to (%1, %2, %3)").
+      arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
+      arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
+  m_doc->notify(msg);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -189,6 +206,10 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
   m_doc->moveSynapse(m_to, m_from);
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
+  QString msg = QString("Synapse moving undone: (%1, %2, %3) <- (%1, %2, %3)").
+      arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
+      arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
+  m_doc->notify(msg);
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
   if (se != NULL) {
@@ -251,6 +272,9 @@ void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::redo()
         writer.writeSynapse(synapseJson);
 
         m_doc->updateSynapsePartner(m_from);
+
+        QString msg = QString("Synaptic elements linked");
+        m_doc->notify(msg);
       }
     }
   }
@@ -292,6 +316,8 @@ void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::undo()
       if (writer.open(m_doc->getDvidTarget())) {
         writer.writeSynapse(m_synapseBackup);
         m_doc->updateSynapsePartner(m_from);
+        QString msg = QString("Undo synaptic elements link.");
+        m_doc->notify(msg);
       }
     }
   }
@@ -351,6 +377,8 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::redo()
           m_doc->updateSynapsePartner(m_synapseSet);
         }
       }
+      QString msg = QString("Synaptic elements unlinked");
+      m_doc->notify(msg);
     }
   }
 
@@ -405,6 +433,8 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::undo()
     if (writer.open(m_doc->getDvidTarget())) {
       writer.writeSynapse(m_synapseBackup);
       m_doc->updateSynapsePartner(m_synapseSet);
+      QString msg = QString("Undo synaptic elements unlink.");
+      m_doc->notify(msg);
     }
   }
 

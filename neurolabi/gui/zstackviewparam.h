@@ -33,7 +33,7 @@ public:
 
   void setZ(int z);
   void setViewPort(const QRect &rect);
-  void setViewPort(int x0, int y0, int x1, int y1);
+  void setViewPort(double x0, double y0, double x1, double y1);
   void setExploreAction(NeuTube::View::EExploreAction action);
   void setSliceAxis(NeuTube::EAxis sliceAxis);
   NeuTube::EAxis getSliceAxis() const;

@@ -9,6 +9,7 @@
 #include "flyem/flyemorthocontrolform.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
+#include "zwidgetmessage.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -40,10 +41,6 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   layout->addWidget(m_yzMvc, 0, 1);
   layout->addWidget(m_xzMvc, 1, 0);
 
-  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-
   m_controlForm = new FlyEmOrthoControlForm(this);
   layout->addWidget(m_controlForm);
 
@@ -68,6 +65,15 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoWidget::getDocument() const
 
 void ZFlyEmOrthoWidget::connectSignalSlot()
 {
+  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+
+  ZWidgetMessage::ConnectMessagePipe(getDocument(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
+  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
+
   connect(m_controlForm, SIGNAL(movingUp()), this, SLOT(moveUp()));
   connect(m_controlForm, SIGNAL(movingDown()), this, SLOT(moveDown()));
   connect(m_controlForm, SIGNAL(movingLeft()), this, SLOT(moveLeft()));
@@ -79,9 +85,22 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SIGNAL(bookmarkEdited(int,int,int)));
   connect(getDocument(), SIGNAL(synapseEdited(int,int,int)),
           this, SIGNAL(synapseEdited(int,int,int)));
+  connect(getDocument(), SIGNAL(bodyMergeEdited()),
+          this, SIGNAL(bodyMergeEdited()));
 
   connect(m_xyMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
+  connect(m_xzMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+          this, SLOT(moveTo(double, double, double)));
+  connect(m_yzMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+          this, SLOT(moveTo(double, double, double)));
+}
+
+void ZFlyEmOrthoWidget::syncMergeWithDvid()
+{
+  m_xyMvc->syncMergeWithDvid();
+  m_xzMvc->syncMergeWithDvid();
+  m_yzMvc->syncMergeWithDvid();
 }
 
 void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
@@ -139,22 +158,43 @@ void ZFlyEmOrthoWidget::locateMainWindow()
   emit zoomingTo(center.getX(), center.getY(), center.getZ());
 }
 
+void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
+{
+  switch (message.getTarget()) {
+  case ZWidgetMessage::TARGET_TEXT:
+  case ZWidgetMessage::TARGET_TEXT_APPENDING:
+    m_controlForm->dump(message);
+    break;
+  default:
+    break;
+  }
+}
+
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
   disconnect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   disconnect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   disconnect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
 
-  if (m_xyMvc != mvc) {
-    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
-  }
-
-  if (m_yzMvc != mvc) {
-    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
-  }
-
-  if (m_xzMvc != mvc) {
-    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getZoomRatio());
+  switch (mvc->getView()->getSliceAxis()) {
+  case NeuTube::Z_AXIS:
+    m_yzMvc->zoomWithHeightAligned(mvc->getView());
+//    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+    m_xzMvc->zoomWithWidthAligned(mvc->getView());
+//    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+    break;
+  case NeuTube::X_AXIS:
+    m_xyMvc->zoomWithHeightAligned(mvc->getView());
+    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
+//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
+//    m_xzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getWidthZoomRatio());
+    break;
+  case NeuTube::Y_AXIS:
+    m_xyMvc->zoomWithWidthAligned(mvc->getView());
+    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
+//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+//    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
+    break;
   }
 
   connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));

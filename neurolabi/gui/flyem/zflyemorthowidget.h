@@ -10,6 +10,7 @@ class FlyEmOrthoControlForm;
 class ZIntPoint;
 class ZStackView;
 class ZStackMvc;
+class ZWidgetMessage;
 
 class ZFlyEmOrthoWidget : public QWidget
 {
@@ -23,6 +24,7 @@ signals:
   void bookmarkEdited(int, int, int);
   void synapseEdited(int, int, int);
   void zoomingTo(int, int, int);
+  void bodyMergeEdited();
 
 public slots:
   void moveUp();
@@ -35,6 +37,8 @@ public slots:
   void syncView();
   void syncViewWith(ZFlyEmOrthoMvc *mvc);
   void locateMainWindow();
+  void syncMergeWithDvid();
+  void processMessage(const ZWidgetMessage &message);
 
 private:
   void init(const ZDvidTarget &target);

@@ -7,8 +7,8 @@
 
 #include "zstackobject.h"
 #include "zintpoint.h"
+#include "zjsonobject.h"
 
-class ZJsonObject;
 class ZJsonArray;
 
 class ZDvidSynapse : public ZStackObject
@@ -43,6 +43,9 @@ public:
 
   void setDefaultColor();
 
+  int getX() const;
+  int getY() const;
+  int getZ() const;
 
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
@@ -104,8 +107,16 @@ public: //Json APIs
       const InputIterator &last, const std::string &rel);
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
-  static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);  
+  static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
+
+  static void AddProperty(ZJsonObject &json, const std::string &key,
+                          const std::string &value);
+
   std::vector<ZIntPoint> getPartners();
+
+public: //Additional properties
+  void setUserName(const std::string &name);
+  std::string getUserName() const;
 
 private:
   static ZJsonArray GetRelationJson(ZJsonObject &json);
@@ -122,6 +133,7 @@ private:
   EKind m_kind;
   std::vector<std::string> m_tagArray;
   std::vector<ZIntPoint> m_partnerHint;
+  ZJsonObject m_propertyJson;
 };
 
 template <typename InputIterator>

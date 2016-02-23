@@ -45,7 +45,8 @@ void ZDvidBufferReader::setService(
 #endif
 
 void ZDvidBufferReader::read(
-    const QString &url, const QByteArray &payload, bool outputingUrl)
+    const QString &url, const QByteArray &payload, const std::string &method,
+    bool outputingUrl)
 {
   if (outputingUrl) {
     qDebug() << url;
@@ -66,14 +67,20 @@ void ZDvidBufferReader::read(
           libdvid::BinaryData::create_binary_data(payload.data(), payload.length());
       libdvid::BinaryDataPtr data;
 
+      libdvid::ConnectionMethod connMeth = libdvid::GET;
+      if (method == "POST") {
+        connMeth = libdvid::POST;
+      } else if (method == "PUT") {
+        connMeth = libdvid::PUT;
+      }
       if (m_service.get() != NULL) {
         data = m_service->custom_request(
-              endPoint, libdvidPayload, libdvid::POST, m_tryingCompress);
+              endPoint, libdvidPayload, connMeth, m_tryingCompress);
       } else {
         libdvid::DVIDNodeService service(
               target.getAddressWithPort(), target.getUuid());
         data = service.custom_request(
-            endPoint, libdvidPayload, libdvid::POST, m_tryingCompress);
+            endPoint, libdvidPayload, connMeth, m_tryingCompress);
       }
 
       m_buffer.append(data->get_data().c_str(), data->length());

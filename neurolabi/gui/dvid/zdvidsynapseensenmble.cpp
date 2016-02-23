@@ -37,7 +37,7 @@ void ZDvidSynapseEnsemble::init()
   m_sliceAxis = NeuTube::Z_AXIS;
 }
 
-void ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
+ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
 {
   ZIntCuboid dataBox = box;
   if (!m_dataRange.isEmpty()) {
@@ -57,6 +57,8 @@ void ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
       }
     }
   }
+
+  return dataBox;
 }
 
 void ZDvidSynapseEnsemble::update(int x, int y, int z)
@@ -125,34 +127,19 @@ void ZDvidSynapseEnsemble::download(int z)
 
     box.shiftSliceAxisInverse(m_sliceAxis);
 
-    update(box);
-#if 0
-    ZDvidUrl dvidUrl(m_dvidTarget);
-    ZJsonArray obj = m_reader.readJsonArray(
-          dvidUrl.getSynapseUrl(
-            m_dvidInfo.getStartCoordinates().getX(),
-            m_dvidInfo.getStartCoordinates().getY(),
-            blockBox.getFirstCorner().getZ(),
-            width, height, blockBox.getDepth()));
-
-    for (size_t i = 0; i < obj.size(); ++i) {
-      ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-      if (synapseJson.hasKey("Pos")) {
-        //      ZJsonArray posJson(synapseJson.value("Pos"));
-        //      int x = ZJsonParser::integerValue(posJson.at(0));
-        //      int y = ZJsonParser::integerValue(posJson.at(1));
-        //      int z = ZJsonParser::integerValue(posJson.at(2));
-
-        ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson);
-        addSynapse(synapse, DATA_LOCAL);
-      }
-    }
-#endif
+    box = update(box);
 
     for (int cz = blockBox.getFirstCorner().getZ();
          cz <= blockBox.getLastCorner().getZ(); ++cz) {
-      getSlice(cz, ADJUST_FULL).setStatus(STATUS_READY);
+      SynapseSlice &slice = getSlice(cz, ADJUST_FULL);
+      if (m_dataRange.isEmpty()) {
+        slice.setStatus(STATUS_READY);
+      } else {
+        slice.setDataRect(
+              QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                    box.getWidth(), box.getHeight()));
+        slice.setStatus(STATUS_PARTIAL_READY);
+      }
     }
   }
 }
@@ -504,7 +491,12 @@ void ZDvidSynapseEnsemble::moveSynapse(
       if (writer.open(m_dvidTarget)) {
         writer.moveSynapse(from, to);
         if (writer.isStatusOk()) {
+          writer.addSynapseProperty(to, "user", NeuTube::GetCurrentUserName());
           moveSynapse(from, to, DATA_LOCAL);
+          ZDvidSynapse &synapse = getSynapse(to, DATA_LOCAL);
+          if (synapse.isValid()) {
+            synapse.setUserName(NeuTube::GetCurrentUserName());
+          }
         }
       }
     }

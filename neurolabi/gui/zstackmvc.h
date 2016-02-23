@@ -74,7 +74,8 @@ public:
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
   ZIntPoint getViewCenter() const;
-  double getZoomRatio() const;
+  double getWidthZoomRatio() const;
+  double getHeightZoomRatio() const;
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
@@ -95,6 +96,13 @@ public slots:
   void zoomTo(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
+  void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+
+  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
+  void zoomWithWidthAligned(const ZStackView *view);
+  void zoomWithHeightAligned(const ZStackView *view);
 
   void dump(const QString &msg);
 

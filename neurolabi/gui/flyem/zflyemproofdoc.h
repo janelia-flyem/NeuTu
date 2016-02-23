@@ -94,7 +94,6 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
-  void saveMergeOperation();
   void downloadBodyMask();
   void clearBodyMerger();
 
@@ -154,6 +153,7 @@ public:
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
+  void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
 
 public: //ROI functions
@@ -213,6 +213,7 @@ public: //Commands
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void bodyMergeEdited();
   void userBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
@@ -236,6 +237,7 @@ public slots:
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
 
   void downloadBookmark(int x, int y, int z);
+  void saveMergeOperation();
 
 protected:
   void autoSave();

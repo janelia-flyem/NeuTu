@@ -299,7 +299,9 @@ signals:
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
-  double getZoomRatio() const;
+  double getCanvasWidthZoomRatio() const;
+  double getCanvasHeightZoomRatio() const;
+  double getProjZoomRatio() const;
   void setInfo();
   bool isImageMovable() const;
 
@@ -308,6 +310,8 @@ public:
   ZStackViewParam getViewParameter(
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
+
+  QRectF getProjRegion() const;
 
   /*!
    * \brief Set the viewport offset
@@ -345,6 +349,10 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
+
+  void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);

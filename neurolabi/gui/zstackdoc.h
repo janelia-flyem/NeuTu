@@ -1072,7 +1072,7 @@ signals:
   void messageGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
-  void stackDelivered(Stack *getStack, bool beOwner);
+  void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
   void stackModified();
   void sparseStackModified();

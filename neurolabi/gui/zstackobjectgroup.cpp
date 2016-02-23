@@ -105,6 +105,8 @@ ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
     //Process subset
     getObjectList(obj->getType()).removeOne(obj);
     //remove_p(getSet(obj->getType()), obj);
+
+    getSelectedSet(obj->getType()).remove(obj);
   }
 
   return found;

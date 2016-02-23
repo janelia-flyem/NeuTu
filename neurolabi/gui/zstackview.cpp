@@ -290,7 +290,19 @@ void ZStackView::setInfo()
   }
 }
 
-double ZStackView::getZoomRatio() const
+double ZStackView::getCanvasWidthZoomRatio() const
+{
+  return (double) m_imageWidget->canvasSize().width() /
+      m_imageWidget->viewPort().width();
+}
+
+double ZStackView::getCanvasHeightZoomRatio() const
+{
+  return (double) m_imageWidget->canvasSize().height() /
+      m_imageWidget->viewPort().height();
+}
+
+double ZStackView::getProjZoomRatio() const
 {
   return (double) m_imageWidget->projectSize().width() /
       m_imageWidget->viewPort().width();
@@ -902,7 +914,9 @@ void ZStackView::takeScreenshot(const QString &filename)
   QImageWriter writer(filename);
   writer.setCompression(1);
 
-  QImage image(m_imageWidget->projectSize(), QImage::Format_ARGB32);
+  QImage image(iround(m_imageWidget->projectSize().width()),
+               iround(m_imageWidget->projectSize().height()),
+               QImage::Format_ARGB32);
 
   m_imageWidget->setViewHintVisible(false);
   m_imageWidget->render(&image);
@@ -1249,7 +1263,7 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
   if (!canvasSize.isEmpty() &&
       (buddyDocument()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS) ||
       buddyPresenter()->hasDrawable(ZStackObject::TARGET_OBJECT_CANVAS))) {
-    double zoomRatio = getZoomRatio();
+    double zoomRatio = getProjZoomRatio();
     int level = 0;
     if (zoomRatio < 0.5 && zoomRatio > 0) {
       level = (int) std::floor(1.0 / zoomRatio - 1);
@@ -1286,7 +1300,7 @@ void ZStackView::reloadTileCanvas()
 
   if (!canvasSize.isEmpty() &&
       buddyDocument()->hasDrawable(ZStackObject::TARGET_TILE_CANVAS)) {
-    double zoomRatio = getZoomRatio();
+    double zoomRatio = getProjZoomRatio();
     int level = 1;
     if (zoomRatio > 0) {
       level = (int) std::floor(1.0 / zoomRatio);
@@ -2034,6 +2048,34 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
   }
 }
 
+void ZStackView::zoomWithWidthAligned(int x0, int x1, int cy)
+{
+  imageWidget()->zoomWithWidthAligned(x0, x1, cy);
+  processViewChange(true, false);
+}
+
+void ZStackView::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
+{
+  bool depthChanged = (cz == getCurrentZ());
+
+  blockSignals(true);
+  setZ(cz);
+  imageWidget()->zoomWithWidthAligned(x0, x1, pw, cy);
+  blockSignals(false);
+  processViewChange(true, depthChanged);
+}
+
+void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
+{
+  bool depthChanged = (cz == getCurrentZ());
+
+  blockSignals(true);
+  setZ(cz);
+  imageWidget()->zoomWithHeightAligned(y0, y1, ph, cx);
+  blockSignals(false);
+  processViewChange(true, depthChanged);
+}
+
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
@@ -2058,6 +2100,11 @@ QRect ZStackView::getViewPort(NeuTube::ECoordinateSystem coordSys) const
   }
 
   return rect;
+}
+
+QRectF ZStackView::getProjRegion() const
+{
+  return m_imageWidget->projectRegion();
 }
 
 ZStackViewParam ZStackView::getViewParameter(

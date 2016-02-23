@@ -20,6 +20,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
   ZDvidTarget getDvidTarget() const;
+  void updateDvidTargetFromDoc();
 
   void updateStack(const ZIntPoint &center);
 

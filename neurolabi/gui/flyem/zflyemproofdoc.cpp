@@ -84,6 +84,11 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
+    connect(this, SIGNAL(bodyMerged()),
+            this, SLOT(saveMergeOperation()));
+    connect(this, SIGNAL(bodyUnmerged()),
+            this, SLOT(saveMergeOperation()));
+
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
@@ -588,7 +593,7 @@ void ZFlyEmProofDoc::addSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
-
+  synapse.setUserName(NeuTube::GetCurrentUserName());
 
   ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
   QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
@@ -873,6 +878,11 @@ void ZFlyEmProofDoc::notifyBodyMerged()
 void ZFlyEmProofDoc::notifyBodyUnmerged()
 {
   emit bodyUnmerged();
+}
+
+void ZFlyEmProofDoc::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
 }
 
 void ZFlyEmProofDoc::clearBodyMerger()
@@ -1869,6 +1879,7 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyMerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 
@@ -1895,6 +1906,7 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyUnmerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 

@@ -304,6 +304,7 @@ public slots:
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
   void exitStrokeEdit();
+//  void exitSwcEdit();
   void deleteSwcNode();
   void lockSelectedSwcNodeFocus();
   void changeSelectedSwcNodeFocus();

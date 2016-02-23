@@ -71,6 +71,10 @@ public:
 
   void setDvidDialog(ZDvidDialog *dlg);
 
+  ZFlyEmBodyMergeProject* getMergeProject() {
+    return &m_mergeProject;
+  }
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -85,6 +89,7 @@ signals:
   void dvidTargetChanged(ZDvidTarget);
   void userBookmarkUpdated(ZStackDoc *doc);
   void nameColorMapReady(bool ready);
+  void bodyMergeEdited();
 
 public slots:
   void mergeSelected();

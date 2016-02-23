@@ -253,6 +253,10 @@ void ZJsonObject::setEntry(const char *key, const char* value)
   }
 }
 
+void ZJsonObject::setEntry(const string &key, const string &value)
+{
+  setEntry(key.c_str(), value.c_str());
+}
 
 void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
 {

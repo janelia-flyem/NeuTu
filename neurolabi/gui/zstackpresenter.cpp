@@ -1704,7 +1704,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
 
   case Qt::Key_Escape:
-    m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+    enterSwcSelectMode();
+//    m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
     m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
     //turnOffStroke();
     exitStrokeEdit();
@@ -2174,7 +2175,7 @@ void ZStackPresenter::exitSwcExtendMode()
   if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
       interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
     interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
-    exitStrokeEdit();
+    enterSwcSelectMode();
     notifyUser("Exit extending mode");
   }
 }
@@ -2336,6 +2337,16 @@ void ZStackPresenter::exitStrokeEdit()
   m_interactiveContext.setExitingEdit(true);
 }
 
+#if 0
+void ZStackPresenter::exitSwcEdit()
+{
+  turnOffActiveObject(ROLE_SWC);
+  interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+  updateCursor();
+  m_interactiveContext.setExitingEdit(true);
+}
+#endif
+
 void ZStackPresenter::exitRectEdit()
 {
   if (interactiveContext().rectEditMode() != ZInteractiveContext::RECT_EDIT_OFF) {
@@ -2429,6 +2440,7 @@ void ZStackPresenter::enterSwcSelectMode()
     notifyUser("Use mouse to select nodes");
   }
 
+  turnOffActiveObject(ROLE_SWC);
   m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
   updateCursor();
 }
