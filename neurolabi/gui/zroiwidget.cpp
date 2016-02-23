@@ -1,3 +1,5 @@
+#include <QtGui>
+
 #include "zroiwidget.h"
 
 ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
@@ -50,7 +52,7 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                             roiList.push_back(keys.at(i));
                         }
                     }
-                    qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
+                    qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<roiList.size();
                 }
 
                 //       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
@@ -61,14 +63,65 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                 //                  dvidTarget.getRoiName()));
                 //          window->getDocument()->addObject(cubes, true);
                 //        }
+
+                //
+                makeGUI();
             }
-        }
-    }
+        } // dvid target is not empty
+    } // window is not null
 }
 
 void ZROIWidget::makeGUI()
 {
+    qDebug()<<"~~~~~~~~~makeGUI";
 
+    if(roiList.empty())
+        return;
+
+    //
+    tw_ROIs = new QTableWidget(0, 2);
+    tw_ROIs->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    QStringList labels;
+    labels << tr("ROI name") << tr("Color");
+    tw_ROIs->setHorizontalHeaderLabels(labels);
+    tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    tw_ROIs->verticalHeader()->hide();
+    tw_ROIs->setShowGrid(false);
+
+    //
+    qDebug()<<"~~~~~ "<<roiList.size();
+
+    //
+    for (int i = 0; i < roiList.size(); ++i)
+    {
+        QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
+        //roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
+        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("red"));
+        //colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        //colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
+
+        int row = tw_ROIs->rowCount();
+        tw_ROIs->insertRow(row);
+        tw_ROIs->setItem(row, 0, roiNameItem);
+        tw_ROIs->setItem(row, 1, colorItem);
+
+        qDebug()<<"insert one row"<<i;
+    }
+
+    //
+    this->setWidget(tw_ROIs);
+
+
+    //
+    connect(tw_ROIs, SIGNAL(cellActivated(int,int)), this, SLOT(updateROIRendering(int,int)));
+}
+
+void ZROIWidget::updateROIRendering(int row, int /* column */)
+{
+    QTableWidgetItem *item = tw_ROIs->item(row, 0);
+
+    qDebug()<<"render ROI: "<<item->text();
 }
 
 

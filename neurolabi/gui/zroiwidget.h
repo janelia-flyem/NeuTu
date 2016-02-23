@@ -6,7 +6,15 @@
 
 #include "flyem/zflyemproofdoc.h"
 
+QT_BEGIN_NAMESPACE
+class QCheckBox;
+class QLabel;
+class QPushButton;
+class QTableWidget;
+class QTableWidgetItem;
+QT_END_NAMESPACE
 
+//
 class ZROIWidget : public QDockWidget
 {
     Q_OBJECT
@@ -20,6 +28,9 @@ public:
     void getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget);
     void makeGUI();
 
+public slots:
+    void updateROIRendering(int row, int column);
+
 public:
     //
     Z3DWindow *m_window;
@@ -29,7 +40,8 @@ public:
     //
     std::vector<std::string> roiList;
 
-
+    //
+    QTableWidget *tw_ROIs;
 };
 
 
