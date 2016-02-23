@@ -20,6 +20,10 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
+  enum EBookmarkRole {
+    ROLE_ASSIGNED, ROLE_USER, ROLE_EXAMINE
+  };
+
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_FLYEM_BOOKMARK;
   }

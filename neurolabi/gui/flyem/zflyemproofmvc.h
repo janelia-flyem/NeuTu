@@ -165,6 +165,7 @@ public slots:
   void loadBookmark();
   void openSequencer();
 
+  void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);

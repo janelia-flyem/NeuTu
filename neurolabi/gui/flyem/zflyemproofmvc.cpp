@@ -2520,6 +2520,21 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
   }
 }
 
+void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
+{
+  TStackObjectSet &selected = getCompleteDocument()->getSelected(
+        ZStackObject::TYPE_FLYEM_BOOKMARK);
+  for (TStackObjectSet::iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+    bookmark->setChecked(checking);
+    recordBookmark(bookmark);
+  }
+  if (!selected.isEmpty()) {
+//    emit bookmarkUpdated();
+  }
+}
+
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
 {
 //  ZFlyEmBookmark *bookmark = m_bookmarkArray.findFirstBookmark(key);

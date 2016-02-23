@@ -126,6 +126,18 @@ const ZFlyEmBookmark* ZFlyEmBookmarkView::getBookmark(
   return NULL;
 }
 
+void ZFlyEmBookmarkView::checkBookmark(ZFlyEmBookmark *bookmark, bool checking)
+{
+  if (bookmark != NULL) {
+    bookmark->setChecked(checking);
+    if (checking) {
+      LINFO() << bookmark->toLogString() << "is checked";
+    } else {
+      LINFO() << bookmark->toLogString() << "is unchecked";
+    }
+  }
+}
+
 void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
 {
   QItemSelectionModel *sel = selectionModel();
@@ -135,12 +147,7 @@ void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
 
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
-    bookmark->setChecked(checking);
-    if (checking) {
-      LINFO() << bookmark->toLogString() << "is checked";
-    } else {
-      LINFO() << bookmark->toLogString() << "is unchecked";
-    }
+    checkBookmark(bookmark, checking);
 
     getModel()->update(index.row());
 

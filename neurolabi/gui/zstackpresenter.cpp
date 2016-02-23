@@ -356,6 +356,12 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
         connect(action, SIGNAL(triggered()),
                 this, SLOT(notifyBodyDecomposeTriggered()));
         break;
+      case ZActionFactory::ACTION_BOOKMARK_CHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
+        break;
+      case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
+        break;
       default:
         break;
       }

@@ -115,7 +115,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     }
 
     if (!actionList.isEmpty()) {
-      actionList.append(ZActionFactory::ACTINO_SEPARATOR);
+      actionList.append(ZActionFactory::ACTION_SEPARATOR);
     }
 
     /* Synapse actions */
@@ -134,18 +134,27 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     }
 
     if (!actionList.isEmpty()) {
-      actionList.append(ZActionFactory::ACTINO_SEPARATOR);
+      actionList.append(ZActionFactory::ACTION_SEPARATOR);
     }
     actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
+    /* Bookmark actions */
+    TStackObjectSet& bookmarkSet =
+        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    if (!bookmarkSet.isEmpty()) {
+      actionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
+      actionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+    }
+
     foreach (ZActionFactory::EAction action, actionList) {
-      if (action == ZActionFactory::ACTINO_SEPARATOR) {
+      if (action == ZActionFactory::ACTION_SEPARATOR) {
         menu->addSeparator();
       } else {
         menu->addAction(presenter->getAction(action));
       }
     }
 
+    //SWC actions (submenu has to be added separately)
     QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
     if (swcNodeList.size() > 1) {
       if (!actionList.isEmpty()) {

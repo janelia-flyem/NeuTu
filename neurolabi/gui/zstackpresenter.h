@@ -391,6 +391,8 @@ signals:
   void bodyDecomposeTriggered();
   void bodyMergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
+  void checkingBookmark();
+  void uncheckingBookmark();
 
 protected:
   void init();
