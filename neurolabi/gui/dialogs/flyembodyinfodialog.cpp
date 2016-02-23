@@ -150,6 +150,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
     connect(this, SIGNAL(ioBodiesLoaded()), this, SLOT(onIOBodiesLoaded()));
+    connect(this, SIGNAL(ioBodiesNotLoaded()), this, SLOT(onIOBodiesNotLoaded()));
 
 }
 
@@ -1063,6 +1064,10 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // get the body list from DVID
         // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
+        if (bodyList.size() == 0) {
+            emit ioBodiesNotLoaded();
+            return;
+        }
 
         // copy into the map
         // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
@@ -1072,9 +1077,10 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
             } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
+        emit ioBodiesLoaded();
     }
 
-    emit ioBodiesLoaded();
+    emit ioBodiesNotLoaded();
 
     // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
@@ -1127,6 +1133,11 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     m_connectionsLoading = false;
 
+}
+
+void FlyEmBodyInfoDialog::onIOBodiesNotLoaded() {
+    ui->ioBodyTableLabel->setText("load failed");
+    m_connectionsLoading = false;
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
