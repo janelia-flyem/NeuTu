@@ -92,7 +92,7 @@ void ZROIWidget::makeGUI()
     tw_ROIs->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     QStringList labels;
-    labels << tr("ROI name") << tr("Color");
+    labels << tr("ROI Name") << tr("Color");
     tw_ROIs->setHorizontalHeaderLabels(labels);
     tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
     tw_ROIs->verticalHeader()->hide();
@@ -106,7 +106,7 @@ void ZROIWidget::makeGUI()
         roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
         roiNameItem->setCheckState(Qt::Unchecked);
 
-        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("color"));
+        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         //colorItem->setBackgroundColor(defaultColor);
         colorItem->setForeground(brush);
@@ -135,12 +135,13 @@ void ZROIWidget::updateROIs()
     for(int i=0; i<tw_ROIs->rowCount(); i++)
     {
         QTableWidgetItem *it = tw_ROIs->item(i, 0);
-        QColor color = tw_ROIs->item(i,1)->foreground().color();
-
-        qDebug()<<"color ... "<<color;
 
         if(it->checkState()==Qt::Checked)
         {
+            QColor color = tw_ROIs->item(i,1)->foreground().color();
+
+            qDebug()<<"~~~~~~~~~~~~~~~ color"<<color;
+
             ZObject3dScan roi = reader.readRoi(it->text().toStdString());
             if (!roi.isEmpty())
             {
