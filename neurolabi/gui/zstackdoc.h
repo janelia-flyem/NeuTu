@@ -153,6 +153,7 @@ public: //attributes
   bool hasObject() const;
 
   bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
@@ -707,6 +708,7 @@ public:
 
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
+  void setVisible(ZStackObject::EType type, std::string source, bool visible);
 
   template <typename T>
   QList<T*> getSelectedObjectList() const;

@@ -108,9 +108,8 @@ void ZROIWidget::makeGUI()
         roiNameItem->setCheckState(Qt::Unchecked);
 
         ZColorScheme zcolor;
+        zcolor.setColorScheme(ZColorScheme::RANDOM_COLOR);
         QBrush brush(zcolor.getColor(i));
-
-        qDebug()<<"test zcolor ... "<<zcolor.getColor(i);
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -143,15 +142,30 @@ void ZROIWidget::updateROIs()
 
         if(it->checkState()==Qt::Checked)
         {
-            QColor color = tw_ROIs->item(i,1)->foreground().color();
-
-            //
-            ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
-            cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
 
             if(m_window != NULL)
             {
-                m_window->getDocument()->addObject(cubes, true);
+                if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, it->text().toStdString() )==false)
+                {
+                    QColor color = tw_ROIs->item(i,1)->foreground().color();
+
+                    //
+                    ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
+                    cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
+
+                    m_window->getDocument()->addObject(cubes, true);
+                }
+                else
+                {
+                    m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, it->text().toStdString(), true);
+                }
+            }
+        }
+        else
+        {
+            if(m_window != NULL)
+            {
+                m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, it->text().toStdString(), false);
             }
         }
     }

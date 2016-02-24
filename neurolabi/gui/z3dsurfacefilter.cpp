@@ -3,6 +3,23 @@
 
 using namespace std;
 
+
+//
+ZCubeData::ZCubeData(std::vector<Z3DCube> cubeArray)
+{
+    m_cubeArray = cubeArray;
+}
+
+ZCubeData::~ZCubeData()
+{
+    m_cubeArray.clear();
+}
+
+size_t ZCubeData::size()
+{
+    return m_cubeArray.size();
+}
+
 //
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
     Z3DGeometryFilter(),
@@ -91,13 +108,15 @@ void Z3DSurfaceFilter::prepareData()
 
     initialize(); // fix opengl issue
 
+    qDebug()<<"?????size??????"<<m_cubeArrayList.size();
+
     //
     for(size_t j=0; j< m_cubeArrayList.size(); ++j)
     {
 
         for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
         {
-            Z3DCube &cube = m_cubeArrayList[j][i];
+            Z3DCube &cube = m_cubeArrayList[j].m_cubeArray[i];
 
             if(cube.initByNodes)
             {
@@ -123,7 +142,8 @@ void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 
 void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 {
-    m_cubeArrayList.push_back(cubes->getCubeArray());
+    ZCubeData zcube(cubes->getCubeArray());
+    m_cubeArrayList.push_back(zcube);
 
     m_dataIsInvalid = true;
     invalidateResult();
@@ -132,7 +152,8 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 void Z3DSurfaceFilter::clearData()
 {
     m_cubeArray.clear();
-    m_cubeArrayList.clear();
+
+    std::vector<ZCubeData>().swap(m_cubeArrayList); // clear()
 }
 
 vector<double> Z3DSurfaceFilter::boundBox()
@@ -144,7 +165,7 @@ vector<double> Z3DSurfaceFilter::boundBox()
 
         for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
         {
-            const Z3DCube &cube = m_cubeArrayList[j][i];
+            const Z3DCube &cube = m_cubeArrayList[j].m_cubeArray[i];
 
             float radius = cube.length / 2.0;
 

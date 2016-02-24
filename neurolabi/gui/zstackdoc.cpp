@@ -534,6 +534,11 @@ bool ZStackDoc::hasObject(ZStackObject::EType type) const
   return !m_objectGroup.getObjectList(type).isEmpty();
 }
 
+bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source) != NULL;
+}
+
 bool ZStackDoc::hasSparseObject() const
 {
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SPARSE_OBJECT).isEmpty();
@@ -9170,6 +9175,21 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
        iter != playerList.end(); ++iter) {
     ZStackObject *obj = (*iter)->getData();
     obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool visible)
+{
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->isSameSource(obj->getSource(), source)) {
+        obj->setVisible(visible);
+    }
     bufferObjectModified(obj->getTarget());
   }
 
