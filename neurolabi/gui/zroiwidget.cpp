@@ -20,11 +20,13 @@
 ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 {
     roiList.clear();
+    defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 }
 
 ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags flags) : QDockWidget(title, parent, flags)
 {
     roiList.clear();
+    defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 }
 
 ZROIWidget::~ZROIWidget()
@@ -62,7 +64,12 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                     {
                         qDebug()<<" rois: "<<keys.at(i);
 
-                        roiList.push_back(keys.at(i));
+
+                        ZObject3dScan roi = reader.readRoi(keys.at(i));
+                        if(!roi.isEmpty())
+                        {
+                            roiList.push_back(keys.at(i));
+                        }
                     }
                 }
                 qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<roiList.size();
@@ -133,22 +140,26 @@ void ZROIWidget::updateROIRendering(int row, int column)
         else
         {
             item->setCheckState(Qt::Checked);
+        }
 
-            ZObject3dScan roi = reader.readRoi(item->text().toStdString());
-            if (!roi.isEmpty())
+        // render selected ROIs
+        ZCubeArray *cubes = new ZCubeArray;
+        for(int i=0; i<tw_ROIs->rowCount(); i++)
+        {
+            QTableWidgetItem *it = tw_ROIs->item(i, 0);
+            if(it->checkState()==Qt::Checked)
             {
-                qDebug()<<"roi is not empty";
-
-                ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(roi, m_dvidInfo);
-                cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( item->text().toStdString() ));
-
-                if(m_window != NULL)
+                ZObject3dScan roi = reader.readRoi(it->text().toStdString());
+                if (!roi.isEmpty())
                 {
-                    m_window->getDocument()->addObject(cubes, true);
-                    qDebug()<<"add cubes for rendering";
+                    ZFlyEmMisc::MakeRoiCube(cubes, roi, m_dvidInfo, defaultColor);
+                    //cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
                 }
             }
-
+        }
+        if(m_window != NULL)
+        {
+            m_window->getDocument()->addObject(cubes, true);
         }
     }
     else if(column==1)

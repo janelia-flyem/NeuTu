@@ -41,6 +41,8 @@ public:
 
     //
     std::vector<std::string> roiList;
+    std::vector<std::string> selectedROIs;
+    QColor defaultColor;
 
     //
     QTableWidget *tw_ROIs;

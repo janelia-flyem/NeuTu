@@ -303,12 +303,12 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
-ZCubeArray* ZFlyEmMisc::MakeRoiCube(
-    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
+void ZFlyEmMisc::MakeRoiCube(
+    ZCubeArray *cubes, const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
 {
   int sampleInterval = 1;
 
-  ZCubeArray *cubes = new ZCubeArray;
+  //ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
   int startCoord[3];
   Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
@@ -329,7 +329,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   uint8_t *array = C_Stack::array8(stack);
 
   //
-  glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
 
   //
   for (k = 0; k <= cdepth; k ++) {
@@ -346,7 +346,11 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
             if (!faceArray.empty()) {
               ZIntCuboid box = dvidInfo.getBlockBox(i + startCoord[0], j + startCoord[1], k + startCoord[2]);
               box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
-              Z3DCube *cube = cubes->makeCube(box, color, faceArray);
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
               cubes->append(*cube);
               delete cube;
 
@@ -360,8 +364,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   C_Stack::kill(stack);
 
-  //
-  return cubes;
 }
 
 
