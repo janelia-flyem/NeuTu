@@ -4,6 +4,7 @@
 #include "zerror.h"
 #include "zpoint.h"
 #include "tz_geo3d_utils.h"
+#include "geometry/zgeometry.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
@@ -191,4 +192,28 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
   m_z -= pt.getZ();
 
   return *this;
+}
+
+void ZIntPoint::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
+}
+
+void ZIntPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+}
+
+int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_x;
+  case NeuTube::Y_AXIS:
+    return m_y;
+  case NeuTube::Z_AXIS:
+    return m_z;
+  }
+
+  return m_z;
 }

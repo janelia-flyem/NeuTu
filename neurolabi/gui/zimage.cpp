@@ -123,11 +123,12 @@ void ZImage::setData(const uint8 *data, int threshold)
 }
 
 void ZImage::setData(
-    const uint8 *data, int slice, int depth, NeuTube::EAxis sliceAxis)
+    const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
+    int slice, NeuTube::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
-  int area = imageWidth * imageHeight;
+  int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
   case NeuTube::Z_AXIS:
@@ -147,10 +148,9 @@ void ZImage::setData(
     break;
   case NeuTube::Y_AXIS:
   {
-    const uint8 *dataOrigin = data;
+    const uint8 *dataOrigin = data + slice * stackWidth;
 
-    data += slice * imageWidth;
-    for (int j = 0; j < depth; j++) {
+    for (int j = 0; j < imageHeight; j++) {
       uchar *line = scanLine(j);
       data = dataOrigin + j * area;
       for (int i = 0; i < imageWidth; i++) {
@@ -167,14 +167,14 @@ void ZImage::setData(
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;
-    for (int j = 0; j < depth; j++) {
+    for (int j = 0; j < imageHeight; j++) {
       uchar *line = scanLine(j);
-      data = dataOrigin + j * area;
-      for (int i = 0; i < imageHeight; i++) {
+      data = dataOrigin + j * stackWidth;
+      for (int i = 0; i < imageWidth; i++) {
         *line++ = *data;
         *line++ = *data;
         *line++ = *data;
-        data += imageWidth;
+        data += area;
         *line++ = 255;
       }
     }

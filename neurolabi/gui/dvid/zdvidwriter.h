@@ -43,6 +43,10 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
@@ -125,6 +129,7 @@ public:
   void writeBookmark(const ZJsonArray &bookmarkJson);
   void writeBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
   void writeBookmarkKey(const ZFlyEmBookmark &bookmark);
+  void deleteBookmarkKey(const ZFlyEmBookmark &bookmark);
 
   void deleteBookmark(int x, int y, int z);
   void deleteBookmark(const ZIntPoint &pt);
@@ -141,6 +146,8 @@ public:
   void writeSynapse(const ZJsonObject &synapseJson);
   void writeSynapse(const ZJsonArray &synapseJson);
   void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
+  void addSynapseProperty(const ZIntPoint &synapse,
+                          const std::string &key, const std::string &value);
 
   inline int getStatusCode() const {
     return m_statusCode;
@@ -179,6 +186,9 @@ private:
   std::string post(const std::string &url, const char *payload, int length);
   std::string post(const std::string &url, const ZJsonObject &payload);
   std::string del(const std::string &url);
+
+  std::string put(const std::string &url, const char *payload, int length);
+  std::string put(const std::string &url);
 #endif
 
   void parseStandardOutput();

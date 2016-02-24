@@ -41,6 +41,9 @@ public:
   virtual QMenu* makeSynapseContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
+  virtual QMenu* makeContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+
 private:
   void init();
 

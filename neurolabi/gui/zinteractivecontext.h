@@ -6,6 +6,7 @@
 #define ZINTERACTIVECONTEXT_H
 
 #include <QRect>
+#include "neutube_def.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -158,6 +159,9 @@ public:
   EUniqueMode getUniqueMode() const;
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+
 private:
   MarkPunctaMode m_markPunctaMode;
   TraceMode m_traceMode;
@@ -172,6 +176,7 @@ private:
   SynapseEditMode m_synapseEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
+  NeuTube::EAxis m_sliceAxis;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;

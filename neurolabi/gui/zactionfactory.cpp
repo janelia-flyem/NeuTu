@@ -530,6 +530,18 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_DECOMPOSE:
     action = new QAction("Decompose", parent);
     break;
+  case ACTION_BODY_MERGE:
+    action = new QAction("Merge", parent);
+    break;
+  case ACTION_SHOW_ORTHO:
+    action = new QAction("Show orthogonal view", parent);
+    break;
+  case ACTION_BOOKMARK_CHECK:
+    action = new QAction("Set Checked", parent);
+    break;
+  case ACTION_BOOKMARK_UNCHECK:
+    action = new QAction("Set Unchecked", parent);
+    break;
   default:
     break;
   }

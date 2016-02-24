@@ -120,6 +120,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
       }
 
       m_doc->removeLocalBookmark(m_bookmarkArray);
+      m_doc->notifyBookmarkEdited(m_bookmarkArray);
       m_isInDoc = false;
     }
   }
@@ -133,6 +134,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::undo()
       writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
         m_doc->addLocalBookmark(m_bookmarkArray);
+        m_doc->notifyBookmarkEdited(m_bookmarkArray);
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to undo bookmark deletion",
@@ -180,6 +182,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
       writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
         m_doc->addLocalBookmark(m_bookmarkArray);
+        m_doc->notifyBookmarkEdited(m_bookmarkArray);
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
@@ -200,6 +203,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
       }
 
       m_doc->removeLocalBookmark(m_bookmarkArray);
+      m_doc->notifyBookmarkEdited(m_bookmarkArray);
       m_isInDoc = false;
     }
   }
@@ -230,6 +234,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
         m_backup = *m_bookmark;
         *m_bookmark = m_newBookmark;
         m_doc->updateLocalBookmark(m_bookmark);
+        m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
                                      NeuTube::MSG_WARNING));
@@ -247,6 +252,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::undo()
       if (writer.isStatusOk()) {
         *m_bookmark = m_backup;
         m_doc->updateLocalBookmark(m_bookmark);
+        m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
                                      NeuTube::MSG_WARNING));

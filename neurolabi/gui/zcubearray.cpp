@@ -387,7 +387,8 @@ std::vector<Z3DCube> ZCubeArray::getCubeArray()
 }
 
 void ZCubeArray::display(
-    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/) const
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
+    NeuTube::EAxis /*sliceAxis*/) const
 {
 }
 

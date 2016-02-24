@@ -5,11 +5,10 @@
 #include <QMutex>
 
 #include <set>
-#include "qthreadfuturemap.h"
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
@@ -137,7 +136,7 @@ public:
     bool isAlive(EThreadName);
 
   private:
-    QThreadFutureMap m_futureMap;
+    ZThreadFutureMap m_futureMap;
   };
 
   void closeBodyWindow();
@@ -238,7 +237,7 @@ private:
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 
   QMutex m_splitWindowMutex;
 

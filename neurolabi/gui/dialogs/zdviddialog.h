@@ -9,6 +9,8 @@ namespace Ui {
 class ZDvidDialog;
 }
 
+class StringListDialog;
+
 class ZDvidDialog : public QDialog
 {
   Q_OBJECT
@@ -23,7 +25,7 @@ public:
   QString getAddress() const;
   QString getUuid() const;
 
-  const ZDvidTarget& getDvidTarget();
+  ZDvidTarget& getDvidTarget();
 
   void addDvidTarget(ZDvidTarget &target);
 
@@ -35,11 +37,13 @@ public slots:
   void saveCurrentTarget();
   void saveCurrentTargetAs();
   void deleteCurrentTarget();
+  void editRoiList();
 
 private:
   Ui::ZDvidDialog *ui;
   QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
+  StringListDialog *m_roiDlg;
   const static char *m_dvidRepoKey;
 };
 

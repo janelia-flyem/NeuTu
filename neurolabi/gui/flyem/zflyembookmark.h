@@ -20,7 +20,18 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  /*
+  enum EBookmarkRole {
+    ROLE_ASSIGNED, ROLE_USER, ROLE_REVIEW
+  };
+  */
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_FLYEM_BOOKMARK;
+  }
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   inline uint64_t getBodyId() const { return m_bodyId; }
   inline const QString& getTime() const { return m_time; }
@@ -42,12 +53,14 @@ public:
 //    m_location.set(x, y, z);
     setCenter(x, y, z);
   }
+  void setLocation(const ZIntPoint &pt);
 
   bool isChecked() const {
     return m_isChecked;
   }
 
   bool isCustom() const {
+//    return (m_bookmarkRole == ROLE_USER);
     return m_isCustom;
   }
 
@@ -85,6 +98,11 @@ public:
 
   void clear();
 
+  ZFlyEmBookmark* clone() const;
+
+private:
+  void init();
+
 private:
   uint64_t m_bodyId;
   QString m_userName;
@@ -94,6 +112,7 @@ private:
   QStringList m_tags;
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
+//  EBookmarkRole m_bookmarkRole;
   bool m_isChecked;
   bool m_isCustom;
   bool m_isInTable;

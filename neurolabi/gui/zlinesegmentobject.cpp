@@ -12,14 +12,34 @@ ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0), m_label(0)
   m_focusColor.setAlpha(0);
 }
 
+double ZLineSegmentObject::getLowerX() const
+{
+  return m_segment.getLowerX();
+}
+
+double ZLineSegmentObject::getUpperX() const
+{
+  return m_segment.getUpperX();
+}
+
+double ZLineSegmentObject::getLowerY() const
+{
+  return m_segment.getLowerY();
+}
+
+double ZLineSegmentObject::getUpperY() const
+{
+  return m_segment.getUpperY();
+}
+
 double ZLineSegmentObject::getLowerZ() const
 {
-  return std::min(m_segment.getStartPoint().z(), m_segment.getEndPoint().z());
+  return m_segment.getLowerZ();
 }
 
 double ZLineSegmentObject::getUpperZ() const
 {
-  return std::max(m_segment.getStartPoint().z(), m_segment.getEndPoint().z());
+  return m_segment.getUpperZ();
 }
 
 QPointF ZLineSegmentObject::getStartXY() const
@@ -33,8 +53,15 @@ QPointF ZLineSegmentObject::getEndXY() const
 }
 
 void ZLineSegmentObject::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  /*
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+  */
+
   int z = painter.getZ(slice);
 
   bool isProj = false;
@@ -47,12 +74,15 @@ void ZLineSegmentObject::display(
     focusColor = getColor();
   }
 
-  if (isSliceVisible(z)) {
+  if (isSliceVisible(z, sliceAxis)) {
     QPen pen = painter.getPen();
     pen.setWidthF(m_width);
 
-    double dz1 = getLowerZ() - z;
-    double dz2 = getUpperZ() - z;
+    ZLineSegment segment = m_segment;
+    segment.shiftSliceAxis(sliceAxis);
+
+    double dz1 = segment.getLowerZ() - z;
+    double dz2 = segment.getUpperZ() - z;
 
     bool fullLinePainting =
         (hasVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ) ||
@@ -99,7 +129,9 @@ void ZLineSegmentObject::display(
 
       if (pen.color().alpha() > 0) {
         painter.setPen(pen);
-        painter.drawLine(getStartXY(), getEndXY());
+        painter.drawLine(
+              QPointF(segment.getStartPoint().x(), segment.getStartPoint().y()),
+              QPointF(segment.getEndPoint().x(), segment.getEndPoint().y()));
       }
     }
 
@@ -111,7 +143,7 @@ void ZLineSegmentObject::display(
       bool visible = false;
 
       QPointF lineStart, lineEnd;
-      computePlaneInersection(lineStart, lineEnd, visible, z);
+      computePlaneInersection(lineStart, lineEnd, visible, z, sliceAxis);
 
       if (visible) {
         painter.drawLine(lineStart, lineEnd);
@@ -120,7 +152,7 @@ void ZLineSegmentObject::display(
   }
 }
 
-bool ZLineSegmentObject::isSliceVisible(int z) const
+bool ZLineSegmentObject::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
 {
   if (isVisible()) {
     if (hasVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ) ||
@@ -128,20 +160,31 @@ bool ZLineSegmentObject::isSliceVisible(int z) const
       return true;
     }
 
-    return getLowerZ() <= z && getUpperZ() >= z;
+    switch (sliceAxis) {
+    case NeuTube::X_AXIS:
+      return getLowerX() <= z && getUpperX() >= z;
+    case NeuTube::Y_AXIS:
+      return getLowerY() <= z && getUpperY() >= z;
+    case NeuTube::Z_AXIS:
+      return getLowerZ() <= z && getUpperZ() >= z;
+    }
   }
 
   return false;
 }
 
 void ZLineSegmentObject::computePlaneInersection(
-    QPointF &lineStart, QPointF &lineEnd, bool &visible, int dataFocus) const
+    QPointF &lineStart, QPointF &lineEnd, bool &visible, int dataFocus,
+    NeuTube::EAxis sliceAxis) const
 {
   double upperZ = dataFocus + 0.5;
   double lowerZ = dataFocus - 0.5;
 
-  ZPoint lowerEnd = m_segment.getStartPoint();
-  ZPoint upperEnd = m_segment.getEndPoint();
+  ZLineSegment segment = m_segment;
+  segment.shiftSliceAxis(sliceAxis);
+
+  ZPoint lowerEnd = segment.getStartPoint();
+  ZPoint upperEnd = segment.getEndPoint();
 
   if (lowerEnd.z() > upperEnd.z()) {
     ZPoint tmp = lowerEnd;
@@ -155,10 +198,10 @@ void ZLineSegmentObject::computePlaneInersection(
   if ((IS_IN_OPEN_RANGE(lowerLineZ, lowerZ, upperZ) &&
        IS_IN_OPEN_RANGE(upperLineZ, lowerZ, upperZ))) {
     visible = true;
-    lineStart.setX(m_segment.getStartPoint().x());
-    lineStart.setY(m_segment.getStartPoint().y());
-    lineEnd.setX(m_segment.getEndPoint().x());
-    lineEnd.setY(m_segment.getEndPoint().y());
+    lineStart.setX(segment.getStartPoint().x());
+    lineStart.setY(segment.getStartPoint().y());
+    lineEnd.setX(segment.getEndPoint().x());
+    lineEnd.setY(segment.getEndPoint().y());
   } else {
     if (lowerLineZ < upperZ && upperLineZ > lowerZ) {
       visible = true;

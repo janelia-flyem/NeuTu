@@ -203,7 +203,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     break;
   }
 
-  Stack *out = C_Stack::make(GREY, width, height, 1);
+  Stack *out = C_Stack::make(GREY, outWidth, outHeight, 1);
 
   C_Stack::setZero(out);
   size_t offset = 0;
@@ -555,4 +555,101 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   }
 
   return curve;
+}
+
+double misc::SampleStack(
+    const Stack *stack, double x, double y, double z, ESampleStackOption option)
+{
+  if (stack == NULL) {
+    return NAN;
+  }
+
+  if (C_Stack::kind(stack) != GREY) {
+    return NAN;
+  }
+
+  double v = NAN;
+
+  if (IS_IN_CLOSE_RANGE3(x, y, z, 0, C_Stack::width(stack) - 1,
+                         0, C_Stack::height(stack) - 1,
+                         0, C_Stack::depth(stack) - 1)) {
+    double nbr[8];
+
+    if (option == SAMPLE_STACK_AVERAGE) {
+      for (size_t i = 0; i < 8; ++i) {
+        nbr[i] = 0.0;
+      }
+    } else {
+      for (size_t i = 0; i < 8; ++i) {
+        nbr[i] = NAN;
+      }
+    }
+
+
+    double wx = x - std::floor(x);
+    double wy = y - std::floor(y);
+    double wz = z - std::floor(z);
+
+    int width = C_Stack::width(stack);
+
+    uint8_t *stackArray = C_Stack::array8(stack);
+    size_t area = C_Stack::area(stack);
+    size_t offset =
+        area * int(z) + width * int(y) + int(x);
+    nbr[0] = stackArray[offset];
+
+    if (wx > 0.0) {
+      nbr[1] = stackArray[offset + 1];
+    }
+    if (wy > 0.0) {
+      nbr[2] = stackArray[offset + width];
+    }
+    if (wz > 0.0) {
+      nbr[4] = stackArray[offset + area];
+    }
+
+    if (wx > 0.0 && wy > 0.0) {
+      nbr[3] = stackArray[offset + width + 1];
+    }
+
+    if (wx > 0.0 && wz > 0.0) {
+      nbr[5] = stackArray[offset + area + 1];
+    }
+
+    if (wy > 0.0 && wz > 0.0) {
+      nbr[6] = stackArray[offset + area + width];
+    }
+
+    if (wx > 0.0 && wy > 0.0 && wz > 0.0) {
+      nbr[7] = stackArray[offset + area + width + 1];
+    }
+
+    switch (option) {
+    case SAMPLE_STACK_NN:
+    {
+      int index = 4 * (wz > 0.5) + 2 * (wy > 0.5) + (wx > 0.5);
+      v = nbr[index];
+    }
+      break;
+    case SAMPLE_STACK_AVERAGE:
+      v = ((nbr[0] * (1.0 - wx) + nbr[1] * wx) * (1.0 - wy) +
+          (nbr[2] * (1.0 - wx) + nbr[3] * wx) * wy) * (1.0 - wz) +
+          ((nbr[4] * (1.0 - wx) + nbr[5] * wx) * (1.0 - wy) +
+          (nbr[6] * (1.0 - wx) + nbr[7] * wx) * wy) * wz;
+      break;
+    case SAMPLE_STACK_UNIFORM:
+      v = nbr[0];
+      for (size_t i = 1; i < 8; ++i) {
+        if (!std::isnan(nbr[i])) {
+          if (nbr[0] != nbr[i]) {
+            v = NAN;
+            break;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  return v;
 }

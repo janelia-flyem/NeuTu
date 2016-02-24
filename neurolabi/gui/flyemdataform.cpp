@@ -856,13 +856,13 @@ Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
       target.setFromSourceString(str);
       ZDvidReader reader;
       if (reader.open(target)) {
-        bool isDataReady = false;
+//        bool isDataReady = false;
         if (reader.hasBodyInfo(neuron->getId())) {
           ZStack *stackObj = reader.readThumbnail(neuron->getId());
           if (stackObj != NULL) {
             stack = C_Stack::clone(stackObj->c_stack());
             delete stackObj;
-            isDataReady = true;
+//            isDataReady = true;
           }
         }
       }

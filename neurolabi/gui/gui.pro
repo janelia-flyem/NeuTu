@@ -470,7 +470,7 @@ HEADERS += mainwindow.h \
     dvid/libdvidheader.h \
     dialogs/dvidoperatedialog.h \
     z3dwindowfactory.h \
-    qthreadfuturemap.h \
+    zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
     zkeyeventmapper.h \
@@ -592,7 +592,14 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     misc/zstackyzview.h \
-    misc/zstackyzmvc.h
+    misc/zstackyzmvc.h \
+    flyem/zflyemorthowindow.h \
+    flyem/zflyemorthodoc.h \
+    flyem/zflyemorthomvc.h \
+    flyem/zflyemorthowidget.h \
+    flyem/flyemorthocontrolform.h \
+    dvid/zdvidannotation.h \
+    dialogs/stringlistdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -663,7 +670,9 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
-    flyem/zflyembookmarkwidget.ui
+    flyem/zflyembookmarkwidget.ui \
+    flyem/flyemorthocontrolform.ui \
+    dialogs/stringlistdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -919,7 +928,7 @@ SOURCES += main.cpp \
     zsleeper.cpp \
     dialogs/dvidoperatedialog.cpp \
     z3dwindowfactory.cpp \
-    qthreadfuturemap.cpp \
+    zthreadfuturemap.cpp \
     zstackball.cpp \
     zstackdochittest.cpp \
     zkeyeventmapper.cpp \
@@ -1041,7 +1050,14 @@ SOURCES += main.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp
+    misc/zstackyzmvc.cpp \
+    flyem/zflyemorthowindow.cpp \
+    flyem/zflyemorthodoc.cpp \
+    flyem/zflyemorthomvc.cpp \
+    flyem/zflyemorthowidget.cpp \
+    flyem/flyemorthocontrolform.cpp \
+    dvid/zdvidannotation.cpp \
+    dialogs/stringlistdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

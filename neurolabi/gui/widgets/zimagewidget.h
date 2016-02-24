@@ -10,6 +10,8 @@
 #include <QMenu>
 #include <QVector>
 
+#include "neutube_def.h"
+
 class QPaintEvent;
 class ZPaintBundle;
 class ZImage;
@@ -50,10 +52,14 @@ public:
    */
   void reset();
 
+  enum EViewPortAdjust {
+    VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
+  };
+
   void setViewPort(const QRect &rect);
-  void setProjRegion(const QRect &rect);
+  void setProjRegion(const QRectF &rect);
   void setView(double zoomRatio, const QPoint &zoomOffset);
-  void setView(const QRect &viewPort, const QRect &projRegion);
+  void setView(const QRect &viewPort, const QRectF &projRegion);
 
   /*!
    * \brief Set view port offset
@@ -80,13 +86,19 @@ public:
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
   void zoom(double zoomRatio);
+  void zoom(double zoomRatio, EViewPortAdjust option);
 
   /*!
    * \brief Zoom an image at a fixed point
    *
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
-  void zoom(double zoomRatio, const QPoint &ref);
+  void zoom(double zoomRatio, const QPointF &ref);
+  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
+
+  void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 
@@ -98,8 +110,8 @@ public:
 
   QSize canvasSize() const;
   QSize screenSize() const;
-  inline QSize projectSize() const { return m_projRegion.size(); }
-  inline const QRect& projectRegion() const { return m_projRegion; }
+  inline QSizeF projectSize() const { return m_projRegion.size(); }
+  inline const QRectF& projectRegion() const { return m_projRegion; }
   inline const QRect& viewPort() const { return m_viewPort; }
   inline const QRect& canvasRegion() const { return m_canvasRegion; }
 
@@ -156,6 +168,18 @@ public:
     return m_paintBlocked;
   }
 
+  void setSliceAxis(NeuTube::EAxis axis) {
+    m_sliceAxis = axis;
+  }
+
+  NeuTube::EAxis getSliceAxis() const {
+    return m_sliceAxis;
+  }
+
+  void setHoverFocus(bool on) {
+    m_hoverFocus = on;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -188,9 +212,24 @@ private:
    * screen coordinates (\a px, \a py).
    */
   QRect alignViewPort(
+      const QRect &viewPort, double vx, double vy, double px, double py,
+      double ratio) const;
+  QRect alignViewPort(
       const QRect &viewPort, int vx, int vy, int px, int py) const;
 
+  void alignProjRegion(double ratio);
+
   void maximizeViewPort();
+
+  QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
+  void adjustViewPort(EViewPortAdjust option);
+
+  /*!
+   * \brief Maximize the projection region while ensuring that at least one of
+   *        the deminesions of the view port is fully covered.
+   */
+  void adjustProjRegion();
+  void adjustProjRegion(const QRect &viewPort);
   QSize getMaskSize() const;
   void paintObject();
   void paintZoomHint();
@@ -203,7 +242,7 @@ private:
   ZPixmap *m_activeDecorationCanvas;
 
   QRect m_viewPort; /* viewport, in world coordinates */
-  QRect m_projRegion; /* projection region */
+  QRectF m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;
   QMenu *m_leftButtonMenu;
@@ -212,9 +251,12 @@ private:
   bool m_isViewHintVisible;
   bool m_paintBlocked;
   QRect m_canvasRegion; //Whole canvas region
+
+  NeuTube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
 
   bool m_freeMoving;
+  bool m_hoverFocus;
 };
 
 #endif

@@ -7,8 +7,8 @@
 
 #include "zstackobject.h"
 #include "zintpoint.h"
+#include "zjsonobject.h"
 
-class ZJsonObject;
 class ZJsonArray;
 
 class ZDvidSynapse : public ZStackObject
@@ -19,7 +19,8 @@ public:
   enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
   const std::string& className() const;
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -42,6 +43,9 @@ public:
 
   void setDefaultColor();
 
+  int getX() const;
+  int getY() const;
+  int getZ() const;
 
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
@@ -105,13 +109,22 @@ public: //Json APIs
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
   static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
 
+  static void AddProperty(ZJsonObject &json, const std::string &key,
+                          const std::string &value);
+
+  std::vector<ZIntPoint> getPartners();
+
+public: //Additional properties
+  void setUserName(const std::string &name);
+  std::string getUserName() const;
+
 private:
   static ZJsonArray GetRelationJson(ZJsonObject &json);
 
 private:
   void init();
-  bool isVisible(int z) const;
-  double getRadius(int z) const;
+  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
+  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
 private:
@@ -120,6 +133,7 @@ private:
   EKind m_kind;
   std::vector<std::string> m_tagArray;
   std::vector<ZIntPoint> m_partnerHint;
+  ZJsonObject m_propertyJson;
 };
 
 template <typename InputIterator>

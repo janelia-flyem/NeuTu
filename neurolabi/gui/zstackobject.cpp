@@ -8,9 +8,11 @@
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE),
+  m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
   m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
 {
+  m_type = GetType();
+  setSliceAxis(NeuTube::Z_AXIS);
 }
 
 ZStackObject::~ZStackObject()
@@ -24,7 +26,8 @@ ZStackObject::~ZStackObject()
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
-                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/) const
+                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
+                           NeuTube::EAxis /*sliceAxis*/) const
 {
   return false;
 }
@@ -131,12 +134,12 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, NeuTube::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, NeuTube::EAxis /*axis*/)
 {
   return false;
 }
@@ -144,6 +147,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/)
 bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
 {
   return false;
+}
+
+void ZStackObject::setHitPoint(const ZIntPoint &pt)
+{
+  m_hitPoint = pt;
 }
 
 bool ZStackObject::fromSameSource(const ZStackObject *obj) const

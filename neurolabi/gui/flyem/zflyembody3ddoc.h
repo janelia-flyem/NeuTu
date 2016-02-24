@@ -13,7 +13,7 @@
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidinfo.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 
 class ZFlyEmProofDoc;
@@ -180,7 +180,7 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
 
@@ -207,12 +207,12 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_REMOVE, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
   }
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_ADD, bodyId, NULL);
+    addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
   }
 }
 

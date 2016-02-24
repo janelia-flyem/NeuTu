@@ -375,6 +375,10 @@ bool ZPainter::isVisible(const QRect &rect) const
 
 bool ZPainter::isVisible(const QRectF &rect) const
 {
+  if (rect.isEmpty()) {
+    return false;
+  }
+
   if (m_canvasRange.isEmpty()) {
     return true;
   }
@@ -392,7 +396,8 @@ bool ZPainter::isVisible(const QRectF &rect) const
 
 void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
 {
-  QRectF rect(pt1, pt2);
+  QRectF rect(std::min(pt1.x(), pt2.x()), std::min(pt1.y(), pt2.y()),
+              fabs(pt1.x() - pt2.x()) + 1.0, fabs(pt1.y() - pt2.y()) + 1.0);
 
   if (isVisible(rect)) {
     m_painter.drawLine(pt1, pt2);

@@ -33,6 +33,7 @@ public:
 
   void read(const QString &url, bool outputingUrl = true);
   void read(const QString &url, const QByteArray &payload,
+            const std::string &method,
             bool outputingUrl = true);
   void readHead(const QString &url);
   bool isReadable(const QString &url);
