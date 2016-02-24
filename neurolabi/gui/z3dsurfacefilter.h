@@ -12,21 +12,6 @@
 class ZObject3d;
 
 //
-class ZCubeData
-{
-public:
-    ZCubeData(std::vector<Z3DCube> cubeArray);
-    ~ZCubeData();
-
-public:
-    size_t size();
-
-public:
-    glm::vec4 color;
-    std::vector<Z3DCube> m_cubeArray;
-};
-
-//
 class Z3DSurfaceFilter : public Z3DGeometryFilter
 {
     Q_OBJECT
@@ -63,7 +48,7 @@ private:
     ZBoolParameter m_showCube;
 
     std::vector<Z3DCube> m_cubeArray;
-    std::vector<ZCubeData> m_cubeArrayList;
+    std::vector<ZCubeArray> m_cubeArrayList;
     Z3DCubeRenderer *m_cubeRenderer;
 
     bool m_dataIsInvalid;

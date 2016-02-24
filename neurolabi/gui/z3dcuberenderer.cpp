@@ -31,6 +31,9 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
   m_cubes.clear();
 
   //
+  m_cubeList.clear();
+
+  //
   m_screen << QVector3D(-1.0f, -1.0f, 0.0f) // (a-b-c)
            << QVector3D( 1.0f, -1.0f, 0.0f)
            << QVector3D( 1.0f,  1.0f, 0.0f)
@@ -88,6 +91,22 @@ void Z3DCubeRenderer::addCube(Z3DCube *zcube)
 
     //
     m_dataChanged = true;
+}
+
+void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
+{
+    m_cubes.clear();
+
+    for (size_t i = 0; i < cubes.size(); ++i)
+    {
+        Z3DCube &cube = cubes.getCubeArray()[i];
+
+        addCube(&cube);
+    }
+
+    //
+    m_cubeList.push_back(m_cubes);
+    m_colorList.push_back(m_color);
 }
 
 void Z3DCubeRenderer::compile()

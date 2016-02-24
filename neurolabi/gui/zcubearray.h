@@ -170,8 +170,13 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
   const std::string& className() const;
 
+  size_t size();
+  void setCubeArray(std::vector<Z3DCube> cubeArray);
+  void setColor(glm::vec4 c);
+
 private:
   std::vector<Z3DCube> m_cubeArray;
+  glm::vec4 color;
 
 };
 
