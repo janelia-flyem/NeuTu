@@ -29,7 +29,9 @@ public:
     void makeGUI();
 
 public slots:
-    void updateROIRendering(int row, int column);
+    void updateROIs();
+    void updateROISelections(int row, int column);
+    void updateROIColors(int row, int column);
     void updateROIRendering(QTableWidgetItem* item);
 
 public:

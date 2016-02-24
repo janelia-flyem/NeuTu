@@ -99,15 +99,17 @@ void ZROIWidget::makeGUI()
     tw_ROIs->setShowGrid(false);
 
     //
+    QBrush brush(defaultColor);
     for (std::size_t i = 0; i < roiList.size(); ++i)
     {
         QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
         roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
         roiNameItem->setCheckState(Qt::Unchecked);
 
-        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("red"));
+        QTableWidgetItem *colorItem = new QTableWidgetItem(tr("color"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        //colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
+        //colorItem->setBackgroundColor(defaultColor);
+        colorItem->setForeground(brush);
 
         int row = tw_ROIs->rowCount();
         tw_ROIs->insertRow(row);
@@ -120,15 +122,42 @@ void ZROIWidget::makeGUI()
 
     //
     //connect(tw_ROIs, SIGNAL(cellActivated(int,int)), this, SLOT(updateROIRendering(int,int)));
-    connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROIRendering(int,int)));
+    connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
+    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
+
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 }
 
-void ZROIWidget::updateROIRendering(int row, int column)
+void ZROIWidget::updateROIs()
+{
+    // render selected ROIs
+    ZCubeArray *cubes = new ZCubeArray;
+    for(int i=0; i<tw_ROIs->rowCount(); i++)
+    {
+        QTableWidgetItem *it = tw_ROIs->item(i, 0);
+        QColor color = tw_ROIs->item(i,1)->foreground().color();
+
+        qDebug()<<"color ... "<<color;
+
+        if(it->checkState()==Qt::Checked)
+        {
+            ZObject3dScan roi = reader.readRoi(it->text().toStdString());
+            if (!roi.isEmpty())
+            {
+                ZFlyEmMisc::MakeRoiCube(cubes, roi, m_dvidInfo, color);
+                //cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
+            }
+        }
+    }
+    if(m_window != NULL)
+    {
+        m_window->getDocument()->addObject(cubes, true);
+    }
+}
+
+void ZROIWidget::updateROISelections(int row, int column)
 {
     QTableWidgetItem *item = tw_ROIs->item(row, 0);
-
-    qDebug()<<"render ROI: "<<item->text()<<item->checkState()<<column;
 
     if(column==0)
     {
@@ -142,31 +171,36 @@ void ZROIWidget::updateROIRendering(int row, int column)
             item->setCheckState(Qt::Checked);
         }
 
-        // render selected ROIs
-        ZCubeArray *cubes = new ZCubeArray;
-        for(int i=0; i<tw_ROIs->rowCount(); i++)
-        {
-            QTableWidgetItem *it = tw_ROIs->item(i, 0);
-            if(it->checkState()==Qt::Checked)
-            {
-                ZObject3dScan roi = reader.readRoi(it->text().toStdString());
-                if (!roi.isEmpty())
-                {
-                    ZFlyEmMisc::MakeRoiCube(cubes, roi, m_dvidInfo, defaultColor);
-                    //cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
-                }
-            }
-        }
-        if(m_window != NULL)
-        {
-            m_window->getDocument()->addObject(cubes, true);
-        }
+        //
+        updateROIs();
+
     }
     else if(column==1)
     {
         // edit color
     }
+}
 
+void ZROIWidget::updateROIColors(int row, int column)
+{
+    QTableWidgetItem *item = tw_ROIs->item(row, 1);
+
+    if(column==1)
+    {
+        //QColor newcolor = QColorDialog::getColor(item->backgroundColor());
+        //item->setBackgroundColor(newcolor);
+        QColor newcolor = QColorDialog::getColor(item->foreground().color());
+        QBrush brush(newcolor);
+        item->setForeground(brush);
+
+        //
+        updateROIs();
+
+    }
+    else if(column==0)
+    {
+        // edit selection
+    }
 }
 
 void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
