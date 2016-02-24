@@ -259,6 +259,12 @@ private:
   void initTimer();
   void initAutoSave();
 
+  /*!
+   * \brief Create essential data instance if necessary
+   */
+  void initData(const ZDvidTarget &target);
+  void initData(const std::string &type, const std::string &dataName);
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
   template<typename T>
   ZSharedPointer<T> getColorScheme(EBodyColorMap type);

@@ -19684,7 +19684,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
 //  stack.load(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
   stack.load(
@@ -19737,7 +19737,23 @@ void ZTest::test(MainWindow *host)
     }
   }
 
-  newStack.save(GET_TEST_DATA_DIR + "/test.tif");
+  newStack.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
+
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
+
+  std::vector<ZObject3dScan*> objArray = ZObject3dScan::extractAllObject(stack);
+  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter) {
+    ZObject3dScan *obj = *iter;
+    ZJsonArray objJson = ZJsonFactory::MakeJsonArray(*obj);
+    QString outFile = QString("roi_%1.json").arg(obj->getLabel());
+    objJson.dump(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/roi_json/" +
+                 outFile.toStdString());
+  }
 
 #endif
 

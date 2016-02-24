@@ -75,8 +75,9 @@ void ZDvidTarget::clear()
   m_labelBlockName = "";
   m_multiscale2dName = "";
   m_grayScaleName = "";
-  m_roiName = "";
+//  m_roiName = "";
   m_synapseName = "";
+  m_roiList.clear();
   m_userList.clear();
 }
 
@@ -228,7 +229,13 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
-  obj.setEntry(m_roiNameKey, m_roiName);
+  ZJsonArray jsonArray;
+  for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
+       iter != m_roiList.end(); ++iter) {
+    jsonArray.append(*iter);
+  }
+  obj.setEntry(m_roiNameKey, jsonArray);
+
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
   obj.setEntry(m_synapseNameKey, m_synapseName);
 
@@ -274,7 +281,11 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
     if (obj.hasKey(m_roiNameKey)) {
-      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
+      ZJsonArray jsonArray(obj.value(m_roiNameKey));
+      for (size_t i = 0; i < jsonArray.size(); ++i) {
+        addRoiName(ZJsonParser::stringValue(jsonArray.getData(), i));
+      }
+//      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
     }
     if (obj.hasKey(m_synapseNameKey)) {
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
@@ -406,14 +417,15 @@ void ZDvidTarget::setMultiscale2dName(const std::string &name)
   m_multiscale2dName = name;
 }
 
-std::string ZDvidTarget::getRoiName() const
+std::string ZDvidTarget::getRoiName(size_t index) const
 {
-  return m_roiName;
+  return m_roiList[index];
 }
 
-void ZDvidTarget::setRoiName(const std::string &name)
+void ZDvidTarget::addRoiName(const std::string &name)
 {
-  m_roiName = name;
+  m_roiList.push_back(name);
+//  m_roiName = name;
 }
 
 std::string ZDvidTarget::getSynapseName() const
@@ -428,6 +440,17 @@ std::string ZDvidTarget::getSynapseName() const
 std::string ZDvidTarget::getBookmarkName() const
 {
   return ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK);
+}
+
+std::string ZDvidTarget::getBookmarkKeyName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY);
+}
+
+std::string ZDvidTarget::getSkeletonName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
 }
 
 void ZDvidTarget::setSynapseName(const std::string &name)

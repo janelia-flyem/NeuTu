@@ -1,0 +1,17 @@
+#!/bin/bash
+if [ $# -lt 4 ]
+then
+  echo './flyem_backup_node <address> <node> <roi_name> <file>'
+  exit
+fi
+
+address=$1
+node=$2
+name=$3
+file=$4
+
+http $address/api/repo/$node/instance dataname="$name" typename="roi"
+http POST $address/api/node/$node/$name/roi < $file
+
+
+ 

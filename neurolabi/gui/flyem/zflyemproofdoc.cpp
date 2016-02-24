@@ -344,12 +344,35 @@ void ZFlyEmProofDoc::annotateBody(
   }
 }
 
+void ZFlyEmProofDoc::initData(
+    const std::string &type, const std::string &dataName)
+{
+  if (!m_dvidReader.hasData(dataName)) {
+    m_dvidWriter.createData(type, dataName);
+    if (!m_dvidWriter.isStatusOk()) {
+      emit messageGenerated(
+            ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
+                           NeuTube::MSG_ERROR));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
+{
+  if (m_dvidReader.isReady()) {
+    initData("annotation", target.getBookmarkName());
+    initData("keyvalue", target.getSkeletonName());
+    initData("keyvalue", target.getBookmarkKeyName());
+  }
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
+    initData(target);
   } else {
     m_dvidTarget.clear();
     emit messageGenerated(

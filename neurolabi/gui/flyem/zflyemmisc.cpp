@@ -411,16 +411,19 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
     Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
-    if (!dvidTarget.getRoiName().empty()) {
+    const std::vector<std::string> &roiList = dvidTarget.getRoiList();
+    if (!roiList.empty()) {
       ZDvidReader reader;
       if (reader.open(dvidTarget)) {
-        ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
-        if (!roi.isEmpty()) {
-          Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
-          graph->setSource(
-                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
-                  dvidTarget.getRoiName()));
-          window->getDocument()->addObject(graph, true);
+        for (std::vector<std::string>::const_iterator iter = roiList.begin();
+             iter != roiList.end(); ++iter) {
+          ZObject3dScan roi = reader.readRoi(*iter);
+          if (!roi.isEmpty()) {
+            Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
+            graph->setSource(
+                  ZStackObjectSourceFactory::MakeFlyEmRoiSource(*iter));
+            window->getDocument()->addObject(graph, true);
+          }
         }
       }
     }

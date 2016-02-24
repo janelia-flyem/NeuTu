@@ -9,6 +9,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zdialogfactory.h"
+#include "stringlistdialog.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -61,7 +62,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
 //  m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
 #endif
 
-
+  m_roiDlg = new StringListDialog(this);
 
   for (QList<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
        iter != m_dvidRepo.end(); ++iter) {
@@ -80,6 +81,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveCurrentTarget()));
   connect(ui->saveAsButton, SIGNAL(clicked()), this, SLOT(saveCurrentTargetAs()));
   connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentTarget()));
+  connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
 
   setFixedSize(size());
 }
@@ -135,7 +137,7 @@ QString ZDvidDialog::getUuid() const
   return ui->uuidLineEdit->text();
 }
 
-const ZDvidTarget &ZDvidDialog::getDvidTarget()
+ZDvidTarget &ZDvidDialog::getDvidTarget()
 {
   ZDvidTarget &target = m_dvidRepo[ui->serverComboBox->currentIndex()];
   if (target.isEditable()) {
@@ -184,6 +186,7 @@ void ZDvidDialog::setServer(int index)
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&
                                (dvidTarget.getName() != "Custom"));
+  ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const
@@ -297,5 +300,20 @@ void ZDvidDialog::deleteCurrentTarget()
 
     m_dvidRepo.removeAt(ui->serverComboBox->currentIndex());
     ui->serverComboBox->removeItem(ui->serverComboBox->currentIndex());
+  }
+}
+
+void ZDvidDialog::editRoiList()
+{
+  m_roiDlg->setStringList(getDvidTarget().getRoiList());
+  if (m_roiDlg->exec()) {
+    QStringList strList = m_roiDlg->getStringList();
+    std::vector<std::string> roiList;
+    foreach(const QString &str, strList) {
+      roiList.push_back(str.toStdString());
+    }
+
+    getDvidTarget().setRoiList(roiList);
+    ui->roiLabel->setText(QString("%1 ROI").arg(roiList.size()));
   }
 }

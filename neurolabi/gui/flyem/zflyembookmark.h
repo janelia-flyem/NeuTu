@@ -20,9 +20,11 @@ public:
     TYPE_FALSE_MERGE, TYPE_FALSE_SPLIT, TYPE_LOCATION
   };
 
+  /*
   enum EBookmarkRole {
-    ROLE_ASSIGNED, ROLE_USER, ROLE_EXAMINE
+    ROLE_ASSIGNED, ROLE_USER, ROLE_REVIEW
   };
+  */
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_FLYEM_BOOKMARK;
@@ -58,6 +60,7 @@ public:
   }
 
   bool isCustom() const {
+//    return (m_bookmarkRole == ROLE_USER);
     return m_isCustom;
   }
 
@@ -98,6 +101,9 @@ public:
   ZFlyEmBookmark* clone() const;
 
 private:
+  void init();
+
+private:
   uint64_t m_bodyId;
   QString m_userName;
   QString m_time;
@@ -106,6 +112,7 @@ private:
   QStringList m_tags;
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
+//  EBookmarkRole m_bookmarkRole;
   bool m_isChecked;
   bool m_isCustom;
   bool m_isInTable;

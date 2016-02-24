@@ -2549,10 +2549,12 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-//    if (!bookmark->isChecked()) {
-//      writer.writeBookmarkKey(*bookmark);
-//    }
-    writer.writeBookmark(*bookmark);
+    if (bookmark->isCustom()) {
+      writer.writeBookmark(*bookmark);
+    } else {
+      writer.writeBookmarkKey(*bookmark);
+    }
+
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
                                            NeuTube::MSG_WARNING));
