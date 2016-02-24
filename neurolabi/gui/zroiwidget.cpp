@@ -69,6 +69,7 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                         if(!roi.isEmpty())
                         {
                             roiList.push_back(keys.at(i));
+                            loadedROIs.push_back(roi);
                         }
                     }
                 }
@@ -99,12 +100,17 @@ void ZROIWidget::makeGUI()
     tw_ROIs->setShowGrid(false);
 
     //
-    QBrush brush(defaultColor);
+    //QBrush brush(defaultColor);
     for (std::size_t i = 0; i < roiList.size(); ++i)
     {
         QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
         roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
         roiNameItem->setCheckState(Qt::Unchecked);
+
+        ZColorScheme zcolor;
+        QBrush brush(zcolor.getColor(i));
+
+        qDebug()<<"test zcolor ... "<<zcolor.getColor(i);
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -121,7 +127,6 @@ void ZROIWidget::makeGUI()
     this->setWidget(tw_ROIs);
 
     //
-    //connect(tw_ROIs, SIGNAL(cellActivated(int,int)), this, SLOT(updateROIRendering(int,int)));
     connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
     connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
 
@@ -131,7 +136,7 @@ void ZROIWidget::makeGUI()
 void ZROIWidget::updateROIs()
 {
     // render selected ROIs
-    ZCubeArray *cubes = new ZCubeArray;
+    //ZCubeArray *cubes = new ZCubeArray;
     for(int i=0; i<tw_ROIs->rowCount(); i++)
     {
         QTableWidgetItem *it = tw_ROIs->item(i, 0);
@@ -140,20 +145,17 @@ void ZROIWidget::updateROIs()
         {
             QColor color = tw_ROIs->item(i,1)->foreground().color();
 
-            qDebug()<<"~~~~~~~~~~~~~~~ color"<<color;
+            //
+            ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
+            cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
 
-            ZObject3dScan roi = reader.readRoi(it->text().toStdString());
-            if (!roi.isEmpty())
+            if(m_window != NULL)
             {
-                ZFlyEmMisc::MakeRoiCube(cubes, roi, m_dvidInfo, color);
-                //cubes->setSource( ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() ));
+                m_window->getDocument()->addObject(cubes, true);
             }
         }
     }
-    if(m_window != NULL)
-    {
-        m_window->getDocument()->addObject(cubes, true);
-    }
+
 }
 
 void ZROIWidget::updateROISelections(int row, int column)

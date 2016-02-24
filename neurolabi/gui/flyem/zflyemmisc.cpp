@@ -303,12 +303,12 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
-void ZFlyEmMisc::MakeRoiCube(
-    ZCubeArray *cubes, const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
 {
   int sampleInterval = 1;
 
-  //ZCubeArray *cubes = new ZCubeArray;
+  ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
   int startCoord[3];
   Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
@@ -364,6 +364,8 @@ void ZFlyEmMisc::MakeRoiCube(
 
   C_Stack::kill(stack);
 
+  //
+  return cubes;
 }
 
 

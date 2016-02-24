@@ -21,7 +21,7 @@ void NormalizeSimmat(ZMatrix &simmat);
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
-void MakeRoiCube(ZCubeArray *cubes, const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color);
+ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,

@@ -5,7 +5,7 @@ using namespace std;
 
 //
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
-  Z3DGeometryFilter(),
+    Z3DGeometryFilter(),
     m_showCube("Visible", true),
     m_cubeRenderer(NULL),
     m_dataIsInvalid(false),
@@ -92,17 +92,22 @@ void Z3DSurfaceFilter::prepareData()
     initialize(); // fix opengl issue
 
     //
-    for (size_t i = 0; i < m_cubeArray.size(); ++i) {
-      Z3DCube cube = m_cubeArray[i];
+    for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+    {
 
-      if(cube.initByNodes)
-      {
-        m_cubeRenderer->addCube(&cube);
-      }
-      else
-      {
-        m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
-      }
+        for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
+        {
+            Z3DCube &cube = m_cubeArrayList[j][i];
+
+            if(cube.initByNodes)
+            {
+                m_cubeRenderer->addCube(&cube);
+            }
+            else
+            {
+                m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
+            }
+        }
     }
 
     m_dataIsInvalid = false;
@@ -118,7 +123,7 @@ void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 
 void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 {
-    m_cubeArray = cubes->getCubeArray();
+    m_cubeArrayList.push_back(cubes->getCubeArray());
 
     m_dataIsInvalid = true;
     invalidateResult();
@@ -127,23 +132,29 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 void Z3DSurfaceFilter::clearData()
 {
     m_cubeArray.clear();
+    m_cubeArrayList.clear();
 }
 
 vector<double> Z3DSurfaceFilter::boundBox()
 {
     vector<double> result(6, 0);
 
-    for (size_t i = 0; i < m_cubeArray.size(); ++i) {
-      const Z3DCube &cube = m_cubeArray[i];
+    for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+    {
 
-      float radius = cube.length / 2.0;
+        for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
+        {
+            const Z3DCube &cube = m_cubeArrayList[j][i];
 
-      result[0] = min(result[0], cube.x - radius);
-      result[1] = max(result[1], cube.x + radius);
-      result[2] = min(result[2], cube.y - radius);
-      result[3] = max(result[3], cube.y + radius);
-      result[4] = min(result[4], cube.z - radius);
-      result[5] = max(result[5], cube.z + radius);
+            float radius = cube.length / 2.0;
+
+            result[0] = min(result[0], cube.x - radius);
+            result[1] = max(result[1], cube.x + radius);
+            result[2] = min(result[2], cube.y - radius);
+            result[3] = max(result[3], cube.y + radius);
+            result[4] = min(result[4], cube.z - radius);
+            result[5] = max(result[5], cube.z + radius);
+        }
     }
 
     return result;
@@ -177,14 +188,14 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-//  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
-//  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
-//  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_cubeArray.empty();
+    //  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
+    //  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
+    //  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
+    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_cubeArrayList.empty();
 }
 
 void Z3DSurfaceFilter::updateSurfaceVisibleState()
 {
-  m_dataIsInvalid = true;
-  invalidateResult();
+    m_dataIsInvalid = true;
+    invalidateResult();
 }
