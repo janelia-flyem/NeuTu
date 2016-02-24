@@ -48,6 +48,7 @@ class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
 //class Z3DRendererBase;
+class ZROIWidget;
 
 class Z3DTabWidget : public QTabWidget
 {
@@ -74,7 +75,7 @@ public slots:
 
     void settingsPanel(bool v);
     void objectsPanel(bool v);
-
+    void roiPanel(bool v);
     void showGraph(bool v);
 
     void resetCameraCenter();
@@ -83,11 +84,12 @@ signals:
     void buttonShowGraphToggled(bool);
     void buttonSettingsToggled(bool);
     void buttonObjectsToggled(bool);
+    void buttonROIsToggled(bool);
 
     void tabIndexChanged(int);
 
 private:
-    bool buttonStatus[4][3]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects
+    bool buttonStatus[4][4]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects 3-rois
     bool windowStatus[4]; // 0-coarsebody 1-body 2-skeleton 3-synapse false-closed true-opened
     int tabLUT[4]; // tab index look up table
     int preIndex;
@@ -122,6 +124,7 @@ public:
     QAction *showGraphAction;
     QAction *settingsAction;
     QAction *objectsAction;
+    QAction *roiAction;
 
     QAction *m_stayOnTopAction;
 
@@ -129,6 +132,7 @@ public slots:
     void updateButtonShowGraph(bool v);
     void updateButtonSettings(bool v);
     void updateButtonObjects(bool v);
+    void updateButtonROIs(bool v);
 
 signals:
     void closed();
@@ -226,6 +230,7 @@ public: //Bounding box
 
   QDockWidget * getSettingsDockWidget();
   QDockWidget * getObjectsDockWidget();
+  ZROIWidget * getROIsDockWidget();
 
 public:
   void setButtonStatus(int index, bool v);
@@ -506,7 +511,7 @@ private:
   std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
 
-  bool m_buttonStatus[3]; // 0-showgraph, 1-setting, 2-objects
+  bool m_buttonStatus[4]; // 0-showgraph, 1-setting, 2-objects, 3-rois
 
   bool m_isClean;   //already cleanup?
 
@@ -521,6 +526,7 @@ private:
   QDockWidget *m_settingsDockWidget;
   QDockWidget *m_objectsDockWidget;
   QDockWidget *m_advancedSettingDockWidget;
+  ZROIWidget *m_roiDockWidget;
 
   bool m_isStereoView;
 

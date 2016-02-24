@@ -584,6 +584,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemsequencercolorscheme.h \
     zpunctumselector.h \
     zgraphobjsmodel.h \
+    zsurfaceobjsmodel.h \
     dvid/zdvidsynapse.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
@@ -599,7 +600,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemorthowidget.h \
     flyem/flyemorthocontrolform.h \
     dvid/zdvidannotation.h \
-    dialogs/stringlistdialog.h
+    dialogs/stringlistdialog.h \
+    zroiwidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1042,6 +1044,7 @@ SOURCES += main.cpp \
     flyem/zflyemsequencercolorscheme.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
+    zsurfaceobjsmodel.cpp \
     dvid/zdvidsynapse.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \
@@ -1057,7 +1060,8 @@ SOURCES += main.cpp \
     flyem/zflyemorthowidget.cpp \
     flyem/flyemorthocontrolform.cpp \
     dvid/zdvidannotation.cpp \
-    dialogs/stringlistdialog.cpp
+    dialogs/stringlistdialog.cpp \
+    zroiwidget.cpp
 
 OTHER_FILES += \
     extlib.pri \

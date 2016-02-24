@@ -26,6 +26,7 @@ public:
     void prepareData();
     void addData(const Z3DCube &cube);
     void addData(ZCubeArray *cubes);
+    void clearData();
 
     std::vector<double> boundBox();
 
@@ -38,6 +39,10 @@ public:
     bool isReady(Z3DEye eye) const;
 
     void setVisible(bool v);
+    bool isVisible() const;
+
+public slots:
+    void updateSurfaceVisibleState();
 
 private:
     ZBoolParameter m_showCube;

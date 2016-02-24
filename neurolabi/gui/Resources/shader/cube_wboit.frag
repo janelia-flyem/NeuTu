@@ -4,6 +4,7 @@ uniform vec4 scene_ambient;
 uniform vec4 material_ambient;
 uniform vec4 material_specular;
 uniform float material_shininess;
+uniform float alpha;
 
 varying vec3 position;
 varying vec3 normal;
@@ -16,7 +17,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 
 void main()
 {
-    float alpha = color.a;
+    //float alpha = color.a;
 
     // the object lies between -40 and -60 z coordinates
     float weight = pow(alpha + 0.01, 4.0) + max(0.01, min(3000.0, 0.3 / (0.00001 + pow(abs(depth) / 200.0, 4.0))));

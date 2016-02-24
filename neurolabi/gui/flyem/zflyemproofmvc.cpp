@@ -47,6 +47,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "flyem/zflyemorthowindow.h"
+#include "zroiwidget.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -173,6 +174,12 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->objectsAction->setCheckable(true);
   m_bodyViewWindow->objectsAction->setChecked(false);
 
+  m_bodyViewWindow->roiAction = m_bodyViewWindow->toolBar->addAction("ROIs");
+  connect(m_bodyViewWindow->roiAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(roiPanel(bool)));
+  m_bodyViewWindow->roiAction->setCheckable(true);
+  m_bodyViewWindow->roiAction->setChecked(false);
+
   //update button status reversely
   connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
@@ -180,6 +187,8 @@ void ZFlyEmProofMvc::initBodyWindow()
           m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
   connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
+          m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -327,8 +336,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 //    ZFlyEmMisc::Decorate3dBodyWindowRoi(
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
-    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
-          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+//    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+    m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
   }
 
   /*

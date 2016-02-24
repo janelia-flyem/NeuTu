@@ -62,6 +62,8 @@ public:
   // to put this filter into the pipeline.
   void setNeedBlending(bool v) { m_needBlending = v; }
 
+  inline void setOpacity(float o) { m_rendererBase->setOpacity(o); }
+
   void setFilterName(QString s) { m_filterName = s;}
   QString getFilterName() {return m_filterName;}
 

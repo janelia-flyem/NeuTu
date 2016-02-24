@@ -303,15 +303,16 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
-ZCubeArray* ZFlyEmMisc::MakeRoiCube(
-    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
+void ZFlyEmMisc::MakeRoiCube(
+    ZCubeArray *cubes, const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
 {
   int sampleInterval = 1;
 
-  ZCubeArray *cubes = new ZCubeArray;
+  //ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
   int startCoord[3];
   Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+  //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
 
   size_t offset = 0;
   int i, j, k;
@@ -328,7 +329,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   uint8_t *array = C_Stack::array8(stack);
 
   //
-  glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 0.5);
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
 
   //
   for (k = 0; k <= cdepth; k ++) {
@@ -346,7 +347,11 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
               ZIntCuboid box = dvidInfo.getBlockBox(
                     i + startCoord[0], j + startCoord[1], k + startCoord[2]);
               box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
-              Z3DCube *cube = cubes->makeCube(box, color, faceArray);
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
               cubes->append(*cube);
               delete cube;
             }
@@ -359,8 +364,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   C_Stack::kill(stack);
 
-  //
-  return cubes;
 }
 
 
@@ -495,6 +498,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
     Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
+/*
     ZDvidReader reader;
     if (reader.open(dvidTarget)) {
       const std::vector<std::string>& roiList = dvidTarget.getRoiList();
@@ -512,9 +516,76 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
                 ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName));
           window->getDocument()->addObject(cubes, true);
         }
+*/
+//    if (!dvidTarget.getRoiName().empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+
+          // test
+          ZJsonObject meta = reader.readInfo();
+//          std::vector<std::string> keys = meta.getAllKey();
+
+//          for(int i=0; i<keys.size(); i++)
+//          {
+//              qDebug()<<keys.at(i);
+//          }
+//          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+
+
+          ZJsonValue datains = meta.value("DataInstances");
+          qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
+
+          if(datains.isObject())
+          {
+              ZJsonObject insList(datains.getData(), true);
+              std::vector<std::string> keys = insList.getAllKey();
+
+              for(int i=0; i<keys.size(); i++)
+              {
+                  //qDebug()<<keys.at(i);
+
+
+                  std::size_t found = keys.at(i).find("roi");
+
+                  if(found!=std::string::npos)
+                  {
+                    qDebug()<<" rois: "<<keys.at(i);
+                  }
+
+
+//                  ZJsonObject submeta(insList.value(keys.at(i).c_str()));
+//                  std::vector<std::string> subkeys = submeta.getAllKey();
+
+//                  for(int j=0; j<subkeys.size(); j++)
+//                  {
+//                      qDebug()<<" ... "<<subkeys.at(i);
+//                  }
+
+
+
+
+
+
+              }
+              qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
+          }
+
+
+
+
+
+
+//       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+//        if (!roi.isEmpty()) {
+//          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+//          cubes->setSource(
+//                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+//                  dvidTarget.getRoiName()));
+//          window->getDocument()->addObject(cubes, true);
+//        }
       }
     }
-  }
+//  }
 }
 
 void ZFlyEmMisc::SubtractBodyWithBlock(

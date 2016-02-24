@@ -169,6 +169,7 @@ public:
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
+
   const std::string& className() const;
 
 private:

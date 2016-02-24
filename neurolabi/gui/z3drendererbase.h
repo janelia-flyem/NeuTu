@@ -74,6 +74,11 @@ public:
   inline void setYScale(float s) { m_coordYScale.set(s); }
   inline void setZScale(float s) { m_coordZScale.set(s); }
   inline void setOpacity(float o) { m_opacity.set(o); }
+  inline void setMaterialSpecular(glm::vec4 v) {
+      m_materialSpecular.setValue1(v[0]);
+      m_materialSpecular.setValue2(v[1]);
+      m_materialSpecular.setValue3(v[2]);
+      m_materialSpecular.setValue4(v[3]);}
 
   inline void setViewMatrix(const glm::mat4 &vm) {m_hasCustomViewMatrix=true; m_customViewMatrix=vm;}
   // use view matrix from camera

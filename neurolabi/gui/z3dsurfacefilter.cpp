@@ -20,6 +20,8 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
     //  adjustWidgets();
 
     setFilterName(QString("surfacefilter"));
+    //setNeedBlending(true);
+    setOpacity(0.35);
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
@@ -55,6 +57,11 @@ void Z3DSurfaceFilter::setVisible(bool v)
     m_showCube.set(v);
 }
 
+bool Z3DSurfaceFilter::isVisible() const
+{
+    return m_showCube.get();
+}
+
 void Z3DSurfaceFilter::render(Z3DEye eye)
 {
     if(m_cubeRenderer->isEmpty())
@@ -81,6 +88,8 @@ void Z3DSurfaceFilter::prepareData()
 {
     if (!m_dataIsInvalid)
         return;
+
+    initialize(); // fix opengl issue
 
     //
     for (size_t i = 0; i < m_cubeArray.size(); ++i) {
@@ -113,6 +122,11 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 
     m_dataIsInvalid = true;
     invalidateResult();
+}
+
+void Z3DSurfaceFilter::clearData()
+{
+    m_cubeArray.clear();
 }
 
 vector<double> Z3DSurfaceFilter::boundBox()
@@ -163,11 +177,14 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-  /*
-  qDebug() << Z3DGeometryFilter::isReady(eye);
-  qDebug() << m_showCube.get();
-  qDebug() << m_cubeArray.empty();
-  */
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() &&
-            !m_cubeArray.empty();
+//  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
+//  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
+//  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
+    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_cubeArray.empty();
+}
+
+void Z3DSurfaceFilter::updateSurfaceVisibleState()
+{
+  m_dataIsInvalid = true;
+  invalidateResult();
 }

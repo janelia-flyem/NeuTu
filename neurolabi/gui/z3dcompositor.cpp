@@ -239,6 +239,15 @@ void Z3DCompositor::process(Z3DEye eye)
     for (size_t i=0; i<filters.size(); ++i) {
       Z3DGeometryFilter* geomFilter = filters.at(i);
       if (geomFilter->isReady(eye) && geomFilter->getOpacity() > 0.0) {
+
+          qDebug()<<geomFilter->getClassName()<<geomFilter->isStayOnTop()<<geomFilter->getOpacity();
+
+//          if(geomFilter->getClassName()=="Z3DSurfaceFilter")
+//          {
+//              geomFilter->setStayOnTop(true);
+//              qDebug()<<geomFilter->getClassName()<<" changed "<<geomFilter->isStayOnTop();
+//          }
+
         if (geomFilter->isStayOnTop())
           onTopFilters.push_back(geomFilter);
         else
@@ -531,6 +540,9 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
 
   for (size_t i=0; i<filters.size(); i++) {
     Z3DGeometryFilter* geomFilter = filters.at(i);
+
+    qDebug()<<"renderGeomsBlendDelayed ... rendering "<<geomFilter->getClassName();
+
     if (geomFilter->needBlending()) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
