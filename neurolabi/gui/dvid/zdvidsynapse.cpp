@@ -28,17 +28,6 @@ void ZDvidSynapse::init()
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {
-#if 0
-  ZStackBall ball;
-  ball.setCenter(getPosition());
-  ball.setRadius(getRadius());
-  ball.setColor(getColor());
-  ball.setSelected(isSelected());
-  ball.setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
-
-  ball.display(painter, slice, option);
-#endif
-
   bool visible = true;
   int z = painter.getZ(slice);
 
