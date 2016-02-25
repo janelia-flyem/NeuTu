@@ -73,6 +73,7 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
 
                             std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
                             roiSourceList.push_back(source);
+                            colorModified.push_back(false);
                         }
                     }
                 }
@@ -147,17 +148,28 @@ void ZROIWidget::updateROIs()
         {
             if(m_window != NULL)
             {
-                if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, it->text().toStdString() )==false)
-                {
-                    QColor color = tw_ROIs->item(i,1)->foreground().color();
+                QColor color = tw_ROIs->item(i,1)->foreground().color();
 
-                    //
+                if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, roiSourceList[i] )==false)
+                {
                     ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
                     cubes->setSource(roiSourceList[i]);
+
+                    qreal r,g,b,a;
+                    color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+                    cubes->setColor(glm::vec4(r,g,b,a));
                     m_window->getDocument()->addObject(cubes, true);
                 }
                 else
                 {
+                    if(colorModified[i] == true)
+                    {
+                        qDebug()<<"~~~color is changed";
+
+                        colorModified[i] = false;
+                        m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, roiSourceList[i])->setColor(color);
+                    }
                     m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, roiSourceList[i], true);
                 }
             }
@@ -211,6 +223,8 @@ void ZROIWidget::updateROIColors(int row, int column)
         QColor newcolor = QColorDialog::getColor(item->foreground().color());
         QBrush brush(newcolor);
         item->setForeground(brush);
+
+        colorModified[row] = true;
 
         //
         updateROIs();

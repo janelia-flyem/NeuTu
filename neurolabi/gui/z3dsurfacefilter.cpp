@@ -125,7 +125,7 @@ void Z3DSurfaceFilter::prepareData()
     else
     {
         //
-        initialize();
+        //initialize();
     }
 }
 

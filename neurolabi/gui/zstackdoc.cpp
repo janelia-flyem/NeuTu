@@ -539,6 +539,11 @@ bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
     return m_objectGroup.findFirstSameSource(type, source) != NULL;
 }
 
+ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source);
+}
+
 bool ZStackDoc::hasSparseObject() const
 {
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SPARSE_OBJECT).isEmpty();

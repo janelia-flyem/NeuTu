@@ -155,6 +155,8 @@ public: //attributes
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
 
+  ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
+
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
   bool hasPuncta() const;

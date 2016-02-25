@@ -100,6 +100,7 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 
     qDebug()<<"#### add cubes "<<cubes.size();
 
+
     //
     for (size_t i = 0; i < cubes.size(); ++i)
     {
@@ -121,9 +122,6 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
                 cube.init(zcube->length, zcube->length, zcube->length, zcube->x, zcube->y, zcube->z);
             }
 
-            if(i==0)
-                m_color = zcube->color;
-
             //
             cubeArray.push_back(cube);
         }
@@ -133,7 +131,11 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 
     //
     m_cubeList.push_back(cubeArray);
-    m_colorList.push_back(m_color);
+
+    qreal r,g,b,a;
+    cubes.getColor().getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+    m_colorList.push_back(glm::vec4(r,g,b,a));
 
 
     qDebug()<<"#### render objects "<<m_cubeList.size();
