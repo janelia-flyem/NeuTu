@@ -260,15 +260,35 @@ void Z3DCubeRenderer::renderPickingUsingOpengl()
 
 void Z3DCubeRenderer::render(Z3DEye eye)
 {
+    //
+    //m_cubeShaderGrp.bind();
+    //m_rendererBase->setMaterialSpecular(glm::vec4(.1f, .1f, .1f, .1f));
+
+
+
+    //
     nObjects = m_cubeList.size();
 
     qDebug()<<"**** "<<nObjects<<" to be rendered";
 
-    for(size_t i=0; i<nObjects; ++i)
+    if (m_hardwareSupportVAO)
     {
-        renderSingleObj(eye, i);
+        if (m_dataChanged)
+        {
+            for(size_t i=0; i<nObjects; ++i)
+            {
+                renderSingleObj(eye, i);
+            }
+        }
+        m_dataChanged = false;
+    }
+    else
+    {
+        // w/o vao defined
     }
 
+    //
+    //m_cubeShaderGrp.release();
 }
 
 void Z3DCubeRenderer::renderSingleObj(Z3DEye eye, int index)
@@ -295,167 +315,155 @@ void Z3DCubeRenderer::renderSingleObj(Z3DEye eye, int index)
     qDebug()<<"******** render "<<nCubes;
 
     //
-    if (m_hardwareSupportVAO) {
-        if (m_dataChanged) {
-            if (!m_VAOs.empty()) {
-                glDeleteVertexArrays(m_VAOs.size(), &m_VAOs[0]);
-            }
-            m_VAOs.resize(nCubes);
-            glGenVertexArrays(m_VAOs.size(), &m_VAOs[0]);
 
-            if (!m_VBOs.empty()) {
-                glDeleteVertexArrays(m_VBOs.size(), &m_VBOs[0]);
-            }
-            m_VBOs.resize(nCubes);
-            glGenBuffers( m_VBOs.size(), &m_VBOs[0]);
+    m_VAOs.resize(nCubes);
+    glGenVertexArrays(m_VAOs.size(), &m_VAOs[0]);
 
-            //glBindVertexArray(m_VAO);
-            // oit pass
-            //
-            oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
-            oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
-            oit3DTransparentizeShader.setUniformValue("vColor", m_colorList[index]);
+    m_VBOs.resize(nCubes);
+    glGenBuffers( m_VBOs.size(), &m_VBOs[0]);
 
-            //
-            GLint loc_position = oit3DTransparentizeShader.attributeLocation("vPosition");
-            GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
+    //glBindVertexArray(m_VAO);
+    // oit pass
+    //
+    oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
+    oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
+    oit3DTransparentizeShader.setUniformValue("vColor", m_colorList[index]);
 
-            //
-            m_cubes = m_cubeList[index];
+    //
+    GLint loc_position = oit3DTransparentizeShader.attributeLocation("vPosition");
+    GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
 
-            //
-            for (size_t i=0; i<nCubes; ++i)
-            {
-                glBindVertexArray(m_VAOs[i]);
-                glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
+    //
+    m_cubes = m_cubeList[index];
 
-                size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
-                size_t size_normal = sizeof(float)*m_cubes[i].normalIndices.size();
-                //size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
-                //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
+    //
+    for (size_t i=0; i<nCubes; ++i)
+    {
+        glBindVertexArray(m_VAOs[i]);
+        glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
 
-                glBufferData( GL_ARRAY_BUFFER, size_position + size_normal, NULL, GL_STATIC_DRAW );
-                glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
-                glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normalIndices[0]) );
-                //glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
+        size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
+        size_t size_normal = sizeof(float)*m_cubes[i].normalIndices.size();
+        //size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
+        //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
 
-                //
-                glEnableVertexAttribArray( loc_position );
-                glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
-
-                glEnableVertexAttribArray( loc_normal );
-                glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
-
-                //glEnableVertexAttribArray( loc_color );
-                //glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
-
-                glBindBuffer( GL_ARRAY_BUFFER, 0);
-                //glBindVertexArray(0);
-            }
-            glBindVertexArray(0);
-        }
+        glBufferData( GL_ARRAY_BUFFER, size_position + size_normal, NULL, GL_STATIC_DRAW );
+        glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
+        glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normalIndices[0]) );
+        //glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
 
         //
-        m_dataChanged = false;
+        glEnableVertexAttribArray( loc_position );
+        glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
 
-        // compose pass
-        // vao
-        glGenVertexArrays(1, &m_vao);
-        glBindVertexArray( m_vao );
-        //oit2DComposeProgram->setAttributeArray("composeVertPos", m_screen.constData());
-        //oit2DComposeProgram->enableAttributeArray("composeVertPos");
+        glEnableVertexAttribArray( loc_normal );
+        glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
 
-        glGenBuffers(1, &m_vbo);
-        glBindBuffer( GL_ARRAY_BUFFER, m_vbo);
-        glBufferData( GL_ARRAY_BUFFER, m_screen.size()*sizeof(QVector3D), m_screen.constData(), GL_STATIC_DRAW);
+        //glEnableVertexAttribArray( loc_color );
+        //glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
 
-        GLint posLoc = glGetAttribLocation(oit2DComposeProgram->programId(), "composeVertPos");
-        glEnableVertexAttribArray(posLoc);
-        glVertexAttribPointer( posLoc, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
+        glBindBuffer( GL_ARRAY_BUFFER, 0);
+        //glBindVertexArray(0);
+    }
+    glBindVertexArray(0);
 
-        glBindVertexArray(0);
 
-        // fbo
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_preFBO);
+    // compose pass
+    // vao
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray( m_vao );
+    //oit2DComposeProgram->setAttributeArray("composeVertPos", m_screen.constData());
+    //oit2DComposeProgram->enableAttributeArray("composeVertPos");
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer( GL_ARRAY_BUFFER, m_vbo);
+    glBufferData( GL_ARRAY_BUFFER, m_screen.size()*sizeof(QVector3D), m_screen.constData(), GL_STATIC_DRAW);
 
-        glBindTexture(GL_TEXTURE_2D, m_texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
+    GLint posLoc = glGetAttribLocation(oit2DComposeProgram->programId(), "composeVertPos");
+    glEnableVertexAttribArray(posLoc);
+    glVertexAttribPointer( posLoc, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
 
-        glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+    // fbo
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_preFBO);
 
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
 
-        //
-        if (!oit2DComposeProgram->link())
-        {
-            qWarning() << oit2DComposeProgram->log() << endl;
-        }
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-        // render
-        // oit pass
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
 
-        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-        for(size_t i=0; i<nCubes; i++)
-        {
-            glBindVertexArray( m_VAOs[i] );
-            glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
-            glBindVertexArray(0);
-        }
+    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-
-        // compose pass
-        if (!oit2DComposeProgram->bind())
-        {
-            qWarning() << oit2DComposeProgram->log() << endl;
-        }
-
-        //
-        glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-        //
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
-
-        GLuint cloc_accum = glGetUniformLocation(oit2DComposeProgram->programId(), "accumTexture");
-        glUniform1i(cloc_accum, 0);
-
-        GLuint cloc_revealage = glGetUniformLocation(oit2DComposeProgram->programId(), "revealageTexture");
-        glUniform1i(cloc_revealage, 1);
-
-        //    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-        //    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-        glBindVertexArray( m_vao );
-        glDrawArrays( GL_TRIANGLES, 0, m_screen.size());
-        glBindVertexArray(0);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
-
-        glDisable(GL_BLEND);
-    } else {
-        // w/o vao defined
+    //
+    if (!oit2DComposeProgram->link())
+    {
+        qWarning() << oit2DComposeProgram->log() << endl;
     }
 
+    // render
+    // oit pass
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
+
+    glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
+    for(size_t i=0; i<nCubes; i++)
+    {
+        glBindVertexArray( m_VAOs[i] );
+        glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
+        glBindVertexArray(0);
+    }
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
+    // compose pass
+    if (!oit2DComposeProgram->bind())
+    {
+        qWarning() << oit2DComposeProgram->log() << endl;
+    }
+
+    //
+    glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+    //
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    GLuint cloc_accum = glGetUniformLocation(oit2DComposeProgram->programId(), "accumTexture");
+    glUniform1i(cloc_accum, 0);
+
+    GLuint cloc_revealage = glGetUniformLocation(oit2DComposeProgram->programId(), "revealageTexture");
+    glUniform1i(cloc_revealage, 1);
+
+    //    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    //    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+    glBindVertexArray( m_vao );
+    glDrawArrays( GL_TRIANGLES, 0, m_screen.size());
+    glBindVertexArray(0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+
+    glDisable(GL_BLEND);
+
+    //
     m_cubeShaderGrp.release();
 }
 
