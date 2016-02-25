@@ -22,6 +22,9 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
     setFilterName(QString("surfacefilter"));
     //setNeedBlending(true);
     setOpacity(0.35);
+
+    //
+    m_initialized = false;
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
@@ -41,6 +44,8 @@ void Z3DSurfaceFilter::initialize()
         //connect(paras[i], SIGNAL(valueChanged()), this, SLOT(invalidateResult()));
         addParameter(paras[i]);
     }
+
+    m_initialized = true;
 }
 
 void Z3DSurfaceFilter::deinitialize()
@@ -50,6 +55,7 @@ void Z3DSurfaceFilter::deinitialize()
         removeParameter(paras[i]);
     }
     Z3DGeometryFilter::deinitialize();
+    m_initialized = false;
 }
 
 void Z3DSurfaceFilter::setVisible(bool v)
@@ -79,6 +85,8 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
 
 void Z3DSurfaceFilter::process(Z3DEye)
 {
+    qDebug()<<"#### process"<<m_dataIsInvalid;
+
     if (m_dataIsInvalid) {
         prepareData();
     }
@@ -86,27 +94,52 @@ void Z3DSurfaceFilter::process(Z3DEye)
 
 void Z3DSurfaceFilter::prepareData()
 {
-    qDebug()<<"~~~ debug surfacefilter prepareData ";
-
     if (!m_dataIsInvalid)
         return;
 
-    initialize(); // reinit renderer
-
-    //
-    for(size_t i=0; i<m_sourceList.size(); ++i)
+    if(!m_initialized)
     {
-        for(size_t j=0; j< m_cubeArrayList.size(); ++j)
-        {
-            if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) != 0 )
-            {
-                //
-                m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
-            }
-        }
+        initialize();
     }
 
-    m_dataIsInvalid = false;
+    //
+    m_cubeRenderer->clearData();
+
+    qDebug()<<"~~~ debug ... "<<m_sourceList.size()<<m_cubeArrayList.size();
+
+    //
+    if(m_sourceList.size()>0)
+    {
+        for(size_t i=0; i<m_sourceList.size(); ++i)
+        {
+            qDebug()<<"~~~ debug ... "<<m_sourceList[i];
+
+            for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+            {
+
+                qDebug()<<"~~~*** debug ... "<<m_cubeArrayList[j].getSource()<<" =?= "<<m_sourceList[i];
+
+                if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
+                {
+                    //
+                    qDebug()<<"~~~ debug surface filter to add data";
+
+                    m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
+
+                    qDebug()<<"~~~ debug surface filter added data";
+                }
+            }
+        }
+
+        qDebug()<<"~~~ debug goto rendering ";
+
+        m_dataIsInvalid = false;
+    }
+    else
+    {
+        //
+        initialize();
+    }
 }
 
 void Z3DSurfaceFilter::addData(const Z3DCube &cube)
@@ -122,12 +155,24 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
     std::string source = cubes->getSource();
     m_sourceList.push_back(source);
 
+    qDebug()<<"~~~ debug addData ... "<<source;
+
+    bool sourceAdded = false;
     for(size_t i=0; i<m_cubeArrayList.size(); i++)
     {
-        if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) != 0 )
+        if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) == 0 )
         {
-            m_cubeArrayList.push_back(*cubes); // add cubes
+            sourceAdded = true;
+            continue;
         }
+    }
+
+    if(!sourceAdded)
+    {
+
+        m_cubeArrayList.push_back(*cubes); // add source
+
+        qDebug()<<"~~~ debug surface filter data added ... "<<m_cubeArrayList.size();
     }
 
     m_dataIsInvalid = true;
@@ -195,6 +240,13 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
         m_widgetsGroup->setBasicAdvancedCutoff(5);
     }
     return m_widgetsGroup;
+}
+
+void Z3DSurfaceFilter::updateData()
+{
+    qDebug()<<"### update surface data";
+    m_dataIsInvalid = true;
+    invalidateResult();
 }
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const

@@ -138,10 +138,6 @@ void ZROIWidget::makeGUI()
 void ZROIWidget::updateROIs()
 {
     // render selected ROIs
-    //ZCubeArray *cubes = new ZCubeArray;
-
-    qDebug()<<"~~~~ debug updateROIs";
-
     m_window->getDocument()->blockSignals(true);
     for(int i=0; i<tw_ROIs->rowCount(); i++)
     {
@@ -155,20 +151,10 @@ void ZROIWidget::updateROIs()
                 {
                     QColor color = tw_ROIs->item(i,1)->foreground().color();
 
-                    qDebug()<<"~~~~ makeroicube ...";
-
                     //
                     ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
-
-                    qDebug()<<"~~~~ makeroicube ... done";
-
                     cubes->setSource(roiSourceList[i]);
-
-                    qDebug()<<"~~~~ setSource ... done" << roiSourceList[i];
-
                     m_window->getDocument()->addObject(cubes, true);
-
-                    qDebug()<<"~~~~ addObject ... done";
                 }
                 else
                 {
@@ -186,9 +172,6 @@ void ZROIWidget::updateROIs()
     }
     m_window->getDocument()->blockSignals(false);
     m_window->update3DCubeDisplay();
-
-    qDebug()<<"~~~~ debug updateROIs done";
-
 }
 
 void ZROIWidget::updateROISelections(int row, int column)

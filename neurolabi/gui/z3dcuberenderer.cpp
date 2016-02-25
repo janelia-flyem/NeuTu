@@ -96,11 +96,14 @@ void Z3DCubeRenderer::addCube(Z3DCube *zcube)
 void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 {
     CubeArrayType cubeArray;
+    std::vector<Z3DCube> z3dcubes = cubes.getCubeArray();
+
+    qDebug()<<"#### add cubes "<<cubes.size();
 
     //
     for (size_t i = 0; i < cubes.size(); ++i)
     {
-        Z3DCube *zcube = &(cubes.getCubeArray()[i]);
+        Z3DCube *zcube = &(z3dcubes[i]);
 
         Cube cube;
 
@@ -126,12 +129,23 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
         }
     }
 
+    qDebug()<<"#### cube array is added "<<cubeArray.size();
+
     //
     m_cubeList.push_back(cubeArray);
     m_colorList.push_back(m_color);
 
+
+    qDebug()<<"#### render objects "<<m_cubeList.size();
+
     //
     m_dataChanged = true;
+}
+
+void Z3DCubeRenderer::clearData()
+{
+    m_cubeList.clear();
+    m_colorList.clear();
 }
 
 void Z3DCubeRenderer::compile()
@@ -246,10 +260,9 @@ void Z3DCubeRenderer::renderPickingUsingOpengl()
 
 void Z3DCubeRenderer::render(Z3DEye eye)
 {
-    if (!m_initialized)
-        return;
-
     nObjects = m_cubeList.size();
+
+    qDebug()<<"**** "<<nObjects<<" to be rendered";
 
     for(size_t i=0; i<nObjects; ++i)
     {
@@ -278,6 +291,8 @@ void Z3DCubeRenderer::renderSingleObj(Z3DEye eye, int index)
 
     //
     nCubes = m_cubeList[index].size();
+
+    qDebug()<<"******** render "<<nCubes;
 
     //
     if (m_hardwareSupportVAO) {
@@ -342,7 +357,6 @@ void Z3DCubeRenderer::renderSingleObj(Z3DEye eye, int index)
 
         //
         m_dataChanged = false;
-
 
         // compose pass
         // vao
@@ -452,5 +466,5 @@ void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 
 bool Z3DCubeRenderer::isEmpty()
 {
-    return m_cubes.empty();
+    return m_cubeList.empty();
 }

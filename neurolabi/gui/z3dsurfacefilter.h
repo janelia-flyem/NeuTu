@@ -42,6 +42,8 @@ public:
     void setVisible(bool v);
     bool isVisible() const;
 
+    void updateData();
+
 public slots:
     void updateSurfaceVisibleState();
 
@@ -54,6 +56,7 @@ private:
     std::vector<std::string> m_sourceList;
 
     bool m_dataIsInvalid;
+    bool m_initialized;
 
     ZWidgetsGroup *m_widgetsGroup;
 

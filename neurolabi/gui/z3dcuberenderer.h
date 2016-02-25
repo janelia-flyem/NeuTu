@@ -22,6 +22,7 @@ public:
     void addCube(double l, double x, double y, double z, glm::vec4 color, std::vector<bool> v);
     void addCube(Z3DCube *zcube);
     void addCubes(ZCubeArray cubes);
+    void clearData();
     bool isEmpty();
 
 protected:
