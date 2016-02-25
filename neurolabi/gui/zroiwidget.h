@@ -46,6 +46,7 @@ public:
     std::vector<std::string> roiList;
     std::vector<ZObject3dScan> loadedROIs;
     QColor defaultColor;
+    std::vector<std::string> roiSourceList;
 
     //
     QTableWidget *tw_ROIs;

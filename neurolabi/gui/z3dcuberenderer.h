@@ -35,6 +35,7 @@ protected:
 
     virtual void render(Z3DEye eye);
     virtual void renderPicking(Z3DEye eye);
+    void renderSingleObj(Z3DEye eye, int index);
 
     Z3DShaderGroup m_cubeShaderGrp;
     QGLShaderProgram *oit2DComposeProgram;
@@ -69,6 +70,7 @@ private:
     std::vector<glm::vec4> m_colorList;
 
     size_t nCubes;
+    size_t nObjects;
     glm::vec4 m_color; // uniform
 };
 

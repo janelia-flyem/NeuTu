@@ -27,6 +27,7 @@ public:
     void addData(const Z3DCube &cube);
     void addData(ZCubeArray *cubes);
     void clearData();
+    void clearSources();
 
     std::vector<double> boundBox();
 
@@ -50,6 +51,7 @@ private:
     std::vector<Z3DCube> m_cubeArray;
     std::vector<ZCubeArray> m_cubeArrayList;
     Z3DCubeRenderer *m_cubeRenderer;
+    std::vector<std::string> m_sourceList;
 
     bool m_dataIsInvalid;
 

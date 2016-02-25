@@ -70,6 +70,9 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                         {
                             roiList.push_back(keys.at(i));
                             loadedROIs.push_back(roi);
+
+                            std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
+                            roiSourceList.push_back(source);
                         }
                     }
                 }
@@ -136,31 +139,40 @@ void ZROIWidget::updateROIs()
 {
     // render selected ROIs
     //ZCubeArray *cubes = new ZCubeArray;
+
+    qDebug()<<"~~~~ debug updateROIs";
+
     m_window->getDocument()->blockSignals(true);
     for(int i=0; i<tw_ROIs->rowCount(); i++)
     {
         QTableWidgetItem *it = tw_ROIs->item(i, 0);
 
-        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( it->text().toStdString() );
-
         if(it->checkState()==Qt::Checked)
         {
-
             if(m_window != NULL)
             {
                 if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, it->text().toStdString() )==false)
                 {
                     QColor color = tw_ROIs->item(i,1)->foreground().color();
 
+                    qDebug()<<"~~~~ makeroicube ...";
+
                     //
                     ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
-                    cubes->setSource(source);
+
+                    qDebug()<<"~~~~ makeroicube ... done";
+
+                    cubes->setSource(roiSourceList[i]);
+
+                    qDebug()<<"~~~~ setSource ... done" << roiSourceList[i];
 
                     m_window->getDocument()->addObject(cubes, true);
+
+                    qDebug()<<"~~~~ addObject ... done";
                 }
                 else
                 {
-                    m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, source, true);
+                    m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, roiSourceList[i], true);
                 }
             }
         }
@@ -168,12 +180,14 @@ void ZROIWidget::updateROIs()
         {
             if(m_window != NULL)
             {
-                m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, source, false);
+                m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, roiSourceList[i], false);
             }
         }
     }
     m_window->getDocument()->blockSignals(false);
     m_window->update3DCubeDisplay();
+
+    qDebug()<<"~~~~ debug updateROIs done";
 
 }
 

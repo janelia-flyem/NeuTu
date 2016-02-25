@@ -1789,7 +1789,9 @@ void Z3DWindow::update3DGraphDisplay()
 
 void Z3DWindow::update3DCubeDisplay()
 {
-  m_surfaceFilter->clearData();
+    qDebug()<<"~~~ debug update3DCubeDisplay ...";
+
+  m_surfaceFilter->clearSources();
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -1799,10 +1801,14 @@ void Z3DWindow::update3DCubeDisplay()
     }
   }
 
+   qDebug()<<"~~~ debug update3DCubeDisplay ... ...";
+
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
+
+  qDebug()<<"~~~ debug update3DCubeDisplay ... done";
 }
 
 void Z3DWindow::updateDisplay()

@@ -26,7 +26,7 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
 {
-
+    clearData();
 }
 
 void Z3DSurfaceFilter::initialize()
@@ -86,32 +86,24 @@ void Z3DSurfaceFilter::process(Z3DEye)
 
 void Z3DSurfaceFilter::prepareData()
 {
+    qDebug()<<"~~~ debug surfacefilter prepareData ";
+
     if (!m_dataIsInvalid)
         return;
 
-    initialize(); // fix opengl issue
+    initialize(); // reinit renderer
 
     //
-    for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+    for(size_t i=0; i<m_sourceList.size(); ++i)
     {
-//        for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
-//        {
-//            Z3DCube &cube = m_cubeArrayList[j].getCubeArray()[i];
-
-//            if(cube.initByNodes)
-//            {
-//                m_cubeRenderer->addCube(&cube);
-//            }
-//            else
-//            {
-//                m_cubeRenderer->addCube(cube.length, cube.x, cube.y, cube.z, cube.color, cube.b_visible);
-//            }
-//        }
-
-
-        //
-        m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
-
+        for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+        {
+            if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) != 0 )
+            {
+                //
+                m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
+            }
+        }
     }
 
     m_dataIsInvalid = false;
@@ -127,7 +119,16 @@ void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 
 void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 {
-    m_cubeArrayList.push_back(*cubes);
+    std::string source = cubes->getSource();
+    m_sourceList.push_back(source);
+
+    for(size_t i=0; i<m_cubeArrayList.size(); i++)
+    {
+        if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) != 0 )
+        {
+            m_cubeArrayList.push_back(*cubes); // add cubes
+        }
+    }
 
     m_dataIsInvalid = true;
     invalidateResult();
@@ -139,16 +140,22 @@ void Z3DSurfaceFilter::clearData()
     m_cubeArrayList.clear();
 }
 
+void Z3DSurfaceFilter::clearSources()
+{
+    m_sourceList.clear();
+}
+
 vector<double> Z3DSurfaceFilter::boundBox()
 {
     vector<double> result(6, 0);
 
     for(size_t j=0; j< m_cubeArrayList.size(); ++j)
     {
+        std::vector<Z3DCube> cubes = m_cubeArrayList[j].getCubeArray();
 
         for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
         {
-            const Z3DCube &cube = m_cubeArrayList[j].getCubeArray()[i];
+            const Z3DCube &cube = cubes[i];
 
             float radius = cube.length / 2.0;
 
