@@ -177,6 +177,11 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, int x, int y, int z) const;
   std::string getAnnotationElementsUrl(const std::string &dataName);
+  std::string getAnnotationUrl(
+      const std::string &dataName, int x, int y, int z,
+      int width, int height, int depth) const;
+  std::string getAnnotationUrl(
+      const std::string &dataName, const ZIntCuboid &box) const;
 
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
@@ -190,6 +195,12 @@ public:
   std::string getSynapseElementsUrl() const;
   std::string getSynapseMoveUrl(
       const ZIntPoint &from, const ZIntPoint &to) const;
+
+  std::string getTodoListUrl() const;
+  std::string getTodoListUrl(const ZIntCuboid &cuboid) const;
+  std::string getTodoListUrl(int x, int y, int z,
+                            int width, int height, int depth) const;
+  std::string getTodoListUrl(int x, int y, int z) const;
 
 private:
   std::string getSplitUrl(

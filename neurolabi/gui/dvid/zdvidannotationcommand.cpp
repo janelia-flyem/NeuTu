@@ -1,5 +1,6 @@
 #include "zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoc.h"
+#include "zstackdoccommand.h"
 
 ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -35,3 +36,39 @@ void ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::undo()
 
   m_isExecuted = false;
 }
+
+/////////////////////////////////////
+ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::RemoveItem(
+    ZFlyEmProofDoc *doc, int x, int y, int z, QUndoCommand *parent) :
+  ZUndoCommand(parent)
+{
+  m_doc = doc;
+  m_item.set(x, y, z);
+}
+
+ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::~RemoveItem()
+{
+}
+
+void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
+{
+  /*
+  ZDvidReader reader;
+  if (reader.open(m_doc->getDvidTarget())) {
+    m_backup = reader.readAnnotationJson(m_item);
+    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    m_doc->notifySynapseEdited(m_synapse);
+    QString msg = QString("Synapse removed at (%1, %2, %3)").
+        arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+    m_doc->notify(msg);
+  }
+  */
+}
+
+void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
+{
+
+}
+
+
+

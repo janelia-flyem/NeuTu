@@ -19,6 +19,7 @@
 #include "flyem/zflyembookmark.h"
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
+#include "flyem/zflyemtodoitem.h"
 
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
@@ -1158,6 +1159,26 @@ void ZDvidWriter::deleteBookmark(
   }
 }
 
+void ZDvidWriter::deleteToDoItem(int x, int y, int z)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getTodoListUrl(x, y, z));
+#else
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
+}
+
+void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray itemJson;
+  itemJson.append(item.toJsonObject());
+
+  writeJson(url.getTodoListUrl(), itemJson);
+}
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {

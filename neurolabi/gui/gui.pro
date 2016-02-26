@@ -596,7 +596,9 @@ HEADERS += mainwindow.h \
     flyem/zflyemorthowidget.h \
     flyem/flyemorthocontrolform.h \
     dvid/zdvidannotation.h \
-    dialogs/stringlistdialog.h
+    dialogs/stringlistdialog.h \
+    flyem/zflyemtodoitem.h \
+    flyem/zflyemtodolist.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1051,7 +1053,9 @@ SOURCES += main.cpp \
     flyem/zflyemorthowidget.cpp \
     flyem/flyemorthocontrolform.cpp \
     dvid/zdvidannotation.cpp \
-    dialogs/stringlistdialog.cpp
+    dialogs/stringlistdialog.cpp \
+    flyem/zflyemtodoitem.cpp \
+    flyem/zflyemtodolist.cpp
 
 OTHER_FILES += \
     extlib.pri \

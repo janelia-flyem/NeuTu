@@ -30,6 +30,7 @@ class ZSwcTree;
 class QProcess;
 class ZFlyEmBookmark;
 class ZDvidSynapse;
+class ZFlyEmToDoItem;
 
 class ZDvidWriter : public QObject
 {
@@ -148,6 +149,9 @@ public:
   void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
   void addSynapseProperty(const ZIntPoint &synapse,
                           const std::string &key, const std::string &value);
+
+  void deleteToDoItem(int x, int y, int z);
+  void writeToDoItem(const ZFlyEmToDoItem &item);
 
   inline int getStatusCode() const {
     return m_statusCode;

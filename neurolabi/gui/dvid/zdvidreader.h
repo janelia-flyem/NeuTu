@@ -32,7 +32,7 @@ class ZDvidVersionDag;
 class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
 class ZFlyEmBookmark;
-
+class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -171,6 +171,7 @@ public:
    */
   ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
 
+
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
   ZJsonObject readBookmarkJson(const ZIntPoint &pt) const;
@@ -192,6 +193,9 @@ public:
   template <typename InputIterator>
   ZJsonArray readSynapseJson(
       const InputIterator &first, const InputIterator &last);
+
+  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
+  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

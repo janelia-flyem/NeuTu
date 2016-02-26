@@ -25,6 +25,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
+#include "flyem/zflyemtodoitem.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -1837,4 +1838,32 @@ ZDvidSynapse ZDvidReader::readSynapse(
   }
 
   return ZDvidSynapse();
+}
+
+std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
+    const ZIntCuboid &box) const
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  ZJsonArray obj = readJsonArray(dvidUrl.getTodoListUrl(box));
+
+  std::vector<ZFlyEmToDoItem> itemArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZFlyEmToDoItem &item = itemArray[i];
+    item.loadJsonObject(itemJson);
+  }
+
+  return itemArray;
+}
+
+ZFlyEmToDoItem ZDvidReader::readToDoItem(int x, int y, int z) const
+{
+  std::vector<ZFlyEmToDoItem> itemArray =
+      readToDoItem(ZIntCuboid(x, y, z, x, y, z));
+  if (!itemArray.empty()) {
+    return itemArray[0];
+  }
+
+  return ZFlyEmToDoItem();
 }

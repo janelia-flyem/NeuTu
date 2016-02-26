@@ -361,6 +361,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
   if (m_dvidReader.isReady()) {
     initData("annotation", target.getBookmarkName());
+    initData("annotation", target.getTodoListName());
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getBookmarkKeyName());
   }

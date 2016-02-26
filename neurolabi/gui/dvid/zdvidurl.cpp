@@ -707,6 +707,28 @@ std::string ZDvidUrl::getAnnotationUrl(
   return stream.str();
 }
 
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName,
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getAnnotationUrl(dataName) << "/" << m_annotationElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, const ZIntCuboid &box) const
+{
+  return getAnnotationUrl(
+        dataName, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        box.getDepth());
+}
+
 std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName)
 {
   return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
@@ -786,4 +808,30 @@ std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
          << label;
 
   return stream.str();
+}
+
+std::string ZDvidUrl::getTodoListUrl() const
+{
+  return getAnnotationUrl(m_dvidTarget.getTodoListName());
+}
+
+std::string ZDvidUrl::getTodoListUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  return getAnnotationUrl(m_dvidTarget.getTodoListName(),
+                          x, y, z, width, height, depth);
+}
+
+std::string ZDvidUrl::getTodoListUrl(int x, int y, int z) const
+{
+  return getTodoListUrl(x, y, z, 1, 1, 1);
+}
+
+std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
+{
+  return getTodoListUrl(cuboid.getFirstCorner().getX(),
+                        cuboid.getFirstCorner().getY(),
+                        cuboid.getFirstCorner().getZ(),
+                        cuboid.getWidth(), cuboid.getHeight(),
+                        cuboid.getDepth());
 }
