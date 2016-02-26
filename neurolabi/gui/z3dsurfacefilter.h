@@ -62,6 +62,7 @@ private:
 
     ZWidgetsGroup *m_widgetsGroup;
     size_t m_nSources;
+    bool m_sourceSet;
 
 };
 

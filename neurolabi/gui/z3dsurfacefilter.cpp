@@ -25,6 +25,9 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
     //
     m_initialized = false;
+
+    //
+    m_sourceSet = false;
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
@@ -45,6 +48,13 @@ void Z3DSurfaceFilter::initialize()
 //        addParameter(paras[i]);
 //    }
 
+    //
+    if(m_sourceSet)
+    {
+        initRenderers(m_nSources);
+    }
+
+    //
     m_initialized = true;
 }
 
@@ -66,7 +76,9 @@ void Z3DSurfaceFilter::initRenderers(size_t n)
         //connect(paras[i], SIGNAL(valueChanged()), this, SLOT(invalidateResult()));
         addParameter(paras[i]);
     }
-
+    //
+    m_sourceSet = true;
+    //
     m_initialized = true;
 }
 
@@ -149,7 +161,7 @@ void Z3DSurfaceFilter::prepareData()
     for(size_t j=0; j< m_cubeArrayList.size(); ++j)
     {
         m_renderCubes[j] = false;
-        m_cubeRenderers[j]->clearData();
+        //m_cubeRenderers[j]->clearData();
     }
 
     // has ROI(s) for rendering
@@ -164,7 +176,18 @@ void Z3DSurfaceFilter::prepareData()
                 {
                     qDebug()<<"### prepareData"<<m_cubeArrayList[j].getSource()<<j;
 
-                    m_cubeRenderers[j]->addCubes(m_cubeArrayList.at(j));
+                    if(m_cubeRenderers[j]->isEmpty())
+                    {
+                        m_cubeRenderers[j]->addCubes(m_cubeArrayList.at(j));
+                    }
+                    else
+                    {
+                        qreal r,g,b,a;
+                        m_cubeArrayList.at(j).getColor().getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+                        m_cubeRenderers[j]->setColor(glm::vec4(r,g,b,a));
+                    }
+
                     m_renderCubes[j] = true;
                 }
             }

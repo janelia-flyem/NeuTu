@@ -133,8 +133,13 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 void Z3DCubeRenderer::clearData()
 {
     m_cubes.clear();
-    m_cubeList.clear();
-    m_colorList.clear();
+//    m_cubeList.clear();
+//    m_colorList.clear();
+}
+
+void Z3DCubeRenderer::setColor(glm::vec4 color)
+{
+    m_color = color;
 }
 
 void Z3DCubeRenderer::compile()
@@ -440,6 +445,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
 void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 {
+    qDebug()<<"*** renderPicking";
 }
 
 bool Z3DCubeRenderer::isEmpty()
