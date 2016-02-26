@@ -154,18 +154,14 @@ void ZROIWidget::updateROIs()
                 {
                     ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
                     cubes->setSource(roiSourceList[i]);
-
-                    qreal r,g,b,a;
-                    color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
-
-                    cubes->setColor(glm::vec4(r,g,b,a));
+                    cubes->setColor(color);
                     m_window->getDocument()->addObject(cubes, true);
                 }
                 else
                 {
                     if(colorModified[i] == true)
                     {
-                        qDebug()<<"~~~color is changed";
+                        qDebug()<<"~~~color is changed"<<color;
 
                         colorModified[i] = false;
                         m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, roiSourceList[i])->setColor(color);

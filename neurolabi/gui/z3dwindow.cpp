@@ -1789,8 +1789,6 @@ void Z3DWindow::update3DGraphDisplay()
 
 void Z3DWindow::update3DCubeDisplay()
 {
-    qDebug()<<"update3Dcubedisp";
-
   m_surfaceFilter->clearSources();
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();

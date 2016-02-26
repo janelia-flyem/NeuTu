@@ -172,11 +172,9 @@ public:
 
   size_t size();
   void setCubeArray(std::vector<Z3DCube> cubeArray);
-  void setColor(glm::vec4 c);
 
 private:
   std::vector<Z3DCube> m_cubeArray;
-  glm::vec4 color;
 
 };
 

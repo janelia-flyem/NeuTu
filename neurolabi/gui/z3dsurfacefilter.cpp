@@ -85,8 +85,6 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
 
 void Z3DSurfaceFilter::process(Z3DEye)
 {
-    qDebug()<<"#### process"<<m_dataIsInvalid;
-
     if (m_dataIsInvalid) {
         prepareData();
     }
@@ -114,7 +112,6 @@ void Z3DSurfaceFilter::prepareData()
             {
                 if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
                 {
-                    //
                     m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
                 }
             }
@@ -147,6 +144,10 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
     {
         if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) == 0 )
         {
+            // update color
+            m_cubeArrayList[i].setColor(cubes->getColor());
+
+            //
             sourceAdded = true;
             continue;
         }

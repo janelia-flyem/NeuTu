@@ -417,11 +417,6 @@ void ZCubeArray::setCubeArray(std::vector<Z3DCube> cubeArray)
     m_cubeArray = cubeArray;
 }
 
-void ZCubeArray::setColor(glm::vec4 c)
-{
-    color = c;
-}
-
 void ZCubeArray::display(ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/, NeuTube::EAxis /*sliceAxis*/) const
 {
 }
