@@ -288,7 +288,7 @@ bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
     //  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
     //  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
     //  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_cubeArrayList.empty();
+    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_sourceList.empty();
 }
 
 void Z3DSurfaceFilter::updateSurfaceVisibleState()
