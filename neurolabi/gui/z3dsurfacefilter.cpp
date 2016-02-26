@@ -50,6 +50,9 @@ void Z3DSurfaceFilter::initialize()
 
 void Z3DSurfaceFilter::initRenderers(size_t n)
 {
+    m_nSources = n;
+
+    //
     for(size_t i=0; i<n; i++)
     {
         Z3DCubeRenderer *cubeRenderer = new Z3DCubeRenderer();
@@ -94,6 +97,9 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
 //        return;
 //    }
 
+    if(m_sourceList.size()<=0)
+        return;
+
     if (!m_showCube.get())
         return;
 
@@ -116,7 +122,6 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
             }
 
             count++;
-
         }
     }
 
@@ -140,9 +145,6 @@ void Z3DSurfaceFilter::prepareData()
         initialize();
     }
 
-    //
-    //m_cubeRenderer->clearData();
-
     // reset renderCubes
     for(size_t j=0; j< m_cubeArrayList.size(); ++j)
     {
@@ -150,11 +152,9 @@ void Z3DSurfaceFilter::prepareData()
         m_cubeRenderers[j]->clearData();
     }
 
-    //
+    // has ROI(s) for rendering
     if(m_sourceList.size()>0)
     {
-        // has ROI(s) for rendering
-
         // assign ROI to cubeRenderer
         for(size_t i=0; i<m_sourceList.size(); ++i)
         {
@@ -162,8 +162,6 @@ void Z3DSurfaceFilter::prepareData()
             {
                 if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
                 {
-                    //m_cubeRenderer->addCubes(m_cubeArrayList.at(j));
-
                     qDebug()<<"### prepareData"<<m_cubeArrayList[j].getSource()<<j;
 
                     m_cubeRenderers[j]->addCubes(m_cubeArrayList.at(j));
@@ -173,11 +171,6 @@ void Z3DSurfaceFilter::prepareData()
         }
 
         m_dataIsInvalid = false;
-    }
-    else
-    {
-        //
-        //initialize();
     }
 }
 

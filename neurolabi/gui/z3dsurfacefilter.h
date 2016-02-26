@@ -61,6 +61,7 @@ private:
     bool m_initialized;
 
     ZWidgetsGroup *m_widgetsGroup;
+    size_t m_nSources;
 
 };
 
