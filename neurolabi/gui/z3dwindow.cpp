@@ -911,6 +911,11 @@ void Z3DWindow::init(EInitMode mode)
   //  }
 }
 
+void Z3DWindow::setROIs(size_t n)
+{
+    m_surfaceFilter->initRenderers(n);
+}
+
 void Z3DWindow::setWindowSize()
 {
   int width = 512;
@@ -1798,7 +1803,7 @@ void Z3DWindow::update3DCubeDisplay()
       m_surfaceFilter->addData(cubeArray);
     }
   }
-  m_surfaceFilter->updateData();
+  m_surfaceFilter->updateSurfaceVisibleState();
 
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();

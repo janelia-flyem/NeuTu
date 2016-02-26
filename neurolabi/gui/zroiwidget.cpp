@@ -43,7 +43,6 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
     //
     if (window != NULL)
     {
-        //if (!dvidTarget.getRoiName().empty()){
         if (reader.open(dvidTarget))
         {
             ZJsonObject meta = reader.readInfo();
@@ -62,9 +61,6 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
 
                     if(found!=std::string::npos)
                     {
-                        qDebug()<<" rois: "<<keys.at(i);
-
-
                         ZObject3dScan roi = reader.readRoi(keys.at(i));
                         if(!roi.isEmpty())
                         {
@@ -77,8 +73,10 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                         }
                     }
                 }
-                qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<roiList.size();
             }
+
+            //
+            window->setROIs(roiList.size());
 
             //
             makeGUI();

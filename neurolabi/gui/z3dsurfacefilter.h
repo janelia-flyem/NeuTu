@@ -42,7 +42,7 @@ public:
     void setVisible(bool v);
     bool isVisible() const;
 
-    void updateData();
+    void initRenderers(size_t n);
 
 public slots:
     void updateSurfaceVisibleState();
@@ -54,6 +54,8 @@ private:
     std::vector<ZCubeArray> m_cubeArrayList;
     Z3DCubeRenderer *m_cubeRenderer;
     std::vector<std::string> m_sourceList;
+    std::vector<Z3DCubeRenderer*> m_cubeRenderers;
+    std::vector<bool> m_renderCubes;
 
     bool m_dataIsInvalid;
     bool m_initialized;
