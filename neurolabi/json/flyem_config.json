@@ -235,7 +235,7 @@
       "label_block": "labels",
       "roi": "entire_mb",
       "librarian": "emdata2.int.janelia.org:9100",
-      "user_name": ["zhaot"]
+      "user_name": []
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -330,16 +330,6 @@
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
-      "name": "MB_sigmundc",
-      "comment": "MB seg (branched from df22)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["sigmundc", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "0f33",
       "name": "MB_shinomiyaa",
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
@@ -394,7 +384,7 @@
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["takemurasa", "zhaot"]
+      "user_name": ["takemurasa"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -424,7 +414,7 @@
       "comment": "MB seg (branched from d1ea)",
       "body_label": "bodies3",
       "label_block": "labels3",
-      "user_name": ["changl", "zhaot"]
+      "user_name": ["changl"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -464,7 +454,7 @@
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["lauchies", "zhaot"]
+      "user_name": ["lauchies"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -474,7 +464,7 @@
       "comment": "MB seg (branched from ccf)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["ogundeyio", "zhaot"]
+      "user_name": ["ogundeyio"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -485,16 +475,6 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["ordishc", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "cb29",
-      "name": "MB_sigmundc_Training",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["sigmundc", "zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",

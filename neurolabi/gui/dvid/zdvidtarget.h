@@ -169,6 +169,7 @@ public:
   std::string getBookmarkName() const;
   std::string getBookmarkKeyName() const;
   std::string getSkeletonName() const;
+  std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
 

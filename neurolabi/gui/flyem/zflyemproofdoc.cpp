@@ -363,6 +363,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("annotation", target.getBookmarkName());
     initData("annotation", target.getTodoListName());
     initData("keyvalue", target.getSkeletonName());
+    initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
   }
 }

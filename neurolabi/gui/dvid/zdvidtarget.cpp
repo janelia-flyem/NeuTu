@@ -453,6 +453,12 @@ std::string ZDvidTarget::getSkeletonName() const
                             getBodyLabelName());
 }
 
+std::string ZDvidTarget::getThumbnailName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
+}
+
 std::string ZDvidTarget::getTodoListName() const
 {
   return ZDvidData::GetName(ZDvidData::ROLE_TODO_LIST,
