@@ -306,12 +306,17 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
 {
+  ZObject3dScan dsRoi = roi;
+  ZDvidInfo dsInfo = dvidInfo;
+  dsRoi.downsampleMax(1, 1, 1);
+  dsInfo.downsampleBlock(1, 1, 1);
+
   int sampleInterval = 1;
 
   ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
   int startCoord[3];
-  Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
   //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
 
   size_t offset = 0;
@@ -344,7 +349,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
               }
             }
             if (!faceArray.empty()) {
-              ZIntCuboid box = dvidInfo.getBlockBox(
+              ZIntCuboid box = dsInfo.getBlockBox(
                     i + startCoord[0], j + startCoord[1], k + startCoord[2]);
               box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
 
@@ -542,7 +547,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
               ZJsonObject insList(datains.getData(), true);
               std::vector<std::string> keys = insList.getAllKey();
 
-              for(int i=0; i<keys.size(); i++)
+              for(size_t i=0; i<keys.size(); i++)
               {
                   //qDebug()<<keys.at(i);
 
