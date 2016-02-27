@@ -1692,7 +1692,7 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
   bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
   const QByteArray &buffer = bufferReader.getBuffer();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << buffer.constData() << std::endl;
 #endif
 

@@ -852,7 +852,8 @@ void ZStackSkeletonizer::configure(const string &filePath)
 
 void ZStackSkeletonizer::configure(const ZJsonObject &config)
 {
-  ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]), false);
+  ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]),
+      ZJsonValue::SET_INCREASE_REF_COUNT);
   std::vector<int> interval = array.toIntegerArray();
   if (interval.size() == 3) {
     setDownsampleInterval(interval[0], interval[1], interval[2]);

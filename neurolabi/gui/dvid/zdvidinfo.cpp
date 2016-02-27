@@ -58,7 +58,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_minPointKey)) {
-      ZJsonArray array(obj[m_minPointKey], false);
+      ZJsonArray array(obj[m_minPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> startCoordinates = array.toIntegerArray();
       if (startCoordinates.size() == 3) {
         m_startCoordinates.set(startCoordinates);
@@ -68,7 +68,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_maxPointKey)) {
-      ZJsonArray array(obj[m_maxPointKey], false);
+      ZJsonArray array(obj[m_maxPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> endCoordinates = array.toIntegerArray();
       if (endCoordinates.size() == 3) {
         for (int i = 0; i < 3; ++i) {
@@ -82,7 +82,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_blockMinIndexKey)) {
-      ZJsonArray array(obj[m_blockMinIndexKey], false);
+      ZJsonArray array(obj[m_blockMinIndexKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> startBlockIndex = array.toIntegerArray();
       if (startBlockIndex.size() == 3) {
         m_startBlockIndex.set(startBlockIndex);
@@ -92,7 +92,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_blockMaxIndexKey)) {
-      ZJsonArray array(obj[m_blockMaxIndexKey], false);
+      ZJsonArray array(obj[m_blockMaxIndexKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> blockIndex = array.toIntegerArray();
       if (blockIndex.size() == 3) {
         m_endBlockIndex.set(blockIndex);
@@ -102,7 +102,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_blockSizeKey)) {
-      ZJsonArray array(obj[m_blockSizeKey], false);
+      ZJsonArray array(obj[m_blockSizeKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       m_blockSize = array.toIntegerArray();
       if (m_blockSize.size() != 3) {
         m_blockSize.resize(m_defaultBlockSize);
@@ -110,7 +110,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_voxelSizeKey)) {
-      ZJsonArray array(obj[m_voxelSizeKey], false);
+      ZJsonArray array(obj[m_voxelSizeKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<double> resolution = array.toNumberArray();
       if (resolution.size() != 3) {
         m_voxelResolution.setVoxelSize(1, 1, 1);
@@ -122,7 +122,7 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
     }
 
     if (obj.hasKey(m_voxelUnitKey)) {
-      ZJsonArray array(obj[m_voxelUnitKey], false);
+      ZJsonArray array(obj[m_voxelUnitKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::string unit = ZJsonParser::stringValue(array.at(0));
       if (!unit.empty()) {
         m_voxelResolution.setUnit(unit);

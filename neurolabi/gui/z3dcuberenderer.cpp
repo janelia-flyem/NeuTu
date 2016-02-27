@@ -294,7 +294,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       glGenVertexArrays(m_VAOs.size(), &m_VAOs[0]);
 
       if (!m_VBOs.empty()) {
-        glDeleteVertexArrays(m_VBOs.size(), &m_VBOs[0]);
+        glDeleteBuffers(m_VBOs.size(), &m_VBOs[0]);
       }
       m_VBOs.resize(nCubes);
       glGenBuffers( m_VBOs.size(), &m_VBOs[0]);

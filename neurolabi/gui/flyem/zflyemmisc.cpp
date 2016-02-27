@@ -308,8 +308,9 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 {
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
-  dsRoi.downsampleMax(1, 1, 1);
-  dsInfo.downsampleBlock(1, 1, 1);
+  int dsIntv = 7;
+  dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+  dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
 
   int sampleInterval = 1;
 
@@ -544,7 +545,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
 
           if(datains.isObject())
           {
-              ZJsonObject insList(datains.getData(), true);
+              ZJsonObject insList(datains);
               std::vector<std::string> keys = insList.getAllKey();
 
               for(size_t i=0; i<keys.size(); i++)

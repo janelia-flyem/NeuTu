@@ -52,16 +52,18 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
 
             if(datains.isObject())
             {
-                ZJsonObject insList(datains.getData(), true);
+                ZJsonObject insList(datains);
                 std::vector<std::string> keys = insList.getAllKey();
-
+#if 1
                 for(std::size_t i=0; i<keys.size(); i++)
                 {
                     std::size_t found = keys.at(i).find("roi");
 
                     if(found!=std::string::npos)
                     {
+#if 1
                         ZObject3dScan roi = reader.readRoi(keys.at(i));
+
                         if(!roi.isEmpty())
                         {
                             roiList.push_back(keys.at(i));
@@ -71,15 +73,19 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                             roiSourceList.push_back(source);
                             colorModified.push_back(false);
                         }
+#endif
                     }
                 }
+#endif
             }
+
 
             //
             window->setROIs(roiList.size());
 
             //
             makeGUI();
+
         }
         //} // dvid target is not empty
     } // window is not null
@@ -103,7 +109,8 @@ void ZROIWidget::makeGUI()
 
     //
     //QBrush brush(defaultColor);
-    for (std::size_t i = 0; i < roiList.size(); ++i)
+    size_t roiCount = roiList.size();
+    for (std::size_t i = 0; i < roiCount; ++i)
     {
         QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
         roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
