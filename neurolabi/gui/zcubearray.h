@@ -172,6 +172,9 @@ public:
 
   const std::string& className() const;
 
+  size_t size();
+  void setCubeArray(std::vector<Z3DCube> cubeArray);
+
 private:
   std::vector<Z3DCube> m_cubeArray;
 

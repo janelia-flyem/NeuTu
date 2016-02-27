@@ -27,8 +27,7 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
   //
   nCubes = 0;
 
-  //
-  m_cubes.clear();
+  clearData();
 
   //
   m_screen << QVector3D(-1.0f, -1.0f, 0.0f) // (a-b-c)
@@ -88,6 +87,59 @@ void Z3DCubeRenderer::addCube(Z3DCube *zcube)
 
     //
     m_dataChanged = true;
+}
+
+void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
+{
+    // convert ZCubeArray to CubeArrayType
+    std::vector<Z3DCube> z3dcubes = cubes.getCubeArray();
+
+    //
+    for (size_t i = 0; i < cubes.size(); ++i)
+    {
+        Z3DCube *zcube = &(z3dcubes[i]);
+
+        Cube cube;
+
+        if(zcube->b_visible.size()>0)
+        {
+            //
+            cube.setVisible(zcube->b_visible);
+
+            if(zcube->initByNodes)
+            {
+                cube.init(zcube->nodes);
+            }
+            else
+            {
+                cube.init(zcube->length, zcube->length, zcube->length, zcube->x, zcube->y, zcube->z);
+            }
+
+            //
+            m_cubes.push_back(cube);
+        }
+    }
+
+    //
+    qreal r,g,b,a;
+    cubes.getColor().getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+    m_color = glm::vec4(r,g,b,a);
+
+    //
+    m_dataChanged = true;
+}
+
+void Z3DCubeRenderer::clearData()
+{
+    m_cubes.clear();
+//    m_cubeList.clear();
+//    m_colorList.clear();
+}
+
+void Z3DCubeRenderer::setColor(glm::vec4 color)
+{
+    m_color = color;
 }
 
 void Z3DCubeRenderer::compile()
@@ -218,6 +270,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
   nCubes = m_cubes.size();
 
+  if(nCubes<1)
+      return;
+
   // size of view
 //  double theta, neardist, w, h;
 //  theta = glm::degrees(m_rendererBase->getCamera().getFieldOfView());
@@ -250,7 +305,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
       //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
-      qDebug()<<"nCubes ... "<<nCubes;
+      qDebug()<<"*** nCubes ... "<<nCubes<<m_color.r<<m_color.g<<m_color.b;
 
       for (size_t i=0; i<nCubes; ++i)
       {
@@ -383,10 +438,14 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   }
 
   m_cubeShaderGrp.release();
+
+  qDebug()<<"*** roi is rendered";
+
 }
 
 void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 {
+    qDebug()<<"*** renderPicking";
 }
 
 bool Z3DCubeRenderer::isEmpty()

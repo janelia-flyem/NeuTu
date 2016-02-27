@@ -911,6 +911,11 @@ void Z3DWindow::init(EInitMode mode)
   //  }
 }
 
+void Z3DWindow::setROIs(size_t n)
+{
+    m_surfaceFilter->initRenderers(n);
+}
+
 void Z3DWindow::setWindowSize()
 {
   int width = 512;
@@ -1789,7 +1794,7 @@ void Z3DWindow::update3DGraphDisplay()
 
 void Z3DWindow::update3DCubeDisplay()
 {
-  m_surfaceFilter->clearData();
+  m_surfaceFilter->clearSources();
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -1798,15 +1803,12 @@ void Z3DWindow::update3DCubeDisplay()
       m_surfaceFilter->addData(cubeArray);
     }
   }
-
-  qDebug()<<"update surface data";
+  m_surfaceFilter->updateSurfaceVisibleState();
 
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
-
-  qDebug()<<"update surface bbox";
 }
 
 void Z3DWindow::updateDisplay()

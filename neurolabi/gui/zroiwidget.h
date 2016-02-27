@@ -5,6 +5,7 @@
 #include <QDockWidget>
 
 #include "flyem/zflyemproofdoc.h"
+#include "zcolorscheme.h"
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -43,8 +44,10 @@ public:
 
     //
     std::vector<std::string> roiList;
-    std::vector<std::string> selectedROIs;
+    std::vector<ZObject3dScan> loadedROIs;
     QColor defaultColor;
+    std::vector<std::string> roiSourceList;
+    std::vector<bool> colorModified;
 
     //
     QTableWidget *tw_ROIs;

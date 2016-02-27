@@ -27,6 +27,7 @@ public:
     void addData(const Z3DCube &cube);
     void addData(ZCubeArray *cubes);
     void clearData();
+    void clearSources();
 
     std::vector<double> boundBox();
 
@@ -41,6 +42,8 @@ public:
     void setVisible(bool v);
     bool isVisible() const;
 
+    void initRenderers(size_t n);
+
 public slots:
     void updateSurfaceVisibleState();
 
@@ -48,11 +51,18 @@ private:
     ZBoolParameter m_showCube;
 
     std::vector<Z3DCube> m_cubeArray;
+    std::vector<ZCubeArray> m_cubeArrayList;
     Z3DCubeRenderer *m_cubeRenderer;
+    std::vector<std::string> m_sourceList;
+    std::vector<Z3DCubeRenderer*> m_cubeRenderers;
+    std::vector<bool> m_renderCubes;
 
     bool m_dataIsInvalid;
+    bool m_initialized;
 
     ZWidgetsGroup *m_widgetsGroup;
+    size_t m_nSources;
+    bool m_sourceSet;
 
 };
 

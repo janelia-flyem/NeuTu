@@ -237,6 +237,9 @@ public:
   bool getButtonStatus(int index);
 
 public:
+  void setROIs(size_t n);
+
+public:
   //Control panel setup
 
 protected:

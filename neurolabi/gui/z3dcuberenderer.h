@@ -8,6 +8,8 @@
 #include "z3dshadergroup.h"
 #include "zcubearray.h"
 
+typedef std::vector<Cube> CubeArrayType;
+
 /// Z3DCubeRenderer
 class Z3DCubeRenderer : public Z3DPrimitiveRenderer
 {
@@ -19,6 +21,9 @@ public:
     void addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color, std::vector<bool> v);
     void addCube(double l, double x, double y, double z, glm::vec4 color, std::vector<bool> v);
     void addCube(Z3DCube *zcube);
+    void addCubes(ZCubeArray cubes);
+    void setColor(glm::vec4 color);
+    void clearData();
     bool isEmpty();
 
 protected:
@@ -44,7 +49,7 @@ private:
     std::vector<GLfloat> m_allFlags;
     std::vector<GLuint> m_indexs;
 
-    std::vector<Cube> m_cubes;
+    CubeArrayType m_cubes;
 
     QVector<QVector3D> m_screen;
     GLuint m_vao, m_vbo;
@@ -62,7 +67,12 @@ private:
     bool m_pickingDataChanged;
     size_t m_oneBatchNumber;
 
+    size_t nObjects; // multiple ROIs
+    std::vector<CubeArrayType> m_cubeList;
+    std::vector<glm::vec4> m_colorList;
+
     size_t nCubes;
+
     glm::vec4 m_color; // uniform
 };
 
