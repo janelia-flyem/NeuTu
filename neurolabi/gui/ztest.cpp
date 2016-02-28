@@ -19741,7 +19741,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
 
@@ -19755,6 +19755,12 @@ void ZTest::test(MainWindow *host)
                  outFile.toStdString());
   }
 
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
+  ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
 #endif
 
   std::cout << "Done." << std::endl;

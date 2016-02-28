@@ -3941,9 +3941,21 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
   emit swcNetworkModified();
 }
 
-void ZStackDoc::setTraceMinScore(double score)
+void ZStackDoc::setAutoTraceMinScore(double score)
 {
-  getTraceWorkspace()->min_score = score;
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_AUTO);
+  m_neuronTracer.setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+}
+
+void ZStackDoc::setManualTraceMinScore(double score)
+{
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
+
+//  m_neuronTracer.setManualTraceMinScore(score);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+//  m_neuronTracer.setSeedMinScore(score);
+//  getTraceWorkspace()->min_score = score;
 }
 
 void ZStackDoc::setReceptor(int option, bool cone)
@@ -4241,7 +4253,7 @@ bool ZStackDoc::subtractBackground()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::subtractBackground(mainStack, 0.5, 3);
+    ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
     notifyStackModified();
     return true;
   }

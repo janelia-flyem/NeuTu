@@ -613,7 +613,8 @@ public:
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
 
-  void setTraceMinScore(double score);
+  void setAutoTraceMinScore(double score);
+  void setManualTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
 
   //void updateMasterLocsegChain();
