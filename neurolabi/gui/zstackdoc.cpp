@@ -5396,12 +5396,12 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
   if (!nodeSet.empty()) {
     Swc_Tree_Node *prevNode = *(nodeSet.begin());
     if (prevNode != NULL) {
-      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
+//      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         Swc_Tree_Node *tn = SwcTreeNode::makePointer(
               center[0], center[1], center[2], radius);
         command  = new ZStackDocCommand::SwcEdit::ExtendSwcNode(
               this, tn, prevNode);
-      }
+//      }
     }
   }
 
@@ -6587,7 +6587,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand()
     pushUndoCommand(command);
     deprecateTraceMask();
 
-    message = "Nodes are connected.";
+    message = "Nodes are connected, except those too far away.";
     succ = true;
   }
 

@@ -690,6 +690,8 @@ void Z3DWindow::init(EInitMode mode)
           m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
+  connect(m_swcFilter, SIGNAL(extendSwcTreeNode(double, double, double, double)),
+            this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
@@ -1821,6 +1823,11 @@ void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
       */
 }
 
+void Z3DWindow::extendSwcTreeNode(double x, double y, double z, double r)
+{
+  m_doc->executeSwcNodeExtendCommand(ZPoint(x, y, z), r);
+}
+
 void Z3DWindow::removeSwcTurn()
 {
   m_doc->executeRemoveTurnCommand();
@@ -2446,7 +2453,11 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //    }
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
                "Right click to exit extending mode.");
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    if (getDocument()->hasStackData()) {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    } else {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+    }
     m_canvas->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);

@@ -25,7 +25,7 @@ class Z3DSwcFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   enum InteractionMode {
-    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode
+    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
   };
 
   explicit Z3DSwcFilter();
@@ -91,7 +91,7 @@ signals:
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
   void addNewSwcTreeNode(double x, double y, double z, double r);
-  void extendSwcTreeNode(double x, double y, double z);
+  void extendSwcTreeNode(double x, double y, double z, double r);
 
 public slots:
   void prepareColor();
