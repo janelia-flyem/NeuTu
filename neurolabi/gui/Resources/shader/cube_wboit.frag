@@ -26,9 +26,11 @@ void main()
      vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, color, alpha);
 
 #if defined(FragData0)
-    FragData0 = mix(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+    //FragData0 = mix(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+     FragData0 = lightcolor;
 #else
-    gl_FragData[0] = mix(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+    //gl_FragData[0] = mix(vec4(color.rgb * alpha * weight, alpha), lightcolor, alpha);
+     gl_FragData[0] = lightcolor;
 #endif
 
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
