@@ -390,7 +390,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
 
-    glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     for(size_t i=0; i<nCubes; i++)
     {
