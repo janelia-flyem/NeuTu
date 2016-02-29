@@ -30,6 +30,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_pressedSwc(NULL)
   //, m_selectedSwcs(NULL)
   , m_pressedSwcTreeNode(NULL)
+//  , m_selectedSwcTreeNode(NULL)
   //, m_selectedSwcTreeNodes(NULL)
   , m_colorMap("Color Map")
   , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
@@ -1408,8 +1409,12 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
       } else if (m_interactionMode == Select) {  // hit nothing in Select mode, if not appending, will deselect all nodes and swcs
         emit treeSelected(m_pressedSwc, appending);
         emit treeNodeSelected(m_pressedSwcTreeNode, appending);
-      } else if (m_interactionMode == AddSwcNode && isNodeRendering()) { // hit nothing, add node
+//        m_selectedSwcTreeNode = m_pressedSwcTreeNode;
+      } else if ((m_interactionMode == AddSwcNode ||
+                  m_interactionMode == SmartExtendSwcNode)
+                  && isNodeRendering()) { // hit nothing, add node
         Swc_Tree_Node *tn = NULL;
+
         // search within a radius first to speed up
         const std::vector<const void*> &objs =
             getPickingManager()->sortObjectsByDistanceToPos(glm::ivec2(e->x(), h-e->y()), 100);
@@ -1429,6 +1434,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           }
           */
         }
+
         // not found, search the whole image
         if (!tn) {
           const std::vector<const void*> &objs1 =
@@ -1450,6 +1456,15 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
             }
             */
           }
+        } else {
+          for (std::vector<ZSwcTree*>::const_iterator iter = m_swcList.begin();
+               iter != m_swcList.end(); ++iter) {
+            const ZSwcTree *tree = *iter;
+            if (tree->getSelectedNode().size() == 1) {
+              tn = *(tree->getSelectedNode().begin());
+            }
+          }
+//          tn = m_selectedSwcTreeNode;
         }
 
         if (tn) {
@@ -1465,7 +1480,11 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           node->node.y = pos.y;
           node->node.z = pos.z;
           */
-          emit addNewSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
+          if (m_interactionMode == AddSwcNode) {
+            emit addNewSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
+          } else if (m_interactionMode == SmartExtendSwcNode) {
+            emit extendSwcTreeNode(pos.x, pos.y, pos.z, SwcTreeNode::radius(tn));
+          }
         }
       }
     }

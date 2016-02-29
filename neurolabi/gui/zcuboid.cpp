@@ -660,3 +660,4 @@ std::vector<double> ZCuboid::toCornerVector() const
 
   return corner;
 }
+
