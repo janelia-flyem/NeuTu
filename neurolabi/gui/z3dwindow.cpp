@@ -916,7 +916,7 @@ void Z3DWindow::createActions()
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
           this, SLOT(changeSelectedSwcNodeType()));
 
-  m_setSwcRootAction = new QAction("Set as root", this);
+  m_setSwcRootAction = new QAction("Set as a root", this);
   connect(m_setSwcRootAction, SIGNAL(triggered()),
           this, SLOT(setRootAsSelectedSwcNode()));
   m_singleSwcNodeActionActivator.registerAction(m_setSwcRootAction, true);

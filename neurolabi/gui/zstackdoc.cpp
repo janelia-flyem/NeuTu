@@ -1276,7 +1276,7 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
         break;
       case ZActionFactory::ACTION_SET_SWC_ROOT:
         connect(action, SIGNAL(triggered()),
-                this, SLOT(executeSetBranchPoint()));
+                this, SLOT(executeSetRootCommand()));
         m_singleSwcNodeActionActivator.registerAction(action, true);
         break;
       case ZActionFactory::ACTION_CONNECTED_ISOLATED_SWC:

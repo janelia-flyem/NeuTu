@@ -126,7 +126,7 @@ QAction* ZActionFactory::makeAction(
             doc, SLOT(executeChangeSelectedSwcNodeSize()));
     break;
   case ACTION_SET_SWC_ROOT:
-    action = new QAction("Set as root", parent);
+    action = new QAction("Set as a root", parent);
     action->setStatusTip("Set the selected node as a root");
     doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetRootCommand()));
     break;
@@ -391,7 +391,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Change size", parent);
     break;
   case ACTION_SET_SWC_ROOT:
-    action = new QAction("Set as root", parent);
+    action = new QAction("Set as a root", parent);
     action->setStatusTip("Set the selected node as a root");
     break;
   case ACTION_SET_BRANCH_POINT:
