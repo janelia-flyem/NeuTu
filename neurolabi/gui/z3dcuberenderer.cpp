@@ -95,6 +95,8 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
     std::vector<Z3DCube> z3dcubes = cubes.getCubeArray();
 
     //
+    size_positions = 0;
+    size_normalIndices = 0;
     for (size_t i = 0; i < cubes.size(); ++i)
     {
         Z3DCube *zcube = &(z3dcubes[i]);
@@ -117,6 +119,16 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 
             //
             m_cubes.push_back(cube);
+
+            //
+            size_positions += sizeof(glm::vec3)*cube.positions.size();
+            size_normalIndices += sizeof(float)*cube.normalIndices.size();
+
+            for(size_t j=0; j<cube.positions.size(); j++)
+            {
+                positions.push_back(cube.positions[i]);
+                normalIndices.push_back(cube.normalIndices[i]);
+            }
         }
     }
 
@@ -124,7 +136,7 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
     qreal r,g,b,a;
     cubes.getColor().getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
 
-    m_color = glm::vec4(r,g,b,a);
+    setColor(glm::vec4(r,g,b,a));
 
     //
     m_dataChanged = true;
@@ -133,6 +145,13 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 void Z3DCubeRenderer::clearData()
 {
     m_cubes.clear();
+
+    positions.clear();
+    normalIndices.clear();
+
+    size_positions = 0;
+    size_normalIndices = 0;
+
 //    m_cubeList.clear();
 //    m_colorList.clear();
 }
@@ -290,13 +309,13 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       if (!m_VAOs.empty()) {
         glDeleteVertexArrays(m_VAOs.size(), &m_VAOs[0]);
       }
-      m_VAOs.resize(nCubes);
+      m_VAOs.resize(nCubes); // nCubes
       glGenVertexArrays(m_VAOs.size(), &m_VAOs[0]);
 
       if (!m_VBOs.empty()) {
         glDeleteBuffers(m_VBOs.size(), &m_VBOs[0]);
       }
-      m_VBOs.resize(nCubes);
+      m_VBOs.resize(nCubes); // nCubes
       glGenBuffers( m_VBOs.size(), &m_VBOs[0]);
 
       //glBindVertexArray(m_VAO);
@@ -306,6 +325,21 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
       qDebug()<<"*** nCubes ... "<<nCubes<<m_color.r<<m_color.g<<m_color.b;
+
+//      glBindVertexArray(m_VAOs[0]);
+//      glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[0] );
+//      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
+//      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
+//      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
+
+//      glEnableVertexAttribArray( loc_position );
+//      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
+
+//      glEnableVertexAttribArray( loc_normal );
+//      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
+
+//      glBindBuffer( GL_ARRAY_BUFFER, 0);
+//      glBindVertexArray(0);
 
       for (size_t i=0; i<nCubes; ++i)
       {
@@ -390,8 +424,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
 
-    //glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+//    glBindVertexArray( m_VAOs[0] );
+//    glDrawArrays( GL_TRIANGLES, 0, positions.size() );
+//    glBindVertexArray(0);
 
     for(size_t i=0; i<nCubes; i++)
     {
@@ -400,8 +438,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
         glBindVertexArray(0);
     }
 
-    glDepthMask(GL_TRUE);
-    glDisable(GL_BLEND);
+    //glDepthMask(GL_TRUE);
+    //glDisable(GL_BLEND);
 
     // compose pass
     if (!oit2DComposeProgram->bind())

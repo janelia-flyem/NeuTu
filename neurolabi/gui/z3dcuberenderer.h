@@ -73,6 +73,12 @@ private:
 
     size_t nCubes;
 
+    std::vector<glm::vec3> positions;
+    std::vector<float> normalIndices;
+
+    size_t size_positions;
+    size_t size_normalIndices;
+
     glm::vec4 m_color; // uniform
 };
 
