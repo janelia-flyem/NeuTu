@@ -190,3 +190,27 @@ ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
 
   return source;
 }
+
+std::string
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
+{
+  return "#.DVIDFlyEMTodoList";
+}
+
+std::string
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource(NeuTube::EAxis axis)
+{
+  std::string source = MakeTodoListEnsembleSource();
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
+}

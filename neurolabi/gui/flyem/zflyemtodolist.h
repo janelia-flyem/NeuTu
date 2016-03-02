@@ -55,7 +55,7 @@ public:
   public:
     ItemSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addSynapse(const ZFlyEmToDoItem &item, NeuTube::EAxis sliceAxis);
+    void addItem(const ZFlyEmToDoItem &item, NeuTube::EAxis sliceAxis);
     const ItemMap& getMap(int y) const;
     ItemMap& getMap(int y);
     ItemMap& getMap(int y, EAdjustment adjust);

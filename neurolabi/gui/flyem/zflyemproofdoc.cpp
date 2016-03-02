@@ -36,6 +36,7 @@
 #include "dvid/zdvidsynpasecommand.h"
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
+#include "flyem/zflyemtodolist.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -1092,6 +1093,14 @@ void ZFlyEmProofDoc::downloadSynapse()
     m_futureMap[threadId] = future;
   }
 #endif
+}
+
+void ZFlyEmProofDoc::downloadTodoList()
+{
+  ZFlyEmToDoList *todoList = new ZFlyEmToDoList;
+  todoList->setDvidTarget(getDvidTarget());
+  todoList->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource());
+  addObject(todoList);
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
