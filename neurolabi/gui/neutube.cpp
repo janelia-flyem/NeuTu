@@ -53,9 +53,11 @@ std::string NeuTube::GetCurrentUserName()
 #endif
   std::string userName = qgetenv("USER").data();
 
+  /*
   if (userName == "zhaot") { //temporary hack
     userName = "takemuras";
   }
+  */
 
   return userName;
 }
