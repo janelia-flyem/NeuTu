@@ -945,17 +945,22 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
 void ZFlyEmProofDoc::downloadBookmark()
 {
   if (m_dvidReader.isReady()) {
+    std::string currentUserName = NeuTube::GetCurrentUserName();
     ZJsonArray bookmarkJson =
-        m_dvidReader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
+        m_dvidReader.readTaggedBookmark("user:" + currentUserName);
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
-        bookmark->setChecked(true);
+      if (bookmark->getUserName().length() == (int) currentUserName.length()) {
+        if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          bookmark->setChecked(true);
+        }
+        addObject(bookmark, true);
+      } else {
+        delete bookmark;
       }
-      addObject(bookmark, true);
     }
     endObjectModifiedMode();
     notifyObjectModified();
