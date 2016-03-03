@@ -949,6 +949,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     ZJsonArray bookmarkJson =
         m_dvidReader.readTaggedBookmark("user:" + currentUserName);
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    int bookmarkCount = 0;
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
@@ -958,6 +959,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->setChecked(true);
         }
         addObject(bookmark, true);
+        ++bookmarkCount;
       } else {
         delete bookmark;
       }
@@ -965,7 +967,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     endObjectModifiedMode();
     notifyObjectModified();
 
-    if (bookmarkJson.isEmpty()) {
+    if (bookmarkCount == 0) {
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
       reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
