@@ -16,6 +16,7 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "flyem/zflyemtodolist.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -175,6 +176,12 @@ public: //Synapse functions
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
 
+public: //Todo list functions
+  void removeTodoItem(
+      const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope);
+  void addTodoItem(const ZIntPoint &pos);
+  void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
+
 
 public: //Bookmark functions
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -186,6 +193,7 @@ public: //Bookmark functions
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
   void notifySynapseEdited(const ZDvidSynapse &synapse);
   void notifySynapseEdited(const ZIntPoint &synapse);
+  void notifyTodoEdited(const ZIntPoint &item);
   void updateLocalBookmark(ZFlyEmBookmark *bookmark);
   void copyBookmarkFrom(const ZFlyEmProofDoc *doc);
 
@@ -210,6 +218,9 @@ public: //Commands
   void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
   void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
+  void executeAddTodoItemCommand(const ZIntPoint &pt);
+  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -218,6 +229,7 @@ signals:
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
   void synapseEdited(int x, int y, int z);
+  void todoEdited(int x, int y, int z);
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
   void bodyMapReady();

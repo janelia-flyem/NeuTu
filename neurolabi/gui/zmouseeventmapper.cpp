@@ -200,6 +200,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
         break;
+      case ZInteractiveContext::INTERACT_ADD_TODO_ITEM:
+        op.setOperation(ZStackOperator::OP_FLYEM_TODO_ADD);
+        break;
       case ZInteractiveContext::INTERACT_MOVE_SYNAPSE:
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_MOVE);
         break;

@@ -36,7 +36,7 @@
 #include "dvid/zdvidsynpasecommand.h"
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
-#include "flyem/zflyemtodolist.h"
+#include "dvid/zdvidannotationcommand.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -644,6 +644,46 @@ void ZFlyEmProofDoc::removeSynapse(
     ZDvidSynapseEnsemble *se = *iter;
     se->removeSynapse(pos, scope);
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::removeTodoItem(
+    const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *se = *iter;
+    se->removeItem(pos, scope);
+    scope = ZFlyEmToDoList::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
+{
+  ZFlyEmToDoItem item;
+  item.setPosition(pos);
+  item.setKind(ZDvidAnnotation::KIND_NOTE);
+  item.setUserName(NeuTube::GetCurrentUserName());
+
+  addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+}
+
+void ZFlyEmProofDoc::addTodoItem(
+    const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope)
+{
+  QList<ZFlyEmToDoList*> seList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = seList.begin();
+       iter != seList.end(); ++iter) {
+    ZFlyEmToDoList *se = *iter;
+    se->addItem(item, scope);
+    scope = ZFlyEmToDoList::DATA_LOCAL;
     processObjectModified(se);
   }
 
@@ -2142,6 +2182,23 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt)
+{
+  ZFlyEmToDoItem item;
+  item.setPosition(pt);
+  item.setKind(ZDvidAnnotation::KIND_NOTE);
+  item.setUserName(NeuTube::GetCurrentUserName());
+
+  executeAddTodoItemCommand(item);
+}
+
+void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::FlyEmToDoItemEdit::AddItem(this, item);
+  pushUndoCommand(command);
+}
+
 void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
 {
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
@@ -2168,6 +2225,10 @@ void ZFlyEmProofDoc::notifySynapseEdited(const ZIntPoint &synapse)
   emit synapseEdited(synapse.getX(), synapse.getY(), synapse.getZ());
 }
 
+void ZFlyEmProofDoc::notifyTodoEdited(const ZIntPoint &item)
+{
+  emit todoEdited(item.getX(), item.getY(), item.getZ());
+}
 
 void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
 {

@@ -132,6 +132,16 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
       }
     }
 
+    if (mode == INTERACT_FREE) {
+      switch (todoEditMode()) {
+      case TODO_ADD_ITEM:
+        mode = INTERACT_ADD_TODO_ITEM;
+        break;
+      default:
+        break;
+      }
+    }
+
 //  } else {
 //    if (mode == INTERACT_FREE) {
 //    switch (exploreMode()) {

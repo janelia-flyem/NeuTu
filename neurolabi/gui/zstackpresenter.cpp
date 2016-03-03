@@ -362,6 +362,14 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
         connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
         break;
+      case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(showSeletedSwcNodeLength()));
+        break;
+      case ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
+        break;
       default:
         break;
       }

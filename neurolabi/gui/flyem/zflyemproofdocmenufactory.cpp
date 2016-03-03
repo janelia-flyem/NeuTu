@@ -68,6 +68,20 @@ QMenu* ZFlyEmProofDocMenuFactory::makeStackContextMenu(
   return makeSynapseContextMenu(presenter, parentWidget, menu);
 }
 
+void ZFlyEmProofDocMenuFactory::addAction(
+    const QList<ZActionFactory::EAction> &actionList,
+    ZStackPresenter *presenter, QMenu *menu)
+{
+  foreach (ZActionFactory::EAction action, actionList) {
+    if (action == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      menu->addAction(presenter->getAction(action));
+    }
+  }
+}
+
+
 QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
 {
@@ -146,27 +160,21 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       actionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
     }
 
-    foreach (ZActionFactory::EAction action, actionList) {
-      if (action == ZActionFactory::ACTION_SEPARATOR) {
-        menu->addSeparator();
-      } else {
-        menu->addAction(presenter->getAction(action));
-      }
-    }
-
+    addAction(actionList, presenter, menu);
+    QList<ZActionFactory::EAction> swcActionList;
     //SWC actions (submenu has to be added separately)
     QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
     if (swcNodeList.size() > 1) {
       if (!actionList.isEmpty()) {
         menu->addSeparator();
       }
+      swcActionList.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH);
+      swcActionList.append(ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH);
+    }
+    if (!swcActionList.isEmpty()) {
       QMenu *submenu = new QMenu("Path Information", menu);
-      submenu->addAction(doc->getAction(
-                           ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH));
-      submenu->addAction(
-            doc->getAction(ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH));
-
       menu->addMenu(submenu);
+      addAction(swcActionList, presenter, submenu);
     }
   } else {
     menu = ZStackDocMenuFactory::makeContextMenu(presenter, parentWidget, menu);

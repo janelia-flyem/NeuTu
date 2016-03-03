@@ -5451,6 +5451,11 @@ void ZStackDoc::notify(const ZWidgetMessage &msg)
   emit messageGenerated(msg);
 }
 
+void ZStackDoc::notify(const QString &msg)
+{
+  notify(ZWidgetMessage(msg));
+}
+
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
 {

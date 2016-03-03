@@ -343,6 +343,11 @@ void ZFlyEmProofPresenter::tryAddSynapse(
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
 
+void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddTodoItemCommand(pt);
+}
+
 void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
 {
   getCompleteDocument()->executeMoveSynapseCommand(pt);
@@ -466,6 +471,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
     tryAddSynapse(currentStackPos.toIntPoint());
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_ADD:
+    tryAddTodoItem(currentStackPos.toIntPoint());
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_MOVE:
     tryMoveSynapse(currentStackPos.toIntPoint());

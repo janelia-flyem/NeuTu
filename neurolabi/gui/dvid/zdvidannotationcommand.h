@@ -2,6 +2,7 @@
 #define ZDVIDANNOTATIONCOMMAND_H
 
 #include "zstackdoccommand.h"
+#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
 
@@ -35,8 +36,24 @@ public:
 private:
   ZFlyEmProofDoc *m_doc;
   ZIntPoint m_item;
-  ZJsonObject m_bakcup;
+  ZJsonObject m_backup;
 };
+
+class AddItem : public ZUndoCommand
+{
+public:
+  AddItem(ZFlyEmProofDoc *doc, const ZFlyEmToDoItem &item);
+  virtual ~AddItem();
+  void undo();
+  void redo();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  ZFlyEmToDoItem m_item;
+};
+
+
+
 }
 }
 
