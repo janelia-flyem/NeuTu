@@ -83,8 +83,10 @@ public slots:
   void tryAddPreSynapseMode();
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
+  void tryAddTodoItem();
 
 private:
+  void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void addActiveStrokeAsBookmark();

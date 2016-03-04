@@ -176,7 +176,7 @@ public:
       const std::string &dataName, uint64_t label) const;
   std::string getAnnotationUrl(
       const std::string &dataName, int x, int y, int z) const;
-  std::string getAnnotationElementsUrl(const std::string &dataName);
+  std::string getAnnotationElementsUrl(const std::string &dataName) const;
   std::string getAnnotationUrl(
       const std::string &dataName, int x, int y, int z,
       int width, int height, int depth) const;
@@ -197,6 +197,7 @@ public:
       const ZIntPoint &from, const ZIntPoint &to) const;
 
   std::string getTodoListUrl() const;
+  std::string getTodlListElementsUrl() const;
   std::string getTodoListUrl(const ZIntCuboid &cuboid) const;
   std::string getTodoListUrl(int x, int y, int z,
                             int width, int height, int depth) const;

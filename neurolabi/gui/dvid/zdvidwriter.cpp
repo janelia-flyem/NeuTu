@@ -1177,7 +1177,7 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   ZJsonArray itemJson;
   itemJson.append(item.toJsonObject());
 
-  writeJson(url.getTodoListUrl(), itemJson);
+  writeJson(url.getTodlListElementsUrl(), itemJson);
 }
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)

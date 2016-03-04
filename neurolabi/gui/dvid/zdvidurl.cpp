@@ -729,7 +729,7 @@ std::string ZDvidUrl::getAnnotationUrl(
         box.getDepth());
 }
 
-std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName)
+std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName) const
 {
   return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
 }
@@ -813,6 +813,11 @@ std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
 std::string ZDvidUrl::getTodoListUrl() const
 {
   return getAnnotationUrl(m_dvidTarget.getTodoListName());
+}
+
+std::string ZDvidUrl::getTodlListElementsUrl() const
+{
+  return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
 }
 
 std::string ZDvidUrl::getTodoListUrl(

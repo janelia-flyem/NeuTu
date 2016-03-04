@@ -10,7 +10,8 @@ ZInteractiveContext::ZInteractiveContext()
   m_exploreMode = EXPLORE_OFF;
   m_oldExploreMode = EXPLORE_OFF;
   m_markPunctaMode = MARK_PUNCTA_OFF;
-  m_swcEditMode = SWC_EDIT_SELECT;
+//  m_swcEditMode = SWC_EDIT_SELECT;
+  m_swcEditMode = SWC_EDIT_OFF;
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
   m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
@@ -23,7 +24,7 @@ ZInteractiveContext::ZInteractiveContext()
 
 bool ZInteractiveContext::isTraceModeOff() const
 {
-  if (m_swcEditMode != SWC_EDIT_SELECT ||
+  if (/*m_swcEditMode != SWC_EDIT_SELECT ||*/
       m_swcEditMode != SWC_EDIT_OFF) {
     return false;
   }
@@ -33,7 +34,7 @@ bool ZInteractiveContext::isTraceModeOff() const
 
 bool ZInteractiveContext::isContextMenuActivated() const
 {
-  return ((m_swcEditMode == SWC_EDIT_OFF || m_swcEditMode == SWC_EDIT_SELECT) &&
+  return ((m_swcEditMode == SWC_EDIT_OFF /*|| m_swcEditMode == SWC_EDIT_SELECT*/) &&
           m_tubeEditMode == TUBE_EDIT_OFF &&
           m_strokeEditMode == STROKE_EDIT_OFF &&
           m_rectEditMode == RECT_EDIT_OFF &&

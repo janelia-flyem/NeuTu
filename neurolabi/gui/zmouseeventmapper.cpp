@@ -151,6 +151,15 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE);
       }
       break;
+    case ZStackObject::TYPE_FLYEM_TODO_LIST:
+      if (event.getModifiers() == Qt::NoModifier) {
+        op.setOperation(ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE);
+      } else if (event.getModifiers() == Qt::ShiftModifier) {
+        op.setOperation(ZStackOperator::OP_FLYEM_TODO_SELECT_MULTIPLE);
+      } else if (event.getModifiers() == Qt::ControlModifier) {
+        op.setOperation(ZStackOperator::OP_FLYEM_TODO_SELECT_TOGGLE);
+      }
+      break;
     default:
       if (event.getModifiers() == Qt::NoModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_SINGLE);
@@ -217,7 +226,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       if (m_doc->getStack() != NULL) {
         if (m_doc->getStack()->containsRaw(rawStackPosition)) {
           bool hitTestOn =
-              (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+              (/*m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||*/
                m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT ||
                m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
                m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
@@ -236,7 +245,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
             bool selectionOn =
-                ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||
+                ((/*m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||*/
                  m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
                  m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
@@ -254,7 +263,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 
     if (op.isNull()) {
       switch (m_context->swcEditMode()) {
-      case ZInteractiveContext::SWC_EDIT_SELECT:
+      case ZInteractiveContext::SWC_EDIT_OFF:
         if (event.getModifiers() == Qt::NoModifier) {
           if (!getDocument()->hasObjectSelected()) {
             if (getDocument()->getTag() == NeuTube::Document::NORMAL) {

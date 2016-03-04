@@ -801,6 +801,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       }
 
       getCompleteDocument()->downloadBookmark();
+      getCompleteDocument()->downloadTodoList();
     }
 
     getProgressSignal()->advanceProgress(0.5);

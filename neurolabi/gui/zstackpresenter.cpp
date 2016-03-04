@@ -135,6 +135,18 @@ void ZStackPresenter::init()
   stroke->setTarget(ZStackObject::TARGET_WIDGET);
   addActiveObject(ROLE_BOOKMARK, stroke);
 
+  stroke = new ZStroke2d;
+  stroke->setVisible(false);
+  stroke->setFilled(false);
+  stroke->setPenetrating(true);
+  stroke->hideStart(true);
+  stroke->setWidth(10.0);
+  stroke->setColor(QColor(200, 128, 200));
+  stroke->setTarget(ZStackObject::TARGET_WIDGET);
+  addActiveObject(ROLE_TODO_ITEM, stroke);
+
+
+
   /*
   m_stroke.setVisible(false);
   m_stroke.setPenetrating(true);
@@ -1096,7 +1108,6 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 #ifdef _DEBUG_
   std::cout << event->button() << " released: " << event->buttons() << std::endl;
 #endif
-
   if (m_skipMouseReleaseEvent) {
     if (event->buttons() == Qt::NoButton) {
       m_skipMouseReleaseEvent = 0;
@@ -2188,7 +2199,7 @@ void ZStackPresenter::exitSwcExtendMode()
 {
   if (interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
       interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SMART_EXTEND) {
-    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+    interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
     enterSwcSelectMode();
     notifyUser("Exit extending mode");
   }
@@ -2271,8 +2282,8 @@ void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
 {
   if (GET_APPLICATION_NAME == "Biocytin" ||
       GET_APPLICATION_NAME == "FlyEM") {
-    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
-        interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
+        interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
         interactiveContext().isRectEditModeOff()) {
       if (isEraser) {
@@ -2287,15 +2298,15 @@ void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
 void ZStackPresenter::tryDrawRectMode(double x, double y)
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
-    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
-         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
+         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
         interactiveContext().isStrokeEditModeOff()) {
       enterDrawRectMode(x, y);
     }
   } else if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF ||
-         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT) &&
+    if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
+         interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
         interactiveContext().isStrokeEditModeOff()) {
       enterDrawRectMode(x, y);
@@ -2381,6 +2392,14 @@ void ZStackPresenter::exitBookmarkEdit()
   m_interactiveContext.setExitingEdit(true);
 }
 
+void ZStackPresenter::exitTodoEdit()
+{
+  turnOffActiveObject(ROLE_TODO_ITEM);
+  interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
+  updateCursor();
+  m_interactiveContext.setExitingEdit(true);
+}
+
 void ZStackPresenter::exitSynapseEdit()
 {
   turnOffActiveObject(ROLE_SYNAPSE);
@@ -2445,8 +2464,8 @@ void ZStackPresenter::sendSelectedToBack()
 */
 void ZStackPresenter::enterSwcSelectMode()
 {
-  if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF ||
-      m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_SELECT) {
+  if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF /*||
+      m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_SELECT*/) {
     m_interactiveContext.setExitingEdit(true);
   }
 
@@ -2455,7 +2474,7 @@ void ZStackPresenter::enterSwcSelectMode()
   }
 
   turnOffActiveObject(ROLE_SWC);
-  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
   updateCursor();
 }
 
@@ -2954,6 +2973,7 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_SHOW_CONTEXT_MENU:
     buddyView()->showContextMenu(getContextMenu(), currentWidgetPos);
+    m_skipMouseReleaseEvent = 1;
     //status = CONTEXT_MENU_POPPED;
     break;
   case ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU:
@@ -3000,6 +3020,7 @@ void ZStackPresenter::process(ZStackOperator &op)
     exitRectEdit();
     exitBookmarkEdit();
     exitSynapseEdit();
+    exitTodoEdit();
     enterSwcSelectMode();
     break;
   case ZStackOperator::OP_PUNCTA_SELECT_SINGLE:

@@ -1851,7 +1851,7 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     m_canvas->updateCursor();
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
@@ -2413,7 +2413,7 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
   m_canvas->updateCursor();
@@ -2464,7 +2464,7 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
   m_canvas->updateCursor();

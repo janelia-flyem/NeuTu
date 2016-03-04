@@ -132,6 +132,10 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       actionList.append(ZActionFactory::ACTION_SEPARATOR);
     }
 
+    actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+
+    actionList.append(ZActionFactory::ACTION_SEPARATOR);
+
     /* Synapse actions */
     actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
     actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_POST);

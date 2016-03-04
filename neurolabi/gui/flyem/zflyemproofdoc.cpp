@@ -667,9 +667,7 @@ void ZFlyEmProofDoc::removeTodoItem(
 
 void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
 {
-  ZFlyEmToDoItem item;
-  item.setPosition(pos);
-  item.setKind(ZDvidAnnotation::KIND_NOTE);
+  ZFlyEmToDoItem item(pos);
   item.setUserName(NeuTube::GetCurrentUserName());
 
   addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
@@ -1012,26 +1010,33 @@ void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
 void ZFlyEmProofDoc::downloadBookmark()
 {
   if (m_dvidReader.isReady()) {
+    std::string currentUserName = NeuTube::GetCurrentUserName();
     ZJsonArray bookmarkJson =
-        m_dvidReader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
+        m_dvidReader.readTaggedBookmark("user:" + currentUserName);
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    int bookmarkCount = 0;
     for (size_t i = 0; i < bookmarkJson.size(); ++i) {
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
-        bookmark->setChecked(true);
-        ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
-//        bookmarkObj.setProperty("checked", "1");
-        m_dvidWriter.writeBookmark(bookmarkObj);
-        m_dvidWriter.deleteBookmarkKey(*bookmark);
+      if (bookmark->getUserName().length() == (int) currentUserName.length()) {
+        if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          bookmark->setChecked(true);
+          ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
+          //        bookmarkObj.setProperty("checked", "1");
+          m_dvidWriter.writeBookmark(bookmarkObj);
+          m_dvidWriter.deleteBookmarkKey(*bookmark);
+        }
+        addObject(bookmark, true);
+        ++bookmarkCount;
+      } else {
+        delete bookmark;
       }
-      addObject(bookmark, true);
     }
     endObjectModifiedMode();
     notifyObjectModified();
 
-    if (bookmarkJson.isEmpty()) {
+    if (bookmarkCount == 0) {
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
       reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
@@ -2184,9 +2189,7 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt)
 {
-  ZFlyEmToDoItem item;
-  item.setPosition(pt);
-  item.setKind(ZDvidAnnotation::KIND_NOTE);
+  ZFlyEmToDoItem item(pt);
   item.setUserName(NeuTube::GetCurrentUserName());
 
   executeAddTodoItemCommand(item);

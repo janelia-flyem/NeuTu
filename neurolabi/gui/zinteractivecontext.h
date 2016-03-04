@@ -47,7 +47,7 @@ public:
 
   enum SwcEditMode {
     SWC_EDIT_OFF = 0,
-    SWC_EDIT_SELECT,
+//    SWC_EDIT_SELECT,
     SWC_EDIT_CONNECT,
     SWC_EDIT_EXTEND,
     SWC_EDIT_SMART_EXTEND,
@@ -116,6 +116,9 @@ public:
     m_synapseEditMode = mode; }
   inline void setBookmarkEditMode(BookmarkEditMode mode)
   { m_bookmarkEditMode = mode; }
+  inline void setTodoEditMode(TodoEditMode mode) {
+    m_todoEditMode = mode;
+  }
 
   inline TraceMode traceMode() const { return m_traceMode; }
   inline TubeEditMode tubeEditMode() const { return m_tubeEditMode; }
