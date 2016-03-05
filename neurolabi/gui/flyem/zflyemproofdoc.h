@@ -181,7 +181,8 @@ public: //Todo list functions
       const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope);
   void addTodoItem(const ZIntPoint &pos);
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
-
+  bool hasTodoItemSelected() const;
+  void checkTodoItem(bool checking);
 
 public: //Bookmark functions
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);

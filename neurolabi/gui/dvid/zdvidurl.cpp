@@ -734,6 +734,20 @@ std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName) cons
   return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
 }
 
+std::string ZDvidUrl::getAnnotationDeleteUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/element";
+}
+
+std::string ZDvidUrl::getAnnotationDeleteUrl(
+    const std::string &dataName, int x, int y, int z) const
+{
+  std::ostringstream stream;
+  stream << getAnnotationDeleteUrl(dataName) << "/" << x << "_" << y << "_"
+         << z;
+  return stream.str();
+}
+
 std::string ZDvidUrl::getSynapseUrl() const
 {
   return getDataUrl(m_dvidTarget.getSynapseName());
@@ -818,6 +832,11 @@ std::string ZDvidUrl::getTodoListUrl() const
 std::string ZDvidUrl::getTodlListElementsUrl() const
 {
   return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
+}
+
+std::string ZDvidUrl::getTodoListDeleteUrl(int x, int y, int z) const
+{
+  return getAnnotationDeleteUrl(m_dvidTarget.getTodoListName(), x, y, z);
 }
 
 std::string ZDvidUrl::getTodoListUrl(

@@ -1163,7 +1163,7 @@ void ZDvidWriter::deleteToDoItem(int x, int y, int z)
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(m_dvidTarget);
-  del(url.getTodoListUrl(x, y, z));
+  del(url.getTodoListDeleteUrl(x, y, z));
 #else
   UNUSED_PARAMETER(x);
   UNUSED_PARAMETER(y);

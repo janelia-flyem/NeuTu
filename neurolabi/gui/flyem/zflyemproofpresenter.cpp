@@ -64,6 +64,8 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(unlinkSelectedSynapse()));
   connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(tryAddTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_CHECK_TODO_ITEM), SIGNAL(triggered()),
+          this, SLOT(checkTodoItem()));
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
@@ -355,6 +357,11 @@ void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
   getCompleteDocument()->executeAddTodoItemCommand(pt);
 }
 
+void ZFlyEmProofPresenter::checkTodoItem()
+{
+  getCompleteDocument()->checkTodoItem(true);
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -469,6 +476,40 @@ void ZFlyEmProofPresenter::processCustomOperator(
       ZFlyEmToDoList *item = *iter;
       item->setHitPoint(hitPoint);
       item->selectHit(false);
+    }
+    if (e != NULL) {
+      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+  }
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_SELECT_MULTIPLE:
+  {
+    QList<ZFlyEmToDoList*> todoList =
+        getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
+    ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+         iter != todoList.end(); ++iter) {
+      ZFlyEmToDoList *item = *iter;
+      item->setHitPoint(hitPoint);
+      item->selectHit(true);
+    }
+    if (e != NULL) {
+      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+  }
+    break;
+  case ZStackOperator::OP_FLYEM_TODO_SELECT_TOGGLE:
+  {
+    QList<ZFlyEmToDoList*> todoList =
+        getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
+    ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+         iter != todoList.end(); ++iter) {
+      ZFlyEmToDoList *item = *iter;
+      item->setHitPoint(hitPoint);
+      item->toggleHitSelect();
     }
     if (e != NULL) {
       e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);

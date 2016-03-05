@@ -1,6 +1,9 @@
 #include "zflyemtodoitem.h"
 
+#include <QColor>
+
 #include "zpainter.h"
+#include "zjsonparser.h"
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -78,28 +81,39 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
       color.setAlphaF(alpha * color.alphaF());
     }
 
+    if (isChecked()) {
+      color.setRgb(
+            color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
+    }
     painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
 
-    if (isFocused) {
+//    if (isFocused) {
+
+//    }
+    if (radius > 0.0) {
       int x = center.getX();
       int y = center.getY();
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
-    }
-    if (radius > 0.0) {
+      painter.drawLine(QPointF(x - 1, y - 1), QPointF(x + 1, y + 1));
+      painter.drawLine(QPointF(x - 1, y + 1), QPointF(x + 1, y - 1));
+
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
     }
 
-    QString decorationText = "t";
+    /*
+    QString decorationText = "*";
     int width = decorationText.size() * 25;
     int height = 25;
     QColor oldColor = painter.getPen().color();
     painter.setPen(QColor(0, 0, 0, 128));
-    painter.drawText(center.getX(), center.getY(), width, height,
-                     Qt::AlignLeft, decorationText);
+    painter.drawText(center.getX() - width / 2, center.getY() - height / 2,
+                     width, height,
+                     Qt::AlignCenter, decorationText);
     painter.setPen(oldColor);
+    */
   }
 
   QPen pen = painter.getPen();
@@ -141,11 +155,25 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
   }
 }
 
-/*
+
 bool ZFlyEmToDoItem::isChecked() const
 {
+  if (m_propertyJson.hasKey("checked")) {
+    return std::string(ZJsonParser::stringValue(m_propertyJson["checked"])) == "1";
+  }
 
+  return false;
 }
-*/
+
+void ZFlyEmToDoItem::setChecked(bool checked)
+{
+  std::string checkedStr = "0";
+  if (checked) {
+    checkedStr = "1";
+  }
+
+  m_propertyJson.setEntry("checked", checkedStr);
+}
+
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmToDoItem)

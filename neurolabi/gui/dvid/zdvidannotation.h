@@ -80,11 +80,12 @@ private:
 private:
   ZIntPoint m_position;
   EKind m_kind;
+  double m_radius;
+
+protected:
   std::vector<std::string> m_tagArray;
   ZJsonObject m_propertyJson;
   ZJsonArray m_relJson;
-
-  double m_radius;
 };
 
 #endif // ZDVIDANNOTATION_H

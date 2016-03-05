@@ -31,10 +31,8 @@ public:
   friend std::ostream& operator<< (
       std::ostream &stream, const ZFlyEmToDoItem &synapse);
 
-  /*
   bool isChecked() const;
   void setChecked(bool checked);
-*/
 
 private:
   void init();

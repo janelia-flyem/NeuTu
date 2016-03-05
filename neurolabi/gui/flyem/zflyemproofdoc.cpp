@@ -586,6 +586,45 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
   return selected;
 }
 
+bool ZFlyEmProofDoc::hasTodoItemSelected() const
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    if (td->hasSelected()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void ZFlyEmProofDoc::checkTodoItem(bool checking)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
+         iter != selectedSet.end(); ++iter) {
+      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        if (checking != item.isChecked()) {
+          item.setChecked(checking);
+          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+        }
+      }
+    }
+    if (!selectedSet.empty()) {
+      processObjectModified(td);
+    }
+  }
+
+  notifyObjectModified();
+}
+
 void ZFlyEmProofDoc::tryMoveSelectedSynapse(
     const ZIntPoint &dest, NeuTube::EAxis axis)
 {
