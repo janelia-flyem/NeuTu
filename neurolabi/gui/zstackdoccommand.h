@@ -35,6 +35,9 @@ private:
 
 namespace ZStackDocCommand {
 namespace SwcEdit {
+/*!
+ * \brief The basic command of modifying swc.
+ */
 class ChangeSwcCommand : public ZUndoCommand
 {
 public:
@@ -51,13 +54,60 @@ public:
     ROLE_NONE, ROLE_CHILD, ROLE_PARENT
   };
 
+  bool isSwcModified() const {
+    return m_isSwcModified;
+  }
+
+  void setSwcModified(bool state) {
+    m_isSwcModified = state;
+  }
+
+
 protected:
+  /*!
+   * \brief Backup a node.
+   *
+   * The properties and links of \a tn will be backed up after the function call.
+   * The function has no effect on \a tn if \a tn has already been backed up in
+   * the command.
+   */
   void backup(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Backup a node and its neighbors.
+   *
+   * Bacup all nodes affected by the operation \a op, which can be setting parent,
+   * setting first child and detaching from parent. \a role specifies the role
+   * of \a tn for the operation.
+   *
+   * \param tn The node to backup.
+   * \param op Operation supposed to be performed after the backup.
+   * \param role Role of \a tn.
+   */
   void backup(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
+
+  /*!
+   * \brief Backup the children of a node.
+   */
   void backupChildren(Swc_Tree_Node *tn);
+
+
+  /*!
+   * \brief Backup childrend of a node according to an operation.
+   */
   void backupChildren(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
 
+  /*!
+   * \brief Record newly created node by the command
+   *
+   * It tracks newly created nodes so that the nodes can be freed in an undone
+   * command when the command is destroyed.
+   */
   void addNewNode(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Record removed node.
+   */
   void recordRemovedNode(Swc_Tree_Node *tn);
 
   void recover();
@@ -68,6 +118,7 @@ protected:
   std::set<Swc_Tree_Node*> m_newNodeSet;
   std::set<Swc_Tree_Node*> m_removedNodeSet;
   std::set<Swc_Tree_Node*> m_garbageSet;
+  bool m_isSwcModified;
 };
 
 class TranslateRoot : public ZUndoCommand
@@ -196,12 +247,37 @@ private:
   Swc_Tree_Node *m_parentNode;
   bool m_nodeInDoc;
 };
+/*
+class BreakParentLink : public ChangeSwcCommand
+{
+public:
+  BreakParentLink(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~BreakParentLink();
+
+  void redo();
+  void undo();
+};
+*/
 
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:
   MergeSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~MergeSwcNode();
+
+  void redo();
+  void undo();
+
+private:
+  std::set<Swc_Tree_Node*> m_selectedNodeSet;
+  Swc_Tree_Node *m_coreNode;
+};
+
+class ResolveCrossover : public ChangeSwcCommand
+{
+public:
+  ResolveCrossover(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ResolveCrossover();
 
   void redo();
   void undo();

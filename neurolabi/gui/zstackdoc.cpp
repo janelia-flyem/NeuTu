@@ -6339,6 +6339,32 @@ bool ZStackDoc::executeRemoveTurnCommand()
 bool ZStackDoc::executeResolveCrossoverCommand()
 {
   bool succ = false;
+
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+
+  QString message = "No crossover is detected. Nothing is done";
+  if (nodeSet.size() == 1) {
+    ZStackDocCommand::SwcEdit::ResolveCrossover *command =
+        new ZStackDocCommand::SwcEdit::ResolveCrossover(this);
+
+    pushUndoCommand(command);
+
+    succ = command->isSwcModified();
+    if (succ) {
+      message = "A crossover is created.";
+    }
+  } else {
+    message = "Nothing done. Exactly one node should be selected.";
+  }
+
+  notify(ZWidgetMessage(
+           message, NeuTube::MSG_INFORMATION,
+           ZWidgetMessage::TARGET_STATUS_BAR));
+
+  return succ;
+
+#if 0
+  bool succ = false;
   QString message;
 
   std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
@@ -6396,6 +6422,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   notifyStatusMessageUpdated(message);
 
   return succ;
+#endif
 }
 
 bool ZStackDoc::executeWatershedCommand()
