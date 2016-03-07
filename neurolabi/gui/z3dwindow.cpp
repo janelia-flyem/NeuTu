@@ -864,7 +864,7 @@ void Z3DWindow::createActions()
   */
 
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
-  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));

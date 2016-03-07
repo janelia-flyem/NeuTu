@@ -22,6 +22,7 @@
 #include "zswctree.h"
 #include "swc/zswcsignalfitter.h"
 #include "zneurontracerconfig.h"
+#include "swc/zswcpruner.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -876,18 +877,21 @@ void ZNeuronTracer::clearBuffer()
   m_seedDsIntv.set(0, 0, 0);
 }
 
+#if 0
 std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
     const Stack *stack, std::vector<Locseg_Chain*> &chainArray)
 {
   std::vector<double> scoreArray(chainArray.size(), 0.0);
   std::vector<double> intensityArray(chainArray.size(), 0.0);
+  std::vector<double> lengthArray(chainArray.size(), 0.0);
 
   std::vector<Locseg_Chain*> goodChainArray;
 
-//  double minIntensity = Infinity;
-  double minIntensity = 0.0;
+  double minIntensity = Infinity;
+//  double minIntensity = 0.0;
   int count = 0;
 
+  const double scoreThreshold = 0.6;
   size_t index = 0;
   for (std::vector<Locseg_Chain*>::iterator iter = chainArray.begin();
        iter != chainArray.end(); ++iter, ++index) {
@@ -907,12 +911,57 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
     }
   }
 
+  /*
   if (count > 0) {
     minIntensity /= count;
   }
+  */
 
   for (index = 0; index < chainArray.size(); ++index) {
     if (scoreArray[index] >= 0.5 || intensityArray[index] >= minIntensity) {
+      goodChainArray.push_back(chainArray[index]);
+    } else {
+      delete chainArray[index];
+    }
+  }
+
+  return goodChainArray;
+}
+#endif
+
+std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
+    const Stack *stack, std::vector<Locseg_Chain*> &chainArray)
+{
+  std::vector<double> scoreArray(chainArray.size(), 0.0);
+  std::vector<double> intensityArray(chainArray.size(), 0.0);
+  std::vector<double> lengthArray(chainArray.size(), 0.0);
+
+  std::vector<Locseg_Chain*> goodChainArray;
+
+  double minIntensity = Infinity;
+
+  const double scoreThreshold = 0.6;
+  size_t index = 0;
+  for (std::vector<Locseg_Chain*>::iterator iter = chainArray.begin();
+       iter != chainArray.end(); ++iter, ++index) {
+    Locseg_Chain *chain = *iter;
+    scoreArray[index] = Locseg_Chain_Average_Score(
+          chain, stack, 1.0, STACK_FIT_CORRCOEF);
+    intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
+    lengthArray[index] = Locseg_Chain_Geolen(chain);
+    //intensityArray[index] = Locseg_Chain_Min_Seg_Signal(chain, stack, 1.0);
+    if (scoreArray[index] >= scoreThreshold) {
+      //intensityArray[index] = Locseg_Chain_Average_Signal(chain, stack, 1.0);
+      //STACK_FIT_LOW_MEAN_SIGNAL
+      if (intensityArray[index] < minIntensity) {
+        minIntensity = intensityArray[index];
+      }
+    }
+  }
+
+  for (index = 0; index < chainArray.size(); ++index) {
+    if (scoreArray[index] >= scoreThreshold ||
+        intensityArray[index] >= minIntensity) {
       goodChainArray.push_back(chainArray[index]);
     } else {
       delete chainArray[index];
@@ -1003,6 +1052,28 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   /* <seedPointArray> allocated */
   Geo3d_Scalar_Field *seedPointArray = extractSeed(mask);
+
+  int minSeedSize = 0;
+
+  if (seedPointArray->size > 15000) {
+    minSeedSize = 125;
+  } else if (seedPointArray->size > 5000) {
+    minSeedSize = 64;
+  }
+
+  if (minSeedSize > 0) {
+    std::cout << "Too many seeds. Screening ..." << std::endl;
+    Stack *tmpStack = C_Stack::clone(mask);
+    mask = Stack_Remove_Small_Object(tmpStack, mask, minSeedSize, 26);
+    C_Stack::kill(tmpStack);
+
+    if (C_Stack::kind(mask) != GREY) {
+      C_Stack::translate(mask, GREY, 1);
+    }
+    Kill_Geo3d_Scalar_Field(seedPointArray);
+    seedPointArray = extractSeed(mask);
+  }
+
   m_mask = mask;
 
   advanceProgress(0.05);
@@ -1037,7 +1108,11 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   }
   advanceProgress(0.1);
 
-  chainArray = screenChain(stack, chainArray);
+  if (chainArray.size() > 100) {
+    std::cout << "Screening " << chainArray.size() << " tubes ..." << std::endl;
+    chainArray = screenChain(stack, chainArray);
+  }
+//  chainArray = screenChain(stack, chainArray);
   advanceProgress(0.3);
 
   /* <mask2> freed */
@@ -1051,7 +1126,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   //Create neuron structure
 
   BOOL oldSpTest = m_connWorkspace->sp_test;
-  if (chainArray.size() > 1000) {
+  if (chainArray.size() > 500) {
     std::cout << "Too many chains: " << chainArray.size() << std::endl;
     std::cout << "Turn off shortest path test" << std::endl;
     m_connWorkspace->sp_test = FALSE;
@@ -1075,6 +1150,11 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     ZSwcResampler resampler;
     resampler.optimalDownsample(tree);
   }
+
+  ZSwcPruner pruner;
+  pruner.setMinLength(0);
+  pruner.removeOrphanBlob(tree);
+
   advanceProgress(0.1);
 
   std::cout << "Done!" << std::endl;
