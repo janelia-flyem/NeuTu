@@ -526,6 +526,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
     break;
+  case ACTION_REMOVE_TODO_ITEM:
+    action = new QAction("Remove todo", parent);
+    break;
   case ACTION_CHECK_TODO_ITEM:
     action = new QAction("Set checked", parent);
     break;

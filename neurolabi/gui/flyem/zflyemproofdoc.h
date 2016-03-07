@@ -184,6 +184,8 @@ public: //Todo list functions
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
 
+  std::set<ZIntPoint> getSelectedTodoItemPosition() const;
+
 public: //Bookmark functions
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
   void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
@@ -221,6 +223,7 @@ public: //Commands
 
   void executeAddTodoItemCommand(const ZIntPoint &pt);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeRemoveTodoItemCommand();
 
 signals:
   void bodyMerged();

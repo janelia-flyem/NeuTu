@@ -84,7 +84,9 @@ public slots:
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
   void tryAddTodoItem();
+  void removeTodoItem();
   void checkTodoItem();
+  void uncheckTodoItem();
 
 private:
   void connectAction();

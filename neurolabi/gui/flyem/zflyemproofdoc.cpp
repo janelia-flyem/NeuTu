@@ -2241,6 +2241,40 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
   pushUndoCommand(command);
 }
 
+std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
+{
+  std::set<ZIntPoint> selected;
+  QList<ZFlyEmToDoList*> objList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmToDoList *td = *iter;
+    const std::set<ZIntPoint> &subset = td->getSelector().getSelectedSet();
+    selected.insert(subset.begin(), subset.end());
+  }
+
+  return selected;
+}
+
+
+void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
+{
+  std::set<ZIntPoint> selected = getSelectedTodoItemPosition();
+
+  if (!selected.empty()) {
+    QUndoCommand *command = new QUndoCommand;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      new ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem(
+            this, pt.getX(), pt.getY(), pt.getZ(), command);
+    }
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    pushUndoCommand(command);
+    endObjectModifiedMode();
+    notifyObjectModified();
+  }
+}
+
 void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
 {
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();

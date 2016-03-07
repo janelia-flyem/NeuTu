@@ -136,6 +136,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     if (doc->hasTodoItemSelected()) {
       actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
       actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+      actionList.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
     }
 
     actionList.append(ZActionFactory::ACTION_SEPARATOR);
@@ -160,15 +161,24 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     }
     actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
+    addAction(actionList, presenter, menu);
+
     /* Bookmark actions */
+    QList<ZActionFactory::EAction> bookmarkActionList;
     TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
-      actionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
-      actionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+      bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
+      bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+    }
+    if (!bookmarkActionList.isEmpty()) {
+      QMenu *submenu = new QMenu("Bookmarks", menu);
+      addAction(bookmarkActionList, presenter, submenu);
+      menu->addMenu(submenu);
     }
 
-    addAction(actionList, presenter, menu);
+
+
     QList<ZActionFactory::EAction> swcActionList;
     //SWC actions (submenu has to be added separately)
     QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();

@@ -66,6 +66,10 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(tryAddTodoItem()));
   connect(getAction(ZActionFactory::ACTION_CHECK_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(checkTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_UNCHECK_TODO_ITEM), SIGNAL(triggered()),
+          this, SLOT(uncheckTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_REMOVE_TODO_ITEM), SIGNAL(triggered()),
+          this, SLOT(removeTodoItem()));
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
@@ -357,9 +361,19 @@ void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
   getCompleteDocument()->executeAddTodoItemCommand(pt);
 }
 
+void ZFlyEmProofPresenter::removeTodoItem()
+{
+  getCompleteDocument()->executeRemoveTodoItemCommand();
+}
+
 void ZFlyEmProofPresenter::checkTodoItem()
 {
   getCompleteDocument()->checkTodoItem(true);
+}
+
+void ZFlyEmProofPresenter::uncheckTodoItem()
+{
+  getCompleteDocument()->checkTodoItem(false);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem()

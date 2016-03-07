@@ -66,19 +66,13 @@ void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
 void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
 {
   if (m_backup.hasKey("Pos")) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
-      writer.writeSynapse(m_backup);
-      if (writer.isStatusOk()) {
-        ZFlyEmToDoItem item;
-        item.loadJsonObject(m_backup);
-        m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_LOCAL);
-        m_doc->notifyTodoEdited(item.getPosition());
-        QString msg = QString("Synapse removal undone at (%1, %2, %3)").
-            arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
-        m_doc->notify(msg);
-      }
-    }
+    ZFlyEmToDoItem item;
+    item.loadJsonObject(m_backup);
+    m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+    m_doc->notifyTodoEdited(item.getPosition());
+    QString msg = QString("Todo removal undone at (%1, %2, %3)").
+        arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+    m_doc->notify(msg);
   }
 }
 
