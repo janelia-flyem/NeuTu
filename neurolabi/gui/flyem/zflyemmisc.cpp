@@ -308,7 +308,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 {
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
-  int dsIntv = 7;
+  int dsIntv = 2;
   dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
   dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
 
