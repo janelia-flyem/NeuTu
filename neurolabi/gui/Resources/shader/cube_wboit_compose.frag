@@ -11,17 +11,17 @@ varying vec2 vTexcoord;
 void main(void)
 {
     vec4 accum = texture2D(accumTexture, vTexcoord);
-    float r = accum.a;
+    float alpha = accum.a;
     accum.a = texture2D(revealageTexture, vTexcoord).r;
-    if (r >= 1.0)
+    if (alpha >= 1.0)
     {
         discard;
     }
 
 #if defined(FragData0)
-    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), r);
+    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);
 #else
-    gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), r);
+    gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);
 #endif
 
 }

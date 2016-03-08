@@ -56,12 +56,14 @@ private:
     GLint m_preFBO;
     GLuint m_fbo;
     GLuint m_renderbuffer;
-    GLuint m_texture;
+    GLuint m_accumTexture, m_revealageTexture;
 
     std::vector<GLuint> m_VAOs;
     std::vector<GLuint> m_pickingVAOs;
     std::vector<GLuint> m_VBOs;
     std::vector<GLuint> m_pickingVBOs;
+
+    GLuint m_vaoSurf, m_vboSurf;
 
     bool m_dataChanged;
     bool m_pickingDataChanged;

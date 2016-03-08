@@ -22,10 +22,15 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
   m_vao = 0;
   m_fbo = 0;
   m_renderbuffer = 0;
-  m_texture = 0;
+  m_accumTexture = 0;
+  m_revealageTexture = 0;
 
   //
   nCubes = 0;
+
+  //
+  m_vaoSurf = 0;
+  m_vboSurf = 0;
 
   clearData();
 
@@ -144,7 +149,7 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 
 void Z3DCubeRenderer::clearData()
 {
-    m_cubes.clear();
+    //m_cubes.clear();
 
     positions.clear();
     normalIndices.clear();
@@ -184,8 +189,11 @@ void Z3DCubeRenderer::initialize()
   glGenFramebuffers(1, &m_fbo);
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-  glGenTextures(1, &m_texture);
-  glBindTexture(GL_TEXTURE_2D, m_texture);
+  glGenTextures(1, &m_accumTexture);
+  glBindTexture(GL_TEXTURE_2D, m_accumTexture);
+
+  glGenTextures(1, &m_revealageTexture);
+  glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
 
   glGenRenderbuffers(1, &m_renderbuffer);
   glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
@@ -212,13 +220,13 @@ void Z3DCubeRenderer::deinitialize()
 
   if (!m_VBOs.empty())
   {
-    glDeleteVertexArrays(m_VBOs.size(), &m_VBOs[0]);
+    glDeleteBuffers(m_VBOs.size(), &m_VBOs[0]);
   }
   m_VBOs.clear();
 
   if (!m_pickingVBOs.empty())
   {
-    glDeleteVertexArrays(m_pickingVBOs.size(), &m_pickingVBOs[0]);
+    glDeleteBuffers(m_pickingVBOs.size(), &m_pickingVBOs[0]);
   }
   m_pickingVBOs.clear();
 
@@ -232,22 +240,42 @@ void Z3DCubeRenderer::deinitialize()
 
   if(m_vao)
   {
-    glDeleteBuffers(1, &m_vao);
+    glDeleteVertexArrays(1, &m_vao);
+  }
+
+  if(m_vbo)
+  {
+    glDeleteBuffers(1, &m_vbo);
+  }
+
+  if(m_vaoSurf)
+  {
+    glDeleteVertexArrays(1, &m_vaoSurf);
+  }
+
+  if(m_vboSurf)
+  {
+    glDeleteBuffers(1, &m_vboSurf);
   }
 
   if(m_fbo)
   {
-    glDeleteBuffers(1, &m_fbo);
+    glDeleteFramebuffers(1, &m_fbo);
   }
 
   if(m_renderbuffer)
   {
-    glDeleteBuffers(1, &m_renderbuffer);
+    glDeleteRenderbuffers(1, &m_renderbuffer);
   }
 
-  if(m_texture)
+  if(m_accumTexture)
   {
-    glDeleteBuffers(1, &m_texture);
+    glDeleteTextures(1, &m_accumTexture);
+  }
+
+  if(m_revealageTexture)
+  {
+    glDeleteTextures(1, &m_revealageTexture);
   }
 
   m_cubeShaderGrp.removeAllShaders();
@@ -276,6 +304,57 @@ void Z3DCubeRenderer::render(Z3DEye eye)
   if (!m_initialized)
     return;
 
+  double w, h;
+  w = m_rendererBase->getViewport().z;
+  h = m_rendererBase->getViewport().w;
+
+  // fbo
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_preFBO);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+  glBindTexture(GL_TEXTURE_2D, m_accumTexture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_accumTexture, 0);
+
+  glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_revealageTexture, 0);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
+
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+
+  //
+  //glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); // render to an offscreen framebuffer
+  //glClearColor(0.0f,0.0f,0.0f,1.0f);
+  //glClearDepth(1.0f);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_MULTISAMPLE);
+
+  glDepthMask(GL_FALSE);
+  glEnable(GL_BLEND);
+
   //
   m_cubeShaderGrp.bind();
   Z3DShaderProgram &oit3DTransparentizeShader = m_cubeShaderGrp.get();
@@ -299,10 +378,6 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 //  h = neardist * glm::tan(theta);
 //  w = m_rendererBase->getCamera().getAspectRatio() * h;
 
-  double w, h;
-  w = m_rendererBase->getViewport().z;
-  h = m_rendererBase->getViewport().w;
-
   //
   if (m_hardwareSupportVAO) {
     if (m_dataChanged) {
@@ -318,28 +393,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
       m_VBOs.resize(nCubes); // nCubes
       glGenBuffers( m_VBOs.size(), &m_VBOs[0]);
 
-      //glBindVertexArray(m_VAO);
       // oit pass
       GLint loc_position = oit3DTransparentizeShader.attributeLocation("vPosition");
       GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
       //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
-      qDebug()<<"*** nCubes ... "<<nCubes<<m_color.r<<m_color.g<<m_color.b;
-
-//      glBindVertexArray(m_VAOs[0]);
-//      glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[0] );
-//      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
-//      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
-//      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
-
-//      glEnableVertexAttribArray( loc_position );
-//      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
-
-//      glEnableVertexAttribArray( loc_normal );
-//      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
-
-//      glBindBuffer( GL_ARRAY_BUFFER, 0);
-//      glBindVertexArray(0);
+      qDebug()<<"*** positions ... "<<positions.size()<<size_normalIndices<<" colors ..."<<m_color.r<<m_color.g<<m_color.b;
 
       for (size_t i=0; i<nCubes; ++i)
       {
@@ -370,10 +429,47 @@ void Z3DCubeRenderer::render(Z3DEye eye)
           glBindVertexArray(0);
       }
 
+
+//      glBindVertexArray(m_VAOs[0]);
+//      glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[0] );
+//      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
+//      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
+//      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
+
+//      glEnableVertexAttribArray( loc_position );
+//      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
+
+//      glEnableVertexAttribArray( loc_normal );
+//      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
+
+//      glBindBuffer( GL_ARRAY_BUFFER, 0);
+//      glBindVertexArray(0);
+
+
+//      glGenVertexArrays(1, &m_vaoSurf);
+//      glBindVertexArray( m_vaoSurf );
+
+//      glGenBuffers(1, &m_vboSurf);
+//      glBindBuffer( GL_ARRAY_BUFFER, m_vboSurf);
+
+//      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
+//      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
+//      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
+
+//      glEnableVertexAttribArray( loc_position );
+//      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
+
+//      glEnableVertexAttribArray( loc_normal );
+//      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
+
+//      glBindBuffer( GL_ARRAY_BUFFER, 0);
+//      glBindVertexArray(0);
+
+      //
       m_dataChanged = false;
     }
 
-    // compose pass
+    // compositing
     // vao
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray( m_vao );
@@ -390,44 +486,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     glBindVertexArray(0);
 
-    // fbo
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_preFBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
-
-    //
-    if (!oit2DComposeProgram->link())
-    {
-        qWarning() << oit2DComposeProgram->log() << endl;
-    }
 
     // render
-    // oit pass
-    glDepthMask(GL_FALSE);
-    glEnable(GL_BLEND);
-
+    // 3D oit pass
     glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFunc(GL_SRC0_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//    glBindVertexArray( m_VAOs[0] );
+//    glBindVertexArray( m_vaoSurf );
 //    glDrawArrays( GL_TRIANGLES, 0, positions.size() );
 //    glBindVertexArray(0);
 
@@ -438,10 +502,18 @@ void Z3DCubeRenderer::render(Z3DEye eye)
         glBindVertexArray(0);
     }
 
+    //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+
     //glDepthMask(GL_TRUE);
     //glDisable(GL_BLEND);
 
-    // compose pass
+    // 2D compositing pass
+    //
+    if (!oit2DComposeProgram->link())
+    {
+        qWarning() << oit2DComposeProgram->log() << endl;
+    }
+
     if (!oit2DComposeProgram->bind())
     {
         qWarning() << oit2DComposeProgram->log() << endl;
@@ -450,14 +522,22 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     //
     glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+//    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+//    glClearColor(0.0f,0.0f,0.0f,1.0f);
+//    glClearDepth(1.0f);
+//    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, m_accumTexture);
 
     GLuint cloc_accum = glGetUniformLocation(oit2DComposeProgram->programId(), "accumTexture");
     glUniform1i(cloc_accum, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
 
     GLuint cloc_revealage = glGetUniformLocation(oit2DComposeProgram->programId(), "revealageTexture");
     glUniform1i(cloc_revealage, 1);
@@ -469,7 +549,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     glDrawArrays( GL_TRIANGLES, 0, m_screen.size());
     glBindVertexArray(0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+    //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
     glDisable(GL_BLEND);
   } else {
@@ -489,5 +569,6 @@ void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 
 bool Z3DCubeRenderer::isEmpty()
 {
-    return m_cubes.empty();
+    //return m_cubes.empty();
+    return positions.empty();
 }
