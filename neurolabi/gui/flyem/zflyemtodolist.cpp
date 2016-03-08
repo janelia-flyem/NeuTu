@@ -703,7 +703,7 @@ ZFlyEmToDoList::ItemSlice::getMap(int y, EAdjustment adjust)
   return (*this)[yIndex];
 }
 
-void ZFlyEmToDoList::ItemSlice::addSynapse(
+void ZFlyEmToDoList::ItemSlice::addItem(
     const ZFlyEmToDoItem &item, NeuTube::EAxis sliceAxis)
 {
   ZIntPoint center = item.getPosition();

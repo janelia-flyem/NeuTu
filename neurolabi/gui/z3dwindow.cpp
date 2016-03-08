@@ -864,7 +864,7 @@ void Z3DWindow::createActions()
   */
 
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
-  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
@@ -916,7 +916,7 @@ void Z3DWindow::createActions()
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
           this, SLOT(changeSelectedSwcNodeType()));
 
-  m_setSwcRootAction = new QAction("Set as root", this);
+  m_setSwcRootAction = new QAction("Set as a root", this);
   connect(m_setSwcRootAction, SIGNAL(triggered()),
           this, SLOT(setRootAsSelectedSwcNode()));
   m_singleSwcNodeActionActivator.registerAction(m_setSwcRootAction, true);
@@ -1851,7 +1851,7 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     m_canvas->updateCursor();
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
@@ -2413,7 +2413,7 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
   m_canvas->updateCursor();
@@ -2453,14 +2453,18 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //    }
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
                "Right click to exit extending mode.");
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    if (getDocument()->hasStackData()) {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    } else {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+    }
     m_canvas->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
     m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
+          ZInteractiveContext::SWC_EDIT_OFF);
     //m_canvas->setCursor(Qt::ArrowCursor);
   }
   m_canvas->updateCursor();

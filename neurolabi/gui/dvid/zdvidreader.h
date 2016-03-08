@@ -178,6 +178,11 @@ public:
   bool isBookmarkChecked(int x, int y, int z) const;
   bool isBookmarkChecked(const ZIntPoint &pt) const;
 
+  ZJsonObject readAnnotationJson(
+      const std::string &dataName, const ZIntPoint &pt) const;
+  ZJsonObject readAnnotationJson(
+      const std::string &dataName, int x, int y, int z) const;
+
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
@@ -196,6 +201,8 @@ public:
 
   std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
   ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
+  ZJsonObject readToDoItemJson(int x, int y, int z);
+  ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

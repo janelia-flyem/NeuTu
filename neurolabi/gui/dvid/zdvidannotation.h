@@ -70,19 +70,22 @@ public:
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
 
-private:
-  void init();
+protected:
   bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
   double getRadius(int z, NeuTube::EAxis sliceAxis) const;
 
 private:
+  void init();
+
+private:
   ZIntPoint m_position;
   EKind m_kind;
+  double m_radius;
+
+protected:
   std::vector<std::string> m_tagArray;
   ZJsonObject m_propertyJson;
   ZJsonArray m_relJson;
-
-  double m_radius;
 };
 
 #endif // ZDVIDANNOTATION_H

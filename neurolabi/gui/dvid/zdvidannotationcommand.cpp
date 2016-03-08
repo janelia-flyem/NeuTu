@@ -52,23 +52,59 @@ ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::~RemoveItem()
 
 void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
 {
-  /*
   ZDvidReader reader;
   if (reader.open(m_doc->getDvidTarget())) {
-    m_backup = reader.readAnnotationJson(m_item);
-    m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
-    m_doc->notifySynapseEdited(m_synapse);
+    m_backup = reader.readToDoItemJson(m_item);
+    m_doc->removeTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
+    m_doc->notifyTodoEdited(m_item);
     QString msg = QString("Synapse removed at (%1, %2, %3)").
-        arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
+        arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
     m_doc->notify(msg);
   }
-  */
 }
 
 void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
 {
-
+  if (m_backup.hasKey("Pos")) {
+    ZFlyEmToDoItem item;
+    item.loadJsonObject(m_backup);
+    m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+    m_doc->notifyTodoEdited(item.getPosition());
+    QString msg = QString("Todo removal undone at (%1, %2, %3)").
+        arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+    m_doc->notify(msg);
+  }
 }
 
+/////////////////AddItem//////////////////////
+ZStackDocCommand::FlyEmToDoItemEdit::AddItem::AddItem(
+    ZFlyEmProofDoc *doc, const ZFlyEmToDoItem &item)
+{
+  m_doc = doc;
+  m_item = item;
+}
+
+ZStackDocCommand::FlyEmToDoItemEdit::AddItem::~AddItem()
+{
+}
+
+void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::redo()
+{
+  m_doc->addTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
+  m_doc->notifyTodoEdited(m_item.getPosition());
+  QString msg = QString("Todo item added at (%1, %2, %3)").
+      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+  m_doc->notify(msg);
+}
+
+void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::undo()
+{
+  m_doc->removeTodoItem(
+        m_item.getPosition(), ZFlyEmToDoList::DATA_GLOBAL);
+  m_doc->notifyTodoEdited(m_item.getPosition());
+  QString msg = QString("New todo item removed by undo at (%1, %2, %3)").
+      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+  m_doc->notify(msg);
+}
 
 

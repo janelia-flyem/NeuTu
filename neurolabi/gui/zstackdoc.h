@@ -869,6 +869,7 @@ public:
                               const std::set<ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
+  void notify(const QString &msg);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }

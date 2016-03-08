@@ -62,7 +62,7 @@ bool ZUndoCommand::isSaved(NeuTube::EDocumentableType type) const
 
 ZStackDocCommand::SwcEdit::ChangeSwcCommand::ChangeSwcCommand(
     ZStackDoc *doc, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc)
+  ZUndoCommand(parent), m_doc(doc), m_isSwcModified(false)
 {
 }
 
@@ -187,6 +187,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcCommand::backup(
 
 void ZStackDocCommand::SwcEdit::ChangeSwcCommand::addNewNode(Swc_Tree_Node *tn)
 {
+  backup(tn);
   m_newNodeSet.insert(tn);
 }
 
@@ -537,12 +538,32 @@ ZStackDocCommand::SwcEdit::RemoveSubtree::~RemoveSubtree()
     SwcTreeNode::killSubtree(m_node);
   }
 }
+#if 0
+ZStackDocCommand::SwcEdit::BreakParentLink::BreakParentLink(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
 
+}
 
+ZStackDocCommand::SwcEdit::BreakParentLink::~BreakParentLink()
+{
+#ifdef _DEBUG_
+    std::cout << "SwcEdit::BreakParentLink destroyed" << std::endl;
+#endif
+}
+
+ZStackDocCommand::SwcEdit::BreakParentLink::redo()
+{
+  backup()
+}
+#endif
+
+////////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
 {
   setText(QObject::tr("Merge swc nodes"));
+  m_coreNode = NULL;
 }
 
 void ZStackDocCommand::SwcEdit::MergeSwcNode::undo()
@@ -556,7 +577,8 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::undo()
 
 void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
 {
-  Swc_Tree_Node *coreNode = NULL;
+  Swc_Tree_Node *coreNode = m_coreNode;
+  m_garbageSet.clear();
 
   std::set<Swc_Tree_Node*> nodeSet = m_selectedNodeSet;
   if (nodeSet.empty()) {
@@ -569,7 +591,11 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
     ZPoint center = SwcTreeNode::centroid(nodeSet);
     double radius = SwcTreeNode::maxRadius(nodeSet);
 
-    coreNode = SwcTreeNode::makePointer(center, radius);
+    if (coreNode == NULL) {
+      coreNode = SwcTreeNode::makePointer(center, radius);
+      m_coreNode = coreNode;
+    }
+
     addNewNode(coreNode);
 #ifdef _DEBUG_
     std::cout << coreNode << " created." << std::endl;
@@ -659,12 +685,15 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
       }
     }
 
-    //m_doc->selectedSwcTreeNodes()->clear();
+    if (!m_backupSet.empty()) {
+      setSwcModified(true);
+      //m_doc->selectedSwcTreeNodes()->clear();
 
-    m_doc->processSwcModified();
-    m_doc->notifyObjectModified();
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
 
-    m_doc->deprecateTraceMask();
+      m_doc->deprecateTraceMask();
+    }
 
     if (coreNode != NULL) {
       m_doc->selectSwcTreeNode(coreNode);
@@ -679,6 +708,98 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::~MergeSwcNode()
 #endif
 }
 
+/////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Resolve crossover"));
+}
+
+void ZStackDocCommand::SwcEdit::ResolveCrossover::undo()
+{
+  recover();
+  m_doc->deselectAllSwcTreeNodes();
+  m_doc->setSwcTreeNodeSelected(
+        m_selectedNodeSet.begin(), m_selectedNodeSet.end(), true);
+//  m_selectedNodeSet.clear();
+}
+
+void ZStackDocCommand::SwcEdit::ResolveCrossover::redo()
+{
+  std::set<Swc_Tree_Node*> nodeSet = m_selectedNodeSet;
+  if (nodeSet.empty()) {
+    nodeSet = m_doc->getSelectedSwcNodeSet();
+    m_selectedNodeSet = m_doc->getSelectedSwcNodeSet();
+    m_doc->deselectAllSwcTreeNodes();
+  }
+
+  if (nodeSet.size() == 1) {
+    Swc_Tree_Node *center = *(nodeSet.begin());
+    size_t centerNeighborCount = SwcTreeNode::neighborArray(center).size();
+    std::map<Swc_Tree_Node*, Swc_Tree_Node*> matched =
+        SwcTreeNode::crossoverMatch(center, TZ_PI_2);
+    if (!matched.empty()) {
+      Swc_Tree_Node *root = SwcTreeNode::root(center);
+      for (std::map<Swc_Tree_Node*, Swc_Tree_Node*>::const_iterator
+           iter = matched.begin(); iter != matched.end(); ++iter) {
+        if (SwcTreeNode::parent(iter->first) == center &&
+            SwcTreeNode::parent(iter->second) == center) {
+          backup(iter->first, OP_SET_PARENT, ROLE_CHILD);
+          backup(iter->second, OP_SET_PARENT, ROLE_PARENT);
+          SwcTreeNode::setParent(iter->first, iter->second);
+
+          backup(root, OP_SET_PARENT, ROLE_PARENT);
+          SwcTreeNode::setParent(iter->second, root);
+        } else {
+          backup(center, OP_SET_PARENT, ROLE_CHILD);
+          backup(root, OP_SET_PARENT, ROLE_PARENT);
+          SwcTreeNode::setParent(center, root);
+          if (SwcTreeNode::parent(iter->first) == center) {
+            backup(iter->first, OP_SET_PARENT, ROLE_CHILD);
+            backup(iter->second, OP_SET_PARENT, ROLE_PARENT);
+            SwcTreeNode::setParent(iter->first, iter->second);
+          } else {
+            backup(iter->second, OP_SET_PARENT, ROLE_CHILD);
+            backup(iter->first, OP_SET_PARENT, ROLE_PARENT);
+            SwcTreeNode::setParent(iter->second, iter->first);
+          }
+        }
+
+        if (matched.size() * 2 == centerNeighborCount) {
+          backup(center, OP_DETACH_PARENT, ROLE_CHILD);
+          SwcTreeNode::detachParent(center);
+          m_removedNodeSet.insert(center);
+          /*
+          new ZStackDocCommand::SwcEdit::SetParent(
+                this, center, NULL, true, command);
+                */
+          /*
+          new ZStackDocCommand::SwcEdit::DeleteSwcNode(
+                this, center, root, command);
+                */
+        }
+      }
+
+      if (!m_backupSet.empty()) {
+        setSwcModified(true);
+        m_doc->deprecateTraceMask();
+
+        m_doc->processSwcModified();
+        m_doc->notifyObjectModified();
+      }
+    }
+  }
+}
+
+ZStackDocCommand::SwcEdit::ResolveCrossover::~ResolveCrossover()
+{
+#ifdef _DEBUG_
+    std::cout << "SwcEdit::ResolveCrossover destroyed" << std::endl;
+#endif
+}
+
+
+//////////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::ExtendSwcNode::ExtendSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *pnode,
     QUndoCommand *parent)

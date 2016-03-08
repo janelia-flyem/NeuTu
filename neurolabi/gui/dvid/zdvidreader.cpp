@@ -1667,6 +1667,26 @@ ZJsonObject ZDvidReader::readBookmarkJson(const ZIntPoint &pt) const
   return readBookmarkJson(pt.getX(), pt.getY(), pt.getZ());
 }
 
+ZJsonObject ZDvidReader::readAnnotationJson(
+    const std::string &dataName, const ZIntPoint &pt) const
+{
+  return readAnnotationJson(dataName, pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZJsonObject ZDvidReader::readAnnotationJson(
+    const std::string &dataName, int x, int y, int z) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject annotationJson;
+  ZIntCuboid box(x, y, z, x, y, z);
+  ZJsonArray obj = readJsonArray(dvidUrl.getAnnotationUrl(dataName, box));
+  if (obj.size() > 0) {
+    annotationJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+
+  return annotationJson;
+}
+
 bool ZDvidReader::isBookmarkChecked(int x, int y, int z) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -1866,4 +1886,14 @@ ZFlyEmToDoItem ZDvidReader::readToDoItem(int x, int y, int z) const
   }
 
   return ZFlyEmToDoItem();
+}
+
+ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z)
+{
+  return readAnnotationJson(getDvidTarget().getTodoListName(), x, y, z);
+}
+
+ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
+{
+  return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
 }

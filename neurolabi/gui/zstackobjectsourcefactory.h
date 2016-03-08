@@ -37,6 +37,10 @@ public:
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
   static std::string MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeTodoListEnsembleSource();
+  static std::string MakeTodoListEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeTodoPunctaSource();
+  static std::string MakeTodoPunctaSource(uint64_t bodyId);
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

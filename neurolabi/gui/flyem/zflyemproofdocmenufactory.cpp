@@ -68,6 +68,20 @@ QMenu* ZFlyEmProofDocMenuFactory::makeStackContextMenu(
   return makeSynapseContextMenu(presenter, parentWidget, menu);
 }
 
+void ZFlyEmProofDocMenuFactory::addAction(
+    const QList<ZActionFactory::EAction> &actionList,
+    ZStackPresenter *presenter, QMenu *menu)
+{
+  foreach (ZActionFactory::EAction action, actionList) {
+    if (action == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      menu->addAction(presenter->getAction(action));
+    }
+  }
+}
+
+
 QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
 {
@@ -118,6 +132,15 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       actionList.append(ZActionFactory::ACTION_SEPARATOR);
     }
 
+    actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+    if (doc->hasTodoItemSelected()) {
+      actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+      actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+      actionList.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
+    }
+
+    actionList.append(ZActionFactory::ACTION_SEPARATOR);
+
     /* Synapse actions */
     actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
     actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_POST);
@@ -138,35 +161,38 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     }
     actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
+    addAction(actionList, presenter, menu);
+
     /* Bookmark actions */
+    QList<ZActionFactory::EAction> bookmarkActionList;
     TStackObjectSet& bookmarkSet =
         doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
     if (!bookmarkSet.isEmpty()) {
-      actionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
-      actionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+      bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_CHECK);
+      bookmarkActionList.append(ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+    }
+    if (!bookmarkActionList.isEmpty()) {
+      QMenu *submenu = new QMenu("Bookmarks", menu);
+      addAction(bookmarkActionList, presenter, submenu);
+      menu->addMenu(submenu);
     }
 
-    foreach (ZActionFactory::EAction action, actionList) {
-      if (action == ZActionFactory::ACTION_SEPARATOR) {
-        menu->addSeparator();
-      } else {
-        menu->addAction(presenter->getAction(action));
-      }
-    }
 
+
+    QList<ZActionFactory::EAction> swcActionList;
     //SWC actions (submenu has to be added separately)
     QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
     if (swcNodeList.size() > 1) {
       if (!actionList.isEmpty()) {
         menu->addSeparator();
       }
+      swcActionList.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH);
+      swcActionList.append(ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH);
+    }
+    if (!swcActionList.isEmpty()) {
       QMenu *submenu = new QMenu("Path Information", menu);
-      submenu->addAction(doc->getAction(
-                           ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH));
-      submenu->addAction(
-            doc->getAction(ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH));
-
       menu->addMenu(submenu);
+      addAction(swcActionList, presenter, submenu);
     }
   } else {
     menu = ZStackDocMenuFactory::makeContextMenu(presenter, parentWidget, menu);

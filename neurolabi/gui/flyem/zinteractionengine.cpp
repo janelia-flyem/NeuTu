@@ -253,7 +253,7 @@ void ZInteractionEngine::exitPaintRect()
 
 void ZInteractionEngine::exitSwcEdit()
 {
-  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 }
 
 void ZInteractionEngine::exitPaintStroke()
