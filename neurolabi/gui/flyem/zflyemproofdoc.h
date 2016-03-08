@@ -128,8 +128,9 @@ public:
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
-  getSynapse(uint64_t bodyId);
+  getSynapse(uint64_t bodyId) const;
 
+  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
 
   void downloadSynapseFunc();
 

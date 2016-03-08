@@ -1329,7 +1329,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 }
 
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
-ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
 {
   QElapsedTimer timer;
   timer.start();
@@ -1357,6 +1357,36 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   }
 
   return synapse;
+}
+
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId) const
+{
+  std::vector<ZPunctum*> puncta;
+  ZDvidReader reader;
+//  reader.setVerbose(false);
+  const double radius = 50.0;
+  if (reader.open(getDvidTarget())) {
+    ZJsonArray annotationJson = reader.readAnnotation(
+          getDvidTarget().getTodoListName(), bodyId);
+
+    for (size_t i = 0; i < annotationJson.size(); ++i) {
+      ZFlyEmToDoItem item;
+
+      ZJsonObject objJson(annotationJson.value(i));
+      item.loadJsonObject(objJson);
+
+      ZPunctum *punctum = new ZPunctum(item.getPosition(), radius);
+      punctum->setColor(item.getDisplayColor());
+      puncta.push_back(punctum);
+      /*
+      if (item.isChecked()) {
+        punctum->setColor()
+      }
+      */
+    }
+  }
+
+  return puncta;
 }
 
 #if 0

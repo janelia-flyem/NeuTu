@@ -53,6 +53,17 @@ std::ostream& operator<< (std::ostream &stream, const ZFlyEmToDoItem &item)
   return stream;
 }
 
+QColor ZFlyEmToDoItem::getDisplayColor() const
+{
+  QColor color = getColor();
+  if (isChecked()) {
+    color.setRgb(
+          color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
+  }
+
+  return color;
+}
+
 void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                            NeuTube::EAxis sliceAxis) const
 {
@@ -82,8 +93,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     }
 
     if (isChecked()) {
-      color.setRgb(
-            color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
+      color = getDisplayColor();
     }
     painter.setPen(color);
     painter.setBrush(Qt::NoBrush);

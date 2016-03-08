@@ -197,6 +197,19 @@ ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
   return "#.DVIDFlyEMTodoList";
 }
 
+std::string ZStackObjectSourceFactory::MakeTodoPunctaSource()
+{
+  return "#.DVIDFlyEMTodoPuncta";
+}
+
+std::string ZStackObjectSourceFactory::MakeTodoPunctaSource(uint64_t bodyId)
+{
+  ZString source = MakeTodoPunctaSource() + "#";
+  source.appendNumber(bodyId);
+
+  return source;
+}
+
 std::string
 ZStackObjectSourceFactory::MakeTodoListEnsembleSource(NeuTube::EAxis axis)
 {

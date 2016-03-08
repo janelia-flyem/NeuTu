@@ -426,6 +426,17 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
         }
       }
 
+      std::vector<ZPunctum*> todoPuncta =
+          getDataDocument()->getTodoPuncta(bodyId);
+      for (std::vector<ZPunctum*>::const_iterator iter = todoPuncta.begin();
+           iter != todoPuncta.end(); ++iter) {
+        ZPunctum *punctum = *iter;
+//        punctum->setRadius(30);
+//        punctum->setColor(128, 128, 128);
+        punctum->setSource(ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+        addObject(punctum, false);
+      }
+
       endObjectModifiedMode();
       notifyObjectModified(true);
     }

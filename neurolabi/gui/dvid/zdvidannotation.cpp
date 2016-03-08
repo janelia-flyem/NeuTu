@@ -19,6 +19,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
   setDefaultRadius();
+  setDefaultColor();
 }
 
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,

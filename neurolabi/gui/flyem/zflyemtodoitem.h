@@ -34,6 +34,8 @@ public:
   bool isChecked() const;
   void setChecked(bool checked);
 
+  QColor getDisplayColor() const;
+
 private:
   void init();
   void init(EKind kind);
