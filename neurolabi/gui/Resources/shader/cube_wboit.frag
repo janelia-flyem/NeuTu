@@ -20,7 +20,7 @@ void main()
     //float alpha = color.a;
 
     // the object lies between -40 and -60 z coordinates
-    float weight = pow(alpha + 0.01, 4.0) + max(0.01, min(3000.0, 0.3 / (0.00001 + pow(abs(depth) / 200.0, 4.0))));
+    float weight = pow(alpha + 0.01f, 4.0f) + max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(depth) / 200.0f, 4.0f))));
 
     vec4 newColor = vec4(color.rgb*color.a*weight, color.a);
 
