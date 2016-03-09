@@ -1679,7 +1679,9 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
     if (!getCompleteDocument()->isSplittable(bodyId)) {
-      QString msg = QString("%1 is not ready for split.").arg(bodyId);
+      QString msg = QString("%1 is not ready for split. "
+                            "The body could be annotated as 'Finalized' or "
+                            "a merged body waiting for upload.").arg(bodyId);
       emit messageGenerated(
             ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);

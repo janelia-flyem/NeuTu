@@ -56,7 +56,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (itemJson.hasKey("Pos")) {
         ZFlyEmToDoItem item;
-        item.loadJsonObject(itemJson);
+        item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
         addItem(item, DATA_LOCAL);
       }
     }
@@ -147,7 +147,7 @@ void ZFlyEmToDoList::downloadForLabel(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZFlyEmToDoItem item;
-    item.loadJsonObject(itemJson);
+    item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
     if (item.isValid()) {
       addItem(item, DATA_LOCAL);
     }

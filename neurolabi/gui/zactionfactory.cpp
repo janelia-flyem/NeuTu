@@ -523,6 +523,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("trace", parent);
     action->setStatusTip("Trace an individual branch");
     action->setToolTip("Trace an individual branch");
+    break;
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
     break;
