@@ -173,7 +173,7 @@ void ZDvidBufferReader::readQt(const QString &url, bool outputUrl)
 
 bool ZDvidBufferReader::isReadable(const QString &url)
 {
-  QTimer::singleShot(5000, this, SLOT(handleTimeout()));
+  QTimer::singleShot(15000, this, SLOT(handleTimeout()));
 
   startReading();
 

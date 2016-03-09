@@ -342,8 +342,7 @@ bool FlyEmBodyInfoDialog::bodies3Present(ZDvidTarget target) {
     reader.setVerbose(false);
     if (reader.open(target)) {
         // check for data name and key
-        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-            ZDvidData::ROLE_BODY_LABEL, target.getBodyLabelName()))) {
+        if (!reader.hasData(target.getBodyAnnotationName())) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have bodies3 annotations" << std::endl;
             #endif
@@ -514,10 +513,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!)
 
-        QString bodyAnnotationName = ZDvidData::GetName(
-              ZDvidData::ROLE_BODY_ANNOTATION,
-              ZDvidData::ROLE_BODY_LABEL,
-              target.getBodyLabelName()).c_str();
+        QString bodyAnnotationName = target.getBodyAnnotationName().c_str();
         QStringList keyList = reader.readKeys(bodyAnnotationName);
 
         ZJsonArray bodies;
