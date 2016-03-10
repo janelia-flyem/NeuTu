@@ -19667,6 +19667,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
 
   double x = 1.4;
@@ -19764,6 +19765,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
 

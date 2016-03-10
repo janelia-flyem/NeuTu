@@ -466,6 +466,12 @@ std::string ZDvidTarget::getTodoListName() const
                             getBodyLabelName());
 }
 
+std::string ZDvidTarget::getBodyAnnotationName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                            ZDvidData::ROLE_BODY_LABEL, getBodyLabelName());
+}
+
 void ZDvidTarget::setSynapseName(const std::string &name)
 {
   m_synapseName = name;

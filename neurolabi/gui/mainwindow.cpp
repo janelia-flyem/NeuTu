@@ -823,9 +823,12 @@ void MainWindow::setActionActivity()
   m_stackActionActivator.registerAction(m_ui->actionUpdate, true);
 
   m_stackActionActivator.registerAction(m_ui->menuFilter->menuAction(), true);
-  m_stackActionActivator.registerAction(m_ui->menuBinary_Morphology->menuAction(), true);
-  m_stackActionActivator.registerAction(m_ui->menuEdge_Detection->menuAction(), true);
-  m_stackActionActivator.registerAction(m_ui->menuSegmentation->menuAction(), true);
+  m_stackActionActivator.registerAction(
+        m_ui->menuBinary_Morphology->menuAction(), true);
+  m_stackActionActivator.registerAction(
+        m_ui->menuEdge_Detection->menuAction(), true);
+  m_stackActionActivator.registerAction(
+        m_ui->menuSegmentation->menuAction(), true);
 
   m_swcActionActivator.registerAction(m_ui->actionSWC_Rescaling, true);
   m_swcActionActivator.registerAction(m_ui->actionRescale_Swc, true);
@@ -2167,12 +2170,15 @@ void MainWindow::openRecentFile()
 void MainWindow::about()
 {
   QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
+#if defined(_CURRENT_COMMIT_)
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
+        " (" + _CURRENT_COMMIT_ + ")</p>";
   }
-  QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+#endif
+  QString thirdPartyLib = QString(
+        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
@@ -3772,7 +3778,8 @@ void MainWindow::on_actionFlyEmSelect_triggered()
     ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
     ParameterDialog dlg;
     dlg.setWindowTitle(tr("Select Bodies"));
-    dlg.setParamterToolTip(tr("{\"file\": <string>, \n \"id\": [<int>] | <int>, \n \"connection\": [<int>]}"));
+    dlg.setParamterToolTip(
+          tr("{\"file\": <string>, \n \"id\": [<int>] | <int>, \n \"connection\": [<int>]}"));
     if (dlg.exec() == QDialog::Accepted) {
       ZString str(dlg.parameter());
       ZJsonObject jValue;
@@ -4305,7 +4312,8 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
       int leftMargin = 100;
       int rightMargin = 800;
 
-      Stack *out = C_Stack::make(GREY, finalWidth + leftMargin + rightMargin, C_Stack::height(stackArray[0]), 1);
+      Stack *out = C_Stack::make(GREY, finalWidth + leftMargin + rightMargin,
+                                 C_Stack::height(stackArray[0]), 1);
 
       Zero_Stack(out);
       uint8_t *outArray = out->array;
@@ -4352,10 +4360,12 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
           C_Stack::drawPatch(out, textPatchArray[layer], dx, dy, 0, 0);
         }
 
-        Stack *scaleBar = Read_Stack_U((dataPath + "/" + dataDir + "/row/scale_bar_row1.tif").c_str());
+        Stack *scaleBar = Read_Stack_U(
+              (dataPath + "/" + dataDir + "/row/scale_bar_row1.tif").c_str());
         Stack *croppedScaleBar = C_Stack::boundCrop(scaleBar);
         C_Stack::kill(scaleBar);
-        C_Stack::drawPatch(out, croppedScaleBar, C_Stack::width(out) - 700, C_Stack::height(out) - 200, 0, 0);
+        C_Stack::drawPatch(out, croppedScaleBar, C_Stack::width(out) - 700,
+                           C_Stack::height(out) - 200, 0, 0);
         C_Stack::kill(croppedScaleBar);
       }
 
