@@ -19637,7 +19637,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   reader.open("emdata2.int.janelia.org", "e402", 7000);
   ZObject3dScan obj = reader.readRoi("seven_column_roi");
@@ -19664,6 +19664,40 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "Bad object subtraction." << std::endl;
   }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+  factory.setDownsampleInterval(7, 7, 7);
+  Stack *stack = factory.createSurfaceImage(obj);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  C_Stack::kill(stack);
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidWriter writer;
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (writer.open(target) && reader.open(target)) {
+    std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+                                              target.getBodyLabelName());
+    QStringList keyList = reader.readKeys(dataName.c_str());
+    foreach(const QString &key, keyList) {
+      writer.deleteKey(dataName, key.toStdString());
+    }
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;
