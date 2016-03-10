@@ -233,7 +233,8 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   Z3DGraphFactory factory;
   factory.setNodeRadiusHint(0);
   factory.setShapeHint(GRAPH_LINE);
-  factory.setEdgeColorHint(QColor(128, 64, 64));
+  factory.setEdgeColorHint(roi.getColor());
+//  factory.setEdgeColorHint(QColor(128, 64, 64));
 
   for (k = 0; k <= cdepth; k ++) {
     for (j = 0; j <= cheight; j++) {
@@ -415,11 +416,17 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
     if (!roiList.empty()) {
       ZDvidReader reader;
       if (reader.open(dvidTarget)) {
+        ZColorScheme colorScheme;
+        colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+        int index = 0;
         for (std::vector<std::string>::const_iterator iter = roiList.begin();
-             iter != roiList.end(); ++iter) {
+             iter != roiList.end(); ++iter, ++index) {
           ZObject3dScan roi = reader.readRoi(*iter);
+          roi.setColor(colorScheme.getColor(index));
           if (!roi.isEmpty()) {
             Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
+//            graph->setColor(colorScheme.getColor(index));
+//            graph->syncNodeColor();
             graph->setSource(
                   ZStackObjectSourceFactory::MakeFlyEmRoiSource(*iter));
             window->getDocument()->addObject(graph, true);

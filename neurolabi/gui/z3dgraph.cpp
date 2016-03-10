@@ -391,4 +391,13 @@ void Z3DGraph::addEdge(
   addEdge(edge);
 }
 
+void Z3DGraph::syncNodeColor()
+{
+  for (std::vector<Z3DGraphNode>::iterator iter = m_nodeArray.begin();
+       iter != m_nodeArray.end(); ++iter) {
+    Z3DGraphNode &node = *iter;
+    node.setColor(getColor());
+  }
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)
