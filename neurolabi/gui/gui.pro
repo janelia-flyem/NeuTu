@@ -68,7 +68,7 @@ GIT = $$system(which git)
 
 #message($$GIT)
 contains(GIT, .*git) {
-    COMMIT_HASH = $$system(git rev-parse HEAD)
+    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
     DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
     message($$COMMIT_HASH)
 }
