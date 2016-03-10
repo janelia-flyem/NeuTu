@@ -97,8 +97,8 @@ public:
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
   std::set<uint64_t> readAnnnotatedBodySet();
 
-  bool hasKey(const QString &dataName, const QString &key);
-  QByteArray readKeyValue(const QString &dataName, const QString &key);
+  bool hasKey(const QString &dataName, const QString &key) const;
+  QByteArray readKeyValue(const QString &dataName, const QString &key) const;
   QStringList readKeys(const QString &dataName);
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
@@ -199,6 +199,8 @@ public:
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
+
+  ZJsonObject readSkeletonConfig() const;
 
   bool good() const;
 

@@ -833,12 +833,12 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
   return bodySet;
 }
 
-bool ZDvidReader::hasKey(const QString &dataName, const QString &key)
+bool ZDvidReader::hasKey(const QString &dataName, const QString &key) const
 {
   return !readKeyValue(dataName, key).isEmpty();
 }
 
-QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
+QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key) const
 {
   ZDvidUrl url(getDvidTarget());
 
@@ -1169,6 +1169,22 @@ ZIntPoint ZDvidReader::readBodyTop(uint64_t bodyId) const
 #endif
 
   return pt;
+}
+
+ZJsonObject ZDvidReader::readSkeletonConfig() const
+{
+  ZJsonObject config;
+
+  std::string skeletonName = ZDvidData::GetName(
+        ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
+        getDvidTarget().getBodyLabelName());
+  if (hasKey(skeletonName.c_str(), "config.json")) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    config = readJsonObject(
+          dvidUrl.getSkeletonConfigUrl(getDvidTarget().getBodyLabelName()));
+  }
+
+  return config;
 }
 
 ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const

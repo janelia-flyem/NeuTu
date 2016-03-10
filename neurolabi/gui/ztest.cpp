@@ -19681,7 +19681,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::kill(stack);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "739f", 6300);
   target.setBodyLabelName("bodies121714");
@@ -19697,7 +19697,19 @@ void ZTest::test(MainWindow *host)
       writer.deleteKey(dataName, key.toStdString());
     }
   }
+#endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (reader.open(target)) {
+    ZJsonObject config = reader.readSkeletonConfig();
+    std::cout << config.dumpString(2) << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;
