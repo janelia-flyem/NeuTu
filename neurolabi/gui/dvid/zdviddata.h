@@ -40,6 +40,7 @@ public:
   static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
+//  static std::string GetName(ERole role, ERole prefixRole);
 
   static bool isDefaultName(ERole role, const std::string &name);
 

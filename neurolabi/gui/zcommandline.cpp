@@ -620,21 +620,23 @@ int ZCommandLine::runSkeletonize()
 
     ZStackSkeletonizer skeletonizer;
 
-
-    if (m_configJson.hasKey("skeletonize")) {
-      skeletonizer.configure(
-            ZJsonObject(m_configJson["skeletonize"],
-            ZJsonValue::SET_INCREASE_REF_COUNT));
-    } else {
-      ZJsonObject config;
-      if (m_input.size() <= 2) {
-        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                    "/json/skeletonize.json");
-      } else {
-        config.load(m_input[2]);
-      }
-      skeletonizer.configure(config);
+    ZJsonObject config;
+    if (m_input.size() <= 2) {
+      config = reader.readSkeletonConfig();
     }
+
+    if (config.isEmpty()) {
+      if (m_configJson.hasKey("skeletonize")) {
+        skeletonizer.configure(
+              ZJsonObject(m_configJson["skeletonize"],
+              ZJsonValue::SET_INCREASE_REF_COUNT));
+      } else {
+        if (m_input.size() >= 2) {
+          config.load(m_input[2]);
+        }
+      }
+    }
+    skeletonizer.configure(config);
 
     for (size_t i = 0; i < bodyIdArray.size(); ++i) {
       uint64_t bodyId = bodyIdArray[rank[i] - 1];
