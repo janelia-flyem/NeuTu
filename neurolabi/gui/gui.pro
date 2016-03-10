@@ -64,6 +64,14 @@ DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 HOSTNAME = $$system(echo $HOSTNAME)
 USER = $$system(echo $USER)
 HOME = $$system(echo $HOME)
+GIT = $$system(which git)
+
+#message($$GIT)
+contains(GIT, .*git) {
+    COMMIT_HASH = $$system(git rev-parse HEAD)
+    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+    message($$COMMIT_HASH)
+}
 
 include(add_itk.pri)
 

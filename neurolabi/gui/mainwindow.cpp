@@ -2167,11 +2167,13 @@ void MainWindow::openRecentFile()
 void MainWindow::about()
 {
   QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
+#if defined(_CURRENT_COMMIT_)
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
+        " (" + _CURRENT_COMMIT_ + ")</p>";
   }
+#endif
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
