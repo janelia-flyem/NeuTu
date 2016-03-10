@@ -19757,10 +19757,25 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
   ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+  factory.setDownsampleInterval(7, 7, 7);
+  Stack *stack = factory.createSurfaceImage(obj);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  C_Stack::kill(stack);
 #endif
 
   std::cout << "Done." << std::endl;

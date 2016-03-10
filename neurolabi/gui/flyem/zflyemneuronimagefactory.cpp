@@ -144,6 +144,11 @@ Stack *ZFlyEmNeuronImageFactory::createSurfaceImage(const ZObject3dScan &obj) co
     offset[1] -= 1500 / (m_downsampleInterval[2] + 1); //hard-coded calibration, need modification later
 
     stack = misc::computeNormal(objStack, NeuTube::Z_AXIS);
+
+#ifdef _DEBUG_2
+    C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test2.tif", objStack);
+#endif
+
     C_Stack::kill(objStack);
 
     int height= C_Stack::height(stack);

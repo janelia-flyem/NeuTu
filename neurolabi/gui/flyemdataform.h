@@ -159,6 +159,8 @@ private slots:
 
   void exportTypeLabelFile();
 
+  void exportSelectedBody();
+
   void importSynapse();
 
   void slotTest();

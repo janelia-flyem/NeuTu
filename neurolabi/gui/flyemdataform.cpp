@@ -185,6 +185,11 @@ void FlyEmDataForm::createExportMenu()
   m_exportMenu->addAction(exportTypeLabelAction);
   connect(exportTypeLabelAction, SIGNAL(triggered()),
           this, SLOT(exportTypeLabelFile()));
+
+  QAction *exportBodyAction = new QAction("Bodies", this);
+  m_exportMenu->addAction(exportBodyAction);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
 }
 
 void FlyEmDataForm::createImportMenu()
@@ -1473,6 +1478,33 @@ void FlyEmDataForm::exportTypeLabelFile()
       QFileDialog::getOpenFileName(this, "Export Type Labels", "", "*.json");
   if (!fileName.isEmpty()) {
     //
+  }
+}
+
+void FlyEmDataForm::exportSelectedBody()
+{
+  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Export Bodies"),
+    "", QFileDialog::ShowDirsOnly);
+
+  if (!dirpath.isEmpty()) {
+    if(QMessageBox::warning(
+         this, "Exporting Bodies",
+         "It will overwrite any existing file "
+         "that has the same name as a saved one. Continue?",
+         QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes) {
+      QItemSelectionModel *sel = ui->queryView->selectionModel();
+      QVector<ZFlyEmNeuron*> neuronArray =
+          m_neuronList->getNeuronArray(sel->selectedIndexes());
+
+      dump(QString("Saving %1 bodies ...").arg(neuronArray.size()));
+      foreach (ZFlyEmNeuron *neuron, neuronArray) {
+        QString output = dirpath + QString("/body_%1.sobj").arg(neuron->getId());
+        neuron->getBody()->save(output.toStdString());
+        dump(output + " saved");
+        neuron->releaseBody();
+      }
+      dump("Done.");
+    }
   }
 }
 
