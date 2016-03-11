@@ -19798,7 +19798,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "739f", 6300);
   target.setBodyLabelName("bodies121714");
@@ -19810,6 +19810,29 @@ void ZTest::test(MainWindow *host)
     std::cout << config.dumpString(2) << std::endl;
   }
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setBodyLabelName("bodies");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    std::cout << "Has body: " << reader.hasBody(15363212) << std::endl;
+  }
+#endif
+
+#if 0
+  try {
+    libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+    service.custom_request("bodies/sparsevol/101", libdvid::BinaryDataPtr(), libdvid::HEAD);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.getStatus() << std::endl;
+    std::cout << e.what() << std::endl;
+  }
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

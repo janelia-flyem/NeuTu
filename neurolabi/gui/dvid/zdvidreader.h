@@ -55,6 +55,7 @@ public:
    * \return
    */
   int getStatusCode() const;
+  void setStatusCode(int code) const;
 
   /*!
    * \brief Check if the reader is ready to use
@@ -247,7 +248,7 @@ protected:
   bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
-  int m_statusCode;
+  mutable int m_statusCode;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif

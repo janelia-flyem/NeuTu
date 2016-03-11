@@ -40,6 +40,9 @@ public:
   bool hasHead(const QString &url);
 
   EStatus getStatus() const;
+  int getStatusCode() const {
+    return m_statusCode;
+  }
 
   inline const QByteArray& getBuffer() const {
     return m_buffer;
@@ -84,6 +87,7 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+  int m_statusCode;
   bool m_tryingCompress;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;

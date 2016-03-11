@@ -85,9 +85,11 @@ void ZDvidBufferReader::read(
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;
-    } catch (std::exception &e) {
+      m_statusCode = 200;
+    } catch (libdvid::DVIDException &e) {
       std::cout << e.what() << std::endl;
       m_status = READ_FAILED;
+      m_statusCode = e.getStatus();
     }
   }
 #endif
@@ -123,9 +125,11 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;
-    } catch (std::exception &e) {
+      m_statusCode = 200;
+    } catch (libdvid::DVIDException &e) {
       std::cout << e.what() << std::endl;
       m_status = READ_FAILED;
+      m_statusCode = e.getStatus();
     }
   } else {
     startReading();
@@ -293,7 +297,8 @@ void ZDvidBufferReader::endReading(EStatus status)
 #ifdef _DEBUG_
     qDebug() << "Status code: " << statusCode;
 #endif
-    if (statusCode.toInt() != 200) {
+    m_statusCode = statusCode.toInt();
+    if (m_statusCode != 200) {
       m_status = READ_BAD_RESPONSE;
     }
     m_networkReply->deleteLater();

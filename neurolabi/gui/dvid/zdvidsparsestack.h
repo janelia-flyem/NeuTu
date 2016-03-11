@@ -66,6 +66,7 @@ public:
 
   void deprecateStackBuffer();
 
+  int getReadStatusCode() const;
 
 private:
   void init();
