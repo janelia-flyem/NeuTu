@@ -99,6 +99,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   ui->label->hide();
 #endif
 
+  m_updateThumbnailAction = NULL;
   createAction();
   createContextMenu();
   ui->queryView->setContextMenu(m_neuronContextMenu);
@@ -505,6 +506,23 @@ ZStackDoc *FlyEmDataForm::updateViewSelectedModel(ZFlyEmQueryView *view)
   return doc;
 }
 
+void FlyEmDataForm::updateViewSelectedThumbnail(ZFlyEmQueryView *view)
+{
+  ui->progressBar->setValue(50);
+  ui->progressBar->show();
+  //QApplication::processEvents();
+
+  QItemSelectionModel *sel = view->selectionModel();
+  QVector<ZFlyEmNeuron*> neuronArray =
+      view->getModel()->getNeuronArray(sel->selectedIndexes());
+
+  foreach (ZFlyEmNeuron *neuron, neuronArray) {
+    updateThumbnail(neuron, THUMBAIL_FORCE_COMPUTE);
+  }
+
+  ui->progressBar->hide();
+}
+
 ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
@@ -542,6 +560,11 @@ void FlyEmDataForm::showSelectedModel()
 void FlyEmDataForm::updateSelectedModel()
 {
   updateViewSelectedModel(ui->queryView);
+}
+
+void FlyEmDataForm::updateSelectedThumbnail()
+{
+  updateViewSelectedThumbnail(ui->queryView);
 }
 
 void FlyEmDataForm::showSelectedBody()
@@ -655,6 +678,7 @@ void FlyEmDataForm::createContextMenu()
     m_neuronContextMenu->addAction(m_showSelectedModelAction);
     m_neuronContextMenu->addAction(m_showSelectedModelWithBoundBoxAction);
     m_neuronContextMenu->addAction(m_updateSelectedModelAction);
+    m_neuronContextMenu->addAction(m_updateThumbnailAction);
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
     m_neuronContextMenu->addAction(m_showSelectedBodyAction);
@@ -678,6 +702,12 @@ void FlyEmDataForm::createAction()
     m_updateSelectedModelAction = new QAction("Update Model", this);
     connect(m_updateSelectedModelAction, SIGNAL(triggered()),
             this, SLOT(updateSelectedModel()));
+  }
+
+  if (m_updateThumbnailAction == NULL) {
+    m_updateThumbnailAction = new QAction("Update Thumbnail", this);
+    connect(m_updateThumbnailAction, SIGNAL(triggered()),
+            this, SLOT(updateSelectedThumbnail()));
   }
 
   if (m_showSelectedBodyAction == NULL) {
@@ -1145,7 +1175,8 @@ void FlyEmDataForm::updateThumbnailLive(ZFlyEmNeuron *neuron)
 #endif
 }
 
-void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron, bool computing)
+void FlyEmDataForm::updateThumbnail(
+    ZFlyEmNeuron *neuron, EUpdateThumbnailOption option)
 {
   if (neuron == NULL) {
     return;
@@ -1201,22 +1232,24 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron, bool computing)
                 }
               }
 
-              if (!isDataReady && computing) {
-                //fire off computation thread
-                QFuture<uint64_t> future =
-                    QtConcurrent::run(
-                      this, &FlyEmDataForm::computeThumbnailFunc, neuron);
-                m_bodyFutureMap[threadId] = future;
-                m_thumbnailFutureWatcher.setFuture(future);
-                QGraphicsTextItem *textItem = new QGraphicsTextItem;
-                QString font = "color=\"green\"";
-                textItem->setHtml(
-                      QString(
-                        "<p><font %1>The thumbail is being computed.</font></p>"
-                        "<p><font %1>It may take several minutes.</font></p>"
-                        "<p><font %1>Please come back later.</font></p>").
-                      arg(font));
-                m_thumbnailScene->addItem(textItem);
+              if (option != THUMBNAIL_NO_COMPUTE) {
+                if (!isDataReady || option == THUMBAIL_FORCE_COMPUTE) {
+                  //fire off computation thread
+                  QFuture<uint64_t> future =
+                      QtConcurrent::run(
+                        this, &FlyEmDataForm::computeThumbnailFunc, neuron);
+                  m_bodyFutureMap[threadId] = future;
+                  m_thumbnailFutureWatcher.setFuture(future);
+                  QGraphicsTextItem *textItem = new QGraphicsTextItem;
+                  QString font = "color=\"green\"";
+                  textItem->setHtml(
+                        QString(
+                          "<p><font %1>The thumbail is being computed.</font></p>"
+                          "<p><font %1>It may take several minutes.</font></p>"
+                          "<p><font %1>Please come back later.</font></p>").
+                        arg(font));
+                  m_thumbnailScene->addItem(textItem);
+                }
               }
             }
           }
@@ -1496,7 +1529,8 @@ void FlyEmDataForm::slotTest()
   QItemSelectionModel *sel = ui->queryView->selectionModel();
   QModelIndexList selected = sel->selectedIndexes();
   if (selected.size() == 1) {
-    updateThumbnail(m_neuronList->getNeuron(selected.front()), false);
+    updateThumbnail(m_neuronList->getNeuron(selected.front()),
+                    THUMBNAIL_NO_COMPUTE);
   }
 
 #if 0

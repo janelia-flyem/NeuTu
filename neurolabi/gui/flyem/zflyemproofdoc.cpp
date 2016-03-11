@@ -2047,8 +2047,19 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
   if (se != NULL) {
     const std::set<ZIntPoint> &selected =
         se->getSelector().getSelectedSet();
+    std::set<ZIntPoint> removingSet;
     for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      ZDvidSynapse &synapse =
+          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      std::vector<ZIntPoint> partners = synapse.getPartners();
+      removingSet.insert(pt);
+      removingSet.insert(partners.begin(), partners.end());
+    }
+
+    for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();
+         iter != removingSet.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       new ZStackDocCommand::DvidSynapseEdit::RemoveSynapse(
             this, pt.getX(), pt.getY(), pt.getZ(), command);
