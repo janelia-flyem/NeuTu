@@ -529,12 +529,12 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "a882",
+      "uuid": "4adc",
       "name": "MB_Synapse_Shift",
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
-      "synapse": "mb6_synapses",
+      "synapse": "alpha1_synapses",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
     },
     {
