@@ -806,6 +806,27 @@ void ZStackDoc::notifySelectionChanged(
   notifySelectionChanged(selectedList, deselectedList);
 }
 
+void ZStackDoc::notifySelectionChanged(
+    const std::set<const ZStackObject *> &selected,
+    const std::set<const ZStackObject *> &deselected)
+{
+  QList<ZStackObject*> selectedList;
+  QList<ZStackObject*> deselectedList;
+
+  for (std::set<const ZStackObject *>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    selectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+  for (std::set<const ZStackObject *>::const_iterator iter = deselected.begin();
+       iter != deselected.end(); ++iter) {
+    deselectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+//  emit objectSelectionChanged(selectedList, deselectedList);
+  notifySelectionChanged(selectedList, deselectedList);
+}
+
 #define DEFINE_NOTIFY_SELECTION_CHANGED(Type, Signal) \
   void ZStackDoc::notifySelectionChanged(\
      const QList<Type *> &selected, \
@@ -813,6 +834,7 @@ void ZStackDoc::notifySelectionChanged(
   {\
     if (!isSelectionSlient()) {\
       if (!selected.empty() || !deselected.empty()) {\
+        std::cout << "Object selelection changed." << std::endl; \
         emit Signal(selected, deselected);\
       }\
     }\
@@ -3791,8 +3813,8 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
         m_objectGroup.setSelected(obj, false);
       }
     }
-    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(type),
-                           m_objectGroup.getSelector()->getDeselectedSet(type));
+    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedObjectSet(type),
+                           m_objectGroup.getSelector()->getDeselectedObjectSet(type));
   }
     break;
   }
@@ -4174,6 +4196,19 @@ void ZStackDoc::toggleSelected(ZStackObject *obj)
   if (obj != NULL) {
     setSelected(obj, !obj->isSelected());
   }
+}
+
+void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
+{
+  if (!appending) {
+    getObjectGroup().deselectAll();
+//    m_objectGroup.getSelector()->deselectAll();
+  }
+  m_objectGroup.setSelected(obj, true);
+
+//  m_objectGroup.getSelector()->selectObject(obj);
+  notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
+                         m_objectGroup.getSelector()->getDeselectedSet());
 }
 
 TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
@@ -4937,6 +4972,11 @@ void ZStackDoc::notify3DGraphModified()
   emit graph3dModified();
 }
 
+void ZStackDoc::notifyTodoModified()
+{
+  emit todoModified();
+}
+
 void ZStackDoc::notifyActiveViewModified()
 {
   emit activeViewModified();
@@ -5165,6 +5205,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     break;
   case ZStackObject::TYPE_3D_GRAPH:
     notify3DGraphModified();
+    break;
+  case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+    notifyTodoModified();
     break;
   default:
 //    notifyObjectModified();
@@ -8419,7 +8462,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
   }
   if (numberOfSelected == 1) {
     ZIntCuboid box;
-    obj->getBoundBox(&box);
+    obj->boundBox(&box);
     if (!box.isEmpty()) {
       for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
            iter != m_playerList.end(); ++iter) {
@@ -8427,7 +8470,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
         if (player->hasRole(ZStackObjectRole::ROLE_SEED)) {
           ZStackObject *checkObj = player->getData();
           ZIntCuboid checkBox;
-          checkObj->getBoundBox(&checkBox);
+          checkObj->boundBox(&checkBox);
           int boxDist;
           if (!checkBox.isEmpty()) {
             if (box.contains(checkBox.getLastCorner()) ||

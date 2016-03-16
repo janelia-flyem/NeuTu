@@ -73,7 +73,7 @@ public:
 
   void dump(const QString &message);
 
-  QList<int> getSelectedNeuronList() const;
+  QList<uint64_t> getSelectedNeuronList() const;
 
 protected:
   void resizeEvent(QResizeEvent *);
@@ -130,7 +130,7 @@ private slots:
   void updateThumbnail(const QModelIndex &index);
   void updateThumbnailSecondary(const QModelIndex &index);
 
-  void updateThumbnail(QList<QGraphicsItem *> itemList, int bodyId);
+  void updateThumbnail(QList<QGraphicsItem *> itemList, uint64_t bodyId);
   void generateThumbnailItem(
       QList<QGraphicsItem *> currentItemList, ZFlyEmNeuron *neuron);
 
@@ -179,6 +179,7 @@ private:
                        EUpdateThumbnailOption option = THUMBNAIL_MISS_COMPUTE);
   void updateThumbnailLive(ZFlyEmNeuron *neuron);
   uint64_t computeThumbnailFunc(ZFlyEmNeuron *neuron);
+  static QString GetThumbnailMessage(uint64_t bodyId);
   void saveVolumeRenderingFigure(
       ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
   Stack *loadThumbnailImage(ZFlyEmNeuron *neuron);

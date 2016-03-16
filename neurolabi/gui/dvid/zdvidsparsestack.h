@@ -40,7 +40,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   ZIntCuboid getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void loadBody(uint64_t bodyId, bool canonizing = false);
   void loadBodyAsync(uint64_t bodyId);

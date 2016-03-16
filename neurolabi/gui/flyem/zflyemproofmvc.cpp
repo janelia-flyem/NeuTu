@@ -47,6 +47,8 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "flyem/zflyemorthowindow.h"
+#include "flyem/zflyemdataframe.h"
+#include "flyem/zflyemtodolistfilter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -82,6 +84,7 @@ void ZFlyEmProofMvc::init()
   initBodyWindow();
   m_objectWindow = NULL;
   m_orthoWindow = NULL;
+//  m_queryWindow = NULL;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -251,6 +254,11 @@ void ZFlyEmProofMvc::detachExternalNeuronWindow()
   m_externalNeuronWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachQueryWindow()
+{
+//  m_queryWindow = NULL;
+}
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -319,6 +327,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
   connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
+  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showTodo(bool)));
+
   setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -1896,6 +1907,16 @@ void ZFlyEmProofMvc::showObjectWindow()
 
   m_objectWindow->show();
   m_objectWindow->raise();
+}
+
+void ZFlyEmProofMvc::showQueryTable()
+{
+  /*
+  if (m_queryWindow = NULL) {
+    m_queryWindow = new ZFlyEmDataFrame;
+    m_queryWindow.load()
+  }
+  */
 }
 
 void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)

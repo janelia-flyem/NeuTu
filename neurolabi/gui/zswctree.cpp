@@ -1202,7 +1202,7 @@ ZCuboid ZSwcTree::boundBox() const
 }
 #endif
 
-const ZCuboid& ZSwcTree::getBoundBox() const
+ZCuboid ZSwcTree::getBoundBox() const
 {
   if (isDeprecated(BOUND_BOX)) {
     double corner[6];

@@ -170,7 +170,7 @@ public:
    * For compability purpose, it is set to take an output parameter instead of
    * returning the result.
    */
-  virtual void getBoundBox(ZIntCuboid *box) const;
+  virtual void boundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);

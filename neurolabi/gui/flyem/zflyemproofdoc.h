@@ -131,6 +131,7 @@ public:
   getSynapse(uint64_t bodyId) const;
 
   std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
 
   void downloadSynapseFunc();
 

@@ -23,6 +23,7 @@ class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
+class ZFlyEmDataFrame;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -132,6 +133,7 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
 
   void setDvidLabelSliceSize(int width, int height);
@@ -198,6 +200,7 @@ protected slots:
   void detachObjectWindow();
   void detachExternalNeuronWindow();
   void detachOrthoWindow();
+  void detachQueryWindow();
 //  void closeBodyWindow(int index);
   void closeOrthoWindow();
   void close3DWindow(Z3DWindow *window);
@@ -276,6 +279,7 @@ protected:
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
+//  ZFlyEmDataFrame *m_queryWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
   ZStackViewParam m_currentViewParam;

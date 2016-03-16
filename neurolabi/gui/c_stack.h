@@ -303,7 +303,7 @@ inline size_t elementNumber(const Mc_Stack *stack) {
 }
 
 inline size_t allByteNumber(const Mc_Stack *stack) {
-  return volumeByteNumber(stack);
+  return volumeByteNumber(stack) * channelNumber(stack);
 }
 
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
@@ -367,6 +367,7 @@ void write(const std::string &filePath, const Mc_Stack *stack,
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
+char* toMrawBuffer(const Mc_Stack *stack, size_t *length);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);

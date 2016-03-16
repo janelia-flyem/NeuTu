@@ -75,6 +75,10 @@
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
+#include "flyem/zflyemtodolistfilter.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemtodoitem.h"
 
 class Sleeper : public QThread
 {
@@ -620,6 +624,13 @@ void Z3DWindow::init(EInitMode mode)
   m_swcFilter = new Z3DSwcFilter();
   m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
+#if defined _FLYEM_
+  m_todoFilter = new ZFlyEmTodoListFilter;
+  updateTodoList();
+#else
+  m_todoFilter = NULL;
+#endif
+
   if (m_doc->swcNetwork() != NULL) {
     ZPointNetwork *network = m_doc->swcNetwork()->toPointNetwork();
     //ZNormColorMap colorMap;
@@ -651,6 +662,11 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(updateNetworkDisplay()));
   connect(getDocument(), SIGNAL(graph3dModified()),
           this, SLOT(update3DGraphDisplay()));
+  connect(getDocument(), SIGNAL(todoModified()),
+          this, SLOT(updateTodoDisplay()));
+  connect(getDocument(),
+          SIGNAL(objectSelectionChanged(QList<ZStackObject*>,QList<ZStackObject*>)),
+          this, SLOT(updateObjectSelection(QList<ZStackObject*>,QList<ZStackObject*>)));
   connect(getDocument(),
           SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           this, SLOT(punctaSelectionChanged()));
@@ -679,6 +695,10 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(swcSizeScaleChanged()));
   connect(m_punctaFilter, SIGNAL(punctumSelected(ZPunctum*, bool)),
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
+  if (m_todoFilter != NULL) {
+    connect(m_todoFilter, SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+  }
   connect(m_swcFilter, SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
   connect(m_swcFilter, SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
@@ -742,6 +762,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
   m_canvas->addEventListenerToBack(m_compositor);  // for interaction
   m_canvas->addEventListenerToBack(m_graphFilter);
+  m_canvas->addEventListenerToBack(m_todoFilter);
 //  m_canvas->addEventListenerToBack(m_decorationFilter);
 
   // build network
@@ -754,7 +775,10 @@ void Z3DWindow::init(EInitMode mode)
   m_volumeRaycaster->getOutputPort("RightEyeImage")->connect(m_compositor->getInputPort("RightEyeImage"));
   m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
   m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
+  m_graphFilter->getOutputPort("GeometryFilter")->connect(
+        m_compositor->getInputPort("GeometryFilters"));
+  m_todoFilter->getOutputPort("GeometryFilter")->connect(
+        m_compositor->getInputPort("GeometryFilters"));
 //  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
@@ -1326,10 +1350,18 @@ void Z3DWindow::createDockWindows()
 #if defined(_FLYEM_)
     //graph
     wg = m_graphFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+            this, SLOT(openAdvancedSetting(QString)));
     m_widgetsGroup->addChildGroup(wg);
 #endif
   }
+
+#if defined(_FLYEM_)
+  wg = m_todoFilter->getWidgetsGroup();
+  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+          this, SLOT(openAdvancedSetting(QString)));
+  m_widgetsGroup->addChildGroup(wg);
+#endif
 
   if (config.getZ3DWindowConfig().isSwcsOn()) {
     //swc
@@ -1559,6 +1591,11 @@ void Z3DWindow::updateGraphBoundBox()
   m_graphBoundBox = m_graphFilter->boundBox();
 }
 
+void Z3DWindow::updateTodoBoundBox()
+{
+  m_todoBoundBox = m_todoFilter->boundBox();
+}
+
 /*
 void Z3DWindow::updateDecorationBoundBox()
 {
@@ -1613,6 +1650,8 @@ void Z3DWindow::cleanup()
     m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
+    delete m_todoFilter;
+    m_todoFilter = NULL;
 //    delete m_decorationFilter;
 //    m_decorationFilter = NULL;
     delete m_compositor;
@@ -1678,6 +1717,29 @@ void Z3DWindow::update3DGraphDisplay()
   resetCameraClippingRange();
 }
 
+void Z3DWindow::updateTodoList()
+{
+#if defined(_FLYEM_)
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc != NULL) {
+    const TStackObjectList& objList =
+        doc->getDataDocument()->getObjectList(ZStackObject::TYPE_FLYEM_TODO_LIST);
+    if (!objList.isEmpty()) {
+      m_todoFilter->setData(objList.front());
+    }
+  }
+#endif
+}
+
+void Z3DWindow::updateTodoDisplay()
+{
+  if (m_todoFilter != NULL) {
+    updateTodoList();
+    updateTodoBoundBox();
+    updateOverallBoundBox();
+    resetCameraClippingRange();
+  }
+}
 
 void Z3DWindow::updateDisplay()
 {
@@ -1686,6 +1748,7 @@ void Z3DWindow::updateDisplay()
   punctaChanged();
   updateNetworkDisplay();
   update3DGraphDisplay();
+  updateTodoDisplay();
 //  updateDecorationDisplay();
 }
 
@@ -1739,6 +1802,32 @@ void Z3DWindow::punctaSizeScaleChanged()
   updatePunctaBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
+}
+
+void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
+{
+  if (p == NULL) {
+    if (!append) {
+      if (m_todoFilter != NULL) { //temporary hack
+        m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+        m_todoFilter->invalidate();
+      }
+    }
+    return;
+  }
+
+  switch (p->getType()) {
+  case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+  {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      doc->selectObject(p, append);
+    }
+  }
+    break;
+  default:
+    break;
+  }
 }
 
 void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
@@ -1870,6 +1959,41 @@ void Z3DWindow::swcSelectionChanged()
 void Z3DWindow::swcTreeNodeSelectionChanged()
 {
   m_swcFilter->invalidate();
+}
+
+void Z3DWindow::updateObjectSelection(
+    QList<ZStackObject *> selected, QList<ZStackObject *> deselected)
+{
+  QSet<ZStackObject::EType> typeSet;
+  for (QList<ZStackObject*>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    typeSet.insert(obj->getType());
+  }
+
+  for (QList<ZStackObject*>::const_iterator iter = deselected.begin();
+       iter != deselected.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    typeSet.insert(obj->getType());
+  }
+
+  for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
+       iter != typeSet.end(); ++iter) {
+    ZStackObject::EType  type = *iter;
+    switch (type) {
+    case ZStackObject::TYPE_SWC:
+      swcSelectionChanged();
+      break;
+    case ZStackObject::TYPE_PUNCTA:
+      punctaSelectionChanged();
+      break;
+    case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+      m_todoFilter->invalidate();
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 void Z3DWindow::swcDoubleClicked(ZSwcTree *tree)
@@ -3997,6 +4121,8 @@ Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
     return getPunctaFilter()->getRendererBase();
   case LAYER_VOLUME:
     return getVolumeRaycasterRenderer()->getRendererBase();
+  case LAYER_TODO:
+    return getTodoFilter()->getRendererBase();
   }
 
   return NULL;
@@ -4004,15 +4130,19 @@ Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
 
 void Z3DWindow::setZScale(ERendererLayer layer, double scale)
 {
-  getRendererBase(layer)->setZScale(scale);
+  if (getRendererBase(layer) != NULL) {
+    getRendererBase(layer)->setZScale(scale);
+  }
 }
 
 void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
 {
   Z3DRendererBase *base = getRendererBase(layer);
-  base->setXScale(sx);
-  base->setYScale(sy);
-  base->setZScale(sz);
+  if (base != NULL) {
+    base->setXScale(sx);
+    base->setYScale(sy);
+    base->setZScale(sz);
+  }
 }
 
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
@@ -4032,6 +4162,11 @@ void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
   case LAYER_PUNCTA:
     getPunctaFilter()->setVisible(visible);
     break;
+  case LAYER_TODO:
+    if (getTodoFilter() != NULL) {
+      getTodoFilter()->setVisible(visible);
+    }
+    break;
   case LAYER_VOLUME:
     break;
   }
@@ -4049,6 +4184,11 @@ bool Z3DWindow::isVisible(ERendererLayer layer) const
   case LAYER_PUNCTA:
     return getPunctaFilter()->isVisible();
     break;
+  case LAYER_TODO:
+    if (getTodoFilter() != NULL) {
+      return getTodoFilter()->isVisible();
+    }
+    break;
   case LAYER_VOLUME:
     break;
   }
@@ -4062,6 +4202,7 @@ void Z3DWindow::setZScale(double scale)
   setZScale(LAYER_SWC, scale);
   setZScale(LAYER_PUNCTA, scale);
   setZScale(LAYER_VOLUME, scale);
+  setZScale(LAYER_TODO, scale);
 }
 
 void Z3DWindow::setScale(double sx, double sy, double sz)
@@ -4070,6 +4211,7 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
   setScale(LAYER_SWC, sx, sy, sz);
   setScale(LAYER_PUNCTA, sx, sy, sz);
   setScale(LAYER_VOLUME, sx, sy, sz);
+  setScale(LAYER_TODO, sx, sy, sz);
 }
 
 void Z3DWindow::cropSwcInRoi()

@@ -48,7 +48,7 @@ ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
   }
 }
 
-ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
+ZFlyEmNeuron::ZFlyEmNeuron(uint64_t id, ZSwcTree *model, ZObject3dScan *body) :
   CONSTRUCTOR_INIT
 {
   m_id = id;
@@ -554,7 +554,7 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse() const
 }
 
 std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
-    int buddyBodyId) const
+    uint64_t buddyBodyId) const
 {
   std::vector<ZPunctum*> synapse;
   if (m_synapseAnnotation != NULL) {

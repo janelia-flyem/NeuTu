@@ -755,6 +755,29 @@ void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
   Read_Stack_Offset(filePath.c_str(), x, y, z);
 }
 
+char *C_Stack::toMrawBuffer(const Mc_Stack *stack, size_t *length)
+{
+  *length = 0;
+  char *buffer = NULL;
+
+  if (stack != NULL) {
+    *length = 24 + C_Stack::allByteNumber(stack);
+    buffer = (char*) malloc(*length);
+
+    int *intBuffer = (int*) buffer;
+    intBuffer[0] = MRAW_MAGIC_NUMBER;
+    intBuffer[1] = C_Stack::kind(stack);
+    intBuffer[2] = C_Stack::width(stack);
+    intBuffer[3] = C_Stack::height(stack);
+    intBuffer[4] = C_Stack::depth(stack);
+    intBuffer[5] = C_Stack::channelNumber(stack);
+
+    memcpy(buffer + 24, C_Stack::array8(stack), C_Stack::allByteNumber(stack));
+  }
+
+  return buffer;
+}
+
 Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
 {
   Mc_Stack *stack = NULL;

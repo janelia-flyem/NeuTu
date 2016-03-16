@@ -104,6 +104,9 @@ ZFlyEmBody3dDoc::BodyEvent::UPDATE_CHANGE_COLOR = 1;
 const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
 ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_SYNAPSE = 2;
 
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_TODO_ITEM = 4;
+
 void ZFlyEmBody3dDoc::BodyEvent::print() const
 {
   switch (m_action) {
@@ -200,6 +203,9 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
     }
+    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+      addTodo(event.getBodyId());
+    }
     break;
   default:
     break;
@@ -220,10 +226,19 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
     }
+    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+      addTodo(event.getBodyId());
+    }
     break;
   default:
     break;
   }
+}
+
+void ZFlyEmBody3dDoc::setTodoItemSelected(
+    ZFlyEmToDoItem *item, bool select)
+{
+  getObjectGroup().setSelected(item, select);
 }
 
 void ZFlyEmBody3dDoc::processEventFunc()
@@ -456,10 +471,27 @@ void ZFlyEmBody3dDoc::addSynapse(bool on)
   }
 }
 
+void ZFlyEmBody3dDoc::addTodo(bool on)
+{
+  if (on) {
+    for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
+         iter != m_bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_TODO_ITEM);
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::showSynapse(bool on)
 {
   m_showingSynapse = on;
   addSynapse(on);
+}
+
+void ZFlyEmBody3dDoc::showTodo(bool on)
+{
+  m_showingTodo = on;
+  addTodo(on);
 }
 
 void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
@@ -501,6 +533,33 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
     notifyObjectModified(true);
   }
 }
+
+void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
+{
+  if (m_showingTodo) {
+    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
+    if (getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_FLYEM_TODO_ITEM, source) == NULL) {
+      std::vector<ZFlyEmToDoItem*> itemList =
+          getDataDocument()->getTodoItem(bodyId);
+
+      for (std::vector<ZFlyEmToDoItem*>::const_iterator iter = itemList.begin();
+           iter != itemList.end(); ++iter) {
+        ZFlyEmToDoItem *item = *iter;
+        item->setRadius(30);
+        item->setColor(255, 255, 0);
+        item->setSource(source);
+        addObject(item, false);
+      }
+    }
+
+    endObjectModifiedMode();
+    notifyObjectModified(true);
+  }
+}
+
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {

@@ -606,7 +606,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotation.h \
     dialogs/stringlistdialog.h \
     flyem/zflyemtodoitem.h \
-    flyem/zflyemtodolist.h
+    flyem/zflyemtodolist.h \
+    flyem/zflyemtodolistfilter.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1063,7 +1064,8 @@ SOURCES += main.cpp \
     dvid/zdvidannotation.cpp \
     dialogs/stringlistdialog.cpp \
     flyem/zflyemtodoitem.cpp \
-    flyem/zflyemtodolist.cpp
+    flyem/zflyemtodolist.cpp \
+    flyem/zflyemtodolistfilter.cpp
 
 OTHER_FILES += \
     extlib.pri \

@@ -169,9 +169,19 @@ public:
     return m_errorOutput;
   }
 
-  void writeUrl(const std::string &url, const std::string &method = "POST");
+//  void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
+
+  std::string post(const std::string &url);
+  std::string post(const std::string &url, const QByteArray &payload);
+  std::string post(const std::string &url, const std::string &payload);
+  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string del(const std::string &url);
+
+  std::string put(const std::string &url, const char *payload, int length);
+  std::string put(const std::string &url);
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
@@ -183,17 +193,6 @@ private:
   bool runCommand(const QString &command, const QStringList &argList);
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
-
-#if defined(_ENABLE_LIBDVIDCPP_)
-  std::string post(const std::string &url);
-  std::string post(const std::string &url, const QByteArray &payload);
-  std::string post(const std::string &url, const char *payload, int length);
-  std::string post(const std::string &url, const ZJsonObject &payload);
-  std::string del(const std::string &url);
-
-  std::string put(const std::string &url, const char *payload, int length);
-  std::string put(const std::string &url);
-#endif
 
   void parseStandardOutput();
   void init();

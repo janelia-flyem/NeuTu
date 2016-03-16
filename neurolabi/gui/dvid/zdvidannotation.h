@@ -7,6 +7,7 @@
 #include "zjsonarray.h"
 
 class ZJsonObject;
+class ZCuboid;
 
 class ZDvidAnnotation : public ZStackObject
 {
@@ -90,6 +91,8 @@ public:
     return m_partnerHint;
   }
 
+  ZCuboid getBoundBox() const;
+
 public: //Additional properties
   void setUserName(const std::string &name);
   std::string getUserName() const;
@@ -119,7 +122,7 @@ public: //Json APIs
                           bool value);
 
 protected:
-  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
   double getRadius(int z, NeuTube::EAxis sliceAxis) const;
 
 private:

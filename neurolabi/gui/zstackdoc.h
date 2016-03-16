@@ -699,6 +699,8 @@ public:
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
+  void selectObject(ZStackObject *obj, bool appending);
+
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
@@ -830,6 +832,7 @@ public:
   void notifyStrokeModified();
   //void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notifyTodoModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -867,6 +870,8 @@ public:
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
+  void notifySelectionChanged(const std::set<const ZStackObject*> &selected,
+                              const std::set<const ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
   void notify(const QString &msg);
@@ -1091,6 +1096,7 @@ signals:
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
+  void todoModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);

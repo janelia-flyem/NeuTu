@@ -8,6 +8,7 @@
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "c_json.h"
+#include "zcuboid.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -32,7 +33,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    visible = isVisible(z, sliceAxis);
+    visible = isSliceVisible(z, sliceAxis);
   }
 
   double radius = getRadius(z, sliceAxis);
@@ -167,7 +168,7 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
-  if (isVisible(z, NeuTube::Z_AXIS)) {
+  if (isSliceVisible(z, NeuTube::Z_AXIS)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
@@ -339,7 +340,7 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   return obj;
 }
 
-bool ZDvidAnnotation::isVisible(int z, NeuTube::EAxis sliceAxis) const
+bool ZDvidAnnotation::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
 {
   int dz = 0;
   switch (sliceAxis) {
@@ -596,6 +597,14 @@ bool ZDvidAnnotation::AddRelation(
   return AddRelation(relArrayJson, to, rel);
 }
 
+ZCuboid ZDvidAnnotation::getBoundBox() const
+{
+  ZCuboid box;
+  box.setFirstCorner(getPosition().toPoint() - getRadius());
+  box.setLastCorner(getPosition().toPoint() + getRadius());
+
+  return box;
+}
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
 

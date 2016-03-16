@@ -36,7 +36,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    visible = isVisible(z, sliceAxis);
+    visible = isSliceVisible(z, sliceAxis);
   }
 
   double radius = getRadius(z, sliceAxis);

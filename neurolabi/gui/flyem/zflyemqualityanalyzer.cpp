@@ -538,7 +538,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   */
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
-    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() >= 0) {
+    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() > 0) {
       double dist =
           metric.measureDistance(
             neuron.getUnscaledModel(), buddyNeuron.getUnscaledModel());
