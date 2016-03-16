@@ -540,6 +540,17 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "7285",
+      "name": "MB_ansarin_Training",
+      "comment": "production synapse work",
+      "body_label": "bodies3",
+      "label_block": "labels3",
+      "synapse": "alpha1_synapses",
+      "user_name": ["ansarin", "zhaot"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "02c3",
       "name": "MB_Synapse_Pat",
       "comment": "production synapse work",
