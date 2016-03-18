@@ -1722,11 +1722,16 @@ void Z3DWindow::updateTodoList()
 #if defined(_FLYEM_)
   ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
   if (doc != NULL) {
+    QList<ZFlyEmToDoItem*> objList = doc->getObjectList<ZFlyEmToDoItem>();
+    m_todoFilter->setData(objList);
+/*
     const TStackObjectList& objList =
-        doc->getDataDocument()->getObjectList(ZStackObject::TYPE_FLYEM_TODO_LIST);
+        doc->getObjectList(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+//        doc->getDataDocument()->getObjectList(ZStackObject::TYPE_FLYEM_TODO_LIST);
     if (!objList.isEmpty()) {
       m_todoFilter->setData(objList.front());
     }
+    */
   }
 #endif
 }
@@ -2780,10 +2785,27 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Z:
     if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->hasSelectedSwcNode()) {
-        locateSwcNodeIn2DView();
-      } else if (getDocument()->hasSelectedPuncta()) {
-        locatePunctumIn2DView();
+      ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+      bool located = false;
+      if (doc != NULL) {
+        ZFlyEmToDoItem *item = doc->getOneSelectedTodoItem();
+        if (item !=NULL) {
+          locate2DView(item->getPosition().toPoint(), item->getRadius());
+          located = true;
+        }
+        /*
+        if (doc->hadTodoItemSelected()) {
+          locateTodoItemIn2DView();
+        }
+        */
+      }
+
+      if (!located) {
+        if (getDocument()->hasSelectedSwcNode()) {
+          locateSwcNodeIn2DView();
+        } else if (getDocument()->hasSelectedPuncta()) {
+          locatePunctumIn2DView();
+        }
       }
     }
     break;
@@ -3135,12 +3157,34 @@ void Z3DWindow::locateSwcNodeIn2DView()
   }
 }
 
+void Z3DWindow::locate2DView(const ZPoint &center, double radius)
+{
+  const int minRadius = 400;
+  if (radius < minRadius) {
+    radius = minRadius;
+  }
+
+  ZStackViewParam param(NeuTube::COORD_STACK);
+
+  double cx = center.getX();
+  double cy = center.getY();
+  double cz = center.getZ();
+  param.setViewPort(iround(cx - radius), iround(cy - radius),
+                    iround(cx + radius), iround(cy + radius));
+  param.setZ(iround(cz));
+
+  emit locating2DViewTriggered(param);
+}
+
 void Z3DWindow::locatePunctumIn2DView()
 {
   QList<ZPunctum*> punctumList =
       m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
   if (punctumList.size() == 1) {
     ZPunctum* punc = *(punctumList.begin());
+
+    locate2DView(punc->getCenter(), punc->radius());
+#if 0
     ZStackViewParam param(NeuTube::COORD_STACK);
 
     double radius = punc->radius();
@@ -3159,6 +3203,7 @@ void Z3DWindow::locatePunctumIn2DView()
     emit locating2DViewTriggered(param);
     //      m_doc->getParentFrame()->viewRoi(
     //            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
+#endif
   }
 }
 

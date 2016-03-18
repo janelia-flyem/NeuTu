@@ -1025,6 +1025,7 @@ public slots: //undoable commands
   virtual bool executeBwsolidCommand();
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
+  virtual void executeRemoveRectRoiCommand();
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();

@@ -324,6 +324,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_TODO));
 
   connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -371,6 +372,11 @@ void ZFlyEmProofMvc::makeBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_TODO));
+
+
+  connect(m_bodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showTodo(bool)));
 
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -893,6 +899,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBody()));
   connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
           this, SLOT(selectBodyInRoi(bool)));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi()),
+          this, SLOT(selectBodyInRoi()));
   connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
@@ -2641,7 +2649,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 {
-  getCompleteDocument()->selectBodyInRoi(getView()->getCurrentZ(), appending);
+  getCompleteDocument()->selectBodyInRoi(
+        getView()->getCurrentZ(), appending, true);
 }
 
 void ZFlyEmProofMvc::updateUserBookmarkTable()

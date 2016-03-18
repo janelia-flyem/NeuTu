@@ -162,7 +162,7 @@ public:
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
-  void selectBodyInRoi(int z, bool appending);
+  void selectBodyInRoi(int z, bool appending, bool removingRoi);
 
 public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
@@ -185,6 +185,9 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+
+  void notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray);
+  void notifyTodoItemModified(const ZIntPoint &pt);
 
   std::set<ZIntPoint> getSelectedTodoItemPosition() const;
 
@@ -239,6 +242,7 @@ signals:
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
   void bodyMapReady();
+  void todoModified(uint64_t bodyId);
 
 public slots:
   void updateDvidLabelObject();

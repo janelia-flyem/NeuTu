@@ -65,6 +65,7 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
+  void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
   void goingToBody();
@@ -87,6 +88,8 @@ public slots:
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
+  void selectBodyInRoi();
+  void zoomInRectRoi();
 
 private:
   void connectAction();

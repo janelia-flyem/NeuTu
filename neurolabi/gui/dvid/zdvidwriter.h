@@ -169,7 +169,7 @@ public:
     return m_errorOutput;
   }
 
-//  void writeUrl(const std::string &url, const std::string &method = "POST");
+  void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
 

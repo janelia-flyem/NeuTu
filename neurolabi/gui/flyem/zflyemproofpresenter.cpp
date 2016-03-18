@@ -70,6 +70,31 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(uncheckTodoItem()));
   connect(getAction(ZActionFactory::ACTION_REMOVE_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(removeTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_SELECT_BODY_IN_RECT), SIGNAL(triggered()),
+          this, SLOT(selectBodyInRoi()));
+  connect(getAction(ZActionFactory::ACTION_ZOOM_TO_RECT), SIGNAL(triggered()),
+          this, SLOT(zoomInRectRoi()));
+}
+
+void ZFlyEmProofPresenter::selectBodyInRoi()
+{
+  getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentZ(), true, true);
+}
+
+void ZFlyEmProofPresenter::zoomInRectRoi()
+{ 
+  ZRect2d rect = buddyDocument()->getRect2dRoi();
+
+  if (rect.isValid()) {
+    ZStackViewParam param(NeuTube::COORD_STACK);
+
+    param.setViewPort(rect.getFirstX(), rect.getFirstY(),
+                      rect.getLastX(), rect.getLastY());
+    param.fixZ(true);
+
+    buddyView()->setView(param);
+    buddyDocument()->executeRemoveRectRoiCommand();
+  }
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
@@ -614,6 +639,16 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     }
   } else {
     buddyDocument()->processRectRoiUpdate(rect, appending);
+    interactiveContext().setAcceptingRect(true);
+    QMenu *menu = getContextMenu();
+    if (!menu->isEmpty()) {
+      const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
+            Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+      QPoint currentWidgetPos(event.getPosition().getX(),
+                 event.getPosition().getY());
+      buddyView()->showContextMenu(menu, currentWidgetPos);
+    }
+    interactiveContext().setAcceptingRect(false);
   }
 }
 

@@ -39,9 +39,9 @@ bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
   }
 
   ZDvidWriter writer;
-  writer.put(getCheckinUrl(bodyId));
+//  writer.put(getCheckinUrl(bodyId));
 
-//  writer.writeUrl(getCheckinUrl(bodyId), "PUT");
+  writer.writeUrl(getCheckinUrl(bodyId), "PUT");
 
   return writer.getStatusCode() == 200;
 }
@@ -53,8 +53,8 @@ bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
   }
 
   ZDvidWriter writer;
-  writer.put(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)));
-//  writer.writeUrl(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)), "PUT");
+//  writer.put(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)));
+  writer.writeUrl(getCheckinUrl(getUuid(), bodyId, getOwner(bodyId)), "PUT");
 
   return writer.getStatusCode() == 200;
 }
@@ -66,8 +66,8 @@ bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
   }
 
   ZDvidWriter writer;
-  writer.put(getCheckoutUrl(bodyId));
-//  writer.writeUrl(getCheckoutUrl(bodyId), "PUT");
+//  writer.put(getCheckoutUrl(bodyId));
+  writer.writeUrl(getCheckoutUrl(bodyId), "PUT");
 
   return writer.getStatusCode() == 200;
 

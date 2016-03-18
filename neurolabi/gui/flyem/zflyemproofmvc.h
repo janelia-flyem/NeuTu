@@ -123,7 +123,7 @@ public slots:
   void locateBody(QList<uint64_t> bodyIdList);
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
-  void selectBodyInRoi(bool appending);
+  void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
 
   void showBody3d();

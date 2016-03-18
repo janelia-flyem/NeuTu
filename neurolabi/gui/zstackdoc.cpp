@@ -6485,6 +6485,23 @@ bool ZStackDoc::executeWatershedCommand()
   return false;
 }
 
+void ZStackDoc::executeRemoveRectRoiCommand()
+{
+  QUndoCommand *command = new QUndoCommand;
+  TStackObjectList objList = getObjectGroup().findSameSource(
+        ZStackObjectSourceFactory::MakeRectRoiSource());
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    new ZStackDocCommand::ObjectEdit::RemoveObject(this, *iter, command);
+  }
+
+  if (command->childCount() > 0) {
+    pushUndoCommand(command);
+  } else {
+    delete command;
+  }
+}
+
 bool ZStackDoc::executeBinarizeCommand(int thre)
 {
   if (hasStackData()) {

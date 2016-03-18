@@ -46,6 +46,7 @@ public:
 
   void setX(double x);
   void setY(double y);
+  void setZ(double z);
 
   void loadJsonObject(json_t *obj);
 

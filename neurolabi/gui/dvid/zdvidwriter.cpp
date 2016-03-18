@@ -273,7 +273,6 @@ void ZDvidWriter::writeJson(
   writeJsonString(dataName, key, obj.dumpString(0));
 }
 
-#if 0
 void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
 {
   /*
@@ -283,13 +282,12 @@ void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
     put(url);
   } else {
   */
-    QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
-        arg(url.c_str());
+  QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
+      arg(url.c_str());
 
-    runCommand(command);
+  runCommand(command);
 //  }
 }
-#endif
 
 void ZDvidWriter::writeJsonString(
     const std::string &url, const std::string &jsonString)

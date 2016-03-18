@@ -372,6 +372,7 @@ public slots:
   void saveAllPunctaAs();
   void markPunctum();
   void locatePunctumIn2DView();
+  void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);

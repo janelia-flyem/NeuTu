@@ -135,11 +135,16 @@ public:
 
   void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 
+  bool hasTodoItemSelected() const;
+
+  ZFlyEmToDoItem* getOneSelectedTodoItem() const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
   void showTodo(bool on);
   void addTodo(bool on);
+  void updateTodo(uint64_t bodyId);
 
 protected:
   void autoSave() {}

@@ -49,6 +49,8 @@ void ZFlyEmTodoListFilter::init()
   connect(m_selectItemEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
           this, SLOT(selectObject(QMouseEvent*,int,int)));
   addEventListener(m_selectItemEvent);
+
+  setStayOnTop(false);
 }
 
 ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
@@ -59,6 +61,10 @@ ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
 void ZFlyEmTodoListFilter::initialize()
 {
   Z3DGeometryFilter::initialize();
+
+  m_rendererBase->setMaterialAmbient(glm::vec4(1, 1, 1, 1));
+  m_rendererBase->setLightAmbient(glm::vec4(0.5, 0, 0.5, 1));
+
   m_lineRenderer = new Z3DLineRenderer;
   m_rendererBase->addRenderer(m_lineRenderer);
   m_sphereRenderer = new Z3DSphereRenderer;
@@ -221,28 +227,14 @@ void ZFlyEmTodoListFilter::process(Z3DEye)
   }
 }
 
-void ZFlyEmTodoListFilter::setData(const ZStackObject *obj)
+void ZFlyEmTodoListFilter::addItem(ZFlyEmToDoItem *item)
 {
-  const ZFlyEmToDoList *todoList = dynamic_cast<const ZFlyEmToDoList*>(obj);
-  if (todoList != NULL) {
-    setData(*todoList);
-  }
-}
-
-void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
-{
-  m_graph.clear();
-  m_itemList.clear();
-
-  ZFlyEmToDoList::ItemIterator iterator(&todoList);
-//  ZCuboid nodeBox;
-  while (iterator.hasNext()) {
-    ZFlyEmToDoItem &item = iterator.next();
-    m_itemList.push_back(&item);
+  if (item != NULL) {
+    m_itemList.push_back(item);
     Z3DGraphNode node;
-    node.setCenter(item.getPosition());
-    node.setRadius(item.getRadius());
-    node.setColor(item.getColor());
+    node.setCenter(item->getPosition());
+    node.setRadius(item->getRadius());
+    node.setColor(item->getDisplayColor());
     m_graph.addNode(node);
 
     ZPoint center = node.center();
@@ -252,14 +244,12 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
 
     node.setCenter(center);
     node.setX(center.getX() - d);
-    node.setColor(QColor(255, 0, 0));
+    node.setColor(item->getDisplayColor());
     node.setRadius(0);
     m_graph.addNode(node);
 
     node.setCenter(center);
     node.setX(center.getX() + d);
-    node.setColor(QColor(255, 0, 0));
-    node.setRadius(0);
     m_graph.addNode(node);
 
     Z3DGraphEdge edge;
@@ -270,20 +260,17 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
     edge.setConnection(nodeCount, nodeCount + 1);
     m_graph.addEdge(edge);
 
-//    edge.setConnection(nodeCount, nodeCount + 2);
-//    m_graph.addEdge(edge);
 
+    nodeCount = m_graph.getNodeNumber();
 
-#if 0
-    nodeBox.set(node.center() - node.radius(), node.center() + node.radius());
-    for (int i = 0; i < 8; ++i) {
-      node.setCenter(nodeBox.corner(i));
-      node.setColor(QColor(255, 0, 0));
-      node.setRadius(0);
-      m_graph.addNode(node);
-    }
-    int nodeCount = m_graph.getNodeNumber() - 8;
-    Z3DGraphEdge edge;
+    node.setCenter(center);
+    node.setY(center.getY() - d);
+    m_graph.addNode(node);
+
+    node.setCenter(center);
+    node.setY(center.getY() + d);
+    m_graph.addNode(node);
+
     edge.useNodeColor(true);
     edge.setShape(GRAPH_LINE);
     edge.setWidth(2);
@@ -291,42 +278,70 @@ void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
     edge.setConnection(nodeCount, nodeCount + 1);
     m_graph.addEdge(edge);
 
-    edge.setConnection(nodeCount, nodeCount + 2);
-    m_graph.addEdge(edge);
+    nodeCount = m_graph.getNodeNumber();
 
-    edge.setConnection(nodeCount + 2, nodeCount + 3);
-    m_graph.addEdge(edge);
+    node.setCenter(center);
+    node.setZ(center.getZ() - d);
+    m_graph.addNode(node);
 
-    edge.setConnection(nodeCount + 1, nodeCount + 3);
-    m_graph.addEdge(edge);
+    node.setCenter(center);
+    node.setZ(center.getZ() + d);
+    m_graph.addNode(node);
 
-    edge.setConnection(nodeCount + 4, nodeCount + 5);
-    m_graph.addEdge(edge);
+    edge.useNodeColor(true);
+    edge.setShape(GRAPH_LINE);
+    edge.setWidth(2);
 
-    edge.setConnection(nodeCount + 5, nodeCount + 7);
+    edge.setConnection(nodeCount, nodeCount + 1);
     m_graph.addEdge(edge);
+  }
+}
 
-    edge.setConnection(nodeCount + 6, nodeCount + 7);
-    m_graph.addEdge(edge);
+void ZFlyEmTodoListFilter::resetData()
+{
+  m_graph.clear();
+  m_itemList.clear();
+  deregisterPickingObjects(getPickingManager());
+  m_selected.clear();
+}
 
-    edge.setConnection(nodeCount + 4, nodeCount + 6);
-    m_graph.addEdge(edge);
+void ZFlyEmTodoListFilter::setData(const ZStackObject *obj)
+{
+  resetData();
 
-    edge.setConnection(nodeCount, nodeCount + 4);
-    m_graph.addEdge(edge);
+  const ZFlyEmToDoList *todoList = dynamic_cast<const ZFlyEmToDoList*>(obj);
+  if (todoList != NULL) {
+    setData(*todoList);
+  }
+  m_dataIsInvalid = true;
+  invalidateResult();
+}
 
-    edge.setConnection(nodeCount + 1, nodeCount + 5);
-    m_graph.addEdge(edge);
+void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
+{
+  resetData();
 
-    edge.setConnection(nodeCount + 2, nodeCount + 6);
-    m_graph.addEdge(edge);
+  for (QList<ZFlyEmToDoItem *>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    addItem(const_cast<ZFlyEmToDoItem*>(*iter));
+  }
+  m_dataIsInvalid = true;
+  invalidateResult();
+}
 
-    edge.setConnection(nodeCount + 3, nodeCount + 7);
-    m_graph.addEdge(edge);
-#endif
+void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
+{
+  resetData();
+
+  ZFlyEmToDoList::ItemIterator iterator(&todoList);
+//  ZCuboid nodeBox;
+  while (iterator.hasNext()) {
+    ZFlyEmToDoItem &item = iterator.next();
+    addItem(&item);
   }
 
   m_dataIsInvalid = true;
+  invalidateResult();
 }
 
 void ZFlyEmTodoListFilter::prepareData()

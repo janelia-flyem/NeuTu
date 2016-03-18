@@ -600,9 +600,30 @@ bool ZFlyEmProofDoc::hasTodoItemSelected() const
   return false;
 }
 
+void ZFlyEmProofDoc::notifyTodoItemModified(const ZIntPoint &pt)
+{
+  uint64_t bodyId = m_dvidReader.readBodyIdAt(pt);
+  if (bodyId > 0) {
+    emit todoModified(bodyId);
+  }
+}
+
+void ZFlyEmProofDoc::notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray)
+{
+  std::vector<uint64_t> bodyIdArray = m_dvidReader.readBodyIdAt(ptArray);
+  std::set<uint64_t> bodyIdSet;
+  bodyIdSet.insert(bodyIdArray.begin(), bodyIdArray.end());
+  for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    emit todoModified(*iter);
+  }
+}
+
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 {
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+
+  std::vector<ZIntPoint> ptArray;
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *td = *iter;
@@ -614,11 +635,13 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
         if (checking != item.isChecked()) {
           item.setChecked(checking);
           td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          ptArray.push_back(item.getPosition());
         }
       }
     }
     if (!selectedSet.empty()) {
       processObjectModified(td);
+      notifyTodoItemModified(ptArray);
     }
   }
 
@@ -701,6 +724,8 @@ void ZFlyEmProofDoc::removeTodoItem(
     processObjectModified(se);
   }
 
+  notifyTodoItemModified(pos);
+
   notifyObjectModified();
 }
 
@@ -723,6 +748,8 @@ void ZFlyEmProofDoc::addTodoItem(
     scope = ZFlyEmToDoList::DATA_LOCAL;
     processObjectModified(se);
   }
+
+  notifyTodoItemModified(item.getPosition());
 
   notifyObjectModified();
 }
@@ -1964,7 +1991,7 @@ void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
   }
 }
 
-void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
+void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
 {
   ZRect2d rect = getRect2dRoi();
 
@@ -1979,6 +2006,16 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
       } else {
         setSelectedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
       }
+    }
+    if (removingRoi) {
+      executeRemoveRectRoiCommand();
+//      removeRect2dRoi();
+      /*
+      ZStackObject *obj = getObjectGroup().findFirstSameSource(
+            ZStackObject::TYPE_RECT2D,
+            ZStackObjectSourceFactory::MakeRectRoiSource());
+      executeRemoveObjectCommand(obj);
+      */
     }
   }
 }
@@ -2230,9 +2267,12 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
       const ZIntPoint &pt = *iter;
       ZDvidSynapse &synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
-      std::vector<ZIntPoint> partners = synapse.getPartners();
       removingSet.insert(pt);
-      removingSet.insert(partners.begin(), partners.end());
+
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        std::vector<ZIntPoint> partners = synapse.getPartners();
+        removingSet.insert(partners.begin(), partners.end());
+      }
     }
 
     for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();

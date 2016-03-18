@@ -172,6 +172,9 @@ public:
   NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
   void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
+  void setAcceptingRect(bool on) { m_acceptingRect = on; }
+  bool acceptingRect() const { return m_acceptingRect; }
+
 private:
   MarkPunctaMode m_markPunctaMode;
   TraceMode m_traceMode;
@@ -187,6 +190,7 @@ private:
   TodoEditMode m_todoEditMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
+  bool m_acceptingRect;
   NeuTube::EAxis m_sliceAxis;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;

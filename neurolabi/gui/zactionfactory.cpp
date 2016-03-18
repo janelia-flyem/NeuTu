@@ -536,6 +536,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_UNCHECK_TODO_ITEM:
     action = new QAction("Set unchecked", parent);
     break;
+  case ACTION_SELECT_BODY_IN_RECT:
+    action = new QAction("Select bodies", parent);
+    break;
+  case ACTION_ZOOM_TO_RECT:
+    action = new QAction("Zoom in", parent);
+    break;
   default:
     break;
   }

@@ -24,6 +24,7 @@ public:
 
   void setData(const ZStackObject *obj);
   void setData(const ZFlyEmToDoList &todoList);
+  void setData(const QList<ZFlyEmToDoItem*> &todoList);
 
   std::vector<double> boundBox();
 
@@ -58,6 +59,9 @@ protected:
 private:
   void init();
   void updateGraphVisibleState();
+  void addItem(ZFlyEmToDoItem *item);
+
+  void resetData();
 
 private:
   Z3DGraph m_graph;
