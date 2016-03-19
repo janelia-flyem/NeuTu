@@ -27,7 +27,7 @@
 #include "z3dtexture.h"
 #include "z3drendertarget.h"
 
-//#define PROFILE3DRENDERERS
+#define PROFILE3DRENDERERS
 
 Z3DNetworkEvaluator::Z3DNetworkEvaluator(QObject *parent)
   : QObject(parent)

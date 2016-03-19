@@ -19811,7 +19811,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
   target.setBodyLabelName("bodies");
@@ -19831,6 +19831,16 @@ void ZTest::test(MainWindow *host)
     std::cout << e.what() << std::endl;
   }
 
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(obj);
+
+  array.dump(GET_TEST_DATA_DIR + "/new_ROI_LOP.json");
+//  std::cout << array.dumpString(0) << std::endl;
 #endif
 
 

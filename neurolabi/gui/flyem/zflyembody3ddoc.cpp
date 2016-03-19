@@ -531,7 +531,30 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
     if (getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_PUNCTUM,
           ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
-      updateTodo(bodyId);
+      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
+          getDataDocument()->getSynapse(bodyId);
+      {
+        std::vector<ZPunctum*> &puncta = synapse.first;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(255, 255, 0);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          addObject(punctum, false);
+        }
+      }
+      {
+        std::vector<ZPunctum*> &puncta = synapse.second;
+        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+             iter != puncta.end(); ++iter) {
+          ZPunctum *punctum = *iter;
+          punctum->setRadius(30);
+          punctum->setColor(128, 128, 128);
+          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+          addObject(punctum, false);
+        }
+      }
     }
   }
 }
