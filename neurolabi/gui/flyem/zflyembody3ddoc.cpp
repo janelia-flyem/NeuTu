@@ -531,6 +531,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
     if (getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_PUNCTUM,
           ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
       std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
           getDataDocument()->getSynapse(bodyId);
       {
@@ -555,6 +556,8 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           addObject(punctum, false);
         }
       }
+      endObjectModifiedMode();
+      notifyObjectModified();
     }
   }
 }
