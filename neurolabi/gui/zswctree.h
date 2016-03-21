@@ -392,7 +392,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y);
+  Swc_Tree_Node* hitTest(double x, double y, NeuTube::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -407,7 +407,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!

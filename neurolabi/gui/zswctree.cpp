@@ -1304,18 +1304,20 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 #endif
 }
 
-Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)
+Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, NeuTube::EAxis axis)
 {
-  if (data() != NULL) {
-    return Swc_Tree_Hit_Node_P(data(), x, y);
+  if (axis == NeuTube::Z_AXIS) {
+    if (data() != NULL) {
+      return Swc_Tree_Hit_Node_P(data(), x, y);
+    }
   }
 
   return NULL;
 }
 
-bool ZSwcTree::hit(double x, double y)
+bool ZSwcTree::hit(double x, double y, NeuTube::EAxis axis)
 {
-  m_hitSwcNode = hitTest(x, y);
+  m_hitSwcNode = hitTest(x, y, axis);
 
   return m_hitSwcNode;
 }

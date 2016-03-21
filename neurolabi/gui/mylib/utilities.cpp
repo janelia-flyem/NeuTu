@@ -2839,7 +2839,7 @@ void mylib::Process_Arguments(int argc, char *argv[], char *spec[], int no_escap
     if (lines == 0)
       { Master_Spec = (char **) mylib::Guarded_Malloc(sizeof(char *)*2,"Process_Arguments");
         Master_Spec[1] = NULL;
-        Master_Spec[0] = Guarded_Strdup("\n","Process_Arguments");
+        Master_Spec[0] = Guarded_Strdup(const_cast<char*>("\n"), "Process_Arguments");
       }
     else
       { Master_Spec = (char **)
