@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
-    int result =  app.exec();
+    int result = app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();

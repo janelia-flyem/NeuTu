@@ -50,6 +50,7 @@ ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::RemoveSynapse(
 {
   m_doc = doc;
   m_synapse.set(x, y, z);
+  m_synapseBackup = m_doc->getDvidReader().readSynapseJson(m_synapse);
 }
 
 ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::~RemoveSynapse()
@@ -59,14 +60,14 @@ ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::~RemoveSynapse()
 
 void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
 {
-  ZDvidReader reader;
-  if (reader.open(m_doc->getDvidTarget())) {
-    m_synapseBackup = reader.readSynapseJson(m_synapse);
+  if (m_doc->getDvidReader().good()) {
     m_doc->removeSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
     m_doc->notifySynapseEdited(m_synapse);
     QString msg = QString("Synapse removed at (%1, %2, %3)").
         arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
     m_doc->notify(msg);
+  } else {
+    m_doc->notify(ZWidgetMessage("Invalid DVID reader", NeuTube::MSG_ERROR));
   }
   /*
   ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
@@ -84,8 +85,8 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
 {
   if (m_synapseBackup.hasKey("Pos")) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
       writer.writeSynapse(m_synapseBackup);
       if (writer.isStatusOk()) {
         ZDvidSynapse synapse;
@@ -97,6 +98,8 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
             arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
         m_doc->notify(msg);
       }
+    } else {
+      m_doc->notify(ZWidgetMessage("Invalid DVID writer", NeuTube::MSG_ERROR));
     }
   }
   /*

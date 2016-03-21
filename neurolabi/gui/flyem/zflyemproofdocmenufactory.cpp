@@ -139,6 +139,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       }
 
       actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+      actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       if (doc->hasTodoItemSelected()) {
         actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);

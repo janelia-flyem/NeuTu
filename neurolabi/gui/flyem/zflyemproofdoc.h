@@ -153,6 +153,14 @@ public:
   void activateBodyColorMap(const QString &option);
   void activateBodyColorMap(EBodyColorMap colorMap);
 
+  ZDvidReader& getDvidReader() {
+    return m_dvidReader;
+  }
+
+  ZDvidWriter& getDvidWriter() {
+    return m_dvidWriter;
+  }
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -226,7 +234,7 @@ public: //Commands
   void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
   void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
-  void executeAddTodoItemCommand(const ZIntPoint &pt);
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
   void executeRemoveTodoItemCommand();
 

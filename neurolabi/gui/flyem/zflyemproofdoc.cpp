@@ -2335,10 +2335,13 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
-void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt)
+void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked)
 {
   ZFlyEmToDoItem item(pt);
   item.setUserName(NeuTube::GetCurrentUserName());
+  if (checked) {
+    item.setChecked(checked);
+  }
 
   executeAddTodoItemCommand(item);
 }

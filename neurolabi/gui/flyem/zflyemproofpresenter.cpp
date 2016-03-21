@@ -64,6 +64,8 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(unlinkSelectedSynapse()));
   connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(tryAddTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED), SIGNAL(triggered()),
+          this, SLOT(tryAddDoneItem()));
   connect(getAction(ZActionFactory::ACTION_CHECK_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(checkTodoItem()));
   connect(getAction(ZActionFactory::ACTION_UNCHECK_TODO_ITEM), SIGNAL(triggered()),
@@ -383,7 +385,12 @@ void ZFlyEmProofPresenter::tryAddSynapse(
 
 void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddTodoItemCommand(pt);
+  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
+}
+
+void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
 }
 
 void ZFlyEmProofPresenter::removeTodoItem()
@@ -407,6 +414,14 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getStackPosition();
   tryAddTodoItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddDoneItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddDoneItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)

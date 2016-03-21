@@ -85,6 +85,7 @@ public slots:
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
   void tryAddTodoItem();
+  void tryAddDoneItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
@@ -101,6 +102,7 @@ private:
   void tryAddSynapse(const ZIntPoint &pt);
   void tryMoveSynapse(const ZIntPoint &pt);
   void tryAddTodoItem(const ZIntPoint &pt);
+  void tryAddDoneItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
