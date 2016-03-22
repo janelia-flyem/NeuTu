@@ -39,7 +39,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
   m_z = stroke.m_z;
   //m_isEraser = stroke.m_isEraser;
   m_isFilled = stroke.m_isFilled;
-  m_isPenetrating = m_isPenetrating;
+  m_isPenetrating = stroke.m_isPenetrating;
   m_type = stroke.m_type;
   m_hideStart = stroke.m_hideStart;
   m_sliceAxis = stroke.m_sliceAxis;

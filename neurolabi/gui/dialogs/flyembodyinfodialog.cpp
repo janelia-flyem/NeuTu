@@ -7,6 +7,8 @@
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
+#include <QFileDialog>
+#include <QColorDialog>
 #else
 #include <QtCore>
 #endif
@@ -1125,9 +1127,15 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     // for some reason, this table gave me more trouble than the
     //  others; set its column behaviors individually
+#if QT_VERSION >= 0x050000
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#else
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#endif
     ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
 
     m_connectionsLoading = false;
@@ -1170,7 +1178,11 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         }
 
         // for this table, we want all columns same width, filling full width
+#if QT_VERSION >= 0x050000
+        ui->connectionsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
 }
