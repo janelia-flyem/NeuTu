@@ -372,7 +372,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
-  doc->showTodo(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_TODO));
+  doc->showTodo(m_bodyWindow->isVisible(Z3DWindow::LAYER_TODO));
 
 
   connect(m_bodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),

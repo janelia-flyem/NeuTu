@@ -40,19 +40,7 @@
 
 using namespace std;
 
-/*
-ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
-{
-  m_tree = src.cloneData();
-  //m_source = "new tree";
-  m_iteratorReady = false;
-}
-*/
-
 const int ZSwcTree::m_nodeStateCosmetic = 1;
-
-//const ZSwcTree::TVisualEffect ZSwcTree::VE_NONE = 0;
-//const ZSwcTree::TVisualEffect ZSwcTree::VE_FULL_SKELETON = 1;
 
 ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
 {
@@ -62,8 +50,6 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
-//  m_visualEffect = VE_FULL_SKELETON;
-
   setTarget(GetDefaultTarget());
 }
 
@@ -2682,7 +2668,9 @@ void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
     updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, FALSE);
     for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
       if (maxRadius >= radiusThre &&
-          (tn == maxRadiusNode || (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType && SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
+          (tn == maxRadiusNode ||
+           (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType &&
+            SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
         SwcTreeNode::setType(tn, somaType);
       } else {
         SwcTreeNode::setType(tn, otherType);
