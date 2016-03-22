@@ -32,7 +32,7 @@ class ZDvidVersionDag;
 class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
 class ZFlyEmBookmark;
-
+class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -97,8 +97,8 @@ public:
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
   std::set<uint64_t> readAnnnotatedBodySet();
 
-  bool hasKey(const QString &dataName, const QString &key);
-  QByteArray readKeyValue(const QString &dataName, const QString &key);
+  bool hasKey(const QString &dataName, const QString &key) const;
+  QByteArray readKeyValue(const QString &dataName, const QString &key) const;
   QStringList readKeys(const QString &dataName);
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
@@ -171,27 +171,38 @@ public:
    */
   ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
 
+
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
   ZJsonObject readBookmarkJson(int x, int y, int z) const;
   ZJsonObject readBookmarkJson(const ZIntPoint &pt) const;
   bool isBookmarkChecked(int x, int y, int z) const;
   bool isBookmarkChecked(const ZIntPoint &pt) const;
 
+  ZJsonObject readAnnotationJson(
+      const std::string &dataName, const ZIntPoint &pt) const;
+  ZJsonObject readAnnotationJson(
+      const std::string &dataName, int x, int y, int z) const;
+
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      NeuTube::FlyEM::ESynapseLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>
   ZJsonArray readSynapseJson(
       const InputIterator &first, const InputIterator &last);
+
+  std::vector<ZFlyEmToDoItem> readToDoItem(const ZIntCuboid &box) const;
+  ZFlyEmToDoItem readToDoItem(int x, int y, int z) const;
+  ZJsonObject readToDoItemJson(int x, int y, int z);
+  ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }
@@ -199,6 +210,8 @@ public:
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
+
+  ZJsonObject readSkeletonConfig() const;
 
   bool good() const;
 

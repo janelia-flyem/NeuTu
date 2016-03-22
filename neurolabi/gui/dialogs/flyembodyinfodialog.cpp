@@ -220,10 +220,12 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
         // is the synapse file present?
         if (dvidBookmarksPresent(target)) {
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+            m_futureMap["importBookmarksDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
         } else if (bodies3Present(target)) {
             // this is the current expected fallback method...
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+            m_futureMap["importBodiesDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
         } else {
             // ...but sometimes, we've got nothing
             emit loadCompleted();
@@ -343,8 +345,7 @@ bool FlyEmBodyInfoDialog::bodies3Present(ZDvidTarget target) {
     reader.setVerbose(false);
     if (reader.open(target)) {
         // check for data name and key
-        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-            ZDvidData::ROLE_BODY_LABEL, target.getBodyLabelName()))) {
+        if (!reader.hasData(target.getBodyAnnotationName())) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have bodies3 annotations" << std::endl;
             #endif
@@ -515,10 +516,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!)
 
-        QString bodyAnnotationName = ZDvidData::GetName(
-              ZDvidData::ROLE_BODY_ANNOTATION,
-              ZDvidData::ROLE_BODY_LABEL,
-              target.getBodyLabelName()).c_str();
+        QString bodyAnnotationName = target.getBodyAnnotationName().c_str();
         QStringList keyList = reader.readKeys(bodyAnnotationName);
 
         ZJsonArray bodies;
@@ -973,7 +971,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
+        m_futureMap["retrieveIOBodiesDvid"] =
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
     }
 }
 
@@ -1203,6 +1202,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
+    m_futureMap.waitForFinished(); //to avoid crash while quitting too early
     delete ui;
 }
 

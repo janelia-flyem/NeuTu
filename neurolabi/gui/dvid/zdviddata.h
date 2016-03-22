@@ -25,7 +25,7 @@ public:
     ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID,
     ROLE_MULTISCALE_2D, ROLE_MERGE_OPERATION,
     ROLE_BOOKMARK, ROLE_BOOKMARK_KEY,
-    ROLE_BODY_SYNAPSES, ROLE_SYNAPSE
+    ROLE_BODY_SYNAPSES, ROLE_SYNAPSE, ROLE_TODO_LIST
   };
 
   enum EType {
@@ -40,6 +40,7 @@ public:
   static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
+//  static std::string GetName(ERole role, ERole prefixRole);
 
   static bool isDefaultName(ERole role, const std::string &name);
 
@@ -67,6 +68,7 @@ private:
   static const char *m_bookmarkAnnotationName;
   static const char *m_bodySynapsesName;
   static const char *m_synapseName;
+  static const char *m_todoListName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_emptyName;

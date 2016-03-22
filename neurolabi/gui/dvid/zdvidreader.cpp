@@ -25,6 +25,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
+#include "flyem/zflyemtodoitem.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -833,12 +834,12 @@ std::set<uint64_t> ZDvidReader::readAnnnotatedBodySet()
   return bodySet;
 }
 
-bool ZDvidReader::hasKey(const QString &dataName, const QString &key)
+bool ZDvidReader::hasKey(const QString &dataName, const QString &key) const
 {
   return !readKeyValue(dataName, key).isEmpty();
 }
 
-QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key)
+QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key) const
 {
   ZDvidUrl url(getDvidTarget());
 
@@ -1169,6 +1170,22 @@ ZIntPoint ZDvidReader::readBodyTop(uint64_t bodyId) const
 #endif
 
   return pt;
+}
+
+ZJsonObject ZDvidReader::readSkeletonConfig() const
+{
+  ZJsonObject config;
+
+  std::string skeletonName = ZDvidData::GetName(
+        ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
+        getDvidTarget().getBodyLabelName());
+  if (hasKey(skeletonName.c_str(), "config.json")) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    config = readJsonObject(
+          dvidUrl.getSkeletonConfigUrl(getDvidTarget().getBodyLabelName()));
+  }
+
+  return config;
 }
 
 ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
@@ -1666,6 +1683,26 @@ ZJsonObject ZDvidReader::readBookmarkJson(const ZIntPoint &pt) const
   return readBookmarkJson(pt.getX(), pt.getY(), pt.getZ());
 }
 
+ZJsonObject ZDvidReader::readAnnotationJson(
+    const std::string &dataName, const ZIntPoint &pt) const
+{
+  return readAnnotationJson(dataName, pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZJsonObject ZDvidReader::readAnnotationJson(
+    const std::string &dataName, int x, int y, int z) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject annotationJson;
+  ZIntCuboid box(x, y, z, x, y, z);
+  ZJsonArray obj = readJsonArray(dvidUrl.getAnnotationUrl(dataName, box));
+  if (obj.size() > 0) {
+    annotationJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+  }
+
+  return annotationJson;
+}
+
 bool ZDvidReader::isBookmarkChecked(int x, int y, int z) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -1796,7 +1833,7 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box, NeuTube::FlyEM::ESynapseLoadMode mode) const
+    const ZIntCuboid &box, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
@@ -1812,7 +1849,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    uint64_t label, NeuTube::FlyEM::ESynapseLoadMode mode) const
+    uint64_t label, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(label));
@@ -1828,7 +1865,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    int x, int y, int z, NeuTube::FlyEM::ESynapseLoadMode mode) const
+    int x, int y, int z, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
@@ -1837,4 +1874,42 @@ ZDvidSynapse ZDvidReader::readSynapse(
   }
 
   return ZDvidSynapse();
+}
+
+std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
+    const ZIntCuboid &box) const
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  ZJsonArray obj = readJsonArray(dvidUrl.getTodoListUrl(box));
+
+  std::vector<ZFlyEmToDoItem> itemArray(obj.size());
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZFlyEmToDoItem &item = itemArray[i];
+    item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+  }
+
+  return itemArray;
+}
+
+ZFlyEmToDoItem ZDvidReader::readToDoItem(int x, int y, int z) const
+{
+  std::vector<ZFlyEmToDoItem> itemArray =
+      readToDoItem(ZIntCuboid(x, y, z, x, y, z));
+  if (!itemArray.empty()) {
+    return itemArray[0];
+  }
+
+  return ZFlyEmToDoItem();
+}
+
+ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z)
+{
+  return readAnnotationJson(getDvidTarget().getTodoListName(), x, y, z);
+}
+
+ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
+{
+  return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
 }

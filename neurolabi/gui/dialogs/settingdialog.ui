@@ -42,7 +42,7 @@
     <string>Scaling of the final reconstruction</string>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -220,7 +220,7 @@
       <rect>
        <x>10</x>
        <y>0</y>
-       <width>375</width>
+       <width>558</width>
        <height>279</height>
       </rect>
      </property>
@@ -301,12 +301,43 @@
         <item>
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>*Score threshold</string>
+           <string>Minimal Tracing Score:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="ScoreThreSpinBox"/>
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>Manual -</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="manualScoreSpinBox">
+          <property name="maximum">
+           <double>1.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Auto -</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="autoScoreSpinBox">
+          <property name="maximum">
+           <double>1.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer_2">
@@ -417,13 +448,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>*These options are for experimental purposes.</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

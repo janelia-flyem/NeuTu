@@ -44,7 +44,7 @@
 #include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
 
@@ -613,7 +613,8 @@ public:
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
 
-  void setTraceMinScore(double score);
+  void setAutoTraceMinScore(double score);
+  void setManualTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
 
   //void updateMasterLocsegChain();
@@ -868,6 +869,7 @@ public:
                               const std::set<ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
+  void notify(const QString &msg);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
@@ -1243,7 +1245,7 @@ private:
 protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

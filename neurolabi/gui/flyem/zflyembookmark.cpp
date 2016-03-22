@@ -10,16 +10,9 @@
 #include "zjsonarray.h"
 #include "zjsonfactory.h"
 
-ZFlyEmBookmark::ZFlyEmBookmark() :
-  m_bodyId(0), m_bookmarkType(TYPE_LOCATION), m_isChecked(false),
-  m_isCustom(false), m_isInTable(true)
+ZFlyEmBookmark::ZFlyEmBookmark()
 {
-  m_type = GetType();
-  m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;
-  setColor(255, 0, 0);
-  setRadius(5.0);
-  setHittable(false);
-  useCosmeticPen(true);
+  init();
 }
 
 ZFlyEmBookmark::~ZFlyEmBookmark()
@@ -30,12 +23,32 @@ ZFlyEmBookmark::~ZFlyEmBookmark()
 #endif
 }
 
+void ZFlyEmBookmark::init()
+{
+  m_type = GetType();
+
+  m_bodyId = 0;
+  m_bookmarkType = TYPE_LOCATION;
+  m_isChecked = false;
+  setCustom(false);
+//  m_bookmarkRole = ROLE_ASSIGNED;
+  m_isInTable = true;
+
+  m_visualEffect = NeuTube::Display::Sphere::VE_DOT_CENTER;
+  setColor(255, 0, 0);
+  setRadius(5.0);
+//  setHittable(false);
+  useCosmeticPen(true);
+}
+
 void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
   m_bookmarkType = TYPE_LOCATION;
   m_isChecked = false;
-  m_isCustom = false;
+  setCustom(false);
+//  m_bookmarkRole = ROLE_USER;
+//  m_isCustom = false;
   m_userName.clear();
   m_comment.clear();
   m_status.clear();
@@ -132,22 +145,21 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
         setStatus(ZJsonParser::stringValue(propJson["status"]));
         setUser(ZJsonParser::stringValue(propJson["user"]));
 
-        /*
         if (propJson.hasKey("checked")) {
-          setChecked(ZJsonParser::booleanValue(propJson["checked"]));
+          if (ZJsonParser::isBoolean(propJson["checked"])) {
+            setChecked(ZJsonParser::booleanValue(propJson["checked"]));
+          } else {
+            std::string checked = ZJsonParser::stringValue(propJson["checked"]);
+            setChecked(checked == "1");
+          }
         }
-        */
 
         if (propJson.hasKey("custom")) {
           if (ZJsonParser::isBoolean(propJson["custom"])) {
             setCustom(ZJsonParser::booleanValue(propJson["custom"]));
           } else {
             std::string custom = ZJsonParser::stringValue(propJson["custom"]);
-            if (custom == "1") {
-              setCustom(true);
-            } else {
-              setCustom(false);
-            }
+            setCustom(custom == "1");
           }
         }
       }
@@ -219,6 +231,13 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
 
 void ZFlyEmBookmark::setCustom(bool state)
 {
+  /*
+  if (state) {
+    m_role = ROLE_USER;
+  } else {
+    m_role = ROLE_ASSIGNED;
+  }
+  */
   m_isCustom = state;
   setHittable(state);
 }
@@ -232,7 +251,7 @@ void ZFlyEmBookmark::display(
   if (isVisible()) {
     if (isSliceVisible(painter.getZ(slice), sliceAxis)) {
       QString decorationText;
-      if (m_isCustom) {
+      if (isCustom()) {
         decorationText = "u";
       }
       if (!decorationText.isEmpty()) {

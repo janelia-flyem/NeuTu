@@ -1,24 +1,20 @@
-#include "zdvidsynapse.h"
-#include <QtCore>
-#include <QPen>
+#include "zdvidannotation.h"
 
+#include <QColor>
+
+#include "tz_math.h"
+#include "zjsonarray.h"
 #include "zpainter.h"
-#include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
-#include "zjsonarray.h"
-#include "tz_math.h"
-#include "zstackball.h"
 #include "c_json.h"
-#include "zlinesegmentobject.h"
-#include "dvid/zdvidannotation.h"
 
-ZDvidSynapse::ZDvidSynapse()
+ZDvidAnnotation::ZDvidAnnotation()
 {
   init();
 }
 
-void ZDvidSynapse::init()
+void ZDvidAnnotation::init()
 {
   m_type = GetType();
   m_projectionVisible = false;
@@ -27,7 +23,7 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
-void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
+void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                            NeuTube::EAxis sliceAxis) const
 {
   bool visible = true;
@@ -117,43 +113,19 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     painter.setPen(pen);
     painter.drawRect(rect);
   }
-  if (isSelected()) {
-    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
-         iter != m_partnerHint.end(); ++iter) {
-
-      ZLineSegmentObject line;
-      line.setStartPoint(getPosition());
-      line.setEndPoint(*iter);
-      line.setColor(QColor(255, 255, 0));
-      line.setFocusColor(QColor(255, 0, 255));
-      line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
-      line.display(painter, slice, option, sliceAxis);
-
-      /*
-      ZIntPoint pos = *iter;
-      painter.drawLine(getPosition().getX(), getPosition().getY(),
-                       pos.getX(), pos.getY());
-                       */
-    }
-  }
 }
-#if 0
-void ZDvidSynapse::setPosition(const ZIntPoint &pos)
+
+void ZDvidAnnotation::setPosition(const ZIntPoint &pos)
 {
   m_position = pos;
 }
 
-void ZDvidSynapse::setPosition(int x, int y, int z)
+void ZDvidAnnotation::setPosition(int x, int y, int z)
 {
   m_position.set(x, y, z);
 }
 
-// temporary?
-std::vector<ZIntPoint> ZDvidSynapse::getPartners() {
-    return std::vector<ZIntPoint>(m_partnerHint);
-}
-
-double ZDvidSynapse::GetDefaultRadius(EKind kind)
+double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case KIND_POST_SYN:
@@ -167,19 +139,19 @@ double ZDvidSynapse::GetDefaultRadius(EKind kind)
   return 7.0;
 }
 
-void ZDvidSynapse::setDefaultRadius()
+void ZDvidAnnotation::setDefaultRadius()
 {
   m_radius = GetDefaultRadius(m_kind);
 }
 
-QColor ZDvidSynapse::GetDefaultColor(EKind kind)
+QColor ZDvidAnnotation::GetDefaultColor(EKind kind)
 {
   switch (kind) {
   case KIND_POST_SYN:
     return QColor(0, 0, 255);
   case KIND_PRE_SYN:
     return QColor(0, 255, 0);
-  case KIND_UNKNOWN:
+  case KIND_NOTE:
     return QColor(0, 200, 200);
   default:
     break;
@@ -188,12 +160,12 @@ QColor ZDvidSynapse::GetDefaultColor(EKind kind)
   return QColor(128, 128, 128);
 }
 
-void ZDvidSynapse::setDefaultColor()
+void ZDvidAnnotation::setDefaultColor()
 {
   setColor(GetDefaultColor(m_kind));
 }
 
-bool ZDvidSynapse::hit(double x, double y, double z)
+bool ZDvidAnnotation::hit(double x, double y, double z)
 {
   if (isVisible(z, NeuTube::Z_AXIS)) {
     double dx = x - m_position.getX();
@@ -209,7 +181,7 @@ bool ZDvidSynapse::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSynapse::hit(double x, double y)
+bool ZDvidAnnotation::hit(double x, double y)
 {
   double dx = x - m_position.getX();
   double dy = y - m_position.getY();
@@ -219,21 +191,20 @@ bool ZDvidSynapse::hit(double x, double y)
   return d2 <= m_radius * m_radius;
 }
 
-void ZDvidSynapse::clear()
+void ZDvidAnnotation::clear()
 {
   m_position.set(0, 0, 0);
   m_kind = KIND_INVALID;
   m_tagArray.clear();
+  m_partnerHint.clear();
+  m_relJson.clear();
+  m_propertyJson.clear();
   setDefaultRadius();
 }
 
-bool ZDvidSynapse::isValid() const
-{
-  return getKind() != KIND_INVALID;
-}
-
-void ZDvidSynapse::loadJsonObject(
-    const ZJsonObject &obj, NeuTube::FlyEM::EDvidAnnotationLoadMode mode)
+void ZDvidAnnotation::loadJsonObject(
+    const ZJsonObject &obj,
+    NeuTube::FlyEM::EDvidAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -245,7 +216,7 @@ void ZDvidSynapse::loadJsonObject(
     if (obj.hasKey("Kind")) {
       setKind(ZJsonParser::stringValue(obj["Kind"]));
     } else {
-      setKind(KIND_UNKNOWN);
+      setKind(KIND_INVALID);
     }
 
     if (obj.hasKey("Tags")) {
@@ -255,24 +226,34 @@ void ZDvidSynapse::loadJsonObject(
       }
     }
 
-    clearPartner();
-    if (mode == NeuTube::FlyEM::LOAD_PARTNER_LOCATION) {
+    if (mode != NeuTube::FlyEM::LOAD_NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
-        if (jsonArray.size() > 0) {
+        switch (mode) {
+        case NeuTube::FlyEM::LOAD_PARTNER_RELJSON:
+          m_relJson = jsonArray;
+          break;
+        case NeuTube::FlyEM::LOAD_PARTNER_LOCATION:
           for (size_t i = 0; i < jsonArray.size(); ++i) {
             ZJsonObject partnerJson(jsonArray.value(i));
             if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
-              std::string rel = ZJsonParser::stringValue(partnerJson["Rel"]);
+//              std::string rel = ZJsonParser::stringValue(partnerJson["Rel"]);
+              /*
               if ((getKind() == KIND_POST_SYN && rel == "PostSynTo") ||
                   (getKind() == KIND_PRE_SYN && rel == "PreSynTo")) {
-                ZJsonArray posJson(partnerJson.value("To"));
-                std::vector<int> coords = posJson.toIntegerArray();
-                addPartner(coords[0], coords[1], coords[2]);
-              }
+                  */
+              ZJsonArray posJson(partnerJson.value("To"));
+              std::vector<int> coords = posJson.toIntegerArray();
+              addPartner(coords[0], coords[1], coords[2]);
+//              }
             }
           }
+          break;
+        default:
+          break;
         }
+
+
       }
     }
 
@@ -285,84 +266,40 @@ void ZDvidSynapse::loadJsonObject(
   }
 }
 
-void ZDvidSynapse::setKind(const std::string &kind)
+bool ZDvidAnnotation::isValid() const
+{
+  return getKind() != KIND_INVALID;
+}
+
+void ZDvidAnnotation::setKind(const std::string &kind)
 {
   if (kind == "PostSyn") {
     setKind(KIND_POST_SYN);
   } else if (kind == "PreSyn") {
     setKind(KIND_PRE_SYN);
+  } else if (kind == "Note") {
+    setKind(KIND_NOTE);
   } else {
-    setKind(KIND_UNKNOWN);
+    setKind(KIND_INVALID);
   }
 }
-#endif
 
-std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
-{
-  //"Kind": (x, y, z)
-  switch (synapse.getKind()) {
-  case ZDvidSynapse::KIND_POST_SYN:
-    stream << "PostSyn";
-    break;
-  case ZDvidSynapse::KIND_PRE_SYN:
-    stream << "PreSyn";
-    break;
-  case ZDvidSynapse::KIND_INVALID:
-    stream << "Invalid";
-    break;
-  default:
-    stream << "Unknown";
-    break;
-  }
-
-  stream << ": " << "(" << synapse.getPosition().getX() << ", "
-         << synapse.getPosition().getY() << ", "
-         << synapse.getPosition().getZ() << ")";
-
-  return stream;
-}
-#if 0
-void ZDvidSynapse::clearPartner()
+void ZDvidAnnotation::clearPartner()
 {
   m_partnerHint.clear();
 }
 
-void ZDvidSynapse::addPartner(int x, int y, int z)
+void ZDvidAnnotation::addPartner(int x, int y, int z)
 {
   m_partnerHint.push_back(ZIntPoint(x, y, z));
 }
 
-void ZDvidSynapse::addTag(const std::string &tag)
+void ZDvidAnnotation::addTag(const std::string &tag)
 {
   m_tagArray.push_back(tag);
 }
 
-std::string ZDvidSynapse::GetKindName(EKind kind)
-{
-  switch (kind) {
-  case ZDvidSynapse::KIND_POST_SYN:
-    return "PostSyn";
-  case ZDvidSynapse::KIND_PRE_SYN:
-    return "PreSyn";
-  default:
-    break;
-  }
-
-  return "Unknown";
-}
-
-ZDvidSynapse::EKind ZDvidSynapse::GetKind(const std::string &name)
-{
-  if (name == "PostSyn") {
-    return ZDvidSynapse::KIND_POST_SYN;
-  } else if (name == "PreSyn") {
-    return ZDvidSynapse::KIND_PRE_SYN;
-  }
-
-  return ZDvidSynapse::KIND_UNKNOWN;
-}
-
-ZJsonObject ZDvidSynapse::MakeRelJson(
+ZJsonObject ZDvidAnnotation::MakeRelJson(
     const ZIntPoint &pt, const std::string &rel)
 {
   ZJsonObject relJson;
@@ -373,26 +310,154 @@ ZJsonObject ZDvidSynapse::MakeRelJson(
 
   return relJson;
 }
-#endif
 
-ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
+ZJsonObject ZDvidAnnotation::toJsonObject() const
 {
-  std::string rel;
-  switch (getKind()) {
-  case ZDvidSynapse::KIND_POST_SYN:
-    rel = "PostSynTo";
+  ZJsonObject obj;
+
+  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
+  obj.setEntry("Pos", posJson);
+  obj.setEntry("Kind", GetKindName(getKind()));
+  ZJsonValue relJson = m_relJson.clone();
+  obj.setEntry("Rels", relJson);
+
+  if (!m_tagArray.empty()) {
+    ZJsonArray tagJson;
+    for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
+         iter != m_tagArray.end(); ++iter) {
+      const std::string &tag = *iter;
+      tagJson.append(tag);
+    }
+    obj.setEntry("Tags", tagJson);
+  }
+
+  if (!m_propertyJson.isEmpty()) {
+    ZJsonValue propJson = m_propertyJson.clone();
+    obj.setEntry("Prop", propJson);
+  }
+
+  return obj;
+}
+
+bool ZDvidAnnotation::isVisible(int z, NeuTube::EAxis sliceAxis) const
+{
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
     break;
-  case ZDvidSynapse::KIND_PRE_SYN:
-    rel = "PreSynTo";
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
     break;
+  case NeuTube::Z_AXIS:
+    abs(getPosition().getZ() - z);
+    break;
+  }
+
+  return dz < iround(getRadius());
+}
+
+double ZDvidAnnotation::getRadius(int z, NeuTube::EAxis sliceAxis) const
+{
+  int dz = 0;
+  switch (sliceAxis) {
+  case NeuTube::X_AXIS:
+    dz = abs(getPosition().getX() - z);
+    break;
+  case NeuTube::Y_AXIS:
+    dz = abs(getPosition().getY() - z);
+    break;
+  case NeuTube::Z_AXIS:
+    dz = abs(getPosition().getZ() - z);
+    break;
+  }
+
+  return std::max(0.0, getRadius() - dz);
+}
+
+void ZDvidAnnotation::setUserName(const std::string &name)
+{
+  m_propertyJson.setEntry("user", name);
+}
+
+std::string ZDvidAnnotation::getUserName() const
+{
+  return ZJsonParser::stringValue(m_propertyJson["user"]);
+}
+
+int ZDvidAnnotation::getX() const
+{
+  return getPosition().getX();
+}
+
+int ZDvidAnnotation::getY() const
+{
+  return getPosition().getY();
+}
+
+int ZDvidAnnotation::getZ() const
+{
+  return getPosition().getZ();
+}
+
+std::string ZDvidAnnotation::GetKindName(EKind kind)
+{
+  switch (kind) {
+  case ZDvidAnnotation::KIND_POST_SYN:
+    return "PostSyn";
+  case ZDvidAnnotation::KIND_PRE_SYN:
+    return "PreSyn";
+  case ZDvidAnnotation::KIND_NOTE:
+    return "Note";
+  case ZDvidAnnotation::KIND_UNKNOWN:
+    return "Unknown";
   default:
-    rel = "UnknownRelationship";
+    break;
   }
 
-  return MakeRelJson(pt, rel);
+  return "Invalid";
 }
-#if 0
-int ZDvidSynapse::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)
+
+ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const std::string &name)
+{
+  if (name == "PostSyn") {
+    return ZDvidAnnotation::KIND_POST_SYN;
+  } else if (name == "PreSyn") {
+    return ZDvidAnnotation::KIND_PRE_SYN;
+  } else if (name == "Note") {
+    return ZDvidAnnotation::KIND_NOTE;
+  } else if (name == "Unknown") {
+    return ZDvidAnnotation::KIND_UNKNOWN;
+  }
+
+  return ZDvidAnnotation::KIND_INVALID;
+}
+
+void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, const std::string &value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  propJson.setEntry(key, value);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, bool value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  if (value == true) {
+    propJson.setEntry(key, "1");
+  } else {
+    propJson.setEntry(key, "0");
+  }
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+int ZDvidAnnotation::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)
 {
   int count = 0;
   for (size_t i = 0; i < relJson.size(); ++i) {
@@ -404,7 +469,7 @@ int ZDvidSynapse::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)
   return count;
 }
 
-int ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonArray &relJson)
+int ZDvidAnnotation::AddRelation(ZJsonObject &json, const ZJsonArray &relJson)
 {
   int count = 0;
   for (size_t i = 0; i < relJson.size(); ++i) {
@@ -416,8 +481,7 @@ int ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonArray &relJson)
   return count;
 }
 
-
-ZJsonArray ZDvidSynapse::GetRelationJson(ZJsonObject &json)
+ZJsonArray ZDvidAnnotation::GetRelationJson(ZJsonObject &json)
 {
   ZJsonArray relArrayJson;
   bool hasRels = false;
@@ -436,7 +500,7 @@ ZJsonArray ZDvidSynapse::GetRelationJson(ZJsonObject &json)
   return relArrayJson;
 }
 
-bool ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
+bool ZDvidAnnotation::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
 {
   if (relJson.isEmpty()) {
     return false;
@@ -447,7 +511,7 @@ bool ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
   return AddRelation(relArrayJson, relJson);
 }
 
-bool ZDvidSynapse::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)
+bool ZDvidAnnotation::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)
 {
   bool removed = false;
 
@@ -464,13 +528,13 @@ bool ZDvidSynapse::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)
   return removed;
 }
 
-bool ZDvidSynapse::RemoveRelation(ZJsonObject &json, const ZIntPoint &pt)
+bool ZDvidAnnotation::RemoveRelation(ZJsonObject &json, const ZIntPoint &pt)
 {
   ZJsonArray relationArray = GetRelationJson(json);
   return RemoveRelation(relationArray, pt);
 }
 
-bool ZDvidSynapse::AddRelation(
+bool ZDvidAnnotation::AddRelation(
     ZJsonArray &relArrayJson, const ZJsonObject &relJson)
 {
   if (relJson.isEmpty()) {
@@ -497,7 +561,7 @@ bool ZDvidSynapse::AddRelation(
   return adding;
 }
 
-bool ZDvidSynapse::AddRelation(
+bool ZDvidAnnotation::AddRelation(
     ZJsonArray &relArrayJson, const ZIntPoint &to, const std::string &rel)
 {
   if (rel.empty()) {
@@ -520,7 +584,7 @@ bool ZDvidSynapse::AddRelation(
   return adding;
 }
 
-bool ZDvidSynapse::AddRelation(
+bool ZDvidAnnotation::AddRelation(
     ZJsonObject &json, const ZIntPoint &to, const std::string &rel)
 {
   if (rel.empty()) {
@@ -531,113 +595,31 @@ bool ZDvidSynapse::AddRelation(
 
   return AddRelation(relArrayJson, to, rel);
 }
-#endif
 
-#if 0
-ZJsonObject ZDvidSynapse::toJsonObject() const
+
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidAnnotation)
+
+///////////////
+ZJsonObject ZDvidAnnotation::Relation::toJsonObject() const
 {
-  ZJsonObject obj;
-
-  ZJsonArray posJson = ZJsonFactory::MakeJsonArray(m_position);
-  obj.setEntry("Pos", posJson);
-  obj.setEntry("Kind", GetKindName(getKind()));
-  if (!m_partnerHint.empty()) {
-    ZJsonArray relArrayJson;
-    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
-         iter != m_partnerHint.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      relArrayJson.append(makeRelJson(pt));
-    }
-    obj.setEntry("Rels", relArrayJson);
-  }
-
-  if (!m_tagArray.empty()) {
-    ZJsonArray tagJson;
-    for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
-         iter != m_tagArray.end(); ++iter) {
-      const std::string &tag = *iter;
-      tagJson.append(tag);
-    }
-    obj.setEntry("Tags", tagJson);
-  }
-
-  if (!m_propertyJson.isEmpty()) {
-    ZJsonObject propJson = m_propertyJson.clone();
-    obj.setEntry("Prop", propJson);
-  }
-
-  return obj;
+  return ZDvidAnnotation::MakeRelJson(m_to, GetName(m_relation));
 }
 
-bool ZDvidSynapse::isVisible(int z, NeuTube::EAxis sliceAxis) const
+std::string ZDvidAnnotation::Relation::GetName(
+    ZDvidAnnotation::Relation::ERelation rel)
 {
-  int dz = 0;
-  switch (sliceAxis) {
-  case NeuTube::X_AXIS:
-    dz = abs(getPosition().getX() - z);
-    break;
-  case NeuTube::Y_AXIS:
-    dz = abs(getPosition().getY() - z);
-    break;
-  case NeuTube::Z_AXIS:
-    abs(getPosition().getZ() - z);
+  switch (rel) {
+  case RELATION_POSTSYN_TO:
+    return "PostSynTo";
+  case RELATION_PRESYN_TO:
+    return "PreSynTo";
+  case RELATION_CONVERGENT_TO:
+    return "ConvergentTo";
+  case RELATION_GROUPED_WITH:
+    return "GroupedWith";
+  default:
     break;
   }
 
-  return dz < iround(getRadius());
+  return "UnknownRelationship";
 }
-
-double ZDvidSynapse::getRadius(int z, NeuTube::EAxis sliceAxis) const
-{
-  int dz = 0;
-  switch (sliceAxis) {
-  case NeuTube::X_AXIS:
-    dz = abs(getPosition().getX() - z);
-    break;
-  case NeuTube::Y_AXIS:
-    dz = abs(getPosition().getY() - z);
-    break;
-  case NeuTube::Z_AXIS:
-    dz = abs(getPosition().getZ() - z);
-    break;
-  }
-
-  return std::max(0.0, getRadius() - dz);
-}
-
-void ZDvidSynapse::setUserName(const std::string &name)
-{
-  m_propertyJson.setEntry("user", name);
-}
-
-std::string ZDvidSynapse::getUserName() const
-{
-  return ZJsonParser::stringValue(m_propertyJson["user"]);
-}
-
-
-void ZDvidSynapse::AddProperty(
-    ZJsonObject &json, const std::string &key, const std::string &value)
-{
-  ZDvidAnnotation::AddProperty(json, key, value);
-}
-
-int ZDvidSynapse::getX() const
-{
-  return getPosition().getX();
-}
-
-int ZDvidSynapse::getY() const
-{
-  return getPosition().getY();
-}
-
-int ZDvidSynapse::getZ() const
-{
-  return getPosition().getZ();
-}
-#endif
-
-ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
-
-

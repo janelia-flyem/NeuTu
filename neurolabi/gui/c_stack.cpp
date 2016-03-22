@@ -133,6 +133,24 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
 
 int* C_Stack::hist(const Stack* stack)
 {
+  if (voxelNumber(stack) > MAX_INT32) {
+    double ratio = (double) voxelNumber(stack) / MAX_INT32;
+    int intv[3] = {0, 0, 0};
+    int i = 0;
+    while ((intv[0] + 1) * (intv[1] + 1) * (intv[2] + 1) < ratio) {
+      intv[i++] += 1;
+      if (i > 2) {
+        i = 0;
+      }
+    }
+
+    Stack *ds = Downsample_Stack(stack, intv[0], intv[1], intv[2]);
+    int *hist = Stack_Hist(ds);
+
+    kill(ds);
+    return hist;
+  }
+
   return Stack_Hist(stack);
 }
 

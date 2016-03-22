@@ -48,24 +48,6 @@ void ZSwcColorScheme::buildBiocytinColorTable()
   //m_colorTable.push_back(QColor(100, 120, 200)); //orchid
 }
 
-void ZSwcColorScheme::buildUniqueColorTable()
-{
-  m_colorTable.clear();
-  m_colorTable.push_back(QColor(Qt::red));
-  m_colorTable.push_back(QColor(Qt::green));
-  m_colorTable.push_back(QColor(Qt::blue));
-  m_colorTable.push_back(QColor(Qt::cyan));
-  m_colorTable.push_back(QColor(Qt::magenta));
-  m_colorTable.push_back(QColor(Qt::darkRed));
-  m_colorTable.push_back(QColor(Qt::darkGreen));
-  m_colorTable.push_back(QColor(Qt::darkBlue));
-  m_colorTable.push_back(QColor(Qt::darkCyan));
-  m_colorTable.push_back(QColor(Qt::darkMagenta));
-  m_colorTable.push_back(QColor(Qt::darkYellow));
-  m_colorTable.push_back(QColor(Qt::white));
-  m_colorTable.push_back(QColor(Qt::black));
-}
-
 void ZSwcColorScheme::setColorScheme(EColorScheme scheme)
 {
   if (scheme != m_colorScheme) {

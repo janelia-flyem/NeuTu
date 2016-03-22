@@ -83,8 +83,13 @@ public slots:
   void tryAddPreSynapseMode();
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
+  void tryAddTodoItem();
+  void removeTodoItem();
+  void checkTodoItem();
+  void uncheckTodoItem();
 
 private:
+  void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void addActiveStrokeAsBookmark();
@@ -92,6 +97,7 @@ private:
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
   void tryAddSynapse(const ZIntPoint &pt);
   void tryMoveSynapse(const ZIntPoint &pt);
+  void tryAddTodoItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();

@@ -43,6 +43,7 @@ private:
   void init();
   void createMenu();
   void connectSignalSlot();
+  void checkBookmark(ZFlyEmBookmark *bookmark, bool checking);
 
 protected:
   void contextMenuEvent(QContextMenuEvent *);

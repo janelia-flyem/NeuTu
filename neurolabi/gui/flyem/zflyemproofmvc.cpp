@@ -801,6 +801,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       }
 
       getCompleteDocument()->downloadBookmark();
+      getCompleteDocument()->downloadTodoList();
     }
 
     getProgressSignal()->advanceProgress(0.5);
@@ -1678,7 +1679,9 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
     if (!getCompleteDocument()->isSplittable(bodyId)) {
-      QString msg = QString("%1 is not ready for split.").arg(bodyId);
+      QString msg = QString("%1 is not ready for split. "
+                            "The body could be annotated as 'Finalized' or "
+                            "a merged body waiting for upload.").arg(bodyId);
       emit messageGenerated(
             ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
@@ -2520,6 +2523,21 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
   }
 }
 
+void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
+{
+  TStackObjectSet &selected = getCompleteDocument()->getSelected(
+        ZStackObject::TYPE_FLYEM_BOOKMARK);
+  for (TStackObjectSet::iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+    bookmark->setChecked(checking);
+    recordBookmark(bookmark);
+  }
+  if (!selected.isEmpty()) {
+//    emit bookmarkUpdated();
+  }
+}
+
 void ZFlyEmProofMvc::recordCheckedBookmark(const QString &key, bool checking)
 {
 //  ZFlyEmBookmark *bookmark = m_bookmarkArray.findFirstBookmark(key);
@@ -2534,8 +2552,12 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 {
   ZDvidWriter writer;
   if (writer.open(getDvidTarget())) {
-    writer.writeBookmarkKey(*bookmark);
-//    writer.writeBookmark(*bookmark);
+    if (bookmark->isCustom()) {
+      writer.writeBookmark(*bookmark);
+    } else {
+      writer.writeBookmarkKey(*bookmark);
+    }
+
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
                                            NeuTube::MSG_WARNING));
@@ -2545,7 +2567,7 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark */*bookmark*/)
 {
-  getCompleteDocument()->setCustomBookmarkSaveState(false);
+//  getCompleteDocument()->setCustomBookmarkSaveState(false);
 }
 
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)

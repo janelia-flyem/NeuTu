@@ -89,7 +89,8 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
       writer.writeSynapse(m_synapseBackup);
       if (writer.isStatusOk()) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(m_synapseBackup);
+        synapse.loadJsonObject(
+              m_synapseBackup, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
         m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
         m_doc->notifySynapseEdited(synapse);
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").

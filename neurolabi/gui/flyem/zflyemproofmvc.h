@@ -7,7 +7,7 @@
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
 #include "flyem/zflyembody3ddoc.h"
@@ -165,6 +165,7 @@ public slots:
   void loadBookmark();
   void openSequencer();
 
+  void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);
@@ -257,7 +258,7 @@ protected:
   ZFlyEmBodyMergeProject m_mergeProject;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 
   ZPaintLabelWidget *m_paintLabelWidget;
 

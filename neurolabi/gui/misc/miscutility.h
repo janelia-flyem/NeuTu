@@ -53,6 +53,13 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
+enum ESampleStackOption {
+  SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM
+};
+
+double SampleStack(const Stack *stack, double x, double y, double z,
+                   ESampleStackOption option);
+
 /*!
  * \brief Parse hdf5 path
  *

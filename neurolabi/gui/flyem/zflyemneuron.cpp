@@ -227,9 +227,9 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           ZStackSkeletonizer skeletonizer;
 
           ZDvidUrl dvidUrl(reader.getDvidTarget());
-          ZJsonObject config = reader.readJsonObject(
-                dvidUrl.getSkeletonConfigUrl(
-                  reader.getDvidTarget().getBodyLabelName()));
+          std::string skeletonUrl = dvidUrl.getSkeletonConfigUrl(
+                reader.getDvidTarget().getBodyLabelName());
+          ZJsonObject config = reader.readJsonObject(skeletonUrl);
 
           if (config.isEmpty()) {
             config.load(NeutubeConfig::getInstance().getApplicatinDir() +

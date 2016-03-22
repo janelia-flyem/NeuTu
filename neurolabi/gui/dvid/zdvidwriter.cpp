@@ -19,6 +19,7 @@
 #include "flyem/zflyembookmark.h"
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
+#include "flyem/zflyemtodoitem.h"
 
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
@@ -1048,7 +1049,7 @@ void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
 {
   writePointAnnotation(
         m_dvidTarget.getBookmarkName(), bookmark.toDvidAnnotationJson());
-  writeBookmarkKey(bookmark);
+//  writeBookmarkKey(bookmark);
 
   /*
   writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
@@ -1070,6 +1071,16 @@ void ZDvidWriter::writeBookmarkKey(const ZFlyEmBookmark &bookmark)
             json, "{}");
 }
 
+void ZDvidWriter::deleteBookmarkKey(const ZFlyEmBookmark &bookmark)
+{
+  ZIntPoint center = bookmark.getCenter().toIntPoint();
+  std::stringstream stream;
+  stream << center.getX() << "_" << center.getY() << "_" << center.getZ();
+
+  deleteKey(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), stream.str());
+}
+
+
 void ZDvidWriter::writeBookmark(const ZJsonArray &bookmarkJson)
 {
   writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
@@ -1086,10 +1097,12 @@ void ZDvidWriter::writeBookmark(
   if (!bookmarkArray.empty()) {
     ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(bookmarkArray);
     writePointAnnotation(m_dvidTarget.getBookmarkName(), jsonArray);
+    /*
     for (std::vector<ZFlyEmBookmark*>::const_iterator
          iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
       writeBookmarkKey(*(*iter));
     }
+    */
   }
 }
 
@@ -1146,6 +1159,26 @@ void ZDvidWriter::deleteBookmark(
   }
 }
 
+void ZDvidWriter::deleteToDoItem(int x, int y, int z)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getTodoListDeleteUrl(x, y, z));
+#else
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
+}
+
+void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray itemJson;
+  itemJson.append(item.toJsonObject());
+
+  writeJson(url.getTodlListElementsUrl(), itemJson);
+}
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {

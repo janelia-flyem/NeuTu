@@ -1276,7 +1276,7 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
         break;
       case ZActionFactory::ACTION_SET_SWC_ROOT:
         connect(action, SIGNAL(triggered()),
-                this, SLOT(executeSetBranchPoint()));
+                this, SLOT(executeSetRootCommand()));
         m_singleSwcNodeActionActivator.registerAction(action, true);
         break;
       case ZActionFactory::ACTION_CONNECTED_ISOLATED_SWC:
@@ -3941,9 +3941,21 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
   emit swcNetworkModified();
 }
 
-void ZStackDoc::setTraceMinScore(double score)
+void ZStackDoc::setAutoTraceMinScore(double score)
 {
-  getTraceWorkspace()->min_score = score;
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_AUTO);
+  m_neuronTracer.setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+}
+
+void ZStackDoc::setManualTraceMinScore(double score)
+{
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
+
+//  m_neuronTracer.setManualTraceMinScore(score);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+//  m_neuronTracer.setSeedMinScore(score);
+//  getTraceWorkspace()->min_score = score;
 }
 
 void ZStackDoc::setReceptor(int option, bool cone)
@@ -4241,7 +4253,7 @@ bool ZStackDoc::subtractBackground()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::subtractBackground(mainStack, 0.5, 3);
+    ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
     notifyStackModified();
     return true;
   }
@@ -5384,12 +5396,12 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
   if (!nodeSet.empty()) {
     Swc_Tree_Node *prevNode = *(nodeSet.begin());
     if (prevNode != NULL) {
-      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
+//      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         Swc_Tree_Node *tn = SwcTreeNode::makePointer(
               center[0], center[1], center[2], radius);
         command  = new ZStackDocCommand::SwcEdit::ExtendSwcNode(
               this, tn, prevNode);
-      }
+//      }
     }
   }
 
@@ -5437,6 +5449,11 @@ void ZStackDoc::setStackBc(double factor, double offset, int channel)
 void ZStackDoc::notify(const ZWidgetMessage &msg)
 {
   emit messageGenerated(msg);
+}
+
+void ZStackDoc::notify(const QString &msg)
+{
+  notify(ZWidgetMessage(msg));
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -6327,6 +6344,32 @@ bool ZStackDoc::executeRemoveTurnCommand()
 bool ZStackDoc::executeResolveCrossoverCommand()
 {
   bool succ = false;
+
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+
+  QString message = "No crossover is detected. Nothing is done";
+  if (nodeSet.size() == 1) {
+    ZStackDocCommand::SwcEdit::ResolveCrossover *command =
+        new ZStackDocCommand::SwcEdit::ResolveCrossover(this);
+
+    pushUndoCommand(command);
+
+    succ = command->isSwcModified();
+    if (succ) {
+      message = "A crossover is created.";
+    }
+  } else {
+    message = "Nothing done. Exactly one node should be selected.";
+  }
+
+  notify(ZWidgetMessage(
+           message, NeuTube::MSG_INFORMATION,
+           ZWidgetMessage::TARGET_STATUS_BAR));
+
+  return succ;
+
+#if 0
+  bool succ = false;
   QString message;
 
   std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
@@ -6384,6 +6427,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   notifyStatusMessageUpdated(message);
 
   return succ;
+#endif
 }
 
 bool ZStackDoc::executeWatershedCommand()
@@ -6575,7 +6619,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand()
     pushUndoCommand(command);
     deprecateTraceMask();
 
-    message = "Nodes are connected.";
+    message = "Nodes are connected, except those too far away.";
     succ = true;
   }
 

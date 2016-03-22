@@ -19,7 +19,7 @@
 #include "zkeyeventswcmapper.h"
 #include "zmouseeventmapper.h"
 #include "zmouseeventprocessor.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zkeyoperationmap.h"
 #include "zstackball.h"
@@ -67,7 +67,7 @@ public:
   };
 
   enum EObjectRole {
-    ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK
+    ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK, ROLE_TODO_ITEM
   };
 
   /*
@@ -326,6 +326,7 @@ public slots:
   void tryDrawRectMode();
   void exitRectEdit();
   void exitBookmarkEdit();
+  void exitTodoEdit();
   void exitSynapseEdit();
 
   void selectDownstreamNode();
@@ -391,6 +392,8 @@ signals:
   void bodyDecomposeTriggered();
   void bodyMergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
+  void checkingBookmark();
+  void uncheckingBookmark();
 
 protected:
   void init();
@@ -528,7 +531,7 @@ protected:
 
   int m_zOrder;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 
 signals:
   void viewModeChanged();

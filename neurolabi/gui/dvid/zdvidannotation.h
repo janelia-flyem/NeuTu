@@ -1,84 +1,71 @@
-#ifndef ZDVIDSYNAPSE_H
-#define ZDVIDSYNAPSE_H
+#ifndef ZDVIDANNOTATION_H
+#define ZDVIDANNOTATION_H
 
-
-#include <iostream>
-#include <QColor>
-
+#include <string>
 #include "zstackobject.h"
-#include "zintpoint.h"
 #include "zjsonobject.h"
-#include "zdvidannotation.h"
+#include "zjsonarray.h"
 
-class ZJsonArray;
+class ZJsonObject;
 
-class ZDvidSynapse : public ZDvidAnnotation
+class ZDvidAnnotation : public ZStackObject
 {
 public:
-  ZDvidSynapse();
+  ZDvidAnnotation();
+
+  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
+               KIND_INVALID };
 
   static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_DVID_SYNAPSE;
+    return ZStackObject::TYPE_DVID_ANNOTATION;
   }
-
-//  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 
-//  void setPosition(int x, int y, int z);
-//  void setPosition(const ZIntPoint &pos);
+  void setPosition(int x, int y, int z);
+  void setPosition(const ZIntPoint &pos);
 
-//  const ZIntPoint& getPosition() const { return m_position; }
+  const ZIntPoint& getPosition() const { return m_position; }
 
-//  void setDefaultRadius();
-//  void setRadius(double r) { m_radius = r; }
+  void setDefaultRadius();
+  void setRadius(double r) { m_radius = r; }
 
-//  double getRadius() const { return m_radius; }
+  double getRadius() const { return m_radius; }
 
-//  void setKind(EKind kind) { m_kind = kind; }
-//  EKind getKind() const { return m_kind; }
-//  static std::string GetKindName(EKind kind);
-//  static EKind GetKind(const std::string &name);
+  void setKind(EKind kind) { m_kind = kind; }
+  EKind getKind() const { return m_kind; }
+  static std::string GetKindName(EKind kind);
+  static EKind GetKind(const std::string &name);
 
-//  void setTag(const std::string &tag) { m_tag = tag; }
+  void setKind(const std::string &kind);
 
-//  void setKind(const std::string &kind);
+  void setDefaultColor();
 
-//  void setDefaultColor();
+  int getX() const;
+  int getY() const;
+  int getZ() const;
 
-//  int getX() const;
-//  int getY() const;
-//  int getZ() const;
+  bool hit(double x, double y);
+  bool hit(double x, double y, double z);
 
-//  bool hit(double x, double y);
-//  bool hit(double x, double y, double z);
-
-  /*
   void loadJsonObject(
       const ZJsonObject &obj,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER);
+      NeuTube::FlyEM::EDvidAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
-  */
 
-//  void clear();
-
-  friend std::ostream& operator<< (
-      std::ostream &stream, const ZDvidSynapse &synapse);
-
-  /*
   void clearPartner();
   void addPartner(int x, int y, int z);
   void addTag(const std::string &tag);
+
+  void clear();
 
   bool isValid() const;
 
   static QColor GetDefaultColor(EKind kind);
   static double GetDefaultRadius(EKind kind);
-  */
 
-  /*
   class Relation {
   public:
     enum ERelation {
@@ -98,9 +85,15 @@ public:
     ZIntPoint m_to;
     ERelation m_relation;
   };
-  */
 
-#if 0
+  const std::vector<ZIntPoint>& getPartners() {
+    return m_partnerHint;
+  }
+
+public: //Additional properties
+  void setUserName(const std::string &name);
+  std::string getUserName() const;
+
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
   static bool AddRelation(
@@ -115,42 +108,36 @@ public: //Json APIs
   static int AddRelation(
       ZJsonObject &json, const InputIterator &first,
       const InputIterator &last, const std::string &rel);
+   static ZJsonArray GetRelationJson(ZJsonObject &json);
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
   static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
 
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
-#endif
+  static void AddProperty(ZJsonObject &json, const std::string &key,
+                          bool value);
 
-//  std::vector<ZIntPoint> getPartners();
-/*
-public: //Additional properties
-  void setUserName(const std::string &name);
-  std::string getUserName() const;
-*/
-//private:
-//  static ZJsonArray GetRelationJson(ZJsonObject &json);
+protected:
+  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
+  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
 
 private:
   void init();
-//  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
-//  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
-  ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
-#if 0
-private:
+protected:
   ZIntPoint m_position;
-  double m_radius;
   EKind m_kind;
+  double m_radius;
+
+  std::vector<ZIntPoint> m_partnerHint;
   std::vector<std::string> m_tagArray;
-//  std::vector<ZIntPoint> m_partnerHint;
   ZJsonObject m_propertyJson;
-#endif
+  ZJsonArray m_relJson;
 };
-/*
+
 template <typename InputIterator>
-int ZDvidSynapse::AddRelation(
+int ZDvidAnnotation::AddRelation(
     ZJsonObject &json, const InputIterator &first,
     const InputIterator &last, const std::string &rel)
 {
@@ -163,6 +150,6 @@ int ZDvidSynapse::AddRelation(
 
   return count;
 }
-*/
 
-#endif // ZDVIDSYNAPSE_H
+
+#endif // ZDVIDANNOTATION_H
