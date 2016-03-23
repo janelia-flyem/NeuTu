@@ -9151,6 +9151,16 @@ void ZStackDoc::notifyZoomingToSelectedSwcNode()
   emit zoomingToSelectedSwcNode();
 }
 
+void ZStackDoc::notifyZoomingTo(double x, double y, double z)
+{
+  emit zoomingTo(iround(x), iround(y), iround(z));
+}
+
+void ZStackDoc::notifyZoomingTo(const ZIntPoint &pt)
+{
+  emit zoomingTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
 template<typename T>
 const T* ZStackDoc::getFirstUserByType() const
 {

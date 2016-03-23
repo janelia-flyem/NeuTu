@@ -19833,7 +19833,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
 
@@ -19843,6 +19843,15 @@ void ZTest::test(MainWindow *host)
 //  std::cout << array.dumpString(0) << std::endl;
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("annotation", "todotest2");
+#endif
 
   std::cout << "Done." << std::endl;
 }

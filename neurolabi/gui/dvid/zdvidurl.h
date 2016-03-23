@@ -186,6 +186,8 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, const ZIntCuboid &box) const;
 
+  std::string getAnnotationSyncUrl(const std::string &dataName) const;
+
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
   std::string getSynapseUrl(const ZIntPoint &pos) const;

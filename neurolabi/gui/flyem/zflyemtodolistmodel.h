@@ -36,6 +36,9 @@ public:
   void append(const InputIterator &first, const InputIterator &last);
   void update(int row);
 
+  const ZFlyEmToDoItem* getItem(const QModelIndex &index) const;
+  ZFlyEmToDoItem* getItem(const QModelIndex &index);
+
   const ZFlyEmToDoItem* getItem(int index) const;
   ZFlyEmToDoItem* getItem(int index);
 
@@ -48,8 +51,15 @@ public:
   void update();
 
 signals:
+  void locatingItem(ZFlyEmToDoItem *item);
+  void doubleClicked(QModelIndex index);
 
 public slots:
+  void processDoubleClick(const QModelIndex &index);
+
+private:
+  void init();
+  void connectSignalSlot();
 
 private:
   QList<ZFlyEmToDoItem*> m_itemList;

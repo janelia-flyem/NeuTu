@@ -680,6 +680,11 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
+std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/sync";
+}
+
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
 {

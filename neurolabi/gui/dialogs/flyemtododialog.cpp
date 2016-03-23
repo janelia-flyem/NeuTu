@@ -22,6 +22,8 @@ void FlyEmTodoDialog::init()
   ui->todoTableView->setModel(m_model);
 
   connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(updateTable()));
+  connect(ui->todoTableView, SIGNAL(doubleClicked(QModelIndex)),
+          m_model, SLOT(processDoubleClick(QModelIndex)));
 }
 
 void FlyEmTodoDialog::setDocument(ZSharedPointer<ZStackDoc> doc)

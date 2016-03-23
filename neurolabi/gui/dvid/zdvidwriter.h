@@ -72,6 +72,8 @@ public:
 
   void createData(const std::string &type, const std::string &name);
 
+  void syncAnnotation(const std::string &name);
+
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);
   //void writeMaxBodyId(int bodyId);

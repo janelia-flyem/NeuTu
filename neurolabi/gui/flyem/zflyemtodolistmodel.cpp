@@ -5,6 +5,26 @@
 ZFlyEmTodoListModel::ZFlyEmTodoListModel(QObject *parent) :
   QAbstractTableModel(parent)
 {
+  init();
+}
+
+void ZFlyEmTodoListModel::init()
+{
+  connectSignalSlot();
+}
+
+void ZFlyEmTodoListModel::connectSignalSlot()
+{
+}
+
+void ZFlyEmTodoListModel::processDoubleClick(const QModelIndex &index)
+{
+  ZFlyEmToDoItem *item = getItem(index);
+  if (item != NULL) {
+    if (getDocument() != NULL) {
+      getDocument()->notifyZoomingTo(item->getPosition());
+    }
+  }
 }
 
 QVariant ZFlyEmTodoListModel::headerData(
@@ -112,6 +132,18 @@ bool ZFlyEmTodoListModel::removeColumns(
   }
 
   return false;
+}
+
+const ZFlyEmToDoItem* ZFlyEmTodoListModel::getItem(const QModelIndex &index) const
+{
+  return getItem(index.row());
+}
+
+
+ZFlyEmToDoItem *ZFlyEmTodoListModel::getItem(const QModelIndex &index)
+{
+  return const_cast<ZFlyEmToDoItem*>(
+        static_cast<const ZFlyEmTodoListModel&>(*this).getItem(index));
 }
 
 const ZFlyEmToDoItem* ZFlyEmTodoListModel::getItem(int index) const
