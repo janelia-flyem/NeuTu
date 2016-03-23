@@ -20,6 +20,7 @@ void ZDvidAnnotation::init()
   m_type = GetType();
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
+  m_bodyId = 0;
   setDefaultRadius();
   setDefaultColor();
 }

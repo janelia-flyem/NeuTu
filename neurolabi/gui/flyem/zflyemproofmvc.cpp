@@ -49,6 +49,7 @@
 #include "flyem/zflyemorthowindow.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemtodolistfilter.h"
+#include "dialogs/flyemtododialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -78,6 +79,7 @@ void ZFlyEmProofMvc::init()
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
+  m_todoDlg = new FlyEmTodoDialog(this);
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -1041,6 +1043,8 @@ void ZFlyEmProofMvc::customInit()
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
+
+  m_todoDlg->setDocument(getDocument());
 }
 
 void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
@@ -2186,6 +2190,12 @@ void ZFlyEmProofMvc::openSequencer()
 {
   m_bodyInfoDlg->show();
   m_bodyInfoDlg->raise();
+}
+
+void ZFlyEmProofMvc::openTodo()
+{
+  m_todoDlg->show();
+  m_todoDlg->raise();
 }
 
 

@@ -243,6 +243,10 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openSequencer()));
   m_toolMenu->addAction(m_openSequencerAction);
 
+  m_openTodoAction = new QAction("Show Todo List", this);
+  connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
+  m_toolMenu->addAction(m_openTodoAction);
+
   menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);

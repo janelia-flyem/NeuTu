@@ -42,6 +42,14 @@ public:
 
   void setKind(const std::string &kind);
 
+  uint64_t getBodyId() const {
+    return m_bodyId;
+  }
+
+  void setBodyId(uint64_t bodyId) {
+    m_bodyId = bodyId;
+  }
+
   void setDefaultColor();
 
   int getX() const;
@@ -132,6 +140,7 @@ protected:
   ZIntPoint m_position;
   EKind m_kind;
   double m_radius;
+  uint64_t m_bodyId;
 
   std::vector<ZIntPoint> m_partnerHint;
   std::vector<std::string> m_tagArray;
