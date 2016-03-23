@@ -722,6 +722,42 @@ void Z3DWindow::init(EInitMode mode)
 //  m_surfaceFilter->addData(cube); // green cube 2
 
 
+  setROIs(1);
+  ZCubeArray *cube = new ZCubeArray;
+  cube->setSource("test cubearray");
+
+  //
+  std::vector<Z3DCube> cubeArray;
+
+  //
+  Z3DCube *cube1 = new Z3DCube;
+
+  //
+  cube1->b_visible.clear();
+  for(int i=0; i<6; i++)
+      cube1->b_visible.push_back(true);
+
+  int l = 20;
+  cube1->nodes.push_back(glm::vec3(0,0,0)); // 1
+  cube1->nodes.push_back(glm::vec3(0,l,0)); // 2
+  cube1->nodes.push_back(glm::vec3(l,l,0)); // 3
+  cube1->nodes.push_back(glm::vec3(l,0,0)); // 4
+  cube1->nodes.push_back(glm::vec3(0,0,l)); // 5
+  cube1->nodes.push_back(glm::vec3(0,l,l)); // 6
+  cube1->nodes.push_back(glm::vec3(l,l,l)); // 7
+  cube1->nodes.push_back(glm::vec3(0,0,l)); // 8
+
+  //
+  //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
+  cube1->initByNodes = true;
+
+  //
+  cube->setColor(QColor(255,0,0,128));
+  cubeArray.push_back(*cube1);
+  cube->setCubeArray(cubeArray);
+
+  //
+  m_surfaceFilter->addData(cube);
   updateSurfaceBoundBox(); // end hard code
 
 

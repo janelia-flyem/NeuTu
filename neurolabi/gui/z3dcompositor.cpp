@@ -499,13 +499,27 @@ void Z3DCompositor::process(Z3DEye eye)
 void Z3DCompositor::renderGeometries(const std::vector<Z3DGeometryFilter*> &filters,
                                      Z3DRenderOutputPort &port, Z3DEye eye)
 {
+    qDebug()<<"renderGeometries ...";
+
   glEnable(GL_DEPTH_TEST);
   if (m_transparencyMethod.isSelected("Blend No Depth Mask"))
+  {
+      qDebug()<<"Blend No Depth Mask ...";
+
     renderGeomsBlendNoDepthMask(filters, port, eye);
+  }
   else if (m_transparencyMethod.isSelected("Blend Delayed"))
+  {
+      qDebug()<<"Blend Delayed ...";
+
     renderGeomsBlendDelayed(filters, port, eye);
+  }
   else
+  {
+      qDebug()<<"OIT ...";
+
     renderGeomsOIT(filters, port, eye, m_transparencyMethod.get());
+  }
   glDisable(GL_DEPTH_TEST);
 }
 

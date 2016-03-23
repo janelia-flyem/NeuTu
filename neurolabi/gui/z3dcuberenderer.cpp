@@ -137,10 +137,9 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
         }
     }
 
-    //
+    // QColor -> glm::vec4
     qreal r,g,b,a;
-    cubes.getColor().getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
-
+    cubes.getColor().getRgbF(&r, &g, &b, &a);
     setColor(glm::vec4(r,g,b,a));
 
     //
@@ -353,7 +352,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     m_rendererBase->setGlobalShaderParameters(oit3DTransparentizeShader, eye);
     oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
     oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
-    oit3DTransparentizeShader.setUniformValue("vColor", m_color);
+
+    qDebug()<<"setcolor ..."<<glGetUniformLocation(m_cubeShaderGrp.get().programId(),"uColor");
+    oit3DTransparentizeShader.setUniformValue("uColor", m_color);
 
     // size of view
     //  double theta, neardist, w, h;
@@ -390,7 +391,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
             GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
             //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
 
-            qDebug()<<"*** positions ... "<<positions.size()<<size_normalIndices<<" colors ..."<<m_color.r<<m_color.g<<m_color.b;
+            qDebug()<<"*** positions ... "<<positions.size()<<size_normalIndices<<" colors ..."<<m_color.r<<m_color.g<<m_color.b<<m_color.a;
 
             for (size_t i=0; i<nCubes; ++i)
             {
@@ -574,6 +575,8 @@ void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 
 bool Z3DCubeRenderer::isEmpty()
 {
+    qDebug()<<"isEmpty ...";
+
     //return m_cubes.empty();
     return positions.empty();
 }

@@ -126,6 +126,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
     } catch (std::exception &e) {
       std::cout << e.what() << std::endl;
       m_status = READ_FAILED;
+    } catch (...) {
     }
   } else {
     startReading();

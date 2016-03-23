@@ -511,7 +511,13 @@ void Z3DShaderProgram::setUniformValue(const QString &name, const glm::vec3 &val
 
 void Z3DShaderProgram::setUniformValue(const QString &name, const glm::vec4 &value)
 {
+
+
   GLint l = getUniformLocation(name);
+
+  qDebug()<<"setUniformValue ... "<<l<<value.a;
+
+
   setUniformValue(l, value);
 }
 

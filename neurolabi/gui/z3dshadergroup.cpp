@@ -139,7 +139,7 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
 
   }
 
-  //shader->printShaders();
+  shader->printShaders();
 }
 
 void Z3DShaderGroup::buildDualDepthPeelingInitShader(Z3DShaderProgram *shader)
