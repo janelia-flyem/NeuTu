@@ -19722,7 +19722,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
 
@@ -19737,6 +19737,92 @@ void ZTest::test(MainWindow *host)
   }
 
 #endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
+  ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
+#endif
+
+#if 0
+
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+  factory.setDownsampleInterval(7, 7, 7);
+  Stack *stack = factory.createSurfaceImage(obj);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  C_Stack::kill(stack);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidWriter writer;
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (writer.open(target) && reader.open(target)) {
+    std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+                                              target.getBodyLabelName());
+    QStringList keyList = reader.readKeys(dataName.c_str());
+    foreach(const QString &key, keyList) {
+      writer.deleteKey(dataName, key.toStdString());
+    }
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (reader.open(target)) {
+    ZJsonObject config = reader.readSkeletonConfig();
+    std::cout << config.dumpString(2) << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setBodyLabelName("bodies");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    std::cout << "Has body: " << reader.hasBody(15363212) << std::endl;
+  }
+#endif
+
+#if 0
+  try {
+    libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+    service.custom_request("bodies/sparsevol/101", libdvid::BinaryDataPtr(), libdvid::HEAD);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.getStatus() << std::endl;
+    std::cout << e.what() << std::endl;
+  }
+
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(obj);
+
+  array.dump(GET_TEST_DATA_DIR + "/new_ROI_LOP.json");
+//  std::cout << array.dumpString(0) << std::endl;
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

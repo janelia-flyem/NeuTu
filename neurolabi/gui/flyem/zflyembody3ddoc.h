@@ -18,6 +18,7 @@
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
+class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -77,6 +78,7 @@ public:
   public:
     static const TUpdateFlag UPDATE_CHANGE_COLOR;
     static const TUpdateFlag UPDATE_ADD_SYNAPSE;
+    static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
 
   private:
     EAction m_action;
@@ -100,6 +102,7 @@ public:
   void updateBody(uint64_t bodyId, const QColor &color);
 
   void addSynapse(uint64_t bodyId);
+  void addTodo(uint64_t bodyId);
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -130,9 +133,18 @@ public:
 
   void processEventFunc();
 
+  void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+
+  bool hasTodoItemSelected() const;
+
+  ZFlyEmToDoItem* getOneSelectedTodoItem() const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
+  void showTodo(bool on);
+  void addTodo(bool on);
+  void updateTodo(uint64_t bodyId);
 
 protected:
   void autoSave() {}
@@ -174,6 +186,7 @@ private:
 
   bool m_quitting;
   bool m_showingSynapse;
+  bool m_showingTodo;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

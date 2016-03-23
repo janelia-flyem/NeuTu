@@ -20,32 +20,23 @@ ZDvidSynapse::ZDvidSynapse()
 
 void ZDvidSynapse::init()
 {
+  m_type = GetType();
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
   setDefaultRadius();
+  setDefaultColor();
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {
-#if 0
-  ZStackBall ball;
-  ball.setCenter(getPosition());
-  ball.setRadius(getRadius());
-  ball.setColor(getColor());
-  ball.setSelected(isSelected());
-  ball.setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
-
-  ball.display(painter, slice, option);
-#endif
-
   bool visible = true;
   int z = painter.getZ(slice);
 
   if (slice < 0) {
     visible = isProjectionVisible();
   } else {
-    visible = isVisible(z, sliceAxis);
+    visible = isSliceVisible(z, sliceAxis);
   }
 
   double radius = getRadius(z, sliceAxis);
@@ -146,7 +137,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
   }
 }
-
+#if 0
 void ZDvidSynapse::setPosition(const ZIntPoint &pos)
 {
   m_position = pos;
@@ -242,7 +233,7 @@ bool ZDvidSynapse::isValid() const
 }
 
 void ZDvidSynapse::loadJsonObject(
-    const ZJsonObject &obj, NeuTube::FlyEM::ESynapseLoadMode mode)
+    const ZJsonObject &obj, NeuTube::FlyEM::EDvidAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -304,6 +295,7 @@ void ZDvidSynapse::setKind(const std::string &kind)
     setKind(KIND_UNKNOWN);
   }
 }
+#endif
 
 std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
 {
@@ -329,7 +321,7 @@ std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
 
   return stream;
 }
-
+#if 0
 void ZDvidSynapse::clearPartner()
 {
   m_partnerHint.clear();
@@ -381,6 +373,7 @@ ZJsonObject ZDvidSynapse::MakeRelJson(
 
   return relJson;
 }
+#endif
 
 ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
 {
@@ -398,7 +391,7 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
 
   return MakeRelJson(pt, rel);
 }
-
+#if 0
 int ZDvidSynapse::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)
 {
   int count = 0;
@@ -422,6 +415,7 @@ int ZDvidSynapse::AddRelation(ZJsonObject &json, const ZJsonArray &relJson)
 
   return count;
 }
+
 
 ZJsonArray ZDvidSynapse::GetRelationJson(ZJsonObject &json)
 {
@@ -537,8 +531,9 @@ bool ZDvidSynapse::AddRelation(
 
   return AddRelation(relArrayJson, to, rel);
 }
+#endif
 
-
+#if 0
 ZJsonObject ZDvidSynapse::toJsonObject() const
 {
   ZJsonObject obj;
@@ -620,6 +615,7 @@ std::string ZDvidSynapse::getUserName() const
   return ZJsonParser::stringValue(m_propertyJson["user"]);
 }
 
+
 void ZDvidSynapse::AddProperty(
     ZJsonObject &json, const std::string &key, const std::string &value)
 {
@@ -640,31 +636,8 @@ int ZDvidSynapse::getZ() const
 {
   return getPosition().getZ();
 }
-
+#endif
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)
 
 
-///////////////
-ZJsonObject ZDvidSynapse::Relation::toJsonObject() const
-{
-  return ZDvidSynapse::MakeRelJson(m_to, GetName(m_relation));
-}
-
-std::string ZDvidSynapse::Relation::GetName(ZDvidSynapse::Relation::ERelation rel)
-{
-  switch (rel) {
-  case RELATION_POSTSYN_TO:
-    return "PostSynTo";
-  case RELATION_PRESYN_TO:
-    return "PreSynTo";
-  case RELATION_CONVERGENT_TO:
-    return "ConvergentTo";
-  case RELATION_GROUPED_WITH:
-    return "GroupedWith";
-  default:
-    break;
-  }
-
-  return "UnknownRelationship";
-}

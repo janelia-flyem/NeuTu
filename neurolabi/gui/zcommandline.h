@@ -55,6 +55,8 @@ private:
   int m_zStart;
   int m_intv[3];
   int m_blockOffset[3];
+  int m_position[3];
+  int m_size[3];
   bool m_fullOverlapScreen;
   bool m_isVerbose;
   bool m_forceUpdate;

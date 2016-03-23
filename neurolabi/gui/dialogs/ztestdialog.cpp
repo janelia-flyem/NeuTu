@@ -57,7 +57,7 @@ void ZTestDialog::testMessage()
 }
 
 void ZTestDialog::MessageProcessor::processMessage(
-    ZMessage *message, QWidget *host) const
+    ZMessage */*message*/, QWidget */*host*/) const
 {
 #ifdef _DEBUG_
   std::cout << "ZTestDialog::MessageProcessor::processMessage" << std::endl;

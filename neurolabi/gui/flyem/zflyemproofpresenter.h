@@ -65,6 +65,7 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
+  void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
   void goingToBody();
@@ -83,8 +84,16 @@ public slots:
   void tryAddPreSynapseMode();
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
+  void tryAddTodoItem();
+  void tryAddDoneItem();
+  void removeTodoItem();
+  void checkTodoItem();
+  void uncheckTodoItem();
+  void selectBodyInRoi();
+  void zoomInRectRoi();
 
 private:
+  void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void addActiveStrokeAsBookmark();
@@ -92,6 +101,8 @@ private:
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
   void tryAddSynapse(const ZIntPoint &pt);
   void tryMoveSynapse(const ZIntPoint &pt);
+  void tryAddTodoItem(const ZIntPoint &pt);
+  void tryAddDoneItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();

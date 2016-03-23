@@ -151,7 +151,8 @@ public:
   enum ETracingMode {
     TRACING_AUTO, TRACING_INTERACTIVE, TRACING_SEED
   };
-  void setTraceScoreThreshold(ETracingMode mode);
+  void prepareTraceScoreThreshold(ETracingMode mode);
+  void setMinScore(double score, ETracingMode mode);
 
   void useEdgePath(bool state) {
     m_usingEdgePath = state;

@@ -17,7 +17,7 @@
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
-  m_showingSynapse(true), m_garbageJustDumped(false)
+  m_showingSynapse(true), m_showingTodo(true), m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -104,6 +104,9 @@ ZFlyEmBody3dDoc::BodyEvent::UPDATE_CHANGE_COLOR = 1;
 const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
 ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_SYNAPSE = 2;
 
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_TODO_ITEM = 4;
+
 void ZFlyEmBody3dDoc::BodyEvent::print() const
 {
   switch (m_action) {
@@ -177,6 +180,11 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
 void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 {
   m_dataDoc = doc;
+
+  if (getDataDocument() != NULL) {
+    connect(getDataDocument(), SIGNAL(todoModified(uint64_t)),
+            this, SLOT(updateTodo(uint64_t)));
+  }
 }
 
 ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
@@ -200,6 +208,9 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
     }
+    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+      addTodo(event.getBodyId());
+    }
     break;
   default:
     break;
@@ -216,14 +227,45 @@ void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
     addBody(event.getBodyId(), event.getBodyColor());
     break;
   case BodyEvent::ACTION_UPDATE:
-    updateBody(event.getBodyId(), event.getBodyColor());
+    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
+      updateBody(event.getBodyId(), event.getBodyColor());
+    }
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
+    }
+    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+      addTodo(event.getBodyId());
     }
     break;
   default:
     break;
   }
+}
+
+void ZFlyEmBody3dDoc::setTodoItemSelected(
+    ZFlyEmToDoItem *item, bool select)
+{
+  getObjectGroup().setSelected(item, select);
+}
+
+bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
+{
+  return !getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM).empty();
+}
+
+ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
+{
+  ZFlyEmToDoItem *item = NULL;
+
+  const TStackObjectSet &objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+  if (!objSet.empty()) {
+    item = const_cast<ZFlyEmToDoItem*>(
+          dynamic_cast<const ZFlyEmToDoItem*>(*(objSet.begin())));
+  }
+
+  return item;
 }
 
 void ZFlyEmBody3dDoc::processEventFunc()
@@ -397,7 +439,10 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
     endObjectModifiedMode();
     notifyObjectModified(true);
 
+    addSynapse(bodyId);
+    addTodo(bodyId);
     //Add synapse
+#if 0
     if (m_showingSynapse) {
       beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 //      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
@@ -425,10 +470,22 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
           addObject(punctum, false);
         }
       }
-
+#if 0
+      std::vector<ZPunctum*> todoPuncta =
+          getDataDocument()->getTodoPuncta(bodyId);
+      for (std::vector<ZPunctum*>::const_iterator iter = todoPuncta.begin();
+           iter != todoPuncta.end(); ++iter) {
+        ZPunctum *punctum = *iter;
+//        punctum->setRadius(30);
+//        punctum->setColor(128, 128, 128);
+        punctum->setSource(ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+        addObject(punctum, false);
+      }
+#endif
       endObjectModifiedMode();
       notifyObjectModified(true);
     }
+#endif
 //    removeObject(tree->getSource(), true);
 //    removeObject(tree, true);
   }
@@ -445,21 +502,36 @@ void ZFlyEmBody3dDoc::addSynapse(bool on)
   }
 }
 
+void ZFlyEmBody3dDoc::addTodo(bool on)
+{
+  if (on) {
+    for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
+         iter != m_bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_TODO_ITEM);
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::showSynapse(bool on)
 {
   m_showingSynapse = on;
   addSynapse(on);
 }
 
+void ZFlyEmBody3dDoc::showTodo(bool on)
+{
+  m_showingTodo = on;
+  addTodo(on);
+}
+
 void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
 {
   if (m_showingSynapse) {
-    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-//      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
-
     if (getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_PUNCTUM,
           ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
       std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
           getDataDocument()->getSynapse(bodyId);
       {
@@ -484,12 +556,65 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           addObject(punctum, false);
         }
       }
+      endObjectModifiedMode();
+      notifyObjectModified();
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
+{
+  if (m_showingTodo) {
+    std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
+    removeObject(source, true);
+
+    if (hasBody(bodyId)) {
+      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+      std::vector<ZFlyEmToDoItem*> itemList =
+          getDataDocument()->getTodoItem(bodyId);
+
+      for (std::vector<ZFlyEmToDoItem*>::const_iterator iter = itemList.begin();
+           iter != itemList.end(); ++iter) {
+        ZFlyEmToDoItem *item = *iter;
+        item->setRadius(30);
+        //        item->setColor(255, 255, 0);
+        item->setSource(source);
+        addObject(item, false);
+      }
+
+      endObjectModifiedMode();
+      notifyObjectModified(true);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
+{
+  if (m_showingTodo) {
+    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
+    if (getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_FLYEM_TODO_ITEM, source) == NULL) {
+      std::vector<ZFlyEmToDoItem*> itemList =
+          getDataDocument()->getTodoItem(bodyId);
+
+      for (std::vector<ZFlyEmToDoItem*>::const_iterator iter = itemList.begin();
+           iter != itemList.end(); ++iter) {
+        ZFlyEmToDoItem *item = *iter;
+        item->setRadius(30);
+//        item->setColor(255, 255, 0);
+        item->setSource(source);
+        addObject(item, false);
+      }
     }
 
     endObjectModifiedMode();
     notifyObjectModified(true);
   }
 }
+
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
@@ -504,6 +629,14 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
     TStackObjectList objList = getObjectGroup().findSameSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter);
+    }
+
+    objList = getObjectGroup().findSameSource(
+          ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       removeObject(*iter, false);

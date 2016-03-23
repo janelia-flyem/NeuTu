@@ -169,6 +169,11 @@ public:
   std::string getBookmarkName() const;
   std::string getBookmarkKeyName() const;
   std::string getSkeletonName() const;
+  std::string getThumbnailName() const;
+
+  std::string getTodoListName() const;
+
+  std::string getBodyAnnotationName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);

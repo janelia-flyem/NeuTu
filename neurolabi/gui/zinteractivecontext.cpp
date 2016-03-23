@@ -10,7 +10,8 @@ ZInteractiveContext::ZInteractiveContext()
   m_exploreMode = EXPLORE_OFF;
   m_oldExploreMode = EXPLORE_OFF;
   m_markPunctaMode = MARK_PUNCTA_OFF;
-  m_swcEditMode = SWC_EDIT_SELECT;
+//  m_swcEditMode = SWC_EDIT_SELECT;
+  m_swcEditMode = SWC_EDIT_OFF;
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
   m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
@@ -18,12 +19,13 @@ ZInteractiveContext::ZInteractiveContext()
   m_exitingEdit = false;
   m_blockingContextMenu = false;
   m_sliceAxis = NeuTube::Z_AXIS;
+  m_acceptingRect = false;
 }
 
 
 bool ZInteractiveContext::isTraceModeOff() const
 {
-  if (m_swcEditMode != SWC_EDIT_SELECT ||
+  if (/*m_swcEditMode != SWC_EDIT_SELECT ||*/
       m_swcEditMode != SWC_EDIT_OFF) {
     return false;
   }
@@ -33,7 +35,7 @@ bool ZInteractiveContext::isTraceModeOff() const
 
 bool ZInteractiveContext::isContextMenuActivated() const
 {
-  return ((m_swcEditMode == SWC_EDIT_OFF || m_swcEditMode == SWC_EDIT_SELECT) &&
+  return ((m_swcEditMode == SWC_EDIT_OFF /*|| m_swcEditMode == SWC_EDIT_SELECT*/) &&
           m_tubeEditMode == TUBE_EDIT_OFF &&
           m_strokeEditMode == STROKE_EDIT_OFF &&
           m_rectEditMode == RECT_EDIT_OFF &&
@@ -126,6 +128,16 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
         break;
       case SYNAPSE_MOVE:
         mode = INTERACT_MOVE_SYNAPSE;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (todoEditMode()) {
+      case TODO_ADD_ITEM:
+        mode = INTERACT_ADD_TODO_ITEM;
         break;
       default:
         break;

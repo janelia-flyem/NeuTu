@@ -15,7 +15,10 @@
 #  define __USE_BSD
 #endif
 #include <string.h>
+#include <memory.h>
+#include <stdlib.h>
 #include <ctype.h>
+
 #include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_swc_tree.h"
@@ -2210,6 +2213,28 @@ static int count_double(const char *str)
   return n;
 }
 
+size_t step_line(char *str)
+{
+    size_t offset = 0;
+
+    int line_count = 0;
+    if (str != NULL) {
+        while (str[offset] != '\0') {
+            ++offset;
+            if (str[offset] == '\r' || str[offset] == '\n') {
+                str[offset] = '\0';
+                ++offset;
+                line_count++;
+            }
+            if (line_count > 0 && !tz_isspace(str[offset])) {
+                break;
+            }
+        }
+    }
+
+    return offset;
+}
+
 Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
 {
   if (swc_string == NULL) {
@@ -2245,15 +2270,22 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
 
   double value[MAX_SWC_FIELD_NUMBER];
   
-  const char *sep = "\n\r";
-  char *line = NULL;
+//  const char *sep = "\n\r";
+//  char *line = NULL;
+  size_t len = strlen(swc_string);\
+  size_t offset = 0;
+#if 0
 #if defined(_WIN64) || defined(_WIN32)
   while ((line = strtok(swc_string, sep)) != NULL) {
     swc_string = NULL;
 #else
   while ((line = strsep(&swc_string, sep)) != NULL) {
 #endif
-    strtrim(line);
+#endif
+  while (offset < len) {
+    char *line = swc_string + offset;
+    offset += step_line(line);
+//    strtrim(line);
     if (strlen(line) > 0) {
       int field_number;
       int cpos;
@@ -2309,6 +2341,7 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
         }
       }
     }
+//    free(line);
   }
 
   Swc_Tree *tree = New_Swc_Tree();

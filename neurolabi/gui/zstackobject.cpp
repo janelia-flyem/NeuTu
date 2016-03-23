@@ -238,7 +238,7 @@ bool ZStackObject::isSelected(const ZStackObject *obj)
   return false;
 }
 
-void ZStackObject::getBoundBox(ZIntCuboid *box) const
+void ZStackObject::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     *box = ZIntCuboid();

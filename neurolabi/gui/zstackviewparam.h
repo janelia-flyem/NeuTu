@@ -48,6 +48,14 @@ public:
    */
   void resize(int width, int height);
 
+  void fixZ(bool state) {
+    m_fixingZ = state;
+  }
+
+  bool fixingZ() const {
+    return m_fixingZ;
+  }
+
 private:
   void init(NeuTube::ECoordinateSystem coordSys);
 
@@ -57,6 +65,7 @@ private:
   NeuTube::ECoordinateSystem m_coordSys;
   NeuTube::View::EExploreAction m_action;
   NeuTube::EAxis m_sliceAxis;
+  bool m_fixingZ;
 };
 
 #endif // ZSTACKVIEWPARAM_H
