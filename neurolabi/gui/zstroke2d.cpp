@@ -11,6 +11,7 @@
 #include "zjsonobject.h"
 #include "tz_geometry.h"
 #include "zpainter.h"
+#include "geometry/zgeometry.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;
@@ -704,8 +705,12 @@ bool ZStroke2d::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
   return false;
 }
 
-bool ZStroke2d::hitTest(double x, double y) const
+bool ZStroke2d::hitTest(double x, double y, NeuTube::EAxis axis) const
 {
+  if (axis != getSliceAxis()) {
+    return false;
+  }
+
   bool hit = false;
 
   for (std::vector<QPointF>::const_iterator iter = m_pointArray.begin();
@@ -768,16 +773,18 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 {
   bool hit = false;
 
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
   if (iround(z) == m_z) {
-    hit = hitTest(x, y);
+    hit = hitTest(x, y, getSliceAxis());
   }
 
   return hit;
 }
 
-bool ZStroke2d::hit(double x, double y)
+bool ZStroke2d::hit(double x, double y, NeuTube::EAxis axis)
 {
-  return hitTest(x, y);
+  return hitTest(x, y, axis);
 }
 
 bool ZStroke2d::hit(double x, double y, double z)

@@ -42,8 +42,8 @@ public:
 
 public:
   using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  virtual void display(ZPainter &painter, int z = 0,
-                       EDisplayStyle option = NORMAL) const;
+  virtual void display(ZPainter &painter, int z,
+                       EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
