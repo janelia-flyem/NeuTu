@@ -1,9 +1,11 @@
 #include "zflyemtodoitem.h"
 
 #include <QColor>
+#include <iostream>
 
 #include "zpainter.h"
 #include "zjsonparser.h"
+
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {

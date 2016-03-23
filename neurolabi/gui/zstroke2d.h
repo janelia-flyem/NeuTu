@@ -139,6 +139,7 @@ public:
   bool hitTest(double x, double y) const;
   bool hitTest(double x, double y, double z) const;
 
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 

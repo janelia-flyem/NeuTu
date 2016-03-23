@@ -52,8 +52,6 @@ public:
 //  int getY() const;
 //  int getZ() const;
 
-//  bool hit(double x, double y);
-//  bool hit(double x, double y, double z);
 
   /*
   void loadJsonObject(

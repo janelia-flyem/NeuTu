@@ -580,7 +580,7 @@ bool ZDvidSynapse::isVisible(int z, NeuTube::EAxis sliceAxis) const
     dz = abs(getPosition().getY() - z);
     break;
   case NeuTube::Z_AXIS:
-    abs(getPosition().getZ() - z);
+    dz = abs(getPosition().getZ() - z);
     break;
   }
 

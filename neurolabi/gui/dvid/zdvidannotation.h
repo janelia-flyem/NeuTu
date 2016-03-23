@@ -56,7 +56,8 @@ public:
   int getY() const;
   int getZ() const;
 
-  bool hit(double x, double y);
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(

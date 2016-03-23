@@ -33,7 +33,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
 
   ZGraph *graph = getBodyGraph();
 
-  if (!graph->size() > 0 && selected->size() > 0) {
+  if (graph->size() > 0 && selected->size() > 0) {
     vector<int> vertexArray(selected->size());
     vector<int>::iterator vertexArrayIter = vertexArray.begin();
     for (vector<vector<double> >::const_iterator iter = selected->begin();

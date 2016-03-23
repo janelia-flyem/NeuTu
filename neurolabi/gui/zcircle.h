@@ -41,6 +41,7 @@ public:
   const static TVisualEffect VE_OUT_FOCUS_DIM;
 
 public:
+  using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   virtual void display(ZPainter &painter, int z = 0,
                        EDisplayStyle option = NORMAL) const;
 
@@ -55,6 +56,7 @@ public:
   static bool isCuttingPlane(double z, double r, double n, double zScale = 1.0);
   bool isCuttingPlane(double n, double zScale = 1.0);
 
+  using ZStackObject::setVisualEffect; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   inline void setVisualEffect(TVisualEffect effect) {
     m_visualEffect = effect;
   }
