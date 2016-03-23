@@ -9,6 +9,7 @@ class ZKeyOperationConfig
 {
 public:
   ZKeyOperationConfig();
+  virtual ~ZKeyOperationConfig() {}
 
   virtual void configure(
       ZKeyOperationMap &map, ZKeyOperation::EGroup group);

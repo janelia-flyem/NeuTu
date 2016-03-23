@@ -205,6 +205,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 

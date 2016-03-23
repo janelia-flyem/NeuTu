@@ -1,5 +1,7 @@
 #include "zflyemtodoitem.h"
 
+#include <iostream>
+
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
   m_type = GetType();
