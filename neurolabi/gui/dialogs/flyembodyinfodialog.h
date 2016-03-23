@@ -37,7 +37,8 @@ signals:
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
   void ioBodiesLoaded();
-  void ioBodiesNotLoaded();
+  void ioBodyLoadFailed();
+  void ioNoBodiesLoaded();
   void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
 
@@ -65,7 +66,8 @@ private slots:
     void updateColorScheme();
     void onGotoBodies();    
     void onIOBodiesLoaded();
-    void onIOBodiesNotLoaded();
+    void onIOBodyLoadFailed();
+    void onIONoBodiesLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
 
