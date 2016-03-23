@@ -1092,19 +1092,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    // table label: "Input (123)" or "Output (123)"
-    // should factor this out
-    std::ostringstream labelStream;
-    if (m_connectionsTableState == CT_INPUT) {
-        labelStream << "Inputs (" ;
-    } else {
-        labelStream << "Outputs (" ;
-    }
-    labelStream << partnerBodyIDs.size();
-    labelStream << ")";
-    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
-
-
+    quint64 totalConnections = 0;
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
         // carefully set data for column items so they will sort
@@ -1118,11 +1106,24 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
         }
 
         QStandardItem * numberItem = new QStandardItem();
-        numberItem->setData(
-              QVariant(quint64(m_connectionsSites[partnerBodyIDs[i]].size())),
-            Qt::DisplayRole);
+        quint64 itemConnections = quint64(m_connectionsSites[partnerBodyIDs[i]].size());
+        totalConnections += itemConnections;
+        numberItem->setData(QVariant(itemConnections), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
+
+
+    // table label: "Input (123)" or "Output (123)"
+    // should factor this out
+    std::ostringstream labelStream;
+    if (m_connectionsTableState == CT_INPUT) {
+        labelStream << "Inputs (" ;
+    } else {
+        labelStream << "Outputs (" ;
+    }
+    labelStream << totalConnections;
+    labelStream << ")";
+    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
 
 
     // for some reason, this table gave me more trouble than the
