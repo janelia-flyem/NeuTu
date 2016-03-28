@@ -113,7 +113,7 @@ void Z3DShaderGroup::rebuild(const QString &header)
 
 void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
 {
-//    qDebug()<<"buildNormalShader"<<m_normalShaderFiles;
+  //qDebug()<<"buildNormalShader"<<m_normalShaderFiles;
 
   if (m_normalShaderFiles.empty()) {
     QStringList allshaders(m_shaderFiles);
@@ -139,7 +139,7 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
 
   }
 
-  shader->printShaders();
+  //shader->printShaders();
 }
 
 void Z3DShaderGroup::buildDualDepthPeelingInitShader(Z3DShaderProgram *shader)

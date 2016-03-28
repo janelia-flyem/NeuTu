@@ -341,7 +341,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); //
+    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO); //
 
     //
     m_cubeShaderGrp.bind();
@@ -353,7 +353,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
     oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
 
-    qDebug()<<"setcolor ..."<<glGetUniformLocation(m_cubeShaderGrp.get().programId(),"uColor");
+    qDebug()<<"setcolor ..."<<glGetUniformLocation(oit3DTransparentizeShader.programId(),"pos_scale")
+            << glGetUniformLocation(oit3DTransparentizeShader.programId(),"uColor")
+               << glGetUniformLocation(oit3DTransparentizeShader.programId(),"alpha");
     oit3DTransparentizeShader.setUniformValue("uColor", m_color);
 
     // size of view
@@ -372,6 +374,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
             if(nCubes<1)
                 return;
+
+            qDebug()<<"nCubes ... "<<nCubes;
 
             //
             if (!m_VAOs.empty()) {
@@ -482,9 +486,9 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
         // render
         //
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); // render to an offscreen framebuffer
-        glClearColor(0.0f,0.0f,0.0f,1.0f);
-        glClearDepth(1.0f);
+        //glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); // render to an offscreen framebuffer
+        //glClearColor(0.0f,0.0f,0.0f,1.0f);
+        //glClearDepth(1.0f);
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_DEPTH_TEST);
@@ -508,7 +512,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
             glBindVertexArray(0);
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+        //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
         //glDepthMask(GL_TRUE);
         //glDisable(GL_BLEND);

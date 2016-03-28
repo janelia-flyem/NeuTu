@@ -1,11 +1,11 @@
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
-
 uniform vec4 scene_ambient;
 uniform vec4 material_ambient;
 uniform vec4 material_specular;
 uniform float material_shininess;
 uniform float alpha;
+
 uniform vec4 uColor;
 
 varying vec3 position;
@@ -18,7 +18,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 
 void main()
 {
-    //float alpha = uColor.a;
+    //float alpha = color.a;
 
     // the object lies between -40 and -60 z coordinates
     float weight = pow(alpha + 0.01f, 4.0f) + max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(depth) / 200.0f, 4.0f))));
@@ -41,7 +41,7 @@ void main()
 #if defined(FragData1)
     FragData1.r = alpha * weight;
 #else
-    gl_FragData[1].r = (1.0 - alpha) * weight;
+    gl_FragData[1].r = alpha * weight;
 #endif
 
 }

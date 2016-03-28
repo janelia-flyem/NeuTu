@@ -174,7 +174,6 @@ void Z3DShaderProgram::loadFromSourceFile(const QStringList &shaderFilenames, co
   m_vertSrcs.clear();
   m_geomSrcs.clear();
   m_fragSrcs.clear();
-
   for (int i=0; i<shaderFilenames.size(); ++i) {
     QString filename = Z3DApplication::app()->getShaderPath(shaderFilenames[i]);
     if (filename.endsWith(".vert", Qt::CaseInsensitive)) {
@@ -511,13 +510,7 @@ void Z3DShaderProgram::setUniformValue(const QString &name, const glm::vec3 &val
 
 void Z3DShaderProgram::setUniformValue(const QString &name, const glm::vec4 &value)
 {
-
-
   GLint l = getUniformLocation(name);
-
-  qDebug()<<"setUniformValue ... "<<l<<value.a;
-
-
   setUniformValue(l, value);
 }
 
