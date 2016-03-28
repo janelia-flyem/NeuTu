@@ -152,6 +152,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
     connect(this, SIGNAL(ioBodiesLoaded()), this, SLOT(onIOBodiesLoaded()));
+    connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
+    connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
 
 }
 
@@ -1064,6 +1066,10 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // get the body list from DVID
         // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
+        if (bodyList.size() == 0) {
+            emit ioNoBodiesLoaded();
+            return;
+        }
 
         // copy into the map
         // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
@@ -1073,9 +1079,10 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
             } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
+        emit ioBodiesLoaded();
+    } else {
+        emit ioBodyLoadFailed();
     }
-
-    emit ioBodiesLoaded();
 
     // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
@@ -1088,19 +1095,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    // table label: "Input (123)" or "Output (123)"
-    // should factor this out
-    std::ostringstream labelStream;
-    if (m_connectionsTableState == CT_INPUT) {
-        labelStream << "Inputs (" ;
-    } else {
-        labelStream << "Outputs (" ;
-    }
-    labelStream << partnerBodyIDs.size();
-    labelStream << ")";
-    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
-
-
+    quint64 totalConnections = 0;
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
         // carefully set data for column items so they will sort
@@ -1114,11 +1109,24 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
         }
 
         QStandardItem * numberItem = new QStandardItem();
-        numberItem->setData(
-              QVariant(quint64(m_connectionsSites[partnerBodyIDs[i]].size())),
-            Qt::DisplayRole);
+        quint64 itemConnections = quint64(m_connectionsSites[partnerBodyIDs[i]].size());
+        totalConnections += itemConnections;
+        numberItem->setData(QVariant(itemConnections), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
+
+
+    // table label: "Input (123)" or "Output (123)"
+    // should factor this out
+    std::ostringstream labelStream;
+    if (m_connectionsTableState == CT_INPUT) {
+        labelStream << "Inputs (" ;
+    } else {
+        labelStream << "Outputs (" ;
+    }
+    labelStream << totalConnections;
+    labelStream << ")";
+    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
 
 
     // for some reason, this table gave me more trouble than the
@@ -1136,6 +1144,16 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     m_connectionsLoading = false;
 
+}
+
+void FlyEmBodyInfoDialog::onIOBodyLoadFailed() {
+    ui->ioBodyTableLabel->setText("load failed");
+    m_connectionsLoading = false;
+}
+
+void FlyEmBodyInfoDialog::onIONoBodiesLoaded() {
+    ui->ioBodyTableLabel->setText("no bodies to load");
+    m_connectionsLoading = false;
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
