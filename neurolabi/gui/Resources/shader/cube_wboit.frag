@@ -18,8 +18,7 @@ uniform vec4 material_specular;
 uniform float material_shininess;
 uniform float alpha;
 
-//uniform vec4 uColor;
-uniform vec3 uColor;
+uniform vec4 uColor;
 
 //
 vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
@@ -34,7 +33,6 @@ void main()
     float weight = pow(alpha + 0.01f, 4.0f) + max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(depth) / 200.0f, 4.0f))));
 
     //vec4 wbColor = vec4(uColor.rgb*alpha*weight, alpha*weight);
-    vec4 wbColor = vec4(uColor*alpha*weight, alpha*weight);
 
      //RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
      //vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, wbColor, alpha);
@@ -54,9 +52,9 @@ void main()
 //#endif
 
 #if GLSL_VERSION >= 130
-    FragData0 = vec4(1,0,0,1);;
+    FragData0 = uColor;
 #else
-    gl_FragColor = vec4(1,0,0,1);
+    gl_FragColor = uColor;
 #endif
 
 }

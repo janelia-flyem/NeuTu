@@ -218,6 +218,8 @@ void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 
 void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 {
+    qDebug()<<"addData ... size ... "<<cubes->getCubeArray().size();
+
     std::string source = cubes->getSource();
     m_sourceList.push_back(source);
 

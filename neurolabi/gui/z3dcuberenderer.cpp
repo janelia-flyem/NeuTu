@@ -370,8 +370,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
                << glGetUniformLocation(oit3DTransparentizeShader.programId(),"alpha");
 
     std::cout<<"color ... "<<m_color<<std::endl;
-    //oit3DTransparentizeShader.setUniformValue("uColor", m_color);
-    oit3DTransparentizeShader.setUniformValue("uColor", m_color.rgb());
+    oit3DTransparentizeShader.setUniformValue("uColor", m_color);
 
     // size of view
     //  double theta, neardist, w, h;
@@ -524,7 +523,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
         for(size_t i=0; i<nCubes; i++)
         {
-            qDebug()<<"draw cube ... "<<i;
+            qDebug()<<"draw cube ... "<<i<<m_cubes[i].positions.size();
 
             glBindVertexArray( m_VAOs[i] );
             glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );

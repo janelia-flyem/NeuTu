@@ -748,9 +748,9 @@ void Z3DWindow::init(EInitMode mode)
   for(int i=0; i<6; i++)
       cube1->b_visible.push_back(true);
 
-  float o = 0;
+  float o = -4;
   float l = 4;
-  cube1->length = 16;
+  cube1->length = 32;
   cube1->nodes.push_back(glm::vec3(o,o,o)); // 1
   cube1->nodes.push_back(glm::vec3(o,+l,o)); // 2
   cube1->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
@@ -763,7 +763,9 @@ void Z3DWindow::init(EInitMode mode)
   //
   //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
   cube1->initByNodes = true;
+  cubeArray.push_back(*cube1);
 
+  //
   Z3DCube *cube2 = new Z3DCube;
 
   //
@@ -771,9 +773,9 @@ void Z3DWindow::init(EInitMode mode)
   for(int i=0; i<6; i++)
       cube2->b_visible.push_back(true);
 
-  o = 5;
+  o = 4;
   l = 4;
-  cube2->length = 16;
+  cube2->length = 32;
   cube2->nodes.push_back(glm::vec3(o,o,o)); // 1
   cube2->nodes.push_back(glm::vec3(o,+l,o)); // 2
   cube2->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
@@ -788,7 +790,7 @@ void Z3DWindow::init(EInitMode mode)
 
   //
   cubeArray.push_back(*cube2);
-  cube->setColor(QColor(255,0,0,128));
+  cube->setColor(QColor(255,255,0,128));
   cube->setCubeArray(cubeArray);
 
   //
