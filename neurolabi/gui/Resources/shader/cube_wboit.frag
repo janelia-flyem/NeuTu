@@ -1,6 +1,17 @@
 //#version 120
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
+
+#if GLSL_VERSION >= 130
+in vec3 position;
+in vec3 normal;
+in float depth;
+#else
+varying vec3 position;
+varying vec3 normal;
+varying float depth;
+#endif
+
 uniform vec4 scene_ambient;
 uniform vec4 material_ambient;
 uniform vec4 material_specular;
@@ -10,14 +21,11 @@ uniform float alpha;
 //uniform vec4 uColor;
 uniform vec3 uColor;
 
-varying vec3 position;
-varying vec3 normal;
-varying float depth;
-
+//
 vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
                             const in vec3 normalDirection, const in vec3 position, const in vec4 color, const in float alpha);
-
+//
 void main()
 {
     //float alpha = color.a;
@@ -45,7 +53,7 @@ void main()
 //    gl_FragData[1].r = 0.5; //alpha * weight;
 //#endif
 
-#if defined(FragData0)
+#if GLSL_VERSION >= 130
     FragData0 = vec4(1,0,0,1);;
 #else
     gl_FragColor = vec4(1,0,0,1);

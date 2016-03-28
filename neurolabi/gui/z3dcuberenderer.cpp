@@ -360,7 +360,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     glUseProgram(oit3DTransparentizeShader.programId()); // debug
 
-    oit3DTransparentizeShader.printShaders(); // debug
+    //oit3DTransparentizeShader.printShaders(); // debug
 
     oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
     oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
@@ -538,15 +538,15 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
         // 2D compositing pass
         //
-        if (!oit2DComposeProgram->link())
-        {
-            qWarning() << oit2DComposeProgram->log() << endl;
-        }
+//        if (!oit2DComposeProgram->link())
+//        {
+//            qWarning() << oit2DComposeProgram->log() << endl;
+//        }
 
-        if (!oit2DComposeProgram->bind())
-        {
-            qWarning() << oit2DComposeProgram->log() << endl;
-        }
+//        if (!oit2DComposeProgram->bind())
+//        {
+//            qWarning() << oit2DComposeProgram->log() << endl;
+//        }
 
 //        //
 //        glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);

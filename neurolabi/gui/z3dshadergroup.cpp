@@ -124,7 +124,6 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
     shader->bindFragDataLocation(0, "FragData0");
     QString header = m_header;
     if (m_normalShaderFiles.back().contains("cube_wboit")) {
-
       if (GLEW_VERSION_3_0) {
         header += "out vec4 FragData1;\n";
       } else {
@@ -132,10 +131,10 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
       }
 
       shader->bindFragDataLocation(1, "FragData1");
+
+      qDebug()<<"header"<<header;
     }
     shader->loadFromSourceFile(m_normalShaderFiles, header);
-
-    //qDebug()<<"header"<<header;
 
   }
 
