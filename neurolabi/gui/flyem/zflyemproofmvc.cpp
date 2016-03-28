@@ -48,6 +48,8 @@
 #include "dvid/zdvidsparsevolslice.h"
 #include "flyem/zflyemorthowindow.h"
 #include "zroiwidget.h"
+#include "flyem/zflyemdataframe.h"
+#include "flyem/zflyemtodolistfilter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -83,6 +85,7 @@ void ZFlyEmProofMvc::init()
   initBodyWindow();
   m_objectWindow = NULL;
   m_orthoWindow = NULL;
+//  m_queryWindow = NULL;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -260,6 +263,11 @@ void ZFlyEmProofMvc::detachExternalNeuronWindow()
   m_externalNeuronWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachQueryWindow()
+{
+//  m_queryWindow = NULL;
+}
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -325,9 +333,13 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_TODO));
 
   connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
+  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showTodo(bool)));
+
   setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -371,6 +383,11 @@ void ZFlyEmProofMvc::makeBodyWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(m_bodyWindow->isVisible(Z3DWindow::LAYER_TODO));
+
+
+  connect(m_bodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showTodo(bool)));
 
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
@@ -812,6 +829,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       }
 
       getCompleteDocument()->downloadBookmark();
+      getCompleteDocument()->downloadTodoList();
     }
 
     getProgressSignal()->advanceProgress(0.5);
@@ -892,6 +910,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBody()));
   connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
           this, SLOT(selectBodyInRoi(bool)));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi()),
+          this, SLOT(selectBodyInRoi()));
   connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
@@ -1689,7 +1709,9 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
 {
   if (bodyId > 0) {
     if (!getCompleteDocument()->isSplittable(bodyId)) {
-      QString msg = QString("%1 is not ready for split.").arg(bodyId);
+      QString msg = QString("%1 is not ready for split. "
+                            "The body could be annotated as 'Finalized' or "
+                            "a merged body waiting for upload.").arg(bodyId);
       emit messageGenerated(
             ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
@@ -1904,6 +1926,16 @@ void ZFlyEmProofMvc::showObjectWindow()
 
   m_objectWindow->show();
   m_objectWindow->raise();
+}
+
+void ZFlyEmProofMvc::showQueryTable()
+{
+  /*
+  if (m_queryWindow = NULL) {
+    m_queryWindow = new ZFlyEmDataFrame;
+    m_queryWindow.load()
+  }
+  */
 }
 
 void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
@@ -2628,7 +2660,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 {
-  getCompleteDocument()->selectBodyInRoi(getView()->getCurrentZ(), appending);
+  getCompleteDocument()->selectBodyInRoi(
+        getView()->getCurrentZ(), appending, true);
 }
 
 void ZFlyEmProofMvc::updateUserBookmarkTable()

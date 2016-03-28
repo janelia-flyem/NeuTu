@@ -1451,7 +1451,7 @@ Stack* Stack_Remove_Small_Object(Stack *in, Stack *out,
   }
 
   int label = 2;
-  Stack_Label_Large_Objects_N(out, NULL, 1, label, size, conn);
+  Stack_Label_Large_Objects_G(out, NULL, 1, label, size, conn);
   Stack_Threshold_Binarize(out, label);
 
   return out;

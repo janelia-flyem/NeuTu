@@ -16,7 +16,6 @@ ssh emrecon22 '/opt/bin/ntupd'
 ssh emrecon42 '/opt/bin/ntupd'
 ssh emrecon99 '/opt/bin/ntupd'
 ssh emrecon100 '/opt/bin/ntupd'
-ssh ordishc-ws1 '/opt/bin/ntupd'
 ssh takemuras-ws2 '/opt/bin/ntupd'
 ssh plazas-ws1 '/opt/bin/ntupd'
 

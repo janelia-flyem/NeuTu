@@ -58,6 +58,8 @@ public:
    */
   void setSelection(ZStackObject *obj, bool selecting);
 
+//  void deselectAll();
+
 //  bool isInSelectedSet(const ZStackObject *obj) const;
 //  bool isInDeselectedSet(const ZStackObject *obj) const;
 
@@ -68,8 +70,8 @@ public:
   std::vector<ZStackObject*> getSelectedList(ZStackObject::EType type) const;
   std::vector<ZStackObject*> getDeselectedList(ZStackObject::EType type) const;
 
-  std::set<ZStackObject*> getSelectedSet(ZStackObject::EType type);
-  std::set<ZStackObject*> getDeselectedSet(ZStackObject::EType type);
+  std::set<ZStackObject*> getSelectedObjectSet(ZStackObject::EType type) const;
+  std::set<ZStackObject*> getDeselectedObjectSet(ZStackObject::EType type) const;
 };
 
 #endif // ZSTACKOBJECTSELECTOR_H

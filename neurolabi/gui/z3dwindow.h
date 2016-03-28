@@ -29,6 +29,7 @@ class Z3DVolumeSource;
 class Z3DVolumeRaycaster;
 class Z3DGraphFilter;
 class Z3DSurfaceFilter;
+class ZFlyEmTodoListFilter;
 class ZPunctum;
 class ZSwcTree;
 struct _Swc_Tree_Node;
@@ -147,7 +148,7 @@ public:
   };
 
   enum ERendererLayer {
-    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_VOLUME
+    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_VOLUME, LAYER_TODO
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -195,6 +196,7 @@ public: //Components
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
   inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
   inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
+  inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_todoFilter; }
   inline Z3DCompositor* getCompositor() const { return m_compositor; }
   inline Z3DVolumeSource *getVolumeSource() const { return m_volumeSource; }
   inline Z3DAxis *getAxis() { return m_axis; }
@@ -207,6 +209,7 @@ public: //Bounding box
   void updateSwcBoundBox();
   void updateGraphBoundBox();
   void updateSurfaceBoundBox();
+  void updateTodoBoundBox();
 //  void updateDecorationBoundBox();
   void updatePunctaBoundBox();
   void updateOverallBoundBox(std::vector<double> bound);
@@ -297,6 +300,7 @@ public slots:
   void updateNetworkDisplay();
   void update3DGraphDisplay();
   void update3DCubeDisplay();
+  void updateTodoDisplay();
 //  void updateDecorationDisplay();
   void updateDisplay();
 
@@ -306,10 +310,12 @@ public slots:
   void swcSizeScaleChanged();
   void punctaSizeScaleChanged();
 
+  void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
+  void extendSwcTreeNode(double x, double y, double z, double r);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
@@ -320,6 +326,8 @@ public slots:
   void punctaSelectionChanged();
   void swcSelectionChanged();
   void swcTreeNodeSelectionChanged();
+  void updateObjectSelection(QList<ZStackObject*> selected,
+                             QList<ZStackObject*> deselected);
 
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
@@ -376,6 +384,7 @@ public slots:
   void saveAllPunctaAs();
   void markPunctum();
   void locatePunctumIn2DView();
+  void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
@@ -422,6 +431,7 @@ private:
 
   // update menu based on context information
   void updateContextMenu(const QString &group);
+  void updateTodoList();
 
 private:
   // menu
@@ -504,6 +514,7 @@ private:
   Z3DVolumeSource *m_volumeSource;
   Z3DGraphFilter *m_graphFilter;
   Z3DSurfaceFilter *m_surfaceFilter;
+  ZFlyEmTodoListFilter *m_todoFilter;
 //  Z3DGraphFilter *m_decorationFilter;
 
   std::vector<double> m_volumeBoundBox;
@@ -511,6 +522,7 @@ private:
   std::vector<double> m_punctaBoundBox;
   std::vector<double> m_graphBoundBox;
   std::vector<double> m_surfaceBoundBox;
+  std::vector<double> m_todoBoundBox;
   std::vector<double> m_decorationBoundBox;
   std::vector<double> m_boundBox;    //overall bound box
 

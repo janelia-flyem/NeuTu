@@ -142,7 +142,7 @@ public:
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
-  void getBoundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const;
 
 private:
   static QVector<QColor> constructColorTable();

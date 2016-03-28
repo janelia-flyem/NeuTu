@@ -173,9 +173,19 @@ ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2)
   return ZPoint(pt1) += pt2;
 }
 
+ZPoint operator + (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() + offset, pt.y() + offset, pt.z() + offset);
+}
+
 ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2)
 {
   return ZPoint(pt1) -= pt2;
+}
+
+ZPoint operator - (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() - offset, pt.y() - offset, pt.z() - offset);
 }
 
 ZPoint operator * (const ZPoint &pt1, double scale)

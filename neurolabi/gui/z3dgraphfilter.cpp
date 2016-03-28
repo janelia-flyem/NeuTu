@@ -16,7 +16,6 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
-  , m_showingArrow(false)
 {
   addParameter(m_showGraph);
 
@@ -311,6 +310,9 @@ vector<double> Z3DGraphFilter::boundBox()
     result[4] = min(result[4], pos.z() - m_graph.getNode(i).radius() * 2.0);
     result[5] = max(result[5], pos.z() + m_graph.getNode(i).radius() * 2.0);
   }
+
+  for(int i=0; i<6; i++)
+      qDebug()<<"graph filter bb ... "<<i<<result[i];
 
   return result;
 }

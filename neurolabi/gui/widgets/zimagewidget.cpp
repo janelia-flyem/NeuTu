@@ -968,13 +968,18 @@ void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
     m_canvasRegion.setTop(y0);
     m_canvasRegion.setWidth(w);
     m_canvasRegion.setHeight(h);
-    m_viewPort.setSize(QSize(0, 0));
-    m_projRegion.setSize(QSize(0, 0));
+    setView(1, QPoint(0, 0));
+
+//    m_viewPort.setSize(QSize(0, 0));
+//    m_projRegion.setSize(QSize(0, 0));
   }
 
+  /*
   if (m_viewPort.width() == 0) {
     m_viewPort = m_canvasRegion;
+    setValidViewPort(m_viewPort);
   }
+  */
 }
 
 bool ZImageWidget::isColorTableRequired()

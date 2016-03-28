@@ -453,6 +453,25 @@ std::string ZDvidTarget::getSkeletonName() const
                             getBodyLabelName());
 }
 
+std::string ZDvidTarget::getThumbnailName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
+}
+
+std::string ZDvidTarget::getTodoListName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_TODO_LIST,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
+}
+
+std::string ZDvidTarget::getBodyAnnotationName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                            ZDvidData::ROLE_BODY_LABEL, getBodyLabelName());
+}
+
 void ZDvidTarget::setSynapseName(const std::string &name)
 {
   m_synapseName = name;

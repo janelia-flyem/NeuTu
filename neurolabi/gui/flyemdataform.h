@@ -73,7 +73,7 @@ public:
 
   void dump(const QString &message);
 
-  QList<int> getSelectedNeuronList() const;
+  QList<uint64_t> getSelectedNeuronList() const;
 
 protected:
   void resizeEvent(QResizeEvent *);
@@ -119,6 +119,7 @@ private slots:
   void viewModel(const QModelIndex &index);
   void showSelectedModel();
   void updateSelectedModel();
+  void updateSelectedThumbnail();
   void showSelectedBody();
   //void showSelectedBodyCoarse();
   void showSelectedModelWithBoundBox();
@@ -129,7 +130,7 @@ private slots:
   void updateThumbnail(const QModelIndex &index);
   void updateThumbnailSecondary(const QModelIndex &index);
 
-  void updateThumbnail(QList<QGraphicsItem *> itemList, int bodyId);
+  void updateThumbnail(QList<QGraphicsItem *> itemList, uint64_t bodyId);
   void generateThumbnailItem(
       QList<QGraphicsItem *> currentItemList, ZFlyEmNeuron *neuron);
 
@@ -159,6 +160,8 @@ private slots:
 
   void exportTypeLabelFile();
 
+  void exportSelectedBody();
+
   void importSynapse();
 
   void slotTest();
@@ -166,10 +169,17 @@ private slots:
 private:
   ZStackDoc* showViewSelectedModel(ZFlyEmQueryView *view);
   ZStackDoc* updateViewSelectedModel(ZFlyEmQueryView *view);
+  void updateViewSelectedThumbnail(ZFlyEmQueryView *view);
   ZStackDoc* showViewSelectedBody(ZFlyEmQueryView *view);
-  void updateThumbnail(ZFlyEmNeuron *neuron, bool computing = true);
+  enum EUpdateThumbnailOption {
+    THUMBNAIL_NO_COMPUTE, THUMBNAIL_MISS_COMPUTE, THUMBAIL_FORCE_COMPUTE
+  };
+
+  void updateThumbnail(ZFlyEmNeuron *neuron,
+                       EUpdateThumbnailOption option = THUMBNAIL_MISS_COMPUTE);
   void updateThumbnailLive(ZFlyEmNeuron *neuron);
   uint64_t computeThumbnailFunc(ZFlyEmNeuron *neuron);
+  static QString GetThumbnailMessage(uint64_t bodyId);
   void saveVolumeRenderingFigure(
       ZFlyEmNeuron *neuron, const QString &output, const QString cameraFile);
   Stack *loadThumbnailImage(ZFlyEmNeuron *neuron);
@@ -184,6 +194,7 @@ private:
   QAction *m_showSelectedModelAction;
   QAction *m_updateSelectedModelAction;
   QAction *m_showSelectedModelWithBoundBoxAction;
+  QAction *m_updateThumbnailAction;
   QAction *m_changeClassAction;
   QAction *m_neighborSearchAction;
   QAction *m_showSelectedBodyAction;

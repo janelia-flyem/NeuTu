@@ -33,7 +33,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 
 void fragment_func(out vec4 fragColor, out float fragDepth)
 {
-  vec3 rayOrigin = mix(vec3(0.0 ,0.0, 0.0), point, ortho);
+  vec3 rayOrigin = point;
   vec3 rayDirection = mix(normalize(point), vec3(0.0, 0.0, -1.0), ortho);
 
   vec3 sphereVector = sphere_center - rayOrigin;

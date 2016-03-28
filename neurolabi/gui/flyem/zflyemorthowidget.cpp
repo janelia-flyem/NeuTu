@@ -10,6 +10,7 @@
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zwidgetmessage.h"
+#include "widgets/zimagewidget.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -110,7 +111,9 @@ void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
 
 void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 {
+  qDebug() << "Proj region:" << m_xyMvc->getView()->imageWidget()->projectRegion();
   getDocument()->updateStack(center);
+  qDebug() << "Proj region:" << m_xyMvc->getView()->imageWidget()->projectRegion();
   m_xyMvc->getView()->updateViewBox();
 //  m_yzMvc->getView()->updateViewBox();
 //  m_xzMvc->getView()->updateViewBox();
