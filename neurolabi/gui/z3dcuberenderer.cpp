@@ -140,6 +140,9 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
     // QColor -> glm::vec4
     qreal r,g,b,a;
     cubes.getColor().getRgbF(&r, &g, &b, &a);
+
+    qDebug()<<"set cube color ... "<<r<<g<<b<<a;
+
     setColor(glm::vec4(r,g,b,a));
 
     //
@@ -185,19 +188,19 @@ void Z3DCubeRenderer::initialize()
     oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Fragment, ":/Resources/shader/cube_wboit_compose.frag");
 
     //
-    glGenFramebuffers(1, &m_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+//    glGenFramebuffers(1, &m_fbo);
+//    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-    glGenTextures(1, &m_accumTexture);
-    glBindTexture(GL_TEXTURE_2D, m_accumTexture);
+//    glGenTextures(1, &m_accumTexture);
+//    glBindTexture(GL_TEXTURE_2D, m_accumTexture);
 
-    glGenTextures(1, &m_revealageTexture);
-    glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
+//    glGenTextures(1, &m_revealageTexture);
+//    glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
 
-    glGenRenderbuffers(1, &m_renderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
+//    glGenRenderbuffers(1, &m_renderbuffer);
+//    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //
     m_initialized = true;
@@ -312,36 +315,38 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     // fbo
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_preFBO); // try using old framebuffer
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+//    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-    glBindTexture(GL_TEXTURE_2D, m_accumTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+//    glBindTexture(GL_TEXTURE_2D, m_accumTexture);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_accumTexture, 0);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_accumTexture, 0);
 
-    glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, w, h, 0, GL_RED, GL_FLOAT, 0);
+//    glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, w, h, 0, GL_RED, GL_FLOAT, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_revealageTexture, 0);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_revealageTexture, 0);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+//    glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+//    glBindRenderbuffer(GL_RENDERBUFFER, m_renderbuffer);
+//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_renderbuffer);
 
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+//    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO); //
+//    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO); //
+
+    //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
     //
     m_cubeShaderGrp.bind();
@@ -349,14 +354,24 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     m_rendererBase->setMaterialSpecular(glm::vec4(.1f, .1f, .1f, .1f));
 
+    qDebug()<<"setGlobalShaderParameters in cuberenderer ... ";
+
     m_rendererBase->setGlobalShaderParameters(oit3DTransparentizeShader, eye);
+
+    glUseProgram(oit3DTransparentizeShader.programId()); // debug
+
+    oit3DTransparentizeShader.printShaders(); // debug
+
     oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
     oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
 
     qDebug()<<"setcolor ..."<<glGetUniformLocation(oit3DTransparentizeShader.programId(),"pos_scale")
             << glGetUniformLocation(oit3DTransparentizeShader.programId(),"uColor")
                << glGetUniformLocation(oit3DTransparentizeShader.programId(),"alpha");
-    oit3DTransparentizeShader.setUniformValue("uColor", m_color);
+
+    std::cout<<"color ... "<<m_color<<std::endl;
+    //oit3DTransparentizeShader.setUniformValue("uColor", m_color);
+    oit3DTransparentizeShader.setUniformValue("uColor", m_color.rgb());
 
     // size of view
     //  double theta, neardist, w, h;
@@ -399,6 +414,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
             for (size_t i=0; i<nCubes; ++i)
             {
+                qDebug()<<"vao of cube ... "<<i;
+
                 glBindVertexArray(m_VAOs[i]);
                 glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
 
@@ -489,17 +506,17 @@ void Z3DCubeRenderer::render(Z3DEye eye)
         //glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); // render to an offscreen framebuffer
         //glClearColor(0.0f,0.0f,0.0f,1.0f);
         //glClearDepth(1.0f);
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_MULTISAMPLE);
+        //glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_TEXTURE_2D);
+        //glEnable(GL_MULTISAMPLE);
 
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
+        //glDepthMask(GL_FALSE);
+        //glEnable(GL_BLEND);
 
         // 3D oit pass
-        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
         //    glBindVertexArray( m_vaoSurf );
         //    glDrawArrays( GL_TRIANGLES, 0, positions.size() );
@@ -507,6 +524,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
         for(size_t i=0; i<nCubes; i++)
         {
+            qDebug()<<"draw cube ... "<<i;
+
             glBindVertexArray( m_VAOs[i] );
             glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
             glBindVertexArray(0);
@@ -529,35 +548,35 @@ void Z3DCubeRenderer::render(Z3DEye eye)
             qWarning() << oit2DComposeProgram->log() << endl;
         }
 
-        //
-        glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+//        //
+//        glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
-//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//        glClearColor(0.0f,0.0f,0.0f,1.0f);
-//        glClearDepth(1.0f);
-//        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+////        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+////        glClearColor(0.0f,0.0f,0.0f,1.0f);
+////        glClearDepth(1.0f);
+////        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //
-        glActiveTexture(GL_TEXTURE0);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, m_accumTexture);
+//        //
+//        glActiveTexture(GL_TEXTURE0);
+//        glEnable(GL_TEXTURE_2D);
+//        glBindTexture(GL_TEXTURE_2D, m_accumTexture);
 
-        GLuint cloc_accum = glGetUniformLocation(oit2DComposeProgram->programId(), "accumTexture");
-        glUniform1i(cloc_accum, 0);
+//        GLuint cloc_accum = glGetUniformLocation(oit2DComposeProgram->programId(), "accumTexture");
+//        glUniform1i(cloc_accum, 0);
 
-        glActiveTexture(GL_TEXTURE1);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
+//        glActiveTexture(GL_TEXTURE1);
+//        glEnable(GL_TEXTURE_2D);
+//        glBindTexture(GL_TEXTURE_2D, m_revealageTexture);
 
-        GLuint cloc_revealage = glGetUniformLocation(oit2DComposeProgram->programId(), "revealageTexture");
-        glUniform1i(cloc_revealage, 1);
+//        GLuint cloc_revealage = glGetUniformLocation(oit2DComposeProgram->programId(), "revealageTexture");
+//        glUniform1i(cloc_revealage, 1);
 
-        GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-        glDrawBuffers(2, DrawBuffers); // "2" is the size of DrawBuffers
+//        GLenum DrawBuffers[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+//        glDrawBuffers(2, DrawBuffers); // "2" is the size of DrawBuffers
 
-        glBindVertexArray( m_vao );
-        glDrawArrays( GL_TRIANGLES, 0, m_screen.size());
-        glBindVertexArray(0);
+//        glBindVertexArray( m_vao );
+//        glDrawArrays( GL_TRIANGLES, 0, m_screen.size());
+//        glBindVertexArray(0);
 
         //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 

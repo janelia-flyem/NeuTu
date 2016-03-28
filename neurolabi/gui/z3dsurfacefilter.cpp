@@ -283,6 +283,9 @@ vector<double> Z3DSurfaceFilter::boundBox()
         }
     }
 
+    for(int i=0; i<6; i++)
+        qDebug()<<"bb ... "<<i<<result[i];
+
     return result;
 }
 

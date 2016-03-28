@@ -748,23 +748,47 @@ void Z3DWindow::init(EInitMode mode)
   for(int i=0; i<6; i++)
       cube1->b_visible.push_back(true);
 
-  int l = 20;
-  cube1->nodes.push_back(glm::vec3(0,0,0)); // 1
-  cube1->nodes.push_back(glm::vec3(0,l,0)); // 2
-  cube1->nodes.push_back(glm::vec3(l,l,0)); // 3
-  cube1->nodes.push_back(glm::vec3(l,0,0)); // 4
-  cube1->nodes.push_back(glm::vec3(0,0,l)); // 5
-  cube1->nodes.push_back(glm::vec3(0,l,l)); // 6
-  cube1->nodes.push_back(glm::vec3(l,l,l)); // 7
-  cube1->nodes.push_back(glm::vec3(0,0,l)); // 8
+  float o = 0;
+  float l = 4;
+  cube1->length = 16;
+  cube1->nodes.push_back(glm::vec3(o,o,o)); // 1
+  cube1->nodes.push_back(glm::vec3(o,+l,o)); // 2
+  cube1->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
+  cube1->nodes.push_back(glm::vec3(o+l,o,o)); // 4
+  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 5
+  cube1->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
+  cube1->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
+  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 8
 
   //
   //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
   cube1->initByNodes = true;
 
+  Z3DCube *cube2 = new Z3DCube;
+
   //
+  cube2->b_visible.clear();
+  for(int i=0; i<6; i++)
+      cube2->b_visible.push_back(true);
+
+  o = 5;
+  l = 4;
+  cube2->length = 16;
+  cube2->nodes.push_back(glm::vec3(o,o,o)); // 1
+  cube2->nodes.push_back(glm::vec3(o,+l,o)); // 2
+  cube2->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
+  cube2->nodes.push_back(glm::vec3(o+l,o,o)); // 4
+  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 5
+  cube2->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
+  cube2->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
+  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 8
+
+  //
+  cube2->initByNodes = true;
+
+  //
+  cubeArray.push_back(*cube2);
   cube->setColor(QColor(255,0,0,128));
-  cubeArray.push_back(*cube1);
   cube->setCubeArray(cubeArray);
 
   //

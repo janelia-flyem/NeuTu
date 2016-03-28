@@ -1,3 +1,4 @@
+//#version 120
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
 attribute vec3 vPosition;
