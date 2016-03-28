@@ -21,7 +21,6 @@ then
   mkdir -p $install_dir
 fi
 
-
 if [ ! -d $install_dir/bin ]
 then
   mkdir $install_dir/bin
@@ -36,9 +35,9 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
-if [ -f $downloadDir/miniconda/bin/gcc ]
+if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
 then
-  export PATH=$downloadDir/miniconda/bin:$PATH
+  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
 elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
 then
   export PATH=/opt/gcc482/bin:$PATH
