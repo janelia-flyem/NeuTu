@@ -19843,7 +19843,7 @@ void ZTest::test(MainWindow *host)
 //  std::cout << array.dumpString(0) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 
@@ -19853,5 +19853,26 @@ void ZTest::test(MainWindow *host)
   writer.createData("annotation", "todotest2");
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("segmentation-labelvol_todo");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("zhaot-ws1", "0751", 6300);
+  target.setBodyLabelName("bodies121714");
+  target.setLabelBlockName("segmentation121714");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("bodies121714_todo");
+#endif
   std::cout << "Done." << std::endl;
 }

@@ -21,12 +21,6 @@ then
   mkdir -p $install_dir
 fi
 
-if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
-then
-  export PATH=/opt/gcc482/bin:$PATH
-  echo $PATH
-  which gcc
-fi
 
 if [ ! -d $install_dir/bin ]
 then
@@ -41,6 +35,17 @@ then
 fi
 
 ./flyem_setup_linux_conda $install_dir
+
+if [ -f $downloadDir/miniconda/bin/gcc ]
+then
+  export PATH=$downloadDir/miniconda/bin:$PATH
+elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+then
+  export PATH=/opt/gcc482/bin:$PATH
+fi
+
+echo $PATH
+which gcc
 
 qtver=4.8.5
 if [ `uname` == 'Darwin' ]
