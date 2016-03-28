@@ -8,6 +8,7 @@
 
 class ZStackDoc;
 class ZFlyEmProofDoc;
+class QSortFilterProxyModel;
 
 class ZFlyEmTodoListModel : public QAbstractTableModel
 {
@@ -50,6 +51,10 @@ public:
 
   void update();
 
+  QSortFilterProxyModel* getSortProxy() const {
+    return m_proxy;
+  }
+
 signals:
   void locatingItem(ZFlyEmToDoItem *item);
   void doubleClicked(QModelIndex index);
@@ -66,6 +71,7 @@ private:
   ZSharedPointer<ZStackDoc> m_doc;
   ZFlyEmTodoPresenter m_defaultPresenter;
   ZSharedPointer<ZFlyEmTodoPresenter> m_presenter;
+  QSortFilterProxyModel* m_proxy;
 };
 
 template <typename InputIterator>

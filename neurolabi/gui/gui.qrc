@@ -110,5 +110,6 @@
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
         <file>images/add_post.png</file>
+        <file>images/todo.png</file>
     </qresource>
 </RCC>

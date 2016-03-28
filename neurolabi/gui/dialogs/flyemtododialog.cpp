@@ -1,6 +1,10 @@
 #include "flyemtododialog.h"
+
+#include <QSortFilterProxyModel>
+
 #include "ui_flyemtododialog.h"
 #include "flyem/zflyemtodolistmodel.h"
+
 
 FlyEmTodoDialog::FlyEmTodoDialog(QWidget *parent) :
   QDialog(parent),
@@ -19,7 +23,9 @@ FlyEmTodoDialog::~FlyEmTodoDialog()
 void FlyEmTodoDialog::init()
 {
   m_model = new ZFlyEmTodoListModel(this);
-  ui->todoTableView->setModel(m_model);
+
+  ui->todoTableView->setModel(m_model->getSortProxy());
+  ui->todoTableView->setSortingEnabled(true);
 
   connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(updateTable()));
   connect(ui->todoTableView, SIGNAL(doubleClicked(QModelIndex)),

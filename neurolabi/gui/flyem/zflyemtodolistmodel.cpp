@@ -1,4 +1,6 @@
 #include "zflyemtodolistmodel.h"
+#include <QSortFilterProxyModel>
+
 #include "zflyemproofdoc.h"
 
 
@@ -11,6 +13,11 @@ ZFlyEmTodoListModel::ZFlyEmTodoListModel(QObject *parent) :
 void ZFlyEmTodoListModel::init()
 {
   connectSignalSlot();
+
+  m_proxy = new QSortFilterProxyModel;
+  m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+  m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  m_proxy->setSourceModel(this);
 }
 
 void ZFlyEmTodoListModel::connectSignalSlot()
@@ -136,7 +143,12 @@ bool ZFlyEmTodoListModel::removeColumns(
 
 const ZFlyEmToDoItem* ZFlyEmTodoListModel::getItem(const QModelIndex &index) const
 {
-  return getItem(index.row());
+  QModelIndex mappedIndex = index;
+  if (m_proxy != NULL) {
+    mappedIndex = m_proxy->mapToSource(index);
+  }
+
+  return getItem(mappedIndex.row());
 }
 
 

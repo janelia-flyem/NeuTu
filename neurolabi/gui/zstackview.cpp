@@ -1248,6 +1248,7 @@ void ZStackView::resetCanvasWithStack(
       canvas.getHeight() != canvasSize.height() ||
       canvas.getTx() != tx || canvas.getTy() != ty) {
     clearTileCanvas();
+    clearObjectCanvas();
     canvas.setSize(canvasSize);
     canvas.setOffset(QPoint(tx, ty));
     painter->setZOffset(box.getFirstCorner().getZ());
@@ -1319,12 +1320,14 @@ void ZStackView::updateObjectCanvas()
 {
   resetCanvasWithStack(m_objectCanvas, &m_objectCanvasPainter);
   reloadObjectCanvas();
+//#if 0
   ZPixmap *canvas = getCanvas(ZStackObject::TARGET_OBJECT_CANVAS);
   if (canvas != NULL) {
     m_objectCanvasPainter.end();
     canvas->cleanUp();
     m_objectCanvasPainter.begin(canvas);
   }
+//#endif
 }
 
 void ZStackView::updateTileCanvas()
