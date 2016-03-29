@@ -285,7 +285,7 @@ void ZProofreadWindow::addSynapseActionToToolbar()
 
   m_synapseToolbar->addSeparator();
   m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
-                                ZActionFactory::ACTiON_ENTER_RECT_ROI_MODE));
+                                ZActionFactory::ACTION_ENTER_RECT_ROI_MODE));
 
   addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
 }

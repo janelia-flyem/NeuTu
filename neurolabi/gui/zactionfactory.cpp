@@ -544,11 +544,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ZOOM_TO_RECT:
     action = new QAction("Zoom in", parent);
+    action->setIcon(QIcon(":/images/zoomin.png"));
     break;
-  case ACTiON_ENTER_RECT_ROI_MODE:
+  case ACTION_ENTER_RECT_ROI_MODE:
     action = new QAction("Draw rectangle ROI", parent);
     action->setToolTip("Use mouse to draw a rectangle ROI");
     action->setIcon(QIcon(":/images/roi_box.png"));
+    break;
+  case ACTION_CANCEL_RECT_ROI:
+    action = new QAction("Cancel", parent);
+    action->setToolTip("Cancel the current rectangle ROI");
+    action->setIcon(QIcon(":/images/delete.png"));
     break;
   default:
     break;
