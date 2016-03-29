@@ -316,7 +316,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
     //
     m_cubeShaderGrp.bind();
-    Z3DShaderProgram &oit3DTransparentizeShader = m_cubeShaderGrp.get(Z3DRendererBase::Normal);
+    Z3DShaderProgram &oit3DTransparentizeShader = m_cubeShaderGrp.get(); // (Z3DRendererBase::Normal);
     m_rendererBase->setMaterialSpecular(glm::vec4(.1f, .1f, .1f, .1f));
     m_rendererBase->setGlobalShaderParameters(oit3DTransparentizeShader, eye);
 

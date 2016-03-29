@@ -555,38 +555,80 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
     }
 
   //
-  port.bindTarget();
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  CHECK_GL_ERROR;
+//  port.bindTarget();
+//  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+//  CHECK_GL_ERROR;
 
-  // opaque obj rendering
-  for (size_t i=0; i<opaqueFilters.size(); i++) {
-    Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
-    if (geomFilter->needBlending()) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-        geomFilter->setCamera(m_camera.get());
-        geomFilter->setViewport(port.getSize());
-        geomFilter->render(eye);
-        glBlendFunc(GL_ONE,GL_ZERO);
-        glDisable(GL_BLEND);
-        CHECK_GL_ERROR;
+//  // opaque obj rendering
+//  for (size_t i=0; i<opaqueFilters.size(); i++) {
+//    Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
+//    if (geomFilter->needBlending()) {
+//        glEnable(GL_BLEND);
+//        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+//        geomFilter->setCamera(m_camera.get());
+//        geomFilter->setViewport(port.getSize());
+//        geomFilter->render(eye);
+//        glBlendFunc(GL_ONE,GL_ZERO);
+//        glDisable(GL_BLEND);
+//        CHECK_GL_ERROR;
+//    }
+//    else
+//    {
+//        geomFilter->setCamera(m_camera.get());
+//        geomFilter->setViewport(port.getSize());
+//        geomFilter->render(eye);
+//        CHECK_GL_ERROR;
+//    }
+//  }
+
+//  // transparent obj rendering
+//  renderTransparentWB(transparentFilters, port, eye);
+
+//  //
+//  port.releaseTarget();
+//  CHECK_GL_ERROR;
+
+
+
+    m_tempPort3.resize(port.getSize());
+    // opaque obj rendering
+    for (size_t i=0; i<opaqueFilters.size(); i++) {
+        Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
+        if (geomFilter->needBlending()) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+            geomFilter->setCamera(m_camera.get());
+            geomFilter->setViewport(m_tempPort3.getSize());
+            geomFilter->render(eye);
+            glBlendFunc(GL_ONE,GL_ZERO);
+            glDisable(GL_BLEND);
+            CHECK_GL_ERROR;
+        }
+        else
+        {
+            geomFilter->setCamera(m_camera.get());
+            geomFilter->setViewport(m_tempPort3.getSize());
+            geomFilter->render(eye);
+            CHECK_GL_ERROR;
+        }
     }
-    else
-    {
-        geomFilter->setCamera(m_camera.get());
-        geomFilter->setViewport(port.getSize());
-        geomFilter->render(eye);
-        CHECK_GL_ERROR;
-    }
-  }
 
-  // transparent obj rendering
-  renderTransparentWB(transparentFilters, port, eye);
+    m_tempPort4.resize(port.getSize());
+    renderTransparentWB(transparentFilters, m_tempPort4, eye);
 
-  //
-  port.releaseTarget();
-  CHECK_GL_ERROR;
+    // blend temport3 and temport4 into outport
+    port.bindTarget();
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    m_rendererBase->setViewport(port.getSize());
+    m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
+    m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
+    m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
+    m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
+    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+    m_rendererBase->render(eye);
+    port.releaseTarget();
+
+    CHECK_GL_ERROR;
 }
 
 void Z3DCompositor::renderGeomsBlendNoDepthMask(const std::vector<Z3DGeometryFilter *> &filters,
@@ -1102,7 +1144,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
 
   glDrawBuffers(2, g_drawBuffers);
 
-  glClearColor(0, 0, 0, 0);
+  //glClearColor(0, 0, 0, 0);
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
@@ -1112,7 +1154,6 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   glDepthMask(GL_FALSE);
   glEnable(GL_BLEND);
 
-  glEnable(GL_BLEND);
   glBlendEquation(GL_FUNC_ADD);
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
