@@ -169,11 +169,12 @@ void Z3DCubeRenderer::initialize()
     cubeShaders << "cube_wboit.vert" << "lighting.frag" << "cube_wboit.frag";
     m_cubeShaderGrp.init(QStringList(), generateHeader(), m_rendererBase, cubeShaders);
     m_cubeShaderGrp.addAllSupportedPostShaders();
+    m_cubeShaderGrp.addWeightedBlendedShaders();
 
     //
-    oit2DComposeProgram = new QGLShaderProgram;
-    oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Vertex, ":/Resources/shader/cube_wboit_compose.vert");
-    oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Fragment, ":/Resources/shader/cube_wboit_compose.frag");
+//    oit2DComposeProgram = new QGLShaderProgram;
+//    oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Vertex, ":/Resources/shader/cube_wboit_compose.vert");
+//    oit2DComposeProgram->addShaderFromSourceFile(QGLShader::Fragment, ":/Resources/shader/cube_wboit_compose.frag");
 
     //
 //    glGenFramebuffers(1, &m_fbo);
@@ -308,9 +309,8 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
 //    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-//    glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO); //
-
-    //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+    // bind this off-screen framebuffer
+    //glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
     //
     m_cubeShaderGrp.bind();
@@ -360,38 +360,38 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
             // compositing
             // vao
-            glGenVertexArrays(1, &m_vao);
-            glBindVertexArray( m_vao );
-            //oit2DComposeProgram->setAttributeArray("composeVertPos", m_screen.constData());
-            //oit2DComposeProgram->enableAttributeArray("composeVertPos");
+//            glGenVertexArrays(1, &m_vao);
+//            glBindVertexArray( m_vao );
+//            //oit2DComposeProgram->setAttributeArray("composeVertPos", m_screen.constData());
+//            //oit2DComposeProgram->enableAttributeArray("composeVertPos");
 
-            glGenBuffers(1, &m_vbo);
-            glBindBuffer( GL_ARRAY_BUFFER, m_vbo);
-            glBufferData( GL_ARRAY_BUFFER, m_screen.size()*sizeof(QVector3D), m_screen.constData(), GL_STATIC_DRAW);
+//            glGenBuffers(1, &m_vbo);
+//            glBindBuffer( GL_ARRAY_BUFFER, m_vbo);
+//            glBufferData( GL_ARRAY_BUFFER, m_screen.size()*sizeof(QVector3D), m_screen.constData(), GL_STATIC_DRAW);
 
-            GLint posLoc = glGetAttribLocation(oit2DComposeProgram->programId(), "composeVertPos");
-            glEnableVertexAttribArray(posLoc);
-            glVertexAttribPointer( posLoc, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
+//            GLint posLoc = glGetAttribLocation(oit2DComposeProgram->programId(), "composeVertPos");
+//            glEnableVertexAttribArray(posLoc);
+//            glVertexAttribPointer( posLoc, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
 
-            glBindVertexArray(0);
+//            glBindVertexArray(0);
 
             //
             m_dataChanged = false;
         }
 
         // render
-        //
         //glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); // render to an offscreen framebuffer
-        //glClearColor(0.0f,0.0f,0.0f,1.0f);
-        //glClearDepth(1.0f);
-        //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
+//        glClearColor(0.0f,0.0f,0.0f,1.0f);
+//        glClearDepth(1.0f);
+//        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //glEnable(GL_DEPTH_TEST);
-        //glEnable(GL_TEXTURE_2D);
-        //glEnable(GL_MULTISAMPLE);
+//        glEnable(GL_DEPTH_TEST);
+//        glEnable(GL_TEXTURE_2D);
+//        glEnable(GL_MULTISAMPLE);
 
-        //glDepthMask(GL_FALSE);
-        //glEnable(GL_BLEND);
+//        glDepthMask(GL_FALSE);
+//        glEnable(GL_BLEND);
 
         // 3D oit pass
         //glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
@@ -399,15 +399,6 @@ void Z3DCubeRenderer::render(Z3DEye eye)
         glBindVertexArray( m_vaoSurf );
         glDrawArrays( GL_TRIANGLES, 0, positions.size() );
         glBindVertexArray(0);
-
-//        for(size_t i=0; i<nCubes; i++)
-//        {
-//            qDebug()<<"draw cube ... "<<i<<m_cubes[i].positions.size();
-
-//            glBindVertexArray( m_VAOs[i] );
-//            glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
-//            glBindVertexArray(0);
-//        }
 
         //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
@@ -458,7 +449,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
 
         //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
     } else {
         // w/o vao defined
     }

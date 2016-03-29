@@ -61,6 +61,12 @@ void Z3DShaderGroup::addWeightedAverageShaders()
   }
 }
 
+void Z3DShaderGroup::addWeightedBlendedShaders()
+{
+    m_shaders[Z3DRendererBase::WeightedBlendedInit] = new Z3DShaderProgram();
+    buildWeightedBlendedShader(m_shaders[Z3DRendererBase::WeightedBlendedInit]);
+}
+
 void Z3DShaderGroup::bind()
 {
   if (m_shaders.find(m_base->getShaderHookType()) != m_shaders.end()) {
@@ -104,6 +110,8 @@ void Z3DShaderGroup::rebuild(const QString &header)
       break;
     case Z3DRendererBase::WeightedAverageInit:
       buildWeightedAverageShader(i->second);
+    case Z3DRendererBase::WeightedBlendedInit:
+      buildWeightedBlendedShader(i->second);
     default:
       break;
     }
@@ -183,6 +191,21 @@ void Z3DShaderGroup::buildWeightedAverageShader(Z3DShaderProgram *shader)
 {
   QStringList allshaders(m_shaderFiles);
   allshaders << "wavg_init.frag";
+  QString header = m_header;
+  if (GLEW_VERSION_3_0) {
+    header += "out vec4 FragData1;\n";
+  } else {
+    header += "#define FragData1 gl_FragData[1]\n";
+  }
+  shader->bindFragDataLocation(0, "FragData0");
+  shader->bindFragDataLocation(1, "FragData1");
+  shader->loadFromSourceFile(allshaders, header);
+}
+
+void Z3DShaderGroup::buildWeightedBlendedShader(Z3DShaderProgram *shader)
+{
+  QStringList allshaders(m_shaderFiles);
+  allshaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
   QString header = m_header;
   if (GLEW_VERSION_3_0) {
     header += "out vec4 FragData1;\n";

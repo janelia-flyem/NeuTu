@@ -38,6 +38,8 @@ Z3DCompositor::Z3DCompositor()
   , m_ddpFinalShader(NULL)
   , m_waRT(NULL)
   , m_waFinalShader(NULL)
+  , m_wbRT(NULL)
+  , m_wbFinalShader(NULL)
   , m_backgroundWidgetsGroup(NULL)
 {
   addParameter(m_showBackground);
@@ -138,6 +140,12 @@ void Z3DCompositor::initialize()
 #endif
   }
 
+  //
+  m_wbFinalShader = new Z3DShaderProgram();
+  m_wbFinalShader->bindFragDataLocation(0, "FragData0");
+  m_wbFinalShader->bindFragDataLocation(1, "FragData1");
+  m_wbFinalShader->loadFromSourceFile("cube_wboit_compose.vert", "cube_wboit_compose.frag", m_rendererBase->generateHeader());
+
   CHECK_GL_ERROR;
 }
 
@@ -184,6 +192,19 @@ void Z3DCompositor::deinitialize()
         delete m_waFinalShader;
         m_waFinalShader = NULL;
     }
+  }
+
+  // wboit
+  if (m_wbRT) {
+    delete m_wbRT;
+    m_wbRT = NULL;
+  }
+
+  if(m_wbFinalShader)
+  {
+      m_wbFinalShader->removeAllShaders();
+      delete m_wbFinalShader;
+      m_wbFinalShader = NULL;
   }
 
   Z3DRenderProcessor::deinitialize();
@@ -504,20 +525,14 @@ void Z3DCompositor::renderGeometries(const std::vector<Z3DGeometryFilter*> &filt
   glEnable(GL_DEPTH_TEST);
   if (m_transparencyMethod.isSelected("Blend No Depth Mask"))
   {
-      qDebug()<<"Blend No Depth Mask ...";
-
     renderGeomsBlendNoDepthMask(filters, port, eye);
   }
   else if (m_transparencyMethod.isSelected("Blend Delayed"))
   {
-      qDebug()<<"Blend Delayed ...";
-
     renderGeomsBlendDelayed(filters, port, eye);
   }
   else
   {
-      qDebug()<<"OIT ...";
-
     renderGeomsOIT(filters, port, eye, m_transparencyMethod.get());
   }
   glDisable(GL_DEPTH_TEST);
@@ -526,15 +541,27 @@ void Z3DCompositor::renderGeometries(const std::vector<Z3DGeometryFilter*> &filt
 void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter *> &filters,
                                             Z3DRenderOutputPort &port, Z3DEye eye)
 {
+    //
+    std::vector<Z3DGeometryFilter*> opaqueFilters;
+    std::vector<Z3DGeometryFilter*> transparentFilters;
+
+    for (size_t i=0; i<filters.size(); i++) {
+      Z3DGeometryFilter* geomFilter = filters.at(i);
+
+      if(geomFilter->getClassName().contains("Surface"))
+          transparentFilters.push_back(geomFilter);
+      else
+          opaqueFilters.push_back(geomFilter);
+    }
+
+  //
   port.bindTarget();
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   CHECK_GL_ERROR;
 
-  for (size_t i=0; i<filters.size(); i++) {
-    Z3DGeometryFilter* geomFilter = filters.at(i);
-
-    qDebug()<<"renderGeomsBlendDelayed ... rendering "<<geomFilter->getClassName();
-
+  // opaque obj rendering
+  for (size_t i=0; i<opaqueFilters.size(); i++) {
+    Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
     if (geomFilter->needBlending()) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
@@ -554,6 +581,10 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
     }
   }
 
+  // transparent obj rendering
+  renderTransparentWB(transparentFilters, port, eye);
+
+  //
   port.releaseTarget();
   CHECK_GL_ERROR;
 }
@@ -1042,6 +1073,104 @@ bool Z3DCompositor::createWARenderTarget(glm::ivec2 size)
   if (!comp) {
     delete m_waRT;
     m_waRT = NULL;
+  }
+  return comp;
+}
+
+void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &filters,
+                                        Z3DRenderOutputPort &port, Z3DEye eye)
+{
+  if (!m_wbRT)
+    if (!createWBRenderTarget(port.getSize())) {
+      LERROR() << "Can not create fbo for weighted blended rendering";
+      return;
+    }
+  m_wbRT->resize(port.getSize());
+
+  Z3DTexture* g_accumulationTexId[2];
+  g_accumulationTexId[0] = m_wbRT->getAttachment(GL_COLOR_ATTACHMENT0);
+  g_accumulationTexId[1] = m_wbRT->getAttachment(GL_COLOR_ATTACHMENT1);
+  GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0,
+                            GL_COLOR_ATTACHMENT1
+                           };
+
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_DEPTH_TEST);
+
+  //
+  m_wbRT->bind();
+
+  glDrawBuffers(2, g_drawBuffers);
+
+  glClearColor(0, 0, 0, 0);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_MULTISAMPLE);
+
+  glDepthMask(GL_FALSE);
+  glEnable(GL_BLEND);
+
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
+  //
+  for (size_t i=0; i<filters.size(); i++) {
+    Z3DGeometryFilter* geomFilter = filters.at(i);
+    geomFilter->setCamera(m_camera.get());
+    geomFilter->setViewport(m_wbRT->getSize());
+    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
+    geomFilter->render(eye);
+    CHECK_GL_ERROR;
+  }
+
+  m_wbRT->release();
+
+  glPopAttrib();
+  for (size_t i=0; i<filters.size(); i++) {
+    Z3DGeometryFilter* geomFilter = filters.at(i);
+    geomFilter->setShaderHookType(Z3DRendererBase::Normal);
+  }
+  CHECK_GL_ERROR;
+
+  //
+  port.bindTarget();
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  m_wbFinalShader->bind();
+  m_wbFinalShader->bindTexture("accumTexture", g_accumulationTexId[0]);
+  m_wbFinalShader->bindTexture("revealageTexture", g_accumulationTexId[1]);
+  m_rendererBase->setViewport(m_wbRT->getSize());
+  m_rendererBase->setGlobalShaderParameters(m_wbFinalShader, eye);
+  renderScreenQuad(*m_wbFinalShader);
+  m_wbFinalShader->release();
+  port.releaseTarget();
+
+  CHECK_GL_ERROR;
+}
+
+bool Z3DCompositor::createWBRenderTarget(glm::ivec2 size)
+{
+  m_wbRT = new Z3DRenderTarget(size);
+  Z3DTexture* g_accumulationTexId[2];
+
+  g_accumulationTexId[0] = new Z3DTexture(glm::ivec3(size, 1),
+                                          GL_RGBA, GL_RGBA32F, GL_FLOAT,
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
+  g_accumulationTexId[0]->uploadTexture();
+  g_accumulationTexId[1] = new Z3DTexture(glm::ivec3(size, 1),
+                                          GL_RED, GL_R32F, GL_FLOAT,
+                                          GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE);
+  g_accumulationTexId[1]->uploadTexture();
+
+  //
+  m_wbRT->attachTextureToFBO(g_accumulationTexId[0], GL_COLOR_ATTACHMENT0);
+  m_wbRT->attachTextureToFBO(g_accumulationTexId[1], GL_COLOR_ATTACHMENT1);
+  bool comp = m_wbRT->isFBOComplete();
+  if (!comp) {
+    delete m_wbRT;
+    m_wbRT = NULL;
   }
   return comp;
 }

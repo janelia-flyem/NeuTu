@@ -1,4 +1,3 @@
-//#version 120
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
 #if GLSL_VERSION >= 130
