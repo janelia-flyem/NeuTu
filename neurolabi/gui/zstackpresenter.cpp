@@ -382,6 +382,9 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
         connect(action, SIGNAL(triggered()),
                 buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
         break;
+      case ZActionFactory::ACTiON_ENTER_RECT_ROI_MODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(tryDrawRectMode()));
+        break;
       default:
         break;
       }
