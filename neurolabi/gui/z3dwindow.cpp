@@ -731,6 +731,8 @@ void Z3DWindow::init(EInitMode mode)
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
 
+  qDebug()<<"hard coded ...";
+
   //
   setROIs(1);
   ZCubeArray *cube = new ZCubeArray;

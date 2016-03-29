@@ -21,10 +21,5 @@ void main(void)
     {
         discard;
     }
-
-#if GLSL_VERSION >= 130
-     FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);;
-#else
-     gl_FragColor = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);
-#endif
+    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);;
 }

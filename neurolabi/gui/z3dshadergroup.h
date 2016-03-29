@@ -22,6 +22,7 @@ public:
   void bind();
   void release();
   Z3DShaderProgram& get();
+  Z3DShaderProgram& get(Z3DRendererBase::ShaderHookType sht);
   void rebuild(const QString &header);
 
 private:

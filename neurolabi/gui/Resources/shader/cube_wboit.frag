@@ -25,28 +25,14 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 //
 void main()
 {
-    //float alpha = color.a;
-
     // the object lies between -40 and -60 z coordinates
     float weight = pow(alpha + 0.01f, 4.0f) + max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(depth) / 200.0f, 4.0f))));
 
     vec4 wbColor = vec4(uColor.rgb*alpha*weight, alpha*weight);
 
      //RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
-     vec4 lightcolor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, wbColor, alpha);
-
-#if GLSL_VERSION >= 130
-     FragData0 = lightcolor;
-#else
-     gl_FragData[0] = lightcolor;
-#endif
+     FragData0  = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, wbColor, alpha);
 
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
-
-#if GLSL_VERSION >= 130
     FragData1.r = alpha * weight;
-#else
-    gl_FragData[1].r = alpha * weight;
-#endif
-
 }
