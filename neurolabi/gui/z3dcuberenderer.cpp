@@ -26,9 +26,6 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
     m_revealageTexture = 0;
 
     //
-    nCubes = 0;
-
-    //
     m_vaoSurf = 0;
     m_vboSurf = 0;
 
@@ -54,6 +51,7 @@ void Z3DCubeRenderer::addCube(double l, double x, double y, double z, glm::vec4 
 
 void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double ty, double tz, glm::vec4 color, std::vector<bool> v)
 {
+    // !obsolete
     Cube cube;
 
     //
@@ -62,7 +60,7 @@ void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double
     cube.setFaceColor(color);
 
     //
-    m_cubes.push_back(cube);
+    //m_cubes.push_back(cube);
 
     //
     m_dataChanged = true;
@@ -70,6 +68,7 @@ void Z3DCubeRenderer::addCube(double sx, double sy, double sz, double tx, double
 
 void Z3DCubeRenderer::addCube(Z3DCube *zcube)
 {
+    // !obsolete
     Cube cube;
 
     //
@@ -88,7 +87,7 @@ void Z3DCubeRenderer::addCube(Z3DCube *zcube)
     m_color = zcube->color;
 
     //
-    m_cubes.push_back(cube);
+    //m_cubes.push_back(cube);
 
     //
     m_dataChanged = true;
@@ -123,16 +122,13 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
             }
 
             //
-            m_cubes.push_back(cube);
-
-            //
             size_positions += sizeof(glm::vec3)*cube.positions.size();
             size_normalIndices += sizeof(float)*cube.normalIndices.size();
 
             for(size_t j=0; j<cube.positions.size(); j++)
             {
-                positions.push_back(cube.positions[i]);
-                normalIndices.push_back(cube.normalIndices[i]);
+                positions.push_back(cube.positions[j]);
+                normalIndices.push_back(cube.normalIndices[j]);
             }
         }
     }
@@ -140,9 +136,6 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
     // QColor -> glm::vec4
     qreal r,g,b,a;
     cubes.getColor().getRgbF(&r, &g, &b, &a);
-
-    qDebug()<<"set cube color ... "<<r<<g<<b<<a;
-
     setColor(glm::vec4(r,g,b,a));
 
     //
@@ -151,16 +144,11 @@ void Z3DCubeRenderer::addCubes(ZCubeArray cubes)
 
 void Z3DCubeRenderer::clearData()
 {
-    //m_cubes.clear();
-
     positions.clear();
     normalIndices.clear();
 
     size_positions = 0;
     size_normalIndices = 0;
-
-    //    m_cubeList.clear();
-    //    m_colorList.clear();
 }
 
 void Z3DCubeRenderer::setColor(glm::vec4 color)
@@ -208,30 +196,6 @@ void Z3DCubeRenderer::initialize()
 
 void Z3DCubeRenderer::deinitialize()
 {
-    if (!m_VAOs.empty())
-    {
-        glDeleteVertexArrays(m_VAOs.size(), &m_VAOs[0]);
-    }
-    m_VAOs.clear();
-
-    if (!m_pickingVAOs.empty())
-    {
-        glDeleteVertexArrays(m_pickingVAOs.size(), &m_pickingVAOs[0]);
-    }
-    m_pickingVAOs.clear();
-
-    if (!m_VBOs.empty())
-    {
-        glDeleteBuffers(m_VBOs.size(), &m_VBOs[0]);
-    }
-    m_VBOs.clear();
-
-    if (!m_pickingVBOs.empty())
-    {
-        glDeleteBuffers(m_pickingVBOs.size(), &m_pickingVBOs[0]);
-    }
-    m_pickingVBOs.clear();
-
     //
     if (oit2DComposeProgram)
     {
@@ -351,25 +315,12 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     //
     m_cubeShaderGrp.bind();
     Z3DShaderProgram &oit3DTransparentizeShader = m_cubeShaderGrp.get();
-
     m_rendererBase->setMaterialSpecular(glm::vec4(.1f, .1f, .1f, .1f));
-
-    qDebug()<<"setGlobalShaderParameters in cuberenderer ... ";
-
     m_rendererBase->setGlobalShaderParameters(oit3DTransparentizeShader, eye);
 
-    glUseProgram(oit3DTransparentizeShader.programId()); // debug
-
-    //oit3DTransparentizeShader.printShaders(); // debug
-
+    //
     oit3DTransparentizeShader.setUniformValue("lighting_enabled", m_needLighting);
     oit3DTransparentizeShader.setUniformValue("pos_scale", getCoordScales());
-
-    qDebug()<<"setcolor ..."<<glGetUniformLocation(oit3DTransparentizeShader.programId(),"pos_scale")
-            << glGetUniformLocation(oit3DTransparentizeShader.programId(),"uColor")
-               << glGetUniformLocation(oit3DTransparentizeShader.programId(),"alpha");
-
-    std::cout<<"color ... "<<m_color<<std::endl;
     oit3DTransparentizeShader.setUniformValue("uColor", m_color);
 
     // size of view
@@ -383,101 +334,29 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     if (m_hardwareSupportVAO) {
         if (m_dataChanged) {
 
-           //
-            nCubes = m_cubes.size();
-
-            if(nCubes<1)
-                return;
-
-            qDebug()<<"nCubes ... "<<nCubes;
-
-            //
-            if (!m_VAOs.empty()) {
-                glDeleteVertexArrays(m_VAOs.size(), &m_VAOs[0]);
-            }
-            m_VAOs.resize(nCubes); // nCubes
-            glGenVertexArrays(m_VAOs.size(), &m_VAOs[0]);
-
-            if (!m_VBOs.empty()) {
-                glDeleteBuffers(m_VBOs.size(), &m_VBOs[0]);
-            }
-            m_VBOs.resize(nCubes); // nCubes
-            glGenBuffers( m_VBOs.size(), &m_VBOs[0]);
-
             // oit pass
             GLint loc_position = oit3DTransparentizeShader.attributeLocation("vPosition");
             GLint loc_normal = oit3DTransparentizeShader.attributeLocation("vNormal");
-            //GLint loc_color = oit3DTransparentizeShader.attributeLocation("vColor");
-
-            qDebug()<<"*** positions ... "<<positions.size()<<size_normalIndices<<" colors ..."<<m_color.r<<m_color.g<<m_color.b<<m_color.a;
-
-            for (size_t i=0; i<nCubes; ++i)
-            {
-                qDebug()<<"vao of cube ... "<<i;
-
-                glBindVertexArray(m_VAOs[i]);
-                glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[i] );
-
-                size_t size_position = sizeof(glm::vec3)*m_cubes[i].positions.size();
-                size_t size_normal = sizeof(float)*m_cubes[i].normalIndices.size();
-                //size_t size_normal = sizeof(glm::vec3)*m_cubes[i].normals.size();
-                //size_t size_color = sizeof(glm::vec4)*m_cubes[i].colors.size();
-
-                glBufferData( GL_ARRAY_BUFFER, size_position + size_normal, NULL, GL_STATIC_DRAW );
-                glBufferSubData( GL_ARRAY_BUFFER, 0, size_position, &(m_cubes[i].positions[0]) );
-                glBufferSubData( GL_ARRAY_BUFFER, size_position, size_normal, &(m_cubes[i].normalIndices[0]) );
-                //glBufferSubData( GL_ARRAY_BUFFER, size_position + size_normal, size_color, &(m_cubes[i].colors[0]) );
-
-                //
-                glEnableVertexAttribArray( loc_position );
-                glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
-
-                glEnableVertexAttribArray( loc_normal );
-                glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position) );
-
-                //glEnableVertexAttribArray( loc_color );
-                //glVertexAttribPointer( loc_color, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_position + size_normal));
-
-                glBindBuffer( GL_ARRAY_BUFFER, 0);
-                glBindVertexArray(0);
-            }
-
-
-            //      glBindVertexArray(m_VAOs[0]);
-            //      glBindBuffer( GL_ARRAY_BUFFER, m_VBOs[0] );
-            //      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
-            //      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
-            //      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
-
-            //      glEnableVertexAttribArray( loc_position );
-            //      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
-
-            //      glEnableVertexAttribArray( loc_normal );
-            //      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
-
-            //      glBindBuffer( GL_ARRAY_BUFFER, 0);
-            //      glBindVertexArray(0);
-
 
             //
-            //      glGenVertexArrays(1, &m_vaoSurf);
-            //      glBindVertexArray( m_vaoSurf );
+            glGenVertexArrays(1, &m_vaoSurf);
+            glBindVertexArray( m_vaoSurf );
 
-            //      glGenBuffers(1, &m_vboSurf);
-            //      glBindBuffer( GL_ARRAY_BUFFER, m_vboSurf);
+            glGenBuffers(1, &m_vboSurf);
+            glBindBuffer( GL_ARRAY_BUFFER, m_vboSurf);
 
-            //      glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
-            //      glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
-            //      glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
+            glBufferData( GL_ARRAY_BUFFER, size_positions + size_normalIndices, NULL, GL_STATIC_DRAW );
+            glBufferSubData( GL_ARRAY_BUFFER, 0, size_positions, &(positions[0]) );
+            glBufferSubData( GL_ARRAY_BUFFER, size_positions, size_normalIndices, &(normalIndices[0]) );
 
-            //      glEnableVertexAttribArray( loc_position );
-            //      glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
+            glEnableVertexAttribArray( loc_position );
+            glVertexAttribPointer( loc_position, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0) );
 
-            //      glEnableVertexAttribArray( loc_normal );
-            //      glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
+            glEnableVertexAttribArray( loc_normal );
+            glVertexAttribPointer( loc_normal, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(size_positions) );
 
-            //      glBindBuffer( GL_ARRAY_BUFFER, 0);
-            //      glBindVertexArray(0);
+            glBindBuffer( GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
 
             // compositing
             // vao
@@ -517,18 +396,18 @@ void Z3DCubeRenderer::render(Z3DEye eye)
         // 3D oit pass
         //glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
-        //    glBindVertexArray( m_vaoSurf );
-        //    glDrawArrays( GL_TRIANGLES, 0, positions.size() );
-        //    glBindVertexArray(0);
+        glBindVertexArray( m_vaoSurf );
+        glDrawArrays( GL_TRIANGLES, 0, positions.size() );
+        glBindVertexArray(0);
 
-        for(size_t i=0; i<nCubes; i++)
-        {
-            qDebug()<<"draw cube ... "<<i<<m_cubes[i].positions.size();
+//        for(size_t i=0; i<nCubes; i++)
+//        {
+//            qDebug()<<"draw cube ... "<<i<<m_cubes[i].positions.size();
 
-            glBindVertexArray( m_VAOs[i] );
-            glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
-            glBindVertexArray(0);
-        }
+//            glBindVertexArray( m_VAOs[i] );
+//            glDrawArrays( GL_TRIANGLES, 0, m_cubes[i].positions.size() );
+//            glBindVertexArray(0);
+//        }
 
         //glBindFramebuffer(GL_FRAMEBUFFER, m_preFBO);
 
@@ -587,18 +466,13 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     m_cubeShaderGrp.release();
 
     qDebug()<<"*** roi is rendered";
-
 }
 
 void Z3DCubeRenderer::renderPicking(Z3DEye eye)
 {
-    qDebug()<<"*** renderPicking";
 }
 
 bool Z3DCubeRenderer::isEmpty()
 {
-    qDebug()<<"isEmpty ...";
-
-    //return m_cubes.empty();
     return positions.empty();
 }
