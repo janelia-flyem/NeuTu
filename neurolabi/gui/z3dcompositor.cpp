@@ -1106,7 +1106,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_TEXTURE_2D);
+  //glEnable(GL_TEXTURE_2D);
   glEnable(GL_MULTISAMPLE);
 
   glDepthMask(GL_FALSE);
@@ -1121,7 +1121,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
     Z3DGeometryFilter* geomFilter = filters.at(i);
     geomFilter->setCamera(m_camera.get());
     geomFilter->setViewport(m_wbRT->getSize());
-    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
+    geomFilter->setShaderHookType(Z3DRendererBase::Normal);
     geomFilter->render(eye);
     CHECK_GL_ERROR;
   }
@@ -1131,7 +1131,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   glPopAttrib();
   for (size_t i=0; i<filters.size(); i++) {
     Z3DGeometryFilter* geomFilter = filters.at(i);
-    geomFilter->setShaderHookType(Z3DRendererBase::Normal);
+    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
   }
   CHECK_GL_ERROR;
 
