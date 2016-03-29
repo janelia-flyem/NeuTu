@@ -19864,7 +19864,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("segmentation-labelvol_todo");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("zhaot-ws1", "0751", 6300);
   target.setBodyLabelName("bodies121714");
@@ -19874,5 +19874,22 @@ void ZTest::test(MainWindow *host)
 
   writer.syncAnnotation("bodies121714_todo");
 #endif
+
+#if 1
+  //Create pixmap
+  ZPixmap pixmap(256, 256);
+  pixmap.setOffset(-100, -100);
+
+
+  //Paint
+  ZPainter painter(&pixmap);
+  painter.setPen(QColor(255, 0, 0));
+  painter.drawLine(100, 100, 200, 200);
+
+  //Save
+  pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
