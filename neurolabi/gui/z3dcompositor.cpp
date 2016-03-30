@@ -582,51 +582,39 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
 //  }
 
 //  // transparent obj rendering
-//  renderTransparentWB(transparentFilters, port, eye);
+//  //renderTransparentWB(transparentFilters, port, eye);
 
 //  //
 //  port.releaseTarget();
 //  CHECK_GL_ERROR;
 
-
-
     m_tempPort3.resize(port.getSize());
-    // opaque obj rendering
-    for (size_t i=0; i<opaqueFilters.size(); i++) {
-        Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
-        if (geomFilter->needBlending()) {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-            geomFilter->setCamera(m_camera.get());
-            geomFilter->setViewport(m_tempPort3.getSize());
-            geomFilter->render(eye);
-            glBlendFunc(GL_ONE,GL_ZERO);
-            glDisable(GL_BLEND);
-            CHECK_GL_ERROR;
-        }
-        else
-        {
-            geomFilter->setCamera(m_camera.get());
-            geomFilter->setViewport(m_tempPort3.getSize());
-            geomFilter->render(eye);
-            CHECK_GL_ERROR;
-        }
-    }
+    renderOpaqueObj(opaqueFilters, m_tempPort3, eye);
 
-    m_tempPort4.resize(port.getSize());
-    renderTransparentWB(transparentFilters, m_tempPort4, eye);
-
-    // blend temport3 and temport4 into outport
     port.bindTarget();
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    m_rendererBase->setViewport(port.getSize());
-    m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
-    m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
-    m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
-    m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
-    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+    m_rendererBase->setViewport(m_tempPort3.getSize());
+    m_textureCopyRenderer->setColorTexture(m_tempPort3.getColorTexture());
+    m_textureCopyRenderer->setDepthTexture(m_tempPort3.getDepthTexture());
+    m_rendererBase->activateRenderer(m_textureCopyRenderer);
     m_rendererBase->render(eye);
     port.releaseTarget();
+
+
+    //m_tempPort4.resize(port.getSize());
+    //renderTransparentWB(transparentFilters, m_tempPort4, eye);
+
+    // blend temport3 and temport4 into outport
+//    port.bindTarget();
+//    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+//    m_rendererBase->setViewport(port.getSize());
+//    m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
+//    m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
+//    //m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
+//    //m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
+//    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+//    m_rendererBase->render(eye);
+//    port.releaseTarget();
 
     CHECK_GL_ERROR;
 }
@@ -745,6 +733,42 @@ void Z3DCompositor::renderOpaque(const std::vector<Z3DGeometryFilter *> &filters
   port.releaseTarget();
   CHECK_GL_ERROR;
 }
+
+void Z3DCompositor::renderOpaqueObj(const std::vector<Z3DGeometryFilter *> &filters,
+                                 Z3DRenderOutputPort &port, Z3DEye eye)
+{
+  //
+  port.bindTarget();
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  CHECK_GL_ERROR;
+
+  //
+  for (size_t i=0; i<filters.size(); i++) {
+    Z3DGeometryFilter* geomFilter = filters.at(i);
+    if (geomFilter->needBlending()) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+        geomFilter->setCamera(m_camera.get());
+        geomFilter->setViewport(port.getSize());
+        geomFilter->render(eye);
+        glBlendFunc(GL_ONE,GL_ZERO);
+        glDisable(GL_BLEND);
+        CHECK_GL_ERROR;
+    }
+    else
+    {
+        geomFilter->setCamera(m_camera.get());
+        geomFilter->setViewport(port.getSize());
+        geomFilter->render(eye);
+        CHECK_GL_ERROR;
+    }
+  }
+
+  //
+  port.releaseTarget();
+  CHECK_GL_ERROR;
+}
+
 
 void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DGeometryFilter *> &filters,
                                          Z3DRenderOutputPort &port, Z3DEye eye)

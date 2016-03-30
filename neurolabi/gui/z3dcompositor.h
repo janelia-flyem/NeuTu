@@ -58,6 +58,8 @@ private:
 
   void renderOpaque(const std::vector<Z3DGeometryFilter*> &filters,
                     Z3DRenderOutputPort &port, Z3DEye eye);
+  void renderOpaqueObj(const std::vector<Z3DGeometryFilter*> &filters,
+                    Z3DRenderOutputPort &port, Z3DEye eye);
 
   void renderTransparentDDP(const std::vector<Z3DGeometryFilter*> &filters,
                             Z3DRenderOutputPort &port, Z3DEye eye);
