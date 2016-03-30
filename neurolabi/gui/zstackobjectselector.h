@@ -58,7 +58,7 @@ public:
    */
   void setSelection(ZStackObject *obj, bool selecting);
 
-//  void deselectAll();
+  void deselectAll();
 
 //  bool isInSelectedSet(const ZStackObject *obj) const;
 //  bool isInDeselectedSet(const ZStackObject *obj) const;

@@ -2256,8 +2256,8 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 {
-  QUndoCommand *command =
-      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+//  QUndoCommand *command =
+//      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
   if (se != NULL) {
@@ -2277,6 +2277,13 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
       }
     }
 
+    ZStackDocCommand::DvidSynapseEdit::RemoveSynapses *command =
+        new ZStackDocCommand::DvidSynapseEdit::RemoveSynapses(this);
+    command->setRemoval(removingSet);
+
+    pushUndoCommand(command);
+
+#if 0
     for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();
          iter != removingSet.end(); ++iter) {
       const ZIntPoint &pt = *iter;
@@ -2288,6 +2295,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
     if (command->childCount() > 0) {
       pushUndoCommand(command);
     }
+#endif
   }
 }
 

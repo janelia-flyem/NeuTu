@@ -121,6 +121,7 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
+  virtual void deselect(bool /*recursive*/) { setSelected(false); }
 
   /*!
    * \brief Display an object to widget

@@ -34,7 +34,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
-
+#include "zstackdocselector.h"
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -3069,9 +3069,16 @@ void ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
-    buddyDocument()->deselectAllObject(false);
+//    buddyDocument()->deselectAllObject(false);
 //    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
     if (op.getHitObject<ZStackObject>() != NULL) {
+      ZStackDocSelector docSelector(getSharedBuddyDocument());
+      docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+                                  ZStackDocSelector::SELECT_RECURSIVE);
+      docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+                                  ZStackDocSelector::SELECT_RECURSIVE);
+      docSelector.deselectAll();
+
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
