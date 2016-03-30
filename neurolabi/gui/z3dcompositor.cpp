@@ -554,69 +554,68 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
           opaqueFilters.push_back(geomFilter);
     }
 
-  //
-//  port.bindTarget();
-//  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-//  CHECK_GL_ERROR;
+    //
+    if(transparentFilters.empty())
+    {
+        port.bindTarget();
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        CHECK_GL_ERROR;
+        //
+        for (size_t i=0; i<opaqueFilters.size(); i++) {
+            Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
+            if (geomFilter->needBlending()) {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+                geomFilter->setCamera(m_camera.get());
+                geomFilter->setViewport(port.getSize());
+                geomFilter->render(eye);
+                glBlendFunc(GL_ONE,GL_ZERO);
+                glDisable(GL_BLEND);
+                CHECK_GL_ERROR;
+            }
+            else
+            {
+                geomFilter->setCamera(m_camera.get());
+                geomFilter->setViewport(port.getSize());
+                geomFilter->render(eye);
+                CHECK_GL_ERROR;
+            }
+        }
+        //
+        port.releaseTarget();
+        CHECK_GL_ERROR;
+    }
+    else
+    {
+        m_tempPort3.resize(port.getSize());
+        renderOpaqueObj(opaqueFilters, m_tempPort3, eye);
 
-//  // opaque obj rendering
-//  for (size_t i=0; i<opaqueFilters.size(); i++) {
-//    Z3DGeometryFilter* geomFilter = opaqueFilters.at(i);
-//    if (geomFilter->needBlending()) {
-//        glEnable(GL_BLEND);
-//        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-//        geomFilter->setCamera(m_camera.get());
-//        geomFilter->setViewport(port.getSize());
-//        geomFilter->render(eye);
-//        glBlendFunc(GL_ONE,GL_ZERO);
-//        glDisable(GL_BLEND);
-//        CHECK_GL_ERROR;
-//    }
-//    else
-//    {
-//        geomFilter->setCamera(m_camera.get());
-//        geomFilter->setViewport(port.getSize());
-//        geomFilter->render(eye);
-//        CHECK_GL_ERROR;
-//    }
-//  }
+        // copy m_tempPort3 to port
+//        port.bindTarget();
+//        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+//        m_rendererBase->setViewport(m_tempPort3.getSize());
+//        m_textureCopyRenderer->setColorTexture(m_tempPort3.getColorTexture());
+//        m_textureCopyRenderer->setDepthTexture(m_tempPort3.getDepthTexture());
+//        m_rendererBase->activateRenderer(m_textureCopyRenderer);
+//        m_rendererBase->render(eye);
+//        port.releaseTarget();
 
-//  // transparent obj rendering
-//  //renderTransparentWB(transparentFilters, port, eye);
+        m_tempPort4.resize(port.getSize());
+        renderTransparentWB(transparentFilters, m_tempPort4, eye);
 
-//  //
-//  port.releaseTarget();
-//  CHECK_GL_ERROR;
-
-    m_tempPort3.resize(port.getSize());
-    renderOpaqueObj(opaqueFilters, m_tempPort3, eye);
-
-    port.bindTarget();
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    m_rendererBase->setViewport(m_tempPort3.getSize());
-    m_textureCopyRenderer->setColorTexture(m_tempPort3.getColorTexture());
-    m_textureCopyRenderer->setDepthTexture(m_tempPort3.getDepthTexture());
-    m_rendererBase->activateRenderer(m_textureCopyRenderer);
-    m_rendererBase->render(eye);
-    port.releaseTarget();
-
-
-    //m_tempPort4.resize(port.getSize());
-    //renderTransparentWB(transparentFilters, m_tempPort4, eye);
-
-    // blend temport3 and temport4 into outport
-//    port.bindTarget();
-//    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-//    m_rendererBase->setViewport(port.getSize());
-//    m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
-//    m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
-//    //m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
-//    //m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
-//    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
-//    m_rendererBase->render(eye);
-//    port.releaseTarget();
-
-    CHECK_GL_ERROR;
+        // blend temport3 and temport4 into outport
+        port.bindTarget();
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        m_rendererBase->setViewport(port.getSize());
+        m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
+        m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
+        m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
+        m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
+        m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+        m_rendererBase->render(eye);
+        port.releaseTarget();
+        CHECK_GL_ERROR;
+    }
 }
 
 void Z3DCompositor::renderGeomsBlendNoDepthMask(const std::vector<Z3DGeometryFilter *> &filters,
@@ -1156,24 +1155,21 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   Z3DTexture* g_accumulationTexId[2];
   g_accumulationTexId[0] = m_wbRT->getAttachment(GL_COLOR_ATTACHMENT0);
   g_accumulationTexId[1] = m_wbRT->getAttachment(GL_COLOR_ATTACHMENT1);
-  GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0,
-                            GL_COLOR_ATTACHMENT1
-                           };
+  GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDisable(GL_DEPTH_TEST);
+  //glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_TEXTURE_2D);
+  glEnable(GL_MULTISAMPLE);
 
   //
   m_wbRT->bind();
 
   glDrawBuffers(2, g_drawBuffers);
 
-  //glClearColor(0, 0, 0, 0);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glEnable(GL_DEPTH_TEST);
-  //glEnable(GL_TEXTURE_2D);
-  glEnable(GL_MULTISAMPLE);
+  glClearColor(0, 0, 0, 0);
+  //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glDepthMask(GL_FALSE);
   glEnable(GL_BLEND);
@@ -1194,11 +1190,11 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   m_wbRT->release();
 
   glPopAttrib();
-  for (size_t i=0; i<filters.size(); i++) {
-    Z3DGeometryFilter* geomFilter = filters.at(i);
-    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
-  }
-  CHECK_GL_ERROR;
+//  for (size_t i=0; i<filters.size(); i++) {
+//    Z3DGeometryFilter* geomFilter = filters.at(i);
+//    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
+//  }
+//  CHECK_GL_ERROR;
 
   //
   port.bindTarget();
