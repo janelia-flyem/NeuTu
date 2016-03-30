@@ -207,12 +207,9 @@ void Z3DShaderGroup::buildWeightedBlendedShader(Z3DShaderProgram *shader)
   QStringList allshaders(m_shaderFiles);
   allshaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
 
-  qDebug()<<"header ... "<<m_header;
+  qDebug()<<"buildWeightedBlendedShader header ... "<<m_header;
 
-//  shader->bindFragDataLocation(0, "FragData0");
-//  shader->bindFragDataLocation(1, "FragData1");
+  shader->bindFragDataLocation(0, "FragData0");
+  shader->bindFragDataLocation(1, "FragData1");
   shader->loadFromSourceFile(allshaders, m_header);
-
-  //
-  shader->printShaders();
 }

@@ -146,6 +146,8 @@ void Z3DCompositor::initialize()
   m_wbFinalShader->bindFragDataLocation(1, "FragData1");
   m_wbFinalShader->loadFromSourceFile("cube_wboit_compose.vert", "cube_wboit_compose.frag", m_rendererBase->generateHeader());
 
+  qDebug()<<"m_wbFinalShader header ... "<<m_rendererBase->generateHeader();
+
   CHECK_GL_ERROR;
 }
 
