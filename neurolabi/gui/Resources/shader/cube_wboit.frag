@@ -31,7 +31,7 @@ void main()
     vec4 wbColor = vec4(uColor.rgb*alpha*weight, alpha*weight);
 
      //RGBA32F texture (accumulation), a synonym of gl_FragColor attached to GL_COLOR_ATTACHMENT0
-     FragData0  = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, wbColor, alpha);
+     FragData0  = wbColor; //apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular, normal, position, wbColor, alpha);
 
     // R32F texture (revealage), attached to GL_COLOR_ATTACHMENT1
     FragData1.r = alpha * weight;

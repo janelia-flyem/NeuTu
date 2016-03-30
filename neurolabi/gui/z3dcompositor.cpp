@@ -1159,11 +1159,11 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   g_accumulationTexId[1] = m_wbRT->getAttachment(GL_COLOR_ATTACHMENT1);
   GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  //glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   //glDisable(GL_DEPTH_TEST);
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_TEXTURE_2D);
-  glEnable(GL_MULTISAMPLE);
+  //glEnable(GL_MULTISAMPLE);
 
   //
   m_wbRT->bind();
@@ -1171,7 +1171,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   glDrawBuffers(2, g_drawBuffers);
 
   glClearColor(0, 0, 0, 0);
-  //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glDepthMask(GL_FALSE);
   glEnable(GL_BLEND);
@@ -1191,7 +1191,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
 
   m_wbRT->release();
 
-  glPopAttrib();
+  //glPopAttrib();
 //  for (size_t i=0; i<filters.size(); i++) {
 //    Z3DGeometryFilter* geomFilter = filters.at(i);
 //    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
