@@ -115,6 +115,14 @@ void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
   getDocument()->updateStack(center);
   qDebug() << "Proj region:" << m_xyMvc->getView()->imageWidget()->projectRegion();
   m_xyMvc->getView()->updateViewBox();
+  /*
+  m_xyMvc->getPresenter()->optimizeStackBc();
+  m_yzMvc->getPresenter()->setStackBc(m_xyMvc->getPresenter()->getGrayScale(),
+                                      m_xyMvc->getPresenter()->getGrayOffset());
+  m_xzMvc->getPresenter()->setStackBc(m_xyMvc->getPresenter()->getGrayScale(),
+                                      m_xyMvc->getPresenter()->getGrayOffset());
+                                      */
+
 //  m_yzMvc->getView()->updateViewBox();
 //  m_xzMvc->getView()->updateViewBox();
 }

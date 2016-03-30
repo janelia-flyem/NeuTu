@@ -1936,9 +1936,10 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
   if (m_orthoWindow == NULL) {
     makeOrthoWindow();
   }
-  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+
   m_orthoWindow->show();
   m_orthoWindow->raise();
+  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
 void ZFlyEmProofMvc::showSkeletonWindow()

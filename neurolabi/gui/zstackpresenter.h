@@ -87,8 +87,8 @@ public:
   };
   */
 
-  inline double greyScale(int c = 0) const {return m_greyScale[c];}
-  inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
+  inline double greyScale(int c = 0) const {return m_grayScale[c];}
+  inline double greyOffset(int c = 0) const {return m_grayOffset[c];}
   //inline int zoomRatio() const { return m_zoomRatio; }
   //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
@@ -172,6 +172,8 @@ public:
   bool isContextMenuOn();
 
   void setStackBc(double scale, double offset, int c = 0);
+  double getGrayScale(int c = 0) const;
+  double getGrayOffset(int c = 0) const;
 
   /* optimize stack brightness and contrast */
   void optimizeStackBc();
@@ -438,8 +440,8 @@ protected:
   QList<ZStackObject*> m_highlightDecorationList;
 
   bool m_showObject;
-  std::vector<double> m_greyScale;
-  std::vector<double> m_greyOffset;
+  std::vector<double> m_grayScale;
+  std::vector<double> m_grayOffset;
   int m_threshold;
   ZStackObject::EDisplayStyle m_objStyle;
   //MouseState m_mouseState;

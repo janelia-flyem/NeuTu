@@ -83,8 +83,8 @@ void ZStackPresenter::init()
 
   initInteractiveContext();
 
-  m_greyScale.resize(5, 1.0);
-  m_greyOffset.resize(5, 0.0);
+  m_grayScale.resize(5, 1.0);
+  m_grayOffset.resize(5, 0.0);
 
   m_objStyle = ZStackObject::BOUNDARY;
   m_threshold = -1;
@@ -1926,10 +1926,29 @@ void ZStackPresenter::addDecoration(ZStackObject *obj, bool tail)
 
 void ZStackPresenter::setStackBc(double scale, double offset, int c)
 {
-  if (c >= 0 && c < (int) m_greyScale.size()) {
-    m_greyScale[c] = scale;
-    m_greyOffset[c] = offset;
+  if (c >= 0 && c < (int) m_grayScale.size()) {
+    m_grayScale[c] = scale;
+    m_grayOffset[c] = offset;
   }
+}
+
+double ZStackPresenter::getGrayScale(int c) const
+{
+  double scale = 1.0;
+  if (c >= 0 && c < (int) m_grayScale.size()) {
+    scale = m_grayScale[c];
+  }
+
+  return scale;
+}
+
+double ZStackPresenter::getGrayOffset(int c) const
+{
+  double offset = 0.0;
+  if (c >= 0 && c < (int) m_grayOffset.size()) {
+    offset = m_grayOffset[c];
+  }
+  return offset;
 }
 
 void ZStackPresenter::optimizeStackBc()
@@ -1938,14 +1957,12 @@ void ZStackPresenter::optimizeStackBc()
     ZStack *stack = buddyDocument()->getStack();
     if (stack != NULL) {
       if (!stack->isVirtual()) {
-        if (stack->kind() != GREY) {
-          double scale, offset;
-          m_greyScale.resize(stack->channelNumber());
-          m_greyOffset.resize(stack->channelNumber());
-          for (int i=0; i<stack->channelNumber(); i++) {
-            stack->bcAdjustHint(&scale, &offset, i);
-            setStackBc(scale, offset, i);
-          }
+        double scale, offset;
+        m_grayScale.resize(stack->channelNumber());
+        m_grayOffset.resize(stack->channelNumber());
+        for (int i=0; i<stack->channelNumber(); i++) {
+          stack->bcAdjustHint(&scale, &offset, i);
+          setStackBc(scale, offset, i);
         }
       }
     }
@@ -3588,8 +3605,8 @@ void ZStackPresenter::acceptActiveStroke()
         }
 
 //        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
-        sgw->greyFactor = m_greyScale[channel];
-        sgw->greyOffset = m_greyOffset[channel];
+        sgw->greyFactor = m_grayScale[channel];
+        sgw->greyOffset = m_grayOffset[channel];
 
         Stack *signalData = signal->c_stack(channel);
         Int_Arraylist *path = Stack_Route(signalData, source, target, sgw);
