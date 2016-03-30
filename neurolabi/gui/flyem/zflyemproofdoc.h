@@ -257,6 +257,7 @@ public slots:
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
+  void downloadTodo(int x, int y, int z);
   void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();

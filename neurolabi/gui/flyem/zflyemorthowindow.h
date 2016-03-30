@@ -24,11 +24,13 @@ signals:
   void synapseEdited(int x, int y, int z);
   void zoomingTo(int x, int y, int z);
   void bodyMergeEdited();
+  void todoEdited(int x, int y, int z);
 
 public slots:
   void updateData(const ZIntPoint &center);
   void downloadBookmark(int x, int y, int z);
   void downloadSynapse(int x, int y, int z);
+  void downloadTodo(int x, int y, int z);
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
 

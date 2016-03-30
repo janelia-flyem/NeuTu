@@ -506,6 +506,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
   UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
   UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+  UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
 //  notifyObjectModified();
 }
@@ -1168,6 +1169,19 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
       emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
   }
+}
+
+void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    td->update(x, y, z);
+    processObjectModified(td);
+  }
+
+  notifyObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
