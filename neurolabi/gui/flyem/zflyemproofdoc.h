@@ -342,20 +342,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
   }
 }
 
-namespace ZFlyEmProofDocCommand {
-class MergeBody : public ZUndoCommand
-{
-public:
-  MergeBody(ZStackDoc *doc, QUndoCommand *parent = NULL);
-  void undo();
-  void redo();
-
-  ZFlyEmProofDoc* getCompleteDocument();
-
-private:
-  ZStackDoc *m_doc;
-};
-}
 
 
 #endif // ZFLYEMPROOFDOC_H
