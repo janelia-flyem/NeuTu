@@ -9,6 +9,17 @@
 class ZJsonObject;
 class ZCuboid;
 
+/*
+ * Annotation json example:
+{
+"Pos":[33,30,31],
+"Kind":"PostSyn",
+"Rels":[ {"Rel":"PostSynTo", "To":[15,27,35]} ],
+"Tags":["Synapse1"],
+"Prop": { "SomeVar": "SomeValue", "Another Var": "A More Complex Value" }
+}
+*/
+
 class ZDvidAnnotation : public ZStackObject
 {
 public:
@@ -129,6 +140,8 @@ public: //Json APIs
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+  static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
+  static ZIntPoint GetPosition(const ZJsonObject &json);
 
 protected:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;

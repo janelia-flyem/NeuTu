@@ -37,6 +37,7 @@
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"
+#include "flyem/zflyemproofdoccommand.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -506,6 +507,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
   UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
   UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+  UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
 //  notifyObjectModified();
 }
@@ -600,15 +602,21 @@ bool ZFlyEmProofDoc::hasTodoItemSelected() const
   return false;
 }
 
-void ZFlyEmProofDoc::notifyTodoItemModified(const ZIntPoint &pt)
+void ZFlyEmProofDoc::notifyTodoItemModified(
+    const ZIntPoint &pt, bool emitingEdit)
 {
   uint64_t bodyId = m_dvidReader.readBodyIdAt(pt);
   if (bodyId > 0) {
     emit todoModified(bodyId);
   }
+
+  if (emitingEdit) {
+    emit todoEdited(pt.getX(), pt.getY(), pt.getZ());
+  }
 }
 
-void ZFlyEmProofDoc::notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray)
+void ZFlyEmProofDoc::notifyTodoItemModified(
+    const std::vector<ZIntPoint> &ptArray, bool emitingEdit)
 {
   std::vector<uint64_t> bodyIdArray = m_dvidReader.readBodyIdAt(ptArray);
   std::set<uint64_t> bodyIdSet;
@@ -616,6 +624,14 @@ void ZFlyEmProofDoc::notifyTodoItemModified(const std::vector<ZIntPoint> &ptArra
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter) {
     emit todoModified(*iter);
+  }
+
+  if (emitingEdit) {
+    for (std::vector<ZIntPoint>::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      emit todoEdited(pt.getX(), pt.getY(), pt.getZ());
+    }
   }
 }
 
@@ -641,7 +657,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
     }
     if (!selectedSet.empty()) {
       processObjectModified(td);
-      notifyTodoItemModified(ptArray);
+      notifyTodoItemModified(ptArray, true);
     }
   }
 
@@ -1168,6 +1184,19 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
       emit messageGenerated(ZWidgetMessage("No synapse found."));
     }
   }
+}
+
+void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
+{
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    td->update(x, y, z);
+    processObjectModified(td);
+  }
+
+  notifyObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
@@ -2083,56 +2112,6 @@ bool ZFlyEmProofDoc::isActive(EBodyColorMap type)
   return m_activeBodyColorMap.get() == getColorScheme(type).get();
 }
 
-//////////////////////////////////////////
-ZFlyEmProofDocCommand::MergeBody::MergeBody(
-    ZStackDoc *doc, QUndoCommand *parent)
-  : ZUndoCommand(parent), m_doc(doc)
-{
-
-}
-
-ZFlyEmProofDoc* ZFlyEmProofDocCommand::MergeBody::getCompleteDocument()
-{
-  return qobject_cast<ZFlyEmProofDoc*>(m_doc);
-}
-
-void ZFlyEmProofDocCommand::MergeBody::redo()
-{
-  getCompleteDocument()->getBodyMerger()->redo();
-  getCompleteDocument()->updateBodyObject();
-
-  getCompleteDocument()->notifyBodyMerged();
-  getCompleteDocument()->notifyBodyMergeEdited();
-//  m_doc->notifyObject3dScanModified();
-}
-
-void ZFlyEmProofDocCommand::MergeBody::undo()
-{
-  ZFlyEmBodyMerger::TLabelMap mapped =
-      getCompleteDocument()->getBodyMerger()->undo();
-
-  std::set<uint64_t> bodySet;
-  for (ZFlyEmBodyMerger::TLabelMap::const_iterator iter = mapped.begin();
-       iter != mapped.end(); ++iter) {
-    bodySet.insert(iter.key());
-    bodySet.insert(iter.value());
-  }
-
-  for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
-       iter != bodySet.end(); ++iter) {
-    uint64_t bodyId = *iter;
-    if (!getCompleteDocument()->getBodyMerger()->isMerged(bodyId)) {
-      getCompleteDocument()->notifyBodyIsolated(bodyId);
-    }
-  }
-
-  getCompleteDocument()->updateBodyObject();
-
-  getCompleteDocument()->notifyBodyUnmerged();
-  getCompleteDocument()->notifyBodyMergeEdited();
-//  m_doc->notifyObject3dScanModified();
-}
-
 void ZFlyEmProofDoc::recordBodySelection()
 {
   ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -2256,8 +2235,8 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
 
 void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 {
-  QUndoCommand *command =
-      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+//  QUndoCommand *command =
+//      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
   if (se != NULL) {
@@ -2277,6 +2256,13 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
       }
     }
 
+    ZStackDocCommand::DvidSynapseEdit::RemoveSynapses *command =
+        new ZStackDocCommand::DvidSynapseEdit::RemoveSynapses(this);
+    command->setRemoval(removingSet);
+
+    pushUndoCommand(command);
+
+#if 0
     for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();
          iter != removingSet.end(); ++iter) {
       const ZIntPoint &pt = *iter;
@@ -2288,6 +2274,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
     if (command->childCount() > 0) {
       pushUndoCommand(command);
     }
+#endif
   }
 }
 

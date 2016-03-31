@@ -986,7 +986,8 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
     case GREY:
       m_image->setData(
             stack->array8(), stack->width(), stack->height(), stack->depth(),
-            slice, m_sliceAxis);
+            slice, buddyPresenter()->getGrayScale(),
+            buddyPresenter()->getGrayOffset(), m_sliceAxis);
       break;
     default:
       break;
@@ -1271,16 +1272,18 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
     }
 //    level  = 0;
     ZPixmap *pixmap = m_objectCanvas.getPixmap(level);
-    m_objectCanvasPainter.end();
+    m_imageWidget->setObjectCanvas(pixmap);
+
 //    pixmap->cleanUp();
     if (static_cast<QPaintDevice*>(pixmap) != m_objectCanvasPainter.device()) {
-      m_imageWidget->setObjectCanvas(pixmap);
-      reloaded = true;
-    }
+      m_objectCanvasPainter.end();
 
-    m_objectCanvasPainter.begin(pixmap);
-    m_objectCanvasPainter.setCompositionMode(
-          QPainter::CompositionMode_SourceOver);
+      reloaded = true;
+
+      m_objectCanvasPainter.begin(pixmap);
+      m_objectCanvasPainter.setCompositionMode(
+            QPainter::CompositionMode_SourceOver);
+    }
 
     TZ_ASSERT(pixmap == m_imageWidget->getObjectCanvas(), "Invalid pixmap");
 

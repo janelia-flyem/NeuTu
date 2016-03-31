@@ -425,6 +425,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
   if (tree == NULL) {
     tree = makeBodyModel(bodyId);
   }
+  tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
   if (tree != NULL) {
 #ifdef _DEBUG_

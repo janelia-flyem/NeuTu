@@ -72,7 +72,7 @@ public:
    */
   void deselectObject(const T &obj);
 
-  void deselectAll();
+  virtual void deselectAll();
 
   /*!
    * \brief The function of selecting or deselecting an object

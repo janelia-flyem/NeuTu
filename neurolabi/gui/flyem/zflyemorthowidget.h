@@ -23,6 +23,7 @@ public:
 signals:
   void bookmarkEdited(int, int, int);
   void synapseEdited(int, int, int);
+  void todoEdited(int, int, int);
   void zoomingTo(int, int, int);
   void bodyMergeEdited();
 

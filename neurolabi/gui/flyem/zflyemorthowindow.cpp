@@ -14,6 +14,9 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
           this, SIGNAL(bookmarkEdited(int,int,int)));
   connect(m_orthoWidget, SIGNAL(synapseEdited(int,int,int)),
           this, SIGNAL(synapseEdited(int,int,int)));
+  connect(m_orthoWidget, SIGNAL(todoEdited(int,int,int)),
+          this, SIGNAL(todoEdited(int, int, int)));
+
   connect(m_orthoWidget, SIGNAL(zoomingTo(int,int,int)),
           this, SIGNAL(zoomingTo(int,int,int)));
   connect(m_orthoWidget, SIGNAL(bodyMergeEdited()),
@@ -35,6 +38,11 @@ void ZFlyEmOrthoWindow::downloadBookmark(int x, int y, int z)
 void ZFlyEmOrthoWindow::downloadSynapse(int x, int y, int z)
 {
   getDocument()->downloadSynapse(x, y, z);
+}
+
+void ZFlyEmOrthoWindow::downloadTodo(int x, int y, int z)
+{
+  getDocument()->downloadTodo(x, y, z);
 }
 
 ZFlyEmOrthoDoc *ZFlyEmOrthoWindow::getDocument() const

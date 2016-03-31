@@ -134,6 +134,8 @@ public:
   void selectHitWithPartner(bool appending);
   void toggleHitSelectWithPartner();
 
+  void deselect(bool recursive);
+
   const std::string& className() const;
 
   bool hit(double x, double y, double z);
@@ -180,6 +182,7 @@ public:
 private:
   void init();
   void updateFromCache(int z);
+  void deselectSub();
 
 private:
   QVector<SynapseSlice> m_synapseEnsemble;

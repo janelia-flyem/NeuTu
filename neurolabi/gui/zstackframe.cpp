@@ -252,7 +252,9 @@ void ZStackFrame::addDocData(const ZStackDocReader &reader)
                                        crossoverTest());
 
   if (m_doc->hasStackData()) {
-    m_presenter->optimizeStackBc();
+    if (m_doc->getStack()->kind() != GREY) {
+      m_presenter->optimizeStackBc();
+    }
     m_view->reset();
   }
 
@@ -379,7 +381,7 @@ void ZStackFrame::updateDocument()
                                        crossoverTest());
 
   if (m_doc->hasStackData()) {
-    if (m_presenter != NULL) {
+    if (m_presenter != NULL && (m_doc->getStack()->kind() != GREY)) {
       m_presenter->optimizeStackBc();
     }
   }
@@ -474,7 +476,9 @@ void ZStackFrame::prepareDisplay()
 {
   setWindowTitle(document()->stackSourcePath().c_str());
   m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath().c_str());
-  m_presenter->optimizeStackBc();
+  if (m_doc->getStack()->kind() != GREY) {
+    m_presenter->optimizeStackBc();
+  }
   m_view->reset();
 }
 
@@ -563,7 +567,9 @@ int ZStackFrame::importImageSequence(const char *filePath)
 
   setWindowTitle(filePath);
   m_statusInfo =  QString("%1 loaded").arg(filePath);
-  m_presenter->optimizeStackBc();
+  if (m_doc->getStack()->kind() != GREY) {
+    m_presenter->optimizeStackBc();
+  }
   m_view->reset();
 
   return SUCCESS;

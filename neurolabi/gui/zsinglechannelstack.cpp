@@ -606,11 +606,11 @@ void ZStack_Stat::update(Stack *stack)
         smin = m_min;
         smax = m_max;
       }
-      if (stack->kind != GREY) {
+//      if (stack->kind != GREY) {
         if (smax != smin)
           m_greyScale = 255.0 / (smax - smin);
         m_greyOffset = -m_greyScale * smin;
-      }
+//      }
     }
   }
 }

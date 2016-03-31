@@ -22,6 +22,8 @@ private:
   void init();
   void initSynapseEnsemble();
   void initSynapseEnsemble(NeuTube::EAxis axis);
+  void initTodoList();
+  void initTodoList(NeuTube::EAxis axis);
 
 private:
   int m_width;
