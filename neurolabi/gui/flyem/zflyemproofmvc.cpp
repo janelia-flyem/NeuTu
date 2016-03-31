@@ -314,6 +314,8 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
   connect(getCompleteDocument(), SIGNAL(todoEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadTodo(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(todoEdited(int,int,int)),
+          getCompleteDocument(), SLOT(downloadTodo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(bodyMergeEdited()),

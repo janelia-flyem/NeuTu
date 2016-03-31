@@ -194,8 +194,9 @@ public: //Todo list functions
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
 
-  void notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray);
-  void notifyTodoItemModified(const ZIntPoint &pt);
+  void notifyTodoItemModified(
+      const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
+  void notifyTodoItemModified(const ZIntPoint &pt, bool emitingEdit = false);
 
   std::set<ZIntPoint> getSelectedTodoItemPosition() const;
 

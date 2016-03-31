@@ -601,15 +601,21 @@ bool ZFlyEmProofDoc::hasTodoItemSelected() const
   return false;
 }
 
-void ZFlyEmProofDoc::notifyTodoItemModified(const ZIntPoint &pt)
+void ZFlyEmProofDoc::notifyTodoItemModified(
+    const ZIntPoint &pt, bool emitingEdit)
 {
   uint64_t bodyId = m_dvidReader.readBodyIdAt(pt);
   if (bodyId > 0) {
     emit todoModified(bodyId);
   }
+
+  if (emitingEdit) {
+    emit todoEdited(pt.getX(), pt.getY(), pt.getZ());
+  }
 }
 
-void ZFlyEmProofDoc::notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray)
+void ZFlyEmProofDoc::notifyTodoItemModified(
+    const std::vector<ZIntPoint> &ptArray, bool emitingEdit)
 {
   std::vector<uint64_t> bodyIdArray = m_dvidReader.readBodyIdAt(ptArray);
   std::set<uint64_t> bodyIdSet;
@@ -617,6 +623,14 @@ void ZFlyEmProofDoc::notifyTodoItemModified(const std::vector<ZIntPoint> &ptArra
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter) {
     emit todoModified(*iter);
+  }
+
+  if (emitingEdit) {
+    for (std::vector<ZIntPoint>::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      emit todoEdited(pt.getX(), pt.getY(), pt.getZ());
+    }
   }
 }
 
@@ -642,7 +656,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
     }
     if (!selectedSet.empty()) {
       processObjectModified(td);
-      notifyTodoItemModified(ptArray);
+      notifyTodoItemModified(ptArray, true);
     }
   }
 
