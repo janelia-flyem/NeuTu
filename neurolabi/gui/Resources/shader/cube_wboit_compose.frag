@@ -21,5 +21,5 @@ void main(void)
     {
         discard;
     }
-    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), 1.0f - alpha);;
+    FragData0 = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4), alpha);;
 }
