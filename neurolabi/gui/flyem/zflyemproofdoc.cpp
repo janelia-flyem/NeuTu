@@ -213,6 +213,12 @@ void ZFlyEmProofDoc::clearBodyMergeStage()
   notifyBodyUnmerged();
 }
 
+void ZFlyEmProofDoc::unmergeSelected()
+{
+  ZFlyEmProofDocCommand::UnmergeBody *command =
+      new ZFlyEmProofDocCommand::UnmergeBody(this);
+  pushUndoCommand(command);
+}
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
@@ -1846,6 +1852,11 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
 void ZFlyEmProofDoc::notifyBodyIsolated(uint64_t bodyId)
 {
   emit bodyIsolated(bodyId);
+}
+
+void ZFlyEmProofDoc::notifyBodyLock(uint64_t bodyId, bool locking)
+{
+  emit requestingBodyLock(bodyId, locking);
 }
 
 ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const

@@ -674,6 +674,15 @@ void ZStackPresenter::createBodyActions()
     m_actionMap[ZActionFactory::ACTION_BODY_MERGE] = action;
   }
 
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_UNMERGE, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyUnmergeTriggered()));
+    m_actionMap[ZActionFactory::ACTION_BODY_UNMERGE] = action;
+  }
+
+
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
@@ -2594,6 +2603,11 @@ void ZStackPresenter::notifyBodyDecomposeTriggered()
 void ZStackPresenter::notifyBodyMergeTriggered()
 {
   emit bodyMergeTriggered();
+}
+
+void ZStackPresenter::notifyBodyUnmergeTriggered()
+{
+  emit bodyUnmergeTriggered();
 }
 
 void ZStackPresenter::notifyBodyAnnotationTriggered()

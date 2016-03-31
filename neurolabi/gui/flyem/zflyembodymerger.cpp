@@ -120,6 +120,27 @@ void ZFlyEmBodyMerger::pushMap(const TLabelSet &labelSet)
   }
 }
 
+void ZFlyEmBodyMerger::unmerge(uint64_t bodyId)
+{
+  for (TLabelMapList::iterator iter = m_mapList.begin();
+       iter != m_mapList.end(); ++iter) {
+    TLabelMap &labelMap = *iter;
+    if (labelMap.contains(bodyId)) {
+      labelMap.remove(bodyId);
+    }
+
+    //remove values
+    for (TLabelMap::iterator itemIter = labelMap.begin();
+         itemIter != labelMap.end();) {
+      if (itemIter.value() == bodyId) {
+        itemIter = labelMap.erase(itemIter);
+      } else {
+        ++itemIter;
+      }
+    }
+  }
+}
+
 ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::undo()
 {
   TLabelMap labelMap;
