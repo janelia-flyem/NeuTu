@@ -30,14 +30,6 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
     m_vboSurf = 0;
 
     clearData();
-
-    //
-    m_screen << QVector3D(-1.0f, -1.0f, 0.0f) // (a-b-c)
-             << QVector3D( 1.0f, -1.0f, 0.0f)
-             << QVector3D( 1.0f,  1.0f, 0.0f)
-             << QVector3D( 1.0f,  1.0f, 0.0f) // (c-d-a)
-             << QVector3D(-1.0f,  1.0f, 0.0f)
-             << QVector3D(-1.0f, -1.0f, 0.0f);
 }
 
 Z3DCubeRenderer::~Z3DCubeRenderer()
