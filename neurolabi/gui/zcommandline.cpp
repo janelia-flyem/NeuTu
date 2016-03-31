@@ -28,6 +28,7 @@
 #include "zneurontracer.h"
 #include "zneurontracerconfig.h"
 #include "dvid/zdvidurl.h"
+//#include "mylib/utilities.h"
 
 using namespace std;
 
@@ -619,21 +620,23 @@ int ZCommandLine::runSkeletonize()
 
     ZStackSkeletonizer skeletonizer;
 
-
-    if (m_configJson.hasKey("skeletonize")) {
-      skeletonizer.configure(
-            ZJsonObject(m_configJson["skeletonize"],
-            ZJsonValue::SET_INCREASE_REF_COUNT));
-    } else {
-      ZJsonObject config;
-      if (m_input.size() <= 2) {
-        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                    "/json/skeletonize.json");
-      } else {
-        config.load(m_input[2]);
-      }
-      skeletonizer.configure(config);
+    ZJsonObject config;
+    if (m_input.size() <= 2) {
+      config = reader.readSkeletonConfig();
     }
+
+    if (config.isEmpty()) {
+      if (m_configJson.hasKey("skeletonize")) {
+        skeletonizer.configure(
+              ZJsonObject(m_configJson["skeletonize"],
+              ZJsonValue::SET_INCREASE_REF_COUNT));
+      } else {
+        if (m_input.size() >= 2) {
+          config.load(m_input[2]);
+        }
+      }
+    }
+    skeletonizer.configure(config);
 
     for (size_t i = 0; i < bodyIdArray.size(); ++i) {
       uint64_t bodyId = bodyIdArray[rank[i] - 1];
@@ -736,6 +739,9 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force]",
     "[--trace] [--level <int>]","[--separate <string>]",
+    "[--position <int> <int> <int>]",
+    "[--size <int> <int> <int>]",
+    "[--dvid <string>]",
     "[--test]", "[--verbose]",
     0
   };
@@ -814,6 +820,18 @@ int ZCommandLine::run(int argc, char *argv[])
     m_isVerbose = true;
   }
 
+  if (Is_Arg_Matched(const_cast<char*>("--intv"))) {
+    for (int i = 1; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i);
+    }
+  }
+
+  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
+    for (int i = 1; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--position"), i);
+    }
+  }
+
   if (command == UNKNOWN_COMMAND) {/*
     if (ZArgumentProcessor::isArgMatched("--sobj_marker")) {
       command = OBJECT_MARKER;
@@ -833,12 +851,6 @@ int ZCommandLine::run(int argc, char *argv[])
         m_input[i] = ZArgumentProcessor::getStringArg("input", i);
       }
       m_output = ZArgumentProcessor::getStringArg("-o");
-
-      if (ZArgumentProcessor::isArgMatched("--intv")) {
-        for (int i = 1; i < 3; ++i) {
-          m_intv[i] = ZArgumentProcessor::getIntArg("--intv", i);
-        }
-      }
 
       m_fullOverlapScreen =
           ZArgumentProcessor::isArgMatched("--fulloverlap_screen");

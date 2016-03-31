@@ -620,7 +620,8 @@ public:
   void setSwcVisible(ZSwcTree* tree, bool visible);
   void setSurfaceVisible(ZCubeArray *cubearray, bool visible);
 
-  void setTraceMinScore(double score);
+  void setAutoTraceMinScore(double score);
+  void setManualTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
 
   //void updateMasterLocsegChain();
@@ -705,6 +706,8 @@ public:
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
+  void selectObject(ZStackObject *obj, bool appending);
+
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
@@ -838,6 +841,7 @@ public:
   //void notifyAllObjectModified();
   void notify3DGraphModified();
   void notify3DCubeModified();
+  void notifyTodoModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -875,8 +879,11 @@ public:
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
+  void notifySelectionChanged(const std::set<const ZStackObject*> &selected,
+                              const std::set<const ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
+  void notify(const QString &msg);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
@@ -1027,6 +1034,7 @@ public slots: //undoable commands
   virtual bool executeBwsolidCommand();
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
+  virtual void executeRemoveRectRoiCommand();
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1099,6 +1107,7 @@ signals:
   void strokeModified();
   void graph3dModified();
   void cube3dModified();
+  void todoModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);

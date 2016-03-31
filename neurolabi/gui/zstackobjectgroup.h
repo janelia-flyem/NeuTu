@@ -38,6 +38,7 @@ public:
   void setSelected(ZStackObject *obj, bool selected);
   void setSelected(bool selected);
   void setSelected(ZStackObject::EType type, bool selected);
+  void deselectAll();
 
   /*!
    * \brief Reset selection recorder

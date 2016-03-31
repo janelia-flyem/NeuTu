@@ -79,7 +79,10 @@ public:
     TYPE_SLICED_PUNCTA,
     TYPE_DVID_SYNAPSE,
     TYPE_DVID_SYNAPE_ENSEMBLE,
-    TYPE_3D_CUBE
+    TYPE_3D_CUBE,
+    TYPE_DVID_ANNOTATION,
+    TYPE_FLYEM_TODO_ITEM,
+    TYPE_FLYEM_TODO_LIST
   };
 
   enum Palette_Color {
@@ -168,7 +171,7 @@ public:
    * For compability purpose, it is set to take an output parameter instead of
    * returning the result.
    */
-  virtual void getBoundBox(ZIntCuboid *box) const;
+  virtual void boundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);

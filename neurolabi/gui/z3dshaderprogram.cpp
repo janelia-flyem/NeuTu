@@ -174,7 +174,6 @@ void Z3DShaderProgram::loadFromSourceFile(const QStringList &shaderFilenames, co
   m_vertSrcs.clear();
   m_geomSrcs.clear();
   m_fragSrcs.clear();
-
   for (int i=0; i<shaderFilenames.size(); ++i) {
     QString filename = Z3DApplication::app()->getShaderPath(shaderFilenames[i]);
     if (filename.endsWith(".vert", Qt::CaseInsensitive)) {

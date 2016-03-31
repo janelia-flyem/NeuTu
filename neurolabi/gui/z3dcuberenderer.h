@@ -49,19 +49,14 @@ private:
     std::vector<GLfloat> m_allFlags;
     std::vector<GLuint> m_indexs;
 
-    CubeArrayType m_cubes;
-
     QVector<QVector3D> m_screen;
     GLuint m_vao, m_vbo;
     GLint m_preFBO;
     GLuint m_fbo;
     GLuint m_renderbuffer;
-    GLuint m_texture;
+    GLuint m_accumTexture, m_revealageTexture;
 
-    std::vector<GLuint> m_VAOs;
-    std::vector<GLuint> m_pickingVAOs;
-    std::vector<GLuint> m_VBOs;
-    std::vector<GLuint> m_pickingVBOs;
+    GLuint m_vaoSurf, m_vboSurf;
 
     bool m_dataChanged;
     bool m_pickingDataChanged;
@@ -70,8 +65,6 @@ private:
     size_t nObjects; // multiple ROIs
     std::vector<CubeArrayType> m_cubeList;
     std::vector<glm::vec4> m_colorList;
-
-    size_t nCubes;
 
     std::vector<glm::vec3> positions;
     std::vector<float> normalIndices;

@@ -2221,9 +2221,11 @@ void ZStackView::setView(const ZStackViewParam &param)
 
     m_imageWidget->setViewPort(viewPort);
 
-    if (slice != m_depthControl->value()) {
-      depthChanged = true;
-      setSliceIndexQuietly(slice);
+    if (param.fixingZ() == false) {
+      if (slice != m_depthControl->value()) {
+        depthChanged = true;
+        setSliceIndexQuietly(slice);
+      }
     }
 
     reloadCanvas();

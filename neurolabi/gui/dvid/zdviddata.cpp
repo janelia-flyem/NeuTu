@@ -22,6 +22,7 @@ const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 const char* ZDvidData::m_bookmarkKeyName = "bookmarks";
 const char* ZDvidData::m_bookmarkAnnotationName = "bookmark_annotations";
 const char* ZDvidData::m_bodySynapsesName = "body_synapses";
+const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
@@ -83,6 +84,8 @@ const char* ZDvidData::GetName(ERole role)
     return m_bodySynapsesName;
   case ROLE_SYNAPSE:
     return m_synapseName;
+  case ROLE_TODO_LIST:
+    return m_todoListName;
   }
 
   return m_emptyName;

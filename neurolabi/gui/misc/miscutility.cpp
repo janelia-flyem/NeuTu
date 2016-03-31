@@ -198,8 +198,8 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     outHeight = depth;
     break;
   case NeuTube::Z_AXIS:
-    outWidth = height;
-    outHeight = depth;
+    outWidth = width;
+    outHeight = height;
     break;
   }
 

@@ -103,6 +103,7 @@ private:
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
+  QAction *m_queryTableAction;
 
   QToolBar *m_toolBar;
   QToolBar *m_synapseToolbar;

@@ -25,7 +25,7 @@ class Z3DSwcFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   enum InteractionMode {
-    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode
+    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
   };
 
   explicit Z3DSwcFilter();
@@ -91,7 +91,7 @@ signals:
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
   void addNewSwcTreeNode(double x, double y, double z, double r);
-  void extendSwcTreeNode(double x, double y, double z);
+  void extendSwcTreeNode(double x, double y, double z, double r);
 
 public slots:
   void prepareColor();
@@ -178,6 +178,7 @@ private:
   ZSwcTree *m_pressedSwc;
   std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
   Swc_Tree_Node *m_pressedSwcTreeNode;
+//  Swc_Tree_Node *m_selectedSwcTreeNode;
   //std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;   //point to all selected swcs, managed by other class
 
   std::vector<glm::vec4> m_baseAndBaseRadius;

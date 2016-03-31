@@ -67,7 +67,7 @@ public:
   };
 
   enum EObjectRole {
-    ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK
+    ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK, ROLE_TODO_ITEM
   };
 
   /*
@@ -326,6 +326,7 @@ public slots:
   void tryDrawRectMode();
   void exitRectEdit();
   void exitBookmarkEdit();
+  void exitTodoEdit();
   void exitSynapseEdit();
 
   void selectDownstreamNode();

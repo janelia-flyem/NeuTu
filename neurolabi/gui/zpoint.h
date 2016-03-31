@@ -31,6 +31,9 @@ public:
   inline double x() const { return m_x; }
   inline double y() const { return m_y; }
   inline double z() const { return m_z; }
+  inline double getX() const { return m_x; }
+  inline double getY() const { return m_y; }
+  inline double getZ() const { return m_z; }
 
   inline double* xRef() { return &m_x; }
   inline double* yRef() { return &m_y; }
@@ -64,7 +67,9 @@ public:
 
   friend ZPoint operator + (const ZPoint &pt1, const ZPoint &pt2);
   friend ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2);
+  friend ZPoint operator + (const ZPoint &pt1, double offset);
   friend ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2);
+  friend ZPoint operator - (const ZPoint &pt1, double offset);
   friend ZPoint operator * (const ZPoint &pt1, double scale);
   friend ZPoint operator / (const ZPoint &pt1, double scale);
 

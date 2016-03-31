@@ -76,8 +76,10 @@ void Z3DSurfaceFilter::initRenderers(size_t n)
         //connect(paras[i], SIGNAL(valueChanged()), this, SLOT(invalidateResult()));
         addParameter(paras[i]);
     }
+
     //
-    m_sourceSet = true;
+    m_sourceSet = false;
+
     //
     m_initialized = true;
 }
@@ -170,12 +172,10 @@ void Z3DSurfaceFilter::prepareData()
         // assign ROI to cubeRenderer
         for(size_t i=0; i<m_sourceList.size(); ++i)
         {
-            for(size_t j=0; j< m_cubeArrayList.size(); ++j)
+            for(size_t j=0; j<m_cubeArrayList.size(); ++j)
             {
                 if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
                 {
-                    qDebug()<<"### prepareData"<<m_cubeArrayList[j].getSource()<<j;
-
                     if(m_cubeRenderers[j]->isEmpty())
                     {
                         m_cubeRenderers[j]->addCubes(m_cubeArrayList.at(j));
@@ -195,14 +195,18 @@ void Z3DSurfaceFilter::prepareData()
 
         m_dataIsInvalid = false;
     }
+    else
+    {
+        // test code here
+    }
 }
 
 void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 {
     m_cubeArray.push_back(cube);
 
-    m_dataIsInvalid = true;
-    invalidateResult();
+    //
+    updateSurfaceVisibleState();
 }
 
 void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
@@ -231,6 +235,8 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
 
         m_cubeArrayList.push_back(*cubes); // add source
     }
+
+    m_sourceSet = true;
 
     //
     updateSurfaceVisibleState();
@@ -301,9 +307,6 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-    //  qDebug() << "Z3DSurfaceFilter::isReady "<<Z3DGeometryFilter::isReady(eye);
-    //  qDebug() << "Z3DSurfaceFilter::isReady m_showCube "<<m_showCube.get();
-    //  qDebug() << "m_cubeArray isEmpty "<< m_cubeArray.empty() << "size" << m_cubeArray.size();
     return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_sourceList.empty();
 }
 

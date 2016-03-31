@@ -52,7 +52,7 @@ ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson);
+        synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
         addSynapse(synapse, DATA_LOCAL);
       }
     }
@@ -152,7 +152,7 @@ void ZDvidSynapseEnsemble::downloadForLabel(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson);
+    synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }

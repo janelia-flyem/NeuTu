@@ -61,6 +61,12 @@ void Z3DShaderGroup::addWeightedAverageShaders()
   }
 }
 
+void Z3DShaderGroup::addWeightedBlendedShaders()
+{
+    m_shaders[Z3DRendererBase::WeightedBlendedInit] = new Z3DShaderProgram();
+    buildWeightedBlendedShader(m_shaders[Z3DRendererBase::WeightedBlendedInit]);
+}
+
 void Z3DShaderGroup::bind()
 {
   if (m_shaders.find(m_base->getShaderHookType()) != m_shaders.end()) {
@@ -86,6 +92,11 @@ Z3DShaderProgram& Z3DShaderGroup::get()
   return *m_shaders[m_base->getShaderHookType()];
 }
 
+Z3DShaderProgram& Z3DShaderGroup::get(Z3DRendererBase::ShaderHookType sht)
+{
+  return *m_shaders[sht];
+}
+
 void Z3DShaderGroup::rebuild(const QString &header)
 {
   m_header = header;
@@ -104,6 +115,10 @@ void Z3DShaderGroup::rebuild(const QString &header)
       break;
     case Z3DRendererBase::WeightedAverageInit:
       buildWeightedAverageShader(i->second);
+      break;
+    case Z3DRendererBase::WeightedBlendedInit:
+      buildWeightedBlendedShader(i->second);
+      break;
     default:
       break;
     }
@@ -113,8 +128,6 @@ void Z3DShaderGroup::rebuild(const QString &header)
 
 void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
 {
-//    qDebug()<<"buildNormalShader"<<m_normalShaderFiles;
-
   if (m_normalShaderFiles.empty()) {
     QStringList allshaders(m_shaderFiles);
     allshaders << "common.frag";
@@ -122,23 +135,17 @@ void Z3DShaderGroup::buildNormalShader(Z3DShaderProgram *shader)
     shader->loadFromSourceFile(allshaders, m_header);
   } else {
     shader->bindFragDataLocation(0, "FragData0");
-    QString header = m_header;
     if (m_normalShaderFiles.back().contains("cube_wboit")) {
-
       if (GLEW_VERSION_3_0) {
-        header += "out vec4 FragData1;\n";
+        m_header += "out vec4 FragData1;\n";
       } else {
-        header += "#define FragData1 gl_FragData[1]\n";
+        m_header += "#define FragData1 gl_FragData[1]\n";
       }
-
       shader->bindFragDataLocation(1, "FragData1");
+
     }
-    shader->loadFromSourceFile(m_normalShaderFiles, header);
-
-    //qDebug()<<"header"<<header;
-
+    shader->loadFromSourceFile(m_normalShaderFiles, m_header);
   }
-
   //shader->printShaders();
 }
 
@@ -193,4 +200,16 @@ void Z3DShaderGroup::buildWeightedAverageShader(Z3DShaderProgram *shader)
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");
   shader->loadFromSourceFile(allshaders, header);
+}
+
+void Z3DShaderGroup::buildWeightedBlendedShader(Z3DShaderProgram *shader)
+{
+  QStringList allshaders(m_shaderFiles);
+  allshaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
+
+  qDebug()<<"buildWeightedBlendedShader header ... "<<m_header;
+
+  shader->bindFragDataLocation(0, "FragData0");
+  shader->bindFragDataLocation(1, "FragData1");
+  shader->loadFromSourceFile(allshaders, m_header);
 }

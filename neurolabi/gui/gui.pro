@@ -64,6 +64,14 @@ DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 HOSTNAME = $$system(echo $HOSTNAME)
 USER = $$system(echo $USER)
 HOME = $$system(echo $HOME)
+GIT = $$system(which git)
+
+#message($$GIT)
+contains(GIT, .*git) {
+    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+    message($$COMMIT_HASH)
+}
 
 include(add_itk.pri)
 
@@ -601,7 +609,11 @@ HEADERS += mainwindow.h \
     flyem/flyemorthocontrolform.h \
     dvid/zdvidannotation.h \
     dialogs/stringlistdialog.h \
-    zroiwidget.h
+    zroiwidget.h \
+    flyem/zflyemtodoitem.h \
+    flyem/zflyemtodolist.h \
+    flyem/zflyemtodolistfilter.h \
+    flyem/zflyemtodolistmodel.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1061,7 +1073,11 @@ SOURCES += main.cpp \
     flyem/flyemorthocontrolform.cpp \
     dvid/zdvidannotation.cpp \
     dialogs/stringlistdialog.cpp \
-    zroiwidget.cpp
+    zroiwidget.cpp \
+    flyem/zflyemtodoitem.cpp \
+    flyem/zflyemtodolist.cpp \
+    flyem/zflyemtodolistfilter.cpp \
+    flyem/zflyemtodolistmodel.cpp
 
 OTHER_FILES += \
     extlib.pri \

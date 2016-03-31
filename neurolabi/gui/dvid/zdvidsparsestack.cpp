@@ -437,6 +437,11 @@ void ZDvidSparseStack::deprecateStackBuffer()
   m_sparseStack.deprecate(ZSparseStack::STACK);
 }
 
+int ZDvidSparseStack::getReadStatusCode() const
+{
+  return m_dvidReader.getStatusCode();
+}
+
 void ZDvidSparseStack::pushLabel()
 {
   ZObject3dScan *obj = m_sparseStack.getObjectMask();

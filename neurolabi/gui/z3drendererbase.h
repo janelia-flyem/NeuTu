@@ -26,7 +26,7 @@ public:
 
   enum ShaderHookType
   {
-    Normal, DualDepthPeelingInit, DualDepthPeelingPeel, WeightedAverageInit
+    Normal, DualDepthPeelingInit, DualDepthPeelingPeel, WeightedAverageInit, WeightedBlendedInit
   };
 
   struct ShaderHookParameter
@@ -116,6 +116,9 @@ public:
   inline void setShaderHookType(ShaderHookType t) { m_shaderHookType = t; }
   inline ShaderHookType getShaderHookType() const { return m_shaderHookType; }
   inline ShaderHookParameter& shaderHookPara() { return m_shaderHookPara; }
+
+  void setMaterialAmbient(const glm::vec4 &color);
+  void setLightAmbient(const glm::vec4 &color);
 
 protected:
 

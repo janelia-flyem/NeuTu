@@ -413,7 +413,7 @@ size_t ZCubeArray::size()
 }
 
 void ZCubeArray::setCubeArray(std::vector<Z3DCube> cubeArray)
-{
+{    
     m_cubeArray = cubeArray;
 }
 

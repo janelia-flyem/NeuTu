@@ -2807,7 +2807,7 @@ static void store_match(int argc, char *argv[])
 /*   PROCESS_ARGUMENTS: TOP LEVEL                                                        */
 /*****************************************************************************************/
 
-void Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
+void mylib::Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
 { static int   First_Call = 1;
   Node        *root;
   Automaton   *mach;
@@ -2839,7 +2839,7 @@ void Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
     if (lines == 0)
       { Master_Spec = (char **) mylib::Guarded_Malloc(sizeof(char *)*2,"Process_Arguments");
         Master_Spec[1] = NULL;
-        Master_Spec[0] = Guarded_Strdup("\n","Process_Arguments");
+        Master_Spec[0] = Guarded_Strdup(const_cast<char*>("\n"), "Process_Arguments");
       }
     else
       { Master_Spec = (char **)
@@ -3126,7 +3126,7 @@ static Match *find_value(int k)
 // Return 0 if the named unit (or synonym) is unmatched or its match is not in a loop,
 //     otherwise the number of times through the loop
 
-int Get_Repeat_Count(char *name)
+int mylib::Get_Repeat_Count(char *name)
 { int n;
 
   n = search_table(name);
@@ -3138,7 +3138,7 @@ int Get_Repeat_Count(char *name)
 
 // Return non-zero if the named unit was matched (in the k'th iteration if non-scalar)
 
-int Is_Arg_Matched(char *name, ... /* [int no] */ )
+int mylib::Is_Arg_Matched(char *name, ... /* [int no] */ )
 { va_list ap;
   int     k, n;
 
