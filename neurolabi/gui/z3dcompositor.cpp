@@ -1170,11 +1170,6 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   m_wbRT->release();
 
   glPopAttrib();
-//  for (size_t i=0; i<filters.size(); i++) {
-//    Z3DGeometryFilter* geomFilter = filters.at(i);
-//    geomFilter->setShaderHookType(Z3DRendererBase::WeightedBlendedInit);
-//  }
-//  CHECK_GL_ERROR;
 
   //
   port.bindTarget();
