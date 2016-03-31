@@ -79,6 +79,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
   case QtFatalMsg:
     LFATALF(context.file, context.line, context.function) << msg;
     abort();
+  default:
+    break;
   }
 }
 #else

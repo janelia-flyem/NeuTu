@@ -417,6 +417,15 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
   return jsonString;
 }
 
+void ZDvidWriter::syncAnnotation(const std::string &name)
+{
+  ZDvidUrl url(getDvidTarget());
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+                   getDvidTarget().getBodyLabelName());
+  post(url.getAnnotationSyncUrl(name), jsonObj);
+}
+
 void ZDvidWriter::createData(const std::string &type, const std::string &name)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -424,21 +433,24 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
   obj.setEntry("typename", type);
   obj.setEntry("dataname", name);
 
-  writeJson(dvidUrl.getInstanceUrl(), obj);
+//  writeJson(dvidUrl.getInstanceUrl(), obj);
 
-  /*
+
   QString command = QString(
         "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
       arg(getJsonStringForCurl(obj).c_str()).
       arg(dvidUrl.getInstanceUrl().c_str());
-*/
   /*
   qDebug() << command;
 
   QProcess::execute(command);
   */
 
-//  runCommand(command);
+  runCommand(command);
+
+  if (type == "annotation") {
+    syncAnnotation(name);
+  }
 }
 
 void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
@@ -883,8 +895,8 @@ uint64_t ZDvidWriter::writePartition(
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 #ifdef _DEBUG_
-  bm.exportDvidObject(GET_TEST_DATA_DIR + "/test_bm.dvid");
-  bs.exportDvidObject(GET_TEST_DATA_DIR + "/test_bs.dvid");
+  bm.exportDvidObject(GET_TMP_DIR + "/test_bm.dvid");
+  bs.exportDvidObject(GET_TMP_DIR + "/test_bs.dvid");
 #endif
 
   if (bs.getVoxelNumber() >= 100000) {
@@ -910,7 +922,7 @@ uint64_t ZDvidWriter::writePartition(
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
 
 #ifdef _DEBUG_
-      Bsc.exportDvidObject(GET_TEST_DATA_DIR + "/test.dvid");
+      Bsc.exportDvidObject(GET_TMP_DIR + "/test.dvid");
 #endif
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;

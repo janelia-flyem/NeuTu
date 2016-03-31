@@ -243,6 +243,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openSequencer()));
   m_toolMenu->addAction(m_openSequencerAction);
 
+  m_openTodoAction = new QAction("Show Todo List", this);
+  m_openTodoAction->setIcon(QIcon(":/images/todo.png"));
+  connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
+  m_toolMenu->addAction(m_openTodoAction);
+
   menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);
@@ -277,6 +282,11 @@ void ZProofreadWindow::addSynapseActionToToolbar()
   m_synapseToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_UNLINK));
+
+  m_synapseToolbar->addSeparator();
+  m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+                                ZActionFactory::ACTION_ENTER_RECT_ROI_MODE));
+
   addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
 }
 
@@ -297,6 +307,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
+  m_toolBar->addAction(m_openTodoAction);
 
   addSynapseActionToToolbar();
 }

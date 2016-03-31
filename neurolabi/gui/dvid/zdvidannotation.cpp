@@ -20,6 +20,7 @@ void ZDvidAnnotation::init()
   m_type = GetType();
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
+  m_bodyId = 0;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -182,8 +183,11 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidAnnotation::hit(double x, double y)
+bool ZDvidAnnotation::hit(double x, double y, NeuTube::EAxis axis)
 {
+  ZIntPoint shiftedCenter = m_position;
+  shiftedCenter.shiftSliceAxis(axis);
+
   double dx = x - m_position.getX();
   double dy = y - m_position.getY();
 
@@ -351,7 +355,7 @@ bool ZDvidAnnotation::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
     dz = abs(getPosition().getY() - z);
     break;
   case NeuTube::Z_AXIS:
-    abs(getPosition().getZ() - z);
+    dz = abs(getPosition().getZ() - z);
     break;
   }
 

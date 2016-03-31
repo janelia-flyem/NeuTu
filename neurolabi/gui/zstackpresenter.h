@@ -324,6 +324,7 @@ public slots:
   void tryDrawRectMode(double x, double y);
   void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
+  void cancelRectRoi();
   void exitRectEdit();
   void exitBookmarkEdit();
   void exitTodoEdit();
@@ -387,7 +388,7 @@ signals:
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
-  void acceptingRectRoi();
+//  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
   void bodyMergeTriggered();

@@ -136,10 +136,11 @@ public:
     m_hideStart = s;
   }
 
-  bool hitTest(double x, double y) const;
+  bool hitTest(double x, double y, NeuTube::EAxis axis) const;
   bool hitTest(double x, double y, double z) const;
 
-  bool hit(double x, double y);
+//  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   void boundBox(ZIntCuboid *box) const;

@@ -99,6 +99,7 @@ private:
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
   QAction *m_contrastAction;
+  QAction *m_openTodoAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

@@ -791,7 +791,7 @@ void Z3DWindow::init(EInitMode mode)
 
   //
   cubeArray.push_back(*cube2);
-  cube->setColor(QColor(255,255,0,128));
+  cube->setColor(QColor(255,255,0,255));
   cube->setCubeArray(cubeArray);
 
   //

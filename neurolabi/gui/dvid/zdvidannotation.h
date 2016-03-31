@@ -42,13 +42,22 @@ public:
 
   void setKind(const std::string &kind);
 
+  uint64_t getBodyId() const {
+    return m_bodyId;
+  }
+
+  void setBodyId(uint64_t bodyId) {
+    m_bodyId = bodyId;
+  }
+
   void setDefaultColor();
 
   int getX() const;
   int getY() const;
   int getZ() const;
 
-  bool hit(double x, double y);
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(
@@ -132,6 +141,7 @@ protected:
   ZIntPoint m_position;
   EKind m_kind;
   double m_radius;
+  uint64_t m_bodyId;
 
   std::vector<ZIntPoint> m_partnerHint;
   std::vector<std::string> m_tagArray;

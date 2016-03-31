@@ -224,7 +224,7 @@ using namespace std;
 #include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "zcircle.h"
+//#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
 #include "test/zclosedcurvetest.h"
@@ -19813,7 +19813,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
 
@@ -19823,6 +19823,36 @@ void ZTest::test(MainWindow *host)
 //  std::cout << array.dumpString(0) << std::endl;
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
 
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("annotation", "todotest2");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("segmentation-labelvol_todo");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("zhaot-ws1", "0751", 6300);
+  target.setBodyLabelName("bodies121714");
+  target.setLabelBlockName("segmentation121714");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("bodies121714_todo");
+#endif
   std::cout << "Done." << std::endl;
 }

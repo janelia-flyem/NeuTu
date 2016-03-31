@@ -24,6 +24,7 @@ class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
+class FlyEmTodoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -166,6 +167,7 @@ public slots:
 
   void loadBookmark();
   void openSequencer();
+  void openTodo();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -269,6 +271,7 @@ protected:
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+  FlyEmTodoDialog *m_todoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

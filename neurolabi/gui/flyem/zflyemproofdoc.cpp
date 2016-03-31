@@ -1401,6 +1401,8 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId) const
       ZJsonObject objJson(annotationJson.value(i));
       item->loadJsonObject(objJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
 
+      item->setBodyId(bodyId);
+
       puncta.push_back(item);
       /*
       if (item.isChecked()) {

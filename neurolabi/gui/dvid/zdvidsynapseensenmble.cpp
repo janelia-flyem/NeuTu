@@ -804,7 +804,7 @@ bool ZDvidSynapseEnsemble::SynapseSlice::isReady(
 
     QRect dataRect = rect;
     if (!range.isEmpty()) {
-      dataRect = rect.intersect(range);
+      dataRect = rect.intersected(range);
     }
 
     if (!dataRect.isValid()) {

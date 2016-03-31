@@ -114,5 +114,7 @@
         <file>Resources/shader/cube_wboit_compose.vert</file>
         <file>Resources/shader/cube_wboit_compose.frag</file>
         <file>images/add_post.png</file>
+        <file>images/todo.png</file>
+        <file>images/roi_box.png</file>
     </qresource>
 </RCC>

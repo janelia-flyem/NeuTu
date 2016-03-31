@@ -382,6 +382,12 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
         connect(action, SIGNAL(triggered()),
                 buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
         break;
+      case ZActionFactory::ACTION_ENTER_RECT_ROI_MODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(tryDrawRectMode()));
+        break;
+      case ZActionFactory::ACTION_CANCEL_RECT_ROI:
+        connect(action, SIGNAL(triggered()), this, SLOT(cancelRectRoi()));
+        break;
       default:
         break;
       }
@@ -2270,6 +2276,11 @@ void ZStackPresenter::tryDrawRectMode()
 {
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawRectMode(pos.x(), pos.y());
+}
+
+void ZStackPresenter::cancelRectRoi()
+{
+  buddyDocument()->executeRemoveRectRoiCommand();
 }
 
 void ZStackPresenter::tryEraseStrokeMode()

@@ -535,13 +535,9 @@
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
-<<<<<<< HEAD
       "roi": "mbroi",
-      "synapse": "mb6_synapses",
-=======
       "synapse": "alpha1_synapses",
->>>>>>> c71467f449b4b38d8265a87092e1e3be08de6aa7
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd", "yy"]
     },
     {
       "address": "emdata1.int.janelia.org",
