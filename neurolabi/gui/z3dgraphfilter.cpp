@@ -311,9 +311,6 @@ vector<double> Z3DGraphFilter::boundBox()
     result[5] = max(result[5], pos.z() + m_graph.getNode(i).radius() * 2.0);
   }
 
-  for(int i=0; i<6; i++)
-      qDebug()<<"graph filter bb ... "<<i<<result[i];
-
   return result;
 }
 

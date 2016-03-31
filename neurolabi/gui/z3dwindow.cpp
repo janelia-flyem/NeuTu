@@ -656,6 +656,21 @@ void Z3DWindow::zoomToSelectedSwcNodes()
 
 void Z3DWindow::init(EInitMode mode)
 {
+    // init canvas and opengl context
+  #ifdef _QT5_
+    m_canvas = new Z3DCanvas("", 512, 512);
+  #else
+    QGLFormat format = QGLFormat();
+    format.setAlpha(true);
+    format.setDepth(true);
+    format.setDoubleBuffer(true);
+    format.setRgba(true);
+    format.setSampleBuffers(true);
+    if (m_isStereoView)
+      format.setStereo(true);
+    m_canvas = new Z3DCanvas("", 512, 512, format);
+  #endif
+
   // processors
   m_axis = new Z3DAxis();
 
@@ -715,24 +730,10 @@ void Z3DWindow::init(EInitMode mode)
 
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
-//  Z3DCube cube;
-//  cube.x = 0;
-//  cube.y = 0;
-//  cube.z = 0;
-//  cube.length = 20;
-//  cube.color = glm::vec4(1.0, 0, 0, 0.5);
 
-//  m_surfaceFilter->addData(cube); // red cube 1
+  qDebug()<<"hard coded ...";
 
-//  cube.x = 0;
-//  cube.y = 25;
-//  cube.z = 0;
-//  cube.length = 20;
-//  cube.color = glm::vec4(0.0, 1.0, 0.0, 0.5);
-
-//  m_surfaceFilter->addData(cube); // green cube 2
-
-
+  //
   setROIs(1);
   ZCubeArray *cube = new ZCubeArray;
   cube->setSource("test cubearray");
@@ -748,22 +749,24 @@ void Z3DWindow::init(EInitMode mode)
   for(int i=0; i<6; i++)
       cube1->b_visible.push_back(true);
 
-  float o = 0;
-  float l = 4;
-  cube1->length = 16;
-  cube1->nodes.push_back(glm::vec3(o,o,o)); // 1
-  cube1->nodes.push_back(glm::vec3(o,+l,o)); // 2
+  float o = -1;
+  float l = 1;
+  cube1->length = 4;
+  cube1->nodes.push_back(glm::vec3(o,o,o)); // 0
+  cube1->nodes.push_back(glm::vec3(o+l,o,o)); // 1
+  cube1->nodes.push_back(glm::vec3(o,o+l,o)); // 2
   cube1->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
-  cube1->nodes.push_back(glm::vec3(o+l,o,o)); // 4
-  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 5
+  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 4
+  cube1->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
   cube1->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
   cube1->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
-  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 8
 
   //
   //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
   cube1->initByNodes = true;
+  cubeArray.push_back(*cube1);
 
+  //
   Z3DCube *cube2 = new Z3DCube;
 
   //
@@ -771,24 +774,24 @@ void Z3DWindow::init(EInitMode mode)
   for(int i=0; i<6; i++)
       cube2->b_visible.push_back(true);
 
-  o = 5;
-  l = 4;
-  cube2->length = 16;
-  cube2->nodes.push_back(glm::vec3(o,o,o)); // 1
-  cube2->nodes.push_back(glm::vec3(o,+l,o)); // 2
+  o = 1;
+  l = 1;
+  cube2->length = 4;
+  cube2->nodes.push_back(glm::vec3(o,o,o)); // 0
+  cube2->nodes.push_back(glm::vec3(o+l,o,o)); // 1
+  cube2->nodes.push_back(glm::vec3(o,o+l,o)); // 2
   cube2->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
-  cube2->nodes.push_back(glm::vec3(o+l,o,o)); // 4
-  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 5
+  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 4
+  cube2->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
   cube2->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
   cube2->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
-  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 8
 
   //
   cube2->initByNodes = true;
 
   //
   cubeArray.push_back(*cube2);
-  cube->setColor(QColor(255,0,0,128));
+  cube->setColor(QColor(255,255,0,128));
   cube->setCubeArray(cubeArray);
 
   //
@@ -872,20 +875,7 @@ void Z3DWindow::init(EInitMode mode)
   // init windows size based on data
   setWindowSize();
 
-  // init canvas and opengl context
-#ifdef _QT5_
-  m_canvas = new Z3DCanvas("", 512, 512);
-#else
-  QGLFormat format = QGLFormat();
-  format.setAlpha(true);
-  format.setDepth(true);
-  format.setDoubleBuffer(true);
-  format.setRgba(true);
-  format.setSampleBuffers(true);
-  if (m_isStereoView)
-    format.setStereo(true);
-  m_canvas = new Z3DCanvas("", 512, 512, format);
-#endif
+  //
   setCentralWidget(m_canvas);
   m_canvas->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_canvas, SIGNAL(customContextMenuRequested(QPoint)),

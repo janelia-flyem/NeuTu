@@ -1,12 +1,20 @@
-//#version 120
 // "Weighted Blended Order-Independent Transparency" technique by Morgan McGuire and Louis Bavoil
 
+#if GLSL_VERSION >= 130
+in vec3 vPosition;
+in float vNormal;
+
+out vec3 position;
+out vec3 normal;
+out float depth;
+#else
 attribute vec3 vPosition;
 attribute float vNormal;
 
 varying vec3 position;
 varying vec3 normal;
 varying float depth;
+#endif
 
 uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;

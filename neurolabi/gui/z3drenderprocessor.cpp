@@ -123,6 +123,8 @@ void Z3DRenderProcessor::renderScreenQuad(const Z3DShaderProgram &shader)
   if (!shader.isLinked())
     return;
 
+  qDebug()<<"renderScreenQuad ...";
+
   glDepthFunc(GL_ALWAYS);
 
   if (m_hardwareSupportVAO) {
