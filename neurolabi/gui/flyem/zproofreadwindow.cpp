@@ -197,6 +197,13 @@ void ZProofreadWindow::createMenu()
   connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showSegmentation(bool)));
 
+  m_viewTodoAction = new QAction("Todo", this);
+  m_viewTodoAction->setIcon(QIcon(":/images/view_todo.png"));
+  m_viewTodoAction->setCheckable(true);
+  m_viewTodoAction->setChecked(true);
+  connect(m_viewTodoAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showTodo(bool)));
+
   m_contrastAction = new QAction("Enhance Contrast", this);
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
@@ -225,6 +232,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
+  m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addSeparator();
@@ -256,6 +264,7 @@ void ZProofreadWindow::createMenu()
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
   m_viewSegmentationAction->setEnabled(false);
+  m_viewTodoAction->setEnabled(false);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
@@ -303,6 +312,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
+  m_toolBar->addAction(m_viewTodoAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addSeparator();
@@ -469,6 +479,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
   m_viewSegmentationAction->setEnabled(target.isValid());
+  m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
 }

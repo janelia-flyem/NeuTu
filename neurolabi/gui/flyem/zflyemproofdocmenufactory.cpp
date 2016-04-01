@@ -124,6 +124,9 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
           if (selectedMapped.size() > 1) {
             actionList.append(ZActionFactory::ACTION_BODY_MERGE);
           }
+          if (selectedMapped.size() != selectedOriginal.size()) {
+            actionList.append(ZActionFactory::ACTION_BODY_UNMERGE);
+          }
 
           actionList.append(ZActionFactory::ACTION_BODY_CHECKOUT);
           actionList.append(ZActionFactory::ACTION_BODY_CHECKIN);

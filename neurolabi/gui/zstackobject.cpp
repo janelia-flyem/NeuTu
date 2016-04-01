@@ -4,6 +4,7 @@
 #include "zintcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
+double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
@@ -13,6 +14,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
 {
   m_type = GetType();
   setSliceAxis(NeuTube::Z_AXIS);
+  m_basePenWidth = m_defaultPenWidth;
 }
 
 ZStackObject::~ZStackObject()
@@ -22,8 +24,6 @@ ZStackObject::~ZStackObject()
             << getSource() << std::endl;
 #endif
 }
-
-double ZStackObject::m_defaultPenWidth = 0.5;
 
 bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
@@ -125,7 +125,7 @@ const QColor& ZStackObject::getColor() const
 
 double ZStackObject::getPenWidth() const
 {
-  double width = getDefaultPenWidth();
+  double width = m_basePenWidth;
 
   if (m_usingCosmeticPen) {
     width += 2.0;
