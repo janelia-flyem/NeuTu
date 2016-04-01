@@ -40,19 +40,7 @@
 
 using namespace std;
 
-/*
-ZSwcTree::ZSwcTree(const ZSwcTree &src) : ZStackObject()
-{
-  m_tree = src.cloneData();
-  //m_source = "new tree";
-  m_iteratorReady = false;
-}
-*/
-
 const int ZSwcTree::m_nodeStateCosmetic = 1;
-
-//const ZSwcTree::TVisualEffect ZSwcTree::VE_NONE = 0;
-//const ZSwcTree::TVisualEffect ZSwcTree::VE_FULL_SKELETON = 1;
 
 ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
 {
@@ -62,8 +50,6 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   setColorScheme(COLOR_NORMAL);
   m_type = ZStackObject::TYPE_SWC;
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
-//  m_visualEffect = VE_FULL_SKELETON;
-
   setTarget(GetDefaultTarget());
 }
 
@@ -1202,7 +1188,7 @@ ZCuboid ZSwcTree::boundBox() const
 }
 #endif
 
-const ZCuboid& ZSwcTree::getBoundBox() const
+ZCuboid ZSwcTree::getBoundBox() const
 {
   if (isDeprecated(BOUND_BOX)) {
     double corner[6];
@@ -1304,18 +1290,20 @@ Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, double z, double margin)
 #endif
 }
 
-Swc_Tree_Node* ZSwcTree::hitTest(double x, double y)
+Swc_Tree_Node* ZSwcTree::hitTest(double x, double y, NeuTube::EAxis axis)
 {
-  if (data() != NULL) {
-    return Swc_Tree_Hit_Node_P(data(), x, y);
+  if (axis == NeuTube::Z_AXIS) {
+    if (data() != NULL) {
+      return Swc_Tree_Hit_Node_P(data(), x, y);
+    }
   }
 
   return NULL;
 }
 
-bool ZSwcTree::hit(double x, double y)
+bool ZSwcTree::hit(double x, double y, NeuTube::EAxis axis)
 {
-  m_hitSwcNode = hitTest(x, y);
+  m_hitSwcNode = hitTest(x, y, axis);
 
   return m_hitSwcNode;
 }
@@ -2680,7 +2668,9 @@ void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
     updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST, maxRadiusNode, FALSE);
     for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
       if (maxRadius >= radiusThre &&
-          (tn == maxRadiusNode || (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType && SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
+          (tn == maxRadiusNode ||
+           (SwcTreeNode::type(SwcTreeNode::parent(tn)) == somaType &&
+            SwcTreeNode::radius(tn) * 3.0 >= maxRadius))) {
         SwcTreeNode::setType(tn, somaType);
       } else {
         SwcTreeNode::setType(tn, otherType);

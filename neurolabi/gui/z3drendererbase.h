@@ -112,6 +112,9 @@ public:
   inline ShaderHookType getShaderHookType() const { return m_shaderHookType; }
   inline ShaderHookParameter& shaderHookPara() { return m_shaderHookPara; }
 
+  void setMaterialAmbient(const glm::vec4 &color);
+  void setLightAmbient(const glm::vec4 &color);
+
 protected:
 
   void generateDisplayList();

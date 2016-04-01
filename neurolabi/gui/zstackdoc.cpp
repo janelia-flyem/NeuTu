@@ -806,6 +806,27 @@ void ZStackDoc::notifySelectionChanged(
   notifySelectionChanged(selectedList, deselectedList);
 }
 
+void ZStackDoc::notifySelectionChanged(
+    const std::set<const ZStackObject *> &selected,
+    const std::set<const ZStackObject *> &deselected)
+{
+  QList<ZStackObject*> selectedList;
+  QList<ZStackObject*> deselectedList;
+
+  for (std::set<const ZStackObject *>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    selectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+  for (std::set<const ZStackObject *>::const_iterator iter = deselected.begin();
+       iter != deselected.end(); ++iter) {
+    deselectedList.append(const_cast<ZStackObject*>(*iter));
+  }
+
+//  emit objectSelectionChanged(selectedList, deselectedList);
+  notifySelectionChanged(selectedList, deselectedList);
+}
+
 #define DEFINE_NOTIFY_SELECTION_CHANGED(Type, Signal) \
   void ZStackDoc::notifySelectionChanged(\
      const QList<Type *> &selected, \
@@ -813,6 +834,7 @@ void ZStackDoc::notifySelectionChanged(
   {\
     if (!isSelectionSlient()) {\
       if (!selected.empty() || !deselected.empty()) {\
+        std::cout << "Object selelection changed." << std::endl; \
         emit Signal(selected, deselected);\
       }\
     }\
@@ -1276,7 +1298,7 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
         break;
       case ZActionFactory::ACTION_SET_SWC_ROOT:
         connect(action, SIGNAL(triggered()),
-                this, SLOT(executeSetBranchPoint()));
+                this, SLOT(executeSetRootCommand()));
         m_singleSwcNodeActionActivator.registerAction(action, true);
         break;
       case ZActionFactory::ACTION_CONNECTED_ISOLATED_SWC:
@@ -3791,8 +3813,8 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
         m_objectGroup.setSelected(obj, false);
       }
     }
-    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(type),
-                           m_objectGroup.getSelector()->getDeselectedSet(type));
+    notifySelectionChanged(m_objectGroup.getSelector()->getSelectedObjectSet(type),
+                           m_objectGroup.getSelector()->getDeselectedObjectSet(type));
   }
     break;
   }
@@ -3941,9 +3963,21 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
   emit swcNetworkModified();
 }
 
-void ZStackDoc::setTraceMinScore(double score)
+void ZStackDoc::setAutoTraceMinScore(double score)
 {
-  getTraceWorkspace()->min_score = score;
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_AUTO);
+  m_neuronTracer.setMinScore(score + 0.05, ZNeuronTracer::TRACING_SEED);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+}
+
+void ZStackDoc::setManualTraceMinScore(double score)
+{
+  m_neuronTracer.setMinScore(score, ZNeuronTracer::TRACING_INTERACTIVE);
+
+//  m_neuronTracer.setManualTraceMinScore(score);
+//  m_neuronTracer.setAutoTraceMinScore(score);
+//  m_neuronTracer.setSeedMinScore(score);
+//  getTraceWorkspace()->min_score = score;
 }
 
 void ZStackDoc::setReceptor(int option, bool cone)
@@ -4164,6 +4198,19 @@ void ZStackDoc::toggleSelected(ZStackObject *obj)
   }
 }
 
+void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
+{
+  if (!appending) {
+    getObjectGroup().deselectAll();
+//    m_objectGroup.getSelector()->deselectAll();
+  }
+  m_objectGroup.setSelected(obj, true);
+
+//  m_objectGroup.getSelector()->selectObject(obj);
+  notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
+                         m_objectGroup.getSelector()->getDeselectedSet());
+}
+
 TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
 {
   return m_objectGroup.getSelectedSet(type);
@@ -4241,7 +4288,7 @@ bool ZStackDoc::subtractBackground()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    ZStackProcessor::subtractBackground(mainStack, 0.5, 3);
+    ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
     notifyStackModified();
     return true;
   }
@@ -4925,6 +4972,11 @@ void ZStackDoc::notify3DGraphModified()
   emit graph3dModified();
 }
 
+void ZStackDoc::notifyTodoModified()
+{
+  emit todoModified();
+}
+
 void ZStackDoc::notifyActiveViewModified()
 {
   emit activeViewModified();
@@ -5153,6 +5205,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     break;
   case ZStackObject::TYPE_3D_GRAPH:
     notify3DGraphModified();
+    break;
+  case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+    notifyTodoModified();
     break;
   default:
 //    notifyObjectModified();
@@ -5384,12 +5439,12 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
   if (!nodeSet.empty()) {
     Swc_Tree_Node *prevNode = *(nodeSet.begin());
     if (prevNode != NULL) {
-      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
+//      if (center[0] >= 0 && center[1] >= 0 && center[2] >= 0) {
         Swc_Tree_Node *tn = SwcTreeNode::makePointer(
               center[0], center[1], center[2], radius);
         command  = new ZStackDocCommand::SwcEdit::ExtendSwcNode(
               this, tn, prevNode);
-      }
+//      }
     }
   }
 
@@ -5437,6 +5492,11 @@ void ZStackDoc::setStackBc(double factor, double offset, int channel)
 void ZStackDoc::notify(const ZWidgetMessage &msg)
 {
   emit messageGenerated(msg);
+}
+
+void ZStackDoc::notify(const QString &msg)
+{
+  notify(ZWidgetMessage(msg));
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -6327,6 +6387,32 @@ bool ZStackDoc::executeRemoveTurnCommand()
 bool ZStackDoc::executeResolveCrossoverCommand()
 {
   bool succ = false;
+
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+
+  QString message = "No crossover is detected. Nothing is done";
+  if (nodeSet.size() == 1) {
+    ZStackDocCommand::SwcEdit::ResolveCrossover *command =
+        new ZStackDocCommand::SwcEdit::ResolveCrossover(this);
+
+    pushUndoCommand(command);
+
+    succ = command->isSwcModified();
+    if (succ) {
+      message = "A crossover is created.";
+    }
+  } else {
+    message = "Nothing done. Exactly one node should be selected.";
+  }
+
+  notify(ZWidgetMessage(
+           message, NeuTube::MSG_INFORMATION,
+           ZWidgetMessage::TARGET_STATUS_BAR));
+
+  return succ;
+
+#if 0
+  bool succ = false;
   QString message;
 
   std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
@@ -6384,6 +6470,7 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   notifyStatusMessageUpdated(message);
 
   return succ;
+#endif
 }
 
 bool ZStackDoc::executeWatershedCommand()
@@ -6396,6 +6483,23 @@ bool ZStackDoc::executeWatershedCommand()
   }
 
   return false;
+}
+
+void ZStackDoc::executeRemoveRectRoiCommand()
+{
+  QUndoCommand *command = new QUndoCommand;
+  TStackObjectList objList = getObjectGroup().findSameSource(
+        ZStackObjectSourceFactory::MakeRectRoiSource());
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    new ZStackDocCommand::ObjectEdit::RemoveObject(this, *iter, command);
+  }
+
+  if (command->childCount() > 0) {
+    pushUndoCommand(command);
+  } else {
+    delete command;
+  }
 }
 
 bool ZStackDoc::executeBinarizeCommand(int thre)
@@ -6575,7 +6679,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand()
     pushUndoCommand(command);
     deprecateTraceMask();
 
-    message = "Nodes are connected.";
+    message = "Nodes are connected, except those too far away.";
     succ = true;
   }
 
@@ -8375,7 +8479,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
   }
   if (numberOfSelected == 1) {
     ZIntCuboid box;
-    obj->getBoundBox(&box);
+    obj->boundBox(&box);
     if (!box.isEmpty()) {
       for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
            iter != m_playerList.end(); ++iter) {
@@ -8383,7 +8487,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
         if (player->hasRole(ZStackObjectRole::ROLE_SEED)) {
           ZStackObject *checkObj = player->getData();
           ZIntCuboid checkBox;
-          checkObj->getBoundBox(&checkBox);
+          checkObj->boundBox(&checkBox);
           int boxDist;
           if (!checkBox.isEmpty()) {
             if (box.contains(checkBox.getLastCorner()) ||
@@ -9045,6 +9149,16 @@ void ZStackDoc::removeAllUser()
 void ZStackDoc::notifyZoomingToSelectedSwcNode()
 {
   emit zoomingToSelectedSwcNode();
+}
+
+void ZStackDoc::notifyZoomingTo(double x, double y, double z)
+{
+  emit zoomingTo(iround(x), iround(y), iround(z));
+}
+
+void ZStackDoc::notifyZoomingTo(const ZIntPoint &pt)
+{
+  emit zoomingTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
 template<typename T>

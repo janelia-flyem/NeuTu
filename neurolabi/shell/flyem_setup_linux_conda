@@ -31,4 +31,9 @@ then
   { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
 fi
 
+if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+then
+  source ${CONDA_ROOT}/bin/activate dvidenv
+  $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+fi
 

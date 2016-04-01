@@ -487,7 +487,7 @@ void ZFlyEmDataBundle::print() const
   //cout << "Config: " << m_configFile << endl;
 }
 
-string ZFlyEmDataBundle::getModelPath(int bodyId) const
+string ZFlyEmDataBundle::getModelPath(uint64_t bodyId) const
 {
   string modelPath;
 
@@ -501,7 +501,7 @@ string ZFlyEmDataBundle::getModelPath(int bodyId) const
   return modelPath;
 }
 
-string ZFlyEmDataBundle::getName(int bodyId) const
+string ZFlyEmDataBundle::getName(uint64_t bodyId) const
 {
   string name;
 
@@ -538,7 +538,7 @@ bool ZFlyEmDataBundle::hasNeuronName(const string &name) const
 
   return false;
 }
-const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
+const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId) const
 {
   for (vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
@@ -550,7 +550,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
   return NULL;
 }
 
-ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId)
+ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId)
 {
   return const_cast<ZFlyEmNeuron*>(
         static_cast<const ZFlyEmDataBundle&>(*this).getNeuron(bodyId));
@@ -568,7 +568,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuronFromName(const string &name) cons
   return NULL;
 }
 
-ZSwcTree* ZFlyEmDataBundle::getModel(int bodyId) const
+ZSwcTree* ZFlyEmDataBundle::getModel(uint64_t bodyId) const
 {
   const ZFlyEmNeuron *neuron = getNeuron(bodyId);
   if (neuron == NULL) {

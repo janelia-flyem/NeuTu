@@ -111,7 +111,7 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
       return m_leftButtonPressMapper;
     } else if (event.getButtons() == Qt::RightButton) {
       return m_rightButtonPressMapper;
-    } else if (event.getButtons() == Qt::LeftButton | Qt::RightButton) {
+    } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton)) {
       return m_bothButtonPressMapper;
     }
     break;

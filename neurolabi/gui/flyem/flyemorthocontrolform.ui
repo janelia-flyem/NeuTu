@@ -21,14 +21,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
-   </item>
-   <item>
     <widget class="QPushButton" name="locateToPushButton">
      <property name="text">
       <string>Locate in Main Window</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
    </item>
   </layout>
  </widget>

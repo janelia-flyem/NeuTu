@@ -225,7 +225,7 @@ using namespace std;
 #include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "zcircle.h"
+//#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
 #include "test/zclosedcurvetest.h"
@@ -19637,7 +19637,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   reader.open("emdata2.int.janelia.org", "e402", 7000);
   ZObject3dScan obj = reader.readRoi("seven_column_roi");
@@ -19666,5 +19666,213 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+<<<<<<< HEAD
+  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
+
+  double x = 1.4;
+  double y = 2.3;
+  double z = 3.2;
+
+  double v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_NN);
+  std::cout << v << std::endl;
+
+  v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_AVERAGE);
+  std::cout << v << std::endl;
+
+  v = misc::SampleStack(stack, x, y, z, misc::SAMPLE_STACK_UNIFORM);
+  std::cout << v << std::endl;
+
+#endif
+
+#if 0
+  ZStack stack;
+//  stack.load(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
+  stack.load(
+        GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field.tif");
+
+  ZIntCuboid box = stack.getBoundBox();
+
+  int ix0 = box.getFirstCorner().getX();
+  int iy0 = box.getFirstCorner().getY();
+  int iz0 = box.getFirstCorner().getZ();
+
+  double ratio = 20.0 / 32.0;
+  double inverseRatio = 32.0 / 20.0;
+
+  box.setFirstCorner((box.getFirstCorner().toPoint() * ratio).toIntPoint());
+  box.setLastCorner((box.getLastCorner().toPoint() * ratio).toIntPoint());
+
+  ZStack newStack(GREY, box, 1);
+
+  size_t offset = 0;
+  box = newStack.getBoundBox();
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  Stack *oldStack = stack.c_stack();
+  uint8_t *array = newStack.array8();
+
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      for (int x = x0; x <= x1; ++x) {
+        double v = misc::SampleStack(
+              oldStack, x * inverseRatio - ix0,
+              y * inverseRatio - iy0,
+              z * inverseRatio - iz0,
+              misc::SAMPLE_STACK_NN);
+        if (std::isnan(v)) {
+          v = 0;
+        }
+
+        array[offset] = iround(v);
+        offset++;
+      }
+    }
+  }
+
+  newStack.save(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/new_label_field_block.tif");
+
+  std::vector<ZObject3dScan*> objArray = ZObject3dScan::extractAllObject(stack);
+  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter) {
+    ZObject3dScan *obj = *iter;
+    ZJsonArray objJson = ZJsonFactory::MakeJsonArray(*obj);
+    QString outFile = QString("roi_%1.json").arg(obj->getLabel());
+    objJson.dump(GET_TEST_DATA_DIR + "/flyem/AL/glomeruli/roi_json/" +
+                 outFile.toStdString());
+  }
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
+  ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
+#endif
+
+#if 0
+
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
+
+  ZFlyEmNeuronImageFactory factory;
+  factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,
+                        ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
+  factory.setDownsampleInterval(7, 7, 7);
+  Stack *stack = factory.createSurfaceImage(obj);
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  C_Stack::kill(stack);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidWriter writer;
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (writer.open(target) && reader.open(target)) {
+    std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_THUMBNAIL, ZDvidData::ROLE_BODY_LABEL,
+                                              target.getBodyLabelName());
+    QStringList keyList = reader.readKeys(dataName.c_str());
+    foreach(const QString &key, keyList) {
+      writer.deleteKey(dataName, key.toStdString());
+    }
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "739f", 6300);
+  target.setBodyLabelName("bodies121714");
+
+  ZDvidReader reader;
+//  ZDvidUrl url(target);
+  if (reader.open(target)) {
+    ZJsonObject config = reader.readSkeletonConfig();
+    std::cout << config.dumpString(2) << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setBodyLabelName("bodies");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    std::cout << "Has body: " << reader.hasBody(15363212) << std::endl;
+  }
+#endif
+
+#if 0
+  try {
+    libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+    service.custom_request("bodies/sparsevol/101", libdvid::BinaryDataPtr(), libdvid::HEAD);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.getStatus() << std::endl;
+    std::cout << e.what() << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
+
+  ZJsonArray array = ZJsonFactory::MakeJsonArray(obj);
+
+  array.dump(GET_TEST_DATA_DIR + "/new_ROI_LOP.json");
+//  std::cout << array.dumpString(0) << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("annotation", "todotest2");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("segmentation-labelvol_todo");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("zhaot-ws1", "0751", 6300);
+  target.setBodyLabelName("bodies121714");
+  target.setLabelBlockName("segmentation121714");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("bodies121714_todo");
+#endif
   std::cout << "Done." << std::endl;
 }

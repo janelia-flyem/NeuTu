@@ -79,6 +79,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
   case QtFatalMsg:
     LFATALF(context.file, context.line, context.function) << msg;
     abort();
+  default:
+    break;
   }
 }
 #else
@@ -140,12 +142,12 @@ int main(int argc, char *argv[])
     if (strcmp(argv[1], "--command") == 0) {
       runCommandLine = true;
     }
-/*
+
     if (runCommandLine) {
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
-    */
+
 
 #ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
@@ -257,7 +259,7 @@ int main(int argc, char *argv[])
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
-    int result =  app.exec();
+    int result = app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();
@@ -265,10 +267,12 @@ int main(int argc, char *argv[])
 
     return result;
   } else {
+    /*
     if (runCommandLine) {
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
+    */
 
     /********* for debugging *************/
 

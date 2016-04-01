@@ -986,7 +986,8 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
     case GREY:
       m_image->setData(
             stack->array8(), stack->width(), stack->height(), stack->depth(),
-            slice, m_sliceAxis);
+            slice, buddyPresenter()->getGrayScale(),
+            buddyPresenter()->getGrayOffset(), m_sliceAxis);
       break;
     default:
       break;
@@ -1248,6 +1249,7 @@ void ZStackView::resetCanvasWithStack(
       canvas.getHeight() != canvasSize.height() ||
       canvas.getTx() != tx || canvas.getTy() != ty) {
     clearTileCanvas();
+    clearObjectCanvas();
     canvas.setSize(canvasSize);
     canvas.setOffset(QPoint(tx, ty));
     painter->setZOffset(box.getFirstCorner().getZ());
@@ -1270,16 +1272,18 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
     }
 //    level  = 0;
     ZPixmap *pixmap = m_objectCanvas.getPixmap(level);
-    m_objectCanvasPainter.end();
+    m_imageWidget->setObjectCanvas(pixmap);
+
 //    pixmap->cleanUp();
     if (static_cast<QPaintDevice*>(pixmap) != m_objectCanvasPainter.device()) {
-      m_imageWidget->setObjectCanvas(pixmap);
-      reloaded = true;
-    }
+      m_objectCanvasPainter.end();
 
-    m_objectCanvasPainter.begin(pixmap);
-    m_objectCanvasPainter.setCompositionMode(
-          QPainter::CompositionMode_SourceOver);
+      reloaded = true;
+
+      m_objectCanvasPainter.begin(pixmap);
+      m_objectCanvasPainter.setCompositionMode(
+            QPainter::CompositionMode_SourceOver);
+    }
 
     TZ_ASSERT(pixmap == m_imageWidget->getObjectCanvas(), "Invalid pixmap");
 
@@ -1319,12 +1323,14 @@ void ZStackView::updateObjectCanvas()
 {
   resetCanvasWithStack(m_objectCanvas, &m_objectCanvasPainter);
   reloadObjectCanvas();
+//#if 0
   ZPixmap *canvas = getCanvas(ZStackObject::TARGET_OBJECT_CANVAS);
   if (canvas != NULL) {
     m_objectCanvasPainter.end();
     canvas->cleanUp();
     m_objectCanvasPainter.begin(canvas);
   }
+//#endif
 }
 
 void ZStackView::updateTileCanvas()
@@ -2221,9 +2227,11 @@ void ZStackView::setView(const ZStackViewParam &param)
 
     m_imageWidget->setViewPort(viewPort);
 
-    if (slice != m_depthControl->value()) {
-      depthChanged = true;
-      setSliceIndexQuietly(slice);
+    if (param.fixingZ() == false) {
+      if (slice != m_depthControl->value()) {
+        depthChanged = true;
+        setSliceIndexQuietly(slice);
+      }
     }
 
     reloadCanvas();

@@ -52,7 +52,7 @@ ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson);
+        synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
         addSynapse(synapse, DATA_LOCAL);
       }
     }
@@ -152,7 +152,7 @@ void ZDvidSynapseEnsemble::downloadForLabel(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson);
+    synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }
@@ -573,16 +573,7 @@ bool ZDvidSynapseEnsemble::toggleHitSelect()
 void ZDvidSynapseEnsemble::selectHit(bool appending)
 {
   if (!appending) {
-    std::vector<ZIntPoint> selectedList = m_selector.getSelectedList();
-    for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
-         iter != selectedList.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      ZDvidSynapse &synapse = getSynapse(pt, DATA_LOCAL);
-      if (synapse.isValid()) {
-        synapse.setSelected(false);
-      }
-    }
-    m_selector.deselectAll();
+    deselectSub();
   }
   m_selector.selectObject(m_hitPoint);
   ZDvidSynapse &synapse = getSynapse(m_hitPoint, DATA_LOCAL);
@@ -662,6 +653,29 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 
   return false;
 }
+
+void ZDvidSynapseEnsemble::deselectSub()
+{
+  std::vector<ZIntPoint> selectedList = m_selector.getSelectedList();
+  for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
+       iter != selectedList.end(); ++iter) {
+    const ZIntPoint &pt = *iter;
+    ZDvidSynapse &synapse = getSynapse(pt, DATA_LOCAL);
+    if (synapse.isValid()) {
+      synapse.setSelected(false);
+    }
+  }
+  m_selector.deselectAll();
+}
+
+void ZDvidSynapseEnsemble::deselect(bool recursive)
+{
+  setSelected(false);
+  if (recursive) {
+    deselectSub();
+  }
+}
+
 
 bool ZDvidSynapseEnsemble::hasSelected() const
 {
@@ -804,7 +818,7 @@ bool ZDvidSynapseEnsemble::SynapseSlice::isReady(
 
     QRect dataRect = rect;
     if (!range.isEmpty()) {
-      dataRect = rect.intersect(range);
+      dataRect = rect.intersected(range);
     }
 
     if (!dataRect.isValid()) {

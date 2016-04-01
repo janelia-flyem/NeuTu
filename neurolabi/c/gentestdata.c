@@ -289,6 +289,16 @@ int main(int argc, char *argv[])
   Write_Image("../data/testimg.tif", image);
 #endif
 
+#if 1
+  Stack *stack = Make_Stack(GREY, 5, 5, 5);
+
+  int i;
+  for (i = 0; i < 125; i++) {
+    stack->array[i] = i;
+  }
+  Write_Stack("../data/testimg.tif", stack);
+#endif
+
 #if 0
   //Print_Tiff_Info("/Users/zhaot/Data/neurolineage/Volker_9D11/GMR_9D11_AE_01_33-fA01b_C071025_20071106221221390.tif");
   
@@ -1695,7 +1705,7 @@ int main(int argc, char *argv[])
   Write_Stack("../data/benchmark/ball.tif", stack);
 #endif
 
-#if 1
+#if 0
   Stack *stack = Make_Stack(GREY, 200, 200, 100);
   draw_sphere(stack, 0, 20, 100, 100, 20);
   draw_sphere(stack, 0, 40, 90, 90, 70);

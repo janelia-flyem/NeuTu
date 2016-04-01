@@ -126,7 +126,7 @@ QAction* ZActionFactory::makeAction(
             doc, SLOT(executeChangeSelectedSwcNodeSize()));
     break;
   case ACTION_SET_SWC_ROOT:
-    action = new QAction("Set as root", parent);
+    action = new QAction("Set as a root", parent);
     action->setStatusTip("Set the selected node as a root");
     doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetRootCommand()));
     break;
@@ -218,55 +218,26 @@ QAction* ZActionFactory::makeAction(
     EAction item, const ZStackPresenter *presenter, QWidget *parent,
     ZActionActivator *activator, bool positive)
 {
-  QAction *action = NULL;
+  QAction *action = MakeAction(item, parent);
   switch (item) {
   case ACTION_ADD_SWC_NODE:
-    action = new QAction("Add Neuron Node", parent);
-    action->setStatusTip("Add an isolated neuron node.");
-    action->setIcon(QIcon(":/images/add.png"));
-    action->setShortcut(Qt::Key_G);
     presenter->connect(action, SIGNAL(triggered()),
                        presenter, SLOT(trySwcAddNodeMode()));
     break;
   case ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
-    action = new QAction("Locate node(s) in 3D", parent);
-    presenter->getParentFrame()->connect(action, SIGNAL(triggered()),
-                       presenter->getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+    QObject::connect(action, SIGNAL(triggered()),
+                     presenter->getParentFrame(), SLOT(locateSwcNodeIn3DView()));
     action->setStatusTip("Located selected swc nodes in 3D view.");
     break;
   case ACTION_CONNECT_TO_SWC_NODE:
-    action = new QAction("Connect to", parent);
-    action->setShortcut(Qt::Key_C);
-    action->setStatusTip(
-          "Connect the currently selected node to another");
     presenter->connect(action, SIGNAL(triggered()),
             presenter, SLOT(enterSwcConnectMode()));
-    action->setIcon(QIcon(":/images/connect_to.png"));
-    break;
-  case ACTION_EXTEND_SWC_NODE:
-    action = new QAction("Extend", parent);
-    action->setShortcut(Qt::Key_Space);
-    action->setStatusTip(
-          "Extend the currently selected node with mouse click.");
-    action->setIcon(QIcon(":/images/extend.png"));
-    break;
-  case ACTION_MOVE_SWC_NODE:
-    action = new QAction("Move Selected (Shift+Mouse)", parent);
-    action->setShortcut(Qt::Key_V);
-    action->setStatusTip("Move selected nodes with mouse.");
-    action->setIcon(QIcon(":/images/move.png"));
     break;
   case ACTION_CHANGE_SWC_NODE_FOCUS:
-    action = new QAction("Move to Current Plane", parent);
-    action->setShortcut(Qt::Key_F);
-    action->setStatusTip(
-          "Move the centers of the selected nodes to the current plane.");
-    action->setIcon(QIcon(":/images/change_focus.png"));
     presenter->connect(action, SIGNAL(triggered()),
                        presenter, SLOT(changeSelectedSwcNodeFocus()));
     break;
   case ACTION_ESTIMATE_SWC_NODE_RADIUS:
-    action = new QAction("Estimate Radius", parent);
     presenter->connect(action, SIGNAL(triggered()),
                        presenter, SLOT(estimateSelectedSwcRadius()));
     break;
@@ -309,6 +280,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
       action->setShortcuts(QKeySequence::Redo);
     }
   }
+    break;
+  case ACTION_ADD_SWC_NODE:
+    action = new QAction("Add Neuron Node", parent);
+    action->setStatusTip("Add an isolated neuron node.");
+    action->setIcon(QIcon(":/images/add.png"));
+    action->setShortcut(Qt::Key_G);
     break;
   case ACTION_SELECT_DOWNSTREAM:
     action = new QAction("Downstream", parent);
@@ -391,7 +368,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Change size", parent);
     break;
   case ACTION_SET_SWC_ROOT:
-    action = new QAction("Set as root", parent);
+    action = new QAction("Set as a root", parent);
     action->setStatusTip("Set the selected node as a root");
     break;
   case ACTION_SET_BRANCH_POINT:
@@ -533,8 +510,54 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_MERGE:
     action = new QAction("Merge", parent);
     break;
+  case ACTION_BODY_UNMERGE:
+    action = new QAction("Unmerge", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
+    break;
+  case ACTION_BOOKMARK_CHECK:
+    action = new QAction("Set Checked", parent);
+    break;
+  case ACTION_BOOKMARK_UNCHECK:
+    action = new QAction("Set Unchecked", parent);
+    break;
+  case ACTION_TRACE:
+    action = new QAction("trace", parent);
+    action->setStatusTip("Trace an individual branch");
+    action->setToolTip("Trace an individual branch");
+    break;
+  case ACTION_ADD_TODO_ITEM:
+    action = new QAction("Todo here", parent);
+    break;
+  case ACTION_ADD_TODO_ITEM_CHECKED:
+    action = new QAction("Done here", parent);
+    break;
+  case ACTION_REMOVE_TODO_ITEM:
+    action = new QAction("Remove todo", parent);
+    break;
+  case ACTION_CHECK_TODO_ITEM:
+    action = new QAction("Set checked", parent);
+    break;
+  case ACTION_UNCHECK_TODO_ITEM:
+    action = new QAction("Set unchecked", parent);
+    break;
+  case ACTION_SELECT_BODY_IN_RECT:
+    action = new QAction("Select bodies", parent);
+    break;
+  case ACTION_ZOOM_TO_RECT:
+    action = new QAction("Zoom in", parent);
+    action->setIcon(QIcon(":/images/zoom2.png"));
+    break;
+  case ACTION_ENTER_RECT_ROI_MODE:
+    action = new QAction("Draw rectangle ROI", parent);
+    action->setToolTip("Use mouse to draw a rectangle ROI");
+    action->setIcon(QIcon(":/images/roi_box.png"));
+    break;
+  case ACTION_CANCEL_RECT_ROI:
+    action = new QAction("Cancel", parent);
+    action->setToolTip("Cancel the current rectangle ROI");
+    action->setIcon(QIcon(":/images/cancel.png"));
     break;
   default:
     break;

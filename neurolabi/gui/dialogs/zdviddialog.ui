@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>328</width>
-    <height>429</height>
+    <height>489</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -199,6 +199,24 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_13">
+     <item>
+      <widget class="QLabel" name="roiLabel">
+       <property name="text">
+        <string>0 ROI</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="roiPushButton">
+       <property name="text">
+        <string>Edit</string>
        </property>
       </widget>
      </item>

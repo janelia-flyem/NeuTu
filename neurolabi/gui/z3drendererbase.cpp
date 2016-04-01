@@ -915,3 +915,12 @@ void Z3DRendererBase::deactivateClipPlanesGLSL()
   }
 }
 
+void Z3DRendererBase::setMaterialAmbient(const glm::vec4 &color)
+{
+  m_materialAmbient.set(color);
+}
+
+void Z3DRendererBase::setLightAmbient(const glm::vec4 &color)
+{
+  m_lightAmbients[0]->set(color);
+}

@@ -179,6 +179,8 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 //          this, SLOT(notifyUser(QString)));
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
                 m_view, SLOT(paintStack()));
+  connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
+                this, SLOT(zoomTo(int,int,int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(processViewChange(ZStackViewParam)));
 }

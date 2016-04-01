@@ -21,6 +21,13 @@ then
   mkdir $install_dir/bin
 fi
 
+if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+then
+  export PATH=/opt/gcc482/bin:$PATH
+  echo $PATH
+  which gcc
+fi
+
 downloadDir=$install_dir/Download
 if [ ! -d $downloadDir ]
 then

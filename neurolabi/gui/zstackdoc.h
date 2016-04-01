@@ -44,7 +44,7 @@
 #include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
 
@@ -613,7 +613,8 @@ public:
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
 
-  void setTraceMinScore(double score);
+  void setAutoTraceMinScore(double score);
+  void setManualTraceMinScore(double score);
   void setReceptor(int option, bool cone = false);
 
   //void updateMasterLocsegChain();
@@ -698,6 +699,8 @@ public:
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
+  void selectObject(ZStackObject *obj, bool appending);
+
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
@@ -829,6 +832,7 @@ public:
   void notifyStrokeModified();
   //void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notifyTodoModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -866,8 +870,11 @@ public:
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
+  void notifySelectionChanged(const std::set<const ZStackObject*> &selected,
+                              const std::set<const ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
+  void notify(const QString &msg);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
@@ -1018,6 +1025,7 @@ public slots: //undoable commands
   virtual bool executeBwsolidCommand();
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
+  virtual void executeRemoveRectRoiCommand();
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1064,6 +1072,8 @@ public slots:
   void removeAllUser();
 
   void notifyZoomingToSelectedSwcNode();
+  void notifyZoomingTo(double x, double y, double z);
+  void notifyZoomingTo(const ZIntPoint &pt);
 
 //  void processRectRoiUpdateSlot();
 
@@ -1089,6 +1099,7 @@ signals:
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
+  void todoModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);
@@ -1132,6 +1143,8 @@ signals:
   void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+
+  void zoomingTo(int x, int y, int z);
 
 protected:
   virtual void autoSave();
@@ -1243,7 +1256,7 @@ private:
 protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

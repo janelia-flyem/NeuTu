@@ -9,6 +9,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemsequencercolorscheme.h"
+#include "zthreadfuturemap.h"
 
 namespace Ui {
 class FlyEmBodyInfoDialog;
@@ -36,6 +37,8 @@ signals:
   void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
   void colorMapLoaded(ZJsonValue colors);
   void ioBodiesLoaded();
+  void ioBodyLoadFailed();
+  void ioNoBodiesLoaded();
   void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
 
@@ -63,6 +66,8 @@ private slots:
     void updateColorScheme();
     void onGotoBodies();    
     void onIOBodiesLoaded();
+    void onIOBodyLoadFailed();
+    void onIONoBodiesLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
 
@@ -117,6 +122,7 @@ private:
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
+    ZThreadFutureMap m_futureMap;
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);

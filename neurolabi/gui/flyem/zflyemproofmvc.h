@@ -7,7 +7,7 @@
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
 #include "flyem/zflyembody3ddoc.h"
@@ -23,6 +23,8 @@ class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
+class ZFlyEmDataFrame;
+class FlyEmTodoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -93,6 +95,7 @@ signals:
 
 public slots:
   void mergeSelected();
+  void unmergeSelected();
   void undo();
   void redo();
 
@@ -107,6 +110,7 @@ public slots:
   void checkOutBody();
   bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(uint64_t bodyId);
+  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -122,7 +126,7 @@ public slots:
   void locateBody(QList<uint64_t> bodyIdList);
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
-  void selectBodyInRoi(bool appending);
+  void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
 
   void showBody3d();
@@ -132,6 +136,7 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
 
   void setDvidLabelSliceSize(int width, int height);
@@ -161,10 +166,13 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showTodo(bool visible);
 
   void loadBookmark();
   void openSequencer();
+  void openTodo();
 
+  void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
   void recordBookmark(ZFlyEmBookmark *bookmark);
   void processSelectionChange(const ZStackObjectSelector &selector);
@@ -197,6 +205,7 @@ protected slots:
   void detachObjectWindow();
   void detachExternalNeuronWindow();
   void detachOrthoWindow();
+  void detachQueryWindow();
 //  void closeBodyWindow(int index);
   void closeOrthoWindow();
   void close3DWindow(Z3DWindow *window);
@@ -257,7 +266,7 @@ protected:
   ZFlyEmBodyMergeProject m_mergeProject;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
 
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 
   ZPaintLabelWidget *m_paintLabelWidget;
 
@@ -265,6 +274,7 @@ protected:
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+  FlyEmTodoDialog *m_todoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -275,6 +285,7 @@ protected:
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
+//  ZFlyEmDataFrame *m_queryWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
   ZStackViewParam m_currentViewParam;

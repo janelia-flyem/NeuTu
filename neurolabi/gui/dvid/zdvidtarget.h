@@ -152,13 +152,28 @@ public:
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
 
-  std::string getRoiName() const;
-  void setRoiName(const std::string &name);
+  std::string getRoiName(size_t index) const;
+  void addRoiName(const std::string &name);
+
+  const std::vector<std::string>& getRoiList() const {
+    return m_roiList;
+  }
+
+  void setRoiList(const std::vector<std::string> &roiList) {
+    m_roiList = roiList;
+  }
 
   std::string getSynapseName() const;
   void setSynapseName(const std::string &name);
 
   std::string getBookmarkName() const;
+  std::string getBookmarkKeyName() const;
+  std::string getSkeletonName() const;
+  std::string getThumbnailName() const;
+
+  std::string getTodoListName() const;
+
+  std::string getBodyAnnotationName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
@@ -182,7 +197,7 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
-  std::string m_roiName;
+  std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
   bool m_isSupervised;

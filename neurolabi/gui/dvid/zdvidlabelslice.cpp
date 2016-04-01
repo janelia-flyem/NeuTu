@@ -3,6 +3,9 @@
 #include <QColor>
 #include <QRect>
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtConcurrent>
+#endif
 
 #include "zarray.h"
 #include "dvid/zdvidreader.h"

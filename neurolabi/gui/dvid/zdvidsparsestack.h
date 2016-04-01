@@ -5,7 +5,7 @@
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
 #include "dvid/zdvidreader.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 
 class ZIntCuboid;
 
@@ -40,7 +40,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   ZIntCuboid getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void loadBody(uint64_t bodyId, bool canonizing = false);
   void loadBodyAsync(uint64_t bodyId);
@@ -66,6 +66,7 @@ public:
 
   void deprecateStackBuffer();
 
+  int getReadStatusCode() const;
 
 private:
   void init();
@@ -90,7 +91,7 @@ private:
   bool m_isValueFilled;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
 };
 
 #endif // ZDVIDSPARSESTACK_H

@@ -36,9 +36,9 @@ public:
   std::string toDetailString() const;
   void print() const;
 
-  std::string getModelPath(int bodyId) const;
-  ZSwcTree* getModel(int bodyId) const;
-  std::string getName(int bodyId) const;
+  std::string getModelPath(uint64_t bodyId) const;
+  ZSwcTree* getModel(uint64_t bodyId) const;
+  std::string getName(uint64_t bodyId) const;
   int getIdFromName(const std::string &name) const;
 
   bool hasNeuronName(const std::string &name) const;
@@ -55,8 +55,8 @@ public:
 
   //Return the pointer to the neuron with id <bodyId>. It returns NULL if no
   //such id is found.
-  const ZFlyEmNeuron* getNeuron(int bodyId) const;
-  ZFlyEmNeuron* getNeuron(int bodyId);
+  const ZFlyEmNeuron* getNeuron(uint64_t bodyId) const;
+  ZFlyEmNeuron* getNeuron(uint64_t bodyId);
   const ZFlyEmNeuron* getNeuronFromName(const std::string &name) const;
 
 

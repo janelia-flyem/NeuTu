@@ -6,11 +6,11 @@
 #include <QString>
 #include <QFuture>
 
-class QThreadFutureMap : public QHash<QString, QFuture<void> >
+class ZThreadFutureMap : public QHash<QString, QFuture<void> >
 {
 public:
-  QThreadFutureMap();
-  ~QThreadFutureMap();
+  ZThreadFutureMap();
+  ~ZThreadFutureMap();
 
   bool hasFuture(const QString &id) const;
   void removeDeadThread();

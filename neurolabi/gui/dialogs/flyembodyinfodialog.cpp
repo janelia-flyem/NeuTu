@@ -7,6 +7,8 @@
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
+#include <QFileDialog>
+#include <QColorDialog>
 #else
 #include <QtCore>
 #endif
@@ -150,6 +152,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(jsonLoadColorMapError(QString)), this, SLOT(onjsonLoadColorMapError(QString)));
     connect(this, SIGNAL(colorMapLoaded(ZJsonValue)), this, SLOT(onColorMapLoaded(ZJsonValue)));
     connect(this, SIGNAL(ioBodiesLoaded()), this, SLOT(onIOBodiesLoaded()));
+    connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
+    connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
 
 }
 
@@ -219,10 +223,12 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
         // is the synapse file present?
         if (dvidBookmarksPresent(target)) {
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+            m_futureMap["importBookmarksDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
         } else if (bodies3Present(target)) {
             // this is the current expected fallback method...
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+            m_futureMap["importBodiesDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
         } else {
             // ...but sometimes, we've got nothing
             emit loadCompleted();
@@ -342,8 +348,7 @@ bool FlyEmBodyInfoDialog::bodies3Present(ZDvidTarget target) {
     reader.setVerbose(false);
     if (reader.open(target)) {
         // check for data name and key
-        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
-            ZDvidData::ROLE_BODY_LABEL, target.getBodyLabelName()))) {
+        if (!reader.hasData(target.getBodyAnnotationName())) {
             #ifdef _DEBUG_
                 std::cout << "UUID doesn't have bodies3 annotations" << std::endl;
             #endif
@@ -514,10 +519,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!)
 
-        QString bodyAnnotationName = ZDvidData::GetName(
-              ZDvidData::ROLE_BODY_ANNOTATION,
-              ZDvidData::ROLE_BODY_LABEL,
-              target.getBodyLabelName()).c_str();
+        QString bodyAnnotationName = target.getBodyAnnotationName().c_str();
         QStringList keyList = reader.readKeys(bodyAnnotationName);
 
         ZJsonArray bodies;
@@ -972,7 +974,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
 
     // trigger retrieval of synapse partners
     if (m_currentDvidTarget.isValid()) {
-        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
+        m_futureMap["retrieveIOBodiesDvid"] =
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
     }
 }
 
@@ -1013,7 +1016,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // how many pre/post?
         int npre = 0;
         int npost = 0;
-        for (int i=0; i<synapses.size(); i++) {
+        for (size_t i=0; i<synapses.size(); i++) {
             if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
                 npre++;
             } else {
@@ -1038,7 +1041,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
         // std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZIntPoint> siteList;
-        for (int i=0; i<synapses.size(); i++) {
+        for (size_t i=0; i<synapses.size(); i++) {
 
             // if we are looking for input bodies, pick out the sites
             //  that are post-synaptic, and vice versa:
@@ -1051,7 +1054,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
                 // currently Ting doesn't expose a method for retrieving relations
                 //  directly; I've patched in a getter to use, temporarily
                 std::vector<ZIntPoint> sites = synapses[i].getPartners();
-                for (int j=0; j<sites.size(); j++) {
+                for (size_t j=0; j<sites.size(); j++) {
                     siteList.push_back(sites[j]);
                 }
 
@@ -1063,18 +1066,23 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
         // get the body list from DVID
         // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
+        if (bodyList.size() == 0) {
+            emit ioNoBodiesLoaded();
+            return;
+        }
 
         // copy into the map
         // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        for (int i=0; i<siteList.size(); i++) {
+        for (size_t i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
             } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
+        emit ioBodiesLoaded();
+    } else {
+        emit ioBodyLoadFailed();
     }
-
-    emit ioBodiesLoaded();
 
     // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
@@ -1087,19 +1095,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    // table label: "Input (123)" or "Output (123)"
-    // should factor this out
-    std::ostringstream labelStream;
-    if (m_connectionsTableState == CT_INPUT) {
-        labelStream << "Inputs (" ;
-    } else {
-        labelStream << "Outputs (" ;
-    }
-    labelStream << partnerBodyIDs.size();
-    labelStream << ")";
-    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
-
-
+    quint64 totalConnections = 0;
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
         // carefully set data for column items so they will sort
@@ -1113,22 +1109,51 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
         }
 
         QStandardItem * numberItem = new QStandardItem();
-        numberItem->setData(
-              QVariant(quint64(m_connectionsSites[partnerBodyIDs[i]].size())),
-            Qt::DisplayRole);
+        quint64 itemConnections = quint64(m_connectionsSites[partnerBodyIDs[i]].size());
+        totalConnections += itemConnections;
+        numberItem->setData(QVariant(itemConnections), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
 
 
+    // table label: "Input (123)" or "Output (123)"
+    // should factor this out
+    std::ostringstream labelStream;
+    if (m_connectionsTableState == CT_INPUT) {
+        labelStream << "Inputs (" ;
+    } else {
+        labelStream << "Outputs (" ;
+    }
+    labelStream << totalConnections;
+    labelStream << ")";
+    ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
+
+
     // for some reason, this table gave me more trouble than the
     //  others; set its column behaviors individually
+#if QT_VERSION >= 0x050000
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#else
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#endif
     ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
 
     m_connectionsLoading = false;
 
+}
+
+void FlyEmBodyInfoDialog::onIOBodyLoadFailed() {
+    ui->ioBodyTableLabel->setText("load failed");
+    m_connectionsLoading = false;
+}
+
+void FlyEmBodyInfoDialog::onIONoBodiesLoaded() {
+    ui->ioBodyTableLabel->setText("no bodies to load");
+    m_connectionsLoading = false;
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
@@ -1167,7 +1192,11 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         }
 
         // for this table, we want all columns same width, filling full width
+#if QT_VERSION >= 0x050000
+        ui->connectionsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
 }
@@ -1192,6 +1221,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
+    m_futureMap.waitForFinished(); //to avoid crash while quitting too early
     delete ui;
 }
 

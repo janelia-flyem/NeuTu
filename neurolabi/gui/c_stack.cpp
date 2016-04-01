@@ -133,6 +133,24 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
 
 int* C_Stack::hist(const Stack* stack)
 {
+  if (voxelNumber(stack) > MAX_INT32) {
+    double ratio = (double) voxelNumber(stack) / MAX_INT32;
+    int intv[3] = {0, 0, 0};
+    int i = 0;
+    while ((intv[0] + 1) * (intv[1] + 1) * (intv[2] + 1) < ratio) {
+      intv[i++] += 1;
+      if (i > 2) {
+        i = 0;
+      }
+    }
+
+    Stack *ds = Downsample_Stack(stack, intv[0], intv[1], intv[2]);
+    int *hist = Stack_Hist(ds);
+
+    kill(ds);
+    return hist;
+  }
+
   return Stack_Hist(stack);
 }
 
@@ -735,6 +753,29 @@ void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
   *z = 0;
 
   Read_Stack_Offset(filePath.c_str(), x, y, z);
+}
+
+char *C_Stack::toMrawBuffer(const Mc_Stack *stack, size_t *length)
+{
+  *length = 0;
+  char *buffer = NULL;
+
+  if (stack != NULL) {
+    *length = 24 + C_Stack::allByteNumber(stack);
+    buffer = (char*) malloc(*length);
+
+    int *intBuffer = (int*) buffer;
+    intBuffer[0] = MRAW_MAGIC_NUMBER;
+    intBuffer[1] = C_Stack::kind(stack);
+    intBuffer[2] = C_Stack::width(stack);
+    intBuffer[3] = C_Stack::height(stack);
+    intBuffer[4] = C_Stack::depth(stack);
+    intBuffer[5] = C_Stack::channelNumber(stack);
+
+    memcpy(buffer + 24, C_Stack::array8(stack), C_Stack::allByteNumber(stack));
+  }
+
+  return buffer;
 }
 
 Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)

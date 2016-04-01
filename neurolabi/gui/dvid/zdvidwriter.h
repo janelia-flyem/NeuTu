@@ -30,6 +30,7 @@ class ZSwcTree;
 class QProcess;
 class ZFlyEmBookmark;
 class ZDvidSynapse;
+class ZFlyEmToDoItem;
 
 class ZDvidWriter : public QObject
 {
@@ -70,6 +71,8 @@ public:
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
   void createData(const std::string &type, const std::string &name);
+
+  void syncAnnotation(const std::string &name);
 
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);
@@ -129,6 +132,7 @@ public:
   void writeBookmark(const ZJsonArray &bookmarkJson);
   void writeBookmark(const std::vector<ZFlyEmBookmark*> &bookmarkArray);
   void writeBookmarkKey(const ZFlyEmBookmark &bookmark);
+  void deleteBookmarkKey(const ZFlyEmBookmark &bookmark);
 
   void deleteBookmark(int x, int y, int z);
   void deleteBookmark(const ZIntPoint &pt);
@@ -147,6 +151,9 @@ public:
   void linkSynapse(const ZIntPoint &v1, const ZIntPoint &v2);
   void addSynapseProperty(const ZIntPoint &synapse,
                           const std::string &key, const std::string &value);
+
+  void deleteToDoItem(int x, int y, int z);
+  void writeToDoItem(const ZFlyEmToDoItem &item);
 
   inline int getStatusCode() const {
     return m_statusCode;
@@ -168,6 +175,16 @@ public:
 
   bool good() const;
 
+  std::string post(const std::string &url);
+  std::string post(const std::string &url, const QByteArray &payload);
+  std::string post(const std::string &url, const std::string &payload);
+  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string del(const std::string &url);
+
+  std::string put(const std::string &url, const char *payload, int length);
+  std::string put(const std::string &url);
+
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
 //  void writeJson(const std::string url, const ZJsonValue &value);
@@ -178,17 +195,6 @@ private:
   bool runCommand(const QString &command, const QStringList &argList);
   bool runCommand(const QString &command);
   bool runCommand(QProcess &process);
-
-#if defined(_ENABLE_LIBDVIDCPP_)
-  std::string post(const std::string &url);
-  std::string post(const std::string &url, const QByteArray &payload);
-  std::string post(const std::string &url, const char *payload, int length);
-  std::string post(const std::string &url, const ZJsonObject &payload);
-  std::string del(const std::string &url);
-
-  std::string put(const std::string &url, const char *payload, int length);
-  std::string put(const std::string &url);
-#endif
 
   void parseStandardOutput();
   void init();
