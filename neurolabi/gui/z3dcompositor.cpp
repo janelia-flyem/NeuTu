@@ -320,6 +320,9 @@ void Z3DCompositor::process(Z3DEye eye)
       currentOutport.releaseTarget();
       CHECK_GL_ERROR;
     } else {
+
+        qDebug()<<"test onTopFilter rendering ... ";
+
       if (m_geometriesMultisampleMode.isSelected("2x2")) {
         m_tempPort.resize(currentOutport.getSize() * 2);
         m_tempPort2.resize(currentOutport.getSize() * 2);
