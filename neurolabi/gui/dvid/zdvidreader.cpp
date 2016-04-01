@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QElapsedTimer>
 
+#include "QsLog/QsLog.h"
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zswctree.h"
@@ -1304,7 +1305,7 @@ ZArray* ZDvidReader::readLabels64(
       timer.start();
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
-      std::cout << "label reading time: " << timer.elapsed() << std::endl;
+      LINFO() << "label reading time: " << timer.elapsed();
 //      return array;
 
       mylib::Dimn_Type arrayDims[3];

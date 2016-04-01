@@ -95,6 +95,7 @@ private:
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
+  QAction *m_viewTodoAction;
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;

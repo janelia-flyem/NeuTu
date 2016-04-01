@@ -2263,6 +2263,11 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
   }
 }
 
+void ZFlyEmProofMvc::showTodo(bool visible)
+{
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);
+}
+
 ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
 {
   return getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());

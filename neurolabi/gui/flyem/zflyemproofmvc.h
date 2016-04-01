@@ -166,6 +166,7 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showTodo(bool visible);
 
   void loadBookmark();
   void openSequencer();
