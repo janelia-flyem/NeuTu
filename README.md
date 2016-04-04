@@ -17,7 +17,7 @@ Go to the NeuTu/neurolabi/shell directory and run
  
     ./setup_neutu_j <install_dir>
 
-Here \<install_dir\> must be a clean directory if it already exists. 
+Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
 
 ### Mac
 
@@ -25,7 +25,7 @@ Go to the NeuTu/neurolabi/shell directory and run
  
     ./setup_neutu_conda <install_dir>
     
-Here \<install_dir\> must be a clean directory if it already exists. 
+Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
  
 ### Windows
 
