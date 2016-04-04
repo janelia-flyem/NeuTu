@@ -50,11 +50,16 @@ public:
     m_namedBodyOnly = state;
   }
 
+  void setTracedOnly(bool state) {
+    m_tracedOnly = state;
+  }
+
   void exclude(int bodyId);
   void exclude(const std::vector<int> &bodyArray);
   bool isExcluded(int bodyId) const;
   bool hasExclusion() const;
   bool namedBodyOnly() const;
+  bool tracedOnly() const;
 
   std::string getBodyListFile() const {
     return m_bodyListFile;
@@ -72,6 +77,7 @@ private:
   size_t m_maxBodySize;
   bool m_hasUpperBodySize;
   bool m_namedBodyOnly;
+  bool m_tracedOnly;
   std::string m_bodyListFile;
 
   std::set<int> m_excludedBodySet;

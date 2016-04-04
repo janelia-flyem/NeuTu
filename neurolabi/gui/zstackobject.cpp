@@ -128,7 +128,7 @@ double ZStackObject::getPenWidth() const
   double width = m_basePenWidth;
 
   if (m_usingCosmeticPen) {
-    width += 2.0;
+    width += 1.0;
   }
 
   return width;
