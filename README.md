@@ -31,5 +31,8 @@ Here \<install_dir\> must be a clean directory if it already exists. Run \<insta
 
 Not supported yet.
 
+## Manual
+
+https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
 Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
