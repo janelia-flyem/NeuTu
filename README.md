@@ -9,6 +9,11 @@ Software package for neuron reconstruction and visualization
 
     git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
 
+For the latest stable FlyEM edition, use the flyem_release branch:
+
+    git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
+
+    
 ## Build
 
 ### Linux and Mac
