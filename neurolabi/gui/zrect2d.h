@@ -13,6 +13,10 @@ public:
   ZRect2d(int x0, int y0, int width, int height);
   virtual ~ZRect2d();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_RECT2D;
+  }
+
   void set(int x0, int y0, int width, int height);
 
   inline int getX0() const { return m_x0; }
@@ -76,6 +80,10 @@ public:
   static QRectF CropRect(
       const QRectF &sourceRectIn, const QRectF &sourceRectOut,
       const QRectF &targetRectIn);
+
+private:
+  void init(int x0, int y0, int width, int height);
+  void preparePen(QPen &pen) const;
 
 private:
   int m_x0;
