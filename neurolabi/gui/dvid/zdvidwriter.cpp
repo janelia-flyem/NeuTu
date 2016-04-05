@@ -169,7 +169,8 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, Stack *stack)
   if (stack != NULL) {
     Mc_Stack mstack;
     C_Stack::view(stack, &mstack);
-    ZStack stackObj(&mstack, NULL);
+    ZStack stackObj;
+    stackObj.setData(&mstack, NULL);
 
     writeThumbnail(bodyId, &stackObj);
   }

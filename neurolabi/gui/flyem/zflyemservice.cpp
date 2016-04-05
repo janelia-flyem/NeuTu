@@ -210,7 +210,8 @@ std::vector<ZStack*> FlyEm::Service::FaceOrphanOverlap::getNeighborStackList(
 ZStack* FlyEm::Service::FaceOrphanOverlap::transformStack(ZStack *stack)
 {
   Mc_Stack *stackData = (Mc_Stack *) malloc(sizeof(Mc_Stack));
-  ZStack *out = new ZStack(stackData, C_Stack::freePointer);
+  ZStack *out = new ZStack;
+  out->setData(stackData, C_Stack::freePointer);
   *stackData = *(stack->data());
 
   if (stack->width() == 1) {

@@ -75,10 +75,12 @@ public:
 
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
+#if 0
   /*! Obsolete. Do not use this constructor!
    */
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+#endif
 
   //! Destructor
   virtual ~ZStack();
