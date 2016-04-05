@@ -28,6 +28,9 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
     //
     m_sourceSet = false;
+
+    //
+    setStayOnTop(false);
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()

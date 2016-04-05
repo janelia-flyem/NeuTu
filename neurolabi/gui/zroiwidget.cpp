@@ -54,14 +54,14 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
             {
                 ZJsonObject insList(datains);
                 std::vector<std::string> keys = insList.getAllKey();
-#if 1
+
                 for(std::size_t i=0; i<keys.size(); i++)
                 {
                     std::size_t found = keys.at(i).find("roi");
 
                     if(found!=std::string::npos)
                     {
-#if 1
+
                         ZObject3dScan roi = reader.readRoi(keys.at(i));
 
                         if(!roi.isEmpty())
@@ -73,10 +73,10 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
                             roiSourceList.push_back(source);
                             colorModified.push_back(false);
                         }
-#endif
+
                     }
                 }
-#endif
+
             }
 
 

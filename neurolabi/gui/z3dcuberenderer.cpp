@@ -5,6 +5,7 @@
 #include "z3dcuberenderer.h"
 #include "z3dgpuinfo.h"
 #include "zglmutils.h"
+#include "z3dgeometryfilter.h"
 
 //
 Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)

@@ -140,13 +140,11 @@ void Z3DCompositor::initialize()
 #endif
   }
 
-  //
+  // ROIs
   m_wbFinalShader = new Z3DShaderProgram();
   m_wbFinalShader->bindFragDataLocation(0, "FragData0");
   m_wbFinalShader->bindFragDataLocation(1, "FragData1");
   m_wbFinalShader->loadFromSourceFile("cube_wboit_compose.vert", "cube_wboit_compose.frag", m_rendererBase->generateHeader());
-
-  qDebug()<<"m_wbFinalShader header ... "<<m_rendererBase->generateHeader();
 
   CHECK_GL_ERROR;
 }
@@ -262,15 +260,6 @@ void Z3DCompositor::process(Z3DEye eye)
     for (size_t i=0; i<filters.size(); ++i) {
       Z3DGeometryFilter* geomFilter = filters.at(i);
       if (geomFilter->isReady(eye) && geomFilter->getOpacity() > 0.0) {
-
-//          qDebug()<<geomFilter->getClassName()<<geomFilter->isStayOnTop()<<geomFilter->getOpacity();
-
-//          if(geomFilter->getClassName()=="Z3DSurfaceFilter")
-//          {
-//              geomFilter->setStayOnTop(true);
-//              qDebug()<<geomFilter->getClassName()<<" changed "<<geomFilter->isStayOnTop();
-//          }
-
         if (geomFilter->isStayOnTop())
           onTopFilters.push_back(geomFilter);
         else
@@ -278,6 +267,13 @@ void Z3DCompositor::process(Z3DEye eye)
       }
     }
   }
+
+    // debug ...
+  for(size_t i=0; i<onTopFilters.size(); i++)
+      qDebug()<<"onTopFilters ... ... "<<onTopFilters[i]->getClassName();
+  for(size_t i=0; i<normalFilters.size(); i++)
+      qDebug()<<"normalFilters ... ... "<<normalFilters[i]->getClassName();
+
 
   Z3DRenderOutputPort &currentOutport = (eye == CenterEye) ?
         m_outport : (eye == LeftEye) ? m_leftEyeOutport : m_rightEyeOutport;
@@ -320,9 +316,6 @@ void Z3DCompositor::process(Z3DEye eye)
       currentOutport.releaseTarget();
       CHECK_GL_ERROR;
     } else {
-
-        qDebug()<<"test onTopFilter rendering ... ";
-
       if (m_geometriesMultisampleMode.isSelected("2x2")) {
         m_tempPort.resize(currentOutport.getSize() * 2);
         m_tempPort2.resize(currentOutport.getSize() * 2);
@@ -525,8 +518,6 @@ void Z3DCompositor::process(Z3DEye eye)
 void Z3DCompositor::renderGeometries(const std::vector<Z3DGeometryFilter*> &filters,
                                      Z3DRenderOutputPort &port, Z3DEye eye)
 {
-    qDebug()<<"renderGeometries ...";
-
   glEnable(GL_DEPTH_TEST);
   if (m_transparencyMethod.isSelected("Blend No Depth Mask"))
   {
@@ -552,52 +543,65 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
 
     for (size_t i=0; i<filters.size(); i++) {
       Z3DGeometryFilter* geomFilter = filters.at(i);
-
-      qDebug()<<"filters ... "<<geomFilter->getClassName();
-
       if(geomFilter->getClassName().contains("Surface"))
           transparentFilters.push_back(geomFilter);
       else
           opaqueFilters.push_back(geomFilter);
     }
 
-    m_tempPort3.resize(port.getSize());
-    renderOpaqueObj(opaqueFilters, m_tempPort3, eye);
+    // debug ...
+    for(size_t i=0; i<transparentFilters.size(); i++)
+        qDebug()<<"transparentFilters ... ... "<<transparentFilters[i]->getClassName();
+    for(size_t i=0; i<opaqueFilters.size(); i++)
+        qDebug()<<"opaqueFilters ... ... "<<opaqueFilters[i]->getClassName();
 
-    // copy m_tempPort3 to port
-    //        port.bindTarget();
-    //        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    //        m_rendererBase->setViewport(m_tempPort3.getSize());
-    //        m_textureCopyRenderer->setColorTexture(m_tempPort3.getColorTexture());
-    //        m_textureCopyRenderer->setDepthTexture(m_tempPort3.getDepthTexture());
-    //        m_rendererBase->activateRenderer(m_textureCopyRenderer);
-    //        m_rendererBase->render(eye);
-    //        port.releaseTarget();
+    //
+    if (transparentFilters.empty()) {
+      renderOpaqueObj(opaqueFilters, port, eye);
+    }
+    else if (opaqueFilters.empty()) {
+      renderTransparentWB(transparentFilters, port, eye);
+    }
+    else {
+        m_tempPort3.resize(port.getSize());
+        renderOpaqueObj(opaqueFilters, m_tempPort3, eye);
 
-    m_tempPort4.resize(port.getSize());
-    renderTransparentWB(transparentFilters, m_tempPort4, eye);
+        // copy m_tempPort3 to port
+        //        port.bindTarget();
+        //        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        //        m_rendererBase->setViewport(m_tempPort3.getSize());
+        //        m_textureCopyRenderer->setColorTexture(m_tempPort3.getColorTexture());
+        //        m_textureCopyRenderer->setDepthTexture(m_tempPort3.getDepthTexture());
+        //        m_rendererBase->activateRenderer(m_textureCopyRenderer);
+        //        m_rendererBase->render(eye);
+        //        port.releaseTarget();
 
-    // copy m_tempPort4 to port
-    //        port.bindTarget();
-    //        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    //        m_rendererBase->setViewport(m_tempPort4.getSize());
-    //        m_textureCopyRenderer->setColorTexture(m_tempPort4.getColorTexture());
-    //        m_textureCopyRenderer->setDepthTexture(m_tempPort4.getDepthTexture());
-    //        m_rendererBase->activateRenderer(m_textureCopyRenderer);
-    //        m_rendererBase->render(eye);
-    //        port.releaseTarget();
+        m_tempPort4.resize(port.getSize());
+        renderTransparentWB(transparentFilters, m_tempPort4, eye);
 
-    // blend temport3 and temport4 into outport
-    port.bindTarget();
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    m_rendererBase->setViewport(port.getSize());
-    m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
-    m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
-    m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
-    m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
-    m_rendererBase->activateRenderer(m_alphaBlendRenderer);
-    m_rendererBase->render(eye);
-    port.releaseTarget();
+        // copy m_tempPort4 to port
+        //        port.bindTarget();
+        //        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        //        m_rendererBase->setViewport(m_tempPort4.getSize());
+        //        m_textureCopyRenderer->setColorTexture(m_tempPort4.getColorTexture());
+        //        m_textureCopyRenderer->setDepthTexture(m_tempPort4.getDepthTexture());
+        //        m_rendererBase->activateRenderer(m_textureCopyRenderer);
+        //        m_rendererBase->render(eye);
+        //        port.releaseTarget();
+
+        // blend temport3 and temport4 into outport
+        port.bindTarget();
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        m_rendererBase->setViewport(port.getSize());
+        m_alphaBlendRenderer->setColorTexture1(m_tempPort3.getColorTexture());
+        m_alphaBlendRenderer->setDepthTexture1(m_tempPort3.getDepthTexture());
+        m_alphaBlendRenderer->setColorTexture2(m_tempPort4.getColorTexture());
+        m_alphaBlendRenderer->setDepthTexture2(m_tempPort4.getDepthTexture());
+        m_rendererBase->activateRenderer(m_alphaBlendRenderer);
+        m_rendererBase->render(eye);
+        port.releaseTarget();
+    }
+
     CHECK_GL_ERROR;
 }
 
@@ -1141,8 +1145,8 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDisable(GL_DEPTH_TEST);
-  //glEnable(GL_DEPTH_TEST);
+  //glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
   //glEnable(GL_TEXTURE_2D);
   glEnable(GL_MULTISAMPLE);
 
