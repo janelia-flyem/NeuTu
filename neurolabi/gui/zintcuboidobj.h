@@ -17,6 +17,10 @@ public:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
   bool isOnSlice(int z, NeuTube::EAxis sliceAxis) const;
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_INT_CUBOID;
+  }
+
   void clear();
 
   bool isValid() const;

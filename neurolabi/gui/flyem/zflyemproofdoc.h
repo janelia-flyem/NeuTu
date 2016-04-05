@@ -40,6 +40,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -166,6 +167,7 @@ public:
   void notifyBodyUnmerged();
   void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
+  void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
@@ -252,6 +254,7 @@ signals:
   void bodySelectionChanged();
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
+  void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots:
   void updateDvidLabelObject();

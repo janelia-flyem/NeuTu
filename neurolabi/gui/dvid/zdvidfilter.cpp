@@ -41,6 +41,11 @@ bool ZDvidFilter::namedBodyOnly() const
   return m_namedBodyOnly;
 }
 
+bool ZDvidFilter::tracedOnly() const
+{
+  return m_tracedOnly;
+}
+
 std::set<uint64_t> ZDvidFilter::loadBodySet() const
 {
 //  ZString

@@ -10,7 +10,7 @@
 
 ZIntCuboidObj::ZIntCuboidObj()
 {
-  m_type = ZStackObject::TYPE_INT_CUBOID;
+  m_type = GetType();
 }
 
 bool ZIntCuboidObj::isSliceVisible(int /*z*/, NeuTube::EAxis /*sliceAxis*/) const
@@ -99,6 +99,8 @@ void ZIntCuboidObj::display(
   if (isSelected()) {
     pen.setWidth(pen.width() + 5);
   }
+
+  pen.setCosmetic(m_usingCosmeticPen);
 
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);

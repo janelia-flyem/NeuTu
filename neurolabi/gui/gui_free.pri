@@ -229,8 +229,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcradiusestimator.h \
    $${PWD}/zswctreenodeselector.h \
    $${PWD}/swc/zswcsignalfitter.h \
-   $${PWD}/zneurontracerconfig.h \
-    flyem/zflyemproofdoccommand.h
+   $${PWD}/zneurontracerconfig.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
@@ -442,6 +441,5 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcradiusestimator.cpp \
    $${PWD}/zswctreenodeselector.cpp \
    $${PWD}/swc/zswcsignalfitter.cpp \
-   $${PWD}/zneurontracerconfig.cpp \
-    flyem/zflyemproofdoccommand.cpp
+   $${PWD}/zneurontracerconfig.cpp
 

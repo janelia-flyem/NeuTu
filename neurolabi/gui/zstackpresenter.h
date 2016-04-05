@@ -342,6 +342,7 @@ public slots:
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyMergeTriggered();
+  void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
@@ -394,6 +395,7 @@ signals:
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
   void bodyMergeTriggered();
+  void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
   void checkingBookmark();
   void uncheckingBookmark();

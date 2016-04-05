@@ -425,9 +425,12 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
   if (tree == NULL) {
     tree = makeBodyModel(bodyId);
   }
-  tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
   if (tree != NULL) {
+//    if (getBodyType() != BODY_SKELETON) {
+      tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
+//    }
+
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
 #endif
