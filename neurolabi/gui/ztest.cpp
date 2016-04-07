@@ -268,6 +268,7 @@ using namespace std;
 #include "flyem/zflyemorthomvc.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
+#include "flyem/zneutuservice.h"
 
 using namespace std;
 
@@ -19892,7 +19893,42 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  QUrl url("http://")
+  QUrl url("http://emdata1.int.janelia.org:8500/api/node");
+  qDebug() << url.host();
+  qDebug() << url.port();
+  qDebug() << url.path();
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  writer.del("http://emdata1.int.janelia.org:8500/api/node/372c/skeletons/key/1_swc");
+  std::cout << writer.getStatusCode() << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "372c", 8500);
+  writer.open(dvidTarget);
+
+  ZJsonObject annotation;
+  annotation.setEntry("status", "test");
+  writer.writeAnnotation(1, annotation);
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/server_test.json");
+
+  ZDvidWriter writer;
+  writer.post("http://zhaot-ws1:8080/update_body", obj);
+#endif
+
+#if 1
+  ZNeutuService service("http://zhaot-ws1:8080");
+  ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
+
+  service.requestBodyUpdate(target, 1);
+
 #endif
 
   std::cout << "Done." << std::endl;

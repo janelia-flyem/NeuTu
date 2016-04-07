@@ -9,6 +9,13 @@ const char* ZFlyEmConfig::m_ipKey = "ip";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
+  init();
+}
+
+void ZFlyEmConfig::init()
+{
+  m_neutuService.setServer("http://zhaot-ws1:8080");
+//  m_neutuServer = "http://zhaot-ws1:8080";
 }
 
 void ZFlyEmConfig::setDvidTarget(const std::string &repo)
