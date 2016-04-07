@@ -19875,7 +19875,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("bodies121714_todo");
 #endif
 
-#if 1
+#if 0
   //Create pixmap
   ZPixmap pixmap(256, 256);
   pixmap.setOffset(-100, -100);
@@ -19889,6 +19889,10 @@ void ZTest::test(MainWindow *host)
   //Save
   pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 
+#endif
+
+#if 0
+  QUrl url("http://")
 #endif
 
   std::cout << "Done." << std::endl;
