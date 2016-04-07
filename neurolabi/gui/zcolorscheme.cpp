@@ -33,7 +33,9 @@ void ZColorScheme::setColorScheme(EColorScheme scheme)
   case PUNCTUM_TYPE_COLOR:
     buildPunctumColorTable();
     break;
-
+  case UNIQUE_COLOR:
+    buildUniqueColorTable();
+    break;
   default:
     break;
   }
@@ -53,7 +55,7 @@ void ZColorScheme::buildRandomColorTable(int n)
 
 void ZColorScheme::buildConvRandomColorTable(int n)
 {
-  ZRandomGenerator generator;
+  ZRandomGenerator generator(42);
   const int maxInt = 65534;
   for (int i = 1; i < n; ++i) {
     int r = generator.rndint(maxInt)%255;
@@ -111,4 +113,22 @@ void ZColorScheme::buildPunctumColorTable()
   m_colorTable.push_back(QColor(127, 128, 255, 255));
   m_colorTable.push_back(QColor(128, 255, 128, 255));
   m_colorTable.push_back(QColor(255, 255, 128, 255));
+}
+
+void ZColorScheme::buildUniqueColorTable()
+{
+  m_colorTable.clear();
+  m_colorTable.push_back(QColor(Qt::red));
+  m_colorTable.push_back(QColor(Qt::green));
+  m_colorTable.push_back(QColor(Qt::blue));
+  m_colorTable.push_back(QColor(Qt::cyan));
+  m_colorTable.push_back(QColor(Qt::magenta));
+  m_colorTable.push_back(QColor(Qt::darkRed));
+  m_colorTable.push_back(QColor(Qt::darkGreen));
+  m_colorTable.push_back(QColor(Qt::darkBlue));
+  m_colorTable.push_back(QColor(Qt::darkCyan));
+  m_colorTable.push_back(QColor(Qt::darkMagenta));
+  m_colorTable.push_back(QColor(Qt::darkYellow));
+  m_colorTable.push_back(QColor(Qt::white));
+  m_colorTable.push_back(QColor(Qt::black));
 }

@@ -1,15 +1,15 @@
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 
-QThreadFutureMap::QThreadFutureMap()
+ZThreadFutureMap::ZThreadFutureMap()
 {
 }
 
-QThreadFutureMap::~QThreadFutureMap()
+ZThreadFutureMap::~ZThreadFutureMap()
 {
   waitForFinished();
 }
 
-void QThreadFutureMap::waitForFinished()
+void ZThreadFutureMap::waitForFinished()
 {
   for (iterator iter = begin(); iter != end(); ++iter) {
     if (!(iter.value().isFinished())) {
@@ -18,12 +18,12 @@ void QThreadFutureMap::waitForFinished()
   }
 }
 
-bool QThreadFutureMap::hasFuture(const QString &id) const
+bool ZThreadFutureMap::hasFuture(const QString &id) const
 {
   return contains(id);
 }
 
-QFuture<void> *QThreadFutureMap::getFuture(const QString &id)
+QFuture<void> *ZThreadFutureMap::getFuture(const QString &id)
 {
   QFuture<void> *future = NULL;
 
@@ -34,7 +34,7 @@ QFuture<void> *QThreadFutureMap::getFuture(const QString &id)
   return future;
 }
 
-bool QThreadFutureMap::isAlive(const QString &id)
+bool ZThreadFutureMap::isAlive(const QString &id)
 {
   QFuture<void> *future = getFuture(id);
   if (future != NULL) {
@@ -44,7 +44,7 @@ bool QThreadFutureMap::isAlive(const QString &id)
   return false;
 }
 
-void QThreadFutureMap::removeDeadThread()
+void ZThreadFutureMap::removeDeadThread()
 {
   QList<QString> keyList = this->keys();
   foreach (const QString &key, keyList) {
@@ -57,7 +57,7 @@ void QThreadFutureMap::removeDeadThread()
   }
 }
 
-int QThreadFutureMap::getLivingThreadNumber() const
+int ZThreadFutureMap::getLivingThreadNumber() const
 {
   int count = 0;
   for (const_iterator iter = begin(); iter != end(); ++iter) {
@@ -69,7 +69,7 @@ int QThreadFutureMap::getLivingThreadNumber() const
   return count;
 }
 
-bool QThreadFutureMap::hasThreadAlive() const
+bool ZThreadFutureMap::hasThreadAlive() const
 {
   for (const_iterator iter = begin(); iter != end(); ++iter) {
     if (!(iter.value().isFinished())) {

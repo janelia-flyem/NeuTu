@@ -35,7 +35,7 @@ public:
   //void preselectItem(ZTileGraphicsItem *item);
   void selectItem(ZTileGraphicsItem *item);
   void updateTileStack();
-  void setScaleFactor(float sf) {scaleFactor = sf;}
+//  void setScaleFactor(float sf) {scaleFactor = sf;}
   void setParentView(ZTileManagerView *p) {m_view = p; }
   ZTileManagerView *getParentView() {return m_view; }
   ZTileGraphicsItem* getSelectedTileItem(){return m_selectedTileItem; }
@@ -56,7 +56,7 @@ private:
   ZTileGraphicsItem *m_selectedTileItem;
   //ZTileGraphicsItem *m_preselected;
   QGraphicsRectItem *m_highlightRec;
-  float scaleFactor;
+//  float scaleFactor;
   ZTileManagerView *m_view;
 
 

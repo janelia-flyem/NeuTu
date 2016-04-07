@@ -16,7 +16,6 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
-  , m_showingArrow(false)
 {
   addParameter(m_showGraph);
 
@@ -214,6 +213,7 @@ void Z3DGraphFilter::prepareColor()
     QColor color =node.color();
 
     if (node.radius() > 0) {
+      Q_ASSERT(index < m_pointColors.size());
       m_pointColors[index++] = glm::vec4(
             color.redF(), color.greenF(), color.blueF(), color.alphaF());
     }

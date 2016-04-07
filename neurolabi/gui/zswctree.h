@@ -73,7 +73,7 @@ public:
 
   //Structral mode
   enum EStructrualMode {
-    STRUCT_CLOSED_CURVE, STRUCT_NORMAL
+    STRUCT_CLOSED_CURVE, STRUCT_POINT_CLOUD, STRUCT_NORMAL
   };
 
   enum EOperation {
@@ -203,7 +203,8 @@ public:
   bool isForest() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis axis) const;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -256,8 +257,8 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  inline void setComment(const std::string &comment) {
-    m_comment = comment;
+  inline void addComment(const std::string &comment) {
+    m_comment.push_back(comment);
   }
 
 public:
@@ -370,8 +371,8 @@ public:
    *
    * \return The bound box.
    */
-   const ZCuboid& getBoundBox() const;
-   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+   ZCuboid getBoundBox() const;
+//   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -391,7 +392,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y);
+  Swc_Tree_Node* hitTest(double x, double y, NeuTube::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -406,7 +407,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!
@@ -766,10 +767,14 @@ private:
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus);
+                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
+
+#ifdef _QT_GUI_USED_
+  const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
+#endif
 
 private:
   Swc_Tree *m_tree;
@@ -796,7 +801,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
-  std::string m_comment;
+  std::vector<std::string> m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

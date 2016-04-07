@@ -99,7 +99,7 @@ public:
    *
    * \return The path of a certain body.
    */
-  std::string getBodyPath(int bodyId) const;
+  std::string getBodyPath(uint64_t bodyId) const;
 
   /*!
    * \brief Test if the target is valid
@@ -152,8 +152,28 @@ public:
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
 
-  std::string getRoiName() const;
-  void setRoiName(const std::string &name);
+  std::string getRoiName(size_t index) const;
+  void addRoiName(const std::string &name);
+
+  const std::vector<std::string>& getRoiList() const {
+    return m_roiList;
+  }
+
+  void setRoiList(const std::vector<std::string> &roiList) {
+    m_roiList = roiList;
+  }
+
+  std::string getSynapseName() const;
+  void setSynapseName(const std::string &name);
+
+  std::string getBookmarkName() const;
+  std::string getBookmarkKeyName() const;
+  std::string getSkeletonName() const;
+  std::string getThumbnailName() const;
+
+  std::string getTodoListName() const;
+
+  std::string getBodyAnnotationName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
@@ -163,6 +183,8 @@ public:
   inline bool isSupervised() const { return m_isSupervised; }
   const std::string& getSupervisor() const { return m_supervisorServer; }
 
+  inline bool isEditable() const { return m_isEditable; }
+  void setEditable(bool on) { m_isEditable = on; }
 
 private:
   std::string m_address;
@@ -175,7 +197,8 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
-  std::string m_roiName;
+  std::vector<std::string> m_roiList;
+  std::string m_synapseName;
   std::set<std::string> m_userList;
   bool m_isSupervised;
   std::string m_supervisorServer;
@@ -183,6 +206,8 @@ private:
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
+
+  bool m_isEditable;
 
   const static char* m_addressKey;
   const static char* m_portKey;
@@ -197,6 +222,7 @@ private:
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
   const static char* m_roiNameKey;
+  const static char* m_synapseNameKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;

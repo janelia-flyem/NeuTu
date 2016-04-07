@@ -12,6 +12,11 @@
 //#include "zflyembodysplitproject.h"
 #include "flyem/zflyembodycolorscheme.h"
 #include "zflyembodyannotation.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "flyem/zflyemtodolist.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -20,6 +25,7 @@ class ZPuncta;
 class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
+class ZFlyEmSequencerColorScheme;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -29,18 +35,27 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
+  enum EBodyColorMap {
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER
+  };
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  void updateTileData();
+  virtual void updateTileData();
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice() const;
+  ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
+//  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
+  QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
+
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
 
@@ -81,7 +96,6 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
-  void saveMergeOperation();
   void downloadBodyMask();
   void clearBodyMerger();
 
@@ -91,18 +105,18 @@ public:
   void importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
-  void saveCustomBookmark();
+//  void saveCustomBookmark();
   void downloadBookmark();
-  inline void setCustomBookmarkSaveState(bool state) {
-    m_isCustomBookmarkSaved = state;
-  }
+//  inline void setCustomBookmarkSaveState(bool state) {
+//    m_isCustomBookmarkSaved = state;
+//  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
 
   void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
-  void useBodyNameMap(bool on);
+//  void useBodyNameMap(bool on);
 
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
@@ -115,8 +129,10 @@ public:
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
-  getSynapse(uint64_t bodyId);
+  getSynapse(uint64_t bodyId) const;
 
+  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
 
   void downloadSynapseFunc();
 
@@ -135,37 +151,136 @@ public:
    */
   void cleanBodyAnnotationMap();
 
+  void activateBodyColorMap(const QString &option);
+  void activateBodyColorMap(EBodyColorMap colorMap);
+
+  ZDvidReader& getDvidReader() {
+    return m_dvidReader;
+  }
+
+  ZDvidWriter& getDvidWriter() {
+    return m_dvidWriter;
+  }
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
+  void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
+  void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
-  void selectBodyInRoi(int z, bool appending);
+  void selectBodyInRoi(int z, bool appending, bool removingRoi);
+
+public: //Synapse functions
+  std::set<ZIntPoint> getSelectedSynapse() const;
+  bool hasDvidSynapseSelected() const;
+  bool hasDvidSynapse() const;
+  void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
+
+  void removeSynapse(
+      const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
+  void addSynapse(
+      const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
+  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void updateSynapsePartner(const ZIntPoint &pos);
+  void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+
+public: //Todo list functions
+  void removeTodoItem(
+      const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope);
+  void addTodoItem(const ZIntPoint &pos);
+  void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
+  bool hasTodoItemSelected() const;
+  void checkTodoItem(bool checking);
+
+  void notifyTodoItemModified(
+      const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
+  void notifyTodoItemModified(const ZIntPoint &pt, bool emitingEdit = false);
+
+  std::set<ZIntPoint> getSelectedTodoItemPosition() const;
+
+public: //Bookmark functions
+  void removeLocalBookmark(ZFlyEmBookmark *bookmark);
+  void removeLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void addLocalBookmark(ZFlyEmBookmark *bookmark);
+  void addLocalBookmark(const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void notifyBookmarkEdited(
+      const std::vector<ZFlyEmBookmark *> &bookmarkArray);
+  void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
+  void notifySynapseEdited(const ZDvidSynapse &synapse);
+  void notifySynapseEdited(const ZIntPoint &synapse);
+  void notifyTodoEdited(const ZIntPoint &item);
+  void updateLocalBookmark(ZFlyEmBookmark *bookmark);
+  void copyBookmarkFrom(const ZFlyEmProofDoc *doc);
+
+  /*!
+   * \brief Find a bookmark at a certain location
+   *
+   * Return the pointer of the bookmark with the coordinates (\a x, \a y, \a z).
+   * It returns NULL if the bookmark cannot be found.
+   *
+   */
+  ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
+
+public: //Commands
+  void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
+
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeRemoveTodoItemCommand();
 
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void bodyMergeEdited();
   void userBookmarkModified();
+  void bookmarkAdded(int x, int y, int z);
+  void bookmarkEdited(int x, int y, int z);
+  void synapseEdited(int x, int y, int z);
+  void todoEdited(int x, int y, int z);
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
   void bodyMapReady();
+  void todoModified(uint64_t bodyId);
+  void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
+  void downloadSynapse(int x, int y, int z);
+  void downloadTodo(int x, int y, int z);
+  void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
-  void saveCustomBookmarkSlot();
+//  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
-  void prepareBodyMap(const ZJsonValue &bodyInfoObj);
+  void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
+  void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void deleteSelectedSynapse();
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
+
+  void downloadBookmark(int x, int y, int z);
+  void saveMergeOperation();
 
 protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
+  void updateDvidTargetForObject();
+  virtual void prepareDvidData();
+  void addDvidLabelSlice(NeuTube::EAxis axis);
 
 private:
   void connectSignalSlot();
@@ -180,17 +295,33 @@ private:
   void initTimer();
   void initAutoSave();
 
-private:
+  /*!
+   * \brief Create essential data instance if necessary
+   */
+  void initData(const ZDvidTarget &target);
+  void initData(const std::string &type, const std::string &dataName);
+
+  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
+  template<typename T>
+  ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+
+  bool isActive(EBodyColorMap type);
+
+  void updateBodyColor(EBodyColorMap type);
+
+protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidWriter m_dvidWriter;
 
-  bool m_isCustomBookmarkSaved;
+//  bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_bodyColorMap;
+  ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
+  QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
@@ -214,20 +345,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
   }
 }
 
-namespace ZFlyEmProofDocCommand {
-class MergeBody : public ZUndoCommand
-{
-public:
-  MergeBody(ZStackDoc *doc, QUndoCommand *parent = NULL);
-  void undo();
-  void redo();
-
-  ZFlyEmProofDoc* getCompleteDocument();
-
-private:
-  ZStackDoc *m_doc;
-};
-}
 
 
 #endif // ZFLYEMPROOFDOC_H

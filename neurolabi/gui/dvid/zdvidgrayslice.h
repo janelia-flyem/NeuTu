@@ -13,7 +13,8 @@ public:
   ZDvidGraySlice();
   ~ZDvidGraySlice();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
@@ -47,7 +48,7 @@ public:
   int getHeight() const { return m_height; }
 
   ZRect2d getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void setBoundBox(const ZRect2d &rect);
 

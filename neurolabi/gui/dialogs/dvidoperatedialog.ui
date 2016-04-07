@@ -65,6 +65,11 @@
         <string>roi</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>annotation</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item>

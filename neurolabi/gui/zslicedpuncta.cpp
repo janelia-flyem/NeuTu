@@ -42,8 +42,13 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
   }
 }
 
-void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
+                            NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   if (m_puncta.isEmpty() || slice < 0) {
     return;
   }
@@ -60,7 +65,7 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) 
     for (QList<ZStackBall*>::const_iterator iter = punctumArray.begin();
          iter != punctumArray.end(); ++iter) {
       const ZStackBall* punctum = *iter;
-      punctum->display(painter, slice, option);
+      punctum->display(painter, slice, option, sliceAxis);
     }
   }
 

@@ -7,6 +7,7 @@
 #include "zfiletype.h"
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
+#include "neutube_def.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -118,6 +119,144 @@ void ZImage::setData(const uint8 *data, int threshold)
         *line++ = '\xff';
       }
     }
+  }
+}
+
+void ZImage::setData(
+    const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
+    int slice, NeuTube::EAxis sliceAxis)
+{
+  int imageWidth = width();
+  int imageHeight = height();
+  int area = stackWidth * stackHeight;
+
+  switch (sliceAxis) {
+  case NeuTube::Z_AXIS:
+  {
+    data += (size_t) area * slice;
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+      for (int i = 0; i < imageWidth; i++) {
+        *line++ = *data;
+        *line++ = *data;
+        *line++ = *data;
+        data++;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
+  case NeuTube::Y_AXIS:
+  {
+    const uint8 *dataOrigin = data + slice * stackWidth;
+
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+      data = dataOrigin + j * area;
+      for (int i = 0; i < imageWidth; i++) {
+        *line++ = *data;
+        *line++ = *data;
+        *line++ = *data;
+        data++;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
+  case NeuTube::X_AXIS:
+  {
+    const uint8 *dataOrigin = data + slice;
+//    data += slice;
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+      data = dataOrigin + j * stackWidth;
+      for (int i = 0; i < imageWidth; i++) {
+        *line++ = *data;
+        *line++ = *data;
+        *line++ = *data;
+        data += area;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
+  }
+}
+
+void ZImage::setData(
+    const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
+    int slice, double scale, double offset, NeuTube::EAxis sliceAxis)
+{
+  int imageWidth = width();
+  int imageHeight = height();
+  int area = stackWidth * stackHeight;
+
+  uint8 valueMap[256];
+  for (int i = 0; i < 256; ++i) {
+    double value = scale * i + offset;
+    if (value <= 0.0) {
+      valueMap[i] = '\0';
+    } else if (value >= 255.0) {
+      valueMap[i] = '\xff';
+    } else {
+      valueMap[i] = (uint8) value;
+    }
+  }
+
+  switch (sliceAxis) {
+  case NeuTube::Z_AXIS:
+  {
+    data += (size_t) area * slice;
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+
+      for (int i = 0; i < imageWidth; i++) {
+        uint8 v = valueMap[*data++];
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+//        data++;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
+  case NeuTube::Y_AXIS:
+  {
+    const uint8 *dataOrigin = data + slice * stackWidth;
+
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+      data = dataOrigin + j * area;
+      for (int i = 0; i < imageWidth; i++) {
+        uint8 v = valueMap[*data++];
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+//        data++;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
+  case NeuTube::X_AXIS:
+  {
+    const uint8 *dataOrigin = data + slice;
+//    data += slice;
+    for (int j = 0; j < imageHeight; j++) {
+      uchar *line = scanLine(j);
+      data = dataOrigin + j * stackWidth;
+      for (int i = 0; i < imageWidth; i++) {
+        uint8 v = valueMap[*data];
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+        data += area;
+        *line++ = 255;
+      }
+    }
+  }
+    break;
   }
 }
 

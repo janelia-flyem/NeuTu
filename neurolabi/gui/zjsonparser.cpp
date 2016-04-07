@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "zintpoint.h"
+
 using namespace std;
 
 const char ZJsonParser::m_emptyString[] = {'\0' };
@@ -80,6 +82,10 @@ json_t* ZJsonParser::arrayValue(const json_t *array, size_t index)
 
 json_type ZJsonParser::type(const json_t *value)
 {
+  if (value == NULL) {
+    return JSON_NULL;
+  }
+
   return json_typeof(value);
 }
 
@@ -227,4 +233,18 @@ json_t* ZJsonParser::decode(const string &str)
 void ZJsonParser::printError() const
 {
   std::cout << m_error.text << std::endl;
+}
+
+ZIntPoint ZJsonParser::toIntPoint(const json_t *value)
+{
+  ZIntPoint pt;
+  if (value != NULL) {
+    if (isArray(value)) {
+      if (arraySize(value) == 3) {
+        pt.set(integerValue(value, 0), integerValue(value, 1), integerValue(value, 2));
+      }
+    }
+  }
+
+  return pt;
 }

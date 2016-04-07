@@ -74,7 +74,16 @@ public:
   ZPoint getVector() const;
   ZPoint getDirection() const;
 
+  double getLowerX() const;
+  double getUpperX() const;
+  double getLowerY() const;
+  double getUpperY() const;
+  double getLowerZ() const;
+  double getUpperZ() const;
+
   void print() const;
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
 
 private:
   ZPoint m_start;

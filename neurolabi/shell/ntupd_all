@@ -1,20 +1,23 @@
 #!/bin/bash
 
-#ssh emrecon2 '/opt/bin/ntupd'
-ssh emrecon10 '/opt/bin/ntupd'
-ssh emrecon11 '/opt/bin/ntupd'
-ssh emrecon12 '/opt/bin/ntupd'
-ssh emrecon13 '/opt/bin/ntupd'
-ssh emrecon14 '/opt/bin/ntupd'
-ssh emrecon15 '/opt/bin/ntupd'
-ssh emrecon16 '/opt/bin/ntupd'
-ssh emrecon17 '/opt/bin/ntupd'
-ssh emrecon19 '/opt/bin/ntupd'
-ssh emrecon42 '/opt/bin/ntupd'
-ssh emrecon99 '/opt/bin/ntupd'
-ssh ordishc-ws1 '/opt/bin/ntupd'
-ssh 10.123.13.46 '/opt/bin/ntupd'
-ssh takemuras-ws2 '/opt/bin/ntupd'
-ssh plazas-ws1 '/opt/bin/ntupd'
-
- 
+namelist=""
+while read line
+do
+  #echo $line
+  name=`echo $line | awk '{$1=$1};1'`
+  if [ ! -z $name ]
+  then
+    if [ ${name:0:1} != "#" ]
+    then
+      #echo $name
+      namelist="$namelist $name"
+      #ssh $name "$cmd_dir/ntconfig $src_neutu /opt/Download/neutube"
+    fi
+  fi
+done < machine.txt
+echo $namelist
+for name in $namelist
+do
+  echo $name
+  ssh $name "/opt/bin/ntupd"
+done

@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "neutube_def.h"
+
 class ZPoint;
 
 /*!
@@ -41,6 +43,7 @@ public:
    */
   bool operator < (const ZIntPoint &pt) const;
   bool operator == (const ZIntPoint &pt) const;
+  bool operator != (const ZIntPoint &pt) const;
 
   ZIntPoint operator - () const;
 
@@ -69,6 +72,12 @@ public:
   bool isZero() const;
 
   bool equals(const ZIntPoint &pt) const;
+
+  double distanceTo(double x, double y, double z) const;
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+  int getSliceCoord(NeuTube::EAxis axis) const;
 
 public:
   int m_x;

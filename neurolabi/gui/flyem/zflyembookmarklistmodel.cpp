@@ -116,6 +116,14 @@ bool ZFlyEmBookmarkListModel::removeRows(
 {
   if (count > 0) {
     beginRemoveRows(parent, row, row + count - 1);
+
+    QVector<ZFlyEmBookmark*> removing;
+    for (int i = row; i < count; ++i) {
+      ZFlyEmBookmark *bookmark = getBookmark(i);
+      removing.append(bookmark);
+    }
+    m_bookmarkArray.remove(removing);
+
     endRemoveRows();
 
     return true;
@@ -140,6 +148,14 @@ bool ZFlyEmBookmarkListModel::removeColumns(
 void ZFlyEmBookmarkListModel::update(int row)
 {
   emit dataChanged(index(row, 0), index(row, columnCount() - 1));
+}
+
+void ZFlyEmBookmarkListModel::removeBookmark(ZFlyEmBookmark *bookmark)
+{
+  int index = m_bookmarkArray.findFirstIndex(bookmark);
+  if (index>= 0) {
+    removeRow(index);
+  }
 }
 
 /*

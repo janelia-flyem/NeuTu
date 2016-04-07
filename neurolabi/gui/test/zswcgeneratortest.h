@@ -26,7 +26,7 @@ TEST(ZSwcGenerator, VoxelArray)
 
   delete tree;
 
-  voxelArray.append(4.5, 0, 0, 2.0);
+  voxelArray.append(5, 0, 0, 2.0);
   tree = ZSwcGenerator::createSwc(voxelArray, ZSwcGenerator::REGION_SAMPLING);
   ASSERT_EQ(3, tree->size());
   delete tree;

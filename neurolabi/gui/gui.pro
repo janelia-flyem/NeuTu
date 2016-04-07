@@ -10,33 +10,33 @@ contains(TEMPLATE, app) {
 }
 
 win32 {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+    DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
-  CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-  }
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
 }
 
 unix {
-QMAKE_PATH = $(QMAKE)
-!exists($$QMAKE_PATH) {
-    QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-}
-message("qmake path: $$QMAKE_PATH")
-exists($$QMAKE_PATH) {
-    macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+    QMAKE_PATH = $(QMAKE)
+    !exists($$QMAKE_PATH) {
+        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
     }
+    message("qmake path: $$QMAKE_PATH")
+    exists($$QMAKE_PATH) {
+        macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+        }
 
-    unix:!macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        unix:!macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        }
     }
-}
-CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-#    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-}
-message($$DEPLOYMENT_COMMAND)
-message("Post link: $$QMAKE_POST_LINK")
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+    #    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
+    message($$DEPLOYMENT_COMMAND)
+    message("Post link: $$QMAKE_POST_LINK")
 }
 
 CONFIG(debug, debug|release) {
@@ -64,6 +64,14 @@ DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 HOSTNAME = $$system(echo $HOSTNAME)
 USER = $$system(echo $USER)
 HOME = $$system(echo $HOME)
+GIT = $$system(which git)
+
+#message($$GIT)
+contains(GIT, .*git) {
+    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+    message($$COMMIT_HASH)
+}
 
 include(add_itk.pri)
 
@@ -468,7 +476,7 @@ HEADERS += mainwindow.h \
     dvid/libdvidheader.h \
     dialogs/dvidoperatedialog.h \
     z3dwindowfactory.h \
-    qthreadfuturemap.h \
+    zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
     zkeyeventmapper.h \
@@ -579,8 +587,32 @@ HEADERS += mainwindow.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
+    flyem/zflyemsequencercolorscheme.h \
     zpunctumselector.h \
-    zgraphobjsmodel.h
+    zgraphobjsmodel.h \
+    dvid/zdvidsynapse.h \
+    flyem/zflyemnamebodycolorscheme.h \
+    dvid/zdvidsynapseensenmble.h \
+    dvid/zdvidsynpasecommand.h \
+    dvid/zdvidannotationcommand.h \
+    dvid/zflyembookmarkcommand.h \
+    misc/zstackyzview.h \
+    misc/zstackyzmvc.h \
+    flyem/zflyemorthowindow.h \
+    flyem/zflyemorthodoc.h \
+    flyem/zflyemorthomvc.h \
+    flyem/zflyemorthowidget.h \
+    flyem/flyemorthocontrolform.h \
+    dvid/zdvidannotation.h \
+    dialogs/stringlistdialog.h \
+    flyem/zflyemtodoitem.h \
+    flyem/zflyemtodolist.h \
+    flyem/zflyemtodolistfilter.h \
+    flyem/zflyemtodolistmodel.h \
+    flyem/zflyemtodopresenter.h \
+    dialogs/flyemtododialog.h \
+    zstackdocselector.h \
+    flyem/zflyemproofdoccommand.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -651,7 +683,10 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyinfodialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
-    flyem/zflyembookmarkwidget.ui
+    flyem/zflyembookmarkwidget.ui \
+    flyem/flyemorthocontrolform.ui \
+    dialogs/stringlistdialog.ui \
+    dialogs/flyemtododialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -905,7 +940,7 @@ SOURCES += main.cpp \
     zsleeper.cpp \
     dialogs/dvidoperatedialog.cpp \
     z3dwindowfactory.cpp \
-    qthreadfuturemap.cpp \
+    zthreadfuturemap.cpp \
     zstackball.cpp \
     zstackdochittest.cpp \
     zkeyeventmapper.cpp \
@@ -1016,8 +1051,32 @@ SOURCES += main.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
+    flyem/zflyemsequencercolorscheme.cpp \
     zpunctumselector.cpp \
-    zgraphobjsmodel.cpp
+    zgraphobjsmodel.cpp \
+    dvid/zdvidsynapse.cpp \
+    flyem/zflyemnamebodycolorscheme.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
+    dvid/zdvidsynpasecommand.cpp \
+    dvid/zdvidannotationcommand.cpp \
+    dvid/zflyembookmarkcommand.cpp \
+    misc/zstackyzview.cpp \
+    misc/zstackyzmvc.cpp \
+    flyem/zflyemorthowindow.cpp \
+    flyem/zflyemorthodoc.cpp \
+    flyem/zflyemorthomvc.cpp \
+    flyem/zflyemorthowidget.cpp \
+    flyem/flyemorthocontrolform.cpp \
+    dvid/zdvidannotation.cpp \
+    dialogs/stringlistdialog.cpp \
+    flyem/zflyemtodoitem.cpp \
+    flyem/zflyemtodolist.cpp \
+    flyem/zflyemtodolistfilter.cpp \
+    flyem/zflyemtodolistmodel.cpp \
+    flyem/zflyemtodopresenter.cpp \
+    dialogs/flyemtododialog.cpp \
+    zstackdocselector.cpp \
+    flyem/zflyemproofdoccommand.cpp
 
 OTHER_FILES += \
     extlib.pri \

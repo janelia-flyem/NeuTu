@@ -22,6 +22,8 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "QsLog.h"
+#include "zstackpresenter.h"
+#include "flyem/zflyemproofpresenter.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -134,6 +136,32 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
   return new ZProofreadWindow(parent);
 }
 
+ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
+{
+  ZProofreadWindow *window = new ZProofreadWindow(parent);
+  if (dvidDlg != NULL) {
+    window->setDvidDialog(dvidDlg);
+  }
+
+  return window;
+}
+
+void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
+{
+  m_mainMvc->setDvidDialog(dvidDlg);
+}
+
+void ZProofreadWindow::test()
+{
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "86e1", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+  m_mainMvc->setDvidTarget(target);
+  m_mainMvc->getPresenter()->setObjectVisible(false);
+  m_mainMvc->test();
+}
+
 void ZProofreadWindow::createMenu()
 {
   QMenu *fileMenu = new QMenu("File", this);
@@ -169,6 +197,13 @@ void ZProofreadWindow::createMenu()
   connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showSegmentation(bool)));
 
+  m_viewTodoAction = new QAction("Todo", this);
+  m_viewTodoAction->setIcon(QIcon(":/images/view_todo.png"));
+  m_viewTodoAction->setCheckable(true);
+  m_viewTodoAction->setChecked(true);
+  connect(m_viewTodoAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showTodo(bool)));
+
   m_contrastAction = new QAction("Enhance Contrast", this);
   m_contrastAction->setCheckable(true);
   m_contrastAction->setChecked(false);
@@ -185,6 +220,10 @@ void ZProofreadWindow::createMenu()
   connect(m_openObject3dAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showObjectWindow()));
 
+  m_queryTableAction = new QAction("Query Table", this);
+  connect(m_queryTableAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showQueryTabel()));
+
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
@@ -193,6 +232,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
+  m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addSeparator();
@@ -211,6 +251,11 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openSequencer()));
   m_toolMenu->addAction(m_openSequencerAction);
 
+  m_openTodoAction = new QAction("Show Todo List", this);
+  m_openTodoAction->setIcon(QIcon(":/images/todo.png"));
+  connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
+  m_toolMenu->addAction(m_openTodoAction);
+
   menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);
@@ -219,6 +264,39 @@ void ZProofreadWindow::createMenu()
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
   m_viewSegmentationAction->setEnabled(false);
+  m_viewTodoAction->setEnabled(false);
+}
+
+void ZProofreadWindow::addSynapseActionToToolbar()
+{
+  m_synapseToolbar = new QToolBar(this);
+  m_synapseToolbar->setIconSize(QSize(24, 24));
+  m_synapseToolbar->addSeparator();
+  m_synapseToolbar->addWidget(new QLabel("Synapse"));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_PRE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_POST));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_DELETE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_MOVE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_LINK));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_UNLINK));
+
+  m_synapseToolbar->addSeparator();
+  m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+                                ZActionFactory::ACTION_ENTER_RECT_ROI_MODE));
+
+  addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
 }
 
 void ZProofreadWindow::createToolbar()
@@ -234,10 +312,14 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
+  m_toolBar->addAction(m_viewTodoAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
+  m_toolBar->addAction(m_openTodoAction);
+
+  addSynapseActionToToolbar();
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -397,6 +479,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
   m_viewSegmentationAction->setEnabled(target.isValid());
+  m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
 }

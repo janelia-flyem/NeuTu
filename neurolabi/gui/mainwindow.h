@@ -136,21 +136,21 @@ public:
   static void createWorkDir();
 
   QAction* getBodySplitAction() const;
-
-  //Report the problem when a file cannot be opened correctly.
-  void reportFileOpenProblem(const QString &filePath,
-                             const QString &reason = "");
-
   void runBodySplit();
 
   void processArgument(const QString &arg);
+
+public: //Testing routines
+  void testFlyEmProofread();
 
 signals:
   void dvidRequestCanceled();
   void progressDone();
   void progressAdvanced(double dp);
+  void progressStarted(QString title, int nticks);
   void docReaderReady(ZStackDocReader*);
   void docReady(ZStackDocPtr);
+  void fileOpenFailed(QString fileName, QString reason);
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
@@ -173,6 +173,11 @@ public slots:
 
   void on_actionTile_Manager_2_triggered();
   void cancelDvidRequest();
+
+  //Report the problem when a file cannot be opened correctly.
+  void reportFileOpenProblem(const QString &filePath,
+                             const QString &reason = "");
+
 
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
@@ -220,6 +225,7 @@ protected:
 
   ZStackDocReader* openFileFunc(const QString &filePath);
   void openFileFunc2(const QString &filePath);
+  void openFileListFunc(const QStringList fileList);
   void runSplitFunc(ZStackFrame *frame);
 
 private slots:
@@ -461,6 +467,8 @@ private slots:
   void on_actionSubtract_Background_triggered();
 
   void on_actionImport_Sparsevol_Json_triggered();
+
+  void on_actionNeuroMorpho_triggered();
 
 private:
   void createActions();

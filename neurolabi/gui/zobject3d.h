@@ -42,8 +42,8 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option)
-  const;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      NeuTube::EAxis sliceAxis) const;
 
 public:
   /*!
@@ -205,13 +205,14 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
   bool hasHitVoxel() const;
   ZIntPoint getHitVoxel() const;
 
-  void getBoundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const;
 
 private:
   int m_conn;

@@ -16,6 +16,8 @@ public:
   explicit DvidOperateDialog(QWidget *parent = 0);
   ~DvidOperateDialog();
 
+  void setDvidDialog(ZDvidDialog *dlg);
+
 private slots:
   void on_dvidPushButton_clicked();
 

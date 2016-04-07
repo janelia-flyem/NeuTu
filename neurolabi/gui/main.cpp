@@ -79,6 +79,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
   case QtFatalMsg:
     LFATALF(context.file, context.line, context.function) << msg;
     abort();
+  default:
+    break;
   }
 }
 #else
@@ -114,11 +116,13 @@ int main(int argc, char *argv[])
   QSurfaceFormat::setDefaultFormat(format);
 #endif
 
+#if 0 //Disable redirect for explicit logging
 #ifndef _FLYEM_
 #ifdef _QT5_
   qInstallMessageHandler(myMessageOutput);
 #else
   qInstallMsgHandler(myMessageOutput);
+#endif
 #endif
 #endif
 
@@ -143,6 +147,7 @@ int main(int argc, char *argv[])
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
+
 
 #ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
@@ -174,17 +179,36 @@ int main(int argc, char *argv[])
               << config.getConfigPath() << std::endl;
   }
 
-  ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
-  tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
-
+  if (!runCommandLine) { //Command line mode takes care of configuration independently
+    ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
+    tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+  }
 
 #ifdef _DEBUG_
   config.print();
 #endif
 
+  // init the logging mechanism
+  QsLogging::Logger& logger = QsLogging::Logger::instance();
+  const QString sLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
+  QsLogging::DestinationPtr fileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          sLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(50)));
+  QsLogging::DestinationPtr debugDestination(
+        QsLogging::DestinationFactory::MakeDebugOutputDestination());
+  logger.addDestination(debugDestination);
+  logger.addDestination(fileDestination);
+#if defined _DEBUG_
+  logger.setLoggingLevel(QsLogging::DebugLevel);
+#else
+  logger.setLoggingLevel(QsLogging::InfoLevel);
+#endif
+
   RECORD_INFORMATION("************* Start ******************");
 
-  if (debugging == false && runCommandLine == false) {
+  if (guiEnabled) {
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -202,25 +226,6 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow::createWorkDir();
-
-
-    // init the logging mechanism
-    QsLogging::Logger& logger = QsLogging::Logger::instance();
-    const QString sLogPath(
-          NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
-    QsLogging::DestinationPtr fileDestination(
-          QsLogging::DestinationFactory::MakeFileDestination(
-            sLogPath, QsLogging::EnableLogRotation,
-            QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
-    QsLogging::DestinationPtr debugDestination(
-          QsLogging::DestinationFactory::MakeDebugOutputDestination());
-    logger.addDestination(debugDestination);
-    logger.addDestination(fileDestination);
-#if defined _DEBUG_
-    logger.setLoggingLevel(QsLogging::DebugLevel);
-#else
-    logger.setLoggingLevel(QsLogging::InfoLevel);
-#endif
 
 #if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");
@@ -254,7 +259,7 @@ int main(int argc, char *argv[])
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
-    int result =  app.exec();
+    int result = app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();
@@ -262,10 +267,12 @@ int main(int argc, char *argv[])
 
     return result;
   } else {
+    /*
     if (runCommandLine) {
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
+    */
 
     /********* for debugging *************/
 

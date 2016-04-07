@@ -275,7 +275,7 @@ void ZFlyEmBodySplitProject::quickViewFunc()
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       if (obj.isEmpty()) {
-        int bodyId = getBodyId();
+        uint64_t bodyId = getBodyId();
         obj = reader.readBody(bodyId);
         if (!obj.isEmpty()) {
           obj.canonize();
@@ -801,7 +801,8 @@ void ZFlyEmBodySplitProject::decomposeBody()
 
   getProgressSignal()->advanceProgress(0.1);
   emitMessage(QString("Identifying isolated objects ..."));
-  std::vector<ZObject3dScan> objArray = wholeBody->getConnectedComponent();
+  std::vector<ZObject3dScan> objArray =
+      wholeBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
   getProgressSignal()->advanceProgress(0.2);
 
   QList<uint64_t> newBodyIdList;
@@ -824,11 +825,12 @@ void ZFlyEmBodySplitProject::decomposeBody()
     }
 
     index = 0;
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+    for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter, ++index) {
       if (index != maxIndex) {
-        const ZObject3dScan &obj = *iter;
-        wholeBody->subtract(obj);
+        ZObject3dScan &obj = *iter;
+        obj.canonize();
+        wholeBody->subtractSliently(obj);
         uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
         QString msg;
         if (newBodyId > 0) {
@@ -977,7 +979,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (minObjSize > 0) { //Isolated objects from the original body
     emitMessage(QString("Identifying isolated objects ..."));
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
     if (objArray.size() > 1) {
       body.clear();
       for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
@@ -990,6 +993,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         }
       }
     }
+    LINFO() << "#Small body group voxels:" << smallBodyGroup.getVoxelNumber();
   }
 
   getProgressSignal()->advanceProgress(0.1);
@@ -1010,6 +1014,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
     emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
+    QString sizeMessage = "Object sizes: ";
+    for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan *obj = *iter;
+      sizeMessage +=
+          QString("%1: %2; ").arg(obj->getLabel()).arg(obj->getVoxelNumber());
+    }
+    emitMessage(sizeMessage);
 #ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -1030,17 +1042,20 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan *obj = *iter;
+//      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());??
       if (obj->getLabel() > 1) {
         obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
+        /* Subtract a split body.
+         * currentBody is the one to split; body becomes the remained part */
         ZObject3dScan currentBody = body.subtract(*obj);
 
         if (currentBody.isEmpty()) {
           emitError("Warning: Empty split detected.");
         } else {
-          if (!dsIntv.isZero()) {
+          if (!dsIntv.isZero()) { //Check isolations caused by downsampling
             std::vector<ZObject3dScan> objArray =
-                currentBody.getConnectedComponent();
+                currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
             if (objArray.empty()) {
               emitError("Warning: Empty split detected after connect component analysis.");
             }
@@ -1081,7 +1096,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   }
 
   if (!body.isEmpty() && m_runningCca /*&& minObjSize > 0*/) { //Check isolated objects after split
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
 #ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -1093,6 +1109,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       dp = 0.2 / objArray.size();
     }
 
+    mainBody.upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
     for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan &obj = *iter;
@@ -1177,7 +1194,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
           */
 
-    wholeBody->subtract(obj);
+    wholeBody->subtractSliently(obj);
 
     uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
     ++bodyIndex;
@@ -1663,16 +1680,16 @@ void ZFlyEmBodySplitProject::updateBodyMask()
                 stack->getOffset().getZ(), 1, NULL);
                 */
 
-          std::map<int, ZObject3dScan*> *bodySet =
+          std::map<uint64_t, ZObject3dScan*> *bodySet =
               ZObject3dScan::extractAllObject(
                 array->getDataPointer<uint64_t>(), array->getDim(0),
                 array->getDim(1), 1,
                 array->getStartCoordinate(2), 1, NULL);
 
           frame->document()->blockSignals(true);
-          for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+          for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
                iter != bodySet->end(); ++iter) {
-            int label = iter->first;
+            uint64_t label = iter->first;
             ZObject3dScan *obj = iter->second;
             if (label > 0) {
               obj->translate(

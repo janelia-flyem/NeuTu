@@ -382,6 +382,12 @@
       <addaction name="actionHackathonSimmat"/>
       <addaction name="actionHackathonEvaluate"/>
      </widget>
+     <widget class="QMenu" name="menuSeven_Column">
+      <property name="title">
+       <string>Seven Column</string>
+      </property>
+      <addaction name="actionNeuroMorpho"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -397,6 +403,7 @@
      <addaction name="separator"/>
      <addaction name="menuHackathon"/>
      <addaction name="menuTEM_Paper"/>
+     <addaction name="menuSeven_Column"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -1427,6 +1434,11 @@
   <action name="actionImport_Sparsevol_Json">
    <property name="text">
     <string>Sparsevol Json</string>
+   </property>
+  </action>
+  <action name="actionNeuroMorpho">
+   <property name="text">
+    <string>NeuroMorpho</string>
    </property>
   </action>
  </widget>

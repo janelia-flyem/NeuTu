@@ -411,12 +411,12 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 }
 
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
-    int targetId, const std::vector<int> &bodyId)
+    uint64_t targetId, const std::vector<uint64_t> &bodyId)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(targetId);
-    for (std::vector<int>::const_iterator iter = bodyId.begin();
+    for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
          iter != bodyId.end(); ++iter) {
       if (*iter != targetId) {
         ZFlyEmBodyAnnotation subann = reader.readBodyAnnotation(*iter);
@@ -445,14 +445,14 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
       if (!labelMap.isEmpty()) {
         //reorganize the map
-        QMap<int, std::vector<int> > mergeMap;
-        foreach (int sourceId, labelMap.keys()) {
-          int targetId = labelMap.value(sourceId);
+        QMap<uint64_t, std::vector<uint64_t> > mergeMap;
+        foreach (uint64_t sourceId, labelMap.keys()) {
+          uint64_t targetId = labelMap.value(sourceId);
           if (mergeMap.contains(targetId)) {
-            std::vector<int> &idArray = mergeMap[targetId];
+            std::vector<uint64_t> &idArray = mergeMap[targetId];
             idArray.push_back(sourceId);
           } else {
-            mergeMap[targetId] = std::vector<int>();
+            mergeMap[targetId] = std::vector<uint64_t>();
             mergeMap[targetId].push_back(sourceId);
           }
         }
@@ -460,7 +460,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
         const std::set<uint64_t> &bodySet =
             getSelection(NeuTube::BODY_LABEL_ORIGINAL);
 
-        foreach (int targetId, mergeMap.keys()) {
+        foreach (uint64_t targetId, mergeMap.keys()) {
           dvidWriter.mergeBody(
                 m_dvidTarget.getBodyLabelName(),
                 targetId, mergeMap.value(targetId));
@@ -777,7 +777,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_MAPPED));
             }
@@ -817,56 +817,6 @@ void ZFlyEmBodyMergeProject::update3DBodyViewPlane(
   if (m_bodyWindow != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindowPlane(m_bodyWindow, dvidInfo, viewParam);
   }
-
-#if 0
-    ZRect2d rect;
-    ZStackDocHelper docHelper;
-    docHelper.extractCurrentZ(getDocument());
-    if (docHelper.hasCurrentZ()) {
-      rect.setZ(docHelper.getCurrentZ());
-      //    rect.setZ(getCurrentZ());
-      rect.setFirstCorner(dvidInfo.getStartCoordinates().getX(),
-                          dvidInfo.getStartCoordinates().getY());
-      rect.setLastCorner(dvidInfo.getEndCoordinates().getX(),
-                         dvidInfo.getEndCoordinates().getY());
-      ZCuboid box;
-      box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
-      box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-      double lineWidth = box.depth() / 2000.0;
-      Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
-
-      if (viewParam.getViewPort().isValid()) {
-        Z3DGraphNode node1;
-        Z3DGraphNode node2;
-
-        node1.setColor(QColor(255, 0, 0));
-        node2.setColor(QColor(255, 0, 0));
-
-        double x = viewParam.getViewPort().center().x();
-        double y = viewParam.getViewPort().center().y();
-
-        double width = lineWidth * 0.3;
-        node1.set(x, rect.getFirstY(), rect.getZ(), width);
-        node2.set(x, rect.getLastY(), rect.getZ(), width);
-
-        graph->addNode(node1);
-        graph->addNode(node2);
-        graph->addEdge(node1, node2, GRAPH_LINE);
-
-        node1.set(rect.getFirstX(), y, rect.getZ(), width);
-        node2.set(rect.getLastX(), y, rect.getZ(), width);
-
-        graph->addNode(node1);
-        graph->addNode(node2);
-        graph->addEdge(node1, node2, GRAPH_LINE);
-      }
-
-      graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
-      m_coarseBodyWindow->getDocument()->addObject(graph, true);
-    }
-
-  }
-#endif
 }
 
 void ZFlyEmBodyMergeProject::update3DBodyViewBox(const ZDvidInfo &dvidInfo)
@@ -975,7 +925,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 //          body.setColor(sparseObject->getColor());
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(
                               label, NeuTube::BODY_LABEL_MAPPED));
@@ -1064,7 +1014,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 
           if (getDocument<ZFlyEmProofDoc>() != NULL) {
             ZDvidLabelSlice *labelSlice =
-                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice();
+                getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL));
             }
@@ -1115,9 +1065,9 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
   }
 }
 
-int ZFlyEmBodyMergeProject::getSelectedBodyId() const
+uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
-  int bodyId = -1;
+  uint64_t bodyId = 0;
   if (m_dataFrame != NULL) {
     bodyId = m_dataFrame->getCompleteDocument()->getSelectedBodyId();
     /*
@@ -1136,7 +1086,7 @@ int ZFlyEmBodyMergeProject::getSelectedBodyId() const
 
 void ZFlyEmBodyMergeProject::notifySplit()
 {
-  int bodyId = getSelectedBodyId();
+  uint64_t bodyId = getSelectedBodyId();
   if (bodyId > 0) {
     emit splitSent(m_dvidTarget, bodyId);
   }
@@ -1419,7 +1369,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL /*&& !m_currentSelected.empty()*/) {
-    ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice();
+    ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(!hl);
 //    doc->blockSignals(true);
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -1440,7 +1390,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
         obj->setLabel(bodyId);
 //        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(doc->getDvidLabelSlice()->getColor(
+        obj->setColor(doc->getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         doc->addObject(obj);
       }

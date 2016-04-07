@@ -170,7 +170,9 @@ void main()
 #endif
     vec3 rayVector = exitRayPosition - startRayPosition;
     float maxRayLength = length(rayVector);
-    float stepSize = maxRayLength / (sampling_rate * length(normalize(rayVector) * dimension));
+    vec3 numVoxels = abs(rayVector * dimension);
+    float numVoxel = max(max(numVoxels.x, numVoxels.y), numVoxels.z);
+    float stepSize = maxRayLength / (sampling_rate * numVoxel);
 
     float currentRayLength = 0.0;
     float rayDepth = -1.0;

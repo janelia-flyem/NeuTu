@@ -840,6 +840,10 @@ static int count_double(const char *str)
 double *String_To_Double_Array(const char *str, double *array, int *n)
 {
   *n = count_double(str);
+  if (*n == 0) {
+    return array;
+  }
+
   if (array == NULL) {
     array = darray_malloc(*n);
   }

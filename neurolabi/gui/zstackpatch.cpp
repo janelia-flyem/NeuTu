@@ -27,8 +27,13 @@ ZPoint ZStackPatch::getFinalOffset() const
 }
 
 void ZStackPatch::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   if (m_stack != NULL) {
     int dataFocus = iround(painter.getZOffset() + slice);
 

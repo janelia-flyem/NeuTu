@@ -109,5 +109,11 @@
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
+        <file>images/add_post.png</file>
+        <file>images/todo.png</file>
+        <file>images/roi_box.png</file>
+        <file>images/cancel.png</file>
+        <file>images/zoom2.png</file>
+        <file>images/view_todo.png</file>
     </qresource>
 </RCC>

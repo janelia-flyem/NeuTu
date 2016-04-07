@@ -17,10 +17,10 @@ then
   if [ `uname` == 'Darwin' ]
   then
     curl -O https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
-    bash Miniconda-latest-MacOSX-x86_64.sh -p $condaDir
+    bash Miniconda-latest-MacOSX-x86_64.sh -b -p $condaDir
   else
     wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-    bash Miniconda-latest-Linux-x86_64.sh -p $condaDir
+    bash Miniconda-latest-Linux-x86_64.sh -b -p $condaDir
   fi
 fi
 
@@ -28,7 +28,12 @@ if [ ! -d $condaDir/envs/dvidenv ]
 then
   CONDA_ROOT=`$condaDir/bin/conda info --root`
   source ${CONDA_ROOT}/bin/activate root
-  $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+  { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
 fi
 
+if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+then
+  source ${CONDA_ROOT}/bin/activate dvidenv
+  $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+fi
 

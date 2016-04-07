@@ -25,7 +25,8 @@ public:
 
   void setLabel(int label);
 
-  void display(ZPainter &painter, int z, EDisplayStyle option) const;
+  void display(ZPainter &painter, int z, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   void append(const ZObject3dScan &obj);
 

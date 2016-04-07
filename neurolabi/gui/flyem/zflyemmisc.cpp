@@ -233,7 +233,8 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   Z3DGraphFactory factory;
   factory.setNodeRadiusHint(0);
   factory.setShapeHint(GRAPH_LINE);
-  factory.setEdgeColorHint(QColor(128, 64, 64));
+  factory.setEdgeColorHint(roi.getColor());
+//  factory.setEdgeColorHint(QColor(128, 64, 64));
 
   for (k = 0; k <= cdepth; k ++) {
     for (j = 0; j <= cheight; j++) {
@@ -401,7 +402,9 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
 
     window->getDocument()->addObject(graph, true);
-    window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+    if (window->isBackgroundOn()) {
+      window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+    }
   }
 }
 
@@ -409,16 +412,25 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
     Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
-    if (!dvidTarget.getRoiName().empty()) {
+    const std::vector<std::string> &roiList = dvidTarget.getRoiList();
+    if (!roiList.empty()) {
       ZDvidReader reader;
       if (reader.open(dvidTarget)) {
-        ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
-        if (!roi.isEmpty()) {
-          Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
-          graph->setSource(
-                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
-                  dvidTarget.getRoiName()));
-          window->getDocument()->addObject(graph, true);
+        ZColorScheme colorScheme;
+        colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+        int index = 0;
+        for (std::vector<std::string>::const_iterator iter = roiList.begin();
+             iter != roiList.end(); ++iter, ++index) {
+          ZObject3dScan roi = reader.readRoi(*iter);
+          roi.setColor(colorScheme.getColor(index));
+          if (!roi.isEmpty()) {
+            Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
+//            graph->setColor(colorScheme.getColor(index));
+//            graph->syncNodeColor();
+            graph->setSource(
+                  ZStackObjectSourceFactory::MakeFlyEmRoiSource(*iter));
+            window->getDocument()->addObject(graph, true);
+          }
         }
       }
     }

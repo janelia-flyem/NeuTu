@@ -134,22 +134,24 @@ void ZSwcNodeObjsModel::setupModelData(ZObjsItem *parent)
     //nodeParent->setToolTip(QString("source: %1").arg(QString::fromStdString(swcTree->source())));
     //parent->appendChild(nodeParent);
 
-    swcTree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);   //depth first
-    for (Swc_Tree_Node *tn = swcTree->begin(); tn != swcTree->end(); tn = swcTree->next()) {
-      if (!SwcTreeNode::isVirtual(tn)) {
-        data.clear();
-        data << "" << tn->node.id << tn->node.type << tn->node.d << tn->node.x
-             << tn->node.y << tn->node.z  << tn->node.label << "";
-        if (SwcTreeNode::isBranchPoint(tn)) {
-          m_swcTreeNodeToType[tn] = SwcTreeNode::BRANCH_POINT;
-          m_swcTreeNodeToRow[tn] = branchPointRow++;
-          ZObjsItem *node = new ZObjsItem(data, tn, branchPointItem);
-          branchPointItem->appendChild(node);
-        } else if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isLeaf(tn)) {
-          m_swcTreeNodeToType[tn] = SwcTreeNode::TERMINAL;
-          m_swcTreeNodeToRow[tn] = terminalRow++;
-          ZObjsItem *node = new ZObjsItem(data, tn, terminalItem);
-          terminalItem->appendChild(node);
+    if (swcTree->getStructrualMode() == ZSwcTree::STRUCT_NORMAL) {
+      swcTree->updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);   //depth first
+      for (Swc_Tree_Node *tn = swcTree->begin(); tn != swcTree->end(); tn = swcTree->next()) {
+        if (!SwcTreeNode::isVirtual(tn)) {
+          data.clear();
+          data << "" << tn->node.id << tn->node.type << tn->node.d << tn->node.x
+               << tn->node.y << tn->node.z  << tn->node.label << "";
+          if (SwcTreeNode::isBranchPoint(tn)) {
+            m_swcTreeNodeToType[tn] = SwcTreeNode::BRANCH_POINT;
+            m_swcTreeNodeToRow[tn] = branchPointRow++;
+            ZObjsItem *node = new ZObjsItem(data, tn, branchPointItem);
+            branchPointItem->appendChild(node);
+          } else if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isLeaf(tn)) {
+            m_swcTreeNodeToType[tn] = SwcTreeNode::TERMINAL;
+            m_swcTreeNodeToRow[tn] = terminalRow++;
+            ZObjsItem *node = new ZObjsItem(data, tn, terminalItem);
+            terminalItem->appendChild(node);
+          }
         }
       }
     }

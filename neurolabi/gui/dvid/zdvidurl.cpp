@@ -2,6 +2,8 @@
 #include <sstream>
 #include "dvid/zdviddata.h"
 #include "zstring.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -14,6 +16,11 @@ const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
+const std::string ZDvidUrl::m_annotationElementCommand = "element";
+const std::string ZDvidUrl::m_annotationElementsCommand = "elements";
+const std::string ZDvidUrl::m_annotationLabelCommand = "label";
+const std::string ZDvidUrl::m_annotationMoveCommand = "move";
+const std::string ZDvidUrl::m_annotationTagCommand = "tag";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -128,27 +135,47 @@ std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
 //      ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL);
 }
 
-std::string ZDvidUrl::getSparsevolUrl(int bodyId) const
+std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
 {
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
-std::string ZDvidUrl::getSparsevolUrl(int bodyId, int z) const
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, int z, NeuTube::EAxis axis) const
 {
-  ZString url = getSparsevolUrl(bodyId) + "?minz=";
-  url.appendNumber(z);
-  url += "&maxz=";
+  ZString url = getSparsevolUrl(bodyId);
+
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(z);
+    url += "&maxz=";
+    break;
+  case NeuTube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(z);
+    url += "&maxx=";
+    break;
+  case NeuTube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(z);
+    url += "&maxy=";
+    break;
+    break;
+  }
+
   url.appendNumber(z);
 
   return url;
 }
 
-std::string ZDvidUrl::getSparsevolUrl(
-    int bodyId, const std::string &dataName) const
+std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
 {
+  /*
   if (bodyId < 0) {
     return "";
   }
+  */
 
   ZString str;
   str.appendNumber(bodyId);
@@ -192,12 +219,13 @@ std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
                            ZDvidData::ROLE_BODY_LABEL, bodyLabelName));
 }
 
-std::string ZDvidUrl::getThumbnailUrl(
-    int bodyId, const std::string &bodyLabelName) const
+std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
+  /*
   if (bodyId < 0) {
     return "";
   }
+  */
 
   ZString str;
   str.appendNumber(bodyId);
@@ -211,6 +239,11 @@ std::string ZDvidUrl::getThumbnailUrl(
 std::string ZDvidUrl::getRepoUrl() const
 {
   return getApiUrl() + "/repo/" + m_dvidTarget.getUuid();
+}
+
+std::string ZDvidUrl::getInfoUrl() const
+{
+  return getRepoUrl() + "/info";
 }
 
 std::string ZDvidUrl::getInstanceUrl() const
@@ -516,14 +549,58 @@ std::string ZDvidUrl::getTileUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
+std::string ZDvidUrl::getBookmarkKeyUrl() const
+{
+  return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY));
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getBookmarkKeyUrl() << "/" << m_keyCommand << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
+{
+  return getBookmarkKeyUrl(pt.getX(), pt.getY(), pt.getZ());
+}
+
 std::string ZDvidUrl::getBookmarkUrl() const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK));
 }
 
+std::string ZDvidUrl::getBookmarkUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getBookmarkUrl() << "/" << m_annotationElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getBookmarkUrl(
+    const ZIntPoint &pt, int width, int height, int depth) const
+{
+  return getBookmarkUrl(pt.getX(), pt.getY(), pt.getZ(), width, height, depth);
+}
+
+std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
+{
+  return getBookmarkUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+                        box.getDepth());
+}
+
 std::string ZDvidUrl::getCustomBookmarkUrl(const std::string &userName) const
 {
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK), userName);
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), userName);
 }
 
 std::string ZDvidUrl::getTileUrl(
@@ -596,4 +673,194 @@ std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
   return getDataUrl(dataName) + "/" + m_roiCommand;
+}
+
+std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
+{
+  return getDataUrl(dataName);
+}
+
+std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/sync";
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, const std::string tag) const
+{
+  return getAnnotationUrl(dataName) + "/" + m_annotationTagCommand + "/" + tag;
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, uint64_t label) const
+{
+  std::ostringstream stream;
+  stream << label;
+  return getAnnotationUrl(dataName) + "/" + m_annotationLabelCommand + "/" +
+      stream.str();
+}
+
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getAnnotationUrl(dataName) << "/"
+         << m_annotationElementCommand << "/" << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName,
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getAnnotationUrl(dataName) << "/" << m_annotationElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getAnnotationUrl(
+    const std::string &dataName, const ZIntCuboid &box) const
+{
+  return getAnnotationUrl(
+        dataName, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        box.getDepth());
+}
+
+std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
+}
+
+std::string ZDvidUrl::getAnnotationDeleteUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/element";
+}
+
+std::string ZDvidUrl::getAnnotationDeleteUrl(
+    const std::string &dataName, int x, int y, int z) const
+{
+  std::ostringstream stream;
+  stream << getAnnotationDeleteUrl(dataName) << "/" << x << "_" << y << "_"
+         << z;
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl() const
+{
+  return getDataUrl(m_dvidTarget.getSynapseName());
+}
+
+std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_annotationElementCommand << "/" << x
+         << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(const ZIntPoint &pos) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ());
+}
+
+std::string ZDvidUrl::getSynapseUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_annotationElementsCommand << "/"
+         << width << "_" << height << "_" << depth << "/"
+         << x << "_" << y << "_" << z;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseElementsUrl() const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_annotationElementsCommand;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(
+    const ZIntPoint &pos, int width, int height, int depth) const
+{
+  return getSynapseUrl(pos.getX(), pos.getY(), pos.getZ(),
+                       width, height, depth);
+}
+
+std::string ZDvidUrl::getSynapseMoveUrl(
+    const ZIntPoint &from, const ZIntPoint &to) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_annotationMoveCommand << "/"
+         << from.getX() << "_" << from.getY() << "_" << from.getZ() << "/"
+         << to.getX() << "_" << to.getY() << "_" << to.getZ();
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
+{
+  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+                       box.getDepth());
+}
+
+std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
+{
+  std::ostringstream stream;
+
+  stream << getSynapseUrl() << "/" << m_annotationLabelCommand << "/"
+         << label;
+
+  return stream.str();
+}
+
+std::string ZDvidUrl::getTodoListUrl() const
+{
+  return getAnnotationUrl(m_dvidTarget.getTodoListName());
+}
+
+std::string ZDvidUrl::getTodlListElementsUrl() const
+{
+  return getAnnotationElementsUrl(m_dvidTarget.getTodoListName());
+}
+
+std::string ZDvidUrl::getTodoListDeleteUrl(int x, int y, int z) const
+{
+  return getAnnotationDeleteUrl(m_dvidTarget.getTodoListName(), x, y, z);
+}
+
+std::string ZDvidUrl::getTodoListUrl(
+    int x, int y, int z, int width, int height, int depth) const
+{
+  return getAnnotationUrl(m_dvidTarget.getTodoListName(),
+                          x, y, z, width, height, depth);
+}
+
+std::string ZDvidUrl::getTodoListUrl(int x, int y, int z) const
+{
+  return getTodoListUrl(x, y, z, 1, 1, 1);
+}
+
+std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
+{
+  return getTodoListUrl(cuboid.getFirstCorner().getX(),
+                        cuboid.getFirstCorner().getY(),
+                        cuboid.getFirstCorner().getZ(),
+                        cuboid.getWidth(), cuboid.getHeight(),
+                        cuboid.getDepth());
 }

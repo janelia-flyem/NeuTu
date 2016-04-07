@@ -14,6 +14,7 @@ class ZMouseEventProcessor
 {
 public:
   ZMouseEventProcessor();
+  ~ZMouseEventProcessor();
 
   void setInteractiveContext(ZInteractiveContext *context);
   void setImageWidget(ZImageWidget *widget);

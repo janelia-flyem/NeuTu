@@ -38,6 +38,7 @@ public:
   void setSelected(ZStackObject *obj, bool selected);
   void setSelected(bool selected);
   void setSelected(ZStackObject::EType type, bool selected);
+  void deselectAll();
 
   /*!
    * \brief Reset selection recorder
@@ -125,6 +126,9 @@ public:
   void removeAllObject(bool deleting = true);
 
   TStackObjectList& getObjectList(ZStackObject::EType type);
+  template<typename T>
+  QList<T*> getObjectList() const;
+
   const TStackObjectList& getObjectList(ZStackObject::EType type) const;
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
@@ -200,6 +204,22 @@ void ZStackObjectGroup::take(
 {
   removeObject(first, last, false);
 }
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList() const
+{
+  QList<T*> tList;
+
+  TStackObjectList& objList =
+      const_cast<TStackObjectList&>(getObjectList(T::GetType()));
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    tList.append(dynamic_cast<T*>(*iter));
+  }
+
+  return tList;
+}
+
 
 typedef ZSharedPointer<ZStackObjectGroup> ZStackObjectGroupPtr;
 

@@ -11,6 +11,11 @@ ZMouseEventProcessor::ZMouseEventProcessor() :
   registerMapper();
 }
 
+ZMouseEventProcessor::~ZMouseEventProcessor()
+{
+  qDebug() << "ZMouseEventProcessor destroyed";
+}
+
 void ZMouseEventProcessor::registerMapper()
 {
   m_mapperList.append(&m_leftButtonReleaseMapper);
@@ -106,7 +111,7 @@ const ZMouseEventMapper& ZMouseEventProcessor::getMouseEventMapper(
       return m_leftButtonPressMapper;
     } else if (event.getButtons() == Qt::RightButton) {
       return m_rightButtonPressMapper;
-    } else if (event.getButtons() == Qt::LeftButton | Qt::RightButton) {
+    } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton)) {
       return m_bothButtonPressMapper;
     }
     break;
@@ -143,6 +148,7 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 {
   ZPoint pt(x, y, z);
   mapPositionFromWidgetToRawStack(pt.xRef(), pt.yRef());
+  pt.shiftSliceAxis(m_imageWidget->getSliceAxis());
 
   return pt;
 }
@@ -150,7 +156,7 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 void ZMouseEventProcessor::mapPositionFromWidgetToRawStack(double *x, double *y)
 const
 {
-  QSize csize = m_imageWidget->projectSize();
+  QSizeF csize = m_imageWidget->projectSize();
 
   if (csize.width() > 0 && csize.height() > 0) {
     *x = *x * (m_imageWidget->viewPort().width()) / csize.width() +

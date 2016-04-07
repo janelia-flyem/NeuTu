@@ -218,7 +218,7 @@ QVariant ZFlyEmNeuronConnectionPresenter::data(
     {
       const ZFlyEmNeuron *input = neuron.getStrongestInput();
       if (input != NULL) {
-        return input->getId();
+        return QString("%1").arg(input->getId());
       } else {
         return QVariant();
       }
@@ -227,7 +227,7 @@ QVariant ZFlyEmNeuronConnectionPresenter::data(
     {
       const ZFlyEmNeuron *output = neuron.getStrongestOutput();
       if (output != NULL) {
-        return output->getId();
+        return QString("%1").arg(output->getId());
       } else {
         return QVariant();
       }

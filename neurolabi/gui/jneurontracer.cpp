@@ -163,7 +163,7 @@ void JNeuronTracer::createMask2D(int nx, int ny, float *I, float *bw)
   gaussianFilter2D(nx, ny, Wx, Wy, u, u, sigma);
 
   for (i=0;  i<nxy; i++) {
-    if (v[i] > lambdaRatioThr*abs(u[i])) {
+    if (v[i] > lambdaRatioThr*fabs(u[i])) {
       //bw[i] = pow(v[i],expComp) * exp(-5.0*abs(u[i])/(v[i]+1e-10));
       bw[i] = pow(v[i],expCompr);
     } else {

@@ -29,6 +29,14 @@ namespace C_Stack {
 */
 ssize_t offset(int x, int y, int z, int width, int height, int depth);
 
+/*!
+ * \brief Neighborhood check.
+ */
+int neighborTest(int conn, int width, int height, int depth, size_t index,
+                 int *isInBound);
+int neighborTest(int conn, int width, int height, int depth,
+                 int x, int y, int z, int *isInBound);
+
 //Functions for Stack
 
 //Stack deallocator, mainly used for constructing a ZStack object
@@ -295,7 +303,7 @@ inline size_t elementNumber(const Mc_Stack *stack) {
 }
 
 inline size_t allByteNumber(const Mc_Stack *stack) {
-  return volumeByteNumber(stack);
+  return volumeByteNumber(stack) * channelNumber(stack);
 }
 
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
@@ -326,10 +334,6 @@ void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 
-int neighborTest(int conn, int width, int height, int depth, size_t index,
-                 int *isInBound);
-int neighborTest(int conn, int width, int height, int depth,
-                 int x, int y, int z, int *isInBound);
 
 Stack* extractChannel(const Stack *stack, int c);
 
@@ -363,6 +367,7 @@ void write(const std::string &filePath, const Mc_Stack *stack,
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
+char* toMrawBuffer(const Mc_Stack *stack, size_t *length);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);

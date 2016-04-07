@@ -16,6 +16,7 @@
 #include <cstdio>
 #include "tz_geo3d_utils.h"
 #include "zintpoint.h"
+#include "geometry/zgeometry.h"
 
 const double ZPoint::m_minimalDistance = 1e-5;
 
@@ -172,9 +173,19 @@ ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2)
   return ZPoint(pt1) += pt2;
 }
 
+ZPoint operator + (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() + offset, pt.y() + offset, pt.z() + offset);
+}
+
 ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2)
 {
   return ZPoint(pt1) -= pt2;
+}
+
+ZPoint operator - (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() - offset, pt.y() - offset, pt.z() - offset);
 }
 
 ZPoint operator * (const ZPoint &pt1, double scale)
@@ -370,4 +381,28 @@ bool ZPoint::operator <(const ZPoint &pt) const
   }
 
   return x() < pt.x();
+}
+
+void ZPoint::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
+}
+
+void ZPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+}
+
+double ZPoint::getSliceCoord(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return m_x;
+  case NeuTube::Y_AXIS:
+    return m_y;
+  case NeuTube::Z_AXIS:
+    return m_z;
+  }
+
+  return m_z;
 }

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -e 
+
+export PATH=/usr/bin:/usr/local/bin:/bin
+
+if test $# -eq 0
+then
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+echo "Installing NeuTu under $install_dir"
+if [ ! -d $install_dir ]
+then
+  mkdir -p $install_dir
+fi
+
+if [ ! -d $install_dir/bin ]
+then
+  mkdir $install_dir/bin
+fi
+
+if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+then
+  export PATH=/opt/gcc482/bin:$PATH
+  echo $PATH
+  which gcc
+fi
+
+downloadDir=$install_dir/Download
+if [ ! -d $downloadDir ]
+then
+  mkdir $downloadDir
+  chmod a+w $downloadDir
+fi
+
+./flyem_setup_linux_conda $install_dir
+
+cd $downloadDir
+
+
+GIT_CMD=/usr/bin/git
+if [ -f /usr/local/git/bin/git ]
+then
+  export PATH=/usr/local/git/bin:$PATH
+  GIT_CMD=/usr/local/git/bin/git
+fi
+
+if [ ! -d $downloadDir/flyem-build-conda ]
+then
+  $GIT_CMD clone http://github.com/janelia-flyem/flyem-build-conda.git
+fi
+
+cd $downloadDir/flyem-build-conda
+{ echo y; } | $downloadDir/miniconda/bin/conda install conda-build
+$downloadDir/miniconda/bin/conda build neutu -c flyem

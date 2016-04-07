@@ -94,6 +94,21 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
   }
 }
 
+void ZStackObjectGroup::deselectAll()
+{
+  for (TObjectSetMap::iterator iter = m_selectedSet.begin();
+       iter != m_selectedSet.end(); ++iter) {
+    TStackObjectSet &selectedSet = iter.value();
+    for (TStackObjectSet::iterator objIter = selectedSet.begin();
+         objIter != selectedSet.end(); ++objIter) {
+      ZStackObject *obj = *objIter;
+      obj->setSelected(false);
+    }
+  }
+  m_selectedSet.clear();
+  m_selector.deselectAll();
+}
+
 ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
 {
   QMutexLocker locker(mutex);
@@ -105,6 +120,8 @@ ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
     //Process subset
     getObjectList(obj->getType()).removeOne(obj);
     //remove_p(getSet(obj->getType()), obj);
+
+    getSelectedSet(obj->getType()).remove(obj);
   }
 
   return found;

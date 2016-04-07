@@ -76,7 +76,12 @@ public:
     TYPE_FLYEM_BOOKMARK,
     TYPE_INT_CUBOID,
     TYPE_LINE_SEGMENT,
-    TYPE_SLICED_PUNCTA
+    TYPE_SLICED_PUNCTA,
+    TYPE_DVID_SYNAPSE,
+    TYPE_DVID_SYNAPE_ENSEMBLE,
+    TYPE_DVID_ANNOTATION,
+    TYPE_FLYEM_TODO_ITEM,
+    TYPE_FLYEM_TODO_LIST
   };
 
   enum Palette_Color {
@@ -116,6 +121,7 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
+  virtual void deselect(bool /*recursive*/) { setSelected(false); }
 
   /*!
    * \brief Display an object to widget
@@ -130,7 +136,8 @@ public:
    *    current slice -(\a slice + 1).
    */
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option) const = 0;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      NeuTube::EAxis sliceAxis) const = 0;
 
   /*!
    * For special painting when ZPainter cannot be created
@@ -140,7 +147,7 @@ public:
    */
   virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode) const;
+      EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -152,10 +159,10 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
-  virtual bool isSliceVisible(int z) const;
+  virtual bool isSliceVisible(int z, NeuTube::EAxis axis) const;
 
   virtual bool hit(double x, double y, double z);
-  virtual bool hit(double x, double y);
+  virtual bool hit(double x, double y, NeuTube::EAxis axis);
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
@@ -164,7 +171,7 @@ public:
    * For compability purpose, it is set to take an output parameter instead of
    * returning the result.
    */
-  virtual void getBoundBox(ZIntCuboid *box) const;
+  virtual void boundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
@@ -191,6 +198,14 @@ public:
 
   double getPenWidth() const;
 
+  double getBasePenWidth() const {
+    return m_basePenWidth;
+  }
+
+  void setBasePenWidth(double width) {
+    m_basePenWidth = width;
+  }
+
   void useCosmeticPen(bool state) {
     m_usingCosmeticPen = state;
   }
@@ -210,6 +225,9 @@ public:
 
   inline std::string getObjectId() const { return m_objectId; }
   inline void setObjectId(const std::string &id) { m_objectId = id; }
+
+  bool hasSameId(const ZStackObject *obj) const;
+  static bool hasSameId(const ZStackObject *obj1, const ZStackObject *obj2);
 
   inline std::string getObjectClass() const { return m_objectClass; }
   inline void setObjectClass(const std::string &id) { m_objectClass = id; }
@@ -250,6 +268,10 @@ public:
 
   inline ZStackObject::EType getType() const {
     return m_type;
+  }
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_UNIDENTIFIED;
   }
 
   inline const ZStackObjectRole& getRole() const {
@@ -295,6 +317,8 @@ public:
     m_isHittable = state;
   }
 
+  void setHitPoint(const ZIntPoint &pt);
+
   inline bool isProjectionVisible() const {
     return m_projectionVisible;
   }
@@ -307,6 +331,9 @@ public:
   virtual void removeVisualEffect(NeuTube::Display::TVisualEffect ve);
   virtual void setVisualEffect(NeuTube::Display::TVisualEffect ve);
   bool hasVisualEffect(NeuTube::Display::TVisualEffect ve) const;
+
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
 public:
   static bool isEmptyTree(const ZStackObject *obj);
@@ -326,6 +353,7 @@ protected:
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
+  double m_basePenWidth;
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;
@@ -335,9 +363,11 @@ protected:
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
+  NeuTube::EAxis m_sliceAxis;
 
   NeuTube::Display::TVisualEffect m_visualEffect;
 
+  mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;
 };
 
