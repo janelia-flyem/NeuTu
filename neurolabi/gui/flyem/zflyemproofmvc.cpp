@@ -2865,4 +2865,55 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
+void ZFlyEmProofMvc::getROIs()
+{
+    //
+    ZDvidReader reader;
+
+    //
+    if (reader.open(getDvidTarget()))
+    {
+        ZJsonObject meta = reader.readInfo();
+
+        //
+        ZJsonValue datains = meta.value("DataInstances");
+
+        if(datains.isObject())
+        {
+            ZJsonObject insList(datains);
+            std::vector<std::string> keys = insList.getAllKey();
+
+            for(std::size_t i=0; i<keys.size(); i++)
+            {
+                std::size_t found = keys.at(i).find("roi");
+
+                if(found!=std::string::npos)
+                {
+
+                    ZObject3dScan roi = reader.readRoi(keys.at(i));
+
+                    if(!roi.isEmpty())
+                    {
+                        roiList.push_back(keys.at(i));
+                        loadedROIs.push_back(roi);
+
+                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
+                        roiSourceList.push_back(source);
+                        colorModified.push_back(false);
+                    }
+
+                }
+            }
+
+        }
+
+        //
+        window->setROIs(roiList.size());
+
+        //
+        makeGUI();
+
+    }
+
+}
 

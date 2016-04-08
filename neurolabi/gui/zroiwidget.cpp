@@ -79,7 +79,6 @@ void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDv
 
             }
 
-
             //
             window->setROIs(roiList.size());
 

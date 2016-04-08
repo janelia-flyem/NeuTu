@@ -195,6 +195,8 @@ public slots:
 
   void syncMergeWithDvid();
 
+  void getROIs();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
