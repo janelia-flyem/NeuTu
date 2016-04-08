@@ -379,6 +379,7 @@ void ZFlyEmToDoList::display(
         }
       }
 
+#if 0
       const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
       for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
            iter != selected.end(); ++iter) {
@@ -386,6 +387,7 @@ void ZFlyEmToDoList::display(
             const_cast<ZFlyEmToDoList&>(*this).getItem(*iter, DATA_LOCAL);
         item.display(painter, slice, option, sliceAxis);
       }
+#endif
     }
   }
 }
@@ -446,21 +448,40 @@ bool ZFlyEmToDoList::toggleHitSelect()
 void ZFlyEmToDoList::selectHit(bool appending)
 {
   if (!appending) {
-    std::vector<ZIntPoint> selectedList = m_selector.getSelectedList();
-    for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
-         iter != selectedList.end(); ++iter) {
-      const ZIntPoint &pt = *iter;
-      ZFlyEmToDoItem &item = getItem(pt, DATA_LOCAL);
-      if (item.isValid()) {
-        item.setSelected(false);
-      }
-    }
-    m_selector.deselectAll();
+    deselectSub();
   }
   m_selector.selectObject(m_hitPoint);
   ZFlyEmToDoItem &item = getItem(m_hitPoint, DATA_LOCAL);
   if (item.isValid()) {
     item.setSelected(true);
+  }
+}
+
+void ZFlyEmToDoList::deselectAll()
+{
+  m_selector.deselectAll();
+}
+
+void ZFlyEmToDoList::deselectSub()
+{
+  std::vector<ZIntPoint> selectedList = m_selector.getSelectedList();
+  for (std::vector<ZIntPoint>::const_iterator iter = selectedList.begin();
+       iter != selectedList.end(); ++iter) {
+    const ZIntPoint &pt = *iter;
+    ZFlyEmToDoItem &item = getItem(pt, DATA_LOCAL);
+    if (item.isValid()) {
+      item.setSelected(false);
+    }
+  }
+  deselectAll();
+}
+
+void ZFlyEmToDoList::deselect(bool recursive)
+{
+  setSelected(false);
+
+  if (recursive) {
+    deselectSub();
   }
 }
 

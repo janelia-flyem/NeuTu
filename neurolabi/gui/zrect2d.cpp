@@ -3,23 +3,21 @@
 #include <cmath>
 #include <QRect>
 #include <QRectF>
+#include <QPen>
 
 #include "geometry/zgeometry.h"
 #include "zpainter.h"
 #include "tz_math.h"
 #include "zsttransform.h"
 
-ZRect2d::ZRect2d() : m_x0(0), m_y0(0), m_width(0), m_height(0), m_z(0),
-  m_isPenetrating(false)
+ZRect2d::ZRect2d()
 {
-  m_type = ZStackObject::TYPE_RECT2D;
+  init(0, 0, 0, 0);
 }
 
-ZRect2d::ZRect2d(int x0, int y0, int width, int height) :
-  m_x0(x0), m_y0(y0), m_width(width), m_height(height), m_z(0),
-  m_isPenetrating(false)
+ZRect2d::ZRect2d(int x0, int y0, int width, int height)
 {
-  m_type = ZStackObject::TYPE_RECT2D;
+  init(x0, y0, width, height);
 }
 
 ZRect2d::~ZRect2d()
@@ -27,6 +25,15 @@ ZRect2d::~ZRect2d()
 #ifdef _DEBUG_
   std::cout << "Destroying ZRect2d: " << getSource() << std::endl;
 #endif
+}
+
+void ZRect2d::init(int x0, int y0, int width, int height)
+{
+  set(x0, y0, width, height);
+  m_z = 0;
+  m_isPenetrating = false;
+  m_type = GetType();
+  useCosmeticPen(true);
 }
 
 void ZRect2d::set(int x0, int y0, int width, int height)
@@ -47,6 +54,18 @@ bool ZRect2d::isSliceVisible(int z, NeuTube::EAxis /*sliceAxis*/) const
   return isValid() && (m_isPenetrating || z == m_z);
 }
 
+void ZRect2d::preparePen(QPen &pen) const
+{
+  pen.setColor(m_color);
+  pen.setWidthF(getPenWidth());
+//  if (isSelected()) {
+//    pen.setWidth(pen.width() + 5);
+//    pen.setStyle(Qt::DashLine);
+//  }
+
+  pen.setCosmetic(m_usingCosmeticPen);
+}
+
 void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                       NeuTube::EAxis sliceAxis) const
 {
@@ -59,17 +78,22 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
     return;
   }
 
-  QColor color = m_color;
-  QPen pen(color);
-  if (isSelected()) {
-    pen.setWidth(pen.width() + 5);
-    pen.setStyle(Qt::DashLine);
-  }
+  QPen pen;
+  preparePen(pen);
 
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
   painter.drawRect(m_x0, m_y0, m_width, m_height);
+
+  if (isSelected()) {
+    QColor color = getColor();
+    color.setAlpha(128);
+    pen.setColor(color);
+    painter.setPen(pen);
+    painter.drawLine(getFirstX(), getFirstY(), getLastX(), getLastY());
+    painter.drawLine(getFirstX(), getLastY(), getLastX(), getFirstY());
+  }
 }
 
 bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
@@ -85,12 +109,8 @@ bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
     return painted;
   }
 
-  QColor color = m_color;
-  QPen pen(color);
-  if (isSelected()) {
-    pen.setWidth(pen.width() + 5);
-    pen.setStyle(Qt::DashLine);
-  }
+  QPen pen;
+  preparePen(pen);
 
   rawPainter->setPen(pen);
   rawPainter->setBrush(Qt::NoBrush);

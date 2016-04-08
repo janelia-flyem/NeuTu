@@ -321,6 +321,10 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           getCompleteDocument(), SLOT(downloadSynapse(int,int,int)));
   connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
+  connect(getCompleteDocument(), SIGNAL(todoEdited(int,int,int)),
+          m_orthoWindow, SLOT(downloadTodo(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(todoEdited(int,int,int)),
+          getCompleteDocument(), SLOT(downloadTodo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(bodyMergeEdited()),
@@ -670,6 +674,13 @@ void ZFlyEmProofMvc::mergeSelected()
   }
 }
 
+void ZFlyEmProofMvc::unmergeSelected()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->unmergeSelected();
+  }
+}
+
 void ZFlyEmProofMvc::undo()
 {
   if (getCompleteDocument() != NULL) {
@@ -918,6 +929,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
           this, SLOT(mergeSelected()));
+  connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
+          this, SLOT(unmergeSelected()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -948,6 +961,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
+          this, SLOT(checkBodyWithMessage(uint64_t,bool)));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           getCompleteDocument(), SLOT(deprecateSplitSource()));
 
@@ -1330,6 +1345,19 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   }
 
   return true;
+}
+
+bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+{
+  bool succ = true;
+
+  if (checkingOut) {
+    succ = checkOutBody(bodyId);
+  } else {
+    succ = checkInBodyWithMessage(bodyId);
+  }
+
+  return succ;
 }
 
 bool ZFlyEmProofMvc::checkInBodyWithMessage(uint64_t bodyId)
@@ -1947,9 +1975,10 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
   if (m_orthoWindow == NULL) {
     makeOrthoWindow();
   }
-  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+
   m_orthoWindow->show();
   m_orthoWindow->raise();
+  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
 void ZFlyEmProofMvc::showSkeletonWindow()
@@ -2243,6 +2272,11 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
     getCompleteDocument()->processObjectModified(slice);
     getCompleteDocument()->notifyObjectModified();
   }
+}
+
+void ZFlyEmProofMvc::showTodo(bool visible)
+{
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);
 }
 
 ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const

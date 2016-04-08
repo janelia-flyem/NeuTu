@@ -95,6 +95,7 @@ signals:
 
 public slots:
   void mergeSelected();
+  void unmergeSelected();
   void undo();
   void redo();
 
@@ -109,6 +110,7 @@ public slots:
   void checkOutBody();
   bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(uint64_t bodyId);
+  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -164,6 +166,7 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showTodo(bool visible);
 
   void loadBookmark();
   void openSequencer();

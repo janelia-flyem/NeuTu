@@ -510,6 +510,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_MERGE:
     action = new QAction("Merge", parent);
     break;
+  case ACTION_BODY_UNMERGE:
+    action = new QAction("Unmerge", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
@@ -544,7 +547,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ZOOM_TO_RECT:
     action = new QAction("Zoom in", parent);
-    action->setIcon(QIcon(":/images/zoomin.png"));
+    action->setIcon(QIcon(":/images/zoom2.png"));
     break;
   case ACTION_ENTER_RECT_ROI_MODE:
     action = new QAction("Draw rectangle ROI", parent);
@@ -554,7 +557,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_CANCEL_RECT_ROI:
     action = new QAction("Cancel", parent);
     action->setToolTip("Cancel the current rectangle ROI");
-    action->setIcon(QIcon(":/images/delete.png"));
+    action->setIcon(QIcon(":/images/cancel.png"));
     break;
   default:
     break;

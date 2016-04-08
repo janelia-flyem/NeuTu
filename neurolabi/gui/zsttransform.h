@@ -2,7 +2,7 @@
 #define ZSTTRANSFORM_H
 
 
-#include "neutube.h"
+#include "neutube_def.h"
 
 class ZPoint;
 class QPointF;
@@ -97,6 +97,10 @@ public:
    * \brief Check if the transformation is identity
    */
   bool isIdentity() const;
+
+  void estimate(
+      double source0, double source1, double target0, double target1,
+      NeuTube::EAxis axis);
 
 private:
   double m_sx;

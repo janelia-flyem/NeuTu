@@ -81,6 +81,17 @@ void ZStackObjectSelector::print() const
   }
 }
 
+void ZStackObjectSelector::deselectAll()
+{
+  for (std::set<const ZStackObject*>::const_iterator iter = m_selectedSet.begin();
+       iter != m_selectedSet.end(); ++iter) {
+    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
+    obj->setSelected(false);
+  }
+  m_deselectedSet.insert(m_selectedSet.begin(), m_selectedSet.end());
+  m_selectedSet.clear();
+}
+
 /*
 bool ZStackObjectSelector::isInSelectedSet(const ZStackObject *obj) const
 {

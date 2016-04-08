@@ -9,7 +9,7 @@ json_t* C_Json::makeObject()
   return json_object();
 }
 
-json_t* C_Json::makeInteger(int v)
+json_t* C_Json::makeInteger(int64_t v)
 {
   return json_integer(v);
 }

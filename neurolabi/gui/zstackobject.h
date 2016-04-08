@@ -122,6 +122,7 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
+  virtual void deselect(bool /*recursive*/) { setSelected(false); }
 
   /*!
    * \brief Display an object to widget
@@ -197,6 +198,14 @@ public:
   }
 
   double getPenWidth() const;
+
+  double getBasePenWidth() const {
+    return m_basePenWidth;
+  }
+
+  void setBasePenWidth(double width) {
+    m_basePenWidth = width;
+  }
 
   void useCosmeticPen(bool state) {
     m_usingCosmeticPen = state;
@@ -345,6 +354,7 @@ protected:
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
+  double m_basePenWidth;
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;

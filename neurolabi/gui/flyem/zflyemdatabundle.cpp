@@ -176,6 +176,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
         std::string name;
         std::string type;
+        bool traced = false;
+
         if (annotationSet.count(bodyId) > 0) {
           ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
           name = annotation.getName();
@@ -185,10 +187,19 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           } else if (!name.empty()) {
             type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
           }
+
+          if (annotation.getStatus() == "Traced" ||
+              annotation.getStatus() == "Hard to trace") { //temporary hack
+            traced = true;
+          }
         }
 
         bool goodNeuron = true;
         if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
           goodNeuron = false;
         }
 
@@ -217,6 +228,17 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
         bool goodNeuron = true;
         if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        bool traced = false;
+
+        if (annotation.getStatus() == "Traced" ||
+            annotation.getStatus() == "Hard to trace") { //temporary hack
+          traced = true;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
           goodNeuron = false;
         }
 

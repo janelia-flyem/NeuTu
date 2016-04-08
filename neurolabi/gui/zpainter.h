@@ -155,6 +155,7 @@ public:
 
   bool isVisible(const QRectF &rect) const;
   bool isVisible(const QRect &rect) const;
+  bool isVisible(double x1, double y1, double x2, double y2) const;
 #endif
 
   /*
