@@ -1149,6 +1149,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_TEXTURE_2D);
   glEnable(GL_MULTISAMPLE);
+  //glEnable(GL_CULL_FACE);
 
   //
   m_wbRT->bind();
