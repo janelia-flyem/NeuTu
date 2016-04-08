@@ -25,6 +25,8 @@ class DvidWriter(object):
 
     def deleteBodyAnnotation(self, bodyId):
         r = requests.delete(self.dvidUrl.getBodyAnnotationUrl(bodyId))
+        print r.url
+        print r.status_code
 
     def deleteKeyValue(self, dataName, key):
         r = requests.delete(self.dvidUrl.getKeyUrl(dataName, key))

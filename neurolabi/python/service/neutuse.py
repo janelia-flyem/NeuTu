@@ -52,7 +52,14 @@ def processEvent(event):
             print "Invalidating body", event.getDataId().getBodyId()
             dvidWriter.deleteSkeleton(event.getDataId().getBodyId())
             dvidWriter.deleteThumbnail(event.getDataId().getBodyId())
+    elif event.getType() == fd.DataEvent.DATA_DELETE:
+        if event.getDataId().getType() == fd.DataId.DATA_BODY:
+            print "Deleting body data", event.getDataId().getBodyId()
+            dvidWriter.deleteSkeleton(event.getDataId().getBodyId())
+            dvidWriter.deleteThumbnail(event.getDataId().getBodyId())
+            dvidWriter.deleteBodyAnnotation(event.getDataId().getBodyId())
     elif event.getType() == fd.DataEvent.DATA_UPDATE:
+        time.sleep(5)
         if event.getDataId().getType() == fd.DataId.DATA_SKELETON:
             print "Skeletionzing body", event.getDataId().getBodyId(), event.dvidEnv
             skl.setDvidEnv(event.dvidEnv)
@@ -63,7 +70,6 @@ def process():
     while True:
         try:
             event = eventQueue.get()
-            time.sleep(5)
             print datetime.datetime.now(), "Processing event ...", event
             processEvent(event)
         except Exception as e:
@@ -81,7 +87,7 @@ def getSchema(service, method):
     if not content:
         raise Exception("Invalid schema")
 
-    print content
+    #print content
 
     serviceHead = False
     methodStart = False
@@ -153,6 +159,7 @@ def updateBody():
     dvidEnv = None
     #dvidServer = getDefaultDvidServer()
     #uuid = getDefaultUuid()
+    option = None
     if request.content_type == 'application/x-www-form-urlencoded':
         bodyIdStr = request.forms.get('bodyId')
         dvidName = request.forms.get('database')
@@ -163,7 +170,7 @@ def updateBody():
         jsonObj = request.json
         try:
             schema = getSchema('update_body', 'post')
-            print schema
+            #print schema
             jsonschema.validate(jsonObj, json.loads(schema))
         except jsonschema.exceptions.ValidationError as inst:
             print 'Invalid json input'
@@ -171,6 +178,7 @@ def updateBody():
             return '<p>Update for ' + str(bodyArray) + ' failed.</p>'
         bodyArray = jsonObj.get('bodies')
         dvidServer = jsonObj.get('dvid-server')
+        option = jsonObj.get('option')
         uuid = jsonObj['uuid']
         bodyArray = jsonObj['bodies']
         config = {'dvid-server': dvidServer, 'uuid': uuid}
@@ -178,14 +186,24 @@ def updateBody():
         dvidEnv.loadServerConfig(config)
         print dvidEnv
 
-    for bodyId in bodyArray:
-        event = fd.DataEvent(fd.DataEvent.DATA_INVALIDATE, fd.DataId(fd.DataId.DATA_BODY, bodyId), dvidEnv)
-        print "+++Event added:", event
-        eventQueue.put(event)
-        event = fd.DataEvent(fd.DataEvent.DATA_UPDATE, fd.DataId(fd.DataId.DATA_SKELETON, bodyId), dvidEnv)
-        print "+++Event added:", event
-        eventQueue.put(event)
+    if not option:
+        option = "update"
 
+    for bodyId in bodyArray:
+        if option == "delete":
+            event = fd.DataEvent(fd.DataEvent.DATA_DELETE, fd.DataId(fd.DataId.DATA_BODY, bodyId), dvidEnv)
+            eventQueue.put(event)
+            print "+++Event added:", event
+
+        if option == "update" or option == "invalidate":
+            event = fd.DataEvent(fd.DataEvent.DATA_INVALIDATE, fd.DataId(fd.DataId.DATA_BODY, bodyId), dvidEnv)
+            eventQueue.put(event)
+            print "+++Event added:", event
+
+        if option == "update":
+            event = fd.DataEvent(fd.DataEvent.DATA_UPDATE, fd.DataId(fd.DataId.DATA_SKELETON, bodyId), dvidEnv)
+            eventQueue.put(event)
+            print "+++Event added:", event
 
 @post('/skeletonize')
 def do_skeletonize():
