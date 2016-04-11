@@ -86,6 +86,7 @@ signals:
     void buttonSettingsToggled(bool);
     void buttonObjectsToggled(bool);
     void buttonROIsToggled(bool);
+    void buttonROIsClicked();
 
     void tabIndexChanged(int);
 

@@ -88,6 +88,7 @@ void ZFlyEmProofMvc::init()
   m_objectWindow = NULL;
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
+  m_ROILoaded = false;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -194,6 +195,8 @@ void ZFlyEmProofMvc::initBodyWindow()
           m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
   connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
+          this, SLOT(getROIs()));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -354,8 +357,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 //    ZFlyEmMisc::Decorate3dBodyWindowRoi(
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
-//    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
-    m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+
+    if(m_ROILoaded)
+        m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 
   /*
@@ -403,6 +407,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_bodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_bodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -421,6 +427,8 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_skeletonWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -436,6 +444,9 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_externalNeuronWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+
+    if(m_ROILoaded)
+        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -2868,7 +2879,14 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 void ZFlyEmProofMvc::getROIs()
 {
     //
+    if(m_ROILoaded)
+        return;
+
+    //
     ZDvidReader reader;
+    m_roiList.clear();
+    m_loadedROIs.clear();
+    m_roiSourceList.clear();
 
     //
     if (reader.open(getDvidTarget()))
@@ -2894,24 +2912,39 @@ void ZFlyEmProofMvc::getROIs()
 
                     if(!roi.isEmpty())
                     {
-                        roiList.push_back(keys.at(i));
-                        loadedROIs.push_back(roi);
+                        m_roiList.push_back(keys.at(i));
+                        m_loadedROIs.push_back(roi);
 
                         std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
-                        roiSourceList.push_back(source);
-                        colorModified.push_back(false);
+                        m_roiSourceList.push_back(source);
                     }
 
                 }
             }
-
         }
 
-        //
-        window->setROIs(roiList.size());
+        m_ROILoaded = true;
 
         //
-        makeGUI();
+        if(m_coarseBodyWindow)
+        {
+            m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_bodyWindow)
+        {
+            m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_externalNeuronWindow)
+        {
+            m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_skeletonWindow)
+        {
+            m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
 
     }
 

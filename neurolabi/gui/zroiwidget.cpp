@@ -19,13 +19,13 @@
 
 ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 {
-    roiList.clear();
+    m_roiList.clear();
     defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 }
 
 ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags flags) : QDockWidget(title, parent, flags)
 {
-    roiList.clear();
+    m_roiList.clear();
     defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 }
 
@@ -34,65 +34,42 @@ ZROIWidget::~ZROIWidget()
 
 }
 
-void ZROIWidget::getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
+void ZROIWidget::getROIs(Z3DWindow *window,
+                         ZDvidInfo &dvidInfo,
+                         std::vector<std::string> roiList,
+                         std::vector<ZObject3dScan> loadedROIs,
+                         std::vector<std::string> roiSourceList)
 {
+    qDebug()<<"setROIs ... "<<window;
+
+    //
     m_window = window;
     m_dvidInfo =  dvidInfo;
-    m_dvidTarget = dvidTarget;
+    m_roiList = roiList;
+    m_loadedROIs = loadedROIs;
+    m_roiSourceList = roiSourceList;
+
+    //
+    size_t N = m_roiList.size();
 
     //
     if (window != NULL)
     {
-        if (reader.open(dvidTarget))
-        {
-            ZJsonObject meta = reader.readInfo();
+        for(size_t i=0; i<N; i++)
+            colorModified.push_back(false);
 
-            //
-            ZJsonValue datains = meta.value("DataInstances");
+        //
+        window->setROIs(N);
 
-            if(datains.isObject())
-            {
-                ZJsonObject insList(datains);
-                std::vector<std::string> keys = insList.getAllKey();
+        //
+        makeGUI();
 
-                for(std::size_t i=0; i<keys.size(); i++)
-                {
-                    std::size_t found = keys.at(i).find("roi");
-
-                    if(found!=std::string::npos)
-                    {
-
-                        ZObject3dScan roi = reader.readRoi(keys.at(i));
-
-                        if(!roi.isEmpty())
-                        {
-                            roiList.push_back(keys.at(i));
-                            loadedROIs.push_back(roi);
-
-                            std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
-                            roiSourceList.push_back(source);
-                            colorModified.push_back(false);
-                        }
-
-                    }
-                }
-
-            }
-
-            //
-            window->setROIs(roiList.size());
-
-            //
-            makeGUI();
-
-        }
-        //} // dvid target is not empty
     } // window is not null
 }
 
 void ZROIWidget::makeGUI()
 {
-    if(roiList.empty())
+    if(m_roiList.empty())
         return;
 
     //
@@ -108,10 +85,10 @@ void ZROIWidget::makeGUI()
 
     //
     //QBrush brush(defaultColor);
-    size_t roiCount = roiList.size();
+    size_t roiCount = m_roiList.size();
     for (std::size_t i = 0; i < roiCount; ++i)
     {
-        QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(roiList[i].c_str()));
+        QTableWidgetItem *roiNameItem = new QTableWidgetItem(QString(m_roiList[i].c_str()));
         roiNameItem->setFlags(roiNameItem->flags() ^ Qt::ItemIsEditable);
         roiNameItem->setCheckState(Qt::Unchecked);
 
@@ -142,6 +119,8 @@ void ZROIWidget::makeGUI()
 
 void ZROIWidget::updateROIs()
 {
+    qDebug()<<"updateROIs ... "<<m_window;
+
     // render selected ROIs
     m_window->getDocument()->blockSignals(true);
     for(int i=0; i<tw_ROIs->rowCount(); i++)
@@ -154,10 +133,10 @@ void ZROIWidget::updateROIs()
             {
                 QColor color = tw_ROIs->item(i,1)->foreground().color();
 
-                if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, roiSourceList[i] )==false)
+                if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i] )==false)
                 {
-                    ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(loadedROIs.at(i), m_dvidInfo, color);
-                    cubes->setSource(roiSourceList[i]);
+                    ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(m_loadedROIs.at(i), m_dvidInfo, color);
+                    cubes->setSource(m_roiSourceList[i]);
                     cubes->setColor(color);
                     m_window->getDocument()->addObject(cubes, true);
                 }
@@ -168,9 +147,9 @@ void ZROIWidget::updateROIs()
                         qDebug()<<"~~~color is changed"<<color;
 
                         colorModified[i] = false;
-                        m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, roiSourceList[i])->setColor(color);
+                        m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])->setColor(color);
                     }
-                    m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, roiSourceList[i], true);
+                    m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], true);
                 }
             }
         }
@@ -178,7 +157,7 @@ void ZROIWidget::updateROIs()
         {
             if(m_window != NULL)
             {
-                m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, roiSourceList[i], false);
+                m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], false);
             }
         }
     }

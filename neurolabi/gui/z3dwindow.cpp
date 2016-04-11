@@ -309,6 +309,11 @@ void Z3DTabWidget::roiPanel(bool v)
         }
     }
 
+    if(v)
+    {
+        emit buttonROIsClicked();
+    }
+
 }
 
 void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
@@ -581,6 +586,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
+  m_buttonStatus[3] = false; // ROIs
 }
 
 Z3DWindow::~Z3DWindow()

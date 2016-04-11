@@ -26,7 +26,11 @@ public:
     ~ZROIWidget();
 
 public:
-    void getROIs(Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget);
+    void getROIs(Z3DWindow *window,
+                 ZDvidInfo &dvidInfo,
+                 std::vector<std::string> roiList,
+                 std::vector<ZObject3dScan> loadedROIs,
+                 std::vector<std::string> roiSourceList);
     void makeGUI();
 
 public slots:
@@ -39,14 +43,12 @@ public:
     //
     Z3DWindow *m_window;
     ZDvidInfo m_dvidInfo;
-    ZDvidTarget m_dvidTarget;
-    ZDvidReader reader;
 
     //
-    std::vector<std::string> roiList;
-    std::vector<ZObject3dScan> loadedROIs;
+    std::vector<std::string> m_roiList;
+    std::vector<ZObject3dScan> m_loadedROIs;
     QColor defaultColor;
-    std::vector<std::string> roiSourceList;
+    std::vector<std::string> m_roiSourceList;
     std::vector<bool> colorModified;
 
     //
