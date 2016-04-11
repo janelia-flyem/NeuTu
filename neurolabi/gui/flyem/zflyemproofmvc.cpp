@@ -362,6 +362,10 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
         m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 
+//  connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(visibilityChanged(bool)), m_bodyViewers, SLOT(roiPanel(bool)));
+//  connect(m_coarseBodyWindow->getObjectsDockWidget(), SIGNAL(visibilityChanged(bool)), m_bodyViewers, SLOT(objectsPanel(bool)));
+//  connect(m_coarseBodyWindow->getSettingsDockWidget(), SIGNAL(visibilityChanged(bool)), m_bodyViewers, SLOT(settingsPanel(bool)));
+
   /*
   ZStackDoc *doc = new ZStackDoc;
   doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
