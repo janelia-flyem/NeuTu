@@ -185,6 +185,7 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
       buttonStatus[i][0] = true;
       buttonStatus[i][1] = false;
       buttonStatus[i][2] = false;
+      buttonStatus[i][3] = false;
 
       windowStatus[i] = false;
 
@@ -295,18 +296,24 @@ void Z3DTabWidget::roiPanel(bool v)
 
     if(cur3Dwin)
     {
-        bool checked = cur3Dwin->getButtonStatus(3);
-        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
+        //
+        cur3Dwin->setButtonStatus(3,v);
+        buttonStatus[getRealIndex(index)][3] = v;
+        cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
 
-        if(isHidden != v)
-            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+        //
+//        bool checked = cur3Dwin->getButtonStatus(3);
+//        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
 
-        if(checked != v)
-        {
-            cur3Dwin->setButtonStatus(3,v);
-            buttonStatus[getRealIndex(index)][3] = v;
-            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-        }
+//        if(isHidden != v)
+//            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+
+//        if(checked != v)
+//        {
+//            cur3Dwin->setButtonStatus(3,v);
+//            buttonStatus[getRealIndex(index)][3] = v;
+//            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+//        }
     }
 
     if(v)
@@ -502,6 +509,7 @@ void Z3DTabWidget::closeWindow(int index)
     buttonStatus[index][0] = true;
     buttonStatus[index][1] = false;
     buttonStatus[index][2] = false;
+    buttonStatus[index][3] = false;
 
     w->getGraphFilter()->setVisible(true);
 
@@ -1573,6 +1581,7 @@ void Z3DWindow::createDockWindows()
 
   m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
   m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_roiDockWidget->setVisible(false);
   m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
 
   addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
@@ -1839,6 +1848,7 @@ void Z3DWindow::cleanup()
     m_buttonStatus[0] = true;  // showgraph
     m_buttonStatus[1] = false; // settings
     m_buttonStatus[2] = false; // objects
+    m_buttonStatus[3] = false; // rois
   }
 }
 

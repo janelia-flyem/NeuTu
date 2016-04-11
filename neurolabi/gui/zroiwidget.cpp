@@ -40,8 +40,6 @@ void ZROIWidget::getROIs(Z3DWindow *window,
                          std::vector<ZObject3dScan> loadedROIs,
                          std::vector<std::string> roiSourceList)
 {
-    qDebug()<<"setROIs ... "<<window;
-
     //
     m_window = window;
     m_dvidInfo =  dvidInfo;
@@ -64,7 +62,7 @@ void ZROIWidget::getROIs(Z3DWindow *window,
         //
         makeGUI();
 
-    } // window is not null
+    }
 }
 
 void ZROIWidget::makeGUI()
@@ -119,8 +117,6 @@ void ZROIWidget::makeGUI()
 
 void ZROIWidget::updateROIs()
 {
-    qDebug()<<"updateROIs ... "<<m_window;
-
     // render selected ROIs
     m_window->getDocument()->blockSignals(true);
     for(int i=0; i<tw_ROIs->rowCount(); i++)

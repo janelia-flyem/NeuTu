@@ -408,7 +408,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
           m_bodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_bodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -428,7 +428,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
           m_skeletonWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_skeletonWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -446,7 +446,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 
     if(m_ROILoaded)
-        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
