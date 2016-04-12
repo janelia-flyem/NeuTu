@@ -47,6 +47,7 @@ class DvidEnv(object):
             self.port = None
 
             self.node = config["uuid"]
+            print config.get("labelvol")
             self.setBodyLabel(config.get("labelvol"))
 
     def loadFlyEmConfig(self, config):

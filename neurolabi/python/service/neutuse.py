@@ -177,13 +177,12 @@ def updateBody():
             print inst
             return '<p>Update for ' + str(bodyArray) + ' failed.</p>'
         bodyArray = jsonObj.get('bodies')
-        dvidServer = jsonObj.get('dvid-server')
+        #dvidServer = jsonObj.get('dvid-server')
         option = jsonObj.get('option')
-        uuid = jsonObj['uuid']
-        bodyArray = jsonObj['bodies']
-        config = {'dvid-server': dvidServer, 'uuid': uuid}
+        #uuid = jsonObj['uuid']
+        #config = {'dvid-server': dvidServer, 'uuid': uuid}
         dvidEnv = DvidEnv()
-        dvidEnv.loadServerConfig(config)
+        dvidEnv.loadServerConfig(jsonObj)
         print dvidEnv
 
     if not option:
