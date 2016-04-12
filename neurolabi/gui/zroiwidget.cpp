@@ -21,12 +21,16 @@ ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 {
     m_roiList.clear();
     defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
+
+    setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 }
 
 ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags flags) : QDockWidget(title, parent, flags)
 {
     m_roiList.clear();
     defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
+
+    setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 }
 
 ZROIWidget::~ZROIWidget()
@@ -76,6 +80,10 @@ void ZROIWidget::makeGUI()
         return;
 
     //
+    selectAll = new QCheckBox("selectAll");
+    selectAll->setChecked(false);
+
+    //
     tw_ROIs = new QTableWidget(0, 2);
     tw_ROIs->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -111,14 +119,47 @@ void ZROIWidget::makeGUI()
     }
 
     //
-    this->setWidget(tw_ROIs);
+    //this->setWidget(tw_ROIs);
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(selectAll);
+    layout->addWidget(tw_ROIs);
+
+    QGroupBox *group = new QGroupBox();
+    group->setLayout(layout);
+
+    this->setWidget(group);
 
     //
     connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
     connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
 
+    connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
+
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 }
+
+void ZROIWidget::updateSelection()
+{
+    if(selectAll->isChecked())
+    {
+        for(int i=0; i<tw_ROIs->rowCount(); i++)
+        {
+            QTableWidgetItem *item = tw_ROIs->item(i, 0);
+            item->setCheckState(Qt::Checked);
+        }
+    }
+    else
+    {
+        for(int i=0; i<tw_ROIs->rowCount(); i++)
+        {
+            QTableWidgetItem *item = tw_ROIs->item(i, 0);
+            item->setCheckState(Qt::Unchecked);
+        }
+    }
+
+    updateROIs();
+}
+
 
 void ZROIWidget::updateROIs()
 {

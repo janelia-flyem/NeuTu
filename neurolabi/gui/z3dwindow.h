@@ -79,6 +79,10 @@ public slots:
     void roiPanel(bool v);
     void showGraph(bool v);
 
+    void resetSettingsButton();
+    void resetObjectsButton();
+    void resetROIButton();
+
     void resetCameraCenter();
 
 signals:

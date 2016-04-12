@@ -362,6 +362,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
         m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 
+  //connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(toBeClosed()), m_bodyViewers, SLOT(resetROIButton()));
+
   /*
   ZStackDoc *doc = new ZStackDoc;
   doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
