@@ -266,9 +266,18 @@ void Z3DTabWidget::settingsPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[getRealIndex(index)][1] = v;
-        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
+        //
+        bool checked = cur3Dwin->getButtonStatus(1);
+        bool isHidden = cur3Dwin->getObjectsDockWidget()->isHidden();
+
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(1,v);
+            buttonStatus[getRealIndex(index)][1] = v;
+
+            if(isHidden == v)
+                cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+        }
     }
 
 }
@@ -281,9 +290,18 @@ void Z3DTabWidget::objectsPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[getRealIndex(index)][2] = v;
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+        //
+        bool checked = cur3Dwin->getButtonStatus(2);
+        bool isHidden = cur3Dwin->getObjectsDockWidget()->isHidden();
+
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(2,v);
+            buttonStatus[getRealIndex(index)][2] = v;
+
+            if(isHidden == v)
+                cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+        }
     }
 
 }
@@ -297,23 +315,17 @@ void Z3DTabWidget::roiPanel(bool v)
     if(cur3Dwin)
     {
         //
-        cur3Dwin->setButtonStatus(3,v);
-        buttonStatus[getRealIndex(index)][3] = v;
-        cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+        bool checked = cur3Dwin->getButtonStatus(3);
+        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
 
-        //
-//        bool checked = cur3Dwin->getButtonStatus(3);
-//        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(3,v);
+            buttonStatus[getRealIndex(index)][3] = v;
 
-//        if(isHidden != v)
-//            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-
-//        if(checked != v)
-//        {
-//            cur3Dwin->setButtonStatus(3,v);
-//            buttonStatus[getRealIndex(index)][3] = v;
-//            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-//        }
+            if(isHidden == v)
+                cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
+        }
     }
 
     if(v)

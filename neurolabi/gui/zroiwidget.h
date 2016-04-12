@@ -33,11 +33,17 @@ public:
                  std::vector<std::string> roiSourceList);
     void makeGUI();
 
+signals:
+    void toBeClosed();
+
 public slots:
     void updateROIs();
     void updateROISelections(int row, int column);
     void updateROIColors(int row, int column);
     void updateROIRendering(QTableWidgetItem* item);
+
+protected:
+    void closeEvent(QCloseEvent * event);
 
 public:
     //

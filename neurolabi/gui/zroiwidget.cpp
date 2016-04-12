@@ -34,6 +34,11 @@ ZROIWidget::~ZROIWidget()
 
 }
 
+void ZROIWidget::closeEvent(QCloseEvent * event)
+{
+    emit toBeClosed();
+}
+
 void ZROIWidget::getROIs(Z3DWindow *window,
                          ZDvidInfo &dvidInfo,
                          std::vector<std::string> roiList,
