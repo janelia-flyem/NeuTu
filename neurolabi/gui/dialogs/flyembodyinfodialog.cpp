@@ -1221,6 +1221,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
+    m_quitting = true;
     m_futureMap.waitForFinished(); //to avoid crash while quitting too early
     delete ui;
 }
