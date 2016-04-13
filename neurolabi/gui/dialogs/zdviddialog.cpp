@@ -149,6 +149,8 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
     target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
+    target.enableSupervisor(ui->librarianCheckBox->isChecked());
+//    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
 
   return target;
@@ -177,12 +179,15 @@ void ZDvidDialog::setServer(int index)
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
+  ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->uuidLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
+
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&
                                (dvidTarget.getName() != "Custom"));
