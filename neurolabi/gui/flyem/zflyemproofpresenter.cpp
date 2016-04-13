@@ -14,6 +14,7 @@
 #include "flyem/zflyemproofdocmenufactory.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
+#include "zstackdocselector.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -525,6 +526,12 @@ void ZFlyEmProofPresenter::processCustomOperator(
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
+    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+                                ZStackDocSelector::SELECT_RECURSIVE);
+    docSelector.deselectAll();
+//    docSelector.setSelectOption(ZStackObject);
+
     for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
          iter != todoList.end(); ++iter) {
       ZFlyEmToDoList *item = *iter;
@@ -575,6 +582,11 @@ void ZFlyEmProofPresenter::processCustomOperator(
     QList<ZDvidSynapseEnsemble*> seList =
         getCompleteDocument()->getDvidSynapseEnsembleList();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+                                ZStackDocSelector::SELECT_RECURSIVE);
+    docSelector.deselectAll();
 
     for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
          iter != seList.end(); ++iter) {

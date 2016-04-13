@@ -8,7 +8,7 @@
 
 namespace C_Json {
 json_t* makeObject();
-json_t* makeInteger(int v);
+json_t* makeInteger(int64_t v);
 json_t* makeNumber(double v);
 json_t* makeBoolean(bool v);
 json_t* makeArray();

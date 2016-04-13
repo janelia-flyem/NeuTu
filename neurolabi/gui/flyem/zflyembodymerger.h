@@ -36,6 +36,16 @@ public:
 
   TLabelMap getFinalMap() const;
 
+  const TLabelMapList& getMapList() const {
+    return m_mapList;
+  }
+
+  void setMapList(const TLabelMapList &mapList) {
+    m_mapList = mapList;
+  }
+
+  void unmerge(uint64_t bodyId);
+
   void pushMap(uint64_t label1, uint64_t label2);
   void pushMap(const TLabelMap &map);
   void pushMap(const TLabelSet &labelSet);

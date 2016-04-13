@@ -40,6 +40,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -166,6 +167,7 @@ public:
   void notifyBodyUnmerged();
   void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
+  void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
@@ -194,8 +196,9 @@ public: //Todo list functions
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
 
-  void notifyTodoItemModified(const std::vector<ZIntPoint> &ptArray);
-  void notifyTodoItemModified(const ZIntPoint &pt);
+  void notifyTodoItemModified(
+      const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
+  void notifyTodoItemModified(const ZIntPoint &pt, bool emitingEdit = false);
 
   std::set<ZIntPoint> getSelectedTodoItemPosition() const;
 
@@ -251,12 +254,14 @@ signals:
   void bodySelectionChanged();
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
+  void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
+  void downloadTodo(int x, int y, int z);
   void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
@@ -340,20 +345,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
   }
 }
 
-namespace ZFlyEmProofDocCommand {
-class MergeBody : public ZUndoCommand
-{
-public:
-  MergeBody(ZStackDoc *doc, QUndoCommand *parent = NULL);
-  void undo();
-  void redo();
-
-  ZFlyEmProofDoc* getCompleteDocument();
-
-private:
-  ZStackDoc *m_doc;
-};
-}
 
 
 #endif // ZFLYEMPROOFDOC_H

@@ -50,6 +50,7 @@
 #include "zroiwidget.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemtodolistfilter.h"
+#include "dialogs/flyemtododialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -79,6 +80,7 @@ void ZFlyEmProofMvc::init()
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
+  m_todoDlg = new FlyEmTodoDialog(this);
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -86,6 +88,7 @@ void ZFlyEmProofMvc::init()
   m_objectWindow = NULL;
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
+  m_ROILoaded = false;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -192,6 +195,8 @@ void ZFlyEmProofMvc::initBodyWindow()
           m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
   connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
+          this, SLOT(getROIs()));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -319,6 +324,10 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           getCompleteDocument(), SLOT(downloadSynapse(int,int,int)));
   connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
+  connect(getCompleteDocument(), SIGNAL(todoEdited(int,int,int)),
+          m_orthoWindow, SLOT(downloadTodo(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(todoEdited(int,int,int)),
+          getCompleteDocument(), SLOT(downloadTodo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(bodyMergeEdited()),
@@ -348,9 +357,12 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 //    ZFlyEmMisc::Decorate3dBodyWindowRoi(
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
-//    ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
-    m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+
+    if(m_ROILoaded)
+        m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
+
+  //connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(toBeClosed()), m_bodyViewers, SLOT(resetROIButton()));
 
   /*
   ZStackDoc *doc = new ZStackDoc;
@@ -397,6 +409,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_bodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -415,6 +429,8 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -430,6 +446,9 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_externalNeuronWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+
+    if(m_ROILoaded)
+        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -665,6 +684,13 @@ void ZFlyEmProofMvc::mergeSelected()
 {
   if (getCompleteDocument() != NULL) {
     getCompleteDocument()->mergeSelected(getSupervisor());
+  }
+}
+
+void ZFlyEmProofMvc::unmergeSelected()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->unmergeSelected();
   }
 }
 
@@ -916,6 +942,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
           this, SLOT(mergeSelected()));
+  connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
+          this, SLOT(unmergeSelected()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
 //          this, SLOT(processLabelSliceSelectionChange()));
 
@@ -946,6 +974,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
+          this, SLOT(checkBodyWithMessage(uint64_t,bool)));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           getCompleteDocument(), SLOT(deprecateSplitSource()));
 
@@ -1052,6 +1082,8 @@ void ZFlyEmProofMvc::customInit()
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
+
+  m_todoDlg->setDocument(getDocument());
 }
 
 void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
@@ -1326,6 +1358,19 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   }
 
   return true;
+}
+
+bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+{
+  bool succ = true;
+
+  if (checkingOut) {
+    succ = checkOutBody(bodyId);
+  } else {
+    succ = checkInBodyWithMessage(bodyId);
+  }
+
+  return succ;
 }
 
 bool ZFlyEmProofMvc::checkInBodyWithMessage(uint64_t bodyId)
@@ -1943,9 +1988,10 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
   if (m_orthoWindow == NULL) {
     makeOrthoWindow();
   }
-  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+
   m_orthoWindow->show();
   m_orthoWindow->raise();
+  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
 void ZFlyEmProofMvc::showSkeletonWindow()
@@ -2199,6 +2245,12 @@ void ZFlyEmProofMvc::openSequencer()
   m_bodyInfoDlg->raise();
 }
 
+void ZFlyEmProofMvc::openTodo()
+{
+  m_todoDlg->show();
+  m_todoDlg->raise();
+}
+
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
@@ -2233,6 +2285,11 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
     getCompleteDocument()->processObjectModified(slice);
     getCompleteDocument()->notifyObjectModified();
   }
+}
+
+void ZFlyEmProofMvc::showTodo(bool visible)
+{
+  getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);
 }
 
 ZDvidLabelSlice* ZFlyEmProofMvc::getDvidLabelSlice() const
@@ -2821,4 +2878,77 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
+void ZFlyEmProofMvc::getROIs()
+{
+    //
+    if(m_ROILoaded)
+        return;
+
+    //
+    ZDvidReader reader;
+    m_roiList.clear();
+    m_loadedROIs.clear();
+    m_roiSourceList.clear();
+
+    //
+    if (reader.open(getDvidTarget()))
+    {
+        ZJsonObject meta = reader.readInfo();
+
+        //
+        ZJsonValue datains = meta.value("DataInstances");
+
+        if(datains.isObject())
+        {
+            ZJsonObject insList(datains);
+            std::vector<std::string> keys = insList.getAllKey();
+
+            for(std::size_t i=0; i<keys.size(); i++)
+            {
+                std::size_t found = keys.at(i).find("roi");
+
+                if(found!=std::string::npos)
+                {
+
+                    ZObject3dScan roi = reader.readRoi(keys.at(i));
+
+                    if(!roi.isEmpty())
+                    {
+                        m_roiList.push_back(keys.at(i));
+                        m_loadedROIs.push_back(roi);
+
+                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
+                        m_roiSourceList.push_back(source);
+                    }
+
+                }
+            }
+        }
+
+        m_ROILoaded = true;
+
+        //
+        if(m_coarseBodyWindow)
+        {
+            m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_bodyWindow)
+        {
+            m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_externalNeuronWindow)
+        {
+            m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_skeletonWindow)
+        {
+            m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+    }
+
+}
 

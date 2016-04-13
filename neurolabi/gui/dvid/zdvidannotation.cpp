@@ -20,6 +20,7 @@ void ZDvidAnnotation::init()
   m_type = GetType();
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
+  m_bodyId = 0;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -182,8 +183,11 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidAnnotation::hit(double x, double y)
+bool ZDvidAnnotation::hit(double x, double y, NeuTube::EAxis axis)
 {
+  ZIntPoint shiftedCenter = m_position;
+  shiftedCenter.shiftSliceAxis(axis);
+
   double dx = x - m_position.getX();
   double dy = y - m_position.getY();
 
@@ -201,6 +205,19 @@ void ZDvidAnnotation::clear()
   m_relJson.clear();
   m_propertyJson.clear();
   setDefaultRadius();
+}
+
+ZIntPoint ZDvidAnnotation::GetPosition(const ZJsonObject &json)
+{
+  ZIntPoint pt;
+  if (json.hasKey("Pos")) {
+    json_t *value = json.value("Pos").getData();
+    pt.setX(ZJsonParser::integerValue(value, 0));
+    pt.setY(ZJsonParser::integerValue(value, 1));
+    pt.setZ(ZJsonParser::integerValue(value, 2));
+  }
+
+  return pt;
 }
 
 void ZDvidAnnotation::loadJsonObject(
@@ -351,7 +368,7 @@ bool ZDvidAnnotation::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
     dz = abs(getPosition().getY() - z);
     break;
   case NeuTube::Z_AXIS:
-    abs(getPosition().getZ() - z);
+    dz = abs(getPosition().getZ() - z);
     break;
   }
 
@@ -456,6 +473,25 @@ void ZDvidAnnotation::AddProperty(
   if (!propJson.hasKey("Prop")) {
     json.setEntry("Prop", propJson);
   }
+}
+
+std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(const ZJsonObject &json)
+{
+  std::vector<ZIntPoint> partnerArray;
+
+  ZJsonArray jsonArray(json.value("Rels"));
+
+  for (size_t i = 0; i < jsonArray.size(); ++i) {
+    ZJsonObject partnerJson(jsonArray.value(i));
+    if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
+      ZJsonArray posJson(partnerJson.value("To"));
+      std::vector<int> coords = posJson.toIntegerArray();
+
+      partnerArray.push_back(ZIntPoint(coords[0], coords[1], coords[2]));
+    }
+  }
+
+  return partnerArray;
 }
 
 int ZDvidAnnotation::AddRelation(ZJsonArray &json, const ZJsonArray &relJson)

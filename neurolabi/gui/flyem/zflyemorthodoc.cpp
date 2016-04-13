@@ -31,6 +31,21 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble()
   initSynapseEnsemble(NeuTube::Z_AXIS);
 }
 
+void ZFlyEmOrthoDoc::initTodoList(NeuTube::EAxis axis)
+{
+  ZFlyEmToDoList *td = new ZFlyEmToDoList;
+  td->setSliceAxis(axis);
+  td->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource(axis));
+  addObject(td);
+}
+
+void ZFlyEmOrthoDoc::initTodoList()
+{
+  initTodoList(NeuTube::X_AXIS);
+  initTodoList(NeuTube::Y_AXIS);
+  initTodoList(NeuTube::Z_AXIS);
+}
+
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
   if (m_dvidReader.isReady()) {
@@ -68,6 +83,7 @@ void ZFlyEmOrthoDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();
+    initTodoList();
     addDvidLabelSlice(NeuTube::X_AXIS);
     addDvidLabelSlice(NeuTube::Y_AXIS);
     addDvidLabelSlice(NeuTube::Z_AXIS);

@@ -15,6 +15,8 @@ FlyEmBodyFilterDialog::FlyEmBodyFilterDialog(QWidget *parent) :
           ui->minSizeSpinBox, SLOT(setEnabled(bool)));
   connect(ui->bodyFilePushButton, SIGNAL(clicked()),
           this, SLOT(setBodyListFile()));
+
+  ui->bodySizeWidget->hide();
 }
 
 FlyEmBodyFilterDialog::~FlyEmBodyFilterDialog()
@@ -92,6 +94,7 @@ ZDvidFilter FlyEmBodyFilterDialog::getDvidFilter() const
   filter.exclude(getExcludedBodies());
   filter.setNamedBodyOnly(namedBodyOnly());
   filter.setBodyListFile(getBodyListFile().toStdString());
+  filter.setTracedOnly(tracedOnly());
 
   return filter;
 }
@@ -99,4 +102,9 @@ ZDvidFilter FlyEmBodyFilterDialog::getDvidFilter() const
 bool FlyEmBodyFilterDialog::namedBodyOnly() const
 {
   return ui->namedBodyCheckBox->isChecked();
+}
+
+bool FlyEmBodyFilterDialog::tracedOnly() const
+{
+  return ui->tracedCheckBox->isChecked();
 }
