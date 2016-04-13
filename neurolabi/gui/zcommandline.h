@@ -60,6 +60,7 @@ private:
   bool m_fullOverlapScreen;
   bool m_isVerbose;
   bool m_forceUpdate;
+  std::vector<uint64_t> m_bodyIdArray;
   ZMessageReporter m_reporter;
 };
 

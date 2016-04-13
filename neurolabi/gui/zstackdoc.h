@@ -1081,6 +1081,8 @@ public slots:
   void removeAllUser();
 
   void notifyZoomingToSelectedSwcNode();
+  void notifyZoomingTo(double x, double y, double z);
+  void notifyZoomingTo(const ZIntPoint &pt);
 
 //  void processRectRoiUpdateSlot();
 
@@ -1152,6 +1154,8 @@ signals:
   void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+
+  void zoomingTo(int x, int y, int z);
 
 protected:
   virtual void autoSave();

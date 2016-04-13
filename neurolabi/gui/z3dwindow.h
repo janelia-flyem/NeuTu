@@ -79,6 +79,10 @@ public slots:
     void roiPanel(bool v);
     void showGraph(bool v);
 
+    void resetSettingsButton();
+    void resetObjectsButton();
+    void resetROIButton();
+
     void resetCameraCenter();
 
 signals:
@@ -86,6 +90,7 @@ signals:
     void buttonSettingsToggled(bool);
     void buttonObjectsToggled(bool);
     void buttonROIsToggled(bool);
+    void buttonROIsClicked();
 
     void tabIndexChanged(int);
 
@@ -171,6 +176,7 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
+  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setVisible(ERendererLayer layer, bool visible);
   bool isVisible(ERendererLayer layer) const;
 

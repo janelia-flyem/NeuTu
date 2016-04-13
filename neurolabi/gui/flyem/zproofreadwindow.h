@@ -95,10 +95,12 @@ private:
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
+  QAction *m_viewTodoAction;
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
   QAction *m_contrastAction;
+  QAction *m_openTodoAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;

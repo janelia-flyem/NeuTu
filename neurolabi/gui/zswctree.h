@@ -73,7 +73,7 @@ public:
 
   //Structral mode
   enum EStructrualMode {
-    STRUCT_CLOSED_CURVE, STRUCT_NORMAL
+    STRUCT_CLOSED_CURVE, STRUCT_POINT_CLOUD, STRUCT_NORMAL
   };
 
   enum EOperation {

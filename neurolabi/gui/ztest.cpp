@@ -224,7 +224,7 @@ using namespace std;
 #include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "zcircle.h"
+//#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
 #include "test/zclosedcurvetest.h"
@@ -267,6 +267,7 @@ using namespace std;
 #include "flyem/zflyemorthomvc.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
+#include "flyem/zneutuservice.h"
 
 using namespace std;
 
@@ -19813,7 +19814,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/new_ROI_LOP.sobj");
 
@@ -19823,6 +19824,92 @@ void ZTest::test(MainWindow *host)
 //  std::cout << array.dumpString(0) << std::endl;
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("annotation", "todotest2");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("segmentation-labelvol_todo");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("zhaot-ws1", "0751", 6300);
+  target.setBodyLabelName("bodies121714");
+  target.setLabelBlockName("segmentation121714");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotation("bodies121714_todo");
+#endif
+
+#if 0
+  //Create pixmap
+  ZPixmap pixmap(256, 256);
+  pixmap.setOffset(-100, -100);
+
+
+  //Paint
+  ZPainter painter(&pixmap);
+  painter.setPen(QColor(255, 0, 0));
+  painter.drawLine(100, 100, 200, 200);
+
+  //Save
+  pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+#endif
+
+#if 0
+  QUrl url("http://emdata1.int.janelia.org:8500/api/node");
+  qDebug() << url.host();
+  qDebug() << url.port();
+  qDebug() << url.path();
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  writer.del("http://emdata1.int.janelia.org:8500/api/node/372c/skeletons/key/1_swc");
+  std::cout << writer.getStatusCode() << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "372c", 8500);
+  writer.open(dvidTarget);
+
+  ZJsonObject annotation;
+  annotation.setEntry("status", "test");
+  writer.writeAnnotation(1, annotation);
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/server_test.json");
+
+  ZDvidWriter writer;
+  writer.post("http://zhaot-ws1:8080/update_body", obj);
+#endif
+
+#if 1
+  ZNeutuService service("http://zhaot-ws1:8080");
+  ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
+
+  service.requestBodyUpdate(target, 1);
+
+#endif
 
   std::cout << "Done." << std::endl;
 }

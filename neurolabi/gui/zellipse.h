@@ -20,6 +20,7 @@ public:
   virtual const std::string& className() const;
 
 public:
+  using ZStackObject::display; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
   const;
 

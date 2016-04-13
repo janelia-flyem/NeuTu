@@ -1,9 +1,11 @@
 #include "zflyemtodoitem.h"
 
 #include <QColor>
+#include <iostream>
 
 #include "zpainter.h"
 #include "zjsonparser.h"
+
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -16,6 +18,8 @@ void ZFlyEmToDoItem::init(EKind kind)
   setKind(kind);
   setDefaultColor();
   setDefaultRadius();
+  useCosmeticPen(true);
+  setBasePenWidth(2.0);
 }
 
 ZFlyEmToDoItem::ZFlyEmToDoItem(const ZIntPoint &pos)
@@ -56,7 +60,7 @@ std::ostream& operator<< (std::ostream &stream, const ZFlyEmToDoItem &item)
 QColor ZFlyEmToDoItem::getDisplayColor() const
 {
   QColor color = getColor();
-  if (isChecked()) {
+  if (!isChecked()) {
     color.setRgb(
           color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
   }
@@ -83,8 +87,13 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
   bool isFocused = (z == center.getZ());
 
+  double basePenWidth = getBasePenWidth();
+
+  QPen pen = painter.getPen();
+  pen.setCosmetic(m_usingCosmeticPen);
+
   if (visible) {
-    QColor color = getColor();
+    QColor color = getDisplayColor();
     if (!isFocused) {
       double alpha = radius / getRadius();
       alpha *= alpha * 0.5;
@@ -92,10 +101,9 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
       color.setAlphaF(alpha * color.alphaF());
     }
 
-    if (isChecked()) {
-      color = getDisplayColor();
-    }
-    painter.setPen(color);
+    pen.setColor(color);
+    painter.setPen(pen);
+//    painter.setPen(color);
     painter.setBrush(Qt::NoBrush);
 
 //    if (isFocused) {
@@ -104,11 +112,18 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     if (radius > 0.0) {
       int x = center.getX();
       int y = center.getY();
-      painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
-      painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
-      painter.drawLine(QPointF(x - 1, y - 1), QPointF(x + 1, y + 1));
-      painter.drawLine(QPointF(x - 1, y + 1), QPointF(x + 1, y - 1));
+      pen.setWidthF(basePenWidth * 0.5);
+      painter.setPen(pen);
 
+      painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
+      painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
+      painter.drawLine(QPointF(x - radius, y - radius),
+                       QPointF(x + radius, y + radius));
+      painter.drawLine(QPointF(x - radius, y + radius),
+                       QPointF(x + radius, y - radius));
+
+      pen.setWidthF(basePenWidth);
+      painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
     }
@@ -126,10 +141,8 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     */
   }
 
-  QPen pen = painter.getPen();
-  pen.setCosmetic(m_usingCosmeticPen);
-
   bool drawingBoundBox = false;
+
   if (isSelected()) {
     drawingBoundBox = true;
     QColor color;
@@ -154,7 +167,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     rect.setHeight(halfSize * 2);
 
     painter.setBrush(Qt::NoBrush);
-    pen.setWidthF(pen.widthF() * 0.5);
+    pen.setWidthF(basePenWidth * 0.5);
     if (visible) {
       pen.setStyle(Qt::SolidLine);
     } else {

@@ -41,6 +41,11 @@ bool ZDvidFilter::namedBodyOnly() const
   return m_namedBodyOnly;
 }
 
+bool ZDvidFilter::tracedOnly() const
+{
+  return m_tracedOnly;
+}
+
 std::set<uint64_t> ZDvidFilter::loadBodySet() const
 {
 //  ZString
@@ -48,7 +53,7 @@ std::set<uint64_t> ZDvidFilter::loadBodySet() const
   std::set<uint64_t> bodySet;
 
 
-  if (!ZFileType::fileType(m_bodyListFile) == ZFileType::JSON_FILE) {
+  if (!(ZFileType::fileType(m_bodyListFile) == ZFileType::JSON_FILE)) {
     FILE *fp = fopen(m_bodyListFile.c_str(), "r");
     if (fp != NULL) {
       ZString str;

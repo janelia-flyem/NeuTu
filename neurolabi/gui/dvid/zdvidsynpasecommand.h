@@ -33,9 +33,34 @@ public:
   void redo();
 
 private:
+  void backup();
+
+private:
   ZFlyEmProofDoc *m_doc;
   ZIntPoint m_synapse;
   ZJsonObject m_synapseBackup;
+  std::vector<ZJsonObject> m_partnerBackup;
+};
+
+class RemoveSynapses : public ZUndoCommand
+{
+public:
+  RemoveSynapses(ZFlyEmProofDoc *doc,  QUndoCommand *parent = NULL);
+  virtual ~RemoveSynapses();
+  void undo();
+  void redo();
+
+  void addRemoval(int x, int y, int z);
+  void setRemoval(const std::set<ZIntPoint>& removal);
+
+private:
+  void backup();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapse;
+  std::vector<ZJsonObject> m_synapseBackup;
+  std::vector<ZJsonObject> m_partnerBackup;
 };
 
 class AddSynapse : public ZUndoCommand

@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <vector>
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -24,6 +25,7 @@ class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
+class FlyEmTodoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -94,6 +96,7 @@ signals:
 
 public slots:
   void mergeSelected();
+  void unmergeSelected();
   void undo();
   void redo();
 
@@ -108,6 +111,7 @@ public slots:
   void checkOutBody();
   bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(uint64_t bodyId);
+  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -163,9 +167,11 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showTodo(bool visible);
 
   void loadBookmark();
   void openSequencer();
+  void openTodo();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -189,6 +195,8 @@ public slots:
   void highlightSelectedObject(bool hl);
 
   void syncMergeWithDvid();
+
+  void getROIs();
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -269,6 +277,7 @@ protected:
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+  FlyEmTodoDialog *m_todoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -285,6 +294,12 @@ protected:
   ZStackViewParam m_currentViewParam;
 
   ZDvidInfo m_dvidInfo;
+  bool m_ROILoaded;
+
+  std::vector<std::string> m_roiList;
+  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<std::string> m_roiSourceList;
+
 };
 
 template <typename T>

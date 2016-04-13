@@ -185,6 +185,7 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
       buttonStatus[i][0] = true;
       buttonStatus[i][1] = false;
       buttonStatus[i][2] = false;
+      buttonStatus[i][3] = false;
 
       windowStatus[i] = false;
 
@@ -265,9 +266,19 @@ void Z3DTabWidget::settingsPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[getRealIndex(index)][1] = v;
-        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
+        //
+        bool checked = cur3Dwin->getButtonStatus(1);
+
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(1,v);
+            buttonStatus[getRealIndex(index)][1] = v;
+            cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
+        }
+        else
+        {
+            cur3Dwin->getSettingsDockWidget()->setVisible(v);
+        }
     }
 
 }
@@ -280,11 +291,20 @@ void Z3DTabWidget::objectsPanel(bool v)
 
     if(cur3Dwin)
     {
-        cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[getRealIndex(index)][2] = v;
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
-    }
+        //
+        bool checked = cur3Dwin->getButtonStatus(2);
 
+        if(checked != v)
+        {
+            cur3Dwin->setButtonStatus(2,v);
+            buttonStatus[getRealIndex(index)][2] = v;
+            cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
+        }
+        else
+        {
+            cur3Dwin->getObjectsDockWidget()->setVisible(v);
+        }
+    }
 }
 
 void Z3DTabWidget::roiPanel(bool v)
@@ -295,11 +315,8 @@ void Z3DTabWidget::roiPanel(bool v)
 
     if(cur3Dwin)
     {
+        //
         bool checked = cur3Dwin->getButtonStatus(3);
-        bool isHidden = cur3Dwin->getROIsDockWidget()->isHidden();
-
-        if(isHidden != v)
-            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
 
         if(checked != v)
         {
@@ -307,6 +324,43 @@ void Z3DTabWidget::roiPanel(bool v)
             buttonStatus[getRealIndex(index)][3] = v;
             cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
         }
+        else
+        {
+            cur3Dwin->getROIsDockWidget()->setVisible(v);
+        }
+    }
+
+    if(v)
+    {
+        emit buttonROIsClicked();
+    }
+
+}
+
+void Z3DTabWidget::resetSettingsButton()
+{
+
+}
+
+void Z3DTabWidget::resetObjectsButton()
+{
+
+}
+
+void Z3DTabWidget::resetROIButton()
+{
+    // widget is closed
+    int index = this->currentIndex();
+
+    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
+
+    if(cur3Dwin)
+    {
+        cur3Dwin->setButtonStatus(3,false);
+        buttonStatus[getRealIndex(index)][3] = false;
+        cur3Dwin->getROIsDockWidget()->toggleViewAction()->setChecked(false);
+
+        emit buttonROIsToggled(cur3Dwin->getButtonStatus(3));
     }
 
 }
@@ -497,6 +551,7 @@ void Z3DTabWidget::closeWindow(int index)
     buttonStatus[index][0] = true;
     buttonStatus[index][1] = false;
     buttonStatus[index][2] = false;
+    buttonStatus[index][3] = false;
 
     w->getGraphFilter()->setVisible(true);
 
@@ -581,6 +636,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
+  m_buttonStatus[3] = false; // ROIs
 }
 
 Z3DWindow::~Z3DWindow()
@@ -791,7 +847,7 @@ void Z3DWindow::init(EInitMode mode)
 
   //
   cubeArray.push_back(*cube2);
-  cube->setColor(QColor(255,255,0,128));
+  cube->setColor(QColor(255,255,0,255));
   cube->setCubeArray(cubeArray);
 
   //
@@ -1396,6 +1452,7 @@ void Z3DWindow::createDockWindows()
 {
   m_settingsDockWidget = new QDockWidget(tr("Control and Settings"), this);
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_settingsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
   m_widgetsGroup = new ZWidgetsGroup("All", NULL, 1);
 
@@ -1558,6 +1615,7 @@ void Z3DWindow::createDockWindows()
 
   m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
   m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_objectsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   ZObjsManagerWidget* omw = new ZObjsManagerWidget(getDocument(), m_objectsDockWidget);
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
@@ -1567,6 +1625,7 @@ void Z3DWindow::createDockWindows()
 
   m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
   m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_roiDockWidget->setVisible(false);
   m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
 
   addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
@@ -1833,6 +1892,7 @@ void Z3DWindow::cleanup()
     m_buttonStatus[0] = true;  // showgraph
     m_buttonStatus[1] = false; // settings
     m_buttonStatus[2] = false; // objects
+    m_buttonStatus[3] = false; // rois
   }
 }
 

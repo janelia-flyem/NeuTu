@@ -10,6 +10,7 @@
 #if defined(_ENABLE_LIBDVIDCPP_)
 #include "libdvid/DVIDNodeService.h"
 #include "libdvid/DVIDThreadedFetch.h"
+#include "libdvid/DVIDConnection.h"
 #ifndef _LIBDVIDCPP_OLD_
 #include "libdvid/DVIDCache.h"
 #define _LIBDVIDCPP_CACHE_

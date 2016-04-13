@@ -106,6 +106,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       if (proofPresenter->interactiveContext().acceptingRect()) {
         actionList.append(ZActionFactory::ACTION_ZOOM_TO_RECT);
         actionList.append(ZActionFactory::ACTION_SELECT_BODY_IN_RECT);
+        actionList.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
       } else {
         std::set<uint64_t> selectedOriginal =
             doc->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
@@ -122,6 +123,9 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
 
           if (selectedMapped.size() > 1) {
             actionList.append(ZActionFactory::ACTION_BODY_MERGE);
+          }
+          if (selectedMapped.size() != selectedOriginal.size()) {
+            actionList.append(ZActionFactory::ACTION_BODY_UNMERGE);
           }
 
           actionList.append(ZActionFactory::ACTION_BODY_CHECKOUT);
