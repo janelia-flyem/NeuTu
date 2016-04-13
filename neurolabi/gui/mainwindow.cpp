@@ -4484,12 +4484,14 @@ void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
 
 void MainWindow::on_actionMake_Movie_triggered()
 {
-  const NeutubeConfig &config = NeutubeConfig::getInstance();
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-  m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
-                           "/flyem/FIB/movie/reconstruct.json").c_str());
-  m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
-                            "/flyem/FIB/movie/frame").c_str());
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/reconstruct.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/frame").c_str());
+  }
 
   if (m_movieDlg->exec()) {
     QString fileName = m_movieDlg->getScriptPath();
@@ -7495,5 +7497,58 @@ void MainWindow::MessageProcessor::processMessage(
     default:
       break;
     }
+  }
+}
+
+void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
+{
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_dvidDlg->exec()) {
+    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+          m_dvidDlg->getDvidTarget());
+    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    if (!target.isValid()) {
+      report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
+    } else {
+      continueLoading = true;
+    }
+  }
+
+  if (continueLoading) {
+    startProgress();
+
+    ZDvidReader fdReader;
+    fdReader.open(target);
+
+  //  m_synapseAnnotationFile = dvidTarget.getSourceString();
+    QStringList annotationList = fdReader.readKeys(
+          ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                             ZDvidData::ROLE_BODY_LABEL,
+                             target.getBodyLabelName()).c_str());
+    std::set<uint64_t> annotationSet;
+    foreach (const QString &idStr, annotationList) {
+      annotationSet.insert(ZString(idStr.toStdString()).firstInteger());
+    }
+
+    ZJsonArray annotBackup;
+
+    for (std::set<uint64_t>::const_iterator iter = annotationSet.begin();
+         iter != annotationSet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (!fdReader.hasBody(bodyId)) {
+          ZJsonObject obj = fdReader.readBodyAnnotationJson(bodyId);
+          annotBackup.append(obj);
+          GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                target, bodyId, ZNeutuService::UPDATE_DELETE);
+        }
+//        ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+      }
+    }
+
+    annotBackup.dump(GET_TEST_DATA_DIR + "/test.json");
+
+    endProgress();
   }
 }

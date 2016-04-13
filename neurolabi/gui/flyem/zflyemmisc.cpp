@@ -459,3 +459,43 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
 //    std::cout << "Subtracting time: " << toc() << std::endl;
   }
 }
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
+    const std::string &url, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode)
+{
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  }
+
+  QUrl qurl(url.c_str());
+  ZString address = qurl.host();
+  if (qurl.port() >= 0) {
+    address += ":";
+    address.appendNumber(qurl.port());
+  }
+  libdvid::DVIDConnection connection(address);
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  std::string error_msg;
+
+  qDebug() << "address: " << address;
+  qDebug() << "path: " << qurl.path();
+
+
+  statusCode = connection.make_request(
+        "/.." + qurl.path().toStdString(), connMethod, payload, results,
+        error_msg, type);
+
+  return results;
+}
+#endif

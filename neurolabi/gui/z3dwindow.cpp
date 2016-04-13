@@ -2009,7 +2009,8 @@ void Z3DWindow::swcDoubleClicked(ZSwcTree *tree)
 
 void Z3DWindow::swcNodeDoubleClicked(Swc_Tree_Node *node)
 {
-  std::vector<double> boundBox = m_swcFilter->getTreeNodeBound(node);
+  std::vector<double> boundBox(6, 0);
+  m_swcFilter->getTreeNodeBound(node, boundBox);
   gotoPosition(boundBox, 0);
 }
 

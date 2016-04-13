@@ -19819,8 +19819,35 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   if (reader.open(target)) {
-    std::cout << "Has body: " << reader.hasBody(15363212) << std::endl;
+    std::cout << "Has body: " << reader.hasBody(8116) << std::endl;
   }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setBodyLabelName("bodies");
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.deleteSkeleton(10001209);
+  writer.deleteBodyAnnotation(10011641);
+
+  std::cout << writer.getStatusCode() << std::endl;
+
+#endif
+
+
+#if 0
+  ZDvidBufferReader reader;
+  reader.readPartial(
+        "http://emdata1.int.janelia.org:8500/api/node/372c/bodies/sparsevol/8116",
+        12, true);
+  QByteArray byteArray = reader.getBuffer();
+
+  std::cout << byteArray.size() << std::endl;
+  std::cout << *((uint32_t*) (byteArray.data() + 8)) << std::endl;
 #endif
 
 #if 0
@@ -19923,11 +19950,14 @@ void ZTest::test(MainWindow *host)
   writer.post("http://zhaot-ws1:8080/update_body", obj);
 #endif
 
-#if 1
+#if 0
   ZNeutuService service("http://zhaot-ws1:8080");
   ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
 
-  service.requestBodyUpdate(target, 1);
+  service.requestBodyUpdate(target, 1, ZNeutuService::UPDATE_DELETE);
+#endif
+
+#if 1
 
 #endif
 

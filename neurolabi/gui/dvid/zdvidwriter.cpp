@@ -495,6 +495,24 @@ void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
   }
 }
 
+void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
+{
+  deleteKey(getDvidTarget().getSkeletonName(),
+            ZDvidUrl::GetSkeletonKey(bodyId));
+}
+
+void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
+{
+  ZDvidUrl url(getDvidTarget());
+  del(url.getBodyAnnotationUrl(bodyId));
+}
+
+void ZDvidWriter::invalidateBody(uint64_t bodyId)
+{
+  deleteBodyAnnotation(bodyId);
+  deleteSkeleton(bodyId);
+}
+
 void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
 {
   ZDvidReader reader;

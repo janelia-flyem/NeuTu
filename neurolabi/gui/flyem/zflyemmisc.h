@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "dvid/libdvidheader.h"
+
 class ZMatrix;
 class Z3DGraph;
 class ZDvidInfo;
@@ -33,6 +35,12 @@ void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo);
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+libdvid::BinaryDataPtr MakeRequest(
+    const std::string &url, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode);
+#endif
 
 class HackathonEvaluator {
 public:
