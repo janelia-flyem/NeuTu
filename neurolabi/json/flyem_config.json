@@ -592,7 +592,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "e402",
+      "uuid": "d505",
       "name": "FIB25_new",
       "comment": "branched from fa60",
       "body_label": "bodies1104",
