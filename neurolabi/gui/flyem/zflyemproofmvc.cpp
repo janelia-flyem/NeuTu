@@ -1776,19 +1776,21 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
         m_futureMap[threadId] = future;
       }
     } else {
-      std::string owner = getSupervisor()->getOwner(bodyId);
-      if (owner.empty()) {
-//        owner = "unknown user";
+      if (getSupervisor() != NULL) {
+        std::string owner = getSupervisor()->getOwner(bodyId);
+        if (owner.empty()) {
+          //        owner = "unknown user";
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                  arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                  NeuTube::MSG_ERROR));
+        }
         emit messageGenerated(
               ZWidgetMessage(
-                QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
-                arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                NeuTube::MSG_ERROR));
+                QString("Failed to launch split. %1 has been locked by %2").
+                arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
       }
-      emit messageGenerated(
-            ZWidgetMessage(
-              QString("Failed to launch split. %1 has been locked by %2").
-              arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
     }
   } else {
     emit errorGenerated(QString("Invalid body id: %1").arg(bodyId));

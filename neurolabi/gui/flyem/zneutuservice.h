@@ -16,15 +16,30 @@ public:
     m_server = server;
   }
 
-  void requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId);
+  enum EStatus {
+    STATUS_NORMAL, STATUS_DOWN
+  };
+
+  enum EUpdateOption {
+    UPDATE_ALL, UPDATE_INVALIDATE, UPDATE_DELETE
+  };
+
+  void requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId,
+                         EUpdateOption option);
   void requestBodyUpdate(const ZDvidTarget &target,
-                         const std::vector<uint64_t> &bodyIdArray);
+                         const std::vector<uint64_t> &bodyIdArray,
+                         EUpdateOption option);
 
   std::string getBodyUpdateUrl() const;
+  EStatus getStatus() const {
+    return m_status;
+  }
+
+  void updateStatus();
 
 private:
   std::string m_server;
-
+  EStatus m_status;
 };
 
 #endif // ZNEUTUSERVICE_H

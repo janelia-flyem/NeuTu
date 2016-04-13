@@ -209,6 +209,8 @@ public:
                             int width, int height, int depth) const;
   std::string getTodoListUrl(int x, int y, int z) const;
 
+  static std::string GetSkeletonKey(uint64_t bodyId);
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,

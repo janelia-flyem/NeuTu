@@ -470,6 +470,8 @@ private slots:
 
   void on_actionNeuroMorpho_triggered();
 
+  void on_actionRemove_Obsolete_Annotations_triggered();
+
 private:
   void createActions();
   void createFileActions();

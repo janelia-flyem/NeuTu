@@ -101,10 +101,11 @@ ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) cons
   }
   */
 
-  ZString str;
-  str.appendNumber(bodyId);
+//  ZString str;
+//  str.appendNumber(bodyId);
 
-  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + "_swc";
+  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" +
+      GetSkeletonKey(bodyId);// + str + "_swc";
 
 #if 0
   ZString str;
@@ -863,4 +864,12 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getFirstCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
+}
+
+std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
+{
+  std::ostringstream stream;
+  stream << bodyId << "_swc";
+
+  return stream.str();
 }

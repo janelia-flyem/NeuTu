@@ -159,6 +159,7 @@ public:
   ZObject3dScan readRoi(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
+  ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;

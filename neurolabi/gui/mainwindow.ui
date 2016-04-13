@@ -338,6 +338,7 @@
       <addaction name="actionOperateDvid"/>
       <addaction name="actionGenerate_Local_Grayscale"/>
       <addaction name="actionUpload_Annotations"/>
+      <addaction name="actionRemove_Obsolete_Annotations"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1439,6 +1440,11 @@
   <action name="actionNeuroMorpho">
    <property name="text">
     <string>NeuroMorpho</string>
+   </property>
+  </action>
+  <action name="actionRemove_Obsolete_Annotations">
+   <property name="text">
+    <string>Remove Obsolete Annotations</string>
    </property>
   </action>
  </widget>

@@ -34,6 +34,8 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   connect(this, SIGNAL(readingCanceled()), this, SLOT(cancelReading()));
   connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
+
+  m_maxSize = 0;
 }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -155,6 +157,28 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 #endif
 }
 
+void ZDvidBufferReader::readPartial(
+    const QString &url, int maxSize, bool outputingUrl)
+{
+  if (outputingUrl) {
+    qDebug() << url;
+  }
+
+  m_buffer.clear();
+
+  startReading();
+
+  m_maxSize = maxSize;
+
+  m_networkReply = m_networkManager->get(QNetworkRequest(url));
+  connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBufferPartial()));
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(handleError(QNetworkReply::NetworkError)));
+
+  waitForReading();
+}
+
 void ZDvidBufferReader::readQt(const QString &url, bool outputUrl)
 {
   if (outputUrl) {
@@ -268,6 +292,14 @@ void ZDvidBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 void ZDvidBufferReader::readBuffer()
 {
   m_buffer.append(m_networkReply->readAll());
+}
+
+void ZDvidBufferReader::readBufferPartial()
+{
+  m_buffer.append(m_networkReply->readAll());
+  if (m_buffer.size() > m_maxSize) {
+    endReading(m_status);
+  }
 }
 
 void ZDvidBufferReader::finishReading()

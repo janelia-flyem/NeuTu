@@ -471,8 +471,11 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                   ZWidgetMessage(
                     "Failed to upload merging results", NeuTube::MSG_ERROR));
           } else {
+            std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
             GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                  getDvidTarget(), targetId);
+                  getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE);
+            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                  getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL);
           }
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();

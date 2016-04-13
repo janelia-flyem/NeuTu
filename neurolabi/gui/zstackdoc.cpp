@@ -299,6 +299,12 @@ void ZStackDoc::emptySlot()
   QMessageBox::information(NULL, "empty slot", "To be implemented");
 }
 
+void ZStackDoc::disconnectSwcNodeModelUpdate()
+{
+  disconnect(this, SIGNAL(swcModified()),
+             m_swcNodeObjsModel, SLOT(updateModelData()));
+}
+
 void ZStackDoc::connectSignalSlot()
 {
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));

@@ -224,6 +224,7 @@
       "label_block": "segmentation",
       "multires_tile": "graytiles",
       "synapse": "annot_synapse",
+      "supervised": false,
       "user_name": ["zhaot"]
     },
     {
@@ -594,7 +595,7 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 7000,
-      "uuid": "e402",
+      "uuid": "d505",
       "name": "FIB25_new",
       "comment": "branched from fa60",
       "body_label": "bodies1104",
