@@ -127,7 +127,7 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
     {
         if(m_renderCubes[i])
         {
-            qDebug()<<"### active cuberenderer "<<i;
+//            qDebug()<<"### active cuberenderer "<<i;
 
             if(count == 0)
             {

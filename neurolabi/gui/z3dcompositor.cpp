@@ -268,12 +268,13 @@ void Z3DCompositor::process(Z3DEye eye)
     }
   }
 
+#if 0
     // debug ...
   for(size_t i=0; i<onTopFilters.size(); i++)
       qDebug()<<"onTopFilters ... ... "<<onTopFilters[i]->getClassName();
   for(size_t i=0; i<normalFilters.size(); i++)
       qDebug()<<"normalFilters ... ... "<<normalFilters[i]->getClassName();
-
+#endif
 
   Z3DRenderOutputPort &currentOutport = (eye == CenterEye) ?
         m_outport : (eye == LeftEye) ? m_leftEyeOutport : m_rightEyeOutport;
@@ -549,12 +550,13 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DGeometryFilter 
           opaqueFilters.push_back(geomFilter);
     }
 
+#if 0
     // debug ...
     for(size_t i=0; i<transparentFilters.size(); i++)
         qDebug()<<"transparentFilters ... ... "<<transparentFilters[i]->getClassName();
     for(size_t i=0; i<opaqueFilters.size(); i++)
         qDebug()<<"opaqueFilters ... ... "<<opaqueFilters[i]->getClassName();
-
+#endif
     //
     if (transparentFilters.empty()) {
       renderOpaqueObj(opaqueFilters, port, eye);
