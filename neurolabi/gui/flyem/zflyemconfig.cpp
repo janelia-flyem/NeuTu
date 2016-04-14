@@ -15,6 +15,7 @@ ZFlyEmConfig::ZFlyEmConfig()
 void ZFlyEmConfig::init()
 {
   m_neutuService.setServer("http://zhaot-ws1:8080");
+  m_neutuService.updateStatus();
 //  m_neutuServer = "http://zhaot-ws1:8080";
 }
 

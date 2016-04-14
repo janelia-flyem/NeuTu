@@ -472,10 +472,12 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                     "Failed to upload merging results", NeuTube::MSG_ERROR));
           } else {
             std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
-            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                  getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE);
-            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                  getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL);
+            if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+              GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                    getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE);
+              GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                    getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL);
+            }
           }
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();

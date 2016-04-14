@@ -475,6 +475,8 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     connMethod = libdvid::PUT;
   } else if (method == "DELETE") {
     connMethod = libdvid::DELETE;
+  } else if (method == "GET") {
+    connMethod = libdvid::GET;
   }
 
   QUrl qurl(url.c_str());
@@ -492,10 +494,23 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
   qDebug() << "path: " << qurl.path();
 
 
+  try {
   statusCode = connection.make_request(
         "/.." + qurl.path().toStdString(), connMethod, payload, results,
         error_msg, type);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    statusCode = e.getStatus();
+  }
 
   return results;
 }
+
+libdvid::BinaryDataPtr ZFlyEmMisc::MakeGetRequest(
+    const std::string &url, int &statusCode)
+{
+  return MakeRequest(url, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                     statusCode);
+}
+
 #endif

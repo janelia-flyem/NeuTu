@@ -11,9 +11,7 @@ class ZNeutuService
 public:
   ZNeutuService(const std::string &server = "");
 
-  void setServer(const std::string &server) {
-    m_server = server;
-  }
+  void setServer(const std::string &server);
 
   enum EStatus {
     STATUS_NORMAL, STATUS_DOWN
@@ -30,11 +28,14 @@ public:
                          EUpdateOption option);
 
   std::string getBodyUpdateUrl() const;
+  std::string getHomeUrl() const;
   EStatus getStatus() const {
     return m_status;
   }
 
   void updateStatus();
+
+  bool isNormal() const;
 
 private:
   std::string m_server;

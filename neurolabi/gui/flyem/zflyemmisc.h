@@ -40,6 +40,7 @@ libdvid::BinaryDataPtr MakeRequest(
     const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
+libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
 #endif
 
 class HackathonEvaluator {
