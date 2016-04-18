@@ -13,6 +13,7 @@
 #if _QT_GUI_USED_
 #include <QDir>
 #include <QSettings>
+#include <QString>
 #endif
 
 class ZXmlNode;
@@ -33,6 +34,18 @@ public:
 
     return config;
   }
+
+#ifdef _QT_GUI_USED_
+  static QSettings& GetSettings() {
+    return getInstance().getSettings();
+  }
+
+  static QString GetFlyEmConfigPath();
+  static void SetFlyEmConfigPath(const QString &path);
+
+  static QString GetNeuTuServer();
+  static void SetNeuTuServer(const QString &path);
+#endif
 
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
@@ -279,7 +292,7 @@ public:
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
 
-#if defined(_FLYEM_)
+#if 0
   const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
   ZFlyEmConfig &getFlyEmConfig() { return m_flyemConfig; }
 #endif
@@ -350,7 +363,7 @@ private:
 #define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
 
 #if defined(_FLYEM_)
-#  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())
+#  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
 #endif
 
 #endif // NEUTUBECONFIG_H

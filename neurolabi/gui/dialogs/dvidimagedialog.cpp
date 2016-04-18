@@ -11,8 +11,7 @@ DvidImageDialog::DvidImageDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 #if defined(_FLYEM_)
-  setAddress( NeutubeConfig::getInstance().getFlyEmConfig().
-              getDvidTarget().getSourceString(false).c_str());
+  setAddress(GET_FLYEM_CONFIG.getDvidTarget().getSourceString(false).c_str());
 #endif
   connect(ui->dvidServerPushButton, SIGNAL(clicked()),
           this, SLOT(showDvidDialog()));

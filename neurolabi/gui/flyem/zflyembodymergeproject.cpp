@@ -443,6 +443,9 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
     if (dvidWriter.open(m_dvidTarget)) {
       ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
 
+      ZWidgetMessage warnMsg;
+      warnMsg.setType(NeuTube::MSG_WARNING);
+
       if (!labelMap.isEmpty()) {
         //reorganize the map
         QMap<uint64_t, std::vector<uint64_t> > mergeMap;
@@ -473,10 +476,17 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           } else {
             std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
             if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-              GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                    getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE);
-              GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                    getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL);
+              if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                    getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
+                  ZNeutuService::REQUEST_FAILED) {
+                warnMsg.setMessage("Computing service failed");
+              }
+
+              if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                    getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
+                  ZNeutuService::REQUEST_FAILED) {
+                warnMsg.setMessage("Computing service failed");
+              }
             }
           }
           QList<ZDvidLabelSlice*> labelList =
@@ -511,6 +521,10 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
         ZWidgetMessage message("Body merge finalized.");
         emit messageGenerated(message);
+
+        if (warnMsg.hasMessage()) {
+          emit messageGenerated(warnMsg);
+        }
       }
     }
     getProgressSignal()->endProgress();

@@ -15,6 +15,16 @@ public:
   explicit FlyEmSettingDialog(QWidget *parent = 0);
   ~FlyEmSettingDialog();
 
+public slots:
+  void update();
+
+private:
+  std::string getNeuTuServer() const;
+  std::string getConfigPath() const;
+
+  void init();
+  void connectSignalSlot();
+
 private:
   Ui::FlyEmSettingDialog *ui;
 };

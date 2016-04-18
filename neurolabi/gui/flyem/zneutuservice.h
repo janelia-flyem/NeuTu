@@ -21,9 +21,13 @@ public:
     UPDATE_ALL, UPDATE_INVALIDATE, UPDATE_DELETE
   };
 
-  void requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId,
+  enum ERequestStatus {
+    REQUEST_IGNORED, REQUEST_FAILED, REQUEST_SUCC
+  };
+
+  ERequestStatus requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId,
                          EUpdateOption option);
-  void requestBodyUpdate(const ZDvidTarget &target,
+  ERequestStatus requestBodyUpdate(const ZDvidTarget &target,
                          const std::vector<uint64_t> &bodyIdArray,
                          EUpdateOption option);
 

@@ -465,7 +465,7 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode)
-{
+{ 
   libdvid::ConnectionMethod connMethod = libdvid::GET;
   if (method == "HEAD") {
     connMethod = libdvid::HEAD;
@@ -480,6 +480,7 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
   }
 
   QUrl qurl(url.c_str());
+//  qurl.setScheme("http");
   ZString address = qurl.host();
   if (qurl.port() >= 0) {
     address += ":";
@@ -495,9 +496,9 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
 
 
   try {
-  statusCode = connection.make_request(
-        "/.." + qurl.path().toStdString(), connMethod, payload, results,
-        error_msg, type);
+    statusCode = connection.make_request(
+          "/.." + qurl.path().toStdString(), connMethod, payload, results,
+          error_msg, type);
   } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
     statusCode = e.getStatus();

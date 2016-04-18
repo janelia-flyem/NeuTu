@@ -183,12 +183,6 @@ bool NeutubeConfig::load(const std::string &filePath)
       m_softwareName = "neuTube";
     }
 
-#ifdef _FLYEM_
-    getFlyEmConfig().loadConfig(
-          ZString::fullPath(
-            GET_APPLICATION_DIR, "json", "", "flyem_config.json"));
-#endif
-
     return true;
   }
 
@@ -566,3 +560,26 @@ void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     m_isPunctaOn = true;
   }
 }
+
+#ifdef _QT_GUI_USED_
+QString NeutubeConfig::GetFlyEmConfigPath()
+{
+  return GetSettings().value("flyem_config").toString();
+}
+
+void NeutubeConfig::SetFlyEmConfigPath(const QString &path)
+{
+  GetSettings().setValue("flyem_config", path);
+}
+
+QString NeutubeConfig::GetNeuTuServer()
+{
+  return GetSettings().value("neutu_server").toString();
+}
+
+void NeutubeConfig::SetNeuTuServer(const QString &path)
+{
+  GetSettings().setValue("neutu_server", path);
+}
+
+#endif

@@ -174,6 +174,7 @@
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zslicedpuncta.h"
 #include "neutubeconfig.h"
+#include "dialogs/flyemsettingdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -403,7 +404,7 @@ void MainWindow::initDialog()
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 #if defined(_FLYEM_)
-  NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+  GET_FLYEM_CONFIG.setDvidTarget(
         m_dvidDlg->getDvidTarget());
 #endif
 
@@ -464,6 +465,8 @@ void MainWindow::initDialog()
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
   m_testDlg2 = new ZTestDialog2(this);
+
+  m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -809,7 +812,7 @@ void MainWindow::setActionActivity()
   //m_stackActionActivator.registerAction(objectViewSurfaceAction, true);
   //m_stackActionActivator.registerAction(objectViewSkeletonAction, true);
 
-  m_stackActionActivator.registerAction(settingAction, true);
+//  m_stackActionActivator.registerAction(settingAction, true);
 
   m_stackActionActivator.registerAction(m_ui->actionMask_SWC, true);
   m_stackActionActivator.registerAction(m_ui->actionOpen_3D_View_Without_Volume, true);
@@ -2423,9 +2426,13 @@ void MainWindow::subtractSwcs()
 
 void MainWindow::setOption()
 {
+#if defined(_FLYEM_)
+  m_flyemSettingDlg->exec();
+#else
   if (activeStackFrame() != NULL) {
     activeStackFrame()->showSetting();
   }
+#endif
 }
 
 int MainWindow::frameNumber()
@@ -6342,9 +6349,8 @@ void MainWindow::on_actionDVID_Bundle_triggered()
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
-    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-          m_dvidDlg->getDvidTarget());
-    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
+    target = GET_FLYEM_CONFIG.getDvidTarget();
     if (!target.isValid()) {
       report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
     } else {
@@ -6618,10 +6624,9 @@ void MainWindow::on_actionFlyEmSettings_triggered()
 {
 #if defined(_FLYEM_)
   if (m_dvidDlg->exec()) {
-    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-          m_dvidDlg->getDvidTarget());
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
 #ifdef _DEBUG_
-    NeutubeConfig::getInstance().getFlyEmConfig().print();
+    GET_FLYEM_CONFIG.print();
 #endif
   }
 #endif
@@ -7505,9 +7510,8 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
-    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-          m_dvidDlg->getDvidTarget());
-    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
+    target = GET_FLYEM_CONFIG.getDvidTarget();
     if (!target.isValid()) {
       report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
     } else {
