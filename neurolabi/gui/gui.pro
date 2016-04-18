@@ -618,7 +618,8 @@ HEADERS += mainwindow.h \
     dialogs/flyemtododialog.h \
     zstackdocselector.h \
     flyem/zflyemproofdoccommand.h \
-    flyem/zneutuservice.h
+    flyem/zneutuservice.h \
+    dialogs/flyemsettingdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -692,7 +693,8 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkwidget.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
-    dialogs/flyemtododialog.ui
+    dialogs/flyemtododialog.ui \
+    dialogs/flyemsettingdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1088,7 +1090,8 @@ SOURCES += main.cpp \
     dialogs/flyemtododialog.cpp \
     zstackdocselector.cpp \
     flyem/zflyemproofdoccommand.cpp \
-    flyem/zneutuservice.cpp
+    flyem/zneutuservice.cpp \
+    dialogs/flyemsettingdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

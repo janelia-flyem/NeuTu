@@ -12,9 +12,7 @@ class ZNeutuService
 public:
   ZNeutuService(const std::string &server = "");
 
-  void setServer(const std::string &server) {
-    m_server = server;
-  }
+  void setServer(const std::string &server);
 
   enum EStatus {
     STATUS_NORMAL, STATUS_DOWN
@@ -24,18 +22,25 @@ public:
     UPDATE_ALL, UPDATE_INVALIDATE, UPDATE_DELETE
   };
 
-  void requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId,
+  enum ERequestStatus {
+    REQUEST_IGNORED, REQUEST_FAILED, REQUEST_SUCC
+  };
+
+  ERequestStatus requestBodyUpdate(const ZDvidTarget &target, uint64_t bodyId,
                          EUpdateOption option);
-  void requestBodyUpdate(const ZDvidTarget &target,
+  ERequestStatus requestBodyUpdate(const ZDvidTarget &target,
                          const std::vector<uint64_t> &bodyIdArray,
                          EUpdateOption option);
 
   std::string getBodyUpdateUrl() const;
+  std::string getHomeUrl() const;
   EStatus getStatus() const {
     return m_status;
   }
 
   void updateStatus();
+
+  bool isNormal() const;
 
 private:
   std::string m_server;

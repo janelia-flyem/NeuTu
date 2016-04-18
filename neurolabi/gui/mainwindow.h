@@ -74,6 +74,7 @@ class ProjectionDialog;
 class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
+class FlyEmSettingDialog;
 
 namespace Ui {
   class MainWindow;
@@ -690,6 +691,7 @@ private:
   ZAutoTraceDialog *m_autoTraceDlg;
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
+  FlyEmSettingDialog *m_flyemSettingDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

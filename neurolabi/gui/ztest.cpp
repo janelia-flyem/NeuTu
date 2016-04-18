@@ -19803,7 +19803,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
   target.setBodyLabelName("bodies");
@@ -19938,6 +19938,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZNeutuService service("http://zhaot-ws1:8080");
+  ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
+
+  std::cout << "Service normal?: " << service.isNormal() << std::endl;
+
+  service.updateStatus();
+  std::cout << "Service normal?: " << service.isNormal() << std::endl;
 
 #endif
 

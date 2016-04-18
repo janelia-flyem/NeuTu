@@ -130,7 +130,6 @@ public:
 
   void saveStack(const QString &filePath);
 
-  void showSetting();
   void showManageObjsDialog();
 
   double displayGreyMin(int c=0) const;
@@ -274,6 +273,7 @@ public slots:
   void notifyViewChanged(const ZStackViewParam &param);
   void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
+  void showSetting();
 
 private slots:
   void updateSwcExtensionHint();

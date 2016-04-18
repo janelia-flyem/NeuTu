@@ -2423,6 +2423,14 @@ void ZStackView::customizeWidget()
     vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     m_secondTopLayout->addWidget(vis3dButton);
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
+
+    if (buddyDocument()->getTag() == NeuTube::Document::NORMAL) {
+      QPushButton *settingButton = new QPushButton(this);
+      settingButton->setText("Settings");
+      settingButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+      m_secondTopLayout->addWidget(settingButton);
+      connect(settingButton, SIGNAL(clicked()), this, SLOT(requestSetting()));
+    }
   }
 }
 
@@ -2454,6 +2462,11 @@ void ZStackView::request3DVis()
 
     m_messageManager->processMessage(&message, true);
   }
+}
+
+void ZStackView::requestSetting()
+{
+  emit changingSetting();
 }
 
 void ZStackView::requestQuick3DVis()

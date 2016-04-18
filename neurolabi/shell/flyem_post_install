@@ -27,6 +27,11 @@ then
   cp $neutube_dir/custom/flyem_config.json $build_dir/json/flyem_config.json
 fi
 
+if [ -f $neutube_dir/custom/config.json ]
+then
+  cp $neutube_dir/custom/config.json $build_dir/config.json
+fi
+
 if [ -f $neutube_dir/custom/config.xml ]
 then
   cp $neutube_dir/custom/config.xml $build_dir/config.xml
