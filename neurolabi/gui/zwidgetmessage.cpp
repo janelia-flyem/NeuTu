@@ -3,8 +3,8 @@
 #include <QStringList>
 #include <QDateTime>
 
-ZWidgetMessage::ZWidgetMessage() :
-  m_type(NeuTube::MSG_INFORMATION), m_target(TARGET_TEXT)
+ZWidgetMessage::ZWidgetMessage(ETarget target) :
+  m_type(NeuTube::MSG_INFORMATION), m_target(target)
 {
 }
 
@@ -84,4 +84,9 @@ void ZWidgetMessage::setMessage(const QString &msg)
   if (!msg.isEmpty()) {
     m_message.append(msg);
   }
+}
+
+bool ZWidgetMessage::hasMessage() const
+{
+  return !m_message.isEmpty();
 }

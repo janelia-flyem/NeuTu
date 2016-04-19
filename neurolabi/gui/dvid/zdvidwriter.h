@@ -97,6 +97,11 @@ public:
   void deleteKey(const QString &dataName,
                  const QString &minKey, const QString &maxKey);
 
+  void deleteSkeleton(uint64_t bodyId);
+  void deleteBodyAnnotation(uint64_t bodyId);
+
+  void invalidateBody(uint64_t bodyId);
+
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);
   std::string createBranch();

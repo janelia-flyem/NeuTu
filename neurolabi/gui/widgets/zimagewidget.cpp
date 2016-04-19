@@ -927,7 +927,8 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (m_activeDecorationCanvas != NULL) {
       if (m_activeDecorationCanvas->isVisible()) {
-        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
+        painter.drawPixmapNt(*m_activeDecorationCanvas);
+//        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
       }
     }
 

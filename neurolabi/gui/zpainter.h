@@ -95,6 +95,8 @@ public:
    * (\a x, \a y) is the target position in world coordinates.
    */
   void drawPixmap(int x, int y, const ZPixmap &image);
+  //ignore transformation
+  void drawPixmapNt(const ZPixmap &image);
 
   void drawActivePixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);

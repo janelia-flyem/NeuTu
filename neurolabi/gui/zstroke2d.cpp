@@ -198,6 +198,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
         painter.setBrush(Qt::NoBrush);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
+      qDebug() << "Painter transform: " << painter.getTransform();
+      qDebug() << "Stroke coord: " << m_pointArray[0];
       painter.drawEllipse(QPointF(m_pointArray[0]), radius, radius);
     } else {
 

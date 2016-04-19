@@ -45,6 +45,7 @@ class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
+class ZStTransform;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -278,6 +279,7 @@ public slots:
   void requestQuick3DVis();
   void requestHighresQuick3DVis();
   void requestMerge();
+  void requestSetting();
 
   void setView(const ZStackViewParam &param);
 
@@ -296,6 +298,7 @@ signals:
   void viewChanged(ZStackViewParam param);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
+  void changingSetting();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
@@ -312,6 +315,9 @@ public:
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
+
+  //Get transform from view port to proj region
+  ZStTransform getViewTransform() const;
 
   /*!
    * \brief Set the viewport offset

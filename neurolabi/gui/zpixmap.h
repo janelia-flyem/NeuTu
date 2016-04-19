@@ -18,6 +18,7 @@ public:
   ~ZPixmap();
 
   const ZStTransform& getTransform() const;
+  void setTransform(const ZStTransform &transform);
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 

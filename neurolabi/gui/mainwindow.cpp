@@ -174,6 +174,7 @@
 #include "flyem/zflyembodyannotationdialog.h"
 #include "zslicedpuncta.h"
 #include "neutubeconfig.h"
+#include "dialogs/flyemsettingdialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -403,7 +404,7 @@ void MainWindow::initDialog()
   m_hotSpotDlg = new FlyEmHotSpotDialog(this);
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 #if defined(_FLYEM_)
-  NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
+  GET_FLYEM_CONFIG.setDvidTarget(
         m_dvidDlg->getDvidTarget());
 #endif
 
@@ -464,6 +465,8 @@ void MainWindow::initDialog()
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
   m_testDlg2 = new ZTestDialog2(this);
+
+  m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
   m_newBsProjectDialog = NULL;
@@ -809,7 +812,7 @@ void MainWindow::setActionActivity()
   //m_stackActionActivator.registerAction(objectViewSurfaceAction, true);
   //m_stackActionActivator.registerAction(objectViewSkeletonAction, true);
 
-  m_stackActionActivator.registerAction(settingAction, true);
+//  m_stackActionActivator.registerAction(settingAction, true);
 
   m_stackActionActivator.registerAction(m_ui->actionMask_SWC, true);
   m_stackActionActivator.registerAction(m_ui->actionOpen_3D_View_Without_Volume, true);
@@ -2423,9 +2426,13 @@ void MainWindow::subtractSwcs()
 
 void MainWindow::setOption()
 {
+#if defined(_FLYEM_)
+  m_flyemSettingDlg->exec();
+#else
   if (activeStackFrame() != NULL) {
     activeStackFrame()->showSetting();
   }
+#endif
 }
 
 int MainWindow::frameNumber()
@@ -4484,12 +4491,14 @@ void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
 
 void MainWindow::on_actionMake_Movie_triggered()
 {
-  const NeutubeConfig &config = NeutubeConfig::getInstance();
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
 
-  m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
-                           "/flyem/FIB/movie/reconstruct.json").c_str());
-  m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
-                            "/flyem/FIB/movie/frame").c_str());
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/reconstruct.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/frame").c_str());
+  }
 
   if (m_movieDlg->exec()) {
     QString fileName = m_movieDlg->getScriptPath();
@@ -6340,9 +6349,8 @@ void MainWindow::on_actionDVID_Bundle_triggered()
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
-    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-          m_dvidDlg->getDvidTarget());
-    target = NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
+    target = GET_FLYEM_CONFIG.getDvidTarget();
     if (!target.isValid()) {
       report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
     } else {
@@ -6616,10 +6624,9 @@ void MainWindow::on_actionFlyEmSettings_triggered()
 {
 #if defined(_FLYEM_)
   if (m_dvidDlg->exec()) {
-    NeutubeConfig::getInstance().getFlyEmConfig().setDvidTarget(
-          m_dvidDlg->getDvidTarget());
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
 #ifdef _DEBUG_
-    NeutubeConfig::getInstance().getFlyEmConfig().print();
+    GET_FLYEM_CONFIG.print();
 #endif
   }
 #endif
@@ -7495,5 +7502,57 @@ void MainWindow::MessageProcessor::processMessage(
     default:
       break;
     }
+  }
+}
+
+void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
+{
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_dvidDlg->exec()) {
+    GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
+    target = GET_FLYEM_CONFIG.getDvidTarget();
+    if (!target.isValid()) {
+      report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
+    } else {
+      continueLoading = true;
+    }
+  }
+
+  if (continueLoading) {
+    startProgress();
+
+    ZDvidReader fdReader;
+    fdReader.open(target);
+
+  //  m_synapseAnnotationFile = dvidTarget.getSourceString();
+    QStringList annotationList = fdReader.readKeys(
+          ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,
+                             ZDvidData::ROLE_BODY_LABEL,
+                             target.getBodyLabelName()).c_str());
+    std::set<uint64_t> annotationSet;
+    foreach (const QString &idStr, annotationList) {
+      annotationSet.insert(ZString(idStr.toStdString()).firstInteger());
+    }
+
+    ZJsonArray annotBackup;
+
+    for (std::set<uint64_t>::const_iterator iter = annotationSet.begin();
+         iter != annotationSet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (!fdReader.hasBody(bodyId)) {
+          ZJsonObject obj = fdReader.readBodyAnnotationJson(bodyId);
+          annotBackup.append(obj);
+          GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                target, bodyId, ZNeutuService::UPDATE_DELETE);
+        }
+//        ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
+      }
+    }
+
+    annotBackup.dump(GET_TEST_DATA_DIR + "/test.json");
+
+    endProgress();
   }
 }

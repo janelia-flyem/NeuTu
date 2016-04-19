@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>328</width>
-    <height>489</height>
+    <height>516</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -180,6 +180,20 @@
      </item>
      <item>
       <widget class="QLineEdit" name="synapseLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_14">
+     <item>
+      <widget class="QCheckBox" name="librarianCheckBox">
+       <property name="text">
+        <string>Use librarian</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

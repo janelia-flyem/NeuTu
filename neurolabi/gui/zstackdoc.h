@@ -774,6 +774,7 @@ public:
     return m_neuronTracer.getConnectionTestWorkspace();
   }
 
+  void disconnectSwcNodeModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();

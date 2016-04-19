@@ -263,6 +263,14 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
   }
 }
 
+void ZPainter::drawPixmapNt(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    m_painter.drawPixmap(0, 0, image);
+    setPainted(true);
+  }
+}
+
 void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
 {
   if (!image.isNull()) {
