@@ -89,6 +89,8 @@ public:
   void drawPixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
 
+  void drawPixmap(const QRectF &targetRect, const ZPixmap &image);
+
   /*!
    * \brief Draw image.
    *

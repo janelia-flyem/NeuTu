@@ -1369,7 +1369,21 @@ void ZStackView::updateActiveDecorationCanvas()
 //    }
 //  }
 
+  qDebug() << "Updating active decoration";
+  qDebug() << "  Projection:" << getProjRegion();
+
+  ZStTransform transform = getViewTransform();
+
   QSize newSize = getProjRegion().size().toSize();
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
+  }
+
+  qDebug() << "  Canvas size" << newSize;
 
   if (m_activeDecorationCanvas != NULL) {
     if (m_activeDecorationCanvas->size() != newSize) {
@@ -1378,12 +1392,17 @@ void ZStackView::updateActiveDecorationCanvas()
     }
   }
 
-
   if (m_activeDecorationCanvas == NULL) {
     m_activeDecorationCanvas = new ZPixmap(newSize);
   }
 
-  ZStTransform transform = getViewTransform();
+
+#if 0
+  ZStTransform transform;
+  QRectF targetRect = getProjRegion();
+  targetRect.setSize(newSize);
+  transform.estimate(m_imageWidget->viewPort(), targetRect);
+#endif
 
   m_activeDecorationCanvas->setTransform(transform);
   m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
