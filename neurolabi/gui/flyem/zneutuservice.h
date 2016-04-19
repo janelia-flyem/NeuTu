@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "tz_stdint.h"
+
 class ZDvidTarget;
 
 class ZNeutuService
