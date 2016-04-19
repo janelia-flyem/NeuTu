@@ -100,6 +100,8 @@ public:
   //ignore transformation
   void drawPixmapNt(const ZPixmap &image);
 
+  void drawPixmap(const ZPixmap &image);
+
   void drawActivePixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
   void drawActivePixmap(int x, int y, const ZPixmap &image);

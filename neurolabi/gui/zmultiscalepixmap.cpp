@@ -28,8 +28,10 @@ void ZMultiscalePixmap::clear()
 
 void ZMultiscalePixmap::setFullResSize(const QSize &size)
 {
-  m_fullResSize = size;
-  invalidateFullRes();
+  if (m_fullResSize != size) {
+    m_fullResSize = size;
+    invalidateFullRes();
+  }
 }
 
 void ZMultiscalePixmap::setSize(const QSize &size)

@@ -280,6 +280,15 @@ void ZPainter::drawPixmapNt(const ZPixmap &image)
   }
 }
 
+void ZPainter::drawPixmap(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    QRectF targetRect =
+        image.getProjTransform().transform(QRectF(image.rect()));
+    m_painter.drawPixmap(targetRect, image, image.rect());
+  }
+}
+
 void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
 {
   if (!image.isNull()) {

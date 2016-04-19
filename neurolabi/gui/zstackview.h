@@ -417,6 +417,7 @@ protected:
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
 

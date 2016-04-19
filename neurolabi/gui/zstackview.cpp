@@ -1379,6 +1379,8 @@ void ZStackView::updateActiveDecorationCanvas()
   if (transform.getSx() > 1.1) {
     QRect viewPort = getViewPort(NeuTube::COORD_STACK);
     newSize = viewPort.size();
+    m_activeDecorationCanvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
     transform.setScale(1.0, 1.0);
     transform.setOffset(-viewPort.left(), -viewPort.top());
   }
@@ -1405,6 +1407,7 @@ void ZStackView::updateActiveDecorationCanvas()
 #endif
 
   m_activeDecorationCanvas->setTransform(transform);
+
   m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
 
   if (m_activeDecorationCanvas != NULL) {
@@ -2423,7 +2426,7 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
-//  updateActiveDecorationCanvas();
+  updateActiveDecorationCanvas();
 
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;

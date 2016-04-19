@@ -927,11 +927,14 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (m_activeDecorationCanvas != NULL) {
       if (m_activeDecorationCanvas->isVisible()) {
+#if 0
         QRectF targetRect = projectRegion();
         if (m_activeDecorationCanvas->getTransform().getSx() != 1.0) {
           targetRect.setSize(m_activeDecorationCanvas->size());
         }
         painter.drawPixmap(targetRect, *m_activeDecorationCanvas);
+#endif
+        painter.drawPixmap(*m_activeDecorationCanvas);
 //        painter.drawPixmapNt(*m_activeDecorationCanvas);
 //        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
       }

@@ -34,22 +34,32 @@ ZPixmap::~ZPixmap()
 
 const ZStTransform& ZPixmap::getTransform() const
 {
-  return m_transform;
+  return m_objTransform;
+}
+
+const ZStTransform& ZPixmap::getProjTransform() const
+{
+  return m_projTransform;
+}
+
+ZStTransform& ZPixmap::getProjTransform()
+{
+  return m_projTransform;
 }
 
 void ZPixmap::setTransform(const ZStTransform &transform)
 {
-  m_transform = transform;
+  m_objTransform = transform;
 }
 
 void ZPixmap::setScale(double sx, double sy)
 {
-  m_transform.setScale(sx, sy);
+  m_objTransform.setScale(sx, sy);
 }
 
 void ZPixmap::setOffset(double dx, double dy)
 {
-  m_transform.setOffset(dx, dy);
+  m_objTransform.setOffset(dx, dy);
 }
 
 void ZPixmap::cleanFunc(QPixmap *pixmap)
@@ -141,7 +151,7 @@ QRectF ZPixmap::getActiveArea(NeuTube::ECoordinateSystem coord) const
   switch (coord) {
   case NeuTube::COORD_WORLD:
     if (m_activeArea.isEmpty()) {
-      return m_transform.getInverseTransform().transform(
+      return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
     } else {
       return m_activeArea;
@@ -150,7 +160,7 @@ QRectF ZPixmap::getActiveArea(NeuTube::ECoordinateSystem coord) const
     if (m_activeArea.isEmpty()) {
       return QRectF(0, 0, width(), height());
     } else {
-      return m_transform.transform(m_activeArea);
+      return m_objTransform.transform(m_activeArea);
     }
   default:
     break;
@@ -164,6 +174,6 @@ bool ZPixmap::isFullyActive() const
   if (m_activeArea.isEmpty()) {
     return true;
   }
-  return m_transform.transform(m_activeArea).contains(
+  return m_objTransform.transform(m_activeArea).contains(
         QRectF(0, 0, width(), height()));
 }
