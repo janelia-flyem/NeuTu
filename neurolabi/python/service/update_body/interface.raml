@@ -1,13 +1,13 @@
 #%RAML 0.8
-title: Skeletonization Service
-/skeletonize:
+title: update_body Service
+/update_body:
   post:
-    description: "Call service to calculate the skeleton of a body"
+    description: "Call service to update data related to a body"
     body:
       application/json:
         schema: |
           { "$schema": "http://json-schema.org/schema#",
-            "title": "Provide body ids whose skeletons will be calculated",
+            "title": "Provide body ids to be updated",
             "type": "object",
             "properties": {
               "dvid-server": { 
@@ -17,8 +17,8 @@ title: Skeletonization Service
               "uuid": { "type": "string" },
               "labelvol": {
                 "type": "string",
-                "description": "Name of the labelvol data for skeletonization. The default value is bodies."
-              }
+                "description": "Name of the labelvol data. The default value is bodies."
+              },
               "bodies": { 
                 "description": "Array of body ids",
                 "type": "array",
@@ -27,7 +27,7 @@ title: Skeletonization Service
                 "uniqueItems": true
               }
             },
-            "required" : ["uuid", "bodies"]
+            "required" : ["dvid-server", "uuid", "bodies"]
           }
     responses:
       200:
@@ -60,7 +60,7 @@ title: Skeletonization Service
               }
 /interface/interface.raml:
   get:
-    description: "Get the interface for the skeletonization service"
+    description: "Get the interface for the update_body service"
     responses:
       200:
         body:

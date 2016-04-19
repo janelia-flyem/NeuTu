@@ -1820,7 +1820,7 @@ void ZStackView::paintActiveDecorationBuffer()
       }
       if (painter.isPainted()) {
         m_activeDecorationCanvas->setVisible(true);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         m_activeDecorationCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
       }
