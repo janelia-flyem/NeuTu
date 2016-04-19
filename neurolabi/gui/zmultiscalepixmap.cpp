@@ -26,6 +26,11 @@ void ZMultiscalePixmap::clear()
   m_pixmapArray.clear();
 }
 
+void ZMultiscalePixmap::setFullResSize(const QSize &size)
+{
+  m_fullResSize = size;
+  invalidateFullRes();
+}
 
 void ZMultiscalePixmap::setSize(const QSize &size)
 {
@@ -53,6 +58,12 @@ void ZMultiscalePixmap::setOffset(const QPoint &offset)
 int ZMultiscalePixmap::getScale(int level) const
 {
   return level + 1;
+}
+
+void ZMultiscalePixmap::invalidateFullRes()
+{
+  delete m_pixmapArray[0];
+  m_pixmapArray[0] = NULL;
 }
 
 ZPixmap* ZMultiscalePixmap::getPixmap(int level)

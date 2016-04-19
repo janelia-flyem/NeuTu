@@ -37,6 +37,11 @@ const ZStTransform& ZPixmap::getTransform() const
   return m_transform;
 }
 
+void ZPixmap::setTransform(const ZStTransform &transform)
+{
+  m_transform = transform;
+}
+
 void ZPixmap::setScale(double sx, double sy)
 {
   m_transform.setScale(sx, sy);

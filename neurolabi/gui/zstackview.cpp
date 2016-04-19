@@ -780,6 +780,8 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 {
   setInfo();
   event->accept();
+
+  updateActiveDecorationCanvas();
   //buddyPresenter()->updateInteractiveContext();
 }
 
@@ -1367,6 +1369,32 @@ void ZStackView::updateActiveDecorationCanvas()
 //    }
 //  }
 
+  QSize newSize = getProjRegion().size().toSize();
+
+  if (m_activeDecorationCanvas != NULL) {
+    if (m_activeDecorationCanvas->size() != newSize) {
+      delete m_activeDecorationCanvas;
+      m_activeDecorationCanvas = NULL;
+    }
+  }
+
+
+  if (m_activeDecorationCanvas == NULL) {
+    m_activeDecorationCanvas = new ZPixmap(newSize);
+  }
+
+  ZStTransform transform = getViewTransform();
+
+  m_activeDecorationCanvas->setTransform(transform);
+  m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
+
+  if (m_activeDecorationCanvas != NULL) {
+    if (m_activeDecorationCanvas->isVisible()){
+      m_activeDecorationCanvas->cleanUp();
+    }
+  }
+
+#if 0
   resetCanvasWithStack(m_activeDecorationCanvas, NULL);
 
   if (m_activeDecorationCanvas == NULL) {
@@ -1387,6 +1415,7 @@ void ZStackView::updateActiveDecorationCanvas()
       m_activeDecorationCanvas->cleanUp();
     }
   }
+#endif
 }
 
 void ZStackView::paintMultiresImageTest(int resLevel)
@@ -1755,9 +1784,11 @@ void ZStackView::paintActiveDecorationBuffer()
 
     if (m_activeDecorationCanvas != NULL) {
       ZPainter painter(m_activeDecorationCanvas);
+//      qDebug() << "Active painter transform: " << painter.getTransform();
+
       ZIntPoint pt = buddyDocument()->getStackOffset();
       pt.shiftSliceAxis(getSliceAxis());
-      painter.setStackOffset(pt);
+//      painter.setStackOffset(pt);
 
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
@@ -1767,6 +1798,9 @@ void ZStackView::paintActiveDecorationBuffer()
       }
       if (painter.isPainted()) {
         m_activeDecorationCanvas->setVisible(true);
+#ifdef _DEBUG_
+        m_activeDecorationCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
       }
     }
   }
@@ -2126,6 +2160,14 @@ ZStackViewParam ZStackView::getViewParameter(
   return param;
 }
 
+ZStTransform ZStackView::getViewTransform() const
+{
+  ZStTransform transform;
+  transform.estimate(m_imageWidget->viewPort(), getProjRegion());
+
+  return transform;
+}
+
 void ZStackView::setViewPortOffset(int x, int y)
 {
   imageWidget()->blockPaint(true);
@@ -2362,6 +2404,8 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
+//  updateActiveDecorationCanvas();
+
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif

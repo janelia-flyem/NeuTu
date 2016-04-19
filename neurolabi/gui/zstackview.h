@@ -45,6 +45,7 @@ class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
+class ZStTransform;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -314,6 +315,9 @@ public:
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
+
+  //Get transform from view port to proj region
+  ZStTransform getViewTransform() const;
 
   /*!
    * \brief Set the viewport offset
