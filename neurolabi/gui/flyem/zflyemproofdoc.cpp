@@ -180,7 +180,7 @@ void ZFlyEmProofDoc::cleanBodyAnnotationMap()
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-      LWARN() << "In consistent body selection: " << bodyId;
+      LWARN() << "Inconsistent body selection: " << bodyId;
       keysToRemove.push_back(bodyId);
     }
   }

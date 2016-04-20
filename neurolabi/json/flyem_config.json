@@ -243,6 +243,7 @@
       "label_block": "segmentation",
       "multires_tile": "graytiles",
       "synapse": "annot_synapse",
+      "supervised": false,
       "user_name": ["zhaot"]
     },
     {
