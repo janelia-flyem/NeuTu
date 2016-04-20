@@ -35,6 +35,7 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_paintBundle = NULL;
   m_tileCanvas = NULL;
   m_objectCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
 }
@@ -86,6 +87,11 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 void ZImageWidget::setObjectCanvas(ZPixmap *canvas)
 {
   m_objectCanvas = canvas;
+}
+
+void ZImageWidget::setDynamicObjectCanvas(ZPixmap *canvas)
+{
+  m_dynamicObjectCanvas = canvas;
 }
 
 void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
@@ -940,6 +946,12 @@ void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
       }
     }
 
+    if (m_dynamicObjectCanvas != NULL) {
+      if (m_dynamicObjectCanvas->isVisible()) {
+        painter.drawPixmap(*m_dynamicObjectCanvas);
+      }
+    }
+
     painter.end();
 
     paintObject();
@@ -1228,6 +1240,8 @@ void ZImageWidget::removeCanvas(ZPixmap *canvas)
     setTileCanvas(NULL);
   } else if (m_activeDecorationCanvas == canvas) {
     setActiveDecorationCanvas(NULL);
+  } else if (m_dynamicObjectCanvas == canvas) {
+    setDynamicObjectCanvas(NULL);
   }
 }
 
@@ -1238,6 +1252,7 @@ void ZImageWidget::reset()
   m_objectCanvas = NULL;
   m_tileCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
 
   m_viewPort.setSize(QSize(0, 0));
   m_canvasRegion.setSize(QSize(0, 0));

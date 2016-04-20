@@ -192,6 +192,7 @@ public:
   void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
+  void paintDynamicObjectBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
 
@@ -384,8 +385,11 @@ protected:
   void clearTileCanvas();
   void updateObjectCanvas();
   void updateTileCanvas();
+  void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
   void updatePaintBundle();
+
+  ZPixmap* updateProjCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 
