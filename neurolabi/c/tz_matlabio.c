@@ -7,9 +7,6 @@
 #include "tz_dirent.h"
 #endif
 #include "tz_matlabio.h"
-#ifdef HAVE_LIBZ
-#  include <zlib.h>
-#endif
 #include "tz_error.h"
 #include "tz_matlabdefs.h"
 
@@ -32,6 +29,9 @@
 
 #define TAG_OFFSET 8
 #define DESCRP_LENGTH 116
+
+/* disable libz */
+#undef HAVE_LIBZ
 
 void Clean_Matlab_Array(Matlab_Array *ma)
 {
