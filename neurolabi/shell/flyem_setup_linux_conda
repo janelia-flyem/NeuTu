@@ -24,9 +24,9 @@ then
   fi
 fi
 
+CONDA_ROOT=`$condaDir/bin/conda info --root`
 if [ ! -d $condaDir/envs/dvidenv ]
 then
-  CONDA_ROOT=`$condaDir/bin/conda info --root`
   source ${CONDA_ROOT}/bin/activate root
   { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
 fi
