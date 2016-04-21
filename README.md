@@ -38,15 +38,7 @@ Additional flags are needed to build special editions:
 
 #### FlyEM Edition
     
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem
-
-#### FlyEM Edition with DVID support
-    
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem -q "DVIDCPP_PATH=<dvidcpp_apth>"
-    
-Here \<dvidcpp_path\> is the install path of libdvid-cpp.
-
-Manual: https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
+Please check README in the flyem_release branch: https://github.com/janelia-flyem/NeuTu/tree/flyem_release
 
 #### Bright Field (Biocytin) Edition
 
@@ -61,5 +53,7 @@ See neurolabi/Compile_Windows.txt for more details.
 The binary version for dark field neuron reconstruction can be downloaded from 
 
     http://www.neutracing.com
+
+Software manual for the FlyEM edition: https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
 Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
