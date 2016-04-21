@@ -15,6 +15,8 @@ public:
   explicit FlyEmSettingDialog(QWidget *parent = 0);
   ~FlyEmSettingDialog();
 
+  void loadSetting();
+
 public slots:
   void update();
 
@@ -23,6 +25,7 @@ private:
   std::string getConfigPath() const;
 
   void init();
+
   void connectSignalSlot();
 
 private:

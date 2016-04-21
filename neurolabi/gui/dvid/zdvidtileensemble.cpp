@@ -3,6 +3,7 @@
 #include <QElapsedTimer>
 #include <QtCore>
 
+#include "neutubeconfig.h"
 #include "zstackview.h"
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
@@ -218,7 +219,12 @@ bool ZDvidTileEnsemble::update(
 
       qint64 tileReadingTime = timer.elapsed();
 
-      std::cout << data.size() << "x tile reading time: " << tileReadingTime << std::endl;
+      if (NeutubeConfig::LoggingProfile()) {
+        LINFO() << data.size() << "x tile reading time: " << tileReadingTime;
+      } else {
+        std::cout << data.size() << "x tile reading time: " << tileReadingTime
+                  << std::endl;
+      }
       if (tileReadingTime > 3000) {
         LWARN() << "Tile reading hickup.";
       }
@@ -227,7 +233,8 @@ bool ZDvidTileEnsemble::update(
 
       QList<ZDvidTile*> tileList;
       QList<ZDvidTileDecodeTask*> taskList;
-      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator
+           iter = tileIndices.begin();
            iter != tileIndices.end(); ++iter) {
         const ZDvidTileInfo::TIndex &index = *iter;
         ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
