@@ -573,9 +573,7 @@ public:
     Cz_Lsminfo m_basicInfo;
     Lsm_Channel_Colors m_lsmChannelInfo;
     Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
-#ifdef _NEUTUBE_
-    std::vector<QString> m_lsmChannelNames;
-#endif
+    std::vector<std::string> m_lsmChannelNames;
     std::vector<double> m_lsmTimeStamps;
     std::vector<int> m_lsmChannelDataTypes;
   };

@@ -135,10 +135,30 @@
       "port": 8500,
       "uuid": "3d33",
       "name": "mb_training_namra_split",
-      "comment": "MB seg (branched from node 2635)",
+      "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["zhaot", "ansarin"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "2b46",
+      "name": "split training neacee",
+      "comment": "MB seg (branched from node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "neacee"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "3e4b",
+      "name": "split training mcadowk",
+      "comment": "MB seg (branched from node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "mcadowk"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -257,6 +277,26 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["zhaot", "ansarin"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "8693",
+      "name": "merge training neacee",
+      "comment": "MB seg (branched from 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "neacee"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "3364",
+      "name": "merge training mcadowk",
+      "comment": "MB seg (branched from 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "mcadowk"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -541,7 +581,7 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
-      "uuid": "7285",
+      "uuid": "5f53",
       "name": "MB_ansarin_Training",
       "comment": "production synapse work",
       "body_label": "bodies3",

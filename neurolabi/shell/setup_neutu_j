@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-if [ `uname` == 'Darwin' ]; then
+if [ `uname` = 'Darwin' ]; then
   scriptDir=$(cd $(dirname "$0") && pwd -P)
 else
   scriptDir=$(dirname `readlink -f "$0"`)
@@ -47,7 +47,7 @@ echo $PATH
 which gcc
 
 qtver=4.8.5
-if [ `uname` == 'Darwin' ]
+if [ `uname` = 'Darwin' ]
 then
   qtver=4.8.4
 fi
@@ -62,11 +62,11 @@ then
       qtSource=$master_dir/$qtsrc.tar.gz
       if [ ! -f $qtSource ]
       then
-        if [ `uname` == 'Darwin' ]
+        if [ `uname` = 'Darwin' ]
         then
           curl -L https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -o $qtSource
         else
-          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource
+          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource --no-check-certificate
         fi
       fi
 
@@ -156,7 +156,7 @@ run_script=$install_dir/bin/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
-if [ `uname` == 'Darwin' ]
+if [ `uname` = 'Darwin' ]
 then
   echo "export DYLD_FALLBACK_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
