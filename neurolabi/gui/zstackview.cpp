@@ -2486,6 +2486,12 @@ void ZStackView::setHoverFocus(bool on)
   m_imageWidget->setHoverFocus(on);
 }
 
+void ZStackView::setSmoothDisplay(bool on)
+{
+  m_imageWidget->setSmoothDisplay(on);
+  updateImageScreen(UPDATE_QUEUED);
+}
+
 /*
 void ZStackView::notifyViewChanged(NeuTube::View::EExploreAction action)
 {

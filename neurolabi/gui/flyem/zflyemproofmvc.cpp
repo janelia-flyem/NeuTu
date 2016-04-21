@@ -203,6 +203,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
   BaseConstruct(frame, doc, axis);
 
+  frame->getView()->setHoverFocus(true);
+
   return frame;
 }
 
@@ -2660,6 +2662,11 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
     getCompleteDocument()->processObjectModified(tile->getTarget());
   }
   */
+}
+
+void ZFlyEmProofMvc::smoothDisplay(bool state)
+{
+  getView()->setSmoothDisplay(state);
 }
 
 ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const

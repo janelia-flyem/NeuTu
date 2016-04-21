@@ -346,6 +346,7 @@ public:
   void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
+  void setSmoothDisplay(bool on);
 
   void notifyViewChanged(const ZStackViewParam &param);
   void notifyViewChanged();

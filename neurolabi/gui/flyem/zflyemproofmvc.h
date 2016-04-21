@@ -143,6 +143,7 @@ public slots:
   void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
+  void smoothDisplay(bool state);
 
   void goToBody();
   void goToBodyBottom();

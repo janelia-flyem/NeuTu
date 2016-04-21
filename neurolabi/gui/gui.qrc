@@ -115,5 +115,6 @@
         <file>images/cancel.png</file>
         <file>images/zoom2.png</file>
         <file>images/view_todo.png</file>
+        <file>images/smooth.png</file>
     </qresource>
 </RCC>
