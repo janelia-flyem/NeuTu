@@ -45,6 +45,7 @@ class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
+class ZStTransform;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -191,6 +192,7 @@ public:
   void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
+  void paintDynamicObjectBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
 
@@ -315,6 +317,9 @@ public:
 
   QRectF getProjRegion() const;
 
+  //Get transform from view port to proj region
+  ZStTransform getViewTransform() const;
+
   /*!
    * \brief Set the viewport offset
    *
@@ -380,8 +385,11 @@ protected:
   void clearTileCanvas();
   void updateObjectCanvas();
   void updateTileCanvas();
+  void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
   void updatePaintBundle();
+
+  ZPixmap* updateProjCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 
@@ -413,6 +421,7 @@ protected:
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
 

@@ -12,6 +12,8 @@
 #include "zstring.h"
 #include "zlogmessagereporter.h"
 #include "neutube.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 using namespace std;
 
@@ -28,6 +30,8 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_workDir = m_settings.value("workDir").toString().toStdString();
 //  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
+
+  m_loggingProfile = false;
 }
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -561,6 +565,77 @@ void NeutubeConfig::ObjManagerConfig::loadXmlNode(
   }
 }
 
+void NeutubeConfig::configure(const ZJsonObject &obj)
+{
+  if (obj.hasKey("profiling")) {
+    m_loggingProfile = ZJsonParser::booleanValue(obj["profiling"]);
+  }
+}
+
+void NeutubeConfig::enableProfileLogging(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("profiling", on);
+#else
+  m_loggingProfile = on;
+#endif
+}
+
+bool NeutubeConfig::loggingProfile() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("profiling")) {
+    return m_settings.value("profiling").toBool();
+  }
+#endif
+
+  return m_loggingProfile;
+}
+
+void NeutubeConfig::enableAutoStatusCheck(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("auto_status", on);
+#endif
+}
+
+bool NeutubeConfig::autoStatusCheck() const
+{
+#if _QT_GUI_USED_
+  if (m_settings.contains("auto_status")) {
+    return m_settings.value("auto_status").toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::EnableAutoStatusCheck(bool on)
+{
+  getInstance().enableAutoStatusCheck(on);
+}
+
+bool NeutubeConfig::AutoStatusCheck()
+{
+  return getInstance().autoStatusCheck();
+}
+
+void NeutubeConfig::EnableProfileLogging(bool on)
+{
+  getInstance().enableProfileLogging(on);
+}
+
+bool NeutubeConfig::LoggingProfile()
+{
+  return getInstance().loggingProfile();
+}
+
+void NeutubeConfig::Configure(const ZJsonObject &obj)
+{
+  getInstance().configure(obj);
+}
+
+
 #ifdef _QT_GUI_USED_
 QString NeutubeConfig::GetFlyEmConfigPath()
 {
@@ -581,5 +656,7 @@ void NeutubeConfig::SetNeuTuServer(const QString &path)
 {
   GetSettings().setValue("neutu_server", path);
 }
-
 #endif
+
+
+

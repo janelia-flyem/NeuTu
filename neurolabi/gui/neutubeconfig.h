@@ -17,6 +17,7 @@
 #endif
 
 class ZXmlNode;
+class ZJsonObject;
 
 class NeutubeConfig
 {
@@ -46,6 +47,20 @@ public:
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
 #endif
+
+  void enableProfileLogging(bool on);
+  bool loggingProfile() const;
+  void configure(const ZJsonObject &obj);
+  void enableAutoStatusCheck(bool on);
+  bool autoStatusCheck() const;
+
+  static void EnableProfileLogging(bool on);
+  static bool LoggingProfile();
+  static void Configure(const ZJsonObject &obj);
+
+  static void EnableAutoStatusCheck(bool on);
+  static bool AutoStatusCheck();
+
 
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
@@ -334,6 +349,7 @@ private:
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
+  bool m_loggingProfile;
 
 #if defined(_FLYEM_)
   ZFlyEmConfig m_flyemConfig;

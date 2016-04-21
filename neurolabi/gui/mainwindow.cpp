@@ -325,7 +325,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_3dWindowFactory.setParentWidget(this);
 
   m_autoCheckTimer = new QTimer(this);
-  m_autoCheckTimer->setInterval(600000);
+  m_autoCheckTimer->setInterval(60000);
+  m_autoCheckTimer->start();
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
 #if defined(_LIBDVIDCPP_CACHE_)
@@ -2427,6 +2428,7 @@ void MainWindow::subtractSwcs()
 void MainWindow::setOption()
 {
 #if defined(_FLYEM_)
+  m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
 #else
   if (activeStackFrame() != NULL) {
@@ -7328,7 +7330,12 @@ void MainWindow::on_actionProof_triggered()
 
 void MainWindow::runRoutineCheck()
 {
-  LINFO() << "Running routine check ...";
+  if (NeutubeConfig::AutoStatusCheck()) {
+    std::cout << "Running routine check ..." << std::endl;
+    if (!GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
+      GET_FLYEM_CONFIG.getNeutuService().updateStatus();
+    }
+  }
 }
 
 void MainWindow::on_actionSubtract_Background_triggered()

@@ -19883,16 +19883,23 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("bodies121714_todo");
 #endif
 
-#if 0
+#if 1
   //Create pixmap
   ZPixmap pixmap(256, 256);
-  pixmap.setOffset(-100, -100);
+  pixmap.setOffset(0, 0);
+  pixmap.setScale(0.5, 0.5);
 
 
   //Paint
   ZPainter painter(&pixmap);
   painter.setPen(QColor(255, 0, 0));
-  painter.drawLine(100, 100, 200, 200);
+
+  ZStroke2d stroke;
+  stroke.append(164, 241);
+  stroke.display(painter, 0, ZStackObject::SOLID, NeuTube::Z_AXIS);
+//  painter.drawLine(100, 100, 200, 200);
+
+  qDebug() << painter.getTransform();
 
   //Save
   pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
@@ -19937,7 +19944,7 @@ void ZTest::test(MainWindow *host)
   service.requestBodyUpdate(target, 1, ZNeutuService::UPDATE_DELETE);
 #endif
 
-#if 1
+#if 0
   ZNeutuService service("http://zhaot-ws1:8080");
   ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
 

@@ -18,12 +18,18 @@ FlyEmSettingDialog::~FlyEmSettingDialog()
 
 void FlyEmSettingDialog::init()
 {
+  loadSetting();
+  connectSignalSlot();
+}
+
+void FlyEmSettingDialog::loadSetting()
+{
   ui->configLineEdit->setText(NeutubeConfig::GetFlyEmConfigPath());
   ui->servicelineEdit->setText(NeutubeConfig::GetNeuTuServer());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
-
-  connectSignalSlot();
+  ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
+  ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -51,4 +57,6 @@ void FlyEmSettingDialog::update()
     ui->statusLabel->setText("Down");
   }
   GET_FLYEM_CONFIG.loadConfig(getConfigPath());
+  NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
+  NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
 }

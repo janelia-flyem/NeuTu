@@ -33,6 +33,23 @@ void ZStTransform::setOffset(double dx, double dy)
   m_dy = dy;
 }
 
+void ZStTransform::addOffset(double dx, double dy)
+{
+  m_dx += dx;
+  m_dy += dy;
+}
+
+void ZStTransform::addScaledOffset(double dx, double dy)
+{
+  if (m_sx !=  0.0) {
+    m_dx += dx / m_sx;
+  }
+
+  if (m_sy != 0.0) {
+    m_dy += dy / m_sy;
+  }
+}
+
 void ZStTransform::setScale(double sx, double sy)
 {
   m_sx = sx;
