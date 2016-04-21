@@ -19,6 +19,11 @@ Go to the NeuTu/neurolabi/shell directory and run
 
 Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
 
+Note: you need to install the following packages using the package manager (e.g. apt-get for Ubuntu and yum/dnf for Fedora) if they have not been installed:
+* libxext-dev
+* freeglut3-dev
+* build-essential for Ubuntu or groupinstall "Development Tools" for Fedora
+
 ### Mac
 
 Go to the NeuTu/neurolabi/shell directory and run
