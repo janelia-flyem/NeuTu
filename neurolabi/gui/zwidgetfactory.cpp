@@ -1,12 +1,15 @@
 #include "zwidgetfactory.h"
 #include <QDialog>
 #include <QFrame>
+#include "zclickablelabel.h"
+#include "znumericparameter.h"
+#include "widgets/zcolorlabel.h"
 
 ZWidgetFactory::ZWidgetFactory()
 {
 }
 
-ZLabeledEditWidget* ZWidgetFactory::makeLabledEditWidget(
+ZLabeledEditWidget* ZWidgetFactory::MakeLabledEditWidget(
     const QString &label, ESpacerOption spacerOption, QWidget *parentWidget)
 {
   ZLabeledEditWidget *widget = new ZLabeledEditWidget(parentWidget);
@@ -41,7 +44,7 @@ ZButtonBox* ZWidgetFactory::makeButtonBox(ZButtonBox::TRole role, QDialog *paren
   return buttonBox;
 }
 
-QSpacerItem *ZWidgetFactory::makeHSpacerItem()
+QSpacerItem *ZWidgetFactory::MakeHSpacerItem()
 {
   return new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 }
@@ -56,3 +59,33 @@ QFrame* ZWidgetFactory::MakeHorizontalLine(QWidget *parentWidget)
   return frame;
 }
 
+ZClickableColorLabel* ZWidgetFactory::MakeClickableColorLabel(
+    const QColor &color, const QString &text, int width,
+    bool clickable, QWidget *parent)
+{
+  ZVec4Parameter *colorVec = new ZVec4Parameter(
+        QString("%1").arg(text), glm::vec4(
+          color.redF(), color.greenF(), color.blueF(), color.alphaF()),
+        glm::vec4(0.f), glm::vec4(1.f), parent);
+
+  ZClickableColorLabel *labelWidget = new ZClickableColorLabel(colorVec);
+  labelWidget->setWidth(width);
+  labelWidget->setHeight(16);
+  labelWidget->setClickable(clickable);
+
+  return labelWidget;
+}
+
+ZColorLabel* ZWidgetFactory::MakeColorLabel(
+    const QColor &color, const QString &text, int width, bool clickable,
+    QWidget *parent)
+{
+  ZColorLabel *labelWidget = new ZColorLabel(parent);
+  labelWidget->setColor(color);
+  labelWidget->setText(text);
+  labelWidget->setWidth(width);
+  labelWidget->setHeight(16);
+  labelWidget->setClickable(clickable);
+
+  return labelWidget;
+}

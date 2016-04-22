@@ -886,6 +886,8 @@ public:
   void notify(const ZWidgetMessage &msg);
   void notify(const QString &msg);
 
+  void notifyUpdateLatency(int64_t t);
+
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
 //  inline QAction* getRedoAction() { return m_redoAction; }
@@ -1157,6 +1159,7 @@ signals:
   void zoomingToSelectedSwcNode();
 
   void zoomingTo(int x, int y, int z);
+  void updatingLatency(int);
 
 protected:
   virtual void autoSave();

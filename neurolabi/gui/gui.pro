@@ -619,7 +619,8 @@ HEADERS += mainwindow.h \
     zstackdocselector.h \
     flyem/zflyemproofdoccommand.h \
     flyem/zneutuservice.h \
-    dialogs/flyemsettingdialog.h
+    dialogs/flyemsettingdialog.h \
+    widgets/zcolorlabel.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1091,7 +1092,8 @@ SOURCES += main.cpp \
     zstackdocselector.cpp \
     flyem/zflyemproofdoccommand.cpp \
     flyem/zneutuservice.cpp \
-    dialogs/flyemsettingdialog.cpp
+    dialogs/flyemsettingdialog.cpp \
+    widgets/zcolorlabel.cpp
 
 OTHER_FILES += \
     extlib.pri \

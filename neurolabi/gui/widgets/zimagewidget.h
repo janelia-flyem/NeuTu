@@ -181,6 +181,10 @@ public:
     m_hoverFocus = on;
   }
 
+  void setSmoothDisplay(bool on) {
+    m_smoothDisplay = on;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -259,6 +263,7 @@ private:
 
   bool m_freeMoving;
   bool m_hoverFocus;
+  bool m_smoothDisplay;
 };
 
 #endif
