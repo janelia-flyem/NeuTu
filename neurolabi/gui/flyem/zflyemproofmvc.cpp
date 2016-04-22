@@ -50,6 +50,9 @@
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemtodolistfilter.h"
 #include "dialogs/flyemtododialog.h"
+#include "zclickablelabel.h"
+#include "znormcolormap.h"
+#include "widgets/zcolorlabel.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -219,6 +222,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
 
   connect(mvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
           mvc, SLOT(showOrthoWindow(double,double,double)));
+  connect(mvc->getDocument().get(), SIGNAL(updatingLatency(int)),
+          mvc, SLOT(updateLatencyWidget(int)));
 
   return mvc;
 }
@@ -1041,7 +1046,8 @@ void ZFlyEmProofMvc::customInit()
   connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
           getCompleteDocument(),
           SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-  connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)), this, SLOT(zoomTo(int,int,int)));
+  connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
 
   /*
   QPushButton *button = new QPushButton(this);
@@ -1055,11 +1061,19 @@ void ZFlyEmProofMvc::customInit()
 //  getView()->addHorizontalWidget(button);
 
 //  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
+  /*
+  m_latencyLabelWidget =
+      ZWidgetFactory::MakeColorLabel(Qt::gray, "Seg Latency", 100, false, this);
+  getView()->addHorizontalWidget(ZWidgetFactory::MakeHSpacerItem());
+  getView()->addHorizontalWidget(m_latencyLabelWidget);
+  */
 
   m_paintLabelWidget = new ZPaintLabelWidget();
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->hide();
+
+//  m_speedLabelWidget->hide();
 
   m_todoDlg->setDocument(getDocument());
 }
@@ -1117,6 +1131,19 @@ void ZFlyEmProofMvc::goToBodyTop()
   }
 }
 
+void ZFlyEmProofMvc::updateLatencyWidget(int t)
+{
+  emit updatingLatency(t);
+  /*
+  ZNormColorMap colorMap;
+  int baseTime = 600;
+  double v = (double) t / baseTime;
+  QColor color = colorMap.mapColor(v);
+  color.setAlpha(100);
+  m_latencyLabelWidget->setColor(color);
+  m_latencyLabelWidget->setText(QString("%1").arg(t));
+  */
+}
 
 void ZFlyEmProofMvc::goToBody()
 {
@@ -1707,6 +1734,8 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
 
+//  m_latencyLabelWidget->hide();
+
   m_paintLabelWidget->show();
   m_mergeProject.closeBodyWindow();
 
@@ -1812,6 +1841,7 @@ void ZFlyEmProofMvc::exitSplit()
     */
 
     m_paintLabelWidget->hide();
+//    m_latencyLabelWidget->show();
 
     m_splitProject.clear();
 

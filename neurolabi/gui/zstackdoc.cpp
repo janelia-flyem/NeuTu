@@ -5505,6 +5505,11 @@ void ZStackDoc::notify(const QString &msg)
   notify(ZWidgetMessage(msg));
 }
 
+void ZStackDoc::notifyUpdateLatency(int64_t t)
+{
+  emit updatingLatency((int) t);
+}
+
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     const ZPoint &center, double radius)
 {
@@ -8965,6 +8970,12 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
           obj->isVisible()) {
         if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
+          if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
+            ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);
+            if (labelSlice != NULL) {
+              m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
+            }
+          }
         }
       }
     }

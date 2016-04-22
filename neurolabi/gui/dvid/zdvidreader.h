@@ -215,6 +215,10 @@ public:
 
   ZJsonObject readSkeletonConfig() const;
 
+  int64_t getReadingTime() const {
+    return m_readingTime;
+  }
+
   bool good() const;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -250,6 +254,7 @@ protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;
+  mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif

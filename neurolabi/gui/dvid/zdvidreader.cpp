@@ -62,6 +62,8 @@ void ZDvidReader::init()
 
 //  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
 
+  m_readingTime = 0;
+
   m_statusCode = 0;
 }
 
@@ -1305,7 +1307,8 @@ ZArray* ZDvidReader::readLabels64(
       timer.start();
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
-      LINFO() << "label reading time: " << timer.elapsed();
+      m_readingTime = timer.elapsed();
+      LINFO() << "label reading time: " << m_readingTime;
 //      return array;
 
       mylib::Dimn_Type arrayDims[3];
