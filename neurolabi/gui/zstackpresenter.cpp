@@ -77,6 +77,7 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 void ZStackPresenter::init()
 {
   m_showObject = true;
+  m_oldShowObject = true;
 //  m_isStrokeOn = false;
   m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
@@ -1869,6 +1870,16 @@ void ZStackPresenter::setObjectVisible(bool v)
 void ZStackPresenter::toggleObjectVisible()
 {
   setObjectVisible(!isObjectVisible());
+}
+
+void ZStackPresenter::suppressObjectVisible(bool v)
+{
+  if (v) {
+    m_oldShowObject = m_showObject;
+    m_showObject = false;
+  } else {
+    m_showObject = m_oldShowObject;
+  }
 }
 
 void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)

@@ -224,6 +224,10 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
           mvc, SLOT(showOrthoWindow(double,double,double)));
   connect(mvc->getDocument().get(), SIGNAL(updatingLatency(int)),
           mvc, SLOT(updateLatencyWidget(int)));
+  connect(mvc->getView(), SIGNAL(sliceSliderPressed()),
+          mvc, SLOT(suppressObjectVisible()));
+  connect(mvc->getView(), SIGNAL(sliceSliderReleased()),
+          mvc, SLOT(recoverObjectVisible()));
 
   return mvc;
 }
@@ -1696,6 +1700,17 @@ void ZFlyEmProofMvc::updateSplitBody()
     }
     updateBodyWindow();
   }
+}
+
+void ZFlyEmProofMvc::suppressObjectVisible()
+{
+  getPresenter()->suppressObjectVisible(true);
+}
+
+void ZFlyEmProofMvc::recoverObjectVisible()
+{
+  getPresenter()->suppressObjectVisible(false);
+  getView()->processDepthSliderValueChange();
 }
 
 void ZFlyEmProofMvc::exportSelectedBody()

@@ -246,6 +246,10 @@ void ZStackView::connectSignalSlot()
 
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
+  connect(m_depthControl, SIGNAL(sliderPressed()),
+          this, SIGNAL(sliceSliderPressed()));
+  connect(m_depthControl, SIGNAL(sliderReleased()),
+          this, SIGNAL(sliceSliderReleased()));
 
 //  connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
@@ -2378,6 +2382,11 @@ void ZStackView::setView(const ZStackViewParam &param)
 
     redraw();
   }
+}
+
+void ZStackView::processDepthSliderValueChange()
+{
+  processDepthSliderValueChange(m_depthControl->value());
 }
 
 void ZStackView::processDepthSliderValueChange(int sliceIndex)

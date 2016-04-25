@@ -55,6 +55,8 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
 #endif
 
     connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(updateArrowState(int)));
+    connect(m_slider, SIGNAL(sliderPressed()), this, SIGNAL(sliderPressed()));
+    connect(m_slider, SIGNAL(sliderReleased()), this, SIGNAL(sliderReleased()));
   }
 
   m_layout = new QHBoxLayout;
