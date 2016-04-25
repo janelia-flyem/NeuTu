@@ -102,7 +102,7 @@ void ZColorMapWidget::mouseMoveEvent(QMouseEvent *e)
       }
     }
   } else {
-    for (size_t i=m_colorMap->get().getNumKeys()-2; i>0; i--) {
+    for (int i=int(m_colorMap->get().getNumKeys())-2; i>=0; i--) {
       if (m_colorMap->get().isKeySelected(i)) {
         if (m_colorMap->get().getKey(i).getIntensity() == m_colorMap->get().getDomainMax())
           change = false;
