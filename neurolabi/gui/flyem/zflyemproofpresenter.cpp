@@ -39,6 +39,7 @@ void ZFlyEmProofPresenter::init()
   m_isHightlightMode = false;
   m_splitWindowMode = false;
   m_highTileContrast = false;
+  m_smoothTransform = false;
 
   m_synapseContextMenu = NULL;
 
@@ -652,9 +653,19 @@ bool ZFlyEmProofPresenter::highTileContrast() const
   return m_highTileContrast;
 }
 
+bool ZFlyEmProofPresenter::smoothTransform() const
+{
+  return m_smoothTransform;
+}
+
 void ZFlyEmProofPresenter::setHighTileContrast(bool high)
 {
   m_highTileContrast = high;
+}
+
+void ZFlyEmProofPresenter::setSmoothTransform(bool on)
+{
+  m_smoothTransform = on;
 }
 
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)

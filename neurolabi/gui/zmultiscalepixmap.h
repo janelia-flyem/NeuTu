@@ -14,8 +14,11 @@ public:
   ~ZMultiscalePixmap();
 
   void setSize(const QSize &size);
+  void setFullResSize(const QSize &size);
   void setOffset(const QPoint &offset);
   void clear();
+
+  void invalidateFullRes();
 
   ZPixmap* getPixmap(int level);
 
@@ -38,6 +41,7 @@ private:
   std::vector<ZPixmap*> m_pixmapArray;
   QSize m_originalSize;
   QPoint m_offset;
+  QSize m_fullResSize;
 
   bool m_visible;
 };

@@ -7,10 +7,13 @@ Z3DGeometryFilter::Z3DGeometryFilter()
   , m_pickingManager(NULL)
   , m_pickingObjectsRegistered(false)
   , m_needBlending(false)
+  , m_needOIT(false)
 {
   addPort(m_outPort);
   m_rendererBase = new Z3DRendererBase();
   addParameter(m_stayOnTop);
+
+  setFilterName("geometryfilter");
 }
 
 Z3DGeometryFilter::~Z3DGeometryFilter()

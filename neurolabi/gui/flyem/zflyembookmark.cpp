@@ -17,7 +17,7 @@ ZFlyEmBookmark::ZFlyEmBookmark()
 
 ZFlyEmBookmark::~ZFlyEmBookmark()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Deconstructing " << this << ": bookmark " << ", "
             << getSource() << std::endl;
 #endif

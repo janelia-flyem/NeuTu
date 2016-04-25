@@ -1714,9 +1714,10 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 
     obj.load(filePath);
 
-    ZJsonArray bookmarkArrayObj(obj["data"], false);
+    ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
-      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
+      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i),
+                              ZJsonValue::SET_INCREASE_REF_COUNT);
       ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
       text.toLower();
       if (bookmarkObj["location"] != NULL) {

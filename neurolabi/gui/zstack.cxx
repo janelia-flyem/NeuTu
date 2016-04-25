@@ -88,12 +88,14 @@ ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
   setData(stack, C_Stack::kill);
 }
 
+#if 0
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
   init();
 
   setData(stack, dealloc);
 }
+#endif
 
 ZStack::ZStack(const ZStack &/*src*/)
 {
@@ -246,7 +248,8 @@ ZStack* ZStack::getSingleChannel(int c) const
 {
   Mc_Stack *data = new Mc_Stack;
   C_Stack::view(m_stack, data, c);
-  ZStack *stack = new ZStack(data, C_Stack::cppDelete);
+  ZStack *stack = new ZStack;
+  stack->setData(data, C_Stack::cppDelete);
   stack->setOffset(getOffset());
 
   return stack;

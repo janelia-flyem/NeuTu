@@ -11,12 +11,14 @@
 
 using namespace std;
 
+/*
 ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
 {
   if (ZJsonParser::isObject(json)) {
     set(json, asNew);
   }
 }
+*/
 
 ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
 {
@@ -122,14 +124,14 @@ string ZJsonObject::summary()
 
     json_object_foreach(m_data, key, value) {
       if (json_is_object(value)) {
-        ZJsonObject obj(value, false);
+        ZJsonObject obj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         stream << obj.summary();
       } else if (json_is_array(value)) {
         stream << key << " : " << "Array " << endl;
         for (size_t i = 0; i < json_array_size(value); i++) {
           json_t *element = json_array_get(value, i);
           if (json_is_object(element)) {
-            ZJsonObject obj(element, false);
+            ZJsonObject obj(element, ZJsonValue::SET_INCREASE_REF_COUNT);
             stream << obj.summary();
           } else {
             stream << "Element : " << "Type " << json_typeof(element) << endl;

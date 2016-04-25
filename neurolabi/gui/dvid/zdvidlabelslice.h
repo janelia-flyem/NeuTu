@@ -135,6 +135,8 @@ public:
     return m_paintBuffer;
   }
 
+  int64_t getReadingTime() const;
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);

@@ -23,7 +23,7 @@ public:
    * \param data json value pointer
    * \param asNew Take it as a new value or just increase its reference count
    */
-  ZJsonValue(json_t *data, bool asNew);
+//  ZJsonValue(json_t *data, bool asNew);
 
   ZJsonValue(json_t *data, ESetDataOption option);
   ZJsonValue(const json_t *data, ESetDataOption option);

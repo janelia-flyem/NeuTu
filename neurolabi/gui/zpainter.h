@@ -89,12 +89,18 @@ public:
   void drawPixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
 
+  void drawPixmap(const QRectF &targetRect, const ZPixmap &image);
+
   /*!
    * \brief Draw image.
    *
    * (\a x, \a y) is the target position in world coordinates.
    */
   void drawPixmap(int x, int y, const ZPixmap &image);
+  //ignore transformation
+  void drawPixmapNt(const ZPixmap &image);
+
+  void drawPixmap(const ZPixmap &image);
 
   void drawActivePixmap(
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);

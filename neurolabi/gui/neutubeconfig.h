@@ -13,9 +13,11 @@
 #if _QT_GUI_USED_
 #include <QDir>
 #include <QSettings>
+#include <QString>
 #endif
 
 class ZXmlNode;
+class ZJsonObject;
 
 class NeutubeConfig
 {
@@ -33,6 +35,32 @@ public:
 
     return config;
   }
+
+#ifdef _QT_GUI_USED_
+  static QSettings& GetSettings() {
+    return getInstance().getSettings();
+  }
+
+  static QString GetFlyEmConfigPath();
+  static void SetFlyEmConfigPath(const QString &path);
+
+  static QString GetNeuTuServer();
+  static void SetNeuTuServer(const QString &path);
+#endif
+
+  void enableProfileLogging(bool on);
+  bool loggingProfile() const;
+  void configure(const ZJsonObject &obj);
+  void enableAutoStatusCheck(bool on);
+  bool autoStatusCheck() const;
+
+  static void EnableProfileLogging(bool on);
+  static bool LoggingProfile();
+  static void Configure(const ZJsonObject &obj);
+
+  static void EnableAutoStatusCheck(bool on);
+  static bool AutoStatusCheck();
+
 
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
@@ -279,7 +307,7 @@ public:
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
 
-#if defined(_FLYEM_)
+#if 0
   const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
   ZFlyEmConfig &getFlyEmConfig() { return m_flyemConfig; }
 #endif
@@ -321,6 +349,7 @@ private:
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
+  bool m_loggingProfile;
 
 #if defined(_FLYEM_)
   ZFlyEmConfig m_flyemConfig;
@@ -350,7 +379,7 @@ private:
 #define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
 
 #if defined(_FLYEM_)
-#  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())
+#  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
 #endif
 
 #endif // NEUTUBECONFIG_H

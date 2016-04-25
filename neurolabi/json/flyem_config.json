@@ -231,6 +231,7 @@
       "label_block": "labels",
       "synapse": "mb6_synapses",
       "librarian": "emdata2.int.janelia.org:9100",
+      "roi": "mbroi",
       "user_name": ["zhaot", "yuy", "yy"]
     },
     {
@@ -575,8 +576,9 @@
       "comment": "production synapse work",
       "body_label": "bodies3",
       "label_block": "labels3",
+      "roi": "mbroi",
       "synapse": "mb6_synapses",
-      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd"]
+      "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd", "ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",

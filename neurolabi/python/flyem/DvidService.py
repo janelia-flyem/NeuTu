@@ -34,6 +34,7 @@ class DvidService(object):
         r = self.opener.open(req)
         content  = r.read()
         return content
+
     
 if __name__ == '__main__':
     service = DvidService('emdata1.int.janelia.org', 8500, '86e1')

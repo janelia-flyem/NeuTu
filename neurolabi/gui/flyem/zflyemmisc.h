@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include "zcubearray.h"
+
+#include "dvid/libdvidheader.h"
 
 class ZMatrix;
 class Z3DGraph;
@@ -20,6 +23,7 @@ void NormalizeSimmat(ZMatrix &simmat);
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
+ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -28,11 +32,20 @@ void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                                const ZStackViewParam &viewParam);
 void Decorate3dBodyWindowRoi(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                              const ZDvidTarget &dvidTarget);
+void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+                             const ZDvidTarget &dvidTarget);
 
 void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo);
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+libdvid::BinaryDataPtr MakeRequest(
+    const std::string &url, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode);
+libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
+#endif
 
 class HackathonEvaluator {
 public:

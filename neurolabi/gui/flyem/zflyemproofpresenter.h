@@ -26,8 +26,10 @@ public:
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
   bool highTileContrast() const;
+  bool smoothTransform() const;
 
   void setHighTileContrast(bool high);
+  void setSmoothTransform(bool on);
 
   void enableSplit();
   void disableSplit();
@@ -112,6 +114,7 @@ private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+  bool m_smoothTransform;
 
   QMenu *m_synapseContextMenu;
 

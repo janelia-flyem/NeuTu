@@ -8,8 +8,11 @@
 */
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+#define nbuf /* Temporary solution for sliencing unused parameter warning */
 #include "libdvid/DVIDNodeService.h"
+#undef nbuf
 #include "libdvid/DVIDThreadedFetch.h"
+#include "libdvid/DVIDConnection.h"
 #ifndef _LIBDVIDCPP_OLD_
 #include "libdvid/DVIDCache.h"
 #define _LIBDVIDCPP_CACHE_

@@ -19,6 +19,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
+
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -95,6 +96,11 @@ public:
                  const std::string &minKey, const std::string &maxKey);
   void deleteKey(const QString &dataName,
                  const QString &minKey, const QString &maxKey);
+
+  void deleteSkeleton(uint64_t bodyId);
+  void deleteBodyAnnotation(uint64_t bodyId);
+
+  void invalidateBody(uint64_t bodyId);
 
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);
@@ -176,14 +182,19 @@ public:
   bool good() const;
 
   std::string post(const std::string &url);
-  std::string post(const std::string &url, const QByteArray &payload);
-  std::string post(const std::string &url, const std::string &payload);
-  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const QByteArray &payload, bool isJson);
+  std::string post(const std::string &url, const std::string &payload, bool isJson);
+  std::string post(const std::string &url, const char *payload, int length,
+                   bool isJson);
   std::string post(const std::string &url, const ZJsonObject &payload);
   std::string del(const std::string &url);
 
-  std::string put(const std::string &url, const char *payload, int length);
+  std::string put(
+      const std::string &url, const char *payload, int length, bool isJson);
   std::string put(const std::string &url);
+
+  std::string request(const std::string &url, const std::string &method,
+                      const char *payload, int length, bool isJson);
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
@@ -199,6 +210,7 @@ private:
   void parseStandardOutput();
   void init();
   bool startService();
+
 
 private:
 //  QEventLoop *m_eventLoop;

@@ -151,6 +151,8 @@ Z3DSwcFilter::Z3DSwcFilter()
   for (int i = 0; i < m_guiNameList.size(); ++i) {
     m_guiNameList[i] = QString("Type %1 Color").arg(i);
   }
+
+  setFilterName(QString("swcfilter"));
 }
 
 Z3DSwcFilter::~Z3DSwcFilter()
@@ -444,17 +446,23 @@ void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
 
 std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
 {
+
   tree->updateIterator(1);   //depth first
   Swc_Tree_Node *tn = tree->begin();
   while (Swc_Tree_Node_Is_Virtual(tn)) {
     tn = tree->next();
   }
-  if (tn == NULL)
+  if (tn == NULL) {
     return std::vector<double>(6, 0);
-  std::vector<double> result = getTreeNodeBound(tn);
+  }
+
+  std::vector<double> result(6, 0);
+  getTreeNodeBound(tn, result);
+  std::vector<double> nodeBound(6, 0);
+
   tn = tree->next();
   for (; tn != tree->end(); tn = tree->next()) {
-    std::vector<double> nodeBound = getTreeNodeBound(tn);
+    getTreeNodeBound(tn, nodeBound);
     result[0] = std::min(result[0], nodeBound[0]);
     result[1] = std::max(result[1], nodeBound[1]);
     result[2] = std::min(result[2], nodeBound[2]);
@@ -462,6 +470,7 @@ std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
     result[4] = std::min(result[4], nodeBound[4]);
     result[5] = std::max(result[5], nodeBound[5]);
   }
+
 
 #ifdef _DEBUG_
   std::cout << getCoordScales().z << std::endl;
@@ -471,17 +480,31 @@ std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
   return result;
 }
 
-std::vector<double> Z3DSwcFilter::getTreeNodeBound(Swc_Tree_Node *tn) const
+void Z3DSwcFilter::getTreeNodeBound(Swc_Tree_Node *tn,
+                                    std::vector<double> &result) const
 {
-  std::vector<double> result(6);
+//  std::vector<double> result(6);
+  double d = tn->node.d * getSizeScale();
+  double x = tn->node.x * getCoordScales().x;
+  double y = tn->node.y * getCoordScales().y;
+  double z = tn->node.z * getCoordScales().z;
+  result[0] = x - d;
+  result[1] = x + d;
+  result[2] = y - d;
+  result[3] = y + d;
+  result[4] = z - d;
+  result[5] = z + d;
+
+  /*
   result[0] = tn->node.x * getCoordScales().x - tn->node.d * getSizeScale();
   result[1] = tn->node.x * getCoordScales().x + tn->node.d * getSizeScale();
   result[2] = tn->node.y * getCoordScales().y - tn->node.d * getSizeScale();
   result[3] = tn->node.y * getCoordScales().y + tn->node.d * getSizeScale();
   result[4] = tn->node.z * getCoordScales().z - tn->node.d * getSizeScale();
   result[5] = tn->node.z * getCoordScales().z + tn->node.d * getSizeScale();
+  */
 
-  return result;
+//  return result;
 }
 
 bool Z3DSwcFilter::isReady(Z3DEye eye) const

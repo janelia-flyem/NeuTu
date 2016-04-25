@@ -110,6 +110,7 @@
 #include "zswcforest.h"
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
+#include "zsurfaceobjsmodel.h"
 
 using namespace std;
 
@@ -174,6 +175,7 @@ void ZStackDoc::init()
   m_seedObjsModel = new ZDocPlayerObjsModel(
         this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
+  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
 //  m_undoAction = NULL;
@@ -297,6 +299,12 @@ void ZStackDoc::emptySlot()
   QMessageBox::information(NULL, "empty slot", "To be implemented");
 }
 
+void ZStackDoc::disconnectSwcNodeModelUpdate()
+{
+  disconnect(this, SIGNAL(swcModified()),
+             m_swcNodeObjsModel, SLOT(updateModelData()));
+}
+
 void ZStackDoc::connectSignalSlot()
 {
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
@@ -304,6 +312,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -529,6 +538,16 @@ bool ZStackDoc::hasObject() const
 bool ZStackDoc::hasObject(ZStackObject::EType type) const
 {
   return !m_objectGroup.getObjectList(type).isEmpty();
+}
+
+bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source) != NULL;
+}
+
+ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source);
 }
 
 bool ZStackDoc::hasSparseObject() const
@@ -3854,6 +3873,14 @@ void ZStackDoc::setGraphVisible(Z3DGraph *graph, bool visible)
   }
 }
 
+void ZStackDoc::setSurfaceVisible(ZCubeArray *cubearray, bool visible)
+{
+  if (cubearray->isVisible() != visible) {
+    cubearray->setVisible(visible);
+    emit surfaceVisibleStateChanged();
+  }
+}
+
 void ZStackDoc::setChainVisible(ZLocsegChain *chain, bool visible)
 {
   if (chain->isVisible() != visible) {
@@ -4972,6 +4999,11 @@ void ZStackDoc::notify3DGraphModified()
   emit graph3dModified();
 }
 
+void ZStackDoc::notify3DCubeModified()
+{
+  emit cube3dModified();
+}
+
 void ZStackDoc::notifyTodoModified()
 {
   emit todoModified();
@@ -5206,6 +5238,8 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
   case ZStackObject::TYPE_3D_GRAPH:
     notify3DGraphModified();
     break;
+  case ZStackObject::TYPE_3D_CUBE:
+    notify3DCubeModified();
   case ZStackObject::TYPE_FLYEM_TODO_ITEM:
     notifyTodoModified();
     break;
@@ -5497,6 +5531,11 @@ void ZStackDoc::notify(const ZWidgetMessage &msg)
 void ZStackDoc::notify(const QString &msg)
 {
   notify(ZWidgetMessage(msg));
+}
+
+void ZStackDoc::notifyUpdateLatency(int64_t t)
+{
+  emit updatingLatency((int) t);
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -8959,6 +8998,12 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
           obj->isVisible()) {
         if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
+          if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
+            ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);
+            if (labelSlice != NULL) {
+              m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
+            }
+          }
         }
       }
     }
@@ -9265,6 +9310,21 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
        iter != playerList.end(); ++iter) {
     ZStackObject *obj = (*iter)->getData();
     obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool visible)
+{
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->isSameSource(obj->getSource(), source)) {
+        obj->setVisible(visible);
+    }
     bufferObjectModified(obj->getTarget());
   }
 

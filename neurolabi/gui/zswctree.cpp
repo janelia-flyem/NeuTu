@@ -312,7 +312,7 @@ bool ZSwcTree::load(const char *filePath)
           double scaleFactor[3] = {1, 1, 1};
           double offset[3] = {1, 1, 1};
 
-          ZJsonObject transformObj(value, false);
+          ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
           const json_t *transformField = transformObj["scale"];
           if (transformField != NULL) {
             if (ZJsonParser::arraySize(transformField) == 3) {

@@ -76,7 +76,7 @@ bool ZMovieScript::loadScript(const std::string &filePath)
     castArray.set(movieObject["cast"], false);
 
     for (size_t i = 0; i < castArray.size(); ++i) {
-      ZJsonObject castObject(castArray.at(i), false);
+      ZJsonObject castObject(castArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       m_cast[ZJsonParser::stringValue(castObject["id"])] =
           ZJsonParser::stringValue(castObject["source"]);
     }
@@ -84,7 +84,7 @@ bool ZMovieScript::loadScript(const std::string &filePath)
 
     for (size_t i = 0; i < sceneArray.size(); ++i) {
       ZMovieScene scene;
-      scene.loadJsonObject(ZJsonObject(sceneArray.at(i), false));
+      scene.loadJsonObject(ZJsonObject(sceneArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT));
 #ifdef _DEBUG_
       scene.print();
 #endif
