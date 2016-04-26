@@ -198,8 +198,8 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
         painter.setBrush(Qt::NoBrush);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
-      qDebug() << "Painter transform: " << painter.getTransform();
-      qDebug() << "Stroke coord: " << m_pointArray[0];
+//      qDebug() << "Painter transform: " << painter.getTransform();
+//      qDebug() << "Stroke coord: " << m_pointArray[0];
       painter.drawEllipse(QPointF(m_pointArray[0]), radius, radius);
     } else {
 
@@ -298,7 +298,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
       painter.drawEllipse(QPointF(m_pointArray[0]), m_width / 2, m_width / 2);
       painted = true;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Paint stroke: " << m_width << std::endl;
       qDebug() << brush;
 #endif
