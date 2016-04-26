@@ -473,7 +473,11 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
   if (doc != NULL && getDocument() != NULL) {
+    ZOUT(LINFO(), 3) << "Loading split results";
+
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZOUT(LINFO(), 3) << "Removing all SWCs";
     doc->removeAllSwcTree();
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
@@ -489,8 +493,10 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      ZOUT(LINFO(), 3) << "Processing split object" << splitObj;
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+          ZOUT(LINFO(), 3) << "Converting split object";
           ZObject3d *obj = splitObj->toObject3d();
           if (obj != NULL) {
             int ds = obj->size() / maxSwcNodeNumber + 1;
@@ -501,10 +507,12 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
               ds = maxScale;
             }
 
+            ZOUT(LINFO(), 3) << "Creating split SWC";
             ZSwcTree *tree = ZSwcGenerator::createSwc(
                   *obj, dmin2(5.0, ds / 2.0), ds);
             if (tree != NULL) {
               tree->setAlpha(255);
+              ZOUT(LINFO(), 3) << "Adding split SWC";
               doc->addObject(tree);
             }
             delete obj;
@@ -515,6 +523,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     }
     doc->endObjectModifiedMode();
     doc->notifyObjectModified();
+
+    ZOUT(LINFO(), 3) << "Split object processed";
   }
 }
 
@@ -1321,6 +1331,8 @@ void ZFlyEmBodySplitProject::backupSeed()
   if (getBodyId() == 0) {
     return;
   }
+
+  ZOUT(LINFO(), 3) << "Backup seeds";
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {

@@ -788,7 +788,8 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
 void ZStackPresenter::createBodyContextMenu()
 {
   if (dynamic_cast<ZFlyEmProofDocMenuFactory*>(getMenuFactory()) != NULL) {
-    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
+    ZOUT(std::cout, 2) << "ZFlyEmProofDocMenuFactory ready";
+//    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
   }
 
   if (m_bodyContextMenu == NULL) {

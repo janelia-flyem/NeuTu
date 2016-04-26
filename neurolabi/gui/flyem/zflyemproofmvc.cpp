@@ -1629,6 +1629,8 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
   ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+
+  ZOUT(LINFO(), 3) << "Get body for split:" << body;
   /*
       dynamic_cast<ZDvidSparseStack*>(
         getDocument()->getObjectGroup().findFirstSameSource(
@@ -1638,6 +1640,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     getProgressSignal()->startProgress("Launching split ...");
+
+    ZOUT(LINFO(), 3) << "Exiting highlight mode";
 
     getCompletePresenter()->setHighlightMode(false);
     highlightSelectedObject(false);
@@ -1654,10 +1658,13 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
 
+    ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
+
     getProgressSignal()->advanceProgress(0.1);
 
     if (reader.hasCoarseSparseVolume(bodyId)) {
       if (body == NULL) {
+        ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = reader.readDvidSparseStackAsync(bodyId);
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
@@ -1665,12 +1672,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
                          bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setHittable(false);
         body->setSelectable(false);
+        ZOUT(LINFO(), 3) << "Adding body:" << body;
         getDocument()->addObject(body, true);
         //          body->setLabel(bodyId);
         //        body->getObjectMask()->setLabel(bodyId);
       }
 
       m_splitProject.setBodyId(bodyId);
+      ZOUT(LINFO(), 3) << "Removing ROI";
       getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
       labelSlice->setVisible(false);
@@ -1698,6 +1707,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
     /*
     QColor color =
@@ -1714,10 +1724,13 @@ void ZFlyEmProofMvc::updateSplitBody()
     launchSplit(bodyId);
 #endif
     if (m_coarseBodyWindow != NULL) {
+      ZOUT(LINFO(), 3) << "Removing rect roi from coarse body window.";
       m_coarseBodyWindow->removeRectRoi();
+      ZOUT(LINFO(), 3) << "Updating coarse body window.";
       updateCoarseBodyWindowDeep();
 //      updateCoarseBodyWindow(false, false, true);
     }
+    ZOUT(LINFO(), 3) << "Updating body window.";
     updateBodyWindow();
   }
 }
@@ -1801,6 +1814,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
+        ZOUT(LINFO(), 3) << "Launching split func:" << bodyId;
         QFuture<void> future =
             QtConcurrent::run(
               this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
@@ -2227,6 +2241,8 @@ void ZFlyEmProofMvc::notifyBookmarkDeleted()
 
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
+  ZOUT(LINFO(), 3) << "Importing bookmarks";
+
   getProgressSignal()->startProgress("Importing bookmarks ...");
   //  m_splitProject.loadBookmark(filePath);
 

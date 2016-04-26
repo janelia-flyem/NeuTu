@@ -918,6 +918,8 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
+  ZOUT(LINFO(), 3) << "Checking splittable:" << bodyId;
+
   if (m_dvidReader.isReady()) {
     ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
     if (annotation.isFinalized()) {
@@ -1686,13 +1688,13 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 
 void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 {
+  ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
-#ifdef _DEBUG_
-    std::cout << objList.size() << " bookmarks" << std::endl;
-#endif
+    ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
     for (TStackObjectList::iterator iter = objList.begin();
@@ -1701,9 +1703,7 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-#ifdef _DEBUG_2
-          std::cout << "Removing bookmark: " << bookmark << std::endl;
-#endif
+          ZOUT(LINFO(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
         }
@@ -1750,6 +1750,7 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             } else {
               bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
             }
+            ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
             addObject(bookmark);
           }
         }
@@ -1757,12 +1758,15 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
     }
     for (std::vector<ZStackObject*>::iterator iter = removed.begin();
          iter != removed.end(); ++iter) {
+      ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
       delete *iter;
     }
   }
   endObjectModifiedMode();
 
   notifyObjectModified();
+
+  ZOUT(LINFO(), 3) << "Bookmark imported";
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)

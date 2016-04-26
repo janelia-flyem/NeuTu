@@ -231,7 +231,9 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     //    if (reader.open(getDvidTarget())) {
     QRect viewPort = viewParam.getViewPort();
 
-    std::cout << "Deleting label array:" << m_labelArray << std::endl;
+    if (NeutubeConfig::GetVerboseLevel() >= 1) {
+      std::cout << "Deleting label array:" << m_labelArray << std::endl;
+    }
 
     ZIntCuboid box;
     box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());

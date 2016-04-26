@@ -30,6 +30,7 @@ void FlyEmSettingDialog::loadSetting()
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
+  ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -59,4 +60,5 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.loadConfig(getConfigPath());
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
+  NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
 }

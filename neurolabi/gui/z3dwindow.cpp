@@ -543,7 +543,9 @@ void Z3DTabWidget::closeAllWindows()
 
 void Z3DTabWidget::closeWindow(int index)
 {
-  qDebug()<<"####closeWindow"<<preIndex<<index<<getRealIndex(index);
+  if (NeutubeConfig::GetVerboseLevel() >= 2) {
+    qDebug()<<"####closeWindow"<<preIndex<<index<<getRealIndex(index);
+  }
 
   Z3DWindow *w = (Z3DWindow *)(widget(index));
   if (w != NULL) {
