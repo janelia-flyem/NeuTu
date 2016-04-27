@@ -6,6 +6,7 @@
 #include "zdvidreader.h"
 #include "zpainter.h"
 #include "zimage.h"
+#include "neutubeconfig.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -230,12 +231,40 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
           int x0 = stripe.getSegmentStart(i);
           int x1 = stripe.getSegmentEnd(i);
 
+          std::vector<int> blockSpan;
+          ZIntPoint blockIndex =
+              ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
           for (int x = x0; x <= x1; ++x) {
-            if (blockBox.contains(x, y, z)) {
-              const ZIntPoint blockIndex =
-                  ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+            bool isValidBlock = true;
+            if (!box.isEmpty()) {
+              isValidBlock = blockBox.contains(x, y, z);
+            }
 
+            if (isValidBlock) {
               if (grid->getStack(blockIndex) == NULL) {
+                if (blockSpan.empty())  {
+                  blockSpan.push_back(x);
+                  blockSpan.push_back(x);
+                } else if (x - blockSpan.back() == 1) {
+                  blockSpan.back() = x;
+                } else {
+                  blockSpan.push_back(x);
+                  blockSpan.push_back(x);
+                }
+              }
+            }
+            blockIndex.setX(blockIndex.getX() + 1);
+          }
+
+          for (size_t i = 0; i < blockSpan.size(); i += 2) {
+            blockIndex.setX(blockSpan[i]);
+            int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
+            ZOUT(LINFO(), 5) << "Reading" << blockNumber << "blocks";
+            std::vector<ZStack*> stackArray= m_dvidReader.readGrayScaleBlock(
+                  blockIndex, dvidInfo, blockNumber);
+            grid->consumeStack(blockIndex, stackArray);
+            blockCount += stackArray.size();
+#if 0
                 ZIntCuboid box = grid->getBlockBox(blockIndex);
                 ZStack *stack = m_dvidReader.readGrayScale(box);
                 grid->consumeStack(blockIndex, stack);
@@ -243,6 +272,7 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
                 //              changed = true;
               }
             }
+#endif
           }
         }
       }
@@ -257,6 +287,8 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 
 bool ZDvidSparseStack::fillValue()
 {
+  return fillValue(ZIntCuboid());
+#if 0
 //  bool changed = false;
   int blockCount = 0;
   ZObject3dScan *objMask = getObjectMask();
@@ -303,6 +335,7 @@ bool ZDvidSparseStack::fillValue()
   }
 
   return blockCount > 0;
+#endif
 //  return changed;
 }
 

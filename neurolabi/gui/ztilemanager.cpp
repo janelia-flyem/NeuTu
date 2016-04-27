@@ -71,9 +71,9 @@ bool ZTileManager::importJsonFile(const QString &filePath)
     if (obj.hasKey("Tiles")) {
       json_t *value = obj["Tiles"];
       if (ZJsonParser::isArray(value)) {
-        ZJsonArray array(value, false);
+        ZJsonArray array(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         for (size_t i = 0; i < array.size(); ++i) {
-          ZJsonObject tileObj(array.at(i), false);
+          ZJsonObject tileObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
           if (!tileObj.isEmpty()) {
             ZTileGraphicsItem *tileItem = new ZTileGraphicsItem;
             if (tileItem->loadJsonObject(tileObj,tileFilePath)) {

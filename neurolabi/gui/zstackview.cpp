@@ -628,8 +628,11 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     m_imageWidget->blockPaint(blockingPaint);
 
-    qDebug() << "Blocking paint:" <<blockingPaint;
-    qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+    if (NeutubeConfig::GetVerboseLevel() >= 2) {
+      qDebug() << "Blocking paint:" <<blockingPaint;
+      qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+    }
+
     switch (option) {
     case UPDATE_QUEUED:
       m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
@@ -1653,9 +1656,9 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZPainter &painter, ZStackObject::ETarget target)
 {
-#ifdef _DEBUG_
+  if (NeutubeConfig::GetVerboseLevel() >= 2) {
     qDebug() << painter.getTransform();
-#endif
+  }
 
   ZStackObjectPainter paintHelper;
   paintHelper.setRestoringPainter(true);
@@ -1696,9 +1699,9 @@ void ZStackView::paintObjectBuffer(
       std::cout << "---" << std::endl;
       std::cout << slice << " " << m_depthControl->value() <<  std::endl;
 #endif
-#ifdef _DEBUG_
-      std::cout << "Displaying objects ..." << std::endl;
-#endif
+      if (NeutubeConfig::GetVerboseLevel() >= 2) {
+        std::cout << "Displaying objects ..." << std::endl;
+      }
       for (int i = 0; i < visibleObject.size(); ++i) {
         /*
       }
@@ -1709,9 +1712,9 @@ void ZStackView::paintObjectBuffer(
         */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
-#ifdef _DEBUG_
-          std::cout << obj->className() << std::endl;
-#endif
+          if (NeutubeConfig::GetVerboseLevel() >= 2) {
+            std::cout << obj->className() << std::endl;
+          }
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);
@@ -1749,9 +1752,9 @@ void ZStackView::paintObjectBuffer(
 
 void ZStackView::paintObjectBuffer()
 {
-#ifdef _DEBUG_
-  std::cout << "ZStackView::paintObjectBuffer" << std::endl;
-#endif
+  if (NeutubeConfig::GetVerboseLevel() >= 2) {
+    std::cout << "ZStackView::paintObjectBuffer" << std::endl;
+  }
 
   updateObjectCanvas();
 

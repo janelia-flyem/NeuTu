@@ -108,6 +108,8 @@ public:
   void setStartBlockIndex(int x, int y, int z);
   void setEndBlockIndex(int x, int y, int z);
 
+  void downsampleBlock(int xintv, int yintv, int zintv);
+
 private:
   std::vector<int> m_stackSize;
   //std::vector<double> m_voxelResolution;

@@ -94,7 +94,7 @@ void ZFlyEmNeuronArray::importNamedBody(const std::string &filePath)
   if (!obj.isEmpty()) {
     ZJsonArray array(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < array.size(); ++i) {
-      ZJsonObject bodyObj(array.at(i), false);
+      ZJsonObject bodyObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bodyObj.hasKey("body ID")) {
         int bodyId = ZJsonParser::integerValue(bodyObj["body ID"]);
         if (bodyId > 0) {
@@ -119,7 +119,7 @@ void ZFlyEmNeuronArray::importFromDataBundle(const std::string &filePath)
   if (!obj.isEmpty()) {
     ZJsonArray array(obj["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < array.size(); ++i) {
-      ZJsonObject bodyObj(array.at(i), false);
+      ZJsonObject bodyObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bodyObj.hasKey("id")) {
         int bodyId = ZJsonParser::integerValue(bodyObj["id"]);
         if (bodyId > 0) {

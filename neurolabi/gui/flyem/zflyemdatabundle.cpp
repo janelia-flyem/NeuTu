@@ -329,7 +329,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     m_neuronArray.resize(neuronJsonArray.size());
     for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
       ZFlyEmNeuron &neuron = m_neuronArray[i];
-      ZJsonObject neuronJson(neuronJsonArray.at(i), false);
+      ZJsonObject neuronJson(neuronJsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       neuron.loadJsonObject(neuronJson, getSource());
       neuron.setSynapseAnnotation(getSynapseAnnotation());
       neuron.setSynapseScale(m_synapseScale);
@@ -364,7 +364,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     }
     m_source = filePath;
 
-    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey], false);
+    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
     m_layerRatio = array.toNumberArray();
 
     json_t *boundBoxObj = bundleObject[ZFlyEmDataBundle::m_boundBoxKey];
@@ -378,7 +379,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
     if (serverObj != NULL) {
-      ZJsonObject obj(serverObj, false);
+      ZJsonObject obj(serverObj, ZJsonValue::SET_INCREASE_REF_COUNT);
       ZDvidTarget target;
       target.set(ZJsonParser::stringValue(obj["address"]),
           ZJsonParser::stringValue(obj["uuid"]),
@@ -739,10 +740,10 @@ int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
 
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
-  ZJsonObject jsonObj(C_Json::makeObject(), true);
+  ZJsonObject jsonObj(C_Json::makeObject(), ZJsonValue::SET_AS_IT_IS);
 
   json_t *neuronArray = C_Json::makeArray();
-  ZJsonArray neuronArrayWrapper(neuronArray, false);
+  ZJsonArray neuronArrayWrapper(neuronArray, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   string exportDir = ZString::dirPath(path);
 

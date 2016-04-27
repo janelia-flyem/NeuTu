@@ -5652,7 +5652,7 @@ void MainWindow::on_actionFeature_Selection_triggered()
         ZJsonObject &output = process.getOutput();
         std::string featureList;
         if (output.hasKey("value")) {
-          ZJsonArray featureArray(output["value"], false);
+          ZJsonArray featureArray(output["value"], ZJsonValue::SET_INCREASE_REF_COUNT);
           size_t featureNumber = featureArray.size();
 
           for (size_t i = 0; i < featureNumber; ++i) {

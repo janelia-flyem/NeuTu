@@ -49,6 +49,8 @@ public:
 #endif
 
   void enableProfileLogging(bool on);
+  void setVerboseLevel(int level);
+  int getVerboseLevel() const;
   bool loggingProfile() const;
   void configure(const ZJsonObject &obj);
   void enableAutoStatusCheck(bool on);
@@ -56,6 +58,8 @@ public:
 
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
+  static int GetVerboseLevel();
+  static void SetVerboseLevel(int level);
   static void Configure(const ZJsonObject &obj);
 
   static void EnableAutoStatusCheck(bool on);
@@ -350,6 +354,7 @@ private:
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
   bool m_loggingProfile;
+  int m_verboseLevel;
 
 #if defined(_FLYEM_)
   ZFlyEmConfig m_flyemConfig;
@@ -381,5 +386,9 @@ private:
 #if defined(_FLYEM_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
 #endif
+
+#define ZOUT(out, level) \
+  if (NeutubeConfig::GetVerboseLevel() < level) {} \
+  else out
 
 #endif // NEUTUBECONFIG_H

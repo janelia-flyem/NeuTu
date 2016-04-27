@@ -174,7 +174,6 @@ void Z3DShaderProgram::loadFromSourceFile(const QStringList &shaderFilenames, co
   m_vertSrcs.clear();
   m_geomSrcs.clear();
   m_fragSrcs.clear();
-
   for (int i=0; i<shaderFilenames.size(); ++i) {
     QString filename = Z3DApplication::app()->getShaderPath(shaderFilenames[i]);
     if (filename.endsWith(".vert", Qt::CaseInsensitive)) {
@@ -242,6 +241,8 @@ void Z3DShaderProgram::loadFromSourceCode(const QStringList &vertSrcs, const QSt
 
   for (int i=0; i<fragSrcs.size(); ++i) {
     QString fragSrc = header + fragSrcs[i];
+
+    //qDebug() << fragSrc;
 #ifdef _QT5_
     if (!addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc)) {
 #else
@@ -431,6 +432,7 @@ void Z3DShaderProgram::setUniformValue(const QString &name, GLuint v1, GLuint v2
 //  setUniformValue(name, static_cast<GLint>(v1), static_cast<GLint>(v2), static_cast<GLint>(v3), static_cast<GLint>(v4));
 //}
 
+// vector
 void Z3DShaderProgram::setUniformValue(GLint loc, const glm::vec2 &value)
 {
   if (loc != -1) {

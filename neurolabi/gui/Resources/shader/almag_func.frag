@@ -77,6 +77,6 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 	baseColor.a = baseColor.a * alpha;
 	baseColor.rgb *= baseColor.a;
 
-	fragColor = baseColor;
+        fragColor = baseColor;
 	fragDepth = gl_FragCoord.z;
 }

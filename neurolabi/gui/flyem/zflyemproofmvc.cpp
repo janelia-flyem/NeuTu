@@ -47,6 +47,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "flyem/zflyemorthowindow.h"
+#include "zroiwidget.h"
 #include "flyem/zflyemdataframe.h"
 #include "flyem/zflyemtodolistfilter.h"
 #include "dialogs/flyemtododialog.h"
@@ -90,6 +91,7 @@ void ZFlyEmProofMvc::init()
   m_objectWindow = NULL;
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
+  m_ROILoaded = false;
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -181,6 +183,12 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyViewWindow->objectsAction->setCheckable(true);
   m_bodyViewWindow->objectsAction->setChecked(false);
 
+  m_bodyViewWindow->roiAction = m_bodyViewWindow->toolBar->addAction("ROIs");
+  connect(m_bodyViewWindow->roiAction, SIGNAL(toggled(bool)),
+          m_bodyViewers, SLOT(roiPanel(bool)));
+  m_bodyViewWindow->roiAction->setCheckable(true);
+  m_bodyViewWindow->roiAction->setChecked(false);
+
   //update button status reversely
   connect(m_bodyViewers, SIGNAL(buttonShowGraphToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonShowGraph(bool)));
@@ -188,6 +196,10 @@ void ZFlyEmProofMvc::initBodyWindow()
           m_bodyViewWindow, SLOT(updateButtonSettings(bool)));
   connect(m_bodyViewers, SIGNAL(buttonObjectsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonObjects(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
+          m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
+  connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
+          this, SLOT(getROIs()));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -354,9 +366,14 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_coarseBodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
-    ZFlyEmMisc::Decorate3dBodyWindowRoi(
-          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+//    ZFlyEmMisc::Decorate3dBodyWindowRoi(
+//          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
+
+    if(m_ROILoaded)
+        m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
+
+  //connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(toBeClosed()), m_bodyViewers, SLOT(resetROIButton()));
 
   /*
   ZStackDoc *doc = new ZStackDoc;
@@ -403,6 +420,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_bodyWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -421,6 +440,8 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded)
+        m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -436,6 +457,9 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_externalNeuronWindow, m_dvidInfo,
           m_doc->getParentMvc()->getView()->getViewParameter());
+
+    if(m_ROILoaded)
+        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -1609,6 +1633,8 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 {
   ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
+
+  ZOUT(LINFO(), 3) << "Get body for split:" << body;
   /*
       dynamic_cast<ZDvidSparseStack*>(
         getDocument()->getObjectGroup().findFirstSameSource(
@@ -1618,6 +1644,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     getProgressSignal()->startProgress("Launching split ...");
+
+    ZOUT(LINFO(), 3) << "Exiting highlight mode";
 
     getCompletePresenter()->setHighlightMode(false);
     highlightSelectedObject(false);
@@ -1634,10 +1662,13 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
 
+    ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
+
     getProgressSignal()->advanceProgress(0.1);
 
     if (reader.hasCoarseSparseVolume(bodyId)) {
       if (body == NULL) {
+        ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = reader.readDvidSparseStackAsync(bodyId);
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
@@ -1645,12 +1676,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
                          bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setHittable(false);
         body->setSelectable(false);
+        ZOUT(LINFO(), 3) << "Adding body:" << body;
         getDocument()->addObject(body, true);
         //          body->setLabel(bodyId);
         //        body->getObjectMask()->setLabel(bodyId);
       }
 
       m_splitProject.setBodyId(bodyId);
+      ZOUT(LINFO(), 3) << "Removing ROI";
       getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
       labelSlice->setVisible(false);
@@ -1678,6 +1711,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
     /*
     QColor color =
@@ -1694,10 +1728,13 @@ void ZFlyEmProofMvc::updateSplitBody()
     launchSplit(bodyId);
 #endif
     if (m_coarseBodyWindow != NULL) {
+      ZOUT(LINFO(), 3) << "Removing rect roi from coarse body window.";
       m_coarseBodyWindow->removeRectRoi();
+      ZOUT(LINFO(), 3) << "Updating coarse body window.";
       updateCoarseBodyWindowDeep();
 //      updateCoarseBodyWindow(false, false, true);
     }
+    ZOUT(LINFO(), 3) << "Updating body window.";
     updateBodyWindow();
   }
 }
@@ -1792,6 +1829,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
+        ZOUT(LINFO(), 3) << "Launching split func:" << bodyId;
         QFuture<void> future =
             QtConcurrent::run(
               this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
@@ -2218,6 +2256,8 @@ void ZFlyEmProofMvc::notifyBookmarkDeleted()
 
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
+  ZOUT(LINFO(), 3) << "Importing bookmarks";
+
   getProgressSignal()->startProgress("Importing bookmarks ...");
   //  m_splitProject.loadBookmark(filePath);
 
@@ -2908,4 +2948,77 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
+void ZFlyEmProofMvc::getROIs()
+{
+    //
+    if(m_ROILoaded)
+        return;
+
+    //
+    ZDvidReader reader;
+    m_roiList.clear();
+    m_loadedROIs.clear();
+    m_roiSourceList.clear();
+
+    //
+    if (reader.open(getDvidTarget()))
+    {
+        ZJsonObject meta = reader.readInfo();
+
+        //
+        ZJsonValue datains = meta.value("DataInstances");
+
+        if(datains.isObject())
+        {
+            ZJsonObject insList(datains);
+            std::vector<std::string> keys = insList.getAllKey();
+
+            for(std::size_t i=0; i<keys.size(); i++)
+            {
+                std::size_t found = keys.at(i).find("roi");
+
+                if(found!=std::string::npos)
+                {
+
+                    ZObject3dScan roi = reader.readRoi(keys.at(i));
+
+                    if(!roi.isEmpty())
+                    {
+                        m_roiList.push_back(keys.at(i));
+                        m_loadedROIs.push_back(roi);
+
+                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
+                        m_roiSourceList.push_back(source);
+                    }
+
+                }
+            }
+        }
+
+        m_ROILoaded = true;
+
+        //
+        if(m_coarseBodyWindow)
+        {
+            m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_bodyWindow)
+        {
+            m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_externalNeuronWindow)
+        {
+            m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+        if(m_skeletonWindow)
+        {
+            m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        }
+
+    }
+
+}
 

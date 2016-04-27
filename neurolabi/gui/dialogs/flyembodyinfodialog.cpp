@@ -424,7 +424,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             #endif
 
-            ZJsonObject bkmk(bookmarks.at(i), false);
+            ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
             uint64_t bodyId = bkmk.value("body ID").toInteger();
             if (bodySet.contains(bodyId)) {
@@ -597,7 +597,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     ZJsonArray bookmarks(data);
     m_bodyModel->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-        ZJsonObject bkmk(bookmarks.at(i), false);
+        ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
@@ -722,7 +722,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // has keys "color", "filter":
-    ZJsonObject first(colorArray.at(0), false);
+    ZJsonObject first(colorArray.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
     if (!first.hasKey("color") || !first.hasKey("filter")) {
         emit jsonLoadColorMapError("Color map json entries must have 'color' and 'filter' keys");
         return false;
@@ -750,7 +750,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     //  iterate over each color, filter and insert into table;
     ZJsonArray colorArray(colors);
     for (size_t i=0; i<colorArray.size(); i++) {
-        ZJsonObject entry(colorArray.at(i), false);
+        ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QString filter(ZJsonParser::stringValue(entry["filter"]));
         QStandardItem * filterTextItem = new QStandardItem(filter);

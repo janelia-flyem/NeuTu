@@ -151,6 +151,8 @@ Z3DSwcFilter::Z3DSwcFilter()
   for (int i = 0; i < m_guiNameList.size(); ++i) {
     m_guiNameList[i] = QString("Type %1 Color").arg(i);
   }
+
+  setFilterName(QString("swcfilter"));
 }
 
 Z3DSwcFilter::~Z3DSwcFilter()

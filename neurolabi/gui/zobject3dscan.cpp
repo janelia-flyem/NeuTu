@@ -851,7 +851,8 @@ void ZObject3dScan::canonize()
     }
 
     newStripeArray.resize(length);
-    std::cout << length << " stripes finalized." << std::endl;
+
+    ZOUT(std::cout, 3) << "  stripes finalized." << std::endl;
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);

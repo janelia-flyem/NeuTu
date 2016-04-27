@@ -32,6 +32,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
 #endif
 
   m_loggingProfile = false;
+  m_verboseLevel = 1;
 }
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -570,6 +571,10 @@ void NeutubeConfig::configure(const ZJsonObject &obj)
   if (obj.hasKey("profiling")) {
     m_loggingProfile = ZJsonParser::booleanValue(obj["profiling"]);
   }
+
+  if (obj.hasKey("verbose")) {
+    m_verboseLevel = ZJsonParser::integerValue(obj["verbose"]);
+  }
 }
 
 void NeutubeConfig::enableProfileLogging(bool on)
@@ -579,6 +584,26 @@ void NeutubeConfig::enableProfileLogging(bool on)
 #else
   m_loggingProfile = on;
 #endif
+}
+
+void NeutubeConfig::setVerboseLevel(int level)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("verbose", level);
+#else
+  m_verboseLevel = on;
+#endif
+}
+
+int NeutubeConfig::getVerboseLevel() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("verbose")) {
+    return m_settings.value("verbose").toInt();
+  }
+#endif
+
+  return m_verboseLevel;
 }
 
 bool NeutubeConfig::loggingProfile() const
@@ -628,6 +653,16 @@ void NeutubeConfig::EnableProfileLogging(bool on)
 bool NeutubeConfig::LoggingProfile()
 {
   return getInstance().loggingProfile();
+}
+
+int NeutubeConfig::GetVerboseLevel()
+{
+  return getInstance().getVerboseLevel();
+}
+
+void NeutubeConfig::SetVerboseLevel(int level)
+{
+  getInstance().setVerboseLevel(level);
 }
 
 void NeutubeConfig::Configure(const ZJsonObject &obj)

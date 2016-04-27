@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <vector>
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -199,6 +200,7 @@ public slots:
 
   void syncMergeWithDvid();
 
+  void getROIs();
   void updateLatencyWidget(int t);
 
   void suppressObjectVisible();
@@ -301,6 +303,12 @@ protected:
   ZStackViewParam m_currentViewParam;
 
   ZDvidInfo m_dvidInfo;
+  bool m_ROILoaded;
+
+  std::vector<std::string> m_roiList;
+  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<std::string> m_roiSourceList;
+
 };
 
 template <typename T>

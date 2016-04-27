@@ -8,7 +8,13 @@
 class ZIntCuboid
 {
 public:
+  /*!
+   * \brief Default constructor
+   *
+   * Construct an empty cuboid
+   */
   ZIntCuboid();
+
   ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2);
   ZIntCuboid(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   ZIntCuboid(const Cuboid_I &cuboid);

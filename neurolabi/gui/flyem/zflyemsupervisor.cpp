@@ -1,5 +1,6 @@
 #include "zflyemsupervisor.h"
 #include "neutube.h"
+#include "neutubeconfig.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "zrandomgenerator.h"
@@ -61,6 +62,8 @@ bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
 
 bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
 {
+  ZOUT(LINFO(), 3) << "Checking out body:" << bodyId;
+
   if (m_server.empty()) {
     return false;
   }

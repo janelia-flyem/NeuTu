@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 #include "tz_stdint.h"
 

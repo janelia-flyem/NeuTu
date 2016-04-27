@@ -17,7 +17,6 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <QtCore>
 
 #ifdef __GLIBCXX__
 #include <tr1/memory>
@@ -11989,6 +11988,9 @@ void ZTest::test(MainWindow *host)
   tic();
   obj2.dilate();
   ptoc();
+
+
+
 #endif
 
 #if 0
@@ -12081,20 +12083,7 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
-  Z3DGraphFactory factory;
-  factory.setShapeHint(GRAPH_LINE);
-  factory.setEdgeColorHint(QColor(255, 0, 0));
-  factory.setNodeRadiusHint(0);
-
-  std::vector<int> faceArray;
-  faceArray.push_back(0);
-  faceArray.push_back(1);
-  faceArray.push_back(2);
-  faceArray.push_back(3);
-  faceArray.push_back(4);
-  faceArray.push_back(5);
-
-  Z3DGraph *graphObj = factory.makeFaceGraph(box, faceArray);
+  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
@@ -16588,13 +16577,6 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
-  ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
-  jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
-#endif
-
-#if 0
-  ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
 
   ZObject3dScan obj2;
   obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
@@ -18572,14 +18554,13 @@ void ZTest::test(MainWindow *host)
   ensemble.setDvidTarget(target);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices;
-  tileIndices.push_back(ZDvidTileInfo::TIndex(10, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(11, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(13, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(14, 10));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
 
-  for (int z = 0; z < 10000; ++z) {
-    std::cout << ">>>>>> z = " << z << std::endl;
-    ensemble.update(tileIndices, 0, z);
+  while (1) {
+    ensemble.update(tileIndices, 0, 9259);
   }
 #endif
 
@@ -18644,6 +18625,12 @@ void ZTest::test(MainWindow *host)
       writer.writeBodyAnntation(anno);
     }
   }
+
+#endif
+
+#if 0
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
 
 #endif
 
@@ -18775,19 +18762,13 @@ void ZTest::test(MainWindow *host)
     stackList.append(stack);
   }
 
-  QFuture<double> result = QtConcurrent::mapped(stackList, &C_Stack::sum);
-  result.waitForFinished();
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
 
-  QFutureIterator<double> iter(result);
-  while (iter.hasNext()) {
-    qDebug() << iter.next();
-  }
-#endif
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
 
-#if 0
-  ZJsonObject tileJson;
-  tileJson.load(GET_TEST_DATA_DIR + "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-.tiles.json");
-  tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
+  window->show();
+  window->raise();
 #endif
 
 #if 0
@@ -19668,7 +19649,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
 
   double x = 1.4;
@@ -19903,7 +19883,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("bodies121714_todo");
 #endif
 
-#if 1
+#if 0
   //Create pixmap
   ZPixmap pixmap(256, 256);
   pixmap.setOffset(0, 0);
@@ -19972,6 +19952,43 @@ void ZTest::test(MainWindow *host)
 
   service.updateStatus();
   std::cout << "Service normal?: " << service.isNormal() << std::endl;
+
+#endif
+
+#if 0
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+  std::cout << "Reading grayscale ..." << std::endl;
+
+  std::vector<int> blockCoords;
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+
+
+  libdvid::GrayscaleBlocks blocks = service.get_grayblocks("grayscale", blockCoords, 2);
+
+  std::cout << blocks.get_num_blocks() << std::endl;
+#endif
+
+#endif
+
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  std::vector<ZStack*> stackArray =
+      reader.readGrayScaleBlock(ZIntPoint(100, 200, 300), dvidInfo, 2);
+
+  stackArray[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+  stackArray[1]->save(GET_TEST_DATA_DIR + "/test2.tif");
 
 #endif
 

@@ -110,6 +110,7 @@
 #include "zswcforest.h"
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
+#include "zsurfaceobjsmodel.h"
 
 using namespace std;
 
@@ -174,6 +175,7 @@ void ZStackDoc::init()
   m_seedObjsModel = new ZDocPlayerObjsModel(
         this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
+  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
 //  m_undoAction = NULL;
@@ -310,6 +312,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -535,6 +538,16 @@ bool ZStackDoc::hasObject() const
 bool ZStackDoc::hasObject(ZStackObject::EType type) const
 {
   return !m_objectGroup.getObjectList(type).isEmpty();
+}
+
+bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source) != NULL;
+}
+
+ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &source) const
+{
+    return m_objectGroup.findFirstSameSource(type, source);
 }
 
 bool ZStackDoc::hasSparseObject() const
@@ -3860,6 +3873,14 @@ void ZStackDoc::setGraphVisible(Z3DGraph *graph, bool visible)
   }
 }
 
+void ZStackDoc::setSurfaceVisible(ZCubeArray *cubearray, bool visible)
+{
+  if (cubearray->isVisible() != visible) {
+    cubearray->setVisible(visible);
+    emit surfaceVisibleStateChanged();
+  }
+}
+
 void ZStackDoc::setChainVisible(ZLocsegChain *chain, bool visible)
 {
   if (chain->isVisible() != visible) {
@@ -4978,6 +4999,11 @@ void ZStackDoc::notify3DGraphModified()
   emit graph3dModified();
 }
 
+void ZStackDoc::notify3DCubeModified()
+{
+  emit cube3dModified();
+}
+
 void ZStackDoc::notifyTodoModified()
 {
   emit todoModified();
@@ -5212,6 +5238,8 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
   case ZStackObject::TYPE_3D_GRAPH:
     notify3DGraphModified();
     break;
+  case ZStackObject::TYPE_3D_CUBE:
+    notify3DCubeModified();
   case ZStackObject::TYPE_FLYEM_TODO_ITEM:
     notifyTodoModified();
     break;
@@ -8657,6 +8685,7 @@ void ZStackDoc::localSeededWatershed()
     ZStack *signalStack = m_stack;
     ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
+      ZOUT(LINFO(), 3) << "Gettting signal stack";
       signalStack = NULL;
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
@@ -8680,6 +8709,7 @@ void ZStackDoc::localSeededWatershed()
 #endif
     if (signalStack != NULL) {
 
+      ZOUT(LINFO(), 3) << "Downsampling seed mask";
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
       getProgressSignal()->advanceProgress(0.1);
 
@@ -8696,6 +8726,8 @@ void ZStackDoc::localSeededWatershed()
       Cuboid_I_Expand_Z(&box, zMargin);
 
       engine.setRange(box);
+
+      ZOUT(LINFO(), 3) << "Running seeded watershed";
       ZStack *out = engine.run(signalStack, seedMask);
       getProgressSignal()->advanceProgress(0.3);
 
@@ -8705,6 +8737,7 @@ void ZStackDoc::localSeededWatershed()
       //objArray = ZObject3dFactory::MakeRegionBoundary(*out);
       //objData = Stack_Region_Border(out->c_stack(), 6, TRUE);
 
+      ZOUT(LINFO(), 3) << "Updating boundary object";
       updateWatershedBoundaryObject(out, dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
@@ -8725,7 +8758,7 @@ void ZStackDoc::seededWatershed()
 {
   getProgressSignal()->startProgress("Splitting ...");
 
-  qDebug() << "Removing old result ...";
+  ZOUT(LINFO(), 3) << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 //  m_isSegmentationReady = false;
   setSegmentationReady(false);
@@ -8734,7 +8767,7 @@ void ZStackDoc::seededWatershed()
   //removeAllObj3d();
   ZStackWatershed engine;
 
-  qDebug() << "Creating seed mask ...";
+  ZOUT(LINFO(), 3) << "Creating seed mask ...";
   ZStackArray seedMask = createWatershedMask(false);
 
   getProgressSignal()->advanceProgress(0.1);
@@ -8744,6 +8777,7 @@ void ZStackDoc::seededWatershed()
     ZIntPoint dsIntv(0, 0, 0);
     if (signalStack->isVirtual()) {
       signalStack = NULL;
+      ZOUT(LINFO(), 3) << "Retrieving signal stack";
       if (m_sparseStack != NULL) {
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
@@ -8758,7 +8792,7 @@ void ZStackDoc::seededWatershed()
     getProgressSignal()->advanceProgress(0.1);
 
     if (signalStack != NULL) {
-      qDebug() << "Downsampling ..." << dsIntv.toString();
+      ZOUT(LINFO(), 3) << "Downsampling ..." << dsIntv.toString();
       seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
 #ifdef _DEBUG_2
@@ -8769,11 +8803,13 @@ void ZStackDoc::seededWatershed()
       ZStack *out = engine.run(signalStack, seedMask);
       getProgressSignal()->advanceProgress(0.3);
 
+      ZOUT(LINFO(), 3) << "Updating watershed boundary object";
       updateWatershedBoundaryObject(out, dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
+      ZOUT(LINFO(), 3) << "Setting label field";
       setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
@@ -8816,6 +8852,9 @@ void ZStackDoc::runSeededWatershed()
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
+
+  ZOUT(LINFO(), 3) << "Retrieving label set";
+
   QSet<int> labelSet;
   foreach (const ZDocPlayer *player, playerList) {
     labelSet.insert(player->getLabel());
@@ -9282,6 +9321,21 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
        iter != playerList.end(); ++iter) {
     ZStackObject *obj = (*iter)->getData();
     obj->setVisible(visible);
+    bufferObjectModified(obj->getTarget());
+  }
+
+  notifyObjectModified();
+}
+
+void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool visible)
+{
+  TStackObjectList &objList = getObjectList(type);
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->isSameSource(obj->getSource(), source)) {
+        obj->setVisible(visible);
+    }
     bufferObjectModified(obj->getTarget());
   }
 
