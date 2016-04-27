@@ -43,7 +43,7 @@ void ZFlyEmConfig::print() const
 
 void ZFlyEmConfig::loadConfig(const std::string &filePath)
 {
-//  m_configPath = filePath;
+  m_configPath = filePath;
   NeutubeConfig::SetFlyEmConfigPath(filePath.c_str());
 
   m_dvidRepo.clear();

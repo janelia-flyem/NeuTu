@@ -49,8 +49,8 @@ ZStack::ZStack(int kind, int width, int height, int depth,
     C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
     delloc = C_Stack::cppDelete;
   } else {
-    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
-    delloc = Kill_Mc_Stack;
+    stack = C_Stack::make(kind, width, height, depth, nchannel);
+    delloc = C_Stack::kill;
   }
   setData(stack, delloc);
 }

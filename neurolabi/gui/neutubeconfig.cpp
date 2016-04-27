@@ -218,10 +218,6 @@ void NeutubeConfig::print()
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << endl;
-
-#if defined(_FLYEM_)
-  m_flyemConfig.print();
-#endif
 }
 
 std::string NeutubeConfig::getPath(Config_Item item) const
@@ -674,7 +670,9 @@ void NeutubeConfig::Configure(const ZJsonObject &obj)
 #ifdef _QT_GUI_USED_
 QString NeutubeConfig::GetFlyEmConfigPath()
 {
-  return GetSettings().value("flyem_config").toString();
+  QString path = GetSettings().value("flyem_config").toString();
+
+  return path;
 }
 
 void NeutubeConfig::SetFlyEmConfigPath(const QString &path)
