@@ -17,10 +17,12 @@ public:
   void addAllSupportedPostShaders();
   void addDualDepthPeelingShaders();
   void addWeightedAverageShaders();
+  void addWeightedBlendedShaders();
 
   void bind();
   void release();
   Z3DShaderProgram& get();
+  Z3DShaderProgram& get(Z3DRendererBase::ShaderHookType sht);
   void rebuild(const QString &header);
 
 private:
@@ -28,6 +30,7 @@ private:
   void buildDualDepthPeelingInitShader(Z3DShaderProgram *shader);
   void buildDualDepthPeelingPeelShader(Z3DShaderProgram *shader);
   void buildWeightedAverageShader(Z3DShaderProgram *shader);
+  void buildWeightedBlendedShader(Z3DShaderProgram *shader);
 
 private:
   QStringList m_shaderFiles;

@@ -124,7 +124,8 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
 
       actionList.set(iter->second, false);
       for (size_t index = 0; index < actionList.size(); ++index) {
-        ZJsonObject actionObject(actionList.at(index), false);
+        ZJsonObject actionObject(actionList.at(index),
+                                 ZJsonValue::SET_INCREASE_REF_COUNT);
         map<string, json_t*> actionEntry = actionObject.toEntryMap();
         MovieAction action;
 
@@ -166,7 +167,7 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
         addAction(action);
       }
     } else if (isCameraTag(iter->first.c_str())) {
-      ZJsonObject cameraObject(iter->second, false);
+      ZJsonObject cameraObject(iter->second, ZJsonValue::SET_INCREASE_REF_COUNT);
       m_camera.loadJsonObject(cameraObject);
       /*
       json_t *rotationObj = cameraObject["rotate"];
@@ -176,7 +177,9 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       */
     } else if (isClipperTag(iter->first.c_str())) {
       for (size_t i = 0; i < ZJsonParser::arraySize(iter->second); ++i) {
-        ZJsonObject clipperObject(ZJsonParser::arrayValue(iter->second, i), false);
+        ZJsonObject clipperObject(
+              ZJsonParser::arrayValue(iter->second, i),
+              ZJsonValue::SET_INCREASE_REF_COUNT);
         ZMovieSceneClipper clipper;
         clipper.loadJsonObject(clipperObject);
         m_clipperArray.push_back(clipper);

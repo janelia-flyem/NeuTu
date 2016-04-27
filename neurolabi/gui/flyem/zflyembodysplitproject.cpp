@@ -262,7 +262,8 @@ void ZFlyEmBodySplitProject::quickViewFunc()
         objMask = doc->getConstSparseStack()->getObjectMask();
       } else {
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
-          objMask = getDocument<ZFlyEmProofDoc>()->getBodyForSplit()->getObjectMask();
+          objMask = getDocument<ZFlyEmProofDoc>()->getBodyForSplit()->
+              getObjectMask();
         }
       }
       if (objMask != NULL) {
@@ -472,7 +473,11 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
   if (doc != NULL && getDocument() != NULL) {
+    ZOUT(LINFO(), 3) << "Loading split results";
+
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZOUT(LINFO(), 3) << "Removing all SWCs";
     doc->removeAllSwcTree();
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
@@ -488,8 +493,10 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      ZOUT(LINFO(), 3) << "Processing split object" << splitObj;
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+          ZOUT(LINFO(), 3) << "Converting split object";
           ZObject3d *obj = splitObj->toObject3d();
           if (obj != NULL) {
             int ds = obj->size() / maxSwcNodeNumber + 1;
@@ -500,10 +507,12 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
               ds = maxScale;
             }
 
+            ZOUT(LINFO(), 3) << "Creating split SWC";
             ZSwcTree *tree = ZSwcGenerator::createSwc(
                   *obj, dmin2(5.0, ds / 2.0), ds);
             if (tree != NULL) {
               tree->setAlpha(255);
+              ZOUT(LINFO(), 3) << "Adding split SWC";
               doc->addObject(tree);
             }
             delete obj;
@@ -514,6 +523,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     }
     doc->endObjectModifiedMode();
     doc->notifyObjectModified();
+
+    ZOUT(LINFO(), 3) << "Split object processed";
   }
 }
 
@@ -810,6 +821,8 @@ void ZFlyEmBodySplitProject::decomposeBody()
   ZDvidWriter writer;
   writer.open(getDvidTarget());
 
+  std::vector<uint64_t> updateBodyArray;
+
   if (objArray.size() > 1) {
     double dp = 0.5 / objArray.size();
     size_t maxIndex = 0;
@@ -825,6 +838,8 @@ void ZFlyEmBodySplitProject::decomposeBody()
     }
 
     index = 0;
+    const size_t skelThre = 20;
+
     for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter, ++index) {
       if (index != maxIndex) {
@@ -834,8 +849,12 @@ void ZFlyEmBodySplitProject::decomposeBody()
         uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
         QString msg;
         if (newBodyId > 0) {
+          size_t voxelNumber = obj.getVoxelNumber();
           msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
-              arg(newBodyId).arg(obj.getVoxelNumber());
+              arg(newBodyId).arg(voxelNumber);
+          if (voxelNumber >= skelThre) {
+            updateBodyArray.push_back(newBodyId);
+          }
           newBodyIdList.append(newBodyId);
 
           emitMessage(msg);
@@ -852,6 +871,11 @@ void ZFlyEmBodySplitProject::decomposeBody()
   }
 
   if (!newBodyIdList.isEmpty()) {
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), updateBodyArray, ZNeutuService::UPDATE_ALL);
+
     QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
     bodyMessage += "<font color=#007700>";
     foreach (uint64_t bodyId, newBodyIdList) {
@@ -951,6 +975,11 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            arg(getBodyId()),
                            NeuTube::MSG_ERROR));
     } else {
+      GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+            getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
+      GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+            getDvidTarget(), bodyId, ZNeutuService::UPDATE_ALL);
+
       updateSplitDocument();
       emitMessage(QString("Done. The cropped part has bodyId %1").arg(bodyId));
       emit resultCommitted();
@@ -1179,6 +1208,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZDvidWriter writer;
   writer.open(getDvidTarget());
+
+  size_t skelThre = 20;
+
+  std::vector<uint64_t> updateBodyArray;
+
 //  foreach (QString objFile, filePathList) {
   foreach (const ZObject3dScan &obj, splitList) {
 //    const ZObject3dScan &obj = splitList
@@ -1202,14 +1236,19 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;
     if (newBodyId > 0) {
+      size_t voxelNumber = obj.getVoxelNumber();
       if (oldBodyId > 0) {
         msg = QString("Label %1 uploaded as %2 (%3 voxels).").
-            arg(oldBodyId).arg(newBodyId).arg(obj.getVoxelNumber());
+            arg(oldBodyId).arg(newBodyId).arg(voxelNumber);
       } else {
         msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
-            arg(newBodyId).arg(obj.getVoxelNumber());
+            arg(newBodyId).arg(voxelNumber);
       }
       newBodyIdList.append(newBodyId);
+
+      if (voxelNumber >= skelThre) {
+        updateBodyArray.push_back(newBodyId);
+      }
 
       emitMessage(msg);
     } else {
@@ -1224,6 +1263,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (!newBodyIdList.isEmpty()) {
     QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), updateBodyArray, ZNeutuService::UPDATE_ALL);
+
     bodyMessage += "<font color=#007700>";
     foreach (uint64_t bodyId, newBodyIdList) {
       bodyMessage.append(QString("%1 ").arg(bodyId));
@@ -1287,6 +1331,8 @@ void ZFlyEmBodySplitProject::backupSeed()
   if (getBodyId() == 0) {
     return;
   }
+
+  ZOUT(LINFO(), 3) << "Backup seeds";
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {

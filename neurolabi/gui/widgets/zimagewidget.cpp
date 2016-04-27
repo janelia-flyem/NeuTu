@@ -14,7 +14,8 @@
 #include "zstackobjectpainter.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
-  m_isViewHintVisible(true), m_freeMoving(false), m_hoverFocus(false)
+  m_isViewHintVisible(true), m_freeMoving(false), m_hoverFocus(false),
+  m_smoothDisplay(false)
 {
   if (image != NULL) {
     m_viewPort.setRect(0, 0, image->width(), image->height());
@@ -35,6 +36,7 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_paintBundle = NULL;
   m_tileCanvas = NULL;
   m_objectCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
 }
@@ -47,6 +49,106 @@ ZImageWidget::~ZImageWidget()
 //    }
 //  }
 }
+
+void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
+{
+#ifdef _DEBUG_2
+  std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
+#endif
+
+  if (!canvasSize().isEmpty() && !isPaintBlocked()) {
+    ZPainter painter;
+
+    if (!painter.begin(this)) {
+      std::cout << "......failed to begin painter" << std::endl;
+    }
+
+    if (m_smoothDisplay) {
+      painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+      painter.setRenderHint(QPainter::HighQualityAntialiasing, true); //not sure if this has any effect
+    } else {
+      painter.setRenderHint(QPainter::Antialiasing, true);
+    }
+
+    //Compute real viewport and projregion
+//#ifdef _DEBUG_
+    //setView(m_zoomRatio, m_viewPort.topLeft());
+    if (m_projRegion.isEmpty() || m_viewPort.isEmpty()) {
+      setView(1, QPoint(0, 0));
+    }
+//#endif
+
+    /* draw gray regions */
+    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
+                     Qt::gray);
+//    QSize size = projectSize();
+
+    if (m_image != NULL) {
+      painter.drawImage(m_projRegion, *m_image, m_viewPort);
+#ifdef _DEBUG_2
+      m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+    }
+
+    //tic();
+    if (m_tileCanvas != NULL) {
+#ifdef _DEBUG_2
+      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
+    }
+    //std::cout << "paint tile canvas: " << toc() << std::endl;
+
+
+    //tic();
+    for (int i = 0; i < m_mask.size(); ++i) {
+      if (m_mask[i] != NULL) {
+        painter.drawImage(//QRect(0, 0, size.width(), size.height()),
+                          m_projRegion, *(m_mask[i]), m_viewPort);
+      }
+    }
+    //std::cout << "paint object canvas: " << toc() << std::endl;
+
+    //tic();
+    if (m_objectCanvas != NULL) {
+#ifdef _DEBUG_2
+      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
+      if (m_objectCanvas->isVisible()) {
+        painter.drawPixmap(m_projRegion, *m_objectCanvas, m_viewPort);
+      }
+    }
+    //std::cout << "paint object canvas: " << toc() << std::endl;
+
+    if (m_activeDecorationCanvas != NULL) {
+      if (m_activeDecorationCanvas->isVisible()) {
+#if 0
+        QRectF targetRect = projectRegion();
+        if (m_activeDecorationCanvas->getTransform().getSx() != 1.0) {
+          targetRect.setSize(m_activeDecorationCanvas->size());
+        }
+        painter.drawPixmap(targetRect, *m_activeDecorationCanvas);
+#endif
+        painter.drawPixmap(*m_activeDecorationCanvas);
+//        painter.drawPixmapNt(*m_activeDecorationCanvas);
+//        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
+      }
+    }
+
+    if (m_dynamicObjectCanvas != NULL) {
+      if (m_dynamicObjectCanvas->isVisible()) {
+        painter.drawPixmap(*m_dynamicObjectCanvas);
+      }
+    }
+
+    painter.end();
+
+    paintObject();
+    paintZoomHint();
+    //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
+  }
+}
+
 
 void ZImageWidget::setImage(ZImage *image)
 {
@@ -86,6 +188,11 @@ void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 void ZImageWidget::setObjectCanvas(ZPixmap *canvas)
 {
   m_objectCanvas = canvas;
+}
+
+void ZImageWidget::setDynamicObjectCanvas(ZPixmap *canvas)
+{
+  m_dynamicObjectCanvas = canvas;
 }
 
 void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
@@ -859,85 +966,6 @@ void ZImageWidget::paintZoomHint()
   }
 }
 
-void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
-{
-#ifdef _DEBUG_2
-  std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
-#endif
-
-  if (!canvasSize().isEmpty() && !isPaintBlocked()) {
-    ZPainter painter;
-
-    if (!painter.begin(this)) {
-      std::cout << "......failed to begin painter" << std::endl;
-    }
-
-    painter.setRenderHint(QPainter::Antialiasing, true);
-//    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-
-    //Compute real viewport and projregion
-//#ifdef _DEBUG_
-    //setView(m_zoomRatio, m_viewPort.topLeft());
-    if (m_projRegion.isEmpty() || m_viewPort.isEmpty()) {
-      setView(1, QPoint(0, 0));
-    }
-//#endif
-
-    /* draw gray regions */
-    painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
-                     Qt::gray);
-//    QSize size = projectSize();
-
-    if (m_image != NULL) {
-      painter.drawImage(m_projRegion, *m_image, m_viewPort);
-#ifdef _DEBUG_2
-      m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-    }
-
-    //tic();
-    if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_2
-      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
-    }
-    //std::cout << "paint tile canvas: " << toc() << std::endl;
-
-
-    //tic();
-    for (int i = 0; i < m_mask.size(); ++i) {
-      if (m_mask[i] != NULL) {
-        painter.drawImage(//QRect(0, 0, size.width(), size.height()),
-                          m_projRegion, *(m_mask[i]), m_viewPort);
-      }
-    }
-    //std::cout << "paint object canvas: " << toc() << std::endl;
-
-    //tic();
-    if (m_objectCanvas != NULL) {
-#ifdef _DEBUG_2
-      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-      if (m_objectCanvas->isVisible()) {
-        painter.drawPixmap(m_projRegion, *m_objectCanvas, m_viewPort);
-      }
-    }
-    //std::cout << "paint object canvas: " << toc() << std::endl;
-
-    if (m_activeDecorationCanvas != NULL) {
-      if (m_activeDecorationCanvas->isVisible()) {
-        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
-      }
-    }
-
-    painter.end();
-
-    paintObject();
-    paintZoomHint();
-    //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
-  }
-}
 
 QSize ZImageWidget::minimumSizeHint() const
 {
@@ -1219,6 +1247,8 @@ void ZImageWidget::removeCanvas(ZPixmap *canvas)
     setTileCanvas(NULL);
   } else if (m_activeDecorationCanvas == canvas) {
     setActiveDecorationCanvas(NULL);
+  } else if (m_dynamicObjectCanvas == canvas) {
+    setDynamicObjectCanvas(NULL);
   }
 }
 
@@ -1229,6 +1259,7 @@ void ZImageWidget::reset()
   m_objectCanvas = NULL;
   m_tileCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
 
   m_viewPort.setSize(QSize(0, 0));
   m_canvasRegion.setSize(QSize(0, 0));

@@ -116,7 +116,6 @@ enum EDvidAnnotationLoadMode {
 };
 }
 
-
 }
 
 

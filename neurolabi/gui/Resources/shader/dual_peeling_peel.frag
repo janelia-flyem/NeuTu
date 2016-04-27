@@ -35,7 +35,7 @@ void main(void)
 {
 	float fragDepth;
 	vec4 color;
-	fragment_func(color, fragDepth);
+        fragment_func(color, fragDepth);
 
 	#ifdef USE_RECT_TEX
 	vec2 depthBlender = texture2DRect(DepthBlenderTex, gl_FragCoord.xy).xy;

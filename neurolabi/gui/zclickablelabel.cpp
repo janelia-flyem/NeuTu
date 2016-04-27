@@ -170,6 +170,16 @@ QColor ZClickableColorLabel::toQColor()
   }
 }
 
+void ZClickableColorLabel::setColor(const QColor &col)
+{
+  fromQColor(col);
+}
+
+void ZClickableColorLabel::setText(const QString &text)
+{
+  m_vec4Color->setName(text);
+}
+
 void ZClickableColorLabel::fromQColor(const QColor &col)
 {
   if (m_vec4Color)

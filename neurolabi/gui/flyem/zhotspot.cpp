@@ -84,7 +84,7 @@ ZTextLineCompositer FlyEm::ZCurveGeometry::toLineCompositer() const
 ZJsonObject FlyEm::ZCurveGeometry::toJsonObject() const
 {
   ZJsonObject obj;
-  ZJsonArray ptArray(obj.setArrayEntry("curve"), false);
+  ZJsonArray ptArray(obj.setArrayEntry("curve"), ZJsonValue::SET_INCREASE_REF_COUNT);
   for (size_t i = 0; i < m_curve.size(); ++i) {
     const ZPoint &pt = m_curve[i];
     ZJsonArray ptObj;

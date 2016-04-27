@@ -17,7 +17,6 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <QtCore>
 
 #ifdef __GLIBCXX__
 #include <tr1/memory>
@@ -268,6 +267,7 @@ using namespace std;
 #include "flyem/zflyemorthomvc.h"
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
+#include "flyem/zneutuservice.h"
 
 using namespace std;
 
@@ -11988,6 +11988,9 @@ void ZTest::test(MainWindow *host)
   tic();
   obj2.dilate();
   ptoc();
+
+
+
 #endif
 
 #if 0
@@ -12080,20 +12083,7 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
-  Z3DGraphFactory factory;
-  factory.setShapeHint(GRAPH_LINE);
-  factory.setEdgeColorHint(QColor(255, 0, 0));
-  factory.setNodeRadiusHint(0);
-
-  std::vector<int> faceArray;
-  faceArray.push_back(0);
-  faceArray.push_back(1);
-  faceArray.push_back(2);
-  faceArray.push_back(3);
-  faceArray.push_back(4);
-  faceArray.push_back(5);
-
-  Z3DGraph *graphObj = factory.makeFaceGraph(box, faceArray);
+  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
@@ -16587,13 +16577,6 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
-  ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
-  jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
-#endif
-
-#if 0
-  ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
 
   ZObject3dScan obj2;
   obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
@@ -18571,14 +18554,13 @@ void ZTest::test(MainWindow *host)
   ensemble.setDvidTarget(target);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices;
-  tileIndices.push_back(ZDvidTileInfo::TIndex(10, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(11, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(13, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(14, 10));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
 
-  for (int z = 0; z < 10000; ++z) {
-    std::cout << ">>>>>> z = " << z << std::endl;
-    ensemble.update(tileIndices, 0, z);
+  while (1) {
+    ensemble.update(tileIndices, 0, 9259);
   }
 #endif
 
@@ -18643,6 +18625,12 @@ void ZTest::test(MainWindow *host)
       writer.writeBodyAnntation(anno);
     }
   }
+
+#endif
+
+#if 1
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
 
 #endif
 
@@ -18774,19 +18762,13 @@ void ZTest::test(MainWindow *host)
     stackList.append(stack);
   }
 
-  QFuture<double> result = QtConcurrent::mapped(stackList, &C_Stack::sum);
-  result.waitForFinished();
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
 
-  QFutureIterator<double> iter(result);
-  while (iter.hasNext()) {
-    qDebug() << iter.next();
-  }
-#endif
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
 
-#if 0
-  ZJsonObject tileJson;
-  tileJson.load(GET_TEST_DATA_DIR + "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-.tiles.json");
-  tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
+  window->show();
+  window->raise();
 #endif
 
 #if 0
@@ -19667,7 +19649,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
 
   double x = 1.4;
@@ -19818,8 +19799,35 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   if (reader.open(target)) {
-    std::cout << "Has body: " << reader.hasBody(15363212) << std::endl;
+    std::cout << "Has body: " << reader.hasBody(8116) << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.setBodyLabelName("bodies");
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.deleteSkeleton(10001209);
+  writer.deleteBodyAnnotation(10011641);
+
+  std::cout << writer.getStatusCode() << std::endl;
+
+#endif
+
+
+#if 0
+  ZDvidBufferReader reader;
+  reader.readPartial(
+        "http://emdata1.int.janelia.org:8500/api/node/372c/bodies/sparsevol/8116",
+        12, true);
+  QByteArray byteArray = reader.getBuffer();
+
+  std::cout << byteArray.size() << std::endl;
+  std::cout << *((uint32_t*) (byteArray.data() + 8)) << std::endl;
 #endif
 
 #if 0
@@ -19864,7 +19872,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("segmentation-labelvol_todo");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("zhaot-ws1", "0751", 6300);
   target.setBodyLabelName("bodies121714");
@@ -19874,5 +19882,78 @@ void ZTest::test(MainWindow *host)
 
   writer.syncAnnotation("bodies121714_todo");
 #endif
+
+#if 1
+  //Create pixmap
+  ZPixmap pixmap(256, 256);
+  pixmap.setOffset(0, 0);
+  pixmap.setScale(0.5, 0.5);
+
+
+  //Paint
+  ZPainter painter(&pixmap);
+  painter.setPen(QColor(255, 0, 0));
+
+  ZStroke2d stroke;
+  stroke.append(164, 241);
+  stroke.display(painter, 0, ZStackObject::SOLID, NeuTube::Z_AXIS);
+//  painter.drawLine(100, 100, 200, 200);
+
+  qDebug() << painter.getTransform();
+
+  //Save
+  pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+#endif
+
+#if 0
+  QUrl url("http://emdata1.int.janelia.org:8500/api/node");
+  qDebug() << url.host();
+  qDebug() << url.port();
+  qDebug() << url.path();
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  writer.del("http://emdata1.int.janelia.org:8500/api/node/372c/skeletons/key/1_swc");
+  std::cout << writer.getStatusCode() << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget dvidTarget("emdata1.int.janelia.org", "372c", 8500);
+  writer.open(dvidTarget);
+
+  ZJsonObject annotation;
+  annotation.setEntry("status", "test");
+  writer.writeAnnotation(1, annotation);
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/server_test.json");
+
+  ZDvidWriter writer;
+  writer.post("http://zhaot-ws1:8080/update_body", obj);
+#endif
+
+#if 0
+  ZNeutuService service("http://zhaot-ws1:8080");
+  ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
+
+  service.requestBodyUpdate(target, 1, ZNeutuService::UPDATE_DELETE);
+#endif
+
+#if 0
+  ZNeutuService service("http://zhaot-ws1:8080");
+  ZDvidTarget target("emdata1.int.janelia.org", "372c", 8500);
+
+  std::cout << "Service normal?: " << service.isNormal() << std::endl;
+
+  service.updateStatus();
+  std::cout << "Service normal?: " << service.isNormal() << std::endl;
+
+#endif
+
   std::cout << "Done." << std::endl;
 }

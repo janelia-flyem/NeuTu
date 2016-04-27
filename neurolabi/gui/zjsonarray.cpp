@@ -10,6 +10,7 @@ ZJsonArray::ZJsonArray() : ZJsonValue()
 {
 }
 
+/*
 ZJsonArray::ZJsonArray(json_t *data, bool asNew) : ZJsonValue()
 {
   if (json_is_array(data)) {
@@ -23,11 +24,19 @@ ZJsonArray::ZJsonArray(const json_t *data, bool asNew) : ZJsonValue()
     set(const_cast<json_t*>(data), asNew);
   }
 }
+*/
 
 ZJsonArray::ZJsonArray(json_t *data, ESetDataOption option) : ZJsonValue()
 {
   if (json_is_array(data)) {
     set(data, option);
+  }
+}
+
+ZJsonArray::ZJsonArray(const json_t *data, ESetDataOption option) : ZJsonValue()
+{
+  if (json_is_array(data)) {
+    set(const_cast<json_t*>(data), option);
   }
 }
 

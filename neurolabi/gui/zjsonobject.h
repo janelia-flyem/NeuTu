@@ -15,7 +15,7 @@ class ZJsonObject : public ZJsonValue
 {
 public:
   ZJsonObject();
-  explicit ZJsonObject(json_t *json, bool asNew);
+//  explicit ZJsonObject(json_t *json, bool asNew);
   explicit ZJsonObject(json_t *data, ESetDataOption option);
   ZJsonObject(const ZJsonObject &obj);
   ZJsonObject(const ZJsonValue &obj);

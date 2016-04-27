@@ -385,8 +385,8 @@ FlyEm::ZIntCuboidCutter::ZIntCuboidCutter()
 bool FlyEm::ZIntCuboidCutter::loadJsonObject(const ZJsonObject &obj)
 {
   if (obj.hasKey("start") && obj.hasKey("size")) {
-    ZJsonArray start(obj["start"], false);
-    ZJsonArray size(obj["size"], false);
+    ZJsonArray start(obj["start"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZJsonArray size(obj["size"], ZJsonValue::SET_INCREASE_REF_COUNT);
 
     std::vector<int> startCoord = start.toIntegerArray();
     std::vector<int> blockSize = size.toIntegerArray();
@@ -447,8 +447,10 @@ void FlyEm::SubstackRegionCalbration::setBounding(
 
 bool FlyEm::SubstackRegionCalbration::importJsonObject(const ZJsonObject &obj)
 {
-  std::vector<int> margin = ZJsonArray(obj["margin"], false).toIntegerArray();
-  std::vector<bool> bounding = ZJsonArray(obj["bounding"], false).toBoolArray();
+  std::vector<int> margin =
+      ZJsonArray(obj["margin"], ZJsonValue::SET_INCREASE_REF_COUNT).toIntegerArray();
+  std::vector<bool> bounding =
+      ZJsonArray(obj["bounding"], ZJsonValue::SET_INCREASE_REF_COUNT).toBoolArray();
 
   if (margin.size() == 3 && bounding.size() == 3) {
     for (int i = 0; i < 3; ++i) {
@@ -501,13 +503,16 @@ void FlyEm::ZSubstackRoi::importJsonFile(const std::string &filePath)
   }
 
   FlyEm::SubstackRegionCalbration calbr;
-  calbr.importJsonObject(ZJsonObject(obj[m_calbrationKey], false));
+  calbr.importJsonObject(
+        ZJsonObject(obj[m_calbrationKey], ZJsonValue::SET_INCREASE_REF_COUNT));
   calbr.calibrate(m_cuboidArray);
 
   if (obj.hasKey(m_cutterKey)) {
-    ZJsonArray cutterArray(obj[m_cutterKey], false);
+    ZJsonArray cutterArray(
+          obj[m_cutterKey], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < cutterArray.size(); ++i) {
-      ZJsonObject cutterObj(cutterArray.at(i), false);
+      ZJsonObject cutterObj(
+            cutterArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (!cutterObj.isEmpty()) {
         ZIntCuboidCutter cutter;
         int id = ZJsonParser::integerValue(cutterObj["id"]);

@@ -43,6 +43,7 @@ public:
   ZPixmap* getTileCanvas() { return m_tileCanvas; }
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
+  void setDynamicObjectCanvas(ZPixmap *canvas);
   void setActiveDecorationCanvas(ZPixmap *canvas);
   void removeCanvas(ZPixmap *canvas);
   void removeCanvas(ZImage *canvas);
@@ -180,6 +181,10 @@ public:
     m_hoverFocus = on;
   }
 
+  void setSmoothDisplay(bool on) {
+    m_smoothDisplay = on;
+  }
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -239,6 +244,7 @@ private:
   QVector<ZImage*> m_mask;
   ZPixmap *m_objectCanvas;
   ZPixmap *m_tileCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZPixmap *m_activeDecorationCanvas;
 
   QRect m_viewPort; /* viewport, in world coordinates */
@@ -257,6 +263,7 @@ private:
 
   bool m_freeMoving;
   bool m_hoverFocus;
+  bool m_smoothDisplay;
 };
 
 #endif

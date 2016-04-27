@@ -62,6 +62,8 @@ void ZDvidReader::init()
 
 //  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
 
+  m_readingTime = 0;
+
   m_statusCode = 0;
 }
 
@@ -1305,7 +1307,8 @@ ZArray* ZDvidReader::readLabels64(
       timer.start();
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
-      LINFO() << "label reading time: " << timer.elapsed();
+      m_readingTime = timer.elapsed();
+      LINFO() << "label reading time: " << m_readingTime;
 //      return array;
 
       mylib::Dimn_Type arrayDims[3];
@@ -1370,12 +1373,14 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
 #if 0
   if (m_service.get() != NULL) {
     try {
+#if 0
       ZString endpoint = "bodies/sparsevol/";
       endpoint.appendNumber(bodyId);
       m_service->custom_request(
             endpoint, libdvid::BinaryDataPtr(), libdvid::HEAD);
       return true;
-//      return m_service->body_exists(m_dvidTarget.getBodyLabelName(), bodyId);
+#endif
+      return m_service->body_exists(m_dvidTarget.getBodyLabelName(), bodyId);
     } catch (libdvid::DVIDException &e) {
       m_statusCode = e.getStatus();
       std::cout << e.what() << std::endl;
@@ -1383,7 +1388,7 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
     }
   }
 #else
-  return hasSparseVolume(bodyId);
+  return hasCoarseSparseVolume(bodyId);
 #endif
 
   return false;
@@ -1451,12 +1456,28 @@ bool ZDvidReader::hasSparseVolume(uint64_t bodyId) const
 
 bool ZDvidReader::hasCoarseSparseVolume(uint64_t bodyId) const
 {
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZDvidBufferReader reader;
+  reader.readPartial(
+        dvidUrl.getCoarseSparsevolUrl(
+          bodyId, getDvidTarget().getBodyLabelName()).c_str(),
+        12, true);
+  QByteArray byteArray = reader.getBuffer();
+  if (byteArray.size() >= 12) {
+    return *((uint32_t*) (byteArray.data() + 8)) > 0;
+  }
+
+  return false;
+
+#if 0
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   return  bufferReader.isReadable(
         dvidUrl.getCoarseSparsevolUrl(
           bodyId, getDvidTarget().getBodyLabelName()).c_str());
+#endif
 }
 
 bool ZDvidReader::hasBodyInfo(uint64_t bodyId) const
@@ -1783,7 +1804,7 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
   bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
   const QByteArray &buffer = bufferReader.getBuffer();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << buffer.constData() << std::endl;
 #endif
 
@@ -1810,6 +1831,13 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
   annotation.setBodyId(bodyId);
 
   return annotation;
+}
+
+ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonObject(url.getBodyAnnotationUrl(bodyId).c_str());
 }
 
 ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const

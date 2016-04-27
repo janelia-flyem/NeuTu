@@ -205,7 +205,16 @@ void ZDvidLabelSlice::forceUpdate()
 void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
-  m_reader.open(target);
+#ifdef _DEBUG_2
+  m_dvidTarget.set("emdata1.int.janelia.org", "e8c1", 8600);
+  m_dvidTarget.setLabelBlockName("labels3");
+#endif
+  m_reader.open(m_dvidTarget);
+}
+
+int64_t ZDvidLabelSlice::getReadingTime() const
+{
+  return m_reader.getReadingTime();
 }
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
@@ -222,7 +231,9 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     //    if (reader.open(getDvidTarget())) {
     QRect viewPort = viewParam.getViewPort();
 
-    std::cout << "Deleting " << m_labelArray << std::endl;
+    if (NeutubeConfig::GetVerboseLevel() >= 1) {
+      std::cout << "Deleting label array:" << m_labelArray << std::endl;
+    }
 
     ZIntCuboid box;
     box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
