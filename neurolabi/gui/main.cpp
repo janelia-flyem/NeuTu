@@ -201,13 +201,26 @@ int main(int argc, char *argv[])
   }
 
 #ifdef _FLYEM_
-  QFileInfo configFileInfo(configPath);
-  QString flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
-  QFileInfo flyemConfigFileInfo(flyemConfigPath);
-  if (!flyemConfigFileInfo.isAbsolute()) {
-    flyemConfigPath =
-        configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (flyemConfigPath.isEmpty()) {
+    QFileInfo configFileInfo(configPath);
+
+    QString defaultFlyemConfigPath = QFileInfo(
+          QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+        absoluteFilePath();
+
+    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+    if (flyemConfigPath.isEmpty()) {
+      flyemConfigPath = defaultFlyemConfigPath;
+    } else {
+      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+      if (!flyemConfigFileInfo.isAbsolute()) {
+        flyemConfigPath =
+            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+      }
+    }
   }
+
   GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
 
   if (config.GetNeuTuServer().isEmpty()) {

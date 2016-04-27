@@ -20,11 +20,17 @@ void FlyEmSettingDialog::init()
 {
   loadSetting();
   connectSignalSlot();
+  ui->configPushButton->hide();
 }
 
 void FlyEmSettingDialog::loadSetting()
 {
-  ui->configLineEdit->setText(NeutubeConfig::GetFlyEmConfigPath());
+  QString configPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (!configPath.isEmpty()) {
+    ui->configLineEdit->setText(configPath);
+  } else {
+    ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
+  }
   ui->servicelineEdit->setText(NeutubeConfig::GetNeuTuServer());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");

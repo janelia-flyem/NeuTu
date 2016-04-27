@@ -29,6 +29,10 @@ public:
 
   void loadConfig(const std::string &filePath);
 
+  std::string getConfigPath() const {
+    return m_configPath;
+  }
+
   inline const std::vector<ZDvidTarget> &getDvidRepo() const {
     return m_dvidRepo;
   }
@@ -58,7 +62,7 @@ private:
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
 #endif
-//  std::string m_configPath;
+  std::string m_configPath;
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;

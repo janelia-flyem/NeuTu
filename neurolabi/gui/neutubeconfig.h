@@ -356,10 +356,6 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
 
-#if defined(_FLYEM_)
-  ZFlyEmConfig m_flyemConfig;
-#endif
-
   ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
