@@ -1,6 +1,7 @@
 #include "zdvidsparsestack.h"
 #include <QImage>
 #include <QtConcurrentRun>
+#include <QMutexLocker>
 
 #include "zdvidinfo.h"
 #include "zdvidreader.h"
@@ -18,6 +19,9 @@ ZDvidSparseStack::~ZDvidSparseStack()
 #ifdef _DEBUG_
   std::cout << "Deleting dvid sparsestack: " << ": " << getSource() << std::endl;
 #endif
+
+  m_cancelingValueFill = true;
+  m_futureMap.waitForFinished();
 }
 
 void ZDvidSparseStack::init()
@@ -26,6 +30,7 @@ void ZDvidSparseStack::init()
   m_type = GetType();
   m_isValueFilled = false;
   m_label = 0;
+  m_cancelingValueFill = false;
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -136,6 +141,11 @@ QString ZDvidSparseStack::getLoadBodyThreadId() const
   return "ZDvidSparseStack::loadBodyAsync";
 }
 
+QString ZDvidSparseStack::getFillValueThreadId() const
+{
+  return "ZDvidSparseStack::fillValue";
+}
+
 void ZDvidSparseStack::downloadBodyMask()
 {
   if (m_dvidReader.isReady()) {
@@ -195,8 +205,35 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
   return m_sparseStack.getDownsampleInterval();
 }
 
-bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
+void ZDvidSparseStack::runFillValueFunc()
 {
+  runFillValueFunc(ZIntCuboid());
+}
+
+void ZDvidSparseStack::cancelFillValueFunc()
+{
+  m_cancelingValueFill = true;
+}
+
+void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box)
+{
+  if (!m_isValueFilled) {
+    QString threadId = getFillValueThreadId();
+    if (!m_futureMap.isAlive(threadId)) {
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZDvidSparseStack::fillValue, box, true);
+      m_futureMap[threadId] = future;
+    }
+  }
+}
+
+bool ZDvidSparseStack::fillValue(
+    const ZIntCuboid &box, bool cancelable)
+{
+  if (!cancelable) {
+    m_cancelingValueFill = true;
+  }
+
   if (m_isValueFilled) {
     return true;
   }
@@ -206,6 +243,8 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
   ZObject3dScan *objMask = getObjectMask();
   if (objMask != NULL) {
     if (!objMask->isEmpty()) {
+      QMutexLocker locker(&m_fillValueMutex);
+
       qDebug() << "Downloading grayscale ...";
       //    tic();
       ZDvidInfo dvidInfo;
@@ -223,6 +262,11 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
 
 
       for (size_t s = 0; s < stripeNumber; ++s) {
+        if (cancelable && m_cancelingValueFill) {
+          m_cancelingValueFill = false;
+          return blockCount > 0;
+        }
+
         const ZObject3dStripe &stripe = blockObj.getStripe(s);
         int segmentNumber = stripe.getSegmentNumber();
         int y = stripe.getY();
@@ -282,12 +326,20 @@ bool ZDvidSparseStack::fillValue(const ZIntCuboid &box)
     }
   }
 
+  if (box.isEmpty()) {
+    m_isValueFilled =  true;
+  }
+
+  if (!m_isValueFilled) {
+    runFillValueFunc();
+  }
+
   return (blockCount > 0);
 }
 
-bool ZDvidSparseStack::fillValue()
+bool ZDvidSparseStack::fillValue(bool cancelable)
 {
-  return fillValue(ZIntCuboid());
+  return fillValue(ZIntCuboid(), cancelable);
 #if 0
 //  bool changed = false;
   int blockCount = 0;

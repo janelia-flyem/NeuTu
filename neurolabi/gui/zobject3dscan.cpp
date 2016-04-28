@@ -109,7 +109,7 @@ void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 #endif
 
   if (objArray.size() + startLabel > 256) {
-    Translate_Stack(stack, GREY16, 1);
+    C_Stack::translate(stack, GREY16, 1);
   }
   for (size_t i = 0; i < objArray.size(); ++i) {
     objArray[i].drawStack(stack, startLabel  + i, offset);

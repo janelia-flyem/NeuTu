@@ -1670,6 +1670,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       if (body == NULL) {
         ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = reader.readDvidSparseStackAsync(bodyId);
+
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setColor(labelSlice->getColor(
@@ -1681,6 +1682,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         //          body->setLabel(bodyId);
         //        body->getObjectMask()->setLabel(bodyId);
       }
+
+      body->runFillValueFunc();
 
       m_splitProject.setBodyId(bodyId);
       ZOUT(LINFO(), 3) << "Removing ROI";
@@ -1881,17 +1884,14 @@ void ZFlyEmProofMvc::exitSplit()
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 
-    /*
+
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
-      body->setVisible(false);
+      body->cancelFillValueFunc();
     }
-
-    getView()->redrawObject();
-    */
 
     m_paintLabelWidget->hide();
 //    m_latencyLabelWidget->show();

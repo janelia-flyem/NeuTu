@@ -18145,7 +18145,7 @@ void ZTest::test(MainWindow *host)
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 0
+#if 1
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
   ZIntHistogram *hist = C_Stack::hist(stack, NULL);
   hist->print();
@@ -19974,7 +19974,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 

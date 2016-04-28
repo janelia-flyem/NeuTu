@@ -129,7 +129,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
   }
 
   if (C_Stack::kind(stackData) != GREY) {
-    Translate_Stack(stackData, GREY, 1);
+    C_Stack::translate(stackData, GREY, 1);
   }
 
   advanceProgress(0.05);
@@ -201,7 +201,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     Swc_Tree *subtree = New_Swc_Tree();
     subtree->root = Make_Virtual_Swc_Tree_Node();
 
-    Stack *objstack = Copy_Stack(stackData);
+    Stack *objstack = C_Stack::clone(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
 
     Translate_Stack(objstack, GREY, 1);
@@ -572,7 +572,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     Swc_Tree *subtree = New_Swc_Tree();
     subtree->root = Make_Virtual_Swc_Tree_Node();
 
-    Stack *objstack = Copy_Stack(stackData);
+    Stack *objstack = C_Stack::clone(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
 
     //Translate_Stack(objstack, GREY, 1);
