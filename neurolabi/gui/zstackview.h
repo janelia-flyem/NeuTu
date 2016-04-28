@@ -227,6 +227,9 @@ public:
 
   void updateViewBox();
 
+  void zoomTo(int x, int y, int z);
+  void zoomTo(const ZIntPoint &pt);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:

@@ -1,5 +1,5 @@
-#ifndef ZSTACKDOCMENUFACTORY_H
-#define ZSTACKDOCMENUFACTORY_H
+#ifndef ZMENUFACTORY_H
+#define ZMENUFACTORY_H
 
 class QMenu;
 class QAction;
@@ -8,23 +8,12 @@ class ZStackPresenter;
 class QWidget;
 class Z3DWindow;
 
-#include "neutube.h"
-#include "zactionactivator.h"
 #include "zactionfactory.h"
 
-/*!
- * \brief Class of creating menus for ZStackDoc
- */
-class ZStackDocMenuFactory
+class ZMenuFactory
 {
 public:
-  ZStackDocMenuFactory();
-  virtual ~ZStackDocMenuFactory() {}
-
-  inline void setSingleSwcNodeActionActivator(
-      ZSingleSwcNodeActionActivator *activator) {
-    m_singleSwcNodeActionActivator = activator;
-  }
+  ZMenuFactory();
 
   void setAdminState(bool state) { m_isAdmin = state; }
   bool isAdmin() const { return m_isAdmin; }
@@ -59,8 +48,7 @@ private:
   void init();
 
 protected:
-  ZSingleSwcNodeActionActivator *m_singleSwcNodeActionActivator;
   bool m_isAdmin;
 };
 
-#endif // ZSTACKDOCMENUFACTORY_H
+#endif // ZMENUFACTORY_H

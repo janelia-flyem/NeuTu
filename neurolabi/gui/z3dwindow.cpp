@@ -81,6 +81,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemtodoitem.h"
+#include "zactionlibrary.h"
 
 class Sleeper : public QThread
 {
@@ -107,7 +108,6 @@ Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
 
 Z3DMainWindow::~Z3DMainWindow()
 {
-
 }
 
 void Z3DMainWindow::closeEvent(QCloseEvent *event)
@@ -644,6 +644,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
 Z3DWindow::~Z3DWindow()
 {
   cleanup();
+
+  delete m_actionLibrary;
 }
 
 void Z3DWindow::createStatusBar()
@@ -1074,6 +1076,26 @@ void Z3DWindow::setWindowSize()
   resize(width+500, height);   //500 for dock widgets
 }
 
+QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ZActionFactory::ACTION_DELETE_SELECTED:
+    if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(removeSelectedObject()));
+    } else {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(deleteSelectedSwcNode()));
+    }
+    break;
+  default:
+    break;
+  }
+
+  return action;
+}
+
 void Z3DWindow::createActions()
 {
 #ifdef _DEBUG_
@@ -1088,6 +1110,8 @@ void Z3DWindow::createActions()
   m_redoAction->setIcon(QIcon(":/images/redo.png"));
   m_redoAction->setShortcuts(QKeySequence::Redo);
   */
+
+  m_actionLibrary = new ZActionLibrary(this);
 
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
   m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);

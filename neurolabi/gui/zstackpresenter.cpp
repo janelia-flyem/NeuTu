@@ -2821,6 +2821,9 @@ void ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_STACK_INC_SLICE_FAST:
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
     break;
+  case ZStackOperator::OP_ZOOM_TO:
+    buddyView()->zoomTo(currentStackPos.toIntPoint());
+    break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {
 //    QPointF pos = mapFromGlobalToStack(QCursor::pos());

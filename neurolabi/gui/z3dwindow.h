@@ -18,6 +18,7 @@
 #include "zactionactivator.h"
 #include "z3dvolumeraycasterrenderer.h"
 #include "zsharedpointer.h"
+#include "zactionfactory.h"
 //#include "zstackviewparam.h"
 
 
@@ -50,6 +51,7 @@ class Z3DWindow;
 class ZRect2d;
 //class Z3DRendererBase;
 class ZROIWidget;
+class ZActionLibrary;
 
 class Z3DTabWidget : public QTabWidget
 {
@@ -244,6 +246,8 @@ public: //Bounding box
 public:
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
+
+  QAction* getAction(ZActionFactory::EAction item);
 
 public:
   void setROIs(size_t n);
@@ -443,9 +447,13 @@ private:
   // menu
   std::map<QString, QMenu*> m_contextMenuGroup;
   QMenu *m_mergedContextMenu;
+  QMenu *m_contextMenu;
 
   QMenu *m_viewMenu;
   QMenu *m_editMenu;
+
+  ZActionLibrary *m_actionLibrary;
+
   QAction *m_removeSelectedObjectsAction;
   QAction *m_openVolumeZoomInViewAction;
   QAction *m_exitVolumeZoomInViewAction;

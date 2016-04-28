@@ -36,6 +36,7 @@
 #include "zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
+#include "zstackviewlocator.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -2129,6 +2130,36 @@ void ZStackView::exportObjectMask(
       delete stack;
     }
   }
+}
+
+void ZStackView::zoomTo(const ZIntPoint &pt)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStackView::zoomTo(int x, int y, int z)
+{
+  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
+  ZStackViewLocator locator;
+  locator.setCanvasSize(imageWidget()->canvasSize().width(),
+                        imageWidget()->canvasSize().height());
+
+  QRect newViewPort = locator.getRectViewPort(x, y, width);
+
+  if (newViewPort.width() < viewPort.width()) {
+    double zoomRatio =
+        locator.getZoomRatio(newViewPort.width(), newViewPort.height());
+    imageWidget()->setZoomRatio(zoomRatio);
+  }
+
+  setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
 }
 
 void ZStackView::increaseZoomRatio()
