@@ -1051,6 +1051,10 @@ void ZFlyEmProofMvc::customInit()
   connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
 
+  // connections to protocols
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+
   /*
   QPushButton *button = new QPushButton(this);
   button->setCheckable(true);
@@ -2255,6 +2259,11 @@ void ZFlyEmProofMvc::openSequencer()
 {
   m_bodyInfoDlg->show();
   m_bodyInfoDlg->raise();
+}
+
+void ZFlyEmProofMvc::openProtocol()
+{
+  m_protocolSwitcher->openProtocolRequested();
 }
 
 void ZFlyEmProofMvc::openTodo()

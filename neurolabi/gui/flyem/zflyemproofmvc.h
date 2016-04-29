@@ -175,6 +175,7 @@ public slots:
 
   void loadBookmark();
   void openSequencer();
+  void openProtocol();
   void openTodo();
 
   void checkSelectedBookmark(bool checking);

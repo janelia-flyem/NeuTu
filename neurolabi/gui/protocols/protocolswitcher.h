@@ -3,6 +3,9 @@
 
 #include <QObject>
 
+#include "dvid/zdvidtarget.h"
+
+
 class ProtocolSwitcher : public QObject
 {
     Q_OBJECT
@@ -12,6 +15,8 @@ public:
 signals:
 
 public slots:
+    void openProtocolRequested();
+    void dvidTargetChanged(ZDvidTarget target);
 };
 
 #endif // PROTOCOLSWITCHER_H

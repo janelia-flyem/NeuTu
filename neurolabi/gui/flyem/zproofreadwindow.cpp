@@ -268,7 +268,7 @@ void ZProofreadWindow::createMenu()
   m_openProtocolsAction = new QAction("Open Protocols", this);
   m_openProtocolsAction->setIcon(QIcon(":/images/protocol.png"));
   connect(m_openProtocolsAction, SIGNAL(triggered()),
-          m_mainMvc, SLOT(openSequencer()));
+          m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
   menuBar()->addMenu(m_toolMenu);
