@@ -622,7 +622,8 @@ HEADERS += mainwindow.h \
     dialogs/flyemsettingdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
-    zmenufactory.h
+    zmenufactory.h \
+    zcrosshair.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1097,7 +1098,8 @@ SOURCES += main.cpp \
     dialogs/flyemsettingdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
-    zmenufactory.cpp
+    zmenufactory.cpp \
+    zcrosshair.cpp
 
 OTHER_FILES += \
     extlib.pri \

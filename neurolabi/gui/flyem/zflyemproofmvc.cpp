@@ -359,7 +359,6 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           doc, SLOT(showSynapse(bool)));
   connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showTodo(bool)));
-
   setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -414,6 +413,9 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
+  connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool)),
+          getCompleteDocument(),
+          SLOT(executeAddTodoItemCommand(int,int,int,bool)));
   setWindowSignalSlot(m_bodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {

@@ -2153,7 +2153,8 @@ void ZStackView::zoomTo(int x, int y, int z)
 
   QRect newViewPort = locator.getRectViewPort(x, y, width);
 
-  if (newViewPort.width() < viewPort.width()) {
+  if (newViewPort.width() < viewPort.width() &&
+      newViewPort.height() < viewPort.height()) {
     double zoomRatio =
         locator.getZoomRatio(newViewPort.width(), newViewPort.height());
     imageWidget()->setZoomRatio(zoomRatio);

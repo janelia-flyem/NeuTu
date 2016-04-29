@@ -225,22 +225,6 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
-public: //Commands
-  void executeRemoveSynapseCommand();
-  void executeLinkSynapseCommand();
-  void executeUnlinkSynapseCommand();
-  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
-  void executeMoveSynapseCommand(const ZIntPoint &dest);
-
-  void executeRemoveBookmarkCommand();
-  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
-  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
-  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
-
-  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
-  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
-  void executeRemoveTodoItemCommand();
-
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -255,6 +239,24 @@ signals:
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
+
+public slots: //Commands
+  void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
+
+  void executeAddTodoItemCommand(int x, int y, int z, bool checked);
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeRemoveTodoItemCommand();
+
 
 public slots:
   void updateDvidLabelObject();

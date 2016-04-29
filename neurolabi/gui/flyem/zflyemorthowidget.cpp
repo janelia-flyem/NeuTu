@@ -210,6 +210,11 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
     break;
   }
 
+  /*
+  m_xyMvc->updateCrossHair(m_xzMvc->getView()->getZ(NeuTube::COORD_STACK),
+                           m_yzMvc->getView()->getZ(NeuTube::COORD_STACK));
+                           */
+
   connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));

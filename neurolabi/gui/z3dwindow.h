@@ -52,6 +52,7 @@ class ZRect2d;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
+class ZMenuFactory;
 
 class Z3DTabWidget : public QTabWidget
 {
@@ -289,6 +290,7 @@ signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
+  void addingTodoMarker(int x, int y, int z, bool checked);
   
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -396,6 +398,8 @@ public slots:
   void locatePunctumIn2DView();
   void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
+  void addTodoMarker();
+  void addDoneMarker();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -453,6 +457,7 @@ private:
   QMenu *m_editMenu;
 
   ZActionLibrary *m_actionLibrary;
+  ZMenuFactory *m_menuFactory;
 
   QAction *m_removeSelectedObjectsAction;
   QAction *m_openVolumeZoomInViewAction;

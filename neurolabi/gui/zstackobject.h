@@ -82,7 +82,8 @@ public:
     TYPE_3D_CUBE,
     TYPE_DVID_ANNOTATION,
     TYPE_FLYEM_TODO_ITEM,
-    TYPE_FLYEM_TODO_LIST
+    TYPE_FLYEM_TODO_LIST,
+    TYPE_CROSS_HAIR
   };
 
   enum Palette_Color {

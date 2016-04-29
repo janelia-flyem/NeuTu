@@ -226,8 +226,7 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     QList<ZActionFactory::EAction> actionList;
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+    if (doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY) {
       if (doc->getSelectedSwcNodeList().size() == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

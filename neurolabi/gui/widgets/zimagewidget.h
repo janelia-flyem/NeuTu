@@ -185,6 +185,9 @@ public:
     m_smoothDisplay = on;
   }
 
+  void showCrossHair(bool on);
+  void updateCrossHair(int x, int y);
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -238,6 +241,7 @@ private:
   QSize getMaskSize() const;
   void paintObject();
   void paintZoomHint();
+  void paintCrossHair();
 
 private:
   ZImage *m_image;
@@ -264,6 +268,8 @@ private:
   bool m_freeMoving;
   bool m_hoverFocus;
   bool m_smoothDisplay;
+  bool m_showingCrossHair;
+  QPoint m_hairCenter;
 };
 
 #endif

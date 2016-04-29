@@ -2341,6 +2341,12 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofDoc::executeAddTodoItemCommand(
+    int x, int y, int z, bool checked)
+{
+  executeAddTodoItemCommand(ZIntPoint(x, y, z), checked);
+}
+
 void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked)
 {
   ZFlyEmToDoItem item(pt);

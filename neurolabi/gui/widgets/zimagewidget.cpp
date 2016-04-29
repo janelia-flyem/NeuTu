@@ -941,6 +941,11 @@ void ZImageWidget::paintObject()
 
 }
 
+void ZImageWidget::showCrossHair(bool on)
+{
+  m_showingCrossHair = on;
+}
+
 void ZImageWidget::paintZoomHint()
 {
   QPainter painter;

@@ -501,7 +501,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
-    obj2.downsampleMax(intv, intv, intv);
+    obj2.downsample(intv, intv, intv);
     stack = obj2.toStackObject();
   } else {
     stack = obj.toStackObject();
