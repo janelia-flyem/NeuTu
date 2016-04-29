@@ -615,6 +615,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofdoccommand.h \
     flyem/zneutuservice.h \
     dialogs/flyemsettingdialog.h \
+    protocols/protocolswitcher.h \
     widgets/zcolorlabel.h
 
 FORMS += dialogs/settingdialog.ui \
@@ -1083,6 +1084,7 @@ SOURCES += main.cpp \
     flyem/zflyemproofdoccommand.cpp \
     flyem/zneutuservice.cpp \
     dialogs/flyemsettingdialog.cpp \
+    protocols/protocolswitcher.cpp \
     widgets/zcolorlabel.cpp
 
 OTHER_FILES += \

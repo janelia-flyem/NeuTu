@@ -265,6 +265,12 @@ void ZProofreadWindow::createMenu()
   connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
   m_toolMenu->addAction(m_openTodoAction);
 
+  m_openProtocolsAction = new QAction("Open Protocols", this);
+  m_openProtocolsAction->setIcon(QIcon(":/images/protocol.png"));
+  connect(m_openProtocolsAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(openSequencer()));
+  m_toolMenu->addAction(m_openProtocolsAction);
+
   menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);
@@ -328,6 +334,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
   m_toolBar->addAction(m_openTodoAction);
+  m_toolBar->addAction(m_openProtocolsAction);
 
   addSynapseActionToToolbar();
 }
