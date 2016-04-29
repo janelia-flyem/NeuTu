@@ -11,6 +11,7 @@
 #include "zstackpresenter.h"
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
+#include "zcrosshair.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -209,6 +210,12 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 //    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
     break;
   }
+
+  int z = m_xyMvc->getView()->getZ(NeuTube::COORD_STACK);
+  int y = m_xzMvc->getView()->getZ(NeuTube::COORD_STACK);
+  int x = m_yzMvc->getView()->getZ(NeuTube::COORD_STACK);
+
+  getDocument()->getCrossHair()->setCenter(x, y, z);
 
   /*
   m_xyMvc->updateCrossHair(m_xzMvc->getView()->getZ(NeuTube::COORD_STACK),

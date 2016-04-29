@@ -616,7 +616,7 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   qDebug() << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
 #endif

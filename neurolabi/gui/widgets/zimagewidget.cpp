@@ -860,7 +860,7 @@ void ZImageWidget::paintObject()
     ZPainter painter;
     ZStackObjectPainter paintHelper;
 
-    painter.setRange(viewPort());
+    painter.setCanvasRange(viewPort());
 
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;

@@ -23,6 +23,8 @@ public:
     return m_center;
   }
 
+  void setCenter(double x, double y, double z);
+
 private:
   void init();
 

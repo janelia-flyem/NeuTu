@@ -187,6 +187,11 @@ void ZPainter::setZOffset(int z)
   m_z = z;
 }
 
+QRectF ZPainter::getCanvasRange() const
+{
+  return m_canvasRange;
+}
+
 void ZPainter::drawImage(
     const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect)
 {

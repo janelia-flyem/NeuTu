@@ -157,6 +157,9 @@ public: //attributes
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 
+  template <typename T>
+  T* getObject(const std::string &source) const;
+
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
   bool hasPuncta() const;
@@ -1529,6 +1532,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template <typename T>
+T* ZStackDoc::getObject(const std::string &source) const
+{
+  return dynamic_cast<T*>(getObject(T::GetType(), source));
 }
 
 #if 0

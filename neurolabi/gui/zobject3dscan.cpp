@@ -817,7 +817,7 @@ void ZObject3dScan::canonize()
   if (!isEmpty() && !isCanonized()) {
     sort();
 
-    std::cout << "Sorting done in canozing" << std::endl;
+    ZOUT(std::cout, 3) << "Sorting done in canozing" << std::endl;
 
 #ifdef _DEBUG_2
   int count = 0;
