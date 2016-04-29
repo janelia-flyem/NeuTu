@@ -17,6 +17,13 @@ signals:
 public slots:
     void openProtocolRequested();
     void dvidTargetChanged(ZDvidTarget target);
+
+private slots:
+
+
+private:
+    ZDvidTarget m_currentDvidTarget;
+
 };
 
 #endif // PROTOCOLSWITCHER_H

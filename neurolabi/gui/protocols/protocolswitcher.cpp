@@ -5,17 +5,30 @@
 
 #include "dvid/zdvidtarget.h"
 
-
+/*
+ * this class manages protocols at the highest level; it loads,
+ * unloads, starts, ends, and generally manages the user's interaction
+ * with protocols; it's not a UI component itself, but it knows
+ * which dialogs and windows to open at any given time
+ */
 ProtocolSwitcher::ProtocolSwitcher(QObject *parent) : QObject(parent)
 {
 
 }
 
 void ProtocolSwitcher::openProtocolRequested() {
-    std::cout << "prsw: open requested" << std::endl;
+
+    // main logic
+
 }
 
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
-    std::cout << "prsw: dvid target changed" << std::endl;
+    m_currentDvidTarget = target;
+
+
+    // probably should check for active protocol here and start loading
+    //  even before user decides to open the window?
+
+
 }
 
