@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include "protocolchooser.h"
+
 #include "dvid/zdvidtarget.h"
 
 /*
@@ -11,15 +13,27 @@
  * with protocols; it's not a UI component itself, but it knows
  * which dialogs and windows to open at any given time
  */
-ProtocolSwitcher::ProtocolSwitcher(QObject *parent) : QObject(parent)
+ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
 {
-
+    m_parent = parent;
 }
 
 void ProtocolSwitcher::openProtocolRequested() {
 
-    // main logic
+    std::cout << "entering prsw::openProtocolRequested()"<< std::endl;
 
+    // main logic:
+    if (m_currentDvidTarget.isValid()) {
+        // testing
+        m_chooser = new ProtocolChooser(m_parent);
+        m_chooser->show();
+        m_chooser->raise();
+
+    }
+
+
+
+    std::cout << "leaving prsw::openProtocolRequested()"<< std::endl;
 }
 
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {

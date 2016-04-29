@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#include "protocolchooser.h"
+
 #include "dvid/zdvidtarget.h"
 
 
@@ -10,7 +12,7 @@ class ProtocolSwitcher : public QObject
 {
     Q_OBJECT
 public:
-    explicit ProtocolSwitcher(QObject *parent = 0);
+    explicit ProtocolSwitcher(QWidget *parent = 0);
 
 signals:
 
@@ -22,7 +24,9 @@ private slots:
 
 
 private:
+    QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
+    ProtocolChooser * m_chooser;
 
 };
 

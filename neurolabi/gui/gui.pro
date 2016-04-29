@@ -616,6 +616,7 @@ HEADERS += mainwindow.h \
     flyem/zneutuservice.h \
     dialogs/flyemsettingdialog.h \
     protocols/protocolswitcher.h \
+    protocols/protocolchooser.h \
     widgets/zcolorlabel.h
 
 FORMS += dialogs/settingdialog.ui \
@@ -685,6 +686,7 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
+    protocols/protocolchooser.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
@@ -1085,6 +1087,7 @@ SOURCES += main.cpp \
     flyem/zneutuservice.cpp \
     dialogs/flyemsettingdialog.cpp \
     protocols/protocolswitcher.cpp \
+    protocols/protocolchooser.cpp \
     widgets/zcolorlabel.cpp
 
 OTHER_FILES += \
