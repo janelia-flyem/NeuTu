@@ -27,7 +27,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
   ZPoint shiftedCenter = getCenter();
   shiftedCenter.shiftSliceAxis(sliceAxis);
 
-  QPen pen(m_color, 1);
+  QPen pen(m_color, 2);
   pen.setStyle(Qt::DotLine);
   pen.setCosmetic(m_usingCosmeticPen);
 

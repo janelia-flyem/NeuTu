@@ -18145,7 +18145,7 @@ void ZTest::test(MainWindow *host)
   tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/fork_2d.tif");
   ZIntHistogram *hist = C_Stack::hist(stack, NULL);
   hist->print();
@@ -19990,6 +19990,19 @@ void ZTest::test(MainWindow *host)
   stackArray[0]->save(GET_TEST_DATA_DIR + "/test.tif");
   stackArray[1]->save(GET_TEST_DATA_DIR + "/test2.tif");
 
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.swc");
+  tree.updateIterator();
+  for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+    tn->node.x *= -1;
+    tn->node.y *= -1;
+    tn->node.z *= -1;
+  }
+
+  tree.save("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.flip.swc");
 #endif
 
   std::cout << "Done." << std::endl;

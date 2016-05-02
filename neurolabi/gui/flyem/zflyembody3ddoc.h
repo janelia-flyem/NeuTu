@@ -41,7 +41,7 @@ public:
 
   public:
     BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
-    m_updateFlag(0) {}
+    m_updateFlag(0), m_resLevel(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
       m_action(action), m_bodyId(bodyId) {}
 
@@ -73,6 +73,14 @@ public:
       return m_updateFlag;
     }
 
+    int getResLevel() {
+      return m_resLevel;
+    }
+
+    void setResLevel(int level) {
+      m_resLevel = level;
+    }
+
     void print() const;
 
   public:
@@ -86,8 +94,7 @@ public:
     QColor m_bodyColor;
 //    bool m_refreshing;
     TUpdateFlag m_updateFlag;
-
-
+    int m_resLevel;
   };
 
   enum EBodyType {

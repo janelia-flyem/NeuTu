@@ -436,7 +436,7 @@ void ZStackView::updateViewBox()
 }
 
 void ZStackView::updateChannelControl()
-{
+{  
   QLayoutItem *child;
   while ((child = m_channelControlLayout->takeAt(0)) != 0) {
     if (child->widget()) {
@@ -462,9 +462,11 @@ void ZStackView::updateChannelControl()
       for (int ch=0; ch<stack->channelNumber(); ++ch) {
         QWidget *checkWidget = m_chVisibleState[ch]->createWidget();
         checkWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
-        m_channelControlLayout->addWidget(
-              channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
+          m_channelControlLayout->addWidget(
+                channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        }
         ZClickableColorLabel *colorWidget = qobject_cast<ZClickableColorLabel*>
             (channelColors[ch]->createWidget());
         colorWidget->setMinimumHeight(20);
@@ -472,14 +474,19 @@ void ZStackView::updateChannelControl()
         colorWidget->setMaximumHeight(20);
         colorWidget->setMaximumWidth(30);
         colorWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
-        m_channelControlLayout->addSpacing(20);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
+          m_channelControlLayout->addSpacing(20);
+        }
+
         connect(channelColors[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
         connect(m_chVisibleState[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
       }
-      m_channelControlLayout->addStretch(1);
+      if (!m_channelControlLayout->isEmpty()) {
+        m_channelControlLayout->addStretch(1);
+      }
     }
   }
 }

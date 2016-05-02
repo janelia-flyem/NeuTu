@@ -223,11 +223,17 @@ int main(int argc, char *argv[])
 
   GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
 
+#ifdef _DEBUG_
+  std::cout << config.GetNeuTuServer().toStdString() << std::endl;
+#endif
+
   if (config.GetNeuTuServer().isEmpty()) {
     QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
     if (!neutuServer.isEmpty()) {
       GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
     }
+  } else {
+    GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
   }
 #endif
 

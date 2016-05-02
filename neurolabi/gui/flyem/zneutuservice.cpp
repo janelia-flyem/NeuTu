@@ -12,9 +12,15 @@ ZNeutuService::ZNeutuService(const std::string &server)
 
 void ZNeutuService::setServer(const std::string &server)
 {
-  m_server = server;
-  if (!ZString(server).startsWith("http://", ZString::CASE_INSENSITIVE)) {
-    m_server = "http://" + m_server;
+  if (server == ":") {
+    m_server = "";
+  } else {
+    m_server = server;
+  }
+  if (!m_server.empty()) {
+    if (!ZString(server).startsWith("http://", ZString::CASE_INSENSITIVE)) {
+      m_server = "http://" + m_server;
+    }
   }
   updateStatus();
 }

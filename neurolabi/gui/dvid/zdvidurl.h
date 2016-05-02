@@ -57,6 +57,9 @@ public:
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
   std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
+  std::string getSparsevolUrl(
+      uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
+
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
