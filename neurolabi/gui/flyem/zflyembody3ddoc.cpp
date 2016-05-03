@@ -14,6 +14,7 @@
 #include "zwidgetmessage.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zstring.h"
+#include "neutubeconfig.h"
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
@@ -61,14 +62,12 @@ void ZFlyEmBody3dDoc::clearGarbage()
   QMutexLocker locker(&m_garbageMutex);
 
   if (!m_garbageJustDumped) {
-#ifdef _DEBUG_
-    std::cout << "Clear garbage objects ..." << std::endl;
-#endif
+    ZOUT(LINFO(), 3) << "Clear garbage objects ...";
 
     for (QList<ZStackObject*>::iterator iter = m_garbageList.begin();
          iter != m_garbageList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      std::cout << "Deleting " << obj << std::endl;
+      ZOUT(LINFO(), 3)<< "Deleting " << obj;
       delete obj;
     }
 
