@@ -211,10 +211,10 @@ ZObject3dScan *ZDvidReader::readBody(
 
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
+//  reader.setService(m_service);
 #endif
 
-  reader.tryCompress(true);
+//  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
   reader.read(dvidUrl.getSparsevolUrl(bodyId, z, axis).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
