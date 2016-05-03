@@ -285,8 +285,8 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
                 //            owner = "unknown user";
                 emit messageGenerated(
                       ZWidgetMessage(
-                        QString("Failed to merge. Is the librarian sever (%2) ready?").
-                        arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
+                        QString("Failed to merge. Is the librarian sever (%1) ready?").
+                        arg(getDvidTarget().getSupervisor().c_str()),
                         NeuTube::MSG_ERROR));
               } else {
                 emit messageGenerated(
