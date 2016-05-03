@@ -39,6 +39,10 @@ public:
 
   std::string mapAddress(const std::string &address) const;
 
+  std::string getDefaultLibrarian() const {
+    return m_defaultLibrarian;
+  }
+
 #ifdef _QT_GUI_USED_
   ZNeutuService& getNeutuService() {
     return m_neutuService;
@@ -63,10 +67,12 @@ private:
   ZNeutuService m_neutuService;
 #endif
   std::string m_configPath;
+  std::string m_defaultLibrarian;
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;
   const static char *m_ipKey;
+  const static char *m_librarianKey;
 };
 
 #endif // ZFLYEMCONFIG_H

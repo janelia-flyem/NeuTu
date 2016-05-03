@@ -274,7 +274,16 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
-  setInfo(target.toJsonObject().dumpString(2).c_str());
+  std::string info = target.toJsonObject().dumpString(2);
+  if (target.isSupervised()) {
+    if (!target.getSupervisor().empty()) {
+      info += "\nLibrarian: " + target.getSupervisor();
+    } else {
+      info += "\nLibrarian: " + GET_FLYEM_CONFIG.getDefaultLibrarian();
+    }
+  }
+
+  setInfo(info.c_str());
 }
 
 

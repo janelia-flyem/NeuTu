@@ -1,4 +1,5 @@
 {
+  "librarian": "emdata2.int.janelia.org:9100",
   "dvid repo": [
     {
       "address": "hackathon.janelia.org",
@@ -230,7 +231,6 @@
       "body_label": "bodies",
       "label_block": "labels",
       "synapse": "mb6_synapses",
-      "librarian": "emdata2.int.janelia.org:9100",
       "roi": "mbroi",
       "user_name": ["zhaot", "yuy", "yy"]
     },
