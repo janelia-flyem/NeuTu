@@ -28,28 +28,31 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
   shiftedCenter.shiftSliceAxis(sliceAxis);
 
   QPen pen(m_color, 2);
-  pen.setStyle(Qt::DotLine);
+  pen.setStyle(Qt::SolidLine);
   pen.setCosmetic(m_usingCosmeticPen);
 
   painter.setPen(pen);
 
   QRectF canvasRange = painter.getCanvasRange();
 
+  /*
   painter.drawLine(QPointF(canvasRange.left(), shiftedCenter.y()),
                    QPointF(canvasRange.right(), shiftedCenter.y()));
   painter.drawLine(QPointF(shiftedCenter.x(), canvasRange.top()),
                    QPointF(shiftedCenter.x(), canvasRange.bottom()));
-  /*
+                   */
+
+  double gap = 10.0;
   painter.drawLine(QPointF(canvasRange.left(), shiftedCenter.y()),
-                   QPointF(shiftedCenter.x() - 2, shiftedCenter.y()));
-  painter.drawLine(QPointF(shiftedCenter.x() + 2, shiftedCenter.y()),
+                   QPointF(shiftedCenter.x() - gap, shiftedCenter.y()));
+  painter.drawLine(QPointF(shiftedCenter.x() + gap, shiftedCenter.y()),
                    QPointF(canvasRange.right(), shiftedCenter.y()));
 
   painter.drawLine(QPointF(shiftedCenter.x(), canvasRange.top()),
-                   QPointF(shiftedCenter.x(), shiftedCenter.y() - 2));
-  painter.drawLine(QPointF(shiftedCenter.x(), shiftedCenter.y() + 2),
+                   QPointF(shiftedCenter.x(), shiftedCenter.y() - gap));
+  painter.drawLine(QPointF(shiftedCenter.x(), shiftedCenter.y() + gap),
                    QPointF(shiftedCenter.x(), canvasRange.bottom()));
-                   */
+/*
 
   pen.setStyle(Qt::SolidLine);
 //  pen.setColor(QColor(200, 200, 200, 255));
@@ -60,6 +63,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                    QPointF(shiftedCenter.x() + 0.2, shiftedCenter.y()));
   painter.drawLine(QPointF(shiftedCenter.x(), shiftedCenter.y() - 0.2),
                    QPointF(shiftedCenter.x(), shiftedCenter.y() + 0.2));
+                   */
 
 }
 

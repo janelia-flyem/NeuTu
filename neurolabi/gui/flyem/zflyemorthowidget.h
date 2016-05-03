@@ -40,6 +40,7 @@ public slots:
   void locateMainWindow();
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
+  void setSegmentationVisible(bool on);
 
 private:
   void init(const ZDvidTarget &target);
