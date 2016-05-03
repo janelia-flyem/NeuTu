@@ -320,7 +320,7 @@ void Z3DCubeRenderer::render(Z3DEye eye)
     m_cubeShaderGrp.release();
 }
 
-void Z3DCubeRenderer::renderPicking(Z3DEye eye)
+void Z3DCubeRenderer::renderPicking(Z3DEye /*eye*/)
 {
 }
 

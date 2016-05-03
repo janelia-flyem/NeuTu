@@ -36,6 +36,7 @@
 #include "zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
+#include "zstackviewlocator.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -246,6 +247,10 @@ void ZStackView::connectSignalSlot()
 
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
+  connect(m_depthControl, SIGNAL(sliderPressed()),
+          this, SIGNAL(sliceSliderPressed()));
+  connect(m_depthControl, SIGNAL(sliderReleased()),
+          this, SIGNAL(sliceSliderReleased()));
 
 //  connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
@@ -431,7 +436,7 @@ void ZStackView::updateViewBox()
 }
 
 void ZStackView::updateChannelControl()
-{
+{  
   QLayoutItem *child;
   while ((child = m_channelControlLayout->takeAt(0)) != 0) {
     if (child->widget()) {
@@ -457,9 +462,11 @@ void ZStackView::updateChannelControl()
       for (int ch=0; ch<stack->channelNumber(); ++ch) {
         QWidget *checkWidget = m_chVisibleState[ch]->createWidget();
         checkWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
-        m_channelControlLayout->addWidget(
-              channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
+          m_channelControlLayout->addWidget(
+                channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        }
         ZClickableColorLabel *colorWidget = qobject_cast<ZClickableColorLabel*>
             (channelColors[ch]->createWidget());
         colorWidget->setMinimumHeight(20);
@@ -467,14 +474,19 @@ void ZStackView::updateChannelControl()
         colorWidget->setMaximumHeight(20);
         colorWidget->setMaximumWidth(30);
         colorWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
-        m_channelControlLayout->addSpacing(20);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
+          m_channelControlLayout->addSpacing(20);
+        }
+
         connect(channelColors[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
         connect(m_chVisibleState[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
       }
-      m_channelControlLayout->addStretch(1);
+      if (!m_channelControlLayout->isEmpty()) {
+        m_channelControlLayout->addStretch(1);
+      }
     }
   }
 }
@@ -611,7 +623,7 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   qDebug() << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
 #endif
@@ -2127,6 +2139,37 @@ void ZStackView::exportObjectMask(
   }
 }
 
+void ZStackView::zoomTo(const ZIntPoint &pt)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStackView::zoomTo(int x, int y, int z)
+{
+  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
+  ZStackViewLocator locator;
+  locator.setCanvasSize(imageWidget()->canvasSize().width(),
+                        imageWidget()->canvasSize().height());
+
+  QRect newViewPort = locator.getRectViewPort(x, y, width);
+
+  if (newViewPort.width() < viewPort.width() &&
+      newViewPort.height() < viewPort.height()) {
+    double zoomRatio =
+        locator.getZoomRatio(newViewPort.width(), newViewPort.height());
+    imageWidget()->setZoomRatio(zoomRatio);
+  }
+
+  setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+}
+
 void ZStackView::increaseZoomRatio()
 {
   increaseZoomRatio(0, 0, false);
@@ -2381,6 +2424,11 @@ void ZStackView::setView(const ZStackViewParam &param)
 
     redraw();
   }
+}
+
+void ZStackView::processDepthSliderValueChange()
+{
+  processDepthSliderValueChange(m_depthControl->value());
 }
 
 void ZStackView::processDepthSliderValueChange(int sliceIndex)

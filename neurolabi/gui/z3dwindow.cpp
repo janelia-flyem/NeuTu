@@ -81,6 +81,8 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemtodoitem.h"
+#include "zactionlibrary.h"
+#include "zmenufactory.h"
 
 class Sleeper : public QThread
 {
@@ -107,7 +109,6 @@ Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
 
 Z3DMainWindow::~Z3DMainWindow()
 {
-
 }
 
 void Z3DMainWindow::closeEvent(QCloseEvent *event)
@@ -627,6 +628,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   createDockWindows();
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
+  m_contextMenu = NULL;
 
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
@@ -644,6 +646,9 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
 Z3DWindow::~Z3DWindow()
 {
   cleanup();
+
+  delete m_actionLibrary;
+  delete m_menuFactory;
 }
 
 void Z3DWindow::createStatusBar()
@@ -1074,6 +1079,32 @@ void Z3DWindow::setWindowSize()
   resize(width+500, height);   //500 for dock widgets
 }
 
+QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ZActionFactory::ACTION_DELETE_SELECTED:
+    if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(removeSelectedObject()));
+    } else {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(deleteSelectedSwcNode()));
+    }
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_ITEM:
+    action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
+    action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
+    break;
+  default:
+    break;
+  }
+
+  return action;
+}
+
 void Z3DWindow::createActions()
 {
 #ifdef _DEBUG_
@@ -1088,6 +1119,9 @@ void Z3DWindow::createActions()
   m_redoAction->setIcon(QIcon(":/images/redo.png"));
   m_redoAction->setShortcuts(QKeySequence::Redo);
   */
+
+  m_actionLibrary = new ZActionLibrary(this);
+  m_menuFactory = new ZMenuFactory;
 
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
   m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
@@ -2326,6 +2360,12 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     return;
   }
 
+  m_contextMenu = m_menuFactory->makeContextMenu(this, m_contextMenu);
+  if (!m_contextMenu->isEmpty()) {
+    m_contextMenu->popup(m_canvas->mapToGlobal(pt));
+    return;
+  }
+
   QList<QAction*> actions;
 
   if (m_doc->hasSelectedSwc() > 0) {
@@ -2576,6 +2616,24 @@ void Z3DWindow::saveSelectedPunctaAs()
     QList<ZPunctum*> punctaList =
         m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
     ZPunctumIO::save(filename, punctaList.begin(), punctaList.end());
+  }
+}
+
+void Z3DWindow::addTodoMarker()
+{
+  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
+  if (swcNodeList.size() == 1) {
+    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
+    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), false);
+  }
+}
+
+void Z3DWindow::addDoneMarker()
+{
+  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
+  if (swcNodeList.size() == 1) {
+    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
+    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), true);
   }
 }
 

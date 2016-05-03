@@ -18628,7 +18628,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZWindowFactory factory;
   factory.setWindowTitle("Test");
 
@@ -19883,7 +19883,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("bodies121714_todo");
 #endif
 
-#if 1
+#if 0
   //Create pixmap
   ZPixmap pixmap(256, 256);
   pixmap.setOffset(0, 0);
@@ -19953,6 +19953,56 @@ void ZTest::test(MainWindow *host)
   service.updateStatus();
   std::cout << "Service normal?: " << service.isNormal() << std::endl;
 
+#endif
+
+#if 0
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+  std::cout << "Reading grayscale ..." << std::endl;
+
+  std::vector<int> blockCoords;
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+
+
+  libdvid::GrayscaleBlocks blocks = service.get_grayblocks("grayscale", blockCoords, 2);
+
+  std::cout << blocks.get_num_blocks() << std::endl;
+#endif
+
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  std::vector<ZStack*> stackArray =
+      reader.readGrayScaleBlock(ZIntPoint(100, 200, 300), dvidInfo, 2);
+
+  stackArray[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+  stackArray[1]->save(GET_TEST_DATA_DIR + "/test2.tif");
+
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.swc");
+  tree.updateIterator();
+  for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+    tn->node.x *= -1;
+    tn->node.y *= -1;
+    tn->node.z *= -1;
+  }
+
+  tree.save("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.flip.swc");
 #endif
 
   std::cout << "Done." << std::endl;

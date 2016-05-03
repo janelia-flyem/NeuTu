@@ -225,6 +225,33 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis,
+    ZObject3dScan *result)
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+
+  ZDvidBufferReader reader;
+#if defined(_ENABLE_LIBDVIDCPP_)
+//  reader.setService(m_service);
+#endif
+
+//  reader.tryCompress(true);
+  ZDvidUrl dvidUrl(getDvidTarget());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, minZ, maxZ, axis).c_str(),
+              isVerbose());
+  const QByteArray &buffer = reader.getBuffer();
+  result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+  result->setLabel(bodyId);
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
 {
   if (result == NULL) {
@@ -236,10 +263,10 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
   ZDvidBufferReader reader;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-//  reader.setService(m_service);
+  reader.setService(m_service);
 #endif
 
-//  reader.tryCompress(true);
+  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
 
   QElapsedTimer timer;
@@ -366,6 +393,31 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
     int blockNumber)
 {
+  std::vector<ZStack*> stackArray(blockNumber, NULL);
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_service != NULL) {
+    try {
+      std::vector<int> blockCoords(3);
+      blockCoords[0] = blockIndex.getX();
+      blockCoords[1] = blockIndex.getY();
+      blockCoords[2] = blockIndex.getZ();
+
+      libdvid::GrayscaleBlocks blocks = m_service->get_grayblocks(
+            getDvidTarget().getGrayScaleName(), blockCoords, blockNumber);
+      ZIntCuboid currentBox = dvidInfo.getBlockBox(blockIndex);
+      for (int i = 0; i < blockNumber; ++i) {
+        stackArray[i] = new ZStack(GREY, currentBox, 1);
+        stackArray[i]->loadValue(blocks.get_raw() + i * currentBox.getVolume(),
+                                 currentBox.getVolume(), stackArray[i]->array8());
+        currentBox.translateX(currentBox.getWidth());
+      }
+      setStatusCode(200);
+    } catch (libdvid::DVIDException &e) {
+      setStatusCode(e.getStatus());
+    }
+  }
+#else
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(getDvidTarget());
 #ifdef _DEBUG_2
@@ -386,8 +438,6 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 #ifdef _DEBUG_2
   tic();
 #endif
-
-  std::vector<ZStack*> stackArray(blockNumber, NULL);
 
   if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
     const QByteArray &data = bufferReader.getBuffer();
@@ -411,6 +461,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 #ifdef _DEBUG_2
   std::cout << "parsing time:" << std::endl;
   ptoc();
+#endif
 #endif
 
   return stackArray;

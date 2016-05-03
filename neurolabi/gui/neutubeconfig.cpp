@@ -687,7 +687,11 @@ QString NeutubeConfig::GetNeuTuServer()
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)
 {
-  GetSettings().setValue("neutu_server", path);
+  if (path.isEmpty()) {
+    GetSettings().setValue("neutu_server", ":");
+  } else {
+    GetSettings().setValue("neutu_server", path);
+  }
 }
 #endif
 

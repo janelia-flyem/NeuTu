@@ -1,4 +1,4 @@
-#include "zstackdocmenufactory.h"
+#include "zmenufactory.h"
 
 #include <QMenu>
 #include <QWidget>
@@ -9,14 +9,13 @@
 #include "zactionfactory.h"
 #include "z3dwindow.h"
 
-ZStackDocMenuFactory::ZStackDocMenuFactory()
+ZMenuFactory::ZMenuFactory()
 {
   init();
 }
 
-void ZStackDocMenuFactory::init()
+void ZMenuFactory::init()
 {
-  m_singleSwcNodeActionActivator = NULL;
   m_isAdmin = false;
 }
 
@@ -33,20 +32,20 @@ static void AddAction(const QList<ZActionFactory::EAction> &actionList,
   }
 }
 
-void ZStackDocMenuFactory::addAction(
+void ZMenuFactory::addAction(
     const QList<ZActionFactory::EAction> &actionList,
     ZStackPresenter *presenter, QMenu *menu)
 {
   AddAction(actionList, presenter, menu);
 }
 
-void ZStackDocMenuFactory::addAction(
+void ZMenuFactory::addAction(
     const QList<ZActionFactory::EAction> &actionList, Z3DWindow *window, QMenu *menu)
 {
   AddAction(actionList, window, menu);
 }
 
-QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
+QMenu* ZMenuFactory::makeSwcNodeContextMenu(
     ZStackDoc *doc, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -116,7 +115,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
+QMenu* ZMenuFactory::makeSwcNodeContextMenu(
     ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -143,7 +142,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
+QMenu* ZMenuFactory::makeSrokePaintContextMenu(
     ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -156,7 +155,7 @@ QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeStackContextMenu(
+QMenu* ZMenuFactory::makeStackContextMenu(
     ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -183,7 +182,7 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
+QMenu* ZMenuFactory::makeBodyContextMenu(
     ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -193,7 +192,7 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeSynapseContextMenu(
+QMenu* ZMenuFactory::makeSynapseContextMenu(
     ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -203,7 +202,7 @@ QMenu* ZStackDocMenuFactory::makeSynapseContextMenu(
   return menu;
 }
 
-QMenu* ZStackDocMenuFactory::makeContextMenu(
+QMenu* ZMenuFactory::makeContextMenu(
     ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
@@ -214,7 +213,7 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(
 }
 
 
-QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
+QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 {
   ZStackDoc *doc = window->getDocument();
 
@@ -227,8 +226,7 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     QList<ZActionFactory::EAction> actionList;
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+    if (doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY) {
       if (doc->getSelectedSwcNodeList().size() == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

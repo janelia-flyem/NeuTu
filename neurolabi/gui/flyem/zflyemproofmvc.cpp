@@ -236,6 +236,10 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
           mvc, SLOT(showOrthoWindow(double,double,double)));
   connect(mvc->getDocument().get(), SIGNAL(updatingLatency(int)),
           mvc, SLOT(updateLatencyWidget(int)));
+  connect(mvc->getView(), SIGNAL(sliceSliderPressed()),
+          mvc, SLOT(suppressObjectVisible()));
+  connect(mvc->getView(), SIGNAL(sliceSliderReleased()),
+          mvc, SLOT(recoverObjectVisible()));
 
   return mvc;
 }
@@ -355,7 +359,6 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           doc, SLOT(showSynapse(bool)));
   connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showTodo(bool)));
-
   setWindowSignalSlot(m_coarseBodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -410,6 +413,9 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
+  connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool)),
+          getCompleteDocument(),
+          SLOT(executeAddTodoItemCommand(int,int,int,bool)));
   setWindowSignalSlot(m_bodyWindow);
 
   if (m_doc->getParentMvc() != NULL) {
@@ -1666,6 +1672,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       if (body == NULL) {
         ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = reader.readDvidSparseStackAsync(bodyId);
+
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setColor(labelSlice->getColor(
@@ -1677,6 +1684,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         //          body->setLabel(bodyId);
         //        body->getObjectMask()->setLabel(bodyId);
       }
+
+      body->runFillValueFunc();
 
       m_splitProject.setBodyId(bodyId);
       ZOUT(LINFO(), 3) << "Removing ROI";
@@ -1733,6 +1742,17 @@ void ZFlyEmProofMvc::updateSplitBody()
     ZOUT(LINFO(), 3) << "Updating body window.";
     updateBodyWindow();
   }
+}
+
+void ZFlyEmProofMvc::suppressObjectVisible()
+{
+  getPresenter()->suppressObjectVisible(true);
+}
+
+void ZFlyEmProofMvc::recoverObjectVisible()
+{
+  getPresenter()->suppressObjectVisible(false);
+  getView()->processDepthSliderValueChange();
 }
 
 void ZFlyEmProofMvc::exportSelectedBody()
@@ -1866,17 +1886,14 @@ void ZFlyEmProofMvc::exitSplit()
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 
-    /*
+
     ZDvidSparseStack *body = dynamic_cast<ZDvidSparseStack*>(
           getDocument()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
-      body->setVisible(false);
+      body->cancelFillValueFunc();
     }
-
-    getView()->redrawObject();
-    */
 
     m_paintLabelWidget->hide();
 //    m_latencyLabelWidget->show();

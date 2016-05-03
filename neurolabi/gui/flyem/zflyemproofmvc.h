@@ -203,6 +203,8 @@ public slots:
   void getROIs();
   void updateLatencyWidget(int t);
 
+  void suppressObjectVisible();
+  void recoverObjectVisible();
 
 //  void toggleEdgeMode(bool edgeOn);
 

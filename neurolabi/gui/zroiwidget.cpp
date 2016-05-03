@@ -38,7 +38,7 @@ ZROIWidget::~ZROIWidget()
 
 }
 
-void ZROIWidget::closeEvent(QCloseEvent * event)
+void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
 {
     emit toBeClosed();
 }

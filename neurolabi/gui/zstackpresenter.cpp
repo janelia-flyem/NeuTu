@@ -77,6 +77,7 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 void ZStackPresenter::init()
 {
   m_showObject = true;
+  m_oldShowObject = true;
 //  m_isStrokeOn = false;
   m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
@@ -1872,6 +1873,16 @@ void ZStackPresenter::toggleObjectVisible()
   setObjectVisible(!isObjectVisible());
 }
 
+void ZStackPresenter::suppressObjectVisible(bool v)
+{
+  if (v) {
+    m_oldShowObject = m_showObject;
+    m_showObject = false;
+  } else {
+    m_showObject = m_oldShowObject;
+  }
+}
+
 void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
 {
   if (m_objStyle != style) {
@@ -2809,6 +2820,9 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_STACK_INC_SLICE_FAST:
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
+    break;
+  case ZStackOperator::OP_ZOOM_TO:
+    buddyView()->zoomTo(currentStackPos.toIntPoint());
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {

@@ -1053,6 +1053,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    obj->clearCache();
     obj->forceUpdate();
     processObjectModified(obj);
   }
@@ -2338,6 +2339,12 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
       emit userBookmarkModified();
     }
   }
+}
+
+void ZFlyEmProofDoc::executeAddTodoItemCommand(
+    int x, int y, int z, bool checked)
+{
+  executeAddTodoItemCommand(ZIntPoint(x, y, z), checked);
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked)

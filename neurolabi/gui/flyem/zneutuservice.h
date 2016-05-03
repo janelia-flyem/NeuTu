@@ -15,6 +15,9 @@ public:
   ZNeutuService(const std::string &server = "");
 
   void setServer(const std::string &server);
+  std::string getServer() const {
+    return m_server;
+  }
 
   enum EStatus {
     STATUS_NORMAL, STATUS_DOWN

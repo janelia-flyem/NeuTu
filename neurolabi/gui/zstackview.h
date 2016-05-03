@@ -227,6 +227,9 @@ public:
 
   void updateViewBox();
 
+  void zoomTo(int x, int y, int z);
+  void zoomTo(const ZIntPoint &pt);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -246,6 +249,7 @@ public slots:
   void updateThresholdSlider();
   void updateSlider();
   void updateChannelControl();
+  void processDepthSliderValueChange();
   void processDepthSliderValueChange(int sliceIndex);
 
   void paintStack();
@@ -300,6 +304,8 @@ signals:
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
   void changingSetting();
+  void sliceSliderPressed();
+  void sliceSliderReleased();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);

@@ -620,7 +620,10 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofdoccommand.h \
     flyem/zneutuservice.h \
     dialogs/flyemsettingdialog.h \
-    widgets/zcolorlabel.h
+    widgets/zcolorlabel.h \
+    zactionlibrary.h \
+    zmenufactory.h \
+    zcrosshair.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1093,7 +1096,10 @@ SOURCES += main.cpp \
     flyem/zflyemproofdoccommand.cpp \
     flyem/zneutuservice.cpp \
     dialogs/flyemsettingdialog.cpp \
-    widgets/zcolorlabel.cpp
+    widgets/zcolorlabel.cpp \
+    zactionlibrary.cpp \
+    zmenufactory.cpp \
+    zcrosshair.cpp
 
 OTHER_FILES += \
     extlib.pri \

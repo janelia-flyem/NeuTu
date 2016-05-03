@@ -7,6 +7,7 @@
 
 const char* ZFlyEmConfig::m_dvidRepoKey = "dvid repo";
 const char* ZFlyEmConfig::m_ipKey = "ip";
+const char* ZFlyEmConfig::m_librarianKey = "librarian";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -15,8 +16,8 @@ ZFlyEmConfig::ZFlyEmConfig()
 
 void ZFlyEmConfig::init()
 {
-  m_neutuService.setServer("http://zhaot-ws1:8080");
-  m_neutuService.updateStatus();
+//  m_neutuService.setServer("http://zhaot-ws1:8080");
+//  m_neutuService.updateStatus();
 //  m_neutuServer = "http://zhaot-ws1:8080";
 }
 
@@ -51,6 +52,9 @@ void ZFlyEmConfig::loadConfig(const std::string &filePath)
   if (!filePath.empty()) {
     ZJsonObject obj;
     if (obj.load(filePath)) {
+      if (obj.hasKey(m_librarianKey)) {
+        m_defaultLibrarian = ZJsonParser::stringValue(obj[m_librarianKey]);
+      }
       if (obj.hasKey(m_ipKey)) {
         ZJsonObject ipJson(obj.value(m_ipKey));
         std::map<std::string, json_t*> entryMap = ipJson.toEntryMap(false);

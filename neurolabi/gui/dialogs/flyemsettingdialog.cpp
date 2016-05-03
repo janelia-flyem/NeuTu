@@ -31,7 +31,8 @@ void FlyEmSettingDialog::loadSetting()
   } else {
     ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
   }
-  ui->servicelineEdit->setText(NeutubeConfig::GetNeuTuServer());
+  ui->servicelineEdit->setText(
+        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());

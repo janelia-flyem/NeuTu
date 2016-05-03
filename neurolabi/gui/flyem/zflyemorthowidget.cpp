@@ -11,6 +11,7 @@
 #include "zstackpresenter.h"
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
+#include "zcrosshair.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -51,6 +52,8 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   layout->setVerticalSpacing(0);
 
   connectSignalSlot();
+
+  setSegmentationVisible(m_controlForm->isShowingSeg());
 }
 
 void ZFlyEmOrthoWidget::syncView()
@@ -81,6 +84,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_controlForm, SIGNAL(movingRight()), this, SLOT(moveRight()));
   connect(m_controlForm, SIGNAL(locatingMain()),
           this, SLOT(locateMainWindow()));
+  connect(m_controlForm, SIGNAL(showingSeg(bool)),
+          this, SLOT(setSegmentationVisible(bool)));
 
   connect(getDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
@@ -91,11 +96,14 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(getDocument(), SIGNAL(bodyMergeEdited()),
           this, SIGNAL(bodyMergeEdited()));
 
-  connect(m_xyMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+  connect(m_xyMvc->getPresenter(),
+          SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
-  connect(m_xzMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+  connect(m_xzMvc->getPresenter(),
+          SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
-  connect(m_yzMvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+  connect(m_yzMvc->getPresenter(),
+          SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
 }
 
@@ -183,6 +191,13 @@ void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
   }
 }
 
+void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)
+{
+  m_xyMvc->setSegmentationVisible(on);
+  m_yzMvc->setSegmentationVisible(on);
+  m_xzMvc->setSegmentationVisible(on);
+}
+
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
   disconnect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
@@ -209,6 +224,17 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 //    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
     break;
   }
+
+  int z = m_xyMvc->getView()->getZ(NeuTube::COORD_STACK);
+  int y = m_xzMvc->getView()->getZ(NeuTube::COORD_STACK);
+  int x = m_yzMvc->getView()->getZ(NeuTube::COORD_STACK);
+
+  getDocument()->getCrossHair()->setCenter(x, y, z);
+
+  /*
+  m_xyMvc->updateCrossHair(m_xzMvc->getView()->getZ(NeuTube::COORD_STACK),
+                           m_yzMvc->getView()->getZ(NeuTube::COORD_STACK));
+                           */
 
   connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));

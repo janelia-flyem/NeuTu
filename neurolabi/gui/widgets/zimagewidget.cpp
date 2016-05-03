@@ -860,7 +860,7 @@ void ZImageWidget::paintObject()
     ZPainter painter;
     ZStackObjectPainter paintHelper;
 
-    painter.setRange(viewPort());
+    painter.setCanvasRange(viewPort());
 
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;
@@ -939,6 +939,11 @@ void ZImageWidget::paintObject()
   }
 
 
+}
+
+void ZImageWidget::showCrossHair(bool on)
+{
+  m_showingCrossHair = on;
 }
 
 void ZImageWidget::paintZoomHint()

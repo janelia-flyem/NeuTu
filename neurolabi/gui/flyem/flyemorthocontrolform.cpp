@@ -30,6 +30,13 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
+  connect(ui->showSegCheckBox, SIGNAL(clicked(bool)),
+          this, SIGNAL(showingSeg(bool)));
+}
+
+bool FlyEmOrthoControlForm::isShowingSeg() const
+{
+  return ui->showSegCheckBox->isChecked();
 }
 
 ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const

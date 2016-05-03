@@ -511,7 +511,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
 }
 
 void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
-    Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
+    Z3DWindow *window, const ZDvidInfo &/*dvidInfo*/, const ZDvidTarget &dvidTarget)
 {
   if (window != NULL) {
 /*

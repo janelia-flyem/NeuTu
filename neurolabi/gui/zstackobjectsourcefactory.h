@@ -41,6 +41,7 @@ public:
   static std::string MakeTodoListEnsembleSource(NeuTube::EAxis axis);
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
+  static std::string MakeCrossHairSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H
