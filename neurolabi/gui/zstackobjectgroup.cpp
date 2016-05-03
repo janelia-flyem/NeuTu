@@ -335,7 +335,7 @@ void ZStackObjectGroup::removeAllObject(bool deleting)
 
 TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType type)
 {
-  ZOUT(LINFO(), 5) << "Gettting object list";
+  ZOUT(LINFO(), 5) << "Getting object list:" << "type" << type;
 
   if (!m_sortedGroup.contains(type)) {
     m_sortedGroup[type] = TStackObjectList();
