@@ -1073,7 +1073,7 @@ Stack* C_Stack::clone(const Stack *stack)
     hasNullText = true;
   }
 
-  Stack *cloned = clone(stack);
+  Stack *cloned = Copy_Stack(const_cast<Stack*>(stack));
 
   if (hasNullText) {
     const_cast<Stack*>(stack)->text = NULL;

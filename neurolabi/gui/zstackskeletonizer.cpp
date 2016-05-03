@@ -24,6 +24,8 @@
 
 using namespace std;
 
+const size_t ZStackSkeletonizer::m_sizeLimit = MAX_INT32;
+
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
   m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
@@ -438,6 +440,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 {
+  if (C_Stack::voxelNumber(stackData) > m_sizeLimit) {
+    std::cout << "Warning: " << "Too big stack. Abort." << std::endl;
+    return NULL;
+  }
+
   Stack *stackSignal = NULL;
 
   /*
