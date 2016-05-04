@@ -83,6 +83,9 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
 
   setFixedSize(size());
+
+  ui->roiLabel->hide();
+  ui->roiPushButton->hide();
 }
 
 ZDvidDialog::~ZDvidDialog()
@@ -189,8 +192,12 @@ void ZDvidDialog::setServer(int index)
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->uuidLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->labelBlockLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->grayScalelineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->tileLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
+  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&

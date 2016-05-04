@@ -601,6 +601,7 @@ int ZCommandLine::runSkeletonize()
         bodyIdSet = reader.readBodyId(100000);
         if (bodyIdSet.empty()) {
           bodyIdSet = reader.readAnnnotatedBodySet();
+
           if (bodyIdSet.empty()) {
             std::cout << "Done: No annotated body found in the database."
                       << std::endl;
@@ -611,8 +612,18 @@ int ZCommandLine::runSkeletonize()
         bodyIdSet = loadBodySet(m_input[1]);
       }
 
-      bodyIdArray.insert(
-            bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
+      for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
+           iter != bodyIdSet.end(); ++iter) {
+        int bodyId = *iter;
+        if (m_namedOnly) {
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+          if (!annotation.getName().empty()) {
+            bodyIdArray.push_back(bodyId);
+          }
+        } else {
+          bodyIdArray.push_back(bodyId);
+        }
+      }
     }
 
     std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
@@ -743,7 +754,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[<input:string> ...]",
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
-    "[--skeletonize] [--force] [--bodyid <string>]",
+    "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
     "[--trace] [--level <int>]","[--separate <string>]",
     "[--position <int> <int> <int>]",
     "[--size <int> <int> <int>]",
@@ -795,6 +806,11 @@ int ZCommandLine::run(int argc, char *argv[])
   m_forceUpdate = false;
   if (Is_Arg_Matched(const_cast<char*>("--force"))) {
     m_forceUpdate = true;
+  }
+
+  m_namedOnly = false;
+  if (Is_Arg_Matched(const_cast<char*>("--named_only"))) {
+    m_namedOnly = true;
   }
 
 //  ZArgumentProcessor::processArguments(argc, argv, Spec);
