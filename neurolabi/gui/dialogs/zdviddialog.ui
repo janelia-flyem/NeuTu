@@ -21,6 +21,27 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Server</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="serverComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
@@ -184,7 +205,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_14">
+    <layout class="QHBoxLayout" name="horizontalLayout_15">
      <item>
       <widget class="QCheckBox" name="librarianCheckBox">
        <property name="text">
@@ -195,26 +216,8 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Server</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="serverComboBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
+      <widget class="QLineEdit" name="librarianLineEdit"/>
      </item>
     </layout>
    </item>
