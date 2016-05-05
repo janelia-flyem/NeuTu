@@ -21,6 +21,7 @@ public:
   ZFlyEmMessageWidget* getMessageWidget() const;
 
   bool isShowingSeg() const;
+  void toggleShowingSeg();
 
 signals:
   void movingUp();

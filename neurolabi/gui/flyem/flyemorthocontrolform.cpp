@@ -30,8 +30,13 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
-  connect(ui->showSegCheckBox, SIGNAL(clicked(bool)),
+  connect(ui->showSegCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(showingSeg(bool)));
+}
+
+void FlyEmOrthoControlForm::toggleShowingSeg()
+{
+  ui->showSegCheckBox->toggle();
 }
 
 bool FlyEmOrthoControlForm::isShowingSeg() const

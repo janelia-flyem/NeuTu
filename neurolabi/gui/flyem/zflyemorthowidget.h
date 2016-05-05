@@ -41,6 +41,10 @@ public slots:
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
   void setSegmentationVisible(bool on);
+  void toggleSegmentation();
+
+public:
+  void keyPressEvent(QKeyEvent *event);
 
 private:
   void init(const ZDvidTarget &target);

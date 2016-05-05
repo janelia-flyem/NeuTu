@@ -2354,6 +2354,15 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
   }
 }
 
+void ZFlyEmProofMvc::toggleSegmentation()
+{
+  ZDvidLabelSlice *slice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    showSegmentation(!slice->isVisible());
+  }
+}
+
 void ZFlyEmProofMvc::showTodo(bool visible)
 {
   getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);

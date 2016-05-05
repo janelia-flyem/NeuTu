@@ -207,6 +207,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     emit selectingBody();
     processed = true;
     break;
+  case Qt::Key_D:
+    emit togglingSegmentation();
+    processed = true;
+    break;
   default:
     break;
   }
@@ -637,6 +641,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       }
     }
+    break;
+  case ZStackOperator::OP_TOGGLE_SEGMENTATION:
+
     break;
   default:
     break;
