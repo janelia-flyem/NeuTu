@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "protocolchooser.h"
+#include "protocolmetadata.h"
 
 #include "dvid/zdvidtarget.h"
 
@@ -27,7 +28,9 @@ private:
     QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
     ProtocolChooser * m_chooser;
+    bool m_active;
 
+    ProtocolMetadata readMetadata();
 };
 
 #endif // PROTOCOLSWITCHER_H
