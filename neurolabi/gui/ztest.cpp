@@ -19992,7 +19992,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.swc");
   tree.updateIterator();
@@ -20004,6 +20004,41 @@ void ZTest::test(MainWindow *host)
 
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.flip.swc");
 #endif
+
+#if 0
+  ZJsonArray objJson1;
+  objJson1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_roi.json");
+
+  std::cout << objJson1.size() << std::endl;
+
+  ZJsonArray objJson2;
+  objJson2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_below_roi.json");
+  std::cout << objJson2.size() << std::endl;
+
+  objJson1.concat(objJson2);
+  objJson1.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_new.json");
+  std::cout << objJson1.size() << std::endl;
+#endif
+
+#if 1
+  ZObject3dScan obj;
+
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "425d", 8500);
+  reader.open(target);
+
+  ZObject3dScan obj1 = reader.readRoi("alpha3_roi");
+  ZObject3dScan obj2 = reader.readRoi("alpha2_roi");
+  ZObject3dScan obj3 = reader.readRoi("alpha1_roi");
+
+  obj1.concat(obj2);
+  obj1.concat(obj3);
+  obj1.canonize();
+
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }
