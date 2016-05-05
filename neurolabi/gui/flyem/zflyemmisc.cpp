@@ -653,23 +653,23 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+//  libdvid::DVIDConnection connection(address);
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
-  std::string error_msg;
+//  std::string error_msg;
 
-  qDebug() << "address: " << address;
-  qDebug() << "path: " << qurl.path();
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
 
 
-  try {
-    statusCode = connection.make_request(
-          "/.." + qurl.path().toStdString(), connMethod, payload, results,
-          error_msg, type);
-  } catch (libdvid::DVIDException &e) {
-    std::cout << e.what() << std::endl;
-    statusCode = e.getStatus();
-  }
+//  try {
+//    statusCode = connection.make_request(
+//          "/.." + qurl.path().toStdString(), connMethod, payload, results,
+//          error_msg, type);
+//  } catch (libdvid::DVIDException &e) {
+//    std::cout << e.what() << std::endl;
+//    statusCode = e.getStatus();
+//  }
 
   return results;
 }

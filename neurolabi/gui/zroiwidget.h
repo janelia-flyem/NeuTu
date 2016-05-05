@@ -6,6 +6,7 @@
 
 #include "flyem/zflyemproofdoc.h"
 #include "zcolorscheme.h"
+#include "zobjsmodel.h"
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -14,6 +15,22 @@ class QPushButton;
 class QTableWidget;
 class QTableWidgetItem;
 QT_END_NAMESPACE
+
+//
+class ZROIObjsModel : public ZObjsModel
+{
+    Q_OBJECT
+public:
+    ZROIObjsModel(QObject *parent = 0);
+    ~ZROIObjsModel();
+
+public slots:
+
+protected:
+    virtual void setModelIndexCheckState(const QModelIndex &index, Qt::CheckState cs);
+    virtual bool needCheckbox(const QModelIndex &index) const;
+
+};
 
 //
 class ZROIWidget : public QDockWidget
@@ -61,6 +78,9 @@ public:
     //
     QCheckBox *selectAll;
     QTableWidget *tw_ROIs;
+
+    //
+    ZROIObjsModel *m_objmodel;
 };
 
 

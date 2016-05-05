@@ -669,29 +669,29 @@ static libdvid::BinaryDataPtr makeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+//  libdvid::DVIDConnection connection(address);
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
-  std::string error_msg;
+//  std::string error_msg;
 
-  qDebug() << "address: " << address;
-  qDebug() << "path: " << qurl.path();
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
 
-  /*
-  statusCode = connection.make_request(
-        "/repo/372c/info", libdvid::GET, libdvid::BinaryDataPtr(),
-        results, error_msg, libdvid::DEFAULT);
-*/
+//  /*
+//  statusCode = connection.make_request(
+//        "/repo/372c/info", libdvid::GET, libdvid::BinaryDataPtr(),
+//        results, error_msg, libdvid::DEFAULT);
+//*/
 
-  statusCode = connection.make_request(
-        "/.." + qurl.path().toStdString(), connMethod, payload, results,
-        error_msg, type);
+//  statusCode = connection.make_request(
+//        "/.." + qurl.path().toStdString(), connMethod, payload, results,
+//        error_msg, type);
 
-#if 0
-  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
-        /*"/../api/node/372c/skeletons/key/1_swc",*/ libdvid::GET, payload, results,
-        error_msg, libdvid::BINARY);
-#endif
+//#if 0
+//  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
+//        /*"/../api/node/372c/skeletons/key/1_swc",*/ libdvid::GET, payload, results,
+//        error_msg, libdvid::BINARY);
+//#endif
 
   return results;
 }
