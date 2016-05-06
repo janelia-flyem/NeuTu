@@ -130,6 +130,11 @@ void ZPainter::setPen(Qt::PenStyle style)
   m_painter.setPen(style);
 }
 
+void ZPainter::setFont(const QFont &font)
+{
+  m_painter.setFont(font);
+}
+
 void ZPainter::setBrush(const QColor &color)
 {
   m_painter.setBrush(color);
