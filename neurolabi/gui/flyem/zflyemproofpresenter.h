@@ -77,6 +77,7 @@ signals:
   void mergingBody();
   void goingToBodyBottom();
   void goingToBodyTop();
+  void togglingSegmentation();
 
 public slots:
   void deleteSelectedSynapse();

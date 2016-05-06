@@ -1,6 +1,7 @@
 #include "zflyemorthowidget.h"
 
 #include <QGridLayout>
+#include <QKeyEvent>
 
 #include "zsharedpointer.h"
 #include "flyem/zflyemorthodoc.h"
@@ -12,6 +13,7 @@
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
 #include "zcrosshair.h"
+#include "zflyemproofpresenter.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -105,6 +107,12 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_yzMvc->getPresenter(),
           SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
+  connect(m_xyMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
+  connect(m_xzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
+  connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
 }
 
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
@@ -196,6 +204,20 @@ void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)
   m_xyMvc->setSegmentationVisible(on);
   m_yzMvc->setSegmentationVisible(on);
   m_xzMvc->setSegmentationVisible(on);
+}
+
+void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
+{
+  switch (event->key()) {
+  case Qt::Key_D:
+    toggleSegmentation();
+    break;
+  }
+}
+
+void ZFlyEmOrthoWidget::toggleSegmentation()
+{
+  m_controlForm->toggleShowingSeg();
 }
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
