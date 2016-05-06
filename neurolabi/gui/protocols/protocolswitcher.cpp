@@ -40,41 +40,27 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
 
 
 void ProtocolSwitcher::openProtocolRequested() {
-
-    std::cout << "entering prsw::openProtocolRequested()"<< std::endl;
-
     if (!m_currentDvidTarget.isValid()) {
         return;
     }
 
-
     if (m_active) {
-        // show protocol dialog
+        // show protocol dialog for the protocol we're loading
         std::cout << "protocol dialogs not implemented yet" << std::endl;
 
     } else {
-        // loading message in the protocol chooser
-        // trigger population of protocol chooser
+        // show the protocol chooser
 
-        //  populate chooser:
-        //      "loading" message
+        // at some point, we will look for saved protocols to load:
+        //      set "loading" message
         //      check for inactive, incomplete protocols we could load;
         //          add to loadable list
-        //      add allowable new protocols to new protocol list
         //      clear "loading" message
 
-        // show chooser
-
-
-        // testing:
         m_chooser->show();
         m_chooser->raise();
-
     }
 
-
-
-    std::cout << "leaving prsw::openProtocolRequested()"<< std::endl;
 }
 
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
@@ -118,8 +104,23 @@ ProtocolMetadata ProtocolSwitcher::readMetadata() {
 
 void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
-    // do stuff
-    std::cout << "prsw::startProtocolRequested: " << protocolName.toStdString() << std::endl;
+    // instantiate dialog
+    // set "loading" message
+    // show/raise dialog
+    // trigger load of saved protocol data
+    // clear "loading message"
+
+
+    // if-else chain not ideal, but C++ is too stupid to switch 
+    //  on strings; however, the chain won't get *too* long
+    //  (I have to write all those protocols...)
+    if (protocolName == "Test protocol 1") {
+        std::cout << "prsw: Test protocol 1" << std::endl;
+    } else if (protocolName == "Test protocol 2") {
+        std::cout << "prsw: Test protocol 2" << std::endl;
+    } else {
+        // should never happen
+    }
 
 }
 
