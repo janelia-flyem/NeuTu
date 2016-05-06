@@ -15,6 +15,8 @@ class ProtocolSwitcher : public QObject
 public:
     explicit ProtocolSwitcher(QWidget *parent = 0);
 
+    static QStringList protocolNames;
+
 signals:
 
 public slots:
@@ -22,7 +24,8 @@ public slots:
     void dvidTargetChanged(ZDvidTarget target);
 
 private slots:
-
+    void startProtocolRequested(QString protocolName);
+    void loadProtocolRequested();
 
 private:
     QWidget * m_parent;

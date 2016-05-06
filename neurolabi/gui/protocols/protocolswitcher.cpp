@@ -18,17 +18,34 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
 {
     m_parent = parent;
     m_chooser = new ProtocolChooser(m_parent);
+
+    // flag is true if a protocol is active, including if it's
+    //  being started or loaded
     m_active = false;
 
+
+
     // set up connections to ProtocolChooser
+    connect(m_chooser, SIGNAL(requestStartProtocol(QString)), this, SLOT(startProtocolRequested(QString)));
 
 
 
 }
 
+// names of available protocols; thank you, C++, for making
+//  constants so hard to define
+QStringList ProtocolSwitcher::protocolNames = QStringList()
+        << "Test protocol 1" 
+        << "Test protocol 2";
+
+
 void ProtocolSwitcher::openProtocolRequested() {
 
     std::cout << "entering prsw::openProtocolRequested()"<< std::endl;
+
+    if (!m_currentDvidTarget.isValid()) {
+        return;
+    }
 
 
     if (m_active) {
@@ -50,10 +67,8 @@ void ProtocolSwitcher::openProtocolRequested() {
 
 
         // testing:
-        if (m_currentDvidTarget.isValid()) {
-            m_chooser->show();
-            m_chooser->raise();
-        }
+        m_chooser->show();
+        m_chooser->raise();
 
     }
 
@@ -100,3 +115,38 @@ ProtocolMetadata ProtocolSwitcher::readMetadata() {
         return metadata;
     }
 }
+
+void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
+
+    // do stuff
+    std::cout << "prsw::startProtocolRequested: " << protocolName.toStdString() << std::endl;
+
+}
+
+void ProtocolSwitcher::loadProtocolRequested() {
+
+    // this also needs to have the saved info as input
+
+    // do stuff
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
