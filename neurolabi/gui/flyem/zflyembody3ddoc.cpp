@@ -106,6 +106,9 @@ ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_SYNAPSE = 2;
 const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
 ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_TODO_ITEM = 4;
 
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_MULTIRES = 8;
+
 void ZFlyEmBody3dDoc::BodyEvent::print() const
 {
   switch (m_action) {
@@ -198,11 +201,15 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
     removeBodyFunc(event.getBodyId());
     break;
   case BodyEvent::ACTION_ADD:
-    addBodyFunc(event.getBodyId(), event.getBodyColor());
+    addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
     break;
   case BodyEvent::ACTION_UPDATE:
 //    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
+    if (event.updating(BodyEvent::UPDATE_MULTIRES)) {
+      addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
+    } else {
       updateBody(event.getBodyId(), event.getBodyColor());
+    }
 //    }
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
@@ -357,7 +364,11 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
   if (!hasBody(bodyId)) {
     m_bodySet.insert(bodyId);
-    addBodyFunc(bodyId, color);
+    if (getBodyType() == BODY_SKELETON) {
+      addBodyFunc(bodyId, color, -1);
+    } else {
+      addBodyFunc(bodyId, color, 5);
+    }
   }
 }
 
@@ -415,19 +426,38 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     }
   }
 
+  if (event.getAction() == BodyEvent::ACTION_ADD) {
+    event.setResLevel(5);
+  }
+
   m_eventQueue.enqueue(event);
 }
 
-void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
+void ZFlyEmBody3dDoc::addBodyFunc(
+    uint64_t bodyId, const QColor &color, int resLevel)
 {
-  ZSwcTree *tree = getBodyModel(bodyId);
+  bool loaded = (getBodyModel(bodyId) != NULL);
+
+  ZSwcTree *tree = NULL;
   if (tree == NULL) {
-    tree = makeBodyModel(bodyId);
+    if (resLevel == 5) {
+      tree = makeBodyModel(bodyId, ZFlyEmBody3dDoc::BODY_COARSE);
+    } else if (resLevel == 0) {
+      tree = makeBodyModel(bodyId, getBodyType());
+    }
+
+    if (resLevel > 0) {
+      BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
+      bodyEvent.setBodyColor(color);
+      bodyEvent.setResLevel(--resLevel);
+      bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+      m_eventQueue.enqueue(bodyEvent);
+    }
   }
 
   if (tree != NULL) {
 //    if (getBodyType() != BODY_SKELETON) {
-      tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
+    tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 //    }
 
 #ifdef _DEBUG_
@@ -437,13 +467,16 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 
 //    delete tree;
     beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    removeBodyFunc(bodyId);
     addObject(tree, true);
     processObjectModified(tree);
     endObjectModifiedMode();
     notifyObjectModified(true);
 
-    addSynapse(bodyId);
-    addTodo(bodyId);
+    if (!loaded) {
+      addSynapse(bodyId);
+      addTodo(bodyId);
+    }
     //Add synapse
 #if 0
     if (m_showingSynapse) {
@@ -680,15 +713,21 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId)
 
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
 {
+  return makeBodyModel(bodyId, getBodyType());
+}
+
+ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
+    uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType)
+{
   ZSwcTree *tree = NULL;
 
   if (bodyId > 0) {
-    if (getBodyType() == BODY_SKELETON) {
+    if (bodyType == BODY_SKELETON) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         tree = reader.readSwc(bodyId);
       }
-    } else if (getBodyType() == BODY_COARSE) {
+    } else if (bodyType == BODY_COARSE) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         ZObject3dScan obj = reader.readCoarseBody(bodyId);

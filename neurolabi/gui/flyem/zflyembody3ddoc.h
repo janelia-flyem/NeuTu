@@ -43,7 +43,7 @@ public:
     BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
     m_updateFlag(0), m_resLevel(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
-      m_action(action), m_bodyId(bodyId) {}
+      m_action(action), m_bodyId(bodyId), m_resLevel(0) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
@@ -73,12 +73,20 @@ public:
       return m_updateFlag;
     }
 
-    int getResLevel() {
+    bool hasUpdateFlag(TUpdateFlag flag) {
+      return (m_updateFlag & flag) > 0;
+    }
+
+    int getResLevel() const {
       return m_resLevel;
     }
 
     void setResLevel(int level) {
       m_resLevel = level;
+    }
+
+    void decResLevel() {
+      --m_resLevel;
     }
 
     void print() const;
@@ -87,6 +95,7 @@ public:
     static const TUpdateFlag UPDATE_CHANGE_COLOR;
     static const TUpdateFlag UPDATE_ADD_SYNAPSE;
     static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
+    static const TUpdateFlag UPDATE_MULTIRES;
 
   private:
     EAction m_action;
@@ -161,9 +170,10 @@ private:
   ZSwcTree* getBodyModel(uint64_t bodyId);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType);
   void updateDvidInfo();
 
-  void addBodyFunc(uint64_t bodyId, const QColor &color);
+  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId);
 

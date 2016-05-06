@@ -20037,6 +20037,34 @@ void ZTest::test(MainWindow *host)
 
   obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
 
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZIntPoint index1 = dvidInfo.getBlockIndex(0, 0, 5120);
+  std::cout << index1.getZ() << std::endl;
+
+  ZIntPoint index2 = dvidInfo.getBlockIndex(0, 0, 8736);
+  std::cout << index2.getZ() << std::endl;
+
+  ZObject3dScan alpha3 = obj1.getSlice(obj1.getMinZ(), index1.getZ() - 1);
+  ZObject3dScan alpha2 = obj2.getSlice(index1.getZ(), index2.getZ() - 1);
+  ZObject3dScan alpha1 = obj3.getSlice(index2.getZ(), obj1.getMaxZ());
+
+  {
+    ZJsonArray alpha1Json =
+        ZJsonFactory::MakeJsonArray(alpha1, ZJsonFactory::OBJECT_SPARSE);
+    alpha1Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha1.json");
+  }
+
+  {
+    ZJsonArray alpha2Json =
+        ZJsonFactory::MakeJsonArray(alpha2, ZJsonFactory::OBJECT_SPARSE);
+    alpha2Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha2.json");
+  }
+
+  {
+    ZJsonArray alpha3Json =
+        ZJsonFactory::MakeJsonArray(alpha3, ZJsonFactory::OBJECT_SPARSE);
+    alpha3Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha3.json");
+  }
 #endif
 
 
