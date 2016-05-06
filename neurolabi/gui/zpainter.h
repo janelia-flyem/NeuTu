@@ -110,6 +110,7 @@ public:
   void setPen(const QColor &color);
   void setPen(const QPen &pen);
   void setPen(Qt::PenStyle style);
+  void setFont(const QFont &font);
 
   void setBrush(const QColor &color);
   void setBrush(const QBrush &pen);

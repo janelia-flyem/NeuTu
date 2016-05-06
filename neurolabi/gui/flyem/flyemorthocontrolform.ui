@@ -23,6 +23,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QCheckBox" name="dataCheckBox">
+       <property name="text">
+        <string>Data</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="showSegCheckBox">
        <property name="text">
         <string>Segmentation</string>
