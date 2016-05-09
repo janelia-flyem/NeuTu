@@ -127,6 +127,8 @@ void ZFlyEmBody3dDoc::BodyEvent::print() const
   }
 
   std::cout << getBodyId() << std::endl;
+  std::cout << "  resolution: " << getResLevel() << std::endl;
+  std::cout << "  flag: " << getUpdateFlag() << std::endl;
 }
 
 void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(

@@ -43,7 +43,7 @@ public:
     BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
     m_updateFlag(0), m_resLevel(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
-      m_action(action), m_bodyId(bodyId), m_resLevel(0) {}
+      m_action(action), m_bodyId(bodyId), m_updateFlag(0), m_resLevel(0) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
