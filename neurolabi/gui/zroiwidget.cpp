@@ -149,6 +149,9 @@ void ZROIWidget::makeGUI()
         tw_ROIs->insertRow(row);
         tw_ROIs->setItem(row, 0, roiNameItem);
         tw_ROIs->setItem(row, 1, colorItem);
+
+        bool checked = false;
+        m_checkStatus.push_back(checked);
     }
 
     //
@@ -163,12 +166,47 @@ void ZROIWidget::makeGUI()
     this->setWidget(group);
 
     //
-    connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
+    //connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
     connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
+    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)), this, SLOT(updateROISelections(QModelIndex)));
 
     connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
 
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
+}
+
+
+void ZROIWidget::updateROISelections(QModelIndex idx)
+{
+    int row = idx.row();
+    int col = idx.column();
+
+    //
+    if(col==0)
+    {
+        //
+        QTableWidgetItem *item = tw_ROIs->item(row, 0);
+
+        //
+        if(m_checkStatus[row] == true)
+        {
+            m_checkStatus[row] = false;
+            item->setCheckState(Qt::Unchecked);
+        }
+        else
+        {
+            m_checkStatus[row] = true;
+            item->setCheckState(Qt::Checked);
+        }
+
+        //
+        updateROIs();
+
+    }
+    else
+    {
+        // edit color
+    }
 }
 
 void ZROIWidget::updateSelection()

@@ -59,6 +59,7 @@ public slots:
     void updateROIColors(int row, int column);
     void updateROIRendering(QTableWidgetItem* item);
     void updateSelection();
+    void updateROISelections(QModelIndex idx);
 
 protected:
     void closeEvent(QCloseEvent * event);
@@ -74,6 +75,7 @@ public:
     QColor defaultColor;
     std::vector<std::string> m_roiSourceList;
     std::vector<bool> colorModified;
+    std::vector<bool> m_checkStatus;
 
     //
     QCheckBox *selectAll;
