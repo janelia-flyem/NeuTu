@@ -623,7 +623,8 @@ HEADERS += mainwindow.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
-    zcrosshair.h
+    zcrosshair.h \
+    zapplication.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1099,7 +1100,8 @@ SOURCES += main.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
-    zcrosshair.cpp
+    zcrosshair.cpp \
+    zapplication.cpp
 
 OTHER_FILES += \
     extlib.pri \

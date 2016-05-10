@@ -146,6 +146,10 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
       case ACTION_ADD:
         m_action = ACTION_ADD;
         m_bodyColor = event.m_bodyColor;
+        m_updateFlag |= event.m_updateFlag;
+        if (getResLevel() < event.getResLevel()) {
+          setResLevel(event.getResLevel());
+        }
 //        m_refreshing |= event.m_refreshing;
         break;
       case ACTION_UPDATE:
@@ -276,60 +280,66 @@ ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
   return item;
 }
 
-void ZFlyEmBody3dDoc::processEventFunc()
+QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
+    bool synced, QSet<uint64_t> &bodySet)
 {
-  std::cout << "Locking process event" << std::endl;
-  QMutexLocker locker(&m_eventQueueMutex);
+  if (synced) {
+    std::cout << "Locking process event" << std::endl;
+    QMutexLocker locker(&m_eventQueueMutex);
+  }
 
 //  QSet<uint64_t> bodySet = m_bodySet;
-  QMap<uint64_t, BodyEvent> m_actionMap;
+  QMap<uint64_t, BodyEvent> actionMap;
   for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
        iter != m_eventQueue.end(); ++iter) {
     const BodyEvent &event = *iter;
     uint64_t bodyId = event.getBodyId();
-    if (m_actionMap.contains(bodyId)) {
-      m_actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
+    if (actionMap.contains(bodyId)) {
+      actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
     } else {
-      m_actionMap[bodyId] = event;
+      actionMap[bodyId] = event;
     }
   }
 
-  for (QMap<uint64_t, BodyEvent>::iterator iter = m_actionMap.begin();
-       iter != m_actionMap.end(); ++iter) {
+  for (QMap<uint64_t, BodyEvent>::iterator iter = actionMap.begin();
+       iter != actionMap.end(); ++iter) {
     BodyEvent &event = iter.value();
     if (event.getAction() == BodyEvent::ACTION_ADD) {
-      if (m_bodySet.contains(event.getBodyId())) {
+      if (bodySet.contains(event.getBodyId())) {
         event.setAction(BodyEvent::ACTION_UPDATE);
       } else {
-        m_bodySet.insert(event.getBodyId());
+        bodySet.insert(event.getBodyId());
       }
     } else if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-      if (m_bodySet.contains(event.getBodyId())) {
-        m_bodySet.remove(event.getBodyId());
+      if (bodySet.contains(event.getBodyId())) {
+        bodySet.remove(event.getBodyId());
       } else {
         event.setAction(BodyEvent::ACTION_NULL);
       }
     }
 //    event.print();
   }
-
   m_eventQueue.clear();
-  locker.unlock();
-  std::cout << "Unlock process event" << std::endl;
 
-  if (!m_actionMap.isEmpty()) {
+  return actionMap;
+}
+
+void ZFlyEmBody3dDoc::processEventFunc()
+{
+  QMap<uint64_t, BodyEvent> actionMap = makeEventMap(true, m_bodySet);
+  if (!actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
 
     std::cout << "====Processing Event====" << std::endl;
-    for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
-         iter != m_actionMap.end(); ++iter) {
+    for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+         iter != actionMap.end(); ++iter) {
       const BodyEvent &event = iter.value();
       event.print();
     }
   }
 
-  for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
-       iter != m_actionMap.end(); ++iter) {
+  for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+       iter != actionMap.end(); ++iter) {
     const BodyEvent &event = iter.value();
     processEventFunc(event);
     if (m_quitting) {
@@ -409,6 +419,10 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
   return retrieveBodyModel(bodyId);
 }
 
+void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event)
+{
+  m_eventQueue.append(event);
+}
 
 void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
                                BodyEvent::TUpdateFlag flag, QMutex *mutex)
@@ -449,11 +463,27 @@ void ZFlyEmBody3dDoc::addBodyFunc(
     }
 
     if (resLevel > 0) {
+      QMutexLocker locker(&m_eventQueueMutex);
       BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
       bodyEvent.setBodyColor(color);
       bodyEvent.setResLevel(--resLevel);
       bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
-      m_eventQueue.enqueue(bodyEvent);
+      bool removing = false;
+
+      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+           iter != m_eventQueue.end(); ++iter) {
+        BodyEvent &event = *iter;
+        if (event.getBodyId() == bodyId) {
+          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+            removing = true;
+          } else {
+            removing = false;
+          }
+        }
+      }
+      if (!removing) {
+        m_eventQueue.enqueue(bodyEvent);
+      }
     }
   }
 

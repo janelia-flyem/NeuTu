@@ -122,6 +122,7 @@ public:
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
+  void addEvent(const BodyEvent &event);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -182,6 +183,8 @@ private:
 
   void processBodySetBuffer();
 
+  QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
+
 
 
 signals:
@@ -232,17 +235,44 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   std::cout << "Locking mutex ..." << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
-  m_eventQueue.clear();
+  QSet<uint64_t> bodySet = m_bodySet;
+  QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> actionMap = makeEventMap(
+        false, bodySet);
+
+//  m_eventQueue.clear();
+
+  QSet<uint64_t> newBodySet;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    uint64_t bodyId = *iter;
+    newBodySet.insert(bodyId);
+  }
 
   for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+    if (!newBodySet.contains(bodyId)) {
+      addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+    }
+  }
+
+//  QList<BodyEvent> oldEventList;
+  for (QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent>::iterator
+       iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
+    if (newBodySet.contains(iter.key())) {
+      if (iter.value().getAction() != BodyEvent::ACTION_REMOVE) {
+        //In the new body set had the bodyID and not remove, add event
+        addEvent(iter.value());
+      } else {
+        addEvent(BodyEvent::ACTION_ADD, iter.key(), 0, NULL);
+      }
+    }
   }
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
+    if (!actionMap.contains(bodyId)) { //If the action map has no such body id
+      addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
+    }
   }
 }
 
