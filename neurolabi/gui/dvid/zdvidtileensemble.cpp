@@ -203,23 +203,26 @@ bool ZDvidTileEnsemble::update(
 //                                       getDvidTarget().getUuid());
       std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
-#define DVID_TILE_THREAD_FETCH 1
+//#define DVID_TILE_THREAD_FETCH 1
 
       std::vector<libdvid::BinaryDataPtr> data;
       try {
-#if DVID_TILE_THREAD_FETCH
-        data = get_tile_array_binary(
-              *(m_reader.getService()), m_dvidTarget.getMultiscale2dName(),
-              libdvid::XY, resLevel, tile_locs_array);
-#else
-        data.resize(tile_locs_array.size());
-//        std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
-        for (size_t i = 0; i < tile_locs_array.size(); ++i) {
-          data[i] = m_reader.getService()->get_tile_slice_binary(
-                m_dvidTarget.getMultiscale2dName(),
-                libdvid::XY, resLevel, tile_locs_array[i]);
+//#if DVID_TILE_THREAD_FETCH
+        if (NeutubeConfig::ParallelTileFetching()) {
+          data = get_tile_array_binary(
+                *(m_reader.getService()), m_dvidTarget.getMultiscale2dName(),
+                libdvid::XY, resLevel, tile_locs_array);
+        } else {
+          //#else
+          data.resize(tile_locs_array.size());
+          //        std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
+          for (size_t i = 0; i < tile_locs_array.size(); ++i) {
+            data[i] = m_reader.getService()->get_tile_slice_binary(
+                  m_dvidTarget.getMultiscale2dName(),
+                  libdvid::XY, resLevel, tile_locs_array[i]);
+          }
         }
-#endif
+//#endif
       } catch (libdvid::DVIDException &e) {
         LWARN() << e.what();
       }
