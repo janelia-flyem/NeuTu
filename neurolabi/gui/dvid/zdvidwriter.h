@@ -32,6 +32,7 @@ class QProcess;
 class ZFlyEmBookmark;
 class ZDvidSynapse;
 class ZFlyEmToDoItem;
+class ZArray;
 
 class ZDvidWriter : public QObject
 {
@@ -160,6 +161,8 @@ public:
 
   void deleteToDoItem(int x, int y, int z);
   void writeToDoItem(const ZFlyEmToDoItem &item);
+
+  void writeLabel(const ZArray &label);
 
   inline int getStatusCode() const {
     return m_statusCode;

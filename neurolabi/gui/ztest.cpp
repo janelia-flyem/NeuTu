@@ -20091,7 +20091,8 @@ void ZTest::test(MainWindow *host)
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-      if (ZString(annotation.getName()).startsWith("KC")) {
+      if (ZString(annotation.getName()).startsWith("KC-s") ||
+          ZString(annotation.getName()).startsWith("KC-p")) {
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
         for (std::vector<ZDvidSynapse>::const_iterator
              iter = synapseArray.begin(); iter != synapseArray.end(); ++iter) {
@@ -20111,21 +20112,36 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+
+  stack.binarize(10);
+
+  ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
+
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t10.sobj");
+
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t10_roi.json");
+#endif
+
+
 #if 1
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
 
-  stack.binarize(5);
+  stack.binarize(10);
 
   ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
 
-  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse.sobj");
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t10.sobj");
 
   ZJsonArray array =
       ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
-  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_roi.json");
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t10_roi.json");
 #endif
-
 
   std::cout << "Done." << std::endl;
 }

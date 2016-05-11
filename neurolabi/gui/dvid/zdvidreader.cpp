@@ -2017,12 +2017,17 @@ ZDvidSynapse ZDvidReader::readSynapse(
 
 std::string ZDvidReader::readMasterNode() const
 {
+  return ReadMasterNode(getDvidTarget());
+}
+
+std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
+{
   std::string master;
   std::string rootNode =
-      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+      GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(getDvidTarget());
+    ZDvidUrl dvidUrl(target);
     std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
         "/branches/key/master";
     LINFO() << "Master url: " << url;

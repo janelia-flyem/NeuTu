@@ -31,7 +31,7 @@ public:
    *
    * \return 1 if index is out of range
    */
-  int getDim(int index);
+  int getDim(int index) const;
 
   /*!
    * \brief Set all array elements to 0
