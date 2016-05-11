@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "protocolchooser.h"
+#include "protocoldialog.h"
 #include "protocolmetadata.h"
 
 #include "dvid/zdvidtarget.h"
@@ -13,6 +14,12 @@
  * unloads, starts, ends, and generally manages the user's interaction
  * with protocols; it's not a UI component itself, but it knows
  * which dialogs and windows to open at any given time
+ *
+ * to add new protocol:
+ * -- (procedure is tentative, in development!)
+ * -- subclass ProtocolDialog and implement
+ * -- add name to protocolNames array
+ * -- add to if-else chaing in startProtocolRequested()
  */
 ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
 {
@@ -35,8 +42,7 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
 // names of available protocols; thank you, C++, for making
 //  constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
-        << "Test protocol 1" 
-        << "Test protocol 2";
+        << "Do N things";
 
 
 void ProtocolSwitcher::openProtocolRequested() {
@@ -102,28 +108,35 @@ ProtocolMetadata ProtocolSwitcher::readMetadata() {
     }
 }
 
+// start a new protocol
 void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
-    // instantiate dialog
-    // set "loading" message
-    // show/raise dialog
-    // trigger load of saved protocol data
-    // clear "loading message"
-
-
     // if-else chain not ideal, but C++ is too stupid to switch 
-    //  on strings; however, the chain won't get *too* long
-    //  (I have to write all those protocols...)
-    if (protocolName == "Test protocol 1") {
-        std::cout << "prsw: Test protocol 1" << std::endl;
-    } else if (protocolName == "Test protocol 2") {
-        std::cout << "prsw: Test protocol 2" << std::endl;
+    //  on strings; however, the chain won't get *too* long,
+    //  so it's not that bad
+    if (protocolName == "Do N things") {
+        m_activeProtocol = new ProtocolDialog(m_parent);
     } else {
         // should never happen
+        return;
     }
+
+    // connect protocol connections:
+
+
+
+    // trigger protocol initialization and go to town
+    // what init is there?  could be interactive or not, so
+    //  has to be in this thread; if the protocol needs to do
+    //  something long-running, it has to manage it
+
+    m_activeProtocol->initialize();
+    m_activeProtocol->raise();
+    m_activeProtocol->show();
 
 }
 
+// load a saved protocol
 void ProtocolSwitcher::loadProtocolRequested() {
 
     // this also needs to have the saved info as input

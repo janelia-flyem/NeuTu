@@ -618,6 +618,7 @@ HEADERS += mainwindow.h \
     protocols/protocolswitcher.h \
     protocols/protocolchooser.h \
     protocols/protocolmetadata.h \
+    protocols/protocoldialog.h \
     widgets/zcolorlabel.h
 
 FORMS += dialogs/settingdialog.ui \
@@ -694,6 +695,7 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
+    protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1090,6 +1092,7 @@ SOURCES += main.cpp \
     protocols/protocolswitcher.cpp \
     protocols/protocolchooser.cpp \
     protocols/protocolmetadata.cpp \
+    protocols/protocoldialog.cpp \
     widgets/zcolorlabel.cpp
 
 OTHER_FILES += \
