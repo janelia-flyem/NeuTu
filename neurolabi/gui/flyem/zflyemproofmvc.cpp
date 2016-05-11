@@ -805,7 +805,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
-    getCompleteDocument()->setDvidTarget(target);
+    getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 //    getCompleteDocument()->beginObjectModifiedMode(
 //          ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    getCompleteDocument()->updateTileData();
@@ -831,16 +831,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
-    m_splitProject.setDvidTarget(target);
-    m_mergeProject.setDvidTarget(target);
+    m_splitProject.setDvidTarget(reader.getDvidTarget());
+    m_mergeProject.setDvidTarget(reader.getDvidTarget());
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
 
     m_dvidInfo = reader.readGrayScaleInfo();
 
-    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
-        target.getAddressWithPort();
+    std::string startLog = "Start using UUID " +
+        reader.getDvidTarget().getUuid() + "@" +
+        reader.getDvidTarget().getAddressWithPort();
 
     ZJsonObject infoJson = reader.readInfo();
     if (infoJson.hasKey("Alias")) {
@@ -856,10 +857,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(target);
+      getSupervisor()->setDvidTarget(reader.getDvidTarget());
     }
 
-    if (target.isValid()) {
+    if (reader.getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
       ZDvidSynapseEnsemble *se =
           getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
@@ -873,7 +874,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getProgressSignal()->advanceProgress(0.5);
 
-    emit dvidTargetChanged(target);
+    emit dvidTargetChanged(reader.getDvidTarget());
   }
   getProgressSignal()->endProgress();
 
@@ -912,7 +913,8 @@ void ZFlyEmProofMvc::setDvidTarget()
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
   if (m_dvidDlg != NULL) {
-    return m_dvidDlg->getDvidTarget();
+    return getCompleteDocument()->getDvidReader().getDvidTarget();
+//    return m_dvidDlg->getDvidTarget();
   }
 
   return ZDvidTarget();
@@ -3012,23 +3014,28 @@ void ZFlyEmProofMvc::getROIs()
 
             for(std::size_t i=0; i<keys.size(); i++)
             {
-                std::size_t found = keys.at(i).find("roi");
-
-                if(found!=std::string::npos)
-                {
-
-                    ZObject3dScan roi = reader.readRoi(keys.at(i));
-
-                    if(!roi.isEmpty())
-                    {
-                        m_roiList.push_back(keys.at(i));
-                        m_loadedROIs.push_back(roi);
-
-                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
-                        m_roiSourceList.push_back(source);
-                    }
-
+              std::string roiName = keys.at(i);
+              ZJsonObject roiJson(insList.value(roiName.c_str()));
+              if (roiJson.hasKey("Base")) {
+                ZJsonObject baseJson(roiJson.value("Base"));
+                std::string typeName =
+                    ZJsonParser::stringValue(baseJson["TypeName"]);
+                if (typeName != "roi") {
+                  roiName = "";
                 }
+              }
+
+              if (!roiName.empty()) {
+                ZObject3dScan roi = reader.readRoi(roiName);
+                if (!roi.isEmpty()) {
+                  m_roiList.push_back(roiName);
+                  m_loadedROIs.push_back(roi);
+
+                  std::string source =
+                      ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+                  m_roiSourceList.push_back(source);
+                }
+              }
             }
         }
 

@@ -20020,7 +20020,7 @@ void ZTest::test(MainWindow *host)
   std::cout << objJson1.size() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
 
   ZDvidReader reader;
@@ -20065,6 +20065,14 @@ void ZTest::test(MainWindow *host)
         ZJsonFactory::MakeJsonArray(alpha3, ZJsonFactory::OBJECT_SPARSE);
     alpha3Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha3.json");
   }
+#endif
+
+#if 1
+  std::string name = "@MB6";
+  std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(name);
+
+  std::cout << "Root node for " << name << ": " << rootNode << std::endl;
+
 #endif
 
 

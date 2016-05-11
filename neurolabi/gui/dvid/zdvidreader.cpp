@@ -27,6 +27,7 @@
 #include "zflyembodyannotation.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
+#include "neutubeconfig.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -153,10 +154,10 @@ bool ZDvidReader::open(
   }
   */
 
+  ZDvidTarget target;
+  target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
-  m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
-
-  return startService();
+  return open(target);
 }
 
 bool ZDvidReader::open(const ZDvidTarget &target)
@@ -178,6 +179,11 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 //  m_dvidClient->setDvidTarget(target);
 
   m_dvidTarget = target;
+
+  std::string masterNode = readMasterNode();
+  if (!masterNode.empty()) {
+    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  }
 
   return startService();
 }
@@ -2007,6 +2013,28 @@ ZDvidSynapse ZDvidReader::readSynapse(
   }
 
   return ZDvidSynapse();
+}
+
+std::string ZDvidReader::readMasterNode() const
+{
+  std::string master;
+  std::string rootNode =
+      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+  if (!rootNode.empty()) {
+    ZDvidBufferReader reader;
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
+        "/branches/key/master";
+    LINFO() << "Master url: " << url;
+    reader.read(url.c_str());
+    ZJsonArray branchJson;
+    branchJson.decodeString(reader.getBuffer().data());
+    if (branchJson.size() > 0) {
+      master = ZJsonParser::stringValue(branchJson.at(0));
+    }
+  }
+
+  return master;
 }
 
 std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
