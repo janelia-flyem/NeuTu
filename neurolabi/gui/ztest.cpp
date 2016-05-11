@@ -20067,12 +20067,63 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   std::string name = "@MB6";
   std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(name);
 
   std::cout << "Root node for " << name << ": " << rootNode << std::endl;
 
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    ZWeightedPointArray ptArray;
+
+    std::set<uint64_t> bodyIdArray = reader.readAnnnotatedBodySet();
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      if (ZString(annotation.getName()).startsWith("KC")) {
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = synapseArray.begin(); iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+          ZIntPoint blockIndex = dvidInfo.getBlockIndex(synapse.getPosition());
+          ptArray.append(blockIndex.toPoint(), 1.0);
+        }
+      }
+    }
+
+    std::cout << ptArray.size() << " synapses" << std::endl;
+
+    ZStackFactory factory;
+    ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
+    stack->save(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+  }
+
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+
+  stack.binarize(5);
+
+  ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
+
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse.sobj");
+
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_roi.json");
 #endif
 
 
