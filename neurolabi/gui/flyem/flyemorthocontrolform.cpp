@@ -30,13 +30,30 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
-  connect(ui->showSegCheckBox, SIGNAL(clicked(bool)),
+  connect(ui->showSegCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(showingSeg(bool)));
+  connect(ui->dataCheckBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(showingData(bool)));
+}
+
+void FlyEmOrthoControlForm::toggleShowingSeg()
+{
+  ui->showSegCheckBox->toggle();
+}
+
+void FlyEmOrthoControlForm::toggleData()
+{
+  ui->dataCheckBox->toggle();
 }
 
 bool FlyEmOrthoControlForm::isShowingSeg() const
 {
   return ui->showSegCheckBox->isChecked();
+}
+
+bool FlyEmOrthoControlForm::isDataVisible() const
+{
+  return ui->dataCheckBox->isChecked();
 }
 
 ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const

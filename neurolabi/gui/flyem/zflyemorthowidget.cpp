@@ -1,6 +1,7 @@
 #include "zflyemorthowidget.h"
 
 #include <QGridLayout>
+#include <QKeyEvent>
 
 #include "zsharedpointer.h"
 #include "flyem/zflyemorthodoc.h"
@@ -12,6 +13,7 @@
 #include "zwidgetmessage.h"
 #include "widgets/zimagewidget.h"
 #include "zcrosshair.h"
+#include "zflyemproofpresenter.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -53,7 +55,9 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
 
   connectSignalSlot();
 
+  setDataVisible(m_controlForm->isDataVisible());
   setSegmentationVisible(m_controlForm->isShowingSeg());
+
 }
 
 void ZFlyEmOrthoWidget::syncView()
@@ -86,6 +90,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SLOT(locateMainWindow()));
   connect(m_controlForm, SIGNAL(showingSeg(bool)),
           this, SLOT(setSegmentationVisible(bool)));
+  connect(m_controlForm, SIGNAL(showingData(bool)),
+          this, SLOT(setDataVisible(bool)));
 
   connect(getDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
@@ -105,6 +111,19 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_yzMvc->getPresenter(),
           SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
+  connect(m_xyMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
+  connect(m_xzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
+  connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+          this, SLOT(toggleSegmentation()));
+
+  connect(m_xyMvc->getCompletePresenter(), SIGNAL(togglingData()),
+          this, SLOT(toggleData()));
+  connect(m_xzMvc->getCompletePresenter(), SIGNAL(togglingData()),
+          this, SLOT(toggleData()));
+  connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingData()),
+          this, SLOT(toggleData()));
 }
 
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
@@ -196,6 +215,32 @@ void ZFlyEmOrthoWidget::setSegmentationVisible(bool on)
   m_xyMvc->setSegmentationVisible(on);
   m_yzMvc->setSegmentationVisible(on);
   m_xzMvc->setSegmentationVisible(on);
+}
+
+void ZFlyEmOrthoWidget::setDataVisible(bool on)
+{
+  m_xyMvc->showData(on);
+  m_yzMvc->showData(on);
+  m_xzMvc->showData(on);
+}
+
+void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
+{
+  switch (event->key()) {
+  case Qt::Key_D:
+    toggleSegmentation();
+    break;
+  }
+}
+
+void ZFlyEmOrthoWidget::toggleSegmentation()
+{
+  m_controlForm->toggleShowingSeg();
+}
+
+void ZFlyEmOrthoWidget::toggleData()
+{
+  m_controlForm->toggleData();
 }
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)

@@ -40,6 +40,7 @@ void ZFlyEmProofPresenter::init()
   m_splitWindowMode = false;
   m_highTileContrast = false;
   m_smoothTransform = false;
+  m_showingData = false;
 
   m_synapseContextMenu = NULL;
 
@@ -205,6 +206,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F2:
     emit selectingBody();
+    processed = true;
+    break;
+  case Qt::Key_D:
+    emit togglingData();
     processed = true;
     break;
   default:
@@ -638,6 +643,9 @@ void ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     break;
+  case ZStackOperator::OP_TOGGLE_SEGMENTATION:
+
+    break;
   default:
     break;
   }
@@ -666,6 +674,16 @@ void ZFlyEmProofPresenter::setHighTileContrast(bool high)
 void ZFlyEmProofPresenter::setSmoothTransform(bool on)
 {
   m_smoothTransform = on;
+}
+
+void ZFlyEmProofPresenter::showData(bool on)
+{
+  m_showingData = on;
+}
+
+bool ZFlyEmProofPresenter::showingData() const
+{
+  return m_showingData;
 }
 
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)

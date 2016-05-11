@@ -2354,6 +2354,41 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
   }
 }
 
+void ZFlyEmProofMvc::toggleSegmentation()
+{
+  ZDvidLabelSlice *slice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    showSegmentation(!slice->isVisible());
+  }
+}
+
+void ZFlyEmProofMvc::showData(bool visible)
+{
+  getCompletePresenter()->showData(visible);
+  getDocument()->beginObjectModifiedMode(
+        ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (ZStackObjectGroup::iterator iter = getDocument()->getObjectGroup().begin();
+       iter != getDocument()->getObjectGroup().end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE ||
+        obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
+        obj->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE ||
+        obj->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST ||
+        obj->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+      obj->setVisible(visible);
+      getDocument()->processObjectModified(obj);
+    }
+  }
+  getDocument()->endObjectModifiedMode();
+  getDocument()->notifyObjectModified();
+}
+
+void ZFlyEmProofMvc::toggleData()
+{
+  showData(!getCompletePresenter()->showingData());
+}
+
 void ZFlyEmProofMvc::showTodo(bool visible)
 {
   getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_TODO_LIST, visible);
