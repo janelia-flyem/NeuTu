@@ -29,10 +29,17 @@ private slots:
     void loadProtocolRequested();
 
 private:
+    enum Status {
+        PROTOCOL_ACTIVE,
+        PROTOCOL_INACTIVE,
+        PROTOCOL_INITIALIZING,
+        PROTOCOL_LOADING
+    };
+
     QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
     ProtocolChooser * m_chooser;
-    bool m_active;
+    Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;
 
     ProtocolMetadata readMetadata();

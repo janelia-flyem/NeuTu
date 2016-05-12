@@ -25,7 +25,10 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
     
 }
 
-void ProtocolDialog::initialize() {
+/*
+ * start the protocol anew; returns success status
+ */
+bool ProtocolDialog::initialize() {
 
     // ask user how many things to do; test proxy for
     //  asking the user for a filename or something
@@ -36,16 +39,20 @@ void ProtocolDialog::initialize() {
     if (ok) {
         setNThings(n);
     } else {
-        setNThings(5);
+        return false;
     }
 
     std::cout << "prdia: nThings = " << getNThings() << std::endl;
 
     // generate pending/finished lists
+    // set current item
+    // remove nThings as attribute (don't need after lists generated)!
     // save state to dvid
-    // set current item; update current item label
+    // update current item label
     // update progress label
 
+
+    return true;
 
 }
 

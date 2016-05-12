@@ -16,7 +16,7 @@ public:
     ~ProtocolDialog();    
     void setNThings(int nThings);
     int getNThings();
-    virtual void initialize();
+    virtual bool initialize();
 
 private:
     Ui::ProtocolDialog *ui;

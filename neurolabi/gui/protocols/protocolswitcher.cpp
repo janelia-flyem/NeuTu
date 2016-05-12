@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QMessageBox>
+
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
@@ -26,9 +28,7 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
     m_parent = parent;
     m_chooser = new ProtocolChooser(m_parent);
 
-    // flag is true if a protocol is active, including if it's
-    //  being started or loaded
-    m_active = false;
+    m_protocolStatus = PROTOCOL_INACTIVE;
 
 
 
@@ -50,12 +50,17 @@ void ProtocolSwitcher::openProtocolRequested() {
         return;
     }
 
-    if (m_active) {
+    if (m_protocolStatus == PROTOCOL_ACTIVE) {
         // show protocol dialog for the protocol we're loading
-        std::cout << "protocol dialogs not implemented yet" << std::endl;
-
+        m_activeProtocol->raise();
+        m_activeProtocol->show();
+    } else if (m_protocolStatus == PROTOCOL_INITIALIZING) {
+        // show a message
+        QMessageBox msgBox;
+        msgBox.setText("A protocol is initializing...");
+        msgBox.exec();
     } else {
-        // show the protocol chooser
+        // PROTOCOL_INACTIVE: show the protocol chooser
 
         // at some point, we will look for saved protocols to load:
         //      set "loading" message
@@ -77,19 +82,18 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     ProtocolMetadata metadata = readMetadata();
     if (metadata.isActive()) {
 
-        m_active = true;
-
-
         std::cout << "active protocol not implemented yet" << std::endl;
 
         // create dialog first, empty, with loading message;
         //  it may be shown quickly
         // load saved protocol data
+        m_protocolStatus = PROTOCOL_LOADING;
         // populate dialog
         // drop loading message
+        m_protocolStatus = PROTOCOL_ACTIVE;
 
     } else {
-        m_active = false;
+        m_protocolStatus = PROTOCOL_INACTIVE;
         // nothing else to do here; we can't set up the protocol
         //  chooser because the information about which protocols
         //  can be initiated or loaded can change over time
@@ -111,6 +115,8 @@ ProtocolMetadata ProtocolSwitcher::readMetadata() {
 // start a new protocol
 void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
+    m_protocolStatus = PROTOCOL_INITIALIZING;
+
     // if-else chain not ideal, but C++ is too stupid to switch 
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
@@ -122,7 +128,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     }
 
     // connect protocol connections:
-
+    // or: pass in whatever it needs to connect itself?
 
 
     // trigger protocol initialization and go to town
@@ -130,14 +136,30 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     //  has to be in this thread; if the protocol needs to do
     //  something long-running, it has to manage it
 
-    m_activeProtocol->initialize();
-    m_activeProtocol->raise();
-    m_activeProtocol->show();
+    bool success = m_activeProtocol->initialize();
+
+    // init returns success?
+    // then: if success, raise/show;
+    //  maybe do the connections here?  or will the protocol want them connected
+    //      before init?
+    //   if not, unconnect
+
+    if (success) {
+        m_activeProtocol->raise();
+        m_activeProtocol->show();
+        m_protocolStatus = PROTOCOL_ACTIVE;
+    } else {
+
+
+        m_protocolStatus = PROTOCOL_INACTIVE;
+    }
 
 }
 
 // load a saved protocol
 void ProtocolSwitcher::loadProtocolRequested() {
+
+    // handle m_protocolStatus state
 
     // this also needs to have the saved info as input
 
