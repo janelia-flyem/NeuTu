@@ -423,5 +423,10 @@ void ZCubeArray::display(
 {
 }
 
+void ZCubeArray::clear()
+{
+  m_cubeArray.clear();
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
 

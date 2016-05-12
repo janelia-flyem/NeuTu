@@ -175,6 +175,8 @@ public:
   size_t size();
   void setCubeArray(std::vector<Z3DCube> cubeArray);
 
+  void clear();
+
 private:
   std::vector<Z3DCube> m_cubeArray;
 
