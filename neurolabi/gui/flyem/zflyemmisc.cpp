@@ -305,12 +305,11 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
 }
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
-    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
 {
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
 
-  int dsIntv = 0;
   if (dsIntv > 0) {
     dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
     dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
@@ -347,7 +346,7 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
       for (i = 0; i <= cwidth; i++) {
         bool goodCube = (sampleInterval == 0);
         if (!goodCube) {
-          goodCube = k % sampleInterval;
+          goodCube = (k % sampleInterval == 0);
         }
         if (goodCube) {
           if (array[offset] > 0) {
@@ -659,23 +658,23 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-//  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(address);
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
-//  std::string error_msg;
+  std::string error_msg;
 
 //  qDebug() << "address: " << address;
 //  qDebug() << "path: " << qurl.path();
 
 
-//  try {
-//    statusCode = connection.make_request(
-//          "/.." + qurl.path().toStdString(), connMethod, payload, results,
-//          error_msg, type);
-//  } catch (libdvid::DVIDException &e) {
-//    std::cout << e.what() << std::endl;
-//    statusCode = e.getStatus();
-//  }
+  try {
+    statusCode = connection.make_request(
+          "/.." + qurl.path().toStdString(), connMethod, payload, results,
+          error_msg, type);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    statusCode = e.getStatus();
+  }
 
   return results;
 }

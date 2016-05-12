@@ -525,6 +525,35 @@ void ZFlyEmProofMvc::updateBodyWindow()
   }
 }
 
+void ZFlyEmProofMvc::updateBodyWindowDeep()
+{
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllSwc();
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processEventFunc();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+    }
+  }
+#if 0
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+#endif
+}
+
 void ZFlyEmProofMvc::updateSkeletonWindow()
 {
   if (m_skeletonWindow != NULL) {
@@ -1742,7 +1771,7 @@ void ZFlyEmProofMvc::updateSplitBody()
 //      updateCoarseBodyWindow(false, false, true);
     }
     ZOUT(LINFO(), 3) << "Updating body window.";
-    updateBodyWindow();
+    updateBodyWindowDeep();
   }
 }
 

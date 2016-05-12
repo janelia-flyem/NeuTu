@@ -121,6 +121,9 @@ void ZFlyEmBody3dDoc::BodyEvent::print() const
   case ACTION_REMOVE:
     std::cout << "Remove: ";
     break;
+  case ACTION_FORCE_ADD:
+    std::cout << "Force add: ";
+    break;
   case ACTION_NULL:
     std::cout << "No action: ";
     break;
@@ -304,18 +307,27 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
   for (QMap<uint64_t, BodyEvent>::iterator iter = actionMap.begin();
        iter != actionMap.end(); ++iter) {
     BodyEvent &event = iter.value();
-    if (event.getAction() == BodyEvent::ACTION_ADD) {
+    switch (event.getAction()) {
+    case BodyEvent::ACTION_ADD:
       if (bodySet.contains(event.getBodyId())) {
         event.setAction(BodyEvent::ACTION_UPDATE);
       } else {
         bodySet.insert(event.getBodyId());
       }
-    } else if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+      break;
+    case BodyEvent::ACTION_FORCE_ADD:
+      event.setAction(BodyEvent::ACTION_UPDATE);
+      bodySet.insert(event.getBodyId());
+      break;
+    case BodyEvent::ACTION_REMOVE:
       if (bodySet.contains(event.getBodyId())) {
         bodySet.remove(event.getBodyId());
       } else {
         event.setAction(BodyEvent::ACTION_NULL);
       }
+      break;
+    default:
+      break;
     }
 //    event.print();
   }
@@ -389,10 +401,10 @@ void ZFlyEmBody3dDoc::setBodyType(EBodyType type)
   m_bodyType = type;
   switch (m_bodyType) {
   case BODY_COARSE:
-    setTag(NeuTube::Document::FLYEM_QUICK_BODY_COARSE);
+    setTag(NeuTube::Document::FLYEM_BODY_3D_COARSE);
     break;
   case BODY_FULL:
-    setTag(NeuTube::Document::FLYEM_QUICK_BODY);
+    setTag(NeuTube::Document::FLYEM_BODY_3D);
     break;
   case BODY_SKELETON:
     setTag(NeuTube::Document::FLYEM_SKELETON);

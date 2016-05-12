@@ -229,6 +229,7 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
   void updateSplitBody();

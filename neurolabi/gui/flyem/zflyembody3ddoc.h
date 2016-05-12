@@ -34,7 +34,8 @@ public:
   class BodyEvent {
   public:
     enum EAction {
-      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE
+      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
+      ACTION_UPDATE
     };
 
     typedef uint64_t TUpdateFlag;

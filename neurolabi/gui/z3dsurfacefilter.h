@@ -44,6 +44,8 @@ public:
 
     void initRenderers(size_t n);
 
+    void invalidateRenderer(const std::string &source);
+
 public slots:
     void updateSurfaceVisibleState();
 

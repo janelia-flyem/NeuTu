@@ -10,6 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
+class QSpinBox;
 class QLabel;
 class QPushButton;
 class QTableWidget;
@@ -60,9 +61,14 @@ public slots:
     void updateROIRendering(QTableWidgetItem* item);
     void updateSelection();
     void updateROISelections(QModelIndex idx);
+    void updateSelectedROIs();
+
 
 protected:
     void closeEvent(QCloseEvent * event);
+
+private:
+    int getDsIntv() const;
 
 public:
     //
@@ -79,6 +85,10 @@ public:
 
     //
     QCheckBox *selectAll;
+
+    QSpinBox *m_dsIntvWidget;
+    QPushButton *m_updateButton;
+
     QTableWidget *tw_ROIs;
 
     //
