@@ -42,21 +42,25 @@ bool ProtocolDialog::initialize() {
     bool ok;
     int n = QInputDialog::getInt(this, "How many things?",
         "How many things", 5, 1, 100, 1, &ok);
-    if (ok) {
-        setNThings(n);
-    } else {
+    if (!ok) {
         return false;
     }
 
-    std::cout << "prdia: nThings = " << getNThings() << std::endl;
 
     // generate pending/finished lists
+    m_finishedList = QStringList();
+    m_pendingList = QStringList();
+    for (int i=0; i<n; i++) {
+        m_pendingList << QString("Thing %1").arg(i);
+    }
+
+
     // set current item
-    // remove nThings as attribute (don't need after lists generated)!
     // save state to dvid
     // update current item label
-    // update progress label
 
+    // update progress label
+    updateProgressLabel();
 
     return true;
 
@@ -78,31 +82,30 @@ void ProtocolDialog::onCompleteButton() {
     // complete = mark protocol as finished; does not
     //  exit, but once exited, can't be reopened
 
+    // change status
+    // save completed data
+    // remove save incomplete (currently I plan diff.
+    //  keys in dvid for complete and incomplete
+
     std::cout << "prdia: complete button clicked" << std::endl;
 }
 
 void ProtocolDialog::onExitButton() {
     // exit = save and exit protocol; can be reopened and
     //  worked on later
-
-    // save?  probably not, should already have state saved
-
-    std::cout << "prdia: exit button clicked" << std::endl;
-
     emit protocolExiting();
-
 }
 
 void ProtocolDialog::onGotoButton() {
     std::cout << "prdia: go to button clicked" << std::endl;
 }
 
-void ProtocolDialog::setNThings(int nThings) {
-    this->m_nThings = nThings;
-}
-
-int ProtocolDialog::getNThings() {
-    return m_nThings;
+void ProtocolDialog::updateProgressLabel() {
+    // Progress:  #/# (#%)
+    int nFinished = m_finishedList.size();
+    int nTotal = m_pendingList.size() + nFinished;
+    float percent = (float) nFinished / nTotal;
+    ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent));
 }
 
 ProtocolDialog::~ProtocolDialog()

@@ -14,8 +14,6 @@ class ProtocolDialog : public QDialog
 public:
     explicit ProtocolDialog(QWidget *parent = 0);
     ~ProtocolDialog();    
-    void setNThings(int nThings);
-    int getNThings();
     virtual bool initialize();
 
 signals:
@@ -31,7 +29,9 @@ private slots:
 
 private:
     Ui::ProtocolDialog *ui;
-    int m_nThings;
+    QStringList m_pendingList;
+    QStringList m_finishedList;
+    void updateProgressLabel();
 };
 
 #endif // PROTOCOLDIALOG_H
