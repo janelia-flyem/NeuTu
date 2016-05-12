@@ -55,11 +55,16 @@ public:
   void configure(const ZJsonObject &obj);
   void enableAutoStatusCheck(bool on);
   bool autoStatusCheck() const;
+  bool parallelTileFetching() const;
+  void setParallelTileFetching(bool on);
 
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
   static int GetVerboseLevel();
   static void SetVerboseLevel(int level);
+  static bool ParallelTileFetching();
+  static void SetParallelTileFetching(bool on);
+
   static void Configure(const ZJsonObject &obj);
 
   static void EnableAutoStatusCheck(bool on);
