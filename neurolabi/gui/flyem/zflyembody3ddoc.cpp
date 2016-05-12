@@ -204,7 +204,7 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
   case BodyEvent::ACTION_REMOVE:
-    removeBodyFunc(event.getBodyId());
+    removeBodyFunc(event.getBodyId(), true);
     break;
   case BodyEvent::ACTION_ADD:
     addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
@@ -462,7 +462,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
       tree = makeBodyModel(bodyId, getBodyType());
     }
 
-    if (resLevel > 0) {
+    if (resLevel > 0 && getBodyType() == ZFlyEmBody3dDoc::BODY_FULL) {
       QMutexLocker locker(&m_eventQueueMutex);
       BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
       bodyEvent.setBodyColor(color);
@@ -499,7 +499,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 
 //    delete tree;
     beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-    removeBodyFunc(bodyId);
+    removeBodyFunc(bodyId, false);
     addObject(tree, true);
     processObjectModified(tree);
     endObjectModifiedMode();
@@ -687,10 +687,10 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
   m_bodySet.remove(bodyId);
-  removeBodyFunc(bodyId);
+  removeBodyFunc(bodyId, true);
 }
 
-void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
+void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
   QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
@@ -703,28 +703,30 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
       dumpGarbage(*iter);
     }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
-    }
+    if (removingAnnotation) {
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
-    }
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
     }
 
     endObjectModifiedMode();

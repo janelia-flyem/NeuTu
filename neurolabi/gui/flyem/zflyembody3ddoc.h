@@ -176,7 +176,7 @@ private:
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
-  void removeBodyFunc(uint64_t bodyId);
+  void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
 
   void connectSignalSlot();
   void updateBodyFunc();

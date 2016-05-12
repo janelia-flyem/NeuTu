@@ -20118,15 +20118,15 @@ void ZTest::test(MainWindow *host)
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
 
-  stack.binarize(10);
+  stack.binarize(30);
 
   ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
 
-  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t10.sobj");
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t30.sobj");
 
   ZJsonArray array =
       ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
-  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t10_roi.json");
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t30_roi.json");
 #endif
 
 

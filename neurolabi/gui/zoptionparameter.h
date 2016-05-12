@@ -221,7 +221,7 @@ void ZOptionParameter<T, T2>::selectNext()
 template<class T, class T2>
 bool ZOptionParameter<T, T2>::isSelected(const T &value) const
 {
-#if defined(_DEBUG_)
+#if defined(_DEBUG_2)
   if (!m_options.contains(value)) {
     LERROR() << QString("Option <%1> does not exist.").arg(value);
   }
