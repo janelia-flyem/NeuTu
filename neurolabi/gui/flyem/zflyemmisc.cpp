@@ -310,11 +310,13 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
 
-  int dsIntv = 1;
-  dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
-  dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  int dsIntv = 0;
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
 
-  int sampleInterval = 1;
+  int sampleInterval = dsIntv;
 
   ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
@@ -343,7 +345,11 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   for (k = 0; k <= cdepth; k ++) {
     for (j = 0; j <= cheight; j++) {
       for (i = 0; i <= cwidth; i++) {
-        if (k % sampleInterval == 0) {
+        bool goodCube = (sampleInterval == 0);
+        if (!goodCube) {
+          goodCube = k % sampleInterval;
+        }
+        if (goodCube) {
           if (array[offset] > 0) {
             std::vector<int> faceArray;
             for (n = 0; n < 6; n++) {

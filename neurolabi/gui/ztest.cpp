@@ -20092,7 +20092,9 @@ void ZTest::test(MainWindow *host)
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
       if (ZString(annotation.getName()).startsWith("KC-s") ||
-          ZString(annotation.getName()).startsWith("KC-p")) {
+          ZString(annotation.getName()).startsWith("KC-p") ||
+          ZString(annotation.getName()).startsWith("KC-any") ||
+          ZString(annotation.getName()).startsWith("KC-c")) {
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
         for (std::vector<ZDvidSynapse>::const_iterator
              iter = synapseArray.begin(); iter != synapseArray.end(); ++iter) {
@@ -20112,7 +20114,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
 
@@ -20128,7 +20130,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
 
