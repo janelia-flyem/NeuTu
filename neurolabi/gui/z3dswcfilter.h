@@ -95,6 +95,7 @@ signals:
 
 public slots:
   void prepareColor();
+  void addNodeType(int type);
   void setClipPlanes();
   void adjustWidgets();
   void selectSwc(QMouseEvent *e, int w, int h);
@@ -120,6 +121,8 @@ private:
   void initTopologyColor();
   void initTypeColor();
   void initSubclassTypeColor();
+
+  static QString GetTypeName(int type);
 
   void decompseSwcTree();
   glm::vec4 getColorByType(Swc_Tree_Node *n);

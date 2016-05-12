@@ -6,9 +6,53 @@
 
 using namespace std;
 
-ZSwcConnector::ZSwcConnector() : m_minDist(20.0)
+ZSwcConnector::ZSwcConnector()
 {
+  init();
 }
+
+void ZSwcConnector::init()
+{
+  m_minDist = 20.0;
+  m_surfaceDist = false;
+  m_dist = 0.0;
+}
+
+void ZSwcConnector::useSurfaceDist(bool on)
+{
+  m_surfaceDist = on;
+}
+
+double ZSwcConnector::computeDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2) const
+{
+  double d = 0.0;
+
+  if (m_surfaceDist) {
+    d = SwcTreeNode::scaledSurfaceDistance(
+          tn1, tn2, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+          m_resolution.voxelSizeZ());
+  } else {
+    d = SwcTreeNode::scaledDistance(
+          tn1, tn2, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+          m_resolution.voxelSizeZ());
+  }
+
+  if (d < 0.0) {
+    double r1 = SwcTreeNode::radius(tn1);
+    double r2 = SwcTreeNode::radius(tn2);
+    if (r1 == 0.0 || r2 == 0.0) {
+      d = 0.0;
+    } else {
+      d = SwcTreeNode::scaledDistance(
+            tn1, tn2, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+            m_resolution.voxelSizeZ()) / r1 / r2;
+    }
+  }
+
+  return d;
+}
+
 
 pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
       const ZSwcPath &hook, const ZSwcTree &loop)
@@ -22,18 +66,14 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
     m_dist = Infinity;
     for (const Swc_Tree_Node *tn = loop.begin(); tn != NULL; tn = loop.next()) {
       if (SwcTreeNode::isRegular(tn)) {
-        double d = SwcTreeNode::scaledDistance(
-              head, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
-              m_resolution.voxelSizeZ());
+        double d = computeDistance(head, tn);
         if (d < m_dist) {
           m_dist = d;
           conn.first = head;
           conn.second = const_cast<Swc_Tree_Node*>(tn);
         }
         if (tail != NULL) {
-          d = SwcTreeNode::scaledDistance(
-                tail, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
-                m_resolution.voxelSizeZ());
+          d = computeDistance(tail, tn);
           if (d < m_dist) {
             m_dist = d;
             conn.first = tail;
@@ -84,9 +124,12 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
       hookIter.begin();
       while (hookIter.hasNext()) {
         Swc_Tree_Node *head = hookIter.next();
+        double d = computeDistance(head, tn);
+        /*
         double d = SwcTreeNode::scaledDistance(
               head, tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
               m_resolution.voxelSizeZ());
+              */
         if (d < m_dist) {
           m_dist = d;
           conn.first = head;
@@ -141,9 +184,12 @@ ZGraph* ZSwcConnector::buildConnection(
       if (SwcTreeNode::isRegular(tn1) && SwcTreeNode::isRegular(tn2)) {
         if (regularRootArray[i] != regularRootArray[j]) {
 //          double w = SwcTreeNode::distance(nodeArray[i], nodeArray[j]);
+          double w = computeDistance(tn1, tn2);
+          /*
           double w = SwcTreeNode::scaledDistance(
                 tn1, tn2, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
                 m_resolution.voxelSizeZ());
+                */
           if (w <= m_minDist) {
             graph->addEdgeFast(i, j, w + 0.1);
           }

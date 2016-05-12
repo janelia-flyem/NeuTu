@@ -150,6 +150,21 @@ TEST(SwcTreeNode, Geometry)
 
   dist = SwcTreeNode::distance(tn1, 1, 0, 0);
   EXPECT_DOUBLE_EQ(1.0, dist);
+
+  dist = SwcTreeNode::scaledDistance(tn1, tn2, 1, 2, 3);
+  EXPECT_DOUBLE_EQ(0.0, dist);
+
+  dist = SwcTreeNode::scaledSurfaceDistance(tn1, tn2, 1, 2, 3);
+  EXPECT_DOUBLE_EQ(-2.0, dist);
+
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(1, 2, 3, 2);
+
+  dist = SwcTreeNode::scaledDistance(tn1, tn3, 1, 2, 3);
+  EXPECT_DOUBLE_EQ(9.8994949366116654, dist);
+
+  dist = SwcTreeNode::scaledSurfaceDistance(tn1, tn3, 1, 2, 3);
+  EXPECT_DOUBLE_EQ(6.8994949366116654, dist);
+
 }
 
 TEST(SwcTreeNode, Crossover)
