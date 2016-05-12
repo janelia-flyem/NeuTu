@@ -18,6 +18,17 @@ public:
     int getNThings();
     virtual bool initialize();
 
+signals:
+    void protocolExiting();
+
+private slots:
+    void onFirstButton();
+    void onDoButton();
+    void onSkipButton();
+    void onExitButton();
+    void onCompleteButton();
+    void onGotoButton();
+
 private:
     Ui::ProtocolDialog *ui;
     int m_nThings;

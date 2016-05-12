@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QObject>
 #include <QMessageBox>
 
 #include "protocolchooser.h"
@@ -74,6 +75,18 @@ void ProtocolSwitcher::openProtocolRequested() {
 
 }
 
+void ProtocolSwitcher::exitProtocolRequested() {
+    m_protocolStatus = PROTOCOL_INACTIVE;
+
+    std::cout << "prsw: exitProtocolRequested" << std::endl;
+
+    // disconnect dialog signals
+    disconnectProtocolSignals();
+
+    // I think this is right...
+    delete m_activeProtocol;
+}
+
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     m_currentDvidTarget = target;
 
@@ -128,7 +141,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     }
 
     // connect protocol connections:
-    // or: pass in whatever it needs to connect itself?
+    connectProtocolSignals();
 
 
     // trigger protocol initialization and go to town
@@ -166,7 +179,16 @@ void ProtocolSwitcher::loadProtocolRequested() {
     // do stuff
 }
 
+// when a protocol is entered/exited, we need to handle
+//  its signals; be sure the next two methods are updated
+//  together!  disconnect everything you connect!
+void ProtocolSwitcher::connectProtocolSignals() {
+    connect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
+}
 
+void ProtocolSwitcher::disconnectProtocolSignals() {
+    disconnect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
+}
 
 
 

@@ -27,6 +27,7 @@ public slots:
 private slots:
     void startProtocolRequested(QString protocolName);
     void loadProtocolRequested();
+    void exitProtocolRequested();
 
 private:
     enum Status {
@@ -43,6 +44,8 @@ private:
     ProtocolDialog * m_activeProtocol;
 
     ProtocolMetadata readMetadata();
+    void connectProtocolSignals();
+    void disconnectProtocolSignals();
 };
 
 #endif // PROTOCOLSWITCHER_H

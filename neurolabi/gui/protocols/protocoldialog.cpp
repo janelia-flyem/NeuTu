@@ -18,6 +18,12 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
     ui->setupUi(this);
 
     // UI connections:
+    connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
+    connect(ui->doButton, SIGNAL(clicked(bool)), this, SLOT(onDoButton()));
+    connect(ui->skipButton, SIGNAL(clicked(bool)), this, SLOT(onSkipButton()));
+    connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
+    connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+    connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
 
 
     // misc UI setup
@@ -54,6 +60,41 @@ bool ProtocolDialog::initialize() {
 
     return true;
 
+}
+
+void ProtocolDialog::onFirstButton() {
+    std::cout << "prdia: first button clicked" << std::endl;
+}
+
+void ProtocolDialog::onSkipButton() {
+    std::cout << "prdia: skip button clicked" << std::endl;
+}
+
+void ProtocolDialog::onDoButton() {
+    std::cout << "prdia: do button clicked" << std::endl;
+}
+
+void ProtocolDialog::onCompleteButton() {
+    // complete = mark protocol as finished; does not
+    //  exit, but once exited, can't be reopened
+
+    std::cout << "prdia: complete button clicked" << std::endl;
+}
+
+void ProtocolDialog::onExitButton() {
+    // exit = save and exit protocol; can be reopened and
+    //  worked on later
+
+    // save?  probably not, should already have state saved
+
+    std::cout << "prdia: exit button clicked" << std::endl;
+
+    emit protocolExiting();
+
+}
+
+void ProtocolDialog::onGotoButton() {
+    std::cout << "prdia: go to button clicked" << std::endl;
 }
 
 void ProtocolDialog::setNThings(int nThings) {
