@@ -23,7 +23,6 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
     connect(ui->skipButton, SIGNAL(clicked(bool)), this, SLOT(onSkipButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
-    connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
 
 
     // misc UI setup
@@ -46,6 +45,7 @@ bool ProtocolDialog::initialize() {
         return false;
     }
 
+    m_protocolStatus = PROTOCOL_INCOMPLETE;
 
     // generate pending/finished lists
     m_finishedList = QStringList();
@@ -54,28 +54,48 @@ bool ProtocolDialog::initialize() {
         m_pendingList << QString("Thing %1").arg(i);
     }
 
-
-    // set current item
-    // save state to dvid
-    // update current item label
-
-    // update progress label
-    updateProgressLabel();
+    // go to first item
+    onFirstButton();
+    saveState();
 
     return true;
-
 }
 
 void ProtocolDialog::onFirstButton() {
-    std::cout << "prdia: first button clicked" << std::endl;
+    if (m_pendingList.size() > 0) {
+        m_currentItem = m_pendingList.first();
+    } else {
+        m_currentItem = "";
+    }
+
+    updateLabels();
 }
 
 void ProtocolDialog::onSkipButton() {
-    std::cout << "prdia: skip button clicked" << std::endl;
+    gotoNextItem();
+    updateLabels();
 }
 
 void ProtocolDialog::onDoButton() {
-    std::cout << "prdia: do button clicked" << std::endl;
+    if (m_currentItem != "") {
+        QString finishedItem = QString(m_currentItem);
+
+        // execute go to next; happens before list
+        //  manipulation so we can keep order straight;
+        //  this updates m_currentItem, too
+        gotoNextItem();
+
+        m_pendingList.removeAt(m_pendingList.indexOf(finishedItem));
+        m_finishedList.append(finishedItem);
+
+        if (m_pendingList.size() == 0) {
+            m_currentItem = "";
+        }
+
+        saveState();
+
+        updateLabels();
+    }
 }
 
 void ProtocolDialog::onCompleteButton() {
@@ -86,26 +106,52 @@ void ProtocolDialog::onCompleteButton() {
     // save completed data
     // remove save incomplete (currently I plan diff.
     //  keys in dvid for complete and incomplete
+    // confirmation dialog?  "you're done, go home?"
 
     std::cout << "prdia: complete button clicked" << std::endl;
 }
 
 void ProtocolDialog::onExitButton() {
-    // exit = save and exit protocol; can be reopened and
-    //  worked on later
+    // exit protocol; can be reopened and worked on later
     emit protocolExiting();
 }
 
-void ProtocolDialog::onGotoButton() {
-    std::cout << "prdia: go to button clicked" << std::endl;
+void ProtocolDialog::gotoNextItem() {
+    std::cout << "prdia: go to next item" << std::endl;
+
+    if (m_pendingList.size() == 0) {
+        m_currentItem = "";
+    } else if (m_currentItem == "") {
+        m_currentItem = m_pendingList.first();
+    } else if (m_currentItem == m_pendingList.last()) {
+        m_currentItem = m_pendingList.first();
+    } else {
+        m_currentItem = m_pendingList.at(m_pendingList.indexOf(m_currentItem) + 1);
+    }
+
+    // do not update labels here!  calling routine
+    //  may still be messing with internal lists
 }
 
-void ProtocolDialog::updateProgressLabel() {
-    // Progress:  #/# (#%)
+void ProtocolDialog::saveState() {
+    // save state of protocol to DVID
+
+    std::cout << "prdia: pretending to save state to dvid" << std::endl;
+
+}
+
+void ProtocolDialog::updateLabels() {
+    // unified update of labels because for this protocol, they are
+    //  both very fast
+
+    // current item
+    ui->currentItemLabel->setText(QString("Current: %1").arg(m_currentItem));
+
+    // progress, in form: "Progress:  #/# (#%)"
     int nFinished = m_finishedList.size();
     int nTotal = m_pendingList.size() + nFinished;
-    float percent = (float) nFinished / nTotal;
-    ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent));
+    float percent = (100.0 * nFinished) / nTotal;
+    ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 }
 
 ProtocolDialog::~ProtocolDialog()

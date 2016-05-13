@@ -110,13 +110,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="gotoButton">
-       <property name="text">
-        <string>Goto current</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QLabel" name="progressLabel">
        <property name="text">
         <string>Progress: n/m (xxx %)</string>

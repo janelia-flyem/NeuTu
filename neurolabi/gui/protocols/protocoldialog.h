@@ -25,13 +25,22 @@ private slots:
     void onSkipButton();
     void onExitButton();
     void onCompleteButton();
-    void onGotoButton();
 
 private:
+    enum Status {
+        PROTOCOL_COMPLETE,
+        PROTOCOL_INCOMPLETE
+    };
+
     Ui::ProtocolDialog *ui;
     QStringList m_pendingList;
     QStringList m_finishedList;
-    void updateProgressLabel();
+    Status m_protocolStatus;
+    QString m_currentItem;
+
+    void saveState();
+    void updateLabels();
+    void gotoNextItem();
 };
 
 #endif // PROTOCOLDIALOG_H
