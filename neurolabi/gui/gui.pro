@@ -624,7 +624,8 @@ HEADERS += mainwindow.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
-    zapplication.h
+    zapplication.h \
+    dialogs/flyemsynapsefilterdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -699,7 +700,8 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
-    dialogs/flyemsettingdialog.ui
+    dialogs/flyemsettingdialog.ui \
+    dialogs/flyemsynapsefilterdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1101,7 +1103,8 @@ SOURCES += main.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
-    zapplication.cpp
+    zapplication.cpp \
+    dialogs/flyemsynapsefilterdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \
