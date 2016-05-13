@@ -20114,7 +20114,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
 
@@ -20131,18 +20131,40 @@ void ZTest::test(MainWindow *host)
 
 
 #if 0
-  ZStack stack;
-  stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
 
-  stack.binarize(10);
+  ZDvidReader reader;
+  reader.open(target);
 
-  ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
 
-  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t10.sobj");
 
-  ZJsonArray array =
-      ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
-  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t10_roi.json");
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  ZIntCuboid box =
+      dvidInfo.getBlockBox(dvidInfo.getBlockIndex(4099, 5018, 10343));
+  ZArray *label = reader.readLabels64(box);
+  label->setValue((uint64_t) 16573243);
+
+//  label->setValue(100);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeLabel(*label);
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
+                                 4099 + 99, 5018 + 99, 10343 + 99));
+
 #endif
 
   std::cout << "Done." << std::endl;

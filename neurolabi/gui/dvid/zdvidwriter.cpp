@@ -1416,6 +1416,25 @@ void ZDvidWriter::writeLabel(const ZArray &label)
   }
 }
 
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntCuboid alignedBox;
+    alignedBox.setFirstCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+    alignedBox.setLastCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+    ZArray *label = reader.readLabels64(alignedBox);
+    writeLabel(*label);
+    delete label;
+  }
+}
+
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
 #if defined(_ENABLE_LIBDVIDCPP_)

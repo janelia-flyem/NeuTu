@@ -454,7 +454,8 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     }
   }
 
-  if (event.getAction() == BodyEvent::ACTION_ADD) {
+  if (event.getAction() == BodyEvent::ACTION_ADD &&
+      getBodyType() != BODY_SKELETON) {
     event.setResLevel(5);
   }
 

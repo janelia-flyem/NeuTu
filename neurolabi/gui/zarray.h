@@ -55,6 +55,9 @@ public:
   template<typename T>
   T* getDataPointer() const;
 
+  template<typename T>
+  void setValue(T v);
+
   /*!
    * \brief Get the unit64 value
    *
@@ -80,6 +83,16 @@ template<typename T>
 T* ZArray::getDataPointer() const
 {
   return (T*) m_data->data;
+}
+
+template<typename T>
+void ZArray::setValue(T v)
+{
+  T* data = getDataPointer<T>();
+  size_t n= getElementNumber();
+  for (size_t i = 0; i < n; ++i) {
+    data[i] = v;
+  }
 }
 
 #endif // ZARRAY_H

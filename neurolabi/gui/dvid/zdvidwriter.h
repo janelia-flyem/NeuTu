@@ -163,6 +163,7 @@ public:
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
   void writeLabel(const ZArray &label);
+  void refreshLabel(const ZIntCuboid &box);
 
   inline int getStatusCode() const {
     return m_statusCode;
