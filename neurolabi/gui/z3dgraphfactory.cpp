@@ -460,3 +460,72 @@ Z3DGraph* Z3DGraphFactory::makeFaceGraph(
 
   return graph;
 }
+
+Z3DGraph* Z3DGraphFactory::makeBoundingBox(const ZIntCuboid &box, const std::vector<int> &faceArray)
+{
+    bool edgeAdded[8][8];
+    for (int i = 0; i < 8; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        edgeAdded[i][j] = false;
+      }
+    }
+
+    Z3DGraph *graph = new Z3DGraph;
+
+    for (int i = 0; i < 8; ++i) {
+      Z3DGraphNode node(box.getCorner(i).toPoint(), m_nodeRadiusHint);
+      node.setColor(m_nodeColorHint);
+      graph->addNode(node);
+    }
+
+    Z3DGraphEdge edge;
+    edge.useNodeColor(false);
+    edge.setShape(m_shapeHint);
+    edge.setStartColor(m_edgeColorHint);
+    edge.setEndColor(m_edgeColorHint);
+
+    for (size_t i = 0; i < faceArray.size(); ++i) {
+      switch (faceArray[i]) {
+      case 0:
+        ADD_EDGE(0, 2);
+        ADD_EDGE(0, 4);
+        ADD_EDGE(2, 6);
+        ADD_EDGE(4, 6);
+        break;
+      case 1:
+        ADD_EDGE(1, 5);
+        ADD_EDGE(1, 3);
+        ADD_EDGE(3, 7);
+        ADD_EDGE(5, 7);
+        break;
+      case 2:
+        ADD_EDGE(0, 1);
+        ADD_EDGE(0, 4);
+        ADD_EDGE(1, 5);
+        ADD_EDGE(4, 5);
+        break;
+      case 3:
+        ADD_EDGE(2, 3);
+        ADD_EDGE(2, 6);
+        ADD_EDGE(3, 7);
+        ADD_EDGE(6, 7);
+        break;
+      case 4:
+        ADD_EDGE(0, 1);
+        ADD_EDGE(0, 2);
+        ADD_EDGE(2, 3);
+        ADD_EDGE(1, 3);
+        break;
+      case 5:
+        ADD_EDGE(4, 5);
+        ADD_EDGE(4, 6);
+        ADD_EDGE(6, 7);
+        ADD_EDGE(5, 7);
+        break;
+      default:
+        break;
+      }
+    }
+
+    return graph;
+}

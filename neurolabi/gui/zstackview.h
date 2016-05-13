@@ -45,6 +45,7 @@ class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
+class ZStTransform;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -191,6 +192,7 @@ public:
   void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
+  void paintDynamicObjectBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
 
@@ -225,6 +227,9 @@ public:
 
   void updateViewBox();
 
+  void zoomTo(int x, int y, int z);
+  void zoomTo(const ZIntPoint &pt);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -244,6 +249,7 @@ public slots:
   void updateThresholdSlider();
   void updateSlider();
   void updateChannelControl();
+  void processDepthSliderValueChange();
   void processDepthSliderValueChange(int sliceIndex);
 
   void paintStack();
@@ -278,6 +284,7 @@ public slots:
   void requestQuick3DVis();
   void requestHighresQuick3DVis();
   void requestMerge();
+  void requestSetting();
 
   void setView(const ZStackViewParam &param);
 
@@ -296,6 +303,9 @@ signals:
   void viewChanged(ZStackViewParam param);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
+  void changingSetting();
+  void sliceSliderPressed();
+  void sliceSliderReleased();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
@@ -312,6 +322,9 @@ public:
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
+
+  //Get transform from view port to proj region
+  ZStTransform getViewTransform() const;
 
   /*!
    * \brief Set the viewport offset
@@ -339,6 +352,7 @@ public:
   void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
+  void setSmoothDisplay(bool on);
 
   void notifyViewChanged(const ZStackViewParam &param);
   void notifyViewChanged();
@@ -378,8 +392,11 @@ protected:
   void clearTileCanvas();
   void updateObjectCanvas();
   void updateTileCanvas();
+  void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
   void updatePaintBundle();
+
+  ZPixmap* updateProjCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 
@@ -411,6 +428,7 @@ protected:
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
 

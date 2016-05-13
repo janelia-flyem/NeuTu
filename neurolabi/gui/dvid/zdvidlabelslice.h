@@ -1,6 +1,8 @@
 #ifndef ZDVIDLABELSLICE_H
 #define ZDVIDLABELSLICE_H
 
+#include <QCache>
+
 #include "zstackobject.h"
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
@@ -135,6 +137,10 @@ public:
     return m_paintBuffer;
   }
 
+  int64_t getReadingTime() const;
+
+  void clearCache();
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
@@ -166,6 +172,8 @@ private:
 
   bool m_selectionFrozen;
   bool m_isFullView;
+
+  mutable QCache<QString, ZArray> m_objCache;
 //  NeuTube::EAxis m_sliceAxis;
 };
 

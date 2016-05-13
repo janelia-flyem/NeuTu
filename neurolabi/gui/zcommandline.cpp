@@ -592,25 +592,42 @@ int ZCommandLine::runSkeletonize()
       return 1;
     }
 
-    std::set<uint64_t> bodyIdSet;
+    std::vector<uint64_t> bodyIdArray = m_bodyIdArray;
 
-    if (m_input.size() == 1) {
-      bodyIdSet = reader.readBodyId(100000);
-      if (bodyIdSet.empty()) {
-        bodyIdSet = reader.readAnnnotatedBodySet();
+    if (bodyIdArray.empty()) {
+      std::set<uint64_t> bodyIdSet;
+
+      if (m_input.size() == 1) {
+        bodyIdSet = reader.readBodyId(100000);
         if (bodyIdSet.empty()) {
-          std::cout << "Done: No annotated body found in the database."
-                    << std::endl;
-          return 1;
+          bodyIdSet = reader.readAnnnotatedBodySet();
+
+          if (bodyIdSet.empty()) {
+            std::cout << "Done: No annotated body found in the database."
+                      << std::endl;
+            return 1;
+          }
+        }
+      } else {
+        bodyIdSet = loadBodySet(m_input[1]);
+      }
+
+      for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
+           iter != bodyIdSet.end(); ++iter) {
+        int bodyId = *iter;
+        if (m_namedOnly) {
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+          if (!annotation.getName().empty()) {
+            bodyIdArray.push_back(bodyId);
+          }
+        } else {
+          bodyIdArray.push_back(bodyId);
         }
       }
-    } else {
-      bodyIdSet = loadBodySet(m_input[1]);
     }
 
-    std::vector<uint64_t> bodyIdArray;
-    bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
-    std::cout << bodyIdArray.size() << " bodies loaded." << std::endl;
+    std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
+              << std::endl;
 
     ZRandomGenerator rnd;
     std::vector<int> rank = rnd.randperm(bodyIdArray.size());
@@ -737,7 +754,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[<input:string> ...]",
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
-    "[--skeletonize] [--force]",
+    "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
     "[--trace] [--level <int>]","[--separate <string>]",
     "[--position <int> <int> <int>]",
     "[--size <int> <int> <int>]",
@@ -791,6 +808,11 @@ int ZCommandLine::run(int argc, char *argv[])
     m_forceUpdate = true;
   }
 
+  m_namedOnly = false;
+  if (Is_Arg_Matched(const_cast<char*>("--named_only"))) {
+    m_namedOnly = true;
+  }
+
 //  ZArgumentProcessor::processArguments(argc, argv, Spec);
 
   m_input.clear();
@@ -830,6 +852,11 @@ int ZCommandLine::run(int argc, char *argv[])
     for (int i = 1; i < 3; ++i) {
       m_intv[i] = Get_Int_Arg(const_cast<char*>("--position"), i);
     }
+  }
+
+  if (Is_Arg_Matched(const_cast<char*>("--bodyid"))) {
+    ZString bodyIdStr(Get_String_Arg(const_cast<char*>("--bodyid")));
+    m_bodyIdArray = bodyIdStr.toUint64Array();
   }
 
   if (command == UNKNOWN_COMMAND) {/*

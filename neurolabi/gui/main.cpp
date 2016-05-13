@@ -79,6 +79,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
   case QtFatalMsg:
     LFATALF(context.file, context.line, context.function) << msg;
     abort();
+  default:
+    break;
   }
 }
 #else
@@ -132,6 +134,8 @@ int main(int argc, char *argv[])
 
   bool guiEnabled = true;
 
+  QString configPath;
+
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
@@ -159,6 +163,10 @@ int main(int argc, char *argv[])
       }
     }
 #endif
+
+    if (QString(argv[1]).endsWith(".json")) {
+      configPath = argv[1];
+    }
   }
   if (debugging || runCommandLine) {
     guiEnabled = false;
@@ -176,6 +184,58 @@ int main(int argc, char *argv[])
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
+
+  if (configPath.isEmpty()) {
+    configPath =
+        QFileInfo(QDir((GET_APPLICATION_DIR + "/json").c_str()), "config.json").
+        absoluteFilePath();
+//        ZString::fullPath(
+//          GET_APPLICATION_DIR, "json", "", "config.json").c_str();
+  }
+
+  LINFO() << "Config path: " << configPath;
+
+  ZJsonObject configObj;
+  if (!configPath.isEmpty()) {
+    configObj.load(configPath.toStdString());
+  }
+
+#ifdef _FLYEM_
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (flyemConfigPath.isEmpty()) {
+    QFileInfo configFileInfo(configPath);
+
+    QString defaultFlyemConfigPath = QFileInfo(
+          QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+        absoluteFilePath();
+
+    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+    if (flyemConfigPath.isEmpty()) {
+      flyemConfigPath = defaultFlyemConfigPath;
+    } else {
+      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+      if (!flyemConfigFileInfo.isAbsolute()) {
+        flyemConfigPath =
+            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+      }
+    }
+  }
+
+  GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << config.GetNeuTuServer().toStdString() << std::endl;
+#endif
+
+  if (config.GetNeuTuServer().isEmpty()) {
+    QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
+    if (!neutuServer.isEmpty()) {
+      GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
+    }
+  } else {
+    GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
+  }
+#endif
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
@@ -257,7 +317,7 @@ int main(int argc, char *argv[])
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
-    int result =  app.exec();
+    int result = app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();

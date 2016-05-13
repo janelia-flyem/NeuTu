@@ -132,6 +132,7 @@ private:
   bool m_resampleSwc;
   bool m_autoGrayThreshold;
   int m_grayOp;
+  static const size_t m_sizeLimit;
 };
 
 #endif // ZSTACKSKELETONIZER_H

@@ -34,7 +34,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
-
+#include "zstackdocselector.h"
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -77,14 +77,15 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 void ZStackPresenter::init()
 {
   m_showObject = true;
+  m_oldShowObject = true;
 //  m_isStrokeOn = false;
   m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
 
   initInteractiveContext();
 
-  m_greyScale.resize(5, 1.0);
-  m_greyOffset.resize(5, 0.0);
+  m_grayScale.resize(5, 1.0);
+  m_grayOffset.resize(5, 0.0);
 
   m_objStyle = ZStackObject::BOUNDARY;
   m_threshold = -1;
@@ -382,6 +383,12 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
         connect(action, SIGNAL(triggered()),
                 buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
         break;
+      case ZActionFactory::ACTION_ENTER_RECT_ROI_MODE:
+        connect(action, SIGNAL(triggered()), this, SLOT(tryDrawRectMode()));
+        break;
+      case ZActionFactory::ACTION_CANCEL_RECT_ROI:
+        connect(action, SIGNAL(triggered()), this, SLOT(cancelRectRoi()));
+        break;
       default:
         break;
       }
@@ -668,6 +675,15 @@ void ZStackPresenter::createBodyActions()
     m_actionMap[ZActionFactory::ACTION_BODY_MERGE] = action;
   }
 
+  {
+    QAction *action = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_BODY_UNMERGE, this);
+    connect(action, SIGNAL(triggered()),
+            this, SLOT(notifyBodyUnmergeTriggered()));
+    m_actionMap[ZActionFactory::ACTION_BODY_UNMERGE] = action;
+  }
+
+
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
 //  m_actionMap[ACTION_ADD_SPLIT_SEED] = action;
@@ -773,7 +789,8 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
 void ZStackPresenter::createBodyContextMenu()
 {
   if (dynamic_cast<ZFlyEmProofDocMenuFactory*>(getMenuFactory()) != NULL) {
-    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
+    ZOUT(std::cout, 2) << "ZFlyEmProofDocMenuFactory ready";
+//    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
   }
 
   if (m_bodyContextMenu == NULL) {
@@ -1856,6 +1873,16 @@ void ZStackPresenter::toggleObjectVisible()
   setObjectVisible(!isObjectVisible());
 }
 
+void ZStackPresenter::suppressObjectVisible(bool v)
+{
+  if (v) {
+    m_oldShowObject = m_showObject;
+    m_showObject = false;
+  } else {
+    m_showObject = m_oldShowObject;
+  }
+}
+
 void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
 {
   if (m_objStyle != style) {
@@ -1920,10 +1947,29 @@ void ZStackPresenter::addDecoration(ZStackObject *obj, bool tail)
 
 void ZStackPresenter::setStackBc(double scale, double offset, int c)
 {
-  if (c >= 0 && c < (int) m_greyScale.size()) {
-    m_greyScale[c] = scale;
-    m_greyOffset[c] = offset;
+  if (c >= 0 && c < (int) m_grayScale.size()) {
+    m_grayScale[c] = scale;
+    m_grayOffset[c] = offset;
   }
+}
+
+double ZStackPresenter::getGrayScale(int c) const
+{
+  double scale = 1.0;
+  if (c >= 0 && c < (int) m_grayScale.size()) {
+    scale = m_grayScale[c];
+  }
+
+  return scale;
+}
+
+double ZStackPresenter::getGrayOffset(int c) const
+{
+  double offset = 0.0;
+  if (c >= 0 && c < (int) m_grayOffset.size()) {
+    offset = m_grayOffset[c];
+  }
+  return offset;
 }
 
 void ZStackPresenter::optimizeStackBc()
@@ -1932,14 +1978,12 @@ void ZStackPresenter::optimizeStackBc()
     ZStack *stack = buddyDocument()->getStack();
     if (stack != NULL) {
       if (!stack->isVirtual()) {
-        if (stack->kind() != GREY) {
-          double scale, offset;
-          m_greyScale.resize(stack->channelNumber());
-          m_greyOffset.resize(stack->channelNumber());
-          for (int i=0; i<stack->channelNumber(); i++) {
-            stack->bcAdjustHint(&scale, &offset, i);
-            setStackBc(scale, offset, i);
-          }
+        double scale, offset;
+        m_grayScale.resize(stack->channelNumber());
+        m_grayOffset.resize(stack->channelNumber());
+        for (int i=0; i<stack->channelNumber(); i++) {
+          stack->bcAdjustHint(&scale, &offset, i);
+          setStackBc(scale, offset, i);
         }
       }
     }
@@ -2272,6 +2316,11 @@ void ZStackPresenter::tryDrawRectMode()
   tryDrawRectMode(pos.x(), pos.y());
 }
 
+void ZStackPresenter::cancelRectRoi()
+{
+  buddyDocument()->executeRemoveRectRoiCommand();
+}
+
 void ZStackPresenter::tryEraseStrokeMode()
 {
   QPointF pos = mapFromGlobalToStack(QCursor::pos());
@@ -2568,6 +2617,11 @@ void ZStackPresenter::notifyBodyMergeTriggered()
   emit bodyMergeTriggered();
 }
 
+void ZStackPresenter::notifyBodyUnmergeTriggered()
+{
+  emit bodyUnmergeTriggered();
+}
+
 void ZStackPresenter::notifyBodyAnnotationTriggered()
 {
   emit bodyAnnotationTriggered();
@@ -2766,6 +2820,9 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_STACK_INC_SLICE_FAST:
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
+    break;
+  case ZStackOperator::OP_ZOOM_TO:
+    buddyView()->zoomTo(currentStackPos.toIntPoint());
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {
@@ -3058,9 +3115,16 @@ void ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
-    buddyDocument()->deselectAllObject(false);
+//    buddyDocument()->deselectAllObject(false);
 //    buddyDocument()->deselectAllObject(ZStackObject::TYPE_FLYEM_BOOKMARK);
     if (op.getHitObject<ZStackObject>() != NULL) {
+      ZStackDocSelector docSelector(getSharedBuddyDocument());
+      docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+                                  ZStackDocSelector::SELECT_RECURSIVE);
+      docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+                                  ZStackDocSelector::SELECT_RECURSIVE);
+      docSelector.deselectAll();
+
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
@@ -3570,8 +3634,8 @@ void ZStackPresenter::acceptActiveStroke()
         }
 
 //        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
-        sgw->greyFactor = m_greyScale[channel];
-        sgw->greyOffset = m_greyOffset[channel];
+        sgw->greyFactor = m_grayScale[channel];
+        sgw->greyOffset = m_grayOffset[channel];
 
         Stack *signalData = signal->c_stack(channel);
         Int_Arraylist *path = Stack_Route(signalData, source, target, sgw);

@@ -26,8 +26,10 @@ public:
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
   bool highTileContrast() const;
+  bool smoothTransform() const;
 
   void setHighTileContrast(bool high);
+  void setSmoothTransform(bool on);
 
   void enableSplit();
   void disableSplit();
@@ -65,6 +67,7 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody();
+  void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
   void goingToBody();
@@ -84,9 +87,12 @@ public slots:
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
   void tryAddTodoItem();
+  void tryAddDoneItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
+  void selectBodyInRoi();
+  void zoomInRectRoi();
 
 private:
   void connectAction();
@@ -98,6 +104,7 @@ private:
   void tryAddSynapse(const ZIntPoint &pt);
   void tryMoveSynapse(const ZIntPoint &pt);
   void tryAddTodoItem(const ZIntPoint &pt);
+  void tryAddDoneItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
@@ -107,6 +114,7 @@ private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+  bool m_smoothTransform;
 
   QMenu *m_synapseContextMenu;
 

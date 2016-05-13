@@ -57,6 +57,9 @@ public:
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
   std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
+  std::string getSparsevolUrl(
+      uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
+
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
@@ -186,6 +189,8 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, const ZIntCuboid &box) const;
 
+  std::string getAnnotationSyncUrl(const std::string &dataName) const;
+
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
   std::string getSynapseUrl(const ZIntPoint &pos) const;
@@ -206,6 +211,8 @@ public:
   std::string getTodoListUrl(int x, int y, int z,
                             int width, int height, int depth) const;
   std::string getTodoListUrl(int x, int y, int z) const;
+
+  static std::string GetSkeletonKey(uint64_t bodyId);
 
 private:
   std::string getSplitUrl(

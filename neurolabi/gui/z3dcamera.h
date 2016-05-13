@@ -63,7 +63,7 @@ public:
   void setNearDist(float nd);
 
   float getFarDist() const { return m_farDist; }
-  void setFarDist(float fd) { m_farDist = fd; invalidProjectionMatrix(); }
+  void setFarDist(float fd);
 
   float getWindowAspectRatio() const { return m_windowAspectRatio; }
   void setWindowAspectRatio(float war);

@@ -60,7 +60,7 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap(const ZJsonValue &bodyInfoObj)
   if (!m_isMapReady) {
     ZJsonArray bookmarks(bodyInfoObj);
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-      ZJsonObject bkmk(bookmarks.at(i), false);
+      ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bkmk.hasKey("name")) {
         const char* name = ZJsonParser::stringValue(bkmk["name"]);
         uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);

@@ -10,6 +10,7 @@
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
 #include "zstackdoc.h"
+#include "neutubeconfig.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -285,6 +286,8 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 
 void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
+  ZOUT(LINFO(), 3) << "Updating user bookmark table";
+
   m_userBookmarkList.clear();
   if (doc != NULL) {
     const TStackObjectList &objList =
@@ -299,5 +302,7 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
+  ZOUT(LINFO(), 3) << "Sorting bookmark view";
+
   getUserBookmarkView()->sort();
 }

@@ -12,6 +12,7 @@
 class ZNormColorMap;
 class ZObject3d;
 class ZStackBall;
+class ZIntPoint;
 
 enum EGraphShape {
   GRAPH_NO_SHAPE, GRAPH_BALL, GRAPH_CYLINDER, GRAPH_LINE
@@ -36,6 +37,8 @@ public:
 
   void set(double x, double y, double z, double r);
   void setCenter(double x, double y, double z);
+  void setCenter(const ZIntPoint &center);
+  void setCenter(const ZPoint &center);
   void setRadius(double r);
 
   void addX(double dx);
@@ -43,6 +46,7 @@ public:
 
   void setX(double x);
   void setY(double y);
+  void setZ(double z);
 
   void loadJsonObject(json_t *obj);
 

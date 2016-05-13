@@ -4,6 +4,7 @@
 #include "znormcolormap.h"
 #include "zobject3d.h"
 #include "zstackball.h"
+#include "zintpoint.h"
 
 using namespace std;
 
@@ -44,6 +45,16 @@ void Z3DGraphNode::setCenter(double x, double y, double z)
   m_center.set(x, y, z);
 }
 
+void Z3DGraphNode::setCenter(const ZIntPoint &center)
+{
+  setCenter(center.getX(), center.getY(), center.getZ());
+}
+
+void Z3DGraphNode::setCenter(const ZPoint &center)
+{
+  setCenter(center.getX(), center.getY(), center.getZ());
+}
+
 void Z3DGraphNode::addX(double dx)
 {
   m_center.setX(m_center.x() + dx);
@@ -62,6 +73,11 @@ void Z3DGraphNode::setX(double x)
 void Z3DGraphNode::setY(double y)
 {
   m_center.setY(y);
+}
+
+void Z3DGraphNode::setZ(double z)
+{
+  m_center.setZ(z);
 }
 
 void Z3DGraphNode::setRadius(double r)

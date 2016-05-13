@@ -101,10 +101,11 @@ ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) cons
   }
   */
 
-  ZString str;
-  str.appendNumber(bodyId);
+//  ZString str;
+//  str.appendNumber(bodyId);
 
-  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" + str + "_swc";
+  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" +
+      GetSkeletonKey(bodyId);// + str + "_swc";
 
 #if 0
   ZString str;
@@ -161,10 +162,38 @@ std::string ZDvidUrl::getSparsevolUrl(
     url.appendNumber(z);
     url += "&maxy=";
     break;
-    break;
   }
 
   url.appendNumber(z);
+
+  return url;
+}
+
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const
+{
+  ZString url = getSparsevolUrl(bodyId);
+
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(minZ);
+    url += "&maxz=";
+    url.appendNumber(maxZ);
+    break;
+  case NeuTube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(minZ);
+    url += "&maxx=";
+    url.appendNumber(maxZ);
+    break;
+  case NeuTube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(minZ);
+    url += "&maxy=";
+    url.appendNumber(maxZ);
+    break;
+  }
 
   return url;
 }
@@ -680,6 +709,11 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
   return getDataUrl(dataName);
 }
 
+std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
+{
+  return getAnnotationUrl(dataName) + "/sync";
+}
+
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
 {
@@ -858,4 +892,12 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getFirstCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
+}
+
+std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
+{
+  std::ostringstream stream;
+  stream << bodyId << "_swc";
+
+  return stream.str();
 }

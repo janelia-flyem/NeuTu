@@ -15,6 +15,7 @@ void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
   m_z = 0;
   m_coordSys = coordSys;
   m_action = NeuTube::View::EXPLORE_UNKNOWN;
+  m_fixingZ = false;
 }
 
 void ZStackViewParam::setZ(int z)

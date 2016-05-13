@@ -87,8 +87,8 @@ public:
   };
   */
 
-  inline double greyScale(int c = 0) const {return m_greyScale[c];}
-  inline double greyOffset(int c = 0) const {return m_greyOffset[c];}
+  inline double greyScale(int c = 0) const {return m_grayScale[c];}
+  inline double greyOffset(int c = 0) const {return m_grayOffset[c];}
   //inline int zoomRatio() const { return m_zoomRatio; }
   //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
@@ -109,6 +109,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   void toggleObjectVisible();
+  void suppressObjectVisible(bool v);
   bool isObjectVisible();
   void setObjectStyle(ZStackObject::EDisplayStyle style);
 
@@ -172,6 +173,8 @@ public:
   bool isContextMenuOn();
 
   void setStackBc(double scale, double offset, int c = 0);
+  double getGrayScale(int c = 0) const;
+  double getGrayOffset(int c = 0) const;
 
   /* optimize stack brightness and contrast */
   void optimizeStackBc();
@@ -324,6 +327,7 @@ public slots:
   void tryDrawRectMode(double x, double y);
   void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
+  void cancelRectRoi();
   void exitRectEdit();
   void exitBookmarkEdit();
   void exitTodoEdit();
@@ -339,6 +343,7 @@ public slots:
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyMergeTriggered();
+  void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
   void notifyBodyCheckinTriggered();
   void notifyBodyForceCheckinTriggered();
@@ -387,10 +392,11 @@ signals:
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
-  void acceptingRectRoi();
+//  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
   void bodyMergeTriggered();
+  void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
   void checkingBookmark();
   void uncheckingBookmark();
@@ -437,8 +443,9 @@ protected:
   QList<ZStackObject*> m_highlightDecorationList;
 
   bool m_showObject;
-  std::vector<double> m_greyScale;
-  std::vector<double> m_greyOffset;
+  bool m_oldShowObject;
+  std::vector<double> m_grayScale;
+  std::vector<double> m_grayOffset;
   int m_threshold;
   ZStackObject::EDisplayStyle m_objStyle;
   //MouseState m_mouseState;

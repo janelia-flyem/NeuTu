@@ -117,7 +117,7 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
     }
 
     if (entryMap.count("reset") > 0) {
-      ZJsonObject resetObj = ZJsonObject(entryMap["reset"], false);
+      ZJsonObject resetObj = ZJsonObject(entryMap["reset"], ZJsonValue::SET_INCREASE_REF_COUNT);
       json_t *value = resetObj["lower"];
       if (value != NULL) {
         m_hasReset[0] = true;

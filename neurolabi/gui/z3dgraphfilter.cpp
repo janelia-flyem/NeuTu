@@ -16,7 +16,6 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
-  , m_showingArrow(false)
 {
   addParameter(m_showGraph);
 
@@ -25,6 +24,8 @@ Z3DGraphFilter::Z3DGraphFilter() :
   m_showGraph.set(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
+
+  setFilterName(QString("graphfilter"));
 }
 
 Z3DGraphFilter::~Z3DGraphFilter()

@@ -34,6 +34,8 @@ ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   connect(this, SIGNAL(readingCanceled()), this, SLOT(cancelReading()));
   connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   connect(this, SIGNAL(checkingStatus()), this, SLOT(waitForReading()));
+
+  m_maxSize = 0;
 }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -85,9 +87,11 @@ void ZDvidBufferReader::read(
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;
-    } catch (std::exception &e) {
+      m_statusCode = 200;
+    } catch (libdvid::DVIDException &e) {
       std::cout << e.what() << std::endl;
       m_status = READ_FAILED;
+      m_statusCode = e.getStatus();
     }
   }
 #endif
@@ -123,7 +127,8 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = READ_OK;
-    } catch (std::exception &e) {
+      m_statusCode = 200;
+    } catch (libdvid::DVIDException &e) {
       std::cout << e.what() << std::endl;
       m_status = READ_FAILED;
     }
@@ -150,6 +155,28 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
   waitForReading();
 #endif
+}
+
+void ZDvidBufferReader::readPartial(
+    const QString &url, int maxSize, bool outputingUrl)
+{
+  if (outputingUrl) {
+    qDebug() << url;
+  }
+
+  m_buffer.clear();
+
+  startReading();
+
+  m_maxSize = maxSize;
+
+  m_networkReply = m_networkManager->get(QNetworkRequest(url));
+  connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBufferPartial()));
+  connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
+          this, SLOT(handleError(QNetworkReply::NetworkError)));
+
+  waitForReading();
 }
 
 void ZDvidBufferReader::readQt(const QString &url, bool outputUrl)
@@ -267,6 +294,14 @@ void ZDvidBufferReader::readBuffer()
   m_buffer.append(m_networkReply->readAll());
 }
 
+void ZDvidBufferReader::readBufferPartial()
+{
+  m_buffer.append(m_networkReply->readAll());
+  if (m_buffer.size() > m_maxSize) {
+    endReading(m_status);
+  }
+}
+
 void ZDvidBufferReader::finishReading()
 {
   endReading(m_status);
@@ -293,7 +328,8 @@ void ZDvidBufferReader::endReading(EStatus status)
 #ifdef _DEBUG_
     qDebug() << "Status code: " << statusCode;
 #endif
-    if (statusCode.toInt() != 200) {
+    m_statusCode = statusCode.toInt();
+    if (m_statusCode != 200) {
       m_status = READ_BAD_RESPONSE;
     }
     m_networkReply->deleteLater();

@@ -32,6 +32,8 @@ public:
   };
 
   void read(const QString &url, bool outputingUrl = true);
+  void readPartial(const QString &url, int maxSize, bool outputingUrl);
+
   void read(const QString &url, const QByteArray &payload,
             const std::string &method,
             bool outputingUrl = true);
@@ -40,6 +42,9 @@ public:
   bool hasHead(const QString &url);
 
   EStatus getStatus() const;
+  int getStatusCode() const {
+    return m_statusCode;
+  }
 
   inline const QByteArray& getBuffer() const {
     return m_buffer;
@@ -68,6 +73,7 @@ private slots:
   void handleTimeout();
   void cancelReading();
   void readBuffer();
+  void readBufferPartial();
   void waitForReading();
 
 private:
@@ -84,7 +90,9 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+  int m_statusCode;
   bool m_tryingCompress;
+  int m_maxSize;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif

@@ -49,8 +49,8 @@ ZStack::ZStack(int kind, int width, int height, int depth,
     C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
     delloc = C_Stack::cppDelete;
   } else {
-    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
-    delloc = Kill_Mc_Stack;
+    stack = C_Stack::make(kind, width, height, depth, nchannel);
+    delloc = C_Stack::kill;
   }
   setData(stack, delloc);
 }
@@ -71,8 +71,8 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
     C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
     delloc = C_Stack::cppDelete;
   } else {
-    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
-    delloc = Kill_Mc_Stack;
+    stack = C_Stack::make(kind, width, height, depth, nchannel);
+    delloc = C_Stack::kill;
   }
 
   m_dealloc = NULL;
@@ -88,12 +88,14 @@ ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
   setData(stack, C_Stack::kill);
 }
 
+#if 0
 ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
   init();
 
   setData(stack, dealloc);
 }
+#endif
 
 ZStack::ZStack(const ZStack &/*src*/)
 {
@@ -246,7 +248,8 @@ ZStack* ZStack::getSingleChannel(int c) const
 {
   Mc_Stack *data = new Mc_Stack;
   C_Stack::view(m_stack, data, c);
-  ZStack *stack = new ZStack(data, C_Stack::cppDelete);
+  ZStack *stack = new ZStack;
+  stack->setData(data, C_Stack::cppDelete);
   stack->setOffset(getOffset());
 
   return stack;
@@ -299,7 +302,7 @@ Mc_Stack *ZStack::makeMcStack(const Stack *stack1, const Stack *stack2, const St
 
   if (stack1 != NULL && stack1->kind == 1 && Stack_Same_Attribute(stack1, stack2)) {
     if (stack3 == NULL || Stack_Same_Attribute(stack2, stack3)) {
-      out = Make_Mc_Stack(1, stack1->width, stack1->height, stack1->depth, 3);
+      out = C_Stack::make(1, stack1->width, stack1->height, stack1->depth, 3);
       size_t volume = Stack_Voxel_Number(stack1);
       memcpy(out->array, stack1->array, volume);
       memcpy(out->array+volume, stack2->array, volume);
@@ -327,7 +330,7 @@ Stack *ZStack::averageOfAllChannels()
   Stack *stack = NULL;
   int nchannel = channelNumber();
   if (nchannel == 1) {
-    stack = Copy_Stack(c_stack());
+    stack = C_Stack::clone(c_stack());
   }
   if (nchannel > 1) {
     stack = Make_Stack(data()->kind, data()->width, data()->height, data()->depth);
@@ -549,7 +552,7 @@ bool ZStack::load(Stack *stack, bool isOwner)
   deprecate(MC_STACK);
 
   if (C_Stack::kind(stack) == 3) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(stack), C_Stack::width(stack), C_Stack::height(stack),
+    m_stack = C_Stack::make(C_Stack::kind(stack), C_Stack::width(stack), C_Stack::height(stack),
                             C_Stack::depth(stack), 3);
     m_dealloc = C_Stack::kill;
     Stack *stack0 = C_Stack::channelExtraction(stack, 0);
@@ -607,7 +610,7 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
     return false;
 
   if (ch3 != NULL) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch3), C_Stack::width(ch3), C_Stack::height(ch3),
+    m_stack = C_Stack::make(C_Stack::kind(ch3), C_Stack::width(ch3), C_Stack::height(ch3),
                             C_Stack::depth(ch3), 3);
     m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 2, ch3);
@@ -618,7 +621,7 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
       C_Stack::copyChannelValue(m_stack, 0, ch1);
     }
   } else if (ch2 != NULL) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch2), C_Stack::width(ch2), C_Stack::height(ch2),
+    m_stack = C_Stack::make(C_Stack::kind(ch2), C_Stack::width(ch2), C_Stack::height(ch2),
                             C_Stack::depth(ch2), 2);
     m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 1, ch2);
@@ -626,7 +629,7 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
       C_Stack::copyChannelValue(m_stack, 0, ch1);
     }
   } else {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch1), C_Stack::width(ch1), C_Stack::height(ch1),
+    m_stack = C_Stack::make(C_Stack::kind(ch1), C_Stack::width(ch1), C_Stack::height(ch1),
                             C_Stack::depth(ch1), 1);
     m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 0, ch1);
@@ -1374,7 +1377,7 @@ bool ZStack::binarize(int threshold)
   if (!isVirtual() && isThresholdable()) {
     isChanged = singleChannelStack(0)->binarize(threshold);
     if (kind() != GREY) {
-      Translate_Stack(singleChannelStack(0)->data(), GREY, 1);
+      C_Stack::translate(singleChannelStack(0)->data(), GREY, 1);
       data()->kind = GREY;
     }
     if (isChanged) {
@@ -1437,7 +1440,7 @@ Stack *ZStack::copyChannel(int c)
 {
   Stack *out = NULL;
   if (!isVirtual() && c < channelNumber()) {
-    out = Copy_Stack(c_stack(c));
+    out = C_Stack::clone(c_stack(c));
   }
   return out;
 }
@@ -1667,7 +1670,7 @@ bool ZStack::loadLSMInfo(const QString &filepath)
     int nameIdx = 0;
     while (nameIdx < m_lsmInfo.m_lsmChannelInfo.s32NumberNames) {
       offset += 4;  // skip uint32_t name length
-      QString str(chStruct+offset);
+      std::string str(chStruct+offset);
       m_lsmInfo.m_lsmChannelNames.push_back(str);
       ++nameIdx;
       offset += str.size() + 1;
@@ -1676,9 +1679,9 @@ bool ZStack::loadLSMInfo(const QString &filepath)
     for (int ch=0; ch<m_lsmInfo.m_lsmChannelInfo.s32NumberColors; ++ch) {
       if (m_lsmInfo.m_lsmChannelNames.size() > (size_t)ch &&
           m_channelColors.size() > (size_t) ch) {
-        QString chName = m_lsmInfo.m_lsmChannelNames[ch];
-        if (!chName.isEmpty())
-          m_channelColors[ch]->setName(chName);
+        std::string chName = m_lsmInfo.m_lsmChannelNames[ch];
+        if (!chName.empty())
+          m_channelColors[ch]->setName(chName.c_str());
         m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
       } else {
         break;

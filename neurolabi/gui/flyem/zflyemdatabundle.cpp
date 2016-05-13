@@ -176,6 +176,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
         std::string name;
         std::string type;
+        bool traced = false;
+
         if (annotationSet.count(bodyId) > 0) {
           ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
           name = annotation.getName();
@@ -185,10 +187,19 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           } else if (!name.empty()) {
             type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
           }
+
+          if (annotation.getStatus() == "Traced" ||
+              annotation.getStatus() == "Hard to trace") { //temporary hack
+            traced = true;
+          }
         }
 
         bool goodNeuron = true;
         if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
           goodNeuron = false;
         }
 
@@ -217,6 +228,17 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
         bool goodNeuron = true;
         if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        bool traced = false;
+
+        if (annotation.getStatus() == "Traced" ||
+            annotation.getStatus() == "Hard to trace") { //temporary hack
+          traced = true;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
           goodNeuron = false;
         }
 
@@ -307,7 +329,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     m_neuronArray.resize(neuronJsonArray.size());
     for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
       ZFlyEmNeuron &neuron = m_neuronArray[i];
-      ZJsonObject neuronJson(neuronJsonArray.at(i), false);
+      ZJsonObject neuronJson(neuronJsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       neuron.loadJsonObject(neuronJson, getSource());
       neuron.setSynapseAnnotation(getSynapseAnnotation());
       neuron.setSynapseScale(m_synapseScale);
@@ -342,7 +364,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     }
     m_source = filePath;
 
-    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey], false);
+    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
     m_layerRatio = array.toNumberArray();
 
     json_t *boundBoxObj = bundleObject[ZFlyEmDataBundle::m_boundBoxKey];
@@ -356,7 +379,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
     if (serverObj != NULL) {
-      ZJsonObject obj(serverObj, false);
+      ZJsonObject obj(serverObj, ZJsonValue::SET_INCREASE_REF_COUNT);
       ZDvidTarget target;
       target.set(ZJsonParser::stringValue(obj["address"]),
           ZJsonParser::stringValue(obj["uuid"]),
@@ -487,7 +510,7 @@ void ZFlyEmDataBundle::print() const
   //cout << "Config: " << m_configFile << endl;
 }
 
-string ZFlyEmDataBundle::getModelPath(int bodyId) const
+string ZFlyEmDataBundle::getModelPath(uint64_t bodyId) const
 {
   string modelPath;
 
@@ -501,7 +524,7 @@ string ZFlyEmDataBundle::getModelPath(int bodyId) const
   return modelPath;
 }
 
-string ZFlyEmDataBundle::getName(int bodyId) const
+string ZFlyEmDataBundle::getName(uint64_t bodyId) const
 {
   string name;
 
@@ -538,7 +561,7 @@ bool ZFlyEmDataBundle::hasNeuronName(const string &name) const
 
   return false;
 }
-const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
+const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId) const
 {
   for (vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
@@ -550,7 +573,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
   return NULL;
 }
 
-ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId)
+ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId)
 {
   return const_cast<ZFlyEmNeuron*>(
         static_cast<const ZFlyEmDataBundle&>(*this).getNeuron(bodyId));
@@ -568,7 +591,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuronFromName(const string &name) cons
   return NULL;
 }
 
-ZSwcTree* ZFlyEmDataBundle::getModel(int bodyId) const
+ZSwcTree* ZFlyEmDataBundle::getModel(uint64_t bodyId) const
 {
   const ZFlyEmNeuron *neuron = getNeuron(bodyId);
   if (neuron == NULL) {
@@ -717,10 +740,10 @@ int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
 
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
-  ZJsonObject jsonObj(C_Json::makeObject(), true);
+  ZJsonObject jsonObj(C_Json::makeObject(), ZJsonValue::SET_AS_IT_IS);
 
   json_t *neuronArray = C_Json::makeArray();
-  ZJsonArray neuronArrayWrapper(neuronArray, false);
+  ZJsonArray neuronArrayWrapper(neuronArray, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   string exportDir = ZString::dirPath(path);
 

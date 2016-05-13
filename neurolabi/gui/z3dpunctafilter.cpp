@@ -53,12 +53,22 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   connect(&m_showPuncta, SIGNAL(valueChanged(bool)),
           this, SIGNAL(visibleChanged(bool)));
 
-  m_selectPunctumEvent = new ZEventListenerParameter("Select Puncta", true, false, this);
-  m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
-  m_selectPunctumEvent->listenTo("select punctum", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
-  m_selectPunctumEvent->listenTo("append select punctum", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
-  m_selectPunctumEvent->listenTo("append select punctum", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
-  connect(m_selectPunctumEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)), this, SLOT(selectPuncta(QMouseEvent*,int,int)));
+  m_selectPunctumEvent = new ZEventListenerParameter(
+        "Select Puncta", true, false, this);
+  m_selectPunctumEvent->listenTo(
+        "select punctum", Qt::LeftButton, Qt::NoModifier,
+        QEvent::MouseButtonPress);
+  m_selectPunctumEvent->listenTo(
+        "select punctum", Qt::LeftButton, Qt::NoModifier,
+        QEvent::MouseButtonRelease);
+  m_selectPunctumEvent->listenTo(
+        "append select punctum", Qt::LeftButton, Qt::ControlModifier,
+        QEvent::MouseButtonPress);
+  m_selectPunctumEvent->listenTo(
+        "append select punctum", Qt::LeftButton, Qt::ControlModifier,
+        QEvent::MouseButtonRelease);
+  connect(m_selectPunctumEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
+          this, SLOT(selectPuncta(QMouseEvent*,int,int)));
   addEventListener(m_selectPunctumEvent);
 
   addParameter(m_xCut);
@@ -68,6 +78,8 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   connect(&m_yCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
   connect(&m_zCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
   adjustWidgets();
+
+  setFilterName(QString("punctafilter"));
 }
 
 Z3DPunctaFilter::~Z3DPunctaFilter()

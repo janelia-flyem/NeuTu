@@ -1,6 +1,7 @@
 #include "zflyemorthodoc.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackobjectsourcefactory.h"
+#include "zcrosshair.h"
 
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
@@ -14,6 +15,16 @@ void ZFlyEmOrthoDoc::init()
   m_width = 256;
   m_height = 256;
   m_depth = 256;
+
+  ZCrossHair *crossHair = new ZCrossHair;
+  crossHair->setCenter(m_width / 2, m_height / 2, m_depth / 2);
+  crossHair->setSource(ZStackObjectSourceFactory::MakeCrossHairSource());
+  addObject(crossHair);
+}
+
+ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
+{
+  return getObject<ZCrossHair>(ZStackObjectSourceFactory::MakeCrossHairSource());
 }
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
@@ -29,6 +40,21 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble()
   initSynapseEnsemble(NeuTube::X_AXIS);
   initSynapseEnsemble(NeuTube::Y_AXIS);
   initSynapseEnsemble(NeuTube::Z_AXIS);
+}
+
+void ZFlyEmOrthoDoc::initTodoList(NeuTube::EAxis axis)
+{
+  ZFlyEmToDoList *td = new ZFlyEmToDoList;
+  td->setSliceAxis(axis);
+  td->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource(axis));
+  addObject(td);
+}
+
+void ZFlyEmOrthoDoc::initTodoList()
+{
+  initTodoList(NeuTube::X_AXIS);
+  initTodoList(NeuTube::Y_AXIS);
+  initTodoList(NeuTube::Z_AXIS);
 }
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
@@ -68,6 +94,7 @@ void ZFlyEmOrthoDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();
+    initTodoList();
     addDvidLabelSlice(NeuTube::X_AXIS);
     addDvidLabelSlice(NeuTube::Y_AXIS);
     addDvidLabelSlice(NeuTube::Z_AXIS);

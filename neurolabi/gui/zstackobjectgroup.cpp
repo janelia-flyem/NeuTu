@@ -1,6 +1,8 @@
 #include "zstackobjectgroup.h"
 
 #include <QMutexLocker>
+#include "QsLog/QsLog.h"
+#include "neutubeconfig.h"
 
 ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
 {
@@ -33,6 +35,10 @@ int ZStackObjectGroup::getMaxZOrder() const
 const ZStackObject* ZStackObjectGroup::getLastObject(
     ZStackObject::EType type) const
 {
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    LINFO() << "Getting last object";
+  }
+
   ZStackObject *obj = NULL;
   if (!getObjectList(type).empty()) {
     obj = getObjectList(type).back();
@@ -43,6 +49,10 @@ const ZStackObject* ZStackObjectGroup::getLastObject(
 
 void ZStackObjectGroup::setSelected(ZStackObject *obj, bool selected)
 {
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    LINFO() << "Getting selected";
+  }
+
   if (obj != NULL) {
     //obj->setSelected(selected);
     getSelector()->setSelection(obj, selected);
@@ -56,6 +66,8 @@ void ZStackObjectGroup::setSelected(ZStackObject *obj, bool selected)
 
 void ZStackObjectGroup::setSelected(bool selected)
 {
+  ZOUT(LINFO(), 5) << "Select object";
+
   for (ZStackObjectGroup::iterator iter = begin(); iter != end(); ++iter) {
     ZStackObject *obj = *iter;
     getSelector()->setSelection(obj, selected);
@@ -74,6 +86,8 @@ void ZStackObjectGroup::setSelected(bool selected)
 
 void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
 {
+  ZOUT(LINFO(), 5) << "Select object by type";
+
   TStackObjectList &objList = getObjectList(type);
   TStackObjectSet &selectedSet = getSelectedSet(type);
 
@@ -94,8 +108,27 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
   }
 }
 
+void ZStackObjectGroup::deselectAll()
+{
+  ZOUT(LINFO(), 5) << "Deselect all objects";
+
+  for (TObjectSetMap::iterator iter = m_selectedSet.begin();
+       iter != m_selectedSet.end(); ++iter) {
+    TStackObjectSet &selectedSet = iter.value();
+    for (TStackObjectSet::iterator objIter = selectedSet.begin();
+         objIter != selectedSet.end(); ++objIter) {
+      ZStackObject *obj = *objIter;
+      obj->setSelected(false);
+    }
+  }
+  m_selectedSet.clear();
+  m_selector.deselectAll();
+}
+
 ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
 {
+  ZOUT(LINFO(), 5) << "Taking object";
+
   QMutexLocker locker(mutex);
 
   ZStackObject *found = NULL;
@@ -114,6 +147,8 @@ ZStackObject* ZStackObjectGroup::take(ZStackObject *obj, QMutex *mutex)
 
 TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc, QMutex *mutex)
 {
+  ZOUT(LINFO(), 5) << "Taking object";
+
   QMutexLocker locker(mutex);
 
   TStackObjectList objSet;
@@ -133,6 +168,8 @@ TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc, QMutex *mutex)
 TStackObjectList ZStackObjectGroup::take(
     ZStackObject::EType type, TObjectTest testFunc)
 {
+  ZOUT(LINFO(), 5) << "Taking object by type";
+
   TStackObjectList objSet;
   TStackObjectList &objList = getObjectList(type);
   for (TStackObjectList::iterator iter = objList.begin();
@@ -151,6 +188,8 @@ TStackObjectList ZStackObjectGroup::take(
 TStackObjectList ZStackObjectGroup::takeSameSource(
     ZStackObject::EType type, const std::string &source)
 {
+  ZOUT(LINFO(), 5) << "Taking object by source";
+
   TStackObjectList objList;
 
   if (!source.empty()) {
@@ -163,6 +202,8 @@ TStackObjectList ZStackObjectGroup::takeSameSource(
 
 TStackObjectList ZStackObjectGroup::take(ZStackObject::EType type)
 {
+  ZOUT(LINFO(), 5) << "Taking object by type";
+
   TStackObjectList objSet = getObjectList(type);
   if (!objSet.empty()) {
     QMutableListIterator<ZStackObject*> miter(*this);
@@ -192,6 +233,8 @@ bool ZStackObjectGroup::remove_p(TStackObjectSet &objSet, ZStackObject *obj)
 
 bool ZStackObjectGroup::removeObject(ZStackObject *obj, bool isDeleting)
 {
+  ZOUT(LINFO(), 5) << "Removing object. Deleting:" << isDeleting;
+
   ZStackObject *found = take(obj);
 
   if (isDeleting) {
@@ -203,6 +246,8 @@ bool ZStackObjectGroup::removeObject(ZStackObject *obj, bool isDeleting)
 
 bool ZStackObjectGroup::removeObject(ZStackObject::EType type, bool deleting)
 {
+  ZOUT(LINFO(), 5) << "Removing object by type. Deleting" << deleting;
+
   TStackObjectList objSet = take(type);
   if (deleting) {
     for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
@@ -217,6 +262,8 @@ bool ZStackObjectGroup::removeObject(ZStackObject::EType type, bool deleting)
 bool ZStackObjectGroup::removeObject(
     const TStackObjectSet &objSet, bool deleting)
 {
+  ZOUT(LINFO(), 5) << "Removing object set. Deleting" << deleting;
+
   bool removed = false;
 
   if (!objSet.empty()) {
@@ -239,6 +286,8 @@ bool ZStackObjectGroup::removeObject(
 
 bool ZStackObjectGroup::removeSelected(bool deleting)
 {
+  ZOUT(LINFO(), 5) << "Removing seleted objects. Deleting" << deleting;
+
   TStackObjectList objSet = takeSelected();
   if (deleting) {
     for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
@@ -252,6 +301,8 @@ bool ZStackObjectGroup::removeSelected(bool deleting)
 
 bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 {
+  ZOUT(LINFO(), 5) << "Removing seleted objects by type. Deleting" << deleting;
+
   TStackObjectList objSet = takeSelected(type);
   if (deleting) {
     for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
@@ -265,6 +316,8 @@ bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 
 void ZStackObjectGroup::removeAllObject(bool deleting)
 {
+  ZOUT(LINFO(), 5) << "Removing all objects. Deleting" << deleting;
+
   if (deleting) {
     for (ZStackObjectGroup::iterator iter = begin(); iter != end(); ++iter) {
       delete *iter;
@@ -282,6 +335,8 @@ void ZStackObjectGroup::removeAllObject(bool deleting)
 
 TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType type)
 {
+  ZOUT(LINFO(), 5) << "Getting object list:" << "type" << type;
+
   if (!m_sortedGroup.contains(type)) {
     m_sortedGroup[type] = TStackObjectList();
   }

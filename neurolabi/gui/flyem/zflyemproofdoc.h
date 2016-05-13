@@ -40,6 +40,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -131,6 +132,7 @@ public:
   getSynapse(uint64_t bodyId) const;
 
   std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
 
   void downloadSynapseFunc();
 
@@ -152,16 +154,25 @@ public:
   void activateBodyColorMap(const QString &option);
   void activateBodyColorMap(EBodyColorMap colorMap);
 
+  ZDvidReader& getDvidReader() {
+    return m_dvidReader;
+  }
+
+  ZDvidWriter& getDvidWriter() {
+    return m_dvidWriter;
+  }
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
   void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
+  void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
-  void selectBodyInRoi(int z, bool appending);
+  void selectBodyInRoi(int z, bool appending, bool removingRoi);
 
 public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
@@ -184,6 +195,10 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+
+  void notifyTodoItemModified(
+      const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
+  void notifyTodoItemModified(const ZIntPoint &pt, bool emitingEdit = false);
 
   std::set<ZIntPoint> getSelectedTodoItemPosition() const;
 
@@ -210,22 +225,6 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
-public: //Commands
-  void executeRemoveSynapseCommand();
-  void executeLinkSynapseCommand();
-  void executeUnlinkSynapseCommand();
-  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
-  void executeMoveSynapseCommand(const ZIntPoint &dest);
-
-  void executeRemoveBookmarkCommand();
-  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
-  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
-  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
-
-  void executeAddTodoItemCommand(const ZIntPoint &pt);
-  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
-  void executeRemoveTodoItemCommand();
-
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -238,12 +237,33 @@ signals:
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();
   void bodyMapReady();
+  void todoModified(uint64_t bodyId);
+  void requestingBodyLock(uint64_t bodyId, bool locking);
+
+public slots: //Commands
+  void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
+
+  void executeAddTodoItemCommand(int x, int y, int z, bool checked);
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeRemoveTodoItemCommand();
+
 
 public slots:
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
+  void downloadTodo(int x, int y, int z);
   void downloadTodoList();
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
@@ -327,20 +347,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
   }
 }
 
-namespace ZFlyEmProofDocCommand {
-class MergeBody : public ZUndoCommand
-{
-public:
-  MergeBody(ZStackDoc *doc, QUndoCommand *parent = NULL);
-  void undo();
-  void redo();
-
-  ZFlyEmProofDoc* getCompleteDocument();
-
-private:
-  ZStackDoc *m_doc;
-};
-}
 
 
 #endif // ZFLYEMPROOFDOC_H

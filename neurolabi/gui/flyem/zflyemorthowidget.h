@@ -23,6 +23,7 @@ public:
 signals:
   void bookmarkEdited(int, int, int);
   void synapseEdited(int, int, int);
+  void todoEdited(int, int, int);
   void zoomingTo(int, int, int);
   void bodyMergeEdited();
 
@@ -39,6 +40,7 @@ public slots:
   void locateMainWindow();
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
+  void setSegmentationVisible(bool on);
 
 private:
   void init(const ZDvidTarget &target);

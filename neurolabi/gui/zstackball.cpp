@@ -389,7 +389,7 @@ bool ZStackBall::hit(double x, double y, NeuTube::EAxis axis)
   shiftedCenter.shiftSliceAxis(axis);
 
   double dx = x - shiftedCenter.x();
-  double dy = y = shiftedCenter.y();
+  double dy = y - shiftedCenter.y();
 
   double d2 = dx * dx + dy * dy;
 

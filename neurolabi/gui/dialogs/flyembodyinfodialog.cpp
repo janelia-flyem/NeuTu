@@ -7,6 +7,8 @@
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
+#include <QFileDialog>
+#include <QColorDialog>
 #else
 #include <QtCore>
 #endif
@@ -427,7 +429,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             #endif
 
-            ZJsonObject bkmk(bookmarks.at(i), false);
+            ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
             uint64_t bodyId = bkmk.value("body ID").toInteger();
             if (bodySet.contains(bodyId)) {
@@ -600,7 +602,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     ZJsonArray bookmarks(data);
     m_bodyModel->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-        ZJsonObject bkmk(bookmarks.at(i), false);
+        ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
@@ -725,7 +727,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // has keys "color", "filter":
-    ZJsonObject first(colorArray.at(0), false);
+    ZJsonObject first(colorArray.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
     if (!first.hasKey("color") || !first.hasKey("filter")) {
         emit jsonLoadColorMapError("Color map json entries must have 'color' and 'filter' keys");
         return false;
@@ -753,7 +755,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     //  iterate over each color, filter and insert into table;
     ZJsonArray colorArray(colors);
     for (size_t i=0; i<colorArray.size(); i++) {
-        ZJsonObject entry(colorArray.at(i), false);
+        ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QString filter(ZJsonParser::stringValue(entry["filter"]));
         QStandardItem * filterTextItem = new QStandardItem(filter);
@@ -1134,9 +1136,15 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
     // for some reason, this table gave me more trouble than the
     //  others; set its column behaviors individually
+#if QT_VERSION >= 0x050000
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
+    ui->ioBodyTableView->horizontalHeader()->setSectionResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#else
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_ID_COLUMN, QHeaderView::ResizeToContents);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NAME_COLUMN, QHeaderView::Stretch);
     ui->ioBodyTableView->horizontalHeader()->setResizeMode(IOBODY_NUMBER_COLUMN, QHeaderView::ResizeToContents);
+#endif
     ui->ioBodyTableView->sortByColumn(IOBODY_NUMBER_COLUMN, Qt::DescendingOrder);
 
     m_connectionsLoading = false;
@@ -1189,7 +1197,11 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
         }
 
         // for this table, we want all columns same width, filling full width
+#if QT_VERSION >= 0x050000
+        ui->connectionsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
         ui->connectionsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
         ui->connectionsTableView->sortByColumn(CONNECTIONS_Z_COLUMN, Qt::AscendingOrder);
     }
 }
@@ -1214,6 +1226,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
 {
+    m_quitting = true;
     m_futureMap.waitForFinished(); //to avoid crash while quitting too early
     delete ui;
 }

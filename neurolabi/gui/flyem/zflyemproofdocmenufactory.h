@@ -5,6 +5,8 @@
 #include "zactionfactory.h"
 #include "zstackdocmenufactory.h"
 
+class Z3DWindow;
+
 class ZFlyEmProofDocMenuFactory : public ZStackDocMenuFactory
 {
 public:
@@ -22,10 +24,8 @@ public:
   QMenu* makeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
-private:
-  void addAction(
-      const QList<ZActionFactory::EAction> &actionList,
-      ZStackPresenter *presenter, QMenu *menu);
+//  QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
+
 };
 
 #endif // ZFLYEMPROOFDOCMENUFACTORY_H

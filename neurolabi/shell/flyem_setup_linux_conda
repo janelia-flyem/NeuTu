@@ -14,7 +14,7 @@ cd $downloadDir
 condaDir=$install_dir/Download/miniconda
 if [ ! -d $condaDir ]
 then
-  if [ `uname` == 'Darwin' ]
+  if [ `uname` = 'Darwin' ]
   then
     curl -O https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
     bash Miniconda-latest-MacOSX-x86_64.sh -b -p $condaDir
@@ -24,11 +24,23 @@ then
   fi
 fi
 
+CONDA_ROOT=`$condaDir/bin/conda info --root`
 if [ ! -d $condaDir/envs/dvidenv ]
 then
-  CONDA_ROOT=`$condaDir/bin/conda info --root`
   source ${CONDA_ROOT}/bin/activate root
-  { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+  { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp=0.2.post1
 fi
 
+if [ `uname` != 'Darwin' ]
+then
+  GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+  if [ $GCCVER \> '4.9.0' ]
+  then
+    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+    then
+      source ${CONDA_ROOT}/bin/activate dvidenv
+      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+    fi
+  fi
+fi
 

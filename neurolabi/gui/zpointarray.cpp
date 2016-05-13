@@ -83,7 +83,7 @@ std::string ZPointArray::toJsonString() const
   std::string str;
 
   if (!empty()) {
-    ZJsonObject obj(json_object(), true);
+    ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
 
     //json_t *rootObj = obj.getValue();
     json_t *pointListObj = json_array();

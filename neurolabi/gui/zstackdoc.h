@@ -39,6 +39,7 @@
 #include "zneurontracer.h"
 #include "zdocplayer.h"
 #include "z3dgraph.h"
+#include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
 #include "misc/miscutility.h"
@@ -65,6 +66,7 @@ class QWidget;
 class ZSwcNodeObjsModel;
 class ZDocPlayerObjsModel;
 class ZGraphObjsModel;
+class ZSurfaceObjsModel;
 class ZStackDocReader;
 class ZStackFactory;
 class ZSparseObject;
@@ -151,6 +153,12 @@ public: //attributes
   bool hasObject() const;
 
   bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
+
+  ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
+
+  template <typename T>
+  T* getObject(const std::string &source) const;
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
@@ -251,6 +259,7 @@ public: //attributes
   inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
   inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
+  inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -612,6 +621,7 @@ public:
   void setGraphVisible(Z3DGraph *graph, bool visible);
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
+  void setSurfaceVisible(ZCubeArray *cubearray, bool visible);
 
   void setAutoTraceMinScore(double score);
   void setManualTraceMinScore(double score);
@@ -699,11 +709,14 @@ public:
 
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
+  void selectObject(ZStackObject *obj, bool appending);
+
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
+  void setVisible(ZStackObject::EType type, std::string source, bool visible);
 
   template <typename T>
   QList<T*> getSelectedObjectList() const;
@@ -772,6 +785,7 @@ public:
     return m_neuronTracer.getConnectionTestWorkspace();
   }
 
+  void disconnectSwcNodeModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
@@ -830,6 +844,8 @@ public:
   void notifyStrokeModified();
   //void notifyAllObjectModified();
   void notify3DGraphModified();
+  void notify3DCubeModified();
+  void notifyTodoModified();
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -867,9 +883,13 @@ public:
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
+  void notifySelectionChanged(const std::set<const ZStackObject*> &selected,
+                              const std::set<const ZStackObject*> &deselected);
 
   void notify(const ZWidgetMessage &msg);
   void notify(const QString &msg);
+
+  void notifyUpdateLatency(int64_t t);
 
 public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
@@ -1020,6 +1040,7 @@ public slots: //undoable commands
   virtual bool executeBwsolidCommand();
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
+  virtual void executeRemoveRectRoiCommand();
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1066,6 +1087,8 @@ public slots:
   void removeAllUser();
 
   void notifyZoomingToSelectedSwcNode();
+  void notifyZoomingTo(double x, double y, double z);
+  void notifyZoomingTo(const ZIntPoint &pt);
 
 //  void processRectRoiUpdateSlot();
 
@@ -1091,6 +1114,8 @@ signals:
   void sparseObjectModified();
   void strokeModified();
   void graph3dModified();
+  void cube3dModified();
+  void todoModified();
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);
@@ -1115,6 +1140,7 @@ signals:
 
   void punctumVisibleStateChanged();
   void graphVisibleStateChanged();
+  void surfaceVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
   void swcVisibleStateChanged(ZSwcTree* swctree, bool visible);
   void cleanChanged(bool);
@@ -1134,6 +1160,9 @@ signals:
   void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+
+  void zoomingTo(int x, int y, int z);
+  void updatingLatency(int);
 
 protected:
   virtual void autoSave();
@@ -1184,6 +1213,7 @@ private:
   ZPunctaObjsModel *m_punctaObjsModel;
   ZDocPlayerObjsModel *m_seedObjsModel;
   ZGraphObjsModel *m_graphObjsModel;
+  ZSurfaceObjsModel *m_surfaceObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;
@@ -1502,6 +1532,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template <typename T>
+T* ZStackDoc::getObject(const std::string &source) const
+{
+  return dynamic_cast<T*>(getObject(T::GetType(), source));
 }
 
 #if 0

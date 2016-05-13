@@ -187,6 +187,11 @@ void ZPainter::setZOffset(int z)
   m_z = z;
 }
 
+QRectF ZPainter::getCanvasRange() const
+{
+  return m_canvasRange;
+}
+
 void ZPainter::drawImage(
     const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect)
 {
@@ -228,6 +233,15 @@ void ZPainter::drawPixmap(
   }
 }
 
+void ZPainter::drawPixmap(const QRectF &targetRect, const ZPixmap &image)
+{
+  if (targetRect.isValid() && !image.isNull()) {
+    m_painter.drawPixmap(targetRect, image, image.rect());
+
+    setPainted(true);
+  }
+}
+
 void ZPainter::drawActivePixmap(
     const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
 {
@@ -260,6 +274,23 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
 
     setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmapNt(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    m_painter.drawPixmap(0, 0, image);
+    setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmap(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    QRectF targetRect =
+        image.getProjTransform().transform(QRectF(image.rect()));
+    m_painter.drawPixmap(targetRect, image, image.rect());
   }
 }
 
@@ -361,11 +392,33 @@ void ZPainter::drawPoints(const std::vector<QPointF> &pointArray)
 
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
-  if (isVisible(QRectF(x1, y1, x2, y2))) {
+  if (isVisible(x1, y1, x2, y2)) {
     m_painter.drawLine(x1, y1, x2, y2);
     setPainted(true);
   }
 //  drawLine(QPointF(x1, y1), QPointF(x2, y2));
+}
+
+bool ZPainter::isVisible(double x1, double y1, double x2, double y2) const
+{
+  if (m_canvasRange.isEmpty()) {
+    return true;
+  }
+
+  if (x1 > x2) {
+    std::swap(x1, x2);
+  }
+
+  if (y1 > y2) {
+    std::swap(y1, y2);
+  }
+
+  QRectF rect;
+  rect.setTopLeft(QPointF(x1, y1));
+  rect.setBottomRight(QPointF(x2, y2));
+  bool visible = m_canvasRange.intersects(rect);
+
+  return visible;
 }
 
 bool ZPainter::isVisible(const QRect &rect) const

@@ -75,10 +75,12 @@ public:
 
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
+#if 0
   /*! Obsolete. Do not use this constructor!
    */
   ZStack(Mc_Stack *stack,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+#endif
 
   //! Destructor
   virtual ~ZStack();
@@ -571,7 +573,7 @@ public:
     Cz_Lsminfo m_basicInfo;
     Lsm_Channel_Colors m_lsmChannelInfo;
     Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
-    std::vector<QString> m_lsmChannelNames;
+    std::vector<std::string> m_lsmChannelNames;
     std::vector<double> m_lsmTimeStamps;
     std::vector<int> m_lsmChannelDataTypes;
   };

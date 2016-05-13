@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <vector>
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -23,6 +24,10 @@ class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
+class ZFlyEmDataFrame;
+class FlyEmTodoDialog;
+class ZClickableColorLabel;
+class ZColorLabel;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -90,9 +95,11 @@ signals:
   void userBookmarkUpdated(ZStackDoc *doc);
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
+  void updatingLatency(int);
 
 public slots:
   void mergeSelected();
+  void unmergeSelected();
   void undo();
   void redo();
 
@@ -107,6 +114,7 @@ public slots:
   void checkOutBody();
   bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(uint64_t bodyId);
+  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
@@ -122,7 +130,7 @@ public slots:
   void locateBody(QList<uint64_t> bodyIdList);
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
-  void selectBodyInRoi(bool appending);
+  void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
 
   void showBody3d();
@@ -132,12 +140,14 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
+  void smoothDisplay(bool state);
 
   void goToBody();
   void goToBodyBottom();
@@ -161,9 +171,11 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showTodo(bool visible);
 
   void loadBookmark();
   void openSequencer();
+  void openTodo();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -188,6 +200,12 @@ public slots:
 
   void syncMergeWithDvid();
 
+  void getROIs();
+  void updateLatencyWidget(int t);
+
+  void suppressObjectVisible();
+  void recoverObjectVisible();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -198,6 +216,7 @@ protected slots:
   void detachObjectWindow();
   void detachExternalNeuronWindow();
   void detachOrthoWindow();
+  void detachQueryWindow();
 //  void closeBodyWindow(int index);
   void closeOrthoWindow();
   void close3DWindow(Z3DWindow *window);
@@ -260,12 +279,14 @@ protected:
 
   ZThreadFutureMap m_futureMap;
 
+//  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
 
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
+  FlyEmTodoDialog *m_todoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -276,11 +297,18 @@ protected:
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
+//  ZFlyEmDataFrame *m_queryWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
 
   ZStackViewParam m_currentViewParam;
 
   ZDvidInfo m_dvidInfo;
+  bool m_ROILoaded;
+
+  std::vector<std::string> m_roiList;
+  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<std::string> m_roiSourceList;
+
 };
 
 template <typename T>
@@ -338,6 +366,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
 }
 
 template <typename T>

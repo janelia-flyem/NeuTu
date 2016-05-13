@@ -14,6 +14,7 @@
 #include "flyem/zflyemproofdocmenufactory.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
+#include "zstackdocselector.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -38,6 +39,7 @@ void ZFlyEmProofPresenter::init()
   m_isHightlightMode = false;
   m_splitWindowMode = false;
   m_highTileContrast = false;
+  m_smoothTransform = false;
 
   m_synapseContextMenu = NULL;
 
@@ -64,12 +66,39 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(unlinkSelectedSynapse()));
   connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(tryAddTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED), SIGNAL(triggered()),
+          this, SLOT(tryAddDoneItem()));
   connect(getAction(ZActionFactory::ACTION_CHECK_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(checkTodoItem()));
   connect(getAction(ZActionFactory::ACTION_UNCHECK_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(uncheckTodoItem()));
   connect(getAction(ZActionFactory::ACTION_REMOVE_TODO_ITEM), SIGNAL(triggered()),
           this, SLOT(removeTodoItem()));
+  connect(getAction(ZActionFactory::ACTION_SELECT_BODY_IN_RECT), SIGNAL(triggered()),
+          this, SLOT(selectBodyInRoi()));
+  connect(getAction(ZActionFactory::ACTION_ZOOM_TO_RECT), SIGNAL(triggered()),
+          this, SLOT(zoomInRectRoi()));
+}
+
+void ZFlyEmProofPresenter::selectBodyInRoi()
+{
+  getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentZ(), true, true);
+}
+
+void ZFlyEmProofPresenter::zoomInRectRoi()
+{ 
+  ZRect2d rect = buddyDocument()->getRect2dRoi();
+
+  if (rect.isValid()) {
+    ZStackViewParam param(NeuTube::COORD_STACK);
+
+    param.setViewPort(rect.getFirstX(), rect.getFirstY(),
+                      rect.getLastX(), rect.getLastY());
+    param.fixZ(true);
+
+    buddyView()->setView(param);
+    buddyDocument()->executeRemoveRectRoiCommand();
+  }
 }
 
 ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
@@ -358,7 +387,12 @@ void ZFlyEmProofPresenter::tryAddSynapse(
 
 void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddTodoItemCommand(pt);
+  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
+}
+
+void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
 }
 
 void ZFlyEmProofPresenter::removeTodoItem()
@@ -382,6 +416,14 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getStackPosition();
   tryAddTodoItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddDoneItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddDoneItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
@@ -485,6 +527,12 @@ void ZFlyEmProofPresenter::processCustomOperator(
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
+    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    docSelector.setSelectOption(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE,
+                                ZStackDocSelector::SELECT_RECURSIVE);
+    docSelector.deselectAll();
+//    docSelector.setSelectOption(ZStackObject);
+
     for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
          iter != todoList.end(); ++iter) {
       ZFlyEmToDoList *item = *iter;
@@ -535,6 +583,11 @@ void ZFlyEmProofPresenter::processCustomOperator(
     QList<ZDvidSynapseEnsemble*> seList =
         getCompleteDocument()->getDvidSynapseEnsembleList();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
+
+    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    docSelector.setSelectOption(ZStackObject::TYPE_FLYEM_TODO_LIST,
+                                ZStackDocSelector::SELECT_RECURSIVE);
+    docSelector.deselectAll();
 
     for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
          iter != seList.end(); ++iter) {
@@ -600,9 +653,19 @@ bool ZFlyEmProofPresenter::highTileContrast() const
   return m_highTileContrast;
 }
 
+bool ZFlyEmProofPresenter::smoothTransform() const
+{
+  return m_smoothTransform;
+}
+
 void ZFlyEmProofPresenter::setHighTileContrast(bool high)
 {
   m_highTileContrast = high;
+}
+
+void ZFlyEmProofPresenter::setSmoothTransform(bool on)
+{
+  m_smoothTransform = on;
 }
 
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
@@ -614,6 +677,16 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     }
   } else {
     buddyDocument()->processRectRoiUpdate(rect, appending);
+    interactiveContext().setAcceptingRect(true);
+    QMenu *menu = getContextMenu();
+    if (!menu->isEmpty()) {
+      const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
+            Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+      QPoint currentWidgetPos(event.getPosition().getX(),
+                 event.getPosition().getY());
+      buddyView()->showContextMenu(menu, currentWidgetPos);
+    }
+    interactiveContext().setAcceptingRect(false);
   }
 }
 

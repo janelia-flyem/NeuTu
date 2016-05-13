@@ -510,6 +510,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_MERGE:
     action = new QAction("Merge", parent);
     break;
+  case ACTION_BODY_UNMERGE:
+    action = new QAction("Unmerge", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
@@ -527,6 +530,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
     break;
+  case ACTION_ADD_TODO_ITEM_CHECKED:
+    action = new QAction("Done here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;
@@ -535,6 +541,23 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_UNCHECK_TODO_ITEM:
     action = new QAction("Set unchecked", parent);
+    break;
+  case ACTION_SELECT_BODY_IN_RECT:
+    action = new QAction("Select bodies", parent);
+    break;
+  case ACTION_ZOOM_TO_RECT:
+    action = new QAction("Zoom in", parent);
+    action->setIcon(QIcon(":/images/zoom2.png"));
+    break;
+  case ACTION_ENTER_RECT_ROI_MODE:
+    action = new QAction("Draw rectangle ROI", parent);
+    action->setToolTip("Use mouse to draw a rectangle ROI");
+    action->setIcon(QIcon(":/images/roi_box.png"));
+    break;
+  case ACTION_CANCEL_RECT_ROI:
+    action = new QAction("Cancel", parent);
+    action->setToolTip("Cancel the current rectangle ROI");
+    action->setIcon(QIcon(":/images/cancel.png"));
     break;
   default:
     break;

@@ -950,7 +950,7 @@ ZIntPoint ZObject3d::getHitVoxel() const
   return pt;
 }
 
-void ZObject3d::getBoundBox(ZIntCuboid *box) const
+void ZObject3d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     if (!isEmpty()) {

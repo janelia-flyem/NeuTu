@@ -181,7 +181,13 @@ public:
   static bool isDvidTarget(const std::string &source);
 
   inline bool isSupervised() const { return m_isSupervised; }
+  void enableSupervisor(bool on) {
+    m_isSupervised = on;
+  }
   const std::string& getSupervisor() const { return m_supervisorServer; }
+  void setSupervisorServer(const std::string &server) {
+    m_supervisorServer = server;
+  }
 
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }

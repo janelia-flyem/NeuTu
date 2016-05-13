@@ -7,6 +7,18 @@
 #include "zjsonarray.h"
 
 class ZJsonObject;
+class ZCuboid;
+
+/*
+ * Annotation json example:
+{
+"Pos":[33,30,31],
+"Kind":"PostSyn",
+"Rels":[ {"Rel":"PostSynTo", "To":[15,27,35]} ],
+"Tags":["Synapse1"],
+"Prop": { "SomeVar": "SomeValue", "Another Var": "A More Complex Value" }
+}
+*/
 
 class ZDvidAnnotation : public ZStackObject
 {
@@ -41,13 +53,22 @@ public:
 
   void setKind(const std::string &kind);
 
+  uint64_t getBodyId() const {
+    return m_bodyId;
+  }
+
+  void setBodyId(uint64_t bodyId) {
+    m_bodyId = bodyId;
+  }
+
   void setDefaultColor();
 
   int getX() const;
   int getY() const;
   int getZ() const;
 
-  bool hit(double x, double y);
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(
@@ -90,6 +111,8 @@ public:
     return m_partnerHint;
   }
 
+  ZCuboid getBoundBox() const;
+
 public: //Additional properties
   void setUserName(const std::string &name);
   std::string getUserName() const;
@@ -117,9 +140,11 @@ public: //Json APIs
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+  static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
+  static ZIntPoint GetPosition(const ZJsonObject &json);
 
 protected:
-  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
   double getRadius(int z, NeuTube::EAxis sliceAxis) const;
 
 private:
@@ -129,6 +154,7 @@ protected:
   ZIntPoint m_position;
   EKind m_kind;
   double m_radius;
+  uint64_t m_bodyId;
 
   std::vector<ZIntPoint> m_partnerHint;
   std::vector<std::string> m_tagArray;

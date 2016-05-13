@@ -42,7 +42,8 @@ public:
   std::vector<double> getTreeBound(ZSwcTree *tree) const;
 
   //get bounding box of swc tree node in world coordinate :[xmin xmax ymin ymax zmin zmax]
-  std::vector<double> getTreeNodeBound(Swc_Tree_Node *tn) const;
+  void getTreeNodeBound(Swc_Tree_Node *tn,
+                        std::vector<double> &result) const;
 
   virtual bool isReady(Z3DEye eye) const;
 

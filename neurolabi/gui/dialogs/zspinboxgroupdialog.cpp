@@ -19,7 +19,7 @@ ZSpinBoxGroupDialog::ZSpinBoxGroupDialog(QWidget *parent) :
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(this);
-  buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
+  buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   buttonLayout->addWidget(buttonBox);
 
   m_mainLayout->addLayout(m_spinBoxLayout);

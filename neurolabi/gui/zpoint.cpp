@@ -173,9 +173,19 @@ ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2)
   return ZPoint(pt1) += pt2;
 }
 
+ZPoint operator + (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() + offset, pt.y() + offset, pt.z() + offset);
+}
+
 ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2)
 {
   return ZPoint(pt1) -= pt2;
+}
+
+ZPoint operator - (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() - offset, pt.y() - offset, pt.z() - offset);
 }
 
 ZPoint operator * (const ZPoint &pt1, double scale)
@@ -311,33 +321,6 @@ ZPoint ZPoint::operator - () const
 ZIntPoint ZPoint::toIntPoint() const
 {
   return ZIntPoint(iround(x()), iround(y()), iround(z()));
-}
-
-ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
-{
-  m_x += pt.getX();
-  m_y += pt.getY();
-  m_z += pt.getZ();
-
-  return *this;
-}
-
-ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
-{
-  m_x -= pt.getX();
-  m_y -= pt.getY();
-  m_z -= pt.getZ();
-
-  return *this;
-}
-
-ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
-{
-  m_x *= pt.getX();
-  m_y *= pt.getY();
-  m_z *= pt.getZ();
-
-  return *this;
 }
 
 void ZPoint::rotate(double theta, double psi)
