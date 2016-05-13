@@ -117,6 +117,23 @@ void ZROIWidget::makeGUI()
     selectAll->setChecked(false);
 
     //
+    double alpha = m_window->getSurfaceFilter()->getOpacity();
+    l_opacity = new QLabel(tr(" Opacity: %1").arg(alpha));
+    s_opacity = new QSlider(Qt::Horizontal);
+    s_opacity->setRange(0,100);
+    s_opacity->setValue(alpha*100);
+
+    //
+    QHBoxLayout *hLayout = new QHBoxLayout;
+    hLayout->addWidget(selectAll);
+    hLayout->addStretch();
+    hLayout->addWidget(l_opacity);
+    hLayout->addWidget(s_opacity);
+
+    QGroupBox *horizontalGroupBox = new QGroupBox();
+    horizontalGroupBox->setLayout(hLayout);
+
+    //
     tw_ROIs = new QTableWidget(0, 2);
     tw_ROIs->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -157,7 +174,7 @@ void ZROIWidget::makeGUI()
     //
     //this->setWidget(tw_ROIs);
     QVBoxLayout *layout = new QVBoxLayout();
-    layout->addWidget(selectAll);
+    layout->addWidget(horizontalGroupBox);
     layout->addWidget(tw_ROIs);
 
     QGroupBox *group = new QGroupBox();
@@ -173,6 +190,9 @@ void ZROIWidget::makeGUI()
     connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
 
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
+
+    connect(s_opacity,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
+    connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
 }
 
 
@@ -336,5 +356,22 @@ void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
     qDebug()<<tw_ROIs->selectedItems();
 }
 
+void ZROIWidget::updateSlider(int v)
+{
+    double alpha = double( v / 100.0 );
+    l_opacity->setText(tr(" Opacity: %1").arg(alpha));
+
+    if(m_window)
+    {
+        m_window->getSurfaceFilter()->setOpacity(alpha);
+    }
+}
+
+void ZROIWidget::updateOpacity(double v)
+{
+    int opacityVal = 100*v;
+    s_opacity->setValue(opacityVal);
+    l_opacity->setText(tr(" Opacity: %1").arg(v));
+}
 
 

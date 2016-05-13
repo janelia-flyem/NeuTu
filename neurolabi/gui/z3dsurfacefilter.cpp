@@ -31,6 +31,9 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
     //
     setStayOnTop(false);
+
+    //
+    connect(m_rendererBase, SIGNAL(opacityChanged(double)), this, SLOT(indicateOpacityChanged(double)));
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
@@ -317,4 +320,9 @@ void Z3DSurfaceFilter::updateSurfaceVisibleState()
 {
     m_dataIsInvalid = true;
     invalidateResult();
+}
+
+void Z3DSurfaceFilter::indicateOpacityChanged(double v)
+{
+    emit opacityValueChanged(v);
 }

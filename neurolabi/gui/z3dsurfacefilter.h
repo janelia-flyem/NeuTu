@@ -44,8 +44,12 @@ public:
 
     void initRenderers(size_t n);
 
+signals:
+    void opacityValueChanged(double);
+
 public slots:
     void updateSurfaceVisibleState();
+    void indicateOpacityChanged(double v);
 
 private:
     ZBoolParameter m_showCube;

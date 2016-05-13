@@ -31,6 +31,9 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
     m_vboSurf = 0;
 
     clearData();
+
+    //
+    getRendererBase()->getOpacity();
 }
 
 Z3DCubeRenderer::~Z3DCubeRenderer()
