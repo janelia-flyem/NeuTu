@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include <QInputDialog>
-
+#include <QMessageBox>
 
 /*
  * this is the base class for all protocols; it's also the
@@ -99,16 +99,26 @@ void ProtocolDialog::onDoButton() {
 }
 
 void ProtocolDialog::onCompleteButton() {
-    // complete = mark protocol as finished; does not
-    //  exit, but once exited, can't be reopened
-
-    // change status
-    // save completed data
-    // remove save incomplete (currently I plan diff.
-    //  keys in dvid for complete and incomplete
-    // confirmation dialog?  "you're done, go home?"
-
     std::cout << "prdia: complete button clicked" << std::endl;
+
+    QMessageBox mb;
+    mb.setText("Complete protocol");
+    mb.setInformativeText("When you complete the protocol, it will save and exit immediately.  You will not be able to reopen it.\n\nComplete protocol now?");
+    mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Cancel);
+    int ans = mb.exec();
+
+    if (ans == QMessageBox::Ok) {
+        m_protocolStatus = PROTOCOL_COMPLETE;
+
+        saveState();
+
+        // remove save incomplete (currently I plan diff.
+        //  keys in dvid for complete and incomplete
+        // changeSaveKeyToComplete();
+
+        onExitButton();
+    }
 }
 
 void ProtocolDialog::onExitButton() {
