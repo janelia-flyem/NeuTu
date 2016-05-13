@@ -131,6 +131,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
     connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
+    connect(ui->regexCheckBox, SIGNAL(clicked(bool)), this, SLOT(updateBodyFilterAfterLoading()));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
     connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
@@ -304,7 +305,11 @@ void FlyEmBodyInfoDialog::updateBodyFilterAfterLoading() {
 }
 
 void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
-    m_bodyProxy->setFilterFixedString(filterText);
+    if (ui->regexCheckBox->isChecked()) {
+        m_bodyProxy->setFilterRegExp(filterText);
+    } else {
+        m_bodyProxy->setFilterFixedString(filterText);
+    }
 
     // turns out you need to explicitly tell it to resort after the filter
     //  changes; if you don't, and new filter shows more items, those items
