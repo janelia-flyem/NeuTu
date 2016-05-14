@@ -43,11 +43,15 @@ public:
     bool isVisible() const;
 
     void initRenderers(size_t n);
-
     void invalidateRenderer(const std::string &source);
+
+signals:
+    void opacityValueChanged(double);
+
 
 public slots:
     void updateSurfaceVisibleState();
+    void indicateOpacityChanged(double v);
 
 private:
     ZBoolParameter m_showCube;

@@ -5,6 +5,10 @@
 #include "zjsonparser.h"
 #include "neutubeconfig.h"
 
+#ifdef _QT_GUI_USED_
+#include "neutube.h"
+#endif
+
 const char* ZFlyEmConfig::m_dvidRepoKey = "dvid repo";
 const char* ZFlyEmConfig::m_ipKey = "ip";
 const char* ZFlyEmConfig::m_librarianKey = "librarian";
@@ -17,6 +21,9 @@ ZFlyEmConfig::ZFlyEmConfig()
 
 void ZFlyEmConfig::init()
 {
+#ifdef _QT_GUI_USED_
+  m_userName = NeuTube::GetCurrentUserName();
+#endif
 //  m_neutuService.setServer("http://zhaot-ws1:8080");
 //  m_neutuService.updateStatus();
 //  m_neutuServer = "http://zhaot-ws1:8080";
@@ -30,6 +37,11 @@ void ZFlyEmConfig::setDvidTarget(const std::string &repo)
 void ZFlyEmConfig::setDvidTarget(const ZDvidTarget &target)
 {
   m_emptyDvidTarget = target;
+}
+
+std::string ZFlyEmConfig::getUserName() const
+{
+  return m_userName;
 }
 
 void ZFlyEmConfig::print() const

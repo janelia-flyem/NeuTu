@@ -7,11 +7,13 @@
 #include "flyem/zflyemproofdoc.h"
 #include "zcolorscheme.h"
 #include "zobjsmodel.h"
+#include "z3dsurfacefilter.h"
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
 class QSpinBox;
 class QLabel;
+class QDoubleSpinBox;
 class QPushButton;
 class QTableWidget;
 class QTableWidgetItem;
@@ -62,6 +64,8 @@ public slots:
     void updateSelection();
     void updateROISelections(QModelIndex idx);
     void updateSelectedROIs();
+    void updateOpacity(double v);
+    void updateSlider(int v);
 
 
 protected:
@@ -88,7 +92,8 @@ public:
 
     QSpinBox *m_dsIntvWidget;
     QPushButton *m_updateButton;
-
+    QLabel *l_opacity;
+    QSlider *s_opacity;
     QTableWidget *tw_ROIs;
 
     //

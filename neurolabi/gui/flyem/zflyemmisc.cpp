@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QString>
 
+#include "neutubeconfig.h"
 #include "zmatrix.h"
 #include "tz_math.h"
 #include "tz_utilities.h"
@@ -659,7 +660,8 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(address, GET_FLYEM_CONFIG.getUserName(),
+                                     NeutubeConfig::GetSoftwareName());
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
   std::string error_msg;

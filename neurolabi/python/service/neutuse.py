@@ -67,6 +67,19 @@ def processEvent(event):
             skl.skeletonize(event.getDataId().getBodyId())
             
 def process():
+    eqcopy =  []
+    while True:
+        try:
+            elem = eventQueue.get(block=False)
+        except Empty:
+            break
+        else:
+            eqcopy.append(elem)
+
+    for i, e in reversed(eqcopy):
+        print  e.getDataId().getBodyId(), i
+
+
     while True:
         try:
             event = eventQueue.get()

@@ -52,6 +52,8 @@ public:
 
   void setServer(const std::string &server);
 #endif
+
+  std::string getUserName() const;
   /*
   std::string getConfigPath() const {
     return m_configPath;
@@ -71,6 +73,7 @@ private:
 #endif
   std::string m_configPath;
   std::string m_defaultLibrarian;
+  std::string m_userName;
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;

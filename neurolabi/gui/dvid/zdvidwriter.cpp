@@ -676,7 +676,9 @@ static libdvid::BinaryDataPtr makeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(
+        address, GET_FLYEM_CONFIG.getUserName(),
+        NeutubeConfig::GetSoftwareName());
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
   std::string error_msg;
