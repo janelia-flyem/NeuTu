@@ -7311,6 +7311,7 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
   if (branch.size() > 1) {
     ZSwcConnector swcConnector;
+    swcConnector.useSurfaceDist(true);
 
     std::pair<Swc_Tree_Node*, Swc_Tree_Node*> conn =
         swcConnector.identifyConnection(branch, getSwcArray());
