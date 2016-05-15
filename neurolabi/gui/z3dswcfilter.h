@@ -202,6 +202,7 @@ private:
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
+  int m_maxType;
 
   ZColorMapParameter m_colorMap;
 
