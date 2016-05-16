@@ -19,6 +19,8 @@
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
+#include "zsharedpointer.h"
+
 
 namespace libdvid{
 class DVIDNodeService;
@@ -227,7 +229,7 @@ private:
   int m_statusCode;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService *m_service;
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif
 };
 

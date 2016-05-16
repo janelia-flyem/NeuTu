@@ -1499,8 +1499,12 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   bool taken = false;
   switch (event->key()) {
   case Qt::Key_R:
-    if (event->modifiers() == Qt::ShiftModifier) {
+    if (event->modifiers() == Qt::ShiftModifier ||
+        event->modifiers() == Qt::ControlModifier) {
       tryDrawRectMode();
+      if (event->modifiers() == Qt::ControlModifier) {
+        interactiveContext().setRectSpan(true);
+      }
       taken = true;
     } else {
       QAction *action = getAction(ZActionFactory::ACTION_PAINT_STROKE);
@@ -2361,6 +2365,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
       enterDrawRectMode(x, y);
     }
   }
+  interactiveContext().setRectSpan(false);
 }
 
 void ZStackPresenter::enterDrawStrokeMode(double x, double y)

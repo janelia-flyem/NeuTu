@@ -189,6 +189,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
       actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
+
+      if (doc->getCuboidRoi().getDepth() > 1) {
+        if (!actionList.isEmpty()) {
+          actionList.append(ZActionFactory::ACTION_SEPARATOR);
+        }
+        actionList.append(ZActionFactory::ACTION_REWRITE_SEGMENTATION);
+      }
     }
 
     addAction(actionList, presenter, menu);

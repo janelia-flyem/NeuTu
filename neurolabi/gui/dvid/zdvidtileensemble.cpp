@@ -8,6 +8,7 @@
 #include "dvid/zdvidreader.h"
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
+#include "flyem/zflyemmisc.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -31,14 +32,6 @@ void ZDvidTileEnsemble::clear()
       delete tileIter->second;
     }
   }
-
-#if defined(_ENABLE_LIBDVIDCPP_)
-    for (std::vector<libdvid::DVIDNodeService*>::iterator
-         iter = m_serviceArray.begin();
-         iter != m_serviceArray.end(); ++iter) {
-      delete *iter;
-    }
-#endif
 }
 
 void ZDvidTileEnsemble::enhanceContrast(bool high)
@@ -430,12 +423,10 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 #if defined(_ENABLE_LIBDVIDCPP_)
     m_serviceArray.resize(36);
     try {
-      for (std::vector<libdvid::DVIDNodeService*>::iterator
+      for (std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
            iter = m_serviceArray.begin();
            iter != m_serviceArray.end(); ++iter) {
-        *iter = new libdvid::DVIDNodeService(
-              m_reader.getDvidTarget().getAddressWithPort(),
-              m_reader.getDvidTarget().getUuid());
+        *iter = ZFlyEmMisc::MakeDvidNodeService(m_reader.getDvidTarget());
       }
     } catch (libdvid::DVIDException &e) {
       LWARN() << e.what();

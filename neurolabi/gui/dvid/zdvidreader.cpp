@@ -28,6 +28,7 @@
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
+#include "flyem/zflyemmisc.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -103,9 +104,12 @@ bool ZDvidReader::startService()
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
 //    delete m_service;
+    /*
     m_service = ZSharedPointer<libdvid::DVIDNodeService>(
           new libdvid::DVIDNodeService(
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
+          */
+    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;

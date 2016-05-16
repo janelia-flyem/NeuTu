@@ -20130,9 +20130,9 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 0
+#if 1
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.set("emdata1.int.janelia.org", "ad5d", 8500);
 
   ZDvidReader reader;
   reader.open(target);
@@ -20142,9 +20142,10 @@ void ZTest::test(MainWindow *host)
   ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
   ZIntCuboid box =
-      dvidInfo.getBlockBox(dvidInfo.getBlockIndex(4099, 5018, 10343));
+      dvidInfo.getBlockBox(dvidInfo.getBlockIndex(3200, 1600, 12960));
+  box.setSize(352, 384, 352);
   ZArray *label = reader.readLabels64(box);
-  label->setValue((uint64_t) 16573243);
+//  label->setValue((uint64_t) 16573243);
 
 //  label->setValue(100);
   ZDvidWriter writer;
@@ -20152,7 +20153,7 @@ void ZTest::test(MainWindow *host)
   writer.writeLabel(*label);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 
@@ -20164,7 +20165,18 @@ void ZTest::test(MainWindow *host)
 
   writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
                                  4099 + 99, 5018 + 99, 10343 + 99));
+#endif
 
+#if 0
+  ZSharedPointer<int> sharedPtr;
+  sharedPtr = ZSharedPointer<int>(new int);
+//  sharedPtr.reset();
+
+  if (sharedPtr == NULL){
+    std::cout << "NUll pointer" << std::endl;
+  } else {
+    std::cout << "NOT NULL" << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

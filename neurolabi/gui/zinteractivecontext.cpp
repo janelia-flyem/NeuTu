@@ -21,6 +21,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_blockingContextMenu = false;
   m_sliceAxis = NeuTube::Z_AXIS;
   m_acceptingRect = false;
+  m_rectSpan = false;
 }
 
 

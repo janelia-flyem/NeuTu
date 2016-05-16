@@ -2068,6 +2068,18 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
   }
 }
 
+void ZFlyEmProofDoc::rewriteSegmentation()
+{
+  ZIntCuboid box = getCuboidRoi();
+  if (box.getDepth() > 1) {
+    getDvidWriter().refreshLabel(box);
+    if (getDvidWriter().getStatusCode() != 200) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to rewite segmentations.", NeuTube::MSG_ERROR));
+    }
+  }
+}
+
 ZSharedPointer<ZFlyEmBodyColorScheme>
 ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
 {

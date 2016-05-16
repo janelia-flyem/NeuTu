@@ -730,6 +730,7 @@ public:
   void clearSelectedSet();
 
   ZRect2d getRect2dRoi() const;
+  ZIntCuboid getCuboidRoi() const;
 
   virtual void selectSwcNode(const ZRect2d &roi);
 
