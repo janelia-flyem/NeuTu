@@ -2246,6 +2246,8 @@ void ZFlyEmProofMvc::commitCurrentSplit()
 
 void ZFlyEmProofMvc::syncDvidBookmark()
 {
+  ZOUT(LINFO(), 3) << "Syncing dvid bookmark";
+
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     TStackObjectList &objList =
@@ -2268,6 +2270,8 @@ void ZFlyEmProofMvc::syncDvidBookmark()
       }
     }
   }
+
+  ZOUT(LINFO(), 3) << "Bookmark synced";
 }
 
 void ZFlyEmProofMvc::notifyBookmarkUpdated()

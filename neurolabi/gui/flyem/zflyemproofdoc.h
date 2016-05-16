@@ -322,6 +322,7 @@ protected:
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
+  bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;

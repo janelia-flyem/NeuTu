@@ -52,6 +52,8 @@ void ZFlyEmProofDoc::init()
   initTimer();
   initAutoSave();
 
+  m_loadingAssignedBookmark = false;
+
   connectSignalSlot();
 }
 
@@ -1691,6 +1693,8 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 {
   ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
 
+  m_loadingAssignedBookmark = true;
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
@@ -1767,6 +1771,8 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 
   notifyObjectModified();
 
+  m_loadingAssignedBookmark = false;
+
   ZOUT(LINFO(), 3) << "Bookmark imported";
 }
 
@@ -1836,7 +1842,9 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
   switch (type) {
   case ZStackObject::TYPE_FLYEM_BOOKMARK:
 //    m_isCustomBookmarkSaved = false;
-    emit userBookmarkModified();
+    if (!m_loadingAssignedBookmark) {
+      emit userBookmarkModified();
+    }
     break;
   default:
     break;
