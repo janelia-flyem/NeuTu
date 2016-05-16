@@ -22,6 +22,7 @@
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
 #include "zarray.h"
+#include "flyem/zflyemmisc.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -34,29 +35,20 @@ ZDvidWriter::ZDvidWriter(QObject *parent) :
 
 ZDvidWriter::~ZDvidWriter()
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-  delete m_service;
-#endif
 }
 
 void ZDvidWriter::init()
 {
   m_statusCode = 0;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  m_service = NULL;
-#endif
 }
 
 bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    delete m_service;
-
-    m_service = new libdvid::DVIDNodeService(
-          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid());
+    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
-    m_service = NULL;
+    m_service.reset();
     std::cout << e.what() << std::endl;
     return false;
   }

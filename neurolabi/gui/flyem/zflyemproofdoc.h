@@ -276,6 +276,7 @@ public slots:
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
+  void rewriteSegmentation();
 
 protected:
   void autoSave();

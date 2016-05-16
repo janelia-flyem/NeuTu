@@ -689,4 +689,20 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeGetRequest(
                      statusCode);
 }
 
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const std::string &web_addr, const std::string &uuid)
+{
+  return ZSharedPointer<libdvid::DVIDNodeService>(
+        new libdvid::DVIDNodeService(
+          web_addr, uuid, GET_FLYEM_CONFIG.getUserName(),
+          NeutubeConfig::GetSoftwareName()));
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const ZDvidTarget &target)
+{
+  return MakeDvidNodeService(target.getAddressWithPort(),
+                             target.getUuid());
+}
+
 #endif

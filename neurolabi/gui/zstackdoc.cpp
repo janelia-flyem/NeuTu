@@ -9134,6 +9134,28 @@ ZRect2d ZStackDoc::getRect2dRoi() const
   return rect;
 }
 
+ZIntCuboid ZStackDoc::getCuboidRoi() const
+{
+  ZIntCuboid box;
+
+  ZRect2d *rectObj = dynamic_cast<ZRect2d*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_RECT2D,
+          ZStackObjectSourceFactory::MakeRectRoiSource()));
+  if (rectObj != NULL) {
+    box.setFirstCorner(
+          rectObj->getFirstX(), rectObj->getFirstY(), rectObj->getZ());
+    box.setLastCorner(
+          rectObj->getLastX(), rectObj->getLastY(), rectObj->getZ());
+    if (rectObj->getZSpan() > 0) {
+      box.setFirstZ(box.getFirstCorner().getZ() - rectObj->getZSpan());
+      box.setLastZ(box.getLastCorner().getZ() + rectObj->getZSpan());
+    }
+  }
+
+  return box;
+}
+
 void ZStackDoc::notifySelectorChanged()
 {
   ZStackObjectSelector *selector = m_objectGroup.getSelector();

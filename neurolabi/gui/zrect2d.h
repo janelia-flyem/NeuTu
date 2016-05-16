@@ -40,6 +40,12 @@ public:
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
   }
+  void setZSpan(int zSpan) {
+    m_zSpan = zSpan;
+  }
+  int getZSpan() const {
+    return m_zSpan;
+  }
 
   bool isValid() const;
 
@@ -91,6 +97,7 @@ private:
   int m_width;
   int m_height;
   int m_z;
+  int m_zSpan;
   bool m_isPenetrating;
 //  NeuTube::EAxis m_sliceAxis;
 };
