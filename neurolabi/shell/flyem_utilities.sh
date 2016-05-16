@@ -20,6 +20,7 @@ function flyem_neutu_update {
 
   condaDir=$install_dir/Download/miniconda
   condaEnv=$condaDir/envs/dvidenv
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
   if [ -d $condaEnv ]
   then
     source ${CONDA_ROOT}/bin/activate root
