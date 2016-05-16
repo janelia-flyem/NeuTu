@@ -11,6 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
+class QSpinBox;
 class QLabel;
 class QDoubleSpinBox;
 class QPushButton;
@@ -62,11 +63,16 @@ public slots:
     void updateROIRendering(QTableWidgetItem* item);
     void updateSelection();
     void updateROISelections(QModelIndex idx);
+    void updateSelectedROIs();
     void updateOpacity(double v);
     void updateSlider(int v);
 
+
 protected:
     void closeEvent(QCloseEvent * event);
+
+private:
+    int getDsIntv() const;
 
 public:
     //
@@ -83,6 +89,9 @@ public:
 
     //
     QCheckBox *selectAll;
+
+    QSpinBox *m_dsIntvWidget;
+    QPushButton *m_updateButton;
     QLabel *l_opacity;
     QSlider *s_opacity;
     QTableWidget *tw_ROIs;

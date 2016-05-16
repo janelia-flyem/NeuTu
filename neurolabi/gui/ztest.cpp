@@ -19992,7 +19992,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.swc");
   tree.updateIterator();
@@ -20003,6 +20003,168 @@ void ZTest::test(MainWindow *host)
   }
 
   tree.save("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.flip.swc");
+#endif
+
+#if 0
+  ZJsonArray objJson1;
+  objJson1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_roi.json");
+
+  std::cout << objJson1.size() << std::endl;
+
+  ZJsonArray objJson2;
+  objJson2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_below_roi.json");
+  std::cout << objJson2.size() << std::endl;
+
+  objJson1.concat(objJson2);
+  objJson1.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_new.json");
+  std::cout << objJson1.size() << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "425d", 8500);
+  reader.open(target);
+
+  ZObject3dScan obj1 = reader.readRoi("alpha3_roi");
+  ZObject3dScan obj2 = reader.readRoi("alpha2_roi");
+  ZObject3dScan obj3 = reader.readRoi("alpha1_roi");
+
+  obj1.concat(obj2);
+  obj1.concat(obj3);
+  obj1.canonize();
+
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZIntPoint index1 = dvidInfo.getBlockIndex(0, 0, 5120);
+  std::cout << index1.getZ() << std::endl;
+
+  ZIntPoint index2 = dvidInfo.getBlockIndex(0, 0, 8736);
+  std::cout << index2.getZ() << std::endl;
+
+  ZObject3dScan alpha3 = obj1.getSlice(obj1.getMinZ(), index1.getZ() - 1);
+  ZObject3dScan alpha2 = obj2.getSlice(index1.getZ(), index2.getZ() - 1);
+  ZObject3dScan alpha1 = obj3.getSlice(index2.getZ(), obj1.getMaxZ());
+
+  {
+    ZJsonArray alpha1Json =
+        ZJsonFactory::MakeJsonArray(alpha1, ZJsonFactory::OBJECT_SPARSE);
+    alpha1Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha1.json");
+  }
+
+  {
+    ZJsonArray alpha2Json =
+        ZJsonFactory::MakeJsonArray(alpha2, ZJsonFactory::OBJECT_SPARSE);
+    alpha2Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha2.json");
+  }
+
+  {
+    ZJsonArray alpha3Json =
+        ZJsonFactory::MakeJsonArray(alpha3, ZJsonFactory::OBJECT_SPARSE);
+    alpha3Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha3.json");
+  }
+#endif
+
+#if 0
+  std::string name = "@MB6";
+  std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(name);
+
+  std::cout << "Root node for " << name << ": " << rootNode << std::endl;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    ZWeightedPointArray ptArray;
+
+    std::set<uint64_t> bodyIdArray = reader.readAnnnotatedBodySet();
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      if (ZString(annotation.getName()).startsWith("KC-s") ||
+          ZString(annotation.getName()).startsWith("KC-p") ||
+          ZString(annotation.getName()).startsWith("KC-any") ||
+          ZString(annotation.getName()).startsWith("KC-c")) {
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = synapseArray.begin(); iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+          ZIntPoint blockIndex = dvidInfo.getBlockIndex(synapse.getPosition());
+          ptArray.append(blockIndex.toPoint(), 1.0);
+        }
+      }
+    }
+
+    std::cout << ptArray.size() << " synapses" << std::endl;
+
+    ZStackFactory factory;
+    ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
+    stack->save(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+  }
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+
+  stack.binarize(30);
+
+  ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
+
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t30.sobj");
+
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t30_roi.json");
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  ZIntCuboid box =
+      dvidInfo.getBlockBox(dvidInfo.getBlockIndex(4099, 5018, 10343));
+  ZArray *label = reader.readLabels64(box);
+  label->setValue((uint64_t) 16573243);
+
+//  label->setValue(100);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeLabel(*label);
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
+                                 4099 + 99, 5018 + 99, 10343 + 99));
+
 #endif
 
   std::cout << "Done." << std::endl;

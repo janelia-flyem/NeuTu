@@ -38,6 +38,7 @@ void FlyEmSettingDialog::loadSetting()
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
+  ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -68,4 +69,5 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
   NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
+  NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
 }

@@ -226,7 +226,13 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     QList<ZActionFactory::EAction> actionList;
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY) {
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+      actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
+    }
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
       if (doc->getSelectedSwcNodeList().size() == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

@@ -52,6 +52,17 @@ ZJsonArray::~ZJsonArray()
 
 }
 
+void ZJsonArray::concat(ZJsonArray &array)
+{
+  if (m_data == NULL) {
+    set(array);
+  } else {
+    for (size_t i = 0; i < array.size(); ++i) {
+      append(array.at(i));
+    }
+  }
+}
+
 size_t ZJsonArray::size() const
 {
   return C_Json::arraySize(m_data);

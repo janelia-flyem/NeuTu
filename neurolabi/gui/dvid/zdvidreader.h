@@ -223,6 +223,9 @@ public:
 
   bool good() const;
 
+  std::string readMasterNode() const;
+  static std::string ReadMasterNode(const ZDvidTarget &target);
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {
     return m_service;

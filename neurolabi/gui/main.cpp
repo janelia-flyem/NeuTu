@@ -9,6 +9,7 @@
 #include "zerror.h"
 #include "z3dapplication.h"
 #include "zneurontracer.h"
+#include "zapplication.h"
 
 #include "ztest.h"
 
@@ -174,7 +175,7 @@ int main(int argc, char *argv[])
 
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
-  QApplication app(argc, argv, guiEnabled);
+  ZApplication app(argc, argv, guiEnabled);
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();

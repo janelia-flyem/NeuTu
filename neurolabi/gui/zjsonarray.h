@@ -36,6 +36,8 @@ public:
   void append(const char *str);
   void append(const std::string &str);
 
+  void concat(ZJsonArray &array);
+
   void remove(::size_t index);
 
   /*!

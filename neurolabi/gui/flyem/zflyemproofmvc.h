@@ -171,7 +171,10 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showData(bool visible);
+  void toggleSegmentation();
   void showTodo(bool visible);
+  void toggleData();
 
   void loadBookmark();
   void openSequencer();
@@ -226,6 +229,7 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
   void updateSplitBody();

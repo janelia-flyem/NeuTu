@@ -131,7 +131,7 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case KIND_POST_SYN:
-    return 5.0;
+    return 3.0;
   case KIND_PRE_SYN:
     return 7.0;
   default:

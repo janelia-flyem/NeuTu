@@ -2988,8 +2988,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3325,6 +3325,7 @@ void Z3DWindow::changeSelectedSwcNodeType()
       default:
         break;
       }
+      getSwcFilter()->addNodeType(dlg.type());
 
       m_doc->notifySwcModified();
     }
@@ -4568,12 +4569,12 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
     if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
       emit croppingSwcInRoi();
     }
-  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
+  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
              m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
     QMessageBox::warning(
           this, "Action Failed", "Cropping only works in coarse body view.");

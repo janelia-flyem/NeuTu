@@ -525,6 +525,35 @@ void ZFlyEmProofMvc::updateBodyWindow()
   }
 }
 
+void ZFlyEmProofMvc::updateBodyWindowDeep()
+{
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllSwc();
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processEventFunc();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+    }
+  }
+#if 0
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+#endif
+}
+
 void ZFlyEmProofMvc::updateSkeletonWindow()
 {
   if (m_skeletonWindow != NULL) {
@@ -805,7 +834,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
-    getCompleteDocument()->setDvidTarget(target);
+    getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 //    getCompleteDocument()->beginObjectModifiedMode(
 //          ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    getCompleteDocument()->updateTileData();
@@ -831,16 +860,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
-    m_splitProject.setDvidTarget(target);
-    m_mergeProject.setDvidTarget(target);
+    m_splitProject.setDvidTarget(reader.getDvidTarget());
+    m_mergeProject.setDvidTarget(reader.getDvidTarget());
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
 
     m_dvidInfo = reader.readGrayScaleInfo();
 
-    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
-        target.getAddressWithPort();
+    std::string startLog = "Start using UUID " +
+        reader.getDvidTarget().getUuid() + "@" +
+        reader.getDvidTarget().getAddressWithPort();
 
     ZJsonObject infoJson = reader.readInfo();
     if (infoJson.hasKey("Alias")) {
@@ -856,10 +886,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(target);
+      getSupervisor()->setDvidTarget(reader.getDvidTarget());
     }
 
-    if (target.isValid()) {
+    if (reader.getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
       ZDvidSynapseEnsemble *se =
           getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
@@ -873,7 +903,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getProgressSignal()->advanceProgress(0.5);
 
-    emit dvidTargetChanged(target);
+    emit dvidTargetChanged(reader.getDvidTarget());
   }
   getProgressSignal()->endProgress();
 
@@ -912,7 +942,8 @@ void ZFlyEmProofMvc::setDvidTarget()
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
   if (m_dvidDlg != NULL) {
-    return m_dvidDlg->getDvidTarget();
+    return getCompleteDocument()->getDvidReader().getDvidTarget();
+//    return m_dvidDlg->getDvidTarget();
   }
 
   return ZDvidTarget();
@@ -1740,7 +1771,7 @@ void ZFlyEmProofMvc::updateSplitBody()
 //      updateCoarseBodyWindow(false, false, true);
     }
     ZOUT(LINFO(), 3) << "Updating body window.";
-    updateBodyWindow();
+    updateBodyWindowDeep();
   }
 }
 
@@ -2352,6 +2383,41 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
     getCompleteDocument()->processObjectModified(slice);
     getCompleteDocument()->notifyObjectModified();
   }
+}
+
+void ZFlyEmProofMvc::toggleSegmentation()
+{
+  ZDvidLabelSlice *slice =
+      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    showSegmentation(!slice->isVisible());
+  }
+}
+
+void ZFlyEmProofMvc::showData(bool visible)
+{
+  getCompletePresenter()->showData(visible);
+  getDocument()->beginObjectModifiedMode(
+        ZStackDoc::OBJECT_MODIFIED_CACHE);
+  for (ZStackObjectGroup::iterator iter = getDocument()->getObjectGroup().begin();
+       iter != getDocument()->getObjectGroup().end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE ||
+        obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
+        obj->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE ||
+        obj->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST ||
+        obj->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
+      obj->setVisible(visible);
+      getDocument()->processObjectModified(obj);
+    }
+  }
+  getDocument()->endObjectModifiedMode();
+  getDocument()->notifyObjectModified();
+}
+
+void ZFlyEmProofMvc::toggleData()
+{
+  showData(!getCompletePresenter()->showingData());
 }
 
 void ZFlyEmProofMvc::showTodo(bool visible)
@@ -2977,23 +3043,28 @@ void ZFlyEmProofMvc::getROIs()
 
             for(std::size_t i=0; i<keys.size(); i++)
             {
-                std::size_t found = keys.at(i).find("roi");
-
-                if(found!=std::string::npos)
-                {
-
-                    ZObject3dScan roi = reader.readRoi(keys.at(i));
-
-                    if(!roi.isEmpty())
-                    {
-                        m_roiList.push_back(keys.at(i));
-                        m_loadedROIs.push_back(roi);
-
-                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
-                        m_roiSourceList.push_back(source);
-                    }
-
+              std::string roiName = keys.at(i);
+              ZJsonObject roiJson(insList.value(roiName.c_str()));
+              if (roiJson.hasKey("Base")) {
+                ZJsonObject baseJson(roiJson.value("Base"));
+                std::string typeName =
+                    ZJsonParser::stringValue(baseJson["TypeName"]);
+                if (typeName != "roi") {
+                  roiName = "";
                 }
+              }
+
+              if (!roiName.empty()) {
+                ZObject3dScan roi = reader.readRoi(roiName);
+                if (!roi.isEmpty()) {
+                  m_roiList.push_back(roiName);
+                  m_loadedROIs.push_back(roi);
+
+                  std::string source =
+                      ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+                  m_roiSourceList.push_back(source);
+                }
+              }
             }
         }
 

@@ -21,7 +21,7 @@
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
-
+#include "zarray.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -69,9 +69,10 @@ bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
 //  m_dvidClient->reset();
-  m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
+  ZDvidTarget target;
+  target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
-  return open(m_dvidTarget);
+  return open(target);
 }
 
 bool ZDvidWriter::open(const ZDvidTarget &target)
@@ -81,6 +82,12 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_dvidTarget = target;
+
+  std::string masterNode = ZDvidReader::ReadMasterNode(m_dvidTarget);
+  if (!masterNode.empty()) {
+    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  }
+
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
@@ -669,10 +676,12 @@ static libdvid::BinaryDataPtr makeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-//  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(
+        address, GET_FLYEM_CONFIG.getUserName(),
+        NeutubeConfig::GetSoftwareName());
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
-//  std::string error_msg;
+  std::string error_msg;
 
 //  qDebug() << "address: " << address;
 //  qDebug() << "path: " << qurl.path();
@@ -683,9 +692,9 @@ static libdvid::BinaryDataPtr makeRequest(
 //        results, error_msg, libdvid::DEFAULT);
 //*/
 
-//  statusCode = connection.make_request(
-//        "/.." + qurl.path().toStdString(), connMethod, payload, results,
-//        error_msg, type);
+  statusCode = connection.make_request(
+        "/.." + qurl.path().toStdString(), connMethod, payload, results,
+        error_msg, type);
 
 //#if 0
 //  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
@@ -1395,6 +1404,37 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   itemJson.append(item.toJsonObject());
 
   writeJson(url.getTodlListElementsUrl(), itemJson);
+}
+
+void ZDvidWriter::writeLabel(const ZArray &label)
+{
+  if (!label.isEmpty()) {
+    ZDvidUrl url(getDvidTarget());
+    post(url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
+                            label.getStartCoordinate(0),
+                            label.getStartCoordinate(1),
+                            label.getStartCoordinate(2)) + "?mutate=true",
+         label.getDataPointer<char>(), label.getByteNumber(), false);
+  }
+}
+
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntCuboid alignedBox;
+    alignedBox.setFirstCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+    alignedBox.setLastCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+    ZArray *label = reader.readLabels64(alignedBox);
+    writeLabel(*label);
+    delete label;
+  }
 }
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)

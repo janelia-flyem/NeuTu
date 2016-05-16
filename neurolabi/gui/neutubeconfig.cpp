@@ -602,6 +602,29 @@ int NeutubeConfig::getVerboseLevel() const
   return m_verboseLevel;
 }
 
+bool NeutubeConfig::parallelTileFetching() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("parallel_tile")) {
+    return m_settings.value("parallel_tile").toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::setParallelTileFetching(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("parallel_tile", on);
+#endif
+}
+
+void NeutubeConfig::SetParallelTileFetching(bool on)
+{
+  getInstance().setParallelTileFetching(on);
+}
+
 bool NeutubeConfig::loggingProfile() const
 {
 #ifdef _QT_GUI_USED_
@@ -661,9 +684,19 @@ void NeutubeConfig::SetVerboseLevel(int level)
   getInstance().setVerboseLevel(level);
 }
 
+bool NeutubeConfig::ParallelTileFetching()
+{
+  return getInstance().parallelTileFetching();
+}
+
 void NeutubeConfig::Configure(const ZJsonObject &obj)
 {
   getInstance().configure(obj);
+}
+
+std::string NeutubeConfig::GetSoftwareName()
+{
+  return getInstance().getSoftwareName();
 }
 
 
