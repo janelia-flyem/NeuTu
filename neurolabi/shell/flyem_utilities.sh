@@ -18,7 +18,14 @@ function flyem_neutu_update {
     qtver=4.8.4
   fi
 
-  condaEnv=$install_dir/Download/miniconda/envs/dvidenv
+  condaDir=$install_dir/Download/miniconda
+  condaEnv=$condaDir/envs/dvidenv
+  if [ -d $condaEnv ]
+  then
+    source ${CONDA_ROOT}/bin/activate root
+    { echo y; } | $condaDir/bin/conda update -n dvidenv -c flyem libdvid-cpp
+  fi
+
   if [ `uname` == 'Darwin' ]; then
     QMAKE_SPEC=$install_dir/Trolltech/Qt$qtver/mkspecs/macx-g++
   else
