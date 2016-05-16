@@ -203,10 +203,11 @@ void ZROIWidget::makeGUI()
     this->setWidget(group);
 
     //
-    connect(tw_ROIs, SIGNAL(cellClicked(int,int)),
-            this, SLOT(updateROISelections(int,int)));
-    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)),
-            this, SLOT(updateROIColors(int,int)));
+    //connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
+    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
+
+    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)), this, SLOT(updateROISelections(QModelIndex)));
+
 
     connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
     connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
