@@ -159,6 +159,7 @@ void ZROIWidget::makeGUI()
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
         QFont font;
         font.setBold(true);
         colorItem->setFont(font);
@@ -203,10 +204,11 @@ void ZROIWidget::makeGUI()
     this->setWidget(group);
 
     //
-    connect(tw_ROIs, SIGNAL(cellClicked(int,int)),
-            this, SLOT(updateROISelections(int,int)));
-    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)),
-            this, SLOT(updateROIColors(int,int)));
+    //connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
+    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
+
+    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)), this, SLOT(updateROISelections(QModelIndex)));
+
 
     connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
     connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
@@ -387,6 +389,12 @@ void ZROIWidget::updateROIColors(int row, int column)
         //QColor newcolor = QColorDialog::getColor(item->backgroundColor());
         //item->setBackgroundColor(newcolor);
         QColor newcolor = QColorDialog::getColor(item->foreground().color());
+        if( !newcolor.isValid() )
+        {
+           return;
+        }
+
+        //
         QBrush brush(newcolor);
         item->setForeground(brush);
 
