@@ -159,6 +159,7 @@ void ZROIWidget::makeGUI()
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        colorItem->setFlags(colorItem->flags() ^ Qt::ItemIsEditable);
         QFont font;
         font.setBold(true);
         colorItem->setFont(font);
@@ -388,6 +389,12 @@ void ZROIWidget::updateROIColors(int row, int column)
         //QColor newcolor = QColorDialog::getColor(item->backgroundColor());
         //item->setBackgroundColor(newcolor);
         QColor newcolor = QColorDialog::getColor(item->foreground().color());
+        if( !newcolor.isValid() )
+        {
+           return;
+        }
+
+        //
         QBrush brush(newcolor);
         item->setForeground(brush);
 
