@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
-  ZApplication app(argc, argv, guiEnabled);
+  QApplication app(argc, argv, guiEnabled);
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
