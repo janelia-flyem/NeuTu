@@ -74,6 +74,13 @@ bool ZJsonArray::isEmpty() const
   return size() == 0;
 }
 
+void ZJsonArray::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeArray();
+  }
+}
+
 json_t* ZJsonArray::at(size_t index)
 {
   return json_array_get(m_data, index);

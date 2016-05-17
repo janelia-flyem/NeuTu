@@ -66,6 +66,15 @@ TEST(ZJsonArray, basic)
   ZJsonArray arrayObj2;
   ASSERT_EQ(std::string("[]"), arrayObj2.dumpString());
 
+  ZJsonArray myList;
+  obj.setEntry("key", myList);
+
+  ASSERT_TRUE(obj.hasKey("key"));
+
+  myList.append(12345);
+
+  ZJsonArray arrayObj3(obj.value("key"));
+  ASSERT_EQ(12345, ZJsonParser::integerValue(arrayObj3.at(0)));
 }
 
 TEST(ZJsonObject, basic)

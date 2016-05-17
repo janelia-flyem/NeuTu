@@ -69,6 +69,13 @@ bool ZJsonObject::isEmpty() const
   return json_object_size(m_data) == 0;
 }
 
+void ZJsonObject::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeObject();
+  }
+}
+
 const json_t* ZJsonObject::operator[] (const char *key) const
 {
   if (m_data != NULL) {
@@ -329,6 +336,7 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
     return;
   }
 
+  value.denull();
   setEntryWithoutKeyCheck(key, value.getValue());
 }
 

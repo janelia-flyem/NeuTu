@@ -9,6 +9,7 @@
 #include <QMutex>
 #include <QColor>
 #include <QList>
+#include <QTime>
 
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
@@ -186,7 +187,8 @@ private:
 
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
 
-
+  template<typename T>
+  T* recoverFromGarbage(const std::string &source);
 
 signals:
 
@@ -217,16 +219,22 @@ private:
   ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
+  QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
-  QList<ZStackObject*> m_garbageList;
+//  QList<ZStackObject*> m_garbageList;
+  QMap<ZStackObject*, int> m_garbageMap;
+
   bool m_garbageJustDumped;
 
   QQueue<BodyEvent> m_eventQueue;
 
   QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
+
+  const static int OBJECT_GARBAGE_LIFE;
+  const static int OBJECT_ACTIVE_LIFE;
 };
 
 template <typename InputIterator>

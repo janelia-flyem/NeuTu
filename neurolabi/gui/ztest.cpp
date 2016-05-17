@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QTime>
 #include <QProcess>
 #include <iostream>
 #include <ostream>
@@ -20179,7 +20180,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 
@@ -20187,6 +20188,27 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.writeMasterNode("0bf3");
+#endif
+
+#if 0
+  QDateTime time;
+  std::cout << time.currentTime().elapsed() << std::endl;
+#endif
+
+#if 1
+  ZJsonArray myList;
+  ZJsonObject myMap;
+
+  // workaround
+
+//  myList.remove(0);
+
+  // now this works:
+  myMap.setEntry("key", myList);
+
+  myList.append(12345);
+
+  std::cout << myMap.dumpString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

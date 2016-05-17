@@ -16,6 +16,9 @@
 #include "zstring.h"
 #include "neutubeconfig.h"
 
+const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 10000;
+const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 5000;
+
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
   m_showingSynapse(true), m_showingTodo(true), m_garbageJustDumped(false)
@@ -27,6 +30,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   m_garbageTimer = new QTimer(this);
   m_garbageTimer->setInterval(60000);
   m_garbageTimer->start();
+
+  m_objectTime.start();
 
   enableAutoSaving(false);
 
@@ -44,7 +49,13 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
   m_futureMap.waitForFinished();
 
   m_garbageJustDumped = false;
-  clearGarbage();
+//  clearGarbage();
+
+  QMutexLocker garbageLocker(&m_garbageMutex);
+  for (QMap<ZStackObject*, int>::iterator iter = m_garbageMap.begin();
+       iter != m_garbageMap.end(); ++iter) {
+    delete iter.key();
+  }
 }
 
 void ZFlyEmBody3dDoc::connectSignalSlot()
@@ -57,10 +68,60 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 {
 }
 
+template<typename T>
+T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
+{
+  QMutexLocker locker(&m_garbageMutex);
+
+  T* obj = NULL;
+
+  if (!source.empty()) {
+    int currentTime = m_objectTime.elapsed();
+    QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+    int minDt = -1;
+    while (iter.hasNext()) {
+      iter.next();
+      int t = iter.value();
+      int dt = currentTime - t;
+      if (dt < 0) {
+        iter.value() = 0;
+      } else if (dt < OBJECT_ACTIVE_LIFE){
+        if (minDt < 0 || minDt > dt) {
+          if (iter.key()->getSource() == source) {
+            minDt = dt;
+            obj = dynamic_cast<T*>(iter.key());
+          }
+        }
+      }
+    }
+  }
+
+  if (obj != NULL) {
+    m_garbageMap.remove(obj);
+  }
+
+  return obj;
+}
+
 void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
+  int currentTime = m_objectTime.elapsed();
+  QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+   while (iter.hasNext()) {
+     iter.next();
+     int t = iter.value();
+     int dt = currentTime - t;
+     if (dt < 0) {
+       iter.value() = 0;
+     } else if (dt > OBJECT_GARBAGE_LIFE){
+       delete iter.key();
+       iter.remove();
+     }
+   }
+
+#if 0
   if (!m_garbageJustDumped) {
     ZOUT(LINFO(), 3) << "Clear garbage objects ...";
 
@@ -73,6 +134,7 @@ void ZFlyEmBody3dDoc::clearGarbage()
 
     m_garbageList.clear();
   }
+#endif
 
   m_garbageJustDumped = false;
 }
@@ -869,7 +931,9 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
 {
   QMutexLocker locker(&m_garbageMutex);
 
-  m_garbageList.append(obj);
+//  m_garbageList.append(obj);
+  m_garbageMap[obj] = m_objectTime.elapsed();
+
   m_garbageJustDumped = true;
 }
 
