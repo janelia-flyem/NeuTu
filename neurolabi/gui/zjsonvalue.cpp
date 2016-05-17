@@ -301,7 +301,7 @@ ZJsonValue ZJsonValue::clone() const
 
 void ZJsonValue::denull()
 {
-  if (m_data != NULL) {
+  if (m_data == NULL) {
     m_data = C_Json::makeJsonNull();
   }
 }

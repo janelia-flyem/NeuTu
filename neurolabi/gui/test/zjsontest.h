@@ -15,8 +15,8 @@ TEST(Json, basic)
 
   obj.setEntry("test1", 10);
   ASSERT_EQ(10, ZJsonParser::integerValue(obj["test1"]));
-  obj.setEntry("test2", true);
-  ASSERT_EQ(true, ZJsonParser::booleanValue(obj["test2"]));
+  obj.setEntry("test3", true);
+  ASSERT_EQ(true, ZJsonParser::booleanValue(obj["test3"]));
 
   obj.print();
 
@@ -41,6 +41,24 @@ TEST(Json, basic)
   arrayObj.append(3.0);
   ASSERT_EQ(3, (int) arrayObj.size());
   ASSERT_EQ(0, ZJsonParser::integerValue(arrayObj.at(2)));
+
+  ZJsonValue value2;
+  ASSERT_TRUE(value2.isNull());
+
+  value2.denull();
+  ASSERT_FALSE(value2.isNull());
+
+  ZJsonArray array;
+  ASSERT_TRUE(array.isNull());
+
+  array.denull();
+  ASSERT_FALSE(array.isNull());
+
+  ZJsonObject obj4;
+  ASSERT_TRUE(obj4.isNull());
+
+  obj4.denull();
+  ASSERT_FALSE(obj4.isNull());
 }
 
 TEST(ZJsonArray, basic)
@@ -81,6 +99,10 @@ TEST(ZJsonObject, basic)
 {
   ZJsonObject obj;
   ASSERT_EQ(std::string("{}"), obj.dumpString());
+
+  ZJsonObject entry;
+  obj.setEntry("key", entry);
+  ASSERT_TRUE(obj.hasKey("key"));
 }
 
 #endif
