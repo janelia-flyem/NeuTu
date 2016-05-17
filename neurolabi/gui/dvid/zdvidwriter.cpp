@@ -23,6 +23,7 @@
 #include "flyem/zflyemtodoitem.h"
 #include "zarray.h"
 #include "flyem/zflyemmisc.h"
+#include "dvid/zdvidbufferreader.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -900,6 +901,12 @@ std::string ZDvidWriter::post(const std::string &url, const ZJsonObject &obj)
   return post(url, payload.c_str(), payload.size(), true);
 }
 
+std::string ZDvidWriter::post(const std::string &url, const ZJsonArray &obj)
+{
+  std::string payload = obj.dumpString(0);
+  return post(url, payload.c_str(), payload.size(), true);
+}
+
 uint64_t ZDvidWriter::writeSplit(
     const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label,
     uint64_t newBodyId)
@@ -1505,5 +1512,32 @@ void ZDvidWriter::addSynapseProperty(
       ZDvidSynapse::AddProperty(synapseJson, key, value);
       writeSynapse(synapseJson);
     }
+  }
+}
+
+void ZDvidWriter::writeMasterNode(const std::string &uuid)
+{
+  std::string rootNode =
+      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+  if (!rootNode.empty()) {
+    ZDvidBufferReader reader;
+    ZDvidUrl dvidUrl(getDvidTarget());
+    dvidUrl.setUuid(uuid);
+    std::string url = dvidUrl.getApiUrl() + "/node/" + uuid +
+        "/branches/key/master";
+    LINFO() << "Master url: " << url;
+    reader.read(url.c_str());
+    ZJsonArray branchJson;
+    branchJson.append(uuid);
+
+    ZJsonArray oldBranchJson;
+    oldBranchJson.decodeString(reader.getBuffer().data());
+    for (size_t i = 0; i < oldBranchJson.size(); ++i) {
+      if (ZJsonParser::stringValue(oldBranchJson.at(i)) != uuid) {
+        branchJson.append(oldBranchJson.at(i));
+      }
+    }
+
+    post(url, branchJson);
   }
 }

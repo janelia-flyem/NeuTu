@@ -167,6 +167,8 @@ public:
   void writeLabel(const ZArray &label);
   void refreshLabel(const ZIntCuboid &box);
 
+  void writeMasterNode(const std::string &uuid);
+
   inline int getStatusCode() const {
     return m_statusCode;
   }
@@ -193,6 +195,7 @@ public:
   std::string post(const std::string &url, const char *payload, int length,
                    bool isJson);
   std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string post(const std::string &url, const ZJsonArray &payload);
   std::string del(const std::string &url);
 
   std::string put(
@@ -216,7 +219,6 @@ private:
   void parseStandardOutput();
   void init();
   bool startService();
-
 
 private:
 //  QEventLoop *m_eventLoop;

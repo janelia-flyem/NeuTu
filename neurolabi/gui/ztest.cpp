@@ -20130,7 +20130,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "ad5d", 8500);
 
@@ -20177,6 +20177,16 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "NOT NULL" << std::endl;
   }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeMasterNode("0bf3");
 #endif
 
   std::cout << "Done." << std::endl;

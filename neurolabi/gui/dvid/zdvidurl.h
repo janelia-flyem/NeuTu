@@ -214,6 +214,8 @@ public:
 
   static std::string GetSkeletonKey(uint64_t bodyId);
 
+  void setUuid(const std::string &uuid);
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
