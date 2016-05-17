@@ -2263,7 +2263,7 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::openProtocol()
 {
-  m_protocolSwitcher->openProtocolRequested();
+  m_protocolSwitcher->openProtocolDialogRequested();
 }
 
 void ZFlyEmProofMvc::openTodo()

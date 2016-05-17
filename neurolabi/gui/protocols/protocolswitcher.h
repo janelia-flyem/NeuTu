@@ -21,11 +21,12 @@ public:
 signals:
 
 public slots:
-    void openProtocolRequested();
+    void openProtocolDialogRequested();
     void dvidTargetChanged(ZDvidTarget target);
 
 private slots:
     void startProtocolRequested(QString protocolName);
+    void saveProtocolRequested(ZJsonObject data);
     void loadProtocolRequested();
     void exitProtocolRequested();
 
@@ -37,15 +38,24 @@ private:
         PROTOCOL_LOADING
     };
 
+    static const std::string PROTOCOL_DATA_NAME;
+
     QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
     ProtocolChooser * m_chooser;
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;
+    std::string m_activeProtocolKey;
 
     ProtocolMetadata readMetadata();
     void connectProtocolSignals();
     void disconnectProtocolSignals();
+    bool askProceedIfNodeLocked();
+    bool checkCreateDataInstance();
+    void saveFailedDialog(QString message);
+    std::string generateKey();
+    std::string generateIdentifier();
+    bool askProceedIfKeyExists(std::string key);
 };
 
 #endif // PROTOCOLSWITCHER_H

@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "zjsonobject.h"
+
 namespace Ui {
 class ProtocolDialog;
 }
@@ -15,9 +17,11 @@ public:
     explicit ProtocolDialog(QWidget *parent = 0);
     ~ProtocolDialog();    
     virtual bool initialize();
+    std::string getName();
 
 signals:
     void protocolExiting();
+    void requestSaveProtocol(ZJsonObject data);
 
 private slots:
     void onFirstButton();
@@ -31,6 +35,8 @@ private:
         PROTOCOL_COMPLETE,
         PROTOCOL_INCOMPLETE
     };
+
+    static const std::string PROTOCOL_NAME;
 
     Ui::ProtocolDialog *ui;
     QStringList m_pendingList;

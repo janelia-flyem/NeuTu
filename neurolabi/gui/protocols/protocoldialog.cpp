@@ -7,6 +7,9 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "zjsonarray.h"
+#include "zjsonobject.h"
+
 /*
  * this is the base class for all protocols; it's also the
  * "do N things" test protocol
@@ -30,8 +33,12 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
     
 }
 
+const std::string ProtocolDialog::PROTOCOL_NAME = "doNthings";
+
 /*
- * start the protocol anew; returns success status
+ * start the protocol anew; returns success status;
+ * initialize is also expected to do the first save
+ * of the protocol's data
  */
 bool ProtocolDialog::initialize() {
 
@@ -59,6 +66,10 @@ bool ProtocolDialog::initialize() {
     saveState();
 
     return true;
+}
+
+std::string ProtocolDialog::getName() {
+    return PROTOCOL_NAME;
 }
 
 void ProtocolDialog::onFirstButton() {
@@ -99,8 +110,6 @@ void ProtocolDialog::onDoButton() {
 }
 
 void ProtocolDialog::onCompleteButton() {
-    std::cout << "prdia: complete button clicked" << std::endl;
-
     QMessageBox mb;
     mb.setText("Complete protocol");
     mb.setInformativeText("When you complete the protocol, it will save and exit immediately.  You will not be able to reopen it.\n\nComplete protocol now?");
@@ -127,8 +136,6 @@ void ProtocolDialog::onExitButton() {
 }
 
 void ProtocolDialog::gotoNextItem() {
-    std::cout << "prdia: go to next item" << std::endl;
-
     if (m_pendingList.size() == 0) {
         m_currentItem = "";
     } else if (m_currentItem == "") {
@@ -144,10 +151,31 @@ void ProtocolDialog::gotoNextItem() {
 }
 
 void ProtocolDialog::saveState() {
-    // save state of protocol to DVID
+    // json save format: {"pending": ["thing 1", "thing 3", ...],
+    //                    "finished": ["thing 0", ...]}
 
-    std::cout << "prdia: pretending to save state to dvid" << std::endl;
+    ZJsonArray pending;
+    for (int i=0; i<m_pendingList.size(); i++) {
+        pending.append(m_pendingList.at(i).toStdString());
+    }
+    ZJsonArray finished;
+    for (int i=0; i<m_finishedList.size(); i++) {
+        finished.append(m_finishedList.at(i).toStdString());
+    }
 
+    // there's a kind-of bug in ZJsonObject; if an array is
+    //  null (ie, not just empty, but newly created null),
+    //  it can't be added as a value to the map; so we force
+    //  it to be empty and not null by adding/removing an element
+    if (finished.size() == 0) {
+        finished.append(0);
+        finished.remove(0);
+    }
+
+    ZJsonObject data;
+    data.setEntry("pending", pending);
+    data.setEntry("finished", finished);
+    emit requestSaveProtocol(data);
 }
 
 void ProtocolDialog::updateLabels() {
