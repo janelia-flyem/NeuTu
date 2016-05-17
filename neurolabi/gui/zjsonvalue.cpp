@@ -12,10 +12,12 @@ ZJsonValue::ZJsonValue() : m_data(NULL)
 {
 }
 
+/*
 ZJsonValue::ZJsonValue(json_t *data, bool asNew) : m_data(NULL)
 {
   set(data, asNew);
 }
+*/
 
 ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 {

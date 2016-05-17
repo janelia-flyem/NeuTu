@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <vector>
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -25,6 +26,8 @@ class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
 class FlyEmTodoDialog;
+class ZClickableColorLabel;
+class ZColorLabel;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -92,6 +95,7 @@ signals:
   void userBookmarkUpdated(ZStackDoc *doc);
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
+  void updatingLatency(int);
 
 public slots:
   void mergeSelected();
@@ -143,6 +147,7 @@ public slots:
   void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
+  void smoothDisplay(bool state);
 
   void goToBody();
   void goToBodyBottom();
@@ -166,7 +171,10 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showData(bool visible);
+  void toggleSegmentation();
   void showTodo(bool visible);
+  void toggleData();
 
   void loadBookmark();
   void openSequencer();
@@ -195,6 +203,12 @@ public slots:
 
   void syncMergeWithDvid();
 
+  void getROIs();
+  void updateLatencyWidget(int t);
+
+  void suppressObjectVisible();
+  void recoverObjectVisible();
+
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -215,6 +229,7 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
   void updateSplitBody();
@@ -268,6 +283,7 @@ protected:
 
   ZThreadFutureMap m_futureMap;
 
+//  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
 
   ZDvidDialog *m_dvidDlg;
@@ -291,6 +307,12 @@ protected:
   ZStackViewParam m_currentViewParam;
 
   ZDvidInfo m_dvidInfo;
+  bool m_ROILoaded;
+
+  std::vector<std::string> m_roiList;
+  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<std::string> m_roiSourceList;
+
 };
 
 template <typename T>
@@ -348,6 +370,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
 }
 
 template <typename T>

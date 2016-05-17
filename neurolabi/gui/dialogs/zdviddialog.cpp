@@ -23,8 +23,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   m_dvidRepo.push_back(customTarget);
 
 #if defined(_FLYEM_)
-  const std::vector<ZDvidTarget> dvidRepo =
-      NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
+  const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 
   std::string userName = NeuTube::GetCurrentUserName();
 
@@ -84,6 +83,9 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
 
   setFixedSize(size());
+
+  ui->roiLabel->hide();
+  ui->roiPushButton->hide();
 }
 
 ZDvidDialog::~ZDvidDialog()
@@ -149,6 +151,9 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
     target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
+    target.enableSupervisor(ui->librarianCheckBox->isChecked());
+    target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
+//    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
 
   return target;
@@ -177,16 +182,28 @@ void ZDvidDialog::setServer(int index)
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
+  ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
+  ui->librarianLineEdit->setText(
+        dvidTarget.getSupervisor().empty() ?
+        GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+        dvidTarget.getSupervisor().c_str());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->uuidLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->labelBlockLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->grayScalelineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->tileLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
+  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
+
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&
                                (dvidTarget.getName() != "Custom"));
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
+
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const

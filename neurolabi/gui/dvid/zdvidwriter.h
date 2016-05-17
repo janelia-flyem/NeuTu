@@ -19,6 +19,9 @@
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
+#include "zsharedpointer.h"
+
+
 namespace libdvid{
 class DVIDNodeService;
 }
@@ -31,6 +34,7 @@ class QProcess;
 class ZFlyEmBookmark;
 class ZDvidSynapse;
 class ZFlyEmToDoItem;
+class ZArray;
 
 class ZDvidWriter : public QObject
 {
@@ -96,6 +100,11 @@ public:
   void deleteKey(const QString &dataName,
                  const QString &minKey, const QString &maxKey);
 
+  void deleteSkeleton(uint64_t bodyId);
+  void deleteBodyAnnotation(uint64_t bodyId);
+
+  void invalidateBody(uint64_t bodyId);
+
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);
   std::string createBranch();
@@ -155,6 +164,11 @@ public:
   void deleteToDoItem(int x, int y, int z);
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
+  void writeLabel(const ZArray &label);
+  void refreshLabel(const ZIntCuboid &box);
+
+  void writeMasterNode(const std::string &uuid);
+
   inline int getStatusCode() const {
     return m_statusCode;
   }
@@ -176,14 +190,20 @@ public:
   bool good() const;
 
   std::string post(const std::string &url);
-  std::string post(const std::string &url, const QByteArray &payload);
-  std::string post(const std::string &url, const std::string &payload);
-  std::string post(const std::string &url, const char *payload, int length);
+  std::string post(const std::string &url, const QByteArray &payload, bool isJson);
+  std::string post(const std::string &url, const std::string &payload, bool isJson);
+  std::string post(const std::string &url, const char *payload, int length,
+                   bool isJson);
   std::string post(const std::string &url, const ZJsonObject &payload);
+  std::string post(const std::string &url, const ZJsonArray &payload);
   std::string del(const std::string &url);
 
-  std::string put(const std::string &url, const char *payload, int length);
+  std::string put(
+      const std::string &url, const char *payload, int length, bool isJson);
   std::string put(const std::string &url);
+
+  std::string request(const std::string &url, const std::string &method,
+                      const char *payload, int length, bool isJson);
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;
@@ -211,7 +231,7 @@ private:
   int m_statusCode;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService *m_service;
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif
 };
 

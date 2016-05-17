@@ -14,7 +14,7 @@ public:
   };
 
 
-  ZWidgetMessage();
+  ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
   ZWidgetMessage(const QString &msg,
                  NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
@@ -59,6 +59,8 @@ public:
 
   void appendMessage(const QString &message);
   void setMessage(const QString &msg);
+
+  bool hasMessage() const;
 
 private:
   QString m_title;

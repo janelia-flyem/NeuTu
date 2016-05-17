@@ -28,6 +28,8 @@ public:
    * The transformation along Z is unchanged.
    */
   void setOffset(double dx, double dy);
+  void addOffset(double dx, double dy);
+  void addScaledOffset(double dx, double dy);
 
   /*!
    * \brief Set X-Y scale

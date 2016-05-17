@@ -109,6 +109,7 @@ public:
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   void toggleObjectVisible();
+  void suppressObjectVisible(bool v);
   bool isObjectVisible();
   void setObjectStyle(ZStackObject::EDisplayStyle style);
 
@@ -442,6 +443,7 @@ protected:
   QList<ZStackObject*> m_highlightDecorationList;
 
   bool m_showObject;
+  bool m_oldShowObject;
   std::vector<double> m_grayScale;
   std::vector<double> m_grayOffset;
   int m_threshold;

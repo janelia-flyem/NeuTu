@@ -592,6 +592,13 @@ double SwcTreeNode::scaledDistance(
   return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+double SwcTreeNode::scaledSurfaceDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  return scaledDistance(tn1, tn2, sx, sy, sz) - radius(tn1) - radius(tn2);
+}
+
 Swc_Tree_Node*
 SwcTreeNode::furthestNode(Swc_Tree_Node *tn, EDistanceType distType)
 {
@@ -1340,7 +1347,8 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   int y2 = iround(y(tn) + radius(tn) * 2);
   int cz = iround(z(tn));
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
   //RC threshold
   int thre = Stack_Threshold_Triangle(slice, 0, 65535);
@@ -1401,7 +1409,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     return false;
   }
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
 
   if (slice == NULL) {

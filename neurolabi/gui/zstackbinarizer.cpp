@@ -186,7 +186,7 @@ int ZStackBinarizer::refineLocmaxThreshold(
 void ZStackBinarizer::postProcess(Stack *stack)
 {
   if (C_Stack::kind(stack) != GREY) {
-    Translate_Stack(stack, GREY, 1);
+    C_Stack::translate(stack, GREY, 1);
   }
 
   if (m_minObjectSize > 0) {
@@ -195,11 +195,11 @@ void ZStackBinarizer::postProcess(Stack *stack)
     C_Stack::kill(tmpStack);
 
     if (C_Stack::kind(stack) != GREY) {
-      Translate_Stack(stack, GREY, 1);
+      C_Stack::translate(stack, GREY, 1);
     }
   }
 
   if (stack->kind != GREY) {
-    Translate_Stack(stack, GREY, 1);
+    C_Stack::translate(stack, GREY, 1);
   }
 }

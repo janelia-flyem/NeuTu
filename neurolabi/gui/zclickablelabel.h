@@ -50,6 +50,9 @@ public:
     m_isClickable = state;
   }
 
+  void setColor(const QColor &col);
+  void setText(const QString &text);
+
 protected:
   virtual void paintEvent(QPaintEvent * e);
   virtual QSize minimumSizeHint() const;
@@ -59,6 +62,7 @@ protected:
   ZDVec3Parameter* m_dvec3Color;
   virtual bool getTip(const QPoint &p, QRect *r, QString *s);
   virtual void labelClicked();
+
 private:
   QColor toQColor();
   void fromQColor(const QColor &col);

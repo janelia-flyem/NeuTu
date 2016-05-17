@@ -81,18 +81,22 @@ then
   fi
 fi
 
-if [ ! -f hdf5/lib/libhdf5.a ]
+use_hdf5=0
+if [ $use_hdf5 -ne 0 ]
 then
-  echo 'Building libpng ...'
-  if [ ! -d hdf5 ]
+  if [ ! -f hdf5/lib/libhdf5.a ]
   then
-    mkdir hdf5
+    echo 'Building libhdf ...'
+    if [ ! -d hdf5 ]
+    then
+      mkdir hdf5
+    fi
+    uncompress_lib hdf5-1.8.12
+    cd hdf5-1.8.12
+    ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
+    make
+    make install
+    cd ..
   fi
-  uncompress_lib hdf5-1.8.12
-  cd hdf5-1.8.12
-  ./configure --enable-shared=no --with-pic --prefix=${libdir}/hdf5
-  make
-  make install
-  cd ..
 fi
 

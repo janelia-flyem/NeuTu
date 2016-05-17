@@ -11,6 +11,7 @@ class ZFlyEmBodyMergeProject;
 class ZStackDoc;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZColorLabel;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -60,6 +61,7 @@ public slots:
   void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
   void updateUserBookmarkTable(ZStackDoc *doc);
   void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
+  void updateLatency(int t);
 
 private slots:
   void setSegmentSize();
@@ -90,6 +92,8 @@ private:
 
   QAction *m_nameColorAction;
   QAction *m_sequencerColorAction;
+
+  ZColorLabel *m_latencyWidget;
 
 //  QSortFilterProxyModel *m_bookmarkProxy;
 //  QSortFilterProxyModel *m_userBookmarkProxy;

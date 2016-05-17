@@ -68,7 +68,9 @@ void ZDvidTile::loadDvidSlice(
 #ifdef _DEBUG_2
     std::cout << "Decoding tile ..." << std::endl;
 #endif
-    m_image->loadFromData(buf, length);
+    if (!m_image->loadFromData(buf, length)) {
+      LWARN() << "Failed to decode tile data";
+    }
     m_image->setScale(1.0 / m_res.getScale(), 1.0 / m_res.getScale());
     m_image->setOffset(-getX(), -getY());
 
@@ -97,7 +99,7 @@ void ZDvidTile::loadDvidSlice(
   modified = false;
 #endif
 
-  if (modified) {
+  if (modified && (m_image != NULL)) {
     m_image->enhanceContrast(highContrast);
     updatePixmap();
   }

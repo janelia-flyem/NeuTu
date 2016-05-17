@@ -1,6 +1,8 @@
 #ifndef ZDVIDSPARSESTACK_H
 #define ZDVIDSPARSESTACK_H
 
+#include <QMutex>
+
 #include "zstackobject.h"
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
@@ -68,12 +70,18 @@ public:
 
   int getReadStatusCode() const;
 
+  void runFillValueFunc();
+  void runFillValueFunc(const ZIntCuboid &box);
+
+  void cancelFillValueFunc();
+
 private:
   void init();
   void initBlockGrid();
-  bool fillValue();
-  bool fillValue(const ZIntCuboid &box);
+  bool fillValue(bool cancelable = false);
+  bool fillValue(const ZIntCuboid &box, bool cancelable = false);
   QString getLoadBodyThreadId() const;
+  QString getFillValueThreadId() const;
   void pushMaskColor();
   void pushLabel();
   bool loadingObjectMask() const;
@@ -92,6 +100,9 @@ private:
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
   ZThreadFutureMap m_futureMap;
+  bool m_cancelingValueFill;
+
+  mutable QMutex m_fillValueMutex;
 };
 
 #endif // ZDVIDSPARSESTACK_H

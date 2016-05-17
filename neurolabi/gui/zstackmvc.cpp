@@ -574,4 +574,3 @@ double ZStackMvc::getHeightZoomRatio() const
 {
   return getView()->getCanvasHeightZoomRatio();
 }
-

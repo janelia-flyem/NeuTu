@@ -7,6 +7,7 @@
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
+#include "z3dwindow.h"
 
 ZStackDocMenuFactory::ZStackDocMenuFactory()
 {
@@ -17,6 +18,32 @@ void ZStackDocMenuFactory::init()
 {
   m_singleSwcNodeActionActivator = NULL;
   m_isAdmin = false;
+}
+
+template <typename T>
+static void AddAction(const QList<ZActionFactory::EAction> &actionList,
+                      T *source, QMenu *menu)
+{
+  foreach (ZActionFactory::EAction action, actionList) {
+    if (action == ZActionFactory::ACTION_SEPARATOR) {
+      menu->addSeparator();
+    } else {
+      menu->addAction(source->getAction(action));
+    }
+  }
+}
+
+void ZStackDocMenuFactory::addAction(
+    const QList<ZActionFactory::EAction> &actionList,
+    ZStackPresenter *presenter, QMenu *menu)
+{
+  AddAction(actionList, presenter, menu);
+}
+
+void ZStackDocMenuFactory::addAction(
+    const QList<ZActionFactory::EAction> &actionList, Z3DWindow *window, QMenu *menu)
+{
+  AddAction(actionList, window, menu);
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
@@ -181,6 +208,34 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
+  }
+
+  return menu;
+}
+
+
+QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
+{
+  ZStackDoc *doc = window->getDocument();
+
+  if (doc != NULL) {
+    if (menu == NULL) {
+      menu = new QMenu(NULL);
+    } else {
+      menu->clear();
+    }
+
+    QList<ZActionFactory::EAction> actionList;
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
+        doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+      if (doc->getSelectedSwcNodeList().size() == 1) {
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+      }
+    }
+
+    addAction(actionList, window, menu);
   }
 
   return menu;

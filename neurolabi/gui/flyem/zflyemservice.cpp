@@ -530,9 +530,9 @@ void FlyEm::Service::FaceOrphanOverlap::setCoordinateConverter(
 void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     const std::string filePath) const
 {
-  ZJsonObject obj(json_object(), true);
-  ZJsonArray nodeArray(json_array(), true);
-  ZJsonArray edgeArray(json_array(), true);
+  ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
+  ZJsonArray nodeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  ZJsonArray edgeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
 
   obj.setEntry("Bodies", nodeArray);
   obj.setEntry("Overlap", edgeArray);
@@ -555,7 +555,7 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
 
     int bodyId = *iter;
 
-    ZJsonObject obj(json_object(), true);
+    ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
     json_t *value = json_integer(bodyId);
     obj.consumeEntry("id", value);
 
@@ -607,7 +607,7 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
 
   //edge property: id1, id2, touching point
   for (int i = 0; i < m_overlapGraph.getEdgeNumber(); ++i) {
-    ZJsonObject obj(json_object(), true);
+    ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
     json_t *value = json_integer(m_overlapGraph.getEdgeBegin(i));
     obj.consumeEntry("id1", value);
     value = json_integer(m_overlapGraph.getEdgeEnd(i));

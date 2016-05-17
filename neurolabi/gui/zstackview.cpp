@@ -36,6 +36,7 @@
 #include "zbenchtimer.h"
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
+#include "zstackviewlocator.h"
 
 #include <QtGui>
 #ifdef _QT5_
@@ -65,7 +66,10 @@ ZStackView::~ZStackView()
   }
 
 //  delete m_objectCanvas;
+  delete m_dynamicObjectCanvas;
+
   delete m_activeDecorationCanvas;
+
 
   if (m_ctrlLayout != NULL) {
     if (m_ctrlLayout->parent() == NULL) {
@@ -179,6 +183,7 @@ void ZStackView::init()
   m_image = NULL;
   m_imageMask = NULL;
 //  m_objectCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
 //  m_tileCanvas = NULL;
   //m_scrollEnabled = false;
@@ -242,6 +247,10 @@ void ZStackView::connectSignalSlot()
 
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
+  connect(m_depthControl, SIGNAL(sliderPressed()),
+          this, SIGNAL(sliceSliderPressed()));
+  connect(m_depthControl, SIGNAL(sliderReleased()),
+          this, SIGNAL(sliceSliderReleased()));
 
 //  connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
@@ -427,7 +436,7 @@ void ZStackView::updateViewBox()
 }
 
 void ZStackView::updateChannelControl()
-{
+{  
   QLayoutItem *child;
   while ((child = m_channelControlLayout->takeAt(0)) != 0) {
     if (child->widget()) {
@@ -453,9 +462,11 @@ void ZStackView::updateChannelControl()
       for (int ch=0; ch<stack->channelNumber(); ++ch) {
         QWidget *checkWidget = m_chVisibleState[ch]->createWidget();
         checkWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
-        m_channelControlLayout->addWidget(
-              channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(checkWidget, 0, Qt::AlignLeft);
+          m_channelControlLayout->addWidget(
+                channelColors[ch]->createNameLabel(),0,Qt::AlignLeft);
+        }
         ZClickableColorLabel *colorWidget = qobject_cast<ZClickableColorLabel*>
             (channelColors[ch]->createWidget());
         colorWidget->setMinimumHeight(20);
@@ -463,14 +474,19 @@ void ZStackView::updateChannelControl()
         colorWidget->setMaximumHeight(20);
         colorWidget->setMaximumWidth(30);
         colorWidget->setFocusPolicy(Qt::NoFocus);
-        m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
-        m_channelControlLayout->addSpacing(20);
+        if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_ORTHO) {
+          m_channelControlLayout->addWidget(colorWidget,0,Qt::AlignLeft);
+          m_channelControlLayout->addSpacing(20);
+        }
+
         connect(channelColors[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
         connect(m_chVisibleState[ch], SIGNAL(valueChanged()),
                 this, SLOT(redraw()));
       }
-      m_channelControlLayout->addStretch(1);
+      if (!m_channelControlLayout->isEmpty()) {
+        m_channelControlLayout->addStretch(1);
+      }
     }
   }
 }
@@ -607,7 +623,7 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   qDebug() << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
 #endif
@@ -620,8 +636,11 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     m_imageWidget->blockPaint(blockingPaint);
 
-    qDebug() << "Blocking paint:" <<blockingPaint;
-    qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+    if (NeutubeConfig::GetVerboseLevel() >= 2) {
+      qDebug() << "Blocking paint:" <<blockingPaint;
+      qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+    }
+
     switch (option) {
     case UPDATE_QUEUED:
       m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
@@ -780,12 +799,15 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 {
   setInfo();
   event->accept();
+
+  updateActiveDecorationCanvas();
   //buddyPresenter()->updateInteractiveContext();
 }
 
 void ZStackView::redrawObject()
 {
   paintObjectBuffer();
+  paintDynamicObjectBuffer();
   updateImageScreen(UPDATE_QUEUED);
 }
 
@@ -816,6 +838,7 @@ void ZStackView::redraw(EUpdateOption option)
   qint64 tilePaintTime = timer.elapsed();
   std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
   paintActiveDecorationBuffer();
+  paintDynamicObjectBuffer();
   paintObjectBuffer();
   qint64 objectPaintTime = timer.elapsed();
   std::cout << "paint object per frame: " << objectPaintTime << std::endl;
@@ -1357,8 +1380,56 @@ void ZStackView::updateTileCanvas()
     //m_tileCanvas->fill(Qt::transparent);
 }
 
+ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
+{
+  ZStTransform transform = getViewTransform();
+
+  QSize newSize = getProjRegion().size().toSize();
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    canvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
+  }
+
+//  qDebug() << "  Canvas size" << newSize;
+
+  if (canvas != NULL) {
+    if (canvas->size() != newSize) {
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+
+  if (canvas == NULL) {
+    canvas = new ZPixmap(newSize);
+  }
+
+  canvas->setTransform(transform);
+
+  if (canvas != NULL) {
+    if (canvas->isVisible()){
+      canvas->cleanUp();
+    }
+  }
+
+  return canvas;
+}
+
+void ZStackView::updateDynamicObjectCanvas()
+{
+  m_dynamicObjectCanvas = updateProjCanvas(m_dynamicObjectCanvas);
+  m_imageWidget->setDynamicObjectCanvas(m_dynamicObjectCanvas);
+}
+
 void ZStackView::updateActiveDecorationCanvas()
 {
+  m_activeDecorationCanvas = updateProjCanvas(m_activeDecorationCanvas);
+  m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
+#if 0
 //  if (m_activeDecorationCanvas != NULL) {
 //    if (m_activeDecorationCanvas->width() != m_image->width() ||
 //        m_activeDecorationCanvas->height() != m_image->height()) {
@@ -1367,6 +1438,54 @@ void ZStackView::updateActiveDecorationCanvas()
 //    }
 //  }
 
+  qDebug() << "Updating active decoration";
+  qDebug() << "  Projection:" << getProjRegion();
+
+  ZStTransform transform = getViewTransform();
+
+  QSize newSize = getProjRegion().size().toSize();
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    m_activeDecorationCanvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
+  }
+
+  qDebug() << "  Canvas size" << newSize;
+
+  if (m_activeDecorationCanvas != NULL) {
+    if (m_activeDecorationCanvas->size() != newSize) {
+      delete m_activeDecorationCanvas;
+      m_activeDecorationCanvas = NULL;
+    }
+  }
+
+  if (m_activeDecorationCanvas == NULL) {
+    m_activeDecorationCanvas = new ZPixmap(newSize);
+  }
+
+
+#if 0
+  ZStTransform transform;
+  QRectF targetRect = getProjRegion();
+  targetRect.setSize(newSize);
+  transform.estimate(m_imageWidget->viewPort(), targetRect);
+#endif
+
+  m_activeDecorationCanvas->setTransform(transform);
+
+  m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
+
+  if (m_activeDecorationCanvas != NULL) {
+    if (m_activeDecorationCanvas->isVisible()){
+      m_activeDecorationCanvas->cleanUp();
+    }
+  }
+
+#if 0
   resetCanvasWithStack(m_activeDecorationCanvas, NULL);
 
   if (m_activeDecorationCanvas == NULL) {
@@ -1387,6 +1506,8 @@ void ZStackView::updateActiveDecorationCanvas()
       m_activeDecorationCanvas->cleanUp();
     }
   }
+#endif
+#endif
 }
 
 void ZStackView::paintMultiresImageTest(int resLevel)
@@ -1490,6 +1611,7 @@ void ZStackView::paintStackBuffer()
     }
   }
 #endif
+
 }
 
 void ZStackView::paintStack()
@@ -1542,9 +1664,9 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZPainter &painter, ZStackObject::ETarget target)
 {
-#ifdef _DEBUG_
+  if (NeutubeConfig::GetVerboseLevel() >= 2) {
     qDebug() << painter.getTransform();
-#endif
+  }
 
   ZStackObjectPainter paintHelper;
   paintHelper.setRestoringPainter(true);
@@ -1552,7 +1674,8 @@ void ZStackView::paintObjectBuffer(
   painter.setPainted(false);
 
   bool visible = true;
-  if (target == ZStackObject::TARGET_OBJECT_CANVAS) {
+  if (target == ZStackObject::TARGET_OBJECT_CANVAS ||
+      target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
     visible = buddyPresenter()->isObjectVisible();
   }
 
@@ -1584,9 +1707,9 @@ void ZStackView::paintObjectBuffer(
       std::cout << "---" << std::endl;
       std::cout << slice << " " << m_depthControl->value() <<  std::endl;
 #endif
-#ifdef _DEBUG_
-      std::cout << "Displaying objects ..." << std::endl;
-#endif
+      if (NeutubeConfig::GetVerboseLevel() >= 2) {
+        std::cout << "Displaying objects ..." << std::endl;
+      }
       for (int i = 0; i < visibleObject.size(); ++i) {
         /*
       }
@@ -1597,9 +1720,9 @@ void ZStackView::paintObjectBuffer(
         */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
-#ifdef _DEBUG_
-          std::cout << obj->className() << std::endl;
-#endif
+          if (NeutubeConfig::GetVerboseLevel() >= 2) {
+            std::cout << obj->className() << std::endl;
+          }
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);
@@ -1637,9 +1760,9 @@ void ZStackView::paintObjectBuffer(
 
 void ZStackView::paintObjectBuffer()
 {
-#ifdef _DEBUG_
-  std::cout << "ZStackView::paintObjectBuffer" << std::endl;
-#endif
+  if (NeutubeConfig::GetVerboseLevel() >= 2) {
+    std::cout << "ZStackView::paintObjectBuffer" << std::endl;
+  }
 
   updateObjectCanvas();
 
@@ -1700,6 +1823,7 @@ bool ZStackView::paintTileCanvasBuffer()
 void ZStackView::paintObject()
 {
   paintObjectBuffer();
+  paintDynamicObjectBuffer();
   updateImageScreen(UPDATE_QUEUED);
 }
 
@@ -1743,6 +1867,22 @@ void ZStackView::paintObject(
   updateImageScreen(UPDATE_QUEUED);
 }
 
+void ZStackView::paintDynamicObjectBuffer()
+{
+#if 0
+  updateDynamicObjectCanvas();
+
+  if (m_dynamicObjectCanvas != NULL) {
+    ZPainter painter(m_dynamicObjectCanvas);
+    paintObjectBuffer(painter, ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+
+    if (painter.isPainted()) {
+      m_dynamicObjectCanvas->setVisible(true);
+    }
+  }
+#endif
+}
+
 void ZStackView::paintActiveDecorationBuffer()
 {
 #if 1
@@ -1755,9 +1895,11 @@ void ZStackView::paintActiveDecorationBuffer()
 
     if (m_activeDecorationCanvas != NULL) {
       ZPainter painter(m_activeDecorationCanvas);
+//      qDebug() << "Active painter transform: " << painter.getTransform();
+
       ZIntPoint pt = buddyDocument()->getStackOffset();
       pt.shiftSliceAxis(getSliceAxis());
-      painter.setStackOffset(pt);
+//      painter.setStackOffset(pt);
 
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
@@ -1767,6 +1909,9 @@ void ZStackView::paintActiveDecorationBuffer()
       }
       if (painter.isPainted()) {
         m_activeDecorationCanvas->setVisible(true);
+#ifdef _DEBUG_2
+        m_activeDecorationCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
       }
     }
   }
@@ -1994,6 +2139,37 @@ void ZStackView::exportObjectMask(
   }
 }
 
+void ZStackView::zoomTo(const ZIntPoint &pt)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStackView::zoomTo(int x, int y, int z)
+{
+  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
+  ZStackViewLocator locator;
+  locator.setCanvasSize(imageWidget()->canvasSize().width(),
+                        imageWidget()->canvasSize().height());
+
+  QRect newViewPort = locator.getRectViewPort(x, y, width);
+
+  if (newViewPort.width() < viewPort.width() &&
+      newViewPort.height() < viewPort.height()) {
+    double zoomRatio =
+        locator.getZoomRatio(newViewPort.width(), newViewPort.height());
+    imageWidget()->setZoomRatio(zoomRatio);
+  }
+
+  setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+}
+
 void ZStackView::increaseZoomRatio()
 {
   increaseZoomRatio(0, 0, false);
@@ -2126,6 +2302,14 @@ ZStackViewParam ZStackView::getViewParameter(
   return param;
 }
 
+ZStTransform ZStackView::getViewTransform() const
+{
+  ZStTransform transform;
+  transform.estimate(m_imageWidget->viewPort(), getProjRegion());
+
+  return transform;
+}
+
 void ZStackView::setViewPortOffset(int x, int y)
 {
   imageWidget()->blockPaint(true);
@@ -2242,6 +2426,11 @@ void ZStackView::setView(const ZStackViewParam &param)
   }
 }
 
+void ZStackView::processDepthSliderValueChange()
+{
+  processDepthSliderValueChange(m_depthControl->value());
+}
+
 void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
   qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
@@ -2348,6 +2537,12 @@ void ZStackView::setHoverFocus(bool on)
   m_imageWidget->setHoverFocus(on);
 }
 
+void ZStackView::setSmoothDisplay(bool on)
+{
+  m_imageWidget->setSmoothDisplay(on);
+  updateImageScreen(UPDATE_QUEUED);
+}
+
 /*
 void ZStackView::notifyViewChanged(NeuTube::View::EExploreAction action)
 {
@@ -2362,6 +2557,8 @@ void ZStackView::notifyViewChanged()
 
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
+  updateActiveDecorationCanvas();
+
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
@@ -2423,6 +2620,14 @@ void ZStackView::customizeWidget()
     vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     m_secondTopLayout->addWidget(vis3dButton);
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
+
+    if (buddyDocument()->getTag() == NeuTube::Document::NORMAL) {
+      QPushButton *settingButton = new QPushButton(this);
+      settingButton->setText("Settings");
+      settingButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+      m_secondTopLayout->addWidget(settingButton);
+      connect(settingButton, SIGNAL(clicked()), this, SLOT(requestSetting()));
+    }
   }
 }
 
@@ -2454,6 +2659,11 @@ void ZStackView::request3DVis()
 
     m_messageManager->processMessage(&message, true);
   }
+}
+
+void ZStackView::requestSetting()
+{
+  emit changingSetting();
 }
 
 void ZStackView::requestQuick3DVis()

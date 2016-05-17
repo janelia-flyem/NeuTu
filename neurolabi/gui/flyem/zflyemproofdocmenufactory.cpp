@@ -6,6 +6,7 @@
 #include "zactionfactory.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "flyem/zflyemproofdoc.h"
+#include "z3dwindow.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -68,19 +69,36 @@ QMenu* ZFlyEmProofDocMenuFactory::makeStackContextMenu(
   return makeSynapseContextMenu(presenter, parentWidget, menu);
 }
 
-void ZFlyEmProofDocMenuFactory::addAction(
-    const QList<ZActionFactory::EAction> &actionList,
-    ZStackPresenter *presenter, QMenu *menu)
-{
-  foreach (ZActionFactory::EAction action, actionList) {
-    if (action == ZActionFactory::ACTION_SEPARATOR) {
-      menu->addSeparator();
-    } else {
-      menu->addAction(presenter->getAction(action));
-    }
-  }
-}
 
+
+#if 0
+QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
+{
+  ZStackDoc *doc = window->getDocument();
+
+  if (doc != NULL) {
+    if (menu == NULL) {
+      menu = new QMenu(NULL);
+    } else {
+      menu->clear();
+    }
+
+    QList<ZActionFactory::EAction> actionList;
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
+        doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
+      if (doc->getSelectedSwcNodeList().size() == 1) {
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+      }
+    }
+
+    addAction(actionList, window, menu);
+  }
+
+  return menu;
+}
+#endif
 
 QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
@@ -171,6 +189,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
       actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
+
+      if (doc->getCuboidRoi().getDepth() > 1) {
+        if (!actionList.isEmpty()) {
+          actionList.append(ZActionFactory::ACTION_SEPARATOR);
+        }
+        actionList.append(ZActionFactory::ACTION_REWRITE_SEGMENTATION);
+      }
     }
 
     addAction(actionList, presenter, menu);

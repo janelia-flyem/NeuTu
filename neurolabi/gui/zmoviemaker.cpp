@@ -328,6 +328,7 @@ ZStackDoc* ZMovieMaker::getAcademy()
 {
   if (!m_academy) {
     m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc);
+    m_academy->disconnectSwcNodeModelUpdate();
   }
 
   return m_academy.get();

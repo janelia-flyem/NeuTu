@@ -161,12 +161,12 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   QVBoxLayout *layout = new QVBoxLayout(dlg);
   dlg->setLayout(layout);
 
-  layout->addWidget(ZWidgetFactory::makeLabledEditWidget(
+  layout->addWidget(ZWidgetFactory::MakeLabledEditWidget(
                       "test", ZWidgetFactory::SPACER_NONE, dlg));
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(dlg);
-  buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
+  buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   QPushButton *okButton = new QPushButton(dlg);
   buttonLayout->addWidget(okButton);
   okButton->setText("OK");

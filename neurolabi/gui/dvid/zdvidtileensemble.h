@@ -9,6 +9,7 @@
 #include "zdvidtarget.h"
 #include "zdvidtile.h"
 #include "zdvidreader.h"
+#include "zsharedpointer.h"
 
 class ZStackView;
 
@@ -49,11 +50,11 @@ public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
   void updateContrast();
-#if defined(_ENABLE_LIBDVIDCPP_)
-  void updateTile(libdvid::Slice2D slice,
-                  int resLevel, const std::vector<int> &loc,
-                  int z, ZDvidTile *tile, libdvid::DVIDNodeService *service);
-#endif
+//#if defined(_ENABLE_LIBDVIDCPP_)
+//  void updateTile(libdvid::Slice2D slice,
+//                  int resLevel, const std::vector<int> &loc,
+//                  int z, ZDvidTile *tile, libdvid::DVIDNodeService *service);
+//#endif
 
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
@@ -63,7 +64,7 @@ private:
   ZStackView *m_view;
   bool m_highContrast;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  std::vector<libdvid::DVIDNodeService*> m_serviceArray;
+  std::vector<ZSharedPointer<libdvid::DVIDNodeService> > m_serviceArray;
 #endif
 };
 

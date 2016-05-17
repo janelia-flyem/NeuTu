@@ -113,6 +113,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="regexCheckBox">
+       <property name="text">
+        <string>Regex</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="saveColorFilterButton">
        <property name="text">
         <string>Save color filter</string>

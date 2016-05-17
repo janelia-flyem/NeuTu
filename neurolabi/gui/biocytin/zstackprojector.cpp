@@ -253,13 +253,13 @@ ZStack* Biocytin::ZStackProjector::project(
 
           if (projMat->dim[0] > stack->width() ||
               projMat->dim[1] > stack->height()) {
-            Stack *proj2 = Crop_Stack(
+            Stack *proj2 = C_Stack::crop(
                   projData, (projMat->dim[0] - stack->width()) / 2,
                 (projMat->dim[1] - stack->height()) / 2, 0,
                 stack->width(), stack->height(), 1, NULL);
             C_Stack::kill(projData);
             projData = proj2;
-            Stack *depth2 = Crop_Stack(
+            Stack *depth2 = C_Stack::crop(
                   depthImage, (projMat->dim[0] - stack->width()) / 2,
                 (projMat->dim[1] - stack->height()) / 2, 0,
                 stack->width(), stack->height(), 1, NULL);

@@ -130,6 +130,11 @@ void ZPainter::setPen(Qt::PenStyle style)
   m_painter.setPen(style);
 }
 
+void ZPainter::setFont(const QFont &font)
+{
+  m_painter.setFont(font);
+}
+
 void ZPainter::setBrush(const QColor &color)
 {
   m_painter.setBrush(color);
@@ -187,6 +192,11 @@ void ZPainter::setZOffset(int z)
   m_z = z;
 }
 
+QRectF ZPainter::getCanvasRange() const
+{
+  return m_canvasRange;
+}
+
 void ZPainter::drawImage(
     const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect)
 {
@@ -228,6 +238,15 @@ void ZPainter::drawPixmap(
   }
 }
 
+void ZPainter::drawPixmap(const QRectF &targetRect, const ZPixmap &image)
+{
+  if (targetRect.isValid() && !image.isNull()) {
+    m_painter.drawPixmap(targetRect, image, image.rect());
+
+    setPainted(true);
+  }
+}
+
 void ZPainter::drawActivePixmap(
     const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
 {
@@ -260,6 +279,23 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
 
     setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmapNt(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    m_painter.drawPixmap(0, 0, image);
+    setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmap(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    QRectF targetRect =
+        image.getProjTransform().transform(QRectF(image.rect()));
+    m_painter.drawPixmap(targetRect, image, image.rect());
   }
 }
 

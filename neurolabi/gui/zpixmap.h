@@ -18,8 +18,12 @@ public:
   ~ZPixmap();
 
   const ZStTransform& getTransform() const;
+  void setTransform(const ZStTransform &transform);
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
+
+  const ZStTransform& getProjTransform() const;
+  ZStTransform& getProjTransform();
 
   void cleanUp();
   void clean(const QRect &rect);
@@ -40,7 +44,8 @@ private:
   void cleanFunc(QPixmap *pixmap);
 
 private:
-  ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+  ZStTransform m_objTransform; //Transform from world coordinates to image coordinates
+  ZStTransform m_projTransform; //Transform from image coordinates to screen coordinates
   QRectF m_activeArea; //Active area in the world coordiantes
   bool m_isVisible;
 

@@ -77,6 +77,7 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
 void ZStackPresenter::init()
 {
   m_showObject = true;
+  m_oldShowObject = true;
 //  m_isStrokeOn = false;
   m_skipMouseReleaseEvent = 0;
   m_zOrder = 2;
@@ -788,7 +789,8 @@ QMenu* ZStackPresenter::getStrokeContextMenu()
 void ZStackPresenter::createBodyContextMenu()
 {
   if (dynamic_cast<ZFlyEmProofDocMenuFactory*>(getMenuFactory()) != NULL) {
-    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
+    ZOUT(std::cout, 2) << "ZFlyEmProofDocMenuFactory ready";
+//    std::cout << "ZFlyEmProofDocMenuFactory" << std::endl;
   }
 
   if (m_bodyContextMenu == NULL) {
@@ -1497,8 +1499,12 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
   bool taken = false;
   switch (event->key()) {
   case Qt::Key_R:
-    if (event->modifiers() == Qt::ShiftModifier) {
+    if (event->modifiers() == Qt::ShiftModifier ||
+        event->modifiers() == Qt::ControlModifier) {
       tryDrawRectMode();
+      if (event->modifiers() == Qt::ControlModifier) {
+        interactiveContext().setRectSpan(true);
+      }
       taken = true;
     } else {
       QAction *action = getAction(ZActionFactory::ACTION_PAINT_STROKE);
@@ -1869,6 +1875,16 @@ void ZStackPresenter::setObjectVisible(bool v)
 void ZStackPresenter::toggleObjectVisible()
 {
   setObjectVisible(!isObjectVisible());
+}
+
+void ZStackPresenter::suppressObjectVisible(bool v)
+{
+  if (v) {
+    m_oldShowObject = m_showObject;
+    m_showObject = false;
+  } else {
+    m_showObject = m_oldShowObject;
+  }
 }
 
 void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
@@ -2349,6 +2365,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
       enterDrawRectMode(x, y);
     }
   }
+  interactiveContext().setRectSpan(false);
 }
 
 void ZStackPresenter::enterDrawStrokeMode(double x, double y)
@@ -2808,6 +2825,9 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_STACK_INC_SLICE_FAST:
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
+    break;
+  case ZStackOperator::OP_ZOOM_TO:
+    buddyView()->zoomTo(currentStackPos.toIntPoint());
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {

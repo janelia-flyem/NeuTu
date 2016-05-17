@@ -40,6 +40,8 @@ protected slots:
 
 signals:
   void valueChanged(int);
+  void sliderPressed();
+  void sliderReleased();
 
 private:
   QHBoxLayout *m_layout;

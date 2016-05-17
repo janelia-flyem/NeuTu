@@ -212,6 +212,14 @@ void ZProofreadWindow::createMenu()
   connect(m_contrastAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(enhanceTileContrast(bool)));
 
+  m_smoothAction = new QAction("Smooth Display", this);
+  m_smoothAction->setCheckable(true);
+  m_smoothAction->setChecked(false);
+  m_smoothAction->setIcon(QIcon(":images/smooth.png"));
+  m_smoothAction->setChecked(false);
+  connect(m_smoothAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(smoothDisplay(bool)));
+
   m_openSkeletonAction = new QAction("3D Skeletons", this);
   connect(m_openSkeletonAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showSkeletonWindow()));
@@ -235,6 +243,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
+  m_viewMenu->addAction(m_smoothAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_openObject3dAction);
   m_viewMenu->addAction(m_openExtNeuronWindowAction);
@@ -315,6 +324,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewTodoAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
+  m_toolBar->addAction(m_smoothAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
   m_toolBar->addAction(m_openTodoAction);

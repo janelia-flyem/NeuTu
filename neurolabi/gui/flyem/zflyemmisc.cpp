@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QString>
 
+#include "neutubeconfig.h"
 #include "zmatrix.h"
 #include "tz_math.h"
 #include "tz_utilities.h"
@@ -304,6 +305,85 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
   return graph;
 }
 
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+//  int sampleInterval = dsIntv;
+
+  ZCubeArray *cubes = new ZCubeArray;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+  //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  //
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
+
+  //
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+//        bool goodCube = (sampleInterval == 0);
+//        if (!goodCube) {
+//          goodCube = (k % sampleInterval == 0);
+//        }
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box = dsInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
+              cubes->append(*cube);
+              delete cube;
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  //
+  return cubes;
+}
+
+
 /*
 void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
 {
@@ -437,6 +517,100 @@ void ZFlyEmMisc::Decorate3dBodyWindowRoi(
   }
 }
 
+void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+    Z3DWindow *window, const ZDvidInfo &/*dvidInfo*/, const ZDvidTarget &dvidTarget)
+{
+  if (window != NULL) {
+/*
+    ZDvidReader reader;
+    if (reader.open(dvidTarget)) {
+      const std::vector<std::string>& roiList = dvidTarget.getRoiList();
+      for (std::vector<std::string>::const_iterator iter = roiList.begin();
+           iter != roiList.end(); ++iter) {
+        const std::string &roiName = *iter;
+        ZObject3dScan roi = reader.readRoi(roiName);
+        if (!roi.isEmpty()) {
+          ZDvidInfo info = dvidInfo;
+          info.downsampleBlock(1, 1, 1);
+          roi.downsample(1, 1, 1);
+
+          ZCubeArray *cubes = MakeRoiCube(roi, info);
+          cubes->setSource(
+                ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName));
+          window->getDocument()->addObject(cubes, true);
+        }
+*/
+//    if (!dvidTarget.getRoiName().empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+
+          // test
+          ZJsonObject meta = reader.readInfo();
+//          std::vector<std::string> keys = meta.getAllKey();
+
+//          for(int i=0; i<keys.size(); i++)
+//          {
+//              qDebug()<<keys.at(i);
+//          }
+//          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+
+
+          ZJsonValue datains = meta.value("DataInstances");
+          qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
+
+          if(datains.isObject())
+          {
+              ZJsonObject insList(datains);
+              std::vector<std::string> keys = insList.getAllKey();
+
+              for(size_t i=0; i<keys.size(); i++)
+              {
+                  //qDebug()<<keys.at(i);
+
+
+                  std::size_t found = keys.at(i).find("roi");
+
+                  if(found!=std::string::npos)
+                  {
+                    qDebug()<<" rois: "<<keys.at(i);
+                  }
+
+
+//                  ZJsonObject submeta(insList.value(keys.at(i).c_str()));
+//                  std::vector<std::string> subkeys = submeta.getAllKey();
+
+//                  for(int j=0; j<subkeys.size(); j++)
+//                  {
+//                      qDebug()<<" ... "<<subkeys.at(i);
+//                  }
+
+
+
+
+
+
+              }
+              qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
+          }
+
+
+
+
+
+
+//       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+//        if (!roi.isEmpty()) {
+//          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+//          cubes->setSource(
+//                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+//                  dvidTarget.getRoiName()));
+//          window->getDocument()->addObject(cubes, true);
+//        }
+      }
+    }
+//  }
+}
+
 void ZFlyEmMisc::SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo)
@@ -459,3 +633,76 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
 //    std::cout << "Subtracting time: " << toc() << std::endl;
   }
 }
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
+    const std::string &url, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode)
+{ 
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  } else if (method == "GET") {
+    connMethod = libdvid::GET;
+  }
+
+  QUrl qurl(url.c_str());
+//  qurl.setScheme("http");
+  ZString address = qurl.host();
+  if (qurl.port() >= 0) {
+    address += ":";
+    address.appendNumber(qurl.port());
+  }
+  libdvid::DVIDConnection connection(address, GET_FLYEM_CONFIG.getUserName(),
+                                     NeutubeConfig::GetSoftwareName());
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  std::string error_msg;
+
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
+
+
+  try {
+    statusCode = connection.make_request(
+          "/.." + qurl.path().toStdString(), connMethod, payload, results,
+          error_msg, type);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    statusCode = e.getStatus();
+  }
+
+  return results;
+}
+
+libdvid::BinaryDataPtr ZFlyEmMisc::MakeGetRequest(
+    const std::string &url, int &statusCode)
+{
+  return MakeRequest(url, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                     statusCode);
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const std::string &web_addr, const std::string &uuid)
+{
+  return ZSharedPointer<libdvid::DVIDNodeService>(
+        new libdvid::DVIDNodeService(
+          web_addr, uuid, GET_FLYEM_CONFIG.getUserName(),
+          NeutubeConfig::GetSoftwareName()));
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const ZDvidTarget &target)
+{
+  return MakeDvidNodeService(target.getAddressWithPort(),
+                             target.getUuid());
+}
+
+#endif

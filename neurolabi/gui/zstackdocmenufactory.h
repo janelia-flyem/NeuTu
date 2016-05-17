@@ -6,9 +6,11 @@ class QAction;
 class ZStackDoc;
 class ZStackPresenter;
 class QWidget;
+class Z3DWindow;
 
 #include "neutube.h"
 #include "zactionactivator.h"
+#include "zactionfactory.h"
 
 /*!
  * \brief Class of creating menus for ZStackDoc
@@ -43,6 +45,15 @@ public:
 
   virtual QMenu* makeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+
+  virtual QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
+
+protected:
+  void addAction(
+      const QList<ZActionFactory::EAction> &actionList,
+      ZStackPresenter *presenter, QMenu *menu);
+  void addAction(const QList<ZActionFactory::EAction> &actionList,
+                 Z3DWindow *window, QMenu *menu);
 
 private:
   void init();

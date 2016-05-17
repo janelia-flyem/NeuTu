@@ -238,6 +238,7 @@ HEADERS += mainwindow.h \
     z3dlinerenderer.h \
     z3dlinewithfixedwidthcolorrenderer.h \
     z3dconerenderer.h \
+    z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
     z3daxis.h \
@@ -330,6 +331,7 @@ HEADERS += mainwindow.h \
     z3dgeometryfilter.h \
     z3dgraphfilter.h \
     z3dpunctafilter.h \
+    z3dsurfacefilter.h \
     z3dswcfilter.h \
     z3dscene.h \
     zqtbarprogressreporter.h \
@@ -590,9 +592,11 @@ HEADERS += mainwindow.h \
     flyem/zflyemsequencercolorscheme.h \
     zpunctumselector.h \
     zgraphobjsmodel.h \
+    zsurfaceobjsmodel.h \
     dvid/zdvidsynapse.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
+    zcubearray.h \
     dvid/zdvidsynpasecommand.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
@@ -605,6 +609,7 @@ HEADERS += mainwindow.h \
     flyem/flyemorthocontrolform.h \
     dvid/zdvidannotation.h \
     dialogs/stringlistdialog.h \
+    zroiwidget.h \
     flyem/zflyemtodoitem.h \
     flyem/zflyemtodolist.h \
     flyem/zflyemtodolistfilter.h \
@@ -612,7 +617,15 @@ HEADERS += mainwindow.h \
     flyem/zflyemtodopresenter.h \
     dialogs/flyemtododialog.h \
     zstackdocselector.h \
-    flyem/zflyemproofdoccommand.h
+    flyem/zflyemproofdoccommand.h \
+    flyem/zneutuservice.h \
+    dialogs/flyemsettingdialog.h \
+    widgets/zcolorlabel.h \
+    zactionlibrary.h \
+    zmenufactory.h \
+    zcrosshair.h \
+    zapplication.h \
+    dialogs/flyemsynapsefilterdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -686,7 +699,9 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkwidget.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
-    dialogs/flyemtododialog.ui
+    dialogs/flyemtododialog.ui \
+    dialogs/flyemsettingdialog.ui \
+    dialogs/flyemsynapsefilterdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -742,6 +757,7 @@ SOURCES += main.cpp \
     z3dlinerenderer.cpp \
     z3dlinewithfixedwidthcolorrenderer.cpp \
     z3dconerenderer.cpp \
+    z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
     z3daxis.cpp \
@@ -821,6 +837,7 @@ SOURCES += main.cpp \
     z3dgeometryfilter.cpp \
     z3dgraphfilter.cpp \
     z3dpunctafilter.cpp \
+    z3dsurfacefilter.cpp \
     z3dswcfilter.cpp \
     z3dscene.cpp \
     zqtbarprogressreporter.cpp \
@@ -1054,9 +1071,11 @@ SOURCES += main.cpp \
     flyem/zflyemsequencercolorscheme.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
+    zsurfaceobjsmodel.cpp \
     dvid/zdvidsynapse.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \
+    zcubearray.cpp \
     dvid/zdvidsynpasecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
@@ -1069,6 +1088,7 @@ SOURCES += main.cpp \
     flyem/flyemorthocontrolform.cpp \
     dvid/zdvidannotation.cpp \
     dialogs/stringlistdialog.cpp \
+    zroiwidget.cpp \
     flyem/zflyemtodoitem.cpp \
     flyem/zflyemtodolist.cpp \
     flyem/zflyemtodolistfilter.cpp \
@@ -1076,7 +1096,15 @@ SOURCES += main.cpp \
     flyem/zflyemtodopresenter.cpp \
     dialogs/flyemtododialog.cpp \
     zstackdocselector.cpp \
-    flyem/zflyemproofdoccommand.cpp
+    flyem/zflyemproofdoccommand.cpp \
+    flyem/zneutuservice.cpp \
+    dialogs/flyemsettingdialog.cpp \
+    widgets/zcolorlabel.cpp \
+    zactionlibrary.cpp \
+    zmenufactory.cpp \
+    zcrosshair.cpp \
+    zapplication.cpp \
+    dialogs/flyemsynapsefilterdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

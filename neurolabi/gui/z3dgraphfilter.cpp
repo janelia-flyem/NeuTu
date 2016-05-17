@@ -24,6 +24,8 @@ Z3DGraphFilter::Z3DGraphFilter() :
   m_showGraph.set(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
+
+  setFilterName(QString("graphfilter"));
 }
 
 Z3DGraphFilter::~Z3DGraphFilter()

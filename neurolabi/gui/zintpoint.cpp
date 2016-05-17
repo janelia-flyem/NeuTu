@@ -158,6 +158,42 @@ double ZIntPoint::distanceTo(double x, double y, double z) const
   return Geo3d_Dist(m_x, m_y, m_z, x, y, z);
 }
 
+ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
+{
+  m_x *= pt.m_x;
+  m_y *= pt.m_y;
+  m_z *= pt.m_z;
+
+  return *this;
+}
+
+ZIntPoint& ZIntPoint::operator /=(const ZIntPoint &pt)
+{
+  m_x /= pt.m_x;
+  m_y /= pt.m_y;
+  m_z /= pt.m_z;
+
+  return *this;
+}
+
+ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
+{
+  m_x += pt.m_x;
+  m_y += pt.m_y;
+  m_z += pt.m_z;
+
+  return *this;
+}
+
+ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
+{
+  m_x -= pt.getX();
+  m_y -= pt.getY();
+  m_z -= pt.getZ();
+
+  return *this;
+}
+
 void ZIntPoint::shiftSliceAxis(NeuTube::EAxis axis)
 {
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);

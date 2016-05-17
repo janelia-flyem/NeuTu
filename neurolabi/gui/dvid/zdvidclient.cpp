@@ -678,8 +678,7 @@ void ZDvidClient::cancelRequest()
 void ZDvidClient::setDefaultServer()
 {
 #if defined(_FLYEM_)
-  const ZDvidTarget &dvidTarget =
-      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  const ZDvidTarget &dvidTarget = GET_FLYEM_CONFIG.getDvidTarget();
   setServer(dvidTarget.getAddress().c_str(), dvidTarget.getPort());
   setUuid(dvidTarget.getUuid().c_str());
 #endif

@@ -70,6 +70,8 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
                           ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
+                          NeuTube::EAxis axis, ZObject3dScan *result);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -159,6 +161,7 @@ public:
   ZObject3dScan readRoi(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
+  ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
@@ -214,7 +217,14 @@ public:
 
   ZJsonObject readSkeletonConfig() const;
 
+  int64_t getReadingTime() const {
+    return m_readingTime;
+  }
+
   bool good() const;
+
+  std::string readMasterNode() const;
+  static std::string ReadMasterNode(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {
@@ -249,6 +259,7 @@ protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;
+  mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
 #endif

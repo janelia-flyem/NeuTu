@@ -11,6 +11,9 @@
 #include "flyem/zflyembodymergeproject.h"
 #include "zstackdoc.h"
 #include "zflyembookmarkview.h"
+#include "widgets/zcolorlabel.h"
+#include "zwidgetfactory.h"
+#include "znormcolormap.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -19,6 +22,9 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->setupUi(this);
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
+  m_latencyWidget =
+      ZWidgetFactory::MakeColorLabel(Qt::gray, "Seg Latency", 100, false, this);
+  ui->topHorizontalLayout->addWidget(m_latencyWidget);
   /*
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
@@ -268,7 +274,16 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
-  setInfo(target.toJsonObject().dumpString(2).c_str());
+  std::string info = target.toJsonObject().dumpString(2);
+  if (target.isSupervised()) {
+    if (!target.getSupervisor().empty()) {
+      info += "\nLibrarian: " + target.getSupervisor();
+    } else {
+      info += "\nLibrarian: " + GET_FLYEM_CONFIG.getDefaultLibrarian();
+    }
+  }
+
+  setInfo(info.c_str());
 }
 
 
@@ -311,7 +326,10 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 {
   if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    ZOUT(LINFO(), 3) << "Update bookmark table for merge project";
     m_assignedBookmarkList.clear();
+
+    ZOUT(LINFO(), 3) << "Bookmark list cleared";
 //    project->clearBookmarkDecoration();
 
     if (project->getDocument() != NULL) {
@@ -327,7 +345,9 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
+
     getAssignedBookmarkView()->sort();
+    ZOUT(LINFO(), 3) << "Bookmark sorted";
     /*
     m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
                           m_bookmarkProxy->sortOrder());
@@ -363,4 +383,15 @@ void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
+}
+
+void FlyEmProofControlForm::updateLatency(int t)
+{
+  ZNormColorMap colorMap;
+  int baseTime = 600;
+  double v = (double) t / baseTime;
+  QColor color = colorMap.mapColor(v);
+  color.setAlpha(100);
+  m_latencyWidget->setColor(color);
+  m_latencyWidget->setText(QString("%1").arg(t));
 }

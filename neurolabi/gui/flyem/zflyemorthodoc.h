@@ -3,6 +3,8 @@
 
 #include "flyem/zflyemproofdoc.h"
 
+class ZCrossHair;
+
 class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
 {
   Q_OBJECT
@@ -13,6 +15,8 @@ public:
   void prepareDvidData();
 
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
+
+  ZCrossHair* getCrossHair() const;
 
 signals:
 

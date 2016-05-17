@@ -22,7 +22,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   spinBoxLayout->addWidget(m_spinBox);
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(this);
-  buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
+  buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
 
   m_buttonBox = ZWidgetFactory::makeButtonBox(
         ZButtonBox::ROLE_YES | ZButtonBox::ROLE_NO | ZButtonBox::ROLE_SKIP,

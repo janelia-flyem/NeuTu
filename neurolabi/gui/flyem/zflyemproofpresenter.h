@@ -26,8 +26,12 @@ public:
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
   bool highTileContrast() const;
+  bool smoothTransform() const;
 
   void setHighTileContrast(bool high);
+  void setSmoothTransform(bool on);
+  void showData(bool on);
+  bool showingData() const;
 
   void enableSplit();
   void disableSplit();
@@ -75,6 +79,8 @@ signals:
   void mergingBody();
   void goingToBodyBottom();
   void goingToBodyTop();
+  void togglingSegmentation();
+  void togglingData();
 
 public slots:
   void deleteSelectedSynapse();
@@ -112,6 +118,8 @@ private:
   bool m_isHightlightMode;
   bool m_splitWindowMode;
   bool m_highTileContrast;
+  bool m_smoothTransform;
+  bool m_showingData;
 
   QMenu *m_synapseContextMenu;
 

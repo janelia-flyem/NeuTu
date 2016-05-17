@@ -197,6 +197,11 @@ ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
   return "#.DVIDFlyEMTodoList";
 }
 
+std::string ZStackObjectSourceFactory::MakeCrossHairSource()
+{
+  return "#.CrossHair";
+}
+
 std::string ZStackObjectSourceFactory::MakeTodoPunctaSource()
 {
   return "#.DVIDFlyEMTodoPuncta";

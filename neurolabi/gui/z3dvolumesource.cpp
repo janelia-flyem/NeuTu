@@ -156,8 +156,8 @@ void Z3DVolumeSource::readVolumes()
         widthScale *= scale;
         heightScale *= scale;
 
-        Stack *stack2 = Resize_Stack(stack, width, height, depth);
-        Translate_Stack(stack2, GREY, 1);
+        Stack *stack2 = C_Stack::resize(stack, width, height, depth);
+        C_Stack::translate(stack2, GREY, 1);
 
         if (m_doc->getStack()->isBinary()) {
           size_t volume = Stack_Voxel_Number(stack2);
@@ -205,7 +205,7 @@ void Z3DVolumeSource::readVolumes()
         if (widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
           stack2 = C_Stack::resize(stack, width, height, depth);
         } else {
-          stack2 = Copy_Stack(stack);
+          stack2 = C_Stack::clone(stack);
         }
 
         if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
@@ -217,7 +217,7 @@ void Z3DVolumeSource::readVolumes()
           }
         }
 
-        Translate_Stack(stack2, GREY, 1);
+        C_Stack::translate(stack2, GREY, 1);
 
         Z3DVolume *vh = new Z3DVolume(stack2,
                                       glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
@@ -350,7 +350,7 @@ void Z3DVolumeSource::readSparseStack()
         stack2 = C_Stack::clone(stack);
       }
 
-      Translate_Stack(stack2, GREY, 1);
+      C_Stack::translate(stack2, GREY, 1);
 
       if (C_Stack::isBinary(stack2)) {
         size_t volume = C_Stack::voxelNumber(stack2);
@@ -537,8 +537,8 @@ void Z3DVolumeSource::readVolumesWithObject()
         widthScale *= scale;
         heightScale *= scale;
 
-        Stack *stack2 = Resize_Stack(stack, width, height, depth);
-        Translate_Stack(stack2, GREY, 1);
+        Stack *stack2 = C_Stack::resize(stack, width, height, depth);
+        C_Stack::translate(stack2, GREY, 1);
 
         if (m_doc->getStack()->isBinary()) {
           size_t volume = Stack_Voxel_Number(stack2);
@@ -586,7 +586,7 @@ void Z3DVolumeSource::readVolumesWithObject()
         if (widthScale != 1.0 || heightScale != 1.0)
           stack2 = C_Stack::resize(stack, width, height, depth);
         else
-          stack2 = Copy_Stack(stack);
+          stack2 = C_Stack::clone(stack);
 
         if (stack->kind == GREY && m_doc->getStack()->isBinary()) {
           size_t volume = m_doc->getStack()->getVoxelNumber();
@@ -597,7 +597,7 @@ void Z3DVolumeSource::readVolumesWithObject()
           }
         }
 
-        Translate_Stack(stack2, GREY, 1);
+        C_Stack::translate(stack2, GREY, 1);
 
         Z3DVolume *vh = new Z3DVolume(stack2,
                                       glm::vec3(1.f/widthScale, 1.f/heightScale, 1.f/depthScale),
@@ -858,7 +858,8 @@ void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,
     glm::vec3 offset = glm::vec3(left, top, front) * scaleSpacing + getVolume(0)->getOffset();
     for (int i=0; i<nchannel; i++) {
       Stack *stack = m_doc->getStack()->c_stack(i);
-      Stack *subStack = Crop_Stack(stack, left, top, front, width, height, depth, NULL);
+      Stack *subStack = C_Stack::crop(
+            stack, left, top, front, width, height, depth, NULL);
       if (subStack->kind == GREY) {
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset,
                                       getVolume(0)->getPhysicalToWorldMatrix());
@@ -866,7 +867,7 @@ void Z3DVolumeSource::readSubVolumes(int left, int top, int front, int width,
         vh->setParentVolumeOffset(getVolume(0)->getOffset());
         m_zoomInVolumes.push_back(vh);
       } else {
-        Translate_Stack(subStack, GREY, 1);
+        C_Stack::translate(subStack, GREY, 1);
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, scaleSpacing, offset,
                                       getVolume(0)->getPhysicalToWorldMatrix());
         vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
