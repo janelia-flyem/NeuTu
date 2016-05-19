@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QInputDialog>
+#include <QLineEdit>
 #include <QObject>
 #include <QMessageBox>
 
@@ -183,6 +185,8 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
         // write protocol metadata (who's active)
 
+        // display dialog: your data saved in this data instance, this key
+
     } else {
         // note that dialog explaining failure is expected to be
         //  raised by the protocol during "initialize()"
@@ -215,8 +219,11 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
     if (m_activeProtocolKey.empty()) {
         // generate key; be sure it's not already in use
         std::string key = generateKey();
+        if (key.empty()) {
+            saveFailedDialog("Key for saved data couldn't be generated; did the user cancel?");
+        }
         if (!askProceedIfKeyExists(key)) {
-            saveFailedDialog("Couldn't verify save key is unused");
+            saveFailedDialog("Key for saved data might already be used!");
             return;
         }
         m_activeProtocolKey = key;
@@ -227,7 +234,7 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
     std::cout << "prswi: save using key " << m_activeProtocolKey << std::endl;
 
 
-    //  - check if node still unlocked?
+    // check if node still unlocked?
 
 
     ZDvidWriter writer;
@@ -329,26 +336,46 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
 }
 
 /*
- * returns the key we will use to store the protocol data
+ * returns the key we will use to store the protocol data;
+ * returns empty string if user cancels identifier input
  */
 std::string ProtocolSwitcher::generateKey() {
     // key = (username)-(protocolname)-(identifier)
-    return NeuTube::GetCurrentUserName() + "-" + m_activeProtocol->getName() + "-" + generateIdentifier();
+    std::string identifier = generateIdentifier();
+    if (identifier.empty()) {
+        return "";
+    } else {
+        return NeuTube::GetCurrentUserName() + "-" + m_activeProtocol->getName() + "-" + identifier;
+    }
 }
 
 /*
  * this method returns an identifier; it's either an
- * assignment ID or something provided by the user
+ * assignment ID or something provided by the user;'
+ * returns empty string if user cancels
  */
 std::string ProtocolSwitcher::generateIdentifier() {
 
-    // test
-    return "testkey";
-
     // if assignment in progress: return assignment ID string
+    // not implemented yes
 
-    // else: prompt user for identifier (no hyphens!)
-
+    // else: prompt user for identifier;  no hyphens!  I want to split on them later
+    //  also, no spaces, because web reasons)
+    bool status;
+    QString ans = QInputDialog::getText(m_parent, "Input identifier",
+        "Input an identifier to be used as part of the key for saved data (no spaces or hyphens!): ",
+        QLineEdit::Normal, "myData", &status);
+    if (status && !ans.isEmpty()) {
+        if (ans.contains('-') || ans.contains(' ')) {
+            QMessageBox::warning(m_parent, "Invalid identifier",
+                "The identifier may not contain hyphens or spaces", QMessageBox::Ok);
+            return "";
+        } else {
+            return ans.toStdString();
+        }
+    } else {
+        return "";
+    }
 }
 
 void ProtocolSwitcher::saveFailedDialog(QString message) {
