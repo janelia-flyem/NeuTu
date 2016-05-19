@@ -163,15 +163,6 @@ void ProtocolDialog::saveState() {
         finished.append(m_finishedList.at(i).toStdString());
     }
 
-    // there's a kind-of bug in ZJsonObject; if an array is
-    //  null (ie, not just empty, but newly created null),
-    //  it can't be added as a value to the map; so we force
-    //  it to be empty and not null by adding/removing an element
-    if (finished.size() == 0) {
-        finished.append(0);
-        finished.remove(0);
-    }
-
     ZJsonObject data;
     data.setEntry("pending", pending);
     data.setEntry("finished", finished);
