@@ -33,6 +33,7 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
     
 }
 
+// protocol name should not contain hyphens
 const std::string ProtocolDialog::PROTOCOL_NAME = "doNthings";
 
 /*

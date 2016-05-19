@@ -158,6 +158,13 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
         return;
     }
 
+    // don't start protocol if we can't save
+    if (!checkCreateDataInstance()) {
+        saveFailedDialog("DVID data instance for protocols was not present and/or could not be created!");
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
+
     // connect happens here, because if init succeeds, it'll
     //  want to request a save
     connectProtocolSignals();
@@ -206,11 +213,6 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
     // if there's no saved key, this is our first save; we thus need
     //  to generate the key
     if (m_activeProtocolKey.empty()) {
-        if (!checkCreateDataInstance()) {
-            saveFailedDialog("DVID data instance for protocols was not present and/or could not be created!");
-            return;
-        }
-
         // generate key; be sure it's not already in use
         std::string key = generateKey();
         if (!askProceedIfKeyExists(key)) {
@@ -307,10 +309,10 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
 
             ZDvidWriter writer;
             if (writer.open(m_currentDvidTarget)) {
-                // writer.createKeyvalue(PROTOCOL_DATA_NAME);
-                std::cout << "pretending to create keyvalue " << PROTOCOL_DATA_NAME << std::endl;
+                std::cout << "creating keyvalue " << PROTOCOL_DATA_NAME << std::endl;
+                writer.createKeyvalue(PROTOCOL_DATA_NAME);
                 // did it actually create?  I'm only going to try once
-                if (!reader.hasData(PROTOCOL_DATA_NAME)) {
+                if (reader.hasData(PROTOCOL_DATA_NAME)) {
                     return true;
                 } else {
                     return false;
