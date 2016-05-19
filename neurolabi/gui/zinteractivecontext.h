@@ -174,6 +174,8 @@ public:
 
   void setAcceptingRect(bool on) { m_acceptingRect = on; }
   bool acceptingRect() const { return m_acceptingRect; }
+  void setRectSpan(bool on) { m_rectSpan = on; }
+  bool rectSpan() const { return m_rectSpan; }
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -191,6 +193,7 @@ private:
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   bool m_acceptingRect;
+  bool m_rectSpan;
   NeuTube::EAxis m_sliceAxis;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;

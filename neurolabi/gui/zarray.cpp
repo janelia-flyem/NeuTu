@@ -199,7 +199,7 @@ uint64_t ZArray::getUint64Value(size_t index) const
   return array[index];
 }
 
-int ZArray::getDim(int index)
+int ZArray::getDim(int index) const
 {
   if (index < 0 || index >= ndims()) {
     return 1;

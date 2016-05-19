@@ -32,6 +32,7 @@ void ZRect2d::init(int x0, int y0, int width, int height)
   set(x0, y0, width, height);
   m_z = 0;
   m_isPenetrating = false;
+  m_zSpan = 0;
   m_type = GetType();
   useCosmeticPen(true);
 }
@@ -51,7 +52,16 @@ bool ZRect2d::isValid() const
 
 bool ZRect2d::isSliceVisible(int z, NeuTube::EAxis /*sliceAxis*/) const
 {
-  return isValid() && (m_isPenetrating || z == m_z);
+  bool visible = isValid();
+
+  if (visible) {
+    if (!m_isPenetrating) {
+      visible = abs(z - m_z) <= m_zSpan;
+    }
+  }
+
+
+  return visible;
 }
 
 void ZRect2d::preparePen(QPen &pen) const

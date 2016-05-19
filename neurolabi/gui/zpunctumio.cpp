@@ -193,11 +193,11 @@ void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList
 {
   ZJsonObject rootObj;
   rootObj.load(file.toStdString());
-  ZJsonArray pointList(rootObj["point-list"], false);
+  ZJsonArray pointList(rootObj["point-list"], ZJsonValue::SET_INCREASE_REF_COUNT);
 
   if (!pointList.isEmpty()) {
     for (size_t i = 0; i < pointList.size(); ++i) {
-      ZJsonArray pointObj(pointList.at(i), false);
+      ZJsonArray pointObj(pointList.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> coordinates = pointObj.toIntegerArray();
       if (coordinates.size() == 3) {
         ZPunctum* punctum = new ZPunctum();

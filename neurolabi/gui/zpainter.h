@@ -110,6 +110,7 @@ public:
   void setPen(const QColor &color);
   void setPen(const QPen &pen);
   void setPen(Qt::PenStyle style);
+  void setFont(const QFont &font);
 
   void setBrush(const QColor &color);
   void setBrush(const QBrush &pen);
@@ -157,11 +158,13 @@ public:
 
   void fillRect(const QRect &r, Qt::GlobalColor color);
   void setOpacity(double alpha);
-  void setRange(const QRectF &r) { m_canvasRange = r; }
+  void setCanvasRange(const QRectF &r) { m_canvasRange = r; }
 
   bool isVisible(const QRectF &rect) const;
   bool isVisible(const QRect &rect) const;
   bool isVisible(double x1, double y1, double x2, double y2) const;
+
+  QRectF getCanvasRange() const;
 #endif
 
   /*

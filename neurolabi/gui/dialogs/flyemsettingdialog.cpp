@@ -20,16 +20,25 @@ void FlyEmSettingDialog::init()
 {
   loadSetting();
   connectSignalSlot();
+  ui->configPushButton->hide();
 }
 
 void FlyEmSettingDialog::loadSetting()
 {
-  ui->configLineEdit->setText(NeutubeConfig::GetFlyEmConfigPath());
-  ui->servicelineEdit->setText(NeutubeConfig::GetNeuTuServer());
+  QString configPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (!configPath.isEmpty()) {
+    ui->configLineEdit->setText(configPath);
+  } else {
+    ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
+  }
+  ui->servicelineEdit->setText(
+        GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
+  ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
+  ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -59,4 +68,6 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.loadConfig(getConfigPath());
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
+  NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
+  NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
 }

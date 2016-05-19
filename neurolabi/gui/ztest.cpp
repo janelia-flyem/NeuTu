@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QTime>
 #include <QProcess>
 #include <iostream>
 #include <ostream>
@@ -17,7 +18,6 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <QtCore>
 
 #ifdef __GLIBCXX__
 #include <tr1/memory>
@@ -11989,6 +11989,9 @@ void ZTest::test(MainWindow *host)
   tic();
   obj2.dilate();
   ptoc();
+
+
+
 #endif
 
 #if 0
@@ -12081,20 +12084,7 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
-  Z3DGraphFactory factory;
-  factory.setShapeHint(GRAPH_LINE);
-  factory.setEdgeColorHint(QColor(255, 0, 0));
-  factory.setNodeRadiusHint(0);
-
-  std::vector<int> faceArray;
-  faceArray.push_back(0);
-  faceArray.push_back(1);
-  faceArray.push_back(2);
-  faceArray.push_back(3);
-  faceArray.push_back(4);
-  faceArray.push_back(5);
-
-  Z3DGraph *graphObj = factory.makeFaceGraph(box, faceArray);
+  Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
@@ -16588,13 +16578,6 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
-  ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(obj);
-  jsonArray.dump(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.json");
-#endif
-
-#if 0
-  ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/flyem/MB/large_outside_block_fixed.sobj");
 
   ZObject3dScan obj2;
   obj2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha_block.sobj");
@@ -18572,14 +18555,13 @@ void ZTest::test(MainWindow *host)
   ensemble.setDvidTarget(target);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices;
-  tileIndices.push_back(ZDvidTileInfo::TIndex(10, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(11, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(13, 20));
-  tileIndices.push_back(ZDvidTileInfo::TIndex(14, 10));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(0, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(2, 2));
+  tileIndices.push_back(ZDvidTileInfo::TIndex(1, 1));
 
-  for (int z = 0; z < 10000; ++z) {
-    std::cout << ">>>>>> z = " << z << std::endl;
-    ensemble.update(tileIndices, 0, z);
+  while (1) {
+    ensemble.update(tileIndices, 0, 9259);
   }
 #endif
 
@@ -18644,6 +18626,12 @@ void ZTest::test(MainWindow *host)
       writer.writeBodyAnntation(anno);
     }
   }
+
+#endif
+
+#if 0
+  ZWindowFactory factory;
+  factory.setWindowTitle("Test");
 
 #endif
 
@@ -18775,19 +18763,13 @@ void ZTest::test(MainWindow *host)
     stackList.append(stack);
   }
 
-  QFuture<double> result = QtConcurrent::mapped(stackList, &C_Stack::sum);
-  result.waitForFinished();
+  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
 
-  QFutureIterator<double> iter(result);
-  while (iter.hasNext()) {
-    qDebug() << iter.next();
-  }
-#endif
+  Z3DWindow *window = factory.make3DWindow(doc);
+  window->setYZView();
 
-#if 0
-  ZJsonObject tileJson;
-  tileJson.load(GET_TEST_DATA_DIR + "/biocytin/DH_7-6-13-2_100x/DH070613C2X100-.tiles.json");
-  tileJson.dump(GET_TEST_DATA_DIR + "/test.json");
+  window->show();
+  window->raise();
 #endif
 
 #if 0
@@ -19668,7 +19650,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR + "/benchmark/block3.tif");
 
   double x = 1.4;
@@ -19903,7 +19884,7 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotation("bodies121714_todo");
 #endif
 
-#if 1
+#if 0
   //Create pixmap
   ZPixmap pixmap(256, 256);
   pixmap.setOffset(0, 0);
@@ -19973,6 +19954,261 @@ void ZTest::test(MainWindow *host)
   service.updateStatus();
   std::cout << "Service normal?: " << service.isNormal() << std::endl;
 
+#endif
+
+#if 0
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "372c");
+  std::cout << "Reading grayscale ..." << std::endl;
+
+  std::vector<int> blockCoords;
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+  blockCoords.push_back(100);
+
+
+  libdvid::GrayscaleBlocks blocks = service.get_grayblocks("grayscale", blockCoords, 2);
+
+  std::cout << blocks.get_num_blocks() << std::endl;
+#endif
+
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  std::vector<ZStack*> stackArray =
+      reader.readGrayScaleBlock(ZIntPoint(100, 200, 300), dvidInfo, 2);
+
+  stackArray[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+  stackArray[1]->save(GET_TEST_DATA_DIR + "/test2.tif");
+
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.swc");
+  tree.updateIterator();
+  for (Swc_Tree_Node *tn = tree.begin(); tn != NULL; tn = tree.next()) {
+    tn->node.x *= -1;
+    tn->node.y *= -1;
+    tn->node.z *= -1;
+  }
+
+  tree.save("/Users/zhaot/Work/neutube/neurolabi/data/00544-ngc.0.flip.swc");
+#endif
+
+#if 0
+  ZJsonArray objJson1;
+  objJson1.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_roi.json");
+
+  std::cout << objJson1.size() << std::endl;
+
+  ZJsonArray objJson2;
+  objJson2.load(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_below_roi.json");
+  std::cout << objJson2.size() << std::endl;
+
+  objJson1.concat(objJson2);
+  objJson1.dump(GET_TEST_DATA_DIR + "/flyem/MB/alpha1_new.json");
+  std::cout << objJson1.size() << std::endl;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "425d", 8500);
+  reader.open(target);
+
+  ZObject3dScan obj1 = reader.readRoi("alpha3_roi");
+  ZObject3dScan obj2 = reader.readRoi("alpha2_roi");
+  ZObject3dScan obj3 = reader.readRoi("alpha1_roi");
+
+  obj1.concat(obj2);
+  obj1.concat(obj3);
+  obj1.canonize();
+
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZIntPoint index1 = dvidInfo.getBlockIndex(0, 0, 5120);
+  std::cout << index1.getZ() << std::endl;
+
+  ZIntPoint index2 = dvidInfo.getBlockIndex(0, 0, 8736);
+  std::cout << index2.getZ() << std::endl;
+
+  ZObject3dScan alpha3 = obj1.getSlice(obj1.getMinZ(), index1.getZ() - 1);
+  ZObject3dScan alpha2 = obj2.getSlice(index1.getZ(), index2.getZ() - 1);
+  ZObject3dScan alpha1 = obj3.getSlice(index2.getZ(), obj1.getMaxZ());
+
+  {
+    ZJsonArray alpha1Json =
+        ZJsonFactory::MakeJsonArray(alpha1, ZJsonFactory::OBJECT_SPARSE);
+    alpha1Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha1.json");
+  }
+
+  {
+    ZJsonArray alpha2Json =
+        ZJsonFactory::MakeJsonArray(alpha2, ZJsonFactory::OBJECT_SPARSE);
+    alpha2Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha2.json");
+  }
+
+  {
+    ZJsonArray alpha3Json =
+        ZJsonFactory::MakeJsonArray(alpha3, ZJsonFactory::OBJECT_SPARSE);
+    alpha3Json.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/alpha3.json");
+  }
+#endif
+
+#if 0
+  std::string name = "@MB6";
+  std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(name);
+
+  std::cout << "Root node for " << name << ": " << rootNode << std::endl;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+    ZWeightedPointArray ptArray;
+
+    std::set<uint64_t> bodyIdArray = reader.readAnnnotatedBodySet();
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      if (ZString(annotation.getName()).startsWith("KC-s") ||
+          ZString(annotation.getName()).startsWith("KC-p") ||
+          ZString(annotation.getName()).startsWith("KC-any") ||
+          ZString(annotation.getName()).startsWith("KC-c")) {
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = synapseArray.begin(); iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+          ZIntPoint blockIndex = dvidInfo.getBlockIndex(synapse.getPosition());
+          ptArray.append(blockIndex.toPoint(), 1.0);
+        }
+      }
+    }
+
+    std::cout << ptArray.size() << " synapses" << std::endl;
+
+    ZStackFactory factory;
+    ZStack *stack = factory.makeDensityMap(ptArray, 5.0);
+    stack->save(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+  }
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/flyem/MB/kc_synapse.tif");
+
+  stack.binarize(30);
+
+  ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(stack);
+
+  obj.save(GET_DATA_DIR + "/flyem/MB/kc_synapse_t30.sobj");
+
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(obj, ZJsonFactory::OBJECT_SPARSE);
+  array.dump(GET_TEST_DATA_DIR + "/flyem/MB/roi/kc_synapse_t30_roi.json");
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "ad5d", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  ZIntCuboid box =
+      dvidInfo.getBlockBox(dvidInfo.getBlockIndex(3200, 1600, 12960));
+  box.setSize(352, 384, 352);
+  ZArray *label = reader.readLabels64(box);
+//  label->setValue((uint64_t) 16573243);
+
+//  label->setValue(100);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeLabel(*label);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
+                                 4099 + 99, 5018 + 99, 10343 + 99));
+#endif
+
+#if 0
+  ZSharedPointer<int> sharedPtr;
+  sharedPtr = ZSharedPointer<int>(new int);
+//  sharedPtr.reset();
+
+  if (sharedPtr == NULL){
+    std::cout << "NUll pointer" << std::endl;
+  } else {
+    std::cout << "NOT NULL" << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeMasterNode("0bf3");
+#endif
+
+#if 0
+  QDateTime time;
+  std::cout << time.currentTime().elapsed() << std::endl;
+#endif
+
+#if 1
+  ZJsonArray myList;
+  ZJsonObject myMap;
+
+  // workaround
+
+//  myList.remove(0);
+
+  // now this works:
+  myMap.setEntry("key", myList);
+
+  myList.append(12345);
+
+  std::cout << myMap.dumpString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

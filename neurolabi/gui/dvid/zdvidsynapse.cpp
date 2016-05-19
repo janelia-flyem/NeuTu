@@ -45,6 +45,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   center.shiftSliceAxis(sliceAxis);
 
   bool isFocused = (z == center.getZ());
+  QPen pen;
 
   if (visible) {
     QColor color = getColor();
@@ -55,9 +56,11 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       color.setAlphaF(alpha * color.alphaF());
     }
 
-    painter.setPen(color);
-    painter.setBrush(Qt::NoBrush);
+    pen.setColor(color);
 
+    painter.setPen(pen);
+
+    painter.setBrush(Qt::NoBrush);
     if (isFocused) {
       int x = center.getX();
       int y = center.getY();
@@ -65,13 +68,25 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
     }
     if (radius > 0.0) {
+      if (getKind() == KIND_POST_SYN) {
+        pen.setWidth(pen.width() + 1);
+      }
+      painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
+      if (getKind() == KIND_POST_SYN) {
+        pen.setWidth(pen.width() - 1);
+      }
     }
+
     if (!getUserName().empty()) {
       QString decorationText = "u";
-      int width = decorationText.size() * 25;
-      int height = 25;
+      int height = iround(getRadius() * 2);
+      int width = decorationText.size() * height;
+      QFont font;
+      font.setPixelSize(width);
+      painter.setFont(font);
+
       QColor oldColor = painter.getPen().color();
       painter.setPen(QColor(0, 0, 0));
       painter.drawText(center.getX(), center.getY(), width, height,
@@ -80,7 +95,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
   }
 
-  QPen pen = painter.getPen();
+
   pen.setCosmetic(m_usingCosmeticPen);
 
   bool drawingBoundBox = false;

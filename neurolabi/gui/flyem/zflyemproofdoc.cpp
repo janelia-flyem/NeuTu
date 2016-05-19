@@ -52,6 +52,8 @@ void ZFlyEmProofDoc::init()
   initTimer();
   initAutoSave();
 
+  m_loadingAssignedBookmark = false;
+
   connectSignalSlot();
 }
 
@@ -285,8 +287,8 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
                 //            owner = "unknown user";
                 emit messageGenerated(
                       ZWidgetMessage(
-                        QString("Failed to merge. Is the librarian sever (%2) ready?").
-                        arg(*iter).arg(getDvidTarget().getSupervisor().c_str()),
+                        QString("Failed to merge. Is the librarian sever (%1) ready?").
+                        arg(getDvidTarget().getSupervisor().c_str()),
                         NeuTube::MSG_ERROR));
               } else {
                 emit messageGenerated(
@@ -918,6 +920,8 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
+  ZOUT(LINFO(), 3) << "Checking splittable:" << bodyId;
+
   if (m_dvidReader.isReady()) {
     ZFlyEmBodyAnnotation annotation = m_dvidReader.readBodyAnnotation(bodyId);
     if (annotation.isFinalized()) {
@@ -1051,6 +1055,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    obj->clearCache();
     obj->forceUpdate();
     processObjectModified(obj);
   }
@@ -1686,13 +1691,15 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 
 void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 {
+  ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
+
+  m_loadingAssignedBookmark = true;
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
-#ifdef _DEBUG_
-    std::cout << objList.size() << " bookmarks" << std::endl;
-#endif
+    ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
 
     for (TStackObjectList::iterator iter = objList.begin();
@@ -1701,9 +1708,7 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-#ifdef _DEBUG_2
-          std::cout << "Removing bookmark: " << bookmark << std::endl;
-#endif
+          ZOUT(LINFO(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
         }
@@ -1714,9 +1719,10 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 
     obj.load(filePath);
 
-    ZJsonArray bookmarkArrayObj(obj["data"], false);
+    ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
-      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
+      ZJsonObject bookmarkObj(bookmarkArrayObj.at(i),
+                              ZJsonValue::SET_INCREASE_REF_COUNT);
       ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
       text.toLower();
       if (bookmarkObj["location"] != NULL) {
@@ -1749,6 +1755,7 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             } else {
               bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
             }
+            ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
             addObject(bookmark);
           }
         }
@@ -1756,12 +1763,17 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
     }
     for (std::vector<ZStackObject*>::iterator iter = removed.begin();
          iter != removed.end(); ++iter) {
+      ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
       delete *iter;
     }
   }
   endObjectModifiedMode();
 
   notifyObjectModified();
+
+  m_loadingAssignedBookmark = false;
+
+  ZOUT(LINFO(), 3) << "Bookmark imported";
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
@@ -1830,7 +1842,9 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
   switch (type) {
   case ZStackObject::TYPE_FLYEM_BOOKMARK:
 //    m_isCustomBookmarkSaved = false;
-    emit userBookmarkModified();
+    if (!m_loadingAssignedBookmark) {
+      emit userBookmarkModified();
+    }
     break;
   default:
     break;
@@ -2058,6 +2072,18 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
             ZStackObjectSourceFactory::MakeRectRoiSource());
       executeRemoveObjectCommand(obj);
       */
+    }
+  }
+}
+
+void ZFlyEmProofDoc::rewriteSegmentation()
+{
+  ZIntCuboid box = getCuboidRoi();
+  if (box.getDepth() > 1) {
+    getDvidWriter().refreshLabel(box);
+    if (getDvidWriter().getStatusCode() != 200) {
+      emit messageGenerated(
+            ZWidgetMessage("Failed to rewite segmentations.", NeuTube::MSG_ERROR));
     }
   }
 }
@@ -2333,6 +2359,12 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
       emit userBookmarkModified();
     }
   }
+}
+
+void ZFlyEmProofDoc::executeAddTodoItemCommand(
+    int x, int y, int z, bool checked)
+{
+  executeAddTodoItemCommand(ZIntPoint(x, y, z), checked);
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked)

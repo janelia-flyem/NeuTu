@@ -78,6 +78,8 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   connect(&m_yCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
   connect(&m_zCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
   adjustWidgets();
+
+  setFilterName(QString("punctafilter"));
 }
 
 Z3DPunctaFilter::~Z3DPunctaFilter()

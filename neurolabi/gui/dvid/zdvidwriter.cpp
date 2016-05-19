@@ -21,7 +21,9 @@
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemtodoitem.h"
-
+#include "zarray.h"
+#include "flyem/zflyemmisc.h"
+#include "dvid/zdvidbufferreader.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -34,29 +36,20 @@ ZDvidWriter::ZDvidWriter(QObject *parent) :
 
 ZDvidWriter::~ZDvidWriter()
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-  delete m_service;
-#endif
 }
 
 void ZDvidWriter::init()
 {
   m_statusCode = 0;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  m_service = NULL;
-#endif
 }
 
 bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    delete m_service;
-
-    m_service = new libdvid::DVIDNodeService(
-          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid());
+    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
-    m_service = NULL;
+    m_service.reset();
     std::cout << e.what() << std::endl;
     return false;
   }
@@ -69,9 +62,10 @@ bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
 //  m_dvidClient->reset();
-  m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
+  ZDvidTarget target;
+  target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
-  return open(m_dvidTarget);
+  return open(target);
 }
 
 bool ZDvidWriter::open(const ZDvidTarget &target)
@@ -81,6 +75,12 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_dvidTarget = target;
+
+  std::string masterNode = ZDvidReader::ReadMasterNode(m_dvidTarget);
+  if (!masterNode.empty()) {
+    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  }
+
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
@@ -669,29 +669,31 @@ static libdvid::BinaryDataPtr makeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(
+        address, GET_FLYEM_CONFIG.getUserName(),
+        NeutubeConfig::GetSoftwareName());
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
   std::string error_msg;
 
-  qDebug() << "address: " << address;
-  qDebug() << "path: " << qurl.path();
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
 
-  /*
-  statusCode = connection.make_request(
-        "/repo/372c/info", libdvid::GET, libdvid::BinaryDataPtr(),
-        results, error_msg, libdvid::DEFAULT);
-*/
+//  /*
+//  statusCode = connection.make_request(
+//        "/repo/372c/info", libdvid::GET, libdvid::BinaryDataPtr(),
+//        results, error_msg, libdvid::DEFAULT);
+//*/
 
   statusCode = connection.make_request(
         "/.." + qurl.path().toStdString(), connMethod, payload, results,
         error_msg, type);
 
-#if 0
-  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
-        /*"/../api/node/372c/skeletons/key/1_swc",*/ libdvid::GET, payload, results,
-        error_msg, libdvid::BINARY);
-#endif
+//#if 0
+//  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
+//        /*"/../api/node/372c/skeletons/key/1_swc",*/ libdvid::GET, payload, results,
+//        error_msg, libdvid::BINARY);
+//#endif
 
   return results;
 }
@@ -894,6 +896,12 @@ std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload,
 }
 
 std::string ZDvidWriter::post(const std::string &url, const ZJsonObject &obj)
+{
+  std::string payload = obj.dumpString(0);
+  return post(url, payload.c_str(), payload.size(), true);
+}
+
+std::string ZDvidWriter::post(const std::string &url, const ZJsonArray &obj)
 {
   std::string payload = obj.dumpString(0);
   return post(url, payload.c_str(), payload.size(), true);
@@ -1397,6 +1405,37 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   writeJson(url.getTodlListElementsUrl(), itemJson);
 }
 
+void ZDvidWriter::writeLabel(const ZArray &label)
+{
+  if (!label.isEmpty()) {
+    ZDvidUrl url(getDvidTarget());
+    post(url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
+                            label.getStartCoordinate(0),
+                            label.getStartCoordinate(1),
+                            label.getStartCoordinate(2)) + "?mutate=true",
+         label.getDataPointer<char>(), label.getByteNumber(), false);
+  }
+}
+
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntCuboid alignedBox;
+    alignedBox.setFirstCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+    alignedBox.setLastCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+    ZArray *label = reader.readLabels64(alignedBox);
+    writeLabel(*label);
+    delete label;
+  }
+}
+
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -1473,5 +1512,32 @@ void ZDvidWriter::addSynapseProperty(
       ZDvidSynapse::AddProperty(synapseJson, key, value);
       writeSynapse(synapseJson);
     }
+  }
+}
+
+void ZDvidWriter::writeMasterNode(const std::string &uuid)
+{
+  std::string rootNode =
+      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+  if (!rootNode.empty()) {
+    ZDvidBufferReader reader;
+    ZDvidUrl dvidUrl(getDvidTarget());
+    dvidUrl.setUuid(uuid);
+    std::string url = dvidUrl.getApiUrl() + "/node/" + uuid +
+        "/branches/key/master";
+    LINFO() << "Master url: " << url;
+    reader.read(url.c_str());
+    ZJsonArray branchJson;
+    branchJson.append(uuid);
+
+    ZJsonArray oldBranchJson;
+    oldBranchJson.decodeString(reader.getBuffer().data());
+    for (size_t i = 0; i < oldBranchJson.size(); ++i) {
+      if (ZJsonParser::stringValue(oldBranchJson.at(i)) != uuid) {
+        branchJson.append(oldBranchJson.at(i));
+      }
+    }
+
+    post(url, branchJson);
   }
 }

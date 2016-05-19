@@ -397,7 +397,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject() const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {
@@ -423,7 +423,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {

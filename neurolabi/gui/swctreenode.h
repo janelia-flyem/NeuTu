@@ -469,6 +469,8 @@ double distance(const Swc_Tree_Node *tn, double x, double y, double z,
  */
 double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                 double sx, double sy, double sz);
+double scaledSurfaceDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                              double sx, double sy, double sz);
 
 /*!
  * \brief Find the node that is the furthest one to a given node.

@@ -99,7 +99,7 @@ void ZDvidTile::loadDvidSlice(
   modified = false;
 #endif
 
-  if (modified) {
+  if (modified && (m_image != NULL)) {
     m_image->enhanceContrast(highContrast);
     updatePixmap();
   }

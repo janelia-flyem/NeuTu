@@ -20,12 +20,19 @@ public:
 
   ZFlyEmMessageWidget* getMessageWidget() const;
 
+  bool isShowingSeg() const;
+  bool isDataVisible() const;
+  void toggleShowingSeg();
+  void toggleData();
+
 signals:
   void movingUp();
   void movingDown();
   void movingLeft();
   void movingRight();
   void locatingMain();
+  void showingSeg(bool on);
+  void showingData(bool on);
 
 public slots:
   void dump(const ZWidgetMessage &message);

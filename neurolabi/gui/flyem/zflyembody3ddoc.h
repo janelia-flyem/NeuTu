@@ -9,6 +9,7 @@
 #include <QMutex>
 #include <QColor>
 #include <QList>
+#include <QTime>
 
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
@@ -34,16 +35,17 @@ public:
   class BodyEvent {
   public:
     enum EAction {
-      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_UPDATE
+      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
+      ACTION_UPDATE
     };
 
     typedef uint64_t TUpdateFlag;
 
   public:
     BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
-    m_updateFlag(0) {}
+    m_updateFlag(0), m_resLevel(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
-      m_action(action), m_bodyId(bodyId) {}
+      m_action(action), m_bodyId(bodyId), m_updateFlag(0), m_resLevel(0) {}
 
     EAction getAction() const { return m_action; }
     uint64_t getBodyId() const { return m_bodyId; }
@@ -73,12 +75,29 @@ public:
       return m_updateFlag;
     }
 
+    bool hasUpdateFlag(TUpdateFlag flag) {
+      return (m_updateFlag & flag) > 0;
+    }
+
+    int getResLevel() const {
+      return m_resLevel;
+    }
+
+    void setResLevel(int level) {
+      m_resLevel = level;
+    }
+
+    void decResLevel() {
+      --m_resLevel;
+    }
+
     void print() const;
 
   public:
     static const TUpdateFlag UPDATE_CHANGE_COLOR;
     static const TUpdateFlag UPDATE_ADD_SYNAPSE;
     static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
+    static const TUpdateFlag UPDATE_MULTIRES;
 
   private:
     EAction m_action;
@@ -86,8 +105,7 @@ public:
     QColor m_bodyColor;
 //    bool m_refreshing;
     TUpdateFlag m_updateFlag;
-
-
+    int m_resLevel;
   };
 
   enum EBodyType {
@@ -106,6 +124,7 @@ public:
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
+  void addEvent(const BodyEvent &event);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -154,18 +173,22 @@ private:
   ZSwcTree* getBodyModel(uint64_t bodyId);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType);
   void updateDvidInfo();
 
-  void addBodyFunc(uint64_t bodyId, const QColor &color);
+  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
-  void removeBodyFunc(uint64_t bodyId);
+  void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
 
   void connectSignalSlot();
   void updateBodyFunc();
 
   void processBodySetBuffer();
 
+  QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
 
+  template<typename T>
+  T* recoverFromGarbage(const std::string &source);
 
 signals:
 
@@ -196,16 +219,22 @@ private:
   ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
+  QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
-  QList<ZStackObject*> m_garbageList;
+//  QList<ZStackObject*> m_garbageList;
+  QMap<ZStackObject*, int> m_garbageMap;
+
   bool m_garbageJustDumped;
 
   QQueue<BodyEvent> m_eventQueue;
 
   QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
+
+  const static int OBJECT_GARBAGE_LIFE;
+  const static int OBJECT_ACTIVE_LIFE;
 };
 
 template <typename InputIterator>
@@ -215,17 +244,44 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   std::cout << "Locking mutex ..." << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
-  m_eventQueue.clear();
+  QSet<uint64_t> bodySet = m_bodySet;
+  QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> actionMap = makeEventMap(
+        false, bodySet);
+
+//  m_eventQueue.clear();
+
+  QSet<uint64_t> newBodySet;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    uint64_t bodyId = *iter;
+    newBodySet.insert(bodyId);
+  }
 
   for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+    if (!newBodySet.contains(bodyId)) {
+      addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+    }
+  }
+
+//  QList<BodyEvent> oldEventList;
+  for (QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent>::iterator
+       iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
+    if (newBodySet.contains(iter.key())) {
+      if (iter.value().getAction() != BodyEvent::ACTION_REMOVE) {
+        //In the new body set had the bodyID and not remove, add event
+        addEvent(iter.value());
+      } else {
+        addEvent(BodyEvent::ACTION_ADD, iter.key(), 0, NULL);
+      }
+    }
   }
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
+    if (!actionMap.contains(bodyId)) { //If the action map has no such body id
+      addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
+    }
   }
 }
 

@@ -36,6 +36,7 @@ void ZFlyEmKeyOperationConfig::ConfigureFlyEmStackMap(ZKeyOperationMap &map)
   QMap<int, ZStackOperator::EOperation> &plainKeyMap = *(map.getPlainMap());
 
   plainKeyMap[Qt::Key_F] = ZStackOperator::OP_OBJECT_TOGGLE_VISIBILITY;
+  plainKeyMap[Qt::Key_Z] = ZStackOperator::OP_ZOOM_TO;
 }
 
 void ZFlyEmKeyOperationConfig::ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map)

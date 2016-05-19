@@ -49,13 +49,22 @@ public:
 #endif
 
   void enableProfileLogging(bool on);
+  void setVerboseLevel(int level);
+  int getVerboseLevel() const;
   bool loggingProfile() const;
   void configure(const ZJsonObject &obj);
   void enableAutoStatusCheck(bool on);
   bool autoStatusCheck() const;
+  bool parallelTileFetching() const;
+  void setParallelTileFetching(bool on);
 
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
+  static int GetVerboseLevel();
+  static void SetVerboseLevel(int level);
+  static bool ParallelTileFetching();
+  static void SetParallelTileFetching(bool on);
+
   static void Configure(const ZJsonObject &obj);
 
   static void EnableAutoStatusCheck(bool on);
@@ -92,6 +101,8 @@ public:
   inline const std::string& getSoftwareName() const {
     return m_softwareName;
   }
+
+  static std::string GetSoftwareName();
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -350,10 +361,7 @@ private:
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
   bool m_loggingProfile;
-
-#if defined(_FLYEM_)
-  ZFlyEmConfig m_flyemConfig;
-#endif
+  int m_verboseLevel;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 
@@ -381,5 +389,9 @@ private:
 #if defined(_FLYEM_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
 #endif
+
+#define ZOUT(out, level) \
+  if (NeutubeConfig::GetVerboseLevel() < level) {} \
+  else out
 
 #endif // NEUTUBECONFIG_H

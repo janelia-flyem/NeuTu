@@ -133,6 +133,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
     connect(ui->gotoBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onGotoBodies()));
     connect(ui->bodyFilterField, SIGNAL(textChanged(QString)), this, SLOT(bodyFilterUpdated(QString)));
+    connect(ui->regexCheckBox, SIGNAL(clicked(bool)), this, SLOT(updateBodyFilterAfterLoading()));
     connect(ui->clearFilterButton, SIGNAL(clicked(bool)), ui->bodyFilterField, SLOT(clear()));
     connect(ui->toBodyListButton, SIGNAL(clicked(bool)), this, SLOT(moveToBodyList()));
     connect(ui->deleteButton, SIGNAL(clicked(bool)), this, SLOT(onDeleteButton()));
@@ -306,7 +307,11 @@ void FlyEmBodyInfoDialog::updateBodyFilterAfterLoading() {
 }
 
 void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
-    m_bodyProxy->setFilterFixedString(filterText);
+    if (ui->regexCheckBox->isChecked()) {
+        m_bodyProxy->setFilterRegExp(filterText);
+    } else {
+        m_bodyProxy->setFilterFixedString(filterText);
+    }
 
     // turns out you need to explicitly tell it to resort after the filter
     //  changes; if you don't, and new filter shows more items, those items
@@ -424,7 +429,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
                 }
             #endif
 
-            ZJsonObject bkmk(bookmarks.at(i), false);
+            ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
             uint64_t bodyId = bkmk.value("body ID").toInteger();
             if (bodySet.contains(bodyId)) {
@@ -597,7 +602,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     ZJsonArray bookmarks(data);
     m_bodyModel->setRowCount(bookmarks.size());
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-        ZJsonObject bkmk(bookmarks.at(i), false);
+        ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
@@ -722,7 +727,7 @@ bool FlyEmBodyInfoDialog::isValidColorMap(ZJsonValue colors) {
     }
 
     // has keys "color", "filter":
-    ZJsonObject first(colorArray.at(0), false);
+    ZJsonObject first(colorArray.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
     if (!first.hasKey("color") || !first.hasKey("filter")) {
         emit jsonLoadColorMapError("Color map json entries must have 'color' and 'filter' keys");
         return false;
@@ -750,7 +755,7 @@ void FlyEmBodyInfoDialog::onColorMapLoaded(ZJsonValue colors) {
     //  iterate over each color, filter and insert into table;
     ZJsonArray colorArray(colors);
     for (size_t i=0; i<colorArray.size(); i++) {
-        ZJsonObject entry(colorArray.at(i), false);
+        ZJsonObject entry(colorArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
         QString filter(ZJsonParser::stringValue(entry["filter"]));
         QStandardItem * filterTextItem = new QStandardItem(filter);

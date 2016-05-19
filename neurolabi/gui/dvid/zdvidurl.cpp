@@ -162,10 +162,38 @@ std::string ZDvidUrl::getSparsevolUrl(
     url.appendNumber(z);
     url += "&maxy=";
     break;
-    break;
   }
 
   url.appendNumber(z);
+
+  return url;
+}
+
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const
+{
+  ZString url = getSparsevolUrl(bodyId);
+
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(minZ);
+    url += "&maxz=";
+    url.appendNumber(maxZ);
+    break;
+  case NeuTube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(minZ);
+    url += "&maxx=";
+    url.appendNumber(maxZ);
+    break;
+  case NeuTube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(minZ);
+    url += "&maxy=";
+    url.appendNumber(maxZ);
+    break;
+  }
 
   return url;
 }
@@ -864,6 +892,11 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getFirstCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
+}
+
+void ZDvidUrl::setUuid(const std::string &uuid)
+{
+  m_dvidTarget.setUuid(uuid);
 }
 
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)

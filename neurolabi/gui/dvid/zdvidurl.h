@@ -57,6 +57,9 @@ public:
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
   std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
+  std::string getSparsevolUrl(
+      uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
+
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
@@ -210,6 +213,8 @@ public:
   std::string getTodoListUrl(int x, int y, int z) const;
 
   static std::string GetSkeletonKey(uint64_t bodyId);
+
+  void setUuid(const std::string &uuid);
 
 private:
   std::string getSplitUrl(

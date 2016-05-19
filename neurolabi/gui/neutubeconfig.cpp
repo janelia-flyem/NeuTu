@@ -32,6 +32,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
 #endif
 
   m_loggingProfile = false;
+  m_verboseLevel = 1;
 }
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -217,10 +218,6 @@ void NeutubeConfig::print()
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << endl;
-
-#if defined(_FLYEM_)
-  m_flyemConfig.print();
-#endif
 }
 
 std::string NeutubeConfig::getPath(Config_Item item) const
@@ -570,6 +567,10 @@ void NeutubeConfig::configure(const ZJsonObject &obj)
   if (obj.hasKey("profiling")) {
     m_loggingProfile = ZJsonParser::booleanValue(obj["profiling"]);
   }
+
+  if (obj.hasKey("verbose")) {
+    m_verboseLevel = ZJsonParser::integerValue(obj["verbose"]);
+  }
 }
 
 void NeutubeConfig::enableProfileLogging(bool on)
@@ -579,6 +580,49 @@ void NeutubeConfig::enableProfileLogging(bool on)
 #else
   m_loggingProfile = on;
 #endif
+}
+
+void NeutubeConfig::setVerboseLevel(int level)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("verbose", level);
+#else
+  m_verboseLevel = on;
+#endif
+}
+
+int NeutubeConfig::getVerboseLevel() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("verbose")) {
+    return m_settings.value("verbose").toInt();
+  }
+#endif
+
+  return m_verboseLevel;
+}
+
+bool NeutubeConfig::parallelTileFetching() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("parallel_tile")) {
+    return m_settings.value("parallel_tile").toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::setParallelTileFetching(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("parallel_tile", on);
+#endif
+}
+
+void NeutubeConfig::SetParallelTileFetching(bool on)
+{
+  getInstance().setParallelTileFetching(on);
 }
 
 bool NeutubeConfig::loggingProfile() const
@@ -630,16 +674,38 @@ bool NeutubeConfig::LoggingProfile()
   return getInstance().loggingProfile();
 }
 
+int NeutubeConfig::GetVerboseLevel()
+{
+  return getInstance().getVerboseLevel();
+}
+
+void NeutubeConfig::SetVerboseLevel(int level)
+{
+  getInstance().setVerboseLevel(level);
+}
+
+bool NeutubeConfig::ParallelTileFetching()
+{
+  return getInstance().parallelTileFetching();
+}
+
 void NeutubeConfig::Configure(const ZJsonObject &obj)
 {
   getInstance().configure(obj);
+}
+
+std::string NeutubeConfig::GetSoftwareName()
+{
+  return getInstance().getSoftwareName();
 }
 
 
 #ifdef _QT_GUI_USED_
 QString NeutubeConfig::GetFlyEmConfigPath()
 {
-  return GetSettings().value("flyem_config").toString();
+  QString path = GetSettings().value("flyem_config").toString();
+
+  return path;
 }
 
 void NeutubeConfig::SetFlyEmConfigPath(const QString &path)
@@ -654,7 +720,11 @@ QString NeutubeConfig::GetNeuTuServer()
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)
 {
-  GetSettings().setValue("neutu_server", path);
+  if (path.isEmpty()) {
+    GetSettings().setValue("neutu_server", ":");
+  } else {
+    GetSettings().setValue("neutu_server", path);
+  }
 }
 #endif
 

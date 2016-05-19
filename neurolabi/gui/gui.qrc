@@ -110,6 +110,10 @@
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
+        <file>Resources/shader/cube_wboit.vert</file>
+        <file>Resources/shader/cube_wboit.frag</file>
+        <file>Resources/shader/cube_wboit_compose.vert</file>
+        <file>Resources/shader/cube_wboit_compose.frag</file>
         <file>images/add_post.png</file>
         <file>images/todo.png</file>
         <file>images/roi_box.png</file>

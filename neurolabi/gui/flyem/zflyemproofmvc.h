@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include <vector>
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
@@ -171,7 +172,10 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showData(bool visible);
+  void toggleSegmentation();
   void showTodo(bool visible);
+  void toggleData();
 
   void loadBookmark();
   void openSequencer();
@@ -201,7 +205,11 @@ public slots:
 
   void syncMergeWithDvid();
 
+  void getROIs();
   void updateLatencyWidget(int t);
+
+  void suppressObjectVisible();
+  void recoverObjectVisible();
 
 //  void toggleEdgeMode(bool edgeOn);
 
@@ -223,6 +231,7 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
   void updateSplitBody();
@@ -301,6 +310,12 @@ protected:
   ZStackViewParam m_currentViewParam;
 
   ZDvidInfo m_dvidInfo;
+  bool m_ROILoaded;
+
+  std::vector<std::string> m_roiList;
+  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<std::string> m_roiSourceList;
+
 };
 
 template <typename T>

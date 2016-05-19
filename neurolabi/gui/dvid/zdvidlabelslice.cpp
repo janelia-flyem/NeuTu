@@ -48,6 +48,8 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAx
   m_selectionFrozen = false;
   m_isFullView = false;
   m_sliceAxis = sliceAxis;
+
+//  m_objCache.setMaxCost();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
@@ -231,7 +233,9 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     //    if (reader.open(getDvidTarget())) {
     QRect viewPort = viewParam.getViewPort();
 
-    std::cout << "Deleting label array:" << m_labelArray << std::endl;
+    if (NeutubeConfig::GetVerboseLevel() >= 1) {
+      std::cout << "Deleting label array:" << m_labelArray << std::endl;
+    }
 
     ZIntCuboid box;
     box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
@@ -245,7 +249,14 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
             viewPort.left(), viewPort.top(), viewParam.getZ(),
             viewPort.width(), viewPort.height(), 1);
             */
-    m_labelArray = m_reader.readLabels64(box);
+    QString cacheKey = (box.getFirstCorner().toString() + " " +
+        box.getLastCorner().toString()).c_str();
+
+    if (m_objCache.contains(cacheKey)) {
+      m_labelArray = m_objCache.take(cacheKey);
+    } else {
+      m_labelArray = m_reader.readLabels64(box);
+    }
 
     if (m_labelArray != NULL) {
 //      ZObject3dFactory::MakeObject3dScanArray(
@@ -256,6 +267,15 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
       m_objArray.translate(box.getFirstCorner().getX(),
                            box.getFirstCorner().getY(),
                            box.getFirstCorner().getZ());
+      //caching
+#if 0
+      if (!m_objCache.contains(cacheKey)) {
+        if (box.getWidth() * box.getHeight() >= 10000) {
+          m_objCache.insert(cacheKey, m_labelArray);
+          m_labelArray = NULL;
+        }
+      }
+#endif
       /*
         if (m_bodyMerger != NULL) {
           updateLabel(*m_bodyMerger);
@@ -660,4 +680,9 @@ QColor ZDvidLabelSlice::getCustomColor(uint64_t label) const
   }
 
   return color;
+}
+
+void ZDvidLabelSlice::clearCache()
+{
+  m_objCache.clear();
 }

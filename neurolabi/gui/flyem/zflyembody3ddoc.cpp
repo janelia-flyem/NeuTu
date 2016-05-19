@@ -14,6 +14,10 @@
 #include "zwidgetmessage.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zstring.h"
+#include "neutubeconfig.h"
+
+const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 10000;
+const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 5000;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
@@ -26,6 +30,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   m_garbageTimer = new QTimer(this);
   m_garbageTimer->setInterval(60000);
   m_garbageTimer->start();
+
+  m_objectTime.start();
 
   enableAutoSaving(false);
 
@@ -43,7 +49,13 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
   m_futureMap.waitForFinished();
 
   m_garbageJustDumped = false;
-  clearGarbage();
+//  clearGarbage();
+
+  QMutexLocker garbageLocker(&m_garbageMutex);
+  for (QMap<ZStackObject*, int>::iterator iter = m_garbageMap.begin();
+       iter != m_garbageMap.end(); ++iter) {
+    delete iter.key();
+  }
 }
 
 void ZFlyEmBody3dDoc::connectSignalSlot()
@@ -56,24 +68,73 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 {
 }
 
+template<typename T>
+T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
+{
+  QMutexLocker locker(&m_garbageMutex);
+
+  T* obj = NULL;
+
+  if (!source.empty()) {
+    int currentTime = m_objectTime.elapsed();
+    QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+    int minDt = -1;
+    while (iter.hasNext()) {
+      iter.next();
+      int t = iter.value();
+      int dt = currentTime - t;
+      if (dt < 0) {
+        iter.value() = 0;
+      } else if (dt < OBJECT_ACTIVE_LIFE){
+        if (minDt < 0 || minDt > dt) {
+          if (iter.key()->getSource() == source) {
+            minDt = dt;
+            obj = dynamic_cast<T*>(iter.key());
+          }
+        }
+      }
+    }
+  }
+
+  if (obj != NULL) {
+    m_garbageMap.remove(obj);
+  }
+
+  return obj;
+}
+
 void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
+  int currentTime = m_objectTime.elapsed();
+  QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+   while (iter.hasNext()) {
+     iter.next();
+     int t = iter.value();
+     int dt = currentTime - t;
+     if (dt < 0) {
+       iter.value() = 0;
+     } else if (dt > OBJECT_GARBAGE_LIFE){
+       delete iter.key();
+       iter.remove();
+     }
+   }
+
+#if 0
   if (!m_garbageJustDumped) {
-#ifdef _DEBUG_
-    std::cout << "Clear garbage objects ..." << std::endl;
-#endif
+    ZOUT(LINFO(), 3) << "Clear garbage objects ...";
 
     for (QList<ZStackObject*>::iterator iter = m_garbageList.begin();
          iter != m_garbageList.end(); ++iter) {
       ZStackObject *obj = *iter;
-      std::cout << "Deleting " << obj << std::endl;
+      ZOUT(LINFO(), 3)<< "Deleting " << obj;
       delete obj;
     }
 
     m_garbageList.clear();
   }
+#endif
 
   m_garbageJustDumped = false;
 }
@@ -107,6 +168,9 @@ ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_SYNAPSE = 2;
 const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
 ZFlyEmBody3dDoc::BodyEvent::UPDATE_ADD_TODO_ITEM = 4;
 
+const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
+ZFlyEmBody3dDoc::BodyEvent::UPDATE_MULTIRES = 8;
+
 void ZFlyEmBody3dDoc::BodyEvent::print() const
 {
   switch (m_action) {
@@ -119,12 +183,17 @@ void ZFlyEmBody3dDoc::BodyEvent::print() const
   case ACTION_REMOVE:
     std::cout << "Remove: ";
     break;
+  case ACTION_FORCE_ADD:
+    std::cout << "Force add: ";
+    break;
   case ACTION_NULL:
     std::cout << "No action: ";
     break;
   }
 
   std::cout << getBodyId() << std::endl;
+  std::cout << "  resolution: " << getResLevel() << std::endl;
+  std::cout << "  flag: " << getUpdateFlag() << std::endl;
 }
 
 void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
@@ -142,6 +211,10 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
       case ACTION_ADD:
         m_action = ACTION_ADD;
         m_bodyColor = event.m_bodyColor;
+        m_updateFlag |= event.m_updateFlag;
+        if (getResLevel() < event.getResLevel()) {
+          setResLevel(event.getResLevel());
+        }
 //        m_refreshing |= event.m_refreshing;
         break;
       case ACTION_UPDATE:
@@ -196,14 +269,18 @@ void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
   case BodyEvent::ACTION_REMOVE:
-    removeBodyFunc(event.getBodyId());
+    removeBodyFunc(event.getBodyId(), true);
     break;
   case BodyEvent::ACTION_ADD:
-    addBodyFunc(event.getBodyId(), event.getBodyColor());
+    addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
     break;
   case BodyEvent::ACTION_UPDATE:
 //    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
+    if (event.updating(BodyEvent::UPDATE_MULTIRES)) {
+      addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
+    } else {
       updateBody(event.getBodyId(), event.getBodyColor());
+    }
 //    }
     if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
@@ -268,60 +345,75 @@ ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
   return item;
 }
 
-void ZFlyEmBody3dDoc::processEventFunc()
+QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
+    bool synced, QSet<uint64_t> &bodySet)
 {
-  std::cout << "Locking process event" << std::endl;
-  QMutexLocker locker(&m_eventQueueMutex);
+  if (synced) {
+    std::cout << "Locking process event" << std::endl;
+    QMutexLocker locker(&m_eventQueueMutex);
+  }
 
 //  QSet<uint64_t> bodySet = m_bodySet;
-  QMap<uint64_t, BodyEvent> m_actionMap;
+  QMap<uint64_t, BodyEvent> actionMap;
   for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
        iter != m_eventQueue.end(); ++iter) {
     const BodyEvent &event = *iter;
     uint64_t bodyId = event.getBodyId();
-    if (m_actionMap.contains(bodyId)) {
-      m_actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
+    if (actionMap.contains(bodyId)) {
+      actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
     } else {
-      m_actionMap[bodyId] = event;
+      actionMap[bodyId] = event;
     }
   }
 
-  for (QMap<uint64_t, BodyEvent>::iterator iter = m_actionMap.begin();
-       iter != m_actionMap.end(); ++iter) {
+  for (QMap<uint64_t, BodyEvent>::iterator iter = actionMap.begin();
+       iter != actionMap.end(); ++iter) {
     BodyEvent &event = iter.value();
-    if (event.getAction() == BodyEvent::ACTION_ADD) {
-      if (m_bodySet.contains(event.getBodyId())) {
+    switch (event.getAction()) {
+    case BodyEvent::ACTION_ADD:
+      if (bodySet.contains(event.getBodyId())) {
         event.setAction(BodyEvent::ACTION_UPDATE);
       } else {
-        m_bodySet.insert(event.getBodyId());
+        bodySet.insert(event.getBodyId());
       }
-    } else if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-      if (m_bodySet.contains(event.getBodyId())) {
-        m_bodySet.remove(event.getBodyId());
+      break;
+    case BodyEvent::ACTION_FORCE_ADD:
+      event.setAction(BodyEvent::ACTION_UPDATE);
+      bodySet.insert(event.getBodyId());
+      break;
+    case BodyEvent::ACTION_REMOVE:
+      if (bodySet.contains(event.getBodyId())) {
+        bodySet.remove(event.getBodyId());
       } else {
         event.setAction(BodyEvent::ACTION_NULL);
       }
+      break;
+    default:
+      break;
     }
 //    event.print();
   }
-
   m_eventQueue.clear();
-  locker.unlock();
-  std::cout << "Unlock process event" << std::endl;
 
-  if (!m_actionMap.isEmpty()) {
+  return actionMap;
+}
+
+void ZFlyEmBody3dDoc::processEventFunc()
+{
+  QMap<uint64_t, BodyEvent> actionMap = makeEventMap(true, m_bodySet);
+  if (!actionMap.isEmpty()) {
     emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
 
     std::cout << "====Processing Event====" << std::endl;
-    for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
-         iter != m_actionMap.end(); ++iter) {
+    for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+         iter != actionMap.end(); ++iter) {
       const BodyEvent &event = iter.value();
       event.print();
     }
   }
 
-  for (QMap<uint64_t, BodyEvent>::const_iterator iter = m_actionMap.begin();
-       iter != m_actionMap.end(); ++iter) {
+  for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+       iter != actionMap.end(); ++iter) {
     const BodyEvent &event = iter.value();
     processEventFunc(event);
     if (m_quitting) {
@@ -358,7 +450,11 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
   if (!hasBody(bodyId)) {
     m_bodySet.insert(bodyId);
-    addBodyFunc(bodyId, color);
+    if (getBodyType() == BODY_SKELETON) {
+      addBodyFunc(bodyId, color, -1);
+    } else {
+      addBodyFunc(bodyId, color, 5);
+    }
   }
 }
 
@@ -367,10 +463,10 @@ void ZFlyEmBody3dDoc::setBodyType(EBodyType type)
   m_bodyType = type;
   switch (m_bodyType) {
   case BODY_COARSE:
-    setTag(NeuTube::Document::FLYEM_QUICK_BODY_COARSE);
+    setTag(NeuTube::Document::FLYEM_BODY_3D_COARSE);
     break;
   case BODY_FULL:
-    setTag(NeuTube::Document::FLYEM_QUICK_BODY);
+    setTag(NeuTube::Document::FLYEM_BODY_3D);
     break;
   case BODY_SKELETON:
     setTag(NeuTube::Document::FLYEM_SKELETON);
@@ -397,6 +493,10 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId)
   return retrieveBodyModel(bodyId);
 }
 
+void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event)
+{
+  m_eventQueue.append(event);
+}
 
 void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
                                BodyEvent::TUpdateFlag flag, QMutex *mutex)
@@ -416,19 +516,55 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     }
   }
 
+  if (event.getAction() == BodyEvent::ACTION_ADD &&
+      getBodyType() != BODY_SKELETON) {
+    event.setResLevel(5);
+  }
+
   m_eventQueue.enqueue(event);
 }
 
-void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
+void ZFlyEmBody3dDoc::addBodyFunc(
+    uint64_t bodyId, const QColor &color, int resLevel)
 {
-  ZSwcTree *tree = getBodyModel(bodyId);
+  bool loaded = (getBodyModel(bodyId) != NULL);
+
+  ZSwcTree *tree = NULL;
   if (tree == NULL) {
-    tree = makeBodyModel(bodyId);
+    if (resLevel == 5) {
+      tree = makeBodyModel(bodyId, ZFlyEmBody3dDoc::BODY_COARSE);
+    } else if (resLevel == 0) {
+      tree = makeBodyModel(bodyId, getBodyType());
+    }
+
+    if (resLevel > 0 && getBodyType() == ZFlyEmBody3dDoc::BODY_FULL) {
+      QMutexLocker locker(&m_eventQueueMutex);
+      BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
+      bodyEvent.setBodyColor(color);
+      bodyEvent.setResLevel(--resLevel);
+      bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+      bool removing = false;
+
+      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+           iter != m_eventQueue.end(); ++iter) {
+        BodyEvent &event = *iter;
+        if (event.getBodyId() == bodyId) {
+          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+            removing = true;
+          } else {
+            removing = false;
+          }
+        }
+      }
+      if (!removing) {
+        m_eventQueue.enqueue(bodyEvent);
+      }
+    }
   }
 
   if (tree != NULL) {
 //    if (getBodyType() != BODY_SKELETON) {
-      tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
+    tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 //    }
 
 #ifdef _DEBUG_
@@ -438,13 +574,16 @@ void ZFlyEmBody3dDoc::addBodyFunc(uint64_t bodyId, const QColor &color)
 
 //    delete tree;
     beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    removeBodyFunc(bodyId, false);
     addObject(tree, true);
     processObjectModified(tree);
     endObjectModifiedMode();
     notifyObjectModified(true);
 
-    addSynapse(bodyId);
-    addTodo(bodyId);
+    if (!loaded) {
+      addSynapse(bodyId);
+      addTodo(bodyId);
+    }
     //Add synapse
 #if 0
     if (m_showingSynapse) {
@@ -623,10 +762,10 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
   m_bodySet.remove(bodyId);
-  removeBodyFunc(bodyId);
+  removeBodyFunc(bodyId, true);
 }
 
-void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
+void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
   QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
@@ -639,28 +778,30 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId)
       dumpGarbage(*iter);
     }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
-    }
+    if (removingAnnotation) {
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
-    }
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
 
-    objList = getObjectGroup().findSameSource(
-          ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter);
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
+      for (TStackObjectList::iterator iter = objList.begin();
+           iter != objList.end(); ++iter) {
+        removeObject(*iter, false);
+        dumpGarbage(*iter);
+      }
     }
 
     endObjectModifiedMode();
@@ -681,15 +822,21 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId)
 
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
 {
+  return makeBodyModel(bodyId, getBodyType());
+}
+
+ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
+    uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType)
+{
   ZSwcTree *tree = NULL;
 
   if (bodyId > 0) {
-    if (getBodyType() == BODY_SKELETON) {
+    if (bodyType == BODY_SKELETON) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         tree = reader.readSwc(bodyId);
       }
-    } else if (getBodyType() == BODY_COARSE) {
+    } else if (bodyType == BODY_COARSE) {
       ZDvidReader reader;
       if (reader.open(getDvidTarget())) {
         ZObject3dScan obj = reader.readCoarseBody(bodyId);
@@ -784,7 +931,9 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
 {
   QMutexLocker locker(&m_garbageMutex);
 
-  m_garbageList.append(obj);
+//  m_garbageList.append(obj);
+  m_garbageMap[obj] = m_objectTime.elapsed();
+
   m_garbageJustDumped = true;
 }
 

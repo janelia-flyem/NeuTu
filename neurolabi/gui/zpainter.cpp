@@ -130,6 +130,11 @@ void ZPainter::setPen(Qt::PenStyle style)
   m_painter.setPen(style);
 }
 
+void ZPainter::setFont(const QFont &font)
+{
+  m_painter.setFont(font);
+}
+
 void ZPainter::setBrush(const QColor &color)
 {
   m_painter.setBrush(color);
@@ -185,6 +190,11 @@ void ZPainter::setStackOffset(const ZPoint &offset)
 void ZPainter::setZOffset(int z)
 {
   m_z = z;
+}
+
+QRectF ZPainter::getCanvasRange() const
+{
+  return m_canvasRange;
 }
 
 void ZPainter::drawImage(

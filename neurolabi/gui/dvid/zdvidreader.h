@@ -70,6 +70,8 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
                           ZObject3dScan *result);
+  ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
+                          NeuTube::EAxis axis, ZObject3dScan *result);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -220,6 +222,9 @@ public:
   }
 
   bool good() const;
+
+  std::string readMasterNode() const;
+  static std::string ReadMasterNode(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {

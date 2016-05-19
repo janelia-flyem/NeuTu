@@ -10,6 +10,7 @@ ZJsonArray::ZJsonArray() : ZJsonValue()
 {
 }
 
+/*
 ZJsonArray::ZJsonArray(json_t *data, bool asNew) : ZJsonValue()
 {
   if (json_is_array(data)) {
@@ -23,11 +24,19 @@ ZJsonArray::ZJsonArray(const json_t *data, bool asNew) : ZJsonValue()
     set(const_cast<json_t*>(data), asNew);
   }
 }
+*/
 
 ZJsonArray::ZJsonArray(json_t *data, ESetDataOption option) : ZJsonValue()
 {
   if (json_is_array(data)) {
     set(data, option);
+  }
+}
+
+ZJsonArray::ZJsonArray(const json_t *data, ESetDataOption option) : ZJsonValue()
+{
+  if (json_is_array(data)) {
+    set(const_cast<json_t*>(data), option);
   }
 }
 
@@ -43,6 +52,17 @@ ZJsonArray::~ZJsonArray()
 
 }
 
+void ZJsonArray::concat(ZJsonArray &array)
+{
+  if (m_data == NULL) {
+    set(array);
+  } else {
+    for (size_t i = 0; i < array.size(); ++i) {
+      append(array.at(i));
+    }
+  }
+}
+
 size_t ZJsonArray::size() const
 {
   return C_Json::arraySize(m_data);
@@ -52,6 +72,13 @@ size_t ZJsonArray::size() const
 bool ZJsonArray::isEmpty() const
 {
   return size() == 0;
+}
+
+void ZJsonArray::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeArray();
+  }
 }
 
 json_t* ZJsonArray::at(size_t index)

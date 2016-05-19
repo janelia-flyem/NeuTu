@@ -1,4 +1,5 @@
 import json
+from dvidenv import *
 
 class DvidUrl(object):
     def __init__(self, env):
@@ -36,3 +37,9 @@ class DvidUrl(object):
 
     def getThumbnailUrl(self, bodyId):
         return self.getServerUrl() + self.getThumbnailEndPoint(bodyId)
+    
+    def getMasterBranchUrl(self):
+        return self.getServerUrl() + "/api/repo/branches/key/master"
+
+if __name__ == '__main__':
+    dvidUrl = DvidUrl(DvidEnv('emdata1.int.janelia.org', 8500, '86e1'))

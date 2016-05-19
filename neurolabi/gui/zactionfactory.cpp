@@ -435,6 +435,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/cut.png"));
     action->setStatusTip("Unlink selected synapses");
     break;
+  case ACTION_SYNAPSE_FILTER:
+    action = new QAction("Filter Synapses", parent);
+    action->setStatusTip("Filter synapses in the window");
+    break;
   case ACTION_TOGGLE_SWC_SKELETON:
     action = new QAction("Show Full Skeleton", parent);
     action->setCheckable(true);
@@ -558,6 +562,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Cancel", parent);
     action->setToolTip("Cancel the current rectangle ROI");
     action->setIcon(QIcon(":/images/cancel.png"));
+    break;
+  case ACTION_REWRITE_SEGMENTATION:
+    action = new QAction("Rewrite segmentation", parent);
+    action->setToolTip("Rewrite segmentation in the current ROI. "
+                       "Mainly used for fixing sync errors.");
     break;
   default:
     break;

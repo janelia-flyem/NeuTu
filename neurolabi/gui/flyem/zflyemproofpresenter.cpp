@@ -40,6 +40,7 @@ void ZFlyEmProofPresenter::init()
   m_splitWindowMode = false;
   m_highTileContrast = false;
   m_smoothTransform = false;
+  m_showingData = false;
 
   m_synapseContextMenu = NULL;
 
@@ -78,6 +79,10 @@ void ZFlyEmProofPresenter::connectAction()
           this, SLOT(selectBodyInRoi()));
   connect(getAction(ZActionFactory::ACTION_ZOOM_TO_RECT), SIGNAL(triggered()),
           this, SLOT(zoomInRectRoi()));
+  connect(getAction(ZActionFactory::ACTION_REWRITE_SEGMENTATION),
+          SIGNAL(triggered()), getCompleteDocument(),
+          SLOT(rewriteSegmentation()));
+
 }
 
 void ZFlyEmProofPresenter::selectBodyInRoi()
@@ -205,6 +210,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F2:
     emit selectingBody();
+    processed = true;
+    break;
+  case Qt::Key_D:
+    emit togglingData();
     processed = true;
     break;
   default:
@@ -638,6 +647,11 @@ void ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     break;
+  case ZStackOperator::OP_TOGGLE_SEGMENTATION:
+    break;
+  case ZStackOperator::OP_REFRESH_SEGMENTATION:
+    getCompleteDocument()->rewriteSegmentation();
+    break;
   default:
     break;
   }
@@ -668,6 +682,16 @@ void ZFlyEmProofPresenter::setSmoothTransform(bool on)
   m_smoothTransform = on;
 }
 
+void ZFlyEmProofPresenter::showData(bool on)
+{
+  m_showingData = on;
+}
+
+bool ZFlyEmProofPresenter::showingData() const
+{
+  return m_showingData;
+}
+
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (isSplitOn()) {
@@ -676,6 +700,10 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
       doc->updateSplitRoi(rect, appending);
     }
   } else {
+    if (interactiveContext().rectSpan()) {
+      rect->setZSpan((rect->getWidth() + rect->getHeight()) / 4);
+      rect->setPenetrating(false);
+    }
     buddyDocument()->processRectRoiUpdate(rect, appending);
     interactiveContext().setAcceptingRect(true);
     QMenu *menu = getContextMenu();

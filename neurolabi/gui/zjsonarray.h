@@ -9,9 +9,10 @@ class ZJsonArray : public ZJsonValue
 {
 public:
   ZJsonArray();
-  explicit ZJsonArray(json_t *data, bool asNew);
-  explicit ZJsonArray(const json_t *data, bool asNew);
+//  explicit ZJsonArray(json_t *data, bool asNew);
+//  explicit ZJsonArray(const json_t *data, bool asNew);
   explicit ZJsonArray(json_t *data, ESetDataOption option);
+  explicit ZJsonArray(const json_t *data, ESetDataOption option);
   explicit ZJsonArray(const ZJsonValue &v);
   virtual ~ZJsonArray();
 
@@ -34,6 +35,8 @@ public:
   void append(double v);
   void append(const char *str);
   void append(const std::string &str);
+
+  void concat(ZJsonArray &array);
 
   void remove(::size_t index);
 
@@ -79,6 +82,7 @@ public:
   bool decode(const std::string &str);
 
   bool isEmpty() const;
+  void denull();
 
   std::string dumpString(int indent = 2) const;
 };

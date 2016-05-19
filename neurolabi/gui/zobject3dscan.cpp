@@ -109,7 +109,7 @@ void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 #endif
 
   if (objArray.size() + startLabel > 256) {
-    Translate_Stack(stack, GREY16, 1);
+    C_Stack::translate(stack, GREY16, 1);
   }
   for (size_t i = 0; i < objArray.size(); ++i) {
     objArray[i].drawStack(stack, startLabel  + i, offset);
@@ -817,7 +817,7 @@ void ZObject3dScan::canonize()
   if (!isEmpty() && !isCanonized()) {
     sort();
 
-    std::cout << "Sorting done in canozing" << std::endl;
+    ZOUT(std::cout, 3) << "Sorting done in canozing" << std::endl;
 
 #ifdef _DEBUG_2
   int count = 0;
@@ -851,7 +851,8 @@ void ZObject3dScan::canonize()
     }
 
     newStripeArray.resize(length);
-    std::cout << length << " stripes finalized." << std::endl;
+
+    ZOUT(std::cout, 3) << "  stripes finalized." << std::endl;
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);
@@ -1257,7 +1258,9 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
   const std::map<std::pair<int, int>, size_t> &stripeMap = getStripeMap();
 
   size_t stripeNumber = getStripeNumber();
+#ifdef _DEBUG_
   size_t round = stripeNumber / 10;
+#endif
   for (size_t i = 0; i < stripeNumber - 1; ++i) {
 #ifdef _DEBUG_
     if (round > 0) {

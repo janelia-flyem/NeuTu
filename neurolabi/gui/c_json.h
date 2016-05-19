@@ -14,6 +14,7 @@ json_t* makeBoolean(bool v);
 json_t* makeArray();
 json_t* makeString(const char *v);
 json_t* makeString(const std::string &v);
+json_t* makeJsonNull();
 
 /*!
  * \brief Make a JSON array from a double array

@@ -225,22 +225,6 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
-public: //Commands
-  void executeRemoveSynapseCommand();
-  void executeLinkSynapseCommand();
-  void executeUnlinkSynapseCommand();
-  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
-  void executeMoveSynapseCommand(const ZIntPoint &dest);
-
-  void executeRemoveBookmarkCommand();
-  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
-  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
-  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
-
-  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
-  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
-  void executeRemoveTodoItemCommand();
-
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -255,6 +239,24 @@ signals:
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
+
+public slots: //Commands
+  void executeRemoveSynapseCommand();
+  void executeLinkSynapseCommand();
+  void executeUnlinkSynapseCommand();
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeMoveSynapseCommand(const ZIntPoint &dest);
+
+  void executeRemoveBookmarkCommand();
+  void executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark);
+  void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
+
+  void executeAddTodoItemCommand(int x, int y, int z, bool checked);
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeRemoveTodoItemCommand();
+
 
 public slots:
   void updateDvidLabelObject();
@@ -274,6 +276,7 @@ public slots:
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
+  void rewriteSegmentation();
 
 protected:
   void autoSave();
@@ -319,6 +322,7 @@ protected:
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
+  bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;

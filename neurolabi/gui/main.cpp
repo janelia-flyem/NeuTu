@@ -9,6 +9,7 @@
 #include "zerror.h"
 #include "z3dapplication.h"
 #include "zneurontracer.h"
+#include "zapplication.h"
 
 #include "ztest.h"
 
@@ -201,20 +202,39 @@ int main(int argc, char *argv[])
   }
 
 #ifdef _FLYEM_
-  QFileInfo configFileInfo(configPath);
-  QString flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
-  QFileInfo flyemConfigFileInfo(flyemConfigPath);
-  if (!flyemConfigFileInfo.isAbsolute()) {
-    flyemConfigPath =
-        configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (flyemConfigPath.isEmpty()) {
+    QFileInfo configFileInfo(configPath);
+
+    QString defaultFlyemConfigPath = QFileInfo(
+          QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+        absoluteFilePath();
+
+    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+    if (flyemConfigPath.isEmpty()) {
+      flyemConfigPath = defaultFlyemConfigPath;
+    } else {
+      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+      if (!flyemConfigFileInfo.isAbsolute()) {
+        flyemConfigPath =
+            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+      }
+    }
   }
+
   GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << config.GetNeuTuServer().toStdString() << std::endl;
+#endif
 
   if (config.GetNeuTuServer().isEmpty()) {
     QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
     if (!neutuServer.isEmpty()) {
       GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
     }
+  } else {
+    GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
   }
 #endif
 
