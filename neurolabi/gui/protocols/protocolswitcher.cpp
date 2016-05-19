@@ -159,7 +159,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     if (m_activeProtocolKey.empty()) {
         std::string key = generateKey();
         if (key.empty()) {
-            saveFailedDialog("Key for saved data couldn't be generated; did the user cancel?");
+            saveFailedDialog("Key for saved data was not generated!");
             return;
         }
         if (!askProceedIfKeyExists(key)) {
@@ -234,21 +234,16 @@ void ProtocolSwitcher::loadProtocolRequested() {
 }
 
 void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
-    std::cout << "prswi: save using key " << m_activeProtocolKey << std::endl;
-
 
     // check if node still unlocked?
 
-
     ZDvidWriter writer;
     if (writer.open(m_currentDvidTarget)) {
-        // writer.writeJson(PROTOCOL_DATA_NAME, m_activeProtocolKey, data);
-        std::cout << "prswi: pretending to write json: " << std::endl;
+        writer.writeJson(PROTOCOL_DATA_NAME, m_activeProtocolKey, data);
+        std::cout << "prswi: writing json: " << std::endl;
         std::cout << data.dumpString() << std::endl;
 
         //  - update metadata:
-        //      - active protocol
-        //      - list of incomplete protocols, if we decide to do that
 
     } else {
         saveFailedDialog("Failed to open DVID for writing");
@@ -371,7 +366,7 @@ std::string ProtocolSwitcher::generateIdentifier() {
     if (status && !ans.isEmpty()) {
         if (ans.contains('-') || ans.contains(' ')) {
             QMessageBox::warning(m_parent, "Invalid identifier",
-                "The identifier may not contain hyphens or spaces", QMessageBox::Ok);
+                "The identifier may not contain hyphens or spaces.", QMessageBox::Ok);
             return "";
         } else {
             return ans.toStdString();
