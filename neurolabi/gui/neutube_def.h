@@ -4,6 +4,11 @@
 #include "tz_stdint.h"
 
 namespace NeuTube {
+
+enum ESyncOption {
+  SYNC, NO_SYNC
+};
+
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,

@@ -48,7 +48,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   //m_source = "new tree";
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
-  m_type = ZStackObject::TYPE_SWC;
+  m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
 }

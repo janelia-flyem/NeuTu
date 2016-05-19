@@ -43,6 +43,11 @@ public:
 
   ZObject3dScan(const ZObject3dScan &obj);
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_OBJECT3D_SCAN;
+  }
+
+
   enum EComponent {
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,

@@ -272,10 +272,6 @@ public:
     return m_type;
   }
 
-  static ZStackObject::EType GetType() {
-    return ZStackObject::TYPE_UNIDENTIFIED;
-  }
-
   inline const ZStackObjectRole& getRole() const {
     return m_role;
   }

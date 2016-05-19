@@ -118,6 +118,7 @@ public:
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
+  void updateBody(uint64_t bodyId, const QColor &color, EBodyType type);
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
@@ -169,11 +170,11 @@ protected:
   void autoSave() {}
 
 private:
-  ZSwcTree* retrieveBodyModel(uint64_t bodyId);
-  ZSwcTree* getBodyModel(uint64_t bodyId);
+  ZSwcTree* retrieveBodyModel(uint64_t bodyId, EBodyType bodyType);
+  ZSwcTree* getBodyModel(uint64_t bodyId, EBodyType bodyType);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
-  ZSwcTree* makeBodyModel(uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, EBodyType bodyType);
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
@@ -186,6 +187,8 @@ private:
   void processBodySetBuffer();
 
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
+
+  static std::string GetBodyTypeName(EBodyType bodyType);
 
   template<typename T>
   T* recoverFromGarbage(const std::string &source);

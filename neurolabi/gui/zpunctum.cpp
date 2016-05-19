@@ -46,7 +46,7 @@ void ZPunctum::init(double x, double y, double z, double r)
   updateVolSize();
   updateMass();
   setVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
-  m_type = ZStackObject::TYPE_PUNCTUM;
+  m_type = GetType();
   m_score = 1.0;
 }
 

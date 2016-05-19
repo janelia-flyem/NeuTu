@@ -80,7 +80,7 @@ public:
   inline bool hasProject() const { return (m_traceProject != NULL); }
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
-  void addDocData(const ZStackDocReader &reader);
+  void addDocData(ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
 

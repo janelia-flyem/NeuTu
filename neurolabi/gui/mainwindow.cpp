@@ -4782,7 +4782,7 @@ ZStackFrame *MainWindow::createStackFrame(
 #endif
 
 ZStackFrame* MainWindow::createStackFrame(
-    const ZStackDocReader &reader, NeuTube::Document::ETag tag)
+    ZStackDocReader &reader, NeuTube::Document::ETag tag)
 {
   //ZStackFrame *newFrame = new ZStackFrame;
   ZStackFrame *newFrame = ZStackFrame::Make(NULL, tag);

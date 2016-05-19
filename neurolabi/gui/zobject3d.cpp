@@ -30,7 +30,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
   }
 
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJ3D;
+  m_type = GetType();
 }
 
 ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
@@ -46,7 +46,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
   }
 
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJ3D;
+  m_type = GetType();
 }
 
 ZObject3d::~ZObject3d()

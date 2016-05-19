@@ -236,7 +236,7 @@ void ZStackFrame::createView()
   }
 }
 
-void ZStackFrame::addDocData(const ZStackDocReader &reader)
+void ZStackFrame::addDocData(ZStackDocReader &reader)
 {
   if (m_doc.get() == NULL) {
     createDocument();

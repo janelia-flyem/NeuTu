@@ -72,7 +72,7 @@ ZObject3dScan::~ZObject3dScan()
 void ZObject3dScan::init()
 {
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
+  m_type = GetType();
 
   m_isCanonized = false;
   m_label = 0;

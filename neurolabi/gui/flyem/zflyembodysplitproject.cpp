@@ -1529,16 +1529,20 @@ void ZFlyEmBodySplitProject::removeAllSeed()
 void ZFlyEmBodySplitProject::removeAllSideSeed()
 {
   std::set<ZStackObject*> removeSet;
-  ZDocPlayerList &playerList = getDocument()->getPlayerList();
-  for (ZDocPlayerList::iterator iter = playerList.begin();
-       iter != playerList.end(); /*++iter*/) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
-      removeSet.insert(player->getData());
-      iter = playerList.erase(iter);
-      delete player;
-    } else {
-      ++iter;
+  QList<ZDocPlayer*> &playerList =
+      getDocument()->getPlayerList().getPlayerList();
+  {
+    QMutexLocker locker(getDocument()->getPlayerList().getMutex());
+    for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+         iter != playerList.end(); /*++iter*/) {
+      ZDocPlayer *player = *iter;
+      if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
+        removeSet.insert(player->getData());
+        iter = playerList.erase(iter);
+        delete player;
+      } else {
+        ++iter;
+      }
     }
   }
 

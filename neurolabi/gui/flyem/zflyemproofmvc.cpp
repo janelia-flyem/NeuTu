@@ -2403,8 +2403,13 @@ void ZFlyEmProofMvc::showData(bool visible)
   getCompletePresenter()->showData(visible);
   getDocument()->beginObjectModifiedMode(
         ZStackDoc::OBJECT_MODIFIED_CACHE);
-  for (ZStackObjectGroup::iterator iter = getDocument()->getObjectGroup().begin();
-       iter != getDocument()->getObjectGroup().end(); ++iter) {
+
+  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
+  QList<ZStackObject*> &objList =
+      getDocument()->getObjectGroup().getObjectList();
+
+  for (QList<ZStackObject*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE ||
         obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
