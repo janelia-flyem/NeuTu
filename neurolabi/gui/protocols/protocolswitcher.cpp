@@ -148,6 +148,35 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
         return;
     }
 
+    // don't start protocol if we can't save
+    if (!checkCreateDataInstance()) {
+        saveFailedDialog("DVID data instance for protocols was not present and/or could not be created!");
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
+
+    // generate the save key and be sure it's not in use
+    if (m_activeProtocolKey.empty()) {
+        std::string key = generateKey();
+        if (key.empty()) {
+            saveFailedDialog("Key for saved data couldn't be generated; did the user cancel?");
+            return;
+        }
+        if (!askProceedIfKeyExists(key)) {
+            saveFailedDialog("Key for saved data might already be used!");
+            return;
+        }
+        m_activeProtocolKey = key;
+
+        // tell user the key, data instance we're using
+        QMessageBox::information(m_parent, "Save location",
+            QString("Your data will be saved in DVID in data instance %1, key %2")
+                .arg(QString::fromStdString(PROTOCOL_DATA_NAME))
+                .arg(QString::fromStdString(m_activeProtocolKey)),
+            QMessageBox::Ok);
+    }
+
+
     m_protocolStatus = PROTOCOL_INITIALIZING;
 
     // if-else chain not ideal, but C++ is too stupid to switch 
@@ -157,13 +186,6 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
         m_activeProtocol = new ProtocolDialog(m_parent);
     } else {
         // should never happen
-        return;
-    }
-
-    // don't start protocol if we can't save
-    if (!checkCreateDataInstance()) {
-        saveFailedDialog("DVID data instance for protocols was not present and/or could not be created!");
-        m_protocolStatus = PROTOCOL_INACTIVE;
         return;
     }
 
@@ -184,8 +206,6 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
         m_protocolStatus = PROTOCOL_ACTIVE;
 
         // write protocol metadata (who's active)
-
-        // display dialog: your data saved in this data instance, this key
 
     } else {
         // note that dialog explaining failure is expected to be
@@ -214,23 +234,6 @@ void ProtocolSwitcher::loadProtocolRequested() {
 }
 
 void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
-    // if there's no saved key, this is our first save; we thus need
-    //  to generate the key
-    if (m_activeProtocolKey.empty()) {
-        // generate key; be sure it's not already in use
-        std::string key = generateKey();
-        if (key.empty()) {
-            saveFailedDialog("Key for saved data couldn't be generated; did the user cancel?");
-        }
-        if (!askProceedIfKeyExists(key)) {
-            saveFailedDialog("Key for saved data might already be used!");
-            return;
-        }
-        m_activeProtocolKey = key;
-    }
-
-
-    // regular save:
     std::cout << "prswi: save using key " << m_activeProtocolKey << std::endl;
 
 
