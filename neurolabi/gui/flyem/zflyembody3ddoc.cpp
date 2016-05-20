@@ -543,6 +543,12 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   if (tree == NULL) {
     if (resLevel == 5) {
       tree = makeBodyModel(bodyId, ZFlyEmBody3dDoc::BODY_COARSE);
+      if (tree != NULL) {
+        if (tree->getSource() == ZStackObjectSourceFactory::MakeFlyEmBodySource(
+              bodyId, GetBodyTypeName(BODY_FULL))) {
+          resLevel = 0;
+        }
+      }
     } else if (resLevel == 0) {
       emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
       tree = makeBodyModel(bodyId, getBodyType());
@@ -847,57 +853,71 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 {
   ZSwcTree *tree = NULL;
 
-  if (bodyId > 0) {
-    if (bodyType == BODY_SKELETON) {
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        tree = reader.readSwc(bodyId);
-      }
-    } else if (bodyType == BODY_COARSE) {
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        ZObject3dScan obj = reader.readCoarseBody(bodyId);
-        if (!obj.isEmpty()) {
-          tree = ZSwcFactory::CreateSurfaceSwc(obj);
-          tree->translate(-m_dvidInfo.getStartBlockIndex());
-          tree->rescale(m_dvidInfo.getBlockSize().getX(),
-                        m_dvidInfo.getBlockSize().getY(),
-                        m_dvidInfo.getBlockSize().getZ());
-          tree->translate(m_dvidInfo.getStartCoordinates());
-        }
-      }
-    } else {
-      ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
-      ZObject3dScan *cachedBody = NULL;
-      if (cachedStack != NULL) {
-        if (cachedStack->getObjectMask() != NULL) {
-          if (cachedStack->getObjectMask()->getLabel() == bodyId) {
-            cachedBody = cachedStack->getObjectMask();
-          }
-        }
-      }
+  if (bodyType == BODY_COARSE) {
+    tree = recoverFromGarbage<ZSwcTree>(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            bodyId, GetBodyTypeName(BODY_FULL)));
+  }
 
-      if (cachedBody == NULL) {
+  if (tree == NULL) {
+    tree = recoverFromGarbage<ZSwcTree>(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            bodyId, GetBodyTypeName(bodyType)));
+  }
+
+  if (tree == NULL) {
+    if (bodyId > 0) {
+      if (bodyType == BODY_SKELETON) {
         ZDvidReader reader;
         if (reader.open(getDvidTarget())) {
-          ZObject3dScan obj;
-          reader.readBody(bodyId, &obj);
+          tree = reader.readSwc(bodyId);
+        }
+      } else if (bodyType == BODY_COARSE) {
+        ZDvidReader reader;
+        if (reader.open(getDvidTarget())) {
+          ZObject3dScan obj = reader.readCoarseBody(bodyId);
           if (!obj.isEmpty()) {
-            obj.canonize();
-            tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
+            tree = ZSwcFactory::CreateSurfaceSwc(obj);
+            tree->translate(-m_dvidInfo.getStartBlockIndex());
+            tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                          m_dvidInfo.getBlockSize().getY(),
+                          m_dvidInfo.getBlockSize().getZ());
+            tree->translate(m_dvidInfo.getStartCoordinates());
           }
         }
       } else {
-        tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
-      }
-    }
+        ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
+        ZObject3dScan *cachedBody = NULL;
+        if (cachedStack != NULL) {
+          if (cachedStack->getObjectMask() != NULL) {
+            if (cachedStack->getObjectMask()->getLabel() == bodyId) {
+              cachedBody = cachedStack->getObjectMask();
+            }
+          }
+        }
 
-    if (tree != NULL) {
-      tree->setSource(
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(
-              bodyId, GetBodyTypeName(bodyType)));
-      tree->setObjectClass(
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+        if (cachedBody == NULL) {
+          ZDvidReader reader;
+          if (reader.open(getDvidTarget())) {
+            ZObject3dScan obj;
+            reader.readBody(bodyId, &obj);
+            if (!obj.isEmpty()) {
+              obj.canonize();
+              tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
+            }
+          }
+        } else {
+          tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
+        }
+      }
+
+      if (tree != NULL) {
+        tree->setSource(
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                bodyId, GetBodyTypeName(bodyType)));
+        tree->setObjectClass(
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+      }
     }
   }
 

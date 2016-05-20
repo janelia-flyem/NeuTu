@@ -343,8 +343,8 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
 
-  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
-          this, SLOT(reloadData(ZStackDocReader)));
+//  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
+//          this, SLOT(reloadData(ZStackDocReader)));
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)

@@ -2404,7 +2404,7 @@ void ZFlyEmProofMvc::showData(bool visible)
   getDocument()->beginObjectModifiedMode(
         ZStackDoc::OBJECT_MODIFIED_CACHE);
 
-  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
+//  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
   QList<ZStackObject*> &objList =
       getDocument()->getObjectGroup().getObjectList();
 

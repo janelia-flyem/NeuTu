@@ -1158,7 +1158,7 @@ signals:
   void progressStarted();
   void progressEnded();
   void progressAdvanced(double dp);
-  void newDocReady(const ZStackDocReader &reader);
+//  void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
 
