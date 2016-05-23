@@ -13,6 +13,7 @@ const char* ZFlyEmConfig::m_dvidRepoKey = "dvid repo";
 const char* ZFlyEmConfig::m_ipKey = "ip";
 const char* ZFlyEmConfig::m_librarianKey = "librarian";
 const char* ZFlyEmConfig::m_dvidRootKey = "dvid root";
+const char* ZFlyEmConfig::m_mb6Key = "mb6_paper";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -27,6 +28,7 @@ void ZFlyEmConfig::init()
 //  m_neutuService.setServer("http://zhaot-ws1:8080");
 //  m_neutuService.updateStatus();
 //  m_neutuServer = "http://zhaot-ws1:8080";
+  m_analyzingMb6 = false;
 }
 
 void ZFlyEmConfig::setDvidTarget(const std::string &repo)
@@ -82,6 +84,10 @@ void ZFlyEmConfig::loadConfig(const std::string &filePath)
             std::cout << "Invalid ip config? " << iter->first << std::endl;
           }
         }
+      }
+
+      if (obj.hasKey(m_mb6Key)) {
+        setAnalyzingMb6(ZJsonParser::booleanValue(obj[m_mb6Key]));
       }
 
       if (obj.hasKey(m_dvidRootKey)) {

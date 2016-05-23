@@ -117,6 +117,10 @@ public: //Additional properties
   void setUserName(const std::string &name);
   std::string getUserName() const;
 
+  ZJsonArray getRelationJson() const {
+    return m_relJson;
+  }
+
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
   static bool AddRelation(

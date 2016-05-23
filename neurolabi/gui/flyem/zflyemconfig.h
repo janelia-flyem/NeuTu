@@ -60,6 +60,14 @@ public:
   }
   */
 
+  bool anayzingMb6() const {
+    return m_analyzingMb6;
+  }
+
+  void setAnalyzingMb6(bool on) {
+    m_analyzingMb6 = on;
+  }
+
 private:
   void init();
 
@@ -74,12 +82,15 @@ private:
   std::string m_configPath;
   std::string m_defaultLibrarian;
   std::string m_userName;
+
+  bool m_analyzingMb6;
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *m_dvidRepoKey;
   const static char *m_dvidRootKey;
   const static char *m_ipKey;
   const static char *m_librarianKey;
+  const static char *m_mb6Key;
 };
 
 #endif // ZFLYEMCONFIG_H

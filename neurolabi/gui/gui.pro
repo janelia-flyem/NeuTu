@@ -625,7 +625,8 @@ HEADERS += mainwindow.h \
     zmenufactory.h \
     zcrosshair.h \
     zapplication.h \
-    dialogs/flyemsynapsefilterdialog.h
+    dialogs/flyemsynapsefilterdialog.h \
+    flyem/zflyemmb6analyzer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1104,7 +1105,8 @@ SOURCES += main.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
     zapplication.cpp \
-    dialogs/flyemsynapsefilterdialog.cpp
+    dialogs/flyemsynapsefilterdialog.cpp \
+    flyem/zflyemmb6analyzer.cpp
 
 OTHER_FILES += \
     extlib.pri \

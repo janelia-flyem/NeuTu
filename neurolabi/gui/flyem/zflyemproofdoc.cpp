@@ -53,6 +53,7 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   m_loadingAssignedBookmark = false;
+  m_analyzer.setDvidReader(&m_dvidReader);
 
   connectSignalSlot();
 }
@@ -1406,7 +1407,8 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
 //  reader.setVerbose(false);
   const double radius = 50.0;
   if (reader.open(getDvidTarget())) {
-    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+    std::vector<ZDvidSynapse> synapseArray =
+        reader.readSynapse(bodyId, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
 
     std::vector<ZPunctum*> &tbar = synapse.first;
     std::vector<ZPunctum*> &psd = synapse.second;
@@ -1414,10 +1416,15 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
     for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
          iter != synapseArray.end(); ++iter) {
       const ZDvidSynapse &synapse = *iter;
+      ZPunctum *punctum = new ZPunctum(synapse.getPosition(), radius);
+      if (GET_FLYEM_CONFIG.anayzingMb6()) {
+        punctum->setName(m_analyzer.getPunctumName(synapse));
+      }
+
       if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
-        tbar.push_back(new ZPunctum(synapse.getPosition(), radius));
+        tbar.push_back(punctum);
       } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
-        psd.push_back(new ZPunctum(synapse.getPosition(), radius));
+        psd.push_back(punctum);
       }
     }
     qDebug() << "Synapse loading time: " << timer.restart();

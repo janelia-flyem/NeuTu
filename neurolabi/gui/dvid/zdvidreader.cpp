@@ -1729,7 +1729,7 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
 }
 
 std::vector<uint64_t> ZDvidReader::readBodyIdAt(
-    const std::vector<ZIntPoint> &ptArray)
+    const std::vector<ZIntPoint> &ptArray) const
 {
   std::vector<uint64_t> bodyArray;
 
@@ -2002,6 +2002,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     synapseArray[i].loadJsonObject(synapseJson, mode);
+    synapseArray[i].setBodyId(label);
   }
 
   return synapseArray;

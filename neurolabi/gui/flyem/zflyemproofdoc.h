@@ -17,6 +17,7 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
+#include "flyem/zflyemmb6analyzer.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -26,6 +27,7 @@ class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
+
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -155,6 +157,10 @@ public:
   void activateBodyColorMap(EBodyColorMap colorMap);
 
   ZDvidReader& getDvidReader() {
+    return m_dvidReader;
+  }
+
+  const ZDvidReader& getDvidReader() const {
     return m_dvidReader;
   }
 
@@ -327,6 +333,8 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+
+  mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 };

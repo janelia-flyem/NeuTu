@@ -16,8 +16,8 @@
 #include "zstring.h"
 #include "neutubeconfig.h"
 
-const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 10000;
-const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 5000;
+const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
+const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
@@ -703,6 +703,9 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           punctum->setRadius(30);
           punctum->setColor(255, 255, 0);
           punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
+          if (punctum->name().isEmpty()) {
+            punctum->setName(QString("%1").arg(bodyId));
+          }
           addObject(punctum, false);
         }
       }
