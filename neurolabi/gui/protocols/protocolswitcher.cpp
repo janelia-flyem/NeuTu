@@ -91,6 +91,7 @@ void ProtocolSwitcher::exitProtocolRequested() {
     m_protocolStatus = PROTOCOL_INACTIVE;
 
     m_activeMetadata.clearActive();
+    m_activeMetadata.write();
 
     // disconnect dialog signals
     disconnectProtocolSignals();
@@ -106,10 +107,15 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     //  even before user decides to open the dialog
     // in separate thread?
     m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(PROTOCOL_DATA_NAME, target);
+    if (!m_activeMetadata.ioSuccessful()) {
+        // error reading metadata; in principle, we should probably do *something*
+        //  here, but popping a dialog would be too intrusive
+        return;
+    }
     if (m_activeMetadata.isActive()) {
 
 
-        std::cout << "active protocol not implemented yet" << std::endl;
+        std::cout << "prswi: protocol active (loading not implemented yet)" << std::endl;
         return;
 
         
@@ -123,6 +129,10 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
         m_protocolStatus = PROTOCOL_ACTIVE;
 
     } else {
+
+        std::cout << "prswi: no protocol active" << std::endl;
+
+
         m_protocolStatus = PROTOCOL_INACTIVE;
         // nothing else to do here; we can't set up the protocol
         //  chooser because the information about which protocols

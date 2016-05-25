@@ -11,6 +11,7 @@ class ProtocolMetadata
 public:
     ProtocolMetadata(std::string dataName, ZDvidTarget target);
     static ProtocolMetadata ReadProtocolMetadata(std::string dataName, ZDvidTarget target);
+    static std::string GetUserMetadataKey();
 
     bool isActive();
     std::string getActiveProtocolName();
@@ -18,9 +19,12 @@ public:
     void setActive(std::string name, std::string key);
     void clearActive();
     void write();
+    bool ioSuccessful();
 
 private:
     static const std::string PROTOCOL_METADATA_SUFFIX;
+    static const std::string KEY_PROTOCOL_NAME;
+    static const std::string KEY_PROTOCOL_KEY;
 
     ZDvidTarget m_dvidTarget;
     std::string m_dvidDataName;
