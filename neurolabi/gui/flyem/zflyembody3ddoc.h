@@ -249,7 +249,8 @@ private:
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
-  QSet<uint64_t> m_unrecycableSet;
+  QMap<uint64_t, int> m_bodyUpdateMap;
+//  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped;
 

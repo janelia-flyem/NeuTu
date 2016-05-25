@@ -15,6 +15,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_type = TYPE_UNIDENTIFIED;
   setSliceAxis(NeuTube::Z_AXIS);
   m_basePenWidth = m_defaultPenWidth;
+  m_timeStamp = 0;
 }
 
 ZStackObject::~ZStackObject()

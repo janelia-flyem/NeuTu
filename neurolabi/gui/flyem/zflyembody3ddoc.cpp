@@ -89,8 +89,21 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
         } else if (dt < OBJECT_ACTIVE_LIFE){
           if (minDt < 0 || minDt > dt) {
             if (iter.key()->getSource() == source) {
-              minDt = dt;
+              uint64_t bodyId =
+                  ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+                    source);
+              bool recycable = true;
               obj = dynamic_cast<T*>(iter.key());
+              if (m_bodyUpdateMap.contains(bodyId)) {
+                if (m_bodyUpdateMap[bodyId] >= obj->getTimeStamp()) { //not recycable
+                  recycable = false;
+                }
+              }
+              if (recycable) {
+                minDt = dt;
+              } else {
+                obj = NULL;
+              }
             }
           }
         }
@@ -108,7 +121,13 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
 {
   QMutexLocker locker(&m_garbageMutex);
-  m_unrecycableSet = bodySet;
+  int currentTime = m_objectTime.elapsed();
+  for (QSet<uint64_t>::const_iterator iter = bodySet.begin();
+       iter != bodySet.end(); ++iter) {
+    m_bodyUpdateMap[*iter] = currentTime;
+  }
+
+//  m_unrecycableSet = bodySet;
   for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
        iter != m_garbageMap.end(); ++iter) {
     ZStackObject *obj = iter.key();
@@ -623,7 +642,8 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 
     if (!loaded) {
       addSynapse(bodyId);
-      addTodo(bodyId);
+//      addTodo(bodyId);
+      updateTodo(bodyId);
     }
     //Add synapse
 #if 0
@@ -893,6 +913,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
   if (tree == NULL) {
     if (bodyId > 0) {
+      int t = m_objectTime.elapsed();
       if (bodyType == BODY_SKELETON) {
         ZDvidReader reader;
         if (reader.open(getDvidTarget())) {
@@ -938,6 +959,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
       }
 
       if (tree != NULL) {
+        tree->setTimeStamp(t);
         tree->setSource(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
                 bodyId, GetBodyTypeName(bodyType)));

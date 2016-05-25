@@ -212,6 +212,14 @@ public:
     m_usingCosmeticPen = state;
   }
 
+  void setTimeStamp(int t){
+    m_timeStamp = t;
+  }
+
+  int getTimeStamp() const {
+    return m_timeStamp;
+  }
+
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
@@ -358,6 +366,7 @@ protected:
   std::string m_objectClass;
   std::string m_objectId;
   int m_zOrder;
+  int m_timeStamp;
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
