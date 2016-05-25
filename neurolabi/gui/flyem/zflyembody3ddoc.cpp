@@ -440,6 +440,13 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
   return actionMap;
 }
 
+void ZFlyEmBody3dDoc::cancelEventThread()
+{
+  m_quitting = true;
+  m_futureMap.waitForFinished();
+  m_quitting = false;
+}
+
 void ZFlyEmBody3dDoc::processEventFunc()
 {
   QMap<uint64_t, BodyEvent> actionMap = makeEventMap(true, m_bodySet);
@@ -1042,8 +1049,27 @@ void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
   m_garbageJustDumped = true;
 }
 
-void ZFlyEmBody3dDoc::dumpAllSwc(bool recycable)
+void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
 {
+  cancelEventThread();
+
+  QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
+  for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
+       iter != punctumList.end(); ++iter) {
+    ZPunctum *p = *iter;
+    removeObject(p, false);
+    dumpGarbage(p, false);
+  }
+
+  QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
+  for (QList<ZFlyEmToDoItem*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoItem *p = *iter;
+    removeObject(p, false);
+    dumpGarbage(p, false);
+  }
+
+
   QList<ZSwcTree*> treeList = getSwcList();
   for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
        iter != treeList.end(); ++iter) {

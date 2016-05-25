@@ -316,9 +316,16 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
   doc->setDvidTarget(getDvidTarget());
   doc->setDataDoc(m_doc);
   doc->setBodyType(bodyType);
-
+/*
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           doc, SLOT(setUnrecycable(QSet<uint64_t>)));
+          */
+
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateBodyWindowDeep()));
+
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateCoarseBodyWindowDeep()));
 
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
@@ -504,9 +511,10 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-      doc->dumpAllSwc(false);
+      doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
+//      doc->processEvent();
       doc->endObjectModifiedMode();
       doc->notifyObjectModified();
     }
@@ -536,9 +544,10 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-      doc->dumpAllSwc(false);
+      doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
-      doc->processEventFunc();
+//      doc->processEventFunc();
+//      doc->processEvent();
       doc->endObjectModifiedMode();
       doc->notifyObjectModified();
     }

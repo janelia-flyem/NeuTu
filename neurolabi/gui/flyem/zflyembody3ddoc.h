@@ -166,12 +166,13 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllSwc(bool recycable);
+  void dumpAllBody(bool recycable);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
   void mergeBodyModel(const ZFlyEmBodyMerger &merger);
 
   void processEventFunc();
+  void cancelEventThread();
 
   void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 
