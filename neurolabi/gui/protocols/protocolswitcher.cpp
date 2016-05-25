@@ -31,13 +31,12 @@
  * -- add name to protocolNames array
  * -- add to if-else chain in startProtocolRequested()
  */
-ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent)
+ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeMetadata("", ZDvidTarget())
 {
     m_parent = parent;
     m_chooser = new ProtocolChooser(m_parent);
 
     m_protocolStatus = PROTOCOL_INACTIVE;
-
 
 
     // set up connections to ProtocolChooser
@@ -91,9 +90,7 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
 void ProtocolSwitcher::exitProtocolRequested() {
     m_protocolStatus = PROTOCOL_INACTIVE;
 
-
-    // write metadata: no active protocol
-
+    m_activeMetadata.clearActive();
 
     // disconnect dialog signals
     disconnectProtocolSignals();
@@ -107,16 +104,21 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
 
     // check for active protocol here and start loading
     //  even before user decides to open the dialog
-    ProtocolMetadata metadata = readMetadata();
-    if (metadata.isActive()) {
+    // in separate thread?
+    m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(PROTOCOL_DATA_NAME, target);
+    if (m_activeMetadata.isActive()) {
+
 
         std::cout << "active protocol not implemented yet" << std::endl;
+        return;
+
+        
 
         // create dialog first, empty, with loading message;
         //  it may be shown quickly
         // load saved protocol data
         m_protocolStatus = PROTOCOL_LOADING;
-        // populate dialog
+        // populate dialog--in separate thread?
         // drop loading message
         m_protocolStatus = PROTOCOL_ACTIVE;
 
@@ -125,18 +127,6 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
         // nothing else to do here; we can't set up the protocol
         //  chooser because the information about which protocols
         //  can be initiated or loaded can change over time
-    }
-}
-
-ProtocolMetadata ProtocolSwitcher::readMetadata() {
-    if (m_currentDvidTarget.isValid()) {
-        // in progress; currently returns metadata that says nothing is saved
-        ProtocolMetadata metadata;
-        return metadata;
-    } else {
-        // default metadata = nothing active, nothing saved
-        ProtocolMetadata metadata;
-        return metadata;
     }
 }
 
@@ -156,25 +146,23 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     }
 
     // generate the save key and be sure it's not in use
-    if (m_activeProtocolKey.empty()) {
-        std::string key = generateKey();
-        if (key.empty()) {
-            saveFailedDialog("Key for saved data was not generated!");
-            return;
-        }
-        if (!askProceedIfKeyExists(key)) {
-            saveFailedDialog("Key for saved data might already be used!");
-            return;
-        }
-        m_activeProtocolKey = key;
-
-        // tell user the key, data instance we're using
-        QMessageBox::information(m_parent, "Save location",
-            QString("Your data will be saved in DVID in data instance %1, key %2")
-                .arg(QString::fromStdString(PROTOCOL_DATA_NAME))
-                .arg(QString::fromStdString(m_activeProtocolKey)),
-            QMessageBox::Ok);
+    std::string key = generateKey();
+    if (key.empty()) {
+        saveFailedDialog("Key for saved data was not generated!");
+        return;
     }
+    if (!askProceedIfKeyExists(key)) {
+        saveFailedDialog("Key for saved data might already be used!");
+        return;
+    }
+    m_activeMetadata.setActive(protocolName.toStdString(), key);
+
+    // tell user the key, data instance we're using
+    QMessageBox::information(m_parent, "Save location",
+        QString("Your data will be saved in DVID in data instance %1, key %2")
+            .arg(QString::fromStdString(PROTOCOL_DATA_NAME))
+            .arg(QString::fromStdString(key)),
+        QMessageBox::Ok);
 
 
     m_protocolStatus = PROTOCOL_INITIALIZING;
@@ -201,11 +189,11 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     bool success = m_activeProtocol->initialize();
     if (success) {
 
+        m_activeMetadata.write();
+
         m_activeProtocol->raise();
         m_activeProtocol->show();
         m_protocolStatus = PROTOCOL_ACTIVE;
-
-        // write protocol metadata (who's active)
 
     } else {
         // note that dialog explaining failure is expected to be
@@ -213,6 +201,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
         disconnectProtocolSignals();
 
+        m_activeMetadata.clearActive();
         m_protocolStatus = PROTOCOL_INACTIVE;
     }
 
@@ -231,6 +220,8 @@ void ProtocolSwitcher::loadProtocolRequested() {
     // this also needs to have the saved info as input
 
     // do stuff
+
+    // metadata
 }
 
 void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
@@ -239,16 +230,10 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
 
     ZDvidWriter writer;
     if (writer.open(m_currentDvidTarget)) {
-        writer.writeJson(PROTOCOL_DATA_NAME, m_activeProtocolKey, data);
-        std::cout << "prswi: writing json: " << std::endl;
-        std::cout << data.dumpString() << std::endl;
-
-        //  - update metadata:
-
+        writer.writeJson(PROTOCOL_DATA_NAME, m_activeMetadata.getActiveProtocolKey(), data);
     } else {
         saveFailedDialog("Failed to open DVID for writing");
     }
-
 }
 
 /*

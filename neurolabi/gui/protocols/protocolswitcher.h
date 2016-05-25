@@ -45,9 +45,8 @@ private:
     ProtocolChooser * m_chooser;
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;
-    std::string m_activeProtocolKey;
+    ProtocolMetadata m_activeMetadata;
 
-    ProtocolMetadata readMetadata();
     void connectProtocolSignals();
     void disconnectProtocolSignals();
     bool askProceedIfNodeLocked();

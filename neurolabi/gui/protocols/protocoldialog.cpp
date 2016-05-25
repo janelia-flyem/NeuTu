@@ -53,8 +53,6 @@ bool ProtocolDialog::initialize() {
         return false;
     }
 
-    m_protocolStatus = PROTOCOL_INCOMPLETE;
-
     // generate pending/finished lists
     m_finishedList = QStringList();
     m_pendingList = QStringList();
@@ -119,7 +117,6 @@ void ProtocolDialog::onCompleteButton() {
     int ans = mb.exec();
 
     if (ans == QMessageBox::Ok) {
-        m_protocolStatus = PROTOCOL_COMPLETE;
 
         saveState();
 

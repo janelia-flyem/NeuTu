@@ -31,17 +31,11 @@ private slots:
     void onCompleteButton();
 
 private:
-    enum Status {
-        PROTOCOL_COMPLETE,
-        PROTOCOL_INCOMPLETE
-    };
-
     static const std::string PROTOCOL_NAME;
 
     Ui::ProtocolDialog *ui;
     QStringList m_pendingList;
     QStringList m_finishedList;
-    Status m_protocolStatus;
     QString m_currentItem;
 
     void saveState();
