@@ -20211,7 +20211,7 @@ void ZTest::test(MainWindow *host)
   std::cout << myMap.dumpString() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 
@@ -20265,6 +20265,22 @@ void ZTest::test(MainWindow *host)
       std::cout << "WARNING: Inconsistent voxel number" << std::endl;
     }
   }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("segmentation-labelvol");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readCoarseBody(51017317967);
+    obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+#endif
+
+#if 1
 
 #endif
 

@@ -112,6 +112,26 @@ public:
     BODY_FULL, BODY_COARSE, BODY_SKELETON
   };
 
+  class ObjectStatus {
+  public:
+    ObjectStatus(int timeStamp = 0);
+    void setRecycable(bool on);
+    void setTimeStamp(int t);
+    void setResLevel(int level);
+
+    bool isRecycable() const;
+    int getTimeStamp() const;
+    int getResLevel() const;
+
+  private:
+    void init(int timeStatus);
+
+  private:
+    bool m_recycable;
+    int m_timeStamp;
+    int m_resLevel;
+  };
+
   void setBodyType(EBodyType type);
   EBodyType getBodyType() { return m_bodyType; }
 
@@ -146,9 +166,9 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllSwc();
+  void dumpAllSwc(bool recycable);
 
-  void dumpGarbage(ZStackObject *obj);
+  void dumpGarbage(ZStackObject *obj, bool recycable);
   void mergeBodyModel(const ZFlyEmBodyMerger &merger);
 
   void processEventFunc();
@@ -165,6 +185,7 @@ public slots:
   void showTodo(bool on);
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
+  void setUnrecycable(const QSet<uint64_t> &bodySet);
 
 protected:
   void autoSave() {}
@@ -227,7 +248,8 @@ private:
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
 //  QList<ZStackObject*> m_garbageList;
-  QMap<ZStackObject*, int> m_garbageMap;
+  QMap<ZStackObject*, ObjectStatus> m_garbageMap;
+  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped;
 

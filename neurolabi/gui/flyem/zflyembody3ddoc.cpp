@@ -52,7 +52,7 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
 //  clearGarbage();
 
   QMutexLocker garbageLocker(&m_garbageMutex);
-  for (QMap<ZStackObject*, int>::iterator iter = m_garbageMap.begin();
+  for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
        iter != m_garbageMap.end(); ++iter) {
     delete iter.key();
   }
@@ -77,19 +77,21 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 
   if (!source.empty()) {
     int currentTime = m_objectTime.elapsed();
-    QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+    QMutableMapIterator<ZStackObject*, ObjectStatus> iter(m_garbageMap);
     int minDt = -1;
     while (iter.hasNext()) {
       iter.next();
-      int t = iter.value();
-      int dt = currentTime - t;
-      if (dt < 0) {
-        iter.value() = 0;
-      } else if (dt < OBJECT_ACTIVE_LIFE){
-        if (minDt < 0 || minDt > dt) {
-          if (iter.key()->getSource() == source) {
-            minDt = dt;
-            obj = dynamic_cast<T*>(iter.key());
+      if (iter.value().isRecycable()) {
+        int t = iter.value().getTimeStamp();
+        int dt = currentTime - t;
+        if (dt < 0) {
+          iter.value() = 0;
+        } else if (dt < OBJECT_ACTIVE_LIFE){
+          if (minDt < 0 || minDt > dt) {
+            if (iter.key()->getSource() == source) {
+              minDt = dt;
+              obj = dynamic_cast<T*>(iter.key());
+            }
           }
         }
       }
@@ -103,15 +105,36 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
   return obj;
 }
 
+void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
+{
+  QMutexLocker locker(&m_garbageMutex);
+  m_unrecycableSet = bodySet;
+  for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
+       iter != m_garbageMap.end(); ++iter) {
+    ZStackObject *obj = iter.key();
+    if (obj != NULL) {
+      ObjectStatus &status = iter.value();
+      if (status.isRecycable()) {
+        uint64_t bodyId =
+            ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+              obj->getSource());
+        if (bodySet.contains(bodyId)) {
+          status.setRecycable(false);
+        }
+      }
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
   int currentTime = m_objectTime.elapsed();
-  QMutableMapIterator<ZStackObject*, int> iter(m_garbageMap);
+  QMutableMapIterator<ZStackObject*, ObjectStatus> iter(m_garbageMap);
    while (iter.hasNext()) {
      iter.next();
-     int t = iter.value();
+     int t = iter.value().getTimeStamp();
      int dt = currentTime - t;
      if (dt < 0) {
        iter.value() = 0;
@@ -800,7 +823,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       removeObject(*iter, false);
-      dumpGarbage(*iter);
+      dumpGarbage(*iter, true);
     }
 
     if (removingAnnotation) {
@@ -809,7 +832,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter);
+        dumpGarbage(*iter, true);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -817,7 +840,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter);
+        dumpGarbage(*iter, true);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -825,7 +848,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter);
+        dumpGarbage(*iter, true);
       }
     }
 
@@ -985,24 +1008,26 @@ void ZFlyEmBody3dDoc::printEventQueue() const
   }
 }
 
-void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj)
+void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
 {
   QMutexLocker locker(&m_garbageMutex);
 
 //  m_garbageList.append(obj);
-  m_garbageMap[obj] = m_objectTime.elapsed();
+//  m_garbageMap[obj] = m_objectTime.elapsed();
+  m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
+  m_garbageMap[obj].setRecycable(recycable);
 
   m_garbageJustDumped = true;
 }
 
-void ZFlyEmBody3dDoc::dumpAllSwc()
+void ZFlyEmBody3dDoc::dumpAllSwc(bool recycable)
 {
   QList<ZSwcTree*> treeList = getSwcList();
   for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
        iter != treeList.end(); ++iter) {
     ZSwcTree *tree = *iter;
     removeObject(tree, false);
-    dumpGarbage(tree);
+    dumpGarbage(tree, recycable);
   }
   m_bodySet.clear();
 }
@@ -1037,9 +1062,55 @@ void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
         } else {
           targetTree->merge(tree);
         }
-        dumpGarbage(tree);
+        dumpGarbage(tree, false);
       }
     }
     removeEmptySwcTree(false);
   }
 }
+
+
+//////////////////////////////////////////////
+ZFlyEmBody3dDoc::ObjectStatus::ObjectStatus(int timeStamp)
+{
+  init(timeStamp);
+}
+
+void ZFlyEmBody3dDoc::ObjectStatus::init(int timeStatus)
+{
+  m_recycable = true;
+  m_timeStamp = timeStatus;
+  m_resLevel = 0;
+}
+
+void ZFlyEmBody3dDoc::ObjectStatus::setRecycable(bool on)
+{
+  m_recycable = on;
+}
+
+bool ZFlyEmBody3dDoc::ObjectStatus::isRecycable() const
+{
+  return m_recycable;
+}
+
+void ZFlyEmBody3dDoc::ObjectStatus::setTimeStamp(int t)
+{
+  m_timeStamp = t;
+}
+
+int ZFlyEmBody3dDoc::ObjectStatus::getTimeStamp() const
+{
+  return m_timeStamp;
+}
+
+void ZFlyEmBody3dDoc::ObjectStatus::setResLevel(int level)
+{
+  m_resLevel = level;
+}
+
+int ZFlyEmBody3dDoc::ObjectStatus::getResLevel() const
+{
+  return m_resLevel;
+}
+
+

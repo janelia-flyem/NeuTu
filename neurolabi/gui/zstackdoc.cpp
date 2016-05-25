@@ -5024,6 +5024,8 @@ void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in clearObjectModifiedTypeBuffer";
     m_objectModifiedTypeBuffer.clear();
   } else {
     m_objectModifiedTypeBuffer.clear();
@@ -5076,6 +5078,8 @@ void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in bufferObjectModified";
     m_objectModifiedTypeBuffer.insert(type);
   } else {
     m_objectModifiedTypeBuffer.insert(type);
@@ -5102,6 +5106,8 @@ void ZStackDoc::bufferObjectModified(
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in bufferObjectModified";
     m_objectModifiedTypeBuffer.unite(typeSet);
   } else {
     m_objectModifiedTypeBuffer.unite(typeSet);
@@ -5264,9 +5270,16 @@ void ZStackDoc::processObjectModified(
     const QSet<ZStackObject::EType> &typeSet, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
-         iter != typeSet.end(); ++iter) {
+    QSet<ZStackObject::EType> bufferTypeSet;
+    {
+      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+      ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                          "in processObjectModified";
+      bufferTypeSet = typeSet;
+    }
+
+    for (QSet<ZStackObject::EType>::const_iterator iter = bufferTypeSet.begin();
+         iter != bufferTypeSet.end(); ++iter) {
       ZStackObject::EType type = *iter;
       processObjectModified(type, false);
     }
