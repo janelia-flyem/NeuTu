@@ -20154,7 +20154,7 @@ void ZTest::test(MainWindow *host)
   writer.writeLabel(*label);
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 
@@ -20165,7 +20165,7 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
-                                 4099 + 99, 5018 + 99, 10343 + 99));
+                                 4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
 #if 0

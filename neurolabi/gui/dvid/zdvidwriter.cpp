@@ -1417,7 +1417,7 @@ void ZDvidWriter::writeLabel(const ZArray &label)
   }
 }
 
-void ZDvidWriter::refreshLabel(const ZIntCuboid &box)
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -1431,10 +1431,60 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box)
             dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
 
     ZArray *label = reader.readLabels64(alignedBox);
+
+    //Reset label
+    uint64_t tmpLabel = label->getMax<uint64_t>() + 1;
+    label->replaceValue(bodyId, tmpLabel);
+
     writeLabel(*label);
+
+    label->replaceValue(tmpLabel, bodyId);
+    writeLabel(*label);
+
     delete label;
   }
 }
+
+void ZDvidWriter::refreshLabel(
+    const ZIntCuboid &box, const std::set<uint64_t> &bodySet)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntCuboid alignedBox;
+    alignedBox.setFirstCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+    alignedBox.setLastCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+    ZArray *label = reader.readLabels64(alignedBox);
+
+    //Reset label
+    uint64_t labelMax = label->getMax<uint64_t>();
+    uint64_t tmpLabel = labelMax + 1;
+    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      label->replaceValue(bodyId, tmpLabel++);
+    }
+
+    writeLabel(*label);
+
+    tmpLabel = labelMax + 1;
+    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      label->replaceValue(tmpLabel, bodyId);
+    }
+
+    writeLabel(*label);
+
+    delete label;
+  }
+}
+
 
 void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {

@@ -2087,7 +2087,8 @@ void ZFlyEmProofDoc::rewriteSegmentation()
 {
   ZIntCuboid box = getCuboidRoi();
   if (box.getDepth() > 1) {
-    getDvidWriter().refreshLabel(box);
+    getDvidWriter().refreshLabel(
+          box, getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL));
     if (getDvidWriter().getStatusCode() != 200) {
       emit messageGenerated(
             ZWidgetMessage("Failed to rewite segmentations.", NeuTube::MSG_ERROR));
