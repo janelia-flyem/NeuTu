@@ -22,11 +22,13 @@ public slots:
 
 signals:
     void requestStartProtocol(QString protocolName);
+    void requestLoadProtocolKey(QString protocolKey);
 
 private slots:
     void onLoadButton();
     void onStartButton();
     void onDoubleClickedStartProtocol(QModelIndex modelIndex);
+    void onDoubleClickedLoadProtocol(QModelIndex modelIndex);
 
 private:
     Ui::ProtocolChooser *ui;

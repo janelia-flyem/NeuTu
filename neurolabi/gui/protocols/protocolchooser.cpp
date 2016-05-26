@@ -26,6 +26,7 @@ ProtocolChooser::ProtocolChooser(QWidget *parent) :
     connect(ui->startProtocolButton, SIGNAL(clicked(bool)), this, SLOT(onStartButton()));
     connect(ui->newProtocolListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickedStartProtocol(QModelIndex)));
     connect(ui->loadProtocolButton, SIGNAL(clicked(bool)), this, SLOT(onLoadButton()));
+    connect(ui->loadProtocolListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickedLoadProtocol(QModelIndex)));
 
     // misc ui settings
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
@@ -38,13 +39,19 @@ ProtocolChooser::~ProtocolChooser()
 }
 
 void ProtocolChooser::onLoadButton() {
+    if (ui->loadProtocolListView->selectionModel()->hasSelection()) {
+        QModelIndexList indices = ui->loadProtocolListView->selectionModel()->selectedIndexes();
+        onDoubleClickedLoadProtocol(indices.at(0));
+    }
+}
 
-    std::cout << "load button clicked" << std::endl;
-
+void ProtocolChooser::onDoubleClickedLoadProtocol(QModelIndex modelIndex) {
+    emit requestLoadProtocolKey(modelIndex.data().toString());
+    close();
 }
 
 void ProtocolChooser::onStartButton() {
-    if(ui->newProtocolListView->selectionModel()->hasSelection()) {
+    if (ui->newProtocolListView->selectionModel()->hasSelection()) {
         // remember, only single selection is allowed
         QModelIndexList indices = ui->newProtocolListView->selectionModel()->selectedIndexes();
         onDoubleClickedStartProtocol(indices.at(0));
@@ -58,15 +65,7 @@ void ProtocolChooser::onDoubleClickedStartProtocol(QModelIndex modelIndex) {
 }
 
 void ProtocolChooser::displaySavedProtocolKeys(QStringList keyList) {
-
-    std::cout << "prch: display saved protocol keys" << std::endl;
-    for (int i=0; i<keyList.size(); i++) {
-        std::cout << keyList.at(i).toStdString() << std::endl;
-    }
-
     m_savedProtocolListModel->setStringList(keyList);
-
-
 }
 
 void ProtocolChooser::setupNewProtocolList() {
@@ -84,6 +83,4 @@ void ProtocolChooser::setupSavedProtocolList() {
     // populate list of saved protocols
     m_savedProtocolListModel = new QStringListModel(this);
     ui->loadProtocolListView->setModel(m_savedProtocolListModel);
-
-
 }

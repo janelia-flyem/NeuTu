@@ -41,6 +41,7 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeM
 
     // set up connections to ProtocolChooser
     connect(m_chooser, SIGNAL(requestStartProtocol(QString)), this, SLOT(startProtocolRequested(QString)));
+    connect(m_chooser, SIGNAL(requestLoadProtocolKey(QString)), this, SLOT(loadProtocolKeyRequested(QString)));
     connect(this, SIGNAL(requestDisplaySavedProtocols(QStringList)), m_chooser, SLOT(displaySavedProtocolKeys(QStringList)));
 
 
@@ -190,7 +191,14 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
 }
 
-// load a saved protocol
+// load a saved protocol from key
+void ProtocolSwitcher::loadProtocolKeyRequested(QString protocolKey) {
+
+    std::cout << "prswi: request load key " + protocolKey.toStdString() << std::endl;
+
+}
+
+// load a saved active protocol
 void ProtocolSwitcher::loadProtocolRequested() {
     // locked dvid node check
     if (!askProceedIfNodeLocked()) {
