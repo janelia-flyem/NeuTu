@@ -28,6 +28,7 @@ private:
     Ui::ProtocolChooser *ui;
 
     void setupNewProtocolList();
+    void setupSavedProtocolList();
 };
 
 #endif // PROTOCOLCHOOSER_H

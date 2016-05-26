@@ -27,7 +27,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>New protocol:</string>
+      <string>New protocols:</string>
      </property>
     </widget>
    </item>
@@ -63,9 +63,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="savedProtocolsLabel">
      <property name="text">
-      <string>Saved protocol:</string>
+      <string>Saved protocols:</string>
      </property>
     </widget>
    </item>

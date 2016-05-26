@@ -76,10 +76,12 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
         // PROTOCOL_INACTIVE: show the protocol chooser
 
         // at some point, we will look for saved protocols to load:
-        //      set "loading" message
-        //      check for inactive, incomplete protocols we could load;
-        //          add to loadable list
-        //      clear "loading" message
+        //      tell chooser to set "loading" message (next step is
+        //          read from dvid, could take time)
+        //      check dvid for inactive, incomplete protocols we could load;
+        //          (do here; we know dvid stuff, chooser doesn't need to)
+        //      send list to chooser
+        //      chooser clears "loading" message when ready
 
         m_chooser->show();
         m_chooser->raise();
@@ -113,26 +115,8 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
         return;
     }
     if (m_activeMetadata.isActive()) {
-
-
-        std::cout << "prswi: protocol active (loading not implemented yet)" << std::endl;
-        return;
-
-        
-
-        // create dialog first, empty, with loading message;
-        //  it may be shown quickly
-        // load saved protocol data
-        m_protocolStatus = PROTOCOL_LOADING;
-        // populate dialog--in separate thread?
-        // drop loading message
-        m_protocolStatus = PROTOCOL_ACTIVE;
-
+        loadProtocolRequested();
     } else {
-
-        std::cout << "prswi: no protocol active" << std::endl;
-
-
         m_protocolStatus = PROTOCOL_INACTIVE;
         // nothing else to do here; we can't set up the protocol
         //  chooser because the information about which protocols
@@ -150,7 +134,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
     // don't start protocol if we can't save
     if (!checkCreateDataInstance()) {
-        saveFailedDialog("DVID data instance for protocols was not present and/or could not be created!");
+        warningDialog("Save failed", "DVID data instance for protocols was not present and/or could not be created!");
         m_protocolStatus = PROTOCOL_INACTIVE;
         return;
     }
@@ -158,11 +142,11 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     // generate the save key and be sure it's not in use
     std::string key = generateKey();
     if (key.empty()) {
-        saveFailedDialog("Key for saved data was not generated!");
+        warningDialog("Save failed", "Key for saved data was not generated!");
         return;
     }
     if (!askProceedIfKeyExists(key)) {
-        saveFailedDialog("Key for saved data might already be used!");
+        warningDialog("Save failed", "Key for saved data might already be used!");
         return;
     }
     m_activeMetadata.setActive(protocolName.toStdString(), key);
@@ -177,15 +161,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
     m_protocolStatus = PROTOCOL_INITIALIZING;
 
-    // if-else chain not ideal, but C++ is too stupid to switch 
-    //  on strings; however, the chain won't get *too* long,
-    //  so it's not that bad
-    if (protocolName == "Do N things") {
-        m_activeProtocol = new ProtocolDialog(m_parent);
-    } else {
-        // should never happen
-        return;
-    }
+    m_activeProtocol = instantiateProtocol(protocolName);
 
     // connect happens here, because if init succeeds, it'll
     //  want to request a save
@@ -201,9 +177,9 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
         m_activeMetadata.write();
 
+        m_protocolStatus = PROTOCOL_ACTIVE;
         m_activeProtocol->raise();
         m_activeProtocol->show();
-        m_protocolStatus = PROTOCOL_ACTIVE;
 
     } else {
         // note that dialog explaining failure is expected to be
@@ -219,19 +195,34 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
 // load a saved protocol
 void ProtocolSwitcher::loadProtocolRequested() {
-
     // locked dvid node check
     if (!askProceedIfNodeLocked()) {
         return;
     }
-    
-    // handle m_protocolStatus state
 
-    // this also needs to have the saved info as input
+    m_protocolStatus = PROTOCOL_LOADING;
 
-    // do stuff
+    m_activeProtocol = instantiateProtocol(QString::fromStdString(m_activeMetadata.getActiveProtocolName()));
+    connectProtocolSignals();
 
-    // metadata
+    // load data from dvid and send to protocol
+    ZDvidReader reader;
+    ZJsonObject data;
+    if (reader.open(m_currentDvidTarget)) {
+        const QByteArray &rawData = reader.readKeyValue(QString::fromStdString(PROTOCOL_DATA_NAME),
+            QString::fromStdString(m_activeMetadata.getActiveProtocolKey()));
+        data.decodeString(rawData.data());
+    } else {
+        warningDialog("Load failed", "Could not open DVID to read data!");
+        return;
+    }
+    requestLoadProtocol(data);
+
+    // ready to show dialog
+    m_protocolStatus = PROTOCOL_ACTIVE;
+    m_activeProtocol->raise();
+    m_activeProtocol->show();
+
 }
 
 void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
@@ -242,8 +233,17 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
     if (writer.open(m_currentDvidTarget)) {
         writer.writeJson(PROTOCOL_DATA_NAME, m_activeMetadata.getActiveProtocolKey(), data);
     } else {
-        saveFailedDialog("Failed to open DVID for writing");
+        warningDialog("Save failed", "Failed to open DVID for writing");
     }
+}
+
+ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
+    // if-else chain not ideal, but C++ is too stupid to switch
+    //  on strings; however, the chain won't get *too* long,
+    //  so it's not that bad
+    if (protocolName == "Do N things") {
+        return new ProtocolDialog(m_parent);
+    } 
 }
 
 /*
@@ -371,8 +371,8 @@ std::string ProtocolSwitcher::generateIdentifier() {
     }
 }
 
-void ProtocolSwitcher::saveFailedDialog(QString message) {
-    QMessageBox::warning(m_parent, "Save failed", message, QMessageBox::Ok);
+void ProtocolSwitcher::warningDialog(QString title, QString message) {
+    QMessageBox::warning(m_parent, title, message, QMessageBox::Ok);
 }
 
 // when a protocol is entered/exited, we need to handle
@@ -381,11 +381,13 @@ void ProtocolSwitcher::saveFailedDialog(QString message) {
 void ProtocolSwitcher::connectProtocolSignals() {
     connect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
     connect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
+    connect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
 }
 
 void ProtocolSwitcher::disconnectProtocolSignals() {
     disconnect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
     disconnect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
+    disconnect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
 }
 
 

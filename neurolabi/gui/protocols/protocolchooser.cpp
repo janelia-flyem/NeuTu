@@ -4,9 +4,9 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "protocolswitcher.h"
-
 #include <QStringListModel>
+
+#include "protocolswitcher.h"
 
 /*
  * this class presents a dialog to the user that lets them
@@ -21,6 +21,8 @@ ProtocolChooser::ProtocolChooser(QWidget *parent) :
 
     setupNewProtocolList();
 
+    // note: can't populate saved protocols now, as dvid target
+    //  not yet chosen
 
 
     // ui connects
@@ -67,4 +69,12 @@ void ProtocolChooser::setupNewProtocolList() {
     QStringListModel * model = new QStringListModel(this);
     model->setStringList(ProtocolSwitcher::protocolNames);
     ui->newProtocolListView->setModel(model);
+}
+
+void ProtocolChooser::setupSavedProtocolList() {
+    // populate list of saved protocols
+    QStringListModel * model = new QStringListModel(this);
+    ui->loadProtocolListView->setModel(model);
+
+
 }

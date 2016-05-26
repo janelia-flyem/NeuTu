@@ -19,6 +19,7 @@ public:
     static QStringList protocolNames;
 
 signals:
+    void requestLoadProtocol(ZJsonObject data);
 
 public slots:
     void openProtocolDialogRequested();
@@ -51,10 +52,11 @@ private:
     void disconnectProtocolSignals();
     bool askProceedIfNodeLocked();
     bool checkCreateDataInstance();
-    void saveFailedDialog(QString message);
+    void warningDialog(QString title, QString message);
     std::string generateKey();
     std::string generateIdentifier();
     bool askProceedIfKeyExists(std::string key);
+    ProtocolDialog * instantiateProtocol(QString protocolName);
 };
 
 #endif // PROTOCOLSWITCHER_H

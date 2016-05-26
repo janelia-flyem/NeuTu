@@ -23,6 +23,9 @@ signals:
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
 
+public slots:
+    void loadDataRequested(ZJsonObject data);
+
 private slots:
     void onFirstButton();
     void onDoButton();
@@ -32,6 +35,8 @@ private slots:
 
 private:
     static const std::string PROTOCOL_NAME;
+    static const std::string KEY_PENDING;
+    static const std::string KEY_FINISHED;
 
     Ui::ProtocolDialog *ui;
     QStringList m_pendingList;

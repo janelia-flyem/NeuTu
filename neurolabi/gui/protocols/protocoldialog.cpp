@@ -9,6 +9,7 @@
 
 #include "zjsonarray.h"
 #include "zjsonobject.h"
+#include "zjsonparser.h"
 
 /*
  * this is the base class for all protocols; it's also the
@@ -35,6 +36,8 @@ ProtocolDialog::ProtocolDialog(QWidget *parent) :
 
 // protocol name should not contain hyphens
 const std::string ProtocolDialog::PROTOCOL_NAME = "doNthings";
+const std::string ProtocolDialog::KEY_FINISHED = "finished";
+const std::string ProtocolDialog::KEY_PENDING = "pending";
 
 /*
  * start the protocol anew; returns success status;
@@ -162,9 +165,30 @@ void ProtocolDialog::saveState() {
     }
 
     ZJsonObject data;
-    data.setEntry("pending", pending);
-    data.setEntry("finished", finished);
+    data.setEntry(KEY_PENDING.c_str(), pending);
+    data.setEntry(KEY_FINISHED.c_str(), finished);
     emit requestSaveProtocol(data);
+}
+
+void ProtocolDialog::loadDataRequested(ZJsonObject data) {
+    if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
+        // how to communicate failure?  overwrite a label?
+        ui->progressLabel->setText("Data could not be loaded from DVID!");
+    }
+
+    m_pendingList = QStringList();
+    ZJsonArray pending = ZJsonArray(data.value(KEY_PENDING.c_str()));
+    for (int i=0; i<pending.size(); i++) {
+        m_pendingList << QString::fromUtf8(ZJsonParser::stringValue(pending.at(i)));
+    }
+
+    m_finishedList = QStringList();
+    ZJsonArray finished = ZJsonArray(data.value(KEY_FINISHED.c_str()));
+    for (int i=0; i<finished.size(); i++) {
+        m_finishedList << QString::fromUtf8(ZJsonParser::stringValue(finished.at(i)));
+    }
+
+    onFirstButton();
 }
 
 void ProtocolDialog::updateLabels() {
