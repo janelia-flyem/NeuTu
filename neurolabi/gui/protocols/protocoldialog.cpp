@@ -174,17 +174,18 @@ void ProtocolDialog::loadDataRequested(ZJsonObject data) {
     if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
         // how to communicate failure?  overwrite a label?
         ui->progressLabel->setText("Data could not be loaded from DVID!");
+        return;
     }
 
     m_pendingList = QStringList();
     ZJsonArray pending = ZJsonArray(data.value(KEY_PENDING.c_str()));
-    for (int i=0; i<pending.size(); i++) {
+    for (size_t i=0; i<pending.size(); i++) {
         m_pendingList << QString::fromUtf8(ZJsonParser::stringValue(pending.at(i)));
     }
 
     m_finishedList = QStringList();
     ZJsonArray finished = ZJsonArray(data.value(KEY_FINISHED.c_str()));
-    for (int i=0; i<finished.size(); i++) {
+    for (size_t i=0; i<finished.size(); i++) {
         m_finishedList << QString::fromUtf8(ZJsonParser::stringValue(finished.at(i)));
     }
 

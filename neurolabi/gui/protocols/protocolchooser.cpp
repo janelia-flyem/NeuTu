@@ -20,10 +20,7 @@ ProtocolChooser::ProtocolChooser(QWidget *parent) :
     ui->setupUi(this);
 
     setupNewProtocolList();
-
-    // note: can't populate saved protocols now, as dvid target
-    //  not yet chosen
-
+    setupSavedProtocolList();
 
     // ui connects
     connect(ui->startProtocolButton, SIGNAL(clicked(bool)), this, SLOT(onStartButton()));
@@ -60,6 +57,18 @@ void ProtocolChooser::onDoubleClickedStartProtocol(QModelIndex modelIndex) {
     close();
 }
 
+void ProtocolChooser::displaySavedProtocolKeys(QStringList keyList) {
+
+    std::cout << "prch: display saved protocol keys" << std::endl;
+    for (int i=0; i<keyList.size(); i++) {
+        std::cout << keyList.at(i).toStdString() << std::endl;
+    }
+
+    m_savedProtocolListModel->setStringList(keyList);
+
+
+}
+
 void ProtocolChooser::setupNewProtocolList() {
     // populate list of protocols that can be started; note that
     //  for now, they are all available; I thought about making this
@@ -73,8 +82,8 @@ void ProtocolChooser::setupNewProtocolList() {
 
 void ProtocolChooser::setupSavedProtocolList() {
     // populate list of saved protocols
-    QStringListModel * model = new QStringListModel(this);
-    ui->loadProtocolListView->setModel(model);
+    m_savedProtocolListModel = new QStringListModel(this);
+    ui->loadProtocolListView->setModel(m_savedProtocolListModel);
 
 
 }

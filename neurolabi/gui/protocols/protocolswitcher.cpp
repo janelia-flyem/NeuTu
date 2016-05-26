@@ -41,7 +41,7 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeM
 
     // set up connections to ProtocolChooser
     connect(m_chooser, SIGNAL(requestStartProtocol(QString)), this, SLOT(startProtocolRequested(QString)));
-
+    connect(this, SIGNAL(requestDisplaySavedProtocols(QStringList)), m_chooser, SLOT(displaySavedProtocolKeys(QStringList)));
 
 
 }
@@ -51,6 +51,10 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeM
 //  there is no reason to need parallel instances as you can use
 //  different identifiers in the stored keys instead
 const std::string ProtocolSwitcher::PROTOCOL_DATA_NAME = "NeuTu-protocols";
+
+// suffix on keys for completed protocols
+const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
+
 
 // names of available protocols; thank you, C++, for making
 //  constants so hard to define
@@ -73,15 +77,9 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
         msgBox.setText("A protocol is initializing...");
         msgBox.exec();
     } else {
-        // PROTOCOL_INACTIVE: show the protocol chooser
-
-        // at some point, we will look for saved protocols to load:
-        //      tell chooser to set "loading" message (next step is
-        //          read from dvid, could take time)
-        //      check dvid for inactive, incomplete protocols we could load;
-        //          (do here; we know dvid stuff, chooser doesn't need to)
-        //      send list to chooser
-        //      chooser clears "loading" message when ready
+        // PROTOCOL_INACTIVE: show the protocol chooser; tell it
+        //  to display saved keys for this user
+        emit requestDisplaySavedProtocols(getUserProtocolKeys(QString::fromStdString(NeuTube::GetCurrentUserName()), false));
 
         m_chooser->show();
         m_chooser->raise();
@@ -171,7 +169,6 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     // what init is there?  could be interactive or not, so
     //  has to be in this thread; if the protocol needs to do
     //  something long-running, it has to manage it
-
     bool success = m_activeProtocol->initialize();
     if (success) {
 
@@ -244,6 +241,36 @@ ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     if (protocolName == "Do N things") {
         return new ProtocolDialog(m_parent);
     } 
+}
+
+/*
+ * read keys from dvid and return keys for a user; flag = whether to include
+ * completed protocols or not
+ */
+QStringList ProtocolSwitcher::getUserProtocolKeys(QString username, bool showComplete) {
+
+    QStringList keyList;
+
+    ZDvidReader reader;
+    if (reader.open(m_currentDvidTarget)) {
+        // read all keys; filter to current user
+        // (not really tested in presence of other users' data yet)
+        QStringList keyList = reader.readKeys(QString::fromStdString(PROTOCOL_DATA_NAME));
+        keyList = keyList.filter(QRegExp(QString::fromStdString("^" + NeuTube::GetCurrentUserName())));
+
+        // remove metadata key
+        keyList.removeAll(QString::fromStdString(ProtocolMetadata::GetUserMetadataKey()));
+
+        // remove "complete" keys
+        if (!showComplete) {
+            // not implemented yet
+        }
+
+        return keyList;
+    } else {
+        // empty results on error
+        return keyList;
+    }
 }
 
 /*

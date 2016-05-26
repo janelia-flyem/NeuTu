@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QModelIndex>
+#include <QStringListModel>
 
 namespace Ui {
 class ProtocolChooser;
@@ -16,6 +17,9 @@ public:
     explicit ProtocolChooser(QWidget *parent = 0);
     ~ProtocolChooser();
 
+public slots:
+    void displaySavedProtocolKeys(QStringList keyList);
+
 signals:
     void requestStartProtocol(QString protocolName);
 
@@ -26,6 +30,7 @@ private slots:
 
 private:
     Ui::ProtocolChooser *ui;
+    QStringListModel * m_savedProtocolListModel;
 
     void setupNewProtocolList();
     void setupSavedProtocolList();

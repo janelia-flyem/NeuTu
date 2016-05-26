@@ -20,6 +20,7 @@ public:
 
 signals:
     void requestLoadProtocol(ZJsonObject data);
+    void requestDisplaySavedProtocols(QStringList keyList);
 
 public slots:
     void openProtocolDialogRequested();
@@ -40,6 +41,7 @@ private:
     };
 
     static const std::string PROTOCOL_DATA_NAME;
+    static const std::string PROTOCOL_COMPLETE_SUFFIX;
 
     QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
@@ -57,6 +59,7 @@ private:
     std::string generateIdentifier();
     bool askProceedIfKeyExists(std::string key);
     ProtocolDialog * instantiateProtocol(QString protocolName);
+    QStringList getUserProtocolKeys(QString username, bool showComplete);
 };
 
 #endif // PROTOCOLSWITCHER_H
