@@ -20154,7 +20154,7 @@ void ZTest::test(MainWindow *host)
   writer.writeLabel(*label);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 
@@ -20166,6 +20166,24 @@ void ZTest::test(MainWindow *host)
 
   writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
+#endif
+
+#if 1
+  ZFlyEmBookmark bookmark;
+  bookmark.setComment("test");
+
+  bookmark.getPropertyJson().setEntry("comment", "test2");
+  bookmark.getPropertyJson().setEntry("prop1", "test2");
+  bookmark.getPropertyJson().setEntry("prop2", "test3");
+  bookmark.setLocation(1, 2, 3);
+  bookmark.setBodyId(10);
+
+  std::cout << bookmark.toDvidAnnotationJson().dumpString() << std::endl;
+
+  ZFlyEmBookmark bookmark2;
+  bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
+  std::cout << bookmark2.toDvidAnnotationJson().dumpString() << std::endl;
+
 #endif
 
 #if 0

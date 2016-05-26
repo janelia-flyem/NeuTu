@@ -27,6 +27,22 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+double ZDvidSynapse::getConfidence() const
+{
+  double c = 1.0;
+
+  if (m_propertyJson.hasKey("confidence")) {
+    c = ZJsonParser::numberValue(m_propertyJson["confidence"]);
+  }
+
+  return c;
+}
+
+void ZDvidSynapse::setConfidence(double c)
+{
+  m_propertyJson.setEntry("confidence", c);
+}
+
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {

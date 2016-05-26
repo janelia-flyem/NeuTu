@@ -98,6 +98,8 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
       setLocation(coordinates[0], coordinates[1], coordinates[2]);
       ZJsonObject propJson(jsonObj.value("Prop"));
 
+      m_propertyJson = propJson;
+
       if (!propJson.isEmpty()) {
         uint64_t bodyId = 0;
         if (ZJsonParser::isInteger(propJson["body ID"])) {
