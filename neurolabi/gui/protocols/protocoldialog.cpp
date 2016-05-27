@@ -14,6 +14,22 @@
 /*
  * this is the base class for all protocols; it's also the
  * "do N things" test protocol
+ *
+ * to implement a protocol:
+ * -- subclass ProtocolDialog
+ * -- implement initialize(); this is called when the protocol is
+ *      started for the first time
+ * -- provide a name to be returned by getName(); must not have hyphens
+ * -- signal protocolExiting(): emit when the protocol is being closed
+ *      by the user but can be reopened later for more work; your
+ *      responsibility to save first
+ * -- signal protocolCompleting(): emit when protocol is finished
+ *      and will not be reopened by the user; your responsibility
+ *      to save first
+ * -- requestSaveProtocol(): emit data to the switcher, who
+ *      will then save it in DVID in the appropriate key
+ * -- implement slot loadDataRequested(); the switcher will send data
+ *      to this slot when a saved protocol is loaded
  */
 ProtocolDialog::ProtocolDialog(QWidget *parent) :
     QDialog(parent),
