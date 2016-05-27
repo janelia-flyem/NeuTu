@@ -54,6 +54,7 @@
 #include "zclickablelabel.h"
 #include "znormcolormap.h"
 #include "widgets/zcolorlabel.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1093,6 +1094,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
+  connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
+          this, SLOT(annotateSynapse()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
@@ -2870,6 +2873,21 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
 
       updateUserBookmarkTable();
     }
+  }
+}
+
+void ZFlyEmProofMvc::annotateSynapse()
+{
+  ZFlyEmSynapseAnnotationDialog dlg(this);
+
+  if (dlg.exec()) {
+    double c = dlg.getConfidence();
+    ZJsonObject propJson;
+    std::ostringstream stream;
+    stream << c;
+    propJson.setEntry("confidence", stream.str());
+    getCompleteDocument()->annotateSelectedSynapse(
+          propJson, getView()->getSliceAxis());
   }
 }
 

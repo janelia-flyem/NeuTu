@@ -365,6 +365,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       }
     } else if (op.getHitObject()->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
       op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
+    } else if (op.getHitObject()->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE) {
+      op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE);
     }
   }
 

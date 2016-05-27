@@ -683,19 +683,48 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(
     if (selectedSet.size() == 1) {
       se->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_GLOBAL);
       processObjectModified(se);
-    }
 
-    QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
-    for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
-         iter != seList.end(); ++iter) {
-      ZDvidSynapseEnsemble *buddySe = *iter;
-      if (buddySe != se) {
-        buddySe->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_LOCAL);
-        processObjectModified(se);
+
+      QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+      for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+           iter != seList.end(); ++iter) {
+        ZDvidSynapseEnsemble *buddySe = *iter;
+        if (buddySe != se) {
+          buddySe->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_LOCAL);
+          processObjectModified(se);
+        }
       }
-    }
 
-    notifyObjectModified();
+      notifyObjectModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::annotateSelectedSynapse(
+    ZJsonObject propJson, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    if (se->getSelector().getSelectedSet().size() == 1) {
+      ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
+      se->annotateSynapse(pt, propJson, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      processObjectModified(se);
+
+      QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+      for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+           iter != seList.end(); ++iter) {
+        ZDvidSynapseEnsemble *buddySe = *iter;
+        if (buddySe != se) {
+          buddySe->annotateSynapse(
+                pt, propJson, ZDvidSynapseEnsemble::DATA_LOCAL);
+          processObjectModified(se);
+        }
+      }
+
+      notifySynapseEdited(pt);
+
+      notifyObjectModified();
+    }
   }
 }
 

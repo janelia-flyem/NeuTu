@@ -185,6 +185,7 @@ public: //Synapse functions
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
+  void annotateSelectedSynapse(ZJsonObject propJson, NeuTube::EAxis axis);
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);

@@ -20168,7 +20168,7 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
-#if 1
+#if 0
   ZFlyEmBookmark bookmark;
   bookmark.setComment("test");
 
