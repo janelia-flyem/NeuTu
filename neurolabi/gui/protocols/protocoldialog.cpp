@@ -120,14 +120,8 @@ void ProtocolDialog::onCompleteButton() {
     int ans = mb.exec();
 
     if (ans == QMessageBox::Ok) {
-
         saveState();
-
-        // remove save incomplete (currently I plan diff.
-        //  keys in dvid for complete and incomplete
-        // changeSaveKeyToComplete();
-
-        onExitButton();
+        emit protocolCompleting();
     }
 }
 

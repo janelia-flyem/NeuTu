@@ -31,6 +31,7 @@ private slots:
     void saveProtocolRequested(ZJsonObject data);
     void loadProtocolRequested();
     void loadProtocolKeyRequested(QString protocolKey);
+    void completeProtocolRequested();
     void exitProtocolRequested();
 
 private:

@@ -101,6 +101,41 @@ void ProtocolSwitcher::exitProtocolRequested() {
     delete m_activeProtocol;
 }
 
+void ProtocolSwitcher::completeProtocolRequested() {
+
+
+    std::cout << "prswi: complete protocol" << std::endl;
+
+
+    // when we complete a protocol, we resave the data under a new key;
+    //  it's the old one plus the completion suffix
+
+    ZDvidReader reader;
+    ZJsonObject data;
+    if (reader.open(m_currentDvidTarget)) {
+        const QByteArray &rawData = reader.readKeyValue(QString::fromStdString(PROTOCOL_DATA_NAME),
+            QString::fromStdString(m_activeMetadata.getActiveProtocolKey()));
+        data.decodeString(rawData.data());
+    } else {
+        warningDialog("Complete failed", "Couldn't read saved data from DVID; completion failed!");
+        return;
+    }
+
+    ZDvidWriter writer;
+    if (writer.open(m_currentDvidTarget)) {
+        std::string incompleteKey = m_activeMetadata.getActiveProtocolKey();
+        std::string completeKey = m_activeMetadata.getActiveProtocolKey() + PROTOCOL_COMPLETE_SUFFIX;
+        writer.writeJson(PROTOCOL_DATA_NAME, completeKey, data);
+        writer.deleteKey(QString::fromStdString(PROTOCOL_DATA_NAME), QString::fromStdString(incompleteKey));
+    } else {
+        warningDialog("Complete failed", "Couldn't write complete data to DVID; completion failed!");
+        return;
+    }
+
+    // after the resave, it's just like exit:
+    exitProtocolRequested();
+}
+
 void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     m_currentDvidTarget = target;
 
@@ -219,8 +254,6 @@ void ProtocolSwitcher::loadProtocolRequested() {
     if (!askProceedIfNodeLocked()) {
         return;
     }
-
-    std::cout << "prswi: load protocol from metadata" << std::endl;
 
     m_protocolStatus = PROTOCOL_LOADING;
 
@@ -432,12 +465,14 @@ void ProtocolSwitcher::warningDialog(QString title, QString message) {
 //  together!  disconnect everything you connect!
 void ProtocolSwitcher::connectProtocolSignals() {
     connect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
+    connect(m_activeProtocol, SIGNAL(protocolCompleting()), this, SLOT(completeProtocolRequested()));
     connect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
     connect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
 }
 
 void ProtocolSwitcher::disconnectProtocolSignals() {
     disconnect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
+    disconnect(m_activeProtocol, SIGNAL(protocolCompleting()), this, SLOT(completeProtocolRequested()));
     disconnect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
     disconnect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
 }

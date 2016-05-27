@@ -20,6 +20,7 @@ public:
     std::string getName();
 
 signals:
+    void protocolCompleting();
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
 
