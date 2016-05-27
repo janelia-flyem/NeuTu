@@ -102,11 +102,6 @@ void ProtocolSwitcher::exitProtocolRequested() {
 }
 
 void ProtocolSwitcher::completeProtocolRequested() {
-
-
-    std::cout << "prswi: complete protocol" << std::endl;
-
-
     // when we complete a protocol, we resave the data under a new key;
     //  it's the old one plus the completion suffix
 
@@ -229,9 +224,6 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 // load a saved protocol from key
 void ProtocolSwitcher::loadProtocolKeyRequested(QString protocolKey) {
 
-    std::cout << "prswi: request load key " + protocolKey.toStdString() << std::endl;
-
-
     // parse protocol name from key; update metadata
     if (protocolKey.count("-") != 2) {
         // problem!
@@ -324,7 +316,12 @@ QStringList ProtocolSwitcher::getUserProtocolKeys(QString username, bool showCom
 
         // remove "complete" keys
         if (!showComplete) {
-            // not implemented yet
+            QRegExp reComplete(QString::fromStdString("*" + PROTOCOL_COMPLETE_SUFFIX));
+            reComplete.setPatternSyntax(QRegExp::Wildcard);
+            QStringList completeList = keyList.filter(reComplete);
+            for (int i=0; i<completeList.size(); i++) {
+                keyList.removeAll(completeList.at(i));
+            }
         }
 
         return keyList;
@@ -394,7 +391,6 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
         if (!reader.hasData(PROTOCOL_DATA_NAME)) {
             ZDvidWriter writer;
             if (writer.open(m_currentDvidTarget)) {
-                std::cout << "creating keyvalue " << PROTOCOL_DATA_NAME << std::endl;
                 writer.createKeyvalue(PROTOCOL_DATA_NAME);
                 // did it actually create?  I'm only going to try once
                 if (reader.hasData(PROTOCOL_DATA_NAME)) {
