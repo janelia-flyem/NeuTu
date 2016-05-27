@@ -12,6 +12,7 @@ public:
     ProtocolMetadata(std::string dataName, ZDvidTarget target);
     static ProtocolMetadata ReadProtocolMetadata(std::string dataName, ZDvidTarget target);
     static std::string GetUserMetadataKey();
+    static std::string GetUserMetadataKey(std::string username);
 
     bool isActive();
     std::string getActiveProtocolName();

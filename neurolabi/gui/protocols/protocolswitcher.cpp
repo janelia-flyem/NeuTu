@@ -60,7 +60,7 @@ const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 // names of available protocols; thank you, C++, for making
 //  constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
-        << "Do N things";
+        << "doNthings";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -196,14 +196,31 @@ void ProtocolSwitcher::loadProtocolKeyRequested(QString protocolKey) {
 
     std::cout << "prswi: request load key " + protocolKey.toStdString() << std::endl;
 
+
+    // parse protocol name from key; update metadata
+    if (protocolKey.count("-") != 2) {
+        // problem!
+        warningDialog("Load failed", "Badly formed key: " + protocolKey);
+        return;
+    }
+
+    // middle part is protocol name
+    QStringList parts = protocolKey.split("-");
+    m_activeMetadata.setActive(parts.at(1).toStdString(), protocolKey.toStdString());
+
+    // call load save active
+    loadProtocolRequested();
+
 }
 
-// load a saved active protocol
+// load a saved active protocol from metadata info
 void ProtocolSwitcher::loadProtocolRequested() {
     // locked dvid node check
     if (!askProceedIfNodeLocked()) {
         return;
     }
+
+    std::cout << "prswi: load protocol from metadata" << std::endl;
 
     m_protocolStatus = PROTOCOL_LOADING;
 
@@ -246,9 +263,12 @@ ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     // if-else chain not ideal, but C++ is too stupid to switch
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
-    if (protocolName == "Do N things") {
+    if (protocolName == "doNthings") {
         return new ProtocolDialog(m_parent);
-    } 
+    } else {
+        // should never happen; the null will cause errors
+        return NULL;
+    }
 }
 
 /*
@@ -264,10 +284,10 @@ QStringList ProtocolSwitcher::getUserProtocolKeys(QString username, bool showCom
         // read all keys; filter to current user
         // (not really tested in presence of other users' data yet)
         QStringList keyList = reader.readKeys(QString::fromStdString(PROTOCOL_DATA_NAME));
-        keyList = keyList.filter(QRegExp(QString::fromStdString("^" + NeuTube::GetCurrentUserName())));
+        keyList = keyList.filter(QRegExp(QString::fromStdString("^" + username.toStdString())));
 
         // remove metadata key
-        keyList.removeAll(QString::fromStdString(ProtocolMetadata::GetUserMetadataKey()));
+        keyList.removeAll(QString::fromStdString(ProtocolMetadata::GetUserMetadataKey(username.toStdString())));
 
         // remove "complete" keys
         if (!showComplete) {
@@ -339,9 +359,6 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
     reader.setVerbose(false);
     if (reader.open(m_currentDvidTarget)) {
         if (!reader.hasData(PROTOCOL_DATA_NAME)) {
-
-            std::cout << "prswi: data name being created" << std::endl;
-
             ZDvidWriter writer;
             if (writer.open(m_currentDvidTarget)) {
                 std::cout << "creating keyvalue " << PROTOCOL_DATA_NAME << std::endl;

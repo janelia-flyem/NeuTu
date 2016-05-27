@@ -57,7 +57,12 @@ ProtocolMetadata ProtocolMetadata::ReadProtocolMetadata(std::string dataName, ZD
 }
 
 std::string ProtocolMetadata::GetUserMetadataKey() {
-    return NeuTube::GetCurrentUserName() + PROTOCOL_METADATA_SUFFIX;
+    // return NeuTube::GetCurrentUserName() + PROTOCOL_METADATA_SUFFIX;
+    return GetUserMetadataKey(NeuTube::GetCurrentUserName());
+}
+
+std::string ProtocolMetadata::GetUserMetadataKey(std::string username) {
+    return username + PROTOCOL_METADATA_SUFFIX;
 }
 
 void ProtocolMetadata::read() {
