@@ -79,7 +79,7 @@ ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZIntCuboid &box, double radius)
 
   return CreateBoxSwc(cuboid, radius);
 }
-
+#if defined (_FLYEM_)
 ZSwcTree* ZSwcFactory::CreateSwc(const ZFlyEmNeuronRange &range)
 {
   if (range.isEmpty()) {
@@ -190,6 +190,7 @@ ZSwcTree* ZSwcFactory::CreateRangeCompareSwc(
 
   return tree;
 }
+#endif
 
 ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
     const ZVoxelArray &voxelArray, double radiusAdjustment)

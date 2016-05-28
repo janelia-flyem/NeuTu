@@ -17,7 +17,9 @@
 #include "dialogs/moviedialog.h"
 #include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
+#if defined(_FLYEM_)
 #include "dialogs/flyemneuronthumbnaildialog.h"
+#endif
 #include "zstackdoc.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
@@ -35,35 +37,38 @@ class QUndoView;
 class QMdiSubWindow;
 class Z3DCanvas;
 class ZStack;
+#if defined(_FLYEM_)
 class ZFlyEmDataFrame;
+class FlyEmBodyIdDialog;
+class FlyEmHotSpotDialog;
+class FlyEmBodyFilterDialog;
+class FlyEmBodySplitProjectDialog;
+class ZFlyEmNewBodySplitProjectDialog;
+class ZFlyEmRoiDialog;
+class FlyEmBodyMergeProjectDialog;
+class ZFlyEmProjectManager;
+class ZFlyEmDataLoader;
+class ZFlyEmHackathonConfigDlg;
+class ZDvidClient;
+class DvidObjectDialog;
+class DvidImageDialog;
+class ZDvidDialog;
+class DvidSkeletonizeDialog;
+class DvidOperateDialog;
+#endif
+class FlyEmSkeletonizationDialog;
 class HelpDialog;
 class QProgressBar;
 class DiagnosisDialog;
 class PenWidthDialog;
-class ZDvidClient;
-class DvidObjectDialog;
 class ResolutionDialog;
-class DvidImageDialog;
 class TileManager;
 class ZTiledStackFrame;
-class FlyEmBodyIdDialog;
-class FlyEmHotSpotDialog;
-class ZDvidDialog;
-class FlyEmBodyFilterDialog;
-class FlyEmBodySplitProjectDialog;
-class ZFlyEmNewBodySplitProjectDialog;
-class DvidSkeletonizeDialog;
-class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
-class DvidOperateDialog;
 class SynapseImportDialog;
-class FlyEmBodyMergeProjectDialog;
 class ZSegmentationProjectDialog;
 class ZStackViewManager;
-class ZFlyEmProjectManager;
-class ZFlyEmDataLoader;
-class ZFlyEmHackathonConfigDlg;
 class ZProgressManager;
 class ZMessageManager;
 class ZTestDialog;
@@ -72,7 +77,6 @@ class ZAutoTraceDialog;
 class QTimer;
 class ProjectionDialog;
 class ZStackSkeletonizer;
-class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
 
 namespace Ui {
@@ -101,12 +105,15 @@ public:
 public: /* frame operation */
   ZStackFrame* activeStackFrame();
   ZStackFrame* currentStackFrame();
+#if defined(_FLYEM_)
   ZFlyEmDataFrame* currentFlyEmDataFrame();
+  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
+#endif
+
   ZTiledStackFrame* currentTiledStackFrame();
   int frameNumber();
 
   //Add a flyem data frame. Nothing happens if <frame> is NULL.
-  void addFlyEmDataFrame(ZFlyEmDataFrame *frame);
 
 public: /* Get useful widgets/objects */
   QProgressDialog* getProgressDialog();
@@ -141,7 +148,9 @@ public:
   void processArgument(const QString &arg);
 
 public: //Testing routines
+#if defined(_FLYEM_)
   void testFlyEmProofread();
+#endif
 
 signals:
   void dvidRequestCanceled();
@@ -199,11 +208,11 @@ public slots:
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
-  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
-
+#if defined(_FLYEM_)
+  void createDvidFrame();
   void launchSplit(const QString &str);
-
+#endif
 private:
   Ui::MainWindow *m_ui;
 
@@ -343,26 +352,20 @@ private slots:
 
   //Addictional actions of an frame when it's activated
   void evokeStackFrame(QMdiSubWindow *frame);
-  void on_actionImport_Network_triggered();
+
   void on_actionAddSWC_triggered();
   void on_actionImage_Sequence_triggered();
-  void on_actionAddFlyEmNeuron_Network_triggered();
   void on_actionSynapse_Annotation_triggered();
   void on_actionPosition_triggered();
   void on_actionImportMask_triggered();
-  void on_actionFlyEmSelect_triggered();
   void on_actionImportSegmentation_triggered();
-  void on_actionFlyEmClone_triggered();
   void on_actionClear_Decoration_triggered();
-  void on_actionFlyEmGrow_triggered();
-  void on_actionFlyEmSelect_connection_triggered();
   void on_actionAxon_Export_triggered();
   void on_actionExtract_body_triggered();
   void on_actionPredict_errors_triggered();
   void on_actionCompute_Features_triggered();
   void on_actionMexican_Hat_triggered();
   void on_actionInvert_triggered();
-  void on_actionFlyEmQATrain_triggered();
   void on_actionUpdate_Configuration_triggered();
   void on_actionErrorClassifcationTrain_triggered();
   void on_actionErrorClassifcationPredict_triggered();
@@ -371,7 +374,6 @@ private slots:
   void on_actionTem_Paper_Volume_Rendering_triggered();
   void on_actionTem_Paper_Neuron_Type_Figure_triggered();
   void on_actionBinary_SWC_triggered();
-  void on_actionImportFlyEmDatabase_triggered();
   void on_actionMake_Movie_triggered();
   void on_actionOpen_3D_View_Without_Volume_triggered();
   void on_actionLoop_Analysis_triggered();
@@ -410,7 +412,6 @@ private slots:
   void on_actionSubmit_Skeletonize_triggered();
   void on_actionSplit_Region_triggered();
   void on_actionLoad_Body_with_Grayscale_triggered();
-  void on_actionFlyEmSettings_triggered();
 
   void on_actionView_Labeled_Regions_triggered();
 
@@ -427,8 +428,6 @@ private slots:
   void on_actionCreate_Thumbnails_triggered();
   
   void on_actionCreate_ROI_triggered();
-
-  void on_actionFlyEmROI_triggered();
 
   void on_actionShape_Matching_triggered();
 
@@ -470,6 +469,17 @@ private slots:
 
   void on_actionNeuroMorpho_triggered();
 
+  void on_actionImport_Network_triggered();
+  void on_actionAddFlyEmNeuron_Network_triggered();
+  void on_actionFlyEmSelect_triggered();
+  void on_actionFlyEmClone_triggered();
+  void on_actionFlyEmGrow_triggered();
+  void on_actionFlyEmSelect_connection_triggered();
+  void on_actionFlyEmQATrain_triggered();
+  void on_actionImportFlyEmDatabase_triggered();
+  void on_actionFlyEmSettings_triggered();
+  void on_actionFlyEmROI_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -509,6 +519,7 @@ private:
   //Get the path opened last time.
   QString getLastOpenPath() const;
 
+#if defined(_FLYEM_)
   ZStackDocReader* hotSpotDemo(int bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
   /*!
@@ -516,17 +527,18 @@ private:
    */
   ZStackDocReader *hotSpotDemoFs(uint64_t bodyId, const QString &dvidAddress,
                            const QString &dvidUuid);
+#endif
 
   ZStackDoc* importHdf5Body(int bodyId, const QString &hdf5Path);
   ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
-
+#if defined(_FLYEM_)
   ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
-
+#endif
   void autoTrace(ZStackFrame *frame);
 
   void setSkeletonizer(
@@ -646,7 +658,6 @@ private:
   HelpDialog *m_helpDlg;
   DiagnosisDialog *m_DiagnosisDlg;
   ResolutionDialog *m_resDlg;
-  ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 
 
   // undo redo
@@ -667,31 +678,37 @@ private:
 
   QMap<QString, QAction*> m_actionMap;
 
-  ZDvidClient *m_dvidClient;
-  ZStackFrame *m_dvidFrame;
-  //DvidObjectDialog *m_dvidObjectDlg;
-  DvidImageDialog *m_dvidImageDlg;
+
   TileManager *m_tileDlg;
-  FlyEmBodyIdDialog *m_bodyDlg;
-  FlyEmHotSpotDialog *m_hotSpotDlg;
-  ZDvidDialog *m_dvidDlg;
-  FlyEmBodyFilterDialog *m_bodyFilterDlg;
-  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
-  ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
-  DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
-  ZFlyEmRoiDialog *m_roiDlg;
-  ShapePaperDialog *m_shapePaperDlg;
-  DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
-  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZSegmentationProjectDialog *m_segmentationDlg;
   ZAutoTraceDialog *m_autoTraceDlg;
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
 
-  ZStackViewManager *m_stackViewManager;
+#if defined(_FLYEM_)
+  ZStackFrame *m_dvidFrame;
+  ZDvidClient *m_dvidClient;
+  //DvidObjectDialog *m_dvidObjectDlg;
+  DvidImageDialog *m_dvidImageDlg;
+  ZDvidDialog *m_dvidDlg;
+  DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
+  DvidOperateDialog *m_dvidOpDlg;
+
+  ShapePaperDialog *m_shapePaperDlg;
+  ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
+  FlyEmBodyIdDialog *m_bodyDlg;
+  FlyEmHotSpotDialog *m_hotSpotDlg;
+  FlyEmBodyFilterDialog *m_bodyFilterDlg;
+  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
+  ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
+  ZFlyEmRoiDialog *m_roiDlg;
+  FlyEmBodyMergeProjectDialog *m_mergeBodyDlg;
   ZFlyEmProjectManager *m_flyemProjectManager;
   ZFlyEmDataLoader *m_flyemDataLoader;
+#endif
+
+  ZStackViewManager *m_stackViewManager;
   //new project main window
   NewProjectMainWindow *m_newProject;
 

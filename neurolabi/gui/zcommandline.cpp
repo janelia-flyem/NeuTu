@@ -9,25 +9,33 @@
 #include <QApplication>
 
 #include "tz_utilities.h"
+#include "zstack.hxx"
 //#include "zargumentprocessor.h"
 #include "ztest.h"
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "tz_error.h"
-#include "flyem/zflyemqualityanalyzer.h"
+#include "zstring.h"
 #include "zfiletype.h"
-#include "flyem/zflyemdatabundle.h"
-#include "flyem/zflyemneuronfeatureanalyzer.h"
-#include "flyem/zflyemneuronfeatureset.h"
+
 #include "zstackskeletonizer.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
 #include "neutubeconfig.h"
 #include "zrandomgenerator.h"
 #include "zneurontracer.h"
 #include "zneurontracerconfig.h"
+#include "zintcuboidarray.h"
+
+#if defined (_FLYEM_)
+#include "flyem/zflyemdatabundle.h"
+#include "flyem/zflyemneuronfeatureanalyzer.h"
+#include "flyem/zflyemneuronfeatureset.h"
+#include "flyem/zflyemqualityanalyzer.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
+#endif
+
 //#include "mylib/utilities.h"
 
 using namespace std;
@@ -102,6 +110,7 @@ int ZCommandLine::runObjectMarker()
 
 int ZCommandLine::runBoundaryOrphan()
 {
+#if defined (_FLYEM_)
   ZIntCuboidArray blockArray;
   blockArray.loadSubstackList(m_blockFile);
 
@@ -203,6 +212,7 @@ int ZCommandLine::runBoundaryOrphan()
   json_object_set(obj, "metadata", metaObj);
 
   json_dump_file(obj, m_output.c_str(), JSON_INDENT(2));
+#endif
 
   return 0;
 }
@@ -331,6 +341,7 @@ int ZCommandLine::runObjectOverlap()
 
 int ZCommandLine::runSynapseObjectList()
 {
+#if defined (_FLYEM_)
   std::set<int> bodySet;
   FlyEm::ZSynapseAnnotationArray synaseArray;
   if (!synaseArray.loadJson(m_input[0])) {
@@ -350,12 +361,13 @@ int ZCommandLine::runSynapseObjectList()
   }
 
   stream.close();
-
+#endif
   return 0;
 }
 
 int ZCommandLine::runOutputClassList()
 {
+#if defined (_FLYEM_)
   if (ZFileType::fileType(m_input[0]) == ZFileType::JSON_FILE) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
@@ -371,12 +383,13 @@ int ZCommandLine::runOutputClassList()
 
     return 0;
   }
-
+#endif
   return 1;
 }
 
 int ZCommandLine::runComputeFlyEmNeuronFeature()
 {
+#if defined (_FLYEM_)
   ZFlyEmDataBundle bundle;
 
   QFileInfo fileInfo(m_input[0].c_str());
@@ -408,7 +421,7 @@ int ZCommandLine::runComputeFlyEmNeuronFeature()
   }
 
   stream.close();
-
+#endif
   return 0;
 }
 
@@ -555,7 +568,7 @@ int ZCommandLine::runSkeletonize()
   if (m_isVerbose) {
     tic();
   }
-
+#if defined (_FLYEM_)
   if (ZDvidTarget::isDvidTarget(m_input[0])) {
     ZDvidTarget target;
     //target.setBodyLabelName("sp2body");
@@ -653,7 +666,9 @@ int ZCommandLine::runSkeletonize()
                   << bodyIdArray.size() << std::endl;
       }
     }
-  } else {
+  } else
+  #endif
+  {
     if (!fexist(m_input[0].c_str())) {
       m_reporter.report("Skeletonization Failed",
                         "The input file " + m_input[0] + " seems not exist.",

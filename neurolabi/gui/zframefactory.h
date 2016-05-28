@@ -14,9 +14,10 @@ class ZFrameFactory
 {
 public:
   ZFrameFactory();
-
+#if defined (_FLYEM_)
   static ZFlyEmDataFrame* MakeFlyEmDataFrame(const std::string &bundlePath);
   static ZFlyEmDataFrame* MakeFlyEmDataFrame(const QString &bundlePath);
+#endif
   static ZStackFrame* MakeStackFrame(
       ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,

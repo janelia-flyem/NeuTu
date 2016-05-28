@@ -8,8 +8,10 @@
 #include "zjsonobject.h"
 #include "zstackball.h"
 #include "swctreenode.h"
+#if defined (_FLYEM_)
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
+#endif
 
 ZDocPlayer::~ZDocPlayer()
 {
@@ -484,7 +486,7 @@ Z3DGraph ZStackBallPlayer::get3DGraph() const
 
   return graph;
 }
-
+#if defined (_FLYEM_)
 ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
   ZDocPlayer(data)
 {
@@ -532,7 +534,7 @@ bool ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) con
 
   return updated;
 }
-
+#endif
 ////////////////////////////
 
 Z3DGraph ZCuboidRoiPlayer::get3DGraph() const

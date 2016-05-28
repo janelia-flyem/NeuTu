@@ -7,7 +7,9 @@
 
 #ifdef _QT_GUI_USED_
 #include <QString>
+#if defined(_FLYEM_)
 #include "flyem/zflyembookmark.h"
+#endif
 #endif
 
 ZJsonFactory::ZJsonFactory()
@@ -63,6 +65,7 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
 }
 
 #if defined(_QT_GUI_USED_)
+#if defined(_FLYEM_)
 ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 {
   ZJsonObject json;
@@ -105,7 +108,10 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 
   return json;
 }
+#endif
 
+
+#if defined(_FLYEM_)
 ZJsonArray ZJsonFactory::MakeJsonArray(
     const std::vector<ZFlyEmBookmark *> &bookmarkArray)
 {
@@ -118,7 +124,7 @@ ZJsonArray ZJsonFactory::MakeJsonArray(
 
   return array;
 }
-
+#endif
 ZJsonArray ZJsonFactory::MakeJsonArray(const QMap<uint64_t, uint64_t> &map)
 {
   ZJsonArray array;

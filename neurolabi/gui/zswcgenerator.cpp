@@ -2,7 +2,9 @@
 #include "zswctree.h"
 #include "swctreenode.h"
 #include "swc/zswcresampler.h"
+#if defined(_FLYEM_)
 #include "flyem/zflyemneuronrangecompare.h"
+#endif
 #include "zdoublevector.h"
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
@@ -77,7 +79,7 @@ ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)
 
   return createBoxSwc(cuboid, radius);
 }
-
+#if defined (_FLYEM_)
 ZSwcTree* ZSwcGenerator::createSwc(const ZFlyEmNeuronRange &range)
 {
   if (range.isEmpty()) {
@@ -127,7 +129,9 @@ ZSwcTree* ZSwcGenerator::createSwc(
 
   return tree;
 }
+#endif
 
+#if defined (_FLYEM_)
 ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
     const ZFlyEmNeuronRange &range, const ZFlyEmNeuronRange &reference)
 {
@@ -188,7 +192,7 @@ ZSwcTree* ZSwcGenerator::createRangeCompareSwc(
 
   return tree;
 }
-
+#endif
 ZSwcTree* ZSwcGenerator::createSwcByRegionSampling(
     const ZVoxelArray &voxelArray, double radiusAdjustment)
 {

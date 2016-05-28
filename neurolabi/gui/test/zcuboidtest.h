@@ -4,7 +4,9 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "zintcuboidarray.h"
+#if defined(_FLYEM_)
 #include "flyem/zintcuboidcomposition.h"
+#endif
 #include "zcuboid.h"
 #include "zintcuboidface.h"
 #include "zsharedpointer.h"
@@ -152,7 +154,7 @@ TEST(ZIntCuboidArray, face)
   face2 = blockArray.getInnerFace();
   EXPECT_EQ(6, (int) face2.size());
 }
-
+#if defined(_FLYEM_)
 TEST(ZIntCuboidComposition, hitTest)
 {
   FlyEm::ZIntCuboidComposition cuboid;
@@ -191,6 +193,7 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_FALSE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 }
+#endif
 
 TEST(ZCuboid, distance) {
   ZCuboid box1;

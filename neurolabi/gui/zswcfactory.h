@@ -2,8 +2,10 @@
 #define ZSWCFACTORY_H
 
 #include "zcuboid.h"
+#if defined (_FLYEM_)
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuronaxis.h"
+#endif
 #include "zvoxelarray.h"
 
 class ZSwcTree;
@@ -31,12 +33,13 @@ public:
   static ZSwcTree* CreateCircleSwc(double cx, double cy, double cz, double r);
   static ZSwcTree* CreateBoxSwc(const ZCuboid &box, double radius = 1.0);
   static ZSwcTree* CreateBoxSwc(const ZIntCuboid &box, double radius = 1.0);
+#if defined (_FLYEM_)
   static ZSwcTree* CreateSwc(const ZFlyEmNeuronRange &range);
   static ZSwcTree* CreateSwc(const ZFlyEmNeuronRange &range,
                              const ZFlyEmNeuronAxis &axis);
   static ZSwcTree* CreateRangeCompareSwc(
       const ZFlyEmNeuronRange &range, const ZFlyEmNeuronRange &reference);
-
+#endif
   static ZSwcTree* CreateSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
 

@@ -63,8 +63,6 @@
 #include "zswcnetwork.h"
 #include "zstring.h"
 #include "zcolormap.h"
-#include "flyem/zsynapseannotationarray.h"
-#include "flyem/zneuronnetwork.h"
 #include "zfiletype.h"
 #include "zstackfile.h"
 #include "zstackprocessor.h"
@@ -99,17 +97,25 @@
 #include "zstackpatch.h"
 #include "zobjectcolorscheme.h"
 #include "zstackdocreader.h"
-#include "dvid/zdvidtileensemble.h"
+
 #include "zstackmvc.h"
-#include "dvid/zdvidsparsestack.h"
+
 #include "zprogresssignal.h"
-#include "dvid/zdvidlabelslice.h"
-#include "dvid/zdvidsparsevolslice.h"
+
 #include "zwidgetmessage.h"
 #include "swc/zswcresampler.h"
 #include "zswcforest.h"
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
+
+#if defined (_FLYEM_)
+#include "flyem/zsynapseannotationarray.h"
+#include "flyem/zneuronnetwork.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidsparsevolslice.h"
+#endif
 
 using namespace std;
 
@@ -1450,6 +1456,7 @@ void ZStackDoc::loadSwcNetwork(const char *filePath)
 
 void ZStackDoc::importFlyEmNetwork(const char *filePath)
 {
+#if defined (_FLYEM_)
   if (m_swcNetwork != NULL) {
     delete m_swcNetwork;
   }
@@ -1467,6 +1474,7 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
   notifyObjectModified();
 
   emit swcNetworkModified();
+#endif
 }
 
 void ZStackDoc::setStackSource(const ZStackFile &stackFile)
@@ -2396,9 +2404,11 @@ DEFINE_GET_OBJECT_LIST(getLocsegChainList, ZLocsegChain, TYPE_LOCSEG_CHAIN)
 DEFINE_GET_OBJECT_LIST(getPunctumList, ZPunctum, TYPE_PUNCTUM)
 DEFINE_GET_OBJECT_LIST(getSparseObjectList, ZSparseObject, TYPE_SPARSE_OBJECT)
 DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
+#if defined (_FLYEM_)
 DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_SLICE)
 DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
 DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
+#endif
 
 void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
 {
@@ -3746,12 +3756,14 @@ void ZStackDoc::deselectAllObject(bool recursive)
   }
 
   if (recursive) {
+#if defined (_FLYEM_)
     QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
     foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
       if (labelSlice->isHittable()) {
         labelSlice->deselectAll();
       }
     }
+#endif
   }
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
@@ -3771,12 +3783,14 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
     break;
   case ZStackObject::TYPE_DVID_LABEL_SLICE:
   {
+#if defined (_FLYEM_)
     QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
     foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
       if (labelSlice->isHittable()) {
         labelSlice->deselectAll();
       }
     }
+#endif
   }
     break;
   default:
@@ -4277,6 +4291,7 @@ bool ZStackDoc::enhanceLine()
 bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
                                         int s)
 {
+#if defined (_FLYEM_)
   FlyEm::ZSynapseAnnotationArray synapseArray;
   if (synapseArray.loadJson(filePath)) {
     std::vector<ZPunctum*> puncta;
@@ -4314,7 +4329,7 @@ bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
 //    addSwcTree(tree);
     return true;
   }
-
+#endif
   return false;
 }
 
@@ -7174,9 +7189,11 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_OBJECT3D_SCAN:
         player = new ZObject3dScanPlayer(obj);
         break;
+#if defined (_FLYEM_)
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
         break;
+#endif
       default:
         player = new ZDocPlayer(obj);
         break;
@@ -8556,6 +8573,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
   }
 }
 
+#if defined (_FLYEM_)
 ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 {
   ZStackObject *obj = getObjectGroup().findFirstSameSource(
@@ -8565,7 +8583,7 @@ ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 
   return sparseStack;
 }
-
+#endif
 void ZStackDoc::localSeededWatershed()
 {
   getProgressSignal()->startProgress("Running local split ...");
@@ -8587,6 +8605,7 @@ void ZStackDoc::localSeededWatershed()
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
       } else {
+#if defined (_FLYEM_)
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack(seedMask.getBoundBox());
@@ -8595,6 +8614,7 @@ void ZStackDoc::localSeededWatershed()
 #endif
           dsIntv = sparseStack->getDownsampleInterval();
         }
+#endif
       }
     }
 
@@ -8673,11 +8693,13 @@ void ZStackDoc::seededWatershed()
         signalStack = m_sparseStack->getStack();
         dsIntv = m_sparseStack->getDownsampleInterval();
       } else {
+#if defined (_FLYEM_)
         ZDvidSparseStack *sparseStack = getDvidSparseStack();
         if (sparseStack != NULL) {
           signalStack = sparseStack->getStack();
           dsIntv = sparseStack->getDownsampleInterval();
         }
+#endif
       }
     }
     getProgressSignal()->advanceProgress(0.1);

@@ -238,11 +238,12 @@ public: //attributes
   QList<ZPunctum*> getPunctumList() const;
   QList<ZSparseObject*> getSparseObjectList() const;
   QList<ZObject3dScan*> getObject3dScanList() const;
+#if defined (_FLYEM_)
   QList<ZDvidLabelSlice*> getDvidLabelSliceList() const;
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
-
+#endif
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
   //inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
@@ -547,7 +548,6 @@ public:
 //  enum ESynapseSelection {
 //    SYNAPSE_ALL, SYNAPSE_TBAR, SYNAPSE_PSD
 //  };
-
   /*!
    * \brief importSynapseAnnotation
    * \param filePath

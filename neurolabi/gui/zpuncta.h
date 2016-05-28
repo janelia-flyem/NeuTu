@@ -23,8 +23,9 @@ public:
                NeuTube::EAxis sliceAxis) const;
 
   bool load(const std::string &filePath, double radius = 3.0);
+#if defined(_FLYEM_)
   bool load(const ZJsonObject &obj, double radius = 3.0);
-
+#endif
   void sort() const;
 
   template<typename InputIterator>

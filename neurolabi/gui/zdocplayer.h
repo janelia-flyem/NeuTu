@@ -256,7 +256,7 @@ class ZPlanePlayer : public ZDocPlayer
 public:
   QString getTypeName() const { return "Plane"; }
 };
-
+#if defined (_FLYEM_)
 /**************************************************/
 class ZDvidLabelSlicePlayer : public ZDocPlayer
 {
@@ -280,7 +280,7 @@ public:
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidSparsevolSlice *getCompleteData() const;
 };
-
+#endif
 /************************************************/
 class ZCuboidRoiPlayer : public ZDocPlayer
 {
