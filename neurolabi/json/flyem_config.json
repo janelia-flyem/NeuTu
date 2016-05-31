@@ -307,6 +307,46 @@
     {
       "address": "emdata1.int.janelia.org",
       "port": 8500,
+      "uuid": "24b8",
+      "name": "split training talebii",
+      "comment": "MB seg (branched from node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "talebii"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "1e80",
+      "name": "split training peeld",
+      "comment": "MB seg (branched from node 6f15)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "peeld"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "65f9",
+      "name": "merge training talebii",
+      "comment": "MB seg (branched from node 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "talebii"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "49df",
+      "name": "merge training peeld",
+      "comment": "MB seg (branched from node 0f33)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "user_name": ["zhaot", "peeld"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
       "uuid": "b6bc",
       "name": "MB_Test",
       "comment": "MB seg (branched from febc)",
