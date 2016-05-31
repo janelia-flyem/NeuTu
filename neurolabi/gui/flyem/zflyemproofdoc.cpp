@@ -1762,6 +1762,9 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             } else {
               bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
             }
+            if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+              bookmark->setChecked(true);
+            }
             ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
             addObject(bookmark);
           }
