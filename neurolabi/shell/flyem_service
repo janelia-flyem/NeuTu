@@ -1,0 +1,14 @@
+#!/bin/bash
+installDir=${PWD}/../../..
+
+condaDir=$installDir/miniconda
+source $condaDir/bin/activate dvidenv
+
+easy_install bottle
+easy_install jsonschema
+easy_install timer
+
+cd $installDir/neutube/neurolabi/python/service
+
+python neutuse.py
+ 
