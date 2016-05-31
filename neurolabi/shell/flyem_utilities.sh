@@ -24,6 +24,7 @@ function flyem_neutu_update {
   if [ -d $condaEnv ]
   then
     source ${CONDA_ROOT}/bin/activate root
+    conda update conda
     { echo y; } | $condaDir/bin/conda update -n dvidenv -c flyem libdvid-cpp
   fi
 
