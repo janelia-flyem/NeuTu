@@ -24,13 +24,13 @@ function flyem_neutu_update {
   if [ -d $condaEnv ]
   then
     source ${CONDA_ROOT}/bin/activate root
-    { echo y; } | conda update conda
-    conda remove libdvid-cpp
+    conda update -y conda
+    conda remove -y libdvid-cpp -n dvidenv
     if [ -d $condaEnv/include/libdvid ]
     then
       rm -rf $condaEnv/include/libdvid
     fi
-    { echo y; } | $condaDir/bin/conda install -n dvidenv -c flyem libdvid-cpp
+    conda install -y -n dvidenv -c flyem libdvid-cpp
   fi
 
   if [ `uname` == 'Darwin' ]; then
