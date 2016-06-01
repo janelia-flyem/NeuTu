@@ -40,6 +40,16 @@ double ZDvidSynapse::getConfidence() const
   return c;
 }
 
+std::string ZDvidSynapse::getAnnotation() const
+{
+  std::string annotation;
+  if (m_propertyJson.hasKey("annotation")) {
+    annotation = ZJsonParser::stringValue(m_propertyJson["annotation"]);
+  }
+
+  return annotation;
+}
+
 void ZDvidSynapse::setConfidence(double c)
 {
   m_propertyJson.setEntry("confidence", c);

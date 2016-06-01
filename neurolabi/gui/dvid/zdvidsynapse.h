@@ -30,6 +30,8 @@ public:
   double getConfidence() const;
   void setConfidence(double c);
 
+  std::string getAnnotation() const;
+
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);
 

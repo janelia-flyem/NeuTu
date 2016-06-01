@@ -2879,7 +2879,8 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofMvc::annotateSynapse()
 {
   ZFlyEmSynapseAnnotationDialog dlg(this);
-
+  getCompleteDocument()->annotateSelectedSynapse(&dlg, getView()->getSliceAxis());
+/*
   if (dlg.exec()) {
     double c = dlg.getConfidence();
     ZJsonObject propJson;
@@ -2889,6 +2890,7 @@ void ZFlyEmProofMvc::annotateSynapse()
     getCompleteDocument()->annotateSelectedSynapse(
           propJson, getView()->getSliceAxis());
   }
+  */
 }
 
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)

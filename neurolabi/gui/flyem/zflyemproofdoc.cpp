@@ -38,6 +38,7 @@
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoccommand.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -701,29 +702,56 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(
 }
 
 void ZFlyEmProofDoc::annotateSelectedSynapse(
+    ZFlyEmSynapseAnnotationDialog *dlg, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    if (se->getSelector().getSelectedSet().size() == 1) {
+      ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
+      const ZDvidSynapse &synapse =
+          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      dlg->setConfidence(synapse.getConfidence());
+      dlg->setAnnotation(synapse.getAnnotation().c_str());
+      if (dlg->exec()) {
+        annotateSynapse(pt, dlg->getPropJson(), axis);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofDoc::annotateSynapse(
+    const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    se->annotateSynapse(pt, propJson, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    processObjectModified(se);
+
+    QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+    for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+         iter != seList.end(); ++iter) {
+      ZDvidSynapseEnsemble *buddySe = *iter;
+      if (buddySe != se) {
+        buddySe->annotateSynapse(
+              pt, propJson, ZDvidSynapseEnsemble::DATA_LOCAL);
+        processObjectModified(se);
+      }
+    }
+
+    notifySynapseEdited(pt);
+
+    notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::annotateSelectedSynapse(
     ZJsonObject propJson, NeuTube::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
     if (se->getSelector().getSelectedSet().size() == 1) {
       ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
-      se->annotateSynapse(pt, propJson, ZDvidSynapseEnsemble::DATA_GLOBAL);
-      processObjectModified(se);
-
-      QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
-      for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
-           iter != seList.end(); ++iter) {
-        ZDvidSynapseEnsemble *buddySe = *iter;
-        if (buddySe != se) {
-          buddySe->annotateSynapse(
-                pt, propJson, ZDvidSynapseEnsemble::DATA_LOCAL);
-          processObjectModified(se);
-        }
-      }
-
-      notifySynapseEdited(pt);
-
-      notifyObjectModified();
+      annotateSynapse(pt, propJson, axis);
     }
   }
 }

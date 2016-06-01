@@ -50,8 +50,10 @@ ZImageWidget::~ZImageWidget()
 //  }
 }
 
-void ZImageWidget::paintEvent(QPaintEvent * /*event*/)
+void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+  QWidget::paintEvent(event);
+
 #ifdef _DEBUG_2
   std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
 #endif
