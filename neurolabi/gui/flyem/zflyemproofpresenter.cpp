@@ -176,7 +176,9 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     emit goingToBodyBottom();
     break;
   case Qt::Key_T:
-    emit goingToBodyTop();
+    if (event->modifiers() == Qt::NoModifier) {
+      emit goingToBodyTop();
+    }
     break;
   default:
     break;
@@ -367,6 +369,13 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode()
   tryAddBookmarkMode(pos.x(), pos.y());
 }
 
+void ZFlyEmProofPresenter::tryTodoItemMode()
+{
+  exitStrokeEdit();
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  tryAddTodoItemMode(pos.x(), pos.y());
+}
+
 void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 {
   switch (interactiveContext().synapseEditMode()) {
@@ -441,6 +450,18 @@ void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
 //  getCompleteDocument()->tryMoveSelectedSynapse(pt);
   exitSynapseEdit();
 //  m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
+  updateCursor();
+}
+
+void ZFlyEmProofPresenter::tryAddTodoItemMode(double x, double y)
+{
+  interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_ADD_ITEM);
+  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_TODO_ITEM);
+
+  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+  stroke->set(x, y);
+
+  turnOnActiveObject(ROLE_TODO_ITEM);
   updateCursor();
 }
 
@@ -521,11 +542,17 @@ void ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE:
     tryAddBookmarkMode();
     break;
+  case ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE:
+    tryTodoItemMode();
+    break;
   case ZStackOperator::OP_BOOKMARK_ADD_NEW:
     addActiveStrokeAsBookmark();
     break;
   case ZStackOperator::OP_BOOKMARK_ANNOTATE:
     emit annotatingBookmark(op.getHitObject<ZFlyEmBookmark>());
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE:
+    emit annotatingSynapse();
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(true);

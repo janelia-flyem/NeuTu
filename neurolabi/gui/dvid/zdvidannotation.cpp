@@ -196,6 +196,15 @@ bool ZDvidAnnotation::hit(double x, double y, NeuTube::EAxis axis)
   return d2 <= m_radius * m_radius;
 }
 
+void ZDvidAnnotation::setProperty(ZJsonObject propJson)
+{
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap();
+  for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
+       iter != entryMap.end(); ++iter) {
+    m_propertyJson.setEntry(iter->first.c_str(), iter->second);
+  }
+}
+
 void ZDvidAnnotation::clear()
 {
   m_position.set(0, 0, 0);

@@ -27,6 +27,9 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 
+  double getConfidence() const;
+  void setConfidence(double c);
+
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);
 

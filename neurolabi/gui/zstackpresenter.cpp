@@ -2578,7 +2578,9 @@ void ZStackPresenter::updateCursor()
           */
     //buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else if (interactiveContext().bookmarkEditMode() ==
-             ZInteractiveContext::BOOKMARK_ADD){
+             ZInteractiveContext::BOOKMARK_ADD ||
+             interactiveContext().todoEditMode() ==
+             ZInteractiveContext::TODO_ADD_ITEM){
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
   } else {
     buddyView()->setScreenCursor(Qt::CrossCursor);

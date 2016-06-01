@@ -109,6 +109,7 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
+  void annotateSynapse();
   void checkInSelectedBody();
   void checkInSelectedBodyAdmin();
   void checkOutBody();
