@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QString>
 
+#include "neutubeconfig.h"
 #include "zmatrix.h"
 #include "tz_math.h"
 #include "tz_utilities.h"
@@ -305,16 +306,17 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
 }
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
-    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color)
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
 {
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
 
-  int dsIntv = 1;
-  dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
-  dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
 
-  int sampleInterval = 1;
+//  int sampleInterval = dsIntv;
 
   ZCubeArray *cubes = new ZCubeArray;
   //For each voxel, create a graph
@@ -343,7 +345,12 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   for (k = 0; k <= cdepth; k ++) {
     for (j = 0; j <= cheight; j++) {
       for (i = 0; i <= cwidth; i++) {
-        if (k % sampleInterval == 0) {
+//        bool goodCube = (sampleInterval == 0);
+//        if (!goodCube) {
+//          goodCube = (k % sampleInterval == 0);
+//        }
+        bool goodCube = true;
+        if (goodCube) {
           if (array[offset] > 0) {
             std::vector<int> faceArray;
             for (n = 0; n < 6; n++) {
@@ -653,13 +660,14 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeRequest(
     address += ":";
     address.appendNumber(qurl.port());
   }
-  libdvid::DVIDConnection connection(address);
+  libdvid::DVIDConnection connection(address, GET_FLYEM_CONFIG.getUserName(),
+                                     NeutubeConfig::GetSoftwareName());
 
   libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
   std::string error_msg;
 
-  qDebug() << "address: " << address;
-  qDebug() << "path: " << qurl.path();
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
 
 
   try {
@@ -679,6 +687,22 @@ libdvid::BinaryDataPtr ZFlyEmMisc::MakeGetRequest(
 {
   return MakeRequest(url, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      statusCode);
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const std::string &web_addr, const std::string &uuid)
+{
+  return ZSharedPointer<libdvid::DVIDNodeService>(
+        new libdvid::DVIDNodeService(
+          web_addr, uuid, GET_FLYEM_CONFIG.getUserName(),
+          NeutubeConfig::GetSoftwareName()));
+}
+
+ZSharedPointer<libdvid::DVIDNodeService> ZFlyEmMisc::MakeDvidNodeService(
+    const ZDvidTarget &target)
+{
+  return MakeDvidNodeService(target.getAddressWithPort(),
+                             target.getUuid());
 }
 
 #endif

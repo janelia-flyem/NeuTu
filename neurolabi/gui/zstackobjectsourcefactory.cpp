@@ -43,6 +43,12 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, const std::string &tag)
+{
+  return MakeFlyEmBodySource(bodyId) + "#." + tag;
+}
+
 uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
     const std::string &source)
 {

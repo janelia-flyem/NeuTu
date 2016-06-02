@@ -96,6 +96,7 @@ signals:
 
 public slots:
   void prepareColor();
+  void addNodeType(int type);
   void setClipPlanes();
   void adjustWidgets();
   void selectSwc(QMouseEvent *e, int w, int h);
@@ -121,6 +122,8 @@ private:
   void initTopologyColor();
   void initTypeColor();
   void initSubclassTypeColor();
+
+  static QString GetTypeName(int type);
 
   void decompseSwcTree();
   glm::vec4 getColorByType(Swc_Tree_Node *n);
@@ -201,6 +204,7 @@ private:
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
+  int m_maxType;
 
   ZColorMapParameter m_colorMap;
 

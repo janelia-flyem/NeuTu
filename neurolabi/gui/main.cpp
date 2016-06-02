@@ -9,6 +9,7 @@
 #include "zerror.h"
 #include "z3dapplication.h"
 #include "zneurontracer.h"
+#include "zapplication.h"
 
 #include "ztest.h"
 

@@ -54,6 +54,7 @@
 #include "zclickablelabel.h"
 #include "znormcolormap.h"
 #include "widgets/zcolorlabel.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -314,9 +315,18 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 {
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
-//  doc->updateFrame();
   doc->setDataDoc(m_doc);
   doc->setBodyType(bodyType);
+/*
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          doc, SLOT(setUnrecycable(QSet<uint64_t>)));
+          */
+
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateBodyWindowDeep()));
+
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateCoarseBodyWindowDeep()));
 
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
@@ -502,9 +512,10 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-      doc->dumpAllSwc();
+      doc->dumpAllBody(false);
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
+//      doc->processEvent();
       doc->endObjectModifiedMode();
       doc->notifyObjectModified();
     }
@@ -523,6 +534,36 @@ void ZFlyEmProofMvc::updateBodyWindow()
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
   }
+}
+
+void ZFlyEmProofMvc::updateBodyWindowDeep()
+{
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      doc->dumpAllBody(false);
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+//      doc->processEventFunc();
+//      doc->processEvent();
+      doc->endObjectModifiedMode();
+      doc->notifyObjectModified();
+    }
+  }
+#if 0
+  if (m_bodyWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+#endif
 }
 
 void ZFlyEmProofMvc::updateSkeletonWindow()
@@ -805,7 +846,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
-    getCompleteDocument()->setDvidTarget(target);
+    getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 //    getCompleteDocument()->beginObjectModifiedMode(
 //          ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    getCompleteDocument()->updateTileData();
@@ -831,16 +872,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
-    m_splitProject.setDvidTarget(target);
-    m_mergeProject.setDvidTarget(target);
+    m_splitProject.setDvidTarget(reader.getDvidTarget());
+    m_mergeProject.setDvidTarget(reader.getDvidTarget());
     m_mergeProject.syncWithDvid();
     getProgressSignal()->advanceProgress(0.2);
 
 
     m_dvidInfo = reader.readGrayScaleInfo();
 
-    std::string startLog = "Start using UUID " + target.getUuid() + "@" +
-        target.getAddressWithPort();
+    std::string startLog = "Start using UUID " +
+        reader.getDvidTarget().getUuid() + "@" +
+        reader.getDvidTarget().getAddressWithPort();
 
     ZJsonObject infoJson = reader.readInfo();
     if (infoJson.hasKey("Alias")) {
@@ -856,10 +898,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(target);
+      getSupervisor()->setDvidTarget(reader.getDvidTarget());
     }
 
-    if (target.isValid()) {
+    if (reader.getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
       ZDvidSynapseEnsemble *se =
           getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
@@ -873,7 +915,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getProgressSignal()->advanceProgress(0.5);
 
-    emit dvidTargetChanged(target);
+    emit dvidTargetChanged(reader.getDvidTarget());
   }
   getProgressSignal()->endProgress();
 
@@ -912,7 +954,8 @@ void ZFlyEmProofMvc::setDvidTarget()
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
   if (m_dvidDlg != NULL) {
-    return m_dvidDlg->getDvidTarget();
+    return getCompleteDocument()->getDvidReader().getDvidTarget();
+//    return m_dvidDlg->getDvidTarget();
   }
 
   return ZDvidTarget();
@@ -1051,6 +1094,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
+  connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
+          this, SLOT(annotateSynapse()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
@@ -1740,7 +1785,7 @@ void ZFlyEmProofMvc::updateSplitBody()
 //      updateCoarseBodyWindow(false, false, true);
     }
     ZOUT(LINFO(), 3) << "Updating body window.";
-    updateBodyWindow();
+    updateBodyWindowDeep();
   }
 }
 
@@ -2215,6 +2260,8 @@ void ZFlyEmProofMvc::commitCurrentSplit()
 
 void ZFlyEmProofMvc::syncDvidBookmark()
 {
+  ZOUT(LINFO(), 3) << "Syncing dvid bookmark";
+
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     TStackObjectList &objList =
@@ -2237,6 +2284,8 @@ void ZFlyEmProofMvc::syncDvidBookmark()
       }
     }
   }
+
+  ZOUT(LINFO(), 3) << "Bookmark synced";
 }
 
 void ZFlyEmProofMvc::notifyBookmarkUpdated()
@@ -2368,8 +2417,13 @@ void ZFlyEmProofMvc::showData(bool visible)
   getCompletePresenter()->showData(visible);
   getDocument()->beginObjectModifiedMode(
         ZStackDoc::OBJECT_MODIFIED_CACHE);
-  for (ZStackObjectGroup::iterator iter = getDocument()->getObjectGroup().begin();
-       iter != getDocument()->getObjectGroup().end(); ++iter) {
+
+//  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
+  QList<ZStackObject*> &objList =
+      getDocument()->getObjectGroup().getObjectList();
+
+  for (QList<ZStackObject*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE ||
         obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
@@ -2822,6 +2876,23 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofMvc::annotateSynapse()
+{
+  ZFlyEmSynapseAnnotationDialog dlg(this);
+  getCompleteDocument()->annotateSelectedSynapse(&dlg, getView()->getSliceAxis());
+/*
+  if (dlg.exec()) {
+    double c = dlg.getConfidence();
+    ZJsonObject propJson;
+    std::ostringstream stream;
+    stream << c;
+    propJson.setEntry("confidence", stream.str());
+    getCompleteDocument()->annotateSelectedSynapse(
+          propJson, getView()->getSliceAxis());
+  }
+  */
+}
+
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 {
   getCompleteDocument()->selectBodyInRoi(
@@ -3012,23 +3083,28 @@ void ZFlyEmProofMvc::getROIs()
 
             for(std::size_t i=0; i<keys.size(); i++)
             {
-                std::size_t found = keys.at(i).find("roi");
-
-                if(found!=std::string::npos)
-                {
-
-                    ZObject3dScan roi = reader.readRoi(keys.at(i));
-
-                    if(!roi.isEmpty())
-                    {
-                        m_roiList.push_back(keys.at(i));
-                        m_loadedROIs.push_back(roi);
-
-                        std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource( keys.at(i) );
-                        m_roiSourceList.push_back(source);
-                    }
-
+              std::string roiName = keys.at(i);
+              ZJsonObject roiJson(insList.value(roiName.c_str()));
+              if (roiJson.hasKey("Base")) {
+                ZJsonObject baseJson(roiJson.value("Base"));
+                std::string typeName =
+                    ZJsonParser::stringValue(baseJson["TypeName"]);
+                if (typeName != "roi") {
+                  roiName = "";
                 }
+              }
+
+              if (!roiName.empty()) {
+                ZObject3dScan roi = reader.readRoi(roiName);
+                if (!roi.isEmpty()) {
+                  m_roiList.push_back(roiName);
+                  m_loadedROIs.push_back(roi);
+
+                  std::string source =
+                      ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+                  m_roiSourceList.push_back(source);
+                }
+              }
             }
         }
 

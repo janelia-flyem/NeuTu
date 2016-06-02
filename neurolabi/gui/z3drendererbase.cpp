@@ -805,6 +805,8 @@ void Z3DRendererBase::invalidateDisplayList()
     glDeleteLists(m_displayList, 1);
   }
   m_displayList = 0;
+
+  emit opacityChanged(getOpacity());
 }
 
 void Z3DRendererBase::invalidatePickingDisplayList()

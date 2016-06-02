@@ -592,6 +592,13 @@ double SwcTreeNode::scaledDistance(
   return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+double SwcTreeNode::scaledSurfaceDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  return scaledDistance(tn1, tn2, sx, sy, sz) - radius(tn1) - radius(tn2);
+}
+
 Swc_Tree_Node*
 SwcTreeNode::furthestNode(Swc_Tree_Node *tn, EDistanceType distType)
 {

@@ -101,6 +101,16 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   }
   propJson.setEntry("user", bookmark.getUserName().toStdString());
 
+  std::map<std::string, json_t*> additionalProp =
+      bookmark.getPropertyJson().toEntryMap(false);
+  for (std::map<std::string, json_t*>::iterator iter = additionalProp.begin();
+       iter != additionalProp.end(); ++iter) {
+    const std::string &key = iter->first;
+    if (!propJson.hasKey(key.c_str())) {
+      propJson.setEntry(key.c_str(), iter->second);
+    }
+  }
+
   json.setEntry("Prop", propJson);
 
   return json;

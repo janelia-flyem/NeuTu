@@ -11,7 +11,7 @@ ZStackDocLoader::ZStackDocLoader() : m_isStackReserved(false),
 }
 
 
-void ZStackDocLoader::load(ZStackDoc *doc, const ZStackDocReader &reader)
+void ZStackDocLoader::load(ZStackDoc *doc, ZStackDocReader &reader)
 {
   if (doc != NULL) {
     doc->blockSignals(true);
@@ -25,8 +25,9 @@ void ZStackDocLoader::load(ZStackDoc *doc, const ZStackDocReader &reader)
       }
     }
 
-    for (TStackObjectList::iterator iter = doc->getObjectGroup().begin();
-         iter != doc->getObjectGroup().end(); ++iter) {
+    QList<ZStackObject*> objList = doc->getObjectGroup().getObjectList();
+    for (QList<ZStackObject*>::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
       ZStackObject *obj = *iter;
       if (getLoadMode(obj->getType()) == LOAD_OVERWRITE) {
         m_roleRemoved.addRole(obj->getRole().getRole());
@@ -42,14 +43,16 @@ void ZStackDocLoader::load(ZStackDoc *doc, const ZStackDocReader &reader)
       m_typeAdded.append(type);
     }
 
-    const ZStackObjectGroup &newObjectGroup = reader.getObjectGroup();
-    for (ZStackObjectGroup::const_iterator iter = newObjectGroup.begin();
-         iter != newObjectGroup.end(); ++iter) {
+    const QList<ZStackObject*> &newObjList =
+        reader.getObjectGroup().getObjectList();
+    for (QList<ZStackObject*>::const_iterator iter = newObjList.begin();
+         iter != newObjList.end(); ++iter) {
       const ZStackObject *obj = *iter;
       m_roleAdded.addRole(obj->getRole().getRole());
       doc->getObjectGroup().add(obj, true);
     }
-    doc->getPlayerList().append(reader.getPlayerList());
+    reader.getPlayerList().moveTo(doc->getPlayerList());
+//    doc->getPlayerList().append(reader.getPlayerList());
 
 
     if (reader.getStack() != NULL) {

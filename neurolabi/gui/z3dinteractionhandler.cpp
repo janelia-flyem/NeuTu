@@ -348,14 +348,14 @@ void Z3DTrackballInteractionHandler::shift(
       (m_camera->getFarDist() - m_camera->getNearDist());
   glm::vec3 startInWorld = m_camera->screenToWorld(
         glm::vec3(glm::vec2(mouseStart), centerDepth), viewport);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Center depth: " << centerDepth << std::endl;
   std::cout << "Mouse start:" << mouseStart << std::endl;
   std::cout << "Start vec: " << startInWorld << std::endl;
 #endif
   glm::vec3 endInWorld = m_camera->screenToWorld(
         glm::vec3(glm::vec2(mouseEnd), centerDepth), viewport);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Mouse end:" << mouseEnd << std::endl;
   std::cout << "End vec: " << endInWorld << std::endl;
 #endif
@@ -373,7 +373,7 @@ void Z3DTrackballInteractionHandler::shift(
       emit objectsMoved(vec.x, vec.y, vec.z);
     } else {
       // camera move in opposite direction
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Moving vec: " << vec
                 << std::endl;
 #endif

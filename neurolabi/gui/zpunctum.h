@@ -31,6 +31,10 @@ public:
 //  ZPunctum(const ZIntPoint &center, double r);
   virtual ~ZPunctum();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_PUNCTUM;
+  }
+
   virtual const std::string& className() const;
 
 public:

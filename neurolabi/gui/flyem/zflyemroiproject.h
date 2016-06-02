@@ -54,7 +54,7 @@ public:
   void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
-  void setDocData(const ZStackDocReader &docReader);
+  void setDocData(ZStackDocReader &docReader);
   void loadSynapse(const std::string &filePath, bool isVisible);
   void shallowClearDataFrame();
   bool addRoi();

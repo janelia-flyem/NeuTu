@@ -31,6 +31,7 @@ Z3DCubeRenderer::Z3DCubeRenderer(QObject *parent)
     m_vboSurf = 0;
 
     clearData();
+
 }
 
 Z3DCubeRenderer::~Z3DCubeRenderer()

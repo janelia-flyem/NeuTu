@@ -14,6 +14,7 @@
 #include "zsleeper.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/libdvidheader.h"
+#include "flyem/zflyemmisc.h"
 
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
@@ -79,9 +80,13 @@ void ZDvidBufferReader::read(
         data = m_service->custom_request(
               endPoint, libdvidPayload, connMeth, m_tryingCompress);
       } else {
+#if 0
         libdvid::DVIDNodeService service(
               target.getAddressWithPort(), target.getUuid());
-        data = service.custom_request(
+#endif
+        ZSharedPointer<libdvid::DVIDNodeService> service =
+            ZFlyEmMisc::MakeDvidNodeService(target);
+        data = service->custom_request(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
       }
 
@@ -119,9 +124,13 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = m_service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
+        /*
         libdvid::DVIDNodeService service(
               target.getAddressWithPort(), target.getUuid());
-        data = service.custom_request(
+              */
+        ZSharedPointer<libdvid::DVIDNodeService> service =
+            ZFlyEmMisc::MakeDvidNodeService(target);
+        data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
 

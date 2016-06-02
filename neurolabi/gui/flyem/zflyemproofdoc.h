@@ -17,6 +17,7 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
+#include "flyem/zflyemmb6analyzer.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -26,6 +27,8 @@ class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
+class ZFlyEmSynapseAnnotationDialog;
+
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -158,6 +161,10 @@ public:
     return m_dvidReader;
   }
 
+  const ZDvidReader& getDvidReader() const {
+    return m_dvidReader;
+  }
+
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
   }
@@ -179,6 +186,9 @@ public: //Synapse functions
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
+  void annotateSelectedSynapse(ZJsonObject propJson, NeuTube::EAxis axis);
+  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
+                               NeuTube::EAxis axis);
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
@@ -276,6 +286,7 @@ public slots:
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
+  void rewriteSegmentation();
 
 protected:
   void autoSave();
@@ -283,6 +294,8 @@ protected:
   void updateDvidTargetForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
+  void annotateSynapse(
+      const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
 
 private:
   void connectSignalSlot();
@@ -321,10 +334,13 @@ protected:
   QTimer *m_bookmarkTimer;
 
   QString m_mergeAutoSavePath;
+  bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+
+  mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 };

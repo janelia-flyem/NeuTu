@@ -694,6 +694,11 @@ void NeutubeConfig::Configure(const ZJsonObject &obj)
   getInstance().configure(obj);
 }
 
+std::string NeutubeConfig::GetSoftwareName()
+{
+  return getInstance().getSoftwareName();
+}
+
 
 #ifdef _QT_GUI_USED_
 QString NeutubeConfig::GetFlyEmConfigPath()

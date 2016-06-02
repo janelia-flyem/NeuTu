@@ -6,6 +6,7 @@
 #include "zcubearray.h"
 
 #include "dvid/libdvidheader.h"
+#include "zsharedpointer.h"
 
 class ZMatrix;
 class Z3DGraph;
@@ -23,7 +24,8 @@ void NormalizeSimmat(ZMatrix &simmat);
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
-ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color);
+ZCubeArray* MakeRoiCube(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -45,6 +47,10 @@ libdvid::BinaryDataPtr MakeRequest(
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
 libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
+ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+    const std::string &web_addr, const std::string &uuid);
+ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+    const ZDvidTarget &target);
 #endif
 
 class HackathonEvaluator {

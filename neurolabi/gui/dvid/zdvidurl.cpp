@@ -894,6 +894,11 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getDepth());
 }
 
+void ZDvidUrl::setUuid(const std::string &uuid)
+{
+  m_dvidTarget.setUuid(uuid);
+}
+
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
 {
   std::ostringstream stream;

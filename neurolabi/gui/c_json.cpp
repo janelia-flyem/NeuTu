@@ -29,6 +29,11 @@ json_t* C_Json::makeString(const std::string &v)
   return makeString(v.c_str());
 }
 
+json_t* C_Json::makeJsonNull()
+{
+  return json_null();
+}
+
 json_t* C_Json::makeBoolean(bool v)
 {
   return v ? json_true() : json_false();

@@ -12,7 +12,7 @@ ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
 ZSparseObject::ZSparseObject()
 {
   setLabel(-1);
-  m_type = ZStackObject::TYPE_SPARSE_OBJECT;
+  m_type = GetType();
 }
 
 #if 0

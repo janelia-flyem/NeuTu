@@ -67,6 +67,19 @@ def processEvent(event):
             skl.skeletonize(event.getDataId().getBodyId())
             
 def process():
+    eqcopy =  []
+    while True:
+        try:
+            elem = eventQueue.get(block=False)
+        except Empty:
+            break
+        else:
+            eqcopy.append(elem)
+
+    for i, e in reversed(eqcopy):
+        print  e.getDataId().getBodyId(), i
+
+
     while True:
         try:
             event = eventQueue.get()
@@ -365,7 +378,11 @@ def parseJson():
     data = get_json_post()
     return '<p>' + data['head'] + '</p>'
 
-run(host=socket.gethostname(), port=8080, debug=True)
+port = 8080
+if len(sys.argv) > 1:
+    port = sys.argv[1]
+
+run(host=socket.gethostname(), port=port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:

@@ -21,6 +21,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_blockingContextMenu = false;
   m_sliceAxis = NeuTube::Z_AXIS;
   m_acceptingRect = false;
+  m_rectSpan = false;
 }
 
 
@@ -42,6 +43,7 @@ bool ZInteractiveContext::isContextMenuActivated() const
           m_rectEditMode == RECT_EDIT_OFF &&
           m_bookmarkEditMode == BOOKMARK_EDIT_OFF &&
           m_synapseEditMode == SYNAPSE_EDIT_OFF &&
+          m_todoEditMode == TODO_EDIT_OFF &&
           !m_exitingEdit &&
           !m_blockingContextMenu);
 }

@@ -109,6 +109,7 @@ public slots:
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
+  void annotateSynapse();
   void checkInSelectedBody();
   void checkInSelectedBodyAdmin();
   void checkOutBody();
@@ -229,6 +230,7 @@ protected slots:
   void updateCoarseBodyWindow();
   void updateCoarseBodyWindowDeep();
   void updateBodyWindow();
+  void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
   void updateSplitBody();

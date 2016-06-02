@@ -144,6 +144,7 @@ protected:
 signals:
   void coordScalesChanged();
   void sizeScaleChanged();
+  void opacityChanged(double);
   
 public slots:
   void invalidateDisplayList();

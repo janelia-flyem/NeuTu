@@ -35,7 +35,15 @@ public:
     return m_objectGroup;
   }
 
+  inline ZStackObjectGroup& getObjectGroup() {
+    return m_objectGroup;
+  }
+
   inline const ZDocPlayerList& getPlayerList() const {
+    return m_playerList;
+  }
+
+  ZDocPlayerList& getPlayerList() {
     return m_playerList;
   }
 

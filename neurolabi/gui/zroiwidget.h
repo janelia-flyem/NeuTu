@@ -6,14 +6,34 @@
 
 #include "flyem/zflyemproofdoc.h"
 #include "zcolorscheme.h"
+#include "zobjsmodel.h"
+#include "z3dsurfacefilter.h"
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
+class QSpinBox;
 class QLabel;
+class QDoubleSpinBox;
 class QPushButton;
 class QTableWidget;
 class QTableWidgetItem;
 QT_END_NAMESPACE
+
+//
+class ZROIObjsModel : public ZObjsModel
+{
+    Q_OBJECT
+public:
+    ZROIObjsModel(QObject *parent = 0);
+    ~ZROIObjsModel();
+
+public slots:
+
+protected:
+    virtual void setModelIndexCheckState(const QModelIndex &index, Qt::CheckState cs);
+    virtual bool needCheckbox(const QModelIndex &index) const;
+
+};
 
 //
 class ZROIWidget : public QDockWidget
@@ -42,9 +62,17 @@ public slots:
     void updateROIColors(int row, int column);
     void updateROIRendering(QTableWidgetItem* item);
     void updateSelection();
+    void updateROISelections(QModelIndex idx);
+    void updateSelectedROIs();
+    void updateOpacity(double v);
+    void updateSlider(int v);
+
 
 protected:
     void closeEvent(QCloseEvent * event);
+
+private:
+    int getDsIntv() const;
 
 public:
     //
@@ -57,10 +85,19 @@ public:
     QColor defaultColor;
     std::vector<std::string> m_roiSourceList;
     std::vector<bool> colorModified;
+    std::vector<bool> m_checkStatus;
 
     //
     QCheckBox *selectAll;
+
+    QSpinBox *m_dsIntvWidget;
+    QPushButton *m_updateButton;
+    QLabel *l_opacity;
+    QSlider *s_opacity;
     QTableWidget *tw_ROIs;
+
+    //
+    ZROIObjsModel *m_objmodel;
 };
 
 

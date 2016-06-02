@@ -346,7 +346,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
     for (ZPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
     }
 
     Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
@@ -446,7 +446,7 @@ ZStack* ZStackFactory::makeDensityMap(
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZWeightedPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
                          iround(pt.weight()));
     }
 

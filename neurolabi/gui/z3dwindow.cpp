@@ -794,72 +794,72 @@ void Z3DWindow::init(EInitMode mode)
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
 
-  qDebug()<<"hard coded ...";
+  //  qDebug()<<"hard coded ...";
 
-  //
-  setROIs(1);
-  ZCubeArray *cube = new ZCubeArray;
-  cube->setSource("test cubearray");
+  //  //
+  //  setROIs(1);
+  //  ZCubeArray *cube = new ZCubeArray;
+  //  cube->setSource("test cubearray");
 
-  //
-  std::vector<Z3DCube> cubeArray;
+  //  //
+  //  std::vector<Z3DCube> cubeArray;
 
-  //
-  Z3DCube *cube1 = new Z3DCube;
+  //  //
+  //  Z3DCube *cube1 = new Z3DCube;
 
-  //
-  cube1->b_visible.clear();
-  for(int i=0; i<6; i++)
-      cube1->b_visible.push_back(true);
+  //  //
+  //  cube1->b_visible.clear();
+  //  for(int i=0; i<6; i++)
+  //      cube1->b_visible.push_back(true);
 
-  float o = -1;
-  float l = 1;
-  cube1->length = 4;
-  cube1->nodes.push_back(glm::vec3(o,o,o)); // 0
-  cube1->nodes.push_back(glm::vec3(o+l,o,o)); // 1
-  cube1->nodes.push_back(glm::vec3(o,o+l,o)); // 2
-  cube1->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
-  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 4
-  cube1->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
-  cube1->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
-  cube1->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
+  //  float o = -1;
+  //  float l = 1;
+  //  cube1->length = 4;
+  //  cube1->nodes.push_back(glm::vec3(o,o,o)); // 0
+  //  cube1->nodes.push_back(glm::vec3(o+l,o,o)); // 1
+  //  cube1->nodes.push_back(glm::vec3(o,o+l,o)); // 2
+  //  cube1->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
+  //  cube1->nodes.push_back(glm::vec3(o,o,o+l)); // 4
+  //  cube1->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
+  //  cube1->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
+  //  cube1->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
 
-  //
-  //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
-  cube1->initByNodes = true;
-  cubeArray.push_back(*cube1);
+  //  //
+  //  //cube1->color = glm::vec4(1.0, 0, 0, 0.5);;
+  //  cube1->initByNodes = true;
+  //  cubeArray.push_back(*cube1);
 
-  //
-  Z3DCube *cube2 = new Z3DCube;
+  //  //
+  //  Z3DCube *cube2 = new Z3DCube;
 
-  //
-  cube2->b_visible.clear();
-  for(int i=0; i<6; i++)
-      cube2->b_visible.push_back(true);
+  //  //
+  //  cube2->b_visible.clear();
+  //  for(int i=0; i<6; i++)
+  //      cube2->b_visible.push_back(true);
 
-  o = 1;
-  l = 1;
-  cube2->length = 4;
-  cube2->nodes.push_back(glm::vec3(o,o,o)); // 0
-  cube2->nodes.push_back(glm::vec3(o+l,o,o)); // 1
-  cube2->nodes.push_back(glm::vec3(o,o+l,o)); // 2
-  cube2->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
-  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 4
-  cube2->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
-  cube2->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
-  cube2->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
+  //  o = 1;
+  //  l = 1;
+  //  cube2->length = 4;
+  //  cube2->nodes.push_back(glm::vec3(o,o,o)); // 0
+  //  cube2->nodes.push_back(glm::vec3(o+l,o,o)); // 1
+  //  cube2->nodes.push_back(glm::vec3(o,o+l,o)); // 2
+  //  cube2->nodes.push_back(glm::vec3(o+l,o+l,o)); // 3
+  //  cube2->nodes.push_back(glm::vec3(o,o,o+l)); // 4
+  //  cube2->nodes.push_back(glm::vec3(o+l,o,o+l)); // 5
+  //  cube2->nodes.push_back(glm::vec3(o,o+l,o+l)); // 6
+  //  cube2->nodes.push_back(glm::vec3(o+l,o+l,o+l)); // 7
 
-  //
-  cube2->initByNodes = true;
+  //  //
+  //  cube2->initByNodes = true;
 
-  //
-  cubeArray.push_back(*cube2);
-  cube->setColor(QColor(255,255,0,255));
-  cube->setCubeArray(cubeArray);
+  //  //
+  //  cubeArray.push_back(*cube2);
+  //  cube->setColor(QColor(255,255,0,255));
+  //  cube->setCubeArray(cubeArray);
 
-  //
-  m_surfaceFilter->addData(cube);
-  updateSurfaceBoundBox(); // end hard code
+  //  //
+  //  m_surfaceFilter->addData(cube);
+  //  updateSurfaceBoundBox(); // end hard code
 
 
   connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
@@ -2988,8 +2988,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
+  if (getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -3325,6 +3325,7 @@ void Z3DWindow::changeSelectedSwcNodeType()
       default:
         break;
       }
+      getSwcFilter()->addNodeType(dlg.type());
 
       m_doc->notifySwcModified();
     }
@@ -4568,12 +4569,12 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
+  if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
     if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
       emit croppingSwcInRoi();
     }
-  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
+  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
              m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
     QMessageBox::warning(
           this, "Action Failed", "Cropping only works in coarse body view.");

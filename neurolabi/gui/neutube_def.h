@@ -4,6 +4,11 @@
 #include "tz_stdint.h"
 
 namespace NeuTube {
+
+enum ESyncOption {
+  SYNC, NO_SYNC
+};
+
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
@@ -13,7 +18,7 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_COARSE_BODY,
-  FLYEM_QUICK_BODY, FLYEM_QUICK_BODY_COARSE, FLYEM_SKELETON,
+  FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
   FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO

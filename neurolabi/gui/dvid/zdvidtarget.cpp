@@ -61,8 +61,8 @@ void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
   setServer(address);
-  setUuid(uuid);
   setPort(port);
+  setUuid(uuid);
 }
 
 void ZDvidTarget::clear()

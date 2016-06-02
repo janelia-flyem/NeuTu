@@ -18,6 +18,8 @@
 #include "zintcuboid.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidbufferreader.h"
+#include "dvid/zdvidurl.h"
 
 class ZDvidFilter;
 class ZArray;
@@ -145,7 +147,11 @@ public:
 
   uint64_t readBodyIdAt(int x, int y, int z);
   uint64_t readBodyIdAt(const ZIntPoint &pt);
-  std::vector<uint64_t> readBodyIdAt(const std::vector<ZIntPoint> &ptArray);
+  std::vector<uint64_t> readBodyIdAt(
+      const std::vector<ZIntPoint> &ptArray) const;
+  template <typename InputIterator>
+  std::vector<uint64_t> readBodyIdAt(
+      const InputIterator &first, const InputIterator &last) const;
 
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
@@ -223,6 +229,9 @@ public:
 
   bool good() const;
 
+  std::string readMasterNode() const;
+  static std::string ReadMasterNode(const ZDvidTarget &target);
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {
     return m_service;
@@ -275,6 +284,56 @@ ZJsonArray ZDvidReader::readSynapseJson(
   }
 
   return synapseJsonArray;
+}
+
+template <typename InputIterator>
+std::vector<uint64_t> ZDvidReader::readBodyIdAt(
+    const InputIterator &first, const InputIterator &last) const
+{
+  std::vector<uint64_t> bodyArray;
+
+  if (first != last) {
+    ZDvidBufferReader bufferReader;
+#if defined(_ENABLE_LIBDVIDCPP_)
+    bufferReader.setService(m_service);
+#endif
+    ZDvidUrl dvidUrl(m_dvidTarget);
+
+    ZJsonArray queryObj;
+
+    for (InputIterator iter = first; iter != last; ++iter) {
+      const ZIntPoint &pt = *iter;
+      ZJsonArray coordObj;
+      coordObj.append(pt.getX());
+      coordObj.append(pt.getY());
+      coordObj.append(pt.getZ());
+
+      queryObj.append(coordObj);
+    }
+
+    QString queryForm = queryObj.dumpString(0).c_str();
+
+#ifdef _DEBUG_
+    std::cout << "Payload: " << queryForm.toStdString() << std::endl;
+#endif
+
+    QByteArray payload;
+    payload.append(queryForm);
+
+    bufferReader.read(
+          dvidUrl.getLocalBodyIdArrayUrl().data(), payload, "GET", true);
+    setStatusCode(bufferReader.getStatusCode());
+
+    ZJsonArray infoJson;
+    infoJson.decodeString(bufferReader.getBuffer().data());
+
+    for (size_t i = 0; i < infoJson.size(); ++i) {
+      uint64_t bodyId = (uint64_t) ZJsonParser::integerValue(infoJson.at(i));
+      bodyArray.push_back(bodyId);
+    }
+  }
+
+  return bodyArray;
 }
 
 #endif // ZDVIDREADER_H

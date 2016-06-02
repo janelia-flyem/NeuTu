@@ -31,6 +31,9 @@ Z3DSurfaceFilter::Z3DSurfaceFilter() :
 
     //
     setStayOnTop(false);
+
+    //
+    connect(m_rendererBase, SIGNAL(opacityChanged(double)), this, SLOT(indicateOpacityChanged(double)));
 }
 
 Z3DSurfaceFilter::~Z3DSurfaceFilter()
@@ -152,6 +155,20 @@ void Z3DSurfaceFilter::process(Z3DEye)
     }
 }
 
+void Z3DSurfaceFilter::invalidateRenderer(const string &source)
+{
+  for(size_t i=0; i<m_cubeArrayList.size(); ++i) {
+    if (m_cubeArrayList[i].getSource() == source) {
+      m_cubeRenderers[i]->clearData();
+    }
+  }
+  for (size_t i = 0; i < m_cubeArrayList.size(); ++i) {
+    if (m_cubeArrayList[i].getSource() == source) {
+      m_cubeArrayList[i].clear();
+    }
+  }
+}
+
 void Z3DSurfaceFilter::prepareData()
 {
     if (!m_dataIsInvalid)
@@ -223,11 +240,14 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
         if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) == 0 )
         {
             // update color
+          if (!m_cubeArrayList[i].isEmpty()) {
             m_cubeArrayList[i].setColor(cubes->getColor());
-
-            //
-            sourceAdded = true;
-            continue;
+          } else {
+            m_cubeArrayList[i] = *cubes;
+          }
+          //
+          sourceAdded = true;
+          continue;
         }
     }
 
@@ -317,4 +337,9 @@ void Z3DSurfaceFilter::updateSurfaceVisibleState()
 {
     m_dataIsInvalid = true;
     invalidateResult();
+}
+
+void Z3DSurfaceFilter::indicateOpacityChanged(double v)
+{
+    emit opacityValueChanged(v);
 }

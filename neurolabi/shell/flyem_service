@@ -1,0 +1,23 @@
+#!/bin/bash
+installDir=${PWD}/../../..
+
+condaDir=$installDir/miniconda
+source $condaDir/bin/activate dvidenv
+
+function install_python_package {
+  package=$1
+  if ! python -c "import $package" 2>/dev/null 
+  then
+    easy_install $package
+  fi
+}
+
+install_python_package bottle
+install_python_package jsonschema
+install_python_package timer
+install_python_package requests
+
+cd $installDir/neutube/neurolabi/python/service
+
+python neutuse.py $*
+ 

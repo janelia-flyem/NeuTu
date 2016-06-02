@@ -364,6 +364,27 @@ void ZDvidSynapseEnsemble::addSynapse(
   }
 }
 
+void ZDvidSynapseEnsemble::annotateSynapse(
+    int x, int y, int z, const ZJsonObject &propJson, EDataScope scope)
+{
+  ZDvidSynapse &synapse = getSynapse(x, y, z, DATA_GLOBAL);
+  if (synapse.isValid()) {
+    synapse.setProperty(propJson);
+    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+      ZDvidWriter writer;
+      if (writer.open(m_dvidTarget)) {
+        writer.writeSynapse(synapse);
+      }
+    }
+  }
+}
+
+void ZDvidSynapseEnsemble::annotateSynapse(
+    const ZIntPoint &pt, const ZJsonObject &propJson, EDataScope scope)
+{
+  annotateSynapse(pt.getX(), pt.getY(), pt.getZ(), propJson, scope);
+}
+
 void ZDvidSynapseEnsemble::setRange(const ZIntCuboid &dataRange)
 {
   m_dataRange = dataRange;

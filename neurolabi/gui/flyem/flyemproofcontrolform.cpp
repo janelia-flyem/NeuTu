@@ -326,7 +326,10 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 {
   if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    ZOUT(LINFO(), 3) << "Update bookmark table for merge project";
     m_assignedBookmarkList.clear();
+
+    ZOUT(LINFO(), 3) << "Bookmark list cleared";
 //    project->clearBookmarkDecoration();
 
     if (project->getDocument() != NULL) {
@@ -342,7 +345,9 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
+
     getAssignedBookmarkView()->sort();
+    ZOUT(LINFO(), 3) << "Bookmark sorted";
     /*
     m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
                           m_bookmarkProxy->sortOrder());

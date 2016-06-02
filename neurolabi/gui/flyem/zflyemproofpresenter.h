@@ -76,6 +76,7 @@ signals:
   void selectingBody();
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
+  void annotatingSynapse();
   void mergingBody();
   void goingToBodyBottom();
   void goingToBodyTop();
@@ -102,11 +103,13 @@ private:
   void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
+  void tryAddTodoItemMode(double x, double y);
   void addActiveStrokeAsBookmark();
   void init();
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
   void tryAddSynapse(const ZIntPoint &pt);
   void tryMoveSynapse(const ZIntPoint &pt);
+  void tryTodoItemMode();
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
