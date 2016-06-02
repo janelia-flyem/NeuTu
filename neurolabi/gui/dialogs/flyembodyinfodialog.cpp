@@ -374,11 +374,13 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
     //  are present
 
     ZDvidReader reader;
-    reader.setVerbose(false);
+
     if (reader.open(target)) {
+        reader.setVerbose(true);
         const QByteArray &bookmarkData = reader.readKeyValue(
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
+        reader.setVerbose(false);
         ZJsonObject jsonDataObject;
         jsonDataObject.decodeString(bookmarkData.data());
 

@@ -27,6 +27,34 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+double ZDvidSynapse::getConfidence() const
+{
+  double c = 1.0;
+
+  if (m_propertyJson.hasKey("confidence")) {
+    const char *confStr =
+        ZJsonParser::stringValue(m_propertyJson["confidence"]);
+    c = std::atof(confStr);
+  }
+
+  return c;
+}
+
+std::string ZDvidSynapse::getAnnotation() const
+{
+  std::string annotation;
+  if (m_propertyJson.hasKey("annotation")) {
+    annotation = ZJsonParser::stringValue(m_propertyJson["annotation"]);
+  }
+
+  return annotation;
+}
+
+void ZDvidSynapse::setConfidence(double c)
+{
+  m_propertyJson.setEntry("confidence", c);
+}
+
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {
@@ -49,8 +77,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
 
   if (visible) {
     QColor color = getColor();
+    double alpha = 1.0;
     if (!isFocused) {
-      double alpha = radius / m_radius;
+      alpha = radius / m_radius;
       alpha *= alpha * 0.5;
       alpha += 0.1;
       color.setAlphaF(alpha * color.alphaF());
@@ -78,18 +107,30 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         pen.setWidth(pen.width() - 1);
       }
     }
+    QString decorationText;
 
     if (!getUserName().empty()) {
-      QString decorationText = "u";
-      int height = iround(getRadius() * 2);
+      decorationText = "U";
+    }
+
+
+    double conf  = getConfidence();
+    if (conf < 1.0) {
+      decorationText += QString(".%1").arg(iround(conf * 10.0));
+    }
+
+    if (!decorationText.isEmpty()) {
+      int height = iround(getRadius() * 1.5);
       int width = decorationText.size() * height;
       QFont font;
-      font.setPixelSize(width);
+      font.setPixelSize(height);
       painter.setFont(font);
 
       QColor oldColor = painter.getPen().color();
-      painter.setPen(QColor(0, 0, 0));
-      painter.drawText(center.getX(), center.getY(), width, height,
+      QColor color = QColor(0, 0, 0);
+      color.setAlphaF(alpha);
+      painter.setPen(color);
+      painter.drawText(center.getX() - height / 2, center.getY(), width, height,
                        Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
     }

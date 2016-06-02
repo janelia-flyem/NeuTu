@@ -27,6 +27,7 @@ class ZDvidSparseStack;
 class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
+class ZFlyEmSynapseAnnotationDialog;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -185,6 +186,9 @@ public: //Synapse functions
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
   void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
+  void annotateSelectedSynapse(ZJsonObject propJson, NeuTube::EAxis axis);
+  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
+                               NeuTube::EAxis axis);
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
@@ -290,6 +294,8 @@ protected:
   void updateDvidTargetForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
+  void annotateSynapse(
+      const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
 
 private:
   void connectSignalSlot();

@@ -113,6 +113,8 @@ public:
 
   ZCuboid getBoundBox() const;
 
+  void setProperty(ZJsonObject propJson);
+
 public: //Additional properties
   void setUserName(const std::string &name);
   std::string getUserName() const;
