@@ -241,7 +241,7 @@ public:
   Stack* toStack(int *offset = NULL, int v = 1) const;
   Stack* toStackWithMargin(int *offset, int v, int margin) const;
 
-  ZStack* toStackObject(int v = 1) const;
+  ZStack* toStackObject(int v = 1, ZStack *result = NULL) const;
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
   ZStack* toVirtualStack() const;
