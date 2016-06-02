@@ -1386,15 +1386,6 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   QSize newSize = getProjRegion().size().toSize();
 
-  if (transform.getSx() > 1.1) {
-    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-    newSize = viewPort.size();
-    canvas->getProjTransform().estimate(
-          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
-    transform.setScale(1.0, 1.0);
-    transform.setOffset(-viewPort.left(), -viewPort.top());
-  }
-
 //  qDebug() << "  Canvas size" << newSize;
 
   if (canvas != NULL) {
@@ -1406,6 +1397,15 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   if (canvas == NULL) {
     canvas = new ZPixmap(newSize);
+  }
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    canvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
   }
 
   canvas->setTransform(transform);
