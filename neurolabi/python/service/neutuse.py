@@ -378,7 +378,11 @@ def parseJson():
     data = get_json_post()
     return '<p>' + data['head'] + '</p>'
 
-run(host=socket.gethostname(), port=8080, debug=True)
+port = 8080
+if len(sys.argv) > 1:
+    port = sys.argv[1]
+
+run(host=socket.gethostname(), port=port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:

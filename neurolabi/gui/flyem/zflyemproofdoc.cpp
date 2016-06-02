@@ -710,6 +710,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
       const ZDvidSynapse &synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      dlg->setOption(synapse.getKind());
       dlg->setConfidence(synapse.getConfidence());
       dlg->setAnnotation(synapse.getAnnotation().c_str());
       if (dlg->exec()) {
