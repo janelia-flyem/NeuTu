@@ -3223,38 +3223,55 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       Stack *stackData = stack->c_stack();
 
-      ZStackSkeletonizer skeletonizer;
-      skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
-                                         dlg.getZInterval());
-      skeletonizer.setProgressReporter(frame->document()->getProgressReporter());
-      skeletonizer.setRebase(true);
-      if (dlg.isExcludingSmallObj()) {
-        skeletonizer.setMinObjSize(dlg.sizeThreshold());
-      } else {
-        skeletonizer.setMinObjSize(0);
+      ZStack backupStack;
+      if (stackData == NULL) {
+        QList<ZSparseObject*> objList =
+            frame->document()->getObjectList<ZSparseObject>();
+        ZObject3dScan obj;
+        for (QList<ZSparseObject*>::iterator iter = objList.begin();
+             iter != objList.end(); ++iter) {
+          obj.concat(*(*iter));
+
+        }
+        obj.toStackObject(1, &backupStack);
+        stackData = backupStack.c_stack();
       }
 
-      double distThre = -1.0;
-      if (!dlg.isConnectingAll()) {
-        distThre = dlg.distanceThreshold();
+      ZSwcTree *wholeTree = NULL;
+      if (stackData != NULL) {
+        ZStackSkeletonizer skeletonizer;
+        skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
+                                           dlg.getZInterval());
+        skeletonizer.setProgressReporter(frame->document()->getProgressReporter());
+        skeletonizer.setRebase(true);
+        if (dlg.isExcludingSmallObj()) {
+          skeletonizer.setMinObjSize(dlg.sizeThreshold());
+        } else {
+          skeletonizer.setMinObjSize(0);
+        }
+
+        double distThre = -1.0;
+        if (!dlg.isConnectingAll()) {
+          distThre = dlg.distanceThreshold();
+        }
+        skeletonizer.setDistanceThreshold(distThre);
+
+        //skeletonizer.setResolution(1, 3);
+
+        skeletonizer.setLengthThreshold(dlg.lengthThreshold());
+        skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
+
+
+        if (dlg.isLevelChecked()) {
+          skeletonizer.setLevel(dlg.level());
+          skeletonizer.setLevelOp(dlg.getLevelOp());
+          //skeletonizer.useOriginalSignal(true);
+        }
+
+        wholeTree = skeletonizer.makeSkeleton(stackData);
+
+        wholeTree->translate(frame->document()->getStackOffset());
       }
-      skeletonizer.setDistanceThreshold(distThre);
-
-      //skeletonizer.setResolution(1, 3);
-
-      skeletonizer.setLengthThreshold(dlg.lengthThreshold());
-      skeletonizer.setKeepingSingleObject(dlg.isKeepingShortObject());
-
-
-      if (dlg.isLevelChecked()) {
-        skeletonizer.setLevel(dlg.level());
-        skeletonizer.setLevelOp(dlg.getLevelOp());
-        //skeletonizer.useOriginalSignal(true);
-      }
-
-      ZSwcTree *wholeTree = skeletonizer.makeSkeleton(stackData);
-
-      wholeTree->translate(frame->document()->getStackOffset());
 
       if (wholeTree != NULL) {
         frame->executeAddObjectCommand(wholeTree);

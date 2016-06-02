@@ -1120,12 +1120,16 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
   return stack;
 }
 
-ZStack* ZObject3dScan::toStackObject(int v) const
+ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
 {
   int offset[3] = {0, 0, 0};
   Stack *stack = toStack(offset, v);
 
-  ZStack *stackObject = new ZStack;
+  ZStack *stackObject = result;
+
+  if (stackObject == NULL) {
+    stackObject = new ZStack;
+  }
 
   if (stack != NULL) {
     stackObject->load(stack);
