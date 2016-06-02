@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "dvid/zdvidannotation.h"
+
 namespace Ui {
 class ZFlyEmSynapseAnnotationDialog;
 }
@@ -26,6 +28,12 @@ public:
   QString getAnnotation() const;
 
   void setAnnotation(const QString &annotation);
+
+  enum EOption {
+    OPTION_TBAR, OPTION_PSD
+  };
+
+  void setOption(ZDvidAnnotation::EKind kind);
 
 protected slots:
   void updateAnnotationWidget();
