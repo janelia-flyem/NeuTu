@@ -151,7 +151,8 @@ public:
 
   QAction* getAction(ZActionFactory::EAction item) const;
 
-  virtual void makeAction(ZActionFactory::EAction item);
+  QAction* makeAction(ZActionFactory::EAction item);
+  virtual bool connectAction(QAction *action, ZActionFactory::EAction item);
 //{
 //    return m_actionMap[item];
 //  }
@@ -400,6 +401,7 @@ signals:
   void orthoViewTriggered(double x, double y, double z);
   void checkingBookmark();
   void uncheckingBookmark();
+  void savingStack();
 
 protected:
   void init();

@@ -65,6 +65,9 @@ public:
 
   QMenu* getContextMenu();
 
+//  QAction* makeAction(ZActionFactory::EAction item);
+  bool connectAction(QAction *action, ZActionFactory::EAction item);
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -100,7 +103,7 @@ public slots:
   void zoomInRectRoi();
 
 private:
-  void connectAction();
+//  void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void tryAddTodoItemMode(double x, double y);

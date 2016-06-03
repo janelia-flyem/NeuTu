@@ -46,11 +46,97 @@ void ZFlyEmProofPresenter::init()
 
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 
-  connectAction();
+//  connectAction();
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
+bool ZFlyEmProofPresenter::connectAction(
+    QAction *action, ZActionFactory::EAction item)
+{
+  bool connected = false;
+
+  if (action != NULL) {
+    connected = true;
+    switch (item) {
+    case ZActionFactory::ACTION_SYNAPSE_DELETE:
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_PRE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddPreSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_POST:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryAddPostSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_MOVE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryMoveSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(linkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNLINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddDoneItem()));
+      break;
+    case ZActionFactory::ACTION_CHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
+      break;
+    case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(uncheckTodoItem()));
+      break;
+    case ZActionFactory::ACTION_REMOVE_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(removeTodoItem()));
+      break;
+    case ZActionFactory::ACTION_SELECT_BODY_IN_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(selectBodyInRoi()));
+      break;
+    case ZActionFactory::ACTION_ZOOM_TO_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(zoomInRectRoi()));
+      break;
+    case ZActionFactory::ACTION_REWRITE_SEGMENTATION:
+      connect(action, SIGNAL(triggered()),
+              getCompleteDocument(), SLOT(rewriteSegmentation()));
+      break;
+    default:
+      connected = false;
+      break;
+    }
+    if (connected == false) {
+      connected = ZStackPresenter::connectAction(action, item);
+    }
+  }
+
+  return connected;
+}
+
+#if 0
+QAction* ZFlyEmProofPresenter::makeAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+
+  if (!m_actionMap.contains(item)) {
+    action = m_actionFactory->makeAction(item, this);
+    m_actionMap[item] = action;
+
+    if (action == NULL) {
+      action = ZStackPresenter::makeAction(item);
+    }
+  } else {
+    action = m_actionMap[item];
+  }
+
+  return action;
+}
+#endif
+
+#if 0
 void ZFlyEmProofPresenter::connectAction()
 {
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
@@ -84,6 +170,7 @@ void ZFlyEmProofPresenter::connectAction()
           SLOT(rewriteSegmentation()));
 
 }
+#endif
 
 void ZFlyEmProofPresenter::selectBodyInRoi()
 {

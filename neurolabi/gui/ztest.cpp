@@ -20299,6 +20299,54 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  const std::vector<ZDvidTarget> &repoList = GET_FLYEM_CONFIG.getDvidRepo();
+
+  std::cout << repoList.size() << std::endl;
+
+  std::set<std::string> userNameSet;
+  std::set<std::string> uuidSet;
+  std::vector<ZDvidTarget> targetList;
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = repoList.begin();
+       iter != repoList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    userNameSet.insert(
+          target.getUserNameSet().begin(), target.getUserNameSet().end());
+    if (ZString(target.getUuid()).startsWith("@")) {
+      if (uuidSet.count(target.getUuid()) == 0) {
+        uuidSet.insert(target.getUuid());
+        targetList.push_back(target);
+      }
+    }
+  }
+
+  std::cout << userNameSet.size() << " users." << std::endl;
+
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = targetList.begin();
+       iter != targetList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    ZDvidReader reader;
+    reader.open(target);
+    //      ZDvidUrl url(target);
+    for (std::set<std::string>::const_iterator iter = userNameSet.begin();
+         iter != userNameSet.end(); ++iter) {
+      const std::string &user = *iter;
+      ZJsonArray jsonArray = reader.readAnnotation(
+            target.getBookmarkName(), "user:" + user);
+      std::cout << jsonArray.size() << " bookmarks for " << target.getUuid()
+                << ":" << user << std::endl;
+      for (size_t i = 0; i < jsonArray.size(); ++i) {
+        ZJsonObject jsonObj(jsonArray.value(i));
+        ZFlyEmBookmark bookmark;
+        bookmark.loadDvidAnnotation(jsonObj);
+        if (bookmark.getComment().contains("split")) {
+          std::cout << bookmark.getCenter().toString() << ":"
+                    << bookmark.getComment().toStdString() << std::endl;
+        }
+      }
+    }
+  }
 
 #endif
 

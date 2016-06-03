@@ -142,7 +142,7 @@ QMenu* ZMenuFactory::makeSwcNodeContextMenu(
   return menu;
 }
 
-QMenu* ZMenuFactory::makeSrokePaintContextMenu(
+QMenu* ZMenuFactory::makeStrokePaintContextMenu(
     ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {

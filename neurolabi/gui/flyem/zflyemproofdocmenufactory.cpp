@@ -190,6 +190,10 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       }
       actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
+      if (doc->hasStackData()) {
+        actionList.append(ZActionFactory::ACTION_SAVE_STACK);
+      }
+
       if (doc->getCuboidRoi().getDepth() > 1) {
         if (!actionList.isEmpty()) {
           actionList.append(ZActionFactory::ACTION_SEPARATOR);
