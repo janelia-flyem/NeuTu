@@ -7777,8 +7777,8 @@ void ZStackDoc::showSeletedSwcNodeScaledLength()
 {
   double resolution[3] = {1, 1, 1};
   if (getResolutionDialog()->exec()) {
-    resolution[0] = getResolutionDialog()->getXYScale();
-    resolution[1] = getResolutionDialog()->getXYScale();
+    resolution[0] = getResolutionDialog()->getXScale();
+    resolution[1] = getResolutionDialog()->getYScale();
     resolution[2] = getResolutionDialog()->getZScale();
     showSeletedSwcNodeLength(resolution);
   }

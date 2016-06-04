@@ -5553,7 +5553,8 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
   ZStackFrame *frame= currentStackFrame();
   if (frame != NULL) {
     if (m_resDlg->exec()) {
-      if (m_resDlg->getXYScale() == 0.0 || m_resDlg->getZScale() == 0.0) {
+      if (m_resDlg->getXScale() == 0.0 || m_resDlg->getYScale() == 0.0 ||
+          m_resDlg->getZScale() == 0.0) {
         report("Invalid Parameter", "A scale value is 0. No SWC is saved",
                NeuTube::MSG_WARNING);
       } else {
@@ -5574,7 +5575,7 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
                 swcSource = "./untitled.swc";
               }
               */
-              tree->rescale(m_resDlg->getXYScale(), m_resDlg->getXYScale(),
+              tree->rescale(m_resDlg->getXScale(), m_resDlg->getYScale(),
                             m_resDlg->getZScale());
               tree->save(fileName.toStdString());
               delete tree;
