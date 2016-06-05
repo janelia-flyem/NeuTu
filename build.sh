@@ -31,6 +31,7 @@ else
   else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
+  shift
 fi
 
 set -e
