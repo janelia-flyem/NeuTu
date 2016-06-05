@@ -607,7 +607,7 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   qDebug() << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
 #endif
@@ -620,8 +620,10 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     m_imageWidget->blockPaint(blockingPaint);
 
+#if defined(_DEBUG_2)
     qDebug() << "Blocking paint:" <<blockingPaint;
     qDebug() << "Updating image widget" << m_imageWidget->screenSize();
+#endif
     switch (option) {
     case UPDATE_QUEUED:
       m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));

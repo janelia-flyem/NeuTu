@@ -4920,6 +4920,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       ZStack *mask = NULL;
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        LINFO() << "Skeletonizing projected mask ...";
         mask = frame->getStrokeMask(NeuTube::COLOR_RED);
         if (mask != NULL) {
           maskArray.push_back(mask);
@@ -4933,6 +4934,7 @@ void MainWindow::on_actionMask_SWC_triggered()
           maskArray.push_back(mask);
         }
       } else {
+        LINFO() << "Skeletonizing mask ...";
         mask = frame->getStrokeMask();
         if (mask != NULL) {
           maskArray.push_back(mask);
@@ -5727,6 +5729,7 @@ void MainWindow::on_actionTiles_triggered()
 {
   QString fileName = getOpenFileName("Load Tiles", "*.json");
   if (!fileName.isEmpty()) {
+    LINFO() << "Start reconstruction: Loading " + fileName + "...";
     QProgressDialog *progressDlg = getProgressDialog();
     progressDlg->setLabelText("Loading tiles ...");
     progressDlg->setRange(0, 0);

@@ -29,8 +29,21 @@ public:
   bool isSaved(NeuTube::EDocumentableType type) const;
   void setSaved(NeuTube::EDocumentableType type, bool state);
 
+  void enableLog(bool on);
+  bool loggingCommand() const;
+  void logCommand(const QString &msg) const;
+  void logCommand() const;
+  void logUndoCommand() const;
+  void setLogMessage(const QString &msg);
+  void setLogMessage(const std::string &msg);
+  void setLogMessage(const char *msg);
+
+  void startUndo();
+
 private:
   bool m_isSwcSaved;
+  bool m_loggingCommand;
+  QString m_logMessage;
 };
 
 namespace ZStackDocCommand {
@@ -637,7 +650,7 @@ private:
   QList<ZStackObject*> m_selectedObject;
 };
 
-class MoveSelected : public QUndoCommand
+class MoveSelected : public ZUndoCommand
 {
   ZStackDoc *m_doc;
   QList<ZSwcTree*> m_swcList;
@@ -668,7 +681,7 @@ public:
 }
 
 namespace TubeEdit {
-class RemoveSmall : public QUndoCommand
+class RemoveSmall : public ZUndoCommand
 {
 public:
   RemoveSmall(ZStackDoc *doc, double thre, QUndoCommand *parent = NULL);
@@ -683,7 +696,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class RemoveSelected : public QUndoCommand
+class RemoveSelected : public ZUndoCommand
 {
 public:
   RemoveSelected(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -697,7 +710,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class Trace : public QUndoCommand
+class Trace : public ZUndoCommand
 {
 public:
   Trace(ZStackDoc *doc, int x, int y, int z, QUndoCommand *parent = NULL);
@@ -713,7 +726,7 @@ private:
   ZLocsegChain* m_chain;
 };
 
-class CutSegment : public QUndoCommand
+class CutSegment : public ZUndoCommand
 {
 public:
   CutSegment(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -727,7 +740,7 @@ private:
   QList<ZLocsegChain*> m_newChainList;
 };
 
-class BreakChain : public QUndoCommand
+class BreakChain : public ZUndoCommand
 {
 public:
   BreakChain(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -759,7 +772,7 @@ private:
   QList<ZPunctum*> m_punctaList;
 };
 #endif
-class AutoTraceAxon : public QUndoCommand
+class AutoTraceAxon : public ZUndoCommand
 {
 public:
   AutoTraceAxon(ZStackDoc *m_doc, QUndoCommand *parent = NULL);
@@ -779,7 +792,7 @@ private:
 }
 
 namespace StrokeEdit {
-class AddStroke : public QUndoCommand
+class AddStroke : public ZUndoCommand
 {
 public:
   AddStroke(ZStackDoc *doc, ZStroke2d *stroke, QUndoCommand *parent = NULL);
@@ -793,7 +806,7 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveTopStroke : public QUndoCommand
+class RemoveTopStroke : public ZUndoCommand
 {
 public:
   RemoveTopStroke(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -807,7 +820,7 @@ private:
   bool m_isInDoc;
 };
 
-class CompositeCommand : public QUndoCommand
+class CompositeCommand : public ZUndoCommand
 {
 public:
   CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -821,7 +834,7 @@ protected:
 }
 
 namespace StackProcess {
-class Binarize : public QUndoCommand
+class Binarize : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -834,7 +847,7 @@ public:
   void redo();
 };
 
-class BwSolid : public QUndoCommand
+class BwSolid : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -846,7 +859,7 @@ public:
   void redo();
 };
 
-class EnhanceLine : public QUndoCommand
+class EnhanceLine : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -858,7 +871,7 @@ public:
   void redo();
 };
 
-class Watershed : public QUndoCommand
+class Watershed : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;

@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#define INIT_ZUNDOCOMMAND m_isSwcSaved(false)
+#define INIT_ZUNDOCOMMAND m_isSwcSaved(false), m_loggingCommand(true)
 
 ZUndoCommand::ZUndoCommand(QUndoCommand *parent) : QUndoCommand(parent),
   INIT_ZUNDOCOMMAND
@@ -35,6 +35,55 @@ ZUndoCommand::ZUndoCommand(const QString &text, QUndoCommand *parent) :
   QUndoCommand(text, parent), INIT_ZUNDOCOMMAND
 {
 
+}
+
+void ZUndoCommand::enableLog(bool on)
+{
+  m_loggingCommand = on;
+}
+
+bool ZUndoCommand::loggingCommand() const
+{
+  return m_loggingCommand;
+}
+
+void ZUndoCommand::logCommand(const QString &msg) const
+{
+  if (loggingCommand() && !msg.isEmpty()) {
+    LINFO() << msg;
+  }
+}
+
+void ZUndoCommand::setLogMessage(const QString &msg)
+{
+  m_logMessage = msg;
+}
+
+void ZUndoCommand::setLogMessage(const std::string &msg)
+{
+  m_logMessage = msg.c_str();
+}
+
+void ZUndoCommand::setLogMessage(const char *msg)
+{
+  m_logMessage = msg;
+}
+
+void ZUndoCommand::logCommand() const
+{
+  logCommand(m_logMessage);
+}
+
+void ZUndoCommand::logUndoCommand() const
+{
+  if (!m_logMessage.isEmpty()) {
+    logCommand("Undo: " + m_logMessage);
+  }
+}
+
+void ZUndoCommand::startUndo()
+{
+  logUndoCommand();
 }
 
 void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
@@ -103,6 +152,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcCommand::recover()
 
 void ZStackDocCommand::SwcEdit::ChangeSwcCommand::undo()
 {
+  startUndo();
   recover();
 }
 
@@ -229,6 +279,7 @@ ZStackDocCommand::SwcEdit::TranslateRoot::~TranslateRoot()
 
 void ZStackDocCommand::SwcEdit::TranslateRoot::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   for (int i = 0; i < m_doc->getSwcList().size(); i++) {
@@ -290,6 +341,7 @@ ZStackDocCommand::SwcEdit::Rescale::~Rescale()
 
 void ZStackDocCommand::SwcEdit::Rescale::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
 
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -358,6 +410,7 @@ ZStackDocCommand::SwcEdit::RescaleRadius::~RescaleRadius()
 
 void ZStackDocCommand::SwcEdit::RescaleRadius::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
@@ -408,6 +461,7 @@ ZStackDocCommand::SwcEdit::ReduceNodeNumber::~ReduceNodeNumber()
 
 void ZStackDocCommand::SwcEdit::ReduceNodeNumber::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   m_doc->removeAllSwcTree(true);
@@ -463,6 +517,7 @@ void ZStackDocCommand::SwcEdit::AddSwc::redo()
 
 void ZStackDocCommand::SwcEdit::AddSwc::undo()
 {
+  startUndo();
   m_doc->removeObject(m_tree, false);
   m_isInDoc = false;
 //  m_doc->notifySwcModified();
@@ -501,6 +556,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::~AddSwcNode()
 
 void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   m_doc->removeObject(m_tree);
@@ -568,6 +624,7 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::MergeSwcNode(
 
 void ZStackDocCommand::SwcEdit::MergeSwcNode::undo()
 {
+  startUndo();
   recover();
   m_doc->deselectAllSwcTreeNodes();
   m_doc->setSwcTreeNodeSelected(
@@ -717,6 +774,7 @@ ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
 
 void ZStackDocCommand::SwcEdit::ResolveCrossover::undo()
 {
+  startUndo();
   recover();
   m_doc->deselectAllSwcTreeNodes();
   m_doc->setSwcTreeNodeSelected(
@@ -821,6 +879,7 @@ ZStackDocCommand::SwcEdit::ExtendSwcNode::~ExtendSwcNode()
 
 void ZStackDocCommand::SwcEdit::ExtendSwcNode::undo()
 {
+  startUndo();
   // after undo, m_parentNode should be the only selected node
   SwcTreeNode::detachParent(m_node);
 
@@ -887,6 +946,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry::redo()
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNodeGeometry::undo()
 {
+  startUndo();
   if (m_node != NULL) {
     SwcTreeNode::setPos(m_node, m_backupX, m_backupY, m_backupZ);
     SwcTreeNode::setRadius(m_node, m_backupR);
@@ -921,6 +981,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeZ::redo()
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNodeZ::undo()
 {
+  startUndo();
   if (m_node != NULL) {
     SwcTreeNode::setZ(m_node, m_backup);
 //    m_doc->notifySwcModified();
@@ -953,6 +1014,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::redo()
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNodeRadius::undo()
 {
+  startUndo();
   if (m_node != NULL) {
     SwcTreeNode::setRadius(m_node, m_backup);
 //    m_doc->notifySwcModified();
@@ -987,6 +1049,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNode::redo()
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNode::undo()
 {
+  startUndo();
   if (m_node != NULL) {
     *m_node = m_backup;
     m_doc->processSwcModified();
@@ -1100,6 +1163,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
 
 void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
 
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -1157,6 +1221,7 @@ void ZStackDocCommand::SwcEdit::SetParent::redo()
 
 void ZStackDocCommand::SwcEdit::SetParent::undo()
 {
+  startUndo();
   if (m_oldParent != m_newParent) {
     //Recover child set of the new parent
     SwcTreeNode::detachParent(m_node);
@@ -1209,6 +1274,7 @@ void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::redo()
 
 void ZStackDocCommand::SwcEdit::SetSwcNodeSeletion::undo()
 {
+  startUndo();
   if (m_host != NULL) {
     //m_nodeSet = m_host->getSelectedNode();
     m_host->deselectAllNode();
@@ -1230,6 +1296,7 @@ ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::~SwcTreeLabeTraceMask() {}
 
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 {
+  startUndo();
   if (!m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -1263,6 +1330,7 @@ ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::~SwcPathLabeTraceMask() {}
 
 void ZStackDocCommand::SwcEdit::SwcPathLabeTraceMask::undo()
 {
+  startUndo();
 //  m_branch.labelStack(m_doc->getTraceWorkspace()->trace_mask, 0);
   m_doc->deprecateTraceMask();
 }
@@ -1335,6 +1403,7 @@ void ZStackDocCommand::SwcEdit::SetRoot::redo()
 
 void ZStackDocCommand::SwcEdit::SetRoot::undo()
 {
+  startUndo();
   if (!m_originalParentArray.empty()) {
     Swc_Tree_Node *virtualRoot = SwcTreeNode::parent(m_node);
     Swc_Tree_Node *currentParent = virtualRoot;
@@ -1432,6 +1501,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwc::redo()
 
 void ZStackDocCommand::SwcEdit::RemoveSwc::undo()
 {
+  startUndo();
   if (m_tree != NULL) {
     //m_doc->addSwcTree(m_tree);
     m_doc->addObject(m_tree);
@@ -1469,6 +1539,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::redo()
 
 void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::undo()
 {
+  startUndo();
   if (m_tree != NULL) {
     //m_doc->addSwcTree(m_tree);
     m_doc->addObject(m_tree);
@@ -1542,6 +1613,7 @@ void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::redo()
 
 void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
 {
+  startUndo();
   if (m_doc != NULL) {
     m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     for (std::set<ZSwcTree*>::iterator iter = m_emptyTreeSet.begin();
@@ -1663,6 +1735,7 @@ ZStackDocCommand::ObjectEdit::RemoveSelected::~RemoveSelected()
 
 void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
 {
+  startUndo();
   //Add the objects back
 //  doc->blockSignals(true);
   //ZDocPlayer::TRole role = ZDocPlayer::ROLE_NONE;
@@ -1776,20 +1849,21 @@ void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
 {
+  startUndo();
   m_doc->addObject(m_obj, false);
   m_isInDoc = true;
 }
 
 ZStackDocCommand::TubeEdit::Trace::Trace(
     ZStackDoc *doc, int x, int y, int z, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_c(0)
+  : ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_c(0)
 {
   setText(QObject::tr("trace tube from (%1,%2,%3)").arg(x).arg(y).arg(z));
 }
 
 ZStackDocCommand::TubeEdit::Trace::Trace(
     ZStackDoc *doc, int x, int y, int z, int c, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_c(c)
+  : ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_c(c)
 {
   setText(QObject::tr("trace tube from (%1,%2,%3) in channel %4").
           arg(x).arg(y).arg(z).arg(c));
@@ -1806,6 +1880,7 @@ void ZStackDocCommand::TubeEdit::Trace::redo()
 
 void ZStackDocCommand::TubeEdit::Trace::undo()
 {
+  startUndo();
   if (m_chain != NULL) {
     m_doc->removeObject(m_chain, true);
     m_chain = NULL;
@@ -1815,7 +1890,7 @@ void ZStackDocCommand::TubeEdit::Trace::undo()
 
 ZStackDocCommand::TubeEdit::AutoTraceAxon::AutoTraceAxon(
     ZStackDoc *doc, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc)
+  :ZUndoCommand(parent), m_doc(doc)
 {
   setText(QObject::tr("auto trace axon"));
 }
@@ -1846,6 +1921,7 @@ ZStackDocCommand::TubeEdit::AutoTraceAxon::~AutoTraceAxon()
 
 void ZStackDocCommand::TubeEdit::AutoTraceAxon::undo()
 {
+  startUndo();
 #if 0
   QList<ZLocsegChain*> chainList = m_doc->getChainList();
   QList<ZSwcTree*> swcList = m_doc->getSwcList();
@@ -1956,7 +2032,7 @@ void ZStackDocCommand::TubeEdit::AutoTraceAxon::redo()
 
 // class ZStackDocCutSelectedLocsegChainCommand
 ZStackDocCommand::TubeEdit::CutSegment::CutSegment(ZStackDoc *doc, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc)
+  : ZUndoCommand(parent), m_doc(doc)
 {
   setText(QObject::tr("cut selected tubes"));
 }
@@ -1982,6 +2058,7 @@ void ZStackDocCommand::TubeEdit::CutSegment::redo()
 
 void ZStackDocCommand::TubeEdit::CutSegment::undo()
 {
+  startUndo();
   // restore previous selection state
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
@@ -2004,7 +2081,7 @@ void ZStackDocCommand::TubeEdit::CutSegment::undo()
 
 // class ZStackDocBreakSelectedLocsegChainCommand
 ZStackDocCommand::TubeEdit::BreakChain::BreakChain(ZStackDoc *doc, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc)
+  : ZUndoCommand(parent), m_doc(doc)
 {
   setText(QObject::tr("break selected tubes"));
 }
@@ -2034,6 +2111,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
 
 void ZStackDocCommand::TubeEdit::BreakChain::undo()
 {
+  startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   // restore previous selection state
@@ -2055,7 +2133,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::undo()
 
 ZStackDocCommand::TubeEdit::RemoveSmall::RemoveSmall(
     ZStackDoc *doc, double thre, QUndoCommand *parent)
-  :QUndoCommand(parent), m_doc(doc), m_thre(thre)
+  :ZUndoCommand(parent), m_doc(doc), m_thre(thre)
 {
   setText(QObject::tr("remove small tube use thre %1").arg(thre));
 }
@@ -2069,6 +2147,7 @@ ZStackDocCommand::TubeEdit::RemoveSmall::~RemoveSmall()
 
 void ZStackDocCommand::TubeEdit::RemoveSmall::undo()
 {
+  startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   for (int i=0; i<m_chainList.size(); i++) {
@@ -2103,7 +2182,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
 }
 
 ZStackDocCommand::TubeEdit::RemoveSelected::RemoveSelected(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc)
 {
 }
 
@@ -2136,6 +2215,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
 
 void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
 {
+  startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   for (int i=0; i<m_chainList.size(); i++) {
@@ -2152,7 +2232,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
 
 ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
     ZStackDoc *doc, double x, double y, double z, QUndoCommand *parent)
-  : QUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_swcMoved(false),
+  : ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_swcMoved(false),
     m_punctaMoved(false), m_swcScaleX(1.), m_swcScaleY(1.), m_swcScaleZ(1.),
     m_punctaScaleX(1.), m_punctaScaleY(1.), m_punctaScaleZ(1.)
 {
@@ -2208,6 +2288,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
 
 void ZStackDocCommand::ObjectEdit::AddObject::undo()
 {
+  startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   m_doc->removeObject(m_obj, false);
@@ -2270,6 +2351,7 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
 
 void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
 {
+  startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
   for (QList<ZPunctum*>::iterator it = m_punctaList.begin();
@@ -2369,7 +2451,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
 
 ZStackDocCommand::StrokeEdit::AddStroke::AddStroke(
     ZStackDoc *doc, ZStroke2d *stroke, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_stroke(stroke), m_isInDoc(false)
+  ZUndoCommand(parent), m_doc(doc), m_stroke(stroke), m_isInDoc(false)
 {
   setText(QObject::tr("Add stroke"));
 }
@@ -2390,6 +2472,7 @@ void ZStackDocCommand::StrokeEdit::AddStroke::redo()
 
 void ZStackDocCommand::StrokeEdit::AddStroke::undo()
 {
+  startUndo();
   m_doc->removeObject(m_stroke, false);
   m_isInDoc = false;
 //  m_doc->notifyStrokeModified();
@@ -2398,7 +2481,7 @@ void ZStackDocCommand::StrokeEdit::AddStroke::undo()
 
 ZStackDocCommand::StrokeEdit::RemoveTopStroke::RemoveTopStroke(
     ZStackDoc *doc, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_stroke(NULL), m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_stroke(NULL), m_isInDoc(true)
 {
 }
 
@@ -2421,6 +2504,7 @@ void ZStackDocCommand::StrokeEdit::RemoveTopStroke::redo()
 
 void ZStackDocCommand::StrokeEdit::RemoveTopStroke::undo()
 {
+  startUndo();
   if (m_stroke != NULL) {
     m_doc->addObject(m_stroke);
 //    m_doc->notifyStrokeModified();
@@ -2429,7 +2513,7 @@ void ZStackDocCommand::StrokeEdit::RemoveTopStroke::undo()
 }
 
 ZStackDocCommand::StrokeEdit::CompositeCommand::CompositeCommand(
-    ZStackDoc *doc, QUndoCommand *parent) : QUndoCommand(parent), m_doc(doc)
+    ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), m_doc(doc)
 {
 }
 
@@ -2455,6 +2539,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()
 
 void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
 {
+  startUndo();
 //  m_doc->blockSignals(true);
 
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -2469,7 +2554,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
 
 ZStackDocCommand::StackProcess::Binarize::Binarize(
     ZStackDoc *doc, int thre, QUndoCommand *parent)
-  :QUndoCommand(parent), doc(doc), zstack(NULL), thre(thre), success(false)
+  :ZUndoCommand(parent), doc(doc), zstack(NULL), thre(thre), success(false)
 {
   setText(QObject::tr("Binarize Image with threshold %1").arg(thre));
 }
@@ -2481,6 +2566,7 @@ ZStackDocCommand::StackProcess::Binarize::~Binarize()
 
 void ZStackDocCommand::StackProcess::Binarize::undo()
 {
+  startUndo();
   if (success) {
     doc->loadStack(zstack);
     //doc->requestRedrawStack();
@@ -2501,7 +2587,7 @@ void ZStackDocCommand::StackProcess::Binarize::redo()
 
 ZStackDocCommand::StackProcess::BwSolid::BwSolid(
     ZStackDoc *doc, QUndoCommand *parent)
-  :QUndoCommand(parent), doc(doc), zstack(NULL), success(false)
+  :ZUndoCommand(parent), doc(doc), zstack(NULL), success(false)
 {
   setText(QObject::tr("Binary Image Solidify"));
 }
@@ -2513,6 +2599,7 @@ ZStackDocCommand::StackProcess::BwSolid::~BwSolid()
 
 void ZStackDocCommand::StackProcess::BwSolid::undo()
 {
+  startUndo();
   if (success) {
     doc->loadStack(zstack);
     //doc->requestRedrawStack();
@@ -2533,7 +2620,7 @@ void ZStackDocCommand::StackProcess::BwSolid::redo()
 
 ZStackDocCommand::StackProcess::Watershed::Watershed(
     ZStackDoc *doc, QUndoCommand *parent)
-  :QUndoCommand(parent), doc(doc), zstack(NULL), success(false)
+  :ZUndoCommand(parent), doc(doc), zstack(NULL), success(false)
 {
   setText(QObject::tr("watershed"));
 }
@@ -2545,6 +2632,7 @@ ZStackDocCommand::StackProcess::Watershed::~Watershed()
 
 void ZStackDocCommand::StackProcess::Watershed::undo()
 {
+  startUndo();
   if (success) {
     doc->loadStack(zstack);
     //doc->requestRedrawStack();
@@ -2565,7 +2653,7 @@ void ZStackDocCommand::StackProcess::Watershed::redo()
 
 ZStackDocCommand::StackProcess::EnhanceLine::EnhanceLine(
     ZStackDoc *doc, QUndoCommand *parent)
-  :QUndoCommand(parent), doc(doc), zstack(NULL), success(false)
+  :ZUndoCommand(parent), doc(doc), zstack(NULL), success(false)
 {
   setText(QObject::tr("Enhance Line"));
 }
@@ -2577,6 +2665,7 @@ ZStackDocCommand::StackProcess::EnhanceLine::~EnhanceLine()
 
 void ZStackDocCommand::StackProcess::EnhanceLine::undo()
 {
+  startUndo();
   if (success) {
     doc->loadStack(zstack);
     //doc->requestRedrawStack();
