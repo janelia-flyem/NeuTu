@@ -31,9 +31,11 @@ else
   else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
+  shift
 fi
 
 set -e
+echo $1
 
 edition=general
 debug_config=release
