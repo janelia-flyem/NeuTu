@@ -396,7 +396,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     signal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
+#ifdef _DEBUG_
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
+#endif
       Swc_Tree_Merge(tree, subtree);
     }
 
@@ -779,7 +781,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     croppedSignal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
+#ifdef _DEBUG_
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
+#endif
       Swc_Tree_Merge(tree, subtree);
     }
 
