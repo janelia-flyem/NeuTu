@@ -12,6 +12,8 @@
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
 
+#include "doNthingsprotocol.h"
+
 #include "neutube.h"
 
 #include "dvid/zdvidreader.h"
@@ -169,7 +171,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     }
 
     // generate the save key and be sure it's not in use
-    std::string key = generateKey();
+    std::string key = generateKey(protocolName);
     if (key.empty()) {
         warningDialog("Save failed", "Key for saved data was not generated!");
         return;
@@ -289,7 +291,7 @@ ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
     if (protocolName == "doNthings") {
-        return new ProtocolDialog(m_parent);
+        return new DoNThingsProtocol(m_parent);
     } else {
         // should never happen; the null will cause errors
         return NULL;
@@ -413,13 +415,13 @@ bool ProtocolSwitcher::checkCreateDataInstance() {
  * returns the key we will use to store the protocol data;
  * returns empty string if user cancels identifier input
  */
-std::string ProtocolSwitcher::generateKey() {
+std::string ProtocolSwitcher::generateKey(QString protocolName) {
     // key = (username)-(protocolname)-(identifier)
     std::string identifier = generateIdentifier();
     if (identifier.empty()) {
         return "";
     } else {
-        return NeuTube::GetCurrentUserName() + "-" + m_activeProtocol->getName() + "-" + identifier;
+        return NeuTube::GetCurrentUserName() + "-" + protocolName.toStdString() + "-" + identifier;
     }
 }
 

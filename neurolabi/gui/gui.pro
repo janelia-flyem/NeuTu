@@ -624,6 +624,7 @@ HEADERS += mainwindow.h \
     protocols/protocolchooser.h \
     protocols/protocolmetadata.h \
     protocols/protocoldialog.h \
+    protocols/doNthingsprotocol.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -705,7 +706,7 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
-    protocols/protocoldialog.ui \
+    protocols/doNthingsprotocol.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui
 SOURCES += main.cpp \
@@ -1109,6 +1110,7 @@ SOURCES += main.cpp \
     protocols/protocolchooser.cpp \
     protocols/protocolmetadata.cpp \
     protocols/protocoldialog.cpp \
+    protocols/doNthingsprotocol.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \

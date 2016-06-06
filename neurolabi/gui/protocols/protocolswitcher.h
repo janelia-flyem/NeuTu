@@ -57,7 +57,7 @@ private:
     bool askProceedIfNodeLocked();
     bool checkCreateDataInstance();
     void warningDialog(QString title, QString message);
-    std::string generateKey();
+    std::string generateKey(QString protocolName);
     std::string generateIdentifier();
     bool askProceedIfKeyExists(std::string key);
     ProtocolDialog * instantiateProtocol(QString protocolName);
