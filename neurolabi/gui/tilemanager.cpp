@@ -151,7 +151,7 @@ void TileManager::keyPressEvent(QKeyEvent *event)
 
 void TileManager::closeProject()
 {
-  LINFO() << "Close reconstruction project";
+  LINFO() << "End reconstruction";
 
   m_doc.reset();
   close();

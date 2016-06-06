@@ -636,8 +636,10 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
 void ZStackFrame::resizeEvent(QResizeEvent *event)
 {
   QMdiSubWindow::resizeEvent(event);
-
+#ifdef _DEBUG_
   qDebug() << "emit infoChanged()";
+#endif
+
   emit infoChanged();
 }
 
@@ -926,7 +928,9 @@ void ZStackFrame::keyPressEvent(QKeyEvent *event)
 
 void ZStackFrame::updateInfo()
 {
+#ifdef _DEBUG_
   qDebug() << "emit infoChanged()";
+#endif
   emit infoChanged();
 }
 

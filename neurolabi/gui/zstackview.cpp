@@ -811,17 +811,22 @@ void ZStackView::redraw(EUpdateOption option)
   buddyDocument()->blockSignals(false);
 
   paintStackBuffer();
+#if defined(_DEBUG_2)
   qint64 stackPaintTime = timer.elapsed();
   std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
+#endif
   paintMaskBuffer();
+#if defined(_DEBUG_2)
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
   std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
+#endif
   paintActiveDecorationBuffer();
   paintObjectBuffer();
+#if defined(_DEBUG_2)
   qint64 objectPaintTime = timer.elapsed();
   std::cout << "paint object per frame: " << objectPaintTime << std::endl;
-
+#endif
   updateImageScreen(option);
 
 //  timer.stop();
@@ -2238,7 +2243,9 @@ void ZStackView::setView(const ZStackViewParam &param)
 
 void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
+#if defined(_DEBUG_2)
   qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
+#endif
   /*
   bool hasActiveSlice = false;
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
