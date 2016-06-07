@@ -350,8 +350,10 @@ void ZPainter::drawPoint(const QPointF &pt)
 void ZPainter::drawText(
     int x, int y, int width, int height, int flags, const QString &text)
 {
-  m_painter.drawText(x, y, width, height, flags, text);
-  setPainted(true);
+  if (isVisible(QRect(QPoint(x,y), QSize(x,y)))) {
+    m_painter.drawText(x, y, width, height, flags, text);
+    setPainted(true);
+  }
 }
 
 void ZPainter::drawPoint(const QPoint &pt)
