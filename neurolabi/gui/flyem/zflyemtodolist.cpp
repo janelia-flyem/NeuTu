@@ -572,11 +572,14 @@ ZFlyEmToDoList::ItemIterator::ItemIterator(
     const ZFlyEmToDoList *se, int z) :
   m_zIterator(m_emptyZ), m_yIterator(m_emptyY), m_xIterator(m_emptyX)
 {
-  if (se != NULL) {
-    if (se->m_itemList.size() > z) {
-      m_yIterator = QVectorIterator<ItemMap>(se->m_itemList[z]);
-      if (m_yIterator.hasNext()) {
-        m_xIterator = QMapIterator<int, ZFlyEmToDoItem>(m_yIterator.next());
+  int index = z - se->getMinZ();
+  if (index >= 0) {
+    if (se != NULL) {
+      if (se->m_itemList.size() > index) {
+        m_yIterator = QVectorIterator<ItemMap>(se->m_itemList[index]);
+        if (m_yIterator.hasNext()) {
+          m_xIterator = QMapIterator<int, ZFlyEmToDoItem>(m_yIterator.next());
+        }
       }
     }
   }
