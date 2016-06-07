@@ -106,8 +106,9 @@ private:
   void tryAddTodoItemMode(double x, double y);
   void addActiveStrokeAsBookmark();
   void init();
-  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void tryAddSynapse(const ZIntPoint &pt);
+  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                     bool tryingLink);
+  void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
   void tryMoveSynapse(const ZIntPoint &pt);
   void tryTodoItemMode();
   void tryAddTodoItem(const ZIntPoint &pt);

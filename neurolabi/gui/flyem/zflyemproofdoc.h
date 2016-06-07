@@ -254,7 +254,7 @@ public slots: //Commands
   void executeRemoveSynapseCommand();
   void executeLinkSynapseCommand();
   void executeUnlinkSynapseCommand();
-  void executeAddSynapseCommand(const ZDvidSynapse &synapse);
+  void executeAddSynapseCommand(const ZDvidSynapse &synapse, bool tryingLink);
   void executeMoveSynapseCommand(const ZIntPoint &dest);
 
   void executeRemoveBookmarkCommand();

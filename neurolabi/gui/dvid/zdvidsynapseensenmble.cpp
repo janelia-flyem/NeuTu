@@ -421,7 +421,7 @@ void ZDvidSynapseEnsemble::display(
 
       rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
                                   range.getFirstCorner().getY()));
-      rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
+      rangeRect.setSize(QSize(range.getWidth(), range.getHeight()));
     }
 
     for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
@@ -622,6 +622,9 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
+      synapse.loadJsonObject(obj, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+      synapse.updatePartner();
+#if 0
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         if (jsonArray.size() > 0) {
@@ -635,6 +638,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
           }
         }
       }
+#endif
     }
   }
 }

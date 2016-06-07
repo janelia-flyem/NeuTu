@@ -376,14 +376,14 @@ void ZFlyEmProofPresenter::tryTodoItemMode()
   tryAddTodoItemMode(pos.x(), pos.y());
 }
 
-void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
+void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt, bool tryingLink)
 {
   switch (interactiveContext().synapseEditMode()) {
   case ZInteractiveContext::SYNAPSE_ADD_PRE:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN);
+    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN, tryingLink);
     break;
   case ZInteractiveContext::SYNAPSE_ADD_POST:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN);
+    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN, tryingLink);
     break;
   default:
     break;
@@ -391,7 +391,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 }
 
 void ZFlyEmProofPresenter::tryAddSynapse(
-    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind, bool tryingLink)
 {
   ZDvidSynapse synapse;
   synapse.setPosition(pt);
@@ -399,7 +399,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
   synapse.setUserName(NeuTube::GetCurrentUserName());
-  getCompleteDocument()->executeAddSynapseCommand(synapse);
+  getCompleteDocument()->executeAddSynapseCommand(synapse, tryingLink);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
 
@@ -646,7 +646,10 @@ void ZFlyEmProofPresenter::processCustomOperator(
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
-    tryAddSynapse(currentStackPos.toIntPoint());
+    tryAddSynapse(currentStackPos.toIntPoint(), true);
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_ADD_ORPHAN:
+    tryAddSynapse(currentStackPos.toIntPoint(), false);
     break;
   case ZStackOperator::OP_FLYEM_TODO_ADD:
     tryAddTodoItem(currentStackPos.toIntPoint());
