@@ -35,6 +35,10 @@ double ZDvidSynapse::getConfidence() const
     const char *confStr =
         ZJsonParser::stringValue(m_propertyJson["confidence"]);
     c = std::atof(confStr);
+  } else if (m_propertyJson.hasKey("conf")) {
+    const char *confStr =
+        ZJsonParser::stringValue(m_propertyJson["conf"]);
+    c = std::atof(confStr);
   }
 
   return c;
@@ -52,7 +56,11 @@ std::string ZDvidSynapse::getAnnotation() const
 
 void ZDvidSynapse::setConfidence(double c)
 {
-  m_propertyJson.setEntry("confidence", c);
+  if (m_propertyJson.hasKey("confidence")) {
+    m_propertyJson.removeKey("confidence");
+  }
+
+  m_propertyJson.setEntry("conf", c);
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -110,7 +118,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QString decorationText;
 
     if (!getUserName().empty()) {
-      decorationText = "U";
+      if (getUserName() != "dawmr-0" &&
+          !QString(getUserName().c_str()).startsWith("$")) {
+        decorationText = "U";
+      }
     }
 
 
@@ -124,12 +135,16 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       int width = decorationText.size() * height;
       QFont font;
       font.setPixelSize(height);
+      font.setWeight(QFont::Light);
+      font.setStyleStrategy(QFont::PreferMatch);
       painter.setFont(font);
 
       QColor oldColor = painter.getPen().color();
       QColor color = QColor(0, 0, 0);
       color.setAlphaF(alpha);
-      painter.setPen(color);
+      QPen pen = painter.getPen();
+      pen.setColor(color);
+      painter.setPen(pen);
       painter.drawText(center.getX() - height / 2, center.getY(), width, height,
                        Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
