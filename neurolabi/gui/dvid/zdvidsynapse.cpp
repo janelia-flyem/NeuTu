@@ -56,6 +56,10 @@ std::string ZDvidSynapse::getAnnotation() const
 
 void ZDvidSynapse::setConfidence(double c)
 {
+  if (m_propertyJson.hasKey("confidence")) {
+    m_propertyJson.removeKey("confidence");
+  }
+
   m_propertyJson.setEntry("conf", c);
 }
 
@@ -114,7 +118,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QString decorationText;
 
     if (!getUserName().empty()) {
-      decorationText = "U";
+      if (getUserName() != "dawmr-0" &&
+          !QString(getUserName().c_str()).startsWith("$")) {
+        decorationText = "U";
+      }
     }
 
 
