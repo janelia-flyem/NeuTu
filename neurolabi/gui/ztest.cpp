@@ -20205,7 +20205,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("0bf3");
+  writer.writeMasterNode("3c25");
 #endif
 
 #if 0

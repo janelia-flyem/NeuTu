@@ -9,6 +9,7 @@
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"
+#include "zdvidutil.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -426,7 +427,7 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
       for (std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
            iter = m_serviceArray.begin();
            iter != m_serviceArray.end(); ++iter) {
-        *iter = ZFlyEmMisc::MakeDvidNodeService(m_reader.getDvidTarget());
+        *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
       }
     } catch (libdvid::DVIDException &e) {
       LWARN() << e.what();

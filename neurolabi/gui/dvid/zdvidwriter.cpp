@@ -24,6 +24,7 @@
 #include "zarray.h"
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidbufferreader.h"
+#include "zdvidutil.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -47,7 +48,7 @@ bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
+    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -1567,9 +1568,9 @@ void ZDvidWriter::addSynapseProperty(
 
 void ZDvidWriter::writeMasterNode(const std::string &uuid)
 {
-  std::string rootNode =
-      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
-  if (!rootNode.empty()) {
+//  std::string rootNode =
+//      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+//  if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(getDvidTarget());
     dvidUrl.setUuid(uuid);
@@ -1588,6 +1589,11 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
       }
     }
 
-    post(url, branchJson);
-  }
+    ZDvid::MakeRequest(
+          url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
+          m_statusCode);
+
+//    ZFlyEmMisc::MakeRequest(url,
+//    post(url, branchJson);
+//  }
 }

@@ -15,6 +15,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/libdvidheader.h"
 #include "flyem/zflyemmisc.h"
+#include "zdvidutil.h"
 
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
   QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
@@ -85,7 +86,7 @@ void ZDvidBufferReader::read(
               target.getAddressWithPort(), target.getUuid());
 #endif
         ZSharedPointer<libdvid::DVIDNodeService> service =
-            ZFlyEmMisc::MakeDvidNodeService(target);
+            ZDvid::MakeDvidNodeService(target);
         data = service->custom_request(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
       }
@@ -129,7 +130,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
               target.getAddressWithPort(), target.getUuid());
               */
         ZSharedPointer<libdvid::DVIDNodeService> service =
-            ZFlyEmMisc::MakeDvidNodeService(target);
+            ZDvid::MakeDvidNodeService(target);
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
