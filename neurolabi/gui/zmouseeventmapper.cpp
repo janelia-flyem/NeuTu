@@ -207,7 +207,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         op.setOperation(ZStackOperator::OP_BOOKMARK_ADD_NEW);
         break;
       case ZInteractiveContext::INTERACT_ADD_SYNAPSE:
-        op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
+        if (event.getModifiers() == Qt::ShiftModifier) {
+          op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD_ORPHAN);
+        } else {
+          op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ADD);
+        }
         break;
       case ZInteractiveContext::INTERACT_ADD_TODO_ITEM:
         op.setOperation(ZStackOperator::OP_FLYEM_TODO_ADD);
