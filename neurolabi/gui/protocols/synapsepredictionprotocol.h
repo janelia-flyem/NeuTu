@@ -30,10 +30,19 @@ public slots:
     void loadDataRequested(ZJsonObject data);
 
 
+private slots:
+    void onExitButton();
+    void onCompleteButton();
+
 private:
     static const std::string PROTOCOL_NAME;
 
     Ui::SynapsePredictionProtocol *ui;
+
+    void saveState();
+    void updateLabels();
+    void gotoNextItem();
+
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
