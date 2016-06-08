@@ -31,11 +31,17 @@ public slots:
 
 
 private slots:
+    void onFirstButton();
+    void onMarkedButton();
+    void onSkipButton();
+    void onGotoButton();
     void onExitButton();
     void onCompleteButton();
 
 private:
     static const std::string PROTOCOL_NAME;
+    static const std::string KEY_PENDING;
+    static const std::string KEY_FINISHED;
 
     Ui::SynapsePredictionProtocol *ui;
 

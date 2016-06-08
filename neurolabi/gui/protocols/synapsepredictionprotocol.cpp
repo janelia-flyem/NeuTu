@@ -18,6 +18,10 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     ui->setupUi(this);
 
     // UI connections:
+    connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
+    connect(ui->markButton, SIGNAL(clicked(bool)), this, SLOT(onMarkedButton()));
+    connect(ui->skipButton, SIGNAL(clicked(bool)), this, SLOT(onSkipButton()));
+    connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
@@ -29,6 +33,9 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
 
 // protocol name should not contain hyphens
 const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction";
+const std::string SynapsePredictionProtocol::KEY_FINISHED = "finished";
+const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
+
 
 /*
  * start the protocol anew; returns success status;
@@ -38,6 +45,43 @@ const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction
 bool SynapsePredictionProtocol::initialize() {
 
 
+    // testing
+    bool ok;
+    int n = QInputDialog::getInt(this, "How many things?",
+        "How many things", 5, 1, 100, 1, &ok);
+    if (!ok) {
+        return false;
+    }
+
+    // needs a custom dialog, ugh
+    // two entry fields for corners of volume
+    //  accept comma or whitespace delimited ints
+    // entry field for name of RoI
+    //  in perfect world, this will be a drop-down and you'll
+    //  choose from existing RoIs in DVID
+
+
+
+    // generate pending/finished lists from user input
+
+    // considering leaving lists as ZJsonArrays rather than
+    //  convert back and forth for each save
+
+    // DVID call exists in ZDvidReader for read synapse given volume
+    // will need to filter by RoI; raw DVID call to get "in RoI"
+    //  status for list of points exists
+    // given synapse list, need to split out pre/post sites
+    // might need to filter on something (auto vs user placed?)
+    // then arrange list in some appropriate way:
+    //  -- pre then post or the other way around?
+    //  -- cluster spatially?
+
+
+
+    // go to first item
+    onFirstButton();
+    saveState();
+
     return true;
 }
 
@@ -45,17 +89,22 @@ std::string SynapsePredictionProtocol::getName() {
     return PROTOCOL_NAME;
 }
 
-void SynapsePredictionProtocol::saveState() {
-
-    // save stuff
-
-
-    // emit requestSaveProtocol(data);
+void SynapsePredictionProtocol::onFirstButton() {
+    std::cout << "SynapsePredictionProtocol::onFirstButton" << std::endl;
 }
 
-void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
+void SynapsePredictionProtocol::onMarkedButton() {
+    std::cout << "SynapsePredictionProtocol::onMarkedButton" << std::endl;
 
-    // do stuff
+}
+
+void SynapsePredictionProtocol::onSkipButton() {
+    std::cout << "SynapsePredictionProtocol::onSkipButton" << std::endl;
+
+}
+
+void SynapsePredictionProtocol::onGotoButton() {
+    std::cout << "SynapsePredictionProtocol::onGotoButton" << std::endl;
 
 }
 
@@ -82,6 +131,23 @@ void SynapsePredictionProtocol::onExitButton() {
 void SynapsePredictionProtocol::gotoNextItem() {
 
     // do stuff
+}
+
+void SynapsePredictionProtocol::saveState() {
+    // json save format: {"pending": [[x, y, z], [x2, y2, z2], ...],
+    //                    "finished": similar list}
+
+    ZJsonObject data;
+
+
+    emit requestSaveProtocol(data);
+}
+
+void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
+
+    std::cout << "SynapsePredictionProtocol::loadDataRequested" << std::endl;
+
+
 }
 
 void SynapsePredictionProtocol::updateLabels() {

@@ -47,21 +47,21 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="firstButton">
        <property name="text">
         <string>First</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="markButton">
        <property name="text">
-        <string>Do</string>
+        <string>Mark reviewed</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QPushButton" name="skipButton">
        <property name="text">
         <string>Skip</string>
        </property>
@@ -103,14 +103,21 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="currentLabel">
        <property name="text">
         <string>current thing:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_4">
+      <widget class="QPushButton" name="gotoButton">
+       <property name="text">
+        <string>Go to current</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="progressLabel">
        <property name="text">
         <string>progress:</string>
        </property>
