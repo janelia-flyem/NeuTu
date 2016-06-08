@@ -2384,12 +2384,44 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
   }
 }
 
-void ZFlyEmProofDoc::executeAddSynapseCommand(const ZDvidSynapse &synapse)
+void ZFlyEmProofDoc::executeAddSynapseCommand(
+    const ZDvidSynapse &synapse, bool tryingLink)
 {
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
   if (se != NULL) {
-    QUndoCommand *command = new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
-          this, synapse);
+    ZUndoCommand *command =
+        new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+    new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
+          this, synapse, command);
+    if (tryingLink) {
+      if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+        const std::set<ZIntPoint> &selected =
+            se->getSelector().getSelectedSet();
+        std::vector<ZDvidSynapse> selectedPresyn;
+        for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          ZDvidSynapse &synapse =
+              se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+          if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+            selectedPresyn.push_back(synapse);
+          }
+          if (selectedPresyn.size() > 1) {
+            break;
+          }
+        }
+        if (selectedPresyn.size() == 1) {
+          ZDvidSynapse &presyn = selectedPresyn.front();
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                this, presyn.getPosition(), synapse.getPosition(),
+                ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                this, synapse.getPosition(), presyn.getPosition(),
+                ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_POSTSYN_TO), command);
+        }
+      }
+    }
     pushUndoCommand(command);
   }
 }

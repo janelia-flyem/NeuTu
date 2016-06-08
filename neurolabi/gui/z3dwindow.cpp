@@ -1814,8 +1814,10 @@ QPointF Z3DWindow::getScreenProjection(
 
 void Z3DWindow::updateVolumeBoundBox()
 {
-  m_volumeBoundBox[0] = m_volumeBoundBox[2] = m_volumeBoundBox[4] = std::numeric_limits<double>::max();
-  m_volumeBoundBox[1] = m_volumeBoundBox[3] = m_volumeBoundBox[5] = -std::numeric_limits<double>::max();
+  m_volumeBoundBox[0] = m_volumeBoundBox[2] = m_volumeBoundBox[4] =
+      std::numeric_limits<double>::max();
+  m_volumeBoundBox[1] = m_volumeBoundBox[3] = m_volumeBoundBox[5] =
+      -std::numeric_limits<double>::max();
   if (hasVolume()) {
     m_volumeBoundBox = m_volumeSource->getVolume(0)->getWorldBoundBox();
   }
@@ -3253,12 +3255,18 @@ void Z3DWindow::updateContextMenu(const QString &group)
 void Z3DWindow::updateOverallBoundBox(std::vector<double> bound)
 {
   if (bound.size() == 6) {
-    m_boundBox[0] = std::min(bound[0], m_boundBox[0]);
-    m_boundBox[1] = std::max(bound[1], m_boundBox[1]);
-    m_boundBox[2] = std::min(bound[2], m_boundBox[2]);
-    m_boundBox[3] = std::max(bound[3], m_boundBox[3]);
-    m_boundBox[4] = std::min(bound[4], m_boundBox[4]);
-    m_boundBox[5] = std::max(bound[5], m_boundBox[5]);
+    if (bound[1] > bound[0]) {
+      m_boundBox[0] = std::min(bound[0], m_boundBox[0]);
+      m_boundBox[1] = std::max(bound[1], m_boundBox[1]);
+    }
+    if (bound[3] > bound[2]) {
+      m_boundBox[2] = std::min(bound[2], m_boundBox[2]);
+      m_boundBox[3] = std::max(bound[3], m_boundBox[3]);
+    }
+    if (bound[5] > bound[4]) {
+      m_boundBox[4] = std::min(bound[4], m_boundBox[4]);
+      m_boundBox[5] = std::max(bound[5], m_boundBox[5]);
+    }
   }
 }
 
@@ -4276,11 +4284,17 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
           m_canvas->width(), m_canvas->height());
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
     //if (success) {
-      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+//      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+//      ZIntCuboid box = m_volumeBoundBox;
+#if 0
       ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                    box.getFirstCorner().getZ(),
                    box.getLastCorner().getX(), box.getLastCorner().getY(),
                    box.getLastCorner().getZ());
+#endif
+      ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
+          m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
+
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
@@ -4314,12 +4328,15 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   if (m_doc->hasStack()) {
     std::vector<ZIntPoint> polyline1;
     std::vector<ZIntPoint> polyline2;
-
+#if 0
     ZIntCuboid box = m_doc->stackRef()->getBoundBox();
     ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                  box.getFirstCorner().getZ(),
                  box.getLastCorner().getX(), box.getLastCorner().getY(),
                  box.getLastCorner().getZ());
+#endif
+    ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
+        m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;

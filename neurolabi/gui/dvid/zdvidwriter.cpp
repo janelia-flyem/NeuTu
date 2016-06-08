@@ -1522,7 +1522,9 @@ void ZDvidWriter::writeSynapse(const ZDvidSynapse &synapse)
   ZDvidUrl url(m_dvidTarget);
   ZJsonArray synapseJson;
   synapseJson.append(synapse.toJsonObject());
-
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
   writeJson(url.getSynapseElementsUrl(), synapseJson);
 }
 
@@ -1539,6 +1541,9 @@ void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
 {
   ZDvidUrl url(m_dvidTarget);
 
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
   writeJson(url.getSynapseElementsUrl(), synapseJson);
 }
 

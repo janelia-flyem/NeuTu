@@ -474,6 +474,13 @@ ZSparseStack* ZDvidSparseStack::getSparseStack()
   return &m_sparseStack;
 }
 
+ZSparseStack* ZDvidSparseStack::getSparseStack(const ZIntCuboid &box)
+{
+  fillValue(box);
+
+  return &m_sparseStack;
+}
+
 bool ZDvidSparseStack::hit(double x, double y, double z)
 {
   ZObject3dScan *objectMask = getObjectMask();

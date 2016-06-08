@@ -7,6 +7,7 @@
 #include "zsparseobject.h"
 #include "neutubeconfig.h"
 #include "zsparsestack.h"
+#include "zstackdochelper.h"
 
 const size_t Z3DVolumeSource::m_nChannelSupport = 10;
 
@@ -250,22 +251,29 @@ void Z3DVolumeSource::readSparseStack()
     return;
   }
 
+  ZStackDocHelper docHelper;
+  ZStack *stackData = docHelper.getSparseStack(m_doc);
+
+
+#if 0
   ZSparseStack *spStack = m_doc->getSparseStack();
   if (spStack->getBoundBox().isEmpty()) {
     return;
   }
 
   const ZStack *stackData = spStack->getStack();
+#endif
 
   if (stackData == NULL) {
     return;
   }
-
   clearVolume();
 
 
   int nchannel = stackData->channelNumber();
-  const ZIntPoint dsIntv = spStack->getDownsampleInterval();
+
+  ZIntPoint dsIntv = docHelper.getSparseStackDsIntv();
+//  const ZIntPoint dsIntv = spStack->getDownsampleInterval();
 
   double widthScale = 1.0;
   double heightScale = 1.0;

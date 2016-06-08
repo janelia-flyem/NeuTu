@@ -12,6 +12,7 @@
 #include "c_json.h"
 #include "zlinesegmentobject.h"
 #include "dvid/zdvidannotation.h"
+#include "tz_constant.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -127,12 +128,45 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
 
     double conf  = getConfidence();
     if (conf < 1.0) {
-      decorationText += QString(".%1").arg(iround(conf * 10.0));
+//      double lineWidth = radius * conf * 0.5 + 1.0;
+      double lineWidth = radius * 0.5;
+      double red = 1.0 - conf;
+      double green = conf;
+      QColor color;
+      color.setRedF(red);
+      if (getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+        color.setBlueF(green);
+      } else {
+        color.setGreenF(green);
+      }
+      color.setAlphaF(alpha);
+      painter.setPen(color);
+      double x = center.getX();
+      double y = center.getY();
+      /*
+      painter.drawLine(QPointF(x - lineWidth, y),
+                       QPointF(x + lineWidth, y));
+                       */
+      int startAngle = 0;
+      int spanAngle = iround((1.0 - conf) * 360) * 16;
+      painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
+                             QPointF(x + lineWidth, y + lineWidth)),
+                      startAngle, spanAngle);
+//      painter.drawEllipse(QPointF(x, y), lineWidth, lineWidth);
+
+//      decorationText += QString(".%1").arg(iround(conf * 10.0));
+    }
+
+
+    int height = iround(getRadius() * 1.5);
+    int width = decorationText.size() * height;
+
+    if (decorationText !=   m_textDecoration.text()) {
+      m_textDecoration.setText(decorationText);
+      m_textDecoration.setTextWidth(width);
     }
 
     if (!decorationText.isEmpty()) {
-      int height = iround(getRadius() * 1.5);
-      int width = decorationText.size() * height;
       QFont font;
       font.setPixelSize(height);
       font.setWeight(QFont::Light);
@@ -145,8 +179,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       QPen pen = painter.getPen();
       pen.setColor(color);
       painter.setPen(pen);
-      painter.drawText(center.getX() - height / 2, center.getY(), width, height,
-                       Qt::AlignLeft, decorationText);
+      painter.drawStaticText(center.getX() - height / 2, center.getY(),
+                             m_textDecoration);
+//      painter.drawText(center.getX() - height / 2, center.getY(), width, height,
+//                       Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
     }
   }

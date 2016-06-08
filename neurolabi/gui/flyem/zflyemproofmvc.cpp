@@ -2955,6 +2955,11 @@ void ZFlyEmProofMvc::addLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofMvc::showBodyGrayscale()
+{
+  m_splitProject.showDataFrame3d();
+}
+
 void ZFlyEmProofMvc::cropCoarseBody3D()
 {
   if (m_coarseBodyWindow != NULL) {
