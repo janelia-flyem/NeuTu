@@ -32,6 +32,9 @@ public:
 
   std::string getAnnotation() const;
 
+  bool isVerified() const;
+  void setVerified(const std::string &userName);
+
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);
 

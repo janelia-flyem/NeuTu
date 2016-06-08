@@ -440,7 +440,11 @@ double ZDvidAnnotation::getRadius(int z, NeuTube::EAxis sliceAxis) const
 
 void ZDvidAnnotation::setUserName(const std::string &name)
 {
-  m_propertyJson.setEntry("user", name);
+  if (name.empty()) {
+    m_propertyJson.removeKey("user");
+  } else {
+    m_propertyJson.setEntry("user", name);
+  }
 }
 
 std::string ZDvidAnnotation::getUserName() const
