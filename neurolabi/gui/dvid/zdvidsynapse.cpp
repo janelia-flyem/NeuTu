@@ -63,6 +63,23 @@ void ZDvidSynapse::setConfidence(double c)
   m_propertyJson.setEntry("conf", c);
 }
 
+bool ZDvidSynapse::isVerified() const
+{
+  const std::string &userName = getUserName();
+  if (!userName.empty()) {
+    if (userName[0] != '$') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void ZDvidSynapse::setVerified(const std::string &userName)
+{
+  setUserName(userName);
+}
+
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {
@@ -106,22 +123,28 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     if (radius > 0.0) {
       if (getKind() == KIND_POST_SYN) {
-        pen.setWidth(pen.width() + 1);
+        pen.setWidthF(pen.widthF() + 1.0);
       }
       painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
       if (getKind() == KIND_POST_SYN) {
-        pen.setWidth(pen.width() - 1);
+        pen.setWidthF(pen.widthF() - 1.0);
       }
     }
     QString decorationText;
 
-    if (!getUserName().empty()) {
-      if (getUserName() != "dawmr-0" &&
-          !QString(getUserName().c_str()).startsWith("$")) {
-        decorationText = "U";
-      }
+    if (isVerified()) {
+      //        decorationText = "U";
+      color.setRgb(0, 0, 0);
+      color.setAlphaF(alpha);
+      pen.setColor(color);
+      painter.setPen(pen);
+      double margin = 0.5;
+      painter.drawLine(QPointF(center.getX(), center.getY() + radius - margin),
+                       QPointF(center.getX() + radius - margin, center.getY()));
+      painter.drawLine(QPointF(center.getX(), center.getY() + radius - margin),
+                       QPointF(center.getX() - radius + margin, center.getY()));
     }
 
 

@@ -364,10 +364,37 @@ void ZDvidSynapseEnsemble::addSynapse(
   }
 }
 
+void ZDvidSynapseEnsemble::setUserName(
+    int x, int y, int z, const std::string &userName, EDataScope scope)
+{
+  if (scope == DATA_GLOBAL) {
+    scope = DATA_SYNC;
+  }
+  ZDvidSynapse &synapse = getSynapse(x, y, z, scope);
+  if (synapse.isValid()) {
+    synapse.setUserName(userName);
+    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+      ZDvidWriter writer;
+      if (writer.open(m_dvidTarget)) {
+        writer.writeSynapse(synapse);
+      }
+    }
+  }
+}
+
+void ZDvidSynapseEnsemble::setUserName(
+    const ZIntPoint &pt, const std::string &userName, EDataScope scope)
+{
+  setUserName(pt.getX(), pt.getY(), pt.getZ(), userName, scope);
+}
+
 void ZDvidSynapseEnsemble::annotateSynapse(
     int x, int y, int z, const ZJsonObject &propJson, EDataScope scope)
 {
-  ZDvidSynapse &synapse = getSynapse(x, y, z, DATA_GLOBAL);
+  if (scope == DATA_GLOBAL) {
+    scope = DATA_SYNC;
+  }
+  ZDvidSynapse &synapse = getSynapse(x, y, z, scope);
   if (synapse.isValid()) {
     synapse.setProperty(propJson);
     if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
