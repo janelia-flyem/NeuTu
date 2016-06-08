@@ -29,6 +29,9 @@
  *      will then save it in DVID in the appropriate key
  * -- implement slot loadDataRequested(); the switcher will send data
  *      to this slot when a saved protocol is loaded
+ * -- ProtocolSwitcher::protocolNames: add to list
+ * -- in ProtocolSwitcher::instantiateProtocol: add else-if
+ *
  */
 ProtocolDialog::ProtocolDialog(QWidget *parent) :
     QDialog(parent),

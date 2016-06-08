@@ -11,6 +11,7 @@
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
+#include "synapsepredictionprotocol.h"
 
 #include "doNthingsprotocol.h"
 
@@ -62,7 +63,8 @@ const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 // names of available protocols; thank you, C++, for making
 //  constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
-        << "doNthings";
+        << "doNthings"
+        << "synapse_prediction";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -292,6 +294,8 @@ ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     //  so it's not that bad
     if (protocolName == "doNthings") {
         return new DoNThingsProtocol(m_parent);
+    } else if (protocolName == "synapse_prediction") {
+        return new SynapsePredictionProtocol(m_parent);
     } else {
         // should never happen; the null will cause errors
         return NULL;
