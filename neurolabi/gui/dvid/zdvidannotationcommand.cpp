@@ -57,7 +57,7 @@ void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
     m_backup = reader.readToDoItemJson(m_item);
     m_doc->removeTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
     m_doc->notifyTodoEdited(m_item);
-    QString msg = QString("Synapse removed at (%1, %2, %3)").
+    QString msg = QString("Todo removed at (%1, %2, %3)").
         arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
     m_doc->notify(msg);
   }

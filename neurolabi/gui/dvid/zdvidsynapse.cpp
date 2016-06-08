@@ -120,7 +120,11 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     if (!getUserName().empty()) {
       if (getUserName() != "dawmr-0" &&
           !QString(getUserName().c_str()).startsWith("$")) {
-        decorationText = "U";
+//        decorationText = "U";
+        painter.drawLine(QPointF(center.getX(), center.getY() - radius),
+                         QPointF(center.getX() + radius, center.getY()));
+        painter.drawLine(QPointF(center.getX(), center.getY() - radius),
+                         QPointF(center.getX() - radius, center.getY()));
       }
     }
 
