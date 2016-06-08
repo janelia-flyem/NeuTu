@@ -897,6 +897,46 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
   notifyObjectModified();
 }
 
+void ZFlyEmProofDoc::verfifySelectedSynapse()
+{
+  const std::string &userName = NeuTube::GetCurrentUserName();
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+  const std::set<ZIntPoint> &selected = getSelectedSynapse();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      se->setUserName(pt, userName, scope);
+      scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    }
+    processObjectModified(se);
+  }
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::unverfifySelectedSynapse()
+{
+  const std::string &userName = NeuTube::GetCurrentUserName();
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+  const std::set<ZIntPoint> &selected = getSelectedSynapse();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      se->setUserName(pt, "$" + userName, scope);
+      scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    }
+    processObjectModified(se);
+  }
+  notifyObjectModified();
+}
+
 void ZFlyEmProofDoc::deleteSelectedSynapse()
 {
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();

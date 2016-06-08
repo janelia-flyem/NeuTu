@@ -109,6 +109,10 @@ public:
                        EDataScope scope);
   void annotateSynapse(const ZIntPoint &pt, const ZJsonObject &propJson,
                        EDataScope scope);
+  void setUserName(const ZIntPoint &pt, const std::string &userName,
+                   EDataScope scope);
+  void setUserName(
+      int x, int y, int z, const std::string &userName, EDataScope scope);
 
   void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
 

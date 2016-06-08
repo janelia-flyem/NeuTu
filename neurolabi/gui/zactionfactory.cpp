@@ -402,6 +402,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SWC_SUMMARIZE:
     action = new QAction("Summary", parent);
     break;
+  case ACTION_SYNAPSE_VERIFY:
+    action = new QAction("Verify", parent);
+    break;
+  case ACTION_SYNAPSE_UNVERIFY:
+    action = new QAction("Unverfiy", parent);
+    break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
     action->setIcon(QIcon(":/images/add.png"));

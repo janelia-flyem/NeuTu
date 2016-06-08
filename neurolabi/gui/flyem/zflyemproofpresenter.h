@@ -88,6 +88,8 @@ signals:
 
 public slots:
   void deleteSelectedSynapse();
+  void verfifySelectedSynapse();
+  void unverfifySelectedSynapse();
   void linkSelectedSynapse();
   void unlinkSelectedSynapse();
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);

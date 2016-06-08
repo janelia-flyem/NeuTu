@@ -141,6 +141,10 @@ void ZFlyEmProofPresenter::connectAction()
 {
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
           this, SLOT(deleteSelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
+          this, SLOT(verfifySelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
+          this, SLOT(unverfifySelectedSynapse()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_PRE), SIGNAL(triggered()),
           this, SLOT(tryAddPreSynapseMode()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST), SIGNAL(triggered()),
@@ -324,6 +328,16 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
     m_synapseContextMenu =
         getMenuFactory()->makeSynapseContextMenu(this, getParentWidget(), NULL);
   }
+}
+
+void ZFlyEmProofPresenter::verfifySelectedSynapse()
+{
+  getCompleteDocument()->verfifySelectedSynapse();
+}
+
+void ZFlyEmProofPresenter::unverfifySelectedSynapse()
+{
+  getCompleteDocument()->unverfifySelectedSynapse();
 }
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
