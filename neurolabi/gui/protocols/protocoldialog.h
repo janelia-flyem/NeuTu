@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include "zjsonobject.h"
+#include "dvid/zdvidtarget.h"
 
 namespace Ui {
 class ProtocolDialog;
@@ -18,6 +19,7 @@ public:
     virtual ~ProtocolDialog();
     virtual bool initialize() = 0;
     virtual std::string getName() = 0;
+    void setDvidTarget(ZDvidTarget target);
 
 signals:
     void protocolCompleting();
@@ -26,6 +28,9 @@ signals:
 
 public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;
+
+protected:
+    ZDvidTarget m_dvidTarget;
 
 private:
     Ui::ProtocolDialog *ui;

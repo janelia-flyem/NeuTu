@@ -62,6 +62,10 @@ std::string ProtocolDialog::getName() {
     return "protocol_name";
 }
 
+void ProtocolDialog::setDvidTarget(ZDvidTarget target) {
+    m_dvidTarget = target;
+}
+
 /*
  * this slot is hit by the protocol switcher when a protocol is loaded;
  * the data is the previously saved data

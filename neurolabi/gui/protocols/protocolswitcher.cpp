@@ -101,8 +101,8 @@ void ProtocolSwitcher::exitProtocolRequested() {
     // disconnect dialog signals
     disconnectProtocolSignals();
 
-    // I think this is right...
-    delete m_activeProtocol;
+    // hide now, delete later
+    m_activeProtocol->hide();
 }
 
 void ProtocolSwitcher::completeProtocolRequested() {
@@ -194,7 +194,7 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
 
     m_protocolStatus = PROTOCOL_INITIALIZING;
 
-    m_activeProtocol = instantiateProtocol(protocolName);
+    instantiateProtocol(protocolName);
 
     // connect happens here, because if init succeeds, it'll
     //  want to request a save
@@ -238,6 +238,7 @@ void ProtocolSwitcher::loadProtocolKeyRequested(QString protocolKey) {
     // middle part is protocol name
     QStringList parts = protocolKey.split("-");
     m_activeMetadata.setActive(parts.at(1).toStdString(), protocolKey.toStdString());
+    m_activeMetadata.write();
 
     // call load save active
     loadProtocolRequested();
@@ -253,7 +254,7 @@ void ProtocolSwitcher::loadProtocolRequested() {
 
     m_protocolStatus = PROTOCOL_LOADING;
 
-    m_activeProtocol = instantiateProtocol(QString::fromStdString(m_activeMetadata.getActiveProtocolName()));
+    instantiateProtocol(QString::fromStdString(m_activeMetadata.getActiveProtocolName()));
     connectProtocolSignals();
 
     // load data from dvid and send to protocol
@@ -288,18 +289,23 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
     }
 }
 
-ProtocolDialog * ProtocolSwitcher::instantiateProtocol(QString protocolName) {
+void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     // if-else chain not ideal, but C++ is too stupid to switch
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
+    if (m_activeProtocol) {
+        delete m_activeProtocol;
+    }
     if (protocolName == "doNthings") {
-        return new DoNThingsProtocol(m_parent);
+        m_activeProtocol = new DoNThingsProtocol(m_parent);
     } else if (protocolName == "synapse_prediction") {
-        return new SynapsePredictionProtocol(m_parent);
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent);
     } else {
         // should never happen; the null will cause errors
-        return NULL;
+        m_activeProtocol = NULL;
     }
+
+    m_activeProtocol->setDvidTarget(m_currentDvidTarget);
 }
 
 /*

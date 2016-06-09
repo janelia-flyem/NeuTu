@@ -7,9 +7,13 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zintcuboid.h"
+#include "zpoint.h"
 
 SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     ui(new Ui::SynapsePredictionProtocol),
@@ -45,34 +49,54 @@ const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
 bool SynapsePredictionProtocol::initialize() {
 
 
-    // testing
-    bool ok;
-    int n = QInputDialog::getInt(this, "How many things?",
-        "How many things", 5, 1, 100, 1, &ok);
-    if (!ok) {
-        return false;
-    }
-
     // needs a custom dialog, ugh
     // two entry fields for corners of volume
-    //  accept comma or whitespace delimited ints
+    //  accept comma or space delimited floats
     // entry field for name of RoI
     //  in perfect world, this will be a drop-down and you'll
     //  choose from existing RoIs in DVID
 
 
+    // test data we can pretend came from dialog:
+    QString point1Input = "3500, 5200,  7300";
+    QString point2Input = "4000 5700  7350";
+    QString roiInput = "testroi";
+
+    // for now, parrot back the input
+    QMessageBox mb;
+    mb.setText("Synapse prediction protocol");
+    mb.setInformativeText(QString("This will eventually ask for user input.  For testing, using:\npoint1 = %1\npoint2 = %2\nRoI = %3")
+        .arg(point1Input).arg(point2Input).arg(roiInput));
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    int ans = mb.exec();
+
+    // convert input point strings to a ZCuboid; parse routine wants
+    //  size coordinates in order (x1, y1, z1, x2, y2, z2), delimited
+    //  by commas or spaces
+    ZIntCuboid volume = parseVolumeString(point1Input + " " + point2Input);
+    if (volume.isEmpty()) {
+        return false;
+    }
+
+    std::cout << "synpre: volume corners: " << volume.getCorner(0).toString() <<
+              ", " << volume.getCorner(1).toString() << std::endl;
+
 
     // generate pending/finished lists from user input
+    // throw this into a thread?
 
-    // considering leaving lists as ZJsonArrays rather than
+    // I'm considering leaving lists as ZJsonArrays rather than
     //  convert back and forth for each save
 
-    // DVID call exists in ZDvidReader for read synapse given volume
-    // will need to filter by RoI; raw DVID call to get "in RoI"
-    //  status for list of points exists
-    // given synapse list, need to split out pre/post sites
-    // might need to filter on something (auto vs user placed?)
-    // then arrange list in some appropriate way:
+    // m_pendingList = getInitialSynapseList(volume, roiInput);
+    // m_finishedList = ZJsonArray();
+
+    // std::cout << "snpre: pending list length: " << m_pendingList.size() << std::endl;
+    // std::cout << "snpre: finished list length: " << m_finishedList.size() << std::endl;
+
+
+    // arrange list in some appropriate way:
     //  -- pre then post or the other way around?
     //  -- cluster spatially?
 
@@ -137,9 +161,13 @@ void SynapsePredictionProtocol::saveState() {
     // json save format: {"pending": [[x, y, z], [x2, y2, z2], ...],
     //                    "finished": similar list}
 
+    // this is easy because we're keeping our data in json
+    //  form
     ZJsonObject data;
-
-
+    /*
+    data.setEntry(KEY_PENDING.c_str(), m_pendingList);
+    data.setEntry(KEY_FINISHED.c_str(), m_finishedList);
+    */
     emit requestSaveProtocol(data);
 }
 
@@ -147,13 +175,115 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     std::cout << "SynapsePredictionProtocol::loadDataRequested" << std::endl;
 
+    /*
+    if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
+        // how to communicate failure?  overwrite a label?
+        ui->progressLabel->setText("Data could not be loaded from DVID!");
+        return;
+    }
 
+    m_pendingList = ZJsonArray(data.value(KEY_PENDING.c_str()));
+    m_finishedList = ZJsonArray(data.value(KEY_FINISHED.c_str()));
+
+    onFirstButton();
+    */
 }
 
 void SynapsePredictionProtocol::updateLabels() {
     // might want to separate update current label from update progress?
     // if both are fast, don't need to
 
+}
+
+/*
+ * retrieve synapses from the input volume that are in the input RoI;
+ * errors return empty list
+ */
+ZJsonArray SynapsePredictionProtocol::getInitialSynapseList(ZIntCuboid volume, QString roi) {
+
+    ZJsonArray synapses;
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(m_dvidTarget)) {
+        std::vector<ZDvidSynapse> synapseList = reader.readSynapse(volume, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+
+        // filter by roi (coming soon)
+        // for now: need to do raw DVID call to batch ask "is point in RoI"?
+
+        // filter to only auto?
+
+
+        // put each pre/post site into list
+        for(std::vector<ZDvidSynapse>::iterator iter = synapseList.begin(); iter != synapseList.end(); ++iter) {
+            ZJsonArray point;
+            point.append(iter->getX());
+            point.append(iter->getY());
+            point.append(iter->getZ());
+            synapses.append(point);
+         }
+
+
+
+        // order somehow?
+
+    }
+
+
+    return synapses;
+}
+
+/*
+ * parse a string into a cuboid; raises a dialog if parsing fails
+ *
+ * input = string of six ints, space and/or comma delimited
+ * output = cuboid; if parsing fails returns default volume, which
+ *      tests as empty
+ */
+ZIntCuboid SynapsePredictionProtocol::parseVolumeString(QString input) {
+    ZIntCuboid volume;
+
+    bool success = true;
+
+    QString input2 = input.replace(",", " ");
+    QStringList items = input2.split(" ", QString::SkipEmptyParts);
+    if (items.size() != 6) {
+        success = false;
+    } else {
+        bool statusx, statusy, statusz;
+        int tempx, tempy, tempz;
+
+        tempx = items.at(0).toInt(&statusx);
+        tempy = items.at(1).toInt(&statusy);
+        tempz = items.at(2).toInt(&statusz);
+        if (statusx && statusy && statusz) {
+            volume.setFirstCorner(tempx, tempy, tempz);
+        } else {
+            success = false;
+        }
+        if (success) {
+            tempx = items.at(3).toInt(&statusx);
+            tempy = items.at(4).toInt(&statusy);
+            tempz = items.at(5).toInt(&statusz);
+            if (statusx && statusy && statusz) {
+                volume.setLastCorner(tempx, tempy, tempz);
+            } else {
+                success = false;
+            }
+        }
+    }
+
+    if (!success) {
+        QMessageBox mb;
+        mb.setText("Parsing error");
+        mb.setInformativeText("Could not parse input volume strings: " + input);
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        int ans = mb.exec();
+
+        volume.reset();
+    }
+    return volume;
 }
 
 SynapsePredictionProtocol::~SynapsePredictionProtocol()

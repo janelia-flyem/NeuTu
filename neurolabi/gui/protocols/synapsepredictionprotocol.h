@@ -3,7 +3,9 @@
 
 #include <QDialog>
 
+#include "zjsonarray.h"
 #include "zjsonobject.h"
+#include "zintcuboid.h"
 
 #include "protocoldialog.h"
 
@@ -44,10 +46,14 @@ private:
     static const std::string KEY_FINISHED;
 
     Ui::SynapsePredictionProtocol *ui;
+    ZJsonArray m_pendingList;
+    ZJsonArray m_finishedList;
 
     void saveState();
     void updateLabels();
     void gotoNextItem();
+    ZIntCuboid parseVolumeString(QString input);
+    ZJsonArray getInitialSynapseList(ZIntCuboid volume, QString roi);
 
 };
 

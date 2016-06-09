@@ -60,7 +60,7 @@ private:
     std::string generateKey(QString protocolName);
     std::string generateIdentifier();
     bool askProceedIfKeyExists(std::string key);
-    ProtocolDialog * instantiateProtocol(QString protocolName);
+    void instantiateProtocol(QString protocolName);
     QStringList getUserProtocolKeys(QString username, bool showComplete);
 };
 
