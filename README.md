@@ -7,9 +7,19 @@ Software package for neuron reconstruction and visualization
 
 ## Download
 
-    git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
+    git clone -b <branch> https://github.com/janelia-flyem/NeuTu.git NeuTu
 
-For the latest stable FlyEM edition, use the flyem_release branch:
+Here the <branch> placeholder should be specified based on which edition you want to compile:
+
+### Dark Field Edition (neuTube)
+
+    git clone -b neutube https://github.com/janelia-flyem/NeuTu.git NeuTu
+
+### Bright Field Edition
+
+    git clone -b biocytin https://github.com/janelia-flyem/NeuTu.git NeuTu
+
+### EM Edition
 
     git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
 
