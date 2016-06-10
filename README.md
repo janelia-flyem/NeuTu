@@ -19,7 +19,7 @@ Here the \<branch\> placeholder should be specified based on which edition you w
 
     git clone -b biocytin https://github.com/janelia-flyem/NeuTu.git NeuTu
 
-### EM Edition
+### FlyEM Edition
 
     git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
 
@@ -46,7 +46,7 @@ where \<qt_dir\> is the install directory of the Qt library. This simplification
 
 Additional flags are needed to build special editions:
 
-#### EM Edition
+#### FlyEM Edition
     
 Please check README in the flyem_release branch: https://github.com/janelia-flyem/NeuTu/tree/flyem_release
 
