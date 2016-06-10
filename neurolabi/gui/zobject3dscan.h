@@ -43,6 +43,11 @@ public:
 
   ZObject3dScan(const ZObject3dScan &obj);
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_OBJECT3D_SCAN;
+  }
+
+
   enum EComponent {
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
@@ -236,7 +241,7 @@ public:
   Stack* toStack(int *offset = NULL, int v = 1) const;
   Stack* toStackWithMargin(int *offset, int v, int margin) const;
 
-  ZStack* toStackObject(int v = 1) const;
+  ZStack* toStackObject(int v = 1, ZStack *result = NULL) const;
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
   ZStack* toVirtualStack() const;

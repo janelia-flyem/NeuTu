@@ -165,7 +165,8 @@ public:
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
   void writeLabel(const ZArray &label);
-  void refreshLabel(const ZIntCuboid &box);
+  void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
+  void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
 

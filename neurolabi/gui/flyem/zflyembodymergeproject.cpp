@@ -496,6 +496,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
           }
         }
 
+        emit mergeUploaded(m_selectedOriginal);
+
         std::set<uint64_t> selectionSet =
             getSelection(NeuTube::BODY_LABEL_MAPPED);
         m_selectedOriginal.clear();

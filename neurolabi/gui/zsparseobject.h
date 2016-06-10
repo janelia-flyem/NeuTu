@@ -14,6 +14,11 @@ public:
   ZSparseObject();
 
 public:
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_SPARSE_OBJECT;
+  }
+
   //void save(const char *filePath);
   //void load(const char *filePath);
   virtual const std::string& className() const;

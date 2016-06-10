@@ -74,5 +74,6 @@ void ZFlyEmKeyOperationConfig::ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map)
 //  shiftKeyMap[Qt::Key_C] = ZStackOperator::OP_SWC_CONNECT_NODE_SMART;
 
   QMap<int, ZStackOperator::EOperation> &controlKeyMap = *(map.getControlMap());
-  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
+//  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
+  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE;
 }

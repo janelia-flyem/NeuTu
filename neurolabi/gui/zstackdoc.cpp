@@ -343,8 +343,8 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(progressStarted()), this, SLOT(startProgressSlot()));
   connect(this, SIGNAL(progressEnded()), this, SLOT(endProgressSlot()));
 
-  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
-          this, SLOT(reloadData(ZStackDocReader)));
+//  connect(this, SIGNAL(newDocReady(ZStackDocReader)),
+//          this, SLOT(reloadData(ZStackDocReader)));
 }
 
 void ZStackDoc::advanceProgressSlot(double dp)
@@ -2401,22 +2401,13 @@ void ZStackDoc::addObject3dScanP(ZObject3dScan *obj)
 #define DEFINE_GET_OBJECT_LIST(Function, ObjectClass, OBJECT_TYPE) \
   QList<ObjectClass*> ZStackDoc::Function() const \
   {\
-    QList<ObjectClass*> objList;\
-    for (ZStackObjectGroup::const_iterator iter = m_objectGroup.begin();\
-         iter != m_objectGroup.end(); ++iter) {\
-      ZStackObject *obj = const_cast<ZStackObject*>(*iter);\
-      if (obj->getType() == ZStackObject::OBJECT_TYPE) {\
-        ObjectClass *dobj = dynamic_cast<ObjectClass*>(obj);\
-        TZ_ASSERT(dobj != NULL, "Null pointer.");\
-        objList.append(dobj);\
-      }\
-    }\
-\
-    return objList;\
+    return m_objectGroup.getObjectList<ObjectClass>();\
   }
 
 QList<ZSwcTree*> ZStackDoc::getSwcList() const
 {
+  return m_objectGroup.getObjectList<ZSwcTree>();
+  /*
   QList<ZSwcTree*> treeList;
   for (ZStackObjectGroup::const_iterator iter = m_objectGroup.begin();
        iter != m_objectGroup.end(); ++iter) {
@@ -2429,6 +2420,7 @@ QList<ZSwcTree*> ZStackDoc::getSwcList() const
   }
 
   return treeList;
+  */
 }
 
 DEFINE_GET_OBJECT_LIST(getObj3dList, ZObject3d, TYPE_OBJ3D)
@@ -3115,11 +3107,15 @@ void ZStackDoc::removeLastObject(bool deleteObject)
 
 void ZStackDoc::removeAllObject(bool deleteObject)
 {
-  //QMutexLocker locker(&m_mutex);
+  {
+    QMutexLocker locker(m_objectGroup.getMutex());
 
-  for (ZStackObjectGroup::const_iterator iter = m_objectGroup.begin();
-       iter != m_objectGroup.end(); ++iter) {
-    bufferObjectModified(*iter);
+    QList<ZStackObject*> &objList = m_objectGroup.getObjectList();
+
+    for (QList<ZStackObject*>::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      bufferObjectModified(*iter);
+    }
   }
 
   m_objectGroup.removeAllObject(deleteObject);
@@ -3176,18 +3172,22 @@ void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
-  //QMutexLocker locker(&m_mutex);
   std::set<ZStackObject*> removeSet;
-  for (ZDocPlayerList::iterator iter = m_playerList.begin();
-       iter != m_playerList.end(); /*++iter*/) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
-      removeSet.insert(player->getData());
-      bufferObjectModified(player->getData());
-      iter = m_playerList.erase(iter);
-      delete player;
-    } else {
-      ++iter;
+  {
+    QMutexLocker locker(m_playerList.getMutex());
+
+    QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
+    for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+         iter != playerList.end(); /*++iter*/) {
+      ZDocPlayer *player = *iter;
+      if (player->hasRole(role)) {
+        removeSet.insert(player->getData());
+        bufferObjectModified(player->getData());
+        iter = playerList.erase(iter);
+        delete player;
+      } else {
+        ++iter;
+      }
     }
   }
 
@@ -3908,7 +3908,8 @@ QStringList ZStackDoc::toStringList() const
   ZStack *mainStack = getStack();
 
   QStringList list;
-  list.append(QString("Number of objects: %1").arg(m_objectGroup.size()));
+  list.append(QString("Number of objects: %1").arg(
+                m_objectGroup.getObjectList().size()));
   if (mainStack != NULL) {
     list.append(QString("Stack size: %1 x %2 x %3").arg(mainStack->width())
                 .arg(mainStack->height()).arg(mainStack->depth()));
@@ -4651,7 +4652,9 @@ bool ZStackDoc::isDeprecated(EComponent component)
 
 ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 {
-  QList<ZStackObject*> sortedObjList = m_objectGroup;
+  QMutexLocker locker(m_objectGroup.getMutex());
+
+  QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
   sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
 
@@ -4670,7 +4673,10 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 
 ZStackObject* ZStackDoc::hitTest(double x, double y, NeuTube::EAxis sliceAxis)
 {
-  QList<ZStackObject*> sortedObjList = m_objectGroup;
+  QMutexLocker locker(m_objectGroup.getMutex());
+
+  QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
+
   sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
 
@@ -5018,6 +5024,8 @@ void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in clearObjectModifiedTypeBuffer";
     m_objectModifiedTypeBuffer.clear();
   } else {
     m_objectModifiedTypeBuffer.clear();
@@ -5070,6 +5078,8 @@ void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in bufferObjectModified";
     m_objectModifiedTypeBuffer.insert(type);
   } else {
     m_objectModifiedTypeBuffer.insert(type);
@@ -5096,6 +5106,8 @@ void ZStackDoc::bufferObjectModified(
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+    ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                        "in bufferObjectModified";
     m_objectModifiedTypeBuffer.unite(typeSet);
   } else {
     m_objectModifiedTypeBuffer.unite(typeSet);
@@ -5258,9 +5270,16 @@ void ZStackDoc::processObjectModified(
     const QSet<ZStackObject::EType> &typeSet, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
-         iter != typeSet.end(); ++iter) {
+    QSet<ZStackObject::EType> bufferTypeSet;
+    {
+      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
+      ZOUT(LINFO(), 5) << "m_objectModifiedTypeBufferMutex locked "
+                          "in processObjectModified";
+      bufferTypeSet = typeSet;
+    }
+
+    for (QSet<ZStackObject::EType>::const_iterator iter = bufferTypeSet.begin();
+         iter != bufferTypeSet.end(); ++iter) {
       ZStackObject::EType type = *iter;
       processObjectModified(type, false);
     }
@@ -7063,18 +7082,25 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
 
   bool succ = false;
 
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  const ZDocPlayerList& playerList = getPlayerList();
-  for (ZDocPlayerList::const_iterator iter = playerList.begin();
-       iter != playerList.end(); ++iter) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(tree->getRole().getRole())) {
-      ZSwcTree *roleTree = dynamic_cast<ZSwcTree*>(player->getData());
-      if (roleTree != NULL) {
-        new ZStackDocCommand::SwcEdit::RemoveSwc(this, roleTree, command);
+
+  {
+    QMutexLocker locker(getPlayerList().getMutex());
+    const QList<ZDocPlayer*>& playerList = getPlayerList().getPlayerList();
+    for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      if (player->hasRole(tree->getRole().getRole())) {
+        ZSwcTree *roleTree = dynamic_cast<ZSwcTree*>(player->getData());
+        if (roleTree != NULL) {
+          new ZStackDocCommand::SwcEdit::RemoveSwc(this, roleTree, command);
+        }
       }
     }
   }
+
+
   if (tree != NULL) {
     new ZStackDocCommand::ObjectEdit::AddObject(this, tree, false, command);
   }
@@ -7186,25 +7212,29 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
     return;
   }
 
-  if (m_objectGroup.contains(obj)) {
-    return;
-  }
+  {
+    QMutexLocker locker(m_objectGroup.getMutex());
 
-  TStackObjectList objList;
-//  ZStackObjectRole role;
+    if (m_objectGroup.containsUnsync(obj)) {
+      return;
+    }
 
-  if (uniqueSource) {
-    if (!obj->getSource().empty()) {
-      objList = m_objectGroup.takeSameSource(obj->getType(), obj->getSource());
-      for (TStackObjectList::iterator iter = objList.begin();
-           iter != objList.end(); ++iter) {
-        ZStackObject *oldObj = *iter;
-        bufferObjectModified(oldObj);
+    TStackObjectList objList;
+    //  ZStackObjectRole role;
+
+    if (uniqueSource) {
+      if (!obj->getSource().empty()) {
+        objList = m_objectGroup.takeSameSourceUnsync(obj->getType(), obj->getSource());
+        for (TStackObjectList::iterator iter = objList.begin();
+             iter != objList.end(); ++iter) {
+          ZStackObject *oldObj = *iter;
+          bufferObjectModified(oldObj);
 #ifdef _DEBUG_
-        std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
+          std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
 #endif
-        //      role.addRole(m_playerList.removePlayer(obj));
-        delete oldObj;
+          //      role.addRole(m_playerList.removePlayer(obj));
+          delete oldObj;
+        }
       }
     }
   }
@@ -7287,7 +7317,7 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       }
 
       if (player != NULL) {
-        m_playerList.append(player);
+        m_playerList.add(player);
         processObjectModified(obj->getRole().getRole());
       }
     }
@@ -8455,9 +8485,9 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
   notifySparseStackModified();
 }
 
-void ZStackDoc::addData(const ZStackDocReader &reader)
+void ZStackDoc::addData(ZStackDocReader &reader)
 {
-  m_objectGroup = reader.getObjectGroup();
+  reader.getObjectGroup().moveTo(m_objectGroup);
 
   if (m_objectGroup.hasObject(ZStackObject::TYPE_SWC)) {
     notifySwcModified();
@@ -8486,10 +8516,10 @@ void ZStackDoc::addData(const ZStackDocReader &reader)
     notifySparseObjectModified();
   }
 
-  m_playerList.append(reader.getPlayerList());
+  reader.getPlayerList().moveTo(m_playerList);
 }
 
-void ZStackDoc::reloadData(const ZStackDocReader &reader)
+void ZStackDoc::reloadData(ZStackDocReader &reader)
 {
   clearData();
   addData(reader);
@@ -8504,9 +8534,12 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
 
   ZStackObject *obj = NULL;
 //  bool hasSelected = false;
+  QMutexLocker locker(m_playerList.getMutex());
+
+  QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
   if (selectedOnly) {
-    for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-         iter != m_playerList.end(); ++iter) {
+    for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
       const ZDocPlayer *player = *iter;
       if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
           player->getData()->isSelected()) {
@@ -8521,8 +8554,8 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
     ZIntCuboid box;
     obj->boundBox(&box);
     if (!box.isEmpty()) {
-      for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-           iter != m_playerList.end(); ++iter) {
+      for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
+           iter != playerList.end(); ++iter) {
         const ZDocPlayer *player = *iter;
         if (player->hasRole(ZStackObjectRole::ROLE_SEED)) {
           ZStackObject *checkObj = player->getData();
@@ -8571,8 +8604,8 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
       }
     }
   } else {
-    for (ZDocPlayerList::const_iterator iter = m_playerList.begin();
-         iter != m_playerList.end(); ++iter) {
+    for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
       const ZDocPlayer *player = *iter;
       if (player->hasRole(ZStackObjectRole::ROLE_SEED) &&
           ((numberOfSelected == 0) || player->getData()->isSelected())) {

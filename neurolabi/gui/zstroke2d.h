@@ -29,6 +29,10 @@ public:
   ZStroke2d(const ZStroke2d &stroke);
   virtual ~ZStroke2d();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_STROKE;
+  }
+
   enum EOperation {
     OPERATION_NULL,
     OPERATION_DELETE, OPERATION_CHANGE_BRUSH_LABEL,

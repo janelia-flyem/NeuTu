@@ -192,8 +192,7 @@ public slots:
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
-  ZStackFrame* createStackFrame(
-      const ZStackDocReader &reader,
+  ZStackFrame* createStackFrame(ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
   ZStackFrame* createStackFrame(ZStackDocPtr doc);

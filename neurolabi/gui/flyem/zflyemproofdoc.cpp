@@ -38,6 +38,7 @@
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoccommand.h"
+#include "dialogs/zflyemsynapseannotationdialog.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -53,6 +54,7 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   m_loadingAssignedBookmark = false;
+  m_analyzer.setDvidReader(&m_dvidReader);
 
   connectSignalSlot();
 }
@@ -682,19 +684,76 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(
     if (selectedSet.size() == 1) {
       se->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_GLOBAL);
       processObjectModified(se);
+
+
+      QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+      for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+           iter != seList.end(); ++iter) {
+        ZDvidSynapseEnsemble *buddySe = *iter;
+        if (buddySe != se) {
+          buddySe->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_LOCAL);
+          processObjectModified(se);
+        }
+      }
+
+      notifyObjectModified();
     }
+  }
+}
+
+void ZFlyEmProofDoc::annotateSelectedSynapse(
+    ZFlyEmSynapseAnnotationDialog *dlg, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    if (se->getSelector().getSelectedSet().size() == 1) {
+      ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
+      const ZDvidSynapse &synapse =
+          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      dlg->setOption(synapse.getKind());
+      dlg->setConfidence(synapse.getConfidence());
+      dlg->setAnnotation(synapse.getAnnotation().c_str());
+      if (dlg->exec()) {
+        annotateSynapse(pt, dlg->getPropJson(), axis);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofDoc::annotateSynapse(
+    const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    se->annotateSynapse(pt, propJson, ZDvidSynapseEnsemble::DATA_GLOBAL);
+    processObjectModified(se);
 
     QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
     for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
          iter != seList.end(); ++iter) {
       ZDvidSynapseEnsemble *buddySe = *iter;
       if (buddySe != se) {
-        buddySe->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_LOCAL);
+        buddySe->annotateSynapse(
+              pt, propJson, ZDvidSynapseEnsemble::DATA_LOCAL);
         processObjectModified(se);
       }
     }
 
+    notifySynapseEdited(pt);
+
     notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::annotateSelectedSynapse(
+    ZJsonObject propJson, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    if (se->getSelector().getSelectedSet().size() == 1) {
+      ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
+      annotateSynapse(pt, propJson, axis);
+    }
   }
 }
 
@@ -1406,7 +1465,8 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
 //  reader.setVerbose(false);
   const double radius = 50.0;
   if (reader.open(getDvidTarget())) {
-    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+    std::vector<ZDvidSynapse> synapseArray =
+        reader.readSynapse(bodyId, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
 
     std::vector<ZPunctum*> &tbar = synapse.first;
     std::vector<ZPunctum*> &psd = synapse.second;
@@ -1414,10 +1474,15 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
     for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
          iter != synapseArray.end(); ++iter) {
       const ZDvidSynapse &synapse = *iter;
+      ZPunctum *punctum = new ZPunctum(synapse.getPosition(), radius);
+      if (GET_FLYEM_CONFIG.anayzingMb6()) {
+        punctum->setName(m_analyzer.getPunctumName(synapse));
+      }
+
       if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
-        tbar.push_back(new ZPunctum(synapse.getPosition(), radius));
+        tbar.push_back(punctum);
       } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
-        psd.push_back(new ZPunctum(synapse.getPosition(), radius));
+        psd.push_back(punctum);
       }
     }
     qDebug() << "Synapse loading time: " << timer.restart();
@@ -1755,6 +1820,9 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             } else {
               bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
             }
+            if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+              bookmark->setChecked(true);
+            }
             ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
             addObject(bookmark);
           }
@@ -2080,7 +2148,8 @@ void ZFlyEmProofDoc::rewriteSegmentation()
 {
   ZIntCuboid box = getCuboidRoi();
   if (box.getDepth() > 1) {
-    getDvidWriter().refreshLabel(box);
+    getDvidWriter().refreshLabel(
+          box, getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL));
     if (getDvidWriter().getStatusCode() != 200) {
       emit messageGenerated(
             ZWidgetMessage("Failed to rewite segmentations.", NeuTube::MSG_ERROR));

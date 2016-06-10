@@ -20,7 +20,7 @@ public:
 
   void clear();
 
-  void load(ZStackDoc *doc, const ZStackDocReader &reader);
+  void load(ZStackDoc *doc, ZStackDocReader &reader);
 
   ELoadMode getLoadMode(ZStackObject::EType type) const;
 

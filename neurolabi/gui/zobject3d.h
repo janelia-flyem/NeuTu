@@ -37,6 +37,10 @@ public:
             int dx, int dy, int dz);
   virtual ~ZObject3d();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_OBJ3D;
+  }
+
   virtual const std::string& className() const;
 
   virtual void save(const char *filePath);

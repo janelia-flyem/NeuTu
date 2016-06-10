@@ -246,7 +246,7 @@ void ZStackDocReader::addPlayer(ZStackObject *obj)
         player = new ZDocPlayer(obj);
         break;
       }
-      m_playerList.append(player);
+      m_playerList.add(player);
     }
   }
 }

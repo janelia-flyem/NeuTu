@@ -171,17 +171,19 @@ void ZJsonObject::appendEntries(const char *key, json_t *obj,
 
 map<string, json_t*> ZJsonObject::toEntryMap(bool recursive) const
 {
-  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+//  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+
 
   map<std::string, json_t*> entryMap;
-
-  if (recursive) {
-    appendEntries(NULL, m_data, &entryMap);
-  } else {
-    const char *subkey = NULL;
-    json_t *value = NULL;
-    json_object_foreach(m_data, subkey, value) {
-      entryMap[subkey] = value;
+  if (C_Json::isObject(m_data)) {
+    if (recursive) {
+      appendEntries(NULL, m_data, &entryMap);
+    } else {
+      const char *subkey = NULL;
+      json_t *value = NULL;
+      json_object_foreach(m_data, subkey, value) {
+        entryMap[subkey] = value;
+      }
     }
   }
 

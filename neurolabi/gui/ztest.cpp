@@ -20165,7 +20165,25 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
-                                 4099 + 99, 5018 + 99, 10343 + 99));
+                                 4099 + 99, 5018 + 99, 10343 + 99), 1);
+#endif
+
+#if 0
+  ZFlyEmBookmark bookmark;
+  bookmark.setComment("test");
+
+  bookmark.getPropertyJson().setEntry("comment", "test2");
+  bookmark.getPropertyJson().setEntry("prop1", "test2");
+  bookmark.getPropertyJson().setEntry("prop2", "test3");
+  bookmark.setLocation(1, 2, 3);
+  bookmark.setBodyId(10);
+
+  std::cout << bookmark.toDvidAnnotationJson().dumpString() << std::endl;
+
+  ZFlyEmBookmark bookmark2;
+  bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
+  std::cout << bookmark2.toDvidAnnotationJson().dumpString() << std::endl;
+
 #endif
 
 #if 0
@@ -20195,7 +20213,7 @@ void ZTest::test(MainWindow *host)
   std::cout << time.currentTime().elapsed() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZJsonArray myList;
   ZJsonObject myMap;
 
@@ -20209,6 +20227,79 @@ void ZTest::test(MainWindow *host)
   myList.append(12345);
 
   std::cout << myMap.dumpString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan roi;
+    roi.load(GET_TEST_DATA_DIR +
+             "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP.sobj");
+
+    ZIntCuboid roiBox = roi.getBoundBox();
+
+    ZIntCuboid cropBox = roiBox;
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntPoint blockIndex1 = dvidInfo.getBlockIndex(7314, 0, 0);
+    ZIntPoint blockIndex2 = dvidInfo.getBlockIndex(12958, 0, 0);
+
+    cropBox.setLastX(blockIndex1.getX());
+
+    ZObject3dScan *roi1 = roi.subobject(cropBox, NULL);
+    roi1->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x1.sobj");
+
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(*roi1);
+    array.dump(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x1.json");
+
+    cropBox.setFirstX(blockIndex1.getX() + 1);
+    cropBox.setLastX(blockIndex2.getX());
+    ZObject3dScan *roi2 = roi.subobject(cropBox, NULL);
+    roi2->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x2.sobj");
+    array = ZJsonFactory::MakeJsonArray(*roi2);
+        array.dump(GET_TEST_DATA_DIR +
+                   "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x2.json");
+
+
+    cropBox.setFirstX(blockIndex2.getX() + 1);
+    cropBox.setLastX(roiBox.getLastCorner().getX());
+    ZObject3dScan *roi3 = roi.subobject(cropBox, NULL);
+    roi3->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x3.sobj");
+
+    array = ZJsonFactory::MakeJsonArray(*roi3);
+        array.dump(GET_TEST_DATA_DIR +
+                   "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x3.json");
+
+
+    if (roi1->getVoxelNumber() + roi2->getVoxelNumber() + roi3->getVoxelNumber()
+        != roi.getVoxelNumber()) {
+      std::cout << "WARNING: Inconsistent voxel number" << std::endl;
+    }
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("segmentation-labelvol");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readCoarseBody(51017317967);
+    obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+#endif
+
+#if 1
+
 #endif
 
   std::cout << "Done." << std::endl;
