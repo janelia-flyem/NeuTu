@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <QSet>
+#include <QtConcurrentRun>
+#include <QMessageBox>
+#include <QApplication>
 
 #include "zrandom.h"
 #include "tz_3dgeom.h"
@@ -14,8 +17,7 @@
 #include "swctreenode.h"
 #include "tz_geometry.h"
 #include "neutubeconfig.h"
-#include <QMessageBox>
-#include <QApplication>
+
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
@@ -1398,6 +1400,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     //      }
     //    }
     if (isNodeRendering()) {
+      QMutexLocker locker(&m_nodeSelectionMutex);
       std::vector<Swc_Tree_Node*>::iterator it = std::find(
             m_sortedNodeList.begin(), m_sortedNodeList.end(),
             (Swc_Tree_Node*) obj);
@@ -1450,26 +1453,23 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           // search within a radius first to speed up
           const std::vector<const void*> &objs =
               getPickingManager()->sortObjectsByDistanceToPos(glm::ivec2(e->x(), h-e->y()), 100);
-          for (size_t i=0; i<objs.size(); ++i) {
-            std::vector<Swc_Tree_Node*>::iterator it = std::find(
-                  m_sortedNodeList.begin(), m_sortedNodeList.end(),
-                  (Swc_Tree_Node*) objs[i]);
-            if (it != m_sortedNodeList.end()) {
-              tn = *it;
-              break;
+          {
+            QMutexLocker locker(&m_nodeSelectionMutex);
+            for (size_t i=0; i<objs.size(); ++i) {
+              std::vector<Swc_Tree_Node*>::iterator it = std::find(
+                    m_sortedNodeList.begin(), m_sortedNodeList.end(),
+                    (Swc_Tree_Node*) objs[i]);
+              if (it != m_sortedNodeList.end()) {
+                tn = *it;
+                break;
+              }
             }
-            /*
-          std::set<Swc_Tree_Node*>::iterator it = m_allNodesSet.find((Swc_Tree_Node*)objs[i]);
-          if (it != m_allNodesSet.end()) {
-            tn = *it;
-            break;
-          }
-          */
           }
           // not found, search the whole image
           if (!tn) {
             const std::vector<const void*> &objs1 =
                 getPickingManager()->sortObjectsByDistanceToPos(glm::ivec2(e->x(), h-e->y()), -1);
+            QMutexLocker locker(&m_nodeSelectionMutex);
             for (size_t i=0; i<objs1.size(); ++i) {
               std::vector<Swc_Tree_Node*>::iterator it = std::find(
                     m_sortedNodeList.begin(), m_sortedNodeList.end(),
@@ -1545,7 +1545,10 @@ void Z3DSwcFilter::decompseSwcTree()
   m_maxType = 0;
   m_decompsedNodePairs.clear();
   m_decomposedNodes.clear();
-  m_sortedNodeList.clear();
+  {
+    QMutexLocker locker(&m_nodeSelectionMutex);
+    m_sortedNodeList.clear();
+  }
   //m_allNodesSet.clear();
 
   m_decompsedNodePairs.resize(m_swcList.size());
@@ -1576,6 +1579,13 @@ void Z3DSwcFilter::decompseSwcTree()
       m_decomposedNodes[i] = allNodes;
     }
   }
+
+  QtConcurrent::run(this, &Z3DSwcFilter::sortNodeList);
+}
+
+void Z3DSwcFilter::sortNodeList()
+{
+  QMutexLocker locker(&m_nodeSelectionMutex);
 
   std::sort(m_sortedNodeList.begin(), m_sortedNodeList.end());
 }
