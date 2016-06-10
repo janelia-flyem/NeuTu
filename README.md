@@ -46,7 +46,7 @@ where \<qt_dir\> is the install directory of the Qt library. This simplification
 
 Additional flags are needed to build special editions:
 
-#### FlyEM Edition
+#### EM Edition
     
 Please check README in the flyem_release branch: https://github.com/janelia-flyem/NeuTu/tree/flyem_release
 
