@@ -86,14 +86,11 @@ bool SynapsePredictionProtocol::initialize() {
     // generate pending/finished lists from user input
     // throw this into a thread?
 
-    // I'm considering leaving lists as ZJsonArrays rather than
-    //  convert back and forth for each save
+    loadInitialSynapseList(volume, roiInput);
 
-    // m_pendingList = getInitialSynapseList(volume, roiInput);
-    // m_finishedList = ZJsonArray();
-
-    // std::cout << "snpre: pending list length: " << m_pendingList.size() << std::endl;
-    // std::cout << "snpre: finished list length: " << m_finishedList.size() << std::endl;
+    // testing
+    std::cout << "snpre: pending list length: " << m_pendingList.size() << std::endl;
+    std::cout << "snpre: finished list length: " << m_finishedList.size() << std::endl;
 
 
     // arrange list in some appropriate way:
@@ -164,10 +161,8 @@ void SynapsePredictionProtocol::saveState() {
     // this is easy because we're keeping our data in json
     //  form
     ZJsonObject data;
-    /*
     data.setEntry(KEY_PENDING.c_str(), m_pendingList);
     data.setEntry(KEY_FINISHED.c_str(), m_finishedList);
-    */
     emit requestSaveProtocol(data);
 }
 
@@ -175,7 +170,6 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     std::cout << "SynapsePredictionProtocol::loadDataRequested" << std::endl;
 
-    /*
     if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
         // how to communicate failure?  overwrite a label?
         ui->progressLabel->setText("Data could not be loaded from DVID!");
@@ -186,7 +180,6 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     m_finishedList = ZJsonArray(data.value(KEY_FINISHED.c_str()));
 
     onFirstButton();
-    */
 }
 
 void SynapsePredictionProtocol::updateLabels() {
@@ -197,11 +190,13 @@ void SynapsePredictionProtocol::updateLabels() {
 
 /*
  * retrieve synapses from the input volume that are in the input RoI;
- * errors return empty list
+ * load into arrays
  */
-ZJsonArray SynapsePredictionProtocol::getInitialSynapseList(ZIntCuboid volume, QString roi) {
+void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QString roi) {
 
-    ZJsonArray synapses;
+    // I don't *think* there's any way these lists will be populated, but...
+    m_pendingList.clear();
+    m_finishedList.clear();
 
     ZDvidReader reader;
     reader.setVerbose(false);
@@ -220,17 +215,12 @@ ZJsonArray SynapsePredictionProtocol::getInitialSynapseList(ZIntCuboid volume, Q
             point.append(iter->getX());
             point.append(iter->getY());
             point.append(iter->getZ());
-            synapses.append(point);
+            m_pendingList.append(point);
          }
 
-
-
-        // order somehow?
+        // order somehow?  here or earlier?
 
     }
-
-
-    return synapses;
 }
 
 /*

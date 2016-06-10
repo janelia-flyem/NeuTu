@@ -53,7 +53,7 @@ private:
     void updateLabels();
     void gotoNextItem();
     ZIntCuboid parseVolumeString(QString input);
-    ZJsonArray getInitialSynapseList(ZIntCuboid volume, QString roi);
+    void loadInitialSynapseList(ZIntCuboid volume, QString roi);
 
 };
 
