@@ -104,6 +104,14 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               getCompleteDocument(), SLOT(rewriteSegmentation()));
       break;
+    case ZActionFactory::ACTION_SYNAPSE_VERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
+              this, SLOT(verfifySelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNVERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
+              this, SLOT(unverfifySelectedSynapse()));
+      break;
     default:
       connected = false;
       break;

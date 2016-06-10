@@ -171,7 +171,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                        QPointF(x + lineWidth, y));
                        */
       int startAngle = 0;
-      int spanAngle = iround((1.0 - conf) * 360) * 16;
+      int spanAngle = iround((1.0 - conf) * 180) * 16;
       painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
                              QPointF(x + lineWidth, y + lineWidth)),
                       startAngle, spanAngle);
