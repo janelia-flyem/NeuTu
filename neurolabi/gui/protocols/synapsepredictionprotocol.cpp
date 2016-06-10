@@ -112,6 +112,8 @@ std::string SynapsePredictionProtocol::getName() {
 
 void SynapsePredictionProtocol::onFirstButton() {
     std::cout << "SynapsePredictionProtocol::onFirstButton" << std::endl;
+
+    updateLabels();
 }
 
 void SynapsePredictionProtocol::onMarkedButton() {
@@ -183,9 +185,16 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 }
 
 void SynapsePredictionProtocol::updateLabels() {
-    // might want to separate update current label from update progress?
-    // if both are fast, don't need to
+    // currently update both labels together (which is fine if they are fast)
 
+    // current item:
+    // ui->currentItemLabel->setText(QString("Current: %1, %2, %3").arg(m_currentItem));
+
+    // progress, in form: "Progress:  #/# (#%)"
+    int nFinished = m_finishedList.size();
+    int nTotal = m_pendingList.size() + nFinished;
+    float percent = (100.0 * nFinished) / nTotal;
+    ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 }
 
 /*
