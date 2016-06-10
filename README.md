@@ -9,7 +9,7 @@ Software package for neuron reconstruction and visualization
 
     git clone -b <branch> https://github.com/janelia-flyem/NeuTu.git NeuTu
 
-Here the \<branch\> placeholder should be specified based on which edition you want to compile:
+Here the \<branch\> placeholder should be specified based on which edition you want to build:
 
 ### Dark Field Edition (neuTube)
 
