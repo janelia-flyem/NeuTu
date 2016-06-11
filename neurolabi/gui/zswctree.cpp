@@ -1162,7 +1162,7 @@ void ZSwcTree::labelBranchLevelFromLeaf()
   }
 }
 
-void ZSwcTree::boundBox(double *corner) const
+void ZSwcTree::getBoundBox(double *corner) const
 {
   Swc_Tree_Bound_Box(m_tree, corner);
 }
@@ -1192,11 +1192,16 @@ ZCuboid ZSwcTree::getBoundBox() const
 {
   if (isDeprecated(BOUND_BOX)) {
     double corner[6];
-    boundBox(corner);
+    getBoundBox(corner);
     m_boundBox.set(corner);
   }
 
   return m_boundBox;
+}
+
+void ZSwcTree::boundBox(ZIntCuboid *box) const
+{
+  *box = getBoundBox().toIntCuboid();
 }
 
 ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
@@ -1228,7 +1233,7 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcTree::createBoundBoxSwc(double margin)
 {
   double corner[6];
-  boundBox(corner);
+  getBoundBox(corner);
 
   ZCuboid boundingBox;
   boundingBox.set(corner);

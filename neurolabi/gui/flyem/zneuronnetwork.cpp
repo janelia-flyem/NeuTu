@@ -292,7 +292,7 @@ void ZNeuronNetwork::layoutSwc()
   for (size_t i = 0; i < m_swcTreeArray.size(); i++) {
     double corner[6];
 
-    m_swcTreeArray[i]->boundBox(corner);
+    m_swcTreeArray[i]->getBoundBox(corner);
     //originalBoundBoxArray[i].set(corner);
 
     corner[0] -= cxArray[i] - xArray[i];

@@ -171,17 +171,28 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   case Qt::Key_C:
     if (!isSplitOn()) {
       emit deselectingAllBody();
+      processed = true;
     }
     break;
   case Qt::Key_M:
     emit mergingBody();
+    processed = true;
     break;
   case Qt::Key_B:
     emit goingToBodyBottom();
+    processed = true;
     break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
       emit goingToBodyTop();
+      processed = true;
+    }
+    break;
+  case Qt::Key_1:
+    if (interactiveContext().todoEditMode() ==
+        ZInteractiveContext::TODO_ADD_ITEM) {
+
+      processed = true;
     }
     break;
   default:
@@ -189,8 +200,11 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   }
 
   ZStackOperator op;
-  op.setOperation(m_bookmarkKeyOperationMap.getOperation(
-                    event->key(), event->modifiers()));
+  if (!processed) {
+    op.setOperation(m_bookmarkKeyOperationMap.getOperation(
+                      event->key(), event->modifiers()));
+  }
+
   if (!op.isNull()) {
     process(op);
     processed = true;
