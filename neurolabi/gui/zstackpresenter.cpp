@@ -2856,6 +2856,9 @@ void ZStackPresenter::process(ZStackOperator &op)
       }
     }
     break;
+  case ZStackOperator::OP_SWC_SET_AS_ROOT:
+    buddyDocument()->executeSetRootCommand();
+    break;
   case ZStackOperator::OP_SWC_ADD_NODE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);

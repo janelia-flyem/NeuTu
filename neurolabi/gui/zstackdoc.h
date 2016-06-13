@@ -1040,6 +1040,8 @@ public slots:
   void selectBranchNode();
   void selectTreeNode();
   void selectConnectedNode();
+  void inverseSwcNodeSelection();
+  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.

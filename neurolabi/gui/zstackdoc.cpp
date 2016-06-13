@@ -854,6 +854,120 @@ void ZStackDoc::selectSwcNodeConnection(Swc_Tree_Node *lastSelectedNode)
   }
 }
 
+void ZStackDoc::inverseSwcNodeSelection()
+{
+  QList<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeList();
+
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    tree->inverseSelection();
+  }
+
+  QList<Swc_Tree_Node*> newSelected = getSelectedSwcNodeList();
+  emit swcTreeNodeSelectionChanged(newSelected, oldSelected);
+//  notifySwcTreeNodeSelectionChanged();
+}
+
+static double ComputeSwcNodeDistance(
+    ZSwcTree::DownstreamIterator &iter1, ZSwcTree::DownstreamIterator &iter2)
+{
+  iter1.begin();
+  iter2.begin();
+
+  double minDist = Infinity;
+  while (iter1.hasNext()) {
+    Swc_Tree_Node *tn1 = iter1.next();
+    while (iter2.hasNext()) {
+      Swc_Tree_Node *tn2 = iter2.next();
+      double d =SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SURFACE);
+      if (d < minDist) {
+        minDist = d;
+      }
+    }
+  }
+
+  return minDist;
+}
+
+void ZStackDoc::selectNoisyTrees()
+{
+  QList<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeList();
+
+  std::vector<double> sizeVector;
+//  std::vector<double> distanceVector;
+  std::vector<ZSwcTree::DownstreamIterator*> iterVector;
+  std::vector<ZSwcTree*> treeVector;
+
+  double minLength = 0.0;
+  double maxLength = 0.0;
+
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    tree->deselectAllNode();
+
+    ZSwcTree::RegularRootIterator iter(tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      double length = SwcTreeNode::downstreamLength(tn);
+      sizeVector.push_back(length);
+
+      iterVector.push_back(new ZSwcTree::DownstreamIterator(tn));
+      treeVector.push_back(tree);
+
+      if (minLength == 0.0 || length < minLength) {
+        minLength = length;
+      }
+
+      if (length > maxLength) {
+        maxLength = length;
+      }
+    }
+  }
+
+  if (maxLength > 0.0) {
+    if (maxLength > minLength * 3.0) {
+      double thre = maxLength / 2.0;
+      for (size_t i = 0; i < sizeVector.size(); ++i) {
+        if (sizeVector[i] < thre) { //small trees
+          ZSwcTree::DownstreamIterator *siter = iterVector[i];
+          double anchorDist = Infinity;
+          for (size_t j = 0; j < sizeVector.size(); ++j) {
+            if (sizeVector[j] > thre) {
+              ZSwcTree::DownstreamIterator *anchorIter = iterVector[j];
+              double d = ComputeSwcNodeDistance(*siter, *anchorIter);
+              if (anchorDist > d) {
+                anchorDist = d;
+              }
+            }
+          }
+
+          if (anchorDist > 30.0) {
+            ZSwcTree *tree = treeVector[i];
+            ZSwcTree::DownstreamIterator *siter = iterVector[i];
+            siter->restart();
+            while (siter->hasNext()) {
+              tree->selectNode(siter->next(), true);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (std::vector<ZSwcTree::DownstreamIterator*>::iterator
+       iter = iterVector.begin(); iter != iterVector.end(); ++iter) {
+    delete *iter;
+  }
+
+  QList<Swc_Tree_Node*> newSelected = getSelectedSwcNodeList();
+  emit swcTreeNodeSelectionChanged(newSelected, oldSelected);
+}
+
 void ZStackDoc::selectUpstreamNode()
 {
   std::set<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeSet();

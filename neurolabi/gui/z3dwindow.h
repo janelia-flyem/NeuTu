@@ -405,6 +405,7 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
+//  void paintEvent(QPaintEvent *event);
 
 private:
   QTabWidget* createBasicSettingTabWidget();

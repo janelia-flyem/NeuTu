@@ -113,4 +113,5 @@ void ZKeyOperationConfig::ConfigureSwcNodeMap(ZKeyOperationMap &map)
 
   QMap<int, ZStackOperator::EOperation> &controlKeyMap = *(map.getControlMap());
   controlKeyMap[Qt::Key_A] = ZStackOperator::OP_SWC_SELECT_ALL_NODE;
+  controlKeyMap[Qt::Key_R] = ZStackOperator::OP_SWC_SET_AS_ROOT;
 }
