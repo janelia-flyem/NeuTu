@@ -20205,7 +20205,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("3c25");
+  writer.writeMasterNode("32a2");
 #endif
 
 #if 0
@@ -20298,7 +20298,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   const std::vector<ZDvidTarget> &repoList = GET_FLYEM_CONFIG.getDvidRepo();
 
   std::cout << repoList.size() << std::endl;
