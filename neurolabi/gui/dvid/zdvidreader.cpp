@@ -1383,6 +1383,7 @@ ZArray* ZDvidReader::readLabels64(
       array->setStartCoordinate(2, z0);
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
+      LERROR() << e.what();
       setStatusCode(e.getStatus());
     }
   }
