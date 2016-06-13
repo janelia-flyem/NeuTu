@@ -578,6 +578,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
+  case ACTION_FLYEM_UPDATE_BODY:
+    action = new QAction("Update Bodies", parent);
+    action->setToolTip("Update bodies from DVID");
+    break;
   case ACTION_SAVE_STACK:
     action = new QAction("Save Stack", parent);
     action->setIcon(QIcon(":/images/save.png"));

@@ -2990,6 +2990,9 @@ void ZStackPresenter::process(ZStackOperator &op)
       }
     }
     break;
+  case ZStackOperator::OP_SWC_SET_AS_ROOT:
+    buddyDocument()->executeSetRootCommand();
+    break;
   case ZStackOperator::OP_SWC_ADD_NODE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
@@ -3293,9 +3296,11 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_STROKE_ADD_NEW:
     acceptActiveStroke();
+    LINFO() << "Add painted mask stroke";
     break;
   case ZStackOperator::OP_STROKE_START_PAINT:
   {
+    LINFO() << "Start painting mask";
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
     stroke->set(currentStackPos.x(), currentStackPos.y());
           //m_mouseEventProcessor.getLatestStackPosition().x(),
@@ -3627,6 +3632,7 @@ void ZStackPresenter::acceptActiveStroke()
         buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       if (!buddyDocument()->getStrokeList().empty()) {
+        LINFO() << "Compute stroke path";
         ZPoint start;
         ZPoint end;
         buddyDocument()->getLastStrokePoint(start.xRef(), start.yRef());

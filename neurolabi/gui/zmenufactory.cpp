@@ -237,6 +237,11 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       }
+
+      if (!actionList.isEmpty()) {
+        actionList.append(ZActionFactory::ACTION_SEPARATOR);
+      }
+      actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
     }
 
     addAction(actionList, window, menu);

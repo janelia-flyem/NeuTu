@@ -3,9 +3,11 @@
 #include <QKeyEvent>
 #include <QDebug>
 
+#include "QsLog/QsLog.h"
 #include "ui_tilemanager.h"
 #include "ztilemanager.h"
 #include "zqtbarprogressreporter.h"
+
 
 TileManager::TileManager(QWidget *parent) :
   QMainWindow(parent),
@@ -149,6 +151,8 @@ void TileManager::keyPressEvent(QKeyEvent *event)
 
 void TileManager::closeProject()
 {
+  LINFO() << "Close reconstruction project";
+
   m_doc.reset();
   close();
   m_scaleFactor = 100;

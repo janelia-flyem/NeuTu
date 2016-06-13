@@ -121,7 +121,8 @@ pair<Swc_Tree_Node*, Swc_Tree_Node*> ZSwcConnector::identifyConnection(
   while (loopIter.hasNext()) {
     Swc_Tree_Node *tn = loopIter.next();
     if (SwcTreeNode::isRegular(tn)) {
-      hookIter.begin();
+//      hookIter.begin();
+      hookIter.restart();
       while (hookIter.hasNext()) {
         Swc_Tree_Node *head = hookIter.next();
         double d = computeDistance(head, tn);

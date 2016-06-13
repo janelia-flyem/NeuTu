@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <stack>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -184,6 +185,36 @@ bool SwcTreeNode::isParentIdConsistent(const Swc_Tree_Node *tn)
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Fsize(tn);
+}
+
+double SwcTreeNode::downstreamLength(Swc_Tree_Node *tn)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
 }
 
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,

@@ -1026,6 +1026,12 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
+          m_doc.get(), SLOT(selectDownstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingUpstreamSwcNode()),
+          m_doc.get(), SLOT(selectUpstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
+          m_doc.get(), SLOT(selectConnectedNode()));
 
   /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -1097,6 +1103,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
     action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
+    break;
+  case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
   default:
     break;
@@ -2639,6 +2648,14 @@ void Z3DWindow::addDoneMarker()
   }
 }
 
+void Z3DWindow::updateBody()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->forceBodyUpdate();
+  }
+}
+
 void Z3DWindow::changeSelectedPunctaName()
 {
   bool ok;
@@ -2975,6 +2992,7 @@ void Z3DWindow::closeEvent(QCloseEvent */*event*/)
 
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
+  ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
   {
   case Qt::Key_Backspace:
@@ -3030,6 +3048,12 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_S:
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
+    } else if (event->modifiers() == Qt::NoModifier) {
+      if (getDocument()->getTag() == NeuTube::Document::NORMAL ||
+          getDocument()->getTag() == NeuTube::Document::FLYEM_SKELETON ||
+          getDocument()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+        keyMode = ZInteractionEngine::KM_SWC_SELECTION;
+      }
     }
     break;
   case Qt::Key_I:
@@ -3156,11 +3180,47 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_R:
-    m_doc->executeResetBranchPoint();
+    if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeResetBranchPoint();
+    } else {
+      m_doc->executeSetRootCommand();
+    }
+    break;
+  case Qt::Key_1:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectDownstreamNode();
+    }
+    break;
+  case Qt::Key_2:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectUpstreamNode();
+    }
+    break;
+  case Qt::Key_3:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectConnectedNode();
+    }
+    break;
+  case Qt::Key_4:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->inverseSwcNodeSelection();
+    }
+    break;
+  case Qt::Key_5:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectNoisyTrees();
+    }
     break;
   default:
     break;
   }
+
+  getCanvas()->setKeyMode(keyMode);
 }
 
 QTabWidget *Z3DWindow::createBasicSettingTabWidget()
@@ -3399,6 +3459,7 @@ void Z3DWindow::breakSelectedSwcNode()
     */
   }
 }
+
 
 void Z3DWindow::mergeSelectedSwcNode()
 {

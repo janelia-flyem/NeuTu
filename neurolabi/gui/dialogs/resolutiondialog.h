@@ -15,8 +15,15 @@ public:
   explicit ResolutionDialog(QWidget *parent = 0);
   ~ResolutionDialog();
 
-  double getXYScale() const;
+//  double getXYScale() const;
+  double getXScale() const;
+  double getYScale() const;
   double getZScale() const;
+
+private slots:
+  void linkXYRes(bool linked);
+  void setXScaleQuitely(double v);
+  void setYScaleQuitely(double v);
 
 private:
   Ui::ResolutionDialog *ui;
