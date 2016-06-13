@@ -2,6 +2,7 @@
 #define ZFLYEMORTHOWIDGET_H
 
 #include <QWidget>
+#include <QVector>
 
 class ZDvidTarget;
 class ZFlyEmOrthoMvc;
@@ -37,6 +38,10 @@ public slots:
   void moveTo(const ZIntPoint &center);
   void syncView();
   void syncViewWith(ZFlyEmOrthoMvc *mvc);
+  void syncImageScreen();
+  void syncImageScreenWith(ZFlyEmOrthoMvc *mvc);
+  void syncHighlightModeWith(ZFlyEmOrthoMvc *mvc);
+  void syncHighlightMode();
   void locateMainWindow();
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
@@ -44,6 +49,7 @@ public slots:
   void setDataVisible(bool on);
   void toggleSegmentation();
   void toggleData();
+  void updateImageScreen();
 
 public:
   void keyPressEvent(QKeyEvent *event);
@@ -56,6 +62,7 @@ private:
   ZFlyEmOrthoMvc *m_xyMvc;
   ZFlyEmOrthoMvc *m_yzMvc;
   ZFlyEmOrthoMvc *m_xzMvc;
+  QVector<ZFlyEmOrthoMvc*> m_mvcArray;
   FlyEmOrthoControlForm *m_controlForm;
 };
 

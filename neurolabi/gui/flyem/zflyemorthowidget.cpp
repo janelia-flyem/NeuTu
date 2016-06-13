@@ -40,6 +40,10 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, NeuTube::Y_AXIS);
 //  xzWidget->setDvidTarget(target);
 
+  m_mvcArray.append(m_xyMvc);
+  m_mvcArray.append(m_yzMvc);
+  m_mvcArray.append(m_xzMvc);
+
 
   layout->addWidget(m_xyMvc, 0, 0);
   layout->addWidget(m_yzMvc, 0, 1);
@@ -102,6 +106,16 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(getDocument(), SIGNAL(bodyMergeEdited()),
           this, SIGNAL(bodyMergeEdited()));
 
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    connect(mvc->getPresenter(),
+            SIGNAL(orthoViewTriggered(double,double,double)),
+            this, SLOT(moveTo(double, double, double)));
+    connect(mvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
+            this, SLOT(toggleSegmentation()));
+    connect(mvc->getCompletePresenter(), SIGNAL(togglingData()),
+            this, SLOT(toggleData()));
+  }
+#if 0
   connect(m_xyMvc->getPresenter(),
           SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(moveTo(double, double, double)));
@@ -124,13 +138,21 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SLOT(toggleData()));
   connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingData()),
           this, SLOT(toggleData()));
+#endif
+
+//  connect(m_xyMvc, SIGNAL(widgetGlyphChanged()))
 }
 
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
 {
+  foreach (ZFlyEmProofMvc *mvc, m_mvcArray) {
+    mvc->syncMergeWithDvid();
+  }
+#if 0
   m_xyMvc->syncMergeWithDvid();
   m_xzMvc->syncMergeWithDvid();
   m_yzMvc->syncMergeWithDvid();
+#endif
 }
 
 void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
@@ -241,6 +263,44 @@ void ZFlyEmOrthoWidget::toggleSegmentation()
 void ZFlyEmOrthoWidget::toggleData()
 {
   m_controlForm->toggleData();
+}
+
+void ZFlyEmOrthoWidget::updateImageScreen()
+{
+  m_xyMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_yzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+  m_xzMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+}
+
+void ZFlyEmOrthoWidget::syncImageScreenWith(ZFlyEmOrthoMvc *mvc)
+{
+  foreach (ZFlyEmOrthoMvc *tmpMvc, m_mvcArray) {
+    if (tmpMvc != mvc) {
+      tmpMvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+    }
+  }
+}
+
+void ZFlyEmOrthoWidget::syncHighlightModeWith(ZFlyEmOrthoMvc *mvc)
+{
+  foreach (ZFlyEmOrthoMvc *tmpMvc, m_mvcArray) {
+    if (tmpMvc != mvc) {
+      tmpMvc->highlightSelectedObject(
+            mvc->getCompletePresenter()->isHighlight());
+    }
+  }
+}
+
+void ZFlyEmOrthoWidget::syncHighlightMode()
+{
+  QObject *obj = sender();
+  syncHighlightModeWith(qobject_cast<ZFlyEmOrthoMvc*>(obj));
+}
+
+void ZFlyEmOrthoWidget::syncImageScreen()
+{
+  QObject *obj = sender();
+  syncImageScreenWith(qobject_cast<ZFlyEmOrthoMvc*>(obj));
 }
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)

@@ -1303,6 +1303,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
     doc->notifyObjectModified();
 
   }
+
+  emit highlightModeEnabled(hl);
 }
 
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()

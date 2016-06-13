@@ -96,6 +96,7 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
+  void highlightModeEnabled(bool);
 
 public slots:
   void mergeSelected();
