@@ -951,9 +951,9 @@ void ZStackDoc::selectNoisyTrees()
     ZSwcTree *tree = *iter;
     tree->deselectAllNode();
 
-    ZSwcTree::RegularRootIterator iter(tree);
-    while (iter.hasNext()) {
-      Swc_Tree_Node *tn = iter.next();
+    ZSwcTree::RegularRootIterator riter(tree);
+    while (riter.hasNext()) {
+      Swc_Tree_Node *tn = riter.next();
       double length = SwcTreeNode::downstreamLength(tn);
       sizeVector.push_back(length);
 
