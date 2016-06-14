@@ -96,6 +96,7 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
+  void roiLoaded();
 
 public slots:
   void mergeSelected();
@@ -210,6 +211,7 @@ public slots:
   void suppressObjectVisible();
   void recoverObjectVisible();
 
+  void updateRoiWidget();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -256,6 +258,7 @@ private:
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
+  void loadROIFunc();
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();

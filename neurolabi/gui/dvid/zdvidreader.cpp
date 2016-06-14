@@ -1862,7 +1862,8 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
-  bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
+//  bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
+  bufferReader.read(dvidUrl.getRoiUrl(dataName).c_str());
   const QByteArray &buffer = bufferReader.getBuffer();
 
 #ifdef _DEBUG_2
