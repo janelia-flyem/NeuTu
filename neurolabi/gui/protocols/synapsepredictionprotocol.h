@@ -6,6 +6,8 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zintcuboid.h"
+#include "zintpoint.h"
+#include "zintpointarray.h"
 
 #include "protocoldialog.h"
 
@@ -46,8 +48,9 @@ private:
     static const std::string KEY_FINISHED;
 
     Ui::SynapsePredictionProtocol *ui;
-    ZJsonArray m_pendingList;
-    ZJsonArray m_finishedList;
+    ZIntPointArray m_pendingList;
+    ZIntPointArray m_finishedList;
+    ZIntPoint m_currentPoint;
 
     void saveState();
     void updateLabels();

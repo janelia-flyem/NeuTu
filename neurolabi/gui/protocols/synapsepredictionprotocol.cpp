@@ -13,6 +13,7 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zintcuboid.h"
+#include "zintpoint.h"
 #include "zpoint.h"
 
 SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
@@ -112,6 +113,15 @@ std::string SynapsePredictionProtocol::getName() {
 
 void SynapsePredictionProtocol::onFirstButton() {
     std::cout << "SynapsePredictionProtocol::onFirstButton" << std::endl;
+    if (m_pendingList.size() > 0) {
+        m_currentPoint = m_pendingList.front();
+    } else {
+
+        // still not sure the best way to represent a null;
+        m_currentPoint = ZIntPoint();
+
+
+    }
 
     updateLabels();
 }
@@ -160,11 +170,28 @@ void SynapsePredictionProtocol::saveState() {
     // json save format: {"pending": [[x, y, z], [x2, y2, z2], ...],
     //                    "finished": similar list}
 
-    // this is easy because we're keeping our data in json
-    //  form
     ZJsonObject data;
-    data.setEntry(KEY_PENDING.c_str(), m_pendingList);
-    data.setEntry(KEY_FINISHED.c_str(), m_finishedList);
+
+    ZJsonArray pending;
+    for(std::vector<ZIntPoint>::iterator iter = m_pendingList.begin(); iter != m_pendingList.end(); ++iter) {
+        ZJsonArray temp;
+        temp.append(iter->getX());
+        temp.append(iter->getY());
+        temp.append(iter->getZ());
+        pending.append(temp);
+     }
+    data.setEntry(KEY_PENDING.c_str(), pending);
+
+    ZJsonArray finished;
+    for(std::vector<ZIntPoint>::iterator iter = m_finishedList.begin(); iter != m_finishedList.end(); ++iter) {
+        ZJsonArray temp;
+        temp.append(iter->getX());
+        temp.append(iter->getY());
+        temp.append(iter->getZ());
+        finished.append(temp);
+     }
+    data.setEntry(KEY_FINISHED.c_str(), finished);
+
     emit requestSaveProtocol(data);
 }
 
@@ -178,8 +205,12 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         return;
     }
 
+    /*
+    // needs to be rewritten!
     m_pendingList = ZJsonArray(data.value(KEY_PENDING.c_str()));
     m_finishedList = ZJsonArray(data.value(KEY_FINISHED.c_str()));
+    */
+
 
     onFirstButton();
 }
@@ -188,7 +219,14 @@ void SynapsePredictionProtocol::updateLabels() {
     // currently update both labels together (which is fine if they are fast)
 
     // current item:
-    // ui->currentItemLabel->setText(QString("Current: %1, %2, %3").arg(m_currentItem));
+
+    // is a zero point good enough for null?
+    if (!m_currentPoint.isZero()) {
+        ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(m_currentPoint.getX())
+            .arg(m_currentPoint.getY()).arg(m_currentPoint.getZ()));
+    } else {
+        ui->currentLabel->setText(QString("Current: --, --, --"));
+    }
 
     // progress, in form: "Progress:  #/# (#%)"
     int nFinished = m_finishedList.size();
@@ -218,14 +256,12 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         // filter to only auto?
 
 
+
         // put each pre/post site into list
         for(std::vector<ZDvidSynapse>::iterator iter = synapseList.begin(); iter != synapseList.end(); ++iter) {
-            ZJsonArray point;
-            point.append(iter->getX());
-            point.append(iter->getY());
-            point.append(iter->getZ());
-            m_pendingList.append(point);
+            m_pendingList.append(iter->getPosition());
          }
+
 
         // order somehow?  here or earlier?
 
