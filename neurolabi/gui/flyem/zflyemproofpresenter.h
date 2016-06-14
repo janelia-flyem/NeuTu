@@ -85,6 +85,7 @@ signals:
   void goingToBodyTop();
   void togglingSegmentation();
   void togglingData();
+  void highlightModeChanged();
 
 public slots:
   void deleteSelectedSynapse();

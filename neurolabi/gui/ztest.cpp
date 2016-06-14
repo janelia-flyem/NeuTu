@@ -17053,7 +17053,7 @@ void ZTest::test(MainWindow *host)
 
   ZObject3dScan obj = reader.readRoi("mb_subtracted");
   std::cout << obj.getVoxelNumber() << std::endl;
-//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
 #if 0

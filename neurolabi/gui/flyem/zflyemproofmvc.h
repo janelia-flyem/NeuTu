@@ -97,6 +97,7 @@ signals:
   void bodyMergeEdited();
   void updatingLatency(int);
   void highlightModeEnabled(bool);
+  void highlightModeChanged();
 
 public slots:
   void mergeSelected();

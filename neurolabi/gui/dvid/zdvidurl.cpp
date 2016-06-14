@@ -166,6 +166,8 @@ std::string ZDvidUrl::getSparsevolUrl(
 
   url.appendNumber(z);
 
+  url += "&exact=false";
+
   return url;
 }
 

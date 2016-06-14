@@ -1280,7 +1280,18 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 //    m_mergeProject.highlightSelectedObject(hl);
     labelSlice->setVisible(!hl);
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-    doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
+
+    TStackObjectList objList =
+        doc->getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *obj = *iter;
+      if (obj->getSliceAxis() == getView()->getSliceAxis()) {
+        doc->removeObject(obj, true);
+      }
+    }
+//    doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
 
     if (hl) {
       const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
@@ -1289,6 +1300,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
            iter != selected.end(); ++iter) {
         uint64_t bodyId = *iter;
         ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
+        obj->setSliceAxis(getView()->getSliceAxis());
         obj->setDvidTarget(getDvidTarget());
         obj->setLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);

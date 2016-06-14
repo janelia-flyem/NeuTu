@@ -20,6 +20,15 @@ void ZDvidSparsevolSlice::setDvidTarget(const ZDvidTarget &target)
   m_reader.open(target);
 }
 
+bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, NeuTube::EAxis axis) const
+{
+  if (m_sliceAxis != axis) {
+    return false;
+  }
+
+  return isVisible();
+}
+
 bool ZDvidSparsevolSlice::update(int z)
 {
   bool updated = false;

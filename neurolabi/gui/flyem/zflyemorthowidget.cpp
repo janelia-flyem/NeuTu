@@ -114,6 +114,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
             this, SLOT(toggleSegmentation()));
     connect(mvc->getCompletePresenter(), SIGNAL(togglingData()),
             this, SLOT(toggleData()));
+    connect(mvc, SIGNAL(highlightModeChanged()),
+            this, SLOT(syncHighlightMode()));
   }
 #if 0
   connect(m_xyMvc->getPresenter(),

@@ -4,6 +4,7 @@
 #include "zflyemsupervisor.h"
 #include "zstackview.h"
 #include "zwidgetmessage.h"
+#include "zflyemproofpresenter.h"
 
 ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
   ZFlyEmProofMvc(parent)
@@ -46,6 +47,8 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
 
   connect(frame->getPresenter(), SIGNAL(savingStack()),
           frame, SLOT(saveStack()));
+  connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
+          frame, SIGNAL(highlightModeChanged()));
 
   return frame;
 }
