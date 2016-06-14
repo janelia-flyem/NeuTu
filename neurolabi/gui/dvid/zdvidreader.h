@@ -40,6 +40,10 @@ namespace libdvid{
 class DVIDNodeService;
 }
 
+namespace lowtis {
+class ImageService;
+}
+
 class ZDvidReader : public QObject
 {
   Q_OBJECT
@@ -268,6 +272,7 @@ protected:
   mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<lowtis::ImageService> m_lowtisService;
 #endif
 
 };

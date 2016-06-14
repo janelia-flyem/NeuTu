@@ -111,6 +111,7 @@ bool ZDvidReader::startService()
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
           */
     m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
+    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;

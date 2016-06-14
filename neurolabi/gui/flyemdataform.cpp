@@ -1034,14 +1034,14 @@ void FlyEmDataForm::updateThumbnailLive(ZFlyEmNeuron *neuron)
 
   //initThumbnailScene();
 
-  bool isWaiting = false;
+//  bool isWaiting = false;
   QString threadId =
       QString("computeThumbnailFunc:%1").arg(neuron->getId());
   QList<QGraphicsItem*> itemList;
 
   if (m_bodyFutureMap.contains(threadId)) {
     if (m_bodyFutureMap[threadId].isRunning()) {
-      isWaiting = true;
+//      isWaiting = true;
       QGraphicsTextItem *textItem = new QGraphicsTextItem;
       textItem->setHtml(GetThumbnailMessage(neuron->getId()));
 

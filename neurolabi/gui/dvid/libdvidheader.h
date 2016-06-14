@@ -15,6 +15,7 @@
 #include "libdvid/DVIDConnection.h"
 #ifndef _LIBDVIDCPP_OLD_
 #include "libdvid/DVIDCache.h"
+#include "lowtis/lowtis.h"
 #define _LIBDVIDCPP_CACHE_
 #endif
 #endif

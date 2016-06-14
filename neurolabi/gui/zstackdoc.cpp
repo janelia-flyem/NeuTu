@@ -4520,11 +4520,11 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
 
 void ZStackDoc::loadFileList(const QStringList &fileList)
 {
-  bool swcLoaded = false;
-  bool chainLoaded = false;
+//  bool swcLoaded = false;
+//  bool chainLoaded = false;
   bool networkLoaded = false;
-  bool punctaLoaded = false;
-  bool obj3dScanLoaded = false;
+//  bool punctaLoaded = false;
+//  bool obj3dScanLoaded = false;
   //bool apoLoaded = false;
 
 //  m_changingSaveState = false;
@@ -4536,23 +4536,23 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
     switch (ZFileType::fileType(iter->toStdString())) {
     case ZFileType::SWC_FILE:
     case ZFileType::SYNAPSE_ANNOTATON_FILE:
-      swcLoaded = true;
+//      swcLoaded = true;
       break;
     case ZFileType::SWC_NETWORK_FILE:
     case ZFileType::FLYEM_NETWORK_FILE:
-      swcLoaded = true;
+//      swcLoaded = true;
       networkLoaded = true;
       break;
     case ZFileType::LOCSEG_CHAIN_FILE:
-      chainLoaded = true;
+//      chainLoaded = true;
       break;
     case ZFileType::V3D_APO_FILE:
     case ZFileType::V3D_MARKER_FILE:
     case ZFileType::RAVELER_BOOKMARK:
-      punctaLoaded = true;
+//      punctaLoaded = true;
       break;
     case ZFileType::OBJECT_SCAN_FILE:
-      obj3dScanLoaded = true;
+//      obj3dScanLoaded = true;
       break;
     default:
       break;

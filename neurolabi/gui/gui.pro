@@ -169,6 +169,11 @@ unix {
             QMAKE_CXXFLAGS += -m64
         }
         RC_FILE = images/app.icns
+
+        contains(CONFIG, c++11) {
+          message(Using C++11)
+          QMAKE_CXXFLAGS += -std=c++11
+        }
     }
 }
 

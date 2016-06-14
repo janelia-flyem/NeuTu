@@ -20350,5 +20350,22 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "372c";
+  config.datatypename = "labels";
+
+  lowtis::ImageService service(config);
+
+  int width = 800;
+  int height = 600;
+  std::vector<int> offset(3, 0);
+  char *buffer = new char[width * height * 8];
+  service.retrieve_image(width, height, offset, buffer);
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
