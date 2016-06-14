@@ -7,7 +7,6 @@
 #include "zjsonobject.h"
 #include "zintcuboid.h"
 #include "zintpoint.h"
-#include "zintpointarray.h"
 
 #include "protocoldialog.h"
 
@@ -48,8 +47,8 @@ private:
     static const std::string KEY_FINISHED;
 
     Ui::SynapsePredictionProtocol *ui;
-    ZIntPointArray m_pendingList;
-    ZIntPointArray m_finishedList;
+    QList<ZIntPoint> m_pendingList;
+    QList<ZIntPoint> m_finishedList;
     ZIntPoint m_currentPoint;
 
     void saveState();

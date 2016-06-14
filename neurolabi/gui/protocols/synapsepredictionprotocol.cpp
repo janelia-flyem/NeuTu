@@ -58,9 +58,10 @@ bool SynapsePredictionProtocol::initialize() {
     //  choose from existing RoIs in DVID
 
 
-    // test data we can pretend came from dialog:
+    // test data we can pretend came from dialog; this volume
+    //  has 12 synaptic elements
     QString point1Input = "3500, 5200,  7300";
-    QString point2Input = "4000 5700  7350";
+    QString point2Input = "3700 5400  7350";
     QString roiInput = "testroi";
 
     // for now, parrot back the input
@@ -114,7 +115,7 @@ std::string SynapsePredictionProtocol::getName() {
 void SynapsePredictionProtocol::onFirstButton() {
     std::cout << "SynapsePredictionProtocol::onFirstButton" << std::endl;
     if (m_pendingList.size() > 0) {
-        m_currentPoint = m_pendingList.front();
+        m_currentPoint = m_pendingList.first();
     } else {
 
         // still not sure the best way to represent a null;
@@ -122,6 +123,8 @@ void SynapsePredictionProtocol::onFirstButton() {
 
 
     }
+
+    // go to current
 
     updateLabels();
 }
@@ -173,23 +176,23 @@ void SynapsePredictionProtocol::saveState() {
     ZJsonObject data;
 
     ZJsonArray pending;
-    for(std::vector<ZIntPoint>::iterator iter = m_pendingList.begin(); iter != m_pendingList.end(); ++iter) {
+    foreach (ZIntPoint point, m_pendingList) {
         ZJsonArray temp;
-        temp.append(iter->getX());
-        temp.append(iter->getY());
-        temp.append(iter->getZ());
+        temp.append(point.getX());
+        temp.append(point.getY());
+        temp.append(point.getZ());
         pending.append(temp);
-     }
+    }
     data.setEntry(KEY_PENDING.c_str(), pending);
 
     ZJsonArray finished;
-    for(std::vector<ZIntPoint>::iterator iter = m_finishedList.begin(); iter != m_finishedList.end(); ++iter) {
+    foreach (ZIntPoint point, m_finishedList) {
         ZJsonArray temp;
-        temp.append(iter->getX());
-        temp.append(iter->getY());
-        temp.append(iter->getZ());
+        temp.append(point.getX());
+        temp.append(point.getY());
+        temp.append(point.getZ());
         finished.append(temp);
-     }
+    }
     data.setEntry(KEY_FINISHED.c_str(), finished);
 
     emit requestSaveProtocol(data);
