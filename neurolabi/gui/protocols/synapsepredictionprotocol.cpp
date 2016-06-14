@@ -71,7 +71,7 @@ bool SynapsePredictionProtocol::initialize() {
         .arg(point1Input).arg(point2Input).arg(roiInput));
     mb.setStandardButtons(QMessageBox::Ok);
     mb.setDefaultButton(QMessageBox::Ok);
-    int ans = mb.exec();
+    mb.exec();
 
     // convert input point strings to a ZCuboid; parse routine wants
     //  size coordinates in order (x1, y1, z1, x2, y2, z2), delimited
@@ -127,30 +127,42 @@ void SynapsePredictionProtocol::onFirstButton() {
 }
 
 void SynapsePredictionProtocol::onMarkedButton() {
-    std::cout << "SynapsePredictionProtocol::onMarkedButton" << std::endl;
 
-    // find element
+    // using this as our null point, ugh
+    if (m_currentPoint.isZero()) {
+        return;
+    }
 
+    bool done = (m_pendingList.size() == 1);
 
-    // find next element
+    // handle the lists
+    ZIntPoint nextPoint = getNextPoint(m_currentPoint);
+    m_pendingList.removeAll(m_currentPoint);
+    m_finishedList.append(m_currentPoint);
 
-    // move element to other list
+    saveState();
 
+    if (done) {
+        m_currentPoint = ZIntPoint();
 
-    // dialog if done?
+        QMessageBox mb;
+        mb.setText("Finished!");
+        mb.setInformativeText("All predictions reviewed!  Remember to complete the protocol when you are satisfied with the results.");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+    } else {
+        m_currentPoint = nextPoint;
+        gotoCurrent();
+    }
 
-
+    updateLabels();
 }
 
 void SynapsePredictionProtocol::onSkipButton() {
     if (m_pendingList.size() > 1) {
         // if pending list has elements, should always be a current point
         m_currentPoint = getNextPoint(m_currentPoint);
-        /*
-        int currentIndex = m_pendingList.indexOf(m_currentPoint);
-        currentIndex = (currentIndex + 1) % m_pendingList.size();
-        m_currentPoint = m_pendingList[currentIndex];
-        */
         gotoCurrent();
         updateLabels();
     }
@@ -189,6 +201,8 @@ void SynapsePredictionProtocol::gotoCurrent() {
 ZIntPoint SynapsePredictionProtocol::getNextPoint(ZIntPoint point) {
     if (!m_pendingList.contains(point)) {
         // poor excuse for a null...
+        return ZIntPoint();
+    } else if (m_pendingList.size() == 0) {
         return ZIntPoint();
     } else {
         int currentIndex = m_pendingList.indexOf(point);
