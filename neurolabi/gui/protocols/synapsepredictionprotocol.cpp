@@ -205,12 +205,18 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         return;
     }
 
-    /*
-    // needs to be rewritten!
-    m_pendingList = ZJsonArray(data.value(KEY_PENDING.c_str()));
-    m_finishedList = ZJsonArray(data.value(KEY_FINISHED.c_str()));
-    */
+    m_pendingList.clear();
+    m_finishedList.clear();
 
+    ZJsonArray pendingJson(data.value(KEY_PENDING.c_str()));
+    for (size_t i=0; i<pendingJson.size(); i++) {
+        m_pendingList.append(ZJsonParser::toIntPoint(pendingJson.at(i)));
+    }
+
+    ZJsonArray finishedJson(data.value(KEY_FINISHED.c_str()));
+    for (size_t i=0; i<finishedJson.size(); i++) {
+        m_finishedList.append(ZJsonParser::toIntPoint(finishedJson.at(i)));
+    }
 
     onFirstButton();
 }
