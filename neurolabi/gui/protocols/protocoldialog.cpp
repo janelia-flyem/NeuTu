@@ -32,6 +32,9 @@
  * -- ProtocolSwitcher::protocolNames: add to list
  * -- in ProtocolSwitcher::instantiateProtocol: add else-if
  *
+ * other signals you can use:
+ * -- emit requestDisplayPoint(x, y, z) to have the 2d view move to a point
+ *
  */
 ProtocolDialog::ProtocolDialog(QWidget *parent) :
     QDialog(parent),

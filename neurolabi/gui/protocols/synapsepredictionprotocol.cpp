@@ -191,11 +191,12 @@ void SynapsePredictionProtocol::onExitButton() {
     emit protocolExiting();
 }
 
-
 void SynapsePredictionProtocol::gotoCurrent() {
-    std::cout << "SynapsePredictionProtocol::gotoCurrent" << std::endl;
-
-    // do stuff
+    // the dubious null check appears again...
+    if (!m_currentPoint.isZero()) {
+        emit requestDisplayPoint(m_currentPoint.getX(),
+            m_currentPoint.getY(), m_currentPoint.getZ());
+    }
 }
 
 ZIntPoint SynapsePredictionProtocol::getNextPoint(ZIntPoint point) {
@@ -241,9 +242,6 @@ void SynapsePredictionProtocol::saveState() {
 }
 
 void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
-
-    std::cout << "SynapsePredictionProtocol::loadDataRequested" << std::endl;
-
     if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
         // how to communicate failure?  overwrite a label?
         ui->progressLabel->setText("Data could not be loaded from DVID!");

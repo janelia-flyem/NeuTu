@@ -25,6 +25,7 @@ signals:
     void protocolCompleting();
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
+    void requestDisplayPoint(int x, int y, int z);
 
 public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;

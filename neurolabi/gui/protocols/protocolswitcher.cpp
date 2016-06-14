@@ -308,6 +308,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     m_activeProtocol->setDvidTarget(m_currentDvidTarget);
 }
 
+void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {
+    emit requestDisplayPoint(x, y, z);
+}
+
 /*
  * read keys from dvid and return keys for a user; flag = whether to include
  * completed protocols or not
@@ -472,17 +476,25 @@ void ProtocolSwitcher::warningDialog(QString title, QString message) {
 //  its signals; be sure the next two methods are updated
 //  together!  disconnect everything you connect!
 void ProtocolSwitcher::connectProtocolSignals() {
+    // lifecycle connects
     connect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
     connect(m_activeProtocol, SIGNAL(protocolCompleting()), this, SLOT(completeProtocolRequested()));
     connect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
     connect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
+
+    // interaction connects
+    connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
 }
 
 void ProtocolSwitcher::disconnectProtocolSignals() {
+    // lifecycle connects
     disconnect(m_activeProtocol, SIGNAL(protocolExiting()), this, SLOT(exitProtocolRequested()));
     disconnect(m_activeProtocol, SIGNAL(protocolCompleting()), this, SLOT(completeProtocolRequested()));
     disconnect(m_activeProtocol, SIGNAL(requestSaveProtocol(ZJsonObject)), this, SLOT(saveProtocolRequested(ZJsonObject)));
     disconnect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
+
+    // interaction connects
+    disconnect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
 }
 
 

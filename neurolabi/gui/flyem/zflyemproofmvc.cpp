@@ -1129,6 +1129,8 @@ void ZFlyEmProofMvc::customInit()
   // connections to protocols
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
 
   /*
   QPushButton *button = new QPushButton(this);

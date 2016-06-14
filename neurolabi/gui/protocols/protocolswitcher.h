@@ -21,6 +21,7 @@ public:
 signals:
     void requestLoadProtocol(ZJsonObject data);
     void requestDisplaySavedProtocols(QStringList keyList);
+    void requestDisplayPoint(int x, int y, int z);
 
 public slots:
     void openProtocolDialogRequested();
@@ -33,6 +34,10 @@ private slots:
     void loadProtocolKeyRequested(QString protocolKey);
     void completeProtocolRequested();
     void exitProtocolRequested();
+
+    // these are slots that are used to pass signals from
+    //  protocols to the main application
+    void displayPointRequested(int x, int y, int z);
 
 private:
     enum Status {
