@@ -7634,7 +7634,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
   return false;
 }
 
-bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
+bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
 #if 0
   if (hasStackData()) {
@@ -7658,7 +7658,12 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
 
   startProgress(0.9);
   m_neuronTracer.setTraceLevel(traceLevel);
-  ZSwcTree *tree = m_neuronTracer.trace(getStack()->c_stack(), doResample);
+  m_neuronTracer.setBackgroundType(m_stackBackground);
+
+  Stack *signal = C_Stack::clone(getStack()->c_stack(c));
+  ZSwcTree *tree = m_neuronTracer.trace(signal, doResample);
+  C_Stack::kill(signal);
+
   endProgress(0.9);
 
   Zero_Stack(getTraceWorkspace()->trace_mask);

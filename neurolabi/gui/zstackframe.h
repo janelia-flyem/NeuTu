@@ -224,7 +224,7 @@ public:
   void pushEnhanceLineCommand();
 
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  void executeAutoTraceCommand(int traceLevel, bool doResample);
+  void executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 

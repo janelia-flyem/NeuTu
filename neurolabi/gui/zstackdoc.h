@@ -963,7 +963,7 @@ public slots: //undoable commands
 
   virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   virtual bool executeRemoveTubeCommand();
-  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample);
+  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   virtual bool executeAutoTraceAxonCommand();
 
   virtual bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);

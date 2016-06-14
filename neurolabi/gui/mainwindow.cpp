@@ -1145,6 +1145,10 @@ void MainWindow::updateAction()
   foreach (ZActionActivator *actionActivator, m_actionActivatorList) {
     actionActivator->update(frame);
   }
+
+  if (GET_APPLICATION_NAME != "General") {
+    m_ui->actionAutomatic_Axon->setVisible(false);
+  }
 }
 
 void MainWindow::updateMenu()
@@ -2612,7 +2616,8 @@ void MainWindow::autoTrace(ZStackFrame *frame)
   frame->document()->setProgressReporter(&reporter);
 
   frame->executeAutoTraceCommand(m_autoTraceDlg->getTraceLevel(),
-                                 m_autoTraceDlg->getDoResample());
+                                 m_autoTraceDlg->getDoResample(),
+                                 m_autoTraceDlg->getChannel());
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2623,6 +2628,9 @@ void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
     if (m_autoTraceDlg->exec()) {
       m_progress->setRange(0, 100);
       m_progress->setValue(1);

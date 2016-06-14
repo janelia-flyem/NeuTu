@@ -993,7 +993,16 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   ZSwcTree *tree = NULL;
 
+  if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    double maxValue = C_Stack::max(stack);
+    Stack_Csub(stack, maxValue);
+  }
+
   ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+
+#ifdef _DEBUG_
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
 
   //Extract seeds
   //First mask
