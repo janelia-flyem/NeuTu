@@ -113,7 +113,6 @@ std::string SynapsePredictionProtocol::getName() {
 }
 
 void SynapsePredictionProtocol::onFirstButton() {
-    std::cout << "SynapsePredictionProtocol::onFirstButton" << std::endl;
     if (m_pendingList.size() > 0) {
         m_currentPoint = m_pendingList.first();
     } else {
@@ -121,27 +120,44 @@ void SynapsePredictionProtocol::onFirstButton() {
         // still not sure the best way to represent a null;
         m_currentPoint = ZIntPoint();
 
-
     }
 
-    // go to current
-
+    gotoCurrent();
     updateLabels();
 }
 
 void SynapsePredictionProtocol::onMarkedButton() {
     std::cout << "SynapsePredictionProtocol::onMarkedButton" << std::endl;
 
+    // find element
+
+
+    // find next element
+
+    // move element to other list
+
+
+    // dialog if done?
+
+
 }
 
 void SynapsePredictionProtocol::onSkipButton() {
-    std::cout << "SynapsePredictionProtocol::onSkipButton" << std::endl;
-
+    if (m_pendingList.size() > 1) {
+        // if pending list has elements, should always be a current point
+        m_currentPoint = getNextPoint(m_currentPoint);
+        /*
+        int currentIndex = m_pendingList.indexOf(m_currentPoint);
+        currentIndex = (currentIndex + 1) % m_pendingList.size();
+        m_currentPoint = m_pendingList[currentIndex];
+        */
+        gotoCurrent();
+        updateLabels();
+    }
 }
 
 void SynapsePredictionProtocol::onGotoButton() {
-    std::cout << "SynapsePredictionProtocol::onGotoButton" << std::endl;
-
+    gotoCurrent();
 }
 
 void SynapsePredictionProtocol::onCompleteButton() {
@@ -164,9 +180,21 @@ void SynapsePredictionProtocol::onExitButton() {
 }
 
 
-void SynapsePredictionProtocol::gotoNextItem() {
+void SynapsePredictionProtocol::gotoCurrent() {
+    std::cout << "SynapsePredictionProtocol::gotoCurrent" << std::endl;
 
     // do stuff
+}
+
+ZIntPoint SynapsePredictionProtocol::getNextPoint(ZIntPoint point) {
+    if (!m_pendingList.contains(point)) {
+        // poor excuse for a null...
+        return ZIntPoint();
+    } else {
+        int currentIndex = m_pendingList.indexOf(point);
+        currentIndex = (currentIndex + 1) % m_pendingList.size();
+        return m_pendingList[currentIndex];
+    }
 }
 
 void SynapsePredictionProtocol::saveState() {

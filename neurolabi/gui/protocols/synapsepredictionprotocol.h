@@ -53,7 +53,8 @@ private:
 
     void saveState();
     void updateLabels();
-    void gotoNextItem();
+    void gotoCurrent();
+    ZIntPoint getNextPoint(ZIntPoint point);
     ZIntCuboid parseVolumeString(QString input);
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
 
