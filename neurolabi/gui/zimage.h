@@ -35,6 +35,8 @@ public:
 
   void clear();
 
+  void init();
+
   /*!
    * \brief Set data function
    *
@@ -148,6 +150,9 @@ private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+
+  double m_grayScale;
+  double m_grayOffset;
   //ZIntPoint m_offset;
 };
 

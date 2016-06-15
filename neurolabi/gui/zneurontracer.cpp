@@ -196,6 +196,8 @@ void ZNeuronTracer::init()
   m_greyOffset = 0.0;
   m_preferredSignalChannel = 0;
 
+  m_estimatingRadius = true;
+
   config();
 }
 
@@ -556,16 +558,19 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   if (tree != NULL) {
     Swc_Tree_Translate(
           tree, stackOffset.getX(), stackOffset.getY(), stackOffset.getZ());
-    ZSwcSignalFitter fitter;
-    fitter.setBackground(m_backgroundType);
-    fitter.setFixingTerminal(true);
-    fitter.fitSignal(tree, getStack(), getSignalChannel());
 
-    Swc_Tree_Node *leaf = tree->root;
-    while (SwcTreeNode::firstChild(leaf) != NULL) {
-      leaf = SwcTreeNode::firstChild(leaf);
+    if (m_estimatingRadius) {
+      ZSwcSignalFitter fitter;
+      fitter.setBackground(m_backgroundType);
+      fitter.setFixingTerminal(true);
+      fitter.fitSignal(tree, getStack(), getSignalChannel());
+
+      Swc_Tree_Node *leaf = tree->root;
+      while (SwcTreeNode::firstChild(leaf) != NULL) {
+        leaf = SwcTreeNode::firstChild(leaf);
+      }
+      SwcTreeNode::setPos(leaf, targetPos);
     }
-    SwcTreeNode::setPos(leaf, targetPos);
   }
 
   return tree;

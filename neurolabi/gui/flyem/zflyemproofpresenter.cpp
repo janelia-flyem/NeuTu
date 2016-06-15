@@ -179,8 +179,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     processed = true;
     break;
   case Qt::Key_B:
-    emit goingToBodyBottom();
-    processed = true;
+    if (event->modifiers() == Qt::NoModifier) {
+      if (getCompleteDocument()->hasBodySelected()) {
+        emit goingToBodyBottom();
+        processed = true;
+      }
+    }
     break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {

@@ -1331,6 +1331,9 @@ ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const
 {
+  if (dataName.empty()) {
+    return NULL;
+  }
 
   ZArray *array = NULL;
 

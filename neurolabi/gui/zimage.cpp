@@ -11,12 +11,14 @@
 
 ZImage::ZImage() : QImage()
 {
+  init();
 }
 
 ZImage::ZImage(int width, int height, QImage::Format format) :
   QImage(width, height, format)
 {
-  memset(scanLine(0), 255, this->bytesPerLine() * height);
+  init();
+
   /*
   int i, j;
   for (j = 0; j < height; j++) {
@@ -27,6 +29,16 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
     }
   }*/
 
+}
+
+void ZImage::init()
+{
+  if (width() > 0 && height() > 0) {
+    memset(scanLine(0), 255, bytesPerLine() * height());
+  }
+
+  m_grayOffset = 0.0;
+  m_grayScale = 1.0;
 }
 
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,

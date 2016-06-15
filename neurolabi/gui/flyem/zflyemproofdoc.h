@@ -88,6 +88,8 @@ public:
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
 
+  bool hasBodySelected() const;
+
   std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
   void setSelectedBody(
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);

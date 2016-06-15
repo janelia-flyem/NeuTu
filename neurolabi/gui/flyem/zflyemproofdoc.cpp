@@ -141,6 +141,22 @@ void ZFlyEmProofDoc::setSelectedBody(
   setSelectedBody(selected, labelType);
 }
 
+bool ZFlyEmProofDoc::hasBodySelected() const
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+  for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    const ZDvidLabelSlice *labelSlice = *iter;
+    if (!labelSlice->getSelectedOriginal().empty()) {
+      return true;
+    }
+//    finalSet.insert(selected.begin(), selected.end());
+  }
+
+  return false;
+}
+
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
     NeuTube::EBodyLabelType labelType) const
 {

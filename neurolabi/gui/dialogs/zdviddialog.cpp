@@ -22,6 +22,10 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   customTarget.setName("Custom");
   m_dvidRepo.push_back(customTarget);
 
+  QRegExp rx("[^\\s]*");
+  QValidator *validator = new QRegExpValidator(rx, this);
+  ui->labelBlockLineEdit->setValidator(validator);
+
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 

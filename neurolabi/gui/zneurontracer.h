@@ -161,6 +161,7 @@ public:
   void setBcAdjust(bool on) { m_bcAdjust = on; }
   void setGreyFactor(double v) { m_greyFactor = v; }
   void setGrayOffset(double v) { m_greyOffset = v; }
+  void setEstimatingRadius(bool on) { m_estimatingRadius = on; }
 
 private:
   //Helper functions
@@ -219,6 +220,7 @@ private:
   bool m_bcAdjust;
   double m_greyFactor;
   double m_greyOffset;
+  bool m_estimatingRadius;
 
   /*
   static const char *m_levelKey;
