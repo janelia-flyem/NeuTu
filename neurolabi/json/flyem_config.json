@@ -144,7 +144,7 @@
       "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "ansarin"]
+      "user_name": ["ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -154,7 +154,7 @@
       "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "neacee"]
+      "user_name": ["neacee"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -164,7 +164,7 @@
       "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "mcadowk"]
+      "user_name": ["mcadowk"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -282,7 +282,7 @@
       "comment": "MB seg (branched from 0f33)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "ansarin"]
+      "user_name": ["ansarin"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -302,7 +302,7 @@
       "comment": "MB seg (branched from 0f33)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "mcadowk"]
+      "user_name": ["mcadowk"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -312,7 +312,7 @@
       "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "talebii"]
+      "user_name": ["talebii"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -322,7 +322,7 @@
       "comment": "MB seg (branched from node 6f15)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "peeld"]
+      "user_name": ["peeld"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -332,7 +332,7 @@
       "comment": "MB seg (branched from node 0f33)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "talebii"]
+      "user_name": ["talebii"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -342,7 +342,7 @@
       "comment": "MB seg (branched from node 0f33)",
       "body_label": "bodies",
       "label_block": "labels",
-      "user_name": ["zhaot", "peeld"]
+      "user_name": ["peeld"]
     },
     {
       "address": "emdata1.int.janelia.org",
