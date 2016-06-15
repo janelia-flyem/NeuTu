@@ -24,6 +24,7 @@ const char* ZDvidData::m_bookmarkAnnotationName = "bookmark_annotations";
 const char* ZDvidData::m_bodySynapsesName = "body_synapses";
 const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
+const char* ZDvidData::m_neutuConfigName = "neutu_config";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -86,6 +87,8 @@ const char* ZDvidData::GetName(ERole role)
     return m_synapseName;
   case ROLE_TODO_LIST:
     return m_todoListName;
+  case ROLE_NEUTU_CONFIG:
+    return m_neutuConfigName;
   }
 
   return m_emptyName;

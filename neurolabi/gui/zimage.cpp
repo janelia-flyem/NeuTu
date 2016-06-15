@@ -8,6 +8,7 @@
 #include "zobject3dscan.h"
 #include "zobject3dstripe.h"
 #include "neutube_def.h"
+#include "tz_math.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -37,8 +38,15 @@ void ZImage::init()
     memset(scanLine(0), 255, bytesPerLine() * height());
   }
 
+  m_nonlinear = true;
   m_grayOffset = 0.0;
-  m_grayScale = 1.0;
+  m_grayScale = 1.5;
+
+  if (format() == Format_Indexed8) {
+    for (int i = 0; i <= 255; ++i) {
+      setColor(i, qRgb(i, i, i));
+    }
+  }
 }
 
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
@@ -62,25 +70,46 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
         int sy = ty0;
 
         uchar *line = NULL;
-        for (int y = ty0; y < ty1; ++y) {
-          if (offsetAdjust) {
-            line = scanLine(y) + tx0 * 4;
-          } else {
-            line = scanLine(y - ty0);
-          }
-          const uint8_t *data = stack->getDataPointer(sx, sy, z);
-          for (int x = tx0; x < tx1; ++x) {
-            if (!ignoringZero || *data > 0) {
-              *line++ = *data;
-              *line++ = *data;
-              *line++ = *data;
-              *line++ = 255;
+
+        if (format() == Format_Indexed8) {
+          for (int y = ty0; y < ty1; ++y) {
+            if (offsetAdjust) {
+              line = scanLine(y) + tx0;
             } else {
-              line += 4;
+              line = scanLine(y - ty0);
             }
-            ++data;
+            const uint8_t *data = stack->getDataPointer(sx, sy, z);
+            for (int x = tx0; x < tx1; ++x) {
+              if (!ignoringZero || *data > 0) {
+                *line++ = *data;
+              } else {
+                line++;
+              }
+              ++data;
+            }
+            ++sy;
           }
-          ++sy;
+        } else {
+          for (int y = ty0; y < ty1; ++y) {
+            if (offsetAdjust) {
+              line = scanLine(y) + tx0 * 4;
+            } else {
+              line = scanLine(y - ty0);
+            }
+            const uint8_t *data = stack->getDataPointer(sx, sy, z);
+            for (int x = tx0; x < tx1; ++x) {
+              if (!ignoringZero || *data > 0) {
+                *line++ = *data;
+                *line++ = *data;
+                *line++ = *data;
+                *line++ = 255;
+              } else {
+                line += 4;
+              }
+              ++data;
+            }
+            ++sy;
+          }
         }
       }
     }
@@ -100,35 +129,47 @@ void ZImage::setData(const uint8 *data, int threshold)
   int w = width();
   int h = height();
 
-  if (threshold < 0) {
+  if (format() == QImage::Format_Indexed8) {
     for (j = 0; j < h; j++) {
       uchar *line = scanLine(j);
       for (i = 0; i < w; i++) {
-//        *line++ = *data;
-//        *line++ = *data;
-//        *line++ = *data++;
-        memset(line, *data++, 3);
-        line += 3;
-        *line++ = '\xff';
+        *line++ = *data++;
       }
     }
+    for (int i = 0; i <= threshold; ++i) {
+      setColor(i, qRgb(255, 0, 0));
+    }
   } else {
-    int i, j;
-
-    for (j = 0; j < h; j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < w; i++) {
-        if (*data > threshold) {
-          *line++ = '\0';
-          *line++ = '\0';
+    if (threshold < 0) {
+      for (j = 0; j < h; j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < w; i++) {
+          //        *line++ = *data;
+          //        *line++ = *data;
+          //        *line++ = *data++;
+          memset(line, *data++, 3);
+          line += 3;
           *line++ = '\xff';
-          ++data;
-        } else {
-          *line++ = *data;
-          *line++ = *data;
-          *line++ = *data++;
         }
-        *line++ = '\xff';
+      }
+    } else {
+      int i, j;
+
+      for (j = 0; j < h; j++) {
+        uchar *line = scanLine(j);
+        for (i = 0; i < w; i++) {
+          if (*data > threshold) {
+            *line++ = '\0';
+            *line++ = '\0';
+            *line++ = '\xff';
+            ++data;
+          } else {
+            *line++ = *data;
+            *line++ = *data;
+            *line++ = *data++;
+          }
+          *line++ = '\xff';
+        }
       }
     }
   }
@@ -146,14 +187,24 @@ void ZImage::setData(
   case NeuTube::Z_AXIS:
   {
     data += (size_t) area * slice;
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < imageWidth; i++) {
-        *line++ = *data;
-        *line++ = *data;
-        *line++ = *data;
-        data++;
-        *line++ = 255;
+
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data++;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data;
+          *line++ = *data;
+          *line++ = *data;
+          data++;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -162,15 +213,25 @@ void ZImage::setData(
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
-      data = dataOrigin + j * area;
-      for (int i = 0; i < imageWidth; i++) {
-        *line++ = *data;
-        *line++ = *data;
-        *line++ = *data;
-        data++;
-        *line++ = 255;
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * area;
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data++;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * area;
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data;
+          *line++ = *data;
+          *line++ = *data;
+          data++;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -178,16 +239,28 @@ void ZImage::setData(
   case NeuTube::X_AXIS:
   {
     const uint8 *dataOrigin = data + slice;
+
 //    data += slice;
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
-      data = dataOrigin + j * stackWidth;
-      for (int i = 0; i < imageWidth; i++) {
-        *line++ = *data;
-        *line++ = *data;
-        *line++ = *data;
-        data += area;
-        *line++ = 255;
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * stackWidth;
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data;
+          data += area;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * stackWidth;
+        for (int i = 0; i < imageWidth; i++) {
+          *line++ = *data;
+          *line++ = *data;
+          *line++ = *data;
+          data += area;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -219,16 +292,27 @@ void ZImage::setData(
   case NeuTube::Z_AXIS:
   {
     data += (size_t) area * slice;
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
 
-      for (int i = 0; i < imageWidth; i++) {
-        uint8 v = valueMap[*data++];
-        *line++ = v;
-        *line++ = v;
-        *line++ = v;
-//        data++;
-        *line++ = 255;
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data++];
+          *line++ = v;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data++];
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+          //        data++;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -237,16 +321,27 @@ void ZImage::setData(
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
-      data = dataOrigin + j * area;
-      for (int i = 0; i < imageWidth; i++) {
-        uint8 v = valueMap[*data++];
-        *line++ = v;
-        *line++ = v;
-        *line++ = v;
-//        data++;
-        *line++ = 255;
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * area;
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data++];
+          *line++ = v;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * area;
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data++];
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+          //        data++;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -255,16 +350,28 @@ void ZImage::setData(
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;
-    for (int j = 0; j < imageHeight; j++) {
-      uchar *line = scanLine(j);
-      data = dataOrigin + j * stackWidth;
-      for (int i = 0; i < imageWidth; i++) {
-        uint8 v = valueMap[*data];
-        *line++ = v;
-        *line++ = v;
-        *line++ = v;
-        data += area;
-        *line++ = 255;
+    if (format() == Format_Indexed8) {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * stackWidth;
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data];
+          *line++ = v;
+          data += area;
+        }
+      }
+    } else {
+      for (int j = 0; j < imageHeight; j++) {
+        uchar *line = scanLine(j);
+        data = dataOrigin + j * stackWidth;
+        for (int i = 0; i < imageWidth; i++) {
+          uint8 v = valueMap[*data];
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+          data += area;
+          *line++ = 255;
+        }
       }
     }
   }
@@ -383,43 +490,14 @@ void ZImage::setCData(const color_t *data, double scale, double offset)
   }
 }
 
-void ZImage::setData(const uint8 *data, double scale, double offset,
+void ZImage::setDataIndexed8(const uint8 *data, double scale, double offset,
                      int threshold)
 {
 #ifdef _DEBUG_2
   tic();
 #endif
   if (scale == 1.0 && offset == 0.0) {
-    if (threshold < 0) {
-      int i, j;
-      int w = width();
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < w; i++) {
-          memset(line, *data++, 3);
-          line += 3;
-          *line++ = '\xff';
-        }
-      }
-    } else {
-      int i, j;
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (*data > threshold) {
-            *line++ = '\0';
-            *line++ = '\0';
-            *line++ = '\xff';
-            ++data;
-          } else {
-            *line++ = *data;
-            *line++ = *data;
-            *line++ = *data++;
-          }
-          *line++ = '\xff';
-        }
-      }
-    }
+    setData(data, threshold);
   } else {
     uint8 valueMap[256];
     for (int i = 0; i < 256; ++i) {
@@ -433,37 +511,110 @@ void ZImage::setData(const uint8 *data, double scale, double offset,
       }
     }
 
-    if (threshold < 0) {
-      int i, j;
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          //memset(line, valueMap[*data++], 3);
-          uint8 v = valueMap[*data++];
-          *line++ = v;
-          *line++ = v;
-          *line++ = v;
-          line++;
+    int i, j;
+    for (j = 0; j < height(); j++) {
+      uchar *line = scanLine(j);
+      for (i = 0; i < width(); i++) {
+        //memset(line, valueMap[*data++], 3);
+        uint8 v = valueMap[*data++];
+        *line++ = v;
+      }
+    }
+
+    for (int i = 0; i <= threshold; ++i) {
+      setColor(i, qRgb(255, 0, 0));
+    }
+  }
+#ifdef _DEBUG_2
+  std::cout << toc() << std::endl;
+#endif
+}
+
+void ZImage::setData(const uint8 *data, double scale, double offset,
+                     int threshold)
+{
+#ifdef _DEBUG_2
+  tic();
+#endif
+  if (format() == QImage::Format_Indexed8) {
+    setDataIndexed8(data, scale, offset, threshold);
+  } else {
+    if (scale == 1.0 && offset == 0.0) {
+      if (threshold < 0) {
+        int i, j;
+        int w = width();
+        for (j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (i = 0; i < w; i++) {
+            memset(line, *data++, 3);
+            line += 3;
+            *line++ = '\xff';
+          }
+        }
+      } else {
+        int i, j;
+        for (j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (i = 0; i < width(); i++) {
+            if (*data > threshold) {
+              *line++ = '\0';
+              *line++ = '\0';
+              *line++ = '\xff';
+              ++data;
+            } else {
+              *line++ = *data;
+              *line++ = *data;
+              *line++ = *data++;
+            }
+            *line++ = '\xff';
+          }
         }
       }
     } else {
-      int i, j;
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (*data > threshold) {
-            *line++ = '\0';
-            *line++ = '\0';
-            *line++ = '\xff';
-            ++data;
-          } else {
+      uint8 valueMap[256];
+      for (int i = 0; i < 256; ++i) {
+        double value = scale * i + offset;
+        if (value <= 0.0) {
+          valueMap[i] = '\0';
+        } else if (value >= 255.0) {
+          valueMap[i] = '\xff';
+        } else {
+          valueMap[i] = (uint8) value;
+        }
+      }
+
+      if (threshold < 0) {
+        int i, j;
+        for (j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (i = 0; i < width(); i++) {
+            //memset(line, valueMap[*data++], 3);
             uint8 v = valueMap[*data++];
             *line++ = v;
             *line++ = v;
             *line++ = v;
+            line++;
           }
+        }
+      } else {
+        int i, j;
+        for (j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (i = 0; i < width(); i++) {
+            if (*data > threshold) {
+              *line++ = '\0';
+              *line++ = '\0';
+              *line++ = '\xff';
+              ++data;
+            } else {
+              uint8 v = valueMap[*data++];
+              *line++ = v;
+              *line++ = v;
+              *line++ = v;
+            }
 
-          *line++ = '\xff';
+            *line++ = '\xff';
+          }
         }
       }
     }
@@ -673,6 +824,14 @@ void ZImage::enhanceEdge()
   delete []edge;
 }
 
+void ZImage::setHighContrastProtocal(
+    double grayOffset, double grayScale, bool nonlinear)
+{
+  m_nonlinear = nonlinear;
+  m_grayOffset = grayOffset;
+  m_grayScale = grayScale;
+}
+
 void ZImage::enhanceContrast(bool highContrast)
 {
   if (format() != ZImage::Format_Indexed8) {
@@ -716,14 +875,22 @@ void ZImage::enhanceContrast(bool highContrast)
     }
   } else {
     if (highContrast) {
+      double s = m_grayScale / 255.0;
       for (int i = 0; i < 255; ++i) {
         QColor color;
-        double v = i / 255.0;
-        v *= sqrt(v);
-        v = v * 1.5;
-        if (v > 1.0) {
+        double v = (i + m_grayOffset) * s;
+        if (m_nonlinear) {
+          v = sqrt(v) * i / 255.0;
+        }
+//        v *= sqrt(v);
+//        v = v * 1.5;
+
+        if (v < 0.0) {
+          v = 0.0;
+        } else if (v > 1.0) {
           v = 1.0;
         }
+
         color.setRedF(v);
         color.setGreenF(v);
         color.setBlueF(v);
@@ -777,12 +944,72 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
       }
   }
 
-  if (scale == 1.f && offset == 0.f) {
+  if (format() == QImage::Format_Indexed8) {
+    for (int i = 0; i < 256; ++i) {
+      if (i <= threshold) {
+        setColor(i, qRgb(255, 0, 0));
+      } else {
+        int r = iround(colorMap[i][0] * 255);
+        int g = iround(colorMap[i][1] * 255);
+        int b = iround(colorMap[i][2] * 255);
+
+        setColor(i, qRgb(r, g, b));
+      }
+    }
+    for (int j = 0; j < height(); j++) {
+      uchar *line = scanLine(j);
+      for (int i = 0; i < width(); i++) {
+        *line++ = *data++;
+      }
+    }
+  } else {
+    if (scale == 1.f && offset == 0.f) {
+      if (threshold < 0) {
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            //glm::col3 col3 = glm::col3(color * (float)(*data++));
+            glm::col3 col3 = colorMap[*data++];
+
+            *line++ = col3[0];
+            *line++ = col3[1];
+            *line++ = col3[2];
+            *line++ = '\xff';
+          }
+        }
+      } else {
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            if (*data > threshold) {
+              *line++ = '\0';
+              *line++ = '\0';
+              *line++ = '\xff';
+              *line++ = '\xff';
+              ++data;
+            } else {
+              //glm::col3 col3 = glm::col3(color * (float)(*data++));
+              glm::col3 col3 = colorMap[*data++];
+
+              *line++ = col3[0];
+              *line++ = col3[1];
+              *line++ = col3[2];
+              *line++ = '\xff';
+            }
+          }
+        }
+      }
+      return;
+    }
+
     if (threshold < 0) {
       for (int j = 0; j < height(); j++) {
         uchar *line = scanLine(j);
         for (int i = 0; i < width(); i++) {
-          //glm::col3 col3 = glm::col3(color * (float)(*data++));
+          /*
+        glm::col3 col3 = glm::col3(glm::clamp(color * (scale * (*data++) + offset),
+                                              glm::vec3(0.f), glm::vec3(255.f)));
+                                              */
           glm::col3 col3 = colorMap[*data++];
 
           *line++ = col3[0];
@@ -802,8 +1029,11 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
             *line++ = '\xff';
             ++data;
           } else {
-            //glm::col3 col3 = glm::col3(color * (float)(*data++));
             glm::col3 col3 = colorMap[*data++];
+
+            /*glm::col3 col3 = glm::col3(glm::clamp(color * (scale * (*data++) + offset),
+                                                glm::vec3(0.f), glm::vec3(255.f)));
+                                                */
 
             *line++ = col3[0];
             *line++ = col3[1];
@@ -813,48 +1043,45 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
         }
       }
     }
-    return;
+  }
+}
+
+void ZImage::setDataBlockIndexed8(
+    const ZImage::DataSource<uint8_t> &source, int startLine,
+    int endLine, int threshold)
+{
+  const uint8_t* data = source.data + startLine * width();
+  float scale = source.scale;
+  float offset = source.offset;
+  glm::vec3 color = glm::vec3(source.color.b, source.color.g, source.color.r);
+
+  glm::col3 colorMap[256];
+  for (int i = 0; i < 256; ++i) {
+    if (scale == 1.f && offset == 0.f) {
+      colorMap[i] = glm::col3(color * (float) i);
+    } else {
+      colorMap[i] = glm::col3(glm::clamp(color * (scale * i + offset),
+                                         glm::vec3(0.f), glm::vec3(255.f)));
+    }
   }
 
-  if (threshold < 0) {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-          /*
-        glm::col3 col3 = glm::col3(glm::clamp(color * (scale * (*data++) + offset),
-                                              glm::vec3(0.f), glm::vec3(255.f)));
-                                              */
-        glm::col3 col3 = colorMap[*data++];
-
-        *line++ = col3[0];
-        *line++ = col3[1];
-        *line++ = col3[2];
-        *line++ = '\xff';
-      }
+  int i, j;
+  for (j = startLine; j < endLine; j++) {
+    uchar *line = scanLine(j);
+    for (i = 0; i < width(); i++) {
+      *line++ = *data++;
     }
-  } else {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-        if (*data > threshold) {
-          *line++ = '\0';
-          *line++ = '\0';
-          *line++ = '\xff';
-          *line++ = '\xff';
-          ++data;
-        } else {
-          glm::col3 col3 = colorMap[*data++];
+  }
 
-          /*glm::col3 col3 = glm::col3(glm::clamp(color * (scale * (*data++) + offset),
-                                                glm::vec3(0.f), glm::vec3(255.f)));
-                                                */
+  for (int i = 0; i < 256; ++i) {
+    if (i <= threshold) {
+      setColor(i, qRgb(255, 0, 0));
+    } else {
+      int r = iround(colorMap[i][0] * 255);
+      int g = iround(colorMap[i][1] * 255);
+      int b = iround(colorMap[i][2] * 255);
 
-          *line++ = col3[0];
-          *line++ = col3[1];
-          *line++ = col3[2];
-          *line++ = '\xff';
-        }
-      }
+      setColor(i, qRgb(r, g, b));
     }
   }
 }
@@ -862,6 +1089,11 @@ void ZImage::setData8(const ZImage::DataSource<uint8_t> &source,
 void ZImage::setDataBlock(const ZImage::DataSource<uint8_t> &source, int startLine,
                           int endLine, int threshold)
 {
+  if (format() == Format_Indexed8) {
+    setDataBlockIndexed8(source, startLine, endLine, threshold);
+    return;
+  }
+
   const uint8_t* data = source.data + startLine * width();
   float scale = source.scale;
   float offset = source.offset;
@@ -961,6 +1193,80 @@ void ZImage::setDataBlock(const ZImage::DataSource<uint8_t> &source, int startLi
         }
       }
     }
+  }
+}
+
+void ZImage::setDataIndexed8(
+    const std::vector<ZImage::DataSource<uint8_t> > &sources,
+    uint8_t alpha, bool useMultithread)
+{
+  if (useMultithread) {
+    int numBlock = std::min(height(), 16);
+    int blockHeight = height() / numBlock;
+    std::vector<QFuture<void> > res(numBlock);
+    for (int i=0; i<numBlock; ++i) {
+      int startLine = i * blockHeight;
+      int endLine = (i+1) * blockHeight;
+      if (i == numBlock - 1)
+        endLine = height();
+      res[i] = QtConcurrent::run(this, &ZImage::setDataBlockMS8Indexed8,
+                                 sources, startLine, endLine, alpha);
+    }
+    for (int i=0; i<numBlock; ++i)
+      res[i].waitForFinished();
+    return;
+  }
+
+  std::vector<ZImage::DataSource<uint8_t> > allSources = sources;
+#ifdef _DEBUG_2
+    std::cout << "Color: " << " " << sources[0].color << std::endl;
+    std::cout << "Color: " << " " << sources[1].color << std::endl;
+    std::cout << "Color: " << " " << sources[2].color << std::endl;
+#endif
+  bool needScaleAndClamp = false;
+  for (size_t i=0; i<allSources.size(); ++i) {
+    std::swap(allSources[i].color.r, allSources[i].color.b);
+    if (allSources[i].scale != 1.f || allSources[i].offset != 0.f) {
+      needScaleAndClamp = true;
+    }
+  }
+
+
+  std::vector<std::vector<glm::col3> > colorMap(allSources.size());
+  for (size_t i = 0; i < colorMap.size(); ++i) {
+    colorMap[i].resize(256);
+  }
+
+#ifdef _DEBUG_2
+        std::cout << "Data value" << (int) allSources[2].data[0] << std::endl;
+#endif
+
+  if (!needScaleAndClamp) {
+    for (int i = 0; i < 256; ++i) {
+      colorMap[0][i] = glm::col3(allSources[0].color * (float) i);
+    }
+  } else {
+    for (int i = 0; i < 256; ++i) {
+      colorMap[0][i] = glm::col3(
+            glm::clamp(allSources[0].color *
+            (allSources[0].scale * i + allSources[0].offset),
+          glm::vec3(0.f), glm::vec3(255.f)));
+    }
+  }
+
+  for (int j = 0; j < height(); j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < width(); i++) {
+      *line++ = *(allSources[0].data)++;
+    }
+  }
+
+  for (int i = 0; i < 256; ++i) {
+    int r = iround(colorMap[0][i][0] * 255);
+    int g = iround(colorMap[0][i][1] * 255);
+    int b = iround(colorMap[0][i][2] * 255);
+
+    setColor(i, qRgba(r, g, b, alpha));
   }
 }
 
@@ -1075,10 +1381,37 @@ void ZImage::setData(const std::vector<ZImage::DataSource<uint8_t> > &sources,
   }
 }
 
+void ZImage::setDataBlockMS8Indexed8(
+    const std::vector<ZImage::DataSource<uint8_t> > &sources,
+    int startLine, int endLine, uint8_t /*alpha*/)
+{
+  std::vector<ZImage::DataSource<uint8_t> > allSources = sources;
+  bool needScaleAndClamp = false;
+  for (size_t i=0; i<allSources.size(); ++i) {
+    allSources[i].data += startLine * width();
+    std::swap(allSources[i].color.r, allSources[i].color.b);
+    if (allSources[i].scale != 1.f || allSources[i].offset != 0.f) {
+      needScaleAndClamp = true;
+    }
+  }
+
+  for (int j = startLine; j < endLine; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < width(); i++) {
+      *line++ = *(allSources[0].data)++;
+    }
+  }
+}
+
 void ZImage::setDataBlockMS8(
     const std::vector<ZImage::DataSource<uint8_t> > &sources,
     int startLine, int endLine, uint8_t alpha)
 {
+  if (format() == Format_Indexed8) {
+    setDataBlockMS8Indexed8(sources, startLine, endLine, alpha);
+    return;
+  }
+
   std::vector<ZImage::DataSource<uint8_t> > allSources = sources;
   bool needScaleAndClamp = false;
   for (size_t i=0; i<allSources.size(); ++i) {

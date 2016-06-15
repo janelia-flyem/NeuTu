@@ -92,6 +92,8 @@ void ZStackPresenter::init()
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
 
+  m_highContrastProtocal = false;
+
   for (int i = 0; i < 3; i++) {
     m_mouseLeftReleasePosition[i] = -1;
     m_mouseRightReleasePosition[i] = -1;

@@ -89,6 +89,16 @@ public:
 
   inline double greyScale(int c = 0) const {return m_grayScale[c];}
   inline double greyOffset(int c = 0) const {return m_grayOffset[c];}
+
+
+  bool usingHighContrastProtocal() const {
+    return m_highContrastProtocal;
+  }
+
+  void useHighContrastProtocal(bool on) {
+    m_highContrastProtocal = on;
+  }
+
   //inline int zoomRatio() const { return m_zoomRatio; }
   //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
@@ -517,6 +527,8 @@ protected:
 
   ZStackBall m_highlightDecoration;
   bool m_highlight;
+
+  bool m_highContrastProtocal;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   int m_skipMouseReleaseEvent;

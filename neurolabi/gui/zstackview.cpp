@@ -983,7 +983,9 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
                                               buddyPresenter()->greyOffset(0),
                                               stack->getChannelColor(0));
         m_image->setData(stackData, getIntensityThreshold());
-
+        if (buddyPresenter()->usingHighContrastProtocal()) {
+          m_image->enhanceContrast(true);
+        }
       }
       break;
     case GREY16:
@@ -1011,6 +1013,9 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
             stack->array8(), stack->width(), stack->height(), stack->depth(),
             slice, buddyPresenter()->getGrayScale(),
             buddyPresenter()->getGrayOffset(), m_sliceAxis);
+      if (buddyPresenter()->usingHighContrastProtocal()) {
+        m_image->enhanceContrast(true);
+      }
       break;
     default:
       break;
@@ -1190,7 +1195,14 @@ void ZStackView::updateImageCanvas()
 
     if (m_image == NULL) {
 //      double scale = 0.5;
-      m_image = new ZImage(box.getWidth(), box.getHeight());
+      if (buddyDocument()->hasStackData() &&
+          buddyDocument()->getStack()->kind() == GREY) {
+        m_image = new ZImage(
+              box.getWidth(), box.getHeight(), QImage::Format_Indexed8);
+      } else {
+        m_image = new ZImage(box.getWidth(), box.getHeight());
+      }
+
       m_image->setOffset(-box.getFirstCorner().getX(),
                          -box.getFirstCorner().getY());
 //      m_image->setScale(scale, scale);

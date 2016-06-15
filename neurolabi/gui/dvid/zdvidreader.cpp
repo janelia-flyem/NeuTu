@@ -1173,6 +1173,19 @@ ZClosedCurve* ZDvidReader::readRoiCurve(
   return result;
 }
 
+ZJsonObject ZDvidReader::readContrastProtocal() const
+{
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::GetName(ZDvidData::ROLE_NEUTU_CONFIG), "contrast_protocal");
+
+  ZJsonObject config;
+  if (!byteArray.isEmpty()) {
+    config.decodeString(byteArray.data());
+  }
+
+  return config;
+}
+
 ZIntCuboid ZDvidReader::readBoundBox(int z)
 {
   QByteArray byteArray = readKeyValue("bound_box", QString("%1").arg(z));

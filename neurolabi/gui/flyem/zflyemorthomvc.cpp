@@ -35,6 +35,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->hideThresholdControl();
   frame->getView()->setHoverFocus(true);
   frame->updateDvidTargetFromDoc();
+  frame->getPresenter()->useHighContrastProtocal(true);
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {

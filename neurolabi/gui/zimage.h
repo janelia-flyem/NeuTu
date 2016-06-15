@@ -64,6 +64,8 @@ public:
   void setCData(const uint8_t *data, uint8_t alpha);
   void setData(const uint8 *data, double scale, double offset,
                int threshold = -1);
+  void setDataIndexed8(const uint8 *data, double scale, double offset,
+                       int threshold = -1);
 
   template<class T> void set2ChannelData(
       const T *data0, double scale0, double offset0,
@@ -95,6 +97,9 @@ public:
   void setData(const std::vector<DataSource<T> > &sources, uint8_t alpha = 255,
                bool useMultithread = true);
 
+  void setDataIndexed8(const std::vector<DataSource<uint8_t> > &sources,
+                       uint8_t alpha = 255, bool useMultithread = true);
+
   void setData(const std::vector<DataSource<uint8_t> > &sources,
                uint8_t alpha = 255, bool useMultithread = true);
 
@@ -107,12 +112,20 @@ public:
   void setDataBlock(const ZImage::DataSource<uint8_t> &source, int startLine,
                     int endLine, int threshold);
 
+  void setDataBlockIndexed8(
+      const ZImage::DataSource<uint8_t> &source, int startLine,
+      int endLine, int threshold);
+
   template<typename T>
   void setDataBlockMS(const std::vector<DataSource<T> > &sources, int startLine,
                       int endLine, uint8_t alpha = 255);
 
   void setDataBlockMS8(const std::vector<DataSource<uint8_t> > &sources, int startLine,
                       int endLine, uint8_t alpha = 255);
+
+  void setDataBlockMS8Indexed8(
+      const std::vector<DataSource<uint8_t> > &sources, int startLine,
+      int endLine, uint8_t alpha = 255);
 
   template<class T>
   void setData(const T *data, double scale, double offset,
@@ -146,11 +159,16 @@ public:
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 
+  void setHighContrastProtocal(
+      double grayOffset, double grayScale, bool nonlinear);
+
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
 
+  //high constrast protocal
+  bool m_nonlinear;
   double m_grayScale;
   double m_grayOffset;
   //ZIntPoint m_offset;
