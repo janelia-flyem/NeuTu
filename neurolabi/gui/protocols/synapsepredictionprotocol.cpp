@@ -7,6 +7,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "synapsepredictioninputdialog.h"
+
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
@@ -49,59 +51,40 @@ const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
  */
 bool SynapsePredictionProtocol::initialize() {
 
+    SynapsePredictionInputDialog inputDialog;
 
-    // needs a custom dialog, ugh
-    // two entry fields for corners of volume
-    //  accept comma or space delimited floats
-    // entry field for name of RoI
-    //  in perfect world, this will be a drop-down and you'll
-    //  choose from existing RoIs in DVID
+    // set initial volume here
+    // small volume for testing:
+    inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
 
+    // larger generic volume as default starting point:
+    // inputDialog.setVolume(ZIntCuboid(3000, 3000, 3000, 4000, 4000, 4000));
 
-    // test data we can pretend came from dialog; this volume
-    //  has 12 synaptic elements
-    QString point1Input = "3500, 5200,  7300";
-    QString point2Input = "3700 5400  7350";
-    QString roiInput = "testroi";
+    inputDialog.setRoI("(RoI is ignored for now)");
 
-    // for now, parrot back the input
-    QMessageBox mb;
-    mb.setText("Synapse prediction protocol");
-    mb.setInformativeText(QString("This will eventually ask for user input.  For testing, using:\npoint1 = %1\npoint2 = %2\nRoI = %3")
-        .arg(point1Input).arg(point2Input).arg(roiInput));
-    mb.setStandardButtons(QMessageBox::Ok);
-    mb.setDefaultButton(QMessageBox::Ok);
-    mb.exec();
-
-    // convert input point strings to a ZCuboid; parse routine wants
-    //  size coordinates in order (x1, y1, z1, x2, y2, z2), delimited
-    //  by commas or spaces
-    ZIntCuboid volume = parseVolumeString(point1Input + " " + point2Input);
+    int ans = inputDialog.exec();
+    if (ans == QDialog::Rejected) {
+        return false;
+    }
+    ZIntCuboid volume = inputDialog.getVolume();
     if (volume.isEmpty()) {
         return false;
     }
-
-    std::cout << "synpre: volume corners: " << volume.getCorner(0).toString() <<
-              ", " << volume.getCorner(1).toString() << std::endl;
-
+    QString roiInput = inputDialog.getRoI();
 
     // generate pending/finished lists from user input
     // throw this into a thread?
-
     loadInitialSynapseList(volume, roiInput);
-
-    // testing
-    std::cout << "snpre: pending list length: " << m_pendingList.size() << std::endl;
-    std::cout << "snpre: finished list length: " << m_finishedList.size() << std::endl;
 
 
     // arrange list in some appropriate way:
+    //  -- here or in above call?
     //  -- pre then post or the other way around?
     //  -- cluster spatially?
 
 
 
-    // go to first item
+    // get started
     onFirstButton();
     saveState();
 
