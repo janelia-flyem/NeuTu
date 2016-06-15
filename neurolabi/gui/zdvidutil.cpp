@@ -95,6 +95,18 @@ ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget 
   return ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
 }
 
+lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
+{
+  lowtis::DVIDLabelblkConfig config;
+  config.username = NeuTube::GetCurrentUserName();
+  config.dvid_server = target.getAddressWithPort();
+  config.dvid_uuid = target.getUuid();
+  config.datatypename = target.getLabelBlockName();
+
+
+  return new lowtis::ImageService(config);
+}
+
 libdvid::BinaryDataPtr ZDvid::MakePayload(const char *payload, int length)
 {
   return libdvid::BinaryData::create_binary_data(payload, length);

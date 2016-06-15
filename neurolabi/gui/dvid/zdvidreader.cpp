@@ -111,7 +111,19 @@ bool ZDvidReader::startService()
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
           */
     m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
-    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
+//    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
+    /*
+    lowtis::DVIDLabelblkConfig config;
+    config.username = NeuTube::GetCurrentUserName();
+    config.dvid_server = getDvidTarget().getAddressWithPort();
+    config.dvid_uuid = getDvidTarget().getUuid();
+    config.datatypename = getDvidTarget().getLabelBlockName();
+    m_lowtisService = new lowtis::ImageService(config);
+    */
+//    m_lowtisService = NULL;
+
+//      ZSharedPointer<lowtis::ImageService> lowtisService = ZDvid::MakeLowtisService(getDvidTarget());
+
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -1424,6 +1436,89 @@ ZArray* ZDvidReader::readLabels64(
 
   return array;
 }
+
+
+ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
+    int width, int height) const
+{
+
+  ZArray *array = NULL;
+
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  qDebug() << "Using lowtis";
+
+
+//  if (m_lowtisService.get() == NULL) {
+    try {
+      lowtis::DVIDLabelblkConfig config;
+      config.username = NeuTube::GetCurrentUserName();
+      config.dvid_server = getDvidTarget().getAddressWithPort();
+      config.dvid_uuid = getDvidTarget().getUuid();
+      config.datatypename = getDvidTarget().getLabelBlockName();
+
+      m_lowtisService = ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
+    } catch (libdvid::DVIDException &e) {
+      m_lowtisService.reset();
+
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+    }
+
+//    m_lowtisService = ZDvid::MakeLowtisServicePtr(getDvidTarget());
+//  }
+  QElapsedTimer timer;
+  timer.start();
+  if (m_lowtisService.get() != NULL) {
+    mylib::Dimn_Type arrayDims[3];
+    arrayDims[0] = width;
+    arrayDims[1] = height;
+    arrayDims[2] = 1;
+    array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+
+    try {
+      std::vector<int> offset(3);
+      offset[0] = x0;
+      offset[1] = y0;
+      offset[2] = z0;
+
+//      m_lowtisService->retrieve_image(
+//            width, height, offset, new char[width*height*8]);
+//      lowtis::DVIDLabelblkConfig config;
+//      config.username = NeuTube::GetCurrentUserName();
+//      config.dvid_server = getDvidTarget().getAddressWithPort();
+//      config.dvid_uuid = getDvidTarget().getUuid();
+//      config.datatypename = getDvidTarget().getLabelBlockName();
+
+//      ZSharedPointer<lowtis::ImageService> lowtisService = ZDvid::MakeLowtisService(getDvidTarget());
+//      lowtis::ImageService *service = new lowtis::ImageService(config);
+
+//      lowtis::ImageService* lowtisService = ZDvid::MakeLowtisServicePtr(getDvidTarget());
+
+//      service->retrieve_image(width, height, offset, array->getDataPointer<char>());
+
+
+      m_lowtisService->retrieve_image(width, height, offset, array->getDataPointer<char>());
+
+      setStatusCode(200);
+    } catch (libdvid::DVIDException &e) {
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+
+      delete array;
+      array = NULL;
+    }
+
+    m_readingTime = timer.elapsed();
+    LINFO() << "label reading time: " << m_readingTime;
+  }
+#endif
+
+
+
+  return array;
+}
+
 
 bool ZDvidReader::hasSparseVolume() const
 {
