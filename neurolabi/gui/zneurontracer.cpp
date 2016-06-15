@@ -272,6 +272,29 @@ void ZNeuronTracer::setIntensityField(ZStack *stack)
   m_stack = stack;
 }
 
+void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
+{
+  if (m_traceWorkspace != NULL) {
+    ZIntPoint stackOffset;
+    if (getStack() != NULL) {
+      stackOffset = getStack()->getOffset();
+    }
+
+    m_traceWorkspace->trace_range[0] =
+        box.getFirstCorner().getX() - stackOffset.getX();
+    m_traceWorkspace->trace_range[3] =
+        box.getLastCorner().getX() - stackOffset.getX();
+    m_traceWorkspace->trace_range[1] =
+        box.getFirstCorner().getY() - stackOffset.getY();
+    m_traceWorkspace->trace_range[4] =
+        box.getLastCorner().getY() - stackOffset.getY();
+    m_traceWorkspace->trace_range[2] =
+        box.getFirstCorner().getZ() - stackOffset.getZ();
+    m_traceWorkspace->trace_range[5] =
+        box.getLastCorner().getZ() - stackOffset.getZ();
+  }
+}
+
 ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 {
   prepareTraceScoreThreshold(TRACING_INTERACTIVE);
@@ -971,14 +994,19 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
-ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
+ZSwcTree* ZNeuronTracer::trace(const ZStack *stack, bool doResampleAfterTracing)
 {
   ZSwcTree *tree = NULL;
 
   if (stack != NULL) {
-    tree = trace(stack->c_stack(), doResampleAfterTracing);
-    if (tree != NULL) {
-      tree->translate(stack->getOffset());
+    Stack *signal = C_Stack::clone(stack->c_stack(m_preferredSignalChannel));
+
+    if (signal != NULL) {
+      tree = trace(signal, doResampleAfterTracing);
+      C_Stack::kill(signal);
+      if (tree != NULL) {
+        tree->translate(stack->getOffset());
+      }
     }
   }
 

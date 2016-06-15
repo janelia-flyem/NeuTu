@@ -1294,12 +1294,26 @@ ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::SwcTreeLabeTraceMask(
 
 ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::~SwcTreeLabeTraceMask() {}
 
+void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::setOffset(const ZPoint &pt)
+{
+  m_offset = pt;
+}
+
+void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::setOffset(const ZIntPoint &pt)
+{
+  m_offset.set(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 {
   startUndo();
   if (!m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
+    workspace.offset[0] = m_offset.x();
+    workspace.offset[1] = m_offset.y();
+    workspace.offset[2] = m_offset.z();
+
     workspace.sdw.color.r = 0;
     workspace.sdw.color.g = 0;
     workspace.sdw.color.b = 0;
@@ -1313,6 +1327,10 @@ void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::redo()
   if (!m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
+    workspace.offset[0] = m_offset.x();
+    workspace.offset[1] = m_offset.y();
+    workspace.offset[2] = m_offset.z();
+
     Swc_Tree_Label_Stack(
           m_tree, m_doc->getTraceWorkspace()->trace_mask, &workspace);
   }

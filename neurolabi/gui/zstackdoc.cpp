@@ -7660,13 +7660,29 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
   m_neuronTracer.setTraceLevel(traceLevel);
   m_neuronTracer.setBackgroundType(m_stackBackground);
 
-  Stack *signal = C_Stack::clone(getStack()->c_stack(c));
-  ZSwcTree *tree = m_neuronTracer.trace(signal, doResample);
-  C_Stack::kill(signal);
+  m_neuronTracer.setSignalChannel(c);
+
+  m_neuronTracer.setTraceRange(getStack()->getBoundBox());
+  ZSwcTree *tree = m_neuronTracer.trace(getStack(), doResample);
 
   endProgress(0.9);
 
   Zero_Stack(getTraceWorkspace()->trace_mask);
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+
+    Swc_Tree_Node_Label_Workspace workspace;
+    Default_Swc_Tree_Node_Label_Workspace(&workspace);
+    ZIntPoint offset = getStackOffset();
+    workspace.offset[0] = offset.getX();
+    workspace.offset[1] = offset.getY();
+    workspace.offset[2] = offset.getZ();
+
+    Swc_Tree_Label_Stack(
+          tree->data(), getTraceWorkspace()->trace_mask, &workspace);
+  }
 
   if (tree != NULL) {
     //ZSwcTree *tree = new ZSwcTree;
@@ -7675,7 +7691,11 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
     ZStackDocCommand::SwcEdit::CompositeCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     new ZStackDocCommand::SwcEdit::AddSwc(this, tree, command);
-    new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(this, tree->data(), command);
+    ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask *labelCommand =
+        new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(
+          this, tree->data(), command);
+    labelCommand->setOffset(getStackOffset());
+
     command->setLogMessage("Run automatic tracing");
     pushUndoCommand(command);
 
