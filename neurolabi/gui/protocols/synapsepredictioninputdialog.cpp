@@ -3,6 +3,9 @@
 
 #include "zintcuboid.h"
 
+/*
+ * this class is the input dialog for starting the synapse_prediction protocol
+ */
 SynapsePredictionInputDialog::SynapsePredictionInputDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SynapsePredictionInputDialog)

@@ -282,6 +282,17 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     if (reader.open(m_dvidTarget)) {
         std::vector<ZDvidSynapse> synapseList = reader.readSynapse(volume, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
 
+
+        // this list is mixed pre- and post- sites; relations are in there, but the list
+        //  doesn't show them in any way as-is
+
+        // do I need to filter out post whose pre is not in the area?  include post
+        //  out of the area whose pre is in the area?
+
+
+        // cache that list for later use?
+
+
         // filter by roi (coming soon)
         // for now: need to do raw DVID call to batch ask "is point in RoI"?
 

@@ -28,11 +28,9 @@
  * with protocols; it's not a UI component itself, but it knows
  * which dialogs and windows to open at any given time
  *
- * to add new protocol:
- * -- (procedure is tentative, in development!)
- * -- subclass ProtocolDialog and implement
- * -- add name to protocolNames array
- * -- add to if-else chain in startProtocolRequested()
+ * see comments in protocoldialog.cpp for how to add new protocol;
+ * in this file, you'll add the name to protocolNames, and
+ * add the class to if-else chain in instantiateProtocol()
  */
 ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeMetadata("", ZDvidTarget())
 {
@@ -63,7 +61,8 @@ const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 // names of available protocols; thank you, C++, for making
 //  constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
-        << "doNthings"
+        // "doNthings" is a test protocol
+        // << "doNthings"
         << "synapse_prediction";
 
 
