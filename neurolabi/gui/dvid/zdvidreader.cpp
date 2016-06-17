@@ -1449,7 +1449,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
   qDebug() << "Using lowtis";
 
 
-//  if (m_lowtisService.get() == NULL) {
+  if (m_lowtisService.get() == NULL) {
     try {
       lowtis::DVIDLabelblkConfig config;
       config.username = NeuTube::GetCurrentUserName();
@@ -1466,7 +1466,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     }
 
 //    m_lowtisService = ZDvid::MakeLowtisServicePtr(getDvidTarget());
-//  }
+  }
   QElapsedTimer timer;
   timer.start();
   if (m_lowtisService.get() != NULL) {

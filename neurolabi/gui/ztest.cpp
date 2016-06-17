@@ -20175,7 +20175,11 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
+  reader.readTile(0, 0, 0, 0);
+
   ZArray *label = reader.readLabels64Lowtis(4099, 5018, 10343, 512, 512);
+
+  reader.readLabels64Lowtis(4099, 5018, 10344, 512, 512);
 
 #endif
 
