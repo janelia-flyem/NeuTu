@@ -286,27 +286,38 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         // this list is mixed pre- and post- sites; relations are in there, but the list
         //  doesn't show them in any way as-is
 
-        // do I need to filter out post whose pre is not in the area?  include post
-        //  out of the area whose pre is in the area?
 
-
-        // cache that list for later use?
+        // cache that list of synapses for later use?
+        // would have to rebuild cache when loading from save
 
 
         // filter by roi (coming soon)
-        // for now: need to do raw DVID call to batch ask "is point in RoI"?
+        // will need to do raw DVID call to batch ask "is point in RoI?";
+        //  that call not in ZDvidReader() yet
 
-        // filter to only auto?
+
+        // filter to only auto?  (not human-placed)
 
 
 
         // put each pre/post site into list
-        for(std::vector<ZDvidSynapse>::iterator iter = synapseList.begin(); iter != synapseList.end(); ++iter) {
-            m_pendingList.append(iter->getPosition());
+        // for now: find the pre-synaptic sites; put each one on the list; then,
+        //  put all its post-synaptic partners on the list immediately after it,
+        //  whether it's in the volume or not
+        for (std::vector<ZDvidSynapse>::iterator iter = synapseList.begin(); iter != synapseList.end(); ++iter) {
+            if (iter->getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+                m_pendingList.append(iter->getPosition());
+                for (size_t i=0; i<iter->getRelationJson().size(); i++) {
+                    ZIntPoint point = ZJsonParser::toIntPoint(ZJsonObject(iter->getRelationJson().value(i))["To"]);
+                    m_pendingList.append(point);
+                }
+            }
          }
 
 
         // order somehow?  here or earlier?
+        // in a perfect world, I'd sort the pre-synaptic sites spatially, but
+        //  for now, it's just the order DVID returns
 
     }
 }

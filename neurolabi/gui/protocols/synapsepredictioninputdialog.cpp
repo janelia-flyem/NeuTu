@@ -93,8 +93,6 @@ void SynapsePredictionInputDialog::zRangeChanged(int z) {
 }
 
 ZIntCuboid SynapsePredictionInputDialog::getVolume() {
-    // no validation yet
-
     return ZIntCuboid(ui->x1spinBox->value(), ui->y1spinBox->value(), ui->z1spinBox->value(),
                       ui->x2spinBox->value(), ui->y2spinBox->value(), ui->z2spinBox->value());
 }
