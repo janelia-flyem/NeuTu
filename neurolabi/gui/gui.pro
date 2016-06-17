@@ -714,6 +714,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui
