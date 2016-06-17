@@ -130,7 +130,7 @@ ZJsonObject ZFlyEmSynapseAnnotationDialog::getPropJson() const
   ZJsonObject propJson;
   std::ostringstream stream;
   stream << getConfidence();
-  propJson.setEntry("confidence", stream.str());
+  propJson.setEntry("conf", stream.str());
 
   QString annotation = getAnnotation();
   propJson.setEntry("annotation", annotation.toStdString());

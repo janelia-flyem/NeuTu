@@ -106,6 +106,8 @@ public slots:
 
   void dump(const QString &msg);
 
+  void saveStack();
+
   void test();
 
 protected:

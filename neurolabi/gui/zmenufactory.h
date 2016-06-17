@@ -23,7 +23,7 @@ public:
       ZStackDoc *doc, QWidget *parentWidget, QMenu *menu);
   QMenu* makeSwcNodeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-  QMenu* makeSrokePaintContextMenu(
+  QMenu* makeStrokePaintContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   virtual QMenu* makeStackContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);

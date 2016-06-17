@@ -65,6 +65,9 @@ public:
 
   QMenu* getContextMenu();
 
+//  QAction* makeAction(ZActionFactory::EAction item);
+  bool connectAction(QAction *action, ZActionFactory::EAction item);
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -85,6 +88,8 @@ signals:
 
 public slots:
   void deleteSelectedSynapse();
+  void verfifySelectedSynapse();
+  void unverfifySelectedSynapse();
   void linkSelectedSynapse();
   void unlinkSelectedSynapse();
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);
@@ -100,14 +105,15 @@ public slots:
   void zoomInRectRoi();
 
 private:
-  void connectAction();
+//  void connectAction();
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void tryAddTodoItemMode(double x, double y);
   void addActiveStrokeAsBookmark();
   void init();
-  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void tryAddSynapse(const ZIntPoint &pt);
+  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                     bool tryingLink);
+  void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
   void tryMoveSynapse(const ZIntPoint &pt);
   void tryTodoItemMode();
   void tryAddTodoItem(const ZIntPoint &pt);

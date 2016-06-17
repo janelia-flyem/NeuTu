@@ -146,11 +146,14 @@ public:
   void drawRect(const QRect & rectangle);
   void drawRect(int x, int y, int width, int height);
 
+  void drawArc(const QRectF &rectangle, int startAngle, int spanAngle);
+
   void drawPolyline(const QPointF * points, int pointCount);
   void drawPolyline(const QPoint * points, int pointCount);
 
   void drawText(
       int x, int y, int width, int height, int flags, const QString & text);
+  void drawStaticText(int x, int y, const QStaticText &text);
 
   void setCompositionMode(QPainter::CompositionMode mode);
   void setRenderHints(QPainter::RenderHints hints, bool on = true);

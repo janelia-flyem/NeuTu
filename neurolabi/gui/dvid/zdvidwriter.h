@@ -190,6 +190,7 @@ public:
 
   bool good() const;
 
+public:
   std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);
   std::string post(const std::string &url, const std::string &payload, bool isJson);

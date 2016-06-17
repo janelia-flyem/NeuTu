@@ -1043,6 +1043,13 @@ void ZFlyEmBody3dDoc::printEventQueue() const
   }
 }
 
+void ZFlyEmBody3dDoc::forceBodyUpdate()
+{
+  QSet<uint64_t> bodySet = m_bodySet;
+  dumpAllBody(false);
+  addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
 void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
 {
   QMutexLocker locker(&m_garbageMutex);

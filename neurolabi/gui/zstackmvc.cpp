@@ -15,6 +15,7 @@
 #include "widgets/zimagewidget.h"
 #include "zintpoint.h"
 #include "zstackviewlocator.h"
+#include "zdialogfactory.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -60,9 +61,12 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
   createPresenter(axis);
+  getPresenter()->createActions();
+
   updateDocument();
 
   m_view->prepareDocument();
+//  m_presenter->createActions();
   m_presenter->prepareView();
 
   customInit();
@@ -395,6 +399,17 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   }
   if (!nonImageUrls.isEmpty()) {
     getDocument()->loadFileList(nonImageUrls);
+  }
+}
+
+void ZStackMvc::saveStack()
+{
+  if (getDocument()->hasStackData()) {
+    QString filePath =
+        ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
+    if (!filePath.isEmpty()) {
+      getDocument()->getStack()->save(filePath.toStdString());
+    }
   }
 }
 

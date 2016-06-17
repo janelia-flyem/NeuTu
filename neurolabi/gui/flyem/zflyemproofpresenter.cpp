@@ -46,15 +46,113 @@ void ZFlyEmProofPresenter::init()
 
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 
-  connectAction();
+//  connectAction();
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
+bool ZFlyEmProofPresenter::connectAction(
+    QAction *action, ZActionFactory::EAction item)
+{
+  bool connected = false;
+
+  if (action != NULL) {
+    connected = true;
+    switch (item) {
+    case ZActionFactory::ACTION_SYNAPSE_DELETE:
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_PRE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddPreSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_POST:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryAddPostSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_MOVE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryMoveSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(linkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNLINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddDoneItem()));
+      break;
+    case ZActionFactory::ACTION_CHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
+      break;
+    case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(uncheckTodoItem()));
+      break;
+    case ZActionFactory::ACTION_REMOVE_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(removeTodoItem()));
+      break;
+    case ZActionFactory::ACTION_SELECT_BODY_IN_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(selectBodyInRoi()));
+      break;
+    case ZActionFactory::ACTION_ZOOM_TO_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(zoomInRectRoi()));
+      break;
+    case ZActionFactory::ACTION_REWRITE_SEGMENTATION:
+      connect(action, SIGNAL(triggered()),
+              getCompleteDocument(), SLOT(rewriteSegmentation()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_VERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
+              this, SLOT(verfifySelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNVERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
+              this, SLOT(unverfifySelectedSynapse()));
+      break;
+    default:
+      connected = false;
+      break;
+    }
+    if (connected == false) {
+      connected = ZStackPresenter::connectAction(action, item);
+    }
+  }
+
+  return connected;
+}
+
+#if 0
+QAction* ZFlyEmProofPresenter::makeAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+
+  if (!m_actionMap.contains(item)) {
+    action = m_actionFactory->makeAction(item, this);
+    m_actionMap[item] = action;
+
+    if (action == NULL) {
+      action = ZStackPresenter::makeAction(item);
+    }
+  } else {
+    action = m_actionMap[item];
+  }
+
+  return action;
+}
+#endif
+
+#if 0
 void ZFlyEmProofPresenter::connectAction()
 {
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
           this, SLOT(deleteSelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
+          this, SLOT(verfifySelectedSynapse()));
+  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
+          this, SLOT(unverfifySelectedSynapse()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_PRE), SIGNAL(triggered()),
           this, SLOT(tryAddPreSynapseMode()));
   connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST), SIGNAL(triggered()),
@@ -84,6 +182,7 @@ void ZFlyEmProofPresenter::connectAction()
           SLOT(rewriteSegmentation()));
 
 }
+#endif
 
 void ZFlyEmProofPresenter::selectBodyInRoi()
 {
@@ -239,6 +338,16 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
   }
 }
 
+void ZFlyEmProofPresenter::verfifySelectedSynapse()
+{
+  getCompleteDocument()->verfifySelectedSynapse();
+}
+
+void ZFlyEmProofPresenter::unverfifySelectedSynapse()
+{
+  getCompleteDocument()->unverfifySelectedSynapse();
+}
+
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
 {
   getCompleteDocument()->executeRemoveSynapseCommand();
@@ -376,14 +485,14 @@ void ZFlyEmProofPresenter::tryTodoItemMode()
   tryAddTodoItemMode(pos.x(), pos.y());
 }
 
-void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
+void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt, bool tryingLink)
 {
   switch (interactiveContext().synapseEditMode()) {
   case ZInteractiveContext::SYNAPSE_ADD_PRE:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN);
+    tryAddSynapse(pt, ZDvidSynapse::KIND_PRE_SYN, tryingLink);
     break;
   case ZInteractiveContext::SYNAPSE_ADD_POST:
-    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN);
+    tryAddSynapse(pt, ZDvidSynapse::KIND_POST_SYN, tryingLink);
     break;
   default:
     break;
@@ -391,7 +500,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt)
 }
 
 void ZFlyEmProofPresenter::tryAddSynapse(
-    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind, bool tryingLink)
 {
   ZDvidSynapse synapse;
   synapse.setPosition(pt);
@@ -399,7 +508,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
   synapse.setUserName(NeuTube::GetCurrentUserName());
-  getCompleteDocument()->executeAddSynapseCommand(synapse);
+  getCompleteDocument()->executeAddSynapseCommand(synapse, tryingLink);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
 
@@ -646,7 +755,10 @@ void ZFlyEmProofPresenter::processCustomOperator(
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
-    tryAddSynapse(currentStackPos.toIntPoint());
+    tryAddSynapse(currentStackPos.toIntPoint(), true);
+    break;
+  case ZStackOperator::OP_DVID_SYNAPSE_ADD_ORPHAN:
+    tryAddSynapse(currentStackPos.toIntPoint(), false);
     break;
   case ZStackOperator::OP_FLYEM_TODO_ADD:
     tryAddTodoItem(currentStackPos.toIntPoint());

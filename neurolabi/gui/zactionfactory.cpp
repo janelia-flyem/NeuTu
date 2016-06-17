@@ -213,7 +213,7 @@ QAction* ZActionFactory::makeAction(
 
   return action;
 }
-
+#if 0
 QAction* ZActionFactory::makeAction(
     EAction item, const ZStackPresenter *presenter, QWidget *parent,
     ZActionActivator *activator, bool positive)
@@ -251,6 +251,7 @@ QAction* ZActionFactory::makeAction(
 
   return action;
 }
+#endif
 
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
@@ -401,6 +402,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SWC_SUMMARIZE:
     action = new QAction("Summary", parent);
     break;
+  case ACTION_SYNAPSE_VERIFY:
+    action = new QAction("Verify", parent);
+    break;
+  case ACTION_SYNAPSE_UNVERIFY:
+    action = new QAction("Unverfiy", parent);
+    break;
   case ACTION_SYNAPSE_ADD_PRE:
     action = new QAction("Add TBar", parent);
     action->setIcon(QIcon(":/images/add.png"));
@@ -493,6 +500,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Erase Mask", parent);
 //    action->setShortcut("Ctrl+E");
     break;
+  case ACTION_SPLIT_DATA:
+    action = new QAction("Split", parent);
+    break;
   case ACTION_BODY_SPLIT_START:
     action = new QAction("Launch split", parent);
     break;
@@ -567,6 +577,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Rewrite segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
+    break;
+  case ACTION_FLYEM_UPDATE_BODY:
+    action = new QAction("Update Bodies", parent);
+    action->setToolTip("Update bodies from DVID");
+    break;
+  case ACTION_SAVE_STACK:
+    action = new QAction("Save Stack", parent);
+    action->setIcon(QIcon(":/images/save.png"));
+    action->setToolTip("Save the stack data into a file.");
     break;
   default:
     break;

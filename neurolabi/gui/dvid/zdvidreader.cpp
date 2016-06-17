@@ -29,6 +29,7 @@
 #include "flyem/zflyemtodoitem.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
+#include "zdvidutil.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -109,7 +110,7 @@ bool ZDvidReader::startService()
           new libdvid::DVIDNodeService(
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
           */
-    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
+    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -1383,6 +1384,7 @@ ZArray* ZDvidReader::readLabels64(
       array->setStartCoordinate(2, z0);
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
+      LERROR() << e.what();
       setStatusCode(e.getStatus());
     }
   }

@@ -47,6 +47,7 @@ signals:
   void bookmarkChecked(QString key, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
   void croppingCoarseBody3D();
+  void showingBodyGrayscale();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
@@ -57,6 +58,7 @@ public slots:
   void selectSeed();
   void selectAllSeed();
   void cropCoarseBody3D();
+  void showBodyGrayscale();
   void updateUserBookmarkTable(ZStackDoc *doc);
 
 private slots:

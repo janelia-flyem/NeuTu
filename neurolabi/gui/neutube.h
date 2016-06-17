@@ -1,6 +1,7 @@
 #ifndef NEUTUBE_H
 #define NEUTUBE_H
 
+#include <QFileDialog>
 #include <string>
 #include "neutube_def.h"
 
@@ -19,6 +20,9 @@ std::string getInfoFile();
 
 std::string GetCurrentUserName();
 bool IsAdminUser();
+
+QFileDialog::Options GetFileDialogOption();
+QString GetLastFilePath();
 }
 
 

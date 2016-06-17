@@ -44,6 +44,9 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
     }
   }
 
+  connect(frame->getPresenter(), SIGNAL(savingStack()),
+          frame, SLOT(saveStack()));
+
   return frame;
 }
 

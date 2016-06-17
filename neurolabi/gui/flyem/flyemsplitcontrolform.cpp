@@ -135,6 +135,10 @@ void FlyEmSplitControlForm::createMenu()
   QAction *crop3DAction = new QAction("Coarse Body Crop", this);
   m_mainMenu->addAction(crop3DAction);
   connect(crop3DAction, SIGNAL(triggered()), this, SLOT(cropCoarseBody3D()));
+
+  QAction *body3DAction = new QAction("Show 3D Grayscale", this);
+  m_mainMenu->addAction(body3DAction);
+  connect(body3DAction, SIGNAL(triggered()), this, SLOT(showBodyGrayscale()));
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -217,6 +221,11 @@ void FlyEmSplitControlForm::importSeed()
 void FlyEmSplitControlForm::cropCoarseBody3D()
 {
   emit croppingCoarseBody3D();
+}
+
+void FlyEmSplitControlForm::showBodyGrayscale()
+{
+  emit showingBodyGrayscale();
 }
 
 void FlyEmSplitControlForm::selectSeed()

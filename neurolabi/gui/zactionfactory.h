@@ -48,6 +48,7 @@ public:
     ACTION_SWC_INTERPOLATION,
     ACTION_SYNAPSE_ADD_PRE, ACTION_SYNAPSE_ADD_POST, ACTION_SYNAPSE_MOVE,
     ACTION_SYNAPSE_DELETE, ACTION_SYNAPSE_LINK, ACTION_SYNAPSE_UNLINK,
+    ACTION_SYNAPSE_VERIFY, ACTION_SYNAPSE_UNVERIFY,
     ACTION_SYNAPSE_FILTER,
     ACTION_TRACE, ACTION_FITSEG, ACTION_DROPSEG, ACTION_FIT_ELLIPSE,
     ACTION_PUNCTA_MARK, ACTION_PUNCTA_ENLARGE, ACTION_PUNCTA_NARROW,
@@ -59,18 +60,19 @@ public:
     ACTION_UNCHECK_TODO_ITEM, ACTION_REMOVE_TODO_ITEM,
     ACTION_ENTER_RECT_ROI_MODE, ACTION_CANCEL_RECT_ROI,
     ACTION_SELECT_BODY_IN_RECT, ACTION_ZOOM_TO_RECT,
-    ACTION_REWRITE_SEGMENTATION,
+    ACTION_REWRITE_SEGMENTATION, ACTION_FLYEM_UPDATE_BODY,
+    ACTION_SAVE_STACK,
     ACTION_SEPARATOR
   };
 
   static QAction* makeAction(
       EAction item, const ZStackDoc *doc, QWidget *parent,
       ZActionActivator *activator = NULL, bool positive = true);
-
+/*
   static QAction* makeAction(
       EAction item, const ZStackPresenter *presenter, QWidget *parent,
       ZActionActivator *activator = NULL, bool positive = true);
-
+*/
   static QAction *MakeAction(EAction actionKey, QObject *parent);
 
   virtual QAction* makeAction(EAction actionKey, QObject *parent) const;

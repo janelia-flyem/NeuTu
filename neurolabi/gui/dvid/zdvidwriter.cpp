@@ -24,6 +24,7 @@
 #include "zarray.h"
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidbufferreader.h"
+#include "zdvidutil.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -47,7 +48,7 @@ bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    m_service = ZFlyEmMisc::MakeDvidNodeService(m_dvidTarget);
+    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -1448,40 +1449,44 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
 void ZDvidWriter::refreshLabel(
     const ZIntCuboid &box, const std::set<uint64_t> &bodySet)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-    ZIntCuboid alignedBox;
-    alignedBox.setFirstCorner(
-          dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-    alignedBox.setLastCorner(
-          dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+  if (!bodySet.empty()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      ZIntCuboid alignedBox;
+      alignedBox.setFirstCorner(
+            dvidInfo.getBlockBox(
+              dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+      alignedBox.setLastCorner(
+            dvidInfo.getBlockBox(
+              dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
 
-    ZArray *label = reader.readLabels64(alignedBox);
+      ZArray *label = reader.readLabels64(alignedBox);
 
-    //Reset label
-    uint64_t labelMax = label->getMax<uint64_t>();
-    uint64_t tmpLabel = labelMax + 1;
-    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
-         iter != bodySet.end(); ++iter) {
-      uint64_t bodyId = *iter;
-      label->replaceValue(bodyId, tmpLabel++);
+      if (reader.getStatusCode() == 200) {
+        //Reset label
+        uint64_t labelMax = label->getMax<uint64_t>();
+        uint64_t tmpLabel = labelMax + 1;
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          label->replaceValue(bodyId, tmpLabel++);
+        }
+
+        writeLabel(*label);
+
+        tmpLabel = labelMax + 1;
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          label->replaceValue(tmpLabel++, bodyId);
+        }
+
+        writeLabel(*label);
+      }
+
+      delete label;
     }
-
-    writeLabel(*label);
-
-    tmpLabel = labelMax + 1;
-    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
-         iter != bodySet.end(); ++iter) {
-      uint64_t bodyId = *iter;
-      label->replaceValue(tmpLabel, bodyId);
-    }
-
-    writeLabel(*label);
-
-    delete label;
   }
 }
 
@@ -1521,7 +1526,9 @@ void ZDvidWriter::writeSynapse(const ZDvidSynapse &synapse)
   ZDvidUrl url(m_dvidTarget);
   ZJsonArray synapseJson;
   synapseJson.append(synapse.toJsonObject());
-
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
   writeJson(url.getSynapseElementsUrl(), synapseJson);
 }
 
@@ -1538,6 +1545,9 @@ void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
 {
   ZDvidUrl url(m_dvidTarget);
 
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
   writeJson(url.getSynapseElementsUrl(), synapseJson);
 }
 
@@ -1567,9 +1577,9 @@ void ZDvidWriter::addSynapseProperty(
 
 void ZDvidWriter::writeMasterNode(const std::string &uuid)
 {
-  std::string rootNode =
-      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
-  if (!rootNode.empty()) {
+//  std::string rootNode =
+//      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+//  if (!rootNode.empty()) {
     ZDvidBufferReader reader;
     ZDvidUrl dvidUrl(getDvidTarget());
     dvidUrl.setUuid(uuid);
@@ -1588,6 +1598,11 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
       }
     }
 
-    post(url, branchJson);
-  }
+    ZDvid::MakeRequest(
+          url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
+          m_statusCode);
+
+//    ZFlyEmMisc::MakeRequest(url,
+//    post(url, branchJson);
+//  }
 }

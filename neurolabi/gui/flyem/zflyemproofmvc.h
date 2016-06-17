@@ -235,6 +235,7 @@ protected slots:
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
+  void showBodyGrayscale();
   void updateSplitBody();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
@@ -416,6 +417,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(recordBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(croppingCoarseBody3D()), this, SLOT(cropCoarseBody3D()));
+  connect(panel, SIGNAL(showingBodyGrayscale()), this, SLOT(showBodyGrayscale()));
 }
 
 
