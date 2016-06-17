@@ -620,6 +620,13 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofdoccommand.h \
     flyem/zneutuservice.h \
     dialogs/flyemsettingdialog.h \
+    protocols/protocolswitcher.h \
+    protocols/protocolchooser.h \
+    protocols/protocolmetadata.h \
+    protocols/protocoldialog.h \
+    protocols/doNthingsprotocol.h \
+    protocols/synapsepredictionprotocol.h \
+    protocols/synapsepredictioninputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -697,12 +704,16 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
+    protocols/protocolchooser.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
+    protocols/doNthingsprotocol.ui \
+    protocols/synapsepredictionprotocol.ui \
+    protocols/synapsepredictioninputdialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui
@@ -1103,6 +1114,13 @@ SOURCES += main.cpp \
     flyem/zflyemproofdoccommand.cpp \
     flyem/zneutuservice.cpp \
     dialogs/flyemsettingdialog.cpp \
+    protocols/protocolswitcher.cpp \
+    protocols/protocolchooser.cpp \
+    protocols/protocolmetadata.cpp \
+    protocols/protocoldialog.cpp \
+    protocols/doNthingsprotocol.cpp \
+    protocols/synapsepredictionprotocol.cpp \
+    protocols/synapsepredictioninputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \

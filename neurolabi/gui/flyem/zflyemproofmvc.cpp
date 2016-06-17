@@ -34,6 +34,7 @@
 #include "flyem/zflyemcoordinateconverter.h"
 #include "flyem/zflyembookmarkannotationdialog.h"
 #include "dialogs/flyembodyinfodialog.h"
+#include "protocols/protocolswitcher.h"
 #include "dialogs/zflyemsplitcommitdialog.h"
 #include "flyem/zflyembodywindowfactory.h"
 #include "flyem/zflyemmisc.h"
@@ -82,6 +83,7 @@ void ZFlyEmProofMvc::init()
 {
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
+  m_protocolSwitcher = new ProtocolSwitcher(this);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
@@ -1122,6 +1124,12 @@ void ZFlyEmProofMvc::customInit()
           getCompleteDocument(),
           SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
   connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+          this, SLOT(zoomTo(int,int,int)));
+
+  // connections to protocols
+  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+          m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+  connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
 
   /*
@@ -2373,6 +2381,11 @@ void ZFlyEmProofMvc::openSequencer()
 {
   m_bodyInfoDlg->show();
   m_bodyInfoDlg->raise();
+}
+
+void ZFlyEmProofMvc::openProtocol()
+{
+  m_protocolSwitcher->openProtocolDialogRequested();
 }
 
 void ZFlyEmProofMvc::openTodo()
