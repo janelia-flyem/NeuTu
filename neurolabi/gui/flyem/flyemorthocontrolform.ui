@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>376</width>
     <height>261</height>
    </rect>
   </property>
@@ -35,7 +35,25 @@
      <item>
       <widget class="QCheckBox" name="showSegCheckBox">
        <property name="text">
-        <string>Segmentation</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/view_segmentation.png</normaloff>:/images/view_segmentation.png</iconset>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="contrastCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/bc_enhance.png</normaloff>:/images/bc_enhance.png</iconset>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -77,6 +95,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

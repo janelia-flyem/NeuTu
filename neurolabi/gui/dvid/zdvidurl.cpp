@@ -507,6 +507,10 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
 std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 {
   std::string key = m_dvidTarget.getLabelBlockName();
+  if (key.empty()) {
+    return "";
+  }
+
   if (!userName.empty()) {
     key += "_" + userName;
   }
@@ -883,6 +887,16 @@ std::string ZDvidUrl::getTodoListUrl(
 std::string ZDvidUrl::getTodoListUrl(int x, int y, int z) const
 {
   return getTodoListUrl(x, y, z, 1, 1, 1);
+}
+
+std::string ZDvidUrl::getConfigUrl() const
+{
+  return getDataUrl("neutu_config");
+}
+
+std::string ZDvidUrl::getContrastUrl() const
+{
+  return getKeyUrl("neutu_config", "contrast");
 }
 
 std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const

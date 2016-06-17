@@ -375,12 +375,14 @@ void ZFlyEmProofDoc::annotateBody(
 void ZFlyEmProofDoc::initData(
     const std::string &type, const std::string &dataName)
 {
-  if (!m_dvidReader.hasData(dataName)) {
-    m_dvidWriter.createData(type, dataName);
-    if (!m_dvidWriter.isStatusOk()) {
-      emit messageGenerated(
-            ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
-                           NeuTube::MSG_ERROR));
+  if (!type.empty() && !dataName.empty()) {
+    if (!m_dvidReader.hasData(dataName)) {
+      m_dvidWriter.createData(type, dataName);
+      if (!m_dvidWriter.isStatusOk()) {
+        emit messageGenerated(
+              ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
+                             NeuTube::MSG_ERROR));
+      }
     }
   }
 }
@@ -393,6 +395,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
+    initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
   }
 }
 
@@ -2479,6 +2482,11 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
       }
     }
     pushUndoCommand(command);
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage(
+            "Failed to add synapse. Have you specified the synapse data name?",
+            NeuTube::MSG_WARNING));
   }
 }
 

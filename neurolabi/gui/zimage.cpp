@@ -9,6 +9,7 @@
 #include "zobject3dstripe.h"
 #include "neutube_def.h"
 #include "tz_math.h"
+#include "zjsonobject.h"
 
 ZImage::ZImage() : QImage()
 {
@@ -38,15 +39,20 @@ void ZImage::init()
     memset(scanLine(0), 255, bytesPerLine() * height());
   }
 
-  m_nonlinear = true;
-  m_grayOffset = 0.0;
-  m_grayScale = 1.5;
-
   if (format() == Format_Indexed8) {
     for (int i = 0; i <= 255; ++i) {
       setColor(i, qRgb(i, i, i));
     }
   }
+
+  setDefaultContrastProtocal();
+}
+
+void ZImage::setDefaultContrastProtocal()
+{
+  m_nonlinear = true;
+  m_grayOffset = 0.0;
+  m_grayScale = 1.5;
 }
 
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
@@ -830,6 +836,21 @@ void ZImage::setHighContrastProtocal(
   m_nonlinear = nonlinear;
   m_grayOffset = grayOffset;
   m_grayScale = grayScale;
+}
+
+void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
+{
+  if (obj.hasKey("nonlinear")) {
+    m_nonlinear = ZJsonParser::booleanValue(obj["nonlinear"]);
+  }
+
+  if (obj.hasKey("offset")) {
+    m_grayOffset = ZJsonParser::numberValue(obj["offset"]);
+  }
+
+  if (obj.hasKey("scale")) {
+    m_grayScale = ZJsonParser::numberValue(obj["scale"]);
+  }
 }
 
 void ZImage::enhanceContrast(bool highContrast)

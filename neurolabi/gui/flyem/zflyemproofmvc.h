@@ -174,6 +174,7 @@ public slots:
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
   void showData(bool visible);
+  void setHighContrast(bool on);
   void toggleSegmentation();
   void showTodo(bool visible);
   void toggleData();

@@ -786,7 +786,13 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
-    removeObject(source, true);
+//    removeObject(source, true);
+    TStackObjectList objList = getObjectGroup().findSameSource(source);
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      removeObject(*iter, false);
+      dumpGarbage(*iter, true);
+    }
 
     if (hasBody(bodyId)) {
       beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);

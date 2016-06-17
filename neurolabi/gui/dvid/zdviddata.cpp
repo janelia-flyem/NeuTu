@@ -28,6 +28,7 @@ const char* ZDvidData::m_neutuConfigName = "neutu_config";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
+const char* ZDvidData::m_nullName = "*";
 const char* ZDvidData::m_emptyName = "";
 
 ZDvidData::ZDvidData()
@@ -109,6 +110,10 @@ const char* ZDvidData::getName(EType type)
 */
 std::string ZDvidData::GetName(ERole role, const std::string &prefix)
 {
+  if (prefix == m_nullName) {
+    return "";
+  }
+
   if (prefix.empty()) {
     return ZDvidData::GetName(role);
   }
@@ -140,4 +145,9 @@ bool ZDvidData::isDefaultName(ERole role, const std::string &name)
   */
 
   return ZDvidData::GetName(role) == name;
+}
+
+bool ZDvidData::IsNullName(const std::string &name)
+{
+  return name == m_nullName;
 }

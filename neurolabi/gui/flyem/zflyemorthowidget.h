@@ -42,6 +42,7 @@ public slots:
   void processMessage(const ZWidgetMessage &message);
   void setSegmentationVisible(bool on);
   void setDataVisible(bool on);
+  void setHighContrast(bool on);
   void toggleSegmentation();
   void toggleData();
 

@@ -44,6 +44,7 @@ public:
 //  static std::string GetName(ERole role, ERole prefixRole);
 
   static bool isDefaultName(ERole role, const std::string &name);
+  static bool IsNullName(const std::string &name);
 
 private:
   static const char *m_grayScaleName;
@@ -73,6 +74,7 @@ private:
   static const char *m_neutuConfigName;
   //static const char *m_keyValueTypeName;
 
+  static const char *m_nullName;
   static const char *m_emptyName;
 };
 

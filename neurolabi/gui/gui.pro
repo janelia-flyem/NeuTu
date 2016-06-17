@@ -627,7 +627,8 @@ HEADERS += mainwindow.h \
     zapplication.h \
     dialogs/flyemsynapsefilterdialog.h \
     flyem/zflyemmb6analyzer.h \
-    dialogs/zflyemsynapseannotationdialog.h
+    dialogs/zflyemsynapseannotationdialog.h \
+    dialogs/zcontrastprotocaldialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -704,7 +705,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyemtododialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
-    dialogs/zflyemsynapseannotationdialog.ui
+    dialogs/zflyemsynapseannotationdialog.ui \
+    dialogs/zcontrastprotocaldialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1109,7 +1111,8 @@ SOURCES += main.cpp \
     zapplication.cpp \
     dialogs/flyemsynapsefilterdialog.cpp \
     flyem/zflyemmb6analyzer.cpp \
-    dialogs/zflyemsynapseannotationdialog.cpp
+    dialogs/zflyemsynapseannotationdialog.cpp \
+    dialogs/zcontrastprotocaldialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

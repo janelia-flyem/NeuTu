@@ -12,6 +12,7 @@
 
 class ZStack;
 class ZObject3dScan;
+class ZJsonObject;
 
 /** A class to load image / stack data structure from neurolabi and to display
  *  the data. The default format is Format_ARGB32_Premultiplied.
@@ -161,6 +162,10 @@ public:
 
   void setHighContrastProtocal(
       double grayOffset, double grayScale, bool nonlinear);
+
+  void loadHighContrastProtocal(const ZJsonObject &obj);
+  void setDefaultContrastProtocal();
+
 
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);

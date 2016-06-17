@@ -983,9 +983,7 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
                                               buddyPresenter()->greyOffset(0),
                                               stack->getChannelColor(0));
         m_image->setData(stackData, getIntensityThreshold());
-        if (buddyPresenter()->usingHighContrastProtocal()) {
-          m_image->enhanceContrast(true);
-        }
+        m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       }
       break;
     case GREY16:
@@ -1013,9 +1011,7 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
             stack->array8(), stack->width(), stack->height(), stack->depth(),
             slice, buddyPresenter()->getGrayScale(),
             buddyPresenter()->getGrayOffset(), m_sliceAxis);
-      if (buddyPresenter()->usingHighContrastProtocal()) {
-        m_image->enhanceContrast(true);
-      }
+      m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       break;
     default:
       break;
@@ -1179,6 +1175,18 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
   }
 }
 
+void ZStackView::updateContrastProtocal()
+{
+  if (m_image != NULL) {
+    if (buddyPresenter()->hasHighContrastProtocal()) {
+      m_image->loadHighContrastProtocal(
+            buddyPresenter()->getHighContrastProtocal());
+    } else {
+      m_image->setDefaultContrastProtocal();
+    }
+  }
+}
+
 void ZStackView::updateImageCanvas()
 {
   resetCanvasWithStack(m_image, &m_imagePainter);
@@ -1202,6 +1210,8 @@ void ZStackView::updateImageCanvas()
       } else {
         m_image = new ZImage(box.getWidth(), box.getHeight());
       }
+
+      updateContrastProtocal();
 
       m_image->setOffset(-box.getFirstCorner().getX(),
                          -box.getFirstCorner().getY());

@@ -24,6 +24,7 @@
 #include "zkeyoperationmap.h"
 #include "zstackball.h"
 #include "zactionfactory.h"
+#include "zjsonobject.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -92,11 +93,11 @@ public:
 
 
   bool usingHighContrastProtocal() const {
-    return m_highContrastProtocal;
+    return m_usingHighContrast;
   }
 
   void useHighContrastProtocal(bool on) {
-    m_highContrastProtocal = on;
+    m_usingHighContrast = on;
   }
 
   //inline int zoomRatio() const { return m_zoomRatio; }
@@ -284,6 +285,11 @@ public:
   virtual void configKeyMap();
 
   virtual ZStackDocMenuFactory* getMenuFactory();
+
+  bool hasHighContrastProtocal() const;
+  ZJsonObject getHighContrastProtocal() const;
+
+  void setHighContrastProtocal(const ZJsonObject &obj);
 
 public: //test functions
   void testBiocytinProjectionMask();
@@ -528,7 +534,8 @@ protected:
   ZStackBall m_highlightDecoration;
   bool m_highlight;
 
-  bool m_highContrastProtocal;
+  bool m_usingHighContrast;
+  ZJsonObject m_highContrastProtocal;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
   int m_skipMouseReleaseEvent;

@@ -848,6 +848,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
     getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
+    ZJsonObject contrastObj = reader.readContrastProtocal();
+    getPresenter()->setHighContrastProtocal(contrastObj);
+
 //    getCompleteDocument()->beginObjectModifiedMode(
 //          ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    getCompleteDocument()->updateTileData();
@@ -855,6 +859,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
+      te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
       te->enhanceContrast(getCompletePresenter()->highTileContrast());
       te->attachView(getView());
     }
@@ -2411,6 +2416,12 @@ void ZFlyEmProofMvc::toggleSegmentation()
   if (slice != NULL) {
     showSegmentation(!slice->isVisible());
   }
+}
+
+void ZFlyEmProofMvc::setHighContrast(bool on)
+{
+  getCompletePresenter()->useHighContrastProtocal(on);
+  getView()->redraw();
 }
 
 void ZFlyEmProofMvc::showData(bool visible)

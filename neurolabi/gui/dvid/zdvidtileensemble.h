@@ -45,6 +45,7 @@ public:
   }
 
   void enhanceContrast(bool high);
+  void setContrastProtocal(const ZJsonObject &obj);
 
 public:
   bool update(
@@ -63,6 +64,8 @@ private:
   ZDvidReader m_reader;
   ZStackView *m_view;
   bool m_highContrast;
+  ZJsonObject m_contrastProtocal;
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<ZSharedPointer<libdvid::DVIDNodeService> > m_serviceArray;
 #endif

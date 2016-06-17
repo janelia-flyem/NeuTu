@@ -69,12 +69,20 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
 void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getCompleteDocument()->setDvidTarget(target);
+
   updateDvidTargetFromDoc();
 }
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 {
   if (getCompleteDocument() != NULL) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZJsonObject contrastObj = reader.readContrastProtocal();
+      getPresenter()->setHighContrastProtocal(contrastObj);
+    }
+
+    getView()->updateContrastProtocal();
     getView()->reset(false);
     if (m_supervisor != NULL) {
       m_supervisor->setDvidTarget(getCompleteDocument()->getDvidTarget());
