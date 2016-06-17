@@ -2,6 +2,7 @@
 #define SYNAPSEPREDICTIONINPUTDIALOG_H
 
 #include <QDialog>
+#include <QPalette>
 
 #include "zintcuboid.h"
 
@@ -21,8 +22,23 @@ public:
     QString getRoI();
     void setRoI(QString roi);
 
+private slots:
+    void xRangeChanged(int x);
+    void yRangeChanged(int y);
+    void zRangeChanged(int z);
+
 private:
     Ui::SynapsePredictionInputDialog *ui;
+
+    QPalette m_defaultPalette;
+    QPalette m_redbgPalette;
+
+    bool xValid();
+    bool yValid();
+    bool zValid();
+    bool isValid();
+    void accept();
+
 };
 
 #endif // SYNAPSEPREDICTIONINPUTDIALOG_H
