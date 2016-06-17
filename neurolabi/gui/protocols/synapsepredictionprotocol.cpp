@@ -56,11 +56,11 @@ bool SynapsePredictionProtocol::initialize() {
     SynapsePredictionInputDialog inputDialog;
 
     // set initial volume here
-    // small volume for testing:
-    inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
+    // small volume for testing (has only a handful of synapses):
+    // inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
 
     // larger generic volume as default starting point:
-    // inputDialog.setVolume(ZIntCuboid(3000, 3000, 3000, 4000, 4000, 4000));
+    inputDialog.setVolume(ZIntCuboid(3000, 3000, 3000, 4000, 4000, 4000));
 
     inputDialog.setRoI("(RoI is ignored for now)");
 

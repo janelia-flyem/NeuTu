@@ -73,8 +73,8 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
 
     if (m_protocolStatus == PROTOCOL_ACTIVE) {
         // show protocol dialog for the protocol we're loading
-        m_activeProtocol->raise();
         m_activeProtocol->show();
+        m_activeProtocol->raise();
     } else if (m_protocolStatus == PROTOCOL_INITIALIZING) {
         // show a message
         QMessageBox msgBox;
@@ -209,8 +209,8 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
         m_activeMetadata.write();
 
         m_protocolStatus = PROTOCOL_ACTIVE;
-        m_activeProtocol->raise();
         m_activeProtocol->show();
+        m_activeProtocol->raise();
 
     } else {
         // note that dialog explaining failure is expected to be
@@ -271,8 +271,8 @@ void ProtocolSwitcher::loadProtocolRequested() {
 
     // ready to show dialog
     m_protocolStatus = PROTOCOL_ACTIVE;
-    m_activeProtocol->raise();
     m_activeProtocol->show();
+    m_activeProtocol->raise();
 
 }
 
