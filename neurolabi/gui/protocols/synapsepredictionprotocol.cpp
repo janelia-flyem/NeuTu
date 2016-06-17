@@ -42,6 +42,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
 const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction";
 const std::string SynapsePredictionProtocol::KEY_FINISHED = "finished";
 const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
+const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
+const int SynapsePredictionProtocol::fileVversion = 1;
 
 
 /*
@@ -221,10 +223,16 @@ void SynapsePredictionProtocol::saveState() {
     }
     data.setEntry(KEY_FINISHED.c_str(), finished);
 
+    // always version your output files!
+    data.setEntry(KEY_VERSION.c_str(), fileVversion);
+
     emit requestSaveProtocol(data);
 }
 
 void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
+
+    // check version of saved data here, once we have a second version
+
     if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
         // how to communicate failure?  overwrite a label?
         ui->progressLabel->setText("Data could not be loaded from DVID!");

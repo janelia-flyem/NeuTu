@@ -43,6 +43,8 @@ ProtocolMetadata::ProtocolMetadata(std::string dataName, ZDvidTarget target)
 const std::string ProtocolMetadata::PROTOCOL_METADATA_SUFFIX = "-metadata";
 const std::string ProtocolMetadata::KEY_PROTOCOL_NAME = "active-protocol-name";
 const std::string ProtocolMetadata::KEY_PROTOCOL_KEY = "active-protocol-key";
+const std::string ProtocolMetadata::KEY_VERSION = "version";
+const int ProtocolMetadata::fileVersion = 1;
 
 /*
  * factory function to read metadata from DVID and create object;
@@ -73,13 +75,15 @@ void ProtocolMetadata::read() {
         ZJsonObject data;
         data.decodeString(rawData.data());
 
+        // check version here, once we have a version two
+
         // we write all the data, so a ton of checking shouldn't be needed;
         //  do one check to make us feel better
-        // OMG, C++, make up your mind on how you want to represent strings!
         if (!data.hasKey(KEY_PROTOCOL_KEY.c_str()) || !data.hasKey(KEY_PROTOCOL_NAME.c_str())) {
             m_ioSuccessful = false;
             return;
         }
+        // OMG, C++, make up your mind on how you want to represent strings!
         m_activeProtocolName = ZJsonParser::stringValue(data[KEY_PROTOCOL_NAME.c_str()]);
         m_activeProtocolKey = ZJsonParser::stringValue(data[KEY_PROTOCOL_KEY.c_str()]);
         m_isActive = true;
@@ -99,6 +103,10 @@ void ProtocolMetadata::write()
         ZJsonObject data;
         data.setEntry(KEY_PROTOCOL_NAME, getActiveProtocolName());
         data.setEntry(KEY_PROTOCOL_KEY, getActiveProtocolKey());
+
+        // always version your output files!
+        data.setEntry(KEY_VERSION.c_str(), fileVersion);
+
         writer.writeJson(m_dvidDataName, m_metadataKey, data);
     } else {
         m_ioSuccessful = false;

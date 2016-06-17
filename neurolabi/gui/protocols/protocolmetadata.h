@@ -26,6 +26,8 @@ private:
     static const std::string PROTOCOL_METADATA_SUFFIX;
     static const std::string KEY_PROTOCOL_NAME;
     static const std::string KEY_PROTOCOL_KEY;
+    static const std::string KEY_VERSION;
+    static const int fileVersion;
 
     ZDvidTarget m_dvidTarget;
     std::string m_dvidDataName;

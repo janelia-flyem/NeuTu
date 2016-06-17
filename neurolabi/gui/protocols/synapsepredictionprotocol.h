@@ -45,6 +45,8 @@ private:
     static const std::string PROTOCOL_NAME;
     static const std::string KEY_PENDING;
     static const std::string KEY_FINISHED;
+    static const std::string KEY_VERSION;
+    static const int fileVversion;
 
     Ui::SynapsePredictionProtocol *ui;
     QList<ZIntPoint> m_pendingList;
