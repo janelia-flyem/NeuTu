@@ -55,7 +55,6 @@ private:
     void updateLabels();
     void gotoCurrent();
     ZIntPoint getNextPoint(ZIntPoint point);
-    ZIntCuboid parseVolumeString(QString input);
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
 
 };

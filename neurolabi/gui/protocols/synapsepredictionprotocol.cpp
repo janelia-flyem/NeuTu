@@ -311,59 +311,6 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     }
 }
 
-/*
- * parse a string into a cuboid; raises a dialog if parsing fails
- *
- * input = string of six ints, space and/or comma delimited
- * output = cuboid; if parsing fails returns default volume, which
- *      tests as empty
- */
-ZIntCuboid SynapsePredictionProtocol::parseVolumeString(QString input) {
-    ZIntCuboid volume;
-
-    bool success = true;
-
-    QString input2 = input.replace(",", " ");
-    QStringList items = input2.split(" ", QString::SkipEmptyParts);
-    if (items.size() != 6) {
-        success = false;
-    } else {
-        bool statusx, statusy, statusz;
-        int tempx, tempy, tempz;
-
-        tempx = items.at(0).toInt(&statusx);
-        tempy = items.at(1).toInt(&statusy);
-        tempz = items.at(2).toInt(&statusz);
-        if (statusx && statusy && statusz) {
-            volume.setFirstCorner(tempx, tempy, tempz);
-        } else {
-            success = false;
-        }
-        if (success) {
-            tempx = items.at(3).toInt(&statusx);
-            tempy = items.at(4).toInt(&statusy);
-            tempz = items.at(5).toInt(&statusz);
-            if (statusx && statusy && statusz) {
-                volume.setLastCorner(tempx, tempy, tempz);
-            } else {
-                success = false;
-            }
-        }
-    }
-
-    if (!success) {
-        QMessageBox mb;
-        mb.setText("Parsing error");
-        mb.setInformativeText("Could not parse input volume strings: " + input);
-        mb.setStandardButtons(QMessageBox::Ok);
-        mb.setDefaultButton(QMessageBox::Ok);
-        int ans = mb.exec();
-
-        volume.reset();
-    }
-    return volume;
-}
-
 SynapsePredictionProtocol::~SynapsePredictionProtocol()
 {
     delete ui;
