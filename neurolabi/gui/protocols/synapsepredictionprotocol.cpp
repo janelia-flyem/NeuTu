@@ -304,15 +304,15 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         // for now: find the pre-synaptic sites; put each one on the list; then,
         //  put all its post-synaptic partners on the list immediately after it,
         //  whether it's in the volume or not
-        for (std::vector<ZDvidSynapse>::iterator iter = synapseList.begin(); iter != synapseList.end(); ++iter) {
-            if (iter->getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-                m_pendingList.append(iter->getPosition());
-                for (size_t i=0; i<iter->getRelationJson().size(); i++) {
-                    ZIntPoint point = ZJsonParser::toIntPoint(ZJsonObject(iter->getRelationJson().value(i))["To"]);
+        for (size_t i=0; i<synapseList.size(); i++) {
+            if (synapseList[i].getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+                m_pendingList.append(synapseList[i].getPosition());
+                for (size_t j=0; j<synapseList[i].getRelationJson().size(); j++) {
+                    ZIntPoint point = ZJsonParser::toIntPoint(ZJsonObject(synapseList[i].getRelationJson().value(j))["To"]);
                     m_pendingList.append(point);
                 }
             }
-         }
+        }
 
 
         // order somehow?  here or earlier?
