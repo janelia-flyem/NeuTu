@@ -154,6 +154,11 @@ public: //attributes
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+
+  // hasSwc() returns true iff it has a non-empty SWC object.
+  bool hasSwcData() const;
+
+
   bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable() const;
@@ -430,6 +435,10 @@ public:
   void setSparseStack(ZSparseStack *spStack);
 
   void importSeedMask(const QString &filePath);
+
+  ZNeuronTracer &getNeuronTracer() {
+    return m_neuronTracer;
+  }
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -1136,6 +1145,7 @@ signals:
   void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+  void stackBoundBoxChanged();
 
 protected:
   virtual void autoSave();
@@ -1164,6 +1174,8 @@ private:
                                 const Swc_Tree_Node *excluded);
   template<typename T>
   const T* getFirstUserByType() const;
+
+  void updateTraceMask();
 
 private:
   //Main stack

@@ -129,7 +129,7 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
   deprecate(ALL_COMPONENT);
 }
 
-bool ZSwcTree::hasRegularNode()
+bool ZSwcTree::hasRegularNode() const
 {
   if (m_tree != NULL) {
     if (SwcTreeNode::isRegular(m_tree->root)) {

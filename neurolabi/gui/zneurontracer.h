@@ -134,6 +134,7 @@ public:
     return m_connWorkspace;
   }
 
+  void initTraceMask();
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -164,6 +165,12 @@ public:
   void setGreyFactor(double v) { m_greyFactor = v; }
   void setGrayOffset(double v) { m_greyOffset = v; }
 
+  int getRecoverLevel() const;
+  void setRecoverLevel(int level);
+
+  Stack* computeSeedMask();
+  Stack* computeSeedMask(Stack *stack);
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
@@ -190,6 +197,7 @@ private:
 
   void init();
   void config();
+
 
 private:
   ZStack *m_stack;

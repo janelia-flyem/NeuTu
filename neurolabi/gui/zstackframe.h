@@ -287,6 +287,7 @@ signals:
   void viewChanged(ZStackViewParam param);
   void splitStarted();
   void keyEventEmitted(QKeyEvent *event);
+  void stackBoundBoxChanged();
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

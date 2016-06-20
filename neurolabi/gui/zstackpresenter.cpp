@@ -362,6 +362,10 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
         connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
         break;
+      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(selectAllSwcTreeNode()));
+        break;
       default:
         break;
       }

@@ -871,6 +871,10 @@ void MainWindow::customizeActions()
 
   bool hasApplication = false;
 
+#ifndef _DEBUG_
+  m_ui->menuDiagnose->menuAction()->setVisible(false);
+#endif
+
   if (!config.getApplication().empty()) {
     if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
@@ -7324,6 +7328,52 @@ void MainWindow::runRoutineCheck()
   LINFO() << "Running routine check ...";
 }
 
+void MainWindow::on_actionTrace_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    Stack *mask = frame->document()->getTraceWorkspace()->trace_mask;
+
+    if (mask != NULL) {
+      ZStackDocReader reader;
+      ZStack *stack = new ZStack;
+      Stack *stackData = C_Stack::translate(mask, GREY, 0);
+      stack->consume(stackData);
+      reader.setStack(stack);
+      ZStackFrame *newFrame = createStackFrame(reader);
+      addStackFrame(newFrame);
+      presentStackFrame(newFrame);
+    }
+  }
+}
+
+void MainWindow::on_actionSeed_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
+    Stack *stackData =
+        C_Stack::clone(
+          frame->document()->getStack()->c_stack(m_autoTraceDlg->getChannel()));
+    Stack *mask =
+        frame->document()->getNeuronTracer().computeSeedMask(stackData);
+    C_Stack::kill(stackData);
+
+    ZStackDocReader reader;
+    ZStack *stack = new ZStack;
+    stack->consume(mask);
+    reader.setStack(stack);
+    ZStackFrame *newFrame = createStackFrame(reader);
+    addStackFrame(newFrame);
+    presentStackFrame(newFrame);
+  }
+}
+
+
 void MainWindow::on_actionSubtract_Background_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -7497,3 +7547,4 @@ void MainWindow::MessageProcessor::processMessage(
     }
   }
 }
+

@@ -169,6 +169,9 @@ public: //properties
   void setVisible(ERendererLayer layer, bool visible);
   bool isVisible(ERendererLayer layer) const;
 
+  void setCutBox(ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(ERendererLayer layer);
+
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(std::vector<double> bound, double minRadius = 64,
@@ -252,7 +255,8 @@ private:
 
   int channelNumber();
 
-  void setupCamera(const std::vector<double> &bound, Z3DCamera::ResetCameraOptions options);
+  void setupCamera(const std::vector<double> &bound,
+                   Z3DCamera::ResetCameraOptions options);
 
   bool hasVolume();
 
@@ -399,6 +403,8 @@ public slots:
   void selectSwcTreeNodeInRoi(bool appending);
   void cropSwcInRoi();
 
+  void updateCuttingBox();
+
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -520,6 +526,7 @@ private:
   QDockWidget *m_advancedSettingDockWidget;
 
   bool m_isStereoView;
+  bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;
 

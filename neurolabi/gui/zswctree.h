@@ -191,7 +191,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.

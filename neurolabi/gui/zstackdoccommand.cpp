@@ -1307,7 +1307,7 @@ void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::setOffset(const ZIntPoint 
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 {
   startUndo();
-  if (!m_doc && m_tree != NULL) {
+  if (m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
     workspace.offset[0] = m_offset.x();
@@ -1324,7 +1324,7 @@ void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::undo()
 
 void ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask::redo()
 {
-  if (!m_doc && m_tree != NULL) {
+  if (m_doc && m_tree != NULL) {
     Swc_Tree_Node_Label_Workspace workspace;
     Default_Swc_Tree_Node_Label_Workspace(&workspace);
     workspace.offset[0] = m_offset.x();

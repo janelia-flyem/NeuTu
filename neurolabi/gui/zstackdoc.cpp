@@ -180,6 +180,7 @@ void ZStackDoc::init()
 //  m_redoAction = NULL;
 
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
+  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   connectSignalSlot();
 
   //setReporter(new ZQtMessageReporter());
@@ -575,6 +576,20 @@ ZObject3dScan* ZStackDoc::getSparseStackMask() const
 bool ZStackDoc::hasSwc() const
 {
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SWC).isEmpty();
+}
+
+bool ZStackDoc::hasSwcData() const
+{
+  QList<ZSwcTree*> swcList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::const_iterator iter = swcList.begin();
+       iter != swcList.end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+    if (tree->hasRegularNode()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool ZStackDoc::hasPuncta() const
@@ -1270,6 +1285,9 @@ void ZStackDoc::loadStack(ZStack *zstack)
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
+
+//    emit stackBoundBoxChanged();
+
     notifyStackModified();
   }
 }
@@ -1477,7 +1495,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     //mainStack = m_stackSource.readStack();
     loadStack(m_stackSource.readStack());
 
-    notifyStackModified();
+//    notifyStackModified();
   }
 }
 
@@ -7634,6 +7652,28 @@ bool ZStackDoc::executeRemoveTubeCommand()
   return false;
 }
 
+void ZStackDoc::updateTraceMask()
+{
+  m_neuronTracer.initTraceMask();
+
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+  ZIntPoint offset = getStackOffset();
+  workspace.offset[0] = -offset.getX();
+  workspace.offset[1] = -offset.getY();
+  workspace.offset[2] = -offset.getZ();
+
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+
+    Swc_Tree_Label_Stack(
+          tree->data(), getTraceWorkspace()->trace_mask, &workspace);
+  }
+}
+
+
 bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
 #if 0
@@ -7660,29 +7700,25 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
   m_neuronTracer.setTraceLevel(traceLevel);
   m_neuronTracer.setBackgroundType(m_stackBackground);
 
+  int recover = m_neuronTracer.getRecoverLevel();
+
+  if (hasSwcData()) {
+    m_neuronTracer.setRecoverLevel(0);
+  }
+
   m_neuronTracer.setSignalChannel(c);
 
   m_neuronTracer.setTraceRange(getStack()->getBoundBox());
+
+  updateTraceMask();
+
   ZSwcTree *tree = m_neuronTracer.trace(getStack(), doResample);
+
+  m_neuronTracer.setRecoverLevel(recover);
 
   endProgress(0.9);
 
-  Zero_Stack(getTraceWorkspace()->trace_mask);
-  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
-  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
-       iter != treeList.end(); ++iter) {
-    const ZSwcTree *tree = *iter;
-
-    Swc_Tree_Node_Label_Workspace workspace;
-    Default_Swc_Tree_Node_Label_Workspace(&workspace);
-    ZIntPoint offset = getStackOffset();
-    workspace.offset[0] = offset.getX();
-    workspace.offset[1] = offset.getY();
-    workspace.offset[2] = offset.getZ();
-
-    Swc_Tree_Label_Stack(
-          tree->data(), getTraceWorkspace()->trace_mask, &workspace);
-  }
+  updateTraceMask();
 
   if (tree != NULL) {
     //ZSwcTree *tree = new ZSwcTree;
@@ -7694,7 +7730,7 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
     ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask *labelCommand =
         new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(
           this, tree->data(), command);
-    labelCommand->setOffset(getStackOffset());
+    labelCommand->setOffset(-getStackOffset());
 
     command->setLogMessage("Run automatic tracing");
     pushUndoCommand(command);
@@ -8486,6 +8522,7 @@ void ZStackDoc::setStackOffset(const ZPoint &offset)
     stackRef()->setOffset(iround(offset.x()),
                           iround(offset.y()),
                           iround(offset.z()));
+    emit stackBoundBoxChanged();
   }
 }
 

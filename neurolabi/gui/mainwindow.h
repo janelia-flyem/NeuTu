@@ -470,6 +470,10 @@ private slots:
 
   void on_actionNeuroMorpho_triggered();
 
+  void on_actionTrace_Mask_triggered();
+
+  void on_actionSeed_Mask_triggered();
+
 private:
   void createActions();
   void createFileActions();

@@ -520,6 +520,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
+
+  m_cuttingStackBound = false;
 }
 
 Z3DWindow::~Z3DWindow()
@@ -669,6 +671,8 @@ void Z3DWindow::init(EInitMode mode)
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
+  connect(getDocument(), SIGNAL(stackBoundBoxChanged()),
+          this, SLOT(updateCuttingBox()));
   connect(m_punctaFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
           this, SLOT(punctaCoordScaleChanged()));
   connect(m_swcFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
@@ -2619,6 +2623,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
 #endif
     if (event->modifiers() == Qt::NoModifier) {
       m_doc->executeBreakSwcConnectionCommand();
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      m_cuttingStackBound = !m_cuttingStackBound;
+      updateCuttingBox();
     }
     break;
   case Qt::Key_Equal: // increase swc size scale
@@ -4060,6 +4067,37 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
   base->setXScale(sx);
   base->setYScale(sy);
   base->setZScale(sz);
+}
+
+void Z3DWindow::updateCuttingBox()
+{
+  if (m_cuttingStackBound) {
+    setCutBox(LAYER_SWC, getDocument()->getStack()->getBoundBox());
+  } else {
+    resetCutBox(LAYER_SWC);
+  }
+}
+
+void Z3DWindow::setCutBox(ERendererLayer layer, const ZIntCuboid &box)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->setCutBox(box);
+    break;
+  default:
+    break;
+  }
+}
+
+void Z3DWindow::resetCutBox(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->resetCut();
+    break;
+  default:
+    break;
+  }
 }
 
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)

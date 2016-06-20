@@ -19757,10 +19757,19 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/gaussians.tif");
   ZStackProcessor::SubtractBackground(&stack, 0.5, 3);
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
+
+  stack.crop(ZIntCuboid(ZIntPoint(463, 382, 49), ZIntPoint(669, 547, 67)));
+
+  stack.save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
   std::cout << "Done." << std::endl;
