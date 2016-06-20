@@ -181,7 +181,12 @@ int main(int argc, char *argv[])
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
-    tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      tracingConfig.load(
+            config.getApplicatinDir() + "/json/trace_config_biocytin.json");
+    } else {
+      tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    }
   }
 
 #ifdef _DEBUG_

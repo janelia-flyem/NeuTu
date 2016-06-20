@@ -1,0 +1,52 @@
+{
+  "tag": "trace configuration",
+  "default": {
+    "minimalScoreAuto": 0.2,
+    "minimalScoreManual": 0.2,
+    "minimalScoreSeed": 0.25,
+    "minimalScore2d": 0.5,
+    "refit": false,
+    "spTest": false,
+    "crossoverTest": false,
+    "tuneEnd": true,
+    "edgePath": false,
+    "enhanceMask": false,
+    "seedMethod": 1,
+    "recover": 0,
+    "maxEucDist": 10
+  },
+  "level": {
+    "1": {
+      "seedMethod": 2,
+      "recover": 0
+    },
+    "2": {
+      "seedMethod": 2,
+      "recover": 1
+    },
+    "3": {
+      "seedMethod": 2,
+      "spTest": true,
+      "recover": 1
+    },
+    "4": {
+      "seedMethod": 2,
+      "spTest": true,
+      "enhanceMask": true,
+      "recover": 1
+    },
+    "5": {
+      "seedMethod": 2,
+      "spTest": true,
+      "enhanceMask": true,
+      "recover": 1
+    },
+    "6": {
+      "seedMethod": 2,
+      "spTest": true,
+      "enhanceMask": true,
+      "recover": 1,
+      "refit": true
+    }
+  }
+}

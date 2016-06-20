@@ -89,6 +89,7 @@ public:
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
     OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
+    OPERATION_SET_AS_ROOT,
     OPERATION_EXTEND_NODE, OPERATION_SELECT, OPERATION_SELECT_CONNECTION,
     OPERATION_SELECT_FLOOD
   };
@@ -127,6 +128,10 @@ public:
 
   friend void swap(ZSwcTree& first, ZSwcTree& second);
   ZSwcTree& operator=(const ZSwcTree &other);
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_SWC;
+  }
 
 public:
   /** @name Set data.
@@ -186,7 +191,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.
@@ -422,6 +427,8 @@ public:
   void selectAllNode();
   void deselectAllNode();
 
+  void inverseSelection();
+
   void recordSelection();
   void processSelection();
 #if defined(_QT_GUI_USED_)
@@ -444,6 +451,7 @@ public:
   void selectUpstreamNode();
   void selectDownstreamNode();
   void selectBranchNode();
+  void selectSmallSubtree(double maxLength);
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;
@@ -690,8 +698,24 @@ public:
     ExtIterator(const ZSwcTree *tree);
     virtual ~ExtIterator();
 
+    /*!
+     * \brief Restart the iterator.
+     */
+    virtual void restart() = 0;
+
+    /*!
+     * \brief Restart the iterator and get the first node
+     */
     virtual Swc_Tree_Node *begin() = 0;
+
     virtual bool hasNext() const = 0;
+
+    /*!
+     * \brief Get the next node.
+     *
+     * Note that the it returns the first node if the iterator is just started.
+     * It returns NULL when it reaches the end.
+     */
     virtual Swc_Tree_Node *next() = 0;
 
     void excludeVirtual(bool on) {
@@ -710,6 +734,7 @@ public:
   class RegularRootIterator : public ExtIterator {
   public:
     RegularRootIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node *next();
@@ -718,6 +743,7 @@ public:
   class DepthFirstIterator : public ExtIterator {
   public:
     DepthFirstIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -726,6 +752,7 @@ public:
   class LeafIterator : public ExtIterator {
   public:
     LeafIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -737,6 +764,19 @@ public:
   class TerminalIterator : public ExtIterator {
   public:
     TerminalIterator(const ZSwcTree *tree);
+    void restart();
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
+  };
+
+  class DownstreamIterator : public ExtIterator {
+  public:
+    DownstreamIterator(Swc_Tree_Node *tn);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();

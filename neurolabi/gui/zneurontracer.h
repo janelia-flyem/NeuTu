@@ -75,6 +75,8 @@ public:
   Swc_Tree* trace(double x1, double y1, double z1, double r1,
                  double x2, double y2, double z2, double r2);
 
+  void setTraceRange(const ZIntCuboid &box);
+
   void clear();
 
   inline void setBackgroundType(NeuTube::EImageBackground bg) {
@@ -111,7 +113,7 @@ public:
    */
   ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing = true);
 
-  ZSwcTree* trace(ZStack *stack, bool doResampleAfterTracing = true);
+  ZSwcTree* trace(const ZStack *stack, bool doResampleAfterTracing = true);
 
   //Autotrace configuration
   //Trace level setup: 1 - 10 (fast -> accurate)
@@ -132,6 +134,7 @@ public:
     return m_connWorkspace;
   }
 
+  void initTraceMask();
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -162,6 +165,12 @@ public:
   void setGreyFactor(double v) { m_greyFactor = v; }
   void setGrayOffset(double v) { m_greyOffset = v; }
 
+  int getRecoverLevel() const;
+  void setRecoverLevel(int level);
+
+  Stack* computeSeedMask();
+  Stack* computeSeedMask(Stack *stack);
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
@@ -188,6 +197,7 @@ private:
 
   void init();
   void config();
+
 
 private:
   ZStack *m_stack;

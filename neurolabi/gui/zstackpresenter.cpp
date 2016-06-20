@@ -364,6 +364,10 @@ void ZStackPresenter::makeAction(ZActionFactory::EAction item)
       case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
         connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
         break;
+      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(selectAllSwcTreeNode()));
+        break;
       default:
         break;
       }
@@ -2860,6 +2864,9 @@ void ZStackPresenter::process(ZStackOperator &op)
         interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_ADDED);
       }
     }
+    break;
+  case ZStackOperator::OP_SWC_SET_AS_ROOT:
+    buddyDocument()->executeSetRootCommand();
     break;
   case ZStackOperator::OP_SWC_ADD_NODE:
   {

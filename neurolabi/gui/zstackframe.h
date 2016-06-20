@@ -224,7 +224,7 @@ public:
   void pushEnhanceLineCommand();
 
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  void executeAutoTraceCommand(int traceLevel, bool doResample);
+  void executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
@@ -287,6 +287,7 @@ signals:
   void viewChanged(ZStackViewParam param);
   void splitStarted();
   void keyEventEmitted(QKeyEvent *event);
+  void stackBoundBoxChanged();
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);

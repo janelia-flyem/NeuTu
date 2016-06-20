@@ -58,6 +58,14 @@ Stack* ZNeuronTraceSeeder::sortSeed(
     int y = (int) seedPointArray->points[index][1];
     int z = (int) seedPointArray->points[index][2];
 
+    if (ws->trace_mask != NULL) {
+      int v = C_Stack::value(ws->trace_mask, x, y, z);
+      if (v > 0) {
+        m_seedScoreArray[i] = 0;
+        continue;
+      }
+    }
+
     double width = seedPointArray->values[index];
 
     ssize_t seed_offset = C_Stack::offset(x, y, z, signal->width, signal->height,
@@ -86,6 +94,17 @@ Stack* ZNeuronTraceSeeder::sortSeed(
     //Local_Neuroseg_Optimize(locseg + i, signal, z_scale, 0);
     double z_scale = 1.0;
     Local_Neuroseg_Optimize_W(&(m_seedArray[i]), signal, z_scale, 0, fws);
+
+    if (ws->trace_mask != NULL) {
+      Local_Neuroseg &seg = m_seedArray[i];
+      int v = C_Stack::value(
+            ws->trace_mask,
+            iround(seg.pos[0]), iround(seg.pos[1]), iround(seg.pos[2]));
+      if (v > 0) {
+        m_seedScoreArray[i] = 0;
+        continue;
+      }
+    }
 
     m_seedScoreArray[i] = fws->sws->fs.scores[1];
 
@@ -272,16 +291,44 @@ void ZNeuronTracer::setIntensityField(ZStack *stack)
   m_stack = stack;
 }
 
+void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
+{
+  if (m_traceWorkspace != NULL) {
+    ZIntPoint stackOffset;
+    if (getStack() != NULL) {
+      stackOffset = getStack()->getOffset();
+    }
+
+    m_traceWorkspace->trace_range[0] =
+        box.getFirstCorner().getX() - stackOffset.getX();
+    m_traceWorkspace->trace_range[3] =
+        box.getLastCorner().getX() - stackOffset.getX();
+    m_traceWorkspace->trace_range[1] =
+        box.getFirstCorner().getY() - stackOffset.getY();
+    m_traceWorkspace->trace_range[4] =
+        box.getLastCorner().getY() - stackOffset.getY();
+    m_traceWorkspace->trace_range[2] =
+        box.getFirstCorner().getZ() - stackOffset.getZ();
+    m_traceWorkspace->trace_range[5] =
+        box.getLastCorner().getZ() - stackOffset.getZ();
+  }
+}
+
+void ZNeuronTracer::initTraceMask()
+{
+  if (m_traceWorkspace->trace_mask == NULL) {
+    m_traceWorkspace->trace_mask =
+        C_Stack::make(GREY16, getStack()->width(), getStack()->height(),
+                      getStack()->depth());
+  }
+  Zero_Stack(m_traceWorkspace->trace_mask);
+}
+
 ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 {
   prepareTraceScoreThreshold(TRACING_INTERACTIVE);
 
-  if (m_traceWorkspace->trace_mask == NULL) {
-    m_traceWorkspace->trace_mask =
-        C_Stack::make(GREY, getStack()->width(), getStack()->height(),
-                      getStack()->depth());
-    Zero_Stack(m_traceWorkspace->trace_mask);
-  }
+  initTraceMask();
 
   Stack *stackData = getIntensityData();
 
@@ -773,6 +820,16 @@ Geo3d_Scalar_Field* ZNeuronTracer::extractSeedOriginal(const Stack *mask)
   return field;
 }
 
+int ZNeuronTracer::getRecoverLevel() const
+{
+  return m_recover;
+}
+
+void ZNeuronTracer::setRecoverLevel(int level)
+{
+  m_recover = level;
+}
+
 std::vector<Locseg_Chain*> ZNeuronTracer::recover(const Stack *stack)
 {
   std::vector<Locseg_Chain*> chainArray;
@@ -971,21 +1028,115 @@ std::vector<Locseg_Chain*> ZNeuronTracer::screenChain(
   return goodChainArray;
 }
 
-ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
+ZSwcTree* ZNeuronTracer::trace(const ZStack *stack, bool doResampleAfterTracing)
 {
   ZSwcTree *tree = NULL;
 
   if (stack != NULL) {
-    tree = trace(stack->c_stack(), doResampleAfterTracing);
-    if (tree != NULL) {
-      tree->translate(stack->getOffset());
+    Stack *signal = C_Stack::clone(stack->c_stack(m_preferredSignalChannel));
+
+    if (signal != NULL) {
+      tree = trace(signal, doResampleAfterTracing);
+      C_Stack::kill(signal);
+      if (tree != NULL) {
+        tree->translate(stack->getOffset());
+      }
     }
   }
 
   return tree;
 }
 
+Stack* ZNeuronTracer::computeSeedMask()
+{
+  return computeSeedMask(getStack()->c_stack(getSignalChannel()));
+}
 
+Stack* ZNeuronTracer::computeSeedMask(Stack *stack)
+{
+  if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    double maxValue = C_Stack::max(stack);
+    Stack_Csub(stack, maxValue);
+  }
+
+  ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+
+  //Extract seeds
+  //First mask
+  std::cout << "Binarizing ..." << std::endl;
+
+  /* <bw> allocated */
+  Stack *bw = binarize(stack);
+  C_Stack::translate(bw, GREY, 1);
+
+  std::cout << "Removing noise ..." << std::endl;
+
+  /* <mask> allocated */
+  Stack *mask = bwsolid(bw);
+
+  /* <bw> freed */
+  C_Stack::kill(bw);
+
+  //Thin line mask
+  /* <mask2> allocated */
+  Stack *mask2 = NULL;
+
+  if (m_enhancingMask) {
+    std::cout << "Enhancing thin branches ..." << std::endl;
+    mask2 = enhanceLine(stack);
+  }
+
+  if (mask2 != NULL) {
+    std::cout << "Making mask for thin branches ..." << std::endl;
+    ZStackBinarizer binarizer;
+    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setRetryCount(5);
+    binarizer.setMinObjectSize(27);
+
+    if (binarizer.binarize(mask2) == false) {
+      std::cout << "Thresholding failed" << std::endl;
+      C_Stack::kill(mask2);
+      mask2 = NULL;
+    }
+  }
+
+  /* <mask2> freed */
+  if (mask2 != NULL) {
+    C_Stack::translate(mask2, GREY, 1);
+    Stack_Or(mask, mask2, mask);
+    C_Stack::kill(mask2);
+    mask2 = NULL;
+  }
+
+  //Trace each seed
+  std::cout << "Extracting seed points ..." << std::endl;
+
+  /* <seedPointArray> allocated */
+  Geo3d_Scalar_Field *seedPointArray = extractSeed(mask);
+
+  int minSeedSize = 0;
+
+  if (seedPointArray->size > 15000) {
+    minSeedSize = 125;
+  } else if (seedPointArray->size > 5000) {
+    minSeedSize = 64;
+  }
+
+  if (minSeedSize > 0) {
+    std::cout << "Too many seeds. Screening ..." << std::endl;
+    Stack *tmpStack = C_Stack::clone(mask);
+    mask = Stack_Remove_Small_Object(tmpStack, mask, minSeedSize, 26);
+    C_Stack::kill(tmpStack);
+
+    if (C_Stack::kind(mask) != GREY) {
+      C_Stack::translate(mask, GREY, 1);
+    }
+    Kill_Geo3d_Scalar_Field(seedPointArray);
+    seedPointArray = extractSeed(mask);
+  }
+
+  return mask;
+}
 
 ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 {
@@ -993,7 +1144,16 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
 
   ZSwcTree *tree = NULL;
 
+  if (m_backgroundType == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    double maxValue = C_Stack::max(stack);
+    Stack_Csub(stack, maxValue);
+  }
+
   ZStackProcessor::SubtractBackground(stack, 0.5, 3);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
 
   //Extract seeds
   //First mask
@@ -1074,6 +1234,11 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
     seedPointArray = extractSeed(mask);
   }
 
+#ifdef _DEBUG_2
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", mask);
+#endif
+
+
   m_mask = mask;
 
   advanceProgress(0.05);
@@ -1140,22 +1305,24 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   advanceProgress(0.1);
 
   //Post process
-  Swc_Tree_Remove_Zigzag(tree->data());
-  Swc_Tree_Tune_Branch(tree->data());
-  Swc_Tree_Remove_Spur(tree->data());
-  Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
-  Swc_Tree_Remove_Overshoot(tree->data());
+  if (tree != NULL) {
+    Swc_Tree_Remove_Zigzag(tree->data());
+    Swc_Tree_Tune_Branch(tree->data());
+    Swc_Tree_Remove_Spur(tree->data());
+    Swc_Tree_Merge_Close_Node(tree->data(), 0.01);
+    Swc_Tree_Remove_Overshoot(tree->data());
 
-  if (doResampleAfterTracing) {
-    ZSwcResampler resampler;
-    resampler.optimalDownsample(tree);
+    if (doResampleAfterTracing) {
+      ZSwcResampler resampler;
+      resampler.optimalDownsample(tree);
+    }
+
+    ZSwcPruner pruner;
+    pruner.setMinLength(0);
+    pruner.removeOrphanBlob(tree);
+
+    advanceProgress(0.1);
   }
-
-  ZSwcPruner pruner;
-  pruner.setMinLength(0);
-  pruner.removeOrphanBlob(tree);
-
-  advanceProgress(0.1);
 
   std::cout << "Done!" << std::endl;
   endProgress();

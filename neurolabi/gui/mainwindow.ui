@@ -227,6 +227,13 @@
      <addaction name="actionPixel"/>
      <addaction name="actionPosition"/>
     </widget>
+    <widget class="QMenu" name="menuDiagnose">
+     <property name="title">
+      <string>Diagnose</string>
+     </property>
+     <addaction name="actionTrace_Mask"/>
+     <addaction name="actionSeed_Mask"/>
+    </widget>
     <addaction name="menuProcess"/>
     <addaction name="menuTrace"/>
     <addaction name="menuTube"/>
@@ -235,6 +242,8 @@
     <addaction name="menuQuery"/>
     <addaction name="separator"/>
     <addaction name="actionTile_Manager_2"/>
+    <addaction name="separator"/>
+    <addaction name="menuDiagnose"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -1439,6 +1448,16 @@
   <action name="actionNeuroMorpho">
    <property name="text">
     <string>NeuroMorpho</string>
+   </property>
+  </action>
+  <action name="actionTrace_Mask">
+   <property name="text">
+    <string>Trace Mask</string>
+   </property>
+  </action>
+  <action name="actionSeed_Mask">
+   <property name="text">
+    <string>Foreground Mask</string>
    </property>
   </action>
  </widget>

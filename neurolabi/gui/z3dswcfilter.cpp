@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <QSet>
+#include <QMessageBox>
+#include <QApplication>
 
 #include "zrandom.h"
 #include "tz_3dgeom.h"
@@ -14,8 +16,7 @@
 #include "swctreenode.h"
 #include "tz_geometry.h"
 #include "neutubeconfig.h"
-#include <QMessageBox>
-#include <QApplication>
+#include "zintcuboid.h"
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
@@ -193,6 +194,14 @@ void Z3DSwcFilter::process(Z3DEye)
   if (m_dataIsInvalid) {
     prepareData();
   }
+}
+
+
+void Z3DSwcFilter::setCutBox(const ZIntCuboid &box)
+{
+  m_xCut.set(glm::ivec2(box.getFirstCorner().getX(), box.getLastCorner().getX()));
+  m_yCut.set(glm::ivec2(box.getFirstCorner().getY(), box.getLastCorner().getY()));
+  m_zCut.set(glm::ivec2(box.getFirstCorner().getZ(), box.getLastCorner().getZ()));
 }
 
 void Z3DSwcFilter::initTopologyColor()
@@ -445,6 +454,17 @@ void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
+}
+
+void Z3DSwcFilter::resetCut()
+{
+  setXCutLower(xCutMin());
+  setYCutLower(yCutMin());
+  setZCutLower(zCutMin());
+
+  setXCutUpper(xCutMax());
+  setYCutUpper(yCutMax());
+  setZCutUpper(zCutMax());
 }
 
 std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
@@ -1267,6 +1287,9 @@ void Z3DSwcFilter::setClipPlanes()
     clipPlanes.push_back(glm::dvec4(1., 0., 0., -m_xCut.lowerValue()));
   if (m_xCut.upperValue() != m_xCut.maximum())
     clipPlanes.push_back(glm::dvec4(-1., 0., 0., m_xCut.upperValue()));
+#ifdef _DEBUG_2
+  std::cout << m_yCut.lowerValue() << " " << m_yCut.upperValue() << std::endl;
+#endif
   if (m_yCut.lowerValue() != m_yCut.minimum())
     clipPlanes.push_back(glm::dvec4(0., 1., 0., -m_yCut.lowerValue()));
   if (m_yCut.upperValue() != m_yCut.maximum())
@@ -1361,11 +1384,12 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     }
 
     // Check if any swc or node was selected...
-    for (std::vector<ZSwcTree*>::iterator it=m_swcList.begin(); it!=m_swcList.end(); ++it)
+    for (std::vector<ZSwcTree*>::iterator it=m_swcList.begin(); it!=m_swcList.end(); ++it) {
       if (*it == obj) {
         m_pressedSwc = *it;
         return;
       }
+    }
     //    for (size_t i=0; i<m_swcList.size(); i++) {
     //      for (size_t j=0; j<m_decompsedNodes[i].size(); j++) {
     //        if (m_decompsedNodes[i][j] == obj) {

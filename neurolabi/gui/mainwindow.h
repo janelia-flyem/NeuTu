@@ -469,6 +469,7 @@ private slots:
 
   void on_actionNeuroMorpho_triggered();
 
+
   void on_actionImport_Network_triggered();
   void on_actionAddFlyEmNeuron_Network_triggered();
   void on_actionFlyEmSelect_triggered();
@@ -479,6 +480,11 @@ private slots:
   void on_actionImportFlyEmDatabase_triggered();
   void on_actionFlyEmSettings_triggered();
   void on_actionFlyEmROI_triggered();
+
+  void on_actionTrace_Mask_triggered();
+
+  void on_actionSeed_Mask_triggered();
+
 
 private:
   void createActions();
