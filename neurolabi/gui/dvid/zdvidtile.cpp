@@ -100,7 +100,10 @@ void ZDvidTile::loadDvidSlice(
 #endif
 
   if (modified && (m_image != NULL)) {
-    m_image->enhanceContrast(highContrast);
+    m_image->loadHighContrastProtocal(m_contrastProtocal);
+    m_image->enhanceContrast(
+          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+//    m_image->enhanceContrast(highContrast);
     updatePixmap();
   }
 }
@@ -151,6 +154,7 @@ void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
     }
 
     if (m_image != NULL) {
+      m_image->loadHighContrastProtocal(m_contrastProtocal);
       m_image->enhanceContrast(
             hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
       if (updatingPixmap) {
@@ -159,6 +163,12 @@ void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
     }
   }
 }
+
+void ZDvidTile::setContrastProtocal(const ZJsonObject &obj)
+{
+  m_contrastProtocal = obj;
+}
+
 /*
 void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
 {

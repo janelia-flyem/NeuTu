@@ -31,6 +31,16 @@
     },
     {
       "address": "emdata1.int.janelia.org",
+      "port": 8800,
+      "uuid": "1598",
+      "name": "CX",
+      "background": 0,
+      "body_label": "*", 
+      "comment": "central complex",
+      "user_name": ["zhaot", "takemuras"]
+    },
+    {
+      "address": "emdata1.int.janelia.org",
       "port": 8000,
       "uuid": "1c6e",
       "name": "FIB19 (emdata1)",

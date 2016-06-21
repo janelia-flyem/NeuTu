@@ -1174,6 +1174,19 @@ ZClosedCurve* ZDvidReader::readRoiCurve(
   return result;
 }
 
+ZJsonObject ZDvidReader::readContrastProtocal() const
+{
+  QByteArray byteArray = readKeyValue(
+        ZDvidData::GetName(ZDvidData::ROLE_NEUTU_CONFIG), "contrast");
+
+  ZJsonObject config;
+  if (!byteArray.isEmpty()) {
+    config.decodeString(byteArray.data());
+  }
+
+  return config;
+}
+
 ZIntCuboid ZDvidReader::readBoundBox(int z)
 {
   QByteArray byteArray = readKeyValue("bound_box", QString("%1").arg(z));
@@ -1208,6 +1221,10 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo() const
 
 bool ZDvidReader::hasData(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return true;
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZDvidBufferReader bufferReader;
   return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
@@ -1278,10 +1295,13 @@ ZJsonObject ZDvidReader::readSkeletonConfig() const
   std::string skeletonName = ZDvidData::GetName(
         ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
         getDvidTarget().getBodyLabelName());
-  if (hasKey(skeletonName.c_str(), "config.json")) {
-    ZDvidUrl dvidUrl(getDvidTarget());
-    config = readJsonObject(
-          dvidUrl.getSkeletonConfigUrl(getDvidTarget().getBodyLabelName()));
+
+  if (!skeletonName.empty()) {
+    if (hasKey(skeletonName.c_str(), "config.json")) {
+      ZDvidUrl dvidUrl(getDvidTarget());
+      config = readJsonObject(
+            dvidUrl.getSkeletonConfigUrl(getDvidTarget().getBodyLabelName()));
+    }
   }
 
   return config;
@@ -1332,6 +1352,9 @@ ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const
 {
+  if (dataName.empty()) {
+    return NULL;
+  }
 
   ZArray *array = NULL;
 
@@ -1638,18 +1661,21 @@ ZDvidTile* ZDvidReader::readTile(
 ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
 {
   ZDvidTileInfo tileInfo;
-  ZDvidUrl dvidUrl(getDvidTarget());
 
-  ZDvidBufferReader bufferReader;
+  if (!dataName.empty()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+
+    ZDvidBufferReader bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
+    bufferReader.setService(m_service);
 #endif
-  bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str(), isVerbose());
-  setStatusCode(bufferReader.getStatusCode());
+    bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str(), isVerbose());
+    setStatusCode(bufferReader.getStatusCode());
 
-  ZJsonObject infoJson;
-  infoJson.decodeString(bufferReader.getBuffer().data());
-  tileInfo.load(infoJson);
+    ZJsonObject infoJson;
+    infoJson.decodeString(bufferReader.getBuffer().data());
+    tileInfo.load(infoJson);
+  }
 
   return tileInfo;
 }
@@ -1830,12 +1856,16 @@ ZJsonObject ZDvidReader::readAnnotationJson(
 ZJsonObject ZDvidReader::readAnnotationJson(
     const std::string &dataName, int x, int y, int z) const
 {
-  ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonObject annotationJson;
-  ZIntCuboid box(x, y, z, x, y, z);
-  ZJsonArray obj = readJsonArray(dvidUrl.getAnnotationUrl(dataName, box));
-  if (obj.size() > 0) {
-    annotationJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+
+  if (!dataName.empty()) {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+
+    ZIntCuboid box(x, y, z, x, y, z);
+    ZJsonArray obj = readJsonArray(dvidUrl.getAnnotationUrl(dataName, box));
+    if (obj.size() > 0) {
+      annotationJson.set(obj.at(0), ZJsonValue::SET_INCREASE_REF_COUNT);
+    }
   }
 
   return annotationJson;

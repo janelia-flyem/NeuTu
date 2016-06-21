@@ -24,6 +24,9 @@ public:
     bool initialize();
     std::string getName();
 
+public:
+    void processSynapseVerification(int x, int y, int z, bool verified);
+
 signals:
     void protocolCompleting();
     void protocolExiting();
@@ -32,11 +35,18 @@ signals:
 public slots:
     void loadDataRequested(ZJsonObject data);
 
+    void verifySynapse(const ZIntPoint &pt);
+    void moveSynapse(const ZIntPoint &src, const ZIntPoint &dst);
+    void unverifySynapse(const ZIntPoint &pt);
 
 private slots:
     void onFirstButton();
+    void onPrevButton();
+    void onNextButton();
+#ifdef _DON_
     void onMarkedButton();
     void onSkipButton();
+#endif
     void onGotoButton();
     void onExitButton();
     void onCompleteButton();
@@ -46,18 +56,28 @@ private:
     static const std::string KEY_PENDING;
     static const std::string KEY_FINISHED;
     static const std::string KEY_VERSION;
+    static const std::string KEY_PROTOCOL_RANGE;
     static const int fileVversion;
 
     Ui::SynapsePredictionProtocol *ui;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
+#ifdef _DON_
     ZIntPoint m_currentPoint;
+#else
+    int m_currentIndex; //Index for locating in pending list
+#endif
+    ZIntCuboid m_protocolRange;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
+#ifdef _DON_
     ZIntPoint getNextPoint(ZIntPoint point);
+    ZIntPoint getPrevPoint(ZIntPoint point);
+#endif
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
+    void loadInitialSynapseList();
 
 };
 

@@ -74,7 +74,8 @@ public:
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
-  void createData(const std::string &type, const std::string &name);
+  void createData(
+      const std::string &type, const std::string &name, bool versioned = true);
 
   void syncAnnotation(const std::string &name);
 

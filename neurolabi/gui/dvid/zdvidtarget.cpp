@@ -371,9 +371,11 @@ std::string ZDvidTarget::getBodyLabelName() const
 }
 
 std::string ZDvidTarget::getLabelBlockName() const
-{
+{ 
   if (m_labelBlockName.empty()) {
     return ZDvidData::GetName(ZDvidData::ROLE_LABEL_BLOCK);
+  } else if (ZDvidData::IsNullName(m_labelBlockName)) {
+    return "";
   }
 
   return m_labelBlockName;
@@ -410,6 +412,16 @@ void ZDvidTarget::setGrayScaleName(const std::string &name)
 void ZDvidTarget::setBodyLabelName(const std::string &name)
 {
   m_bodyLabelName = name;
+}
+
+void ZDvidTarget::setNullBodyLabelName()
+{
+  setBodyLabelName("*");
+}
+
+void ZDvidTarget::setNullLabelBlockName()
+{
+  setLabelBlockName("*");
 }
 
 void ZDvidTarget::setMultiscale2dName(const std::string &name)

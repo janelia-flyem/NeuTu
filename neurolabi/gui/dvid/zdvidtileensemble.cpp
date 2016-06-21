@@ -41,6 +41,11 @@ void ZDvidTileEnsemble::enhanceContrast(bool high)
   updateContrast();
 }
 
+void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
+{
+  m_contrastProtocal = obj;
+}
+
 void ZDvidTileEnsemble::updateContrast()
 {
   for (std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> >::iterator
@@ -253,6 +258,7 @@ bool ZDvidTileEnsemble::update(
             task->setHighContrast(m_highContrast);
             taskList.append(task);
           }
+          tile->setContrastProtocal(m_contrastProtocal);
           tileList.append(tile);
         }
       }
@@ -412,6 +418,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option, sliceAxis);
     }
   }
+
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
@@ -420,6 +427,9 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
   m_dvidTarget = dvidTarget;
   if (m_reader.open(dvidTarget)) {
     m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
+
+    ZJsonObject obj = m_reader.readContrastProtocal();
+    setContrastProtocal(obj);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
     m_serviceArray.resize(36);

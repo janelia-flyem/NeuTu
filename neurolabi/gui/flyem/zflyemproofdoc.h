@@ -88,6 +88,8 @@ public:
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
 
+  bool hasBodySelected() const;
+
   std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
   void setSelectedBody(
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
@@ -243,6 +245,8 @@ signals:
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
   void synapseEdited(int x, int y, int z);
+  void synapseVerified(int x, int y, int z, bool verified);
+//  void synapseUnverified(int x, int y, int z);
   void todoEdited(int x, int y, int z);
   void bodyIsolated(uint64_t bodyId);
   void bodySelectionChanged();

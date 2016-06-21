@@ -1212,7 +1212,7 @@ void ZStackDoc::updateVirtualStackSize()
     QList<ZSwcTree*> swcList = getSwcList();
     for (int i = 0; i < swcList.size(); i++) {
       double tmpcorner[6];
-      swcList[i]->boundBox(tmpcorner);
+      swcList[i]->getBoundBox(tmpcorner);
       corner[3] = std::max(corner[3], tmpcorner[3]);
       corner[4] = std::max(corner[4], tmpcorner[4]);
       corner[5] = std::max(corner[5], tmpcorner[5]);
@@ -1558,7 +1558,7 @@ void ZStackDoc::readSwc(const char *filePath)
     return;
   Stack stack;
   double corner[6];
-  tree->boundBox(corner);
+  tree->getBoundBox(corner);
   static const double Lateral_Margin = 10.0;
   static const double Axial_Margin = 1.0;
   Stack_Set_Attribute(&stack, round(corner[3] + Lateral_Margin - corner[0] + 1),
@@ -5728,6 +5728,10 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //        if (getTag() == NeuTube::Document::FLYEM_ROI) {
 //          m_neuronTracer.useEdgePath(true);
 //        }
+
+        if (getTag() == NeuTube::Document::FLYEM_ROI) {
+          m_neuronTracer.setEstimatingRadius(false);
+        }
 
         Swc_Tree *branch = m_neuronTracer.trace(
               SwcTreeNode::x(prevNode), SwcTreeNode::y(prevNode),

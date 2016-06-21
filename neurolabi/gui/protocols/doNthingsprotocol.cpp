@@ -14,9 +14,8 @@
 /*
  * this is a test protocol: "do N things"
  */
-DoNThingsProtocol::DoNThingsProtocol(QWidget *parent) :
-    ui(new Ui::DoNThingsProtocol),
-    ProtocolDialog(parent)
+DoNThingsProtocol::DoNThingsProtocol(QWidget *parent) : ProtocolDialog(parent),
+    ui(new Ui::DoNThingsProtocol)
 {
     ui->setupUi(this);
 

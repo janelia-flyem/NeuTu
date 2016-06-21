@@ -17,17 +17,19 @@
 #include "zintcuboid.h"
 #include "zintpoint.h"
 #include "zpoint.h"
+#include "zjsonfactory.h"
+#include "zjsonarray.h"
 
 SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
-    ui(new Ui::SynapsePredictionProtocol),
-    ProtocolDialog(parent)
+    ProtocolDialog(parent),
+    ui(new Ui::SynapsePredictionProtocol)
 {
     ui->setupUi(this);
 
     // UI connections:
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
-    connect(ui->markButton, SIGNAL(clicked(bool)), this, SLOT(onMarkedButton()));
-    connect(ui->skipButton, SIGNAL(clicked(bool)), this, SLOT(onSkipButton()));
+    connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
+    connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
@@ -36,6 +38,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
+    m_currentIndex = 0;
 }
 
 // protocol name should not contain hyphens
@@ -43,6 +46,7 @@ const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction
 const std::string SynapsePredictionProtocol::KEY_FINISHED = "finished";
 const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
+const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const int SynapsePredictionProtocol::fileVversion = 1;
 
 
@@ -60,7 +64,9 @@ bool SynapsePredictionProtocol::initialize() {
     // inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
 
     // larger generic volume as default starting point:
+#ifdef _DON_
     inputDialog.setVolume(ZIntCuboid(3000, 3000, 3000, 4000, 4000, 4000));
+#endif
 
     inputDialog.setRoI("(RoI is ignored for now)");
 
@@ -73,6 +79,8 @@ bool SynapsePredictionProtocol::initialize() {
         return false;
     }
     QString roiInput = inputDialog.getRoI();
+
+    m_protocolRange = volume;
 
     // generate pending/finished lists from user input
     // throw this into a thread?
@@ -99,11 +107,17 @@ std::string SynapsePredictionProtocol::getName() {
 
 void SynapsePredictionProtocol::onFirstButton() {
     if (m_pendingList.size() > 0) {
+      m_currentIndex = 0;
+#ifdef _DON_
         m_currentPoint = m_pendingList.first();
+#endif
     } else {
 
+      m_currentIndex = -1;
         // still not sure the best way to represent a null;
+#ifdef _DON_
         m_currentPoint = ZIntPoint();
+#endif
 
     }
 
@@ -111,6 +125,41 @@ void SynapsePredictionProtocol::onFirstButton() {
     updateLabels();
 }
 
+void SynapsePredictionProtocol::onPrevButton()
+{
+  if (m_pendingList.size() > 1) {
+    m_currentIndex--;
+    if (m_currentIndex < 0) {
+      m_currentIndex = m_pendingList.size() - 1;
+    }
+#ifdef _DON_
+    m_currentPoint = m_pendingList[m_currentIndex];
+#endif
+    gotoCurrent();
+    updateLabels();
+  } else {
+    m_currentIndex = 0;
+  }
+}
+
+void SynapsePredictionProtocol::onNextButton()
+{
+  if (m_pendingList.size() > 1) {
+    m_currentIndex++;
+    if (m_currentIndex >= m_pendingList.size()) {
+      m_currentIndex = 0;
+    }
+#ifdef _DON_
+    m_currentPoint = m_pendingList[m_currentIndex];
+#endif
+    gotoCurrent();
+    updateLabels();
+  } else {
+    m_currentIndex = 0;
+  }
+}
+
+#ifdef _DON_
 void SynapsePredictionProtocol::onMarkedButton() {
 
     // using this as our null point, ugh
@@ -152,6 +201,7 @@ void SynapsePredictionProtocol::onSkipButton() {
         updateLabels();
     }
 }
+#endif
 
 void SynapsePredictionProtocol::onGotoButton() {
     gotoCurrent();
@@ -178,12 +228,17 @@ void SynapsePredictionProtocol::onExitButton() {
 
 void SynapsePredictionProtocol::gotoCurrent() {
     // the dubious null check appears again...
-    if (!m_currentPoint.isZero()) {
+    if (m_currentIndex >= 0 && m_currentIndex < m_pendingList.size()) {
+      ZIntPoint pt = m_pendingList[m_currentIndex];
+      emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
+      /*
         emit requestDisplayPoint(m_currentPoint.getX(),
             m_currentPoint.getY(), m_currentPoint.getZ());
+            */
     }
 }
 
+#ifdef _DON_
 ZIntPoint SynapsePredictionProtocol::getNextPoint(ZIntPoint point) {
     if (!m_pendingList.contains(point)) {
         // poor excuse for a null...
@@ -197,12 +252,33 @@ ZIntPoint SynapsePredictionProtocol::getNextPoint(ZIntPoint point) {
     }
 }
 
+ZIntPoint SynapsePredictionProtocol::getPrevPoint(ZIntPoint point) {
+    if (!m_pendingList.contains(point)) {
+        // poor excuse for a null...
+        return ZIntPoint();
+    } else if (m_pendingList.size() == 0) {
+        return ZIntPoint();
+    } else {
+        int currentIndex = m_pendingList.indexOf(point);
+
+        if (currentIndex == 0) {
+          currentIndex = m_pendingList.size() - 1;
+        } else {
+          currentIndex = (currentIndex - 1) % m_pendingList.size();
+        }
+
+        return m_pendingList[currentIndex];
+    }
+}
+#endif
+
 void SynapsePredictionProtocol::saveState() {
     // json save format: {"pending": [[x, y, z], [x2, y2, z2], ...],
     //                    "finished": similar list}
 
     ZJsonObject data;
 
+#ifdef _DON_
     ZJsonArray pending;
     foreach (ZIntPoint point, m_pendingList) {
         ZJsonArray temp;
@@ -222,6 +298,10 @@ void SynapsePredictionProtocol::saveState() {
         finished.append(temp);
     }
     data.setEntry(KEY_FINISHED.c_str(), finished);
+#else
+    ZJsonArray rangeJson = ZJsonFactory::MakeJsonArray(m_protocolRange);
+    data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
+#endif
 
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), fileVversion);
@@ -233,10 +313,11 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     // check version of saved data here, once we have a second version
 
+#ifdef _DON_
     if (!data.hasKey(KEY_FINISHED.c_str()) || !data.hasKey(KEY_PENDING.c_str())) {
-        // how to communicate failure?  overwrite a label?
-        ui->progressLabel->setText("Data could not be loaded from DVID!");
-        return;
+      // how to communicate failure?  overwrite a label?
+      ui->progressLabel->setText("Data could not be loaded from DVID!");
+      return;
     }
 
     m_pendingList.clear();
@@ -251,8 +332,59 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     for (size_t i=0; i<finishedJson.size(); i++) {
         m_finishedList.append(ZJsonParser::toIntPoint(finishedJson.at(i)));
     }
+#else
+  m_protocolRange.loadJson(
+        ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
+  if (!m_protocolRange.isEmpty()) {
+    loadInitialSynapseList();
+  } else {
+    ui->progressLabel->setText(
+          "Invalid protocol range. No data loaded.");
+    return;
+  }
+#endif
 
     onFirstButton();
+}
+
+void SynapsePredictionProtocol::processSynapseVerification(
+    int x, int y, int z, bool verified)
+{
+  if (verified) {
+    verifySynapse(ZIntPoint(x, y, z));
+  } else {
+    unverifySynapse(ZIntPoint(x, y, z));
+  }
+
+  updateLabels();
+}
+
+void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
+{
+  if (m_pendingList.removeOne(pt)) {
+    if (m_currentIndex >= m_pendingList.size()) {
+      m_currentIndex = m_pendingList.size() - 1;
+    }
+    m_finishedList.append(pt);
+  }
+}
+
+void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
+{
+  if (m_finishedList.removeOne(pt)) {
+    m_pendingList.append(pt);
+  }
+}
+
+void SynapsePredictionProtocol::moveSynapse(
+    const ZIntPoint &src, const ZIntPoint &dst)
+{
+  if (m_pendingList.removeOne(src)) {
+    if (m_currentIndex >= m_pendingList.size()) {
+      m_currentIndex = m_pendingList.size() - 1;
+    }
+    m_finishedList.append(dst);
+  }
 }
 
 void SynapsePredictionProtocol::updateLabels() {
@@ -261,9 +393,10 @@ void SynapsePredictionProtocol::updateLabels() {
     // current item:
 
     // is a zero point good enough for null?
-    if (!m_currentPoint.isZero()) {
-        ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(m_currentPoint.getX())
-            .arg(m_currentPoint.getY()).arg(m_currentPoint.getZ()));
+    if (m_currentIndex >= 0 && m_currentIndex < m_pendingList.size()) {
+      ZIntPoint currentPoint = m_pendingList[m_currentIndex];
+        ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(currentPoint.getX())
+            .arg(currentPoint.getY()).arg(currentPoint.getZ()));
     } else {
         ui->currentLabel->setText(QString("Current: --, --, --"));
     }
@@ -275,6 +408,11 @@ void SynapsePredictionProtocol::updateLabels() {
     ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 }
 
+void SynapsePredictionProtocol::loadInitialSynapseList()
+{
+  loadInitialSynapseList(m_protocolRange, "");
+}
+
 /*
  * retrieve synapses from the input volume that are in the input RoI;
  * load into arrays
@@ -284,11 +422,13 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     // I don't *think* there's any way these lists will be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
+    m_currentIndex = 0;
 
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
-        std::vector<ZDvidSynapse> synapseList = reader.readSynapse(volume, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+        std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
+              volume, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
 
 
         // this list is mixed pre- and post- sites; relations are in there, but the list
@@ -312,6 +452,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         // for now: find the pre-synaptic sites; put each one on the list; then,
         //  put all its post-synaptic partners on the list immediately after it,
         //  whether it's in the volume or not
+#ifdef _DON_
         for (size_t i=0; i<synapseList.size(); i++) {
             if (synapseList[i].getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
                 m_pendingList.append(synapseList[i].getPosition());
@@ -321,6 +462,19 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
                 }
             }
         }
+#else
+        for (size_t i=0; i<synapseList.size(); i++) {
+          ZDvidSynapse &synapse = synapseList[i];
+          if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            if (synapse.isVerified()) {
+              m_finishedList.append(synapse.getPosition());
+            } else {
+              m_pendingList.append(synapse.getPosition());
+            }
+          }
+        }
+#endif
+
 
 
         // order somehow?  here or earlier?

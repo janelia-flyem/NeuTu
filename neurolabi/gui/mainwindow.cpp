@@ -3224,21 +3224,23 @@ void MainWindow::on_actionSkeletonization_triggered()
       Stack *stackData = stack->c_stack();
 
       ZStack backupStack;
+      ZObject3dScan *obj = NULL;
       if (stackData == NULL) {
         QList<ZSparseObject*> objList =
             frame->document()->getObjectList<ZSparseObject>();
-        ZObject3dScan obj;
-        for (QList<ZSparseObject*>::iterator iter = objList.begin();
-             iter != objList.end(); ++iter) {
-          obj.concat(*(*iter));
-
+        if (!objList.isEmpty()) {
+          obj = new ZObject3dScan;
+          for (QList<ZSparseObject*>::iterator iter = objList.begin();
+               iter != objList.end(); ++iter) {
+            obj->concat(*(*iter));
+          }
         }
-        obj.toStackObject(1, &backupStack);
-        stackData = backupStack.c_stack();
+//        obj.toStackObject(1, &backupStack);
+//        stackData = backupStack.c_stack();
       }
 
       ZSwcTree *wholeTree = NULL;
-      if (stackData != NULL) {
+      if (stackData != NULL || obj != NULL) {
         ZStackSkeletonizer skeletonizer;
         skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
                                            dlg.getZInterval());
@@ -3268,7 +3270,12 @@ void MainWindow::on_actionSkeletonization_triggered()
           //skeletonizer.useOriginalSignal(true);
         }
 
-        wholeTree = skeletonizer.makeSkeleton(stackData);
+        if (stackData != NULL) {
+          wholeTree = skeletonizer.makeSkeleton(stackData);
+        } else {
+          wholeTree = skeletonizer.makeSkeleton(*obj);
+          delete obj;
+        }
 
         wholeTree->translate(frame->document()->getStackOffset());
       }

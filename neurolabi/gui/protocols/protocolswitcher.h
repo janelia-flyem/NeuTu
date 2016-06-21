@@ -27,6 +27,8 @@ public slots:
     void openProtocolDialogRequested();
     void dvidTargetChanged(ZDvidTarget target);
 
+    void processSynapseVerification(int x, int y, int z, bool verified);
+
 private slots:
     void startProtocolRequested(QString protocolName);
     void saveProtocolRequested(ZJsonObject data);

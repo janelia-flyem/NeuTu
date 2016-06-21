@@ -38,12 +38,16 @@ ProtocolSwitcher::ProtocolSwitcher(QWidget *parent) : QObject(parent), m_activeM
     m_chooser = new ProtocolChooser(m_parent);
 
     m_protocolStatus = PROTOCOL_INACTIVE;
+    m_activeProtocol = NULL;
 
 
     // set up connections to ProtocolChooser
-    connect(m_chooser, SIGNAL(requestStartProtocol(QString)), this, SLOT(startProtocolRequested(QString)));
-    connect(m_chooser, SIGNAL(requestLoadProtocolKey(QString)), this, SLOT(loadProtocolKeyRequested(QString)));
-    connect(this, SIGNAL(requestDisplaySavedProtocols(QStringList)), m_chooser, SLOT(displaySavedProtocolKeys(QStringList)));
+    connect(m_chooser, SIGNAL(requestStartProtocol(QString)),
+            this, SLOT(startProtocolRequested(QString)));
+    connect(m_chooser, SIGNAL(requestLoadProtocolKey(QString)),
+            this, SLOT(loadProtocolKeyRequested(QString)));
+    connect(this, SIGNAL(requestDisplaySavedProtocols(QStringList)),
+            m_chooser, SLOT(displaySavedProtocolKeys(QStringList)));
 
 
 }
@@ -267,6 +271,10 @@ void ProtocolSwitcher::loadProtocolRequested() {
         warningDialog("Load failed", "Could not open DVID to read data!");
         return;
     }
+#ifdef _DEBUG_
+    std::cout << data.dumpString(2) << std::endl;
+#endif
+
     requestLoadProtocol(data);
 
     // ready to show dialog
@@ -496,7 +504,12 @@ void ProtocolSwitcher::disconnectProtocolSignals() {
     disconnect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
 }
 
-
+void ProtocolSwitcher::processSynapseVerification(int x, int y, int z, bool verified)
+{
+  if (m_activeProtocol != NULL) {
+    m_activeProtocol->processSynapseVerification(x, y, z, verified);
+  }
+}
 
 
 

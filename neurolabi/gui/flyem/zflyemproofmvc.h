@@ -99,6 +99,8 @@ signals:
   void updatingLatency(int);
   void highlightModeEnabled(bool);
   void highlightModeChanged();
+  void roiLoaded();
+
 
 public slots:
   void mergeSelected();
@@ -176,6 +178,7 @@ public slots:
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
   void showData(bool visible);
+  void setHighContrast(bool on);
   void toggleSegmentation();
   void showTodo(bool visible);
   void toggleData();
@@ -214,6 +217,7 @@ public slots:
   void suppressObjectVisible();
   void recoverObjectVisible();
 
+  void updateRoiWidget();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -261,6 +265,7 @@ private:
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
+  void loadROIFunc();
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();

@@ -83,7 +83,7 @@ void ZFlyEmProofMvc::init()
 {
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
-  m_protocolSwitcher = new ProtocolSwitcher(this);
+    m_protocolSwitcher = new ProtocolSwitcher(this);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
@@ -243,6 +243,9 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
           mvc, SLOT(suppressObjectVisible()));
   connect(mvc->getView(), SIGNAL(sliceSliderReleased()),
           mvc, SLOT(recoverObjectVisible()));
+  connect(mvc, SIGNAL(roiLoaded()), mvc, SLOT(updateRoiWidget()));
+  connect(mvc->getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
+          mvc->m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
 
   return mvc;
 }
@@ -347,6 +350,8 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           getCompleteDocument(), SLOT(downloadSynapse(int,int,int)));
   connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
+//  connect(m_orthoWindow, SIGNAL(synapseEdited(int,int,int)),
+//          this, SIGNAL())
   connect(getCompleteDocument(), SIGNAL(todoEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadTodo(int, int, int)));
   connect(m_orthoWindow, SIGNAL(todoEdited(int,int,int)),
@@ -849,6 +854,10 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
     getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
+    ZJsonObject contrastObj = reader.readContrastProtocal();
+    getPresenter()->setHighContrastProtocal(contrastObj);
+
 //    getCompleteDocument()->beginObjectModifiedMode(
 //          ZStackDoc::OBJECT_MODIFIED_CACHE);
 //    getCompleteDocument()->updateTileData();
@@ -856,6 +865,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
+      te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
       te->enhanceContrast(getCompletePresenter()->highTileContrast());
       te->attachView(getView());
     }
@@ -2439,6 +2449,12 @@ void ZFlyEmProofMvc::toggleSegmentation()
   }
 }
 
+void ZFlyEmProofMvc::setHighContrast(bool on)
+{
+  getCompletePresenter()->useHighContrastProtocal(on);
+  getView()->redraw();
+}
+
 void ZFlyEmProofMvc::showData(bool visible)
 {
   getCompletePresenter()->showData(visible);
@@ -3088,82 +3104,101 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
-void ZFlyEmProofMvc::getROIs()
+void ZFlyEmProofMvc::loadROIFunc()
 {
-    //
-    if(m_ROILoaded)
-        return;
+  //
+  if(m_ROILoaded)
+    return;
+
+  //
+  ZDvidReader reader;
+  m_roiList.clear();
+  m_loadedROIs.clear();
+  m_roiSourceList.clear();
+
+  //
+  if (reader.open(getDvidTarget()))
+  {
+    ZJsonObject meta = reader.readInfo();
 
     //
-    ZDvidReader reader;
-    m_roiList.clear();
-    m_loadedROIs.clear();
-    m_roiSourceList.clear();
+    ZJsonValue datains = meta.value("DataInstances");
 
-    //
-    if (reader.open(getDvidTarget()))
+    if(datains.isObject())
     {
-        ZJsonObject meta = reader.readInfo();
+      ZJsonObject insList(datains);
+      std::vector<std::string> keys = insList.getAllKey();
 
-        //
-        ZJsonValue datains = meta.value("DataInstances");
-
-        if(datains.isObject())
-        {
-            ZJsonObject insList(datains);
-            std::vector<std::string> keys = insList.getAllKey();
-
-            for(std::size_t i=0; i<keys.size(); i++)
-            {
-              std::string roiName = keys.at(i);
-              ZJsonObject roiJson(insList.value(roiName.c_str()));
-              if (roiJson.hasKey("Base")) {
-                ZJsonObject baseJson(roiJson.value("Base"));
-                std::string typeName =
-                    ZJsonParser::stringValue(baseJson["TypeName"]);
-                if (typeName != "roi") {
-                  roiName = "";
-                }
-              }
-
-              if (!roiName.empty()) {
-                ZObject3dScan roi = reader.readRoi(roiName);
-                if (!roi.isEmpty()) {
-                  m_roiList.push_back(roiName);
-                  m_loadedROIs.push_back(roi);
-
-                  std::string source =
-                      ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-                  m_roiSourceList.push_back(source);
-                }
-              }
-            }
+      for(std::size_t i=0; i<keys.size(); i++)
+      {
+        std::string roiName = keys.at(i);
+        ZJsonObject roiJson(insList.value(roiName.c_str()));
+        if (roiJson.hasKey("Base")) {
+          ZJsonObject baseJson(roiJson.value("Base"));
+          std::string typeName =
+              ZJsonParser::stringValue(baseJson["TypeName"]);
+          if (typeName != "roi") {
+            roiName = "";
+          }
         }
 
-        m_ROILoaded = true;
+        if (!roiName.empty()) {
+          ZObject3dScan roi = reader.readRoi(roiName);
+          if (!roi.isEmpty()) {
+            m_roiList.push_back(roiName);
+            m_loadedROIs.push_back(roi);
 
-        //
-        if(m_coarseBodyWindow)
-        {
-            m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+            std::string source =
+                ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+            m_roiSourceList.push_back(source);
+          }
         }
-
-        if(m_bodyWindow)
-        {
-            m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
-        }
-
-        if(m_externalNeuronWindow)
-        {
-            m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
-        }
-
-        if(m_skeletonWindow)
-        {
-            m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
-        }
-
+      }
     }
 
+    m_ROILoaded = true;
+
+    emit roiLoaded();
+  }
+}
+
+void ZFlyEmProofMvc::updateRoiWidget()
+{
+  //
+  if(m_coarseBodyWindow)
+  {
+    m_coarseBodyWindow->getROIsDockWidget()->getROIs(
+          m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+
+  if(m_bodyWindow)
+  {
+    m_bodyWindow->getROIsDockWidget()->getROIs(
+          m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+
+  if(m_externalNeuronWindow)
+  {
+    m_externalNeuronWindow->getROIsDockWidget()->getROIs(
+          m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+
+  if(m_skeletonWindow)
+  {
+    m_skeletonWindow->getROIsDockWidget()->getROIs(
+          m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+  }
+}
+
+void ZFlyEmProofMvc::getROIs()
+{
+  const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    ZOUT(LINFO(), 3) << "Loading ROIs";
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofMvc::loadROIFunc);
+    m_futureMap[threadId] = future;
+  }
 }
 

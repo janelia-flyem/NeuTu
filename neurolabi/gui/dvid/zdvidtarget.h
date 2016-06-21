@@ -143,8 +143,12 @@ public:
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
 
+  void setNullBodyLabelName();
+
   std::string getLabelBlockName() const;
   void setLabelBlockName(const std::string &name);
+
+  void setNullLabelBlockName();
 
   std::string getMultiscale2dName() const;
   void setMultiscale2dName(const std::string &name);

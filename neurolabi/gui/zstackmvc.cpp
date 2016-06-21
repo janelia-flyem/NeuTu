@@ -145,8 +145,10 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
           m_view, SLOT(updateThresholdSlider()));
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateSlider()));
+  /*
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_presenter, SLOT(updateStackBc()));
+          */
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()),

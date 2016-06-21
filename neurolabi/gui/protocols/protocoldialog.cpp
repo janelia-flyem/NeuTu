@@ -83,3 +83,9 @@ ProtocolDialog::~ProtocolDialog()
 {
     delete ui;
 }
+
+void ProtocolDialog::processSynapseVerification(
+    int /*x*/, int /*y*/, int /*z*/, bool /*verified*/)
+{
+
+}

@@ -214,6 +214,8 @@ public:
   ZJsonObject readToDoItemJson(int x, int y, int z);
   ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
+  ZJsonObject readContrastProtocal() const;
+
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }
 

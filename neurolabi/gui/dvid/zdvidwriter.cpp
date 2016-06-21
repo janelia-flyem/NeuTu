@@ -429,28 +429,46 @@ void ZDvidWriter::syncAnnotation(const std::string &name)
   post(url.getAnnotationSyncUrl(name), jsonObj);
 }
 
-void ZDvidWriter::createData(const std::string &type, const std::string &name)
+void ZDvidWriter::createData(
+    const std::string &type, const std::string &name, bool versioned)
 {
+  if (type.empty() || name.empty()) {
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonObject obj;
   obj.setEntry("typename", type);
   obj.setEntry("dataname", name);
+  if (!versioned) {
+    obj.setEntry("versioned", "0");
+  }
 
 //  writeJson(dvidUrl.getInstanceUrl(), obj);
 
 
+  std::string url = dvidUrl.getInstanceUrl();
+
+#if 0
+  post(url, obj);
+
+  std::cout << obj.dumpString(2) << std::endl;
+#endif
+
+#if 1
   QString command = QString(
         "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
       arg(getJsonStringForCurl(obj).c_str()).
-      arg(dvidUrl.getInstanceUrl().c_str());
+      arg(url.c_str());
   /*
   qDebug() << command;
 
   QProcess::execute(command);
   */
 
-  runCommand(command);
 
+  runCommand(command);
+#endif
   if (type == "annotation") {
     syncAnnotation(name);
   }
@@ -458,6 +476,10 @@ void ZDvidWriter::createData(const std::string &type, const std::string &name)
 
 void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
 {
+  if (dataName.empty() || key.empty()) {
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   std::string url = dvidUrl.getKeyUrl(dataName, key);
   del(url);
@@ -1222,11 +1244,13 @@ void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(
         NeuTube::GetCurrentUserName());
 
-  if (!bodyMap.isEmpty()) {
-    ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-    writeJsonString(url, array.dumpString(0));
-  } else {
-    writeJsonString(url, "[]");
+  if (!url.empty()) {
+    if (!bodyMap.isEmpty()) {
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+      writeJsonString(url, array.dumpString(0));
+    } else {
+      writeJsonString(url, "[]");
+    }
   }
 }
 

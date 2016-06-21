@@ -19,20 +19,25 @@ SynapsePredictionInputDialog::SynapsePredictionInputDialog(QWidget *parent) :
     m_redbgPalette.setColor(QPalette::Base, QColor(255, 128, 128));
 
     // UI connects
+#ifdef _DON_
     connect(ui->x1spinBox, SIGNAL(valueChanged(int)), this, SLOT(xRangeChanged(int)));
     connect(ui->x2spinBox, SIGNAL(valueChanged(int)), this, SLOT(xRangeChanged(int)));
     connect(ui->y1spinBox, SIGNAL(valueChanged(int)), this, SLOT(yRangeChanged(int)));
     connect(ui->y2spinBox, SIGNAL(valueChanged(int)), this, SLOT(yRangeChanged(int)));
     connect(ui->z1spinBox, SIGNAL(valueChanged(int)), this, SLOT(zRangeChanged(int)));
     connect(ui->z2spinBox, SIGNAL(valueChanged(int)), this, SLOT(zRangeChanged(int)));
-
+#endif
 }
 
 // override accept() so we can not accept if invalid
 void SynapsePredictionInputDialog::accept() {
+#ifdef _DON_
     if (isValid()) {
         QDialog::accept();
     }
+#else
+    QDialog::accept();
+#endif
 }
 
 void SynapsePredictionInputDialog::setRoI(QString roi){
@@ -43,6 +48,7 @@ QString SynapsePredictionInputDialog::getRoI() {
     return ui->roiInput->text();
 }
 
+#ifdef _DON_
 bool SynapsePredictionInputDialog::xValid() {
     return (ui->x1spinBox->value() < ui->x2spinBox->value());
 }
@@ -91,19 +97,39 @@ void SynapsePredictionInputDialog::zRangeChanged(int z) {
         ui->z2spinBox->setPalette(m_defaultPalette);
     }
 }
+#endif
 
 ZIntCuboid SynapsePredictionInputDialog::getVolume() {
+#ifdef _DON_
     return ZIntCuboid(ui->x1spinBox->value(), ui->y1spinBox->value(), ui->z1spinBox->value(),
                       ui->x2spinBox->value(), ui->y2spinBox->value(), ui->z2spinBox->value());
+#else
+  ZIntCuboid box;
+  box.setFirstCorner(
+        ui->x1spinBox->value(), ui->y1spinBox->value(), ui->z1spinBox->value());
+  box.setSize(ui->widthSpinBox->value(), ui->heightSpinBox->value(),
+              ui->depthSpinBox->value());
+
+  return box;
+#endif
 }
 
 void SynapsePredictionInputDialog::setVolume(ZIntCuboid volume) {
+#ifdef _DON_
     ui->x1spinBox->setValue(volume.getFirstCorner().getX());
     ui->y1spinBox->setValue(volume.getFirstCorner().getY());
     ui->z1spinBox->setValue(volume.getFirstCorner().getZ());
     ui->x2spinBox->setValue(volume.getLastCorner().getX());
     ui->y2spinBox->setValue(volume.getLastCorner().getY());
     ui->z2spinBox->setValue(volume.getLastCorner().getZ());
+#else
+  ui->x1spinBox->setValue(volume.getFirstCorner().getX());
+  ui->y1spinBox->setValue(volume.getFirstCorner().getY());
+  ui->z1spinBox->setValue(volume.getFirstCorner().getZ());
+  ui->widthSpinBox->setValue(volume.getWidth());
+  ui->heightSpinBox->setValue(volume.getHeight());
+  ui->depthSpinBox->setValue(volume.getDepth());
+#endif
 }
 
 SynapsePredictionInputDialog::~SynapsePredictionInputDialog()

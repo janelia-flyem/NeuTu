@@ -141,6 +141,22 @@ void ZFlyEmProofDoc::setSelectedBody(
   setSelectedBody(selected, labelType);
 }
 
+bool ZFlyEmProofDoc::hasBodySelected() const
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+  for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    const ZDvidLabelSlice *labelSlice = *iter;
+    if (!labelSlice->getSelectedOriginal().empty()) {
+      return true;
+    }
+//    finalSet.insert(selected.begin(), selected.end());
+  }
+
+  return false;
+}
+
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
     NeuTube::EBodyLabelType labelType) const
 {
@@ -359,12 +375,14 @@ void ZFlyEmProofDoc::annotateBody(
 void ZFlyEmProofDoc::initData(
     const std::string &type, const std::string &dataName)
 {
-  if (!m_dvidReader.hasData(dataName)) {
-    m_dvidWriter.createData(type, dataName);
-    if (!m_dvidWriter.isStatusOk()) {
-      emit messageGenerated(
-            ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
-                           NeuTube::MSG_ERROR));
+  if (!type.empty() && !dataName.empty()) {
+    if (!m_dvidReader.hasData(dataName)) {
+      m_dvidWriter.createData(type, dataName);
+      if (!m_dvidWriter.isStatusOk()) {
+        emit messageGenerated(
+              ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
+                             NeuTube::MSG_ERROR));
+      }
     }
   }
 }
@@ -377,6 +395,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
+    initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
   }
 }
 
@@ -911,6 +930,7 @@ void ZFlyEmProofDoc::verfifySelectedSynapse()
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, userName, scope);
       scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+      emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
     }
     processObjectModified(se);
   }
@@ -931,6 +951,7 @@ void ZFlyEmProofDoc::unverfifySelectedSynapse()
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, "$" + userName, scope);
       scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+      emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), false);
     }
     processObjectModified(se);
   }
@@ -2463,6 +2484,11 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
       }
     }
     pushUndoCommand(command);
+  } else {
+    emit messageGenerated(
+          ZWidgetMessage(
+            "Failed to add synapse. Have you specified the synapse data name?",
+            NeuTube::MSG_WARNING));
   }
 }
 

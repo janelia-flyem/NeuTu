@@ -20349,6 +20349,30 @@ void ZTest::test(MainWindow *host)
   }
 
 #endif
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "5cb3", 8700);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject obj;
+  obj.setEntry("nonlinear", true);
+  obj.setEntry("offset", 0.0);
+  obj.setEntry("scale", 1.2);
+  writer.writeJson("neutu_config", "contrast", obj);
+
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("keyvalue", "data_test2", false);
+#endif
 
   std::cout << "Done." << std::endl;
 }

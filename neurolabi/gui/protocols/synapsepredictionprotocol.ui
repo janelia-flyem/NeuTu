@@ -54,16 +54,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="markButton">
+      <widget class="QPushButton" name="prevButton">
        <property name="text">
-        <string>Mark reviewed</string>
+        <string>&lt;&lt; Prev</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="skipButton">
+      <widget class="QPushButton" name="nextButton">
        <property name="text">
-        <string>Skip</string>
+        <string>Next &gt;&gt;</string>
        </property>
       </widget>
      </item>

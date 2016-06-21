@@ -21,6 +21,10 @@ public:
     virtual std::string getName() = 0;
     void setDvidTarget(ZDvidTarget target);
 
+public:
+    //Special behaviors
+    virtual void processSynapseVerification(int x, int y, int z, bool verified);
+
 signals:
     void protocolCompleting();
     void protocolExiting();

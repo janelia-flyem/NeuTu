@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>436</width>
+    <width>451</width>
     <height>300</height>
    </rect>
   </property>
@@ -40,7 +40,7 @@
    <item>
     <widget class="QLabel" name="label_11">
      <property name="text">
-      <string>Enter corners of volume and region of interest:</string>
+      <string>Enter volume and region of interest:</string>
      </property>
     </widget>
    </item>
@@ -49,7 +49,7 @@
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>First:</string>
+        <string>First Corner:</string>
        </property>
       </widget>
      </item>
@@ -78,6 +78,9 @@
        <property name="maximum">
         <number>1000000</number>
        </property>
+       <property name="value">
+        <number>5000</number>
+       </property>
       </widget>
      </item>
      <item>
@@ -104,6 +107,9 @@
       <widget class="QSpinBox" name="y1spinBox">
        <property name="maximum">
         <number>1000000</number>
+       </property>
+       <property name="value">
+        <number>5000</number>
        </property>
       </widget>
      </item>
@@ -135,7 +141,23 @@
        <property name="maximum">
         <number>1000000</number>
        </property>
+       <property name="value">
+        <number>7000</number>
+       </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -144,7 +166,7 @@
      <item>
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>Second:</string>
+        <string>Size:</string>
        </property>
       </widget>
      </item>
@@ -164,14 +186,20 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>x</string>
+        <string>width</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="x2spinBox">
+      <widget class="QSpinBox" name="widthSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
        <property name="maximum">
         <number>1000000</number>
+       </property>
+       <property name="value">
+        <number>512</number>
        </property>
       </widget>
      </item>
@@ -191,14 +219,20 @@
      <item>
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>y</string>
+        <string>height</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="y2spinBox">
+      <widget class="QSpinBox" name="heightSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
        <property name="maximum">
         <number>1000000</number>
+       </property>
+       <property name="value">
+        <number>512</number>
        </property>
       </widget>
      </item>
@@ -218,16 +252,35 @@
      <item>
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>z</string>
+        <string>depth</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="z2spinBox">
+      <widget class="QSpinBox" name="depthSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
        <property name="maximum">
         <number>1000000</number>
        </property>
+       <property name="value">
+        <number>512</number>
+       </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_8">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -242,6 +295,19 @@
      </item>
      <item>
       <widget class="QLineEdit" name="roiInput"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_9">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

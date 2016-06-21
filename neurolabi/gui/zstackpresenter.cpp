@@ -92,6 +92,8 @@ void ZStackPresenter::init()
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
 
+  m_usingHighContrast = false;
+
   for (int i = 0; i < 3; i++) {
     m_mouseLeftReleasePosition[i] = -1;
     m_mouseRightReleasePosition[i] = -1;
@@ -749,15 +751,19 @@ void ZStackPresenter::createActions()
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_DELETE_SELECTED, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
-    m_actionMap[ZActionFactory::ACTION_DELETE_SELECTED] = action;
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+      m_actionMap[ZActionFactory::ACTION_DELETE_SELECTED] = action;
+    }
   }
 
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_FIT_ELLIPSE, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+    }
   }
 
 /*
@@ -795,6 +801,21 @@ void ZStackPresenter::createSwcNodeContextMenu()
           getAction(ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D));
 //          m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
+}
+
+bool ZStackPresenter::hasHighContrastProtocal() const
+{
+  return !m_highContrastProtocal.isEmpty();
+}
+
+ZJsonObject ZStackPresenter::getHighContrastProtocal() const
+{
+  return m_highContrastProtocal;
+}
+
+void ZStackPresenter::setHighContrastProtocal(const ZJsonObject &obj)
+{
+  m_highContrastProtocal = obj;
 }
 
 QMenu* ZStackPresenter::getSwcNodeContextMenu()

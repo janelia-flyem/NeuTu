@@ -369,7 +369,8 @@ public:
    *        (\a corner[0], \a corner[1], corner[2]) and the last corner is
    *        (\a corner[3], \a corner[4], corner[5]).
    */
-  void boundBox(double *corner) const;
+  void getBoundBox(double *corner) const;
+
 
   /*!
    * \brief Get bound box of the tree
@@ -378,6 +379,8 @@ public:
    */
    ZCuboid getBoundBox() const;
 //   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+
+   void boundBox(ZIntCuboid *box) const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
