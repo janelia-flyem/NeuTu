@@ -22,8 +22,10 @@ ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const ZDvidTarget &target);
+#if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
 lowtis::ImageService* MakeLowtisServicePtr(const ZDvidTarget &target);
+#endif
 
 libdvid::BinaryDataPtr MakePayload(const char *payload, int length);
 libdvid::BinaryDataPtr MakePayload(const std::string &payload);

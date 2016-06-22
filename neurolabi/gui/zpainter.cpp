@@ -565,8 +565,10 @@ void ZPainter::drawEllipse(const QPoint & center, int rx, int ry)
 
 void ZPainter::drawRect(const QRectF & rectangle)
 {
-  m_painter.drawRect(rectangle);
-  setPainted(true);
+  if (isVisible(rectangle)) {
+    m_painter.drawRect(rectangle);
+    setPainted(true);
+  }
 #if _QT_GUI_USED_
 //  QRectF rect = rectangle;
 //  rect.moveCenter(-QPointF(m_offset.x(), m_offset.y()) + rectangle.center());
@@ -576,15 +578,19 @@ void ZPainter::drawRect(const QRectF & rectangle)
 
 void ZPainter::drawRect(const QRect & rectangle)
 {
-  m_painter.drawRect(rectangle);
-  setPainted(true);
+  if (isVisible(rectangle)) {
+    m_painter.drawRect(rectangle);
+    setPainted(true);
+  }
 //  drawRect(QRectF(rectangle));
 }
 
 void ZPainter::drawRect(int x, int y, int width, int height)
 {
-  m_painter.drawRect(x, y, width, height);
-  setPainted(true);
+  if (isVisible(QRect(QPoint(x, y), QSize(width, height)))) {
+    m_painter.drawRect(x, y, width, height);
+    setPainted(true);
+  }
 //  drawRect(QRectF(x, y, width, height));
 }
 

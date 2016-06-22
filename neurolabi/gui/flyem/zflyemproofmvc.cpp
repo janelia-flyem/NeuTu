@@ -56,6 +56,7 @@
 #include "znormcolormap.h"
 #include "widgets/zcolorlabel.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
+#include "zflyemorthodoc.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -246,6 +247,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
   connect(mvc, SIGNAL(roiLoaded()), mvc, SLOT(updateRoiWidget()));
   connect(mvc->getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
           mvc->m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
+  connect(mvc->getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
+          mvc->m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
 
   return mvc;
 }
@@ -350,6 +353,20 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           getCompleteDocument(), SLOT(downloadSynapse(int,int,int)));
   connect(getCompleteDocument(), SIGNAL(synapseEdited(int,int,int)),
           m_orthoWindow, SLOT(downloadSynapse(int, int, int)));
+  connect(m_orthoWindow, SIGNAL(synapseVerified(int,int,int,bool)),
+          getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)));
+
+  connect(m_orthoWindow, SIGNAL(synapseVerified(int,int,int,bool)),
+          this, SLOT(processSynapseVerification(int,int,int,bool)));
+  connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
+          m_orthoWindow, SLOT(downloadSynapse(int,int,int)));
+
+  connect(m_orthoWindow->getDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
+          this, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
+          m_orthoWindow->getDocument(), SLOT(syncMoveSynapse(ZIntPoint,ZIntPoint)));
+
+
 //  connect(m_orthoWindow, SIGNAL(synapseEdited(int,int,int)),
 //          this, SIGNAL())
   connect(getCompleteDocument(), SIGNAL(todoEdited(int,int,int)),
@@ -3202,3 +3219,19 @@ void ZFlyEmProofMvc::getROIs()
   }
 }
 
+void ZFlyEmProofMvc::processSynapseVerification(int x, int y, int z, bool verified)
+{
+  getCompleteDocument()->downloadSynapse(x, y, z);
+  if (m_protocolSwitcher != NULL) {
+    m_protocolSwitcher->processSynapseVerification(x, y, z, verified);
+  }
+}
+
+void ZFlyEmProofMvc::processSynapseMoving(
+    const ZIntPoint &from, const ZIntPoint &to)
+{
+  getCompleteDocument()->syncMoveSynapse(from, to);
+  if (m_protocolSwitcher != NULL) {
+    m_protocolSwitcher->processSynapseMoving(from, to);
+  }
+}

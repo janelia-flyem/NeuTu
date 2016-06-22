@@ -247,6 +247,8 @@ protected slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void processSynapseVerification(int x, int y, int z, bool verified);
+  void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
 protected:
   void customInit();

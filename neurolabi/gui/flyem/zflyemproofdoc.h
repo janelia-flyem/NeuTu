@@ -196,7 +196,9 @@ public: //Synapse functions
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
   void addSynapse(
       const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
-  void moveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+  void moveSynapse(
+      const ZIntPoint &from, const ZIntPoint &to,
+      ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
 
@@ -224,6 +226,8 @@ public: //Bookmark functions
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
   void notifySynapseEdited(const ZDvidSynapse &synapse);
   void notifySynapseEdited(const ZIntPoint &synapse);
+  void notifySynapseMoved(const ZIntPoint &from, const ZIntPoint &to);
+
   void notifyTodoEdited(const ZIntPoint &item);
   void updateLocalBookmark(ZFlyEmBookmark *bookmark);
   void copyBookmarkFrom(const ZFlyEmProofDoc *doc);
@@ -246,6 +250,7 @@ signals:
   void bookmarkEdited(int x, int y, int z);
   void synapseEdited(int x, int y, int z);
   void synapseVerified(int x, int y, int z, bool verified);
+  void synapseMoved(const ZIntPoint &from, const ZIntPoint &to);
 //  void synapseUnverified(int x, int y, int z);
   void todoEdited(int x, int y, int z);
   void bodyIsolated(uint64_t bodyId);
@@ -293,6 +298,9 @@ public slots:
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
   void rewriteSegmentation();
+
+  void syncSynapse(const ZIntPoint &pt);
+  void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
 protected:
   void autoSave();

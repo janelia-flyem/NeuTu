@@ -26,6 +26,8 @@ public:
 
 public:
     void processSynapseVerification(int x, int y, int z, bool verified);
+    void processSynapseVerification(const ZIntPoint &pt, bool verified);
+    void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
 signals:
     void protocolCompleting();
@@ -50,6 +52,7 @@ private slots:
     void onGotoButton();
     void onExitButton();
     void onCompleteButton();
+    void onRefreshButton();
 
 private:
     static const std::string PROTOCOL_NAME;

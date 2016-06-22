@@ -6,6 +6,8 @@
 #include "zjsonobject.h"
 #include "dvid/zdvidtarget.h"
 
+class ZIntPoint;
+
 namespace Ui {
 class ProtocolDialog;
 }
@@ -24,6 +26,8 @@ public:
 public:
     //Special behaviors
     virtual void processSynapseVerification(int x, int y, int z, bool verified);
+    virtual void processSynapseMoving(
+        const ZIntPoint &from, const ZIntPoint &to);
 
 signals:
     void protocolCompleting();

@@ -16,6 +16,8 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
           this, SIGNAL(synapseEdited(int,int,int)));
   connect(m_orthoWidget, SIGNAL(todoEdited(int,int,int)),
           this, SIGNAL(todoEdited(int, int, int)));
+  connect(m_orthoWidget, SIGNAL(synapseVerified(int,int,int,bool)),
+          this, SIGNAL(synapseVerified(int,int,int,bool)));
 
   connect(m_orthoWidget, SIGNAL(zoomingTo(int,int,int)),
           this, SIGNAL(zoomingTo(int,int,int)));

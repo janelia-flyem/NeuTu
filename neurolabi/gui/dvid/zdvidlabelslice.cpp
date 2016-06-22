@@ -256,9 +256,15 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
       m_labelArray = m_objCache.take(cacheKey);
     } else {
       if (box.getDepth() == 1) {
+#if defined(_ENABLE_LOWTIS_)
         m_labelArray = m_reader.readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               box.getFirstCorner().getZ(), box.getWidth(), box.getHeight());
+#else
+        m_labelArray = m_reader.readLabels64(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1);
+#endif
       } else {
         m_labelArray = m_reader.readLabels64(box);
       }

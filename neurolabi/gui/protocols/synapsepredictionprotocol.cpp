@@ -33,6 +33,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+    connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
 
 
     // misc UI setup
@@ -127,7 +128,7 @@ void SynapsePredictionProtocol::onFirstButton() {
 
 void SynapsePredictionProtocol::onPrevButton()
 {
-  if (m_pendingList.size() > 1) {
+  if (!m_pendingList.empty()) {
     m_currentIndex--;
     if (m_currentIndex < 0) {
       m_currentIndex = m_pendingList.size() - 1;
@@ -138,13 +139,13 @@ void SynapsePredictionProtocol::onPrevButton()
     gotoCurrent();
     updateLabels();
   } else {
-    m_currentIndex = 0;
+    m_currentIndex = -1;
   }
 }
 
 void SynapsePredictionProtocol::onNextButton()
 {
-  if (m_pendingList.size() > 1) {
+  if (!m_pendingList.empty()) {
     m_currentIndex++;
     if (m_currentIndex >= m_pendingList.size()) {
       m_currentIndex = 0;
@@ -155,7 +156,7 @@ void SynapsePredictionProtocol::onNextButton()
     gotoCurrent();
     updateLabels();
   } else {
-    m_currentIndex = 0;
+    m_currentIndex = -1;
   }
 }
 
@@ -219,6 +220,12 @@ void SynapsePredictionProtocol::onCompleteButton() {
         saveState();
         emit protocolCompleting();
     }
+}
+
+void SynapsePredictionProtocol::onRefreshButton()
+{
+  loadInitialSynapseList();
+  updateLabels();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
@@ -347,6 +354,13 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     onFirstButton();
 }
 
+void SynapsePredictionProtocol::processSynapseMoving(
+    const ZIntPoint &from, const ZIntPoint &to)
+{
+  moveSynapse(from, to);
+  updateLabels();
+}
+
 void SynapsePredictionProtocol::processSynapseVerification(
     int x, int y, int z, bool verified)
 {
@@ -361,29 +375,100 @@ void SynapsePredictionProtocol::processSynapseVerification(
 
 void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 {
-  if (m_pendingList.removeOne(pt)) {
-    if (m_currentIndex >= m_pendingList.size()) {
-      m_currentIndex = m_pendingList.size() - 1;
+  ZDvidReader reader;
+  ZIntPoint targetPoint = pt;
+  bool isVerified = true;
+  if (reader.open(m_dvidTarget)) {
+    ZDvidSynapse synapse =
+        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+
+    if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+      std::vector<ZIntPoint> psdArray = synapse.getPartners();
+      for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
+           iter != psdArray.end(); ++iter) {
+        const ZIntPoint &pt = *iter;
+        ZDvidSynapse synapse =
+            reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+        if (!synapse.isVerified()) {
+          isVerified = false;
+          break;
+        }
+      }
+    } else if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+      std::vector<ZIntPoint> partnerArray = synapse.getPartners();
+      if (!partnerArray.empty()) {
+        targetPoint = partnerArray.front();
+        ZDvidSynapse presyn =
+            reader.readSynapse(targetPoint, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+
+        std::vector<ZIntPoint> psdArray = presyn.getPartners();
+        for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
+             iter != psdArray.end(); ++iter) {
+          const ZIntPoint &pt = *iter;
+          ZDvidSynapse synapse =
+              reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+          if (!synapse.isVerified()) {
+            isVerified = false;
+            break;
+          }
+        }
+      }
     }
-    m_finishedList.append(pt);
+  }
+
+  if (isVerified) {
+    if (m_pendingList.removeOne(targetPoint)) {
+      if (m_currentIndex >= m_pendingList.size()) {
+        m_currentIndex = m_pendingList.size() - 1;
+      }
+      m_finishedList.append(targetPoint);
+    }
   }
 }
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 {
-  if (m_finishedList.removeOne(pt)) {
-    m_pendingList.append(pt);
+  ZDvidReader reader;
+  ZIntPoint targetPoint = pt;
+
+  if (reader.open(m_dvidTarget)) {
+    ZDvidSynapse synapse =
+        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+
+    if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+      std::vector<ZIntPoint> partnerArray = synapse.getPartners();
+      if (!partnerArray.empty()) {
+        targetPoint = partnerArray.front();
+      }
+    }
+  }
+
+  if (m_finishedList.removeOne(targetPoint)) {
+    m_pendingList.append(targetPoint);
   }
 }
+
+void SynapsePredictionProtocol::processSynapseVerification(
+    const ZIntPoint &pt, bool verified)
+{
+  processSynapseVerification(pt.getX(), pt.getY(), pt.getZ(), verified);
+}
+
 
 void SynapsePredictionProtocol::moveSynapse(
     const ZIntPoint &src, const ZIntPoint &dst)
 {
-  if (m_pendingList.removeOne(src)) {
-    if (m_currentIndex >= m_pendingList.size()) {
-      m_currentIndex = m_pendingList.size() - 1;
+  int index = m_pendingList.indexOf(src);
+  if (index >= 0) { //A pending synapse
+    m_pendingList[index] = dst;
+    processSynapseVerification(dst, true);
+  } else {
+    index = m_finishedList.indexOf(src);
+    if (index >= 0) {
+      m_finishedList[index] = dst;
+    } else { //could be psd
+      processSynapseVerification(dst, true);
     }
-    m_finishedList.append(dst);
   }
 }
 
@@ -417,7 +502,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
  * retrieve synapses from the input volume that are in the input RoI;
  * load into arrays
  */
-void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QString roi) {
+void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QString /*roi*/) {
 
     // I don't *think* there's any way these lists will be populated, but...
     m_pendingList.clear();
@@ -427,9 +512,13 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
+#ifdef _DON_
         std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
               volume, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
-
+#else
+      std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
+            volume, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+#endif
 
         // this list is mixed pre- and post- sites; relations are in there, but the list
         //  doesn't show them in any way as-is
@@ -466,7 +555,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         for (size_t i=0; i<synapseList.size(); i++) {
           ZDvidSynapse &synapse = synapseList[i];
           if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-            if (synapse.isVerified()) {
+            if (synapse.isProtocolVerified(m_dvidTarget)) {
               m_finishedList.append(synapse.getPosition());
             } else {
               m_pendingList.append(synapse.getPosition());

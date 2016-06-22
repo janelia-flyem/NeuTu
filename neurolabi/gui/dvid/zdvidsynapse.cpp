@@ -13,6 +13,7 @@
 #include "zlinesegmentobject.h"
 #include "dvid/zdvidannotation.h"
 #include "tz_constant.h"
+#include "dvid/zdvidreader.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -74,6 +75,38 @@ bool ZDvidSynapse::isVerified() const
   }
 
   return false;
+}
+
+bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
+{
+  if (!isVerified()) {
+    return false;
+  }
+
+  bool v = true;
+
+  if (getKind() == KIND_PRE_SYN) {
+    std::vector<ZIntPoint> psdArray = getPartners();
+    if (!psdArray.empty()) {
+      ZDvidReader reader;
+      if (reader.open(target)) {
+        for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
+             iter != psdArray.end(); ++iter) {
+          const ZIntPoint &pt = *iter;
+          ZDvidSynapse synapse =
+              reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+          if (!synapse.isVerified()) {
+            v = false;
+            break;
+          }
+        }
+      }
+    }
+  } else {
+    v = false;
+  }
+
+  return v;
 }
 
 void ZDvidSynapse::setVerified(const std::string &userName)
@@ -246,11 +279,72 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     painter.setPen(pen);
     painter.drawRect(rect);
+
+    if (!visible) {
+      pen.setStyle(Qt::SolidLine);
+      pen.setColor(QColor(255, 0, 0, 128));
+      painter.setPen(pen);
+      QPointF pt[3];
+      double s = 5.0;
+      if (z > center.getZ()) {
+        pt[0] = QPointF(rect.center().x() - rect.width() / s,
+                        rect.top() + rect.height() / s);
+        pt[1] = QPointF(rect.center().x(),
+                        rect.top() - rect.height() / s);
+        pt[2] = QPointF(rect.center().x() + rect.width() / s,
+                        rect.top() + rect.height() / s);
+
+      } else {
+        pt[0] = QPointF(rect.center().x() - rect.width() / s,
+                        rect.bottom() - rect.height() / s);
+        pt[1] = QPointF(rect.center().x(),
+                        rect.bottom() + rect.height() / s);
+        pt[2] = QPointF(rect.center().x() + rect.width() / s,
+                        rect.bottom() - rect.height() / s);
+      }
+      painter.drawLine(pt[0], pt[1]);
+      painter.drawLine(pt[1], pt[2]);
+      painter.drawLine(pt[0], pt[2]);
+    }
   }
+
   if (isSelected()) {
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(QColor(255, 0, 0, 128));
+    painter.setPen(pen);
+
+
+
     for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
          iter != m_partnerHint.end(); ++iter) {
+      const ZIntPoint &partner = *iter;
+      double len = 0.0;
+      if (partner.getZ() < z && getPosition().getZ() < z) {
+        len = -1.0;
+      } else if (partner.getZ() > z && getPosition().getZ() > z) {
+        len = 1.0;
+      }
 
+      if (len != 0.0) {
+        QPointF pt[3];
+        pt[0].setX(partner.getX() - len);
+        pt[0].setY(partner.getY() - len);
+
+        pt[1].setX(partner.getX() + len);
+        pt[1].setY(partner.getY() - len);
+
+        pt[2].setX(partner.getX());
+        pt[2].setY(partner.getY() + len);
+
+
+        painter.drawLine(pt[0], pt[1]);
+        painter.drawLine(pt[1], pt[2]);
+        painter.drawLine(pt[0], pt[2]);
+      }
+    }
+
+    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+         iter != m_partnerHint.end(); ++iter) {
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);

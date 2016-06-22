@@ -83,6 +83,7 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
                              target.getUuid());
 }
 
+#if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
 {
   lowtis::DVIDLabelblkConfig config;
@@ -106,6 +107,7 @@ lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 
   return new lowtis::ImageService(config);
 }
+#endif
 
 libdvid::BinaryDataPtr ZDvid::MakePayload(const char *payload, int length)
 {

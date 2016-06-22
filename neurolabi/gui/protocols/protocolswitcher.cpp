@@ -511,6 +511,14 @@ void ProtocolSwitcher::processSynapseVerification(int x, int y, int z, bool veri
   }
 }
 
+void ProtocolSwitcher::processSynapseMoving(
+    const ZIntPoint &from, const ZIntPoint &to)
+{
+  if (m_activeProtocol != NULL) {
+    m_activeProtocol->processSynapseMoving(from, to);
+  }
+}
+
 
 
 

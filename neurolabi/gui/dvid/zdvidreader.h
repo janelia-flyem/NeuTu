@@ -210,6 +210,9 @@ public:
   ZDvidSynapse readSynapse(
       int x, int y, int z,
       NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+  ZDvidSynapse readSynapse(
+      const ZIntPoint &pt,
+      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

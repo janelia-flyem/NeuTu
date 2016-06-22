@@ -11,6 +11,7 @@
 #include "zdvidannotation.h"
 
 class ZJsonArray;
+class ZDvidTarget;
 
 class ZDvidSynapse : public ZDvidAnnotation
 {
@@ -33,6 +34,8 @@ public:
   std::string getAnnotation() const;
 
   bool isVerified() const;
+  bool isProtocolVerified(const ZDvidTarget &target) const;
+
   void setVerified(const std::string &userName);
 
 //  void setPosition(int x, int y, int z);

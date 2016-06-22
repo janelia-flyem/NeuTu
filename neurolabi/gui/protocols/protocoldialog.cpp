@@ -10,6 +10,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zintpoint.h"
 
 /*
  * this is the base class for all protocols
@@ -73,7 +74,7 @@ void ProtocolDialog::setDvidTarget(ZDvidTarget target) {
  * this slot is hit by the protocol switcher when a protocol is loaded;
  * the data is the previously saved data
  */
-void ProtocolDialog::loadDataRequested(ZJsonObject data) {
+void ProtocolDialog::loadDataRequested(ZJsonObject /*data*/) {
 
     std::cout << "in ProtocolDialog::loadDataRequested()" << std::endl;
 
@@ -82,6 +83,12 @@ void ProtocolDialog::loadDataRequested(ZJsonObject data) {
 ProtocolDialog::~ProtocolDialog()
 {
     delete ui;
+}
+
+void ProtocolDialog::processSynapseMoving(
+    const ZIntPoint &/*from*/, const ZIntPoint &/*to*/)
+{
+
 }
 
 void ProtocolDialog::processSynapseVerification(

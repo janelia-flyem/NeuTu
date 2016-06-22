@@ -103,6 +103,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SIGNAL(bookmarkEdited(int,int,int)));
   connect(getDocument(), SIGNAL(synapseEdited(int,int,int)),
           this, SIGNAL(synapseEdited(int,int,int)));
+  connect(getDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
+          this, SIGNAL(synapseVerified(int,int,int,bool)));
   connect(getDocument(), SIGNAL(todoEdited(int,int,int)),
           this, SIGNAL(todoEdited(int,int,int)));
   connect(getDocument(), SIGNAL(bodyMergeEdited()),

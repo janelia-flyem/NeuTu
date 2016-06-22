@@ -1468,7 +1468,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
   ZArray *array = NULL;
 
 
-#if defined(_ENABLE_LIBDVIDCPP_)
+#if defined(_ENABLE_LOWTIS_)
   qDebug() << "Using lowtis";
 
 
@@ -2147,6 +2147,12 @@ ZDvidSynapse ZDvidReader::readSynapse(
   }
 
   return ZDvidSynapse();
+}
+
+ZDvidSynapse ZDvidReader::readSynapse(
+    const ZIntPoint &pt, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
+{
+  return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
 }
 
 std::string ZDvidReader::readMasterNode() const

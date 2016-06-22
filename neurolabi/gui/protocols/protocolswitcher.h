@@ -28,6 +28,7 @@ public slots:
     void dvidTargetChanged(ZDvidTarget target);
 
     void processSynapseVerification(int x, int y, int z, bool verified);
+    void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
 private slots:
     void startProtocolRequested(QString protocolName);

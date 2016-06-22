@@ -234,6 +234,28 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_V:
+  {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_MOVE);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
+    break;
+  case Qt::Key_Y:
+  {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
+    break;
   default:
     break;
   }
