@@ -1050,6 +1050,7 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
   void inverseSwcNodeSelection();
+  void selectNoisyTrees(double minLength, double minDist);
   void selectNoisyTrees();
 
   /*!

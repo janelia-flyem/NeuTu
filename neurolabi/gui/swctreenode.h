@@ -108,6 +108,8 @@ int index(const Swc_Tree_Node *tn);
  */
 double length(const Swc_Tree_Node *tn);
 
+double length(const Swc_Tree_Node *tn, double sx, double sy, double sz);
+
 /*!
  * \brief Weight of edge between the node and its parent
  *
@@ -231,6 +233,7 @@ int downstreamSize(Swc_Tree_Node *tn);
 int downstreamSize(Swc_Tree_Node *tn, Swc_Tree_Node_Compare compfunc);
 int singleTreeSize(Swc_Tree_Node *tn);
 double downstreamLength(Swc_Tree_Node *tn);
+double downstreamLength(Swc_Tree_Node *tn, double sx, double sy, double sz);
 
 inline Swc_Tree_Node *nextSibling(Swc_Tree_Node *tn) {
   return (tn == NULL) ? NULL : tn->next_sibling;

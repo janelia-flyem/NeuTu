@@ -212,6 +212,16 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_T:
+    if (hasRectDecoration()) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        emit selectingSwcNodeTreeInRoi(true);
+      } else {
+        emit selectingSwcNodeTreeInRoi(false);
+      }
+      processed = true;
+    }
+    break;
   case Qt::Key_X:
     if (hasRectDecoration()) {
       emit croppingSwc();

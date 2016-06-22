@@ -46,6 +46,7 @@ class ZStroke2d;
 class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
+class ZSwcIsolationDialog;
 //class Z3DRendererBase;
 
 class Z3DTabWidget : public QTabWidget
@@ -401,6 +402,7 @@ public slots:
   void markSwcSoma();
 
   void selectSwcTreeNodeInRoi(bool appending);
+  void selectSwcTreeNodeTreeInRoi(bool appending);
   void cropSwcInRoi();
 
   void updateCuttingBox();
@@ -533,6 +535,7 @@ private:
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar;
+  ZSwcIsolationDialog *m_swcIsolationDlg;
 };
 
 #endif // Z3DWINDOW_H
