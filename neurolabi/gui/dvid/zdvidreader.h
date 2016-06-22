@@ -40,6 +40,10 @@ namespace libdvid{
 class DVIDNodeService;
 }
 
+namespace lowtis {
+class ImageService;
+}
+
 class ZDvidReader : public QObject
 {
   Q_OBJECT
@@ -123,6 +127,9 @@ public:
   ZArray* readLabels64(int x0, int y0, int z0,
                        int width, int height, int depth) const;
   ZArray* readLabels64(const ZIntCuboid &box);
+
+  ZArray* readLabels64Lowtis(int x0, int y0, int z0,
+      int width, int height) const;
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
                          int dim1, int dim2, int width, int height);
@@ -270,6 +277,7 @@ protected:
   mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
 #endif
 
 };

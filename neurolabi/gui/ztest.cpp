@@ -20168,6 +20168,22 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.readTile(0, 0, 0, 0);
+
+  ZArray *label = reader.readLabels64Lowtis(4099, 5018, 10343, 512, 512);
+
+  reader.readLabels64Lowtis(4099, 5018, 10344, 512, 512);
+
+#endif
+
+
 #if 0
   ZFlyEmBookmark bookmark;
   bookmark.setComment("test");
@@ -20372,6 +20388,27 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.createData("keyvalue", "data_test2", false);
+#endif
+
+#if 0
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "372c";
+  config.datatypename = "labels";
+
+  lowtis::ImageService service(config);
+
+  int width = 512;
+  int height = 512;
+  std::vector<int> offset(3, 0);
+  offset[0] = 4099;
+  offset[1] = 5018;
+  offset[2] = 10343;
+
+  char *buffer = new char[width * height * 8];
+  service.retrieve_image(width, height, offset, buffer);
+
 #endif
 
   std::cout << "Done." << std::endl;

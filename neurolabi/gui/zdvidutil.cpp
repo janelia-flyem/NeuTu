@@ -9,6 +9,9 @@
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
+#include "neutube.h"
+
+
 libdvid::BinaryDataPtr ZDvid::MakeRequest(
     const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
@@ -78,6 +81,30 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
 {
   return MakeDvidNodeService(target.getAddressWithPort(),
                              target.getUuid());
+}
+
+ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
+{
+  lowtis::DVIDLabelblkConfig config;
+  config.username = NeuTube::GetCurrentUserName();
+  config.dvid_server = target.getAddressWithPort();
+  config.dvid_uuid = target.getUuid();
+  config.datatypename = target.getLabelBlockName();
+
+
+  return ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
+}
+
+lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
+{
+  lowtis::DVIDLabelblkConfig config;
+  config.username = NeuTube::GetCurrentUserName();
+  config.dvid_server = target.getAddressWithPort();
+  config.dvid_uuid = target.getUuid();
+  config.datatypename = target.getLabelBlockName();
+
+
+  return new lowtis::ImageService(config);
 }
 
 libdvid::BinaryDataPtr ZDvid::MakePayload(const char *payload, int length)
