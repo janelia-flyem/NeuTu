@@ -598,7 +598,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotation.h \
     dialogs/stringlistdialog.h \
     flyem/zflyemtodoitem.h \
-    flyem/zflyemtodolist.h
+    flyem/zflyemtodolist.h \
+    dialogs/zswcisolationdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -671,7 +672,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
     flyem/flyemorthocontrolform.ui \
-    dialogs/stringlistdialog.ui
+    dialogs/stringlistdialog.ui \
+    dialogs/zswcisolationdialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1055,7 +1057,8 @@ SOURCES += main.cpp \
     dvid/zdvidannotation.cpp \
     dialogs/stringlistdialog.cpp \
     flyem/zflyemtodoitem.cpp \
-    flyem/zflyemtodolist.cpp
+    flyem/zflyemtodolist.cpp \
+    dialogs/zswcisolationdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

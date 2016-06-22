@@ -204,7 +204,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
     painter->drawText(
-          QRectF(10, 10, 200, 200),
+          QRectF(10, 10, 300, 200),
           "Selection mode on: \n"
           "  1: downstream;\n"
           "  2: upstream;\n"

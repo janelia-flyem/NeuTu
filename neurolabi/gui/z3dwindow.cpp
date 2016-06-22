@@ -75,6 +75,7 @@
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
+#include "dialogs/zswcisolationdialog.h"
 
 class Sleeper : public QThread
 {
@@ -802,6 +803,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(moveSelectedObjects(double,double,double)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeTreeInRoi(bool)),
+          this, SLOT(selectSwcTreeNodeTreeInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -820,6 +823,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+
+  m_swcIsolationDlg = new ZSwcIsolationDialog(this);
 
 #if defined(REMOTE_WORKSTATION)
   getCompositor()->setShowBackground(false);
@@ -2751,7 +2756,10 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_5:
     if (getCanvas()->getInteractionEngine()->getKeyMode() ==
         ZInteractionEngine::KM_SWC_SELECTION) {
-      m_doc->selectNoisyTrees();
+      if (m_swcIsolationDlg->exec()) {
+        m_doc->selectNoisyTrees(m_swcIsolationDlg->getLengthThreshold(),
+                                m_swcIsolationDlg->getDistanceThreshold());
+      }
     }
     break;
   default:
@@ -4213,6 +4221,55 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
     removeRectRoi();
   }
 }
+
+void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::RegularRootIterator rootIter(tree);
+      while (rootIter.hasNext()) {
+        Swc_Tree_Node *root = rootIter.next();
+        bool treeInRoi = true;
+        ZSwcTree::DownstreamIterator dsIter(root);
+        while (dsIter.hasNext()) {
+          Swc_Tree_Node *tn = dsIter.next();
+          const QPointF &pt = getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+        }
+
+        if (treeInRoi) {
+          dsIter.restart();
+          while (dsIter.hasNext()) {
+            Swc_Tree_Node *tn = dsIter.next();
+            tree->selectNode(tn, true);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
 
 void Z3DWindow::removeRectRoi()
 {
