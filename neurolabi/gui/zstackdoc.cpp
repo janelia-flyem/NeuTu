@@ -929,9 +929,9 @@ void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
     ZSwcTree *tree = *iter;
     tree->deselectAllNode();
 
-    ZSwcTree::RegularRootIterator iter(tree);
-    while (iter.hasNext()) {
-      Swc_Tree_Node *tn = iter.next();
+    ZSwcTree::RegularRootIterator rootIter(tree);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
       double length = SwcTreeNode::downstreamLength(
             tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
             m_resolution.voxelSizeZ());
@@ -997,9 +997,9 @@ void ZStackDoc::selectNoisyTrees()
     ZSwcTree *tree = *iter;
     tree->deselectAllNode();
 
-    ZSwcTree::RegularRootIterator iter(tree);
-    while (iter.hasNext()) {
-      Swc_Tree_Node *tn = iter.next();
+    ZSwcTree::RegularRootIterator rootIter(tree);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
       double length = SwcTreeNode::downstreamLength(tn);
       sizeVector.push_back(length);
 
