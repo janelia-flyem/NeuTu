@@ -66,6 +66,7 @@ void Z3DNetworkEvaluator::setNetworkSink(Z3DCanvasRenderer *canvasRenderer)
 
 QString Z3DNetworkEvaluator::process(bool stereo)
 {
+  CHECK_GL_ERROR;
   if (!m_canvasRenderer)
     return "No Network";
 
@@ -175,6 +176,7 @@ QString Z3DNetworkEvaluator::process(bool stereo)
     m_canvasRenderer->invalidate();
   }
 
+  CHECK_GL_ERROR;
   return error;
 }
 
@@ -503,10 +505,11 @@ void Z3DCheckOpenGLStateProcessWrapper::checkState(const Z3DProcessor *p)
     warn(p, "A shader was active");
   }
 
-  if (Z3DRenderTarget::getCurrentBoundDrawFBO() != 0) {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    warn(p, "A render target was bound (releaseTarget() missing?)");
-  }
+  // can not check this as we are drawing to QOpenglWidget's (Qt5) fbo which is not 0
+  //  if (Z3DRenderTarget::getCurrentBoundDrawFBO() != 0) {
+  //    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  //    warn(p, "A render target was bound (releaseTarget() missing?)");
+  //  }
 
   if (!checkGLState(GL_DEPTH_FUNC, GL_LESS)) {
     glDepthFunc(GL_LESS);
