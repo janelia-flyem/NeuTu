@@ -7,6 +7,8 @@
 #include "zstackball.h"
 #include "tz_math.h"
 
+const int ZSlicedPuncta::m_visibleRange = 5.0;
+
 ZSlicedPuncta::ZSlicedPuncta()
 {
   m_type = ZStackObject::TYPE_SLICED_PUNCTA;
@@ -24,7 +26,7 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
   if (p != NULL || ignoreNull) {
     int z = iround(p->getZ()) - m_zStart;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (z == 9447) {
       std::cout << "debug here" << std::endl;
     }
@@ -40,16 +42,21 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
   }
 }
 
-void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
+                            NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   if (m_puncta.isEmpty() || slice < 0) {
     return;
   }
 
   int z = painter.getZ(slice);
 
-  int lowerIndex = std::max(0, z - m_zStart - 5);
-  int upperIndex = std::min(m_puncta.size() - 1, z + m_zStart + 5);
+  int lowerIndex = std::max(0, z - m_zStart - m_visibleRange);
+  int upperIndex = std::min(m_puncta.size() - 1, z + m_zStart + m_visibleRange);
 
 
   for (int index = lowerIndex; index <= upperIndex; ++index) {
@@ -58,7 +65,7 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) 
     for (QList<ZStackBall*>::const_iterator iter = punctumArray.begin();
          iter != punctumArray.end(); ++iter) {
       const ZStackBall* punctum = *iter;
-      punctum->display(painter, slice, option);
+      punctum->display(painter, slice, option, sliceAxis);
     }
   }
 

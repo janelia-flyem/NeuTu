@@ -89,10 +89,15 @@ public:
     return m_data->getRole().getRole();
   }
 
-  virtual void updateData(const ZStackViewParam &/*param*/) const {}
+  void enableUpdate(bool on) { m_enableUpdate = on; }
+
+  virtual bool updateData(const ZStackViewParam &/*param*/) const {
+    return true;
+  }
 
 protected:
   ZStackObject *m_data; //not owned by the player
+  bool m_enableUpdate;
   //TRole m_role;
 };
 
@@ -251,7 +256,7 @@ class ZPlanePlayer : public ZDocPlayer
 public:
   QString getTypeName() const { return "Plane"; }
 };
-
+#if defined (_FLYEM_)
 /**************************************************/
 class ZDvidLabelSlicePlayer : public ZDocPlayer
 {
@@ -260,7 +265,7 @@ public:
 
 public:
   QString getTypeName() const { return "DvidLabelSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
 };
 
@@ -272,10 +277,10 @@ public:
 
 public:
   QString getTypeName() const { return "DvidSparsevolSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidSparsevolSlice *getCompleteData() const;
 };
-
+#endif
 /************************************************/
 class ZCuboidRoiPlayer : public ZDocPlayer
 {

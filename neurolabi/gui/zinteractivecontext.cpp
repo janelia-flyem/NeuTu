@@ -14,8 +14,10 @@ ZInteractiveContext::ZInteractiveContext()
   m_strokeEditMode = STROKE_EDIT_OFF;
   m_rectEditMode = RECT_EDIT_OFF;
   m_bookmarkEditMode = BOOKMARK_EDIT_OFF;
+  m_synapseEditMode = SYNAPSE_EDIT_OFF;
   m_exitingEdit = false;
   m_blockingContextMenu = false;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 
@@ -36,6 +38,7 @@ bool ZInteractiveContext::isContextMenuActivated() const
           m_strokeEditMode == STROKE_EDIT_OFF &&
           m_rectEditMode == RECT_EDIT_OFF &&
           m_bookmarkEditMode == BOOKMARK_EDIT_OFF &&
+          m_synapseEditMode == SYNAPSE_EDIT_OFF &&
           !m_exitingEdit &&
           !m_blockingContextMenu);
 }
@@ -109,6 +112,20 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
       switch (bookmarkEditMode()) {
       case BOOKMARK_ADD:
         mode = INTERACT_ADD_BOOKMARK;
+        break;
+      default:
+        break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      switch (synapseEditMode()) {
+      case SYNAPSE_ADD_PRE:
+      case SYNAPSE_ADD_POST:
+        mode = INTERACT_ADD_SYNAPSE;
+        break;
+      case SYNAPSE_MOVE:
+        mode = INTERACT_MOVE_SYNAPSE;
         break;
       default:
         break;

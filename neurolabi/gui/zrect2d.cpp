@@ -4,6 +4,7 @@
 #include <QRect>
 #include <QRectF>
 
+#include "geometry/zgeometry.h"
 #include "zpainter.h"
 #include "tz_math.h"
 #include "zsttransform.h"
@@ -41,15 +42,20 @@ bool ZRect2d::isValid() const
   return m_width > 0 && m_height > 0;
 }
 
-bool ZRect2d::isSliceVisible(int z) const
+bool ZRect2d::isSliceVisible(int z, NeuTube::EAxis /*sliceAxis*/) const
 {
   return isValid() && (m_isPenetrating || z == m_z);
 }
 
-void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
+                      NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != m_sliceAxis) {
+    return;
+  }
+
   int z = slice + iround(painter.getZOffset());
-  if (!(isSliceVisible(z) || (slice < 0))) {
+  if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
 
@@ -63,14 +69,16 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) co
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
-
-
   painter.drawRect(m_x0, m_y0, m_width, m_height);
 }
 
-bool ZRect2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-             EDisplaySliceMode sliceMode) const
+bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
+             EDisplaySliceMode /*sliceMode*/, NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != m_sliceAxis) {
+    return false;
+  }
+
   bool painted = false;
 
   if (rawPainter == NULL || !isVisible()) {
@@ -170,8 +178,12 @@ bool ZRect2d::contains(double x, double y) const
        x < m_x0 + m_width && y < m_y0 + m_height));
 }
 
-bool ZRect2d::hit(double x, double y)
+bool ZRect2d::hit(double x, double y, NeuTube::EAxis axis)
 {
+  if (m_sliceAxis != axis) {
+    return false;
+  }
+
   return ((x >= m_x0 - 5 && y >= m_y0 - 5 &&
        x < m_x0 + m_width + 5 && y < m_y0 + m_height + 5) &&
       !(x >= m_x0 + 5 && y >= m_y0 + 5 &&
@@ -180,15 +192,21 @@ bool ZRect2d::hit(double x, double y)
 
 bool ZRect2d::hit(double x, double y, double z)
 {
+  double wx = x;
+  double wy = y;
+  double wz = z;
+
+  ZGeometry::shiftSliceAxis(wx, wy, wz, m_sliceAxis);
+
   if (m_isPenetrating) {
-    return hit(x, y);
+    return hit(wx, wy, m_sliceAxis);
   }
 
-  if (iround(z) == m_z) {
-    return ((x >= m_x0 - 5 && y >= m_y0 - 5 &&
-             x < m_x0 + m_width + 5 && y < m_y0 + m_height + 5) &&
-            !(x >= m_x0 + 5 && y >= m_y0 + 5 &&
-              x < m_x0 + m_width - 5 && y < m_y0 + m_height - 5));
+  if (iround(wz) == m_z) {
+    return ((wx >= m_x0 - 5 && wy >= m_y0 - 5 &&
+             wx < m_x0 + m_width + 5 && wy < m_y0 + m_height + 5) &&
+            !(wx >= m_x0 + 5 && wy >= m_y0 + 5 &&
+              wx < m_x0 + m_width - 5 && wy < m_y0 + m_height - 5));
   }
 
   return false;

@@ -45,7 +45,13 @@ ZJsonArray::~ZJsonArray()
 
 size_t ZJsonArray::size() const
 {
-  return json_array_size(m_data);
+  return C_Json::arraySize(m_data);
+//  return json_array_size(m_data);
+}
+
+bool ZJsonArray::isEmpty() const
+{
+  return size() == 0;
 }
 
 json_t* ZJsonArray::at(size_t index)
@@ -101,6 +107,16 @@ void ZJsonArray::append(json_t *obj)
 void ZJsonArray::append(const ZJsonValue &obj)
 {
   append(obj.getValue());
+}
+
+void ZJsonArray::remove(size_t index)
+{
+  json_array_remove(m_data, index);
+}
+
+void ZJsonArray::setValue(size_t i, const ZJsonValue &obj)
+{
+  json_array_set(m_data, i, obj.getData());
 }
 
 std::vector<double> ZJsonArray::toNumberArray() const
@@ -193,4 +209,9 @@ string ZJsonArray::dumpString(int indent) const
   }
 
   return ZJsonValue::dumpString(indent);
+}
+
+ZJsonValue ZJsonArray::value(size_t index) const
+{
+  return ZJsonValue(at(index), ZJsonValue::SET_INCREASE_REF_COUNT);
 }

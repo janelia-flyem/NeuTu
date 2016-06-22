@@ -79,7 +79,7 @@ ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZIntCuboid &box, double radius)
 
   return CreateBoxSwc(cuboid, radius);
 }
-
+#if defined (_FLYEM_)
 ZSwcTree* ZSwcFactory::CreateSwc(const ZFlyEmNeuronRange &range)
 {
   if (range.isEmpty()) {
@@ -190,6 +190,7 @@ ZSwcTree* ZSwcFactory::CreateRangeCompareSwc(
 
   return tree;
 }
+#endif
 
 ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
     const ZVoxelArray &voxelArray, double radiusAdjustment)
@@ -200,9 +201,10 @@ ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
 
   ZDoubleVector voxelSizeArray(voxelArray.size());
 
+  const ZVoxelArray::TVector &voxelData = voxelArray.getInternalData();
   //Retrieve voxel size
   for (size_t i = 0; i < voxelSizeArray.size(); ++i) {
-    voxelSizeArray[i] = -voxelArray[i].value();
+    voxelSizeArray[i] = -voxelData[i].value();
   }
 
   std::vector<int> indexArray;
@@ -212,11 +214,11 @@ ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
 
   for (size_t i = 1; i < voxelArray.size(); ++i) {
     size_t currentVoxelIndex = indexArray[i];
-    const ZVoxel &currentVoxel = voxelArray[currentVoxelIndex];
+    const ZVoxel &currentVoxel = voxelData[currentVoxelIndex];
     for (size_t j = 0; j < i; ++j) {
       size_t prevVoxelIndex = indexArray[j];
       if (sampled[prevVoxelIndex]) {
-        const ZVoxel &prevVoxel = voxelArray[prevVoxelIndex];
+        const ZVoxel &prevVoxel = voxelData[prevVoxelIndex];
         double dist = currentVoxel.distanceTo(prevVoxel);
         if (dist < prevVoxel.value()) {
           sampled[currentVoxelIndex] = false;
@@ -232,9 +234,9 @@ ZSwcTree* ZSwcFactory::CreateSwcByRegionSampling(
     if (sampled[i]) {
       Swc_Tree_Node *tn = SwcTreeNode::makePointer();
       SwcTreeNode::setPos(
-            tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
+            tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
       SwcTreeNode::setRadius(
-            tn, voxelArray[i].value() + radiusAdjustment);
+            tn, voxelData[i].value() + radiusAdjustment);
       Swc_Tree_Node_Set_Parent(tn, prevTn);
       prevTn = tn;
     }
@@ -258,7 +260,9 @@ ZSwcTree* ZSwcFactory::CreateSwc(
 
   Swc_Tree *tree = New_Swc_Tree();
 
-  ZVoxel prevVoxel = voxelArray[startIndex];
+
+  const ZVoxelArray::TVector &voxelData = voxelArray.getInternalData();
+  ZVoxel prevVoxel = voxelData[startIndex];
 
   Swc_Tree_Node *tn = New_Swc_Tree_Node();
   SwcTreeNode::setPos(tn, prevVoxel.x(), prevVoxel.y(), prevVoxel.z());
@@ -267,7 +271,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(
   Swc_Tree_Node *prevTn = tn;
 
   for (size_t i = startIndex + 1; i < endIndex; i++) {
-    double dist = voxelArray[i].distanceTo(prevVoxel);
+    double dist = voxelData[i].distanceTo(prevVoxel);
     bool sampling = true;
 
     if (option == SPARSE_SAMPLING) {
@@ -279,20 +283,20 @@ ZSwcTree* ZSwcFactory::CreateSwc(
     if (sampling) {
       tn = New_Swc_Tree_Node();
 
-      SwcTreeNode::setPos(tn, voxelArray[i].x(), voxelArray[i].y(), voxelArray[i].z());
-      SwcTreeNode::setRadius(tn, voxelArray[i].value());
+      SwcTreeNode::setPos(tn, voxelData[i].x(), voxelData[i].y(), voxelData[i].z());
+      SwcTreeNode::setRadius(tn, voxelData[i].value());
       Swc_Tree_Node_Set_Parent(prevTn, tn);
       prevTn = tn;
-      prevVoxel = voxelArray[i];
+      prevVoxel = voxelData[i];
     }
   }
 
   if (endIndex - startIndex > 0) { //last node
     tn = New_Swc_Tree_Node();
 
-    SwcTreeNode::setPos(tn, voxelArray[endIndex].x(), voxelArray[endIndex].y(),
-                        voxelArray[endIndex].z());
-    SwcTreeNode::setRadius(tn, voxelArray[endIndex].value());
+    SwcTreeNode::setPos(tn, voxelData[endIndex].x(), voxelData[endIndex].y(),
+                        voxelData[endIndex].z());
+    SwcTreeNode::setRadius(tn, voxelData[endIndex].value());
     Swc_Tree_Node_Set_Parent(prevTn, tn);
     /*
     if (SwcTreeNode::hasOverlap(prevTn, tn) && SwcTreeNode::hasChild(prevTn)) {
@@ -546,23 +550,127 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
     Swc_Tree_Node *root = tree->root();
     Stack_Neighbor_Offset(conn, width, height, neighbor);
 
+    double radius = sparseLevel * 0.7;
     for (int k = 0; k <= cdepth; k++) {
       for (int j = 0; j <= cheight; j++) {
         for (int i = 0; i <= cwidth; i++) {
 //          out_array[offset] = 0;
-          if (in_array[offset] > 0) {
+          uint8_t in_value = in_array[offset];
+          if (in_value > 0) {
             n_in_bound = Stack_Neighbor_Bound_Test_S(
                   conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
             bool isSurface = false;
             if (n_in_bound == conn) {
               for (int n = 0; n < n_in_bound; n++) {
-                if (in_array[offset + neighbor[n]] != in_array[offset]) {
+                if (in_array[offset + neighbor[n]] != in_value) {
                   isSurface = true;
                   break;
                 }
               }
             } else {
               isSurface = true;
+            }
+
+            if (isSurface) {
+              if (count++ % sparseLevel == 0) {
+                SwcTreeNode::makePointer(i + stack.getOffset().getX(),
+                                         j + stack.getOffset().getY(),
+                                         k + stack.getOffset().getZ(),
+                                         radius, root);
+              }
+            }
+          }
+          offset++;
+        }
+      }
+    }
+
+  }
+
+#if 0
+  Stack *surface = Stack_Perimeter(stack.c_stack(), NULL, 6);
+
+#ifdef _DEBUG_2
+  C_Stack::write(GET_DATA_DIR + "/test.tif", surface);
+#endif
+
+
+  if (surface != NULL) {
+    tree = new ZSwcTree();
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+
+    int width = C_Stack::width(surface);
+    int height = C_Stack::height(surface);
+    int depth = C_Stack::depth(surface);
+
+    size_t offset = 0;
+    int count = 0;
+    for (int z = 0; z < depth; ++z) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          if ((surface->array[offset++]) > 0) {
+            if (count++ % sparseLevel == 0) {
+              SwcTreeNode::makePointer(x + stack.getOffset().getX(),
+                                       y + stack.getOffset().getY(),
+                                       z + stack.getOffset().getZ(),
+                                       sparseLevel * 0.7, root);
+            }
+          }
+        }
+      }
+    }
+
+    C_Stack::kill(surface);
+  }
+#endif
+
+  return tree;
+}
+
+ZSwcTree* ZSwcFactory::CreateSurfaceSwcFast(const ZStack &stack, int sparseLevel)
+{
+  if (stack.kind() != GREY) {
+    return NULL;
+  }
+
+  ZSwcTree *tree = NULL;
+
+  if (stack.hasData()) {
+    int width = stack.width();
+    int height = stack.height();
+    int depth = stack.depth();
+
+    int cwidth = width - 1;
+    int cheight = height - 1;
+    int cdepth = depth - 1;
+
+    const uint8_t* in_array = stack.array8();
+
+    int conn = 6;
+    size_t offset = 0;
+    int neighbor[26];
+//    int is_in_bound[26];
+//    int n_in_bound;
+    int count = 0;
+
+    tree = new ZSwcTree();
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+    Stack_Neighbor_Offset(conn, width, height, neighbor);
+
+    for (int k = 0; k <= cdepth; k++) {
+      for (int j = 0; j <= cheight; j++) {
+        for (int i = 0; i <= cwidth; i++) {
+//          out_array[offset] = 0;
+          uint8_t in_value = in_array[offset];
+          if (in_value > 0) {
+            bool isSurface = false;
+            for (int n = 0; n < conn; n++) {
+              if (in_array[offset + neighbor[n]] != in_value) {
+                isSurface = true;
+                break;
+              }
             }
 
             if (isSurface) {

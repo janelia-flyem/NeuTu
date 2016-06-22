@@ -131,6 +131,7 @@ public:
   }
 
   static std::string num2str(int n);
+  static std::string num2str(uint64_t n);
 
 private:
   String_Workspace *m_workspace;

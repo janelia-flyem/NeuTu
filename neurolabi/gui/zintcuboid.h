@@ -3,6 +3,7 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
+#include "neutube_def.h"
 
 class ZIntCuboid
 {
@@ -24,6 +25,8 @@ public:
   inline void setFirstCorner(int x, int y, int z) {
     m_firstCorner.set(x, y, z);
   }
+
+  ZIntPoint getCorner(int index) const;
 
   inline void setLastCorner(const ZIntPoint &corner) {
     m_lastCorner = corner;
@@ -80,6 +83,9 @@ public:
   void expandX(int dx);
   void expandY(int dy);
 
+  //intersect
+  ZIntCuboid& intersect(const ZIntCuboid &cuboid);
+
   /*!
    * \brief Get the volume of the cuboid.
    *
@@ -104,7 +110,15 @@ public:
 
   bool equals(const ZIntCuboid &cuboid) const;
 
+  bool hasOverlap(const ZIntCuboid &box) const;
+
   //double distanceTo(const ZIntPoint &pt);
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+  int getDim(NeuTube::EAxis axis) const;
+
+  ZIntPoint getCenter() const;
 
 private:
   ZIntPoint m_firstCorner;

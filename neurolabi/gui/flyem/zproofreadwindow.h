@@ -2,6 +2,8 @@
 #define ZPROOFREADWINDOW_H
 
 #include <QMainWindow>
+#include <QPalette>
+
 #include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
@@ -11,6 +13,7 @@ class QProgressDialog;
 class ZProgressSignal;
 class ZDvidTarget;
 class ZWidgetMessage;
+class ZDvidDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -22,10 +25,16 @@ public:
   explicit ZProofreadWindow(QWidget *parent = 0);
 
   static ZProofreadWindow* Make(QWidget *parent = 0);
+  static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
   QProgressDialog* getProgressDialog() {
     return m_progressDlg;
   }
+
+  void setDvidDialog(ZDvidDialog *dvidDlg);
+
+public:
+  void test();
 
 signals:
   void splitTriggered(uint64_t bodyId);
@@ -57,6 +66,7 @@ public slots:
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
+  void changeEvent(QEvent * event);
 
 private:
   void init();
@@ -67,9 +77,12 @@ private:
 
   void createMenu();
   void createToolbar();
+  void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
   void logMessage(const ZWidgetMessage &msg);
+
+  void displayActiveHint(bool on);
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
@@ -92,9 +105,12 @@ private:
   QAction *m_openObject3dAction;
 
   QToolBar *m_toolBar;
+  QToolBar *m_synapseToolbar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
+
+  QPalette m_defaultPal;
 };
 
 

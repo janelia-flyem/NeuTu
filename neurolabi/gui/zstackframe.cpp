@@ -43,6 +43,7 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "zdialogfactory.h"
+#include "zobject3dfactory.h"
 
 using namespace std;
 
@@ -284,7 +285,7 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_presenter, SLOT(updateStackBc()));
   connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateView()));
+          m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
@@ -328,8 +329,8 @@ void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
-  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
-          m_presenter, SLOT(processSliceChangeEvent(int)));
+//  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
+//          m_presenter, SLOT(processSliceChangeEvent(int)));
 }
 
 bool ZStackFrame::connectFunc(const QObject* obj1, const char *signal,
@@ -635,8 +636,10 @@ void ZStackFrame::closeEvent(QCloseEvent *event)
 void ZStackFrame::resizeEvent(QResizeEvent *event)
 {
   QMdiSubWindow::resizeEvent(event);
-
+#ifdef _DEBUG_
   qDebug() << "emit infoChanged()";
+#endif
+
   emit infoChanged();
 }
 
@@ -777,9 +780,14 @@ bool ZStackFrame::traceMasked()
   return m_settingDlg->traceMasked();
 }
 
-double ZStackFrame::traceMinScore()
+double ZStackFrame::autoTraceMinScore()
 {
-  return m_settingDlg->traceMinScore();
+  return m_settingDlg->autoTraceMinScore();
+}
+
+double ZStackFrame::manualTraceMinScore()
+{
+  return m_settingDlg->manualTraceMinScore();
 }
 
 char ZStackFrame::unit()
@@ -857,7 +865,8 @@ void ZStackFrame::synchronizeDocument()
                             m_settingDlg->yResolution(),
                             m_settingDlg->zResolution(),
                             m_settingDlg->unit());
-  document()->setTraceMinScore(m_settingDlg->traceMinScore());
+  document()->setAutoTraceMinScore(m_settingDlg->autoTraceMinScore());
+  document()->setManualTraceMinScore(m_settingDlg->manualTraceMinScore());
   document()->setReceptor(m_settingDlg->receptor(), m_settingDlg->useCone());
   if (hasProject()) {
     document()->setWorkdir(m_traceProject->workspacePath().toLocal8Bit().constData());
@@ -919,7 +928,9 @@ void ZStackFrame::keyPressEvent(QKeyEvent *event)
 
 void ZStackFrame::updateInfo()
 {
+#ifdef _DEBUG_
   qDebug() << "emit infoChanged()";
+#endif
   emit infoChanged();
 }
 
@@ -982,7 +993,7 @@ QStringList ZStackFrame::toStringList() const
 
 void ZStackFrame::updateView()
 {
-  m_view->redraw();
+  m_view->redraw(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackFrame::undo()
@@ -1029,9 +1040,9 @@ void ZStackFrame::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   document()->executeSwcRescaleCommand(setting);
 }
 
-void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample)
+void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-  document()->executeAutoTraceCommand(traceLevel, doResample);
+  document()->executeAutoTraceCommand(traceLevel, doResample, c);
 }
 
 void ZStackFrame::executeAutoTraceAxonCommand()
@@ -1228,14 +1239,16 @@ void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 
 void ZStackFrame::setViewPortCenter(int x, int y, int z)
 {
-  presenter()->setViewPortCenter(x, y, z);
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_NORMAL);
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
 //  x -= document()->getStackOffset().getX();
 //  y -= document()->getStackOffset().getY();
-  z -= document()->getStackOffset().getZ();
+//  z -= document()->getStackOffset().getZ();
+  ZGeometry::shiftSliceAxis(x, y, z, view()->getSliceAxis());
 
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
@@ -1243,7 +1256,10 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
-  presenter()->setViewPortCenter(x, y, z);
+
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::hideObject()
@@ -1279,7 +1295,11 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
     ZWindowFactory factory;
     //factory.setParentWidget(parent);
     window = factory.make3DWindow(doc, mode);
-    window->setWindowTitle(windowTitle());
+    QString title = windowTitle();
+    if (title.endsWith(" *")) {
+      title.resize(title.size()-2);
+    }
+    window->setWindowTitle(title);
 
     doc->registerUser(window);
 
@@ -1495,9 +1515,11 @@ void ZStackFrame::importMask(const QString &filePath)
 
   if (stack != NULL) {
     if (stack->channelNumber() == 1 && stack->kind() == GREY) {
-      ZObject3d *obj = new ZObject3d;
+      ZObject3dScan *obj = ZObject3dFactory::MakeObject3dScan(*stack, NULL);
+      obj->setSource(stack->sourcePath());
       obj->setColor(QColor(255, 0, 0, 128));
-      if (obj->loadStack(stack->c_stack(0))) {
+//      if (obj->loadStack(stack->c_stack(0))) {
+      if (!obj->isEmpty()) {
         obj->translate(document()->getStackOffset());
         /*
         obj->translate(iround(document()->getStackOffset().getX()),
@@ -1628,7 +1650,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 #endif
 
     //obj->print();
-    obj->duplicateAcrossZ(document()->getStack()->depth());
+    obj->duplicateSlice(document()->getStack()->depth());
 
     obj->setColor(16, 16, 16, 64);
 

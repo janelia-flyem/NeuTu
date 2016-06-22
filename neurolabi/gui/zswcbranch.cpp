@@ -344,7 +344,7 @@ std::vector<ZWeightedPoint> ZSwcBranch::denseSamplePoint()
     double dist = SwcTreeNode::distance(tn, parent);
     double maxLength = dist - r1;
 
-    if (r0 > 0.0 || r1 > 0.0 && (r0 + r1) < dist) {
+    if ((r0 > 0.0 || r1 > 0.0) && (r0 + r1) < dist) {
       double slope = (r1 - r0) / dist;
       double r = r0;
       double curLength = (r + r0) / (1.0 - slope);

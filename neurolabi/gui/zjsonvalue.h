@@ -26,6 +26,7 @@ public:
   ZJsonValue(json_t *data, bool asNew);
 
   ZJsonValue(json_t *data, ESetDataOption option);
+  ZJsonValue(const json_t *data, ESetDataOption option);
 
   /*!
    * \brief Constructor
@@ -41,6 +42,8 @@ public:
   ZJsonValue& operator= (const ZJsonValue &value);
 
   virtual ~ZJsonValue();
+
+  ZJsonValue clone() const;
 
 public:
   inline json_t *getData() const { return m_data; }
@@ -73,6 +76,7 @@ public:
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
+  void set(const ZJsonValue &value);
 
   /*!
    * \brief Obsolete. Will be removed.

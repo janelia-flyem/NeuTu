@@ -7,8 +7,9 @@ class ZStackDocHelper
 {
 public:
   ZStackDocHelper();
+#if defined(_FLYEM_)
   void extractCurrentZ(const ZStackDoc *doc);
-
+#endif
   int getCurrentZ() const;
   bool hasCurrentZ() const;
 

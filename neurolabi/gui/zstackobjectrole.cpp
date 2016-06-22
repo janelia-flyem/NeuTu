@@ -12,6 +12,7 @@ const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ROI = 128;
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_MASK = 256;
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SEGMENTATION = 512;
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ACTIVE_VIEW = 1024;
+const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SKELETON_MASK = 2048;
 
 ZStackObjectRole::ZStackObjectRole() : m_role(ZStackObjectRole::ROLE_NONE)
 {

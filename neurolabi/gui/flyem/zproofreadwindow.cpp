@@ -22,6 +22,8 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "QsLog.h"
+#include "zstackpresenter.h"
+#include "flyem/zflyemproofpresenter.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -125,11 +127,39 @@ void ZProofreadWindow::init()
   statusBar()->showMessage("Load a database to start proofreading");
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
+
+  m_defaultPal = palette();
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
 {
   return new ZProofreadWindow(parent);
+}
+
+ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
+{
+  ZProofreadWindow *window = new ZProofreadWindow(parent);
+  if (dvidDlg != NULL) {
+    window->setDvidDialog(dvidDlg);
+  }
+
+  return window;
+}
+
+void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
+{
+  m_mainMvc->setDvidDialog(dvidDlg);
+}
+
+void ZProofreadWindow::test()
+{
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "86e1", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+  m_mainMvc->setDvidTarget(target);
+  m_mainMvc->getPresenter()->setObjectVisible(false);
+  m_mainMvc->test();
 }
 
 void ZProofreadWindow::createMenu()
@@ -219,6 +249,33 @@ void ZProofreadWindow::createMenu()
   m_viewSegmentationAction->setEnabled(false);
 }
 
+void ZProofreadWindow::addSynapseActionToToolbar()
+{
+  m_synapseToolbar = new QToolBar(this);
+  m_synapseToolbar->setIconSize(QSize(24, 24));
+  m_synapseToolbar->addSeparator();
+  m_synapseToolbar->addWidget(new QLabel("Synapse"));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_PRE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_ADD_POST));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_DELETE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_MOVE));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_LINK));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_UNLINK));
+  addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
+}
+
 void ZProofreadWindow::createToolbar()
 {
   m_toolBar = new QToolBar(this);
@@ -236,6 +293,8 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_openSequencerAction);
+
+  addSynapseActionToToolbar();
 }
 
 void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
@@ -427,4 +486,45 @@ void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
     LDEBUG() << msg.toPlainString();
     break;
   }
+}
+
+void ZProofreadWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::ActivationChange) {
+    displayActiveHint(isActiveWindow());
+  }
+}
+
+void ZProofreadWindow::displayActiveHint(bool on)
+{
+//  setAutoFillBackground(on);
+#if 1
+  if (on) {
+    setPalette(m_defaultPal);
+  } else {
+    QPalette pal(m_defaultPal);
+//    QColor color = pal.background().color();
+//    color.setAlpha(200);
+    pal.setColor(QPalette::Background, QColor(200, 164, 164, 200));
+    setPalette(pal);
+  }
+#if 0
+  (palette());
+
+  // set black background
+  Pal.setColor(QPalette::Background, Qt::black);
+  m_pMyWidget->setAutoFillBackground(true);
+  m_pMyWidget->setPalette(Pal);
+
+  if (on) {
+//    setWindowOpacity(1.0);
+    setStyleSheet("background-color:black;");
+  } else {
+//    setWindowOpacity(0.8);
+    setStyleSheet("background-color:blue;");
+  }
+
+  setPalette(pal);
+#endif
+#endif
 }

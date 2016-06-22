@@ -8,6 +8,7 @@
 #include "tz_mc_stack.h"
 #include "tz_cuboid_i.h"
 #include "tz_stack_watershed.h"
+#include "zinthistogram.h"
 
 //! Functions for C-compatible stack
 /*!
@@ -27,6 +28,14 @@ namespace C_Stack {
  *         coordinates are out of range.
 */
 ssize_t offset(int x, int y, int z, int width, int height, int depth);
+
+/*!
+ * \brief Neighborhood check.
+ */
+int neighborTest(int conn, int width, int height, int depth, size_t index,
+                 int *isInBound);
+int neighborTest(int conn, int width, int height, int depth,
+                 int x, int y, int z, int *isInBound);
 
 //Functions for Stack
 
@@ -251,6 +260,7 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+ZIntHistogram* hist(const Stack *stack, ZIntHistogram *out);
 double mean(const Stack *stack);
 double mode(const Stack *stack);
 
@@ -324,10 +334,6 @@ void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 
-int neighborTest(int conn, int width, int height, int depth, size_t index,
-                 int *isInBound);
-int neighborTest(int conn, int width, int height, int depth,
-                 int x, int y, int z, int *isInBound);
 
 Stack* extractChannel(const Stack *stack, int c);
 

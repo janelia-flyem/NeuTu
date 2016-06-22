@@ -53,7 +53,7 @@
 #include "zmoviescript.h"
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
@@ -75,6 +75,7 @@
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
+#include "dialogs/zswcisolationdialog.h"
 
 class Sleeper : public QThread
 {
@@ -520,6 +521,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
+
+  m_cuttingStackBound = false;
 }
 
 Z3DWindow::~Z3DWindow()
@@ -664,11 +667,13 @@ void Z3DWindow::init(EInitMode mode)
           SIGNAL(punctumVisibleStateChanged()),
           m_punctaFilter, SLOT(updatePunctumVisibleState()));
   connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged()),
-          m_punctaFilter, SLOT(updatePunctumVisibleState()));
+          SIGNAL(graphVisibleStateChanged()),
+          this, SLOT(update3DGraphDisplay()));
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
+  connect(getDocument(), SIGNAL(stackBoundBoxChanged()),
+          this, SLOT(updateCuttingBox()));
   connect(m_punctaFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
           this, SLOT(punctaCoordScaleChanged()));
   connect(m_swcFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
@@ -690,6 +695,8 @@ void Z3DWindow::init(EInitMode mode)
           m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
   connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
+  connect(m_swcFilter, SIGNAL(extendSwcTreeNode(double, double, double, double)),
+            this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
@@ -796,8 +803,16 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(moveSelectedObjects(double,double,double)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeTreeInRoi(bool)),
+          this, SLOT(selectSwcTreeNodeTreeInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
+          m_doc.get(), SLOT(selectDownstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingUpstreamSwcNode()),
+          m_doc.get(), SLOT(selectUpstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
+          m_doc.get(), SLOT(selectConnectedNode()));
 
   /*
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -808,6 +823,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+
+  m_swcIsolationDlg = new ZSwcIsolationDialog(this);
 
 #if defined(REMOTE_WORKSTATION)
   getCompositor()->setShowBackground(false);
@@ -861,8 +878,8 @@ void Z3DWindow::createActions()
   m_redoAction->setShortcuts(QKeySequence::Redo);
   */
 
-  m_undoAction = m_doc->getUndoAction();
-  m_redoAction = m_doc->getRedoAction();
+  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
@@ -914,7 +931,7 @@ void Z3DWindow::createActions()
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
           this, SLOT(changeSelectedSwcNodeType()));
 
-  m_setSwcRootAction = new QAction("Set as root", this);
+  m_setSwcRootAction = new QAction("Set as a root", this);
   connect(m_setSwcRootAction, SIGNAL(triggered()),
           this, SLOT(setRootAsSelectedSwcNode()));
   m_singleSwcNodeActionActivator.registerAction(m_setSwcRootAction, true);
@@ -959,10 +976,10 @@ void Z3DWindow::createActions()
           */
 
   m_selectSwcNodeDownstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_DOWNSTREAM);
 
   m_selectSwcNodeUpstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_UPSTREAM);
 
   /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
@@ -970,7 +987,7 @@ void Z3DWindow::createActions()
           SLOT(selectBranchNode()));
           */
   m_selectSwcNodeBranchAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_SWC_BRANCH);
 
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
@@ -1049,10 +1066,10 @@ void Z3DWindow::createActions()
           */
 
   m_removeSwcTurnAction =
-      m_doc->getAction(ZStackDoc::ACTION_REMOVE_TURN);
+      m_doc->getAction(ZActionFactory::ACTION_REMOVE_TURN);
 
   m_resolveCrossoverAction =
-      m_doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER);
+      m_doc->getAction(ZActionFactory::ACTION_RESOLVE_CROSSOVER);
 
 }
 
@@ -1665,7 +1682,10 @@ void Z3DWindow::update3DGraphDisplay()
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
+    Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
+    if (graph->isVisible()) {
+      m_graphFilter->addData(*graph);
+    }
   }
   updateGraphBoundBox();
 //  updateDecorationBoundBox();
@@ -1816,6 +1836,11 @@ void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);
   m_doc->undoStack()->push(insertNewSwcTreeNodeCommand);
       */
+}
+
+void Z3DWindow::extendSwcTreeNode(double x, double y, double z, double r)
+{
+  m_doc->executeSwcNodeExtendCommand(ZPoint(x, y, z), r);
 }
 
 void Z3DWindow::removeSwcTurn()
@@ -2122,7 +2147,8 @@ void Z3DWindow::markSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2132,7 +2158,8 @@ void Z3DWindow::markSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2142,7 +2169,7 @@ void Z3DWindow::markSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2152,7 +2179,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2162,7 +2189,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2172,7 +2199,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2441,7 +2468,11 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //    }
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
                "Right click to exit extending mode.");
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    if (getDocument()->hasStackData()) {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    } else {
+      m_swcFilter->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+    }
     m_canvas->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);
@@ -2460,6 +2491,11 @@ void Z3DWindow::changeBackground()
   int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
   QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
+}
+
+bool Z3DWindow::isBackgroundOn() const
+{
+  return m_compositor->showingBackground();
 }
 
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
@@ -2517,6 +2553,7 @@ void Z3DWindow::closeEvent(QCloseEvent */*event*/)
 
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
+  ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
   {
   case Qt::Key_Backspace:
@@ -2572,6 +2609,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_S:
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
+    } else if (event->modifiers() == Qt::NoModifier) {
+      keyMode = ZInteractionEngine::KM_SWC_SELECTION;
     }
     break;
   case Qt::Key_I:
@@ -2589,6 +2628,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
 #endif
     if (event->modifiers() == Qt::NoModifier) {
       m_doc->executeBreakSwcConnectionCommand();
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      m_cuttingStackBound = !m_cuttingStackBound;
+      updateCuttingBox();
     }
     break;
   case Qt::Key_Equal: // increase swc size scale
@@ -2681,11 +2723,50 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_R:
-    m_doc->executeResetBranchPoint();
+    if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeResetBranchPoint();
+    } else {
+      m_doc->executeSetRootCommand();
+    }
+    break;
+  case Qt::Key_1:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectDownstreamNode();
+    }
+    break;
+  case Qt::Key_2:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectUpstreamNode();
+    }
+    break;
+  case Qt::Key_3:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectConnectedNode();
+    }
+    break;
+  case Qt::Key_4:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->inverseSwcNodeSelection();
+    }
+    break;
+  case Qt::Key_5:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      if (m_swcIsolationDlg->exec()) {
+        m_doc->selectNoisyTrees(m_swcIsolationDlg->getLengthThreshold(),
+                                m_swcIsolationDlg->getDistanceThreshold());
+      }
+    }
     break;
   default:
     break;
   }
+
+  getCanvas()->setKeyMode(keyMode);
 }
 
 QTabWidget *Z3DWindow::createBasicSettingTabWidget()
@@ -2851,6 +2932,7 @@ void Z3DWindow::changeSelectedSwcNodeType()
       default:
         break;
       }
+      getSwcFilter()->addNodeType(dlg.type());
 
       m_doc->notifySwcModified();
     }
@@ -2916,6 +2998,7 @@ void Z3DWindow::breakSelectedSwcNode()
     */
   }
 }
+
 
 void Z3DWindow::mergeSelectedSwcNode()
 {
@@ -3994,6 +4077,37 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
   base->setZScale(sz);
 }
 
+void Z3DWindow::updateCuttingBox()
+{
+  if (m_cuttingStackBound) {
+    setCutBox(LAYER_SWC, getDocument()->getStack()->getBoundBox());
+  } else {
+    resetCutBox(LAYER_SWC);
+  }
+}
+
+void Z3DWindow::setCutBox(ERendererLayer layer, const ZIntCuboid &box)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->setCutBox(box);
+    break;
+  default:
+    break;
+  }
+}
+
+void Z3DWindow::resetCutBox(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->resetCut();
+    break;
+  default:
+    break;
+  }
+}
+
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
 {
   getRendererBase(layer)->setOpacity(opacity);
@@ -4107,6 +4221,55 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
     removeRectRoi();
   }
 }
+
+void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::RegularRootIterator rootIter(tree);
+      while (rootIter.hasNext()) {
+        Swc_Tree_Node *root = rootIter.next();
+        bool treeInRoi = true;
+        ZSwcTree::DownstreamIterator dsIter(root);
+        while (dsIter.hasNext()) {
+          Swc_Tree_Node *tn = dsIter.next();
+          const QPointF &pt = getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+        }
+
+        if (treeInRoi) {
+          dsIter.restart();
+          while (dsIter.hasNext()) {
+            Swc_Tree_Node *tn = dsIter.next();
+            tree->selectNode(tn, true);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
 
 void Z3DWindow::removeRectRoi()
 {

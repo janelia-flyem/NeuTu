@@ -192,6 +192,8 @@ public:
 
   bool hasPartner(int bodyId) const;
 
+  std::vector<ZJsonObject> toDvidSynapseElementJson() const;
+
 private:
   SynapseLocation m_tBar;
   std::vector<SynapseLocation> m_partnerArray;

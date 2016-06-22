@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>239</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Saving Splits</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -63,7 +63,21 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="textEdit">
+    <widget class="QCheckBox" name="ccaCheckBox">
+     <property name="text">
+      <string>Connected component analysis</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="noticeTextEdit">
      <property name="enabled">
       <bool>true</bool>
      </property>

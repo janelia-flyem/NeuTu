@@ -1,7 +1,9 @@
 #include "zstackdochelper.h"
 #include "zstackdoc.h"
+#if defined(_FLYEM_)
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
+#endif
 #include "zstackview.h"
 
 ZStackDocHelper::ZStackDocHelper()
@@ -9,7 +11,7 @@ ZStackDocHelper::ZStackDocHelper()
   m_currentZ = 0;
   m_hasCurrentZ = false;
 }
-
+#if defined(_FLYEM_)
 void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
 {
   m_hasCurrentZ = false;
@@ -42,7 +44,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
     }
   }
 }
-
+#endif
 int ZStackDocHelper::getCurrentZ() const
 {
   return m_currentZ;

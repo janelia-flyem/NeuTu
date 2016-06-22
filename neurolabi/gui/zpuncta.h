@@ -19,11 +19,13 @@ public:
   void clear();
   void addPunctum(ZPunctum *p, bool ignoreNull = true);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   bool load(const std::string &filePath, double radius = 3.0);
+#if defined(_FLYEM_)
   bool load(const ZJsonObject &obj, double radius = 3.0);
-
+#endif
   void sort() const;
 
   template<typename InputIterator>

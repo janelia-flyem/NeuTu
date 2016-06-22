@@ -13,6 +13,7 @@
 #include "zstackpresenter.h"
 #include "zstackview.h"
 #include "zpoint.h"
+#include "ztiledstackframe.h"
 
 #include <QFileInfo>
 
@@ -22,7 +23,7 @@ const QColor ZTileManager::m_selectionColor = QColor(255, 0, 0);
 ZTileManager::ZTileManager(QObject *parent) : QGraphicsScene(parent),
   m_selectedTileItem(NULL), /*m_preselected(NULL),*/ m_highlightRec(NULL), m_view(NULL)/*, m_selectDecoration(NULL)*/
 {
-    scaleFactor = 0.1;
+//    scaleFactor = 1.0;
     getParentFrame()->setTileManager(this);
 }
 
@@ -77,7 +78,7 @@ bool ZTileManager::importJsonFile(const QString &filePath)
             ZTileGraphicsItem *tileItem = new ZTileGraphicsItem;
             if (tileItem->loadJsonObject(tileObj,tileFilePath)) {
               //tileItem->setFlag(QGraphicsItem::ItemIsSelectable);
-              tileItem->setScale(scaleFactor);
+//              tileItem->setScale(scaleFactor);
               addItem(tileItem);
               succ = true;
             } else {
@@ -169,6 +170,11 @@ void ZTileManager::updateTileStack()
         frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi(true);
+
+        ZTiledStackFrame *completeFrame = qobject_cast<ZTiledStackFrame*>(frame);
+        if (completeFrame != NULL) {
+          completeFrame->updateStackBoundBox();
+        }
       }
       frame->setWindowTitle(source.c_str());
       endProgress();
@@ -206,7 +212,7 @@ void ZTileManager::selectItem(ZTileGraphicsItem *item)
     */
     //m_selectDecoration->setRect(m_selectedTileItem->rect());
     //qDebug() << m_selectDecoration->rect();
-    emit(loadingTile());
+//    emit(loadingTile());
     updateTileStack();
   }
 }

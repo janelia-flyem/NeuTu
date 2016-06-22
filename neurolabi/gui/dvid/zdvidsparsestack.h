@@ -5,6 +5,7 @@
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "zthreadfuturemap.h"
 
 class ZIntCuboid;
 
@@ -14,7 +15,12 @@ public:
   ZDvidSparseStack();
   ~ZDvidSparseStack();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+  }
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -36,12 +42,14 @@ public:
   ZIntCuboid getBoundBox() const;
   using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
-  void loadBody(int bodyId);
+  void loadBody(uint64_t bodyId, bool canonizing = false);
+  void loadBodyAsync(uint64_t bodyId);
   void setMaskColor(const QColor &color);
+  void setLabel(uint64_t bodyId);
 
   uint64_t getLabel() const;
 
-  const ZObject3dScan *getObjectMask() const;
+//  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
 
   const ZSparseStack* getSparseStack() const;
@@ -50,17 +58,27 @@ public:
   void downloadBodyMask();
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
 
   bool isEmpty() const;
 
   ZDvidSparseStack* getCrop(const ZIntCuboid &box) const;
 
+  void deprecateStackBuffer();
+
 
 private:
+  void init();
   void initBlockGrid();
   bool fillValue();
   bool fillValue(const ZIntCuboid &box);
+  QString getLoadBodyThreadId() const;
+  void pushMaskColor();
+  void pushLabel();
+  bool loadingObjectMask() const;
+  void finishObjectMaskLoading();
+  void syncObjectMask();
+  void pushAttribute();
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -70,7 +88,9 @@ private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
   bool m_isValueFilled;
+  uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
+  ZThreadFutureMap m_futureMap;
 };
 
 #endif // ZDVIDSPARSESTACK_H

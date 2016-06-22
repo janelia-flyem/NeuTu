@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QtConcurrentRun>
 #include <QMessageBox>
+#include <QElapsedTimer>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -29,6 +30,13 @@
 #include "zintcuboidobj.h"
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
+#include "zflyemnamebodycolorscheme.h"
+#include "zflyemsequencercolorscheme.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidsynpasecommand.h"
+#include "dvid/zflyembookmarkcommand.h"
+#include "dvid/zdvidannotation.h"
+#include "flyem/zflyemtodolist.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -55,7 +63,7 @@ void ZFlyEmProofDoc::initTimer()
 
 void ZFlyEmProofDoc::initAutoSave()
 {
-  m_isCustomBookmarkSaved = true;
+//  m_isCustomBookmarkSaved = true;
 
   QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
         NeutubeConfig::AUTO_SAVE).c_str());
@@ -78,15 +86,27 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
+    connect(this, SIGNAL(bodyMerged()),
+            this, SLOT(saveMergeOperation()));
+    connect(this, SIGNAL(bodyUnmerged()),
+            this, SLOT(saveMergeOperation()));
+
+  /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
+          */
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
-  if (getDvidLabelSlice() != NULL) {
-    getDvidLabelSlice()->setSelection(selected, labelType);
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  if (!sliceList.isEmpty()) {
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      slice->setSelection(selected, labelType);
+    }
 
     emit bodySelectionChanged();
   }
@@ -95,10 +115,14 @@ void ZFlyEmProofDoc::setSelectedBody(
 void ZFlyEmProofDoc::addSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
-  if (getDvidLabelSlice() != NULL) {
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  if (!sliceList.isEmpty()) {
     if (!selected.empty()) {
-      getDvidLabelSlice()->addSelection(
-            selected.begin(), selected.end(), labelType);
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        slice->addSelection(selected.begin(), selected.end(), labelType);
+      }
       emit bodySelectionChanged();
     }
   }
@@ -147,15 +171,88 @@ void ZFlyEmProofDoc::recordAnnotation(
   m_annotationMap[bodyId] = anno;
 }
 
+void ZFlyEmProofDoc::cleanBodyAnnotationMap()
+{
+  std::set<uint64_t> selected = getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  std::vector<uint64_t> keysToRemove;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    uint64_t bodyId = iter.key();
+    if (selected.count(bodyId) == 0) {
+      LWARN() << "In consistent body selection: " << bodyId;
+      keysToRemove.push_back(bodyId);
+    }
+  }
+
+  for (std::vector<uint64_t>::const_iterator iter = keysToRemove.begin();
+       iter != keysToRemove.end(); ++iter) {
+    m_annotationMap.remove(*iter);
+  }
+}
+
+void ZFlyEmProofDoc::verifyBodyAnnotationMap()
+{
+  std::set<uint64_t> selected = getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    uint64_t bodyId = iter.key();
+    if (selected.count(bodyId) == 0) {
+      emit messageGenerated(
+            ZWidgetMessage(
+              QString("Inconsistent body selection: %1").arg(bodyId),
+              NeuTube::MSG_WARNING));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::clearBodyMergeStage()
+{
+  clearBodyMerger();
+  saveMergeOperation();
+  notifyBodyUnmerged();
+}
+
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
   bool okToContinue = true;
 
-  if (m_annotationMap.size() > 1) {
+  cleanBodyAnnotationMap();
+
+  QMap<uint64_t, QVector<QString> > nameMap;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!anno.getName().empty()) {
+      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
+
+      if (!nameMap.contains(mappedBodyId)) {
+        nameMap[mappedBodyId] = QVector<QString>();
+      }
+      nameMap[mappedBodyId].append(anno.getName().c_str());
+//      nameMap[iter.key()] = anno.getName().c_str();
+    }
+  }
+  if (nameMap.size() > 1) {
+    QString detail = "<p>Details: </p>";
+    detail += "<ul>";
+    for (QMap<uint64_t, QVector<QString> >::const_iterator iter = nameMap.begin();
+         iter != nameMap.end(); ++iter) {
+      const QVector<QString> &nameArray = iter.value();
+      detail += QString("<li>%1:").arg(iter.key());
+      foreach (const QString &name, nameArray) {
+        detail += " \"" + name + "\"";
+      }
+
+//      detail += QString("<li>%1: %2</li>").arg(iter.key()).arg(iter.value());
+
+      detail += "</li>";
+    }
+    detail += "</ul>";
     okToContinue = ZDialogFactory::Ask(
           "Conflict to Resolve",
-          "You are about to merge multiple annotations. Do you want to continue?",
+          "You are about to merge multiple names. Do you want to continue?" +
+          detail,
           NULL);
   }
 
@@ -217,14 +314,28 @@ void ZFlyEmProofDoc::annotateBody(
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
-    if (getDvidLabelSlice()->hasCustomColorMap()) {
-      m_bodyColorMap->updateNameMap(annotation);
-      getDvidLabelSlice()->assignColorMap();
-      processObjectModified(getDvidLabelSlice());
-      notifyObjectModified();
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      if (slice->hasCustomColorMap()) {
+        ZFlyEmNameBodyColorScheme *colorMap =
+            dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
+        if (colorMap != NULL) {
+          colorMap->updateNameMap(annotation);
+          slice->assignColorMap();
+          processObjectModified(slice);
+        }
+      }
     }
+
+    notifyObjectModified();
   }
   if (writer.getStatusCode() == 200) {
+    if (getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL).count(bodyId) > 0) {
+      m_annotationMap[bodyId] = annotation;
+    }
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
@@ -234,44 +345,128 @@ void ZFlyEmProofDoc::annotateBody(
   }
 }
 
+void ZFlyEmProofDoc::initData(
+    const std::string &type, const std::string &dataName)
+{
+  if (!m_dvidReader.hasData(dataName)) {
+    m_dvidWriter.createData(type, dataName);
+    if (!m_dvidWriter.isStatusOk()) {
+      emit messageGenerated(
+            ZWidgetMessage(QString("Failed to create data: ") + dataName.c_str(),
+                           NeuTube::MSG_ERROR));
+    }
+  }
+}
+
+void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
+{
+  if (m_dvidReader.isReady()) {
+    initData("annotation", target.getBookmarkName());
+    initData("annotation", target.getTodoListName());
+    initData("keyvalue", target.getSkeletonName());
+    initData("keyvalue", target.getThumbnailName());
+    initData("keyvalue", target.getBookmarkKeyName());
+  }
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
+    m_dvidWriter.open(target);
     m_dvidTarget = target;
-    m_bodyColorMap.reset();
+    m_activeBodyColorMap.reset();
+    initData(target);
   } else {
+    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
+
+  prepareDvidData();
+
+  updateDvidTargetForObject();
+}
+
+void ZFlyEmProofDoc::prepareDvidData()
+{
+  if (m_dvidReader.isReady()) {
+    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+    ZIntCuboid boundBox;
+    if (dvidInfo.isValid()) {
+      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
+                       dvidInfo.getEndCoordinates());
+    } else {
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
+    }
+
+    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    loadStack(stack);
+  }
+
+
+  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+  ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+  addObject(ensemble, true);
+
+  ensemble->setDvidTarget(getDvidTarget());
+  addDvidLabelSlice(NeuTube::Z_AXIS);
+
+//    addDvidLabelSlice(NeuTube::Y_AXIS);
+//    addDvidLabelSlice(NeuTube::Z_AXIS);
 }
 
 void ZFlyEmProofDoc::updateTileData()
 {
   if (m_dvidReader.isReady()) {
     ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+    ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
-      ZStack *stack = ZStackFactory::makeVirtualStack(
-            ZIntCuboid(dvidInfo.getStartCoordinates(),
-                       dvidInfo.getEndCoordinates()));
-      loadStack(stack);
+      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
+                       dvidInfo.getEndCoordinates());
+    } else {
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
+    }
 
-      ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-      ensemble->setDvidTarget(getDvidTarget());
-      //    ensemble->attachView(stackWidget->getView());
+    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    loadStack(stack);
+
+    ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
+
+    if (ensemble == NULL) {
+      ensemble = new ZDvidTileEnsemble;
+      ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
       ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
       addObject(ensemble, true);
-
-      //  target.setBodyLabelName("labels");
-
-      ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
-      labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      labelSlice->setDvidTarget(getDvidTarget());
-      labelSlice->setSource(ZStackObjectSourceFactory::MakeDvidLabelSliceSource());
-      labelSlice->setBodyMerger(&m_bodyMerger);
-      addObject(labelSlice, true);
     }
+
+    ensemble->setDvidTarget(getDvidTarget());
+
+    ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+
+    if (slice == NULL) {
+      addDvidLabelSlice(NeuTube::Z_AXIS);
+    } else{
+      slice->setDvidTarget(getDvidTarget());
+    }
+//    addDvidLabelSlice(NeuTube::Y_AXIS);
+//    addDvidLabelSlice(NeuTube::Z_AXIS);
   }
 }
+
+
+void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
+{
+  ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
+  labelSlice->setSliceAxis(axis);
+  labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  labelSlice->setDvidTarget(getDvidTarget());
+  labelSlice->setSource(
+        ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
+  labelSlice->setBodyMerger(&m_bodyMerger);
+  addObject(labelSlice, 0, true);
+}
+
 
 ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
 {
@@ -283,14 +478,277 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
   return NULL;
 }
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice() const
+template<typename T>
+static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
+{
+  QList<T*> objList = doc->getObjectList<T>();
+  for (typename QList<T*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    T *obj = *iter;
+    obj->setDvidTarget(doc->getDvidTarget());
+//    doc->processObjectModified(obj);
+  }
+}
+
+void ZFlyEmProofDoc::updateDvidTargetForObject()
+{
+  /*
+  QList<ZDvidLabelSlice*> objList = getObjectList<ZDvidLabelSlice>();
+  for (QList<ZDvidLabelSlice*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZDvidLabelSlice *obj = *iter;
+    obj->setDvidTarget(getDvidTarget());
+  }
+  */
+//  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  UpdateDvidTargetForObject<ZDvidLabelSlice>(this);
+  UpdateDvidTargetForObject<ZDvidSparseStack>(this);
+  UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
+  UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
+  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
+//  endObjectModifiedMode();
+//  notifyObjectModified();
+}
+
+
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(NeuTube::EAxis axis) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
-  if (!teList.empty()) {
-    return teList[0];
+  std::string source = ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis);
+  for (QList<ZDvidLabelSlice*>::iterator iter = teList.begin();
+       iter != teList.end(); ++iter) {
+    ZDvidLabelSlice *te = *iter;
+    if (te->getSource() == source) {
+      return te;
+    }
   }
 
   return NULL;
+}
+
+ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
+    NeuTube::EAxis axis) const
+{
+  QList<ZDvidSynapseEnsemble*> teList = getObjectList<ZDvidSynapseEnsemble>();
+//  QList<ZStackObject*> teList = getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+  for (QList<ZDvidSynapseEnsemble*>::iterator iter = teList.begin();
+       iter != teList.end(); ++iter) {
+    ZDvidSynapseEnsemble *te = *iter;
+    if (te->getSliceAxis() == axis) {
+      return te;
+    }
+  }
+
+  return NULL;
+}
+
+QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
+{
+  QList<ZStackObject*> objList =
+      getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
+
+  QList<ZDvidSynapseEnsemble*> teList;
+  for (QList<ZStackObject*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    teList.append(dynamic_cast<ZDvidSynapseEnsemble*>(*iter));
+  }
+
+  return teList;
+}
+
+bool ZFlyEmProofDoc::hasDvidSynapse() const
+{
+  return !getDvidSynapseEnsembleList().isEmpty();
+}
+
+bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    return getDvidSynapseEnsemble(NeuTube::Z_AXIS)->hasSelected();
+  }
+
+  return false;
+}
+
+std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
+{
+  std::set<ZIntPoint> selected;
+
+  QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+       iter != seList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    selected.insert(selectedSet.begin(), selectedSet.end());
+  }
+
+  return selected;
+}
+
+void ZFlyEmProofDoc::tryMoveSelectedSynapse(
+    const ZIntPoint &dest, NeuTube::EAxis axis)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    const ZIntPoint &source = *selectedSet.begin();
+    if (selectedSet.size() == 1) {
+      se->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      processObjectModified(se);
+    }
+
+    QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+    for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+         iter != seList.end(); ++iter) {
+      ZDvidSynapseEnsemble *buddySe = *iter;
+      if (buddySe != se) {
+        buddySe->moveSynapse(source, dest, ZDvidSynapseEnsemble::DATA_LOCAL);
+        processObjectModified(se);
+      }
+    }
+
+    notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::addSynapse(
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
+{
+  ZDvidSynapse synapse;
+  synapse.setPosition(pt);
+  synapse.setKind(kind);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+  synapse.setUserName(NeuTube::GetCurrentUserName());
+
+  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+  QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
+       iter != seList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->addSynapse(synapse, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::removeSynapse(
+    const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->removeSynapse(pos, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::addSynapse(
+    const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->addSynapse(synapse, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
+{
+  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->moveSynapse(from, to, scope);
+    scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::updateSynapsePartner(const ZIntPoint &pos)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->updatePartner(se->getSynapse(pos, ZDvidSynapseEnsemble::DATA_LOCAL));
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    for (std::set<ZIntPoint>::const_iterator iter = posArray.begin();
+         iter != posArray.end(); ++iter) {
+      se->updatePartner(
+            se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_LOCAL));
+    }
+    processObjectModified(se);
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::deleteSelectedSynapse()
+{
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+  const std::set<ZIntPoint> &selected = getSelectedSynapse();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      se->removeSynapse(pt, scope);
+      scope = ZDvidSynapseEnsemble::DATA_LOCAL;
+    }
+    processObjectModified(se);
+  }
+  notifyObjectModified();
+
+  /*
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    bool changed = false;
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      if (se->removeSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL)) {
+        changed = true;
+      }
+    }
+    se->getSelector().deselectAll();
+
+    if (changed) {
+      processObjectModified(se);
+      notifyObjectModified();
+    }
+  }
+  */
 }
 
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
@@ -319,7 +777,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice()->getColor(
+    slice->setColor(getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
                       slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
     //slice->updateSelection();
   }
@@ -449,6 +907,11 @@ void ZFlyEmProofDoc::notifyBodyUnmerged()
   emit bodyUnmerged();
 }
 
+void ZFlyEmProofDoc::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
+}
+
 void ZFlyEmProofDoc::clearBodyMerger()
 {
   getBodyMerger()->clear();
@@ -477,27 +940,80 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
   endObjectModifiedMode();
 
   notifyObjectModified();
+
+  cleanBodyAnnotationMap();
+}
+
+void ZFlyEmProofDoc::downloadBookmark(int x, int y, int z)
+{
+  if (m_dvidReader.isReady()) {
+    ZJsonObject bookmarkJson = m_dvidReader.readBookmarkJson(x, y, z);
+    ZFlyEmBookmark *bookmark = getBookmark(x, y, z);
+    if (!bookmarkJson.isEmpty()) {
+      bool newBookmark = false;
+      if (bookmark == NULL) {
+        bookmark = new ZFlyEmBookmark;
+        newBookmark = true;
+      }
+      bookmark->loadDvidAnnotation(bookmarkJson);
+      if (newBookmark) {
+        addLocalBookmark(bookmark);
+      } else {
+        updateLocalBookmark(bookmark);
+      }
+    } else {
+      if (bookmark != NULL) {
+        removeObject(bookmark, true);
+      }
+    }
+  }
 }
 
 void ZFlyEmProofDoc::downloadBookmark()
 {
-  if (getDvidTarget().isValid()) {
-    ZDvidUrl url(getDvidTarget());
-    ZDvidBufferReader reader;
-    reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
-    ZJsonArray jsonObj;
-    jsonObj.decodeString(reader.getBuffer());
-    if (!jsonObj.isEmpty()) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-      for (size_t i = 0; i < jsonObj.size(); ++i) {
-        ZJsonObject bookmarkObj =
-            ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-        ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-        bookmark->loadJsonObject(bookmarkObj);
-        addObject(bookmark, true);
+  if (m_dvidReader.isReady()) {
+    ZJsonArray bookmarkJson =
+        m_dvidReader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    for (size_t i = 0; i < bookmarkJson.size(); ++i) {
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
+      bookmark->loadDvidAnnotation(bookmarkObj);
+      if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        bookmark->setChecked(true);
+        ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
+//        bookmarkObj.setProperty("checked", "1");
+        m_dvidWriter.writeBookmark(bookmarkObj);
+        m_dvidWriter.deleteBookmarkKey(*bookmark);
       }
-      endObjectModifiedMode();
-      notifyObjectModified();
+      addObject(bookmark, true);
+    }
+    endObjectModifiedMode();
+    notifyObjectModified();
+
+    if (bookmarkJson.isEmpty()) {
+      ZDvidUrl url(getDvidTarget());
+      ZDvidBufferReader reader;
+      reader.read(url.getCustomBookmarkUrl(NeuTube::GetCurrentUserName()).c_str());
+      ZJsonArray jsonObj;
+      jsonObj.decodeString(reader.getBuffer());
+      if (!jsonObj.isEmpty()) {
+        beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+        for (size_t i = 0; i < jsonObj.size(); ++i) {
+          ZJsonObject bookmarkObj =
+              ZJsonObject(jsonObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+          ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+          bookmark->loadJsonObject(bookmarkObj);
+          addObject(bookmark, true);
+          bookmark->addUserTag();
+          if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+            bookmark->setChecked(true);
+          }
+          m_dvidWriter.writeBookmark(*bookmark);
+        }
+        endObjectModifiedMode();
+        notifyObjectModified();
+      }
     }
   }
 }
@@ -543,8 +1059,32 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
   }
 }
 
+void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
+{
+  QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+//  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+       iter != seList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    se->update(x, y, z);
+    processObjectModified(se);
+  }
+//  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
 void ZFlyEmProofDoc::downloadSynapse()
 {
+  if (!getDvidTarget().getSynapseName().empty()) {
+    ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
+    synapseEnsemble->setDvidTarget(getDvidTarget());
+    synapseEnsemble->setSource(
+          ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+
+    addObject(synapseEnsemble);
+  }
+
+#if 0
   const QString threadId = "downloadSynapse";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
@@ -552,11 +1092,20 @@ void ZFlyEmProofDoc::downloadSynapse()
         QtConcurrent::run(this, &ZFlyEmProofDoc::downloadSynapseFunc);
     m_futureMap[threadId] = future;
   }
+#endif
+}
+
+void ZFlyEmProofDoc::downloadTodoList()
+{
+  ZFlyEmToDoList *todoList = new ZFlyEmToDoList;
+  todoList->setDvidTarget(getDvidTarget());
+  todoList->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource());
+  addObject(todoList);
 }
 
 void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
 {
-  m_isCustomBookmarkSaved = false;
+//  m_isCustomBookmarkSaved = false;
 }
 
 void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
@@ -659,6 +1208,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 
       for (int z = minZ; z <= maxZ; ++z) {
         QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        std::vector<ZIntPoint> ptArray;
         for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
              iter != ballList.end(); ++iter) {
           ZStackBall *ball = *iter;
@@ -667,10 +1217,23 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
             ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
 
             if (coarseBody.contains(blockIndex)) {
+              ptArray.push_back(pt);
+#if 0
               if (reader.readBodyIdAt(pt) == bodyId) {
                 puncta.push_back(
                       new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
               }
+#endif
+            }
+          }
+        }
+        if (!ptArray.empty()) {
+          std::vector<uint64_t> idArray = reader.readBodyIdAt(ptArray);
+          for (size_t i = 0; i < idArray.size(); ++i) {
+            if (idArray[i] == bodyId) {
+              ZStackBall *ball = ballList[i];
+              puncta.push_back(
+                    new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
             }
           }
         }
@@ -680,6 +1243,215 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 
   return puncta;
 }
+
+std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
+{
+  QElapsedTimer timer;
+  timer.start();
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZDvidReader reader;
+//  reader.setVerbose(false);
+  const double radius = 50.0;
+  if (reader.open(getDvidTarget())) {
+    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+
+    std::vector<ZPunctum*> &tbar = synapse.first;
+    std::vector<ZPunctum*> &psd = synapse.second;
+
+    for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+         iter != synapseArray.end(); ++iter) {
+      const ZDvidSynapse &synapse = *iter;
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        tbar.push_back(new ZPunctum(synapse.getPosition(), radius));
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        psd.push_back(new ZPunctum(synapse.getPosition(), radius));
+      }
+    }
+    qDebug() << "Synapse loading time: " << timer.restart();
+  }
+
+  return synapse;
+}
+
+#if 0
+std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
+{
+  QElapsedTimer timer;
+  timer.start();
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(getDvidTarget())) {
+//    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+//    qDebug() << "Bounding box reading time" << timer.restart();
+//    int minZ = box.getFirstCorner().getZ();
+//    int maxZ = box.getLastCorner().getZ();
+
+    ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+
+    qDebug() << "Coarse body reading time" << timer.restart();
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    std::vector<ZIntPoint> tbarPtArray;
+    std::vector<ZIntPoint> psdPtArray;
+    ZObject3dScan::ConstSegmentIterator segIter(&coarseBody);
+    while (segIter.hasNext()) {
+      const ZObject3dScan::Segment seg = segIter.next();
+      ZIntCuboid blockBox = dvidInfo.getBlockBox(
+            seg.getStart(), seg.getEnd(), seg.getY(), seg.getZ());
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(blockBox);
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+        if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+          tbarPtArray.push_back(synapse.getPosition());
+        } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+          psdPtArray.push_back(synapse.getPosition());
+        }
+      }
+    }
+    qDebug() << "Coarse body screening time" << timer.restart();
+
+    if (!tbarPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.first;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(tbarPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = tbarPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+    if (!psdPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.second;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(psdPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = psdPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+    qDebug() << "Final verifying time" << timer.elapsed();
+  }
+
+#if 0
+  ZDvidSynapseEnsemble se;
+  se.setDvidTarget(getDvidTarget());
+
+  se.downloadForLabel(bodyId);
+
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  std::vector<ZPunctum*> &tbar = synapse.first;
+  std::vector<ZPunctum*> &psd = synapse.second;
+
+  ZDvidSynapseEnsemble::SynapseIterator sIter(&se);
+  while (sIter.hasNext()) {
+    ZDvidSynapse &s = sIter.next();
+    if (s.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+      tbar.push_back(new ZPunctum(
+                       s.getPosition().getX(), s.getPosition().getY(),
+                       s.getPosition().getZ(), 50.0));
+    } else if (s.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+      psd.push_back(new ZPunctum(s.getPosition().getX(), s.getPosition().getY(),
+                                 s.getPosition().getZ(), 50.0));
+    }
+  }
+#endif
+
+#if 0
+  std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
+  ZSlicedPuncta  *tbar = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
+  ZSlicedPuncta  *psd = dynamic_cast<ZSlicedPuncta*>(
+        getObjectGroup().findFirstSameSource(
+          ZStackObject::TYPE_SLICED_PUNCTA,
+          ZStackObjectSourceFactory::MakeFlyEmPsdSource()));
+
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(getDvidTarget())) {
+    ZIntCuboid box = reader.readBodyBoundBox(bodyId);
+    int minZ = box.getFirstCorner().getZ();
+    int maxZ = box.getLastCorner().getZ();
+
+    ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    std::vector<ZIntPoint> tbarPtArray;
+    std::vector<ZIntPoint> psdPtArray;
+    for (int z = minZ; z <= maxZ; ++z) {
+      if (tbar != NULL) {
+        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              tbarPtArray.push_back(pt);
+            }
+          }
+        }
+      }
+
+      if (psd != NULL) {
+        QList<ZStackBall*> ballList = psd->getPunctaOnSlice(z);
+        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+             iter != ballList.end(); ++iter) {
+          ZStackBall *ball = *iter;
+          ZIntPoint pt = ball->getCenter().toIntPoint();
+          if (box.contains(pt)) {
+            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
+
+            if (coarseBody.contains(blockIndex)) {
+              psdPtArray.push_back(pt);
+            }
+          }
+        }
+      }
+    }
+    if (!tbarPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.first;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(tbarPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = tbarPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+    if (!psdPtArray.empty()) {
+      std::vector<ZPunctum*> &puncta = synapse.second;
+      std::vector<uint64_t> idArray = reader.readBodyIdAt(psdPtArray);
+      for (size_t i = 0; i < idArray.size(); ++i) {
+        if (idArray[i] == bodyId) {
+          const ZIntPoint &pt = psdPtArray[i];
+          puncta.push_back(
+                new ZPunctum(pt.getX(), pt.getY(), pt.getZ(), 50.0));
+        }
+      }
+    }
+
+  }
+#endif
+  return synapse;
+
+}
+#endif
 
 void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 {
@@ -807,6 +1579,7 @@ void ZFlyEmProofDoc::autoSave()
   backupMergeOperation();
 }
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {
   if (!m_isCustomBookmarkSaved) {
@@ -814,7 +1587,9 @@ void ZFlyEmProofDoc::saveCustomBookmarkSlot()
     saveCustomBookmark();
   }
 }
+#endif
 
+#if 0
 void ZFlyEmProofDoc::saveCustomBookmark()
 {
   ZDvidWriter writer;
@@ -842,12 +1617,13 @@ void ZFlyEmProofDoc::saveCustomBookmark()
     }
   }
 }
+#endif
 
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
   case ZStackObject::TYPE_FLYEM_BOOKMARK:
-    m_isCustomBookmarkSaved = false;
+//    m_isCustomBookmarkSaved = false;
     emit userBookmarkModified();
     break;
   default:
@@ -880,7 +1656,7 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
-void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
+void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
 //  ZRect2d rect = getRect2dRoi();
 
@@ -896,7 +1672,6 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
   roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
   roi->clear();
 
-  executeRemoveObjectCommand(getSplitRoi());
 
   roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
@@ -909,9 +1684,21 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect)
                            rect->getHeight() * rect->getHeight()) / 2.0);
       roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
       roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+    } else if (appending) {
+      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ());
+      roi->setLastCorner(roi->getFirstCorner());
     }
   }
   m_splitSource.reset();
+
+  if (appending) {
+    ZIntCuboidObj *oldRoi = getSplitRoi();
+    if (oldRoi != NULL) {
+      roi->join(oldRoi->getCuboid());
+    }
+  }
+
+  executeRemoveObjectCommand(getSplitRoi());
 
   removeObject(rect, true);
 
@@ -957,29 +1744,47 @@ void ZFlyEmProofDoc::deprecateSplitSource()
   m_splitSource.reset();
 }
 
-void ZFlyEmProofDoc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
+void ZFlyEmProofDoc::prepareNameBodyMap(const ZJsonValue &bodyInfoObj)
 {
-  if (m_bodyColorMap.get() == NULL) {
-    m_bodyColorMap =
-        ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
-    m_bodyColorMap->setDvidTarget(getDvidTarget());
-  }
-  m_bodyColorMap->prepareNameMap(bodyInfoObj);
+  ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
+      getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
+  if (colorMap.get() != NULL) {
+    colorMap->prepareNameMap(bodyInfoObj);
 
-  emit bodyMapReady();
+    emit bodyMapReady();
+  }
 }
 
+void ZFlyEmProofDoc::updateSequencerBodyMap(
+    const ZFlyEmSequencerColorScheme &colorScheme)
+{
+  ZSharedPointer<ZFlyEmSequencerColorScheme> colorMap =
+      getColorScheme<ZFlyEmSequencerColorScheme>(BODY_COLOR_SEQUENCER);
+  if (colorMap.get() != NULL) {
+    *(colorMap.get()) = colorScheme;
+    if (isActive(BODY_COLOR_SEQUENCER)) {
+      updateBodyColor(BODY_COLOR_SEQUENCER);
+    }
+  }
+}
+
+#if 0
 void ZFlyEmProofDoc::useBodyNameMap(bool on)
 {
   if (getDvidLabelSlice() != NULL) {
     if (on) {
-      if (m_bodyColorMap.get() == NULL) {
-        m_bodyColorMap =
-            ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmBodyColorScheme);
-        m_bodyColorMap->setDvidTarget(getDvidTarget());
-        m_bodyColorMap->prepareNameMap();
+      if (m_activeBodyColorMap.get() == NULL) {
+        ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
+            getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
+        if (colorMap.get() != NULL) {
+          colorMap->setDvidTarget(getDvidTarget());
+          colorMap->prepareNameMap();
+        }
+
+        m_activeBodyColorMap =
+            ZSharedPointer<ZFlyEmBodyColorScheme>(colorMap);
       }
-      getDvidLabelSlice()->setCustomColorMap(m_bodyColorMap);
+      getDvidLabelSlice()->setCustomColorMap(m_activeBodyColorMap);
     } else {
       getDvidLabelSlice()->removeCustomColorMap();
     }
@@ -988,11 +1793,31 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
     notifyObjectModified();
   }
 }
+#endif
+
+void ZFlyEmProofDoc::updateBodyColor(EBodyColorMap type)
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
+    if (colorMap.get() != NULL) {
+      slice->setCustomColorMap(colorMap);
+    } else {
+      slice->removeCustomColorMap();
+    }
+
+    processObjectModified(slice);
+    notifyObjectModified();
+  }
+}
 
 void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice();
-  if (slice != NULL) {
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+//  ZDvidLabelSlice *slice = getDvidLabelSlice();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
 }
@@ -1016,6 +1841,67 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending)
   }
 }
 
+ZSharedPointer<ZFlyEmBodyColorScheme>
+ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+{
+  if (!m_colorMapConfig.contains(type)) {
+    switch (type) {
+    case BODY_COLOR_NORMAL:
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>();
+      break;
+    case BODY_COLOR_NAME:
+    {
+      ZFlyEmNameBodyColorScheme *colorScheme = new ZFlyEmNameBodyColorScheme;
+      colorScheme->setDvidTarget(getDvidTarget());
+      m_colorMapConfig[type] =
+          ZSharedPointer<ZFlyEmBodyColorScheme>(colorScheme);
+    }
+      break;
+    case BODY_COLOR_SEQUENCER:
+      m_colorMapConfig[type] =
+          ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmSequencerColorScheme);
+      break;
+    }
+  }
+
+  return m_colorMapConfig[type];
+}
+
+template <typename T>
+ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+{
+  ZSharedPointer<ZFlyEmBodyColorScheme> colorScheme = getColorScheme(type);
+  if (colorScheme.get() != NULL) {
+    return Shared_Dynamic_Cast<T>(colorScheme);
+  }
+
+  return ZSharedPointer<T>();
+}
+
+void ZFlyEmProofDoc::activateBodyColorMap(const QString &option)
+{
+  if (option == "Name") {
+    activateBodyColorMap(BODY_COLOR_NAME);
+  } else if (option == "Sequencer") {
+    activateBodyColorMap(BODY_COLOR_SEQUENCER);
+  } else {
+    activateBodyColorMap(BODY_COLOR_NORMAL);
+  }
+}
+
+void ZFlyEmProofDoc::activateBodyColorMap(EBodyColorMap colorMap)
+{
+  if (!isActive(colorMap)) {
+    updateBodyColor(colorMap);
+    m_activeBodyColorMap = getColorScheme(colorMap);
+  }
+}
+
+bool ZFlyEmProofDoc::isActive(EBodyColorMap type)
+{
+  return m_activeBodyColorMap.get() == getColorScheme(type).get();
+}
+
 //////////////////////////////////////////
 ZFlyEmProofDocCommand::MergeBody::MergeBody(
     ZStackDoc *doc, QUndoCommand *parent)
@@ -1035,6 +1921,7 @@ void ZFlyEmProofDocCommand::MergeBody::redo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyMerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
 }
 
@@ -1061,5 +1948,297 @@ void ZFlyEmProofDocCommand::MergeBody::undo()
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyUnmerged();
+  getCompleteDocument()->notifyBodyMergeEdited();
 //  m_doc->notifyObject3dScanModified();
+}
+
+void ZFlyEmProofDoc::recordBodySelection()
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    slice->recordSelection();
+  }
+}
+
+void ZFlyEmProofDoc::processBodySelection()
+{
+  ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (slice != NULL) {
+    slice->processSelection();
+  }
+}
+
+void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
+{
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+    if (selected.size() > 1) {
+      ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
+          new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeLinkSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    std::vector<ZDvidSynapse> selectedPresyn;
+    std::vector<ZDvidSynapse> selectedPostsyn;
+
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        selectedPresyn.push_back(synapse);
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        selectedPostsyn.push_back(synapse);
+      }
+    }
+
+    if (selectedPresyn.size() == 1) {
+      ZDvidSynapse &presyn = selectedPresyn.front();
+      ZStackDocCommand::DvidSynapseEdit::LinkSynapse *linkCommand =
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+            this, presyn.getPosition(), command);
+      for (std::vector<ZDvidSynapse>::const_iterator
+           iter = selectedPostsyn.begin(); iter != selectedPostsyn.end();
+           ++iter) {
+        const ZDvidSynapse& postsyn = *iter;
+        linkCommand->addRelation(
+              postsyn.getPosition(), ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_PRESYN_TO));
+        new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+              this, postsyn.getPosition(), presyn.getPosition(),
+              ZDvidSynapse::Relation::GetName(
+                ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
+              command);
+      }
+    }
+
+//    qDebug() << "#Commands: " << command->childCount();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand()
+{
+  QList<ZFlyEmBookmark*> bookmarkList =
+      getSelectedObjectList<ZFlyEmBookmark>(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  executeRemoveBookmarkCommand(bookmarkList);
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(ZFlyEmBookmark *bookmark)
+{
+  ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
+      new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, bookmark);
+  if (command->hasRemoving()) {
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveBookmarkCommand(
+    const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *command =
+      new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL);
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    command->addRemoving(*iter);
+  }
+
+  if (command->hasRemoving()) {
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *command =
+        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, bookmark);
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeRemoveSynapseCommand()
+{
+  QUndoCommand *command =
+      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
+
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      const ZIntPoint &pt = *iter;
+      new ZStackDocCommand::DvidSynapseEdit::RemoveSynapse(
+            this, pt.getX(), pt.getY(), pt.getZ(), command);
+    }
+    se->getSelector().deselectAll();
+
+    if (command->childCount() > 0) {
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeAddSynapseCommand(const ZDvidSynapse &synapse)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    QUndoCommand *command = new ZStackDocCommand::DvidSynapseEdit::AddSynapse(
+          this, synapse);
+    pushUndoCommand(command);
+  }
+}
+
+void ZFlyEmProofDoc::executeMoveSynapseCommand(const ZIntPoint &dest)
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selectedSet = se->getSelector().getSelectedSet();
+    if (selectedSet.size() == 1) {
+      QUndoCommand *command =
+          new ZStackDocCommand::DvidSynapseEdit::MoveSynapse(
+            this, *selectedSet.begin(), dest);
+      pushUndoCommand(command);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::removeLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      bookmark->setSelected(false);
+      removeObject(bookmark, false);
+      emit userBookmarkModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      processObjectModified(bookmark);
+      notifyObjectModified();
+      emit userBookmarkModified();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
+{
+  QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    addObject(bookmark->clone(), false);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::notifySynapseEdited(const ZDvidSynapse &synapse)
+{
+  emit synapseEdited(synapse.getPosition().getX(),
+                     synapse.getPosition().getY(),
+                     synapse.getPosition().getZ());
+}
+
+void ZFlyEmProofDoc::notifySynapseEdited(const ZIntPoint &synapse)
+{
+  emit synapseEdited(synapse.getX(), synapse.getY(), synapse.getZ());
+}
+
+
+void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    ZIntPoint center = bookmark->getCenter().toIntPoint();
+    emit bookmarkEdited(center.getX(), center.getY(), center.getZ());
+  }
+}
+
+void ZFlyEmProofDoc::notifyBookmarkEdited(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark *>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    notifyBookmarkEdited(*iter);
+  }
+}
+
+void ZFlyEmProofDoc::removeLocalBookmark(
+    const std::vector<ZFlyEmBookmark*> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = *iter;
+    bookmark->setSelected(false);
+    removeObject(bookmark, false);
+  }
+
+  if (!bookmarkArray.empty()) {
+    emit userBookmarkModified();
+  }
+}
+
+void ZFlyEmProofDoc::addLocalBookmark(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    addObject(bookmark, false);
+
+    emit userBookmarkModified();
+  }
+}
+
+void ZFlyEmProofDoc::addLocalBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
+       iter != bookmarkArray.end(); ++iter) {
+    ZFlyEmBookmark *bookmark = *iter;
+    addObject(bookmark, false);
+  }
+
+  if (!bookmarkArray.empty()) {
+    emit userBookmarkModified();
+  }
+}
+
+ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
+{
+  QList<ZFlyEmBookmark*> bookmarkList = getObjectList<ZFlyEmBookmark>();
+
+  ZFlyEmBookmark *bookmark = NULL;
+  for (QList<ZFlyEmBookmark*>::iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    bookmark = *iter;
+    if (iround(bookmark->getCenter().x()) == x &&
+        iround(bookmark->getCenter().y()) == y &&
+        iround(bookmark->getCenter().z()) == z) {
+      break;
+    }
+    bookmark = NULL;
+  }
+
+  return bookmark;
 }

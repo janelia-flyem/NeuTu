@@ -37,7 +37,9 @@ public:
   void removeIsolatedObject(ZStack *stack, int r, int dr);
 
   static void invert(ZStack *stack);
-  static void subtractBackground(ZStack *stack);
+  static void SubtractBackground(ZStack *stack);
+  static void SubtractBackground(ZStack *stack, double minFr, int maxIter);
+  static void SubtractBackground(Stack *stack, double minFr, int maxIter);
 
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
   //

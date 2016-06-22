@@ -46,6 +46,7 @@ class ZStroke2d;
 class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
+class ZSwcIsolationDialog;
 //class Z3DRendererBase;
 
 class Z3DTabWidget : public QTabWidget
@@ -165,8 +166,12 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
+  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setVisible(ERendererLayer layer, bool visible);
   bool isVisible(ERendererLayer layer) const;
+
+  void setCutBox(ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(ERendererLayer layer);
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -251,7 +256,8 @@ private:
 
   int channelNumber();
 
-  void setupCamera(const std::vector<double> &bound, Z3DCamera::ResetCameraOptions options);
+  void setupCamera(const std::vector<double> &bound,
+                   Z3DCamera::ResetCameraOptions options);
 
   bool hasVolume();
 
@@ -298,6 +304,7 @@ public slots:
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
+  void extendSwcTreeNode(double x, double y, double z, double r);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
@@ -383,6 +390,7 @@ public slots:
   //void toogleExtendSelectedSwcNodeMode(bool checked);
   void toogleSmartExtendSelectedSwcNodeMode(bool checked);
   void changeBackground();
+  bool isBackgroundOn() const;
 
   void toogleMoveSelectedObjectsMode(bool checked);
   void moveSelectedObjects(double x, double y, double z);
@@ -394,7 +402,10 @@ public slots:
   void markSwcSoma();
 
   void selectSwcTreeNodeInRoi(bool appending);
+  void selectSwcTreeNodeTreeInRoi(bool appending);
   void cropSwcInRoi();
+
+  void updateCuttingBox();
 
 
 protected:
@@ -402,6 +413,7 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
+//  void paintEvent(QPaintEvent *event);
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -516,12 +528,14 @@ private:
   QDockWidget *m_advancedSettingDockWidget;
 
   bool m_isStereoView;
+  bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;
 
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar;
+  ZSwcIsolationDialog *m_swcIsolationDlg;
 };
 
 #endif // Z3DWINDOW_H

@@ -11,11 +11,16 @@ public:
   ZDvidSparsevolSlice();
   ZDvidSparsevolSlice(const ZDvidSparsevolSlice& obj);
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SPARSEVOL_SLICE;
+  }
+
   void setDvidTarget(const ZDvidTarget &target);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
-  void update(int z);
+  bool update(int z);
   void update();
 
 private:

@@ -158,7 +158,9 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
-void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZObject3d::display(
+    ZPainter &painter, int slice, EDisplayStyle option,
+    NeuTube::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
 
@@ -176,17 +178,40 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
 
-  if (slice < 0) {
-    for (size_t i = 0; i < obj->size; i++) {
-      pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
-    }
-  } else {
-    for (size_t i = 0; i < obj->size; i++) {
-      if (obj->voxels[i][2] == z) {
+  switch (sliceAxis) {
+  case NeuTube::Z_AXIS:
+    if (slice < 0) {
+      for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
       }
+    } else {
+      for (size_t i = 0; i < obj->size; i++) {
+        if (obj->voxels[i][2] == z) {
+          pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
+        }
+      }
     }
+    break;
+  case NeuTube::X_AXIS:
+  case NeuTube::Y_AXIS:
+    if (slice < 0) {
+      for (size_t i = 0; i < obj->size; i++) {
+        ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
+        pt.shiftSliceAxis(sliceAxis);
+        pointArray.push_back(QPoint(pt.getX(), pt.getY()));
+      }
+    } else {
+      for (size_t i = 0; i < obj->size; i++) {
+        ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
+        pt.shiftSliceAxis(sliceAxis);
+        if (pt.getZ() == z) {
+          pointArray.push_back(QPoint(pt.getX(), pt.getY()));
+        }
+      }
+    }
+    break;
   }
+
   painter.drawPoints(&(pointArray[0]), pointArray.size());
 
   if (isSelected()) {

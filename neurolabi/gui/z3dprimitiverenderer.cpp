@@ -109,7 +109,8 @@ void Z3DPrimitiveRenderer::renderScreenQuad(const Z3DShaderProgram &shader, bool
     glDepthFunc(GL_LESS);
 }
 
-void Z3DPrimitiveRenderer::renderTriangleList(const Z3DShaderProgram &shader, const Z3DTriangleList &mesh)
+void Z3DPrimitiveRenderer::renderTriangleList(
+    const Z3DShaderProgram &shader, const Z3DTriangleList &mesh)
 {
   if (mesh.empty() || !shader.isLinked())
     return;

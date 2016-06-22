@@ -84,6 +84,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
     ZIntCuboid box = obj.getBoundBox();
+    std::cout << "Downsampling " << m_downsampleInterval[0] + 1 << " x "
+              << m_downsampleInterval[1] + 1 << " x "
+              << m_downsampleInterval[2] + 1 << std::endl;
     newObj.downsampleMax(m_downsampleInterval[0],
                          m_downsampleInterval[1], m_downsampleInterval[2]);
     int offset[3] = {0, 0, 0};
@@ -293,7 +296,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
           }
         }
 
-        ssize_t seedIndex = path[0].toIndex(
+        const std::vector<ZVoxel>& pathData = path.getInternalData();
+        ssize_t seedIndex = pathData[0].toIndex(
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;
@@ -392,7 +396,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     signal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
+#ifdef _DEBUG_
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
+#endif
       Swc_Tree_Merge(tree, subtree);
     }
 
@@ -672,7 +678,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
           }
         }
 
-        ssize_t seedIndex = path[0].toIndex(
+        ssize_t seedIndex = path.getInternalData()[0].toIndex(
               C_Stack::width(mask), C_Stack::height(mask),
               C_Stack::depth(mask));
         mask->array[seedIndex] = SP_GROW_SOURCE;
@@ -775,7 +781,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     croppedSignal = NULL;
 
     if (Swc_Tree_Regular_Root(subtree) != NULL) {
+#ifdef _DEBUG_
       cout << Swc_Tree_Node_Fsize(subtree->root) - 1<< " nodes added" << endl;
+#endif
       Swc_Tree_Merge(tree, subtree);
     }
 

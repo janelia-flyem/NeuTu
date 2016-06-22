@@ -23,6 +23,7 @@ unix {
 }
 
 win32 {
+    DEFINES += LIBXML_STATIC
     INCLUDEPATH += $${EXTLIB_DIR}/Mingw/64/include \
         $${EXTLIB_DIR}/Mingw/64/include/libxml2
 

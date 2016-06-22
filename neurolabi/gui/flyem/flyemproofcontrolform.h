@@ -46,8 +46,12 @@ signals:
   void selectingBody();
   void bookmarkChecked(QString, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void removingBookmark(ZFlyEmBookmark*);
+  void removingBookmark(QList<ZFlyEmBookmark*>);
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
+  void clearingBodyMergeStage();
+  void exportingSelectedBody();
 
 public slots:
   void setInfo(const QString &info);
@@ -55,6 +59,7 @@ public slots:
   void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
   void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
   void updateUserBookmarkTable(ZStackDoc *doc);
+  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
 
 private slots:
   void setSegmentSize();
@@ -69,6 +74,9 @@ private slots:
   void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
+//  void enableSequencerColorMap(bool on);
+  void clearBodyMergeStage();
+  void exportSelectedBody();
 
 private:
   void createMenu();
@@ -81,6 +89,7 @@ private:
   ZFlyEmBookmarkListModel m_userBookmarkList;
 
   QAction *m_nameColorAction;
+  QAction *m_sequencerColorAction;
 
 //  QSortFilterProxyModel *m_bookmarkProxy;
 //  QSortFilterProxyModel *m_userBookmarkProxy;

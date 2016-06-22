@@ -17,6 +17,7 @@ class ZStackDocMenuFactory
 {
 public:
   ZStackDocMenuFactory();
+  virtual ~ZStackDocMenuFactory() {}
 
   inline void setSingleSwcNodeActionActivator(
       ZSingleSwcNodeActionActivator *activator) {
@@ -33,15 +34,20 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
   QMenu* makeSrokePaintContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-  QMenu* makeStackContextMenu(
+  virtual QMenu* makeStackContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-  QMenu* makeBodyContextMenu(
+  virtual QMenu* makeBodyContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+  virtual QMenu* makeSynapseContextMenu(
+      ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
+
+  virtual QMenu* makeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 private:
   void init();
 
-private:
+protected:
   ZSingleSwcNodeActionActivator *m_singleSwcNodeActionActivator;
   bool m_isAdmin;
 };

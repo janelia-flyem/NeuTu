@@ -89,14 +89,15 @@ public:
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
     OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
+    OPERATION_SET_AS_ROOT,
     OPERATION_EXTEND_NODE, OPERATION_SELECT, OPERATION_SELECT_CONNECTION,
     OPERATION_SELECT_FLOOD
   };
 
-  typedef uint32_t TVisualEffect;
+//  typedef uint32_t TVisualEffect;
 
-  const static TVisualEffect VE_NONE;
-  const static TVisualEffect VE_FULL_SKELETON;
+//  const static TVisualEffect VE_NONE;
+//  const static TVisualEffect VE_FULL_SKELETON;
 
   /** @name Constructors
    */
@@ -127,6 +128,10 @@ public:
 
   friend void swap(ZSwcTree& first, ZSwcTree& second);
   ZSwcTree& operator=(const ZSwcTree &other);
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_SWC;
+  }
 
 public:
   /** @name Set data.
@@ -186,7 +191,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.
@@ -203,11 +208,12 @@ public:
   bool isForest() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       NeuTube::EAxis axis) const;
 
-  bool hasVisualEffect(TVisualEffect ve) const;
-  void addVisualEffect(TVisualEffect ve);
-  void removeVisualEffect(TVisualEffect ve);
+//  bool hasVisualEffect(TVisualEffect ve) const;
+//  void addVisualEffect(TVisualEffect ve);
+//  void removeVisualEffect(TVisualEffect ve);
 
   /*!
    * \brief save Save swc
@@ -256,8 +262,8 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  inline void setComment(const std::string &comment) {
-    m_comment = comment;
+  inline void addComment(const std::string &comment) {
+    m_comment.push_back(comment);
   }
 
 public:
@@ -391,7 +397,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y);
+  Swc_Tree_Node* hitTest(double x, double y, NeuTube::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -406,7 +412,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!
@@ -420,6 +426,8 @@ public:
   void deselectNode(Swc_Tree_Node *tn);
   void selectAllNode();
   void deselectAllNode();
+
+  void inverseSelection();
 
   void recordSelection();
   void processSelection();
@@ -443,6 +451,7 @@ public:
   void selectUpstreamNode();
   void selectDownstreamNode();
   void selectBranchNode();
+  void selectSmallSubtree(double maxLength);
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;
@@ -689,8 +698,24 @@ public:
     ExtIterator(const ZSwcTree *tree);
     virtual ~ExtIterator();
 
+    /*!
+     * \brief Restart the iterator.
+     */
+    virtual void restart() = 0;
+
+    /*!
+     * \brief Restart the iterator and get the first node
+     */
     virtual Swc_Tree_Node *begin() = 0;
+
     virtual bool hasNext() const = 0;
+
+    /*!
+     * \brief Get the next node.
+     *
+     * Note that the it returns the first node if the iterator is just started.
+     * It returns NULL when it reaches the end.
+     */
     virtual Swc_Tree_Node *next() = 0;
 
     void excludeVirtual(bool on) {
@@ -709,6 +734,7 @@ public:
   class RegularRootIterator : public ExtIterator {
   public:
     RegularRootIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node *next();
@@ -717,6 +743,7 @@ public:
   class DepthFirstIterator : public ExtIterator {
   public:
     DepthFirstIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -725,6 +752,7 @@ public:
   class LeafIterator : public ExtIterator {
   public:
     LeafIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -736,6 +764,19 @@ public:
   class TerminalIterator : public ExtIterator {
   public:
     TerminalIterator(const ZSwcTree *tree);
+    void restart();
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
+  };
+
+  class DownstreamIterator : public ExtIterator {
+  public:
+    DownstreamIterator(Swc_Tree_Node *tn);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -766,15 +807,19 @@ private:
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus);
+                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
 
+#ifdef _QT_GUI_USED_
+  const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
+#endif
+
 private:
   Swc_Tree *m_tree;
   EStructrualMode m_smode;
-  TVisualEffect m_visualEffect;
+//  TVisualEffect m_visualEffect;
 
   mutable bool m_iteratorReady; /* When this option is on, any iterator option changing
                            internal linked list
@@ -796,7 +841,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
-  std::string m_comment;
+  std::vector<std::string> m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

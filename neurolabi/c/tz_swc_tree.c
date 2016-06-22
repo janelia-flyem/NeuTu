@@ -2096,6 +2096,120 @@ static int swc_tree_string_max_id(const char *swc_string)
   return max_id;
 }
 
+static int count_double(const char *str)
+{
+  int n = 0;
+  int state = 0;
+
+  BOOL has_number = FALSE;
+
+  while (*str) {
+    switch (state) {
+      case 0:
+        if (has_number) {
+          n++;
+          has_number = FALSE;
+        }
+
+        if (isdigit(*str)) {
+          state = 2;
+          has_number = TRUE;
+        } else if (*str == '+' || *str == '-') {
+          state = 1;
+        } else if ((*str) == '.') {
+          state = 8;
+        }
+
+        ++str;
+        break;
+      case 1:
+        if (isdigit(*str)) {
+          state = 2;
+          has_number = TRUE;
+          ++str;
+        } else if ((*str) == '.') {
+          state = 8;
+          ++str;
+        } else {
+          state = 0;
+        }
+        break;
+      case 8:
+        if (isdigit(*str)) {
+          state = 3;
+          has_number = TRUE;
+          ++str;
+        } else {
+          state = 0;
+        }
+        break;
+      case 2:
+        if (*str == '.') {
+          state = 3;
+        } else if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (!isdigit(*str)) {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 3:
+        if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (isdigit(*str)) {
+          state = 4;
+          has_number = TRUE;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 4:
+        if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (!isdigit(*str)) {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 5:
+        if (*str == '+' || *str == '-') {
+          state = 6;
+        } else if (isdigit(*str)) {
+          state = 7;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 6:
+        if (isdigit(*str)) {
+          state = 7;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 7:
+        if (!isdigit(*str)) {
+          state =0;
+        }
+        ++str;
+        break;
+      default:
+        state = 0;
+        ++str;
+        break;
+    }
+  }
+
+  if (has_number) {
+    ++n;
+  }
+
+  return n;
+}
+
 Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
 {
   if (swc_string == NULL) {
@@ -2164,33 +2278,35 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
       printf("%s\n", line);
       fflush(stdout);
 #endif
+      int number_count = count_double(line);
+      if (number_count <= MAX_SWC_FIELD_NUMBER) {
+        String_To_Double_Array(line, value, &field_number);
 
-      String_To_Double_Array(line, value, &field_number);
+        if (field_number >= 7) {
+          Swc_Node node;
+          Default_Swc_Node(&node);
+          node.id = (int) value[0];
+          node.type = (int) value[1];
+          node.x = value[2];
+          node.y = value[3];
+          node.z = value[4];
+          node.d = value[5];
+          node.parent_id = (int) value[6];
 
-      if (field_number >= 7) {
-        Swc_Node node;
-        Default_Swc_Node(&node);
-        node.id = (int) value[0];
-        node.type = (int) value[1];
-        node.x = value[2];
-        node.y = value[3];
-        node.z = value[4];
-        node.d = value[5];
-        node.parent_id = (int) value[6];
+          map[node.id + 1].tree_node = New_Swc_Tree_Node();
+          if (field_number >= 8) {
+            node.label = value[7];
+          }
+          if (field_number >= 9) {
+            map[node.id + 1].tree_node->feature = value[8];
+          }
+          if (field_number >= 10) {
+            map[node.id + 1].tree_node->weight = value[9];
+          }
 
-        map[node.id + 1].tree_node = New_Swc_Tree_Node();
-        if (field_number >= 8) {
-          node.label = value[7];
+          map[node.id + 1].tree_node->node = node;
+          n++;
         }
-        if (field_number >= 9) {
-          map[node.id + 1].tree_node->feature = value[8];
-        }
-        if (field_number >= 10) {
-          map[node.id + 1].tree_node->weight = value[9];
-        }
-
-        map[node.id + 1].tree_node->node = node;
-        n++;
       }
     }
   }
@@ -2215,17 +2331,24 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
         map[i].tree_node->node.parent_id = -1;
       }
 
-      if (map[map[i].tree_node->node.parent_id + 1].tree_node->first_child 
-	  == NULL) {
+      Swc_Tree_Node *sibling = 
+        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
+      if (sibling == NULL) {
 	map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
 	  map[i].tree_node;
       } else {
+        map[i].tree_node->next_sibling = sibling;
+        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
+          map[i].tree_node;
+        
+        /*
 	Swc_Tree_Node *sibling = 
 	  map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
 	while (sibling->next_sibling != NULL) {
 	  sibling = sibling->next_sibling;
 	}
 	sibling->next_sibling = map[i].tree_node;
+        */
       }
     }
   }

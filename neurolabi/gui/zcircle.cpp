@@ -59,10 +59,11 @@ void ZCircle::set(const ZPoint &center, double r)
 //#endif
 //}
 
-void ZCircle::display(ZPainter &painter, int n,
-                      ZStackObject::EDisplayStyle style) const
+void ZCircle::display(
+    ZPainter &painter, int n,
+    ZStackObject::EDisplayStyle style, NeuTube::EAxis sliceAxis) const
 {
-  if (!isVisible()) {
+  if (!isVisible() || sliceAxis != NeuTube::Z_AXIS) {
     return;
   }
 
@@ -184,15 +185,23 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
 
   if (hasVisualEffect(VE_BOUND_BOX)) {
     QRectF rect;
-    rect.setLeft(m_center.x() - adjustedRadius);
-    rect.setTop(m_center.y() - adjustedRadius);
-    rect.setWidth(adjustedRadius + adjustedRadius);
-    rect.setHeight(adjustedRadius + adjustedRadius);
+    double halfSize = adjustedRadius;
+    if (m_usingCosmeticPen) {
+      halfSize += 0.5;
+    }
+    rect.setLeft(m_center.x() - halfSize);
+    rect.setTop(m_center.y() - halfSize);
+    rect.setWidth(halfSize * 2);
+    rect.setHeight(halfSize * 2);
 
     painter->setBrush(Qt::NoBrush);
 
     QPen pen = oldPen;
-    pen.setStyle(Qt::SolidLine);
+    if (visible) {
+      pen.setStyle(Qt::SolidLine);
+    } else {
+      pen.setStyle(Qt::DotLine);
+    }
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 

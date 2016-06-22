@@ -36,6 +36,12 @@ void ZIntHistogram::clear()
   }
 }
 
+void ZIntHistogram::setData(int *hist)
+{
+  clear();
+  m_hist = hist;
+}
+
 ZIntHistogram& ZIntHistogram::operator =(const ZIntHistogram &hist)
 {
   const int *histArray = hist.c_hist();
@@ -70,6 +76,58 @@ int ZIntHistogram::getCount(int v) const
   }
 
   return count;
+}
+
+int ZIntHistogram::getLowerCount(int v) const
+{
+  int count = 0;
+  if (!isEmpty()) {
+    int minV = getMinValue();
+    int maxV = std::min(v, getMaxValue());
+    for (int i = minV; i <= maxV; ++i) {
+      count += getCount(i);
+    }
+  }
+
+  return count;
+}
+
+int ZIntHistogram::getUpperCount(int v) const
+{
+  int count = 0;
+  if (!isEmpty()) {
+    int minV = std::max(v, getMinValue());
+    int maxV = getMaxValue();
+    for (int i = minV; i <= maxV; ++i) {
+      count += getCount(i);
+    }
+  }
+
+  return count;
+}
+
+int ZIntHistogram::getMode(int minV, int maxV) const
+{
+  minV = std::max(minV, getMinValue());
+  maxV = std::min(maxV, getMaxValue());
+
+  int m = minV;
+
+  int maxCount = getCount(m);
+  for (int i = minV; i <= maxV; ++i) {
+    int c = getCount(i);
+    if (c > maxCount) {
+      maxCount = c;
+      m = i;
+    }
+  }
+
+  return m;
+}
+
+int ZIntHistogram::getMode() const
+{
+  return getMode(getMinValue(), getMaxValue());
 }
 
 void ZIntHistogram::print() const

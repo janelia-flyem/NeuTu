@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FlyEmOrthoControlForm</class>
+ <widget class="QWidget" name="FlyEmOrthoControlForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>261</height>
+   </rect>
+  </property>
+  <property name="cursor">
+   <cursorShape>ArrowCursor</cursorShape>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="locateToPushButton">
+     <property name="text">
+      <string>Locate in Main Window</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ZFlyEmMessageWidget</class>
+   <extends>QWidget</extends>
+   <header>flyem/zflyemmessagewidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

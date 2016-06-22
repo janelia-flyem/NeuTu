@@ -13,14 +13,14 @@ void ZStackObjectPainter::init()
 
 void ZStackObjectPainter::paint(
     const ZStackObject *obj, ZPainter &painter, int slice,
-    ZStackObject::EDisplayStyle option) const
+    ZStackObject::EDisplayStyle option, NeuTube::EAxis sliceAxis) const
 {
   if (obj != NULL) {
     if (m_painterConst) {
       painter.save();
     }
 
-    obj->display(painter, slice, option);
+    obj->display(painter, slice, option, sliceAxis);
 
     if (m_painterConst) {
       painter.restore();

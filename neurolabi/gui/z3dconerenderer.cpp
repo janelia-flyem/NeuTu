@@ -328,22 +328,26 @@ void Z3DConeRenderer::render(Z3DEye eye)
 
       glEnableVertexAttribArray(attr_origin);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[0]);
-      glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat), &(m_baseAndBaseRadius[0]), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat),
+                   &(m_baseAndBaseRadius[0]), GL_STATIC_DRAW);
       glVertexAttribPointer(attr_origin, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
       glEnableVertexAttribArray(attr_axis);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[1]);
-      glBufferData(GL_ARRAY_BUFFER, m_axisAndTopRadius.size()*4*sizeof(GLfloat), &(m_axisAndTopRadius[0]), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, m_axisAndTopRadius.size()*4*sizeof(GLfloat),
+                   &(m_axisAndTopRadius[0]), GL_STATIC_DRAW);
       glVertexAttribPointer(attr_axis, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
       glEnableVertexAttribArray(attr_flags);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[2]);
-      glBufferData(GL_ARRAY_BUFFER, m_allFlags.size()*sizeof(GLfloat), &(m_allFlags[0]), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, m_allFlags.size()*sizeof(GLfloat),
+                   &(m_allFlags[0]), GL_STATIC_DRAW);
       glVertexAttribPointer(attr_flags, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
       glEnableVertexAttribArray(attr_colors);
       glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[3]);
-      glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat), &(m_coneBaseColors[0]), GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat),
+                   &(m_coneBaseColors[0]), GL_STATIC_DRAW);
       glVertexAttribPointer(attr_colors, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
       if (m_sameColorForBaseAndTop) {
@@ -352,12 +356,14 @@ void Z3DConeRenderer::render(Z3DEye eye)
       } else {
         glEnableVertexAttribArray(attr_colors2);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[4]);
-        glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat), &(m_coneTopColors[0]), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, m_baseAndBaseRadius.size()*4*sizeof(GLfloat),
+                     &(m_coneTopColors[0]), GL_STATIC_DRAW);
         glVertexAttribPointer(attr_colors2, 4, GL_FLOAT, GL_FALSE, 0, 0);
       }
 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBOs[5]);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexs.size()*sizeof(GLuint), &(m_indexs[0]), GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexs.size()*sizeof(GLuint),
+                   &(m_indexs[0]), GL_STATIC_DRAW);
 
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindVertexArray(0);

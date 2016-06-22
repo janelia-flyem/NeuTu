@@ -11,6 +11,9 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_namedDecorationList.append(&m_stroke);
   m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
+  m_previousKey = Qt::Key_unknown;
+  m_previousKeyModifiers = Qt::NoModifier;
+  m_keyMode = KM_NORMAL;
 }
 
 ZInteractionEngine::~ZInteractionEngine()
@@ -72,6 +75,9 @@ void ZInteractionEngine::processMouseReleaseEvent(
       exitPaintStroke();
       event->accept();
     }
+    if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF) {
+      exitSwcEdit();
+    }
     m_mouseRightButtonPressed = false;
   }
 }
@@ -124,10 +130,7 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
   switch (event->key()) {
   case Qt::Key_R:
-    if (event->modifiers() == Qt::ControlModifier) {
-      enterPaintStroke();
-      processed = true;
-    } else if (event->modifiers() == Qt::ShiftModifier) {
+    if (event->modifiers() == Qt::ShiftModifier) {
       enterPaintRect();
       processed = true;
     }
@@ -209,6 +212,16 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       processed = true;
     }
     break;
+  case Qt::Key_T:
+    if (hasRectDecoration()) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        emit selectingSwcNodeTreeInRoi(true);
+      } else {
+        emit selectingSwcNodeTreeInRoi(false);
+      }
+      processed = true;
+    }
+    break;
   case Qt::Key_X:
     if (hasRectDecoration()) {
       emit croppingSwc();
@@ -218,6 +231,9 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
   default:
     break;
   }
+
+  m_previousKey = event->key();
+  m_previousKeyModifiers = event->modifiers();
 
   return processed;
 }
@@ -246,6 +262,11 @@ void ZInteractionEngine::exitPaintRect()
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
 //  m_rect.setVisible(false);
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitSwcEdit()
+{
+  m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
 }
 
 void ZInteractionEngine::exitPaintStroke()
@@ -308,6 +329,8 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_SWC_ADD_NODE:
     return m_interactiveContext.swcEditMode() ==
         ZInteractiveContext::SWC_EDIT_ADD_NODE;
+  case STATE_SWC_SELECTION:
+    return m_keyMode == KM_SWC_SELECTION;
   }
 
   return false;

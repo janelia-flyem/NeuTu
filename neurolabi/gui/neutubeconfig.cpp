@@ -2,6 +2,11 @@
 
 #include <iostream>
 
+#ifdef _QT_GUI_USED_
+#include <QDir>
+#include <QsLog.h>
+#endif
+
 #include "tz_cdefs.h"
 #include "zxmldoc.h"
 #include "zstring.h"
@@ -21,7 +26,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_softwareName = "NeuTu";
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
-  std::cout << m_settings.fileName().toStdString() << std::endl;
+//  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
 }
 /*
@@ -252,11 +257,23 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case DOCUMENT:
     return m_docUrl;
   case TMP_DATA:
-#if _QT_GUI_USED_
-    return QDir::tempPath().toStdString();
+  {
+    std::string tmpDir;
+#if defined(_QT_GUI_USED_)
+    std::string user = NeuTube::GetCurrentUserName();
+    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
+    QDir tmpDirObj(tmpDir.c_str());
+    if (!tmpDirObj.exists()) {
+      if (!tmpDirObj.mkpath(tmpDir.c_str())) {
+        LERROR() << "Failed to make tmp directory: " << tmpDir;
+        tmpDir = "";
+      }
+    }
 #else
-    return "/tmp";
+    tmpDir = "/tmp";
 #endif
+    return tmpDir;
+  }
   case WORKING_DIR:
     if (m_workDir.empty()) {
 #ifdef _QT_GUI_USED_
@@ -269,9 +286,11 @@ std::string NeutubeConfig::getPath(Config_Item item) const
   case LOG_DIR:
     if (m_logDir.empty()) {
       ZString dir = getPath(WORKING_DIR);
+#if defined(_QT_GUI_USED_)
       if (dir.startsWith("/groups/flyem/")) {
         dir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
       }
+#endif
       return dir;
     }
     return m_logDir;

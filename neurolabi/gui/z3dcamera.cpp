@@ -48,6 +48,12 @@ void Z3DCamera::setNearDist(float nd)
   invalidProjectionMatrix();
 }
 
+void Z3DCamera::setFarDist(float fd)
+{
+  m_farDist = fd;
+  invalidProjectionMatrix();
+}
+
 void Z3DCamera::setWindowAspectRatio(float war)
 {
   m_windowAspectRatio = war;
@@ -228,18 +234,22 @@ glm::mat4 Z3DCamera::getProjectionMatrix(Z3DEye eye)
 {
   if (!m_projectionMatricesIsValid[eye]) {
     if (m_projectionType == Orthographic) {
-      m_projectionMatrices[eye] = glm::ortho(m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
+      m_projectionMatrices[eye] = glm::ortho(
+            m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
     } else {
       if (eye == CenterEye) {
-        m_projectionMatrices[eye] = glm::frustum(m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
+        m_projectionMatrices[eye] = glm::frustum(
+              m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
       } else if (eye == LeftEye) {
         float frustumShift = (m_eyeSeparation/2.f)*m_nearDist/m_centerDist;
-        m_projectionMatrices[eye] = glm::frustum(m_left+frustumShift, m_right+frustumShift,
-                                                 m_bottom, m_top, m_nearDist, m_farDist);
+        m_projectionMatrices[eye] = glm::frustum(
+              m_left+frustumShift, m_right+frustumShift,
+              m_bottom, m_top, m_nearDist, m_farDist);
       } else {  //RightEye
         float frustumShift = (m_eyeSeparation/2.f)*m_nearDist/m_centerDist;
-        m_projectionMatrices[eye] = glm::frustum(m_left-frustumShift, m_right-frustumShift,
-                                                 m_bottom, m_top, m_nearDist, m_farDist);
+        m_projectionMatrices[eye] = glm::frustum(
+              m_left-frustumShift, m_right-frustumShift,
+              m_bottom, m_top, m_nearDist, m_farDist);
       }
     }
     m_projectionMatricesIsValid[eye] = true;
@@ -268,8 +278,9 @@ bool Z3DCamera::operator !=(const Z3DCamera &rhs) const
 
 void Z3DCamera::dolly(float value)
 {
-  if (value <= 0.f || (m_centerDist < 1.0f && value > 1.f))
+  if (value <= 0.f || (m_centerDist < 3.0f && value > 1.f))
     return;
+
   glm::vec3 pos = m_center - m_viewVector * (m_centerDist / value);
   float maxV = 1e15;
   if (std::abs(pos.x) < maxV && std::abs(pos.y) < maxV  && std::abs(pos.z) < maxV )

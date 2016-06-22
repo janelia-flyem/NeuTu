@@ -28,6 +28,7 @@ public:
   inline Z3DCameraParameter* getCamera() { return &m_camera; }
 
   void setShowBackground(bool v) { m_showBackground.set(v); }
+  bool showingBackground() const { return m_showBackground.get(); }
   void setBackgroundFirstColor(glm::vec3 color) { m_backgroundRenderer->setFirstColor(color); }
   void setBackgroundSecondColor(glm::vec3 color) { m_backgroundRenderer->setSecondColor(color); }
   void setBackgroundFirstColor(double r, double g, double b, double alpha)

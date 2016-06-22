@@ -1,9 +1,13 @@
 #include "zpuncta.h"
 #include "zpainter.h"
+#if defined(_FLYEM_)
 #include "flyem/zsynapseannotationarray.h"
+#endif
+
 #include "zfiletype.h"
 #include "zstring.h"
 #include "zcolorscheme.h"
+#include "zjsonobject.h"
 
 ZPuncta::ZPuncta()
 {
@@ -36,9 +40,10 @@ void ZPuncta::sort() const
   }
 }
 
-void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
+                      NeuTube::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != NeuTube::Z_AXIS) {
     return;
   }
 
@@ -64,7 +69,7 @@ void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option) const
   for (QList<ZPunctum*>::const_iterator iter = beginIter;
        iter != endIter; ++iter) {
     const ZPunctum* punctum = *iter;
-    punctum->display(painter, slice, option);
+    punctum->display(painter, slice, option, sliceAxis);
   }
 }
 
@@ -83,7 +88,7 @@ void ZPuncta::setSorted(bool state) const
 {
   m_isSorted = state;
 }
-
+#if defined(_FLYEM_)
 bool ZPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
@@ -94,7 +99,7 @@ bool ZPuncta::load(const ZJsonObject &obj, double radius)
 
   return true;
 }
-
+#endif
 bool ZPuncta::load(const std::string &filePath, double radius)
 {
   clear();
@@ -102,6 +107,7 @@ bool ZPuncta::load(const std::string &filePath, double radius)
   bool succ = false;
 
   switch (ZFileType::fileType(filePath)) {
+#if defined(_FLYEM_)
   case ZFileType::JSON_FILE:
   {
     ZJsonObject obj;
@@ -109,6 +115,7 @@ bool ZPuncta::load(const std::string &filePath, double radius)
     succ = load(obj, radius);
   }
     break;
+#endif
   case ZFileType::TXT_FILE:
   {
     ZColorScheme scheme;

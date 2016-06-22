@@ -7,6 +7,8 @@
 #include "zstackdoc.h"
 #include "zstackpresenter.h"
 #include "zstackview.h"
+#include "zstackobjectsourcefactory.h"
+#include "z3dgraphfactory.h"
 
 ZTiledStackFrame::ZTiledStackFrame(QWidget *parent) :
   ZStackFrame(parent)
@@ -52,4 +54,18 @@ bool ZTiledStackFrame::importTiles(const QString &path)
   }
 
   return false;
+}
+
+void ZTiledStackFrame::updateStackBoundBox()
+{
+  ZIntCuboid box = document()->getStack()->getBoundBox();
+
+  Z3DGraphFactory factory;
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setNodeRadiusHint(0);
+  factory.setEdgeWidthHint(1.0);
+  factory.setEdgeColorHint(QColor(200, 0, 200));
+  Z3DGraph *graph = factory.makeBox(box);
+  graph->setSource(ZStackObjectSourceFactory::MakeStackBoundBoxSource());
+  document()->addObject(graph);
 }

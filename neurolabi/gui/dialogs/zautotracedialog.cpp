@@ -7,6 +7,7 @@
 #include <QDialogButtonBox>
 
 #include "zlabeledspinboxwidget.h"
+#include "zlabeledcombowidget.h"
 
 ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
   : QDialog(parent, f)
@@ -26,6 +27,16 @@ ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
         "Level 0 means default parameters.");
   m_levelSpinBox->setRange(0, 6);
   alllayout->addWidget(m_levelSpinBox);
+  m_levelSpinBox->hide();
+
+
+  m_channelWidget = new ZLabeledComboWidget;
+  m_channelWidget->setLabel("Signal channel for tracing");
+  m_channelWidget->addSpacer();
+  alllayout->addWidget(m_channelWidget);
+  setChannelNumber(0);
+
+  this->setWindowTitle(tr("Automatic Tracing"));
 
   QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                    | QDialogButtonBox::Cancel);
@@ -40,6 +51,23 @@ ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
 
 ZAutoTraceDialog::~ZAutoTraceDialog()
 {
+}
+
+void ZAutoTraceDialog::setChannelNumber(int count)
+{
+  if (m_channelWidget->getComboBox()->count() != count) {
+    m_channelWidget->getComboBox()->clear();
+    for (int i = 1; i <= count; ++i) {
+      m_channelWidget->getComboBox()->addItem(QString("Ch %1").arg(i));
+    }
+  }
+
+  m_channelWidget->setVisible(count > 1);
+}
+
+int ZAutoTraceDialog::getChannel() const
+{
+  return m_channelWidget->getComboBox()->currentIndex();
 }
 
 bool ZAutoTraceDialog::getDoResample() const

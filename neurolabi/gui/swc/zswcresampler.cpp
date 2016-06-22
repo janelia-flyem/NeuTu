@@ -85,8 +85,10 @@ int ZSwcResampler::suboptimalDownsample(ZSwcTree *tree)
     tn = next;
   }
 
+#ifdef _DEBUG_
   std::cout << count << " removed" << std::endl;
   std::cout << checked << " " << treeCount << std::endl;
+#endif
 
   return count;
 }

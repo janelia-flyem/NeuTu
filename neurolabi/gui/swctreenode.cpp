@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <stack>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -186,6 +187,67 @@ int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn)
   return Swc_Tree_Node_Fsize(tn);
 }
 
+double SwcTreeNode::downstreamLength(Swc_Tree_Node *tn)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
+}
+
+double SwcTreeNode::downstreamLength(
+    Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child, sx, sy, sz);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
+}
+
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
                                 Swc_Tree_Node_Compare compfunc)
 {
@@ -311,6 +373,12 @@ int SwcTreeNode::index(const Swc_Tree_Node *tn)
 double SwcTreeNode::length(const Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Length(tn);
+}
+
+double SwcTreeNode::length(
+    const Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  return Swc_Tree_Node_Scaled_Length(tn, sx, sy, sz);
 }
 
 bool SwcTreeNode::isLeaf(const Swc_Tree_Node *tn)
@@ -590,6 +658,13 @@ double SwcTreeNode::scaledDistance(
   double dz = (z(tn1) - z(tn2)) * sz;
 
   return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+double SwcTreeNode::scaledSurfaceDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  return scaledDistance(tn1, tn2, sx, sy, sz) - radius(tn1) - radius(tn2);
 }
 
 Swc_Tree_Node*

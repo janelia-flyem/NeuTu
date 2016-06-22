@@ -15,6 +15,7 @@
 #include "tz_stack_math.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_objdetect.h"
+#include "tz_int_histogram.h"
 
 ZStackProcessor::ZStackProcessor()
 {
@@ -836,11 +837,62 @@ void ZStackProcessor::invert(ZStack *stack)
   }
 }
 
-void ZStackProcessor::subtractBackground(ZStack *stack)
+void ZStackProcessor::SubtractBackground(ZStack *stack)
 {
   for (int c = 0; c < stack->channelNumber(); ++c) {
     int commonIntensity = Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
     Stack_Subc(stack->c_stack(c), commonIntensity);
+  }
+}
+
+void ZStackProcessor::SubtractBackground(
+    Stack *stackData, double minFr, int maxIter)
+{
+  ZIntHistogram *hist = C_Stack::hist(stackData, NULL);
+  int maxV = hist->getMaxValue();
+
+  int totalCount = hist->getUpperCount(0);
+
+  int commonIntensity = 0;
+
+  int darkCount = hist->getCount(0);
+  if ((double) darkCount / totalCount > 0.9) {
+    commonIntensity = hist->getMinValue();
+  } else {
+    for (int iter = 0; iter < maxIter; ++iter) {
+      int mode = hist->getMode(commonIntensity + 1, maxV);
+      if (mode == maxV) {
+        break;
+      }
+      //      int commonIntensity =
+      //          Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
+
+      commonIntensity = mode;
+      double fgRatio = (double) hist->getUpperCount(commonIntensity + 1) /
+          totalCount;
+      if (fgRatio < minFr) {
+        break;
+      }
+    }
+  }
+
+#ifdef _DEBUG_
+  std::cout << "Subtracing background with value " << commonIntensity
+            << std::endl;
+#endif
+
+  if (commonIntensity > 0) {
+    Stack_Subc(stackData, commonIntensity);
+  }
+
+  delete hist;
+}
+
+void ZStackProcessor::SubtractBackground(ZStack *stack, double minFr, int maxIter)
+{
+  for (int c = 0; c < stack->channelNumber(); ++c) {
+    Stack *stackData = stack->c_stack(c);
+    SubtractBackground(stackData, minFr, maxIter);
   }
 }
 
@@ -927,3 +979,34 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack)
     stack->array[*iter] = 0;
   }
 }
+/*
+void ZStackProcessor::SubtractBackground(Stack *stack, double minFr, int maxIter)
+{
+  int *hist = Stack_Hist(stack);
+  int minV = Int_Histogram_Min(hist);
+  int maxV = Int_Histogram_Max(hist);
+
+  int commonIntensity = 0;
+
+  if ((double) hist[2] / Stack_Voxel_Number(stack) > 0.9) {
+    commonIntensity = minV;
+  } else {
+    for (int iter = 0; iter < maxIter; ++iter) {
+      int mode =  Int_Histogram_Mode(hist, commonIntensity + 1, maxV);
+      if (mode == maxV) {
+        break;
+      }
+
+      commonIntensity = mode;
+      double fgRatio = (double) HistUpperCount(hist, commonIntensity + 1) /
+          Stack_Voxel_Number(stack);
+      if (fgRatio < minFr) {
+        break;
+      }
+    }
+  }
+
+  std::cout << "Subtracing background: " << commonIntensity << std::endl;
+  Stack_Subc(stack, commonIntensity);
+}
+*/

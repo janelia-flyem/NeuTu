@@ -6,6 +6,9 @@ ProjectionDialog::ProjectionDialog(QWidget *parent) :
   ui(new Ui::ProjectionDialog)
 {
   ui->setupUi(this);
+
+  ui->depthCheckBox->setVisible(false);
+  ui->contrastCheckBox->setVisible(false);
 }
 
 ProjectionDialog::~ProjectionDialog()
@@ -37,3 +40,4 @@ int ProjectionDialog::getSlabCount() const
 {
   return ui->slabSpinBox->value();
 }
+

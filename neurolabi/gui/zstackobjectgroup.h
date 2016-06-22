@@ -63,18 +63,22 @@ public:
   TStackObjectList findSameClass(
       ZStackObject::EType type, const std::string &objClass);
 
+  ZStackObject* replaceFirstSameSource(ZStackObject *obj);
+
   template<typename InputIterator>
   QList<ZStackObject*> findSameSource(
       const InputIterator begin, const InputIterator end) const;
 
+  void add(ZStackObject *obj, bool uniqueSource);
   void add(const ZStackObject *obj, bool uniqueSource);
-  QList<ZStackObject*> addU(const ZStackObject *obj);
+  void add(ZStackObject *obj, int zOrder, bool uniqueSource);
+//  QList<ZStackObject*> addU(const ZStackObject *obj);
 
   template <typename InputIterator>
   void add(const InputIterator begin, const InputIterator end,
            bool uniqueSource, QMutex *mutex = NULL);
 
-  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
+//  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
 
   /*!
    * \brief Take an object
@@ -121,6 +125,9 @@ public:
   void removeAllObject(bool deleting = true);
 
   TStackObjectList& getObjectList(ZStackObject::EType type);
+  template<typename T>
+  QList<T*> getObjectList() const;
+
   const TStackObjectList& getObjectList(ZStackObject::EType type) const;
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
@@ -137,12 +144,15 @@ public:
 
   QList<ZStackObject::EType> getAllType() const;
 
+  void compressZOrder();
+
 private:
   bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
 
 private:
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
+  int m_currentZOrder;
 
   ZStackObjectSelector m_selector;
 };
@@ -193,6 +203,22 @@ void ZStackObjectGroup::take(
 {
   removeObject(first, last, false);
 }
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList() const
+{
+  QList<T*> tList;
+
+  TStackObjectList& objList =
+      const_cast<TStackObjectList&>(getObjectList(T::GetType()));
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    tList.append(dynamic_cast<T*>(*iter));
+  }
+
+  return tList;
+}
+
 
 typedef ZSharedPointer<ZStackObjectGroup> ZStackObjectGroupPtr;
 

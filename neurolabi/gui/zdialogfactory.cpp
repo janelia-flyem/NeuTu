@@ -6,26 +6,29 @@
 #include <QFileInfo>
 
 #include "zwidgetfactory.h"
-#include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zparameterarray.h"
 #include "zstackmvc.h"
 #include "zstackdoc.h"
-#include "zflyemcontrolform.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
-#include "dvid/zdvidreader.h"
+
 #include "zstackfactory.h"
-#include "dvid/zdvidtile.h"
 #include "zstackview.h"
-#include "dvid/zdvidtileensemble.h"
-#include "flyem/zflyembodymergedoc.h"
-#include "dvid/zdvidlabelslice.h"
 #include "zstackpresenter.h"
+#include "z3dapplication.h"
+#if defined (_FLYEM_)
 #include "flyem/flyemproofcontrolform.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemproofdoc.h"
-#include "z3dapplication.h"
+#include "dvid/zdvidtileensemble.h"
+#include "flyem/zflyembodymergedoc.h"
+#include "zflyemcontrolform.h"
+#include "dialogs/flyembodymergeprojectdialog.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidtile.h"
+#include "dvid/zdvidlabelslice.h"
+#include "dialogs/zdviddialog.h"
+#endif
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -45,7 +48,7 @@ ZDialogFactory::~ZDialogFactory()
 {
 
 }
-
+#if defined (_FLYEM_)
 ZDvidDialog* ZDialogFactory::makeDvidDialog(QWidget *parent)
 {
   ZDvidDialog *dlg = new ZDvidDialog(parent);
@@ -67,13 +70,13 @@ DvidImageDialog* ZDialogFactory::makeDvidImageDialog(
 
   return dlg;
 }
-
+#endif
 ZSpinBoxDialog* ZDialogFactory::makeSpinBoxDialog(QWidget *parent)
 {
   ZSpinBoxDialog *dlg = new ZSpinBoxDialog(parent);
   return dlg;
 }
-
+#if defined (_FLYEM_)
 QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 {
   QDialog *dlg = new QDialog(parent);
@@ -153,7 +156,7 @@ QDialog* ZDialogFactory::makeStackDialog(QWidget *parent)
 
   return dlg;
 }
-
+#endif
 
 QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
 {

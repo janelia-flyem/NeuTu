@@ -5,6 +5,13 @@ ZTask::ZTask(QObject *parent) : QObject(parent) {
   setAutoDelete(false);
 }
 
+ZTask::~ZTask()
+{
+#ifdef _DEBUG_2
+  std::cout << "ZTask destroyed." << std::endl;
+#endif
+}
+
 void ZTask::run()
 {
   execute();

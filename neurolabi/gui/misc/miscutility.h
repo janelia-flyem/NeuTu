@@ -16,6 +16,8 @@
 
 class ZGraph;
 class ZIntPoint;
+class ZSwcTree;
+class ZClosedCurve;
 
 namespace misc {
 
@@ -48,6 +50,15 @@ ZIntPoint getDsIntvFor3DVolume(double dsRatio);
 double computeConfidence(double v, double median, double p95);
 
 ZTree<int> *buildSegmentationTree(const Stack *stack);
+
+ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
+
+enum ESampleStackOption {
+  SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM
+};
+
+double SampleStack(const Stack *stack, double x, double y, double z,
+                   ESampleStackOption option);
 
 /*!
  * \brief Parse hdf5 path

@@ -18,6 +18,7 @@ ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(NeuTube::Document::ETag tag)
   case NeuTube::Document::BIOCYTIN_PROJECTION:
     doc = new ZBiocytinProjectionDoc;
     break;
+#if defined(_FLYEM_)
   case NeuTube::Document::FLYEM_PROOFREAD:
     doc = new ZFlyEmProofDoc;
     break;
@@ -27,6 +28,7 @@ ZSharedPointer<ZStackDoc> ZStackDocFactory::Make(NeuTube::Document::ETag tag)
   case NeuTube::Document::FLYEM_MERGE:
     doc = new ZFlyEmBodyMergeDoc;
     break;
+#endif
   default:
     doc = new ZStackDoc;
     break;

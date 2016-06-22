@@ -25,7 +25,7 @@ class Z3DSwcFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   enum InteractionMode {
-    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode
+    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
   };
 
   explicit Z3DSwcFilter();
@@ -75,6 +75,9 @@ public:
   inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
   inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
+  void resetCut();
+  void setCutBox(const ZIntCuboid &box);
+
   bool isNodeRendering() const { return m_renderingPrimitive.isSelected("Sphere"); }
 
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
@@ -91,10 +94,11 @@ signals:
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
   void addNewSwcTreeNode(double x, double y, double z, double r);
-  void extendSwcTreeNode(double x, double y, double z);
+  void extendSwcTreeNode(double x, double y, double z, double r);
 
 public slots:
   void prepareColor();
+  void addNodeType(int type);
   void setClipPlanes();
   void adjustWidgets();
   void selectSwc(QMouseEvent *e, int w, int h);
@@ -120,6 +124,8 @@ private:
   void initTopologyColor();
   void initTypeColor();
   void initSubclassTypeColor();
+
+  static QString GetTypeName(int type);
 
   void decompseSwcTree();
   glm::vec4 getColorByType(Swc_Tree_Node *n);
@@ -199,6 +205,7 @@ private:
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
+  int m_maxType;
 
   ZColorMapParameter m_colorMap;
 

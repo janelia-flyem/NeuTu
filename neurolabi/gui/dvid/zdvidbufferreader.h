@@ -9,6 +9,12 @@
 #include <QString>
 #include <QNetworkReply>
 
+
+#include "zsharedpointer.h"
+namespace libdvid{
+class DVIDNodeService;
+}
+
 class QTimer;
 
 /*!
@@ -25,7 +31,10 @@ public:
     READ_BAD_RESPONSE
   };
 
-  void read(const QString &url, bool outputUrl = true);
+  void read(const QString &url, bool outputingUrl = true);
+  void read(const QString &url, const QByteArray &payload,
+            const std::string &method,
+            bool outputingUrl = true);
   void readHead(const QString &url);
   bool isReadable(const QString &url);
   bool hasHead(const QString &url);
@@ -37,6 +46,14 @@ public:
   }
 
   void readQt(const QString &url, bool outputUrl = true);
+
+  void tryCompress(bool compress) {
+    m_tryingCompress = compress;
+  }
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
+#endif
 
 signals:
   void readingDone();
@@ -67,6 +84,10 @@ private:
   QEventLoop *m_eventLoop;
   bool m_isReadingDone;
   EStatus m_status;
+  bool m_tryingCompress;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDNodeService> m_service;
+#endif
 //  QTimer *m_timer;
 };
 

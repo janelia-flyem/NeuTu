@@ -4,7 +4,7 @@
 #include "zstackdoc.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
 #include "QsLog.h"
 #include "zobject3dscanarray.h"

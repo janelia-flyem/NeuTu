@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 
+#include "neutube_def.h"
+
 class ZIntPoint;
 
 class ZPoint {
@@ -118,6 +120,11 @@ public:
       return (pt1.x() < pt2.x());
     }
   };
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+
+  double getSliceCoord(NeuTube::EAxis axis) const;
 
 private:
   double m_x;

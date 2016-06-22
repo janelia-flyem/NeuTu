@@ -25,6 +25,14 @@ ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 #endif
 }
 
+ZJsonValue::ZJsonValue(const json_t *data, ESetDataOption option) : m_data(NULL)
+{
+  set(const_cast<json_t*>(data), option);
+#ifdef _DEBUG_2
+      std::cout << m_data << std::endl;
+#endif
+}
+
 ZJsonValue::ZJsonValue(const ZJsonValue &value) : m_data(NULL)
 {
   set(value.m_data, SET_INCREASE_REF_COUNT);
@@ -118,6 +126,11 @@ bool ZJsonValue::isBoolean()
 bool ZJsonValue::isEmpty() const
 {
   return m_data == NULL;
+}
+
+void ZJsonValue::set(const ZJsonValue &value)
+{
+  set(value.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
 void ZJsonValue::set(json_t *data, bool asNew)
@@ -272,4 +285,9 @@ bool ZJsonValue::load(const string &filePath)
 #endif
 
   return false;
+}
+
+ZJsonValue ZJsonValue::clone() const
+{
+  return ZJsonValue(C_Json::clone(m_data), SET_AS_IT_IS);
 }

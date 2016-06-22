@@ -1,5 +1,7 @@
 #include "z3dcanvas.h"
 
+#include <QPainter>
+
 #include "z3dnetworkevaluator.h"
 #include <algorithm>
 #include "z3dcanvaseventlistener.h"
@@ -188,7 +190,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
     drawable->display(painter, 0, ZStackObject::NORMAL,
-                      ZStackObject::DISPLAY_SLICE_SINGLE);
+                      ZStackObject::DISPLAY_SLICE_SINGLE, NeuTube::Z_AXIS);
   }
 #else
   UNUSED_PARAMETER(painter);
@@ -198,6 +200,18 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   painter->setPen(QColor(255, 0, 0));
   painter->drawRect(QRect(10, 10, 40, 60));
 #endif
+
+  if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
+    painter->setPen(QColor(255, 255, 255));
+    painter->drawText(
+          QRectF(10, 10, 300, 200),
+          "Selection mode on: \n"
+          "  1: downstream;\n"
+          "  2: upstream;\n"
+          "  3: connected nodes;\n"
+          "  4: inverse selection\n"
+          "  5: select potential false positives");
+  }
 
   //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
@@ -258,6 +272,12 @@ void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
       break;
     }
   }
+}
+
+void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)
+{
+  m_interaction.setKeyMode(mode);
+  update(QRect(QPoint(0, 0), size()));
 }
 
 double Z3DCanvas::getDevicePixelRatio()

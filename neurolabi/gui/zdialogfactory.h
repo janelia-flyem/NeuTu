@@ -25,11 +25,15 @@ public:
   ZDialogFactory(QWidget *parentWidget);
   ~ZDialogFactory();
 
-  static ZDvidDialog* makeDvidDialog(QWidget *parent = 0);
+
   static QDialog* makeTestDialog(QWidget *parent = 0);
+#if defined (_FLYEM_)
+  static ZDvidDialog* makeDvidDialog(QWidget *parent = 0);
   static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
       ZDvidDialog *dvidDlg, QWidget *parent = 0);
+#endif
+
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
   static ZSpinBoxGroupDialog *makeDownsampleDialog(QWidget *parent);
   static QDialog* makeParameterDialog(
