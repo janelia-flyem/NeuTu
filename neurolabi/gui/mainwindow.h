@@ -472,6 +472,8 @@ private slots:
 
   void on_actionRemove_Obsolete_Annotations_triggered();
 
+  void on_actionGenerate_KC_c_Actor_triggered();
+
 private:
   void createActions();
   void createFileActions();

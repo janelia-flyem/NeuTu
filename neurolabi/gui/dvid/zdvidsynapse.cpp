@@ -14,6 +14,7 @@
 #include "dvid/zdvidannotation.h"
 #include "tz_constant.h"
 #include "dvid/zdvidreader.h"
+#include "zvaa3dmarker.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -402,6 +403,29 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
   }
 
   return MakeRelJson(pt, rel);
+}
+
+ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
+{
+  ZVaa3dMarker marker;
+
+  marker.setCenter(
+        getPosition().getX(), getPosition().getY(), getPosition().getZ());
+  if (getKind() == KIND_PRE_SYN) {
+    marker.setColor(255, 255, 0);
+    marker.setType(1);
+  } else {
+    marker.setColor(128, 128, 128);
+    marker.setType(2);
+  }
+
+  std::ostringstream commentStream;
+  commentStream << getBodyId();
+  marker.setName(commentStream.str());
+
+  marker.setRadius(radius);
+
+  return marker;
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

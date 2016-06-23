@@ -272,7 +272,7 @@ void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
 {
   switch (event->key()) {
   case Qt::Key_D:
-    toggleSegmentation();
+    toggleData();
     break;
   }
 }

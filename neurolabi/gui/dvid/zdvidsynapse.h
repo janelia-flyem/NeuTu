@@ -12,6 +12,7 @@
 
 class ZJsonArray;
 class ZDvidTarget;
+class ZVaa3dMarker;
 
 class ZDvidSynapse : public ZDvidAnnotation
 {
@@ -37,6 +38,8 @@ public:
   bool isProtocolVerified(const ZDvidTarget &target) const;
 
   void setVerified(const std::string &userName);
+
+  ZVaa3dMarker toVaa3dMarker(double radius) const;
 
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);

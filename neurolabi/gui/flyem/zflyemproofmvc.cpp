@@ -2485,12 +2485,18 @@ void ZFlyEmProofMvc::showData(bool visible)
   for (QList<ZStackObject*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE ||
-        obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
+    if (obj->getType() == ZStackObject::TYPE_DVID_ANNOTATION ||
         obj->getType() == ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE ||
         obj->getType() == ZStackObject::TYPE_FLYEM_TODO_LIST ||
         obj->getType() == ZStackObject::TYPE_FLYEM_BOOKMARK) {
       obj->setVisible(visible);
+      getDocument()->processObjectModified(obj);
+    } else if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
+      if (visible) {
+        obj->setVisible(m_showSegmentation);
+      } else {
+        obj->setVisible(false);
+      }
       getDocument()->processObjectModified(obj);
     }
   }

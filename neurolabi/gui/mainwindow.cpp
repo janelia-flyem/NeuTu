@@ -175,6 +175,7 @@
 #include "zslicedpuncta.h"
 #include "neutubeconfig.h"
 #include "dialogs/flyemsettingdialog.h"
+#include "flyem/zfileparser.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -7590,4 +7591,57 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
     endProgress();
   }
+}
+
+void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+{
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie1/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QVector<uint64_t> neuronArray;
+  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+
+  std::ofstream stream;
+  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
+
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+          markerArray.push_back(marker);
+        }
+      }
+
+      outFileName = QString("%1.marker").arg(bodyId);
+      outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+
+      delete tree;
+    }
+  }
+
 }

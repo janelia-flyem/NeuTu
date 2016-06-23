@@ -2930,7 +2930,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
     }
     QList<ZPunctum*> plist = ZPunctumIO::load(file);
     for (int i=0; i<plist.size(); i++) {
-      addObject(plist[i]);
+      addObject(plist[i], false);
     }
   }
 
