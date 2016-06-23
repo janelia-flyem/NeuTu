@@ -36,6 +36,8 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           this, SIGNAL(showingData(bool)));
   connect(ui->contrastCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(settingHighContrast(bool)));
+  connect(ui->smoothCheckBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(settingSmooth(bool)));
 }
 
 void FlyEmOrthoControlForm::toggleShowingSeg()

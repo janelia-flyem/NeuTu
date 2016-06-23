@@ -240,7 +240,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, axis).c_str(), isVerbose());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, z, axis).c_str(), isVerbose());
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 

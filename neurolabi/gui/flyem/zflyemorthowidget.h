@@ -49,6 +49,7 @@ public slots:
   void setSegmentationVisible(bool on);
   void setDataVisible(bool on);
   void setHighContrast(bool on);
+  void setSmoothDisplay(bool on);
   void toggleSegmentation();
   void toggleData();
   void updateImageScreen();

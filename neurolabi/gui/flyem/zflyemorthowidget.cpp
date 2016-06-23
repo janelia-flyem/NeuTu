@@ -98,6 +98,8 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
           this, SLOT(setDataVisible(bool)));
   connect(m_controlForm, SIGNAL(settingHighContrast(bool)),
           this, SLOT(setHighContrast(bool)));
+  connect(m_controlForm, SIGNAL(settingSmooth(bool)),
+          this, SLOT(setSmoothDisplay(bool)));
 
   connect(getDocument(), SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
@@ -257,6 +259,13 @@ void ZFlyEmOrthoWidget::setHighContrast(bool on)
   m_xyMvc->setHighContrast(on);
   m_yzMvc->setHighContrast(on);
   m_xzMvc->setHighContrast(on);
+}
+
+void ZFlyEmOrthoWidget::setSmoothDisplay(bool on)
+{
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    mvc->smoothDisplay(on);
+  }
 }
 
 void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
