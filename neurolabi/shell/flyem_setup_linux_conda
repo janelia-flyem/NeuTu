@@ -28,7 +28,7 @@ CONDA_ROOT=`$condaDir/bin/conda info --root`
 if [ ! -d $condaDir/envs/dvidenv ]
 then
   source ${CONDA_ROOT}/bin/activate root
-  { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp=0.2.post20
+  { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
 fi
 
 if [ `uname` != 'Darwin' ]
