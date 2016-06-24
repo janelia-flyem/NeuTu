@@ -36,6 +36,7 @@
       "name": "CX",
       "background": 0,
       "body_label": "*", 
+      "synapse": "rough_PB26_tbars",
       "comment": "central complex",
       "user_name": ["zhaot", "takemuras"]
     },

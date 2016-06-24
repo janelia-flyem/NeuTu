@@ -210,7 +210,18 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
   std::map<std::string, json_t*> entryMap = propJson.toEntryMap();
   for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
        iter != entryMap.end(); ++iter) {
-    m_propertyJson.setEntry(iter->first.c_str(), iter->second);
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (strlen(ZJsonParser::stringValue(iter->second)) == 0) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
+    }
   }
 }
 
@@ -240,6 +251,8 @@ ZIntPoint ZDvidAnnotation::GetPosition(const ZJsonObject &json)
 
 void ZDvidAnnotation::updatePartner(const ZJsonArray &jsonArray)
 {
+  m_partnerHint.clear();
+
   for (size_t i = 0; i < jsonArray.size(); ++i) {
     ZJsonObject partnerJson(jsonArray.value(i));
     if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {

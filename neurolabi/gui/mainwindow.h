@@ -474,6 +474,8 @@ private slots:
 
   void on_actionGenerate_KC_c_Actor_triggered();
 
+  void on_actionMake_Movie_MB_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -536,6 +538,8 @@ private:
   void setSkeletonizer(
       ZStackSkeletonizer &skeletonizer,
       const FlyEmSkeletonizationDialog &dlg);
+
+  void makeMovie();
 
 private:
   QMdiArea *mdiArea;

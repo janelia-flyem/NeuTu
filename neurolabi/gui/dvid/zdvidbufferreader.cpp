@@ -105,6 +105,10 @@ void ZDvidBufferReader::read(
 
 void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 {
+  if (url.isEmpty()) {
+    return;
+  }
+
   if (outputingUrl) {
     qDebug() << url;
   }

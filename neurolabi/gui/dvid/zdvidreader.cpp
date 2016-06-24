@@ -972,6 +972,10 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 
 QStringList ZDvidReader::readKeys(const QString &dataName)
 {
+  if (dataName.isEmpty()) {
+    return QStringList();
+  }
+
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)
   reader.setService(m_service);

@@ -4516,17 +4516,8 @@ void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
   }
 }
 
-void MainWindow::on_actionMake_Movie_triggered()
+void MainWindow::makeMovie()
 {
-  if (m_movieDlg->getScriptPath().isEmpty()) {
-    const NeutubeConfig &config = NeutubeConfig::getInstance();
-
-    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
-                               "/flyem/FIB/movie/reconstruct.json").c_str());
-    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
-                               "/flyem/FIB/movie/frame").c_str());
-  }
-
   if (m_movieDlg->exec()) {
     QString fileName = m_movieDlg->getScriptPath();
     /*
@@ -4569,6 +4560,35 @@ void MainWindow::on_actionMake_Movie_triggered()
     }
   }
 }
+
+void MainWindow::on_actionMake_Movie_triggered()
+{
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/reconstruct.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/frame").c_str());
+  }
+
+  makeMovie();
+}
+
+void MainWindow::on_actionMake_Movie_MB_triggered()
+{
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/MB/paper/movie1/script.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/MB/paper/movie1/frame").c_str());
+  }
+
+  makeMovie();
+}
+
 
 void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {

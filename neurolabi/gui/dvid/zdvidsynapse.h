@@ -13,6 +13,7 @@
 class ZJsonArray;
 class ZDvidTarget;
 class ZVaa3dMarker;
+class ZDvidReader;
 
 class ZDvidSynapse : public ZDvidAnnotation
 {
@@ -40,6 +41,8 @@ public:
   void setVerified(const std::string &userName);
 
   ZVaa3dMarker toVaa3dMarker(double radius) const;
+
+  void updatePartnerVerification(ZDvidReader &reader);
 
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);
@@ -150,31 +153,10 @@ private:
 //  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
-#if 0
-private:
-  ZIntPoint m_position;
-  double m_radius;
-  EKind m_kind;
-  std::vector<std::string> m_tagArray;
-//  std::vector<ZIntPoint> m_partnerHint;
-  ZJsonObject m_propertyJson;
-#endif
-};
-/*
-template <typename InputIterator>
-int ZDvidSynapse::AddRelation(
-    ZJsonObject &json, const InputIterator &first,
-    const InputIterator &last, const std::string &rel)
-{
-  int count = 0;
-  for (InputIterator iter = first; iter != last; ++iter) {
-    if (AddRelation(json, *iter, rel)) {
-      ++count;
-    }
-  }
+  static QColor GetArrowColor(bool verified);
 
-  return count;
-}
-*/
+private:
+  std::vector<bool> m_isPartnerVerified;
+};
 
 #endif // ZDVIDSYNAPSE_H

@@ -400,6 +400,8 @@
       <addaction name="actionGenerate_PAM_Actor"/>
       <addaction name="actionGenerate_MB_Actor"/>
       <addaction name="actionGenerate_MB_Conn_Actor"/>
+      <addaction name="separator"/>
+      <addaction name="actionMake_Movie_MB"/>
      </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
@@ -1493,6 +1495,11 @@
   <action name="actionGenerate_MB_Conn_Actor">
    <property name="text">
     <string>Generate MB-Conn Actor</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_MB">
+   <property name="text">
+    <string>Make Movie</string>
    </property>
   </action>
  </widget>

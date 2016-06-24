@@ -312,7 +312,9 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
         m_activeProtocol = NULL;
     }
 
-    m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+    if (m_activeProtocol != NULL) {
+      m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+    }
 }
 
 void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {

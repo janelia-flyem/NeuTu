@@ -115,6 +115,17 @@ void ZDvidSynapse::setVerified(const std::string &userName)
   setUserName(userName);
 }
 
+QColor ZDvidSynapse::GetArrowColor(bool verified)
+{
+  QColor color(255, 0, 0);
+  if (verified) {
+    color = QColor(0, 255, 0);
+  }
+  color.setAlpha(100);
+
+  return color;
+}
+
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            NeuTube::EAxis sliceAxis) const
 {
@@ -133,9 +144,11 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   center.shiftSliceAxis(sliceAxis);
 
   bool isFocused = (z == center.getZ());
-  QPen pen;
+
 
   if (visible) {
+    QPen pen;
+
     QColor color = getColor();
     double alpha = 1.0;
     if (!isFocused) {
@@ -172,8 +185,23 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     if (isVerified()) {
       //        decorationText = "U";
       color.setRgb(0, 0, 0);
+
+      if (isSelected()) {
+        if (getKind() == KIND_PRE_SYN) {
+          color.setRgb(0, 255, 0);
+          for (std::vector<bool>::const_iterator iter = m_isPartnerVerified.begin();
+               iter != m_isPartnerVerified.end(); ++iter) {
+            if (!(*iter)) {
+              color.setRgb(0, 0, 0);
+              break;
+            }
+          }
+        }
+      }
+
       color.setAlphaF(alpha);
       pen.setColor(color);
+      pen.setWidthF(pen.widthF() + 0.5);
       painter.setPen(pen);
       double margin = 0.5;
       painter.drawLine(QPointF(center.getX(), center.getY() + radius - margin),
@@ -245,13 +273,14 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
 
+  QPen pen;
   pen.setCosmetic(m_usingCosmeticPen);
 
   bool drawingBoundBox = false;
   if (isSelected()) {
     drawingBoundBox = true;
     QColor color;
-    color.setRgb(255, 255, 0);
+    color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
   } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
@@ -281,9 +310,10 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     painter.setPen(pen);
     painter.drawRect(rect);
 
+#if 0
     if (!visible) {
       pen.setStyle(Qt::SolidLine);
-      pen.setColor(QColor(255, 0, 0, 128));
+      pen.setColor(GetArrowColor(isVerified()));
       painter.setPen(pen);
       QPointF pt[3];
       double s = 5.0;
@@ -307,40 +337,43 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawLine(pt[1], pt[2]);
       painter.drawLine(pt[0], pt[2]);
     }
+#endif
   }
 
   if (isSelected()) {
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(QColor(255, 0, 0, 128));
-    painter.setPen(pen);
+
+    size_t index = 0;
+    if (m_isPartnerVerified.size() == m_partnerHint.size()) {
+      for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+           iter != m_partnerHint.end(); ++iter, ++index) {
+        pen.setColor(GetArrowColor(m_isPartnerVerified[index]));
+        painter.setPen(pen);
+
+        const ZIntPoint &partner = *iter;
+        double len = 0.0;
+        if (partner.getZ() < z && getPosition().getZ() < z) {
+          len = -1.0;
+        } else if (partner.getZ() > z && getPosition().getZ() > z) {
+          len = 1.0;
+        }
+
+        if (len != 0.0) {
+          QPointF pt[3];
+          pt[0].setX(partner.getX() - len);
+          pt[0].setY(partner.getY() - len);
+
+          pt[1].setX(partner.getX() + len);
+          pt[1].setY(partner.getY() - len);
+
+          pt[2].setX(partner.getX());
+          pt[2].setY(partner.getY() + len);
 
 
-
-    for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
-         iter != m_partnerHint.end(); ++iter) {
-      const ZIntPoint &partner = *iter;
-      double len = 0.0;
-      if (partner.getZ() < z && getPosition().getZ() < z) {
-        len = -1.0;
-      } else if (partner.getZ() > z && getPosition().getZ() > z) {
-        len = 1.0;
-      }
-
-      if (len != 0.0) {
-        QPointF pt[3];
-        pt[0].setX(partner.getX() - len);
-        pt[0].setY(partner.getY() - len);
-
-        pt[1].setX(partner.getX() + len);
-        pt[1].setY(partner.getY() - len);
-
-        pt[2].setX(partner.getX());
-        pt[2].setY(partner.getY() + len);
-
-
-        painter.drawLine(pt[0], pt[1]);
-        painter.drawLine(pt[1], pt[2]);
-        painter.drawLine(pt[0], pt[2]);
+          painter.drawLine(pt[0], pt[1]);
+          painter.drawLine(pt[1], pt[2]);
+          painter.drawLine(pt[0], pt[2]);
+        }
       }
     }
 
@@ -426,6 +459,18 @@ ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
   marker.setRadius(radius);
 
   return marker;
+}
+
+void ZDvidSynapse::updatePartnerVerification(ZDvidReader &reader)
+{
+  m_isPartnerVerified.resize(m_partnerHint.size(), false);
+
+  if (reader.good()) {
+    for (size_t i = 0; i < m_partnerHint.size(); ++i) {
+      ZDvidSynapse synapse = reader.readSynapse(m_partnerHint[i]);
+      m_isPartnerVerified[i] = synapse.isVerified();
+    }
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

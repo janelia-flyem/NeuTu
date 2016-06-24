@@ -246,9 +246,9 @@ void ZJsonObject::setEntry(const char *key, const string &value)
     return;
   }
 
-  if (!value.empty()) {
+//  if (!value.empty()) {
     setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
-  }
+//  }
 }
 
 void ZJsonObject::setEntry(const char *key, const char* value)
@@ -258,9 +258,9 @@ void ZJsonObject::setEntry(const char *key, const char* value)
   }
 
   if (value != NULL) {
-    if (strlen(value) > 0) {
+//    if (strlen(value) > 0) {
       setEntryWithoutKeyCheck(key, json_string(value), true);
-    }
+//    }
   }
 }
 

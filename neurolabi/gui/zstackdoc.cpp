@@ -2431,7 +2431,7 @@ void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
 //  blockSignals(true);
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   foreach (ZPunctum *punctum, punctaList) {
-    addObject(punctum);
+    addObject(punctum, false);
   }
   endObjectModifiedMode();
   notifyObjectModified();

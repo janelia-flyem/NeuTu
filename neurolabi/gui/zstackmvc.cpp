@@ -577,6 +577,16 @@ void ZStackMvc::zoomTo(int x, int y, int z)
   zoomTo(x, y, z, width);
 }
 
+void ZStackMvc::zoomToL1(int x, int y, int z)
+{
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(400, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
+}
+
 ZIntPoint ZStackMvc::getViewCenter() const
 {
   return getView()->getViewCenter();

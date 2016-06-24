@@ -1,6 +1,7 @@
 #include "zflyemsynapseannotationdialog.h"
 
 #include <sstream>
+#include <iostream>
 
 #include <QPainter>
 
@@ -134,6 +135,10 @@ ZJsonObject ZFlyEmSynapseAnnotationDialog::getPropJson() const
 
   QString annotation = getAnnotation();
   propJson.setEntry("annotation", annotation.toStdString());
+
+#ifdef _DEBUG_
+  std::cout << propJson.dumpString(2) << std::endl;
+#endif
 
   return propJson;
 }

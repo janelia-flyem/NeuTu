@@ -488,22 +488,26 @@ void ZDvidSynapseEnsemble::display(
       SynapseSlice &synapseSlice =
           const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z, ADJUST_FULL);
 
+
+
       for (int i = 0; i < synapseSlice.size(); ++i) {
         QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
         for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
              iter != synapseMap.end(); ++iter) {
           const ZDvidSynapse &synapse = iter.value();
-          synapse.display(painter, slice, option, sliceAxis);
+          if (!synapse.isSelected()) {
+            synapse.display(painter, slice, option, sliceAxis);
+          }
         }
-      }
+      }  
+    }
 
-      const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
-      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-           iter != selected.end(); ++iter) {
-        ZDvidSynapse &synapse =
-            const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
-        synapse.display(painter, slice, option, sliceAxis);
-      }
+    const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
+      synapse.display(painter, slice, option, sliceAxis);
     }
   }
 }
@@ -651,6 +655,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
       ZJsonObject obj(objArray.value(0));
       synapse.loadJsonObject(obj, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
       synapse.updatePartner();
+      synapse.updatePartnerVerification(m_reader);
 #if 0
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
