@@ -30,6 +30,14 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
+
+    connect(ui->reviewFirstButton, SIGNAL(clicked(bool)),
+            this, SLOT(onReviewFirstButton()));
+    connect(ui->reviewPrevButton, SIGNAL(clicked(bool)),
+            this, SLOT(onReviewPrevButton()));
+    connect(ui->reviewNextButton, SIGNAL(clicked(bool)),
+            this, SLOT(onReviewNextButton()));
+
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
@@ -39,7 +47,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
-    m_currentIndex = 0;
+    m_currentPendingIndex = 0;
+    m_currentFinishedIndex = 0;
 }
 
 // protocol name should not contain hyphens
@@ -108,13 +117,13 @@ std::string SynapsePredictionProtocol::getName() {
 
 void SynapsePredictionProtocol::onFirstButton() {
     if (m_pendingList.size() > 0) {
-      m_currentIndex = 0;
+      m_currentPendingIndex = 0;
 #ifdef _DON_
         m_currentPoint = m_pendingList.first();
 #endif
     } else {
 
-      m_currentIndex = -1;
+      m_currentPendingIndex = -1;
         // still not sure the best way to represent a null;
 #ifdef _DON_
         m_currentPoint = ZIntPoint();
@@ -126,12 +135,23 @@ void SynapsePredictionProtocol::onFirstButton() {
     updateLabels();
 }
 
+void SynapsePredictionProtocol::onReviewFirstButton()
+{
+  if (m_finishedList.size() > 0) {
+    m_currentPendingIndex = 0;
+  } else {
+    m_currentPendingIndex = -1;
+  }
+
+  gotoCurrentFinished();
+}
+
 void SynapsePredictionProtocol::onPrevButton()
 {
   if (!m_pendingList.empty()) {
-    m_currentIndex--;
-    if (m_currentIndex < 0) {
-      m_currentIndex = m_pendingList.size() - 1;
+    m_currentPendingIndex--;
+    if (m_currentPendingIndex < 0) {
+      m_currentPendingIndex = m_pendingList.size() - 1;
     }
 #ifdef _DON_
     m_currentPoint = m_pendingList[m_currentIndex];
@@ -139,16 +159,29 @@ void SynapsePredictionProtocol::onPrevButton()
     gotoCurrent();
     updateLabels();
   } else {
-    m_currentIndex = -1;
+    m_currentPendingIndex = -1;
+  }
+}
+
+void SynapsePredictionProtocol::onReviewPrevButton()
+{
+  if (!m_finishedList.empty()) {
+    m_currentFinishedIndex--;
+    if (m_currentFinishedIndex < 0) {
+      m_currentFinishedIndex = m_finishedList.size() - 1;
+    }
+    gotoCurrentFinished();
+  } else {
+    m_currentFinishedIndex = -1;
   }
 }
 
 void SynapsePredictionProtocol::onNextButton()
 {
   if (!m_pendingList.empty()) {
-    m_currentIndex++;
-    if (m_currentIndex >= m_pendingList.size()) {
-      m_currentIndex = 0;
+    m_currentPendingIndex++;
+    if (m_currentPendingIndex >= m_pendingList.size()) {
+      m_currentPendingIndex = 0;
     }
 #ifdef _DON_
     m_currentPoint = m_pendingList[m_currentIndex];
@@ -156,7 +189,21 @@ void SynapsePredictionProtocol::onNextButton()
     gotoCurrent();
     updateLabels();
   } else {
-    m_currentIndex = -1;
+    m_currentPendingIndex = -1;
+  }
+}
+
+void SynapsePredictionProtocol::onReviewNextButton()
+{
+  if (!m_finishedList.empty()) {
+    m_currentFinishedIndex++;
+    if (m_currentFinishedIndex >= m_finishedList.size()) {
+      m_currentFinishedIndex = 0;
+    }
+
+    gotoCurrentFinished();
+  } else {
+    m_currentFinishedIndex = -1;
   }
 }
 
@@ -235,14 +282,23 @@ void SynapsePredictionProtocol::onExitButton() {
 
 void SynapsePredictionProtocol::gotoCurrent() {
     // the dubious null check appears again...
-    if (m_currentIndex >= 0 && m_currentIndex < m_pendingList.size()) {
-      ZIntPoint pt = m_pendingList[m_currentIndex];
+    if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
+      ZIntPoint pt = m_pendingList[m_currentPendingIndex];
       emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
       /*
         emit requestDisplayPoint(m_currentPoint.getX(),
             m_currentPoint.getY(), m_currentPoint.getZ());
             */
     }
+}
+
+void SynapsePredictionProtocol::gotoCurrentFinished()
+{
+  if (m_currentFinishedIndex >= 0 &&
+      m_currentFinishedIndex < m_finishedList.size()) {
+    ZIntPoint pt = m_finishedList[m_currentFinishedIndex];
+    emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
+  }
 }
 
 #ifdef _DON_
@@ -418,8 +474,8 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 
   if (isVerified) {
     if (m_pendingList.removeOne(targetPoint)) {
-      if (m_currentIndex >= m_pendingList.size()) {
-        m_currentIndex = m_pendingList.size() - 1;
+      if (m_currentPendingIndex >= m_pendingList.size()) {
+        m_currentPendingIndex = m_pendingList.size() - 1;
       }
       m_finishedList.append(targetPoint);
     }
@@ -478,8 +534,8 @@ void SynapsePredictionProtocol::updateLabels() {
     // current item:
 
     // is a zero point good enough for null?
-    if (m_currentIndex >= 0 && m_currentIndex < m_pendingList.size()) {
-      ZIntPoint currentPoint = m_pendingList[m_currentIndex];
+    if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
+      ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
         ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(currentPoint.getX())
             .arg(currentPoint.getY()).arg(currentPoint.getZ()));
     } else {
@@ -507,7 +563,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     // I don't *think* there's any way these lists will be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
-    m_currentIndex = 0;
+    m_currentPendingIndex = 0;
 
     ZDvidReader reader;
     reader.setVerbose(false);

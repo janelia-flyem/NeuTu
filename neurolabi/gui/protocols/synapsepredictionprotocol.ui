@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>450</width>
     <height>300</height>
    </rect>
   </property>
@@ -71,6 +71,38 @@
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string>Refresh</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Review:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reviewFirstButton">
+       <property name="text">
+        <string>First (R)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reviewPrevButton">
+       <property name="text">
+        <string>&lt;&lt; Prev (R)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reviewNextButton">
+       <property name="text">
+        <string>Next (R) &gt;&gt;</string>
        </property>
       </widget>
      </item>

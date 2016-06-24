@@ -45,6 +45,11 @@ private slots:
     void onFirstButton();
     void onPrevButton();
     void onNextButton();
+
+    void onReviewFirstButton();
+    void onReviewPrevButton();
+    void onReviewNextButton();
+
 #ifdef _DON_
     void onMarkedButton();
     void onSkipButton();
@@ -68,13 +73,15 @@ private:
 #ifdef _DON_
     ZIntPoint m_currentPoint;
 #else
-    int m_currentIndex; //Index for locating in pending list
+    int m_currentPendingIndex; //Index for locating in pending list
+    int m_currentFinishedIndex;
 #endif
     ZIntCuboid m_protocolRange;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
+    void gotoCurrentFinished();
 #ifdef _DON_
     ZIntPoint getNextPoint(ZIntPoint point);
     ZIntPoint getPrevPoint(ZIntPoint point);
