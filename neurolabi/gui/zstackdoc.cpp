@@ -305,6 +305,13 @@ void ZStackDoc::disconnectSwcNodeModelUpdate()
              m_swcNodeObjsModel, SLOT(updateModelData()));
 }
 
+
+void ZStackDoc::disconnectPunctaModelUpdate()
+{
+  disconnect(this, SIGNAL(punctaModified()),
+             m_punctaObjsModel, SLOT(updateModelData()));
+}
+
 void ZStackDoc::connectSignalSlot()
 {
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));

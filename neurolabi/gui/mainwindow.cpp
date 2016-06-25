@@ -7624,14 +7624,40 @@ void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
   target.setLabelBlockName("labels3");
   target.setGrayScaleName("grayscale");
 
-  QVector<uint64_t> neuronArray;
-  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
 
-  std::ofstream stream;
-  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+
+//  QVector<uint64_t> neuronArray;
+//  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+
+//  std::ofstream stream;
+//  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
 
   ZDvidReader reader;
   if (reader.open(target)) {
+    int index = 0;
     foreach (uint64_t bodyId, neuronArray) {
       ZSwcTree *tree = reader.readSwc(bodyId);
 
@@ -7639,26 +7665,30 @@ void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
       QString outPath = outDir.absoluteFilePath(outFileName);
       tree->save(outPath.toStdString());
 
-      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+      if (index < 5) {
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
 
-      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
+        //      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        //      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
 
-      std::vector<ZVaa3dMarker> markerArray;
-      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
-           iter != synapseArray.end(); ++iter) {
-        const ZDvidSynapse &synapse = *iter;
+        std::vector<ZVaa3dMarker> markerArray;
+        for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+             iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
 
-        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-          ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
-          markerArray.push_back(marker);
+          if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+            markerArray.push_back(marker);
+          }
         }
+
+        outFileName = QString("%1.marker").arg(bodyId);
+        outPath = outDir.absoluteFilePath(outFileName);
+        FlyEm::ZFileParser::writeVaa3dMakerFile(
+              outPath.toStdString(), markerArray);
       }
 
-      outFileName = QString("%1.marker").arg(bodyId);
-      outPath = outDir.absoluteFilePath(outFileName);
-      FlyEm::ZFileParser::writeVaa3dMakerFile(
-            outPath.toStdString(), markerArray);
+      ++index;
 
       delete tree;
     }

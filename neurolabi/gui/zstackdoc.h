@@ -788,6 +788,7 @@ public:
   }
 
   void disconnectSwcNodeModelUpdate();
+  void disconnectPunctaModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
