@@ -18,6 +18,12 @@ public:
   double getLengthThreshold() const;
   double getDistanceThreshold() const;
 
+  double getXScale() const;
+  double getYScale() const;
+  double getZScale() const;
+
+  void setScale(double xs, double ys, double zs);
+
 private:
   Ui::ZSwcIsolationDialog *ui;
 };

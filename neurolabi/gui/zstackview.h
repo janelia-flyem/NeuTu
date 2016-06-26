@@ -278,6 +278,7 @@ public slots:
   void requestQuick3DVis();
   void requestHighresQuick3DVis();
   void requestMerge();
+  void closeChildFrame();
 
   void setView(const ZStackViewParam &param);
 
@@ -296,6 +297,7 @@ signals:
   void viewChanged(ZStackViewParam param);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
+  void closingChildFrame();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);

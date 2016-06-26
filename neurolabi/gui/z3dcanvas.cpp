@@ -146,6 +146,9 @@ void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 
 void Z3DCanvas::resizeEvent(QResizeEvent *event)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
   getGLFocus();
   QGraphicsView::resizeEvent(event);
   if (m_3dScene)
@@ -173,6 +176,10 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 
 void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
+
   if (!m_networkEvaluator) {
     return;
   }
@@ -203,19 +210,21 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
+    QFont font("Helvetica [Cronyx]", 24);;
+    painter->setFont(font);
     painter->drawText(
           QRectF(10, 10, 300, 200),
           "Selection mode on: \n"
           "  1: downstream;\n"
           "  2: upstream;\n"
           "  3: connected nodes;\n"
-          "  4: inverse selection\n"
-          "  5: select potential false positives");
+          "  4: inverse selection;\n"
+          "  5: select small trees;");
   }
 
   //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
-
+  CHECK_GL_ERROR;
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
