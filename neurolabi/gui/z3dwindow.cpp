@@ -826,6 +826,12 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
 
   m_swcIsolationDlg = new ZSwcIsolationDialog(this);
+  if (getDocument() != NULL) {
+    const ZResolution &res = getDocument()->getResolution();
+    m_swcIsolationDlg->setScale(res.voxelSizeX(), res.voxelSizeY(),
+                                res.voxelSizeZ());
+  }
+
   m_helpDlg = new HelpDialog(this);
 
 #if defined(REMOTE_WORKSTATION)

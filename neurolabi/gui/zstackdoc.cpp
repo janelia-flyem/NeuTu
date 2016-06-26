@@ -908,7 +908,8 @@ static double ComputeSwcNodeDistance(
   return minDist;
 }
 
-void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
+void ZStackDoc::selectNoisyTrees(
+    double minLength, double minDist, double sx, double sy, double sz)
 {
   QList<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeList();
 
@@ -926,9 +927,7 @@ void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
     ZSwcTree::RegularRootIterator iter(tree);
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();
-      double length = SwcTreeNode::downstreamLength(
-            tn, m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
-            m_resolution.voxelSizeZ());
+      double length = SwcTreeNode::downstreamLength(tn, sx, sy, sz);
       sizeVector.push_back(length);
 
       iterVector.push_back(new ZSwcTree::DownstreamIterator(tn));
@@ -943,10 +942,7 @@ void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
       for (size_t j = 0; j < sizeVector.size(); ++j) {
         if (sizeVector[j] > minLength) {
           ZSwcTree::DownstreamIterator *anchorIter = iterVector[j];
-          double d = ComputeSwcNodeDistance(
-                *siter, *anchorIter,
-                m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
-                m_resolution.voxelSizeZ());
+          double d = ComputeSwcNodeDistance(*siter, *anchorIter, sx, sy, sz);
           if (anchorDist > d) {
             anchorDist = d;
           }
@@ -971,6 +967,13 @@ void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
 
   QList<Swc_Tree_Node*> newSelected = getSelectedSwcNodeList();
   emit swcTreeNodeSelectionChanged(newSelected, oldSelected);
+}
+
+void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
+{
+  selectNoisyTrees(minLength, minDist,
+                   m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+                   m_resolution.voxelSizeZ());
 }
 
 void ZStackDoc::selectNoisyTrees()

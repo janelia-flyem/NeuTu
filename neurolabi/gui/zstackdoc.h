@@ -734,6 +734,11 @@ public:
 
   void setStackBc(double factor, double offset, int channel);
 
+  void selectNoisyTrees(double minLength, double minDist,
+                        double sx, double sy, double sz);
+  void selectNoisyTrees(double minLength, double minDist);
+  void selectNoisyTrees();
+
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
@@ -1052,8 +1057,6 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
   void inverseSwcNodeSelection();
-  void selectNoisyTrees(double minLength, double minDist);
-  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.
