@@ -204,6 +204,8 @@ public: //attributes
 
   void setResolution(const Cz_Lsminfo &lsmInfo);
 
+  void setResolution(const ZResolution &res);
+
   /*!
    * \brief Get the data space coordinates of stack coordinates
    */

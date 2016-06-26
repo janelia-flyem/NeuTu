@@ -76,6 +76,7 @@
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
 #include "dialogs/zswcisolationdialog.h"
+#include "dialogs/helpdialog.h"
 
 class Sleeper : public QThread
 {
@@ -825,6 +826,7 @@ void Z3DWindow::init(EInitMode mode)
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
 
   m_swcIsolationDlg = new ZSwcIsolationDialog(this);
+  m_helpDlg = new HelpDialog(this);
 
 #if defined(REMOTE_WORKSTATION)
   getCompositor()->setShowBackground(false);
@@ -883,6 +885,9 @@ void Z3DWindow::createActions()
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+
+  m_helpAction = new QAction("Help", this);
+  connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
 
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
@@ -1077,10 +1082,14 @@ void Z3DWindow::createMenus()
 {
   m_viewMenu = menuBar()->addMenu(tr("&View"));
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
+  m_helpMenu = menuBar()->addMenu(tr("&Help"));
+
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
   m_editMenu->addSeparator();
   m_editMenu->addAction(m_markSwcSomaAction);
+
+  m_helpMenu->addAction(m_helpAction);
 
   createContextMenu();
   customizeContextMenu();
@@ -3997,6 +4006,13 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   }
 
   delete stroke;
+}
+
+void Z3DWindow::help()
+{
+  m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
+  m_helpDlg->show();
+  m_helpDlg->raise();
 }
 
 void Z3DWindow::markSwcSoma()
