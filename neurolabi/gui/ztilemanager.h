@@ -59,6 +59,7 @@ private:
 //  float scaleFactor;
   ZTileManagerView *m_view;
 
+  ZResolution m_resolution;
 
   //static const QColor m_preselectionColor;
   static const QColor m_selectionColor;

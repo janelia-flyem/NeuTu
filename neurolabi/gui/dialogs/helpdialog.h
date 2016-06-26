@@ -14,6 +14,8 @@ class HelpDialog : public QDialog
 public:
   explicit HelpDialog(QWidget *parent = 0);
   ~HelpDialog();
+
+  void setSource(const QString &source);
   
 private:
   Ui::HelpDialog *ui;

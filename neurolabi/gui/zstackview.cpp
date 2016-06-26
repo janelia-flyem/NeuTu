@@ -2424,6 +2424,20 @@ void ZStackView::customizeWidget()
     vis3dButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     m_secondTopLayout->addWidget(vis3dButton);
     connect(vis3dButton, SIGNAL(clicked()), this, SLOT(request3DVis()));
+
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      if (buddyDocument() != NULL) {
+        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+          QPushButton *closeChildFrameButton = new QPushButton(this);
+          closeChildFrameButton->setText("Close Projection Windows");
+          closeChildFrameButton->setSizePolicy(
+                QSizePolicy::Maximum, QSizePolicy::Maximum);
+          m_secondTopLayout->addWidget(closeChildFrameButton);
+          connect(closeChildFrameButton, SIGNAL(clicked()),
+                  this, SLOT(closeChildFrame()));
+        }
+      }
+    }
   }
 }
 
@@ -2439,6 +2453,11 @@ void ZStackView::addHorizontalWidget(QSpacerItem *spacer)
   if (spacer != NULL) {
     m_secondTopLayout->addSpacerItem(spacer);
   }
+}
+
+void ZStackView::closeChildFrame()
+{
+  emit closingChildFrame();
 }
 
 void ZStackView::request3DVis()

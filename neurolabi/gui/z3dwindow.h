@@ -47,6 +47,7 @@ class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
 class ZSwcIsolationDialog;
+class HelpDialog;
 //class Z3DRendererBase;
 
 class Z3DTabWidget : public QTabWidget
@@ -400,6 +401,7 @@ public slots:
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
   void markSwcSoma();
+  void help();
 
   void selectSwcTreeNodeInRoi(bool appending);
   void selectSwcTreeNodeTreeInRoi(bool appending);
@@ -429,6 +431,8 @@ private:
 
   QMenu *m_viewMenu;
   QMenu *m_editMenu;
+  QMenu *m_helpMenu;
+
   QAction *m_removeSelectedObjectsAction;
   QAction *m_openVolumeZoomInViewAction;
   QAction *m_exitVolumeZoomInViewAction;
@@ -458,6 +462,7 @@ private:
   QAction *m_selectAllSwcNodeAction;
   QAction *m_translateSwcNodeAction;
   QAction *m_changeSwcNodeSizeAction;
+  QAction *m_helpAction;
 
   QAction *m_refreshTraceMaskAction;
 
@@ -536,6 +541,7 @@ private:
 
   QToolBar *m_toolBar;
   ZSwcIsolationDialog *m_swcIsolationDlg;
+  HelpDialog *m_helpDlg;
 };
 
 #endif // Z3DWINDOW_H

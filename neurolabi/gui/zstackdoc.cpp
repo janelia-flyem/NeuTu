@@ -9558,6 +9558,11 @@ void ZStackDoc::setResolution(double x, double y, double z, char unit)
   m_resolution.setUnit(unit);
 }
 
+void ZStackDoc::setResolution(const ZResolution &res)
+{
+  m_resolution = res;
+}
+
 void ZStackDoc::setResolution(const Cz_Lsminfo &lsmInfo)
 {
   setResolution(lsmInfo.f64VoxelSizeX * 1e6,
