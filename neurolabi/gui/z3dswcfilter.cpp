@@ -475,40 +475,42 @@ std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
   tn = tree->next();
   if (getCoordScales().x == 1.0 && getCoordScales().y == 1.0 &&
       getCoordScales().z == 1.0 && getSizeScale() == 1.0) {
-    double d = tn->node.d;
-    double x = tn->node.x;
-    double y = tn->node.y;
-    double z = tn->node.z;
+    for (; tn != tree->end(); tn = tree->next()) {
+      double d = tn->node.d;
+      double x = tn->node.x;
+      double y = tn->node.y;
+      double z = tn->node.z;
 
-    double x0 = x - d;
-    double x1 = x + d;
-    double y0 = y - d;
-    double y1 = y + d;
-    double z0 = z - d;
-    double z1 = z + d;
+      double x0 = x - d;
+      double x1 = x + d;
+      double y0 = y - d;
+      double y1 = y + d;
+      double z0 = z - d;
+      double z1 = z + d;
 
-    if (x0 < result[0]) {
-      result[0] = x0;
-    }
+      if (x0 < result[0]) {
+        result[0] = x0;
+      }
 
-    if (x1 > result[1]) {
-      result[1] = x1;
-    }
+      if (x1 > result[1]) {
+        result[1] = x1;
+      }
 
-    if (y0 < result[2]) {
-      result[2] = y0;
-    }
+      if (y0 < result[2]) {
+        result[2] = y0;
+      }
 
-    if (y1 > result[3]) {
-      result[3] = y1;
-    }
+      if (y1 > result[3]) {
+        result[3] = y1;
+      }
 
-    if (z0 < result[4]) {
-      result[4] = z0;
-    }
+      if (z0 < result[4]) {
+        result[4] = z0;
+      }
 
-    if (z1 > result[5]) {
-      result[5] = z1;
+      if (z1 > result[5]) {
+        result[5] = z1;
+      }
     }
   } else {
     for (; tn != tree->end(); tn = tree->next()) {

@@ -4589,7 +4589,6 @@ void MainWindow::on_actionMake_Movie_MB_triggered()
   makeMovie();
 }
 
-
 void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -7613,9 +7612,9 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
   }
 }
 
-void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+void MainWindow::generateMBKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie1/cast").c_str());
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7693,5 +7692,219 @@ void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
       delete tree;
     }
   }
+}
+
+void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> kCcNeuronArray;
+  QVector<uint64_t> kCsNeuronArray;
+  QVector<uint64_t> kCpNeuronArray;
+
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (wordList.size() > 1) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        QString name = wordList[1];
+        if (name.startsWith('"')) {
+          name.remove(0, 1);
+//          name = name.right(1);
+        }
+        if (name.endsWith('"')) {
+          name.chop(1);
+        }
+        if (name == "KC-c") {
+          kCcNeuronArray.append(idArray.front());
+        } else if (name == "KC-s") {
+          kCsNeuronArray.append(idArray.front());
+        } else if (name == "KC-p") {
+          kCpNeuronArray.append(idArray.front());
+        }
+      }
+    }
+  }
+
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZSwcTree kCcTree;
+    foreach (uint64_t bodyId, kCcNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCcTree.merge(tree, true);
+    }
+    QString outFileName = "KC_c.swc";
+    QString outPath = outDir.absoluteFilePath(outFileName);
+    kCcTree.save(outPath.toStdString());
+
+    ZSwcTree kCsTree;
+    foreach (uint64_t bodyId, kCsNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCsTree.merge(tree, true);
+    }
+    outFileName = "KC_s.swc";
+    outPath = outDir.absoluteFilePath(outFileName);
+    kCsTree.save(outPath.toStdString());
+
+    ZSwcTree kCpTree;
+    foreach (uint64_t bodyId, kCpNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCpTree.merge(tree, true);
+    }
+    outFileName = "KC_p.swc";
+    outPath = outDir.absoluteFilePath(outFileName);
+    kCpTree.save(outPath.toStdString());
+  }
+}
+
+void MainWindow::generateMBPAMCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+}
+
+void MainWindow::generateMBONCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+}
+
+void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+{
+  generateMBKcCast("movie1");
+}
+
+void MainWindow::on_actionGenerate_KC_s_Actor_triggered()
+{
+  generateMBKcCast("movie2");
+}
+
+void MainWindow::on_actionGenerate_MB_Actor_triggered()
+{
+  generateMBONCast("movie6");
+}
+
+void MainWindow::on_actionGenerate_KC_p_Actor_triggered()
+{
+  generateMBKcCast("movie3");
+}
+
+void MainWindow::on_actionGenerate_All_KC_Actor_triggered()
+{
+  generateMBAllKcCast("movie4");
+}
+
+void MainWindow::on_actionGenerate_PAM_Actor_triggered()
+{
+  generateMBPAMCast("movie5");
+}
+
+void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
+{
 
 }

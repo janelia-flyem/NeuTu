@@ -476,6 +476,18 @@ private slots:
 
   void on_actionMake_Movie_MB_triggered();
 
+  void on_actionGenerate_KC_s_Actor_triggered();
+
+  void on_actionGenerate_MB_Actor_triggered();
+
+  void on_actionGenerate_KC_p_Actor_triggered();
+
+  void on_actionGenerate_All_KC_Actor_triggered();
+
+  void on_actionGenerate_PAM_Actor_triggered();
+
+  void on_actionGenerate_MB_Conn_Actor_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -540,6 +552,11 @@ private:
       const FlyEmSkeletonizationDialog &dlg);
 
   void makeMovie();
+
+  void generateMBKcCast(const std::string &movieFolder);
+  void generateMBAllKcCast(const std::string &movieFolder);
+  void generateMBPAMCast(const std::string &movieFolder);
+  void generateMBONCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;
