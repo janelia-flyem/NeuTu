@@ -616,16 +616,18 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int h)
 
     // Check if any point was selected...
     for (std::vector<ZPunctum*>::iterator it=m_punctaList.begin();
-         it!=m_punctaList.end(); ++it)
+         it!=m_punctaList.end(); ++it) {
       if (*it == obj) {
         m_pressedPunctum = *it;
         break;
       }
+    }
     return;
   }
 
   if (e->type() == QEvent::MouseButtonRelease) {
-    if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
+    if (std::abs(e->x() - m_startCoord.x) < 2 &&
+        std::abs(m_startCoord.y - e->y()) < 2) { //moving distinguishment
       if (e->modifiers() == Qt::ControlModifier)
         emit punctumSelected(m_pressedPunctum, true);
       else

@@ -33,6 +33,8 @@ signals:
   void locatingMain();
   void showingSeg(bool on);
   void showingData(bool on);
+  void settingHighContrast(bool on);
+  void settingSmooth(bool on);
 
 public slots:
   void dump(const ZWidgetMessage &message);

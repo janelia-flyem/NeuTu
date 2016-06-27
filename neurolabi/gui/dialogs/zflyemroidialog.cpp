@@ -519,11 +519,15 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
                                      z, boundBox.getWidth(),
                                      boundBox.getHeight(), 1);
       } else {
+        int width = dvidInfo.getStackSize()[0];
+        int height = dvidInfo.getStackSize()[1];
+        if (width / 20000) { //temporary fix
+          width /= 2;
+        }
         stack = reader.readGrayScale(
               dvidInfo.getStartCoordinates().getX(),
               dvidInfo.getStartCoordinates().getY(),
-              z, dvidInfo.getStackSize()[0],
-            dvidInfo.getStackSize()[1], 1);
+              z, width, height, 1);
         if (stack != NULL) {
           boundBox = ZFlyEmRoiProject::estimateBoundBox(
                 *stack, getDvidTarget().getBgValue());

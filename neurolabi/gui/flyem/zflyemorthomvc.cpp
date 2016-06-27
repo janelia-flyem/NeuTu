@@ -4,6 +4,7 @@
 #include "zflyemsupervisor.h"
 #include "zstackview.h"
 #include "zwidgetmessage.h"
+#include "zflyemproofpresenter.h"
 
 ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
   ZFlyEmProofMvc(parent)
@@ -35,6 +36,7 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->hideThresholdControl();
   frame->getView()->setHoverFocus(true);
   frame->updateDvidTargetFromDoc();
+  frame->getPresenter()->useHighContrastProtocal(true);
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
@@ -43,6 +45,11 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
       se->attachView(frame->getView());
     }
   }
+
+  connect(frame->getPresenter(), SIGNAL(savingStack()),
+          frame, SLOT(saveStack()));
+  connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
+          frame, SIGNAL(highlightModeChanged()));
 
   return frame;
 }
@@ -68,12 +75,20 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
 void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 {
   getCompleteDocument()->setDvidTarget(target);
+
   updateDvidTargetFromDoc();
 }
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 {
   if (getCompleteDocument() != NULL) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZJsonObject contrastObj = reader.readContrastProtocal();
+      getPresenter()->setHighContrastProtocal(contrastObj);
+    }
+
+    getView()->updateContrastProtocal();
     getView()->reset(false);
     if (m_supervisor != NULL) {
       m_supervisor->setDvidTarget(getCompleteDocument()->getDvidTarget());

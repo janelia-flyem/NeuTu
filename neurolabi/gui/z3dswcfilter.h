@@ -7,6 +7,8 @@ class Z3DSphereRenderer;
 class Z3DLineWithFixedWidthColorRenderer;
 
 #include <QObject>
+#include <QMutex>
+
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
 #include <map>
@@ -118,6 +120,8 @@ protected:
   void renderSelectionBox(Z3DEye eye);
   void prepareData();
 
+  void sortNodeList();
+
 private:
   void initTopologyColor();
   void initTypeColor();
@@ -227,6 +231,8 @@ private:
   bool m_enableCutting;
 
   QVector<QString> m_guiNameList;
+
+  mutable QMutex m_nodeSelectionMutex;
 };
 
 #endif // Z3DSWCFILTER_H

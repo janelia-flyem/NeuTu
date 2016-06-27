@@ -89,6 +89,7 @@ public:
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
     OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
+    OPERATION_SET_AS_ROOT,
     OPERATION_EXTEND_NODE, OPERATION_SELECT, OPERATION_SELECT_CONNECTION,
     OPERATION_SELECT_FLOOD
   };
@@ -368,7 +369,8 @@ public:
    *        (\a corner[0], \a corner[1], corner[2]) and the last corner is
    *        (\a corner[3], \a corner[4], corner[5]).
    */
-  void boundBox(double *corner) const;
+  void getBoundBox(double *corner) const;
+
 
   /*!
    * \brief Get bound box of the tree
@@ -377,6 +379,8 @@ public:
    */
    ZCuboid getBoundBox() const;
 //   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+
+   void boundBox(ZIntCuboid *box) const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -426,6 +430,8 @@ public:
   void selectAllNode();
   void deselectAllNode();
 
+  void inverseSelection();
+
   void recordSelection();
   void processSelection();
 #if defined(_QT_GUI_USED_)
@@ -448,6 +454,7 @@ public:
   void selectUpstreamNode();
   void selectDownstreamNode();
   void selectBranchNode();
+  void selectSmallSubtree(double maxLength);
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;
@@ -694,8 +701,24 @@ public:
     ExtIterator(const ZSwcTree *tree);
     virtual ~ExtIterator();
 
+    /*!
+     * \brief Restart the iterator.
+     */
+    virtual void restart() = 0;
+
+    /*!
+     * \brief Restart the iterator and get the first node
+     */
     virtual Swc_Tree_Node *begin() = 0;
+
     virtual bool hasNext() const = 0;
+
+    /*!
+     * \brief Get the next node.
+     *
+     * Note that the it returns the first node if the iterator is just started.
+     * It returns NULL when it reaches the end.
+     */
     virtual Swc_Tree_Node *next() = 0;
 
     void excludeVirtual(bool on) {
@@ -714,6 +737,7 @@ public:
   class RegularRootIterator : public ExtIterator {
   public:
     RegularRootIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node *next();
@@ -722,6 +746,7 @@ public:
   class DepthFirstIterator : public ExtIterator {
   public:
     DepthFirstIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -730,6 +755,7 @@ public:
   class LeafIterator : public ExtIterator {
   public:
     LeafIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -741,6 +767,19 @@ public:
   class TerminalIterator : public ExtIterator {
   public:
     TerminalIterator(const ZSwcTree *tree);
+    void restart();
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
+  };
+
+  class DownstreamIterator : public ExtIterator {
+  public:
+    DownstreamIterator(Swc_Tree_Node *tn);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();

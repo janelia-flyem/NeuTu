@@ -46,47 +46,82 @@ void ZFlyEmProofPresenter::init()
 
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
 
-  connectAction();
+//  connectAction();
 
 //  ZKeyOperationConfig::ConfigureFlyEmStackMap(m_stackKeyOperationMap);
 }
 
-void ZFlyEmProofPresenter::connectAction()
+bool ZFlyEmProofPresenter::connectAction(
+    QAction *action, ZActionFactory::EAction item)
 {
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_DELETE), SIGNAL(triggered()),
-          this, SLOT(deleteSelectedSynapse()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
-          this, SLOT(verfifySelectedSynapse()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
-          this, SLOT(unverfifySelectedSynapse()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_PRE), SIGNAL(triggered()),
-          this, SLOT(tryAddPreSynapseMode()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_ADD_POST), SIGNAL(triggered()),
-          this, SLOT(tryAddPostSynapseMode()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_MOVE), SIGNAL(triggered()),
-          this, SLOT(tryMoveSynapseMode()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_LINK), SIGNAL(triggered()),
-          this, SLOT(linkSelectedSynapse()));
-  connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNLINK), SIGNAL(triggered()),
-          this, SLOT(unlinkSelectedSynapse()));
-  connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM), SIGNAL(triggered()),
-          this, SLOT(tryAddTodoItem()));
-  connect(getAction(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED), SIGNAL(triggered()),
-          this, SLOT(tryAddDoneItem()));
-  connect(getAction(ZActionFactory::ACTION_CHECK_TODO_ITEM), SIGNAL(triggered()),
-          this, SLOT(checkTodoItem()));
-  connect(getAction(ZActionFactory::ACTION_UNCHECK_TODO_ITEM), SIGNAL(triggered()),
-          this, SLOT(uncheckTodoItem()));
-  connect(getAction(ZActionFactory::ACTION_REMOVE_TODO_ITEM), SIGNAL(triggered()),
-          this, SLOT(removeTodoItem()));
-  connect(getAction(ZActionFactory::ACTION_SELECT_BODY_IN_RECT), SIGNAL(triggered()),
-          this, SLOT(selectBodyInRoi()));
-  connect(getAction(ZActionFactory::ACTION_ZOOM_TO_RECT), SIGNAL(triggered()),
-          this, SLOT(zoomInRectRoi()));
-  connect(getAction(ZActionFactory::ACTION_REWRITE_SEGMENTATION),
-          SIGNAL(triggered()), getCompleteDocument(),
-          SLOT(rewriteSegmentation()));
+  bool connected = false;
 
+  if (action != NULL) {
+    connected = true;
+    switch (item) {
+    case ZActionFactory::ACTION_SYNAPSE_DELETE:
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_PRE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddPreSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_ADD_POST:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryAddPostSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_MOVE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryMoveSynapseMode()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_LINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(linkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNLINK:
+      connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddDoneItem()));
+      break;
+    case ZActionFactory::ACTION_CHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
+      break;
+    case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(uncheckTodoItem()));
+      break;
+    case ZActionFactory::ACTION_REMOVE_TODO_ITEM:
+      connect(action, SIGNAL(triggered()), this, SLOT(removeTodoItem()));
+      break;
+    case ZActionFactory::ACTION_SELECT_BODY_IN_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(selectBodyInRoi()));
+      break;
+    case ZActionFactory::ACTION_ZOOM_TO_RECT:
+      connect(action, SIGNAL(triggered()), this, SLOT(zoomInRectRoi()));
+      break;
+    case ZActionFactory::ACTION_REWRITE_SEGMENTATION:
+      connect(action, SIGNAL(triggered()),
+              getCompleteDocument(), SLOT(rewriteSegmentation()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_VERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
+              this, SLOT(verfifySelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_UNVERIFY:
+      connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
+              this, SLOT(unverfifySelectedSynapse()));
+      break;
+    default:
+      connected = false;
+      break;
+    }
+    if (connected == false) {
+      connected = ZStackPresenter::connectAction(action, item);
+    }
+  }
+
+  return connected;
 }
 
 void ZFlyEmProofPresenter::selectBodyInRoi()
@@ -171,26 +206,77 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   case Qt::Key_C:
     if (!isSplitOn()) {
       emit deselectingAllBody();
+      processed = true;
     }
     break;
   case Qt::Key_M:
     emit mergingBody();
+    processed = true;
     break;
   case Qt::Key_B:
-    emit goingToBodyBottom();
+    if (event->modifiers() == Qt::NoModifier) {
+      if (getCompleteDocument()->hasBodySelected()) {
+        emit goingToBodyBottom();
+        processed = true;
+      }
+    }
     break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
       emit goingToBodyTop();
+      processed = true;
     }
+    break;
+  case Qt::Key_1:
+    if (interactiveContext().todoEditMode() ==
+        ZInteractiveContext::TODO_ADD_ITEM) {
+
+      processed = true;
+    }
+    break;
+  case Qt::Key_V:
+  {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_MOVE);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
+    break;
+  case Qt::Key_X:
+  {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_DELETE);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
+    break;
+  case Qt::Key_Y:
+  {
+    if (event->modifiers() == Qt::NoModifier) {
+      QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY);
+      if (action != NULL) {
+        action->trigger();
+        processed = true;
+      }
+    }
+  }
     break;
   default:
     break;
   }
 
   ZStackOperator op;
-  op.setOperation(m_bookmarkKeyOperationMap.getOperation(
-                    event->key(), event->modifiers()));
+  if (!processed) {
+    op.setOperation(m_bookmarkKeyOperationMap.getOperation(
+                      event->key(), event->modifiers()));
+  }
+
   if (!op.isNull()) {
     process(op);
     processed = true;
@@ -346,7 +432,10 @@ bool ZFlyEmProofPresenter::isHighlight() const
 
 void ZFlyEmProofPresenter::setHighlightMode(bool hl)
 {
-  m_isHightlightMode = hl;
+  if (m_isHightlightMode != hl) {
+    m_isHightlightMode = hl;
+    emit highlightModeChanged();
+  }
 }
 
 void ZFlyEmProofPresenter::toggleHighlightMode()

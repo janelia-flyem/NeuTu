@@ -17053,7 +17053,7 @@ void ZTest::test(MainWindow *host)
 
   ZObject3dScan obj = reader.readRoi("mb_subtracted");
   std::cout << obj.getVoxelNumber() << std::endl;
-//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
 #if 0
@@ -20168,6 +20168,22 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.readTile(0, 0, 0, 0);
+
+  ZArray *label = reader.readLabels64Lowtis(4099, 5018, 10343, 512, 512);
+
+  reader.readLabels64Lowtis(4099, 5018, 10344, 512, 512);
+
+#endif
+
+
 #if 0
   ZFlyEmBookmark bookmark;
   bookmark.setComment("test");
@@ -20205,7 +20221,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("0bf3");
+  writer.writeMasterNode("32a2");
 #endif
 
 #if 0
@@ -20298,7 +20314,100 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
+  const std::vector<ZDvidTarget> &repoList = GET_FLYEM_CONFIG.getDvidRepo();
+
+  std::cout << repoList.size() << std::endl;
+
+  std::set<std::string> userNameSet;
+  std::set<std::string> uuidSet;
+  std::vector<ZDvidTarget> targetList;
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = repoList.begin();
+       iter != repoList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    userNameSet.insert(
+          target.getUserNameSet().begin(), target.getUserNameSet().end());
+    if (ZString(target.getUuid()).startsWith("@")) {
+      if (uuidSet.count(target.getUuid()) == 0) {
+        uuidSet.insert(target.getUuid());
+        targetList.push_back(target);
+      }
+    }
+  }
+
+  std::cout << userNameSet.size() << " users." << std::endl;
+
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = targetList.begin();
+       iter != targetList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    ZDvidReader reader;
+    reader.open(target);
+    //      ZDvidUrl url(target);
+    for (std::set<std::string>::const_iterator iter = userNameSet.begin();
+         iter != userNameSet.end(); ++iter) {
+      const std::string &user = *iter;
+      ZJsonArray jsonArray = reader.readAnnotation(
+            target.getBookmarkName(), "user:" + user);
+      std::cout << jsonArray.size() << " bookmarks for " << target.getUuid()
+                << ":" << user << std::endl;
+      for (size_t i = 0; i < jsonArray.size(); ++i) {
+        ZJsonObject jsonObj(jsonArray.value(i));
+        ZFlyEmBookmark bookmark;
+        bookmark.loadDvidAnnotation(jsonObj);
+        if (bookmark.getComment().contains("split")) {
+          std::cout << bookmark.getCenter().toString() << ":"
+                    << bookmark.getComment().toStdString() << std::endl;
+        }
+      }
+    }
+  }
+
+#endif
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "5cb3", 8700);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject obj;
+  obj.setEntry("nonlinear", true);
+  obj.setEntry("offset", 0.0);
+  obj.setEntry("scale", 1.2);
+  writer.writeJson("neutu_config", "contrast", obj);
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("keyvalue", "data_test2", false);
+#endif
+
+#if 0
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "372c";
+  config.datatypename = "labels";
+
+  lowtis::ImageService service(config);
+
+  int width = 512;
+  int height = 512;
+  std::vector<int> offset(3, 0);
+  offset[0] = 4099;
+  offset[1] = 5018;
+  offset[2] = 10343;
+
+  char *buffer = new char[width * height * 8];
+  service.retrieve_image(width, height, offset, buffer);
 
 #endif
 

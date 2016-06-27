@@ -62,6 +62,20 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
   return array;
 }
 
+ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
+{
+  ZJsonArray array;
+  array.append(box.getFirstCorner().getX());
+  array.append(box.getFirstCorner().getY());
+  array.append(box.getFirstCorner().getZ());
+
+  array.append(box.getLastCorner().getX());
+  array.append(box.getLastCorner().getY());
+  array.append(box.getLastCorner().getZ());
+
+  return array;
+}
+
 #if defined(_QT_GUI_USED_)
 ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 {

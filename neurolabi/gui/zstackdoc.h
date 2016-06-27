@@ -643,7 +643,8 @@ public:
   void test(QProgressBar *pb = NULL);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
-  inline void pushUndoCommand(QUndoCommand *command) { m_undoStack->push(command); }
+  void pushUndoCommand(QUndoCommand *command);
+  void pushUndoCommand(ZUndoCommand *command);
 
   inline std::string additionalSource() { return m_additionalSource; }
   inline void setAdditionalSource(const std::string &filePath) {
@@ -1062,6 +1063,8 @@ public slots:
   void selectBranchNode();
   void selectTreeNode();
   void selectConnectedNode();
+  void inverseSwcNodeSelection();
+  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.

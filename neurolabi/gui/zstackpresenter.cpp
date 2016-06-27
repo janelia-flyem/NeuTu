@@ -92,6 +92,8 @@ void ZStackPresenter::init()
   m_mouseLeftButtonPressed = false;
   m_mouseRightButtonPressed = false;
 
+  m_usingHighContrast = false;
+
   for (int i = 0; i < 3; i++) {
     m_mouseLeftReleasePosition[i] = -1;
     m_mouseRightReleasePosition[i] = -1;
@@ -171,7 +173,7 @@ void ZStackPresenter::init()
   m_bodyContextMenu = NULL;
     m_contextMenu = NULL;
 
-  createActions();
+//  createActions();
 
   //m_leftButtonReleaseMapper.setContext(&m_interactiveContext);
   //m_moveMapper.setContext(&m_interactiveContext);
@@ -239,10 +241,10 @@ QAction* ZStackPresenter::getAction(ZActionFactory::EAction item) const
   QAction *action = NULL;
 
   if (action == NULL) {
-    const_cast<ZStackPresenter&>(*this).makeAction(item);
-    if (m_actionMap.contains(item)) {
-      action = m_actionMap[item];
-    }
+    action = const_cast<ZStackPresenter&>(*this).makeAction(item);
+//    if (m_actionMap.contains(item)) {
+//      action = m_actionMap[item];
+//    }
     if (action == NULL) {
       action = buddyDocument()->getAction(item);
     }
@@ -250,150 +252,187 @@ QAction* ZStackPresenter::getAction(ZActionFactory::EAction item) const
 
   return action;
 }
-
-void ZStackPresenter::makeAction(ZActionFactory::EAction item)
+bool ZStackPresenter::connectAction(
+    QAction *action, ZActionFactory::EAction item)
 {
-  if (!m_actionMap.contains(item)) {
-    QAction *action = m_actionFactory->makeAction(item, this);
-    m_actionMap[item] = action;
+  bool connected = false;
 
-    //Additional behaviors
-    if (action != NULL) {
-      switch (item) {
-      case ZActionFactory::ACTION_DELETE_SELECTED:
-        connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
-        break;
-      case ZActionFactory::ACTION_FIT_ELLIPSE:
-        connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
-        break;
+  //Additional behaviors
+  if (action != NULL) {
+    connected = true;
+    switch (item) {
+    case ZActionFactory::ACTION_DELETE_SELECTED:
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+      break;
+    case ZActionFactory::ACTION_FIT_ELLIPSE:
+      connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+      break;
 
-        //Puncta actions
-      case ZActionFactory::ACTION_PUNCTA_MARK:
-        connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
-        break;
-      case ZActionFactory::ACTION_PUNCTA_ENLARGE:
-        connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
-        break;
-      case ZActionFactory::ACTION_PUNCTA_NARROW:
-        connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
-        break;
-      case ZActionFactory::ACTION_PUNCTA_MEANSHIFT:
-        connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
-        break;
-      case ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL:
-        connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
-        break;
+      //Puncta actions
+    case ZActionFactory::ACTION_PUNCTA_MARK:
+      connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
+      break;
+    case ZActionFactory::ACTION_PUNCTA_ENLARGE:
+      connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+      break;
+    case ZActionFactory::ACTION_PUNCTA_NARROW:
+      connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+      break;
+    case ZActionFactory::ACTION_PUNCTA_MEANSHIFT:
+      connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
+      break;
+    case ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL:
+      connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+      break;
 
-        //SWC actions
-      case ZActionFactory::ACTION_ADD_SWC_NODE:
-        connect(action, SIGNAL(triggered()), this, SLOT(trySwcAddNodeMode()));
-        break;
-      case ZActionFactory::ACTION_TOGGLE_SWC_SKELETON:
-        connect(action, SIGNAL(triggered(bool)),
-                this, SLOT(toggleSwcSkeleton(bool)));
-        break;
-      case ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
-        connect(action, SIGNAL(triggered()),
-                getParentFrame(), SLOT(locateSwcNodeIn3DView()));
-        break;
-      case ZActionFactory::ACTION_CONNECT_TO_SWC_NODE:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(enterSwcConnectMode()));
-        m_singleSwcNodeActionActivator.registerAction(action, true);
-        break;
-      case ZActionFactory::ACTION_EXTEND_SWC_NODE:
-        connect(action, SIGNAL(triggered()), this, SLOT(enterSwcExtendMode()));
-        m_singleSwcNodeActionActivator.registerAction(action, true);
-        break;
-      case ZActionFactory::ACTION_MOVE_SWC_NODE:
-        connect(action, SIGNAL(triggered()), this, SLOT(enterSwcMoveMode()));
-        break;
-      case ZActionFactory::ACTION_LOCK_SWC_NODE_FOCUS:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(lockSelectedSwcNodeFocus()));
-        break;
-      case ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(changeSelectedSwcNodeFocus()));
-        break;
-      case ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(estimateSelectedSwcRadius()));
-        break;
+      //SWC actions
+    case ZActionFactory::ACTION_ADD_SWC_NODE:
+      connect(action, SIGNAL(triggered()), this, SLOT(trySwcAddNodeMode()));
+      break;
+    case ZActionFactory::ACTION_TOGGLE_SWC_SKELETON:
+      connect(action, SIGNAL(triggered(bool)),
+              this, SLOT(toggleSwcSkeleton(bool)));
+      break;
+    case ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
+      connect(action, SIGNAL(triggered()),
+              getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+      break;
+    case ZActionFactory::ACTION_CONNECT_TO_SWC_NODE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(enterSwcConnectMode()));
+      m_singleSwcNodeActionActivator.registerAction(action, true);
+      break;
+    case ZActionFactory::ACTION_EXTEND_SWC_NODE:
+      connect(action, SIGNAL(triggered()), this, SLOT(enterSwcExtendMode()));
+      m_singleSwcNodeActionActivator.registerAction(action, true);
+      break;
+    case ZActionFactory::ACTION_MOVE_SWC_NODE:
+      connect(action, SIGNAL(triggered()), this, SLOT(enterSwcMoveMode()));
+      break;
+    case ZActionFactory::ACTION_LOCK_SWC_NODE_FOCUS:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(lockSelectedSwcNodeFocus()));
+      break;
+    case ZActionFactory::ACTION_CHANGE_SWC_NODE_FOCUS:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(changeSelectedSwcNodeFocus()));
+      break;
+    case ZActionFactory::ACTION_ESTIMATE_SWC_NODE_RADIUS:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(estimateSelectedSwcRadius()));
+      break;
 
-        //Trace actions
-      case ZActionFactory::ACTION_TRACE:
-        connect(action, SIGNAL(triggered()), this, SLOT(traceTube()));
-        break;
-      case ZActionFactory::ACTION_FITSEG:
-        connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
-        break;
-      case ZActionFactory::ACTION_DROPSEG:
-        connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
-        break;
+      //Trace actions
+    case ZActionFactory::ACTION_TRACE:
+      connect(action, SIGNAL(triggered()), this, SLOT(traceTube()));
+      break;
+    case ZActionFactory::ACTION_FITSEG:
+      connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
+      break;
+    case ZActionFactory::ACTION_DROPSEG:
+      connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
+      break;
 
-        //stroke actions
-      case ZActionFactory::ACTION_PAINT_STROKE:
-        connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
-        break;
-      case ZActionFactory::ACTION_ADD_SPLIT_SEED:
-        connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
-        break;
-      case ZActionFactory::ACTION_ERASE_STROKE:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(tryEraseStrokeMode()));
-        break;
+      //stroke actions
+    case ZActionFactory::ACTION_PAINT_STROKE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
+      break;
+    case ZActionFactory::ACTION_ADD_SPLIT_SEED:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryPaintStrokeMode()));
+      break;
+    case ZActionFactory::ACTION_ERASE_STROKE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(tryEraseStrokeMode()));
+      break;
 
-        //Body actions
-      case ZActionFactory::ACTION_BODY_ANNOTATION:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyAnnotationTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_SPLIT_START:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodySplitTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_CHECKIN:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyCheckinTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyForceCheckinTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_CHECKOUT:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyCheckoutTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_DECOMPOSE:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyDecomposeTriggered()));
-        break;
-      case ZActionFactory::ACTION_BOOKMARK_CHECK:
-        connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
-        break;
-      case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
-        connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
-        break;
-      case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
-        connect(action, SIGNAL(triggered()),
-                buddyDocument(), SLOT(showSeletedSwcNodeLength()));
-        break;
-      case ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
-        connect(action, SIGNAL(triggered()),
-                buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
-        break;
-      case ZActionFactory::ACTION_ENTER_RECT_ROI_MODE:
-        connect(action, SIGNAL(triggered()), this, SLOT(tryDrawRectMode()));
-        break;
-      case ZActionFactory::ACTION_CANCEL_RECT_ROI:
-        connect(action, SIGNAL(triggered()), this, SLOT(cancelRectRoi()));
-        break;
-      default:
-        break;
-      }
+      //Body actions
+    case ZActionFactory::ACTION_BODY_ANNOTATION:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyAnnotationTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_SPLIT_START:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodySplitTriggered()));
+      break;
+    case ZActionFactory::ACTION_SPLIT_DATA:
+      connect(action, SIGNAL(triggered()), this, SLOT(runSeededWatershed()));
+      break;
+    case ZActionFactory::ACTION_BODY_CHECKIN:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyCheckinTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyForceCheckinTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_CHECKOUT:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyCheckoutTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_DECOMPOSE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyDecomposeTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_MERGE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyMergeTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_UNMERGE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyUnmergeTriggered()));
+      break;
+    case ZActionFactory::ACTION_BOOKMARK_CHECK:
+      connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
+      break;
+    case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
+      connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
+      break;
+    case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
+      connect(action, SIGNAL(triggered()),
+              buddyDocument(), SLOT(showSeletedSwcNodeLength()));
+      break;
+    case ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
+      connect(action, SIGNAL(triggered()),
+              buddyDocument(), SLOT(showSeletedSwcNodeScaledLength()));
+      break;
+    case ZActionFactory::ACTION_ENTER_RECT_ROI_MODE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryDrawRectMode()));
+      break;
+    case ZActionFactory::ACTION_CANCEL_RECT_ROI:
+      connect(action, SIGNAL(triggered()), this, SLOT(cancelRectRoi()));
+      break;
+    case ZActionFactory::ACTION_SAVE_STACK:
+      connect(action, SIGNAL(triggered()), this, SIGNAL(savingStack()));
+      break;
+    case ZActionFactory::ACTION_SHOW_ORTHO:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyOrthoViewTriggered()));
+      break;
+    default:
+      connected = false;
+      break;
     }
   }
+
+  return connected;
+}
+
+QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+
+  if (!m_actionMap.contains(item)) {
+    action = m_actionFactory->makeAction(item, this);
+    m_actionMap[item] = action;
+
+    if (!connectAction(action, item)) {
+      LWARN() << "Failed to connect action: " << action->text();
+    }
+  } else {
+    action = m_actionMap[item];
+  }
+
+  return action;
 }
 
 void ZStackPresenter::clearData()
@@ -609,17 +648,22 @@ void ZStackPresenter::createStrokeActions()
 
 void ZStackPresenter::createMiscActions()
 {
-  {
-    QAction *action = ZActionFactory::MakeAction(
-          ZActionFactory::ACTION_SHOW_ORTHO, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(notifyOrthoViewTriggered()));
-    m_actionMap[ZActionFactory::ACTION_SHOW_ORTHO] = action;
-  }
-
+  makeAction(ZActionFactory::ACTION_SHOW_ORTHO);
+  makeAction(ZActionFactory::ACTION_SAVE_STACK);
 }
 
 void ZStackPresenter::createBodyActions()
 {
+  makeAction(ZActionFactory::ACTION_BODY_SPLIT_START);
+  makeAction(ZActionFactory::ACTION_BODY_ANNOTATION);
+  makeAction(ZActionFactory::ACTION_BODY_CHECKIN);
+  makeAction(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+  makeAction(ZActionFactory::ACTION_BODY_CHECKOUT);
+  makeAction(ZActionFactory::ACTION_BODY_MERGE);
+  makeAction(ZActionFactory::ACTION_BODY_UNMERGE);
+
+
+#if 0
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_BODY_SPLIT_START, this);
@@ -682,7 +726,7 @@ void ZStackPresenter::createBodyActions()
             this, SLOT(notifyBodyUnmergeTriggered()));
     m_actionMap[ZActionFactory::ACTION_BODY_UNMERGE] = action;
   }
-
+#endif
 
 //  action = new QAction(tr("Add split seed"), this);
 //  connect(action, SIGNAL(triggered()), this, SLOT());
@@ -707,15 +751,19 @@ void ZStackPresenter::createActions()
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_DELETE_SELECTED, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
-    m_actionMap[ZActionFactory::ACTION_DELETE_SELECTED] = action;
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+      m_actionMap[ZActionFactory::ACTION_DELETE_SELECTED] = action;
+    }
   }
 
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_FIT_ELLIPSE, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(fitEllipse()));
+    }
   }
 
 /*
@@ -753,6 +801,21 @@ void ZStackPresenter::createSwcNodeContextMenu()
           getAction(ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D));
 //          m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D]);
   }
+}
+
+bool ZStackPresenter::hasHighContrastProtocal() const
+{
+  return !m_highContrastProtocal.isEmpty();
+}
+
+ZJsonObject ZStackPresenter::getHighContrastProtocal() const
+{
+  return m_highContrastProtocal;
+}
+
+void ZStackPresenter::setHighContrastProtocal(const ZJsonObject &obj)
+{
+  m_highContrastProtocal = obj;
 }
 
 QMenu* ZStackPresenter::getSwcNodeContextMenu()
@@ -963,7 +1026,8 @@ void ZStackPresenter::addPunctaEditFunctionToRightMenu()
 
 void ZStackPresenter::prepareView()
 {
-  createDocDependentActions();
+//  createActions();
+//  createDocDependentActions();
   if (NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
     updateLeftMenu(getAction(ZActionFactory::ACTION_TRACE));
   } else {
@@ -2947,6 +3011,9 @@ void ZStackPresenter::process(ZStackOperator &op)
       }
     }
     break;
+  case ZStackOperator::OP_SWC_SET_AS_ROOT:
+    buddyDocument()->executeSetRootCommand();
+    break;
   case ZStackOperator::OP_SWC_ADD_NODE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
@@ -3250,9 +3317,11 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_STROKE_ADD_NEW:
     acceptActiveStroke();
+    LINFO() << "Add painted mask stroke";
     break;
   case ZStackOperator::OP_STROKE_START_PAINT:
   {
+    LINFO() << "Start painting mask";
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
     stroke->set(currentStackPos.x(), currentStackPos.y());
           //m_mouseEventProcessor.getLatestStackPosition().x(),
@@ -3584,6 +3653,7 @@ void ZStackPresenter::acceptActiveStroke()
         buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
       if (!buddyDocument()->getStrokeList().empty()) {
+        LINFO() << "Compute stroke path";
         ZPoint start;
         ZPoint end;
         buddyDocument()->getLastStrokePoint(start.xRef(), start.yRef());

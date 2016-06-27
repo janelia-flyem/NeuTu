@@ -15,6 +15,7 @@
 #include "widgets/zimagewidget.h"
 #include "zintpoint.h"
 #include "zstackviewlocator.h"
+#include "zdialogfactory.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -60,9 +61,12 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
   createPresenter(axis);
+  getPresenter()->createActions();
+
   updateDocument();
 
   m_view->prepareDocument();
+//  m_presenter->createActions();
   m_presenter->prepareView();
 
   customInit();
@@ -141,8 +145,10 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
           m_view, SLOT(updateThresholdSlider()));
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateSlider()));
+  /*
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_presenter, SLOT(updateStackBc()));
+          */
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()),
@@ -398,6 +404,17 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   }
 }
 
+void ZStackMvc::saveStack()
+{
+  if (getDocument()->hasStackData()) {
+    QString filePath =
+        ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
+    if (!filePath.isEmpty()) {
+      getDocument()->getStack()->save(filePath.toStdString());
+    }
+  }
+}
+
 #if 0
 void ZStackMvc::focusInEvent(QFocusEvent *event)
 {
@@ -554,6 +571,16 @@ void ZStackMvc::zoomTo(int x, int y, int z)
 {
   QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
   int width = imin3(800, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
+}
+
+void ZStackMvc::zoomToL1(int x, int y, int z)
+{
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(400, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }

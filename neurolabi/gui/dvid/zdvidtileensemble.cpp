@@ -9,6 +9,7 @@
 #include "widgets/zimagewidget.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"
+#include "zdvidutil.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -38,6 +39,11 @@ void ZDvidTileEnsemble::enhanceContrast(bool high)
 {
   m_highContrast = high;
   updateContrast();
+}
+
+void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
+{
+  m_contrastProtocal = obj;
 }
 
 void ZDvidTileEnsemble::updateContrast()
@@ -252,6 +258,7 @@ bool ZDvidTileEnsemble::update(
             task->setHighContrast(m_highContrast);
             taskList.append(task);
           }
+          tile->setContrastProtocal(m_contrastProtocal);
           tileList.append(tile);
         }
       }
@@ -411,6 +418,7 @@ void ZDvidTileEnsemble::display(
       tile->display(painter, slice, option, sliceAxis);
     }
   }
+
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
@@ -420,13 +428,16 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
   if (m_reader.open(dvidTarget)) {
     m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
 
+    ZJsonObject obj = m_reader.readContrastProtocal();
+    setContrastProtocal(obj);
+
 #if defined(_ENABLE_LIBDVIDCPP_)
     m_serviceArray.resize(36);
     try {
       for (std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
            iter = m_serviceArray.begin();
            iter != m_serviceArray.end(); ++iter) {
-        *iter = ZFlyEmMisc::MakeDvidNodeService(m_reader.getDvidTarget());
+        *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
       }
     } catch (libdvid::DVIDException &e) {
       LWARN() << e.what();

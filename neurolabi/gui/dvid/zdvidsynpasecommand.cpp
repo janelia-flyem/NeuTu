@@ -314,8 +314,11 @@ ZStackDocCommand::DvidSynapseEdit::MoveSynapse::~MoveSynapse()
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 {
   m_doc->moveSynapse(m_from, m_to);
+  m_doc->notifySynapseMoved(m_from, m_to);
+  /*
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
+  */
   QString msg = QString("Synapse moved from (%1, %2, %3) to (%1, %2, %3)").
       arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
       arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
@@ -333,8 +336,11 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
 {
   m_doc->moveSynapse(m_to, m_from);
+  m_doc->notifySynapseMoved(m_to, m_from);
+  /*
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
+  */
   QString msg = QString("Synapse moving undone: (%1, %2, %3) <- (%1, %2, %3)").
       arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
       arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());

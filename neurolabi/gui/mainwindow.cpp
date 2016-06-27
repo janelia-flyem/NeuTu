@@ -175,6 +175,7 @@
 #include "zslicedpuncta.h"
 #include "neutubeconfig.h"
 #include "dialogs/flyemsettingdialog.h"
+#include "flyem/zfileparser.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -3224,21 +3225,23 @@ void MainWindow::on_actionSkeletonization_triggered()
       Stack *stackData = stack->c_stack();
 
       ZStack backupStack;
+      ZObject3dScan *obj = NULL;
       if (stackData == NULL) {
         QList<ZSparseObject*> objList =
             frame->document()->getObjectList<ZSparseObject>();
-        ZObject3dScan obj;
-        for (QList<ZSparseObject*>::iterator iter = objList.begin();
-             iter != objList.end(); ++iter) {
-          obj.concat(*(*iter));
-
+        if (!objList.isEmpty()) {
+          obj = new ZObject3dScan;
+          for (QList<ZSparseObject*>::iterator iter = objList.begin();
+               iter != objList.end(); ++iter) {
+            obj->concat(*(*iter));
+          }
         }
-        obj.toStackObject(1, &backupStack);
-        stackData = backupStack.c_stack();
+//        obj.toStackObject(1, &backupStack);
+//        stackData = backupStack.c_stack();
       }
 
       ZSwcTree *wholeTree = NULL;
-      if (stackData != NULL) {
+      if (stackData != NULL || obj != NULL) {
         ZStackSkeletonizer skeletonizer;
         skeletonizer.setDownsampleInterval(dlg.getXInterval(), dlg.getYInterval(),
                                            dlg.getZInterval());
@@ -3268,7 +3271,12 @@ void MainWindow::on_actionSkeletonization_triggered()
           //skeletonizer.useOriginalSignal(true);
         }
 
-        wholeTree = skeletonizer.makeSkeleton(stackData);
+        if (stackData != NULL) {
+          wholeTree = skeletonizer.makeSkeleton(stackData);
+        } else {
+          wholeTree = skeletonizer.makeSkeleton(*obj);
+          delete obj;
+        }
 
         wholeTree->translate(frame->document()->getStackOffset());
       }
@@ -4508,17 +4516,8 @@ void MainWindow::addFlyEmDataFrame(ZFlyEmDataFrame *frame)
   }
 }
 
-void MainWindow::on_actionMake_Movie_triggered()
+void MainWindow::makeMovie()
 {
-  if (m_movieDlg->getScriptPath().isEmpty()) {
-    const NeutubeConfig &config = NeutubeConfig::getInstance();
-
-    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
-                               "/flyem/FIB/movie/reconstruct.json").c_str());
-    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
-                               "/flyem/FIB/movie/frame").c_str());
-  }
-
   if (m_movieDlg->exec()) {
     QString fileName = m_movieDlg->getScriptPath();
     /*
@@ -4561,6 +4560,35 @@ void MainWindow::on_actionMake_Movie_triggered()
     }
   }
 }
+
+void MainWindow::on_actionMake_Movie_triggered()
+{
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/reconstruct.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/FIB/movie/frame").c_str());
+  }
+
+  makeMovie();
+}
+
+void MainWindow::on_actionMake_Movie_MB_triggered()
+{
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/MB/paper/movie1/script.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/flyem/MB/paper/movie1/frame").c_str());
+  }
+
+  makeMovie();
+}
+
 
 void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
@@ -4960,6 +4988,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       ZStack *mask = NULL;
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        LINFO() << "Skeletonizing projected mask ...";
         mask = frame->getStrokeMask(NeuTube::COLOR_RED);
         if (mask != NULL) {
           maskArray.push_back(mask);
@@ -4973,6 +5002,7 @@ void MainWindow::on_actionMask_SWC_triggered()
           maskArray.push_back(mask);
         }
       } else {
+        LINFO() << "Skeletonizing mask ...";
         mask = frame->getStrokeMask();
         if (mask != NULL) {
           maskArray.push_back(mask);
@@ -5593,7 +5623,8 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
   ZStackFrame *frame= currentStackFrame();
   if (frame != NULL) {
     if (m_resDlg->exec()) {
-      if (m_resDlg->getXYScale() == 0.0 || m_resDlg->getZScale() == 0.0) {
+      if (m_resDlg->getXScale() == 0.0 || m_resDlg->getYScale() == 0.0 ||
+          m_resDlg->getZScale() == 0.0) {
         report("Invalid Parameter", "A scale value is 0. No SWC is saved",
                NeuTube::MSG_WARNING);
       } else {
@@ -5614,7 +5645,7 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
                 swcSource = "./untitled.swc";
               }
               */
-              tree->rescale(m_resDlg->getXYScale(), m_resDlg->getXYScale(),
+              tree->rescale(m_resDlg->getXScale(), m_resDlg->getYScale(),
                             m_resDlg->getZScale());
               tree->save(fileName.toStdString());
               delete tree;
@@ -5766,6 +5797,7 @@ void MainWindow::on_actionTiles_triggered()
 {
   QString fileName = getOpenFileName("Load Tiles", "*.json");
   if (!fileName.isEmpty()) {
+    LINFO() << "Start reconstruction: Loading " + fileName + "...";
     QProgressDialog *progressDlg = getProgressDialog();
     progressDlg->setLabelText("Loading tiles ...");
     progressDlg->setRange(0, 0);
@@ -7579,4 +7611,57 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
     endProgress();
   }
+}
+
+void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+{
+  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie1/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QVector<uint64_t> neuronArray;
+  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+
+  std::ofstream stream;
+  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
+
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+          markerArray.push_back(marker);
+        }
+      }
+
+      outFileName = QString("%1.marker").arg(bodyId);
+      outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+
+      delete tree;
+    }
+  }
+
 }

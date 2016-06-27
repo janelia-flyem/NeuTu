@@ -22,6 +22,10 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   customTarget.setName("Custom");
   m_dvidRepo.push_back(customTarget);
 
+  QRegExp rx("[^\\s]*");
+  QValidator *validator = new QRegExpValidator(rx, this);
+  ui->labelBlockLineEdit->setValidator(validator);
+
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 
@@ -146,8 +150,16 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setServer(getAddress().toStdString());
     target.setUuid(getUuid().toStdString());
     target.setPort(getPort());
-    target.setBodyLabelName(ui->bodyLineEdit->text().toStdString());
-    target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
+    if (ui->bodyLineEdit->text().isEmpty()) {
+      target.setNullBodyLabelName();
+    } else {
+      target.setBodyLabelName(ui->bodyLineEdit->text().toStdString());
+    }
+    if (ui->labelBlockLineEdit->text().isEmpty()) {
+      target.setNullLabelBlockName();
+    } else {
+      target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
+    }
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
     target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());

@@ -377,6 +377,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
     if (reader.open(target)) {
         reader.setVerbose(true);
+        #ifdef _DEBUG_
+            std::cout << "getting file from dataname " << ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION) << " and key " << ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES) << std::endl;
+        #endif
         const QByteArray &bookmarkData = reader.readKeyValue(
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
@@ -402,6 +405,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
               ZDvidData::ROLE_BODY_ANNOTATION,
               ZDvidData::ROLE_BODY_LABEL,
               target.getBodyLabelName()).c_str();
+        #ifdef _DEBUG_
+            std::cout << "getting names from " << bodyAnnotationName.toStdString() << std::endl;
+        #endif
 
         // get all the keys rather than testing whether each body ID
         //  has a name individually
@@ -433,10 +439,10 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
-            uint64_t bodyId = bkmk.value("body ID").toInteger();
+            uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);
+
             if (bodySet.contains(bodyId)) {
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName,
-                      QString::number(bkmk.value("body ID").toInteger()));
+                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, QString::number(bodyId));
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 

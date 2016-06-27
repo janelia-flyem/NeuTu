@@ -103,7 +103,8 @@ fi
 if [ ! -d $downloadDir/neutube ]
 then
   cd $master_dir
-  if [ `git branch --list flyem_release` ]
+  git rev-parse --verify flyem_release 2>devnull
+  if [ $? -eq 0 ]
   then
     cd $downloadDir
     $GIT_CMD clone -b flyem_release $master_dir/.git neutube

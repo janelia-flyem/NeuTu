@@ -74,7 +74,8 @@ public:
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
-  void createData(const std::string &type, const std::string &name);
+  void createData(
+      const std::string &type, const std::string &name, bool versioned = true);
 
   void syncAnnotation(const std::string &name);
 
@@ -190,6 +191,7 @@ public:
 
   bool good() const;
 
+public:
   std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);
   std::string post(const std::string &url, const std::string &payload, bool isJson);

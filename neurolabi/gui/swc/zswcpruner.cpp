@@ -277,10 +277,4 @@ void ZSwcPruner::removeOrphanBlob(ZSwcTree *tree) const
 
   forest->setDataOwner(false);
   delete forest;
-  /*
-  ZSwcTree::RegularRootIterator rootIter(tree);
-  while (rootIter.hasNext()) {
-    Swc_Tree_Node *tn = rootIter.next();
-  }
-  */
 }

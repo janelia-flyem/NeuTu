@@ -2748,7 +2748,15 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
+    ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+
+    if (getSliceAxis() == NeuTube::X_AXIS) {
+      for (int i = 0; i < runLength; ++i) {
+        addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
+      }
+    } else {
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
+    }
   }
 
   return true;

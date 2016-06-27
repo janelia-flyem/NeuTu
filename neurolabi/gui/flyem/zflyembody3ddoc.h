@@ -180,6 +180,8 @@ public:
 
   ZFlyEmToDoItem* getOneSelectedTodoItem() const;
 
+  void forceBodyUpdate();
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);

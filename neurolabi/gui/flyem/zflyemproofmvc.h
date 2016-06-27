@@ -22,6 +22,7 @@ class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
 class FlyEmBodyInfoDialog;
+class ProtocolSwitcher;
 class ZFlyEmSplitCommitDialog;
 class ZFlyEmOrthoWindow;
 class ZFlyEmDataFrame;
@@ -96,6 +97,10 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
+  void highlightModeEnabled(bool);
+  void highlightModeChanged();
+  void roiLoaded();
+
 
 public slots:
   void mergeSelected();
@@ -173,12 +178,14 @@ public slots:
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
   void showData(bool visible);
+  void setHighContrast(bool on);
   void toggleSegmentation();
   void showTodo(bool visible);
   void toggleData();
 
   void loadBookmark();
   void openSequencer();
+  void openProtocol();
   void openTodo();
 
   void checkSelectedBookmark(bool checking);
@@ -210,6 +217,7 @@ public slots:
   void suppressObjectVisible();
   void recoverObjectVisible();
 
+  void updateRoiWidget();
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -233,11 +241,14 @@ protected slots:
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void cropCoarseBody3D();
+  void showBodyGrayscale();
   void updateSplitBody();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void processSynapseVerification(int x, int y, int z, bool verified);
+  void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
 protected:
   void customInit();
@@ -256,6 +267,7 @@ private:
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
+  void loadROIFunc();
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();
@@ -289,6 +301,7 @@ protected:
 
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
+  ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
@@ -413,6 +426,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SLOT(recordBookmark(ZFlyEmBookmark*)));
   connect(panel, SIGNAL(croppingCoarseBody3D()), this, SLOT(cropCoarseBody3D()));
+  connect(panel, SIGNAL(showingBodyGrayscale()), this, SLOT(showBodyGrayscale()));
 }
 
 

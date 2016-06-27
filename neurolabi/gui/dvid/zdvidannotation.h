@@ -108,7 +108,7 @@ public:
     ERelation m_relation;
   };
 
-  const std::vector<ZIntPoint>& getPartners() {
+  const std::vector<ZIntPoint>& getPartners() const {
     return m_partnerHint;
   }
 

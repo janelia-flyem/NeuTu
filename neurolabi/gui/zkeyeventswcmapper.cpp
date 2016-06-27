@@ -40,6 +40,7 @@ void ZKeyEventSwcMapper::initKeyMap()
   m_shiftKeyMap[Qt::Key_C] = ZSwcTree::OPERATION_CONNECT_NODE_SMART;
 
   m_controlKeyMap[Qt::Key_A] = ZSwcTree::OPERATION_SELECT_ALL_NODE;
+  m_controlKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_SET_AS_ROOT;
 
   updateKeyMap();
 }

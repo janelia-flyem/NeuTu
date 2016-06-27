@@ -146,6 +146,8 @@ public:
   void drawRect(const QRect & rectangle);
   void drawRect(int x, int y, int width, int height);
 
+  void drawArc(const QRectF &rectangle, int startAngle, int spanAngle);
+
   void drawPolyline(const QPointF * points, int pointCount);
   void drawPolyline(const QPoint * points, int pointCount);
 

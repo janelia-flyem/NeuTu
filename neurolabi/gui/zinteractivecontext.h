@@ -195,6 +195,7 @@ private:
   bool m_acceptingRect;
   bool m_rectSpan;
   NeuTube::EAxis m_sliceAxis;
+  int m_keyIndex;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;
