@@ -57,8 +57,6 @@ private slots:
 
 private:
     static const std::string PROTOCOL_NAME;
-    static const std::string KEY_PENDING;
-    static const std::string KEY_FINISHED;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
     static const int fileVersion;

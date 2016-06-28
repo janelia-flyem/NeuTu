@@ -53,8 +53,6 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
 
 // protocol name should not contain hyphens
 const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction";
-const std::string SynapsePredictionProtocol::KEY_FINISHED = "finished";
-const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const int SynapsePredictionProtocol::fileVersion = 1;
@@ -217,14 +215,9 @@ void SynapsePredictionProtocol::onExitButton() {
 }
 
 void SynapsePredictionProtocol::gotoCurrent() {
-    // the dubious null check appears again...
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
       ZIntPoint pt = m_pendingList[m_currentPendingIndex];
       emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
-      /*
-        emit requestDisplayPoint(m_currentPoint.getX(),
-            m_currentPoint.getY(), m_currentPoint.getZ());
-            */
     }
 }
 
@@ -238,8 +231,10 @@ void SynapsePredictionProtocol::gotoCurrentFinished()
 }
 
 void SynapsePredictionProtocol::saveState() {
-    // json save format: {"pending": [[x, y, z], [x2, y2, z2], ...],
-    //                    "finished": similar list}
+    // json save format: {"range": [x1, y1, z1, x2, y2, z2]},
+    //      which are the corners of cube we're looking at;
+    //      note that the examined/not status of the synapses
+    //      is stored directly in DVID
 
     ZJsonObject data;
 
@@ -392,7 +387,6 @@ void SynapsePredictionProtocol::updateLabels() {
 
     // current item:
 
-    // is a zero point good enough for null?
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
       ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
         ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(currentPoint.getX())
