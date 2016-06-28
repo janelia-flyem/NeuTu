@@ -13,10 +13,23 @@ if [ $HOSTNAME = emrecon13 ]
 then
   cp $neutube_dir/neurolabi/gui/config_flyem_3dfix.xml $build_dir/config.xml
 fi
+if [ $HOSTNAME = emrecon20 ]
+then
+  cp $neutube_dir/neurolabi/gui/config_flyem_3dfix.xml $build_dir/config.xml
+fi
+if [ $HOSTNAME = emrecon22 ]
+then
+  cp $neutube_dir/neurolabi/gui/config_flyem_3dfix.xml $build_dir/config.xml
+fi
 
 if [ -f $neutube_dir/custom/flyem_config.json ]
 then
   cp $neutube_dir/custom/flyem_config.json $build_dir/json/flyem_config.json
+fi
+
+if [ -f $neutube_dir/custom/config.json ]
+then
+  cp $neutube_dir/custom/config.json $build_dir/config.json
 fi
 
 if [ -f $neutube_dir/custom/config.xml ]

@@ -15,6 +15,7 @@
         <file>images/zoomin.png</file>
         <file>images/zoomout.png</file>
         <file>images/document.png</file>
+        <file>images/protocol.png</file>
         <file>images/setting.png</file>
         <file>images/hook.png</file>
         <file>images/link.png</file>
@@ -109,5 +110,16 @@
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
+        <file>Resources/shader/cube_wboit.vert</file>
+        <file>Resources/shader/cube_wboit.frag</file>
+        <file>Resources/shader/cube_wboit_compose.vert</file>
+        <file>Resources/shader/cube_wboit_compose.frag</file>
+        <file>images/add_post.png</file>
+        <file>images/todo.png</file>
+        <file>images/roi_box.png</file>
+        <file>images/cancel.png</file>
+        <file>images/zoom2.png</file>
+        <file>images/view_todo.png</file>
+        <file>images/smooth.png</file>
     </qresource>
 </RCC>

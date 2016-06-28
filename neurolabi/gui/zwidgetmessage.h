@@ -14,7 +14,7 @@ public:
   };
 
 
-  ZWidgetMessage();
+  ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
   ZWidgetMessage(const QString &msg,
                  NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
@@ -52,10 +52,15 @@ public:
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
 
+  template <typename T1, typename T2>
+  static void ConnectMessagePipe(T1 *source, T2 *target);
+
   static QString appendTime(const QString &message);
 
   void appendMessage(const QString &message);
   void setMessage(const QString &msg);
+
+  bool hasMessage() const;
 
 private:
   QString m_title;
@@ -78,5 +83,12 @@ void ZWidgetMessage::ConnectMessagePipe(
   }
 }
 
+
+template <typename T1, typename T2>
+void ZWidgetMessage::ConnectMessagePipe(T1 *source, T2 *target)
+{
+  QObject::connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
+                   target, SLOT(processMessage(ZWidgetMessage)));
+}
 
 #endif // ZWIDGETMESSAGE_H

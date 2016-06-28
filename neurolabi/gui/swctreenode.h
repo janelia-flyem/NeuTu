@@ -230,6 +230,7 @@ bool isTerminal(const Swc_Tree_Node *tn);
 int downstreamSize(Swc_Tree_Node *tn);
 int downstreamSize(Swc_Tree_Node *tn, Swc_Tree_Node_Compare compfunc);
 int singleTreeSize(Swc_Tree_Node *tn);
+double downstreamLength(Swc_Tree_Node *tn);
 
 inline Swc_Tree_Node *nextSibling(Swc_Tree_Node *tn) {
   return (tn == NULL) ? NULL : tn->next_sibling;
@@ -469,6 +470,8 @@ double distance(const Swc_Tree_Node *tn, double x, double y, double z,
  */
 double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                 double sx, double sy, double sz);
+double scaledSurfaceDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                              double sx, double sy, double sz);
 
 /*!
  * \brief Find the node that is the furthest one to a given node.

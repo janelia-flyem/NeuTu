@@ -562,7 +562,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
         if (kind == COLOR) {
           kind = GREY;
         }
-        stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
+        stack = C_Stack::make(kind, width, height, depth, nchannel);
 
         for (int i = 0; i < C_Stack::channelNumber(stack); i++) {
           for (size_t j = 0; j < m_urlList.size(); j++) {
@@ -595,7 +595,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
         int width = C_Stack::width(slice);
         int height = C_Stack::height(slice);
         int depth = fileList.size();
-        Mc_Stack *stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
+        Mc_Stack *stack = C_Stack::make(kind, width, height, depth, nchannel);
         C_Stack::kill(slice);
 
         for (int i = 0; i < nchannel; i++) {
@@ -682,7 +682,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
           }
         }
 
-        Mc_Stack *stack = Make_Mc_Stack(kind, width, height, depth, channelNumber);
+        Mc_Stack *stack = C_Stack::make(kind, width, height, depth, channelNumber);
         data->setData(stack);
 
 #define FLIP_DIM(inArray, outArray) \

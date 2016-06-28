@@ -33,6 +33,23 @@ void ZStTransform::setOffset(double dx, double dy)
   m_dy = dy;
 }
 
+void ZStTransform::addOffset(double dx, double dy)
+{
+  m_dx += dx;
+  m_dy += dy;
+}
+
+void ZStTransform::addScaledOffset(double dx, double dy)
+{
+  if (m_sx !=  0.0) {
+    m_dx += dx / m_sx;
+  }
+
+  if (m_sy != 0.0) {
+    m_dy += dy / m_sy;
+  }
+}
+
 void ZStTransform::setScale(double sx, double sy)
 {
   m_sx = sx;
@@ -153,5 +170,35 @@ void ZStTransform::estimate(const QRectF &input, const QRectF &output)
     m_dy = output.top() - m_sx * input.top();
     m_sz = 1.0;
     m_dz = 0.0;
+  }
+}
+
+void ZStTransform::estimate(
+    double source0, double source1, double target0, double target1,
+    NeuTube::EAxis axis)
+{
+  double s = 0.0;
+  double t = 0.0;
+  if (source0 == source1) {
+    s = 1.0;
+    t = target0 - source0;
+  } else {
+    s = (target1 - target0) / (source1 - source0);
+    t = target0 - s * source0;
+  }
+
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    m_sx = s;
+    m_dx = t;
+    break;
+  case NeuTube::Y_AXIS:
+    m_sy = s;
+    m_dy = t;
+    break;
+  case NeuTube::Z_AXIS:
+    m_sz = s;
+    m_dz = t;
+    break;
   }
 }

@@ -41,8 +41,26 @@ std::string ZFlyEmNeuronInfo::GuessTypeFromName(const std::string &name)
 {
   size_t len = name.size();
   while (len-- > 0) {
-    const std::string &substr = name.substr(0, len);
+    std::string substr = name.substr(0, len);
     if (m_typeSet.count(substr) > 0) {
+      //digit check
+      while (len < name.size()){
+        if (name[len] != ' ' && name[len] != '-') {
+//        if (isdigit(name[len])) {
+          substr += name[len];
+        } else {
+          break;
+        }
+        len++;
+      }
+
+      //check '-like'
+      if (len + 5 <= name.size()) {
+        if (name.substr(len, 5) == "-like") {
+          substr += "-like";
+        }
+      }
+
       return substr;
     }
   }
@@ -134,6 +152,7 @@ FlyEm::ZTypeClassMap::ZTypeClassMap()
   (*this)["Mi"] = "Mi";
   (*this)["Mi1"] = "Mi";
   (*this)["Mi10"] = "Mi";
+  (*this)["Mi15"] = "Mi";
   (*this)["Mi2"] = "Mi";
   (*this)["Mi1"] = "Mi";
   (*this)["Mi3"] = "Mi";

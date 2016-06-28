@@ -19,8 +19,8 @@ public:
 private:
   void buildVaa3dColorTable();
   void buildBiocytinColorTable();
-  void buildUniqueColorTable();
   void buildJinTypeColorTable();
+  void buildGmuTypeColorTable();
 };
 
 #endif // ZSWCCOLORSCHEME_H

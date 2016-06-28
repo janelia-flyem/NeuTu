@@ -20,6 +20,8 @@ ZLocsegChain::ZLocsegChain(Local_Neuroseg *locseg)
 
 ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg) : ZStackObject(zlocseg)
 {
+  m_type = GetType();
+
   m_chain = NULL;
   copyData(zlocseg.m_chain);
   updateBufferChain();
@@ -52,7 +54,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
 
   m_source = "traced";
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_LOCSEG_CHAIN;
+  m_type = GetType();
 }
 
 ZLocsegChain::~ZLocsegChain()
@@ -113,8 +115,13 @@ void ZLocsegChain::updateBufferChain()
   }
 }
 
-void ZLocsegChain::display(ZPainter &painter, int z, EDisplayStyle option) const
+void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
+                           NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
+
   if (!isVisible())
     return;
 
@@ -148,7 +155,7 @@ void ZLocsegChain::display(ZPainter &painter, int z, EDisplayStyle option) const
           }
         }
 
-        (*zsegIterator).display(painter, z, option, color);
+        (*zsegIterator).display(painter, slice, option, color);
 
         index++;
         ++zsegIterator;
@@ -169,7 +176,7 @@ void ZLocsegChain::display(ZPainter &painter, int z, EDisplayStyle option) const
         }
       }
 
-      (*m_bufferChain.begin()).display(painter, z, option, color);
+      (*m_bufferChain.begin()).display(painter, slice, option, color);
     }
 
     if (index > 0) {
@@ -184,7 +191,7 @@ void ZLocsegChain::display(ZPainter &painter, int z, EDisplayStyle option) const
           }
         }
 
-        (*(--m_bufferChain.end())).display(painter, z, option, color);
+        (*(--m_bufferChain.end())).display(painter, slice, option, color);
       }
     }
   }

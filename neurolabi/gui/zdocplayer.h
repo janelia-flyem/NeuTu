@@ -3,6 +3,8 @@
 
 #include <QList>
 #include <QString>
+#include <QMutex>
+
 #include <vector>
 #include "tz_utilities.h"
 #include "tz_cdefs.h"
@@ -89,18 +91,37 @@ public:
     return m_data->getRole().getRole();
   }
 
-  virtual void updateData(const ZStackViewParam &/*param*/) const {}
+  void enableUpdate(bool on) { m_enableUpdate = on; }
+
+  virtual bool updateData(const ZStackViewParam &/*param*/) const {
+    return true;
+  }
 
 protected:
   ZStackObject *m_data; //not owned by the player
+  bool m_enableUpdate;
   //TRole m_role;
 };
 
 /********************************************************/
-class ZDocPlayerList : public QList<ZDocPlayer*>, ZUncopyable
+class ZDocPlayerList : public ZUncopyable
 {
 public:
   virtual ~ZDocPlayerList();
+
+  inline QList<ZDocPlayer*>& getPlayerList() {
+    return m_playerList;
+  }
+
+  inline const QList<ZDocPlayer*>& getPlayerList() const {
+    return m_playerList;
+  }
+
+  void add(ZDocPlayer *data);
+
+  int size() const {
+    return m_playerList.size();
+  }
 
   /*!
    * \brief Remove players containing certain data
@@ -113,6 +134,7 @@ public:
   ZStackObjectRole::TRole removePlayer(ZStackObject *data);
 
   QList<ZDocPlayer*> takePlayer(ZStackObject *data);
+
 
   /*!
    * \brief Remove players with certain roles.
@@ -138,7 +160,39 @@ public:
    */
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
+  void clear();
+  void clearUnsync();
+
   void print() const;
+
+  void moveTo(ZDocPlayerList &playerList);
+
+  QMutex* getMutex() const {
+    return &m_mutex;
+  }
+
+public:
+  void addUnsync(ZDocPlayer *data);
+  ZStackObjectRole::TRole removePlayerUnsync(ZStackObject *data);
+
+  QList<ZDocPlayer*> takePlayerUnsync(ZStackObject *data);
+
+
+  ZStackObjectRole::TRole removePlayerUnsync(ZStackObjectRole::TRole role);
+
+  ZStackObjectRole::TRole removeAllUnsync();
+
+  QList<ZDocPlayer*> getPlayerListUnsync(ZStackObjectRole::TRole role);
+
+  QList<const ZDocPlayer*> getPlayerListUnsync(ZStackObjectRole::TRole role) const;
+
+  bool hasPlayerUnsync(ZStackObjectRole::TRole role) const;
+
+  void printUnsync() const;
+
+private:
+  QList<ZDocPlayer*> m_playerList;
+  mutable QMutex m_mutex;
 };
 
 /***************************************************/
@@ -260,7 +314,7 @@ public:
 
 public:
   QString getTypeName() const { return "DvidLabelSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
 };
 
@@ -272,7 +326,7 @@ public:
 
 public:
   QString getTypeName() const { return "DvidSparsevolSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidSparsevolSlice *getCompleteData() const;
 };
 

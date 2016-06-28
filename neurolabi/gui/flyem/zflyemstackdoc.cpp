@@ -33,7 +33,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
 
   ZGraph *graph = getBodyGraph();
 
-  if (!graph->size() > 0 && selected->size() > 0) {
+  if (graph->size() > 0 && selected->size() > 0) {
     vector<int> vertexArray(selected->size());
     vector<int>::iterator vertexArrayIter = vertexArray.begin();
     for (vector<vector<double> >::const_iterator iter = selected->begin();
@@ -59,9 +59,9 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
   }
 }
 
-QString ZFlyEmStackDoc::dataInfo(int x, int y, int z) const
+QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z) const
 {
-  QString info = ZStackDoc::dataInfo(x, y, z);
+  QString info = ZStackDoc::rawDataInfo(x, y, z);
 
   ZStack *segmentation = getSegmentation();
 
@@ -69,9 +69,12 @@ QString ZFlyEmStackDoc::dataInfo(int x, int y, int z) const
     TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
-    int bodyId =
-        FlyEm::ZSegmentationAnalyzer::channelCodeToId(
-          segmentation->color(x, y, z));
+    int wx = iround(x);
+    int wy = iround(y);
+    int wz = z;
+//    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
+    uint64_t bodyId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+          segmentation->color(wx, wy, wz));
 
 #ifdef _DEBUG_2
     if (bodyId < 0) {

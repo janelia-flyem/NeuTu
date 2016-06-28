@@ -15,7 +15,7 @@ class ZJsonObject : public ZJsonValue
 {
 public:
   ZJsonObject();
-  explicit ZJsonObject(json_t *json, bool asNew);
+//  explicit ZJsonObject(json_t *json, bool asNew);
   explicit ZJsonObject(json_t *data, ESetDataOption option);
   ZJsonObject(const ZJsonObject &obj);
   ZJsonObject(const ZJsonValue &obj);
@@ -33,6 +33,7 @@ public:
    * An object is empty iff no key exists.
    */
   bool isEmpty() const;
+  void denull();
 
 public:
   /*!
@@ -74,6 +75,8 @@ public:
    * The function does nothing if the key is empty.
    */
   void setEntry(const char *key, const std::string &value);
+  void setEntry(const char *key, const char *value);
+  void setEntry(const std::string &key, const std::string &value);
 
   /*!
    * \brief Set an entry of the object with an array

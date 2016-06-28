@@ -35,7 +35,7 @@
      <x>10</x>
      <y>20</y>
      <width>191</width>
-     <height>151</height>
+     <height>158</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -43,6 +43,13 @@
      <widget class="QPushButton" name="dvidPushButton">
       <property name="text">
        <string>Select Database</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="contrastPushButton">
+      <property name="text">
+       <string>Set Contrast</string>
       </property>
      </widget>
     </item>
@@ -63,6 +70,11 @@
       <item>
        <property name="text">
         <string>roi</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>annotation</string>
        </property>
       </item>
      </widget>

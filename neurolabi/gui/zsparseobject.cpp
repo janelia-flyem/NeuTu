@@ -12,7 +12,7 @@ ZINTERFACE_DEFINE_CLASS_NAME(ZSparseObject)
 ZSparseObject::ZSparseObject()
 {
   setLabel(-1);
-  m_type = ZStackObject::TYPE_SPARSE_OBJECT;
+  m_type = GetType();
 }
 
 #if 0
@@ -61,11 +61,16 @@ void ZSparseObject::labelStack(ZStack *stack) const
   drawStack(stack->c_stack(), m_label, offset);
 }
 
-void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option) const
+void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
+                            NeuTube::EAxis sliceAxis) const
 {
   if (m_stackGrid.isEmpty() || z < 0) {
-    ZObject3dScan::display(painter, z, option);
+    ZObject3dScan::display(painter, z, option, sliceAxis);
   } else {
+    if (sliceAxis != m_sliceAxis) {
+      return;
+    }
+
     UNUSED_PARAMETER(option);
     z -= iround(painter.getZOffset());
     QPen pen(m_color);
@@ -81,6 +86,10 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option) cons
           int x1 = stripe.getSegmentEnd(j);
           int y = stripe.getY();
           for (int x = x0; x <= x1; ++x) {
+            int wx = x;
+            int wy = y;
+            int wz = z;
+            ZGeometry::shiftSliceAxisInverse(wx, wy, wz, m_sliceAxis);
             int v = getVoxelValue(x, y, z);
             painter.setPen(QColor(v, v, v));
             painter.drawPoint(QPoint(x, y));

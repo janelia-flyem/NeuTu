@@ -54,7 +54,7 @@ std::string NeuTube::GetCurrentUserName()
   std::string userName = qgetenv("USER").data();
 
   /*
-  if (userName == "plazas") { //temporary hack
+  if (userName == "zhaot") { //temporary hack
     userName = "takemuras";
   }
   */
@@ -75,3 +75,16 @@ bool NeuTube::IsAdminUser()
   return NeuTube::GetCurrentUserName() == "zhaot";
 }
 
+QFileDialog::Options NeuTube::GetFileDialogOption()
+{
+  if (!NeutubeConfig::getInstance().usingNativeDialog()) {
+    return QFileDialog::DontUseNativeDialog;
+  }
+
+  return 0;
+}
+
+QString NeuTube::GetLastFilePath()
+{
+  return NeutubeConfig::GetSettings().value("lastPath").toString();
+}

@@ -14,17 +14,19 @@
 /*!
  * \brief The aggregate class of ZStackObject
  *
- * No NULL object is allowed to be included in the group.
+ * No NULL object is allowed to be included in the group. Objects with different
+ * types are not considered as source conflict even if they have the same source.
  */
 typedef QSet<ZStackObject*> TStackObjectSet;
 typedef QList<ZStackObject*> TStackObjectList;
 typedef bool (*TObjectTest)(const ZStackObject*);
 
-class ZStackObjectGroup : public QList<ZStackObject*>
+class ZStackObjectGroup
 {
 public:
   ZStackObjectGroup();
   ~ZStackObjectGroup();
+
   typedef QMap<ZStackObject::EType, TStackObjectList> TObjectListMap;
   typedef QMap<ZStackObject::EType, TStackObjectSet> TObjectSetMap;
 
@@ -37,7 +39,12 @@ public:
 
   void setSelected(ZStackObject *obj, bool selected);
   void setSelected(bool selected);
+
   void setSelected(ZStackObject::EType type, bool selected);
+
+  void deselectAll();
+
+  bool isEmpty() const;
 
   /*!
    * \brief Reset selection recorder
@@ -48,20 +55,31 @@ public:
     return &m_selector;
   }
 
-  const ZStackObject *getLastObject(ZStackObject::EType type) const;
+  QMutex* getMutex() const {
+    return &m_mutex;
+  }
 
+  void moveTo(ZStackObjectGroup &group);
+
+  const ZStackObject *getLastObject(ZStackObject::EType type) const;
   ZStackObject* findFirstSameSource(const ZStackObject *obj) const;
   ZStackObject* findFirstSameSource(
       ZStackObject::EType type, const std::string &source) const;
+
+
   TStackObjectList findSameSource(const std::string &str) const;
   TStackObjectList findSameSource(const ZStackObject *obj) const;
   TStackObjectList findSameSource(
       ZStackObject::EType type, const std::string &source) const;
+  /*
   TStackObjectList findSameSourceClass(
       ZStackObject::EType type, const std::string &source);
+      */
 
   TStackObjectList findSameClass(
       ZStackObject::EType type, const std::string &objClass);
+
+  ZStackObject* replaceFirstSameSource(ZStackObject *obj);
 
   template<typename InputIterator>
   QList<ZStackObject*> findSameSource(
@@ -74,7 +92,7 @@ public:
 
   template <typename InputIterator>
   void add(const InputIterator begin, const InputIterator end,
-           bool uniqueSource, QMutex *mutex = NULL);
+           bool uniqueSource);
 
 //  void addInFront(ZStackObject *obj, bool uniqueSource, QMutex *mutex = NULL);
 
@@ -85,8 +103,8 @@ public:
    *
    * \return \a obj if it is in the group. Otherwise it returns NULL.
    */
-  ZStackObject* take(ZStackObject *obj, QMutex *mutex = NULL);
-  TStackObjectList take(TObjectTest testFunc, QMutex *mutex = NULL);
+  ZStackObject* take(ZStackObject *obj);
+  TStackObjectList take(TObjectTest testFunc);
   TStackObjectList take(ZStackObject::EType type, TObjectTest testFunc);
   TStackObjectList take(ZStackObject::EType type);
   TStackObjectList takeSelected();
@@ -95,7 +113,7 @@ public:
       ZStackObject::EType type, const std::string &source);
 
   template <typename InputIterator>
-  void take(const InputIterator &first, const InputIterator &last);
+  TStackObjectList take(const InputIterator &first, const InputIterator &last);
 
 
   /*!
@@ -117,6 +135,18 @@ public:
   void removeObject(InputIterator begin, InputIterator end,
                     bool deleting = true);
 
+  QList<ZStackObject*>& getObjectList() {
+    return m_objectList;
+  }
+
+  const QList<ZStackObject*>& getObjectList() const {
+    return m_objectList;
+  }
+
+  int size() const {
+    return m_objectList.size();
+  }
+
   /*!
    * \brief Remove all objects
    */
@@ -124,6 +154,11 @@ public:
 
   TStackObjectList& getObjectList(ZStackObject::EType type);
   const TStackObjectList& getObjectList(ZStackObject::EType type) const;
+
+  template<typename T>
+  QList<T*> getObjectList() const;
+
+
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
@@ -141,31 +176,129 @@ public:
 
   void compressZOrder();
 
-private:
-  bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
+public:
+  bool containsUnsync(const ZStackObject *obj) const;
+
+  int getMaxZOrderUnsync() const;
+
+  void setSelectedUnsync(bool selected);
+  void setSelectedUnsync(ZStackObject::EType type, bool selected);
+
+  const ZStackObject *getLastObjectUnsync(ZStackObject::EType type) const;
+  ZStackObject* findFirstSameSourceUnsync(const ZStackObject *obj) const;
+  TStackObjectList findSameSourceUnsync(const std::string &str) const;
+  TStackObjectList findSameSourceUnsync(
+      ZStackObject::EType type, const std::string &source) const;
+  TStackObjectList findSameSourceUnsync(const ZStackObject *obj) const;
+  ZStackObject* findFirstSameSourceUnsync(
+      ZStackObject::EType type, const std::string &source) const;
+  TStackObjectList findSameSourceClassUnsync(
+      ZStackObject::EType type, const std::string &source);
+  TStackObjectList findSameClassUnsync(
+      ZStackObject::EType type, const std::string &objClass);
+
+  ZStackObject* replaceFirstSameSourceUnsync(ZStackObject *obj);
+  template<typename InputIterator>
+  QList<ZStackObject*> findSameSourceUnsync(
+      const InputIterator begin, const InputIterator end) const;
+
+  void addUnsync(ZStackObject *obj, bool uniqueSource);
+  void addUnsync(const ZStackObject *obj, bool uniqueSource);
+  void addUnsync(ZStackObject *obj, int zOrder, bool uniqueSource);
+//  QList<ZStackObject*> addU(const ZStackObject *obj);
+
+  template <typename InputIterator>
+  void addUnsync(const InputIterator begin, const InputIterator end,
+           bool uniqueSource);
+
+
+  ZStackObject* takeUnsync(ZStackObject *obj);
+  TStackObjectList takeUnsync(TObjectTest testFunc);
+  TStackObjectList takeUnsync(ZStackObject::EType type, TObjectTest testFunc);
+  TStackObjectList takeUnsync(ZStackObject::EType type);
+  TStackObjectList takeSelectedUnsync();
+  TStackObjectList takeSelectedUnsync(ZStackObject::EType type);
+  TStackObjectList takeSameSourceUnsync(
+      ZStackObject::EType type, const std::string &source);
+
+  template <typename InputIterator>
+  TStackObjectList takeUnsync(
+      const InputIterator &first, const InputIterator &last);
+
+  bool removeObjectUnsync(ZStackObject *obj, bool isDeleting = true);
+  bool removeObjectUnsync(ZStackObject::EType type, bool deleting = true);
+  bool removeObjectUnsync(const TStackObjectSet &objSet, bool deleting = true);
+
+  bool removeSelectedUnsync(bool deleting = true);
+  bool removeSelectedUnsync(ZStackObject::EType type, bool deleting = true);
+
+  template <typename InputIterator>
+  void removeObjectUnsync(InputIterator begin, InputIterator end,
+                    bool deleting = true);
+
+  /*!
+   * \brief Remove all objects
+   */
+  void removeAllObjectUnsync(bool deleting = true);
+
+  TStackObjectSet getObjectSetUnsync(ZStackObject::EType type) const;
+  TStackObjectList& getObjectListUnsync(ZStackObject::EType type);
+  const TStackObjectList& getObjectListUnsync(ZStackObject::EType type)
+  const;
+
+  template<typename T>
+  QList<T*> getObjectListUnsync() const;
+
+  TStackObjectList getObjectListUnsync(ZStackObject::EType type,
+                                 TObjectTest testFunc) const;
+
+  TStackObjectSet& getSelectedSetUnsync(ZStackObject::EType type);
+  const TStackObjectSet& getSelectedSetUnsync(ZStackObject::EType type) const;
+
+  bool hasObjectUnsync(ZStackObject::EType type) const;
+  bool hasObjectUnsync(ZStackObject::ETarget target) const;
+  bool hasSelectedUnsync() const;
+  bool hasSelectedUnsync(ZStackObject::EType type) const;
+
+  QList<ZStackObject::EType> getAllTypeUnsync() const;
+
+  void compressZOrderUnsync();
 
 private:
+  static bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
+  ZStackObjectGroup(const ZStackObjectGroup &group);
+  ZStackObjectGroup& operator= (const ZStackObjectGroup &group);
+
+private:
+  QList<ZStackObject*> m_objectList;
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
   int m_currentZOrder;
+
+  mutable QMutex m_mutex;
 
   ZStackObjectSelector m_selector;
 };
 
 template <typename InputIterator>
-void ZStackObjectGroup::add(
-    const InputIterator begin, const InputIterator end, bool uniqueSource,
-    QMutex *mutex)
+void ZStackObjectGroup::addUnsync(
+    const InputIterator begin, const InputIterator end, bool uniqueSource)
 {
-  QMutexLocker locker(mutex);
-
   for (InputIterator iter = begin; iter != end; ++iter) {
-    add(*iter, uniqueSource);
+    addUnsync(*iter, uniqueSource);
   }
 }
 
 template <typename InputIterator>
-void ZStackObjectGroup::removeObject(
+void ZStackObjectGroup::add(
+    const InputIterator begin, const InputIterator end, bool uniqueSource)
+{
+  QMutexLocker locker(&m_mutex);
+  addUnsync(begin, end, uniqueSource);
+}
+
+template <typename InputIterator>
+void ZStackObjectGroup::removeObjectUnsync(
     InputIterator begin, InputIterator end, bool deleting)
 {
   TStackObjectSet objSet;
@@ -174,18 +307,62 @@ void ZStackObjectGroup::removeObject(
     objSet.insert(*iter);
   }
 
-  removeObject(objSet, deleting);
+  removeObjectUnsync(objSet, deleting);
+}
+
+template <typename InputIterator>
+void ZStackObjectGroup::removeObject(
+    InputIterator begin, InputIterator end, bool deleting)
+{
+  QMutexLocker locker(&m_mutex);
+  removeObjectUnsync(begin, end, deleting);
 }
 
 template<typename InputIterator>
-TStackObjectList ZStackObjectGroup::findSameSource(
+TStackObjectList ZStackObjectGroup::findSameSourceUnsync(
     const InputIterator begin, const InputIterator end) const
 {
   TStackObjectList objList;
   for (InputIterator iter = begin; iter != end; ++iter) {
     const ZStackObject *obj = *iter;
     if (!obj->getSource().empty()) {
-      objList.append(findSameSource(*iter));
+      objList.append(findSameSourceUnsync(*iter));
+    }
+  }
+
+  return objList;
+}
+
+template<typename InputIterator>
+TStackObjectList ZStackObjectGroup::findSameSource(
+    const InputIterator begin, const InputIterator end) const
+{
+  QMutexLocker locker(&m_mutex);
+
+  return findSameSourceUnsync(begin, end);
+}
+
+template <typename InputIterator>
+TStackObjectList ZStackObjectGroup::takeUnsync(
+    const InputIterator &first, const InputIterator &last)
+{
+  TStackObjectSet objSet;
+
+  for (InputIterator iter = first; iter != last; ++iter) {
+    objSet.insert(*iter);
+  }
+
+  TStackObjectList objList;
+
+  if (!objSet.empty()) {
+    QMutableListIterator<ZStackObject*> miter(m_objectList);
+    while (miter.hasNext()) {
+      ZStackObject *obj = miter.next();
+      if (objSet.contains(obj)) {
+        miter.remove();
+        getObjectListUnsync(obj->getType()).removeOne(obj);
+        objList.append(obj);
+      }
     }
   }
 
@@ -193,10 +370,35 @@ TStackObjectList ZStackObjectGroup::findSameSource(
 }
 
 template <typename InputIterator>
-void ZStackObjectGroup::take(
+TStackObjectList ZStackObjectGroup::take(
     const InputIterator &first, const InputIterator &last)
 {
-  removeObject(first, last, false);
+  QMutexLocker locker(&m_mutex);
+
+  return takeUnsync(first, last);
+}
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectListUnsync() const
+{
+  QList<T*> tList;
+
+  TStackObjectList& objList =
+      const_cast<TStackObjectList&>(getObjectListUnsync(T::GetType()));
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    tList.append(dynamic_cast<T*>(*iter));
+  }
+
+  return tList;
+}
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList() const
+{
+  QMutexLocker locker(&m_mutex);
+
+  return getObjectListUnsync<T>();
 }
 
 typedef ZSharedPointer<ZStackObjectGroup> ZStackObjectGroupPtr;

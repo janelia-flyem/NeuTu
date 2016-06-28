@@ -7,6 +7,8 @@ class Z3DSphereRenderer;
 class Z3DLineWithFixedWidthColorRenderer;
 
 #include <QObject>
+#include <QMutex>
+
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
 #include <map>
@@ -25,7 +27,7 @@ class Z3DSwcFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   enum InteractionMode {
-    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode
+    Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
   };
 
   explicit Z3DSwcFilter();
@@ -42,7 +44,8 @@ public:
   std::vector<double> getTreeBound(ZSwcTree *tree) const;
 
   //get bounding box of swc tree node in world coordinate :[xmin xmax ymin ymax zmin zmax]
-  std::vector<double> getTreeNodeBound(Swc_Tree_Node *tn) const;
+  void getTreeNodeBound(Swc_Tree_Node *tn,
+                        std::vector<double> &result) const;
 
   virtual bool isReady(Z3DEye eye) const;
 
@@ -91,10 +94,11 @@ signals:
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
   void addNewSwcTreeNode(double x, double y, double z, double r);
-  void extendSwcTreeNode(double x, double y, double z);
+  void extendSwcTreeNode(double x, double y, double z, double r);
 
 public slots:
   void prepareColor();
+  void addNodeType(int type);
   void setClipPlanes();
   void adjustWidgets();
   void selectSwc(QMouseEvent *e, int w, int h);
@@ -116,10 +120,14 @@ protected:
   void renderSelectionBox(Z3DEye eye);
   void prepareData();
 
+  void sortNodeList();
+
 private:
   void initTopologyColor();
   void initTypeColor();
   void initSubclassTypeColor();
+
+  static QString GetTypeName(int type);
 
   void decompseSwcTree();
   glm::vec4 getColorByType(Swc_Tree_Node *n);
@@ -178,6 +186,7 @@ private:
   ZSwcTree *m_pressedSwc;
   std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
   Swc_Tree_Node *m_pressedSwcTreeNode;
+//  Swc_Tree_Node *m_selectedSwcTreeNode;
   //std::set<Swc_Tree_Node*> m_selectedSwcTreeNodes;   //point to all selected swcs, managed by other class
 
   std::vector<glm::vec4> m_baseAndBaseRadius;
@@ -199,6 +208,7 @@ private:
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
+  int m_maxType;
 
   ZColorMapParameter m_colorMap;
 
@@ -221,6 +231,8 @@ private:
   bool m_enableCutting;
 
   QVector<QString> m_guiNameList;
+
+  mutable QMutex m_nodeSelectionMutex;
 };
 
 #endif // Z3DSWCFILTER_H

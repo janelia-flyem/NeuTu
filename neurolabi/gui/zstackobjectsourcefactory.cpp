@@ -43,6 +43,12 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, const std::string &tag)
+{
+  return MakeFlyEmBodySource(bodyId) + "#." + tag;
+}
+
 uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
     const std::string &source)
 {
@@ -73,9 +79,22 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
   return "#.DVIDTileEnsemble";
 }
 
-std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource()
+std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
+    NeuTube::EAxis axis)
 {
-  return "#.DVIDLabelSlice";
+  std::string source = "#.DVIDLabelSlice";
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
@@ -96,6 +115,11 @@ std::string ZStackObjectSourceFactory::MakeNodeAdaptorSource()
 std::string ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource()
 {
   return "#.FlyEMBoundBox";
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmRoiSource(const std::string &roiName)
+{
+  return "#.FlyemRoi#" + roiName;
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource()
@@ -145,3 +169,72 @@ std::string ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass()
   return "#.FlyEmExternalNeuron";
 }
 
+std::string ZStackObjectSourceFactory::MakeStackBoundBoxSource()
+{
+  return "#.StackBoundBox";
+}
+
+std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
+{
+  return "#.DVIDSynapseEnsemble";
+}
+
+std::string
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
+{
+  std::string source = MakeDvidSynapseEnsembleSource();
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
+}
+
+std::string
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
+{
+  return "#.DVIDFlyEMTodoList";
+}
+
+std::string ZStackObjectSourceFactory::MakeCrossHairSource()
+{
+  return "#.CrossHair";
+}
+
+std::string ZStackObjectSourceFactory::MakeTodoPunctaSource()
+{
+  return "#.DVIDFlyEMTodoPuncta";
+}
+
+std::string ZStackObjectSourceFactory::MakeTodoPunctaSource(uint64_t bodyId)
+{
+  ZString source = MakeTodoPunctaSource() + "#";
+  source.appendNumber(bodyId);
+
+  return source;
+}
+
+std::string
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource(NeuTube::EAxis axis)
+{
+  std::string source = MakeTodoListEnsembleSource();
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    source += ".X";
+    break;
+  case NeuTube::Y_AXIS:
+    source += ".Y";
+    break;
+  default:
+    break;
+  }
+
+  return source;
+}

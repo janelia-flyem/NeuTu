@@ -23,8 +23,10 @@ public:
     ROLE_SPLIT_LABEL, ROLE_SPLIT_STATUS,
     ROLE_BODY_INFO,
     ROLE_MERGE_TEST_BODY_LABEL, ROLE_MAX_BODY_ID,
-    ROLE_MULTISCALE_2D, ROLE_MERGE_OPERATION, 
-    ROLE_BOOKMARK, ROLE_BODY_SYNAPSES
+    ROLE_MULTISCALE_2D, ROLE_MERGE_OPERATION,
+    ROLE_BOOKMARK, ROLE_BOOKMARK_KEY,
+    ROLE_BODY_SYNAPSES, ROLE_SYNAPSE, ROLE_TODO_LIST,
+    ROLE_NEUTU_CONFIG
   };
 
   enum EType {
@@ -39,8 +41,10 @@ public:
   static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
+//  static std::string GetName(ERole role, ERole prefixRole);
 
   static bool isDefaultName(ERole role, const std::string &name);
+  static bool IsNullName(const std::string &name);
 
 private:
   static const char *m_grayScaleName;
@@ -62,10 +66,15 @@ private:
   static const char *m_labelBlockName;
   static const char *m_multiscale2dName;
   static const char *m_mergeOperationName;
-  static const char *m_bookmarkName;
+  static const char *m_bookmarkKeyName;
+  static const char *m_bookmarkAnnotationName;
   static const char *m_bodySynapsesName;
+  static const char *m_synapseName;
+  static const char *m_todoListName;
+  static const char *m_neutuConfigName;
   //static const char *m_keyValueTypeName;
 
+  static const char *m_nullName;
   static const char *m_emptyName;
 };
 

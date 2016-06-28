@@ -48,7 +48,7 @@ ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
   }
 }
 
-ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
+ZFlyEmNeuron::ZFlyEmNeuron(uint64_t id, ZSwcTree *model, ZObject3dScan *body) :
   CONSTRUCTOR_INIT
 {
   m_id = id;
@@ -227,9 +227,9 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           ZStackSkeletonizer skeletonizer;
 
           ZDvidUrl dvidUrl(reader.getDvidTarget());
-          ZJsonObject config = reader.readJsonObject(
-                dvidUrl.getSkeletonConfigUrl(
-                  reader.getDvidTarget().getBodyLabelName()));
+          std::string skeletonUrl = dvidUrl.getSkeletonConfigUrl(
+                reader.getDvidTarget().getBodyLabelName());
+          ZJsonObject config = reader.readJsonObject(skeletonUrl);
 
           if (config.isEmpty()) {
             config.load(NeutubeConfig::getInstance().getApplicatinDir() +
@@ -397,7 +397,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject() const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {
@@ -423,7 +423,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {
@@ -554,7 +554,7 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse() const
 }
 
 std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
-    int buddyBodyId) const
+    uint64_t buddyBodyId) const
 {
   std::vector<ZPunctum*> synapse;
   if (m_synapseAnnotation != NULL) {

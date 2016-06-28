@@ -29,12 +29,28 @@ public:
   bool isSaved(NeuTube::EDocumentableType type) const;
   void setSaved(NeuTube::EDocumentableType type, bool state);
 
+  void enableLog(bool on);
+  bool loggingCommand() const;
+  void logCommand(const QString &msg) const;
+  void logCommand() const;
+  void logUndoCommand() const;
+  void setLogMessage(const QString &msg);
+  void setLogMessage(const std::string &msg);
+  void setLogMessage(const char *msg);
+
+  void startUndo();
+
 private:
   bool m_isSwcSaved;
+  bool m_loggingCommand;
+  QString m_logMessage;
 };
 
 namespace ZStackDocCommand {
 namespace SwcEdit {
+/*!
+ * \brief The basic command of modifying swc.
+ */
 class ChangeSwcCommand : public ZUndoCommand
 {
 public:
@@ -51,13 +67,60 @@ public:
     ROLE_NONE, ROLE_CHILD, ROLE_PARENT
   };
 
+  bool isSwcModified() const {
+    return m_isSwcModified;
+  }
+
+  void setSwcModified(bool state) {
+    m_isSwcModified = state;
+  }
+
+
 protected:
+  /*!
+   * \brief Backup a node.
+   *
+   * The properties and links of \a tn will be backed up after the function call.
+   * The function has no effect on \a tn if \a tn has already been backed up in
+   * the command.
+   */
   void backup(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Backup a node and its neighbors.
+   *
+   * Bacup all nodes affected by the operation \a op, which can be setting parent,
+   * setting first child and detaching from parent. \a role specifies the role
+   * of \a tn for the operation.
+   *
+   * \param tn The node to backup.
+   * \param op Operation supposed to be performed after the backup.
+   * \param role Role of \a tn.
+   */
   void backup(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
+
+  /*!
+   * \brief Backup the children of a node.
+   */
   void backupChildren(Swc_Tree_Node *tn);
+
+
+  /*!
+   * \brief Backup childrend of a node according to an operation.
+   */
   void backupChildren(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
 
+  /*!
+   * \brief Record newly created node by the command
+   *
+   * It tracks newly created nodes so that the nodes can be freed in an undone
+   * command when the command is destroyed.
+   */
   void addNewNode(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Record removed node.
+   */
   void recordRemovedNode(Swc_Tree_Node *tn);
 
   void recover();
@@ -68,6 +131,7 @@ protected:
   std::set<Swc_Tree_Node*> m_newNodeSet;
   std::set<Swc_Tree_Node*> m_removedNodeSet;
   std::set<Swc_Tree_Node*> m_garbageSet;
+  bool m_isSwcModified;
 };
 
 class TranslateRoot : public ZUndoCommand
@@ -196,12 +260,37 @@ private:
   Swc_Tree_Node *m_parentNode;
   bool m_nodeInDoc;
 };
+/*
+class BreakParentLink : public ChangeSwcCommand
+{
+public:
+  BreakParentLink(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~BreakParentLink();
+
+  void redo();
+  void undo();
+};
+*/
 
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:
   MergeSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~MergeSwcNode();
+
+  void redo();
+  void undo();
+
+private:
+  std::set<Swc_Tree_Node*> m_selectedNodeSet;
+  Swc_Tree_Node *m_coreNode;
+};
+
+class ResolveCrossover : public ChangeSwcCommand
+{
+public:
+  ResolveCrossover(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ResolveCrossover();
 
   void redo();
   void undo();
@@ -561,7 +650,7 @@ private:
   QList<ZStackObject*> m_selectedObject;
 };
 
-class MoveSelected : public QUndoCommand
+class MoveSelected : public ZUndoCommand
 {
   ZStackDoc *m_doc;
   QList<ZSwcTree*> m_swcList;
@@ -592,7 +681,7 @@ public:
 }
 
 namespace TubeEdit {
-class RemoveSmall : public QUndoCommand
+class RemoveSmall : public ZUndoCommand
 {
 public:
   RemoveSmall(ZStackDoc *doc, double thre, QUndoCommand *parent = NULL);
@@ -607,7 +696,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class RemoveSelected : public QUndoCommand
+class RemoveSelected : public ZUndoCommand
 {
 public:
   RemoveSelected(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -621,7 +710,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class Trace : public QUndoCommand
+class Trace : public ZUndoCommand
 {
 public:
   Trace(ZStackDoc *doc, int x, int y, int z, QUndoCommand *parent = NULL);
@@ -637,7 +726,7 @@ private:
   ZLocsegChain* m_chain;
 };
 
-class CutSegment : public QUndoCommand
+class CutSegment : public ZUndoCommand
 {
 public:
   CutSegment(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -651,7 +740,7 @@ private:
   QList<ZLocsegChain*> m_newChainList;
 };
 
-class BreakChain : public QUndoCommand
+class BreakChain : public ZUndoCommand
 {
 public:
   BreakChain(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -683,7 +772,7 @@ private:
   QList<ZPunctum*> m_punctaList;
 };
 #endif
-class AutoTraceAxon : public QUndoCommand
+class AutoTraceAxon : public ZUndoCommand
 {
 public:
   AutoTraceAxon(ZStackDoc *m_doc, QUndoCommand *parent = NULL);
@@ -703,7 +792,7 @@ private:
 }
 
 namespace StrokeEdit {
-class AddStroke : public QUndoCommand
+class AddStroke : public ZUndoCommand
 {
 public:
   AddStroke(ZStackDoc *doc, ZStroke2d *stroke, QUndoCommand *parent = NULL);
@@ -717,7 +806,7 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveTopStroke : public QUndoCommand
+class RemoveTopStroke : public ZUndoCommand
 {
 public:
   RemoveTopStroke(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -731,7 +820,7 @@ private:
   bool m_isInDoc;
 };
 
-class CompositeCommand : public QUndoCommand
+class CompositeCommand : public ZUndoCommand
 {
 public:
   CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -745,7 +834,7 @@ protected:
 }
 
 namespace StackProcess {
-class Binarize : public QUndoCommand
+class Binarize : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -758,7 +847,7 @@ public:
   void redo();
 };
 
-class BwSolid : public QUndoCommand
+class BwSolid : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -770,7 +859,7 @@ public:
   void redo();
 };
 
-class EnhanceLine : public QUndoCommand
+class EnhanceLine : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -782,7 +871,7 @@ public:
   void redo();
 };
 
-class Watershed : public QUndoCommand
+class Watershed : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;

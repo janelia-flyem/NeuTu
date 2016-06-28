@@ -344,11 +344,11 @@ void ZSingleChannelStack::shiftLocation(int *offset, int width, int height, int 
   if (depth == -1)
     depth = m_stack->depth;
 
-  Stack *stack = Make_Stack(m_stack->kind, width, height, depth);
+  Stack *stack = C_Stack::make(m_stack->kind, width, height, depth);
   int left = (-1) * offset[0];
   int top = (-1) * offset[1];
   int up = (-1) * offset[2];
-  Crop_Stack(m_stack, left, top, up, width, height, depth, stack);
+  C_Stack::crop(m_stack, left, top, up, width, height, depth, stack);
 
   copyData(stack);
   C_Stack::kill(stack);
@@ -512,7 +512,7 @@ bool ZSingleChannelStack::watershed()
   if (!isVirtual()) {
     Stack_Invert_Value(m_stack);
     Watershed_3D *shed = Build_3D_Watershed(m_stack, 0);
-    Stack *out = Copy_Stack(shed->labels);
+    Stack *out = C_Stack::clone(shed->labels);
     Kill_Watershed_3D(shed);
     copyData(out);
     C_Stack::kill(out);
@@ -606,11 +606,11 @@ void ZStack_Stat::update(Stack *stack)
         smin = m_min;
         smax = m_max;
       }
-      if (stack->kind != GREY) {
+//      if (stack->kind != GREY) {
         if (smax != smin)
           m_greyScale = 255.0 / (smax - smin);
         m_greyOffset = -m_greyScale * smin;
-      }
+//      }
     }
   }
 }

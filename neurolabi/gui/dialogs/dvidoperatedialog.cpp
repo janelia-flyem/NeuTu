@@ -5,6 +5,7 @@
 #include "ui_dvidoperatedialog.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
+#include "dialogs/zcontrastprotocaldialog.h"
 
 DvidOperateDialog::DvidOperateDialog(QWidget *parent) :
   QDialog(parent),
@@ -12,7 +13,9 @@ DvidOperateDialog::DvidOperateDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  m_dvidDlg = new ZDvidDialog(this);
+  m_dvidDlg = NULL;
+  m_contrastDlg = new ZContrastProtocalDialog(this);
+//  m_dvidDlg = new ZDvidDialog(this);
 }
 
 DvidOperateDialog::~DvidOperateDialog()
@@ -46,6 +49,29 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
     } else {
       QMessageBox::warning(
             this, "Operation Failed", "Please specify a valid DVID target.");
+    }
+  }
+}
+
+void DvidOperateDialog::setDvidDialog(ZDvidDialog *dlg)
+{
+  m_dvidDlg = dlg;
+}
+
+void DvidOperateDialog::on_contrastPushButton_clicked()
+{
+  if (m_contrastDlg->exec()) {
+    ZJsonObject obj = m_contrastDlg->getContrastProtocal();
+    ZDvidReader reader;
+    if (reader.open(m_dvidDlg->getDvidTarget())) {
+      ZDvidWriter writer;
+      writer.open(m_dvidDlg->getDvidTarget());
+
+      if (!reader.hasData("neutu_config")) {
+        writer.createData("keyvalue", "neutu_config", false);
+      }
+
+      writer.writeJson("neutu_config", "contrast", obj);
     }
   }
 }

@@ -4,6 +4,7 @@
 #include <QRectF>
 #include <QPointF>
 #include <QPaintDevice>
+#include <QStaticText>
 
 #include "zintpoint.h"
 #include "zimage.h"
@@ -130,6 +131,11 @@ void ZPainter::setPen(Qt::PenStyle style)
   m_painter.setPen(style);
 }
 
+void ZPainter::setFont(const QFont &font)
+{
+  m_painter.setFont(font);
+}
+
 void ZPainter::setBrush(const QColor &color)
 {
   m_painter.setBrush(color);
@@ -187,6 +193,11 @@ void ZPainter::setZOffset(int z)
   m_z = z;
 }
 
+QRectF ZPainter::getCanvasRange() const
+{
+  return m_canvasRange;
+}
+
 void ZPainter::drawImage(
     const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect)
 {
@@ -228,6 +239,15 @@ void ZPainter::drawPixmap(
   }
 }
 
+void ZPainter::drawPixmap(const QRectF &targetRect, const ZPixmap &image)
+{
+  if (targetRect.isValid() && !image.isNull()) {
+    m_painter.drawPixmap(targetRect, image, image.rect());
+
+    setPainted(true);
+  }
+}
+
 void ZPainter::drawActivePixmap(
     const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
 {
@@ -260,6 +280,23 @@ void ZPainter::drawPixmap(int x, int y, const ZPixmap &image)
           targetRect, dynamic_cast<const QPixmap&>(image), sourceRect);
 
     setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmapNt(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    m_painter.drawPixmap(0, 0, image);
+    setPainted(true);
+  }
+}
+
+void ZPainter::drawPixmap(const ZPixmap &image)
+{
+  if (!image.isNull()) {
+    QRectF targetRect =
+        image.getProjTransform().transform(QRectF(image.rect()));
+    m_painter.drawPixmap(targetRect, image, image.rect());
   }
 }
 
@@ -314,8 +351,18 @@ void ZPainter::drawPoint(const QPointF &pt)
 void ZPainter::drawText(
     int x, int y, int width, int height, int flags, const QString &text)
 {
-  m_painter.drawText(x, y, width, height, flags, text);
-  setPainted(true);
+  if (isVisible(QRect(QPoint(x, y), QSize(width, height)))) {
+    m_painter.drawText(x, y, width, height, flags, text);
+    setPainted(true);
+  }
+}
+
+void ZPainter::drawStaticText(int x, int y, const QStaticText &text)
+{
+  if (isVisible(QRect(QPoint(x, y), text.size().toSize()))) {
+    m_painter.drawStaticText(x, y, text);
+    setPainted(true);
+  }
 }
 
 void ZPainter::drawPoint(const QPoint &pt)
@@ -337,6 +384,7 @@ void ZPainter::drawPoints(const QPointF *points, int pointCount)
 //    drawPoint(points[i]);
 //  }
 }
+
 
 void ZPainter::drawPoints(const QPoint *points, int pointCount)
 {
@@ -361,11 +409,33 @@ void ZPainter::drawPoints(const std::vector<QPointF> &pointArray)
 
 void ZPainter::drawLine(int x1, int y1, int x2, int y2)
 {
-  if (isVisible(QRectF(x1, y1, x2, y2))) {
+  if (isVisible(x1, y1, x2, y2)) {
     m_painter.drawLine(x1, y1, x2, y2);
     setPainted(true);
   }
 //  drawLine(QPointF(x1, y1), QPointF(x2, y2));
+}
+
+bool ZPainter::isVisible(double x1, double y1, double x2, double y2) const
+{
+  if (m_canvasRange.isEmpty()) {
+    return true;
+  }
+
+  if (x1 > x2) {
+    std::swap(x1, x2);
+  }
+
+  if (y1 > y2) {
+    std::swap(y1, y2);
+  }
+
+  QRectF rect;
+  rect.setTopLeft(QPointF(x1 - 0.5, y1 - 0.5));
+  rect.setBottomRight(QPointF(x2 + 0.5, y2 + 0.5));
+  bool visible = m_canvasRange.intersects(rect);
+
+  return visible;
 }
 
 bool ZPainter::isVisible(const QRect &rect) const
@@ -375,6 +445,10 @@ bool ZPainter::isVisible(const QRect &rect) const
 
 bool ZPainter::isVisible(const QRectF &rect) const
 {
+  if (rect.isEmpty()) {
+    return false;
+  }
+
   if (m_canvasRange.isEmpty()) {
     return true;
   }
@@ -392,7 +466,8 @@ bool ZPainter::isVisible(const QRectF &rect) const
 
 void ZPainter::drawLine(const QPointF &pt1, const QPointF &pt2)
 {
-  QRectF rect(pt1, pt2);
+  QRectF rect(std::min(pt1.x(), pt2.x()), std::min(pt1.y(), pt2.y()),
+              fabs(pt1.x() - pt2.x()) + 1.0, fabs(pt1.y() - pt2.y()) + 1.0);
 
   if (isVisible(rect)) {
     m_painter.drawLine(pt1, pt2);
@@ -469,6 +544,14 @@ void ZPainter::drawEllipse(const QPointF & center, double rx, double ry)
 #endif
 }
 
+void ZPainter::drawArc(const QRectF &rectangle, int startAngle, int spanAngle)
+{
+  if (isVisible(rectangle)) {
+    m_painter.drawArc(rectangle, startAngle, spanAngle);
+    setPainted(true);
+  }
+}
+
 void ZPainter::drawEllipse(const QPoint & center, int rx, int ry)
 {
   if (isVisible(QRectF(center.x() - rx, center.y() - ry,
@@ -482,8 +565,10 @@ void ZPainter::drawEllipse(const QPoint & center, int rx, int ry)
 
 void ZPainter::drawRect(const QRectF & rectangle)
 {
-  m_painter.drawRect(rectangle);
-  setPainted(true);
+  if (isVisible(rectangle)) {
+    m_painter.drawRect(rectangle);
+    setPainted(true);
+  }
 #if _QT_GUI_USED_
 //  QRectF rect = rectangle;
 //  rect.moveCenter(-QPointF(m_offset.x(), m_offset.y()) + rectangle.center());
@@ -493,15 +578,19 @@ void ZPainter::drawRect(const QRectF & rectangle)
 
 void ZPainter::drawRect(const QRect & rectangle)
 {
-  m_painter.drawRect(rectangle);
-  setPainted(true);
+  if (isVisible(rectangle)) {
+    m_painter.drawRect(rectangle);
+    setPainted(true);
+  }
 //  drawRect(QRectF(rectangle));
 }
 
 void ZPainter::drawRect(int x, int y, int width, int height)
 {
-  m_painter.drawRect(x, y, width, height);
-  setPainted(true);
+  if (isVisible(QRect(QPoint(x, y), QSize(width, height)))) {
+    m_painter.drawRect(x, y, width, height);
+    setPainted(true);
+  }
 //  drawRect(QRectF(x, y, width, height));
 }
 

@@ -70,12 +70,17 @@ public:
                   deconstructed. \a delloc can be NULL to keep the stack data
                   in the memory even the object is deconstructed.
    */
-  ZStack(Mc_Stack *stack,
-         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+  ZStack(Mc_Stack *stack/*,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill*/);
 
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
-  ZStack(const ZStack &src);
+#if 0
+  /*! Obsolete. Do not use this constructor!
+   */
+  ZStack(Mc_Stack *stack,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+#endif
 
   //! Destructor
   virtual ~ZStack();
@@ -102,9 +107,11 @@ public: /* attributes */
 
   /*!
    * \brief Set stack data
+   *
+   * Be careful when you want to set \a dealloc to a non-default value.
    */
   void setData(Mc_Stack *stack,
-               C_Stack::Mc_Stack_Deallocator *delloc = C_Stack::kill);
+               C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
   /*!
    * \brief Set data from stack
@@ -561,18 +568,31 @@ public: /* processing routines */
 public:
   void initChannelColors();
 
+  struct LsmInfo {
+    LsmInfo() {}
+    Cz_Lsminfo m_basicInfo;
+    Lsm_Channel_Colors m_lsmChannelInfo;
+    Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
+    std::vector<std::string> m_lsmChannelNames;
+    std::vector<double> m_lsmTimeStamps;
+    std::vector<int> m_lsmChannelDataTypes;
+  };
+
   // read lsm file, fill Cz_Lsminfo, Lsm_Channel_Colors and channel names and colors
 #ifdef _NEUTUBE_
-  std::vector<ZVec3Parameter*>& channelColors() { initChannelColors(); return m_channelColors; }
-  glm::vec3 getChannelColor(size_t ch) { initChannelColors(); return m_channelColors[ch]->get(); }
+  std::vector<ZVec3Parameter*>& channelColors() {
+    initChannelColors(); return m_channelColors; }
+  glm::vec3 getChannelColor(size_t ch) {
+    initChannelColors(); return m_channelColors[ch]->get(); }
+
   bool loadLSMInfo(const QString &filepath);
   void logLSMInfo();
   void setChannelColor(int ch, double r, double g, double b);
-  const Cz_Lsminfo& getLSMInfo() const { return m_lsmInfo; }
+  const Cz_Lsminfo& getLSMInfo() const { return m_lsmInfo.m_basicInfo; }
 #endif
 
 private:
-  //ZStack(const ZStack &src); //uncopyable
+  ZStack(const ZStack &src); //uncopyable
 
   void init();
   bool canMerge(const Stack *s1, const Stack *s2);
@@ -590,29 +610,29 @@ private:
 
 private:
   Mc_Stack *m_stack; //Master data
-  C_Stack::Mc_Stack_Deallocator *m_delloc; //Dellocator of the master data
-  //ZStack_Projection *m_proj;
-  //ZStack_Stat *m_stat;
-  ZStackFile m_source;
-//  double m_preferredZScale;
-//  ZResolution m_resolution;
+  C_Stack::Mc_Stack_Deallocator *m_dealloc; //Dellocator of the master data
   ZIntPoint m_offset;
+
+  ZStackFile m_source;
+
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
   mutable char m_buffer[1]; //Buffer of text field of temporary stack
 
   //float color for each channel
 
-  bool m_isLSMFile;
+//  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
   std::vector<ZVec3Parameter*> m_channelColors;
-  Cz_Lsminfo m_lsmInfo;
-  Lsm_Channel_Colors m_lsmChannelInfo;
-  Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
-  std::vector<QString> m_lsmChannelNames;
-  std::vector<double> m_lsmTimeStamps;
-  std::vector<int> m_lsmChannelDataTypes;
+
+  LsmInfo m_lsmInfo;
+//  Cz_Lsminfo m_lsmInfo;
+//  Lsm_Channel_Colors m_lsmChannelInfo;
+//  Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
+//  std::vector<QString> m_lsmChannelNames;
+//  std::vector<double> m_lsmTimeStamps;
+//  std::vector<int> m_lsmChannelDataTypes;
 #endif
 };
 

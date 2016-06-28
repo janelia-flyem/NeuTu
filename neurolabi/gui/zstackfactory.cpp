@@ -16,6 +16,8 @@
 #include "math.h"
 #include "tz_color.h"
 #include "zobject3dscanarray.h"
+#include "tz_stack_bwmorph.h"
+#include "c_stack.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -216,11 +218,11 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
   //delete painter;
 #endif
 
-  stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);
+  Stack *stackData = C_Stack::make(GREY, pix->width(), pix->height(), 1);
   size_t offset = 0;
-  int height = stack->height();
-  int width = stack->width();
-  uint8_t *array = stack->array8();
+  int height = C_Stack::height(stackData);
+  int width = C_Stack::width(stackData);
+  uint8_t *array = C_Stack::array8(stackData);
 #ifdef _DEBUG_2
   tic();
 #endif
@@ -231,6 +233,17 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
       //array[offset++] = qRed(image.pixel(x, y));
     }
   }
+
+  stack = new ZStack;
+  stack->consume(stackData);
+  /*
+  stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);
+
+  Stack_Fill_2dhole(stackData, stack->c_stack(), 255, 1);
+
+  C_Stack::kill(stackData);
+  */
+
 #ifdef _DEBUG_2
   ptoc();
 #endif
@@ -333,7 +346,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
     for (ZPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
     }
 
     Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
@@ -433,7 +446,7 @@ ZStack* ZStackFactory::makeDensityMap(
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZWeightedPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
                          iround(pt.weight()));
     }
 

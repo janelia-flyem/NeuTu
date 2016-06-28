@@ -176,6 +176,8 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView();
   createPresenter();
+  presenter()->createActions();
+
   updateDocument();
 
   if (document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
@@ -184,6 +186,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   setView(m_view);
   m_view->prepareDocument();
   m_presenter->prepareView();
+//  m_presenter->createActions();
 
   if (doc.get() != NULL) {
     customizeWidget();
@@ -236,7 +239,7 @@ void ZStackFrame::createView()
   }
 }
 
-void ZStackFrame::addDocData(const ZStackDocReader &reader)
+void ZStackFrame::addDocData(ZStackDocReader &reader)
 {
   if (m_doc.get() == NULL) {
     createDocument();
@@ -252,7 +255,9 @@ void ZStackFrame::addDocData(const ZStackDocReader &reader)
                                        crossoverTest());
 
   if (m_doc->hasStackData()) {
-    m_presenter->optimizeStackBc();
+    if (m_doc->getStack()->kind() != GREY) {
+      m_presenter->optimizeStackBc();
+    }
     m_view->reset();
   }
 
@@ -285,7 +290,7 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_presenter, SLOT(updateStackBc()));
   connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateView()));
+          m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
@@ -322,6 +327,8 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(notifyViewChanged(ZStackViewParam)));
+
+  connectAction(m_view, SIGNAL(changingSetting()), this, SLOT(showSetting()));
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -329,8 +336,8 @@ void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
-  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
-          m_presenter, SLOT(processSliceChangeEvent(int)));
+//  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
+//          m_presenter, SLOT(processSliceChangeEvent(int)));
 }
 
 bool ZStackFrame::connectFunc(const QObject* obj1, const char *signal,
@@ -379,7 +386,7 @@ void ZStackFrame::updateDocument()
                                        crossoverTest());
 
   if (m_doc->hasStackData()) {
-    if (m_presenter != NULL) {
+    if (m_presenter != NULL && (m_doc->getStack()->kind() != GREY)) {
       m_presenter->optimizeStackBc();
     }
   }
@@ -474,7 +481,9 @@ void ZStackFrame::prepareDisplay()
 {
   setWindowTitle(document()->stackSourcePath().c_str());
   m_statusInfo =  QString("%1 loaded").arg(document()->stackSourcePath().c_str());
-  m_presenter->optimizeStackBc();
+  if (m_doc->getStack()->kind() != GREY) {
+    m_presenter->optimizeStackBc();
+  }
   m_view->reset();
 }
 
@@ -563,7 +572,9 @@ int ZStackFrame::importImageSequence(const char *filePath)
 
   setWindowTitle(filePath);
   m_statusInfo =  QString("%1 loaded").arg(filePath);
-  m_presenter->optimizeStackBc();
+  if (m_doc->getStack()->kind() != GREY) {
+    m_presenter->optimizeStackBc();
+  }
   m_view->reset();
 
   return SUCCESS;
@@ -778,9 +789,14 @@ bool ZStackFrame::traceMasked()
   return m_settingDlg->traceMasked();
 }
 
-double ZStackFrame::traceMinScore()
+double ZStackFrame::autoTraceMinScore()
 {
-  return m_settingDlg->traceMinScore();
+  return m_settingDlg->autoTraceMinScore();
+}
+
+double ZStackFrame::manualTraceMinScore()
+{
+  return m_settingDlg->manualTraceMinScore();
 }
 
 char ZStackFrame::unit()
@@ -858,7 +874,8 @@ void ZStackFrame::synchronizeDocument()
                             m_settingDlg->yResolution(),
                             m_settingDlg->zResolution(),
                             m_settingDlg->unit());
-  document()->setTraceMinScore(m_settingDlg->traceMinScore());
+  document()->setAutoTraceMinScore(m_settingDlg->autoTraceMinScore());
+  document()->setManualTraceMinScore(m_settingDlg->manualTraceMinScore());
   document()->setReceptor(m_settingDlg->receptor(), m_settingDlg->useCone());
   if (hasProject()) {
     document()->setWorkdir(m_traceProject->workspacePath().toLocal8Bit().constData());
@@ -983,7 +1000,7 @@ QStringList ZStackFrame::toStringList() const
 
 void ZStackFrame::updateView()
 {
-  m_view->redraw();
+  m_view->redraw(ZStackView::UPDATE_QUEUED);
 }
 
 void ZStackFrame::undo()
@@ -1229,14 +1246,16 @@ void ZStackFrame::setObjectDisplayStyle(ZStackObject::EDisplayStyle style)
 
 void ZStackFrame::setViewPortCenter(int x, int y, int z)
 {
-  presenter()->setViewPortCenter(x, y, z);
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_NORMAL);
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
 //  x -= document()->getStackOffset().getX();
 //  y -= document()->getStackOffset().getY();
-  z -= document()->getStackOffset().getZ();
+//  z -= document()->getStackOffset().getZ();
+  ZGeometry::shiftSliceAxis(x, y, z, view()->getSliceAxis());
 
   ZStackViewLocator locator;
   locator.setCanvasSize(view()->imageWidget()->canvasSize().width(),
@@ -1244,7 +1263,10 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
   QRect viewPort = locator.getLandmarkViewPort(x, y, radius);
   presenter()->setZoomRatio(
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
-  presenter()->setViewPortCenter(x, y, z);
+
+  view()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+
+//  presenter()->setViewPortCenter(x, y, z);
 }
 
 void ZStackFrame::hideObject()
@@ -1635,7 +1657,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 #endif
 
     //obj->print();
-    obj->duplicateAcrossZ(document()->getStack()->depth());
+    obj->duplicateSlice(document()->getStack()->depth());
 
     obj->setColor(16, 16, 16, 64);
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-if [ `uname` == 'Darwin' ]; then
+if [ `uname` = 'Darwin' ]; then
   scriptDir=$(cd $(dirname "$0") && pwd -P)
 else
   scriptDir=$(dirname `readlink -f "$0"`)
@@ -21,13 +21,6 @@ then
   mkdir -p $install_dir
 fi
 
-if [ -f /opt/gcc482/bin/gcc-4.8.2 ]
-then
-  export PATH=/opt/gcc482/bin:$PATH
-  echo $PATH
-  which gcc
-fi
-
 if [ ! -d $install_dir/bin ]
 then
   mkdir $install_dir/bin
@@ -42,8 +35,19 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
+if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
+then
+  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
+elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+then
+  export PATH=/opt/gcc482/bin:$PATH
+fi
+
+echo $PATH
+which gcc
+
 qtver=4.8.5
-if [ `uname` == 'Darwin' ]
+if [ `uname` = 'Darwin' ]
 then
   qtver=4.8.4
 fi
@@ -58,11 +62,11 @@ then
       qtSource=$master_dir/$qtsrc.tar.gz
       if [ ! -f $qtSource ]
       then
-        if [ `uname` == 'Darwin' ]
+        if [ `uname` = 'Darwin' ]
         then
           curl -L https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -o $qtSource
         else
-          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource
+          wget https://download.qt.io/archive/qt/4.8/$qtver/qt-everywhere-opensource-src-$qtver.tar.gz -O $qtSource --no-check-certificate
         fi
       fi
 
@@ -99,7 +103,8 @@ fi
 if [ ! -d $downloadDir/neutube ]
 then
   cd $master_dir
-  if [ `git branch --list flyem_release` ]
+  git rev-parse --verify flyem_release 2>devnull
+  if [ $? -eq 0 ]
   then
     cd $downloadDir
     $GIT_CMD clone -b flyem_release $master_dir/.git neutube
@@ -152,13 +157,13 @@ run_script=$install_dir/bin/neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "dvidlib=$install_dir/Download/miniconda/envs/dvidenv/lib" >> $run_script
-if [ `uname` == 'Darwin' ]
+if [ `uname` = 'Darwin' ]
 then
   echo "export DYLD_FALLBACK_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
 else
   echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
-  echo "$downloadDir/neutube/neurolabi/build/neuTube" >> $run_script
+  echo "$downloadDir/neutube/neurolabi/build/neuTube $*" >> $run_script
 fi
 chmod a+x $run_script
 

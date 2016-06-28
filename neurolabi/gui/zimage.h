@@ -8,9 +8,11 @@
 #include "zglmutils.h"
 #include "zintpoint.h"
 #include "zsttransform.h"
+#include "neutube.h"
 
 class ZStack;
 class ZObject3dScan;
+class ZJsonObject;
 
 /** A class to load image / stack data structure from neurolabi and to display
  *  the data. The default format is Format_ARGB32_Premultiplied.
@@ -34,6 +36,8 @@ public:
 
   void clear();
 
+  void init();
+
   /*!
    * \brief Set data function
    *
@@ -42,8 +46,18 @@ public:
    */
   void setData(const uint8 *data, int threshold = -1);
 
+  void setData(
+      const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
+      int slice, NeuTube::EAxis sliceAxis);
+
+  void setData(
+      const uint8 *data, int stackWidth, int stackHeight, int stackDepth,
+      int slice, double scale, double offset, NeuTube::EAxis sliceAxis);
+
   void setData(const ZStack *stack, int z, bool ignoringZero = false,
                bool offsetAdjust = true);
+//  void setData(const ZStack *stack, int z, NeuTube::EAxis sliceAxis,
+//               bool ignoringZero = false, bool offsetAdjust = true);
 
   void setData(const color_t *data, int alpha = 255);
   void setCData(const color_t *data, double scale, double offset);
@@ -51,14 +65,18 @@ public:
   void setCData(const uint8_t *data, uint8_t alpha);
   void setData(const uint8 *data, double scale, double offset,
                int threshold = -1);
+  void setDataIndexed8(const uint8 *data, double scale, double offset,
+                       int threshold = -1);
 
-  template<class T> void set2ChannelData(const T *data0, double scale0, double offset0,
-                                         const T *data1, double scale1, double offset1,
-                                         uint8_t alpha = 255);
-  template<class T> void set3ChannelData(const T *data0, double scale0, double offset0,
-                                         const T *data1, double scale1, double offset1,
-                                         const T *data2, double scale2, double offset2,
-                                         uint8_t alpha = 255);
+  template<class T> void set2ChannelData(
+      const T *data0, double scale0, double offset0,
+      const T *data1, double scale1, double offset1,
+      uint8_t alpha = 255);
+  template<class T> void set3ChannelData(
+      const T *data0, double scale0, double offset0,
+      const T *data1, double scale1, double offset1,
+      const T *data2, double scale2, double offset2,
+      uint8_t alpha = 255);
 
   template<class T> void setBinaryData(const T *data, T bg = 0,
                                        int threshold = -1);
@@ -80,6 +98,9 @@ public:
   void setData(const std::vector<DataSource<T> > &sources, uint8_t alpha = 255,
                bool useMultithread = true);
 
+  void setDataIndexed8(const std::vector<DataSource<uint8_t> > &sources,
+                       uint8_t alpha = 255, bool useMultithread = true);
+
   void setData(const std::vector<DataSource<uint8_t> > &sources,
                uint8_t alpha = 255, bool useMultithread = true);
 
@@ -92,12 +113,20 @@ public:
   void setDataBlock(const ZImage::DataSource<uint8_t> &source, int startLine,
                     int endLine, int threshold);
 
+  void setDataBlockIndexed8(
+      const ZImage::DataSource<uint8_t> &source, int startLine,
+      int endLine, int threshold);
+
   template<typename T>
   void setDataBlockMS(const std::vector<DataSource<T> > &sources, int startLine,
                       int endLine, uint8_t alpha = 255);
 
   void setDataBlockMS8(const std::vector<DataSource<uint8_t> > &sources, int startLine,
                       int endLine, uint8_t alpha = 255);
+
+  void setDataBlockMS8Indexed8(
+      const std::vector<DataSource<uint8_t> > &sources, int startLine,
+      int endLine, uint8_t alpha = 255);
 
   template<class T>
   void setData(const T *data, double scale, double offset,
@@ -131,10 +160,22 @@ public:
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 
+  void setHighContrastProtocal(
+      double grayOffset, double grayScale, bool nonlinear);
+
+  void loadHighContrastProtocal(const ZJsonObject &obj);
+  void setDefaultContrastProtocal();
+
+
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+
+  //high constrast protocal
+  bool m_nonlinear;
+  double m_grayScale;
+  double m_grayOffset;
   //ZIntPoint m_offset;
 };
 

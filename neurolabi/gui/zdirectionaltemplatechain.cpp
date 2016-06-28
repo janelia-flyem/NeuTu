@@ -16,10 +16,11 @@ ZDirectionalTemplateChain::~ZDirectionalTemplateChain()
   m_chain.clear();
 }
 
-void ZDirectionalTemplateChain::display(ZPainter &painter, int z, EDisplayStyle option) const
+void ZDirectionalTemplateChain::display(
+    ZPainter &painter, int slice, EDisplayStyle option, NeuTube::EAxis sliceAxis) const
 {
   for (int i = 0; i < m_chain.size(); i++) {
-    m_chain.at(i)->display(painter, z, option);
+    m_chain.at(i)->display(painter, slice, option, sliceAxis);
   }
 }
 

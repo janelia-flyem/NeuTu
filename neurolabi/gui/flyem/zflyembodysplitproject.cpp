@@ -262,7 +262,8 @@ void ZFlyEmBodySplitProject::quickViewFunc()
         objMask = doc->getConstSparseStack()->getObjectMask();
       } else {
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
-          objMask = getDocument<ZFlyEmProofDoc>()->getBodyForSplit()->getObjectMask();
+          objMask = getDocument<ZFlyEmProofDoc>()->getBodyForSplit()->
+              getObjectMask();
         }
       }
       if (objMask != NULL) {
@@ -275,7 +276,7 @@ void ZFlyEmBodySplitProject::quickViewFunc()
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
       if (obj.isEmpty()) {
-        int bodyId = getBodyId();
+        uint64_t bodyId = getBodyId();
         obj = reader.readBody(bodyId);
         if (!obj.isEmpty()) {
           obj.canonize();
@@ -472,7 +473,11 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 {
   if (doc != NULL && getDocument() != NULL) {
+    ZOUT(LINFO(), 3) << "Loading split results";
+
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    ZOUT(LINFO(), 3) << "Removing all SWCs";
     doc->removeAllSwcTree();
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
@@ -488,8 +493,10 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      ZOUT(LINFO(), 3) << "Processing split object" << splitObj;
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+          ZOUT(LINFO(), 3) << "Converting split object";
           ZObject3d *obj = splitObj->toObject3d();
           if (obj != NULL) {
             int ds = obj->size() / maxSwcNodeNumber + 1;
@@ -500,10 +507,12 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
               ds = maxScale;
             }
 
+            ZOUT(LINFO(), 3) << "Creating split SWC";
             ZSwcTree *tree = ZSwcGenerator::createSwc(
                   *obj, dmin2(5.0, ds / 2.0), ds);
             if (tree != NULL) {
               tree->setAlpha(255);
+              ZOUT(LINFO(), 3) << "Adding split SWC";
               doc->addObject(tree);
             }
             delete obj;
@@ -514,6 +523,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     }
     doc->endObjectModifiedMode();
     doc->notifyObjectModified();
+
+    ZOUT(LINFO(), 3) << "Split object processed";
   }
 }
 
@@ -801,13 +812,16 @@ void ZFlyEmBodySplitProject::decomposeBody()
 
   getProgressSignal()->advanceProgress(0.1);
   emitMessage(QString("Identifying isolated objects ..."));
-  std::vector<ZObject3dScan> objArray = wholeBody->getConnectedComponent();
+  std::vector<ZObject3dScan> objArray =
+      wholeBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
   getProgressSignal()->advanceProgress(0.2);
 
   QList<uint64_t> newBodyIdList;
 
   ZDvidWriter writer;
   writer.open(getDvidTarget());
+
+  std::vector<uint64_t> updateBodyArray;
 
   if (objArray.size() > 1) {
     double dp = 0.5 / objArray.size();
@@ -824,16 +838,23 @@ void ZFlyEmBodySplitProject::decomposeBody()
     }
 
     index = 0;
-    for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
+    const size_t skelThre = 20;
+
+    for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter, ++index) {
       if (index != maxIndex) {
-        const ZObject3dScan &obj = *iter;
-        wholeBody->subtract(obj);
+        ZObject3dScan &obj = *iter;
+        obj.canonize();
+        wholeBody->subtractSliently(obj);
         uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
         QString msg;
         if (newBodyId > 0) {
+          size_t voxelNumber = obj.getVoxelNumber();
           msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
-              arg(newBodyId).arg(obj.getVoxelNumber());
+              arg(newBodyId).arg(voxelNumber);
+          if (voxelNumber >= skelThre) {
+            updateBodyArray.push_back(newBodyId);
+          }
           newBodyIdList.append(newBodyId);
 
           emitMessage(msg);
@@ -850,6 +871,11 @@ void ZFlyEmBodySplitProject::decomposeBody()
   }
 
   if (!newBodyIdList.isEmpty()) {
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), updateBodyArray, ZNeutuService::UPDATE_ALL);
+
     QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
     bodyMessage += "<font color=#007700>";
     foreach (uint64_t bodyId, newBodyIdList) {
@@ -949,6 +975,11 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            arg(getBodyId()),
                            NeuTube::MSG_ERROR));
     } else {
+      GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+            getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
+      GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+            getDvidTarget(), bodyId, ZNeutuService::UPDATE_ALL);
+
       updateSplitDocument();
       emitMessage(QString("Done. The cropped part has bodyId %1").arg(bodyId));
       emit resultCommitted();
@@ -977,7 +1008,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (minObjSize > 0) { //Isolated objects from the original body
     emitMessage(QString("Identifying isolated objects ..."));
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
     if (objArray.size() > 1) {
       body.clear();
       for (std::vector<ZObject3dScan>::const_iterator iter = objArray.begin();
@@ -990,6 +1022,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         }
       }
     }
+    LINFO() << "#Small body group voxels:" << smallBodyGroup.getVoxelNumber();
   }
 
   getProgressSignal()->advanceProgress(0.1);
@@ -1010,6 +1043,14 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     std::vector<ZObject3dScan*> objArray =
         ZObject3dScan::extractAllObject(*stack);
     emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
+    QString sizeMessage = "Object sizes: ";
+    for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      const ZObject3dScan *obj = *iter;
+      sizeMessage +=
+          QString("%1: %2; ").arg(obj->getLabel()).arg(obj->getVoxelNumber());
+    }
+    emitMessage(sizeMessage);
 #ifdef _DEBUG_2
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -1030,17 +1071,20 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan *obj = *iter;
+//      obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());??
       if (obj->getLabel() > 1) {
         obj->upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 
+        /* Subtract a split body.
+         * currentBody is the one to split; body becomes the remained part */
         ZObject3dScan currentBody = body.subtract(*obj);
 
         if (currentBody.isEmpty()) {
           emitError("Warning: Empty split detected.");
         } else {
-          if (!dsIntv.isZero()) {
+          if (!dsIntv.isZero()) { //Check isolations caused by downsampling
             std::vector<ZObject3dScan> objArray =
-                currentBody.getConnectedComponent();
+                currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
             if (objArray.empty()) {
               emitError("Warning: Empty split detected after connect component analysis.");
             }
@@ -1081,7 +1125,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   }
 
   if (!body.isEmpty() && m_runningCca /*&& minObjSize > 0*/) { //Check isolated objects after split
-    std::vector<ZObject3dScan> objArray = body.getConnectedComponent();
+    std::vector<ZObject3dScan> objArray =
+        body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
 #ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -1093,6 +1138,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       dp = 0.2 / objArray.size();
     }
 
+    mainBody.upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
     for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan &obj = *iter;
@@ -1162,6 +1208,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   ZDvidWriter writer;
   writer.open(getDvidTarget());
+
+  size_t skelThre = 20;
+
+  std::vector<uint64_t> updateBodyArray;
+
 //  foreach (QString objFile, filePathList) {
   foreach (const ZObject3dScan &obj, splitList) {
 //    const ZObject3dScan &obj = splitList
@@ -1177,7 +1228,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
           getDvidTarget().getBodyLabelName(), obj, getBodyId(), ++bodyIndex);
           */
 
-    wholeBody->subtract(obj);
+    wholeBody->subtractSliently(obj);
 
     uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
     ++bodyIndex;
@@ -1185,14 +1236,19 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
     QString msg;
     if (newBodyId > 0) {
+      size_t voxelNumber = obj.getVoxelNumber();
       if (oldBodyId > 0) {
         msg = QString("Label %1 uploaded as %2 (%3 voxels).").
-            arg(oldBodyId).arg(newBodyId).arg(obj.getVoxelNumber());
+            arg(oldBodyId).arg(newBodyId).arg(voxelNumber);
       } else {
         msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
-            arg(newBodyId).arg(obj.getVoxelNumber());
+            arg(newBodyId).arg(voxelNumber);
       }
       newBodyIdList.append(newBodyId);
+
+      if (voxelNumber >= skelThre) {
+        updateBodyArray.push_back(newBodyId);
+      }
 
       emitMessage(msg);
     } else {
@@ -1207,6 +1263,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (!newBodyIdList.isEmpty()) {
     QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
+    GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+          getDvidTarget(), updateBodyArray, ZNeutuService::UPDATE_ALL);
+
     bodyMessage += "<font color=#007700>";
     foreach (uint64_t bodyId, newBodyIdList) {
       bodyMessage.append(QString("%1 ").arg(bodyId));
@@ -1270,6 +1331,8 @@ void ZFlyEmBodySplitProject::backupSeed()
   if (getBodyId() == 0) {
     return;
   }
+
+  ZOUT(LINFO(), 3) << "Backup seeds";
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -1466,16 +1529,20 @@ void ZFlyEmBodySplitProject::removeAllSeed()
 void ZFlyEmBodySplitProject::removeAllSideSeed()
 {
   std::set<ZStackObject*> removeSet;
-  ZDocPlayerList &playerList = getDocument()->getPlayerList();
-  for (ZDocPlayerList::iterator iter = playerList.begin();
-       iter != playerList.end(); /*++iter*/) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
-      removeSet.insert(player->getData());
-      iter = playerList.erase(iter);
-      delete player;
-    } else {
-      ++iter;
+  QList<ZDocPlayer*> &playerList =
+      getDocument()->getPlayerList().getPlayerList();
+  {
+    QMutexLocker locker(getDocument()->getPlayerList().getMutex());
+    for (QList<ZDocPlayer*>::iterator iter = playerList.begin();
+         iter != playerList.end(); /*++iter*/) {
+      ZDocPlayer *player = *iter;
+      if (player->hasRole(ZStackObjectRole::ROLE_SEED) && player->getLabel() > 1) {
+        removeSet.insert(player->getData());
+        iter = playerList.erase(iter);
+        delete player;
+      } else {
+        ++iter;
+      }
     }
   }
 
@@ -1663,16 +1730,16 @@ void ZFlyEmBodySplitProject::updateBodyMask()
                 stack->getOffset().getZ(), 1, NULL);
                 */
 
-          std::map<int, ZObject3dScan*> *bodySet =
+          std::map<uint64_t, ZObject3dScan*> *bodySet =
               ZObject3dScan::extractAllObject(
                 array->getDataPointer<uint64_t>(), array->getDim(0),
                 array->getDim(1), 1,
                 array->getStartCoordinate(2), 1, NULL);
 
           frame->document()->blockSignals(true);
-          for (std::map<int, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+          for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
                iter != bodySet->end(); ++iter) {
-            int label = iter->first;
+            uint64_t label = iter->first;
             ZObject3dScan *obj = iter->second;
             if (label > 0) {
               obj->translate(

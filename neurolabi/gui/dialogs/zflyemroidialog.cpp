@@ -519,11 +519,15 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
                                      z, boundBox.getWidth(),
                                      boundBox.getHeight(), 1);
       } else {
+        int width = dvidInfo.getStackSize()[0];
+        int height = dvidInfo.getStackSize()[1];
+        if (width / 20000) { //temporary fix
+          width /= 2;
+        }
         stack = reader.readGrayScale(
               dvidInfo.getStartCoordinates().getX(),
               dvidInfo.getStartCoordinates().getY(),
-              z, dvidInfo.getStackSize()[0],
-            dvidInfo.getStackSize()[1], 1);
+              z, width, height, 1);
         if (stack != NULL) {
           boundBox = ZFlyEmRoiProject::estimateBoundBox(
                 *stack, getDvidTarget().getBgValue());
@@ -1274,16 +1278,25 @@ void ZFlyEmRoiDialog::exportRoiObject()
 void ZFlyEmRoiDialog::exportResult()
 {
   if (m_project != NULL) {
-    ZObject3dScan obj = m_project->getRoiObject();
+    ZObject3dScan obj = m_project->getRoiSlice();
 
     ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+    int minZ = blockObj.getMinZ();
+    int maxZ = blockObj.getMaxZ();
+
+    ZObject3dScan interpolated;
+    for (int z = minZ; z <= maxZ; ++z) {
+      interpolated.concat(blockObj.interpolateSlice(z));
+    }
+
+//    blockObj.fillHole();
 
     std::string fileName = GET_DATA_DIR + "/roi_" + m_project->getName();
 
-    blockObj.save(fileName + ".sobj");
+    interpolated.save(fileName + ".sobj");
 
     ZJsonArray array = ZJsonFactory::MakeJsonArray(
-          blockObj, ZJsonFactory::OBJECT_SPARSE);
+          interpolated, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);
     array.dump(fileName + ".json");

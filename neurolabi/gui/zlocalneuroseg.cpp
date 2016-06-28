@@ -471,7 +471,9 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 }
 
 
-void ZLocalNeuroseg::display(ZPainter &/*painter*/, int /*z*/, EDisplayStyle /*option*/) const
+void ZLocalNeuroseg::display(
+    ZPainter &/*painter*/, int /*z*/, EDisplayStyle /*option*/,
+    NeuTube::EAxis /*axis*/) const
 {
 #if 0
   display(painter, z, option, RED);

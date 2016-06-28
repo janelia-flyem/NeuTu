@@ -23,9 +23,10 @@ public:
    * \param data json value pointer
    * \param asNew Take it as a new value or just increase its reference count
    */
-  ZJsonValue(json_t *data, bool asNew);
+//  ZJsonValue(json_t *data, bool asNew);
 
   ZJsonValue(json_t *data, ESetDataOption option);
+  ZJsonValue(const json_t *data, ESetDataOption option);
 
   /*!
    * \brief Constructor
@@ -42,6 +43,8 @@ public:
 
   virtual ~ZJsonValue();
 
+  ZJsonValue clone() const;
+
 public:
   inline json_t *getData() const { return m_data; }
   inline json_t *getValue() const { return m_data; }
@@ -54,6 +57,7 @@ public:
   bool isNumber();
   bool isBoolean();
   virtual bool isEmpty() const;
+  bool isNull() const;
 
   /*!
    * \brief Get the integer value of the json value.
@@ -73,6 +77,9 @@ public:
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
+  void set(const ZJsonValue &value);
+
+  virtual void denull();
 
   /*!
    * \brief Obsolete. Will be removed.

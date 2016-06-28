@@ -80,7 +80,7 @@ public:
   inline bool hasProject() const { return (m_traceProject != NULL); }
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
-  void addDocData(const ZStackDocReader &reader);
+  void addDocData(ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
 
@@ -130,7 +130,6 @@ public:
 
   void saveStack(const QString &filePath);
 
-  void showSetting();
   void showManageObjsDialog();
 
   double displayGreyMin(int c=0) const;
@@ -195,7 +194,8 @@ public: //frame parameters
   double zReconstructScale();
   char unit();
   int traceEffort();
-  double traceMinScore();
+  double autoTraceMinScore();
+  double manualTraceMinScore();
   bool traceMasked();
   double reconstructDistThre();
   bool crossoverTest();
@@ -273,6 +273,7 @@ public slots:
   void notifyViewChanged(const ZStackViewParam &param);
   void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
+  void showSetting();
 
 private slots:
   void updateSwcExtensionHint();

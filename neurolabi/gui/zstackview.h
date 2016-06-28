@@ -20,7 +20,9 @@
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
+//#include "zstackdoc.h"
 
+class ZStackDoc;
 class ZStackPresenter;
 class QSlider;
 class ZImageWidget;
@@ -34,7 +36,6 @@ class QMenu;
 class QPushButton;
 class QProgressBar;
 class QRadioButton;
-class ZStackDoc;
 class ZStack;
 class ZStackViewParam;
 class ZMessageManager;
@@ -44,6 +45,7 @@ class ZPixmap;
 class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
+class ZStTransform;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -71,12 +73,16 @@ public:
    */
   void reset(bool updatingScreen = true);
 
+  enum EUpdateOption {
+    UPDATE_NONE, UPDATE_QUEUED, UPDATE_DIRECT
+  };
+
   /*!
    * \brief Update image screen
    *
    * Update the screen by assuming that all the canvas buffers are ready.
    */
-  void updateImageScreen();
+  void updateImageScreen(EUpdateOption option);
 
   //void updateScrollControl();
 
@@ -126,6 +132,7 @@ public:
    * The value will be clipped if \a slice is out of range.
    */
   void setSliceIndex(int slice);
+  void setSliceIndexQuietly(int slice);
 
   /*!
    * \brief Increase or descrease of the slice index with a certain step.
@@ -145,10 +152,13 @@ public:
 
   //int threshold();
 
+  void setSliceAxis(NeuTube::EAxis axis);
+  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+
   /*!
    * \brief Get stack data from the buddy document
    */
-  ZStack *stackData();
+  ZStack *stackData() const;
 
   //set up the view after the document is ready
   void prepareDocument();
@@ -171,16 +181,18 @@ public:
 
   bool isDepthChangable();
 
-  void paintStackBuffer();
+  virtual void paintStackBuffer();
   void paintMaskBuffer();
   void paintObjectBuffer();
   bool paintTileCanvasBuffer();
 
   //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
 
+  void paintObjectBuffer(ZStackObject::ETarget target);
   void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
 
   void paintActiveDecorationBuffer();
+  void paintDynamicObjectBuffer();
 
   ZStack* getObjectMask(uint8_t maskValue);
 
@@ -213,6 +225,11 @@ public:
   void setDepthFrozen(bool state);
   void blockViewChangeEvent(bool state);
 
+  void updateViewBox();
+
+  void zoomTo(int x, int y, int z);
+  void zoomTo(const ZIntPoint &pt);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -222,8 +239,8 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
-  void updateView();
-  void redraw(bool updatingScreen = true);
+//  void updateView();
+  void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
@@ -232,6 +249,7 @@ public slots:
   void updateThresholdSlider();
   void updateSlider();
   void updateChannelControl();
+  void processDepthSliderValueChange();
   void processDepthSliderValueChange(int sliceIndex);
 
   void paintStack();
@@ -266,6 +284,7 @@ public slots:
   void requestQuick3DVis();
   void requestHighresQuick3DVis();
   void requestMerge();
+  void requestSetting();
 
   void setView(const ZStackViewParam &param);
 
@@ -276,23 +295,36 @@ public slots:
 
   void dump(const QString &msg);
 
+  void hideThresholdControl();
+
 
 signals:
-  void currentSliceChanged(int);
+//  void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
-  void viewPortChanged();
+//  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
+  void changingSetting();
+  void sliceSliderPressed();
+  void sliceSliderReleased();
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
-  double getZoomRatio() const;
+  double getCanvasWidthZoomRatio() const;
+  double getCanvasHeightZoomRatio() const;
+  double getProjZoomRatio() const;
   void setInfo();
   bool isImageMovable() const;
 
   int getZ(NeuTube::ECoordinateSystem coordSys) const;
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
-      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
+      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
+      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
+
+  QRectF getProjRegion() const;
+
+  //Get transform from view port to proj region
+  ZStTransform getViewTransform() const;
 
   /*!
    * \brief Set the viewport offset
@@ -302,13 +334,28 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
+  void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
+  void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
+
+  ZIntPoint getViewCenter() const;
+
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
 
   void addHorizontalWidget(QWidget *widget);
   void addHorizontalWidget(QSpacerItem *spacer);
 
-  void notifyViewPortChanged();
+//  void notifyViewPortChanged();
+
+  bool isViewChanged(const ZStackViewParam &param) const;
+  void processViewChange(bool redrawing, bool depthChanged);
+  void processViewChange(const ZStackViewParam &param);
+
+  void setHoverFocus(bool on);
+  void setSmoothDisplay(bool on);
+
+  void notifyViewChanged(const ZStackViewParam &param);
+  void notifyViewChanged();
 
 
 public: //Change view parameters
@@ -316,42 +363,54 @@ public: //Change view parameters
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
-  void notifyViewChanged();
+
+  void zoomWithWidthAligned(int x0, int x1, int cy);
+  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+//  void notifyViewChanged(
+//      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
 
-private:
+  void updateContrastProtocal();
+
+protected:
+  ZIntCuboid getViewBoundBox() const;
+  virtual int getDepth() const;
+
   void clearCanvas();
   template<typename T>
   void resetCanvasWithStack(T &canvas, ZPainter *painter);
 
-  void resetCanvasWithStack(ZMultiscalePixmap &canvas, ZPainter *painter);
+  virtual void resetCanvasWithStack(
+      ZMultiscalePixmap &canvas, ZPainter *painter);
 
   void reloadTileCanvas();
   bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
-  void updateImageCanvas();
+  virtual void updateImageCanvas();
   void updateMaskCanvas();
   void clearObjectCanvas();
   void clearTileCanvas();
   void updateObjectCanvas();
   void updateTileCanvas();
+  void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
   void updatePaintBundle();
 
-  void connectSignalSlot();
+  ZPixmap* updateProjCanvas(ZPixmap *canvas);
 
-  void hideThresholdControl();
+  void connectSignalSlot();
 
   QSize getCanvasSize() const;
 
   //help functions
-  void paintSingleChannelStackSlice(ZStack *stack, int slice);
+  virtual void paintSingleChannelStackSlice(ZStack *stack, int slice);
   void paintMultipleChannelStackSlice(ZStack *stack, int slice);
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
 
-  void notifyViewChanged(const ZStackViewParam &param);
+  QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
 
   void init();
 
@@ -360,7 +419,7 @@ private:
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
 
-private:
+protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
@@ -371,8 +430,11 @@ private:
   ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
+
+  NeuTube::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;
@@ -408,6 +470,8 @@ private:
   bool m_depthFrozen;
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
+
+//  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 
 #endif

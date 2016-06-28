@@ -12,6 +12,8 @@
 #include "zstring.h"
 #include "zlogmessagereporter.h"
 #include "neutube.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 using namespace std;
 
@@ -26,8 +28,11 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_softwareName = "NeuTu";
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
-  std::cout << m_settings.fileName().toStdString() << std::endl;
+//  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
+
+  m_loggingProfile = false;
+  m_verboseLevel = 1;
 }
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -183,12 +188,6 @@ bool NeutubeConfig::load(const std::string &filePath)
       m_softwareName = "neuTube";
     }
 
-#ifdef _FLYEM_
-    getFlyEmConfig().loadConfig(
-          ZString::fullPath(
-            GET_APPLICATION_DIR, "json", "", "flyem_config.json"));
-#endif
-
     return true;
   }
 
@@ -219,10 +218,6 @@ void NeutubeConfig::print()
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
   cout << endl;
-
-#if defined(_FLYEM_)
-  m_flyemConfig.print();
-#endif
 }
 
 std::string NeutubeConfig::getPath(Config_Item item) const
@@ -261,7 +256,7 @@ std::string NeutubeConfig::getPath(Config_Item item) const
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
     std::string user = NeuTube::GetCurrentUserName();
-    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z/" + user;
+    tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {
       if (!tmpDirObj.mkpath(tmpDir.c_str())) {
@@ -566,3 +561,172 @@ void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     m_isPunctaOn = true;
   }
 }
+
+void NeutubeConfig::configure(const ZJsonObject &obj)
+{
+  if (obj.hasKey("profiling")) {
+    m_loggingProfile = ZJsonParser::booleanValue(obj["profiling"]);
+  }
+
+  if (obj.hasKey("verbose")) {
+    m_verboseLevel = ZJsonParser::integerValue(obj["verbose"]);
+  }
+}
+
+void NeutubeConfig::enableProfileLogging(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("profiling", on);
+#else
+  m_loggingProfile = on;
+#endif
+}
+
+void NeutubeConfig::setVerboseLevel(int level)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("verbose", level);
+#else
+  m_verboseLevel = on;
+#endif
+}
+
+int NeutubeConfig::getVerboseLevel() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("verbose")) {
+    return m_settings.value("verbose").toInt();
+  }
+#endif
+
+  return m_verboseLevel;
+}
+
+bool NeutubeConfig::parallelTileFetching() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("parallel_tile")) {
+    return m_settings.value("parallel_tile").toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::setParallelTileFetching(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("parallel_tile", on);
+#endif
+}
+
+void NeutubeConfig::SetParallelTileFetching(bool on)
+{
+  getInstance().setParallelTileFetching(on);
+}
+
+bool NeutubeConfig::loggingProfile() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("profiling")) {
+    return m_settings.value("profiling").toBool();
+  }
+#endif
+
+  return m_loggingProfile;
+}
+
+void NeutubeConfig::enableAutoStatusCheck(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("auto_status", on);
+#endif
+}
+
+bool NeutubeConfig::autoStatusCheck() const
+{
+#if _QT_GUI_USED_
+  if (m_settings.contains("auto_status")) {
+    return m_settings.value("auto_status").toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::EnableAutoStatusCheck(bool on)
+{
+  getInstance().enableAutoStatusCheck(on);
+}
+
+bool NeutubeConfig::AutoStatusCheck()
+{
+  return getInstance().autoStatusCheck();
+}
+
+void NeutubeConfig::EnableProfileLogging(bool on)
+{
+  getInstance().enableProfileLogging(on);
+}
+
+bool NeutubeConfig::LoggingProfile()
+{
+  return getInstance().loggingProfile();
+}
+
+int NeutubeConfig::GetVerboseLevel()
+{
+  return getInstance().getVerboseLevel();
+}
+
+void NeutubeConfig::SetVerboseLevel(int level)
+{
+  getInstance().setVerboseLevel(level);
+}
+
+bool NeutubeConfig::ParallelTileFetching()
+{
+  return getInstance().parallelTileFetching();
+}
+
+void NeutubeConfig::Configure(const ZJsonObject &obj)
+{
+  getInstance().configure(obj);
+}
+
+std::string NeutubeConfig::GetSoftwareName()
+{
+  return getInstance().getSoftwareName();
+}
+
+
+#ifdef _QT_GUI_USED_
+QString NeutubeConfig::GetFlyEmConfigPath()
+{
+  QString path = GetSettings().value("flyem_config").toString();
+
+  return path;
+}
+
+void NeutubeConfig::SetFlyEmConfigPath(const QString &path)
+{
+  GetSettings().setValue("flyem_config", path);
+}
+
+QString NeutubeConfig::GetNeuTuServer()
+{
+  return GetSettings().value("neutu_server").toString();
+}
+
+void NeutubeConfig::SetNeuTuServer(const QString &path)
+{
+  if (path.isEmpty()) {
+    GetSettings().setValue("neutu_server", ":");
+  } else {
+    GetSettings().setValue("neutu_server", path);
+  }
+}
+#endif
+
+
+

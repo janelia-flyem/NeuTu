@@ -3,11 +3,20 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
+#include "neutube_def.h"
+
+class ZJsonArray;
 
 class ZIntCuboid
 {
 public:
+  /*!
+   * \brief Default constructor
+   *
+   * Construct an empty cuboid
+   */
   ZIntCuboid();
+
   ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2);
   ZIntCuboid(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   ZIntCuboid(const Cuboid_I &cuboid);
@@ -82,6 +91,9 @@ public:
   void expandX(int dx);
   void expandY(int dy);
 
+  //intersect
+  ZIntCuboid& intersect(const ZIntCuboid &cuboid);
+
   /*!
    * \brief Get the volume of the cuboid.
    *
@@ -109,6 +121,20 @@ public:
   bool hasOverlap(const ZIntCuboid &box) const;
 
   //double distanceTo(const ZIntPoint &pt);
+
+  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+  int getDim(NeuTube::EAxis axis) const;
+
+  ZIntPoint getCenter() const;
+
+  /*!
+   * \brief Set corners from a json array
+   *
+   * Array: [x1, y1, z1, x2, y2, z2]. The object is reset to default if the json
+   * array is invalid.
+   */
+  void loadJson(const ZJsonArray &json);
 
 private:
   ZIntPoint m_firstCorner;

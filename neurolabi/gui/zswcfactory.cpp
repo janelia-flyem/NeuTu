@@ -499,19 +499,26 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 
   ZStack *stack = NULL;
   std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
+  tic();
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
-    obj2.downsampleMax(intv, intv, intv);
+    obj2.downsample(intv, intv, intv);
     stack = obj2.toStackObject();
   } else {
     stack = obj.toStackObject();
   }
+  std::cout << "Preparing for stack time: " << toc() << std::endl;
 
   ZSwcTree *tree = NULL;
   if (stack != NULL) {
     tree = CreateSurfaceSwc(*stack, sparseLevel);
-    tree->setColor(obj.getColor());
-    tree->rescale(intv + 1, intv + 1, intv + 1);
+    if (tree != NULL) {
+      tree->setColor(obj.getColor());
+      tree->rescale(intv + 1, intv + 1, intv + 1);
+    } else {
+      LWARN() << "Failed to generate body surface for sparsevol: "
+              << obj.getVoxelNumber() << " voxels";
+    }
     delete stack;
   }
 
@@ -550,6 +557,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
     Stack_Neighbor_Offset(conn, width, height, neighbor);
 
     double radius = sparseLevel * 0.7;
+    tic();
     for (int k = 0; k <= cdepth; k++) {
       for (int j = 0; j <= cheight; j++) {
         for (int i = 0; i <= cwidth; i++) {
@@ -583,7 +591,10 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
         }
       }
     }
+    std::cout << "Surface extracting time:" << toc() << std::endl;
 
+  } else {
+    LWARN() << "Failed to generate surface for empty stack";
   }
 
 #if 0

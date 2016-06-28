@@ -27,7 +27,7 @@ QVariant ZFlyEmBookmarkPresenter::data(
       }
       break;
     case 1:
-      return (int) bookmark.getBodyId();
+      return QString("%1").arg(bookmark.getBodyId());
     case 2:
       return bookmark.getComment();
     case 3:

@@ -1,6 +1,8 @@
 #include "zintcuboid.h"
 #include <cmath>
 #include "tz_utilities.h"
+#include "zjsonarray.h"
+#include "zjsonparser.h"
 
 ZIntCuboid::ZIntCuboid()
 {
@@ -82,6 +84,16 @@ ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
   for (int i = 0; i < 3; i++) {
     m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
     m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  }
+
+  return *this;
+}
+
+ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)
+{
+  for (int i = 0; i < 3; i++) {
+    m_firstCorner[i] = imax2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = imin2(m_lastCorner[i], cuboid.m_lastCorner[i]);
   }
 
   return *this;
@@ -242,20 +254,77 @@ ZIntPoint ZIntCuboid::getCorner(int index) const
 
 bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
 {
-  bool overlapped = false;
-  for (int i = 0; i < 8; ++i) {
-    if (contains(box.getCorner(i))) {
-      overlapped = true;
-      break;
-    }
-
-    if (box.contains(getCorner(i))) {
-      overlapped = true;
-      break;
-    }
+  if (isEmpty() || box.isEmpty()) {
+    return false;
   }
 
-  return overlapped;
+
+  if (box.getFirstCorner().getX() > getLastCorner().getX() ||
+      box.getLastCorner().getX() < getFirstCorner().getX()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getY() > getLastCorner().getY() ||
+      box.getLastCorner().getY() < getFirstCorner().getY()) {
+    return false;
+  }
+
+  if (box.getFirstCorner().getZ() > getLastCorner().getZ() ||
+      box.getLastCorner().getZ() < getFirstCorner().getZ()) {
+    return false;
+  }
+
+  return true;
+}
+
+void ZIntCuboid::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxis(axis);
+  m_lastCorner.shiftSliceAxis(axis);
+}
+
+void ZIntCuboid::shiftSliceAxisInverse(NeuTube::EAxis axis)
+{
+  m_firstCorner.shiftSliceAxisInverse(axis);
+  m_lastCorner.shiftSliceAxisInverse(axis);
+}
+
+int ZIntCuboid::getDim(NeuTube::EAxis axis) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return getWidth();
+  case NeuTube::Y_AXIS:
+    return getHeight();
+  case NeuTube::Z_AXIS:
+    return getDepth();
+  }
+
+  return 0;
+}
+
+ZIntPoint ZIntCuboid::getCenter() const
+{
+  return getFirstCorner() +
+      ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
+}
+
+void ZIntCuboid::loadJson(const ZJsonArray &json)
+{
+  reset();
+
+  int count = json.size();
+
+  if (count == 6) {
+    for (int i = 0; i < count; ++i) {
+      setFirstCorner(ZJsonParser::integerValue(json.at(0)),
+                     ZJsonParser::integerValue(json.at(1)),
+                     ZJsonParser::integerValue(json.at(2)));
+      setLastCorner(ZJsonParser::integerValue(json.at(3)),
+                    ZJsonParser::integerValue(json.at(4)),
+                    ZJsonParser::integerValue(json.at(5)));
+    }
+  }
 }
 
 /*

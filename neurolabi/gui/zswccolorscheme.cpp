@@ -1,5 +1,6 @@
 #include "zswccolorscheme.h"
 #include <QDebug>
+#include <QColor>
 
 ZSwcColorScheme::ZSwcColorScheme()
 {
@@ -9,7 +10,7 @@ ZSwcColorScheme::ZSwcColorScheme()
 
 void ZSwcColorScheme::buildVaa3dColorTable()
 {
-  m_colorTable.resize(19);
+  m_colorTable.resize(21);
   m_colorTable[0].setRgb(255, 255, 255);
   m_colorTable[1].setRgb(20, 20, 20);
   m_colorTable[2].setRgb(200, 20, 0); //red
@@ -48,24 +49,6 @@ void ZSwcColorScheme::buildBiocytinColorTable()
   //m_colorTable.push_back(QColor(100, 120, 200)); //orchid
 }
 
-void ZSwcColorScheme::buildUniqueColorTable()
-{
-  m_colorTable.clear();
-  m_colorTable.push_back(QColor(Qt::red));
-  m_colorTable.push_back(QColor(Qt::green));
-  m_colorTable.push_back(QColor(Qt::blue));
-  m_colorTable.push_back(QColor(Qt::cyan));
-  m_colorTable.push_back(QColor(Qt::magenta));
-  m_colorTable.push_back(QColor(Qt::darkRed));
-  m_colorTable.push_back(QColor(Qt::darkGreen));
-  m_colorTable.push_back(QColor(Qt::darkBlue));
-  m_colorTable.push_back(QColor(Qt::darkCyan));
-  m_colorTable.push_back(QColor(Qt::darkMagenta));
-  m_colorTable.push_back(QColor(Qt::darkYellow));
-  m_colorTable.push_back(QColor(Qt::white));
-  m_colorTable.push_back(QColor(Qt::black));
-}
-
 void ZSwcColorScheme::setColorScheme(EColorScheme scheme)
 {
   if (scheme != m_colorScheme) {
@@ -83,6 +66,9 @@ void ZSwcColorScheme::setColorScheme(EColorScheme scheme)
     case JIN_TYPE_COLOR:
       buildJinTypeColorTable();
       break;
+    case GMU_TYPE_COLOR:
+      buildGmuTypeColorTable();
+      break;
     default:
       break;
     }
@@ -98,4 +84,20 @@ void ZSwcColorScheme::buildJinTypeColorTable()
   m_colorTable.push_back(QColor(Qt::green));
   m_colorTable.push_back(QColor(Qt::red));
   m_colorTable.push_back(QColor(Qt::gray));
+}
+
+void ZSwcColorScheme::buildGmuTypeColorTable()
+{
+  buildVaa3dColorTable();
+  m_colorTable.resize(275);
+
+  for (int i = 21; i < (int) m_colorTable.size(); ++i) {
+    int baseType = i / 10 % 18 + 2;
+    QColor color = m_colorTable[baseType];
+    int h = color.hue();
+    int s = color.saturation();
+    int v = i % 10 * 28;
+    color.setHsv(h, s, v);
+    m_colorTable[i] = color;
+  }
 }

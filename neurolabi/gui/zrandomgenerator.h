@@ -15,6 +15,7 @@ public:
    */
   std::vector<int> randperm(int n);
   int rndint(int maxValue);
+  int rndint(int minValue, int maxValue);
   void setSeed(int seed);
 
   static int count;

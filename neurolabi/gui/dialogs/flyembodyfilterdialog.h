@@ -22,6 +22,7 @@ public:
   size_t getMaxBodySize() const;
   bool hasUpperBodySize() const;
   bool namedBodyOnly() const;
+  bool tracedOnly() const;
 
   QString getBodyListFile() const;
   void setBodyListFile(const QString path);

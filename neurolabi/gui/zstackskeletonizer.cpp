@@ -24,6 +24,8 @@
 
 using namespace std;
 
+const size_t ZStackSkeletonizer::m_sizeLimit = MAX_INT32;
+
 ZStackSkeletonizer::ZStackSkeletonizer() : m_lengthThreshold(15.0),
   m_distanceThreshold(-1.0), m_rebase(false), m_interpolating(false),
   m_removingBorder(false), m_fillingHole(false), m_minObjSize(0),
@@ -129,7 +131,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
   }
 
   if (C_Stack::kind(stackData) != GREY) {
-    Translate_Stack(stackData, GREY, 1);
+    C_Stack::translate(stackData, GREY, 1);
   }
 
   advanceProgress(0.05);
@@ -201,7 +203,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
     Swc_Tree *subtree = New_Swc_Tree();
     subtree->root = Make_Virtual_Swc_Tree_Node();
 
-    Stack *objstack = Copy_Stack(stackData);
+    Stack *objstack = C_Stack::clone(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
 
     Translate_Stack(objstack, GREY, 1);
@@ -438,6 +440,11 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
 
 ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 {
+  if (C_Stack::voxelNumber(stackData) > m_sizeLimit) {
+    std::cout << "Warning: " << "Too big stack. Abort." << std::endl;
+    return NULL;
+  }
+
   Stack *stackSignal = NULL;
 
   /*
@@ -572,7 +579,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     Swc_Tree *subtree = New_Swc_Tree();
     subtree->root = Make_Virtual_Swc_Tree_Node();
 
-    Stack *objstack = Copy_Stack(stackData);
+    Stack *objstack = C_Stack::clone(stackData);
     size_t objSize = Stack_Level_Mask(objstack, 3 + objIndex);
 
     //Translate_Stack(objstack, GREY, 1);
@@ -852,7 +859,8 @@ void ZStackSkeletonizer::configure(const string &filePath)
 
 void ZStackSkeletonizer::configure(const ZJsonObject &config)
 {
-  ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]), false);
+  ZJsonArray array(const_cast<json_t*>(config["downsampleInterval"]),
+      ZJsonValue::SET_INCREASE_REF_COUNT);
   std::vector<int> interval = array.toIntegerArray();
   if (interval.size() == 3) {
     setDownsampleInterval(interval[0], interval[1], interval[2]);

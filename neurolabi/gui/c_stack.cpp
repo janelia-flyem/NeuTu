@@ -26,6 +26,17 @@
 #include "tz_int_histogram.h"
 #include "tz_iarray.h"
 
+
+#if _QT_GUI_USED_
+#include <QMutex>
+#include <QMutexLocker>
+
+static QMutex stackMutex;
+#  define STACK_MUTEX_GUARD QMutexLocker locker(&stackMutex);
+#else
+#  define STACK_MUTEX_GUARD
+#endif
+
 using namespace std;
 
 void C_Stack::copyPlaneValue(Stack *stack, const void *array, int slice)
@@ -94,6 +105,8 @@ void C_Stack::setAttribute(
 Stack* C_Stack::crop(const Stack* stack, int left, int top, int front,
             int width, int height, int depth, Stack *desstack)
 {
+  STACK_MUTEX_GUARD
+
   return Crop_Stack(stack, left, top, front, width, height, depth, desstack);
 }
 
@@ -105,6 +118,8 @@ Stack* C_Stack::crop(const Stack *stack, const Cuboid_I &box, Stack *desstack)
 
 Stack* C_Stack::boundCrop(const Stack *stack, int margin)
 {
+  STACK_MUTEX_GUARD
+
   return Stack_Bound_Crop(stack, margin);
 }
 
@@ -118,9 +133,15 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
   int depth = 0;
   Cuboid_I_Size(&bound_box, &width, &height, &depth);
 
+  Stack *out = crop(stack, bound_box.cb[0] - margin,
+      bound_box.cb[1] - margin, bound_box.cb[2] - margin,
+      width + margin * 2, height + margin * 2, depth + margin * 2, NULL);
+  /*
+  STACK_MUTEX_GUARD
   Stack *out =  Crop_Stack(stack, bound_box.cb[0] - margin,
       bound_box.cb[1] - margin, bound_box.cb[2] - margin,
       width + margin * 2, height + margin * 2, depth + margin * 2, NULL);
+      */
 
   if (offset != NULL) {
     for (int i = 0; i < 3; ++i) {
@@ -133,6 +154,30 @@ Stack* C_Stack::boundCrop(const Stack *stack, int margin, int *offset)
 
 int* C_Stack::hist(const Stack* stack)
 {
+  if (voxelNumber(stack) > MAX_INT32) {
+    double ratio = (double) voxelNumber(stack) / MAX_INT32;
+    int intv[3] = {0, 0, 0};
+    int i = 0;
+    while ((intv[0] + 1) * (intv[1] + 1) * (intv[2] + 1) < ratio) {
+      intv[i++] += 1;
+      if (i > 2) {
+        i = 0;
+      }
+    }
+
+    Stack *ds = NULL;
+
+    {
+      STACK_MUTEX_GUARD
+      ds = Downsample_Stack(stack, intv[0], intv[1], intv[2]);
+    }
+
+    int *hist = Stack_Hist(ds);
+
+    kill(ds);
+    return hist;
+  }
+
   return Stack_Hist(stack);
 }
 
@@ -250,6 +295,8 @@ void C_Stack::printValue(const Mc_Stack *stack)
 
 Stack* C_Stack::channelExtraction(const Stack *stack, int channel)
 {
+  STACK_MUTEX_GUARD
+
   return Stack_Channel_Extraction(stack, channel, NULL);
 }
 
@@ -285,6 +332,8 @@ bool C_Stack::setValue(
 
 Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 {
+  STACK_MUTEX_GUARD
+
   return Resize_Stack(stack, width, height, depth);
 }
 
@@ -478,27 +527,37 @@ double C_Stack::mode(const Stack *stack)
 
 Stack* C_Stack::translate(Stack *stack, int kind, int in_place)
 {
+  STACK_MUTEX_GUARD
+
   return Translate_Stack(stack, kind, in_place);
 }
 
 Stack* C_Stack::make(int kind, int width, int height, int depth)
 {
+  STACK_MUTEX_GUARD
+
   return Make_Stack(kind, width,height, depth);
 }
 
 Stack* C_Stack::make(float *data, int kind, int width, int height, int depth)
 {
+  STACK_MUTEX_GUARD
+
   return Scale_Float_Stack(data, width, height, depth, kind);
 }
 
 Stack* C_Stack::make(double *data, int kind, int width, int height, int depth)
 {
+  STACK_MUTEX_GUARD
+
   return Scale_Double_Stack(data, width, height, depth, kind);
 }
 
 
 Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelNumber)
 {
+  STACK_MUTEX_GUARD
+
   return Make_Mc_Stack(kind, width,height, depth, channelNumber);
 }
 
@@ -535,6 +594,8 @@ void C_Stack::freePointer(Mc_Stack *stack)
 void C_Stack::kill(Mc_Stack *stack)
 {
   if (stack != NULL) {
+    STACK_MUTEX_GUARD
+
     Kill_Mc_Stack(stack);
   }
 }
@@ -542,12 +603,16 @@ void C_Stack::kill(Mc_Stack *stack)
 void C_Stack::kill(Stack *stack)
 {
   if (stack != NULL) {
+    STACK_MUTEX_GUARD
+
     Kill_Stack(stack);
   }
 }
 
 int C_Stack::stackUsage()
 {
+  STACK_MUTEX_GUARD
+
   return Stack_Usage();
 }
 
@@ -737,6 +802,29 @@ void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
   Read_Stack_Offset(filePath.c_str(), x, y, z);
 }
 
+char *C_Stack::toMrawBuffer(const Mc_Stack *stack, size_t *length)
+{
+  *length = 0;
+  char *buffer = NULL;
+
+  if (stack != NULL) {
+    *length = 24 + C_Stack::allByteNumber(stack);
+    buffer = (char*) malloc(*length);
+
+    int *intBuffer = (int*) buffer;
+    intBuffer[0] = MRAW_MAGIC_NUMBER;
+    intBuffer[1] = C_Stack::kind(stack);
+    intBuffer[2] = C_Stack::width(stack);
+    intBuffer[3] = C_Stack::height(stack);
+    intBuffer[4] = C_Stack::depth(stack);
+    intBuffer[5] = C_Stack::channelNumber(stack);
+
+    memcpy(buffer + 24, C_Stack::array8(stack), C_Stack::allByteNumber(stack));
+  }
+
+  return buffer;
+}
+
 Mc_Stack* C_Stack::readMrawFromBuffer(const char *buffer, int channel)
 {
   Mc_Stack *stack = NULL;
@@ -907,7 +995,10 @@ _read_failed:
   }
     break;
   default:
+  {
+    STACK_MUTEX_GUARD
     stack = Read_Mc_Stack(filePath.c_str(), channel);
+  }
     if ((size_t)stack->width * stack->height * 2 >= (size_t)1024*1024*1024) {
       double scale =
           (1024.0*1024*1024) / ((double)stack->width * stack->height * 2);
@@ -934,6 +1025,7 @@ Stack* C_Stack::readSc(const string &filePath)
       delete obj3d;
     }
   } else {
+    STACK_MUTEX_GUARD
     stack = Read_Stack_U(filePath.c_str());
   }
 
@@ -944,7 +1036,7 @@ Stack* C_Stack::extractChannel(const Stack *stack, int c)
 {
   TZ_ASSERT(kind(stack) == COLOR, "unsupported format");
 
-  Stack *out = Make_Stack(GREY, width(stack), height(stack), depth(stack));
+  Stack *out = make(GREY, width(stack), height(stack), depth(stack));
 
   color_t *arrayc = (color_t*) stack->array;
   size_t nvoxel = Stack_Voxel_Number(stack);
@@ -969,6 +1061,8 @@ void C_Stack::setStackValue(Stack *stack, const std::vector<size_t> &indexArray,
 
 Stack* C_Stack::clone(const Stack *stack)
 {
+  STACK_MUTEX_GUARD
+
   if (stack == NULL) {
     return NULL;
   }
@@ -990,6 +1084,8 @@ Stack* C_Stack::clone(const Stack *stack)
 
 Mc_Stack* C_Stack::clone(const Mc_Stack *stack)
 {
+  STACK_MUTEX_GUARD
+
   return Copy_Mc_Stack(stack);
 }
 
@@ -1286,7 +1382,7 @@ int C_Stack::digitWidth(int n)
   stream << config.getPath(NeutubeConfig::DATA) << "/benchmark/digit" << n
          << ".tif";
          */
-  Stack *digitPatch = Read_Stack_U(stream.str().c_str());
+  Stack *digitPatch = readSc(stream.str().c_str());
 
   int width = digitPatch->width;
 
@@ -1323,7 +1419,7 @@ int C_Stack::drawDigit(Stack *canvas, int n, int dx, int dy, int dz)
   stream << "../data" << "/benchmark/digit" << n << ".tif";
 #endif
 
-  Stack *digitPatch = Read_Stack_U(stream.str().c_str());
+  Stack *digitPatch = readSc(stream.str().c_str());
   drawPatch(canvas, digitPatch, dx, dy, dz, 0);
 
   int width = digitPatch->width;
@@ -1739,6 +1835,9 @@ void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
   }
 
   Stack_Not(mask, mask);
+
+  STACK_MUTEX_GUARD
+
   Stack *dist = Stack_Bwdist_L_U16(mask, NULL, 0);
   uint16* distArray = C_Stack::guardedArray16(dist);
   //Generate new mask
@@ -1748,6 +1847,8 @@ void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
       stack->array[index] = 0;
     }
   }
+
+  Kill_Stack(dist);
 }
 
 #if 0

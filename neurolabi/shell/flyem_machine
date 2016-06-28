@@ -1,0 +1,8 @@
+#!/bin/bash
+
+os=`lsb_release -a | grep Description | sed 's/Description:\(.*\)\s(.*/\1/g' | awk '{$1=$1};1'`
+gc=`lspci -v | grep VGA | sed 's/.*:\s\(.*]\)\s(.*/\1/g'`
+machine=`hostname | sed 's/\([^\.]*\)\..*/\1/g'`
+
+echo "<tr><td>$machine</td><td>User</td><td>$os</td><td>$gc</td></tr>"
+ 

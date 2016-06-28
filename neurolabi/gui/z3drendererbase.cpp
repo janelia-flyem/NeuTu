@@ -805,6 +805,8 @@ void Z3DRendererBase::invalidateDisplayList()
     glDeleteLists(m_displayList, 1);
   }
   m_displayList = 0;
+
+  emit opacityChanged(getOpacity());
 }
 
 void Z3DRendererBase::invalidatePickingDisplayList()
@@ -915,3 +917,12 @@ void Z3DRendererBase::deactivateClipPlanesGLSL()
   }
 }
 
+void Z3DRendererBase::setMaterialAmbient(const glm::vec4 &color)
+{
+  m_materialAmbient.set(color);
+}
+
+void Z3DRendererBase::setLightAmbient(const glm::vec4 &color)
+{
+  m_lightAmbients[0]->set(color);
+}

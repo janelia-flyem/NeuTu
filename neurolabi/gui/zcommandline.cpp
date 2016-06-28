@@ -28,6 +28,7 @@
 #include "zneurontracer.h"
 #include "zneurontracerconfig.h"
 #include "dvid/zdvidurl.h"
+//#include "mylib/utilities.h"
 
 using namespace std;
 
@@ -470,14 +471,14 @@ int ZCommandLine::runImageSeparation()
   ZStack mask;
   mask.load(m_input[1]);
 
-  std::map<int, ZObject3dScan*> *objMap =
+  std::map<uint64_t, ZObject3dScan*> *objMap =
       ZObject3dScan::extractAllObject(
         mask.array8(), mask.width(), mask.height(),
         mask.depth(), 0, 1, NULL);
 
   std::cout << objMap->size() << " objects extracted." << std::endl;
 
-  for (std::map<int, ZObject3dScan*>::iterator iter = objMap->begin();
+  for (std::map<uint64_t, ZObject3dScan*>::iterator iter = objMap->begin();
        iter != objMap->end(); ++iter) {
     ZObject3dScan *obj = iter->second;
     if (iter->first > 0) {
@@ -585,31 +586,48 @@ int ZCommandLine::runSkeletonize()
                                       ZDvidData::ROLE_BODY_LABEL,
                                       target.getBodyLabelName())
                 << "\", " << "\"typename\": \"keyvalue\"}' "
-                << "http://emdata1.int.janelia.org:8500/api/repo/86e1/instance"
+                << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
                 << std::endl;
 
       return 1;
     }
 
-    std::set<uint64_t> bodyIdSet;
+    std::vector<uint64_t> bodyIdArray = m_bodyIdArray;
 
-    if (m_input.size() == 1) {
-      bodyIdSet = reader.readBodyId(100000);
-      if (bodyIdSet.empty()) {
-        bodyIdSet = reader.readAnnnotatedBodySet();
+    if (bodyIdArray.empty()) {
+      std::set<uint64_t> bodyIdSet;
+
+      if (m_input.size() == 1) {
+        bodyIdSet = reader.readBodyId(100000);
         if (bodyIdSet.empty()) {
-          std::cout << "Done: No annotated body found in the database."
-                    << std::endl;
-          return 1;
+          bodyIdSet = reader.readAnnnotatedBodySet();
+
+          if (bodyIdSet.empty()) {
+            std::cout << "Done: No annotated body found in the database."
+                      << std::endl;
+            return 1;
+          }
+        }
+      } else {
+        bodyIdSet = loadBodySet(m_input[1]);
+      }
+
+      for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
+           iter != bodyIdSet.end(); ++iter) {
+        int bodyId = *iter;
+        if (m_namedOnly) {
+          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+          if (!annotation.getName().empty()) {
+            bodyIdArray.push_back(bodyId);
+          }
+        } else {
+          bodyIdArray.push_back(bodyId);
         }
       }
-    } else {
-      bodyIdSet = loadBodySet(m_input[1]);
     }
 
-    std::vector<uint64_t> bodyIdArray;
-    bodyIdArray.insert(bodyIdArray.begin(), bodyIdSet.begin(), bodyIdSet.end());
-    std::cout << bodyIdArray.size() << " bodies loaded." << std::endl;
+    std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
+              << std::endl;
 
     ZRandomGenerator rnd;
     std::vector<int> rank = rnd.randperm(bodyIdArray.size());
@@ -619,21 +637,23 @@ int ZCommandLine::runSkeletonize()
 
     ZStackSkeletonizer skeletonizer;
 
-
-    if (m_configJson.hasKey("skeletonize")) {
-      skeletonizer.configure(
-            ZJsonObject(m_configJson["skeletonize"],
-            ZJsonValue::SET_INCREASE_REF_COUNT));
-    } else {
-      ZJsonObject config;
-      if (m_input.size() <= 2) {
-        config.load(NeutubeConfig::getInstance().getApplicatinDir() +
-                    "/json/skeletonize.json");
-      } else {
-        config.load(m_input[2]);
-      }
-      skeletonizer.configure(config);
+    ZJsonObject config;
+    if (m_input.size() <= 2) {
+      config = reader.readSkeletonConfig();
     }
+
+    if (config.isEmpty()) {
+      if (m_configJson.hasKey("skeletonize")) {
+        skeletonizer.configure(
+              ZJsonObject(m_configJson["skeletonize"],
+              ZJsonValue::SET_INCREASE_REF_COUNT));
+      } else {
+        if (m_input.size() >= 2) {
+          config.load(m_input[2]);
+        }
+      }
+    }
+    skeletonizer.configure(config);
 
     for (size_t i = 0; i < bodyIdArray.size(); ++i) {
       uint64_t bodyId = bodyIdArray[rank[i] - 1];
@@ -734,8 +754,11 @@ int ZCommandLine::run(int argc, char *argv[])
     "[<input:string> ...]",
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
-    "[--skeletonize] [--force]",
+    "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
     "[--trace] [--level <int>]","[--separate <string>]",
+    "[--position <int> <int> <int>]",
+    "[--size <int> <int> <int>]",
+    "[--dvid <string>]",
     "[--test]", "[--verbose]",
     0
   };
@@ -785,6 +808,11 @@ int ZCommandLine::run(int argc, char *argv[])
     m_forceUpdate = true;
   }
 
+  m_namedOnly = false;
+  if (Is_Arg_Matched(const_cast<char*>("--named_only"))) {
+    m_namedOnly = true;
+  }
+
 //  ZArgumentProcessor::processArguments(argc, argv, Spec);
 
   m_input.clear();
@@ -814,6 +842,23 @@ int ZCommandLine::run(int argc, char *argv[])
     m_isVerbose = true;
   }
 
+  if (Is_Arg_Matched(const_cast<char*>("--intv"))) {
+    for (int i = 1; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i);
+    }
+  }
+
+  if (Is_Arg_Matched(const_cast<char*>("--position"))) {
+    for (int i = 1; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--position"), i);
+    }
+  }
+
+  if (Is_Arg_Matched(const_cast<char*>("--bodyid"))) {
+    ZString bodyIdStr(Get_String_Arg(const_cast<char*>("--bodyid")));
+    m_bodyIdArray = bodyIdStr.toUint64Array();
+  }
+
   if (command == UNKNOWN_COMMAND) {/*
     if (ZArgumentProcessor::isArgMatched("--sobj_marker")) {
       command = OBJECT_MARKER;
@@ -833,12 +878,6 @@ int ZCommandLine::run(int argc, char *argv[])
         m_input[i] = ZArgumentProcessor::getStringArg("input", i);
       }
       m_output = ZArgumentProcessor::getStringArg("-o");
-
-      if (ZArgumentProcessor::isArgMatched("--intv")) {
-        for (int i = 1; i < 3; ++i) {
-          m_intv[i] = ZArgumentProcessor::getIntArg("--intv", i);
-        }
-      }
 
       m_fullOverlapScreen =
           ZArgumentProcessor::isArgMatched("--fulloverlap_screen");

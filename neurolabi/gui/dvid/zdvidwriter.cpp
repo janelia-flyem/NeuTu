@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QUrl>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemneuron.h"
@@ -19,7 +20,11 @@
 #include "flyem/zflyembookmark.h"
 #include "neutube.h"
 #include "dvid/libdvidheader.h"
-
+#include "flyem/zflyemtodoitem.h"
+#include "zarray.h"
+#include "flyem/zflyemmisc.h"
+#include "dvid/zdvidbufferreader.h"
+#include "zdvidutil.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -32,29 +37,20 @@ ZDvidWriter::ZDvidWriter(QObject *parent) :
 
 ZDvidWriter::~ZDvidWriter()
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-  delete m_service;
-#endif
 }
 
 void ZDvidWriter::init()
 {
   m_statusCode = 0;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  m_service = NULL;
-#endif
 }
 
 bool ZDvidWriter::startService()
 {
-#if _ENABLE_LIBDVIDCPP_
+#if defined(_ENABLE_LIBDVIDCPP_)
   try {
-    delete m_service;
-
-    m_service = new libdvid::DVIDNodeService(
-          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid());
+    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
   } catch (std::exception &e) {
-    m_service = NULL;
+    m_service.reset();
     std::cout << e.what() << std::endl;
     return false;
   }
@@ -67,9 +63,10 @@ bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
 //  m_dvidClient->reset();
-  m_dvidTarget.set(serverAddress.toStdString(), uuid.toStdString(), port);
+  ZDvidTarget target;
+  target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
-  return open(m_dvidTarget);
+  return open(target);
 }
 
 bool ZDvidWriter::open(const ZDvidTarget &target)
@@ -79,10 +76,25 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_dvidTarget = target;
+
+  std::string masterNode = ZDvidReader::ReadMasterNode(m_dvidTarget);
+  if (!masterNode.empty()) {
+    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  }
+
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
   return startService();;
+}
+
+bool ZDvidWriter::good() const
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  return m_service != NULL;
+#else
+  return m_dvidTarget.isValid();
+#endif
 }
 
 bool ZDvidWriter::open(const QString &sourceString)
@@ -95,6 +107,9 @@ bool ZDvidWriter::open(const QString &sourceString)
 void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
 {
   if (tree != NULL) {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    post(dvidUrl.getSkeletonUrl(bodyId), tree->toString(), false);
+#if 0
     QString tmpPath = QString("%1/%2.swc").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(bodyId);
@@ -115,6 +130,7 @@ void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
 
 
     runCommand(command);
+#endif
 
 //    QProcess::execute(command);
   }
@@ -123,6 +139,12 @@ void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
 {
   if (stack != NULL) {
+    size_t length;
+    char* buffer = C_Stack::toMrawBuffer(stack->data(), &length);
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    post(dvidUrl.getThumbnailUrl(bodyId), buffer, length, false);
+    free(buffer);
+#if 0
     QString tmpPath = QString("%1/%2.mraw").
         arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
         arg(bodyId);
@@ -135,7 +157,7 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
         arg(tmpPath);
 
     runCommand(command);
-
+#endif
     /*
     qDebug() << command;
 
@@ -149,7 +171,8 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, Stack *stack)
   if (stack != NULL) {
     Mc_Stack mstack;
     C_Stack::view(stack, &mstack);
-    ZStack stackObj(&mstack, NULL);
+    ZStack stackObj;
+    stackObj.setData(&mstack, NULL);
 
     writeThumbnail(bodyId, &stackObj);
   }
@@ -189,7 +212,7 @@ void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
   deleteKey(url.getBodyAnnotationName(), ZString::num2str(bodyId));
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId, const ZJsonObject &obj)
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj)
 {
   if (bodyId > 0 && !obj.isEmpty()) {
     writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
@@ -255,15 +278,25 @@ void ZDvidWriter::writeJson(
 
 void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
 {
+  /*
+  if (method == "POST") {
+    post(url);
+  } else if (method == "PUT") {
+    put(url);
+  } else {
+  */
   QString command = QString("curl -i -X %1 %2").arg(method.c_str()).
       arg(url.c_str());
 
   runCommand(command);
+//  }
 }
 
 void ZDvidWriter::writeJsonString(
     const std::string &url, const std::string &jsonString)
 {
+  post(url, jsonString, true);
+#if 0
   QString annotationString = jsonString.c_str();
 
   QString command;
@@ -299,6 +332,7 @@ void ZDvidWriter::writeJsonString(
   runCommand(command);
 
 //  qDebug() << getStandardOutput();
+#endif
 }
 
 
@@ -316,11 +350,12 @@ void ZDvidWriter::writeJson(const std::string &url, const ZJsonValue &value,
 
 
 void ZDvidWriter::mergeBody(const std::string &dataName,
-                            int targetId, const std::vector<int> &bodyId)
+                            uint64_t targetId,
+                            const std::vector<uint64_t> &bodyId)
 {
   ZJsonArray jsonArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   jsonArray.append(targetId);
-  for (std::vector<int>::const_iterator iter = bodyId.begin();
+  for (std::vector<uint64_t>::const_iterator iter = bodyId.begin();
        iter != bodyId.end(); ++iter) {
     jsonArray.append(*iter);
   }
@@ -343,6 +378,11 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
   obj.append(cuboid.getLastCorner().getY());
   obj.append(cuboid.getLastCorner().getZ());
 
+  std::string url = ZDvidUrl(m_dvidTarget).getBoundBoxUrl(z);
+  writeJson(url, obj);
+#if 0
+
+
   //ZString annotationString = obj.dumpString(0);
   //annotationString.replace(" ", "");
   //annotationString.replace("\"", "\"\"\"");
@@ -353,7 +393,7 @@ void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
       arg(ZDvidUrl(m_dvidTarget).getBoundBoxUrl(z).c_str());
 
   runCommand(command);
-
+#endif
   /*
   qDebug() << command;
 
@@ -380,32 +420,71 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
   return jsonString;
 }
 
-void ZDvidWriter::createData(const std::string &type, const std::string &name)
+void ZDvidWriter::syncAnnotation(const std::string &name)
 {
+  ZDvidUrl url(getDvidTarget());
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+                   getDvidTarget().getBodyLabelName());
+  post(url.getAnnotationSyncUrl(name), jsonObj);
+}
+
+void ZDvidWriter::createData(
+    const std::string &type, const std::string &name, bool versioned)
+{
+  if (type.empty() || name.empty()) {
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonObject obj;
   obj.setEntry("typename", type);
   obj.setEntry("dataname", name);
+  if (!versioned) {
+    obj.setEntry("versioned", "0");
+  }
 
+//  writeJson(dvidUrl.getInstanceUrl(), obj);
+
+
+  std::string url = dvidUrl.getInstanceUrl();
+
+#if 0
+  post(url, obj);
+
+  std::cout << obj.dumpString(2) << std::endl;
+#endif
+
+#if 1
   QString command = QString(
         "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
       arg(getJsonStringForCurl(obj).c_str()).
-      arg(dvidUrl.getInstanceUrl().c_str());
-
+      arg(url.c_str());
   /*
   qDebug() << command;
 
   QProcess::execute(command);
   */
 
+
   runCommand(command);
+#endif
+  if (type == "annotation") {
+    syncAnnotation(name);
+  }
 }
 
 void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
 {
+  if (dataName.empty() || key.empty()) {
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   std::string url = dvidUrl.getKeyUrl(dataName, key);
-  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
+  del(url);
+
+//  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
 
   /*
   qDebug() << command;
@@ -413,7 +492,7 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
   QProcess::execute(command);
   */
 
-  runCommand(command);
+//  runCommand(command);
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
@@ -439,7 +518,25 @@ void ZDvidWriter::deleteKey(const QString &dataName, const QString &minKey,
   }
 }
 
-void ZDvidWriter::writeBodyInfo(int bodyId)
+void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
+{
+  deleteKey(getDvidTarget().getSkeletonName(),
+            ZDvidUrl::GetSkeletonKey(bodyId));
+}
+
+void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
+{
+  ZDvidUrl url(getDvidTarget());
+  del(url.getBodyAnnotationUrl(bodyId));
+}
+
+void ZDvidWriter::invalidateBody(uint64_t bodyId)
+{
+  deleteBodyAnnotation(bodyId);
+  deleteSkeleton(bodyId);
+}
+
+void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
 {
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {
@@ -474,6 +571,11 @@ bool ZDvidWriter::lockNode(const std::string &message)
   messageArrayJson.append(message);
   messageJson.setEntry("log", messageArrayJson);
 
+  post(ZDvidUrl(m_dvidTarget).getLockUrl(), messageJson.dumpString(0), true);
+
+  return getStatusCode() == 200;
+
+#if 0
   QString command = QString(
         "curl -i -X POST -H \"Content-Type: application/json\" "
         "-d \"%1\" %2").arg(getJsonStringForCurl(messageJson).c_str()).
@@ -486,7 +588,7 @@ bool ZDvidWriter::lockNode(const std::string &message)
   */
 
   return runCommand(command);
-
+#endif
 //  return true;
 }
 
@@ -494,6 +596,17 @@ std::string ZDvidWriter::createBranch()
 {
   std::string uuid;
 
+  std::string response = post(ZDvidUrl(m_dvidTarget).getBranchUrl());
+
+  if (getStatusCode() == 200) {
+    ZJsonObject obj;
+    obj.decodeString(response.c_str());
+
+    if (obj.hasKey("child")) {
+      uuid = ZJsonParser::stringValue(obj["child"]);
+    }
+  }
+#if 0
   QProcess process;
 
   QString command = QString("curl -i -X POST %21").
@@ -515,6 +628,7 @@ std::string ZDvidWriter::createBranch()
       uuid = ZJsonParser::stringValue(obj["child"]);
     }
   }
+#endif
 
   return uuid;
 }
@@ -529,7 +643,12 @@ bool ZDvidWriter::runCommand(const QString &command, const QStringList &argList)
 
 bool ZDvidWriter::runCommand(const QString &command)
 {
-  LINFO() << command;
+  std::cout << command.toStdString() << std::endl;
+  if (command.length() <= 200) {
+    LINFO() << command;
+  } else {
+    LINFO() << command.left(200) << "...";
+  }
 //  qDebug() << command;
 
   QProcess process;
@@ -551,15 +670,171 @@ bool ZDvidWriter::runCommand(QProcess &process)
 }
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-std::string ZDvidWriter::post(
-    const std::string &url, const char *payload, int length)
+static libdvid::BinaryDataPtr makeRequest(
+    const std::string &url, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode)
 {
-#ifdef _DEBUG_
-  std::cout << "HTTP POST: " << url << std::endl;
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  }
+
+  QUrl qurl(url.c_str());
+  ZString address = qurl.host();
+  if (qurl.port() >= 0) {
+    address += ":";
+    address.appendNumber(qurl.port());
+  }
+  libdvid::DVIDConnection connection(
+        address, GET_FLYEM_CONFIG.getUserName(),
+        NeutubeConfig::GetSoftwareName());
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  std::string error_msg;
+
+//  qDebug() << "address: " << address;
+//  qDebug() << "path: " << qurl.path();
+
+//  /*
+//  statusCode = connection.make_request(
+//        "/repo/372c/info", libdvid::GET, libdvid::BinaryDataPtr(),
+//        results, error_msg, libdvid::DEFAULT);
+//*/
+
+  statusCode = connection.make_request(
+        "/.." + qurl.path().toStdString(), connMethod, payload, results,
+        error_msg, type);
+
+//#if 0
+//  statusCode = connection.make_request("/.." + qurl.path().toStdString(),
+//        /*"/../api/node/372c/skeletons/key/1_swc",*/ libdvid::GET, payload, results,
+//        error_msg, libdvid::BINARY);
+//#endif
+
+  return results;
+}
 #endif
+
+std::string ZDvidWriter::request(
+    const std::string &url, const std::string &method, const char *payload,
+    int length, bool isJson)
+{
+  LINFO() << "HTTP " + method + ": " + url;
+
+  m_statusCode = 0;
+  std::string response;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    libdvid::BinaryDataPtr libdvidPayload;
+    if (payload != NULL && length > 0) {
+      libdvidPayload =
+          libdvid::BinaryData::create_binary_data(payload, length);
+    }
+
+    libdvid::ConnectionMethod connMethod = libdvid::POST;
+    if (method == "POST") {
+      connMethod = libdvid::POST;
+    } else if (method == "PUT") {
+      connMethod = libdvid::PUT;
+    } else if (method == "DELETE") {
+      connMethod = libdvid::DELETE;
+    }
+
+    libdvid::BinaryDataPtr data;
+    bool requested = false;
+    if (m_service != NULL) {
+      std::string endPoint = ZDvidUrl::GetEndPoint(url);
+
+      if (!endPoint.empty()) {
+        //    std::cout << libdvidPayload->get_data().size() << std::endl;
+        requested = true;
+        data = m_service->custom_request(endPoint, libdvidPayload, connMethod);
+
+        m_statusCode = 200;
+      }
+    }
+
+    if (!requested) {
+      libdvid::ConnectionType type = libdvid::BINARY;
+      if (isJson) {
+        type = libdvid::JSON;
+      }
+      data = makeRequest(url, method, libdvidPayload, type, m_statusCode);
+    }
+    response = data->get_data();
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    LWARN() << "HTTP " + method + " exception (" << e.getStatus() << "): " << e.what();
+    m_statusCode = e.getStatus();
+  }
+#endif
+
+#ifdef _DEBUG_
+  std::cout << response << std::endl;
+#endif
+
+  return response;
+}
+
+
+std::string ZDvidWriter::del(const std::string &url)
+{
+  return request(url, "DELETE", NULL, 0, false);
+
+#if 0
+  std::cout << "HTTP DELETE: " << url << std::endl;
+  m_statusCode = 0;
+  std::string response;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    libdvid::BinaryDataPtr libdvidPayload;
+    libdvid::BinaryDataPtr data;
+
+    std::string endPoint = ZDvidUrl::GetEndPoint(url);
+    if (!endPoint.empty()) {
+      //    std::cout << libdvidPayload->get_data().size() << std::endl;
+      data = m_service->custom_request(
+            endPoint, libdvidPayload, libdvid::DELETE);
+      m_statusCode = 200;
+    } else {
+      data = makeRequest(url, "DELETE", libdvidPayload, m_statusCode);
+    }
+    response = data->get_data();
+
+//    m_buffer.append(data->get_data().c_str(), data->length());
+//    m_status = READ_OK;
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    LWARN() << "HTTP DELETE exception (" << e.getStatus() << "): " << e.what();
+    m_statusCode = e.getStatus();
+  }
+#endif
+  return response;
+#endif
+}
+
+std::string ZDvidWriter::post(
+    const std::string &url, const std::string &payload, bool isJson)
+{
+  return post(url, payload.c_str(), payload.length(), isJson);
+}
+
+std::string ZDvidWriter::post(
+    const std::string &url, const char *payload, int length, bool isJson)
+{
+  return request(url, "POST", payload, length, isJson);
+#if 0
   LINFO() << "HTTP POST: " << url;
   m_statusCode = 0;
   std::string response;
+#if defined(_ENABLE_LIBDVIDCPP_)
   try {
     std::string endPoint = ZDvidUrl::GetEndPoint(url);
     libdvid::BinaryDataPtr libdvidPayload;
@@ -567,7 +842,7 @@ std::string ZDvidWriter::post(
       libdvidPayload =
         libdvid::BinaryData::create_binary_data(payload, length);
     }
-    std::cout << libdvidPayload->get_data().size() << std::endl;
+//    std::cout << libdvidPayload->get_data().size() << std::endl;
     libdvid::BinaryDataPtr data = m_service->custom_request(
           endPoint, libdvidPayload, libdvid::POST);
 
@@ -575,24 +850,85 @@ std::string ZDvidWriter::post(
     m_statusCode = 200;
 //    m_buffer.append(data->get_data().c_str(), data->length());
 //    m_status = READ_OK;
-  } catch (std::exception &e) {
+  } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
+    LWARN() << "HTTP POST exception (" << e.getStatus() << "): " << e.what();
+    m_statusCode = e.getStatus();
   }
+#endif
 
   return response;
+#endif
 }
 
-std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload)
+std::string ZDvidWriter::put(
+    const std::string &url, const char *payload, int length, bool isJson)
 {
-  return post(url, payload.constData(), payload.length());
+  return request(url, "PUT", payload, length, isJson);
+#if 0
+  LINFO() << "HTTP PUT: " << url;
+  m_statusCode = 0;
+  std::string response;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    libdvid::BinaryDataPtr libdvidPayload;
+    if (payload != NULL && length > 0) {
+      libdvidPayload =
+          libdvid::BinaryData::create_binary_data(payload, length);
+    }
+
+    std::string endPoint = ZDvidUrl::GetEndPoint(url);
+    libdvid::BinaryDataPtr data;
+    if (!endPoint.empty()) {
+      //    std::cout << libdvidPayload->get_data().size() << std::endl;
+      data = m_service->custom_request(
+            endPoint, libdvidPayload, libdvid::PUT);
+
+      m_statusCode = 200;
+    } else {
+      data = makeRequest(url, "PUT", libdvidPayload, isJson, m_statusCode);
+    }
+    response = data->get_data();
+//    m_buffer.append(data->get_data().c_str(), data->length());
+//    m_status = READ_OK;
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    LWARN() << "HTTP PUT exception (" << e.getStatus() << "): " << e.what();
+    m_statusCode = e.getStatus();
+  }
+#endif
+
+  return response;
+#endif
+}
+
+std::string ZDvidWriter::post(const std::string &url)
+{
+  return post(url, NULL, 0, false);
+}
+
+std::string ZDvidWriter::put(const std::string &url)
+{
+  return put(url, NULL, 0, false);
+}
+
+std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload,
+                              bool isJson)
+{
+  return post(url, payload.constData(), payload.length(), isJson);
 }
 
 std::string ZDvidWriter::post(const std::string &url, const ZJsonObject &obj)
 {
   std::string payload = obj.dumpString(0);
-  return post(url, payload.c_str(), payload.size());
+  return post(url, payload.c_str(), payload.size(), true);
 }
-#endif
+
+std::string ZDvidWriter::post(const std::string &url, const ZJsonArray &obj)
+{
+  std::string payload = obj.dumpString(0);
+  return post(url, payload.c_str(), payload.size(), true);
+}
 
 uint64_t ZDvidWriter::writeSplit(
     const ZObject3dScan &obj, uint64_t oldLabel, uint64_t label,
@@ -610,32 +946,28 @@ uint64_t ZDvidWriter::writeSplit(
   m_statusCode = 0;
 #if defined(_ENABLE_LIBDVIDCPP_)
   UNUSED_PARAMETER(label);
-  try {
-    std::string url;
-    if (newBodyId == 0) {
-      url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel);
-    } else {
-      url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel, newBodyId);
-    }
+  std::string url;
+  if (newBodyId == 0) {
+    url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel);
+  } else {
+    url = ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel, newBodyId);
+  }
 
-    QByteArray payload = obj.toDvidPayload();
-    ZString response = post(url, payload);
+  QByteArray payload = obj.toDvidPayload();
+  ZString response = post(url, payload, false);
 
-    if (!response.empty()) {
+  if (!response.empty()) {
 #ifdef _DEBUG_
-      std::cout << response << std::endl;
+    std::cout << response << std::endl;
 #endif
-      ZJsonObject obj;
-      obj.decodeString(response.c_str());
-      if (obj.hasKey("label")) {
-        newBodyId = ZJsonParser::integerValue(obj["label"]);
-        m_statusCode = 200;
-      }
+    ZJsonObject obj;
+    obj.decodeString(response.c_str());
+    if (obj.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(obj["label"]);
+      m_statusCode = 200;
+    } else {
+      newBodyId = 0;
     }
-//    m_buffer.append(data->get_data().c_str(), data->length());
-//    m_status = READ_OK;
-  } catch (std::exception &e) {
-    std::cout << e.what() << std::endl;
   }
 #else
   //POST <api URL>/node/<UUID>/<data name>/split/<label>
@@ -732,6 +1064,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
+  UNUSED_PARAMETER(&bf);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -747,6 +1080,11 @@ uint64_t ZDvidWriter::writePartition(
   timer.start();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
+#ifdef _DEBUG_
+  bm.exportDvidObject(GET_TMP_DIR + "/test_bm.dvid");
+  bs.exportDvidObject(GET_TMP_DIR + "/test_bs.dvid");
+#endif
+
   if (bs.getVoxelNumber() >= 100000) {
     ZDvidInfo dvidInfo;
     ZDvidReader reader;
@@ -769,8 +1107,25 @@ uint64_t ZDvidWriter::writePartition(
     if (!Bsc.isEmpty()) {
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
 
+#ifdef _DEBUG_
+      Bsc.exportDvidObject(GET_TMP_DIR + "/test.dvid");
+#endif
+
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
+//      newBodyId = 0;//debugging
       if (newBodyId == 0) {
+        QString tmpPath = QString("%1/%2_Bsc.dvid").
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(oldLabel);
+        LINFO() << "Saving" << tmpPath << "for debugging.";
+        Bsc.exportDvidObject(tmpPath.toStdString());
+
+        tmpPath = QString("%1/%2_bm.dvid").
+            arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
+            arg(oldLabel);
+        LINFO() << "Saving" << tmpPath << "for debugging.";
+        bm.exportDvidObject(tmpPath.toStdString());
+
         LERROR() << "Failed to write coarse split.";
         return 0;
       }
@@ -806,7 +1161,7 @@ uint64_t ZDvidWriter::writePartition(
 
       //Upload remaining part
       if (!bsr.isEmpty()) {
-        writeSplit(bsr, oldLabel, 0, newBodyId);
+        newBodyId = writeSplit(bsr, oldLabel, 0, newBodyId);
         std::cout << "Fine time: " << timer.elapsed() << std::endl;
       }
     } else {
@@ -816,6 +1171,7 @@ uint64_t ZDvidWriter::writePartition(
     newBodyId = writeSplit(bs, oldLabel, 0);
   }
 #else
+  UNUSED_PARAMETER(&bm);
   newBodyId = writeSplit(bs, oldLabel, 0);
 #endif
 
@@ -837,7 +1193,7 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
     }
 
     QByteArray payload = obj.toDvidPayload();
-    ZString response = post(url, payload);
+    ZString response = post(url, payload, false);
 
     if (!response.empty()) {
 #ifdef _DEBUG_
@@ -888,11 +1244,13 @@ void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
   std::string url = ZDvidUrl(m_dvidTarget).getMergeOperationUrl(
         NeuTube::GetCurrentUserName());
 
-  if (!bodyMap.isEmpty()) {
-    ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
-    writeJsonString(url, array.dumpString(0));
-  } else {
-    writeJsonString(url, "[]");
+  if (!url.empty()) {
+    if (!bodyMap.isEmpty()) {
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(bodyMap);
+      writeJsonString(url, array.dumpString(0));
+    } else {
+      writeJsonString(url, "[]");
+    }
   }
 }
 
@@ -939,18 +1297,336 @@ void ZDvidWriter::parseStandardOutput()
 
 void ZDvidWriter::writeBookmark(const ZFlyEmBookmark &bookmark)
 {
-  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+  writePointAnnotation(
+        m_dvidTarget.getBookmarkName(), bookmark.toDvidAnnotationJson());
+//  writeBookmarkKey(bookmark);
+
+  /*
+  writeJsonString(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
                   bookmark.getDvidKey().toStdString(),
                   bookmark.toJsonObject().dumpString(0));
+                  */
 }
 
+void ZDvidWriter::writeBookmarkKey(const ZFlyEmBookmark &bookmark)
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZJsonObject json;
+  if (bookmark.isChecked()) {
+    json.setEntry("checked", true);
+  }
+
+  writeJson(dvidUrl.getBookmarkKeyUrl(bookmark.getCenter().toIntPoint()),
+            json, "{}");
+}
+
+void ZDvidWriter::deleteBookmarkKey(const ZFlyEmBookmark &bookmark)
+{
+  ZIntPoint center = bookmark.getCenter().toIntPoint();
+  std::stringstream stream;
+  stream << center.getX() << "_" << center.getY() << "_" << center.getZ();
+
+  deleteKey(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY), stream.str());
+}
+
+
+void ZDvidWriter::writeBookmark(const ZJsonArray &bookmarkJson)
+{
+  writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
+}
+
+void ZDvidWriter::writeBookmark(const ZJsonObject &bookmarkJson)
+{
+  writePointAnnotation(m_dvidTarget.getBookmarkName(), bookmarkJson);
+}
+
+void ZDvidWriter::writeBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  if (!bookmarkArray.empty()) {
+    ZJsonArray jsonArray = ZJsonFactory::MakeJsonArray(bookmarkArray);
+    writePointAnnotation(m_dvidTarget.getBookmarkName(), jsonArray);
+    /*
+    for (std::vector<ZFlyEmBookmark*>::const_iterator
+         iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
+      writeBookmarkKey(*(*iter));
+    }
+    */
+  }
+}
+
+#if 0
 void ZDvidWriter::writeCustomBookmark(const ZJsonValue &bookmarkJson)
 {
-  writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK),
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_BOOKMARK_KEY),
             NeuTube::GetCurrentUserName(), bookmarkJson);
 }
 
 void ZDvidWriter::deleteAllCustomBookmark()
 {
   writeCustomBookmark(ZJsonArray());
+}
+#endif
+
+void ZDvidWriter::deletePointAnnotation(
+    const std::string &dataName, int x, int y, int z)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getAnnotationUrl(dataName, x, y, z));
+#else
+  UNUSED_PARAMETER(&dataName);
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
+}
+
+void ZDvidWriter::deletePointAnnotation(
+    const std::string &dataName, const ZIntPoint &pt)
+{
+  deletePointAnnotation(dataName, pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZDvidWriter::deleteBookmark(int x, int y, int z)
+{
+  deletePointAnnotation(m_dvidTarget.getBookmarkName(), x, y, z);
+}
+
+void ZDvidWriter::deleteBookmark(const ZIntPoint &pt)
+{
+  deleteBookmark(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZDvidWriter::deleteBookmark(
+    const std::vector<ZFlyEmBookmark *> &bookmarkArray)
+{
+  for (std::vector<ZFlyEmBookmark *>::const_iterator
+       iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    deleteBookmark(bookmark->getCenter().toIntPoint());
+  }
+}
+
+void ZDvidWriter::deleteToDoItem(int x, int y, int z)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getTodoListDeleteUrl(x, y, z));
+#else
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
+}
+
+void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray itemJson;
+  itemJson.append(item.toJsonObject());
+
+  writeJson(url.getTodlListElementsUrl(), itemJson);
+}
+
+void ZDvidWriter::writeLabel(const ZArray &label)
+{
+  if (!label.isEmpty()) {
+    ZDvidUrl url(getDvidTarget());
+    post(url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
+                            label.getStartCoordinate(0),
+                            label.getStartCoordinate(1),
+                            label.getStartCoordinate(2)) + "?mutate=true",
+         label.getDataPointer<char>(), label.getByteNumber(), false);
+  }
+}
+
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntCuboid alignedBox;
+    alignedBox.setFirstCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+    alignedBox.setLastCorner(
+          dvidInfo.getBlockBox(
+            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+    ZArray *label = reader.readLabels64(alignedBox);
+
+    //Reset label
+    uint64_t tmpLabel = label->getMax<uint64_t>() + 1;
+    label->replaceValue(bodyId, tmpLabel);
+
+    writeLabel(*label);
+
+    label->replaceValue(tmpLabel, bodyId);
+    writeLabel(*label);
+
+    delete label;
+  }
+}
+
+void ZDvidWriter::refreshLabel(
+    const ZIntCuboid &box, const std::set<uint64_t> &bodySet)
+{
+  if (!bodySet.empty()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      ZIntCuboid alignedBox;
+      alignedBox.setFirstCorner(
+            dvidInfo.getBlockBox(
+              dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+      alignedBox.setLastCorner(
+            dvidInfo.getBlockBox(
+              dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+      ZArray *label = reader.readLabels64(alignedBox);
+
+      if (reader.getStatusCode() == 200) {
+        //Reset label
+        uint64_t labelMax = label->getMax<uint64_t>();
+        uint64_t tmpLabel = labelMax + 1;
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          label->replaceValue(bodyId, tmpLabel++);
+        }
+
+        writeLabel(*label);
+
+        tmpLabel = labelMax + 1;
+        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+             iter != bodySet.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          label->replaceValue(tmpLabel++, bodyId);
+        }
+
+        writeLabel(*label);
+      }
+
+      delete label;
+    }
+  }
+}
+
+
+void ZDvidWriter::deleteSynapse(int x, int y, int z)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  del(url.getSynapseUrl(x, y, z));
+#else
+  UNUSED_PARAMETER(x);
+  UNUSED_PARAMETER(y);
+  UNUSED_PARAMETER(z);
+#endif
+}
+
+void ZDvidWriter::writePointAnnotation(
+    const std::string &dataName, const ZJsonObject &annotationJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray json;
+  json.append(annotationJson);
+
+  writePointAnnotation(dataName, json);
+}
+
+void ZDvidWriter::writePointAnnotation(
+    const std::string &dataName, const ZJsonArray &annotationJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+
+  writeJson(url.getAnnotationElementsUrl(dataName), annotationJson);
+}
+
+void ZDvidWriter::writeSynapse(const ZDvidSynapse &synapse)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray synapseJson;
+  synapseJson.append(synapse.toJsonObject());
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
+  writeJson(url.getSynapseElementsUrl(), synapseJson);
+}
+
+void ZDvidWriter::writeSynapse(const ZJsonObject &synapseJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+  ZJsonArray synapseArrayJson;
+  synapseArrayJson.append(synapseJson);
+
+  writeJson(url.getSynapseElementsUrl(), synapseArrayJson);
+}
+
+void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
+{
+  ZDvidUrl url(m_dvidTarget);
+
+#ifdef _DEBUG_
+  std::cout << synapseJson.dumpString(2) << std::endl;
+#endif
+  writeJson(url.getSynapseElementsUrl(), synapseJson);
+}
+
+void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvidUrl url(m_dvidTarget);
+  post(url.getSynapseMoveUrl(from, to));
+#else
+  UNUSED_PARAMETER(&from);
+  UNUSED_PARAMETER(&to);
+#endif
+}
+
+void ZDvidWriter::addSynapseProperty(
+    const ZIntPoint &synapse, const std::string &key, const std::string &value)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZJsonObject synapseJson = reader.readSynapseJson(synapse);
+    if (!synapseJson.isEmpty()) {
+      ZDvidSynapse::AddProperty(synapseJson, key, value);
+      writeSynapse(synapseJson);
+    }
+  }
+}
+
+void ZDvidWriter::writeMasterNode(const std::string &uuid)
+{
+//  std::string rootNode =
+//      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
+//  if (!rootNode.empty()) {
+    ZDvidBufferReader reader;
+    ZDvidUrl dvidUrl(getDvidTarget());
+    dvidUrl.setUuid(uuid);
+    std::string url = dvidUrl.getApiUrl() + "/node/" + uuid +
+        "/branches/key/master";
+    LINFO() << "Master url: " << url;
+    reader.read(url.c_str());
+    ZJsonArray branchJson;
+    branchJson.append(uuid);
+
+    ZJsonArray oldBranchJson;
+    oldBranchJson.decodeString(reader.getBuffer().data());
+    for (size_t i = 0; i < oldBranchJson.size(); ++i) {
+      if (ZJsonParser::stringValue(oldBranchJson.at(i)) != uuid) {
+        branchJson.append(oldBranchJson.at(i));
+      }
+    }
+
+    ZDvid::MakeRequest(
+          url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
+          m_statusCode);
+
+//    ZFlyEmMisc::MakeRequest(url,
+//    post(url, branchJson);
+//  }
 }

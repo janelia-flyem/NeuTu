@@ -338,6 +338,7 @@
       <addaction name="actionOperateDvid"/>
       <addaction name="actionGenerate_Local_Grayscale"/>
       <addaction name="actionUpload_Annotations"/>
+      <addaction name="actionRemove_Obsolete_Annotations"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -382,6 +383,24 @@
       <addaction name="actionHackathonSimmat"/>
       <addaction name="actionHackathonEvaluate"/>
      </widget>
+     <widget class="QMenu" name="menuSeven_Column">
+      <property name="title">
+       <string>Seven Column</string>
+      </property>
+      <addaction name="actionNeuroMorpho"/>
+     </widget>
+     <widget class="QMenu" name="menuMB_Paper">
+      <property name="title">
+       <string>MB Paper</string>
+      </property>
+      <addaction name="actionGenerate_KC_c_Actor"/>
+      <addaction name="actionGenerate_KC_s_Actor"/>
+      <addaction name="actionGenerate_KC_p_Actor"/>
+      <addaction name="actionGenerate_All_KC_Actor"/>
+      <addaction name="actionGenerate_PAM_Actor"/>
+      <addaction name="actionGenerate_MB_Actor"/>
+      <addaction name="actionGenerate_MB_Conn_Actor"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -397,6 +416,8 @@
      <addaction name="separator"/>
      <addaction name="menuHackathon"/>
      <addaction name="menuTEM_Paper"/>
+     <addaction name="menuMB_Paper"/>
+     <addaction name="menuSeven_Column"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -1427,6 +1448,51 @@
   <action name="actionImport_Sparsevol_Json">
    <property name="text">
     <string>Sparsevol Json</string>
+   </property>
+  </action>
+  <action name="actionNeuroMorpho">
+   <property name="text">
+    <string>NeuroMorpho</string>
+   </property>
+  </action>
+  <action name="actionRemove_Obsolete_Annotations">
+   <property name="text">
+    <string>Remove Obsolete Annotations</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_c_Actor">
+   <property name="text">
+    <string>Generate KC-c Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_s_Actor">
+   <property name="text">
+    <string>Generate KC-s Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_p_Actor">
+   <property name="text">
+    <string>Generate KC-p Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_All_KC_Actor">
+   <property name="text">
+    <string>Generate All KC Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_PAM_Actor">
+   <property name="text">
+    <string>Generate PAM Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_Actor">
+   <property name="text">
+    <string>Generate MB Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_Conn_Actor">
+   <property name="text">
+    <string>Generate MB-Conn Actor</string>
    </property>
   </action>
  </widget>

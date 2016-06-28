@@ -342,15 +342,43 @@ void Z3DTrackballInteractionHandler::shift(
     glm::ivec2 mouseStart, glm::ivec2 mouseEnd, int w, int h)
 {
   glm::ivec4 viewport(0, 0, w, h);
-  float centerDepth = m_camera->worldToScreen(m_camera->getCenter(), viewport).z;
-  glm::vec3 startInWorld = m_camera->screenToWorld(glm::vec3(glm::vec2(mouseStart), centerDepth), viewport);
-  glm::vec3 endInWorld = m_camera->screenToWorld(glm::vec3(glm::vec2(mouseEnd), centerDepth), viewport);
+//  float centerDepth = m_camera->worldToScreen(m_camera->getCenter(), viewport).z;
+//  float centerDepth = 0.99;
+  float centerDepth = 1.0 - m_camera->getNearDist() /
+      (m_camera->getFarDist() - m_camera->getNearDist());
+  glm::vec3 startInWorld = m_camera->screenToWorld(
+        glm::vec3(glm::vec2(mouseStart), centerDepth), viewport);
+#ifdef _DEBUG_2
+  std::cout << "Center depth: " << centerDepth << std::endl;
+  std::cout << "Mouse start:" << mouseStart << std::endl;
+  std::cout << "Start vec: " << startInWorld << std::endl;
+#endif
+  glm::vec3 endInWorld = m_camera->screenToWorld(
+        glm::vec3(glm::vec2(mouseEnd), centerDepth), viewport);
+#ifdef _DEBUG_2
+  std::cout << "Mouse end:" << mouseEnd << std::endl;
+  std::cout << "End vec: " << endInWorld << std::endl;
+#endif
   glm::vec3 vec = endInWorld - startInWorld;
-  if (m_moveObjects) {
-    emit objectsMoved(vec.x, vec.y, vec.z);
-  } else {
-    // camera move in opposite direction
-    m_camera->setCamera(m_camera->getEye() - vec, m_camera->getCenter() - vec);
+
+  if (glm::length(vec) > 0) {
+#if 0
+    double minMove = 0.2;
+    if (glm::length(vec) < minMove) {
+      vec *= minMove / glm::length(vec);
+    }
+#endif
+
+    if (m_moveObjects) {
+      emit objectsMoved(vec.x, vec.y, vec.z);
+    } else {
+      // camera move in opposite direction
+#ifdef _DEBUG_2
+      std::cout << "Moving vec: " << vec
+                << std::endl;
+#endif
+      m_camera->setCamera(m_camera->getEye() - vec, m_camera->getCenter() - vec);
+    }
   }
 }
 

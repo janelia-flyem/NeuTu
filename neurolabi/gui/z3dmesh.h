@@ -19,10 +19,10 @@ public:
   void setTriangleType(GLenum type);
 
   virtual const std::string& className() const;
-  virtual void display(ZPainter &, int, EDisplayStyle) const {}
+  virtual void display(ZPainter &, int, EDisplayStyle, NeuTube::EAxis) const {}
 
   std::vector<double> getBoundBox() const;
-  using ZStackObject::getBoundBox; // warning: 'Z3DTriangleList::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+//  using ZStackObject::getBoundBox; // warning: 'Z3DTriangleList::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
   void setVertices(const std::vector<glm::vec3> &vertices) { m_vertices = vertices; }
   void setVertices(const std::vector<glm::dvec3> &vertices);

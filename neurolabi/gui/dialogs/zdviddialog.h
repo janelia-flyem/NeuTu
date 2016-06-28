@@ -9,6 +9,8 @@ namespace Ui {
 class ZDvidDialog;
 }
 
+class StringListDialog;
+
 class ZDvidDialog : public QDialog
 {
   Q_OBJECT
@@ -23,15 +25,25 @@ public:
   QString getAddress() const;
   QString getUuid() const;
 
-  const ZDvidTarget& getDvidTarget();
+  ZDvidTarget& getDvidTarget();
+
+  void addDvidTarget(ZDvidTarget &target);
+
+  bool hasNameConflict(const std::string &name) const;
+  void saveCurrentTarget(bool cloning);
 
 public slots:
   void setServer(int index);
+  void saveCurrentTarget();
+  void saveCurrentTargetAs();
+  void deleteCurrentTarget();
+  void editRoiList();
 
 private:
   Ui::ZDvidDialog *ui;
-  std::vector<ZDvidTarget> m_dvidRepo;
+  QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
+  StringListDialog *m_roiDlg;
   const static char *m_dvidRepoKey;
 };
 

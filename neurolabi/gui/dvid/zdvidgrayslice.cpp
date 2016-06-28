@@ -25,8 +25,12 @@ void ZDvidGraySlice::clear()
 }
 
 void ZDvidGraySlice::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    NeuTube::EAxis sliceAxis) const
 {
+  if (sliceAxis != NeuTube::Z_AXIS) {
+    return;
+  }
   //if (!m_image.isNull()) {
     int z = painter.getZOffset() + slice;
     //m_latestZ = z;

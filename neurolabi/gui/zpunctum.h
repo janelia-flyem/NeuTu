@@ -26,8 +26,14 @@ class ZPunctum : public ZStackBall
 public:
   ZPunctum();
   ZPunctum(double x, double y, double z, double r);
+  ZPunctum(const ZPoint &center, double r);
+  ZPunctum(const ZIntPoint &center, double r);
 //  ZPunctum(const ZIntPoint &center, double r);
   virtual ~ZPunctum();
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_PUNCTUM;
+  }
 
   virtual const std::string& className() const;
 
@@ -116,6 +122,7 @@ public:
   //ZJsonObject toJsonObject() const;
 
 private:
+  void init(double x, double y, double z, double r);
   QColor highlightingColor(const QColor &color) const;
   QColor selectingColor(const QColor &color) const;
 

@@ -19,6 +19,7 @@ ZDocPlayer::~ZDocPlayer()
 ZDocPlayer::ZDocPlayer(ZStackObject *data)
 {
   m_data = data;
+  m_enableUpdate = true;
 }
 
 bool ZDocPlayer::hasData(ZStackObject *data) const
@@ -55,24 +56,59 @@ ZDocPlayerList::~ZDocPlayerList()
 #ifdef _DEBUG_2
   print();
 #endif
-
-  //foreach won't work here
-  for (const_iterator iter = begin(); iter != end(); ++iter) {
-    ZDocPlayer *player = *iter;
-    delete player;
-  }
   clear();
 }
 
-QList<ZDocPlayer*> ZDocPlayerList::takePlayer(ZStackObject *data)
+void ZDocPlayerList::clearUnsync()
+{
+  //foreach won't work here
+  for (QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    delete player;
+  }
+
+  m_playerList.clear();
+}
+
+void ZDocPlayerList::clear()
+{
+  QMutexLocker locker(&m_mutex);
+
+  clearUnsync();
+}
+
+void ZDocPlayerList::moveTo(ZDocPlayerList &playerList)
+{
+  QMutexLocker locker(&m_mutex);
+  QMutexLocker locker2(playerList.getMutex());
+
+  playerList.getPlayerList().append(getPlayerList());
+
+  getPlayerList().clear();
+}
+
+void ZDocPlayerList::addUnsync(ZDocPlayer *data)
+{
+  m_playerList.append(data);
+}
+
+void ZDocPlayerList::add(ZDocPlayer *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  addUnsync(data);
+}
+
+QList<ZDocPlayer*> ZDocPlayerList::takePlayerUnsync(ZStackObject *data)
 {
   QList<ZDocPlayer*> playerList;
-  ZDocPlayerList::iterator iter = begin();
-  while (iter != end()) {
+  QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
+  while (iter != m_playerList.end()) {
     ZDocPlayer *player = *iter;
     if (player->hasData(data)) {
       //role |= player->getRole();
-      iter = erase(iter);
+      iter = m_playerList.erase(iter);
       playerList.append(player);
     } else {
       ++iter;
@@ -82,18 +118,25 @@ QList<ZDocPlayer*> ZDocPlayerList::takePlayer(ZStackObject *data)
   return playerList;
 }
 
-ZStackObjectRole::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
+QList<ZDocPlayer*> ZDocPlayerList::takePlayer(ZStackObject *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return takePlayerUnsync(data);
+}
+
+ZStackObjectRole::TRole ZDocPlayerList::removePlayerUnsync(ZStackObject *data)
 {
   ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
   if (data != NULL) {
     role = data->getRole().getRole();
 
-    ZDocPlayerList::iterator iter = begin();
-    while (iter != end()) {
+    QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
+    while (iter != m_playerList.end()) {
       ZDocPlayer *player = *iter;
       if (player->hasData(data)) {
 //        role |= player->getRole();
-        iter = erase(iter);
+        iter = m_playerList.erase(iter);
         delete player;
       } else {
         ++iter;
@@ -104,16 +147,23 @@ ZStackObjectRole::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
   return role;
 }
 
-ZStackObjectRole::TRole ZDocPlayerList::removePlayer(
+ZStackObjectRole::TRole ZDocPlayerList::removePlayer(ZStackObject *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return removePlayerUnsync(data);
+}
+
+ZStackObjectRole::TRole ZDocPlayerList::removePlayerUnsync(
     ZStackObjectRole::TRole role)
 {
   ZStackObjectRole roleObj;
-  ZDocPlayerList::iterator iter = begin();
-  while (iter != end()) {
+  QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
+  while (iter != m_playerList.end()) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
       roleObj.addRole(player->getRole());
-      iter = erase(iter);
+      iter = m_playerList.erase(iter);
       delete player;
     } else {
       ++iter;
@@ -123,26 +173,68 @@ ZStackObjectRole::TRole ZDocPlayerList::removePlayer(
   return roleObj.getRole();
 }
 
-ZStackObjectRole::TRole ZDocPlayerList::removeAll()
+ZStackObjectRole::TRole ZDocPlayerList::removePlayer(
+    ZStackObjectRole::TRole role)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return removePlayerUnsync(role);
+}
+
+ZStackObjectRole::TRole ZDocPlayerList::removeAllUnsync()
 {
   ZStackObjectRole roleObj;
-  ZDocPlayerList::iterator iter = begin();
-  while (iter != end()) {
+  QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
+  while (iter != m_playerList.end()) {
     ZDocPlayer *player = *iter;
     roleObj.addRole(player->getRole());
     delete player;
     ++iter;
   }
-  clear();
+
+  m_playerList.clear();
 
   return roleObj.getRole();
 }
 
-QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role)
+
+ZStackObjectRole::TRole ZDocPlayerList::removeAll()
+{
+  QMutexLocker locker(&m_mutex);
+
+  return removeAllUnsync();
+}
+
+QList<ZDocPlayer*> ZDocPlayerList::getPlayerListUnsync(
+    ZStackObjectRole::TRole role)
 {
   QList<ZDocPlayer*> playerList;
 
-  for(ZDocPlayerList::iterator iter = begin(); iter != end(); ++iter) {
+  for(QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->hasRole(role)) {
+      playerList.append(player);
+    }
+  }
+
+  return playerList;
+}
+
+QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return getPlayerListUnsync(role);
+}
+
+QList<const ZDocPlayer*>
+ZDocPlayerList::getPlayerListUnsync(ZStackObjectRole::TRole role) const
+{
+  QList<const ZDocPlayer*> playerList;
+
+  for(QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
       playerList.append(player);
@@ -155,21 +247,15 @@ QList<ZDocPlayer*> ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role)
 QList<const ZDocPlayer*>
 ZDocPlayerList::getPlayerList(ZStackObjectRole::TRole role) const
 {
-  QList<const ZDocPlayer*> playerList;
+  QMutexLocker locker(&m_mutex);
 
-  for(ZDocPlayerList::const_iterator iter = begin(); iter != end(); ++iter) {
-    ZDocPlayer *player = *iter;
-    if (player->hasRole(role)) {
-      playerList.append(player);
-    }
-  }
-
-  return playerList;
+  return getPlayerListUnsync(role);
 }
 
-bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
+bool ZDocPlayerList::hasPlayerUnsync(ZStackObjectRole::TRole role) const
 {
-  for(ZDocPlayerList::const_iterator iter = begin(); iter != end(); ++iter) {
+  for(QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
       return true;
@@ -179,13 +265,28 @@ bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
   return false;
 }
 
-void ZDocPlayerList::print() const
+bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
+{
+  QMutexLocker locker(&m_mutex);
+
+  return hasPlayerUnsync(role);
+}
+
+void ZDocPlayerList::printUnsync() const
 {
   std::cout << size() << " players." << std::endl;
-  for (const_iterator iter = begin(); iter != end(); ++iter) {
+  for (QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+       iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     std::cout << player->getData()->className() << std::endl;
   }
+}
+
+void ZDocPlayerList::print() const
+{
+  QMutexLocker locker(&m_mutex);
+
+  printUnsync();
 }
 
 
@@ -494,12 +595,17 @@ ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidLabelSlice*>(m_data);
 }
 
-void ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
-  ZDvidLabelSlice *obj = getCompleteData();
-  if (obj != NULL) {
-    obj->update(viewParam);
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidLabelSlice *obj = getCompleteData();
+    if (obj != NULL) {
+      updated = obj->update(viewParam);
+    }
   }
+
+  return updated;
 }
 
 /////////////////////////////
@@ -514,12 +620,17 @@ ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidSparsevolSlice*>(m_data);
 }
 
-void ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
-  ZDvidSparsevolSlice *obj = getCompleteData();
-  if (obj != NULL) {
-    obj->update(viewParam.getZ());
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidSparsevolSlice *obj = getCompleteData();
+    if (obj != NULL) {
+      updated = obj->update(viewParam.getZ());
+    }
   }
+
+  return updated;
 }
 
 ////////////////////////////

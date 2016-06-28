@@ -17,6 +17,7 @@ class ZStackBall : public ZStackObject {
 public:
   ZStackBall();
   ZStackBall(double x, double y, double z, double r);
+  ZStackBall(const ZIntPoint &center, double r);
   virtual ~ZStackBall() {}
 
   void set(double x, double y, double z, double r);
@@ -45,52 +46,25 @@ public:
 
   virtual const std::string& className() const;
 
-#if 0
-  typedef uint32_t TVisualEffect;
-
-  const static TVisualEffect VE_NONE;
-  const static TVisualEffect VE_DASH_PATTERN;
-  const static TVisualEffect VE_BOUND_BOX;
-  const static TVisualEffect VE_NO_CIRCLE;
-  const static TVisualEffect VE_NO_FILL;
-  const static TVisualEffect VE_GRADIENT_FILL;
-  const static TVisualEffect VE_OUT_FOCUS_DIM;
-  const static TVisualEffect VE_DOT_CENTER;
-  const static TVisualEffect VE_RECTANGLE_SHAPE;
-#endif
-
-
 public:
   virtual void display(ZPainter &painter, int slice,
-                       EDisplayStyle option) const;
+                       EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
   void displayHelper(
-      ZPainter *painter, int slice, EDisplayStyle style) const;
+      ZPainter *painter, int slice, EDisplayStyle style,
+      NeuTube::EAxis sliceAxis) const;
 
-  bool isSliceVisible(int z) const;
+  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
 
   /*!
    * \brief Test if a circle is cut by a plane.
    */
-  static bool isCuttingPlane(double z, double r, double n, double zScale = 1.0);
-  bool isCuttingPlane(double n, double zScale = 1.0) const;
+  static bool isCuttingPlane(double z, double r, double n, double zScale);
+  bool isCuttingPlane(double n, double zScale, NeuTube::EAxis sliceAxis) const;
 
-#if 0
-  inline void setVisualEffect(NeuTube::Display::TVisualEffect effect) {
-    m_visualEffect = effect;
-  }
-
-  inline void addVisualEffect(TVisualEffect effect) {
-    m_visualEffect |= effect;
-  }
-
-  inline bool hasVisualEffect(TVisualEffect effect) const {
-    return effect & m_visualEffect;
-  }
-#endif
 
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &offset);
@@ -98,7 +72,7 @@ public:
   void scale(double sx, double sy, double sz);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
 
 private:
   double getAdjustedRadius(double r) const;

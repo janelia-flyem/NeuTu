@@ -4,6 +4,11 @@
 #include "tz_stdint.h"
 
 namespace NeuTube {
+
+enum ESyncOption {
+  SYNC, NO_SYNC
+};
+
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
@@ -13,10 +18,18 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_COARSE_BODY,
-  FLYEM_QUICK_BODY, FLYEM_QUICK_BODY_COARSE, FLYEM_SKELETON,
+  FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
-  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO
+};
+}
+
+namespace View {
+enum EExploreAction {
+  EXPLORE_NONE, EXPLORE_MOVE, EXPLORE_ZOOM, EXPLORE_SLICE,
+  EXPLORE_ZOOM_DONE, EXPLORE_MOVE_DONE,
+  EXPLORE_UNKNOWN
 };
 }
 
@@ -30,6 +43,14 @@ enum ESizeHintOption {
 
 enum EAxis {
   X_AXIS, Y_AXIS, Z_AXIS
+};
+
+enum EPLANE {
+  PLANE_XY, PLANE_XZ, PLANE_YZ
+};
+
+enum EAxisSystem {
+  AXIS_NORMAL, AXIS_SHIFTED
 };
 
 enum ECoordinateSystem {
@@ -83,10 +104,21 @@ namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
 }
 
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
+}
+
 namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
 }
 
+}
+
+namespace FlyEM {
+enum EDvidAnnotationLoadMode {
+  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
+};
 }
 
 }

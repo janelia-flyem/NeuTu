@@ -26,6 +26,9 @@ ZAutoTraceDialog::ZAutoTraceDialog(QWidget *parent, Qt::WindowFlags f)
         "Level 0 means default parameters.");
   m_levelSpinBox->setRange(0, 6);
   alllayout->addWidget(m_levelSpinBox);
+  m_levelSpinBox->hide();
+
+  this->setWindowTitle(tr("Automatic Tracing"));
 
   QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                    | QDialogButtonBox::Cancel);

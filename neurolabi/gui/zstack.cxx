@@ -31,19 +31,15 @@
 
 using namespace std;
 
-ZStack::ZStack() : m_stack(NULL), m_delloc(NULL),
-  m_isLSMFile(false)
+ZStack::ZStack()
 {
-  m_buffer[0] = '\0';
+  init();
 }
 
 ZStack::ZStack(int kind, int width, int height, int depth,
                int nchannel, bool isVirtual)
-  : m_isLSMFile(false)
 {  
-  m_buffer[0] = '\0';
- // m_proj = NULL;
- // m_stat = NULL;
+  init();
 
   Mc_Stack *stack = NULL;
   C_Stack::Mc_Stack_Deallocator *delloc = NULL;
@@ -53,20 +49,16 @@ ZStack::ZStack(int kind, int width, int height, int depth,
     C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
     delloc = C_Stack::cppDelete;
   } else {
-    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
-    delloc = Kill_Mc_Stack;
+    stack = C_Stack::make(kind, width, height, depth, nchannel);
+    delloc = C_Stack::kill;
   }
-
-  m_delloc = NULL;
   setData(stack, delloc);
 }
 
 ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
-  : m_isLSMFile(false)
 {
-  m_buffer[0] = '\0';
- // m_proj = NULL;
- // m_stat = NULL;
+  init();
+
   int width = box.getWidth();
   int height = box.getHeight();
   int depth = box.getDepth();
@@ -79,19 +71,38 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
     C_Stack::setAttribute(stack, kind, width, height, depth, nchannel);
     delloc = C_Stack::cppDelete;
   } else {
-    stack = Make_Mc_Stack(kind, width, height, depth, nchannel);
-    delloc = Kill_Mc_Stack;
+    stack = C_Stack::make(kind, width, height, depth, nchannel);
+    delloc = C_Stack::kill;
   }
 
-  m_delloc = NULL;
+  m_dealloc = NULL;
   setData(stack, delloc);
   setOffset(box.getFirstCorner());
 }
 
-ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc) :
-  m_stack(NULL), m_delloc(NULL), m_isLSMFile(false)
+ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
+  m_stack(NULL)
 {
+  init();
+
+  setData(stack, C_Stack::kill);
+}
+
+#if 0
+ZStack::ZStack(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
+{
+  init();
+
   setData(stack, dealloc);
+}
+#endif
+
+ZStack::ZStack(const ZStack &/*src*/)
+{
+//  init();
+
+//  m_stack = src.m_stack;
+//  m_offset = src.m_offset;
 }
 
 ZStack::~ZStack()
@@ -156,11 +167,11 @@ size_t ZStack::getVoxelNumber(EStackUnit unit) const
   return 0;
 }
 
-void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *delloc)
+void ZStack::setData(Mc_Stack *stack, C_Stack::Mc_Stack_Deallocator *dealloc)
 {
   deprecate(MC_STACK);
   m_stack = stack;
-  m_delloc = delloc;
+  m_dealloc = dealloc;
 }
 
 void ZStack::consume(Stack *stack)
@@ -170,25 +181,14 @@ void ZStack::consume(Stack *stack)
 
 void ZStack::consume(ZStack *stack)
 {
-  this->setData(stack->m_stack, stack->m_delloc);
-  stack->m_delloc = NULL;
+  this->setData(stack->m_stack, stack->m_dealloc);
+  stack->m_dealloc = NULL;
   setSource(stack->source());
 //  m_resolution = stack->getResolution();
   setOffset(stack->getOffset());
 //  m_preferredZScale = stack->m_preferredZScale;
 
   delete stack;
-}
-
-ZStack::ZStack(const ZStack &src)
-{
-  m_stack = src.m_stack;
-  m_delloc = NULL;
-//  m_preferredZScale = src.m_preferredZScale;
-//  m_resolution = src.m_resolution;
-  m_offset = src.m_offset;
-  m_buffer[0] = '\0';
-  m_isLSMFile = src.m_isLSMFile;
 }
 
 const Stack* ZStack::c_stack(int c) const
@@ -248,7 +248,8 @@ ZStack* ZStack::getSingleChannel(int c) const
 {
   Mc_Stack *data = new Mc_Stack;
   C_Stack::view(m_stack, data, c);
-  ZStack *stack = new ZStack(data, C_Stack::cppDelete);
+  ZStack *stack = new ZStack;
+  stack->setData(data, C_Stack::cppDelete);
   stack->setOffset(getOffset());
 
   return stack;
@@ -301,7 +302,7 @@ Mc_Stack *ZStack::makeMcStack(const Stack *stack1, const Stack *stack2, const St
 
   if (stack1 != NULL && stack1->kind == 1 && Stack_Same_Attribute(stack1, stack2)) {
     if (stack3 == NULL || Stack_Same_Attribute(stack2, stack3)) {
-      out = Make_Mc_Stack(1, stack1->width, stack1->height, stack1->depth, 3);
+      out = C_Stack::make(1, stack1->width, stack1->height, stack1->depth, 3);
       size_t volume = Stack_Voxel_Number(stack1);
       memcpy(out->array, stack1->array, volume);
       memcpy(out->array+volume, stack2->array, volume);
@@ -329,7 +330,7 @@ Stack *ZStack::averageOfAllChannels()
   Stack *stack = NULL;
   int nchannel = channelNumber();
   if (nchannel == 1) {
-    stack = Copy_Stack(c_stack());
+    stack = C_Stack::clone(c_stack());
   }
   if (nchannel > 1) {
     stack = Make_Stack(data()->kind, data()->width, data()->height, data()->depth);
@@ -386,6 +387,9 @@ Stack *ZStack::averageOfAllChannels()
 
 void ZStack::init()
 {
+  m_stack = NULL;
+  m_dealloc = NULL;
+  m_buffer[0] = '\0';
   //m_singleChannelStackVector.resize(nchannel);
 //  m_preferredZScale = 1.0;
   //m_source = NULL;
@@ -426,11 +430,11 @@ void ZStack::deprecate(EComponent component)
 
   switch (component) {
   case MC_STACK:  
-    if (m_stack != NULL && m_delloc != NULL) {
-      m_delloc(m_stack);
+    if (m_stack != NULL && m_dealloc != NULL) {
+      m_dealloc(m_stack);
     }
     m_stack = NULL;
-    m_delloc = NULL;
+    m_dealloc = NULL;
     break;
     /*
   case STACK_PROJECTION:
@@ -548,9 +552,9 @@ bool ZStack::load(Stack *stack, bool isOwner)
   deprecate(MC_STACK);
 
   if (C_Stack::kind(stack) == 3) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(stack), C_Stack::width(stack), C_Stack::height(stack),
+    m_stack = C_Stack::make(C_Stack::kind(stack), C_Stack::width(stack), C_Stack::height(stack),
                             C_Stack::depth(stack), 3);
-    m_delloc = C_Stack::kill;
+    m_dealloc = C_Stack::kill;
     Stack *stack0 = C_Stack::channelExtraction(stack, 0);
     C_Stack::copyChannelValue(m_stack, 0, stack0);
     C_Stack::kill(stack0);
@@ -570,9 +574,9 @@ bool ZStack::load(Stack *stack, bool isOwner)
     if (isOwner) {
       stack->array = NULL;
       Kill_Stack(stack);
-      m_delloc = C_Stack::systemKill;
+      m_dealloc = C_Stack::systemKill;
     } else {
-      m_delloc = NULL;
+      m_dealloc = NULL;
     }
   }
 
@@ -606,9 +610,9 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
     return false;
 
   if (ch3 != NULL) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch3), C_Stack::width(ch3), C_Stack::height(ch3),
+    m_stack = C_Stack::make(C_Stack::kind(ch3), C_Stack::width(ch3), C_Stack::height(ch3),
                             C_Stack::depth(ch3), 3);
-    m_delloc = C_Stack::kill;
+    m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 2, ch3);
     if (ch2 != NULL) {
       C_Stack::copyChannelValue(m_stack, 1, ch2);
@@ -617,17 +621,17 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
       C_Stack::copyChannelValue(m_stack, 0, ch1);
     }
   } else if (ch2 != NULL) {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch2), C_Stack::width(ch2), C_Stack::height(ch2),
+    m_stack = C_Stack::make(C_Stack::kind(ch2), C_Stack::width(ch2), C_Stack::height(ch2),
                             C_Stack::depth(ch2), 2);
-    m_delloc = C_Stack::kill;
+    m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 1, ch2);
     if (ch1 != NULL) {
       C_Stack::copyChannelValue(m_stack, 0, ch1);
     }
   } else {
-    m_stack = Make_Mc_Stack(C_Stack::kind(ch1), C_Stack::width(ch1), C_Stack::height(ch1),
+    m_stack = C_Stack::make(C_Stack::kind(ch1), C_Stack::width(ch1), C_Stack::height(ch1),
                             C_Stack::depth(ch1), 1);
-    m_delloc = C_Stack::kill;
+    m_dealloc = C_Stack::kill;
     C_Stack::copyChannelValue(m_stack, 0, ch1);
   }
   return true;
@@ -762,7 +766,8 @@ string ZStack::save(const string &filepath) const
 
   if (!isVirtual()) {
     resultFilePath = filepath;
-    if (channelNumber() > 1 && kind() != GREY && kind() != GREY16) { //save as raw
+    if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
+        (getVoxelNumber() > 2147483648)) { //save as raw
       if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE ||
           ZFileType::fileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
@@ -1372,7 +1377,7 @@ bool ZStack::binarize(int threshold)
   if (!isVirtual() && isThresholdable()) {
     isChanged = singleChannelStack(0)->binarize(threshold);
     if (kind() != GREY) {
-      Translate_Stack(singleChannelStack(0)->data(), GREY, 1);
+      C_Stack::translate(singleChannelStack(0)->data(), GREY, 1);
       data()->kind = GREY;
     }
     if (isChanged) {
@@ -1435,7 +1440,7 @@ Stack *ZStack::copyChannel(int c)
 {
   Stack *out = NULL;
   if (!isVirtual() && c < channelNumber()) {
-    out = Copy_Stack(c_stack(c));
+    out = C_Stack::clone(c_stack(c));
   }
   return out;
 }
@@ -1642,62 +1647,66 @@ bool ZStack::loadLSMInfo(const QString &filepath)
   fread(&ifd_offset, 4, 1, fp);
 
   fseek(fp, ifd_offset, SEEK_SET);
-  fread(&m_lsmInfo, sizeof(Cz_Lsminfo), 1, fp);
+  fread(&(m_lsmInfo.m_basicInfo), sizeof(Cz_Lsminfo), 1, fp);
 
   //m_channelColors.clear();
   initChannelColors();
-  m_lsmChannelNames.clear();
-  m_lsmTimeStamps.clear();
-  m_lsmChannelDataTypes.clear();
 
-  if (m_lsmInfo.u32OffsetChannelColors != 0) {
-    fseek(fp, m_lsmInfo.u32OffsetChannelColors, SEEK_SET);
-    fread(&m_lsmChannelInfo, sizeof(Lsm_Channel_Colors), 1, fp);
+  m_lsmInfo.m_lsmChannelNames.clear();
+  m_lsmInfo.m_lsmTimeStamps.clear();
+  m_lsmInfo.m_lsmChannelDataTypes.clear();
 
-    char *chStruct = new char[m_lsmChannelInfo.s32BlockSize];
-    fseek(fp, m_lsmInfo.u32OffsetChannelColors, SEEK_SET);
-    fread(chStruct, m_lsmChannelInfo.s32BlockSize, 1, fp);
-    std::vector<glm::col4> cls(m_lsmChannelInfo.s32NumberColors);
-    memcpy(&(cls[0]), chStruct+m_lsmChannelInfo.s32ColorsOffset, sizeof(uint32_t)*cls.size());
+  if (m_lsmInfo.m_basicInfo.u32OffsetChannelColors != 0) {
+    fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetChannelColors, SEEK_SET);
+    fread(&(m_lsmInfo.m_lsmChannelInfo), sizeof(Lsm_Channel_Colors), 1, fp);
 
-    size_t offset = m_lsmChannelInfo.s32NamesOffset;
+    char *chStruct = new char[m_lsmInfo.m_lsmChannelInfo.s32BlockSize];
+    fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetChannelColors, SEEK_SET);
+    fread(chStruct, m_lsmInfo.m_lsmChannelInfo.s32BlockSize, 1, fp);
+    std::vector<glm::col4> cls(m_lsmInfo.m_lsmChannelInfo.s32NumberColors);
+    memcpy(&(cls[0]), chStruct+m_lsmInfo.m_lsmChannelInfo.s32ColorsOffset, sizeof(uint32_t)*cls.size());
+
+    size_t offset = m_lsmInfo.m_lsmChannelInfo.s32NamesOffset;
     int nameIdx = 0;
-    while (nameIdx < m_lsmChannelInfo.s32NumberNames) {
+    while (nameIdx < m_lsmInfo.m_lsmChannelInfo.s32NumberNames) {
       offset += 4;  // skip uint32_t name length
-      QString str(chStruct+offset);
-      m_lsmChannelNames.push_back(str);
+      std::string str(chStruct+offset);
+      m_lsmInfo.m_lsmChannelNames.push_back(str);
       ++nameIdx;
       offset += str.size() + 1;
     }
 
-    for (int ch=0; ch<m_lsmChannelInfo.s32NumberColors; ++ch) {
-      QString chName;
-      if (m_lsmChannelNames.size() > (size_t)ch)
-        chName = m_lsmChannelNames[ch];
-      if (!chName.isEmpty())
-        m_channelColors[ch]->setName(chName);
-      m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+    for (int ch=0; ch<m_lsmInfo.m_lsmChannelInfo.s32NumberColors; ++ch) {
+      if (m_lsmInfo.m_lsmChannelNames.size() > (size_t)ch &&
+          m_channelColors.size() > (size_t) ch) {
+        std::string chName = m_lsmInfo.m_lsmChannelNames[ch];
+        if (!chName.empty())
+          m_channelColors[ch]->setName(chName.c_str());
+        m_channelColors[ch]->set(glm::vec3(cls[ch])/255.f);
+      } else {
+        break;
+      }
     }
 
     delete[] chStruct;
   }
 
-  if (m_lsmInfo.u32OffsetTimeStamps != 0) {
-    fseek(fp, m_lsmInfo.u32OffsetTimeStamps, SEEK_SET);
-    fread(&m_lsmTimeStampInfo, sizeof(Lsm_Time_Stamp_Info), 1, fp);
-    double *stamps = new double[m_lsmTimeStampInfo.s32NumberTimeStamps];
-    fread(stamps, sizeof(double), m_lsmTimeStampInfo.s32NumberTimeStamps, fp);
-    for (int i=0; i<m_lsmTimeStampInfo.s32NumberTimeStamps; ++i)
-      m_lsmTimeStamps.push_back(stamps[i]);
+  if (m_lsmInfo.m_basicInfo.u32OffsetTimeStamps != 0) {
+    fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetTimeStamps, SEEK_SET);
+    fread(&m_lsmInfo.m_lsmTimeStampInfo, sizeof(Lsm_Time_Stamp_Info), 1, fp);
+    double *stamps = new double[m_lsmInfo.m_lsmTimeStampInfo.s32NumberTimeStamps];
+    fread(stamps, sizeof(double), m_lsmInfo.m_lsmTimeStampInfo.s32NumberTimeStamps, fp);
+    for (int i=0; i<m_lsmInfo.m_lsmTimeStampInfo.s32NumberTimeStamps; ++i)
+      m_lsmInfo.m_lsmTimeStamps.push_back(stamps[i]);
     delete[] stamps;
   }
 
-  if (m_lsmInfo.u32OffsetChannelDataTypes != 0) {
-    fseek(fp, m_lsmInfo.u32OffsetChannelDataTypes, SEEK_SET);
-    uint32_t *dataTypes = new uint32_t[m_lsmInfo.s32DimensionChannels];
-    fread(dataTypes, sizeof(uint32_t), m_lsmInfo.s32DimensionChannels, fp);
-    for (int i=0; i<m_lsmInfo.s32DimensionChannels; ++i)
-      m_lsmChannelDataTypes.push_back(dataTypes[i]);
+  if (m_lsmInfo.m_basicInfo.u32OffsetChannelDataTypes != 0) {
+    fseek(fp, m_lsmInfo.m_basicInfo.u32OffsetChannelDataTypes, SEEK_SET);
+    uint32_t *dataTypes = new uint32_t[m_lsmInfo.m_basicInfo.s32DimensionChannels];
+    fread(dataTypes, sizeof(uint32_t), m_lsmInfo.m_basicInfo.s32DimensionChannels, fp);
+    for (int i=0; i<m_lsmInfo.m_basicInfo.s32DimensionChannels; ++i)
+      m_lsmInfo.m_lsmChannelDataTypes.push_back(dataTypes[i]);
     delete[] dataTypes;
   }
 
@@ -1705,43 +1714,43 @@ bool ZStack::loadLSMInfo(const QString &filepath)
 
   // fill zresolution
 
-  m_isLSMFile = true;
+//  m_isLSMFile = true;
   return true;
 }
 
 void ZStack::logLSMInfo()
 {
-  if (!m_isLSMFile) {
-    LINFO() << sourcePath() << "is not a valid LSM file.";
-    return;
-  }
+//  if (!m_isLSMFile) {
+//    LINFO() << sourcePath() << "is not a valid LSM file.";
+//    return;
+//  }
 
   LINFO() << "Start LSM Info for" << sourcePath();
-  LINFO() << "MagicNumber:" << hex << m_lsmInfo.u32MagicNumber;
-  LINFO() << "DimensionX:" << m_lsmInfo.s32DimensionX;
-  LINFO() << "DimensionY:" << m_lsmInfo.s32DimensionY;
-  LINFO() << "DimensionZ:" << m_lsmInfo.s32DimensionZ;
-  LINFO() << "DimensionChannels:" << m_lsmInfo.s32DimensionChannels;
-  LINFO() << "DimensionTime:" << m_lsmInfo.s32DimensionTime;
-  switch (m_lsmInfo.s32DataType) {
+  LINFO() << "MagicNumber:" << hex << m_lsmInfo.m_basicInfo.u32MagicNumber;
+  LINFO() << "DimensionX:" << m_lsmInfo.m_basicInfo.s32DimensionX;
+  LINFO() << "DimensionY:" << m_lsmInfo.m_basicInfo.s32DimensionY;
+  LINFO() << "DimensionZ:" << m_lsmInfo.m_basicInfo.s32DimensionZ;
+  LINFO() << "DimensionChannels:" << m_lsmInfo.m_basicInfo.s32DimensionChannels;
+  LINFO() << "DimensionTime:" << m_lsmInfo.m_basicInfo.s32DimensionTime;
+  switch (m_lsmInfo.m_basicInfo.s32DataType) {
   case 1: LINFO() << "DataType:" << "8-bit unsigned integer"; break;
   case 2: LINFO() << "DataType:" << "12-bit unsigned integer"; break;
   case 5: LINFO() << "DataType:" << "32-bit float(for \"Time Series Mean-of-ROIs\")"; break;
   //case 0: LINFO() << "DataType:" << "different data types for different channels, see 32OffsetChannelDataTypes"; break;
   }
-  for (size_t i=0; i<m_lsmChannelDataTypes.size(); ++i) {
-    switch (m_lsmChannelDataTypes[i]) {
+  for (size_t i=0; i<m_lsmInfo.m_lsmChannelDataTypes.size(); ++i) {
+    switch (m_lsmInfo.m_lsmChannelDataTypes[i]) {
     case 1: LINFO() << "Channel" << i+1 << "DataType:" << "8-bit unsigned integer"; break;
     case 2: LINFO() << "Channel" << i+1 << "DataType:" << "12-bit unsigned integer"; break;
     case 5: LINFO() << "Channel" << i+1 << "DataType:" << "32-bit float(for \"Time Series Mean-of-ROIs\")"; break;
     }
   }
-  LINFO() << "ThumbnailX:" << m_lsmInfo.s32ThumbnailX;
-  LINFO() << "ThumbnailY:" << m_lsmInfo.s32ThumbnailY;
-  LINFO() << "VoxelSizeX in meter:" << m_lsmInfo.f64VoxelSizeX;
-  LINFO() << "VoxelSizeY in meter:" << m_lsmInfo.f64VoxelSizeY;
-  LINFO() << "VoxelSizeZ in meter:" << m_lsmInfo.f64VoxelSizeZ;
-  switch (m_lsmInfo.u16ScanType) {
+  LINFO() << "ThumbnailX:" << m_lsmInfo.m_basicInfo.s32ThumbnailX;
+  LINFO() << "ThumbnailY:" << m_lsmInfo.m_basicInfo.s32ThumbnailY;
+  LINFO() << "VoxelSizeX in meter:" << m_lsmInfo.m_basicInfo.f64VoxelSizeX;
+  LINFO() << "VoxelSizeY in meter:" << m_lsmInfo.m_basicInfo.f64VoxelSizeY;
+  LINFO() << "VoxelSizeZ in meter:" << m_lsmInfo.m_basicInfo.f64VoxelSizeZ;
+  switch (m_lsmInfo.m_basicInfo.u16ScanType) {
   case 0: LINFO() << "ScanType:" << "normal x-y-z-scan"; break;
   case 1: LINFO() << "ScanType:" << "z-Scan (x-z-plane)"; break;
   case 2: LINFO() << "ScanType:" << "line scan"; break;
@@ -1754,28 +1763,28 @@ void ZStack::logLSMInfo()
   case 9: LINFO() << "ScanType:" << "time series spline plane x-z (release 2.5 or later)"; break;
   case 10: LINFO() << "ScanType:" << "point mode (release 3.0 or later)"; break;
   }
-  switch (m_lsmInfo.u16SpectralScan) {
+  switch (m_lsmInfo.m_basicInfo.u16SpectralScan) {
   case 0: LINFO() << "SpectralScan:" << "no spectral scan"; break;
   case 1: LINFO() << "SpectralScan:" << "image has been acquired in spectral scan mode with a META detector (release 3.0 or later)"; break;
   }
-  switch (m_lsmInfo.u32DataType) {
+  switch (m_lsmInfo.m_basicInfo.u32DataType) {
   case 0: LINFO() << "DataType:" << "Original scan data"; break;
   case 1: LINFO() << "DataType:" << "Calculated data"; break;
   case 2: LINFO() << "DataType:" << "Animation"; break;
   }
-  if (m_lsmInfo.f64TimeInterval != 0) {
-    LINFO() << "TimeInterval in s:" << m_lsmInfo.f64TimeInterval;
+  if (m_lsmInfo.m_basicInfo.f64TimeInterval != 0) {
+    LINFO() << "TimeInterval in s:" << m_lsmInfo.m_basicInfo.f64TimeInterval;
   }
-  for (size_t i=0; i<m_lsmTimeStamps.size(); ++i) {
-    LINFO() << "TimeStamp" << i+1 << "in s:" << m_lsmTimeStamps[i];
+  for (size_t i=0; i<m_lsmInfo.m_lsmTimeStamps.size(); ++i) {
+    LINFO() << "TimeStamp" << i+1 << "in s:" << m_lsmInfo.m_lsmTimeStamps[i];
   }
-  LINFO() << "DisplayAspectX:" << m_lsmInfo.f64DisplayAspectX;
-  LINFO() << "DisplayAspectY:" << m_lsmInfo.f64DisplayAspectY;
-  LINFO() << "DisplayAspectZ:" << m_lsmInfo.f64DisplayAspectZ;
-  LINFO() << "DisplayAspectTime:" << m_lsmInfo.f64DisplayAspectTime;
-  LINFO() << "ObjectiveSphereCorrection:" << m_lsmInfo.f64objectiveSphereCorrection;
+  LINFO() << "DisplayAspectX:" << m_lsmInfo.m_basicInfo.f64DisplayAspectX;
+  LINFO() << "DisplayAspectY:" << m_lsmInfo.m_basicInfo.f64DisplayAspectY;
+  LINFO() << "DisplayAspectZ:" << m_lsmInfo.m_basicInfo.f64DisplayAspectZ;
+  LINFO() << "DisplayAspectTime:" << m_lsmInfo.m_basicInfo.f64DisplayAspectTime;
+  LINFO() << "ObjectiveSphereCorrection:" << m_lsmInfo.m_basicInfo.f64objectiveSphereCorrection;
   for (size_t i=0; i<m_channelColors.size(); ++i) {
-    LINFO() << "Channel" << i+1 << "Name:" << m_lsmChannelNames[i] << "Color(RGB):" << m_channelColors[i]->get();
+    LINFO() << "Channel" << i+1 << "Name:" << m_lsmInfo.m_lsmChannelNames[i] << "Color(RGB):" << m_channelColors[i]->get();
   }
   LINFO() << "End LSM Info for" << sourcePath();
 }
@@ -2110,7 +2119,7 @@ void ZStack::downsampleMin(int xintv, int yintv, int zintv)
 void ZStack::swapData(ZStack *stack)
 {
   std::swap(m_stack, stack->m_stack);
-  std::swap(m_delloc, stack->m_delloc);
+  std::swap(m_dealloc, stack->m_dealloc);
   std::swap(m_source, stack->m_source);
 //  std::swap(m_preferredZScale, stack->m_preferredZScale);
 //  std::swap(m_resolution, stack->m_resolution);

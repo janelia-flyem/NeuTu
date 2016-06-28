@@ -1,6 +1,10 @@
 #ifndef ZDVIDTILE_H
 #define ZDVIDTILE_H
 
+#include <QMutex>
+#include <QMutexLocker>
+#include <QPixmap>
+
 #include "zimage.h"
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
@@ -8,6 +12,7 @@
 //#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 #include "zpixmap.h"
+#include "zjsonobject.h"
 
 class ZPainter;
 class ZStack;
@@ -21,8 +26,13 @@ public:
   ZDvidTile();
   ~ZDvidTile();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_TILE;
+  }
+
 public:
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
@@ -31,8 +41,8 @@ public:
   void setTileIndex(int ix, int iy);
   void setResolutionLevel(int level);
 
-  void loadDvidSlice(const QByteArray &buffer, int z);
-  void loadDvidSlice(const uchar *buf, int length, int z);
+  void loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast);
+  void loadDvidSlice(const uchar *buf, int length, int z, bool highContrast);
 
 //  void setTileOffset(int x, int y, int z);
 
@@ -40,7 +50,9 @@ public:
 
   void printInfo() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target,
+                     const ZDvidTileInfo &tileInfo);
+  void setTileInfo(const ZDvidTileInfo &tileInfo);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -61,13 +73,13 @@ public:
   void attachView(ZStackView *view);
 
   ZRect2d getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 //  void setImageData(const uint8_t *data, int width, int height);
 
-  void enhanceContrast(bool high);
+  void enhanceContrast(bool high, bool updatingPixmap);
+  void setContrastProtocal(const ZJsonObject &obj);
 
-private:
   void updatePixmap();
 
 private:
@@ -80,6 +92,9 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+  ZJsonObject m_contrastProtocal;
+
+  QMutex m_pixmapMutex;
 
   ZStackView *m_view;
 };

@@ -12,6 +12,7 @@ public:
 
   void setParentDoc(ZSharedPointer<ZStackDoc> doc);
 
+  using ZStackDoc::processRectRoiUpdate; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void processRectRoiUpdate(ZRect2d *rect);
 
 signals:

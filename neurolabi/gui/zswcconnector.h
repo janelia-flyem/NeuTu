@@ -34,10 +34,17 @@ public:
   ZGraph* buildConnection(const std::set<Swc_Tree_Node *> &nodeSet);
 
   void setResolution(const ZResolution &resolution);
+  void useSurfaceDist(bool on);
+
+private:
+  void init();
+  double computeDistance(
+      const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2) const;
 
 private:
   double m_minDist;
   double m_dist;
+  bool m_surfaceDist;
   ZResolution m_resolution;
 };
 

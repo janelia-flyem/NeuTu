@@ -66,7 +66,7 @@ public:
   }
 
   //Obsolete functions
-  int getSelectedBodyId() const;
+  uint64_t getSelectedBodyId() const;
   void addSelected(uint64_t label);
   void removeSelected(uint64_t label);
 
@@ -124,6 +124,7 @@ signals:
   void selectionChanged(ZStackObjectSelector selector);
   void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
+  void mergeUploaded(QSet<uint64_t> bodySet);
   void splitSent(ZDvidTarget target, uint64_t bodyId);
   void locating2DViewTriggered(ZStackViewParam);
   void dvidLabelChanged();
@@ -172,7 +173,8 @@ private:
 
   QString getSelectionMessage() const;
 
-  void mergeBodyAnnotation(int targetId, const std::vector<int> &bodyId);
+  void mergeBodyAnnotation(
+      uint64_t targetId, const std::vector<uint64_t> &bodyId);
 
   //void updateSelection();
 

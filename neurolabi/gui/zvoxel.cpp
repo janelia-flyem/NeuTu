@@ -7,6 +7,7 @@
 #include "tz_utilities.h"
 #include "tz_math.h"
 #include "tz_stack_attribute.h"
+#include "geometry/zgeometry.h"
 
 ZVoxel::ZVoxel()
 {
@@ -118,4 +119,9 @@ void ZVoxel::print() const
 {
   std::cout << "(" << m_x << ", " << m_y << ", " << m_z << "): " << m_value
             << std::endl;
+}
+
+void ZVoxel::shiftSliceAxis(NeuTube::EAxis axis)
+{
+  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }

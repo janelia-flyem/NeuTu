@@ -11,6 +11,9 @@
 #include "flyem/zflyembodymergeproject.h"
 #include "zstackdoc.h"
 #include "zflyembookmarkview.h"
+#include "widgets/zcolorlabel.h"
+#include "zwidgetfactory.h"
+#include "znormcolormap.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -19,6 +22,9 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->setupUi(this);
   setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
+  m_latencyWidget =
+      ZWidgetFactory::MakeColorLabel(Qt::gray, "Seg Latency", 100, false, this);
+  ui->topHorizontalLayout->addWidget(m_latencyWidget);
   /*
   connect(ui->segmentCheckBox, SIGNAL(clicked(bool)),
           this, SIGNAL(segmentVisibleChanged(bool)));
@@ -65,11 +71,17 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(bookmarkChecked(QString, bool)));
   connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
 
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
   connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
           this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
+  connect(getUserBookmarkView(), SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)));
   /*
   connect(ui->userBookmarkView, SIGNAL(bookmarkChecked(QString,bool)),
           this, SIGNAL(bookmarkChecked(QString, bool)));
@@ -148,12 +160,18 @@ void FlyEmProofControlForm::createMenu()
   m_nameColorAction->setCheckable(true);
   m_nameColorAction->setEnabled(false);
 
+  m_sequencerColorAction = new QAction("Sequencer", this);
+  m_sequencerColorAction->setCheckable(true);
+  m_sequencerColorAction->setEnabled(true);
+
   colorActionGroup->addAction(normalColorAction);
   colorActionGroup->addAction(m_nameColorAction);
+  colorActionGroup->addAction(m_sequencerColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addAction(normalColorAction);
   colorMenu->addAction(m_nameColorAction);
+  colorMenu->addAction(m_sequencerColorAction);
 
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
@@ -164,8 +182,18 @@ void FlyEmProofControlForm::createMenu()
   connect(clearMergeAction, SIGNAL(triggered()),
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
+
+  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
+  developerMenu->addAction(exportBodyAction);
 #endif
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::exportSelectedBody()
+{
+  emit exportingSelectedBody();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
@@ -246,7 +274,28 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
-  setInfo(target.toJsonObject().dumpString(2).c_str());
+  std::string info = target.toJsonObject().dumpString(2);
+  if (target.isSupervised()) {
+    if (!target.getSupervisor().empty()) {
+      info += "\nLibrarian: " + target.getSupervisor();
+    } else {
+      info += "\nLibrarian: " + GET_FLYEM_CONFIG.getDefaultLibrarian();
+    }
+  }
+
+  setInfo(info.c_str());
+}
+
+
+void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
+{
+  if (bookmark != NULL) {
+    if (bookmark->isCustom()) {
+      m_userBookmarkList.removeBookmark(bookmark);
+    } else {
+      m_assignedBookmarkList.removeBookmark(bookmark);
+    }
+  }
 }
 
 void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
@@ -277,7 +326,10 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 {
   if (project != NULL) {
 //    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
+    ZOUT(LINFO(), 3) << "Update bookmark table for merge project";
     m_assignedBookmarkList.clear();
+
+    ZOUT(LINFO(), 3) << "Bookmark list cleared";
 //    project->clearBookmarkDecoration();
 
     if (project->getDocument() != NULL) {
@@ -293,7 +345,9 @@ void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
         }
       }
     }
+
     getAssignedBookmarkView()->sort();
+    ZOUT(LINFO(), 3) << "Bookmark sorted";
     /*
     m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
                           m_bookmarkProxy->sortOrder());
@@ -329,4 +383,15 @@ void FlyEmProofControlForm::locateUserBookmark(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getUserBookmarkView()->getBookmark(index);
 
   locateBookmark(bookmark);
+}
+
+void FlyEmProofControlForm::updateLatency(int t)
+{
+  ZNormColorMap colorMap;
+  int baseTime = 600;
+  double v = (double) t / baseTime;
+  QColor color = colorMap.mapColor(v);
+  color.setAlpha(100);
+  m_latencyWidget->setColor(color);
+  m_latencyWidget->setText(QString("%1").arg(t));
 }

@@ -15,9 +15,16 @@ then
   name=$3
 fi
 
+log=""
+if [ $# -ge 4 ]
+then
+  log=$4
+fi
+
+
 http POST http://$address/api/node/$node/commit log:="[\"locked for backup\"]"
 date=`date`
-http POST http://$address/api/node/$node/branch log:="[\"$name node created at $date\"]"
+http POST http://$address/api/node/$node/branch log:="[\"Node for $name: $log\"]"
 
 
  

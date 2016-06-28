@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <stack>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -184,6 +185,36 @@ bool SwcTreeNode::isParentIdConsistent(const Swc_Tree_Node *tn)
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Fsize(tn);
+}
+
+double SwcTreeNode::downstreamLength(Swc_Tree_Node *tn)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
 }
 
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
@@ -590,6 +621,13 @@ double SwcTreeNode::scaledDistance(
   double dz = (z(tn1) - z(tn2)) * sz;
 
   return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+double SwcTreeNode::scaledSurfaceDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  return scaledDistance(tn1, tn2, sx, sy, sz) - radius(tn1) - radius(tn2);
 }
 
 Swc_Tree_Node*
@@ -1340,7 +1378,8 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   int y2 = iround(y(tn) + radius(tn) * 2);
   int cz = iround(z(tn));
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
   //RC threshold
   int thre = Stack_Threshold_Triangle(slice, 0, 65535);
@@ -1401,7 +1440,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     return false;
   }
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
 
   if (slice == NULL) {

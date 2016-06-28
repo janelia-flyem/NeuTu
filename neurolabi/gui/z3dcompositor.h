@@ -28,6 +28,7 @@ public:
   inline Z3DCameraParameter* getCamera() { return &m_camera; }
 
   void setShowBackground(bool v) { m_showBackground.set(v); }
+  bool showingBackground() const { return m_showBackground.get(); }
   void setBackgroundFirstColor(glm::vec3 color) { m_backgroundRenderer->setFirstColor(color); }
   void setBackgroundSecondColor(glm::vec3 color) { m_backgroundRenderer->setSecondColor(color); }
   void setBackgroundFirstColor(double r, double g, double b, double alpha)
@@ -57,6 +58,8 @@ private:
 
   void renderOpaque(const std::vector<Z3DGeometryFilter*> &filters,
                     Z3DRenderOutputPort &port, Z3DEye eye);
+  void renderOpaqueObj(const std::vector<Z3DGeometryFilter*> &filters,
+                    Z3DRenderOutputPort &port, Z3DEye eye);
 
   void renderTransparentDDP(const std::vector<Z3DGeometryFilter*> &filters,
                             Z3DRenderOutputPort &port, Z3DEye eye);
@@ -65,6 +68,9 @@ private:
   void renderTransparentWA(const std::vector<Z3DGeometryFilter*> &filters,
                            Z3DRenderOutputPort &port, Z3DEye eye);
   bool createWARenderTarget(glm::ivec2 size);
+  void renderTransparentWB(const std::vector<Z3DGeometryFilter*> &filters,
+                           Z3DRenderOutputPort &port, Z3DEye eye);
+  bool createWBRenderTarget(glm::ivec2 size);
 
   // if image inport has more than 1 image, blend use tempport3 and tempport4,
   // send output to colorTex and depthTex
@@ -103,6 +109,9 @@ private:
 
   Z3DRenderTarget *m_waRT;
   Z3DShaderProgram *m_waFinalShader;
+
+  Z3DRenderTarget *m_wbRT;
+  Z3DShaderProgram *m_wbFinalShader;
 
   Z3DTrackballInteractionHandler* m_interactionHandler;
 

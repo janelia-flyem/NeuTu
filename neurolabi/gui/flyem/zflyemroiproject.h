@@ -7,6 +7,7 @@
 #include <QString>
 #include "dvid/zdvidinfo.h"
 #include "flyem/zsynapseannotationarray.h"
+#include "dvid/zdvidwriter.h"
 
 class ZStackFrame;
 class ZSwcTree;
@@ -53,7 +54,7 @@ public:
   void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
-  void setDocData(const ZStackDocReader &docReader);
+  void setDocData(ZStackDocReader &docReader);
   void loadSynapse(const std::string &filePath, bool isVisible);
   void shallowClearDataFrame();
   bool addRoi();
@@ -112,6 +113,7 @@ public:
    */
   ZObject3dScan getRoiObject(int xIntv, int yIntv, int zIntv) const;
   ZObject3dScan getRoiObject() const;
+  ZObject3dScan getRoiSlice() const;
 
   int getFirstRoiZ() const;
   int getLastRoiZ() const;
@@ -168,6 +170,7 @@ private:
   std::string m_name;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
+  ZDvidWriter m_dvidWriter;
   int m_z;
   ZIntPoint m_currentDsIntv;
   ZStackFrame *m_dataFrame;

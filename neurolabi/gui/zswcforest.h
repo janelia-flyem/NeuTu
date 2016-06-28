@@ -38,12 +38,17 @@ public:
    */
   ZSwcTree* getSwcTreeWithMaxLength() const;
 
+  void setDataOwner(bool on) {
+    m_isDataOwner = on;
+  }
+
 public:
   //Graph* buildConnectionGraph(bool mst = false, double distThre = -1.0);
   //ZSwcTree* merge();
   void print();
 
 private:
+  bool m_isDataOwner;
   Graph *m_graph;
   Graph_Workspace *m_workspace;
   std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > m_connection;

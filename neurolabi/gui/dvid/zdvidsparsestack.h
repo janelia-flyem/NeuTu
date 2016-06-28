@@ -1,11 +1,13 @@
 #ifndef ZDVIDSPARSESTACK_H
 #define ZDVIDSPARSESTACK_H
 
+#include <QMutex>
+
 #include "zstackobject.h"
 #include "zsparsestack.h"
 #include "zdvidtarget.h"
 #include "dvid/zdvidreader.h"
-#include "qthreadfuturemap.h"
+#include "zthreadfuturemap.h"
 
 class ZIntCuboid;
 
@@ -15,7 +17,12 @@ public:
   ZDvidSparseStack();
   ~ZDvidSparseStack();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_SPARSE_STACK;
+  }
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -35,7 +42,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   ZIntCuboid getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void loadBody(uint64_t bodyId, bool canonizing = false);
   void loadBodyAsync(uint64_t bodyId);
@@ -50,10 +57,12 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
+  ZSparseStack *getSparseStack(const ZIntCuboid &box);
+
   void downloadBodyMask();
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y);
+  bool hit(double x, double y, NeuTube::EAxis axis);
 
   bool isEmpty() const;
 
@@ -61,13 +70,20 @@ public:
 
   void deprecateStackBuffer();
 
+  int getReadStatusCode() const;
+
+  void runFillValueFunc();
+  void runFillValueFunc(const ZIntCuboid &box);
+
+  void cancelFillValueFunc();
 
 private:
   void init();
   void initBlockGrid();
-  bool fillValue();
-  bool fillValue(const ZIntCuboid &box);
+  bool fillValue(bool cancelable = false);
+  bool fillValue(const ZIntCuboid &box, bool cancelable = false);
   QString getLoadBodyThreadId() const;
+  QString getFillValueThreadId() const;
   void pushMaskColor();
   void pushLabel();
   bool loadingObjectMask() const;
@@ -85,7 +101,10 @@ private:
   bool m_isValueFilled;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
-  QThreadFutureMap m_futureMap;
+  ZThreadFutureMap m_futureMap;
+  bool m_cancelingValueFill;
+
+  mutable QMutex m_fillValueMutex;
 };
 
 #endif // ZDVIDSPARSESTACK_H

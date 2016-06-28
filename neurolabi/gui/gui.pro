@@ -10,33 +10,33 @@ contains(TEMPLATE, app) {
 }
 
 win32 {
-  DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
+    DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
-  CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-  }
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+        QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
 }
 
 unix {
-QMAKE_PATH = $(QMAKE)
-!exists($$QMAKE_PATH) {
-    QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
-}
-message("qmake path: $$QMAKE_PATH")
-exists($$QMAKE_PATH) {
-    macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+    QMAKE_PATH = $(QMAKE)
+    !exists($$QMAKE_PATH) {
+        QMAKE_PATH = $$[QT_INSTALL_BINS]/qmake
     }
+    message("qmake path: $$QMAKE_PATH")
+    exists($$QMAKE_PATH) {
+        macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_mac $$QMAKE_PATH $$OUT_PWD
+        }
 
-    unix:!macx {
-      DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        unix:!macx {
+          DEPLOYMENT_COMMAND = $$PWD/deploy_linux $$QMAKE_PATH $$OUT_PWD
+        }
     }
-}
-CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
-#    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
-}
-message($$DEPLOYMENT_COMMAND)
-message("Post link: $$QMAKE_POST_LINK")
+    CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
+    #    QMAKE_POST_LINK += $$DEPLOYMENT_COMMAND
+    }
+    message($$DEPLOYMENT_COMMAND)
+    message("Post link: $$QMAKE_POST_LINK")
 }
 
 CONFIG(debug, debug|release) {
@@ -64,6 +64,14 @@ DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 HOSTNAME = $$system(echo $HOSTNAME)
 USER = $$system(echo $USER)
 HOME = $$system(echo $HOME)
+GIT = $$system(which git)
+
+#message($$GIT)
+contains(GIT, .*git) {
+    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+    message($$COMMIT_HASH)
+}
 
 include(add_itk.pri)
 
@@ -161,6 +169,11 @@ unix {
             QMAKE_CXXFLAGS += -m64
         }
         RC_FILE = images/app.icns
+
+        contains(CONFIG, c++11) {
+          message(Using C++11)
+          QMAKE_CXXFLAGS += -std=c++11
+        }
     }
 }
 
@@ -230,6 +243,7 @@ HEADERS += mainwindow.h \
     z3dlinerenderer.h \
     z3dlinewithfixedwidthcolorrenderer.h \
     z3dconerenderer.h \
+    z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
     z3daxis.h \
@@ -322,6 +336,7 @@ HEADERS += mainwindow.h \
     z3dgeometryfilter.h \
     z3dgraphfilter.h \
     z3dpunctafilter.h \
+    z3dsurfacefilter.h \
     z3dswcfilter.h \
     z3dscene.h \
     zqtbarprogressreporter.h \
@@ -468,7 +483,7 @@ HEADERS += mainwindow.h \
     dvid/libdvidheader.h \
     dialogs/dvidoperatedialog.h \
     z3dwindowfactory.h \
-    qthreadfuturemap.h \
+    zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
     zkeyeventmapper.h \
@@ -579,7 +594,54 @@ HEADERS += mainwindow.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
-    zpunctumselector.h
+    flyem/zflyemsequencercolorscheme.h \
+    zpunctumselector.h \
+    zgraphobjsmodel.h \
+    zsurfaceobjsmodel.h \
+    dvid/zdvidsynapse.h \
+    flyem/zflyemnamebodycolorscheme.h \
+    dvid/zdvidsynapseensenmble.h \
+    zcubearray.h \
+    dvid/zdvidsynpasecommand.h \
+    dvid/zdvidannotationcommand.h \
+    dvid/zflyembookmarkcommand.h \
+    misc/zstackyzview.h \
+    misc/zstackyzmvc.h \
+    flyem/zflyemorthowindow.h \
+    flyem/zflyemorthodoc.h \
+    flyem/zflyemorthomvc.h \
+    flyem/zflyemorthowidget.h \
+    flyem/flyemorthocontrolform.h \
+    dvid/zdvidannotation.h \
+    dialogs/stringlistdialog.h \
+    zroiwidget.h \
+    flyem/zflyemtodoitem.h \
+    flyem/zflyemtodolist.h \
+    flyem/zflyemtodolistfilter.h \
+    flyem/zflyemtodolistmodel.h \
+    flyem/zflyemtodopresenter.h \
+    dialogs/flyemtododialog.h \
+    zstackdocselector.h \
+    flyem/zflyemproofdoccommand.h \
+    flyem/zneutuservice.h \
+    dialogs/flyemsettingdialog.h \
+    protocols/protocolswitcher.h \
+    protocols/protocolchooser.h \
+    protocols/protocolmetadata.h \
+    protocols/protocoldialog.h \
+    protocols/doNthingsprotocol.h \
+    protocols/synapsepredictionprotocol.h \
+    protocols/synapsepredictioninputdialog.h \
+    widgets/zcolorlabel.h \
+    zactionlibrary.h \
+    zmenufactory.h \
+    zcrosshair.h \
+    zapplication.h \
+    dialogs/flyemsynapsefilterdialog.h \
+    flyem/zflyemmb6analyzer.h \
+    dialogs/zflyemsynapseannotationdialog.h \
+    zdvidutil.h \
+    dialogs/zcontrastprotocaldialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -648,9 +710,21 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
+    protocols/protocolchooser.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
-    flyem/zflyembookmarkwidget.ui
+    flyem/zflyembookmarkwidget.ui \
+    flyem/flyemorthocontrolform.ui \
+    dialogs/stringlistdialog.ui \
+    dialogs/flyemtododialog.ui \
+    protocols/doNthingsprotocol.ui \
+    protocols/synapsepredictionprotocol.ui \
+    protocols/synapsepredictioninputdialog.ui \
+    protocols/protocoldialog.ui \
+    dialogs/flyemsettingdialog.ui \
+    dialogs/flyemsynapsefilterdialog.ui \
+    dialogs/zflyemsynapseannotationdialog.ui \
+    dialogs/zcontrastprotocaldialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -706,6 +780,7 @@ SOURCES += main.cpp \
     z3dlinerenderer.cpp \
     z3dlinewithfixedwidthcolorrenderer.cpp \
     z3dconerenderer.cpp \
+    z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
     z3daxis.cpp \
@@ -785,6 +860,7 @@ SOURCES += main.cpp \
     z3dgeometryfilter.cpp \
     z3dgraphfilter.cpp \
     z3dpunctafilter.cpp \
+    z3dsurfacefilter.cpp \
     z3dswcfilter.cpp \
     z3dscene.cpp \
     zqtbarprogressreporter.cpp \
@@ -904,7 +980,7 @@ SOURCES += main.cpp \
     zsleeper.cpp \
     dialogs/dvidoperatedialog.cpp \
     z3dwindowfactory.cpp \
-    qthreadfuturemap.cpp \
+    zthreadfuturemap.cpp \
     zstackball.cpp \
     zstackdochittest.cpp \
     zkeyeventmapper.cpp \
@@ -1015,7 +1091,54 @@ SOURCES += main.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
-    zpunctumselector.cpp
+    flyem/zflyemsequencercolorscheme.cpp \
+    zpunctumselector.cpp \
+    zgraphobjsmodel.cpp \
+    zsurfaceobjsmodel.cpp \
+    dvid/zdvidsynapse.cpp \
+    flyem/zflyemnamebodycolorscheme.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
+    zcubearray.cpp \
+    dvid/zdvidsynpasecommand.cpp \
+    dvid/zdvidannotationcommand.cpp \
+    dvid/zflyembookmarkcommand.cpp \
+    misc/zstackyzview.cpp \
+    misc/zstackyzmvc.cpp \
+    flyem/zflyemorthowindow.cpp \
+    flyem/zflyemorthodoc.cpp \
+    flyem/zflyemorthomvc.cpp \
+    flyem/zflyemorthowidget.cpp \
+    flyem/flyemorthocontrolform.cpp \
+    dvid/zdvidannotation.cpp \
+    dialogs/stringlistdialog.cpp \
+    zroiwidget.cpp \
+    flyem/zflyemtodoitem.cpp \
+    flyem/zflyemtodolist.cpp \
+    flyem/zflyemtodolistfilter.cpp \
+    flyem/zflyemtodolistmodel.cpp \
+    flyem/zflyemtodopresenter.cpp \
+    dialogs/flyemtododialog.cpp \
+    zstackdocselector.cpp \
+    flyem/zflyemproofdoccommand.cpp \
+    flyem/zneutuservice.cpp \
+    dialogs/flyemsettingdialog.cpp \
+    protocols/protocolswitcher.cpp \
+    protocols/protocolchooser.cpp \
+    protocols/protocolmetadata.cpp \
+    protocols/protocoldialog.cpp \
+    protocols/doNthingsprotocol.cpp \
+    protocols/synapsepredictionprotocol.cpp \
+    protocols/synapsepredictioninputdialog.cpp \
+    widgets/zcolorlabel.cpp \
+    zactionlibrary.cpp \
+    zmenufactory.cpp \
+    zcrosshair.cpp \
+    zapplication.cpp \
+    dialogs/flyemsynapsefilterdialog.cpp \
+    flyem/zflyemmb6analyzer.cpp \
+    dialogs/zflyemsynapseannotationdialog.cpp \
+    zdvidutil.cpp \
+    dialogs/zcontrastprotocaldialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

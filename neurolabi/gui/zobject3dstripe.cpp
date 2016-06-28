@@ -1,7 +1,11 @@
 #include "zobject3dstripe.h"
+
+#include <cstring>
+
 #include "tz_error.h"
 #include "zerror.h"
 #include "tz_math.h"
+#include "geometry/zgeometry.h"
 
 int ZObject3dStripe::getMinX() const
 {
@@ -296,8 +300,111 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   }
 }
 
+void ZObject3dStripe::drawStack(Stack *stack, int v, NeuTube::EAxis axis,
+                                const int *offset) const
+{
+  switch (axis) {
+  case NeuTube::Z_AXIS:
+    drawStack(stack, v, offset);
+    break;
+  case NeuTube::X_AXIS:
+  case NeuTube::Y_AXIS:
+    if (C_Stack::kind(stack) == GREY || C_Stack::kind(stack) != GREY16) {
+      Image_Array ima;
+      ima.array = stack->array;
+      int dx = 0;
+      int dy = 0;
+      int dz = 0;
+      if (offset != NULL) {
+        dx = offset[0];
+        dy = offset[1];
+        dz = offset[2];
+        ZGeometry::shiftSliceAxis(dx, dy, dz, axis);
+      }
+
+      int y = getY();
+      int z = getZ();
+
+      if (offset != NULL) {
+        y += dy;
+        z += dz;
+      }
+
+      int shiftedWidth = C_Stack::width(stack);
+      int shiftedHeight = C_Stack::height(stack);
+      int shiftedDepth = C_Stack::depth(stack);
+      ZGeometry::shiftSliceAxis(shiftedWidth, shiftedHeight, shiftedDepth, axis);
+      if (y >= shiftedHeight) {
+        return;
+      }
+
+      if (z >= shiftedDepth) {
+        return;
+      }
+
+      size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+      size_t arrayOffset = 0;
+
+      int stride = 1;
+      if (axis == NeuTube::Y_AXIS) {
+        arrayOffset = C_Stack::width(stack) * y + area * z;
+      } else {
+        arrayOffset = area * y + z;
+        stride = C_Stack::width(stack);
+      }
+
+      switch (C_Stack::kind(stack)) {
+      case GREY:
+        ima.array8 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 255) ? 255 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array8[x * stride] = v;
+            }
+          }
+        }
+        break;
+      case GREY16:
+        ima.array16 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 65535) ? 65535 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array16[x * stride] = v;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+      }
+    } else {
+      RECORD_ERROR(true, "Unsupported kind");
+      return;
+    }
+
+    break;
+  }
+}
+
 void ZObject3dStripe::drawStack(
-    Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
+    Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+    const int *offset) const
 {
   if (C_Stack::kind(stack) != COLOR) {
     RECORD_ERROR(true, "Unsupported kind");
@@ -655,4 +762,92 @@ void ZObject3dStripe::print(int indent) const
     }
     std::cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << std::endl;
   }
+}
+
+#define MOVE_SEGMENT(seg, nseg, s, start, end) \
+  ++seg;\
+  if (seg >= nseg) {\
+    break;\
+  }\
+  start = s.getSegmentStart(seg);\
+  end = s.getSegmentEnd(seg);
+
+#define MOVE_FIRST_SEGMENT \
+  ++seg1;\
+  if (seg1 >= nseg1) {\
+    break;\
+  }\
+  s1Start = s1.getSegmentStart(seg1);\
+  s1End = s1.getSegmentEnd(seg1);
+
+#define MOVE_SECOND_SEGMENT \
+  ++seg2;\
+  if (seg2 >= nseg2) {\
+    break;\
+  }\
+  s2Start = s2.getSegmentStart(seg2);\
+  s2End = s2.getSegmentEnd(seg2);
+
+
+ZObject3dStripe operator - (
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+{
+  ZObject3dStripe result;
+
+  if ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+      !s1.m_segmentArray.empty() && !s2.m_segmentArray.empty()) {
+    result.setY(s1.getY());
+    result.setZ(s2.getZ());
+
+    const_cast<ZObject3dStripe&>(s1).canonize();
+    const_cast<ZObject3dStripe&>(s2).canonize();
+
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+//    int currentStart = s1Start;
+//    int currentEnd = s1End;
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End < s1Start) {
+        MOVE_SECOND_SEGMENT;
+      } else if (s2Start <= s1Start) {
+        if (s2End >= s1End) {
+          MOVE_FIRST_SEGMENT;
+        } else {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        }
+      } else if (s2Start <= s1End) {
+        result.addSegment(s1Start, s2Start - 1, false);
+        if (s2End < s1End) {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        } else {
+          MOVE_FIRST_SEGMENT;
+        }
+      } else {
+        result.addSegment(s1Start, s1End, false);
+        MOVE_FIRST_SEGMENT;
+      }
+    }
+
+    while (seg1 < nseg1) {
+      result.addSegment(s1Start, s1End, false);
+      MOVE_FIRST_SEGMENT;
+    }
+
+    result.setCanonized(true);
+  } else {
+    result = s1;
+  }
+
+  return result;
 }

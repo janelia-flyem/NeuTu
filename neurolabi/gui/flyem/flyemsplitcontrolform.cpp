@@ -10,6 +10,7 @@
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
 #include "zstackdoc.h"
+#include "neutubeconfig.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -134,6 +135,10 @@ void FlyEmSplitControlForm::createMenu()
   QAction *crop3DAction = new QAction("Coarse Body Crop", this);
   m_mainMenu->addAction(crop3DAction);
   connect(crop3DAction, SIGNAL(triggered()), this, SLOT(cropCoarseBody3D()));
+
+  QAction *body3DAction = new QAction("Show 3D Grayscale", this);
+  m_mainMenu->addAction(body3DAction);
+  connect(body3DAction, SIGNAL(triggered()), this, SLOT(showBodyGrayscale()));
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
@@ -218,6 +223,11 @@ void FlyEmSplitControlForm::cropCoarseBody3D()
   emit croppingCoarseBody3D();
 }
 
+void FlyEmSplitControlForm::showBodyGrayscale()
+{
+  emit showingBodyGrayscale();
+}
+
 void FlyEmSplitControlForm::selectSeed()
 {
   emit selectingSeed();
@@ -242,6 +252,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
     if (project->getDocument() != NULL) {
+      ZOUT(LINFO(), 3) << "Update bookmark table for split project";
       m_assignedBookmarkList.clear();
       m_userBookmarkList.clear();
       const TStackObjectList &objList = project->getDocument()->
@@ -249,15 +260,16 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-//        if (bookmark->getBodyId() == project->getBodyId()) {
-          if (bookmark->isCustom()) {
-            m_userBookmarkList.append(bookmark);
-          } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-            if (bookmark->getBodyId() == project->getBodyId()) {
-              m_assignedBookmarkList.append(bookmark);
-            }
+        //        if (bookmark->getBodyId() == project->getBodyId()) {
+        if (bookmark->isCustom()) {
+          m_userBookmarkList.append(bookmark);
+        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          if (bookmark->getBodyId() == project->getBodyId()) {
+            m_assignedBookmarkList.append(bookmark);
           }
         }
+      }
+      ZOUT(LINFO(), 3) << "Bookmark updated";
 //      }
     }
   }
@@ -285,6 +297,8 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 
 void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
+  ZOUT(LINFO(), 3) << "Updating user bookmark table for split control form";
+
   m_userBookmarkList.clear();
   if (doc != NULL) {
     const TStackObjectList &objList =
@@ -299,5 +313,7 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
       }
     }
   }
+  ZOUT(LINFO(), 3) << "Sorting bookmark view";
+
   getUserBookmarkView()->sort();
 }

@@ -480,6 +480,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
   }
 
   tree->resortId();
+  tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
   return tree;
 }
