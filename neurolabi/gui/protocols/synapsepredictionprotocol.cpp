@@ -57,7 +57,7 @@ const std::string SynapsePredictionProtocol::KEY_FINISHED = "finished";
 const std::string SynapsePredictionProtocol::KEY_PENDING = "pending";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
-const int SynapsePredictionProtocol::fileVversion = 1;
+const int SynapsePredictionProtocol::fileVersion = 1;
 
 
 /*
@@ -247,7 +247,7 @@ void SynapsePredictionProtocol::saveState() {
     data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
 
     // always version your output files!
-    data.setEntry(KEY_VERSION.c_str(), fileVversion);
+    data.setEntry(KEY_VERSION.c_str(), fileVersion);
 
     emit requestSaveProtocol(data);
 }

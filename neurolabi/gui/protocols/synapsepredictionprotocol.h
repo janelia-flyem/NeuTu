@@ -61,7 +61,7 @@ private:
     static const std::string KEY_FINISHED;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
-    static const int fileVversion;
+    static const int fileVersion;
 
     Ui::SynapsePredictionProtocol *ui;
     QList<ZIntPoint> m_pendingList;
