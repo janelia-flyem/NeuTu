@@ -1060,7 +1060,7 @@ void ZFlyEmRoiProject::setDsIntv(int xintv, int yintv, int zintv)
   m_currentDsIntv.set(xintv, yintv, zintv);
 }
 
-void ZFlyEmRoiProject::setDocData(const ZStackDocReader &docReader)
+void ZFlyEmRoiProject::setDocData(ZStackDocReader &docReader)
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->clearData();

@@ -12,9 +12,10 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
   m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
 {
-  m_type = GetType();
+  m_type = TYPE_UNIDENTIFIED;
   setSliceAxis(NeuTube::Z_AXIS);
   m_basePenWidth = m_defaultPenWidth;
+  m_timeStamp = 0;
 }
 
 ZStackObject::~ZStackObject()

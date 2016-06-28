@@ -25,6 +25,11 @@ void ZDvidAnnotation::init()
   setDefaultColor();
 }
 
+void ZDvidAnnotation::setRadius(double r)
+{
+  m_radius = r;
+}
+
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                            NeuTube::EAxis sliceAxis) const
 {
@@ -196,6 +201,30 @@ bool ZDvidAnnotation::hit(double x, double y, NeuTube::EAxis axis)
   return d2 <= m_radius * m_radius;
 }
 
+void ZDvidAnnotation::setProperty(ZJsonObject propJson)
+{
+  if (propJson.hasKey("conf") && m_propertyJson.hasKey("confidence")) {
+    m_propertyJson.removeKey("confidence");
+  }
+
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap();
+  for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
+       iter != entryMap.end(); ++iter) {
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (strlen(ZJsonParser::stringValue(iter->second)) == 0) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
+    }
+  }
+}
+
 void ZDvidAnnotation::clear()
 {
   m_position.set(0, 0, 0);
@@ -218,6 +247,31 @@ ZIntPoint ZDvidAnnotation::GetPosition(const ZJsonObject &json)
   }
 
   return pt;
+}
+
+void ZDvidAnnotation::updatePartner(const ZJsonArray &jsonArray)
+{
+  m_partnerHint.clear();
+
+  for (size_t i = 0; i < jsonArray.size(); ++i) {
+    ZJsonObject partnerJson(jsonArray.value(i));
+    if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
+//              std::string rel = ZJsonParser::stringValue(partnerJson["Rel"]);
+      /*
+      if ((getKind() == KIND_POST_SYN && rel == "PostSynTo") ||
+          (getKind() == KIND_PRE_SYN && rel == "PreSynTo")) {
+          */
+      ZJsonArray posJson(partnerJson.value("To"));
+      std::vector<int> coords = posJson.toIntegerArray();
+      addPartner(coords[0], coords[1], coords[2]);
+//              }
+    }
+  }
+}
+
+void ZDvidAnnotation::updatePartner()
+{
+  updatePartner(m_relJson);
 }
 
 void ZDvidAnnotation::loadJsonObject(
@@ -252,6 +306,9 @@ void ZDvidAnnotation::loadJsonObject(
           m_relJson = jsonArray;
           break;
         case NeuTube::FlyEM::LOAD_PARTNER_LOCATION:
+//          m_relJson = jsonArray;
+          updatePartner(jsonArray);
+#if 0
           for (size_t i = 0; i < jsonArray.size(); ++i) {
             ZJsonObject partnerJson(jsonArray.value(i));
             if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
@@ -266,6 +323,7 @@ void ZDvidAnnotation::loadJsonObject(
 //              }
             }
           }
+#endif
           break;
         default:
           break;
@@ -280,6 +338,9 @@ void ZDvidAnnotation::loadJsonObject(
 
     if (obj.hasKey("Prop")) {
       m_propertyJson.setValue(obj.value("Prop").clone());
+#ifdef _DEBUG_
+      std::cout << m_propertyJson.dumpString(2) << std::endl;
+#endif
     }
   }
 }
@@ -395,7 +456,11 @@ double ZDvidAnnotation::getRadius(int z, NeuTube::EAxis sliceAxis) const
 
 void ZDvidAnnotation::setUserName(const std::string &name)
 {
-  m_propertyJson.setEntry("user", name);
+  if (name.empty()) {
+    m_propertyJson.removeKey("user");
+  } else {
+    m_propertyJson.setEntry("user", name);
+  }
 }
 
 std::string ZDvidAnnotation::getUserName() const

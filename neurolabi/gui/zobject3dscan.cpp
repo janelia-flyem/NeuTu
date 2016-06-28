@@ -72,7 +72,7 @@ ZObject3dScan::~ZObject3dScan()
 void ZObject3dScan::init()
 {
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJECT3D_SCAN;
+  m_type = GetType();
 
   m_isCanonized = false;
   m_label = 0;
@@ -1120,12 +1120,16 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
   return stack;
 }
 
-ZStack* ZObject3dScan::toStackObject(int v) const
+ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
 {
   int offset[3] = {0, 0, 0};
   Stack *stack = toStack(offset, v);
 
-  ZStack *stackObject = new ZStack;
+  ZStack *stackObject = result;
+
+  if (stackObject == NULL) {
+    stackObject = new ZStack;
+  }
 
   if (stack != NULL) {
     stackObject->load(stack);
@@ -2744,7 +2748,15 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
+    ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+
+    if (getSliceAxis() == NeuTube::X_AXIS) {
+      for (int i = 0; i < runLength; ++i) {
+        addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
+      }
+    } else {
+      addSegment(coord[2], coord[1], coord[0], coord[0] + runLength - 1, false);
+    }
   }
 
   return true;

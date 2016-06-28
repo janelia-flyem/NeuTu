@@ -7,8 +7,7 @@
 #include "zintpoint.h"
 #include "tz_stdint.h"
 #include "zstackball.h"
-
-class ZJsonObject;
+#include "zjsonobject.h"
 
 class ZFlyEmBookmark : public ZStackBall
 {
@@ -100,6 +99,14 @@ public:
 
   ZFlyEmBookmark* clone() const;
 
+  ZJsonObject& getPropertyJson() {
+    return m_propertyJson;
+  }
+
+  const ZJsonObject& getPropertyJson() const {
+    return m_propertyJson;
+  }
+
 private:
   void init();
 
@@ -116,6 +123,7 @@ private:
   bool m_isChecked;
   bool m_isCustom;
   bool m_isInTable;
+  ZJsonObject m_propertyJson;
 //  QString m_decorationText;
 };
 

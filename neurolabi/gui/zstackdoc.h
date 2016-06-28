@@ -233,8 +233,8 @@ public: //attributes
   // Prefix for tracing project.
   const char *tubePrefix() const;
 
-  inline QList<ZStackObject*>* drawableList() {
-    return &m_objectGroup;
+  inline QList<ZStackObject*> *drawableList() {
+    return &(m_objectGroup.getObjectList());
   }
 
 //  inline QList<ZSwcTree*>* swcList();
@@ -288,7 +288,7 @@ public: //attributes
 
   void updateSwcNodeAction();
 
-  void addData(const ZStackDocReader &reader);
+  void addData(ZStackDocReader &reader);
 
   bool isUndoClean() const;
   bool isSwcSavingRequired() const;
@@ -643,7 +643,8 @@ public:
   void test(QProgressBar *pb = NULL);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
-  inline void pushUndoCommand(QUndoCommand *command) { m_undoStack->push(command); }
+  void pushUndoCommand(QUndoCommand *command);
+  void pushUndoCommand(ZUndoCommand *command);
 
   inline std::string additionalSource() { return m_additionalSource; }
   inline void setAdditionalSource(const std::string &filePath) {
@@ -787,6 +788,7 @@ public:
   }
 
   void disconnectSwcNodeModelUpdate();
+  void disconnectPunctaModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
@@ -1062,6 +1064,8 @@ public slots:
   void selectBranchNode();
   void selectTreeNode();
   void selectConnectedNode();
+  void inverseSwcNodeSelection();
+  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.
@@ -1082,7 +1086,7 @@ public slots:
 
   void reloadStack();
 
-  void reloadData(const ZStackDocReader &reader);
+  void reloadData(ZStackDocReader &reader);
 
   void removeUser(QObject *user);
   void removeAllUser();
@@ -1158,7 +1162,7 @@ signals:
   void progressStarted();
   void progressEnded();
   void progressAdvanced(double dp);
-  void newDocReady(const ZStackDocReader &reader);
+//  void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
 
@@ -1269,6 +1273,8 @@ private:
   QMutex m_objectModifiedRoleBufferMutex;
   QStack<EObjectModifiedMode> m_objectModifiedMode;
   QMutex m_objectModifiedModeMutex;
+
+  QMutex m_playerMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;

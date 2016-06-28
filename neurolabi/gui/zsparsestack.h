@@ -5,6 +5,8 @@
 #include "bigdata/zstackblockgrid.h"
 #include "zuncopyable.h"
 
+class ZIntCuboid;
+
 /*!
  * \brief Sparse stack representation
  */
@@ -29,6 +31,8 @@ public:
    */
   ZStack* getStack();
   const ZStack* getStack() const;
+
+  ZStack *getStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
 
   /*!
    * \brief Get the downsample interval for producing the dense stack.

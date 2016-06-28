@@ -57,6 +57,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
+  ZSparseStack *getSparseStack(const ZIntCuboid &box);
+
   void downloadBodyMask();
 
   bool hit(double x, double y, double z);

@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QTime>
 #include <QProcess>
 #include <iostream>
 #include <ostream>
@@ -17052,7 +17053,7 @@ void ZTest::test(MainWindow *host)
 
   ZObject3dScan obj = reader.readRoi("mb_subtracted");
   std::cout << obj.getVoxelNumber() << std::endl;
-//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
 #if 0
@@ -20164,7 +20165,41 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.refreshLabel(ZIntCuboid(4099, 5018, 10343,
-                                 4099 + 99, 5018 + 99, 10343 + 99));
+                                 4099 + 99, 5018 + 99, 10343 + 99), 1);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.readTile(0, 0, 0, 0);
+
+  ZArray *label = reader.readLabels64Lowtis(4099, 5018, 10343, 512, 512);
+
+  reader.readLabels64Lowtis(4099, 5018, 10344, 512, 512);
+
+#endif
+
+
+#if 0
+  ZFlyEmBookmark bookmark;
+  bookmark.setComment("test");
+
+  bookmark.getPropertyJson().setEntry("comment", "test2");
+  bookmark.getPropertyJson().setEntry("prop1", "test2");
+  bookmark.getPropertyJson().setEntry("prop2", "test3");
+  bookmark.setLocation(1, 2, 3);
+  bookmark.setBodyId(10);
+
+  std::cout << bookmark.toDvidAnnotationJson().dumpString() << std::endl;
+
+  ZFlyEmBookmark bookmark2;
+  bookmark2.loadDvidAnnotation(bookmark.toDvidAnnotationJson());
+  std::cout << bookmark2.toDvidAnnotationJson().dumpString() << std::endl;
+
 #endif
 
 #if 0
@@ -20179,14 +20214,207 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("0bf3");
+  writer.writeMasterNode("32a2");
+#endif
+
+#if 0
+  QDateTime time;
+  std::cout << time.currentTime().elapsed() << std::endl;
+#endif
+
+#if 0
+  ZJsonArray myList;
+  ZJsonObject myMap;
+
+  // workaround
+
+//  myList.remove(0);
+
+  // now this works:
+  myMap.setEntry("key", myList);
+
+  myList.append(12345);
+
+  std::cout << myMap.dumpString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan roi;
+    roi.load(GET_TEST_DATA_DIR +
+             "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP.sobj");
+
+    ZIntCuboid roiBox = roi.getBoundBox();
+
+    ZIntCuboid cropBox = roiBox;
+
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZIntPoint blockIndex1 = dvidInfo.getBlockIndex(7314, 0, 0);
+    ZIntPoint blockIndex2 = dvidInfo.getBlockIndex(12958, 0, 0);
+
+    cropBox.setLastX(blockIndex1.getX());
+
+    ZObject3dScan *roi1 = roi.subobject(cropBox, NULL);
+    roi1->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x1.sobj");
+
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(*roi1);
+    array.dump(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x1.json");
+
+    cropBox.setFirstX(blockIndex1.getX() + 1);
+    cropBox.setLastX(blockIndex2.getX());
+    ZObject3dScan *roi2 = roi.subobject(cropBox, NULL);
+    roi2->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x2.sobj");
+    array = ZJsonFactory::MakeJsonArray(*roi2);
+        array.dump(GET_TEST_DATA_DIR +
+                   "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x2.json");
+
+
+    cropBox.setFirstX(blockIndex2.getX() + 1);
+    cropBox.setLastX(roiBox.getLastCorner().getX());
+    ZObject3dScan *roi3 = roi.subobject(cropBox, NULL);
+    roi3->save(GET_TEST_DATA_DIR +
+               "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x3.sobj");
+
+    array = ZJsonFactory::MakeJsonArray(*roi3);
+        array.dump(GET_TEST_DATA_DIR +
+                   "/flyem/FIB/FIB19/roi/roi_new_segmentation_LO_LOP_x3.json");
+
+
+    if (roi1->getVoxelNumber() + roi2->getVoxelNumber() + roi3->getVoxelNumber()
+        != roi.getVoxelNumber()) {
+      std::cout << "WARNING: Inconsistent voxel number" << std::endl;
+    }
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("segmentation-labelvol");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan obj = reader.readCoarseBody(51017317967);
+    obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+#endif
+
+#if 0
+  const std::vector<ZDvidTarget> &repoList = GET_FLYEM_CONFIG.getDvidRepo();
+
+  std::cout << repoList.size() << std::endl;
+
+  std::set<std::string> userNameSet;
+  std::set<std::string> uuidSet;
+  std::vector<ZDvidTarget> targetList;
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = repoList.begin();
+       iter != repoList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    userNameSet.insert(
+          target.getUserNameSet().begin(), target.getUserNameSet().end());
+    if (ZString(target.getUuid()).startsWith("@")) {
+      if (uuidSet.count(target.getUuid()) == 0) {
+        uuidSet.insert(target.getUuid());
+        targetList.push_back(target);
+      }
+    }
+  }
+
+  std::cout << userNameSet.size() << " users." << std::endl;
+
+
+  for (std::vector<ZDvidTarget>::const_iterator iter = targetList.begin();
+       iter != targetList.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    ZDvidReader reader;
+    reader.open(target);
+    //      ZDvidUrl url(target);
+    for (std::set<std::string>::const_iterator iter = userNameSet.begin();
+         iter != userNameSet.end(); ++iter) {
+      const std::string &user = *iter;
+      ZJsonArray jsonArray = reader.readAnnotation(
+            target.getBookmarkName(), "user:" + user);
+      std::cout << jsonArray.size() << " bookmarks for " << target.getUuid()
+                << ":" << user << std::endl;
+      for (size_t i = 0; i < jsonArray.size(); ++i) {
+        ZJsonObject jsonObj(jsonArray.value(i));
+        ZFlyEmBookmark bookmark;
+        bookmark.loadDvidAnnotation(jsonObj);
+        if (bookmark.getComment().contains("split")) {
+          std::cout << bookmark.getCenter().toString() << ":"
+                    << bookmark.getComment().toStdString() << std::endl;
+        }
+      }
+    }
+  }
+
+#endif
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "5cb3", 8700);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject obj;
+  obj.setEntry("nonlinear", true);
+  obj.setEntry("offset", 0.0);
+  obj.setEntry("scale", 1.2);
+  writer.writeJson("neutu_config", "contrast", obj);
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.createData("keyvalue", "data_test2", false);
+#endif
+
+#if 0
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "372c";
+  config.datatypename = "labels";
+
+  lowtis::ImageService service(config);
+
+  int width = 512;
+  int height = 512;
+  std::vector<int> offset(3, 0);
+  offset[0] = 4099;
+  offset[1] = 5018;
+  offset[2] = 10343;
+
+  char *buffer = new char[width * height * 8];
+  service.retrieve_image(width, height, offset, buffer);
+
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/system/split_test/test.sobj");
+  obj.getSlice(2742, 2813).save(GET_TEST_DATA_DIR + "/system/split_test/body.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

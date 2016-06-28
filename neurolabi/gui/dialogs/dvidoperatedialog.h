@@ -8,6 +8,8 @@ namespace Ui {
 class DvidOperateDialog;
 }
 
+class ZContrastProtocalDialog;
+
 class DvidOperateDialog : public QDialog
 {
   Q_OBJECT
@@ -23,10 +25,13 @@ private slots:
 
   void on_creatDataPushButton_clicked();
 
+  void on_contrastPushButton_clicked();
+
 private:
   Ui::DvidOperateDialog *ui;
 
   ZDvidDialog *m_dvidDlg;
+  ZContrastProtocalDialog *m_contrastDlg;
 };
 
 #endif // DVIDOPERATEDIALOG_H

@@ -23,6 +23,8 @@ public:
   bool update(int z);
   void update();
 
+  bool isSliceVisible(int z, NeuTube::EAxis axis) const;
+
 private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);
 

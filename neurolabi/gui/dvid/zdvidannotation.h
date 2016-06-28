@@ -2,6 +2,8 @@
 #define ZDVIDANNOTATION_H
 
 #include <string>
+#include <QStaticText>
+
 #include "zstackobject.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -42,8 +44,7 @@ public:
   const ZIntPoint& getPosition() const { return m_position; }
 
   void setDefaultRadius();
-  void setRadius(double r) { m_radius = r; }
-
+  void setRadius(double r);
   double getRadius() const { return m_radius; }
 
   void setKind(EKind kind) { m_kind = kind; }
@@ -107,15 +108,24 @@ public:
     ERelation m_relation;
   };
 
-  const std::vector<ZIntPoint>& getPartners() {
+  const std::vector<ZIntPoint>& getPartners() const {
     return m_partnerHint;
   }
 
   ZCuboid getBoundBox() const;
 
+  void setProperty(ZJsonObject propJson);
+
+  void updatePartner();
+  void updatePartner(const ZJsonArray &jsonArray);
+
 public: //Additional properties
   void setUserName(const std::string &name);
   std::string getUserName() const;
+
+  ZJsonArray getRelationJson() const {
+    return m_relJson;
+  }
 
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
@@ -160,6 +170,8 @@ protected:
   std::vector<std::string> m_tagArray;
   ZJsonObject m_propertyJson;
   ZJsonArray m_relJson;
+
+  mutable QStaticText m_textDecoration;
 };
 
 template <typename InputIterator>

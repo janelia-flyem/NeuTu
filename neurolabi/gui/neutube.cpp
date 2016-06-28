@@ -75,3 +75,16 @@ bool NeuTube::IsAdminUser()
   return NeuTube::GetCurrentUserName() == "zhaot";
 }
 
+QFileDialog::Options NeuTube::GetFileDialogOption()
+{
+  if (!NeutubeConfig::getInstance().usingNativeDialog()) {
+    return QFileDialog::DontUseNativeDialog;
+  }
+
+  return 0;
+}
+
+QString NeuTube::GetLastFilePath()
+{
+  return NeutubeConfig::GetSettings().value("lastPath").toString();
+}

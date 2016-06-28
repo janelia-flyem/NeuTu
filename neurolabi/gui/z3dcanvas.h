@@ -97,6 +97,7 @@ public:
   bool processMouseMoveEventForPaint(QMouseEvent *e);
   bool suppressingContextMenu() const;
   void disableKeyEvent();
+  void setKeyMode(ZInteractionEngine::EKeyMode mode);
 
   void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler);
 

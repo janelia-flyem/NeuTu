@@ -33,6 +33,7 @@ public:
    * An object is empty iff no key exists.
    */
   bool isEmpty() const;
+  void denull();
 
 public:
   /*!

@@ -44,6 +44,10 @@ std::string ZDvidUrl::getNodeUrl() const
 
 std::string ZDvidUrl::getDataUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return m_dvidTarget.getUrl() + "/" + dataName;
 }
 
@@ -61,6 +65,10 @@ std::string ZDvidUrl::getDataUrl(
 
 std::string ZDvidUrl::getInfoUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getDataUrl(dataName) + "/" + m_infoCommand;
 }
 
@@ -165,6 +173,8 @@ std::string ZDvidUrl::getSparsevolUrl(
   }
 
   url.appendNumber(z);
+
+  url += "&exact=false";
 
   return url;
 }
@@ -507,6 +517,10 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
 std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 {
   std::string key = m_dvidTarget.getLabelBlockName();
+  if (key.empty()) {
+    return "";
+  }
+
   if (!userName.empty()) {
     key += "_" + userName;
   }
@@ -701,6 +715,10 @@ std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getDataUrl(dataName) + "/" + m_roiCommand;
 }
 
@@ -711,18 +729,30 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
 
 std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getAnnotationUrl(dataName) + "/sync";
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getAnnotationUrl(dataName) + "/" + m_annotationTagCommand + "/" + tag;
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, uint64_t label) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   std::ostringstream stream;
   stream << label;
   return getAnnotationUrl(dataName) + "/" + m_annotationLabelCommand + "/" +
@@ -733,6 +763,10 @@ std::string ZDvidUrl::getAnnotationUrl(
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, int x, int y, int z) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   std::ostringstream stream;
 
   stream << getAnnotationUrl(dataName) << "/"
@@ -745,6 +779,10 @@ std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName,
     int x, int y, int z, int width, int height, int depth) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   std::ostringstream stream;
 
   stream << getAnnotationUrl(dataName) << "/" << m_annotationElementsCommand << "/"
@@ -765,17 +803,29 @@ std::string ZDvidUrl::getAnnotationUrl(
 
 std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
 }
 
 std::string ZDvidUrl::getAnnotationDeleteUrl(const std::string &dataName) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   return getAnnotationUrl(dataName) + "/element";
 }
 
 std::string ZDvidUrl::getAnnotationDeleteUrl(
     const std::string &dataName, int x, int y, int z) const
 {
+  if (dataName.empty()) {
+    return "";
+  }
+
   std::ostringstream stream;
   stream << getAnnotationDeleteUrl(dataName) << "/" << x << "_" << y << "_"
          << z;
@@ -883,6 +933,16 @@ std::string ZDvidUrl::getTodoListUrl(
 std::string ZDvidUrl::getTodoListUrl(int x, int y, int z) const
 {
   return getTodoListUrl(x, y, z, 1, 1, 1);
+}
+
+std::string ZDvidUrl::getConfigUrl() const
+{
+  return getDataUrl("neutu_config");
+}
+
+std::string ZDvidUrl::getContrastUrl() const
+{
+  return getKeyUrl("neutu_config", "contrast");
 }
 
 std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const

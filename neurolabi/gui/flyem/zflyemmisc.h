@@ -41,17 +41,6 @@ void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo);
 
-#if defined(_ENABLE_LIBDVIDCPP_)
-libdvid::BinaryDataPtr MakeRequest(
-    const std::string &url, const std::string &method,
-    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
-    int &statusCode);
-libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
-    const std::string &web_addr, const std::string &uuid);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
-    const ZDvidTarget &target);
-#endif
 
 class HackathonEvaluator {
 public:

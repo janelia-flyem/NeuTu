@@ -374,11 +374,16 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
     //  are present
 
     ZDvidReader reader;
-    reader.setVerbose(false);
+
     if (reader.open(target)) {
+        reader.setVerbose(true);
+        #ifdef _DEBUG_
+            std::cout << "getting file from dataname " << ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION) << " and key " << ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES) << std::endl;
+        #endif
         const QByteArray &bookmarkData = reader.readKeyValue(
             ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
             ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
+        reader.setVerbose(false);
         ZJsonObject jsonDataObject;
         jsonDataObject.decodeString(bookmarkData.data());
 
@@ -400,6 +405,9 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
               ZDvidData::ROLE_BODY_ANNOTATION,
               ZDvidData::ROLE_BODY_LABEL,
               target.getBodyLabelName()).c_str();
+        #ifdef _DEBUG_
+            std::cout << "getting names from " << bodyAnnotationName.toStdString() << std::endl;
+        #endif
 
         // get all the keys rather than testing whether each body ID
         //  has a name individually
@@ -431,10 +439,10 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
             ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
-            uint64_t bodyId = bkmk.value("body ID").toInteger();
+            uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);
+
             if (bodySet.contains(bodyId)) {
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName,
-                      QString::number(bkmk.value("body ID").toInteger()));
+                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, QString::number(bodyId));
                 ZJsonObject tempJson;
                 tempJson.decodeString(temp.data());
 
@@ -886,22 +894,37 @@ void FlyEmBodyInfoDialog::exportBodies(QString filename) {
 
     // tab-separated text file, with header
     QTextStream outputStream(&outputFile);
-    for (int i=0; i<m_bodyModel->columnCount(); i++) {
-        if (i != 0) {
-            outputStream << "\t";
-        }
-        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
-    }
-    outputStream << "\n";
 
-    for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+    if (filename.endsWith(".csv")) { //Export headerless csv file
+      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
         for (int i=0; i<m_bodyProxy->columnCount(); i++) {
-            if (i != 0) {
-                outputStream << "\t";
-            }
-            outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+          if (i != 0) {
+            outputStream << ",";
+          }
+          outputStream << '"'
+                       << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString()
+                       << '"';
         }
         outputStream << "\n";
+      }
+    } else {
+      for (int i=0; i<m_bodyModel->columnCount(); i++) {
+        if (i != 0) {
+          outputStream << "\t";
+        }
+        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
+      }
+      outputStream << "\n";
+
+      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
+          if (i != 0) {
+            outputStream << "\t";
+          }
+          outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+        }
+        outputStream << "\n";
+      }
     }
 
     outputFile.close();

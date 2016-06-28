@@ -12,6 +12,7 @@
 //#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 #include "zpixmap.h"
+#include "zjsonobject.h"
 
 class ZPainter;
 class ZStack;
@@ -77,6 +78,7 @@ public:
 //  void setImageData(const uint8_t *data, int width, int height);
 
   void enhanceContrast(bool high, bool updatingPixmap);
+  void setContrastProtocal(const ZJsonObject &obj);
 
   void updatePixmap();
 
@@ -90,6 +92,7 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+  ZJsonObject m_contrastProtocal;
 
   QMutex m_pixmapMutex;
 

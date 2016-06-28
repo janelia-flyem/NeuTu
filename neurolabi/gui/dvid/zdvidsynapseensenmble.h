@@ -105,6 +105,15 @@ public:
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,
                    EDataScope scope);
 
+  void annotateSynapse(int x, int y, int z, const ZJsonObject &propJson,
+                       EDataScope scope);
+  void annotateSynapse(const ZIntPoint &pt, const ZJsonObject &propJson,
+                       EDataScope scope);
+  void setUserName(const ZIntPoint &pt, const std::string &userName,
+                   EDataScope scope);
+  void setUserName(
+      int x, int y, int z, const std::string &userName, EDataScope scope);
+
   void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
 
   ZDvidSynapse &getSynapse(int x, int y, int z, EDataScope scope);

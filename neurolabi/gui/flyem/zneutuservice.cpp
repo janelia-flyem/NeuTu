@@ -4,6 +4,7 @@
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
+#include "zdvidutil.h"
 
 ZNeutuService::ZNeutuService(const std::string &server)
 {
@@ -100,7 +101,7 @@ void ZNeutuService::updateStatus()
 
   if (!m_server.empty()) {
     int statusCode;
-    if (ZFlyEmMisc::MakeGetRequest(getHomeUrl(), statusCode)) {
+    if (ZDvid::MakeGetRequest(getHomeUrl(), statusCode)) {
       if (statusCode == 200) {
         m_status = STATUS_NORMAL;
       }

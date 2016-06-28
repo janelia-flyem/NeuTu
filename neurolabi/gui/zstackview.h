@@ -371,6 +371,8 @@ public: //Change view parameters
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
 
+  void updateContrastProtocal();
+
 protected:
   ZIntCuboid getViewBoundBox() const;
   virtual int getDepth() const;

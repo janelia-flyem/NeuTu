@@ -92,7 +92,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
     if (m_volumeMode == NeuTube3D::VR_AUTO) {
       if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-          doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+          doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
+          doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
         window->getVolumeRaycasterRenderer()->setCompositeMode(
               "Direct Volume Rendering");
       } else {

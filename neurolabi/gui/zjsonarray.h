@@ -82,6 +82,7 @@ public:
   bool decode(const std::string &str);
 
   bool isEmpty() const;
+  void denull();
 
   std::string dumpString(int indent = 2) const;
 };

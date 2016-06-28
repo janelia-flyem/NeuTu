@@ -983,7 +983,7 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
                                               buddyPresenter()->greyOffset(0),
                                               stack->getChannelColor(0));
         m_image->setData(stackData, getIntensityThreshold());
-
+        m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       }
       break;
     case GREY16:
@@ -1011,6 +1011,7 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
             stack->array8(), stack->width(), stack->height(), stack->depth(),
             slice, buddyPresenter()->getGrayScale(),
             buddyPresenter()->getGrayOffset(), m_sliceAxis);
+      m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       break;
     default:
       break;
@@ -1174,6 +1175,18 @@ void ZStackView::resetCanvasWithStack(T &canvas, ZPainter *painter)
   }
 }
 
+void ZStackView::updateContrastProtocal()
+{
+  if (m_image != NULL) {
+    if (buddyPresenter()->hasHighContrastProtocal()) {
+      m_image->loadHighContrastProtocal(
+            buddyPresenter()->getHighContrastProtocal());
+    } else {
+      m_image->setDefaultContrastProtocal();
+    }
+  }
+}
+
 void ZStackView::updateImageCanvas()
 {
   resetCanvasWithStack(m_image, &m_imagePainter);
@@ -1190,7 +1203,16 @@ void ZStackView::updateImageCanvas()
 
     if (m_image == NULL) {
 //      double scale = 0.5;
-      m_image = new ZImage(box.getWidth(), box.getHeight());
+      if (buddyDocument()->hasStackData() &&
+          buddyDocument()->getStack()->kind() == GREY) {
+        m_image = new ZImage(
+              box.getWidth(), box.getHeight(), QImage::Format_Indexed8);
+      } else {
+        m_image = new ZImage(box.getWidth(), box.getHeight());
+      }
+
+      updateContrastProtocal();
+
       m_image->setOffset(-box.getFirstCorner().getX(),
                          -box.getFirstCorner().getY());
 //      m_image->setScale(scale, scale);
@@ -1386,15 +1408,6 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   QSize newSize = getProjRegion().size().toSize();
 
-  if (transform.getSx() > 1.1) {
-    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-    newSize = viewPort.size();
-    canvas->getProjTransform().estimate(
-          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
-    transform.setScale(1.0, 1.0);
-    transform.setOffset(-viewPort.left(), -viewPort.top());
-  }
-
 //  qDebug() << "  Canvas size" << newSize;
 
   if (canvas != NULL) {
@@ -1406,6 +1419,15 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   if (canvas == NULL) {
     canvas = new ZPixmap(newSize);
+  }
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    canvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
   }
 
   canvas->setTransform(transform);

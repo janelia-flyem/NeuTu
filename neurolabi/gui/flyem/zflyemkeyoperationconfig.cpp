@@ -52,6 +52,7 @@ void ZFlyEmKeyOperationConfig::ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map)
 //  plainKeyMap[Qt::Key_S] = ZStackOperator::OP_SWC_MOVE_NODE_DOWN;
 //  plainKeyMap[Qt::Key_D] = ZStackOperator::OP_SWC_MOVE_NODE_RIGHT;
   plainKeyMap[Qt::Key_G] = ZStackOperator::OP_BOOKMARK_ENTER_ADD_MODE;
+  plainKeyMap[Qt::Key_B] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
 
 //  plainKeyMap[Qt::Key_Q] = ZStackOperator::OP_SWC_DECREASE_NODE_SIZE;
 //  plainKeyMap[Qt::Key_E] = ZStackOperator::OP_SWC_INCREASE_NODE_SIZE;
@@ -74,5 +75,6 @@ void ZFlyEmKeyOperationConfig::ConfigureFlyEmBookmarkMap(ZKeyOperationMap &map)
 //  shiftKeyMap[Qt::Key_C] = ZStackOperator::OP_SWC_CONNECT_NODE_SMART;
 
   QMap<int, ZStackOperator::EOperation> &controlKeyMap = *(map.getControlMap());
-  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
+//  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
+  controlKeyMap[Qt::Key_G] = ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE;
 }

@@ -21,13 +21,13 @@ TEST(ZStackDoc, Basic)
 TEST(ZStackDoc, Swc)
 {
   ZStackDoc doc;
-  doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/1.swc").c_str());
+  doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/swc/compare1.swc").c_str());
   doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
   ASSERT_EQ(1, doc.getSwcList().size());
   ASSERT_EQ(GET_TEST_DATA_DIR + "/test1.swc", doc.getSwcList().front()->getSource());
 
   ZSwcTree *tree = new ZSwcTree;
-  tree->load(GET_TEST_DATA_DIR + "/benchmark/bundle1/swc/2.swc");
+  tree->load(GET_TEST_DATA_DIR + "/benchmark/swc/compare2.swc");
   doc.addObject(tree);
   ASSERT_EQ(2, doc.getSwcList().size());
 

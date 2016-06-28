@@ -57,6 +57,7 @@ public:
   bool isNumber();
   bool isBoolean();
   virtual bool isEmpty() const;
+  bool isNull() const;
 
   /*!
    * \brief Get the integer value of the json value.
@@ -77,6 +78,8 @@ public:
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
   void set(const ZJsonValue &value);
+
+  virtual void denull();
 
   /*!
    * \brief Obsolete. Will be removed.

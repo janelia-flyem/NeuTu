@@ -31,6 +31,10 @@ public:
   ZLocsegChain(const ZLocsegChain &zlocseg);   // deep copy
   virtual ~ZLocsegChain();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_LOCSEG_CHAIN;
+  }
+
   virtual const std::string& className() const;
 
 public:

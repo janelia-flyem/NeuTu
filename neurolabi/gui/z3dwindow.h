@@ -228,6 +228,10 @@ public: //Bounding box
    * \brief Get the document associated with the window
    */
   inline ZStackDoc* getDocument() const { return m_doc.get(); }
+  template <typename T>
+  T* getDocument() const {
+    return dynamic_cast<T*>(m_doc.get());
+  }
 
   void createToolBar();
 
@@ -400,6 +404,7 @@ public slots:
   void changeSelectedPunctaName();
   void addTodoMarker();
   void addDoneMarker();
+  void updateBody();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -438,6 +443,7 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
+//  void paintEvent(QPaintEvent *event);
 
 private:
   QTabWidget* createBasicSettingTabWidget();

@@ -21,6 +21,7 @@
 #include "zpunctum.h"
 #include "z3dvolumesource.h"
 #include "zpunctumio.h"
+#include "z3dpunctafilter.h"
 
 using namespace std;
 
@@ -49,12 +50,17 @@ void ZMovieMaker::prepareStage()
                                     false, NULL);
   m_stage = new ZMovieStage(window);
 
+  window->getDocument()->disconnectPunctaModelUpdate();
+  window->getDocument()->disconnectSwcNodeModelUpdate();
+
   m_photographer.setStage(m_stage);
   window->getVolumeSource()->setMaxVoxelNumber(1024 * 1024 * 512);
   window->getVolumeSource()->reloadVolume();
 
   window->show();
   window->getSwcFilter()->setColorMode("Intrinsic");
+  window->getSwcFilter()->enablePicking(false);
+  window->getPunctaFilter()->setColorMode("Original Point Color");
   window->getVolumeRaycaster()->getRenderer()->setOpaque(true);
   window->getVolumeRaycaster()->hideBoundBox();
   window->getVolumeRaycasterRenderer()->setCompositeMode("Direct Volume Rendering");

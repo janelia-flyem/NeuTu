@@ -99,6 +99,7 @@ private:
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
+  QAction *m_openProtocolsAction;
   QAction *m_contrastAction;
   QAction *m_smoothAction;
   QAction *m_openTodoAction;

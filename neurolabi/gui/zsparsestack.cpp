@@ -110,6 +110,49 @@ void ZSparseStack::assignStackValue(
   }
 }
 
+ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+{
+  ZStack *out = NULL;
+  if (m_objectMask != NULL || m_stackGrid != NULL) {
+    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    cuboid.intersect(box);
+    if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
+      size_t volume = cuboid.getVolume();
+      double dsRatio = (double) volume / MAX_STACK_VOLUME;
+      ZObject3dScan *obj = m_objectMask->subobject(cuboid);
+
+      if (dsRatio > 1.0) {
+        ZIntPoint tmpDsIntv = misc::getDsIntvFor3DVolume(dsRatio);
+
+        obj->downsampleMax(tmpDsIntv.getX(), tmpDsIntv.getY(), tmpDsIntv.getZ());
+
+        ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
+              tmpDsIntv.getX(), tmpDsIntv.getY(), tmpDsIntv.getZ());
+#ifdef _DEBUG_2
+  return NULL;
+#endif
+        out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out->setZero();
+        assignStackValue(out, *obj, *dsGrid, m_baseValue);
+        if (dsIntv != NULL) {
+          *dsIntv = tmpDsIntv;
+        }
+        delete dsGrid;
+        delete obj;
+      } else {
+        out = new ZStack(GREY, cuboid, 1);
+        out->setZero();
+        assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
+        if (dsIntv != NULL) {
+          dsIntv->set(0, 0, 0);
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
 ZStack* ZSparseStack::getStack()
 {
   if (m_objectMask == NULL || m_stackGrid == NULL) {

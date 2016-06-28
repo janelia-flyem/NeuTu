@@ -12,6 +12,9 @@
 #include "c_json.h"
 #include "zlinesegmentobject.h"
 #include "dvid/zdvidannotation.h"
+#include "tz_constant.h"
+#include "dvid/zdvidreader.h"
+#include "zvaa3dmarker.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -25,6 +28,102 @@ void ZDvidSynapse::init()
   m_kind = KIND_INVALID;
   setDefaultRadius();
   setDefaultColor();
+}
+
+double ZDvidSynapse::getConfidence() const
+{
+  double c = 1.0;
+
+  if (m_propertyJson.hasKey("confidence")) {
+    const char *confStr =
+        ZJsonParser::stringValue(m_propertyJson["confidence"]);
+    c = std::atof(confStr);
+  } else if (m_propertyJson.hasKey("conf")) {
+    const char *confStr =
+        ZJsonParser::stringValue(m_propertyJson["conf"]);
+    c = std::atof(confStr);
+  }
+
+  return c;
+}
+
+std::string ZDvidSynapse::getAnnotation() const
+{
+  std::string annotation;
+  if (m_propertyJson.hasKey("annotation")) {
+    annotation = ZJsonParser::stringValue(m_propertyJson["annotation"]);
+  }
+
+  return annotation;
+}
+
+void ZDvidSynapse::setConfidence(double c)
+{
+  if (m_propertyJson.hasKey("confidence")) {
+    m_propertyJson.removeKey("confidence");
+  }
+
+  m_propertyJson.setEntry("conf", c);
+}
+
+bool ZDvidSynapse::isVerified() const
+{
+  const std::string &userName = getUserName();
+  if (!userName.empty()) {
+    if (userName[0] != '$') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
+{
+  if (!isVerified()) {
+    return false;
+  }
+
+  bool v = true;
+
+  if (getKind() == KIND_PRE_SYN) {
+    std::vector<ZIntPoint> psdArray = getPartners();
+    if (!psdArray.empty()) {
+      ZDvidReader reader;
+      if (reader.open(target)) {
+        for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
+             iter != psdArray.end(); ++iter) {
+          const ZIntPoint &pt = *iter;
+          ZDvidSynapse synapse =
+              reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+          if (!synapse.isVerified()) {
+            v = false;
+            break;
+          }
+        }
+      }
+    }
+  } else {
+    v = false;
+  }
+
+  return v;
+}
+
+void ZDvidSynapse::setVerified(const std::string &userName)
+{
+  setUserName(userName);
+}
+
+QColor ZDvidSynapse::GetArrowColor(bool verified)
+{
+  QColor color(255, 0, 0);
+  if (verified) {
+    color = QColor(0, 255, 0);
+  }
+  color.setAlpha(100);
+
+  return color;
 }
 
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -45,12 +144,15 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   center.shiftSliceAxis(sliceAxis);
 
   bool isFocused = (z == center.getZ());
-  QPen pen;
+
 
   if (visible) {
+    QPen pen;
+
     QColor color = getColor();
+    double alpha = 1.0;
     if (!isFocused) {
-      double alpha = radius / m_radius;
+      alpha = radius / m_radius;
       alpha *= alpha * 0.5;
       alpha += 0.1;
       color.setAlphaF(alpha * color.alphaF());
@@ -69,40 +171,116 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     if (radius > 0.0) {
       if (getKind() == KIND_POST_SYN) {
-        pen.setWidth(pen.width() + 1);
+        pen.setWidthF(pen.widthF() + 1.0);
       }
       painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
       if (getKind() == KIND_POST_SYN) {
-        pen.setWidth(pen.width() - 1);
+        pen.setWidthF(pen.widthF() - 1.0);
       }
     }
+    QString decorationText;
 
-    if (!getUserName().empty()) {
-      QString decorationText = "u";
-      int height = iround(getRadius() * 2);
-      int width = decorationText.size() * height;
+    if (isVerified()) {
+      //        decorationText = "U";
+      color.setRgb(0, 0, 0);
+
+      if (isSelected()) {
+        if (getKind() == KIND_PRE_SYN) {
+          color.setRgb(0, 255, 0);
+          for (std::vector<bool>::const_iterator iter = m_isPartnerVerified.begin();
+               iter != m_isPartnerVerified.end(); ++iter) {
+            if (!(*iter)) {
+              color.setRgb(0, 0, 0);
+              break;
+            }
+          }
+        }
+      }
+
+      color.setAlphaF(alpha);
+      pen.setColor(color);
+      pen.setWidthF(pen.widthF() + 0.5);
+      painter.setPen(pen);
+      double margin = 0.5;
+      painter.drawLine(QPointF(center.getX(), center.getY() + radius - margin),
+                       QPointF(center.getX() + radius - margin, center.getY()));
+      painter.drawLine(QPointF(center.getX(), center.getY() + radius - margin),
+                       QPointF(center.getX() - radius + margin, center.getY()));
+    }
+
+
+    double conf  = getConfidence();
+    if (conf < 1.0) {
+//      double lineWidth = radius * conf * 0.5 + 1.0;
+      double lineWidth = radius * 0.5;
+      double red = 1.0 - conf;
+      double green = conf;
+      QColor color;
+      color.setRedF(red);
+      if (getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+        color.setBlueF(green);
+      } else {
+        color.setGreenF(green);
+      }
+      color.setAlphaF(alpha);
+      painter.setPen(color);
+      double x = center.getX();
+      double y = center.getY();
+      /*
+      painter.drawLine(QPointF(x - lineWidth, y),
+                       QPointF(x + lineWidth, y));
+                       */
+      int startAngle = 0;
+      int spanAngle = iround((1.0 - conf) * 180) * 16;
+      painter.drawArc(QRectF(QPointF(x - lineWidth, y - lineWidth),
+                             QPointF(x + lineWidth, y + lineWidth)),
+                      startAngle, spanAngle);
+//      painter.drawEllipse(QPointF(x, y), lineWidth, lineWidth);
+
+//      decorationText += QString(".%1").arg(iround(conf * 10.0));
+    }
+
+
+    int height = iround(getRadius() * 1.5);
+    int width = decorationText.size() * height;
+
+    if (decorationText !=   m_textDecoration.text()) {
+      m_textDecoration.setText(decorationText);
+      m_textDecoration.setTextWidth(width);
+    }
+
+    if (!decorationText.isEmpty()) {
       QFont font;
-      font.setPixelSize(width);
+      font.setPixelSize(height);
+      font.setWeight(QFont::Light);
+      font.setStyleStrategy(QFont::PreferMatch);
       painter.setFont(font);
 
       QColor oldColor = painter.getPen().color();
-      painter.setPen(QColor(0, 0, 0));
-      painter.drawText(center.getX(), center.getY(), width, height,
-                       Qt::AlignLeft, decorationText);
+      QColor color = QColor(0, 0, 0);
+      color.setAlphaF(alpha);
+      QPen pen = painter.getPen();
+      pen.setColor(color);
+      painter.setPen(pen);
+      painter.drawStaticText(center.getX() - height / 2, center.getY(),
+                             m_textDecoration);
+//      painter.drawText(center.getX() - height / 2, center.getY(), width, height,
+//                       Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
     }
   }
 
 
+  QPen pen;
   pen.setCosmetic(m_usingCosmeticPen);
 
   bool drawingBoundBox = false;
   if (isSelected()) {
     drawingBoundBox = true;
     QColor color;
-    color.setRgb(255, 255, 0);
+    color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
   } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
@@ -131,11 +309,76 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     painter.setPen(pen);
     painter.drawRect(rect);
+
+#if 0
+    if (!visible) {
+      pen.setStyle(Qt::SolidLine);
+      pen.setColor(GetArrowColor(isVerified()));
+      painter.setPen(pen);
+      QPointF pt[3];
+      double s = 5.0;
+      if (z > center.getZ()) {
+        pt[0] = QPointF(rect.center().x() - rect.width() / s,
+                        rect.top() + rect.height() / s);
+        pt[1] = QPointF(rect.center().x(),
+                        rect.top() - rect.height() / s);
+        pt[2] = QPointF(rect.center().x() + rect.width() / s,
+                        rect.top() + rect.height() / s);
+
+      } else {
+        pt[0] = QPointF(rect.center().x() - rect.width() / s,
+                        rect.bottom() - rect.height() / s);
+        pt[1] = QPointF(rect.center().x(),
+                        rect.bottom() + rect.height() / s);
+        pt[2] = QPointF(rect.center().x() + rect.width() / s,
+                        rect.bottom() - rect.height() / s);
+      }
+      painter.drawLine(pt[0], pt[1]);
+      painter.drawLine(pt[1], pt[2]);
+      painter.drawLine(pt[0], pt[2]);
+    }
+#endif
   }
+
   if (isSelected()) {
+    pen.setStyle(Qt::SolidLine);
+
+    size_t index = 0;
+    if (m_isPartnerVerified.size() == m_partnerHint.size()) {
+      for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+           iter != m_partnerHint.end(); ++iter, ++index) {
+        pen.setColor(GetArrowColor(m_isPartnerVerified[index]));
+        painter.setPen(pen);
+
+        const ZIntPoint &partner = *iter;
+        double len = 0.0;
+        if (partner.getZ() < z && getPosition().getZ() < z) {
+          len = -1.0;
+        } else if (partner.getZ() > z && getPosition().getZ() > z) {
+          len = 1.0;
+        }
+
+        if (len != 0.0) {
+          QPointF pt[3];
+          pt[0].setX(partner.getX() - len);
+          pt[0].setY(partner.getY() - len);
+
+          pt[1].setX(partner.getX() + len);
+          pt[1].setY(partner.getY() - len);
+
+          pt[2].setX(partner.getX());
+          pt[2].setY(partner.getY() + len);
+
+
+          painter.drawLine(pt[0], pt[1]);
+          painter.drawLine(pt[1], pt[2]);
+          painter.drawLine(pt[0], pt[2]);
+        }
+      }
+    }
+
     for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
          iter != m_partnerHint.end(); ++iter) {
-
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);
@@ -193,6 +436,41 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
   }
 
   return MakeRelJson(pt, rel);
+}
+
+ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
+{
+  ZVaa3dMarker marker;
+
+  marker.setCenter(
+        getPosition().getX(), getPosition().getY(), getPosition().getZ());
+  if (getKind() == KIND_PRE_SYN) {
+    marker.setColor(255, 255, 0);
+    marker.setType(1);
+  } else {
+    marker.setColor(128, 128, 128);
+    marker.setType(2);
+  }
+
+  std::ostringstream commentStream;
+  commentStream << getBodyId();
+  marker.setName(commentStream.str());
+
+  marker.setRadius(radius);
+
+  return marker;
+}
+
+void ZDvidSynapse::updatePartnerVerification(ZDvidReader &reader)
+{
+  m_isPartnerVerified.resize(m_partnerHint.size(), false);
+
+  if (reader.good()) {
+    for (size_t i = 0; i < m_partnerHint.size(); ++i) {
+      ZDvidSynapse synapse = reader.readSynapse(m_partnerHint[i]);
+      m_isPartnerVerified[i] = synapse.isVerified();
+    }
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidSynapse)

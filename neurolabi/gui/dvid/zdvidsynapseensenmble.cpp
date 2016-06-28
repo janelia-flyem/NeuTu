@@ -364,6 +364,54 @@ void ZDvidSynapseEnsemble::addSynapse(
   }
 }
 
+void ZDvidSynapseEnsemble::setUserName(
+    int x, int y, int z, const std::string &userName, EDataScope scope)
+{
+  if (scope == DATA_GLOBAL) {
+    scope = DATA_SYNC;
+  }
+  ZDvidSynapse &synapse = getSynapse(x, y, z, scope);
+  if (synapse.isValid()) {
+    synapse.setUserName(userName);
+    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+      ZDvidWriter writer;
+      if (writer.open(m_dvidTarget)) {
+        writer.writeSynapse(synapse);
+      }
+    }
+  }
+}
+
+void ZDvidSynapseEnsemble::setUserName(
+    const ZIntPoint &pt, const std::string &userName, EDataScope scope)
+{
+  setUserName(pt.getX(), pt.getY(), pt.getZ(), userName, scope);
+}
+
+void ZDvidSynapseEnsemble::annotateSynapse(
+    int x, int y, int z, const ZJsonObject &propJson, EDataScope scope)
+{
+  if (scope == DATA_GLOBAL) {
+    scope = DATA_SYNC;
+  }
+  ZDvidSynapse &synapse = getSynapse(x, y, z, scope);
+  if (synapse.isValid()) {
+    synapse.setProperty(propJson);
+    if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+      ZDvidWriter writer;
+      if (writer.open(m_dvidTarget)) {
+        writer.writeSynapse(synapse);
+      }
+    }
+  }
+}
+
+void ZDvidSynapseEnsemble::annotateSynapse(
+    const ZIntPoint &pt, const ZJsonObject &propJson, EDataScope scope)
+{
+  annotateSynapse(pt.getX(), pt.getY(), pt.getZ(), propJson, scope);
+}
+
 void ZDvidSynapseEnsemble::setRange(const ZIntCuboid &dataRange)
 {
   m_dataRange = dataRange;
@@ -400,7 +448,7 @@ void ZDvidSynapseEnsemble::display(
 
       rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
                                   range.getFirstCorner().getY()));
-      rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
+      rangeRect.setSize(QSize(range.getWidth(), range.getHeight()));
     }
 
     for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
@@ -440,22 +488,26 @@ void ZDvidSynapseEnsemble::display(
       SynapseSlice &synapseSlice =
           const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z, ADJUST_FULL);
 
+
+
       for (int i = 0; i < synapseSlice.size(); ++i) {
         QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
         for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
              iter != synapseMap.end(); ++iter) {
           const ZDvidSynapse &synapse = iter.value();
-          synapse.display(painter, slice, option, sliceAxis);
+          if (!synapse.isSelected()) {
+            synapse.display(painter, slice, option, sliceAxis);
+          }
         }
-      }
+      }  
+    }
 
-      const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
-      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
-           iter != selected.end(); ++iter) {
-        ZDvidSynapse &synapse =
-            const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
-        synapse.display(painter, slice, option, sliceAxis);
-      }
+    const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          const_cast<ZDvidSynapseEnsemble&>(*this).getSynapse(*iter, DATA_LOCAL);
+      synapse.display(painter, slice, option, sliceAxis);
     }
   }
 }
@@ -601,6 +653,10 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
+      synapse.loadJsonObject(obj, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+      synapse.updatePartner();
+      synapse.updatePartnerVerification(m_reader);
+#if 0
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         if (jsonArray.size() > 0) {
@@ -614,6 +670,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
           }
         }
       }
+#endif
     }
   }
 }
@@ -739,11 +796,14 @@ ZDvidSynapseEnsemble::SynapseIterator::SynapseIterator(
     const ZDvidSynapseEnsemble *se, int z) :
   m_zIterator(m_emptyZ), m_yIterator(m_emptyY), m_xIterator(m_emptyX)
 {
-  if (se != NULL) {
-    if (se->m_synapseEnsemble.size() > z) {
-      m_yIterator = QVectorIterator<SynapseMap>(se->m_synapseEnsemble[z]);
-      if (m_yIterator.hasNext()) {
-        m_xIterator = QMapIterator<int, ZDvidSynapse>(m_yIterator.next());
+  int index = z - se->getMinZ();
+  if (index >= 0) {
+    if (se != NULL) {
+      if (se->m_synapseEnsemble.size() > index) {
+        m_yIterator = QVectorIterator<SynapseMap>(se->m_synapseEnsemble[index]);
+        if (m_yIterator.hasNext()) {
+          m_xIterator = QMapIterator<int, ZDvidSynapse>(m_yIterator.next());
+        }
       }
     }
   }

@@ -8,6 +8,8 @@
 #include <queue>
 #include <limits.h>
 #include <string.h>
+#include <stack>
+
 #include "tz_error.h"
 #include "zswctree.h"
 #include "tz_voxel_graphics.h"
@@ -48,7 +50,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   //m_source = "new tree";
   m_iteratorReady = false;
   setColorScheme(COLOR_NORMAL);
-  m_type = ZStackObject::TYPE_SWC;
+  m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
 }
@@ -1162,7 +1164,7 @@ void ZSwcTree::labelBranchLevelFromLeaf()
   }
 }
 
-void ZSwcTree::boundBox(double *corner) const
+void ZSwcTree::getBoundBox(double *corner) const
 {
   Swc_Tree_Bound_Box(m_tree, corner);
 }
@@ -1192,11 +1194,16 @@ ZCuboid ZSwcTree::getBoundBox() const
 {
   if (isDeprecated(BOUND_BOX)) {
     double corner[6];
-    boundBox(corner);
+    getBoundBox(corner);
     m_boundBox.set(corner);
   }
 
   return m_boundBox;
+}
+
+void ZSwcTree::boundBox(ZIntCuboid *box) const
+{
+  *box = getBoundBox().toIntCuboid();
 }
 
 ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
@@ -1228,7 +1235,7 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcTree::createBoundBoxSwc(double margin)
 {
   double corner[6];
-  boundBox(corner);
+  getBoundBox(corner);
 
   ZCuboid boundingBox;
   boundingBox.set(corner);
@@ -3385,6 +3392,21 @@ void ZSwcTree::selectAllNode()
   }
 }
 
+void ZSwcTree::inverseSelection()
+{
+  updateIterator();
+
+  std::set<Swc_Tree_Node*> oldSelected = m_selectedNode;
+  m_selectedNode.clear();
+  for (Swc_Tree_Node *tn = begin(); tn != NULL; tn = next()) {
+    if (SwcTreeNode::isRegular(tn)) {
+      if (oldSelected.count(tn) == 0) {
+        m_selectedNode.insert(tn);
+      }
+    }
+  }
+}
+
 void ZSwcTree::deselectAllNode()
 {
   m_selectedNode.clear();
@@ -3590,6 +3612,20 @@ void ZSwcTree::selectBranchNode()
   }
 }
 
+void ZSwcTree::selectSmallSubtree(double maxLength)
+{
+  m_selectedNode.clear();
+  RegularRootIterator iter(this);
+  while (iter.hasNext()) {
+    Swc_Tree_Node *tn = iter.next();
+    if (SwcTreeNode::downstreamLength(tn) <= maxLength) {
+      m_selectedNode.insert(tn);
+    }
+  }
+
+  selectDownstreamNode();
+}
+
 void ZSwcTree::selectConnectedNode()
 {
   std::set<Swc_Tree_Node*> nodeSet = getSelectedNode();
@@ -3662,10 +3698,15 @@ ZSwcTree::RegularRootIterator::RegularRootIterator(const ZSwcTree *tree) :
 {
 }
 
+void ZSwcTree::RegularRootIterator::restart()
+{
+  m_currentNode = NULL;
+}
 
 Swc_Tree_Node* ZSwcTree::RegularRootIterator::begin()
 {
-  m_currentNode = NULL;
+  restart();
+
   if (m_tree != NULL) {
     m_currentNode = m_tree->firstRegularRoot();
   }
@@ -3675,12 +3716,24 @@ Swc_Tree_Node* ZSwcTree::RegularRootIterator::begin()
 
 bool ZSwcTree::RegularRootIterator::hasNext() const
 {
+  if (m_tree == NULL) {
+    return false;
+  }
+
+  if (m_currentNode == NULL) {
+    return m_tree->firstRegularRoot() != NULL;
+  }
+
   return SwcTreeNode::nextSibling(m_currentNode) != NULL;
 }
 
 Swc_Tree_Node* ZSwcTree::RegularRootIterator::next()
 {
-  m_currentNode = SwcTreeNode::nextSibling(m_currentNode);
+  if (m_currentNode == NULL) {
+    m_currentNode = begin();
+  } else {
+    m_currentNode = SwcTreeNode::nextSibling(m_currentNode);
+  }
 
   return m_currentNode;
 }
@@ -3695,14 +3748,20 @@ ZSwcTree::DepthFirstIterator::DepthFirstIterator(const ZSwcTree *tree) :
   }
 }
 
-Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
+void ZSwcTree::DepthFirstIterator::restart()
 {
   m_currentNode = NULL;
+}
+
+Swc_Tree_Node* ZSwcTree::DepthFirstIterator::begin()
+{
+  restart();
+
   if (m_tree != NULL) {
     m_currentNode = m_tree->begin();
     if (m_excludingVirtual) {
       if (SwcTreeNode::isVirtual(m_currentNode)) {
-        m_currentNode = m_currentNode->next;
+        m_currentNode = m_tree->next();
       }
     }
   }
@@ -3757,13 +3816,18 @@ ZSwcTree::LeafIterator::LeafIterator(const ZSwcTree *tree) :
   }
 }
 
-Swc_Tree_Node* ZSwcTree::LeafIterator::begin()
+void ZSwcTree::LeafIterator::restart()
 {
   m_currentNode = NULL;
   m_currentIndex = 0;
+}
+
+Swc_Tree_Node* ZSwcTree::LeafIterator::begin()
+{
+  restart();
 
   if (!m_nodeArray.empty()) {
-    m_currentNode = m_nodeArray[m_currentIndex];
+    m_currentNode = m_nodeArray[m_currentIndex++];
   }
 
   return m_currentNode;
@@ -3777,7 +3841,9 @@ bool ZSwcTree::LeafIterator::hasNext() const
 Swc_Tree_Node* ZSwcTree::LeafIterator::next()
 {
   if (hasNext()) {
-    return m_nodeArray[m_currentIndex++];
+    m_currentNode = m_nodeArray[m_currentIndex++];
+
+    return m_currentNode;
   }
 
   return NULL;
@@ -3793,13 +3859,18 @@ ZSwcTree::TerminalIterator::TerminalIterator(const ZSwcTree *tree) :
   }
 }
 
-Swc_Tree_Node* ZSwcTree::TerminalIterator::begin()
+void ZSwcTree::TerminalIterator::restart()
 {
   m_currentNode = NULL;
   m_currentIndex = 0;
+}
+
+Swc_Tree_Node* ZSwcTree::TerminalIterator::begin()
+{
+  restart();
 
   if (!m_nodeArray.empty()) {
-    m_currentNode = m_nodeArray[m_currentIndex];
+    m_currentNode = m_nodeArray[m_currentIndex++];
   }
 
   return m_currentNode;
@@ -3811,13 +3882,79 @@ bool ZSwcTree::TerminalIterator::hasNext() const
 }
 
 Swc_Tree_Node* ZSwcTree::TerminalIterator::next()
-{
+{ 
   if (hasNext()) {
-    return m_nodeArray[m_currentIndex++];
+    m_currentNode = m_nodeArray[m_currentIndex++];
+
+    return m_currentNode;
   }
 
   return NULL;
 }
+
+////////////////////////////////////////////////
+ZSwcTree::DownstreamIterator::DownstreamIterator(Swc_Tree_Node *tn) :
+  ExtIterator(NULL), m_currentIndex(0)
+{
+  if (tn != NULL) {
+    double length = 0;
+
+    Swc_Tree_Node *pointer = tn;
+    std::stack<Swc_Tree_Node*> nodeStack;
+
+    do {
+      m_nodeArray.push_back(pointer);
+      Swc_Tree_Node *child = pointer->first_child;
+
+      while (child != NULL) {
+        nodeStack.push(child);
+        length += SwcTreeNode::length(child);
+        child = child->next_sibling;
+      }
+      if (!nodeStack.empty()) {
+        pointer = nodeStack.top();
+        nodeStack.pop();
+      } else {
+        pointer = NULL;
+      }
+    } while (pointer != NULL);
+  }
+}
+
+void ZSwcTree::DownstreamIterator::restart()
+{
+  m_currentNode = NULL;
+  m_currentIndex = 0;
+}
+
+Swc_Tree_Node* ZSwcTree::DownstreamIterator::begin()
+{
+  restart();
+
+  if (!m_nodeArray.empty()) {
+    m_currentNode = m_nodeArray[m_currentIndex++];
+  }
+
+  return m_currentNode;
+}
+
+bool ZSwcTree::DownstreamIterator::hasNext() const
+{
+  return (m_currentIndex < m_nodeArray.size());
+}
+
+Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
+{
+  if (hasNext()) {
+    m_currentNode = m_nodeArray[m_currentIndex++];
+
+    return m_currentNode;
+  }
+
+  return NULL;
+}
+
+
 
 ////////////////////////////////////////////////
 ZStackObject::ETarget ZSwcTree::GetDefaultTarget()

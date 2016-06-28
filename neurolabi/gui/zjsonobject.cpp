@@ -69,6 +69,13 @@ bool ZJsonObject::isEmpty() const
   return json_object_size(m_data) == 0;
 }
 
+void ZJsonObject::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeObject();
+  }
+}
+
 const json_t* ZJsonObject::operator[] (const char *key) const
 {
   if (m_data != NULL) {
@@ -164,17 +171,19 @@ void ZJsonObject::appendEntries(const char *key, json_t *obj,
 
 map<string, json_t*> ZJsonObject::toEntryMap(bool recursive) const
 {
-  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+//  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+
 
   map<std::string, json_t*> entryMap;
-
-  if (recursive) {
-    appendEntries(NULL, m_data, &entryMap);
-  } else {
-    const char *subkey = NULL;
-    json_t *value = NULL;
-    json_object_foreach(m_data, subkey, value) {
-      entryMap[subkey] = value;
+  if (C_Json::isObject(m_data)) {
+    if (recursive) {
+      appendEntries(NULL, m_data, &entryMap);
+    } else {
+      const char *subkey = NULL;
+      json_t *value = NULL;
+      json_object_foreach(m_data, subkey, value) {
+        entryMap[subkey] = value;
+      }
     }
   }
 
@@ -237,9 +246,9 @@ void ZJsonObject::setEntry(const char *key, const string &value)
     return;
   }
 
-  if (!value.empty()) {
+//  if (!value.empty()) {
     setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
-  }
+//  }
 }
 
 void ZJsonObject::setEntry(const char *key, const char* value)
@@ -249,9 +258,9 @@ void ZJsonObject::setEntry(const char *key, const char* value)
   }
 
   if (value != NULL) {
-    if (strlen(value) > 0) {
+//    if (strlen(value) > 0) {
       setEntryWithoutKeyCheck(key, json_string(value), true);
-    }
+//    }
   }
 }
 
@@ -329,6 +338,7 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
     return;
   }
 
+  value.denull();
   setEntryWithoutKeyCheck(key, value.getValue());
 }
 

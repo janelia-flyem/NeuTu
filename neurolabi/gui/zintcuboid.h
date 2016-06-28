@@ -5,6 +5,8 @@
 #include "tz_cuboid_i.h"
 #include "neutube_def.h"
 
+class ZJsonArray;
+
 class ZIntCuboid
 {
 public:
@@ -125,6 +127,14 @@ public:
   int getDim(NeuTube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+
+  /*!
+   * \brief Set corners from a json array
+   *
+   * Array: [x1, y1, z1, x2, y2, z2]. The object is reset to default if the json
+   * array is invalid.
+   */
+  void loadJson(const ZJsonArray &json);
 
 private:
   ZIntPoint m_firstCorner;

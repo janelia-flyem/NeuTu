@@ -56,7 +56,16 @@ public:
   T* getDataPointer() const;
 
   template<typename T>
-  void setValue(T v);
+  void setValue(const T &v);
+
+  template<typename T>
+  void setValue(size_t index, const T &v);
+
+  template<typename T>
+  void replaceValue(const T &src, const T &dst);
+
+  template <typename T>
+  T getMax() const;
 
   /*!
    * \brief Get the unit64 value
@@ -86,13 +95,52 @@ T* ZArray::getDataPointer() const
 }
 
 template<typename T>
-void ZArray::setValue(T v)
+void ZArray::setValue(const T &v)
 {
   T* data = getDataPointer<T>();
   size_t n= getElementNumber();
   for (size_t i = 0; i < n; ++i) {
     data[i] = v;
   }
+}
+
+template<typename T>
+void ZArray::setValue(size_t index, const T &v)
+{
+  T* data = getDataPointer<T>();
+
+  data[index] = v;
+}
+
+template<typename T>
+void ZArray::replaceValue(const T &src, const T &dst)
+{
+  T* data = getDataPointer<T>();
+  size_t n= getElementNumber();
+  for (size_t i = 0; i < n; ++i) {
+    if (data[i] == src) {
+      data[i] = dst;
+    }
+  }
+}
+
+
+template<typename T>
+T ZArray::getMax() const
+{
+  T m = 0;
+  size_t n = getElementNumber();
+  if (n > 0) {
+    T* data = getDataPointer<T>();
+    m = data[0];
+    for (size_t i = 1; i < n; ++i) {
+      if (m < data[i]) {
+        m = data[i];
+      }
+    }
+  }
+
+  return m;
 }
 
 #endif // ZARRAY_H

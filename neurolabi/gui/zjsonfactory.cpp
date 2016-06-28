@@ -62,6 +62,20 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
   return array;
 }
 
+ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
+{
+  ZJsonArray array;
+  array.append(box.getFirstCorner().getX());
+  array.append(box.getFirstCorner().getY());
+  array.append(box.getFirstCorner().getZ());
+
+  array.append(box.getLastCorner().getX());
+  array.append(box.getLastCorner().getY());
+  array.append(box.getLastCorner().getZ());
+
+  return array;
+}
+
 #if defined(_QT_GUI_USED_)
 ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 {
@@ -100,6 +114,16 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
     propJson.setEntry("custom", "0");
   }
   propJson.setEntry("user", bookmark.getUserName().toStdString());
+
+  std::map<std::string, json_t*> additionalProp =
+      bookmark.getPropertyJson().toEntryMap(false);
+  for (std::map<std::string, json_t*>::iterator iter = additionalProp.begin();
+       iter != additionalProp.end(); ++iter) {
+    const std::string &key = iter->first;
+    if (!propJson.hasKey(key.c_str())) {
+      propJson.setEntry(key.c_str(), iter->second);
+    }
+  }
 
   json.setEntry("Prop", propJson);
 

@@ -24,7 +24,7 @@ ZStroke2d::ZStroke2d() :
   m_isPenetrating(true)
 {
   setLabel(1);
-  m_type = ZStackObject::TYPE_STROKE;
+  m_type = GetType();
   setSliceAxis(NeuTube::Z_AXIS);
   //setEraser(m_isEraser);
 }

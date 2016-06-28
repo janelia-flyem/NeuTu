@@ -7,6 +7,8 @@ class Z3DSphereRenderer;
 class Z3DLineWithFixedWidthColorRenderer;
 
 #include <QObject>
+#include <QMutex>
+
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
 #include <map>
@@ -81,6 +83,9 @@ public:
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
   inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
+  void enablePicking(bool picking) {
+    m_enablePicking = picking;
+  }
 
   void setVisible(bool v);
   bool isVisible() const;
@@ -117,6 +122,8 @@ protected:
   void renderPicking(Z3DEye eye);
   void renderSelectionBox(Z3DEye eye);
   void prepareData();
+
+  void sortNodeList();
 
 private:
   void initTopologyColor();
@@ -225,8 +232,11 @@ private:
   ZSwcColorScheme m_colorScheme;
 
   bool m_enableCutting;
+  bool m_enablePicking;
 
   QVector<QString> m_guiNameList;
+
+  mutable QMutex m_nodeSelectionMutex;
 };
 
 #endif // Z3DSWCFILTER_H

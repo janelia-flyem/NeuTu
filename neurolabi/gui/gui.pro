@@ -44,6 +44,7 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 include(extratarget.pri)
@@ -169,6 +170,11 @@ unix {
             QMAKE_CXXFLAGS += -m64
         }
         RC_FILE = images/app.icns
+
+        contains(CONFIG, c++11) {
+          message(Using C++11)
+          QMAKE_CXXFLAGS += -std=c++11
+        }
     }
 }
 
@@ -620,12 +626,23 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofdoccommand.h \
     flyem/zneutuservice.h \
     dialogs/flyemsettingdialog.h \
+    protocols/protocolswitcher.h \
+    protocols/protocolchooser.h \
+    protocols/protocolmetadata.h \
+    protocols/protocoldialog.h \
+    protocols/doNthingsprotocol.h \
+    protocols/synapsepredictionprotocol.h \
+    protocols/synapsepredictioninputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
     zapplication.h \
-    dialogs/flyemsynapsefilterdialog.h
+    dialogs/flyemsynapsefilterdialog.h \
+    flyem/zflyemmb6analyzer.h \
+    dialogs/zflyemsynapseannotationdialog.h \
+    zdvidutil.h \
+    dialogs/zcontrastprotocaldialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -694,14 +711,21 @@ FORMS += dialogs/settingdialog.ui \
     flyem/flyemsplitcontrolform.ui \
     flyem/zflyembodyannotationdialog.ui \
     dialogs/flyembodyinfodialog.ui \
+    protocols/protocolchooser.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
+    protocols/doNthingsprotocol.ui \
+    protocols/synapsepredictionprotocol.ui \
+    protocols/synapsepredictioninputdialog.ui \
+    protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
-    dialogs/flyemsynapsefilterdialog.ui
+    dialogs/flyemsynapsefilterdialog.ui \
+    dialogs/zflyemsynapseannotationdialog.ui \
+    dialogs/zcontrastprotocaldialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1099,12 +1123,23 @@ SOURCES += main.cpp \
     flyem/zflyemproofdoccommand.cpp \
     flyem/zneutuservice.cpp \
     dialogs/flyemsettingdialog.cpp \
+    protocols/protocolswitcher.cpp \
+    protocols/protocolchooser.cpp \
+    protocols/protocolmetadata.cpp \
+    protocols/protocoldialog.cpp \
+    protocols/doNthingsprotocol.cpp \
+    protocols/synapsepredictionprotocol.cpp \
+    protocols/synapsepredictioninputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
     zapplication.cpp \
-    dialogs/flyemsynapsefilterdialog.cpp
+    dialogs/flyemsynapsefilterdialog.cpp \
+    flyem/zflyemmb6analyzer.cpp \
+    dialogs/zflyemsynapseannotationdialog.cpp \
+    zdvidutil.cpp \
+    dialogs/zcontrastprotocaldialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

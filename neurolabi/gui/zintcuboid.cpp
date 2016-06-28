@@ -1,6 +1,8 @@
 #include "zintcuboid.h"
 #include <cmath>
 #include "tz_utilities.h"
+#include "zjsonarray.h"
+#include "zjsonparser.h"
 
 ZIntCuboid::ZIntCuboid()
 {
@@ -305,6 +307,24 @@ ZIntPoint ZIntCuboid::getCenter() const
 {
   return getFirstCorner() +
       ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
+}
+
+void ZIntCuboid::loadJson(const ZJsonArray &json)
+{
+  reset();
+
+  int count = json.size();
+
+  if (count == 6) {
+    for (int i = 0; i < count; ++i) {
+      setFirstCorner(ZJsonParser::integerValue(json.at(0)),
+                     ZJsonParser::integerValue(json.at(1)),
+                     ZJsonParser::integerValue(json.at(2)));
+      setLastCorner(ZJsonParser::integerValue(json.at(3)),
+                    ZJsonParser::integerValue(json.at(4)),
+                    ZJsonParser::integerValue(json.at(5)));
+    }
+  }
 }
 
 /*

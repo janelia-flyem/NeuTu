@@ -212,6 +212,9 @@ public:
                             int width, int height, int depth) const;
   std::string getTodoListUrl(int x, int y, int z) const;
 
+  std::string getConfigUrl() const;
+  std::string getContrastUrl() const;
+
   static std::string GetSkeletonKey(uint64_t bodyId);
 
   void setUuid(const std::string &uuid);

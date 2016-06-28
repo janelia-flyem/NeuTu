@@ -20,6 +20,8 @@ ZLocsegChain::ZLocsegChain(Local_Neuroseg *locseg)
 
 ZLocsegChain::ZLocsegChain(const ZLocsegChain &zlocseg) : ZStackObject(zlocseg)
 {
+  m_type = GetType();
+
   m_chain = NULL;
   copyData(zlocseg.m_chain);
   updateBufferChain();
@@ -52,7 +54,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
 
   m_source = "traced";
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_LOCSEG_CHAIN;
+  m_type = GetType();
 }
 
 ZLocsegChain::~ZLocsegChain()

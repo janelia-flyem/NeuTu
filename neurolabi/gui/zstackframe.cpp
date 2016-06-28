@@ -176,6 +176,8 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView();
   createPresenter();
+  presenter()->createActions();
+
   updateDocument();
 
   if (document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
@@ -184,6 +186,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   setView(m_view);
   m_view->prepareDocument();
   m_presenter->prepareView();
+//  m_presenter->createActions();
 
   if (doc.get() != NULL) {
     customizeWidget();
@@ -236,7 +239,7 @@ void ZStackFrame::createView()
   }
 }
 
-void ZStackFrame::addDocData(const ZStackDocReader &reader)
+void ZStackFrame::addDocData(ZStackDocReader &reader)
 {
   if (m_doc.get() == NULL) {
     createDocument();

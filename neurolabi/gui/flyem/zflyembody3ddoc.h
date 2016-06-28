@@ -9,6 +9,7 @@
 #include <QMutex>
 #include <QColor>
 #include <QList>
+#include <QTime>
 
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
@@ -111,12 +112,33 @@ public:
     BODY_FULL, BODY_COARSE, BODY_SKELETON
   };
 
+  class ObjectStatus {
+  public:
+    ObjectStatus(int timeStamp = 0);
+    void setRecycable(bool on);
+    void setTimeStamp(int t);
+    void setResLevel(int level);
+
+    bool isRecycable() const;
+    int getTimeStamp() const;
+    int getResLevel() const;
+
+  private:
+    void init(int timeStatus);
+
+  private:
+    bool m_recycable;
+    int m_timeStamp;
+    int m_resLevel;
+  };
+
   void setBodyType(EBodyType type);
   EBodyType getBodyType() { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
+  void updateBody(uint64_t bodyId, const QColor &color, EBodyType type);
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
@@ -144,12 +166,13 @@ public:
 
   void printEventQueue() const;
 
-  void dumpAllSwc();
+  void dumpAllBody(bool recycable);
 
-  void dumpGarbage(ZStackObject *obj);
+  void dumpGarbage(ZStackObject *obj, bool recycable);
   void mergeBodyModel(const ZFlyEmBodyMerger &merger);
 
   void processEventFunc();
+  void cancelEventThread();
 
   void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
 
@@ -157,22 +180,25 @@ public:
 
   ZFlyEmToDoItem* getOneSelectedTodoItem() const;
 
+  void forceBodyUpdate();
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
   void showTodo(bool on);
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
+  void setUnrecycable(const QSet<uint64_t> &bodySet);
 
 protected:
   void autoSave() {}
 
 private:
-  ZSwcTree* retrieveBodyModel(uint64_t bodyId);
-  ZSwcTree* getBodyModel(uint64_t bodyId);
+  ZSwcTree* retrieveBodyModel(uint64_t bodyId, EBodyType bodyType);
+  ZSwcTree* getBodyModel(uint64_t bodyId, EBodyType bodyType);
 
   ZSwcTree* makeBodyModel(uint64_t bodyId);
-  ZSwcTree* makeBodyModel(uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, EBodyType bodyType);
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
@@ -186,7 +212,10 @@ private:
 
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
 
+  static std::string GetBodyTypeName(EBodyType bodyType);
 
+  template<typename T>
+  T* recoverFromGarbage(const std::string &source);
 
 signals:
 
@@ -217,16 +246,24 @@ private:
   ZThreadFutureMap m_futureMap;
   QTimer *m_timer;
   QTimer *m_garbageTimer;
+  QTime m_objectTime;
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
 
-  QList<ZStackObject*> m_garbageList;
+//  QList<ZStackObject*> m_garbageList;
+  QMap<ZStackObject*, ObjectStatus> m_garbageMap;
+  QMap<uint64_t, int> m_bodyUpdateMap;
+//  QSet<uint64_t> m_unrecycableSet;
+
   bool m_garbageJustDumped;
 
   QQueue<BodyEvent> m_eventQueue;
 
   QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
+
+  const static int OBJECT_GARBAGE_LIFE;
+  const static int OBJECT_ACTIVE_LIFE;
 };
 
 template <typename InputIterator>
