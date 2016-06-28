@@ -7614,7 +7614,7 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
 void MainWindow::generateMBKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7696,7 +7696,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
 
 void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7780,7 +7780,7 @@ void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
 
 void MainWindow::generateMBPAMCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7828,7 +7828,7 @@ void MainWindow::generateMBPAMCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);

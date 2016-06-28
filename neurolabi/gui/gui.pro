@@ -44,6 +44,7 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 include(extratarget.pri)

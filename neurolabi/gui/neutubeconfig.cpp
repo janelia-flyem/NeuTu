@@ -224,7 +224,20 @@ std::string NeutubeConfig::getPath(Config_Item item) const
 {
   switch (item) {
   case DATA:
-    return m_dataPath;
+  {
+    std::string dataPath;
+#ifdef _QT_GUI_USED_
+    if (m_settings.contains("data_dir")) {
+      dataPath = m_settings.value("data_dir").toString().toStdString();
+    }
+#endif
+    if (dataPath.empty()) {
+      return m_dataPath;
+    }
+
+    return dataPath;
+  }
+    break;
   case FLYEM_BODY_CONN_CLASSIFIER:
     return m_segmentationClassifierPath;
   case FLYEM_BODY_CONN_TRAIN_DATA:
@@ -726,6 +739,12 @@ void NeutubeConfig::SetNeuTuServer(const QString &path)
     GetSettings().setValue("neutu_server", path);
   }
 }
+
+void NeutubeConfig::SetDataDir(const QString &dataDir)
+{
+  GetSettings().setValue("data_dir", dataDir);
+}
+
 #endif
 
 

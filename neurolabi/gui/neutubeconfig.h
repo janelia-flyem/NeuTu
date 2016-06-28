@@ -46,6 +46,8 @@ public:
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
+
+  static void SetDataDir(const QString &dataDir);
 #endif
 
   void enableProfileLogging(bool on);
