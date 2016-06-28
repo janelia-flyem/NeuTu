@@ -50,10 +50,6 @@ private slots:
     void onReviewPrevButton();
     void onReviewNextButton();
 
-#ifdef _DON_
-    void onMarkedButton();
-    void onSkipButton();
-#endif
     void onGotoButton();
     void onExitButton();
     void onCompleteButton();
@@ -70,22 +66,14 @@ private:
     Ui::SynapsePredictionProtocol *ui;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
-#ifdef _DON_
-    ZIntPoint m_currentPoint;
-#else
     int m_currentPendingIndex; //Index for locating in pending list
     int m_currentFinishedIndex;
-#endif
     ZIntCuboid m_protocolRange;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
     void gotoCurrentFinished();
-#ifdef _DON_
-    ZIntPoint getNextPoint(ZIntPoint point);
-    ZIntPoint getPrevPoint(ZIntPoint point);
-#endif
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
     void loadInitialSynapseList();
 
