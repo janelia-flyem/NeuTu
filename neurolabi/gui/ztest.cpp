@@ -20168,7 +20168,7 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
 
@@ -20409,6 +20409,12 @@ void ZTest::test(MainWindow *host)
   char *buffer = new char[width * height * 8];
   service.retrieve_image(width, height, offset, buffer);
 
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/system/split_test/test.sobj");
+  obj.getSlice(2742, 2813).save(GET_TEST_DATA_DIR + "/system/split_test/body.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

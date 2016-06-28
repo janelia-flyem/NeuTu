@@ -557,6 +557,7 @@ private:
   void generateMBAllKcCast(const std::string &movieFolder);
   void generateMBPAMCast(const std::string &movieFolder);
   void generateMBONCast(const std::string &movieFolder);
+  void generateMBONConnCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;

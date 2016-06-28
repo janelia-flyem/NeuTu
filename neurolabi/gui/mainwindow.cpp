@@ -7874,6 +7874,174 @@ void MainWindow::generateMBONCast(const std::string &movieFolder)
   }
 }
 
+void MainWindow::generateMBONConnCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+
+    double radius = 80;
+    {
+      int bodyId = 1190582;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 8862577 || bodyIdArray[i] == 2089450) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+    }
+
+    {
+      int bodyId = 8862577;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 1190582) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+    }
+    {
+      int bodyId = 2089450;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 1190582) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+    }
+  }
+}
+
 void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
 {
   generateMBKcCast("movie1");
@@ -7906,5 +8074,5 @@ void MainWindow::on_actionGenerate_PAM_Actor_triggered()
 
 void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
 {
-
+  generateMBONConnCast("movie7");
 }
