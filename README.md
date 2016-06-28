@@ -32,14 +32,9 @@ where \<qt_dir\> is the install directory of the Qt library. This simplification
 Additional flags are needed to build special editions:
 
 #### FlyEM Edition
-    
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem
 
-#### FlyEM Edition with DVID support
-    
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem -q "DVIDCPP_PATH=<dvidcpp_apth>"
-    
-Here \<dvidcpp_path\> is the install path of libdvid-cpp.
+Please check README in the flyem_release branch: https://github.com/janelia-flyem/NeuTu/tree/flyem_release
+
 
 #### Bright Field (Biocytin) Edition
 
