@@ -26,6 +26,10 @@ by specifying the qmake command path and the corresponding spec path, or
 
     sh build.sh <qt_dir> -e biocytin
     
+The executable is 
+
+    NeuTu/neurolabi/build/neuTube
+
 ### Windows (NOT tested)
 
 See neurolabi/Compile_Windows.txt for more details.
