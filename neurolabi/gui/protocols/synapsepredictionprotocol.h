@@ -2,7 +2,9 @@
 #define SYNAPSEPREDICTIONPROTOCOL_H
 
 #include <QDialog>
+#include <QtGui>
 
+#include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zintcuboid.h"
@@ -55,13 +57,25 @@ private slots:
     void onCompleteButton();
     void onRefreshButton();
 
+    void onDoubleClickSitesTable(QModelIndex index);
+
 private:
     static const std::string PROTOCOL_NAME;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
     static const int fileVersion;
 
+    enum SitesTableColumns {
+        SITES_PRE_COLUMN,
+        SITES_X_COLUMN,
+        SITES_Y_COLUMN,
+        SITES_Z_COLUMN,
+        SITES_STATUS_COLUMN,
+        SITES_CONFIDENCE_COLUMN
+    };
+
     Ui::SynapsePredictionProtocol *ui;
+    QStandardItemModel * m_sitesModel;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
     int m_currentPendingIndex; //Index for locating in pending list
@@ -74,6 +88,9 @@ private:
     void gotoCurrentFinished();
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
     void loadInitialSynapseList();
+    void setSitesHeaders(QStandardItemModel * model);
+    void updateSitesTable();
+    std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
 
 };
 

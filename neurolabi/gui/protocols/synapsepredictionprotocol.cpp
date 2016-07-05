@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QtGui>
 #include <QInputDialog>
 #include <QMessageBox>
 
@@ -26,6 +27,13 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // sites table
+    // currently not putting in the confidence column:
+    m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
+    setSitesHeaders(m_sitesModel);
+    ui->sitesTableView->setModel(m_sitesModel);
+
+
     // UI connections:
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
@@ -43,6 +51,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
 
+    connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
@@ -385,8 +394,7 @@ void SynapsePredictionProtocol::moveSynapse(
 void SynapsePredictionProtocol::updateLabels() {
     // currently update both labels together (which is fine if they are fast)
 
-    // current item:
-
+    // current item label:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
       ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
         ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(currentPoint.getX())
@@ -394,6 +402,9 @@ void SynapsePredictionProtocol::updateLabels() {
     } else {
         ui->currentLabel->setText(QString("Current: --, --, --"));
     }
+
+    // current item table:
+    updateSitesTable();
 
     // progress, in form: "Progress:  #/# (#%)"
     int nFinished = m_finishedList.size();
@@ -462,6 +473,124 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         //  for now, it's just the order DVID returns
 
     }
+}
+
+void SynapsePredictionProtocol::updateSitesTable() {
+    m_sitesModel->clear();
+
+    // currently plan to rebuild from scratch each time
+    if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
+
+        ZIntPoint location = m_pendingList.at(m_currentPendingIndex);
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(location);
+
+        // testing
+        std::cout << "synpre::updateTable: got synapse" << std::endl;
+        std::cout << "pre-syn site at " << synapse.front().getPosition().toString() << std::endl;
+        std::cout << "# post-syn sites = " << synapse.size() - 1 << std::endl;
+
+        // for indicating current table
+
+        for (size_t i=0; i<synapse.size(); i++) {
+            ZDvidSynapse site = synapse[i];
+
+            // we will need to style the current item differently
+            bool isCurrent = (site.getPosition() == location);
+            QFont boldFont;
+            boldFont.setBold(true);
+
+            if (site.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+                // this is just a marker in the "pre" column
+                QStandardItem * preItem = new QStandardItem();
+                preItem->setData(QVariant(QString("•")), Qt::DisplayRole);
+                if (isCurrent) {
+                    preItem->setData(boldFont, Qt::FontRole);
+                }
+                m_sitesModel->setItem(i, SITES_PRE_COLUMN, preItem);
+            }
+
+            QStandardItem * xItem = new QStandardItem();
+            QStandardItem * yItem = new QStandardItem();
+            QStandardItem * zItem = new QStandardItem();
+            xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
+            yItem->setData(QVariant(site.getX()), Qt::DisplayRole);
+            zItem->setData(QVariant(site.getX()), Qt::DisplayRole);
+            if (isCurrent) {
+                xItem->setData(boldFont, Qt::FontRole);
+                yItem->setData(boldFont, Qt::FontRole);
+                zItem->setData(boldFont, Qt::FontRole);
+            }
+            m_sitesModel->setItem(i, SITES_X_COLUMN, xItem);
+            m_sitesModel->setItem(i, SITES_Y_COLUMN, yItem);
+            m_sitesModel->setItem(i, SITES_Z_COLUMN, zItem);
+
+
+            if (site.isVerified()) {
+                // text marker in "status" column
+                QStandardItem * statusItem = new QStandardItem();
+                statusItem->setData(QVariant(QString("•")), Qt::DisplayRole);
+                if (isCurrent) {
+                    statusItem->setData(boldFont, Qt::FontRole);
+                }
+                m_sitesModel->setItem(i, SITES_STATUS_COLUMN, statusItem);
+            }
+        }
+    }
+}
+
+void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex index) {
+    QStandardItem *itemX = m_sitesModel->item(index.row(), SITES_X_COLUMN);
+    int x = itemX->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemY = m_sitesModel->item(index.row(), SITES_Y_COLUMN);
+    int y = itemY->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemZ = m_sitesModel->item(index.row(), SITES_Z_COLUMN);
+    int z = itemZ->data(Qt::DisplayRole).toInt();
+
+    emit requestDisplayPoint(x, y, z);
+}
+
+// input: point (pre- or post-synaptic site)
+// output: array with first pre-synaptic site then all post-synaptic sites
+//  for the synapse; returns empty list on errors
+std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint point) {
+
+    std::vector<ZDvidSynapse> result;
+
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+        ZDvidSynapse synapse = reader.readSynapse(point, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+
+        // find the presynaptic site
+        if (!(synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN)) {
+            if (synapse.getPartners().size() > 0) {
+                ZIntPoint preLocation = synapse.getPartners().front();
+                synapse = reader.readSynapse(preLocation, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            } else {
+                // can't find presynaptic site, so give up
+                return result;
+            }
+        }
+        result.push_back(synapse);
+
+        // get all the post-synaptic sites
+        std::vector<ZIntPoint> psdArray = synapse.getPartners();
+        for (size_t i=0; i<psdArray.size(); i++) {
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], NeuTube::FlyEM::LOAD_NO_PARTNER);
+            result.push_back(post);
+        }
+    }
+    return result;
+}
+
+void SynapsePredictionProtocol::setSitesHeaders(QStandardItemModel * model) {
+    model->setHorizontalHeaderItem(SITES_PRE_COLUMN, new QStandardItem(QString("Pre")));
+    model->setHorizontalHeaderItem(SITES_X_COLUMN, new QStandardItem(QString("x")));
+    model->setHorizontalHeaderItem(SITES_Y_COLUMN, new QStandardItem(QString("y")));
+    model->setHorizontalHeaderItem(SITES_Z_COLUMN, new QStandardItem(QString("z")));
+    model->setHorizontalHeaderItem(SITES_STATUS_COLUMN, new QStandardItem(QString("V")));
+    // model->setHorizontalHeaderItem(SITES_CONFIDENCE_COLUMN, new QStandardItem(QString("Conf")));
 }
 
 SynapsePredictionProtocol::~SynapsePredictionProtocol()
