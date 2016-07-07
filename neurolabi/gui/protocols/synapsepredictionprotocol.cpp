@@ -477,6 +477,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
 
 void SynapsePredictionProtocol::updateSitesTable() {
     m_sitesModel->clear();
+    setSitesHeaders(m_sitesModel);
 
     // currently plan to rebuild from scratch each time
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
@@ -490,19 +491,19 @@ void SynapsePredictionProtocol::updateSitesTable() {
         std::cout << "# post-syn sites = " << synapse.size() - 1 << std::endl;
 
         // for indicating current table
+        QFont boldFont;
+        boldFont.setBold(true);
 
         for (size_t i=0; i<synapse.size(); i++) {
             ZDvidSynapse site = synapse[i];
 
             // we will need to style the current item differently
             bool isCurrent = (site.getPosition() == location);
-            QFont boldFont;
-            boldFont.setBold(true);
 
             if (site.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
                 // this is just a marker in the "pre" column
                 QStandardItem * preItem = new QStandardItem();
-                preItem->setData(QVariant(QString("•")), Qt::DisplayRole);
+                preItem->setData(QVariant(QString("*")), Qt::DisplayRole);
                 if (isCurrent) {
                     preItem->setData(boldFont, Qt::FontRole);
                 }
@@ -528,13 +529,14 @@ void SynapsePredictionProtocol::updateSitesTable() {
             if (site.isVerified()) {
                 // text marker in "status" column
                 QStandardItem * statusItem = new QStandardItem();
-                statusItem->setData(QVariant(QString("•")), Qt::DisplayRole);
+                statusItem->setData(QVariant(QString("*")), Qt::DisplayRole);
                 if (isCurrent) {
                     statusItem->setData(boldFont, Qt::FontRole);
                 }
                 m_sitesModel->setItem(i, SITES_STATUS_COLUMN, statusItem);
             }
         }
+        ui->sitesTableView->resizeColumnsToContents();
     }
 }
 
