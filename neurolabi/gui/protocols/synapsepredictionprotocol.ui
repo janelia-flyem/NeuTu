@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
-    <height>310</height>
+    <width>474</width>
+    <height>416</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="toReviewLabel">
        <property name="text">
         <string>Sites to review:</string>
        </property>
@@ -62,9 +62,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="reviewedLabel">
        <property name="text">
-        <string>Already reviewed sites:</string>
+        <string>Reviewed sites:</string>
        </property>
       </widget>
      </item>
@@ -105,6 +105,94 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="currentLabel">
+         <property name="text">
+          <string>Current T-bar
+</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="preLocationLabel">
+         <property name="text">
+          <string>--, --, --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="preConfLabel">
+         <property name="text">
+          <string>Confidence: --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="preStatusLabel">
+         <property name="text">
+          <string>Verified: --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="postSummaryLabel">
+         <property name="text">
+          <string>PSDs verified: --/--</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="gotoButton">
+         <property name="text">
+          <string>Go to current</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>PSDs</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableView" name="sitesTableView">
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::NoSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <spacer name="horizontalSpacer_2">
@@ -137,41 +225,6 @@
       <widget class="QPushButton" name="completeButton">
        <property name="text">
         <string>Complete protocol</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QTableView" name="sitesTableView">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::NoSelection</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QPushButton" name="gotoButton">
-       <property name="text">
-        <string>Go to current</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="currentLabel">
-       <property name="text">
-        <string>current thing:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="progressLabel">
-       <property name="text">
-        <string>progress:</string>
        </property>
       </widget>
      </item>

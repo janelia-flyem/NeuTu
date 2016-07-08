@@ -28,7 +28,6 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     ui->setupUi(this);
 
     // sites table
-    // currently not putting in the confidence column:
     m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
     ui->sitesTableView->setModel(m_sitesModel);
@@ -265,8 +264,14 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
   if (!m_protocolRange.isEmpty()) {
     loadInitialSynapseList();
   } else {
-    ui->progressLabel->setText(
-          "Invalid protocol range. No data loaded.");
+
+
+      // need message here!
+      // this no longer present:
+      // ui->progressLabel->setText("Invalid protocol range. No data loaded.");
+
+
+
     return;
   }
 
@@ -392,25 +397,52 @@ void SynapsePredictionProtocol::moveSynapse(
 }
 
 void SynapsePredictionProtocol::updateLabels() {
-    // currently update both labels together (which is fine if they are fast)
+    // currently we update all labels and the PSD table at once
 
-    // current item label:
+
+    // current presynaptic sites labels:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
-      ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
-        ui->currentLabel->setText(QString("Current: %1, %2, %3").arg(currentPoint.getX())
-            .arg(currentPoint.getY()).arg(currentPoint.getZ()));
+        ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(currentPoint);
+
+        // first item in that list is the pre-synaptic element
+        ui->preLocationLabel->setText(QString::fromStdString(currentPoint.toString()));
+        ui->preConfLabel->setText(QString("Confidence: %1").arg(synapse[0].getConfidence(), 3, 'f', 1));
+        if (synapse[0].isVerified()) {
+            ui->preStatusLabel->setText(QString("Verified: yes"));
+        } else {
+            ui->preStatusLabel->setText(QString("Verified: no"));
+        }
+
+        int nPSDverified = 0;
+        for (size_t i=1; i<synapse.size(); i++) {
+            if (synapse[i].isVerified()) {
+                nPSDverified++;
+            }
+        }
+        ui->postSummaryLabel->setText(QString("PSDs verified: %1/%2").arg(nPSDverified).arg(synapse.size() - 1));
+
+        updateSitesTable(synapse);
     } else {
-        ui->currentLabel->setText(QString("Current: --, --, --"));
+        // ui->currentLabel->setText(QString("Current: --, --, --"));
+
+        ui->preLocationLabel->setText(QString("(--, --, --)"));
+        ui->preConfLabel->setText(QString("Confidence: --"));
+        ui->preStatusLabel->setText(QString("Verified: --"));
+        ui->postSummaryLabel->setText(QString("PSDs verified: --/--"));
+
+        clearSitesTable();
     }
 
-    // current item table:
-    updateSitesTable();
-
-    // progress, in form: "Progress:  #/# (#%)"
+    // progress labels:
+    int nPending = m_pendingList.size();
     int nFinished = m_finishedList.size();
-    int nTotal = m_pendingList.size() + nFinished;
+    int nTotal = nPending + nFinished;
     float percent = (100.0 * nFinished) / nTotal;
-    ui->progressLabel->setText(QString("Progress: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
+
+    // not sure I like all the numbers; try more minimal
+    // ui->toReviewLabel->setText(QString("Sites to review: %1 / %2 (%3%)").arg(nPending).arg(nTotal).arg((1.0 - percent), 4, 'f', 1));
+    ui->reviewedLabel->setText(QString("Reviewed sites: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 }
 
 void SynapsePredictionProtocol::loadInitialSynapseList()
@@ -424,7 +456,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
  */
 void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QString /*roi*/) {
 
-    // I don't *think* there's any way these lists will be populated, but...
+    // I don't *think* there's any way these lists will already be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
     m_currentPendingIndex = 0;
@@ -435,27 +467,13 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
       std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
             volume, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
 
-        // this list is mixed pre- and post- sites; relations are in there, but the list
-        //  doesn't show them in any way as-is
-
-
-        // cache that list of synapses for later use?
-        // would have to rebuild cache when loading from save
-
-
         // filter by roi (coming soon)
         // will need to do raw DVID call to batch ask "is point in RoI?";
         //  that call not in ZDvidReader() yet
 
 
-        // filter to only auto?  (not human-placed)
-
-
-
-        // put each pre/post site into list
-        // for now: find the pre-synaptic sites; put each one on the list; then,
-        //  put all its post-synaptic partners on the list immediately after it,
-        //  whether it's in the volume or not
+        // build the list of pre-synaptic sites; if already verified,
+        //  then they are "finished"
         for (size_t i=0; i<synapseList.size(); i++) {
           ZDvidSynapse &synapse = synapseList[i];
           if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
@@ -475,40 +493,32 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     }
 }
 
-void SynapsePredictionProtocol::updateSitesTable() {
+void SynapsePredictionProtocol::clearSitesTable() {
     m_sitesModel->clear();
     setSitesHeaders(m_sitesModel);
+}
+
+void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synapse) {
+    clearSitesTable();
 
     // currently plan to rebuild from scratch each time
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
 
-        ZIntPoint location = m_pendingList.at(m_currentPendingIndex);
-        std::vector<ZDvidSynapse> synapse = getWholeSynapse(location);
-
-        // testing
-        std::cout << "synpre::updateTable: got synapse" << std::endl;
-        std::cout << "pre-syn site at " << synapse.front().getPosition().toString() << std::endl;
-        std::cout << "# post-syn sites = " << synapse.size() - 1 << std::endl;
-
-        // for indicating current table
-        QFont boldFont;
-        boldFont.setBold(true);
-
-        for (size_t i=0; i<synapse.size(); i++) {
+        // note: post synaptic sites start at index 1, but the
+        //  table row still starts at 0
+        for (size_t i=1; i<synapse.size(); i++) {
             ZDvidSynapse site = synapse[i];
 
-            // we will need to style the current item differently
-            bool isCurrent = (site.getPosition() == location);
-
-            if (site.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-                // this is just a marker in the "pre" column
-                QStandardItem * preItem = new QStandardItem();
-                preItem->setData(QVariant(QString("*")), Qt::DisplayRole);
-                if (isCurrent) {
-                    preItem->setData(boldFont, Qt::FontRole);
-                }
-                m_sitesModel->setItem(i, SITES_PRE_COLUMN, preItem);
+            if (site.isVerified()) {
+                // text marker in "status" column
+                QStandardItem * statusItem = new QStandardItem();
+                statusItem->setData(QVariant(QString("*")), Qt::DisplayRole);
+                m_sitesModel->setItem(i - 1, SITES_STATUS_COLUMN, statusItem);
             }
+
+            QStandardItem * confItem = new QStandardItem();
+            confItem->setData(QVariant(site.getConfidence()), Qt::DisplayRole);
+            m_sitesModel->setItem(i - 1, SITES_CONFIDENCE_COLUMN, confItem);
 
             QStandardItem * xItem = new QStandardItem();
             QStandardItem * yItem = new QStandardItem();
@@ -516,25 +526,9 @@ void SynapsePredictionProtocol::updateSitesTable() {
             xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
             yItem->setData(QVariant(site.getX()), Qt::DisplayRole);
             zItem->setData(QVariant(site.getX()), Qt::DisplayRole);
-            if (isCurrent) {
-                xItem->setData(boldFont, Qt::FontRole);
-                yItem->setData(boldFont, Qt::FontRole);
-                zItem->setData(boldFont, Qt::FontRole);
-            }
-            m_sitesModel->setItem(i, SITES_X_COLUMN, xItem);
-            m_sitesModel->setItem(i, SITES_Y_COLUMN, yItem);
-            m_sitesModel->setItem(i, SITES_Z_COLUMN, zItem);
-
-
-            if (site.isVerified()) {
-                // text marker in "status" column
-                QStandardItem * statusItem = new QStandardItem();
-                statusItem->setData(QVariant(QString("*")), Qt::DisplayRole);
-                if (isCurrent) {
-                    statusItem->setData(boldFont, Qt::FontRole);
-                }
-                m_sitesModel->setItem(i, SITES_STATUS_COLUMN, statusItem);
-            }
+            m_sitesModel->setItem(i - 1, SITES_X_COLUMN, xItem);
+            m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
+            m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
         }
         ui->sitesTableView->resizeColumnsToContents();
     }
@@ -587,12 +581,11 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
 }
 
 void SynapsePredictionProtocol::setSitesHeaders(QStandardItemModel * model) {
-    model->setHorizontalHeaderItem(SITES_PRE_COLUMN, new QStandardItem(QString("Pre")));
+    model->setHorizontalHeaderItem(SITES_STATUS_COLUMN, new QStandardItem(QString("V")));
+    model->setHorizontalHeaderItem(SITES_CONFIDENCE_COLUMN, new QStandardItem(QString("Conf")));
     model->setHorizontalHeaderItem(SITES_X_COLUMN, new QStandardItem(QString("x")));
     model->setHorizontalHeaderItem(SITES_Y_COLUMN, new QStandardItem(QString("y")));
     model->setHorizontalHeaderItem(SITES_Z_COLUMN, new QStandardItem(QString("z")));
-    model->setHorizontalHeaderItem(SITES_STATUS_COLUMN, new QStandardItem(QString("V")));
-    // model->setHorizontalHeaderItem(SITES_CONFIDENCE_COLUMN, new QStandardItem(QString("Conf")));
 }
 
 SynapsePredictionProtocol::~SynapsePredictionProtocol()

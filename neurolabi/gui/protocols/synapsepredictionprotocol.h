@@ -66,12 +66,11 @@ private:
     static const int fileVersion;
 
     enum SitesTableColumns {
-        SITES_PRE_COLUMN,
+        SITES_STATUS_COLUMN,
+        SITES_CONFIDENCE_COLUMN,
         SITES_X_COLUMN,
         SITES_Y_COLUMN,
-        SITES_Z_COLUMN,
-        SITES_STATUS_COLUMN,
-        SITES_CONFIDENCE_COLUMN
+        SITES_Z_COLUMN
     };
 
     Ui::SynapsePredictionProtocol *ui;
@@ -89,7 +88,8 @@ private:
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
     void loadInitialSynapseList();
     void setSitesHeaders(QStandardItemModel * model);
-    void updateSitesTable();
+    void clearSitesTable();
+    void updateSitesTable(std::vector<ZDvidSynapse>);
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
 
 };
