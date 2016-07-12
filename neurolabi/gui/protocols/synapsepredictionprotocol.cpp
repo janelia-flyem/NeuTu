@@ -258,13 +258,19 @@ void SynapsePredictionProtocol::saveState() {
 void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     // check version of saved data here, once we have a second version
-
+    if (!data.hasKey(KEY_VERSION.c_str())) {
+        ui->progressLabel->setText("No version info in saved data; data not loaded!");
+        return;
+    }
+    if (ZJsonParser::integerValue(data[KEY_VERSION.c_str()]) > fileVersion) {
+        ui->progressLabel->setText("Saved data is from a newer version of NeuTu; update NeuTu and try again!");
+        return;
+    }
 
     m_protocolRange.loadJson(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
     if (!m_protocolRange.isEmpty()) {
         loadInitialSynapseList();
     } else {
-        // failure: not a big message, hopefully will be enough
         ui->progressLabel->setText("Invalid protocol range. No data loaded!");
         return;
     }
@@ -501,7 +507,7 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             if (site.isVerified()) {
                 // text marker in "status" column
                 QStandardItem * statusItem = new QStandardItem();
-                statusItem->setData(QVariant(QString::fromUtf8("\u2022")), Qt::DisplayRole);
+                statusItem->setData(QVariant(QString::fromUtf8("\u2714")), Qt::DisplayRole);
                 m_sitesModel->setItem(i - 1, SITES_STATUS_COLUMN, statusItem);
             }
 
@@ -513,8 +519,8 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             QStandardItem * yItem = new QStandardItem();
             QStandardItem * zItem = new QStandardItem();
             xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
-            yItem->setData(QVariant(site.getX()), Qt::DisplayRole);
-            zItem->setData(QVariant(site.getX()), Qt::DisplayRole);
+            yItem->setData(QVariant(site.getY()), Qt::DisplayRole);
+            zItem->setData(QVariant(site.getZ()), Qt::DisplayRole);
             m_sitesModel->setItem(i - 1, SITES_X_COLUMN, xItem);
             m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
             m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
