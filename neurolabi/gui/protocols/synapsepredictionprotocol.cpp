@@ -259,21 +259,15 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     // check version of saved data here, once we have a second version
 
-  m_protocolRange.loadJson(
-        ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
-  if (!m_protocolRange.isEmpty()) {
-    loadInitialSynapseList();
-  } else {
 
-
-      // need message here!
-      // this no longer present:
-      // ui->progressLabel->setText("Invalid protocol range. No data loaded.");
-
-
-
-    return;
-  }
+    m_protocolRange.loadJson(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
+    if (!m_protocolRange.isEmpty()) {
+        loadInitialSynapseList();
+    } else {
+        // failure: not a big message, hopefully will be enough
+        ui->progressLabel->setText("Invalid protocol range. No data loaded!");
+        return;
+    }
 
     onFirstButton();
 }
@@ -424,8 +418,6 @@ void SynapsePredictionProtocol::updateLabels() {
 
         updateSitesTable(synapse);
     } else {
-        // ui->currentLabel->setText(QString("Current: --, --, --"));
-
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
         ui->preStatusLabel->setText(QString("Verified: --"));
@@ -434,15 +426,12 @@ void SynapsePredictionProtocol::updateLabels() {
         clearSitesTable();
     }
 
-    // progress labels:
+    // progress label:
     int nPending = m_pendingList.size();
     int nFinished = m_finishedList.size();
     int nTotal = nPending + nFinished;
     float percent = (100.0 * nFinished) / nTotal;
-
-    // not sure I like all the numbers; try more minimal
-    // ui->toReviewLabel->setText(QString("Sites to review: %1 / %2 (%3%)").arg(nPending).arg(nTotal).arg((1.0 - percent), 4, 'f', 1));
-    ui->reviewedLabel->setText(QString("Reviewed sites: %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
+    ui->progressLabel->setText(QString("Progress:\n\n %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 }
 
 void SynapsePredictionProtocol::loadInitialSynapseList()
@@ -512,7 +501,7 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             if (site.isVerified()) {
                 // text marker in "status" column
                 QStandardItem * statusItem = new QStandardItem();
-                statusItem->setData(QVariant(QString("*")), Qt::DisplayRole);
+                statusItem->setData(QVariant(QString::fromUtf8("\u2022")), Qt::DisplayRole);
                 m_sitesModel->setItem(i - 1, SITES_STATUS_COLUMN, statusItem);
             }
 
@@ -530,7 +519,13 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
             m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
         }
-        ui->sitesTableView->resizeColumnsToContents();
+#if QT_VERSION >= 0x050000
+        ui->sitesTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        ui->sitesTableView->horizontalHeader()->setSectionResizeMode(SITES_CONFIDENCE_COLUMN, QHeaderView::Stretch);
+#else
+        ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+        ui->sitesTableView->horizontalHeader()->setResizeMode(SITES_CONFIDENCE_COLUMN, QHeaderView::Stretch);
+#endif
     }
 }
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>474</width>
-    <height>416</height>
+    <height>446</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -163,6 +163,15 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="progressLabel">
+         <property name="text">
+          <string>Progress:
+
+--/-- (--%)</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
