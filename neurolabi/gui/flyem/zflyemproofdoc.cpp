@@ -957,7 +957,6 @@ void ZFlyEmProofDoc::verifySelectedSynapse()
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, userName, scope);
-      std::cout << "ZFEPD::verifySelectedSynapse: setting confidence = 1 for " << pt.toString() << std::endl;
       se->setConfidence(pt, 1.0, scope);
       emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
     }

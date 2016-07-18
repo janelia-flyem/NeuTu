@@ -318,6 +318,9 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
           break;
         }
       }
+      if (!synapse.isVerified()) {
+          isVerified = false;
+      }
     } else if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
       if (!partnerArray.empty()) {
@@ -335,6 +338,9 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
             isVerified = false;
             break;
           }
+        }
+        if (!presyn.isVerified()) {
+            isVerified = false;
         }
       }
     }
