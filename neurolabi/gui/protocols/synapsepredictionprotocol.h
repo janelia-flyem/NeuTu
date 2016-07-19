@@ -2,7 +2,9 @@
 #define SYNAPSEPREDICTIONPROTOCOL_H
 
 #include <QDialog>
+#include <QtGui>
 
+#include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zintcuboid.h"
@@ -50,44 +52,45 @@ private slots:
     void onReviewPrevButton();
     void onReviewNextButton();
 
-#ifdef _DON_
-    void onMarkedButton();
-    void onSkipButton();
-#endif
     void onGotoButton();
     void onExitButton();
     void onCompleteButton();
     void onRefreshButton();
 
+    void onDoubleClickSitesTable(QModelIndex index);
+
 private:
     static const std::string PROTOCOL_NAME;
-    static const std::string KEY_PENDING;
-    static const std::string KEY_FINISHED;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
-    static const int fileVversion;
+    static const int fileVersion;
+
+    enum SitesTableColumns {
+        SITES_STATUS_COLUMN,
+        SITES_CONFIDENCE_COLUMN,
+        SITES_X_COLUMN,
+        SITES_Y_COLUMN,
+        SITES_Z_COLUMN
+    };
 
     Ui::SynapsePredictionProtocol *ui;
+    QStandardItemModel * m_sitesModel;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
-#ifdef _DON_
-    ZIntPoint m_currentPoint;
-#else
     int m_currentPendingIndex; //Index for locating in pending list
     int m_currentFinishedIndex;
-#endif
     ZIntCuboid m_protocolRange;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
     void gotoCurrentFinished();
-#ifdef _DON_
-    ZIntPoint getNextPoint(ZIntPoint point);
-    ZIntPoint getPrevPoint(ZIntPoint point);
-#endif
     void loadInitialSynapseList(ZIntCuboid volume, QString roi);
     void loadInitialSynapseList();
+    void setSitesHeaders(QStandardItemModel * model);
+    void clearSitesTable();
+    void updateSitesTable(std::vector<ZDvidSynapse>);
+    std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
 
 };
 

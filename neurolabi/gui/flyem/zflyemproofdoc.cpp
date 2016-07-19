@@ -944,7 +944,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
   notifyObjectModified();
 }
 
-void ZFlyEmProofDoc::verfifySelectedSynapse()
+void ZFlyEmProofDoc::verifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -957,6 +957,7 @@ void ZFlyEmProofDoc::verfifySelectedSynapse()
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, userName, scope);
+      se->setConfidence(pt, 1.0, scope);
       emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
     }
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
@@ -965,7 +966,7 @@ void ZFlyEmProofDoc::verfifySelectedSynapse()
   notifyObjectModified();
 }
 
-void ZFlyEmProofDoc::unverfifySelectedSynapse()
+void ZFlyEmProofDoc::unverifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -978,6 +979,7 @@ void ZFlyEmProofDoc::unverfifySelectedSynapse()
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, "$" + userName, scope);
+      se->setConfidence(pt, 0.5, scope);
       emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), false);
     }
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
