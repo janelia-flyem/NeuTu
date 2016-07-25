@@ -1,5 +1,5 @@
 {
-  "librarian": "emdata2.int.janelia.org:9100",
+  "librarian": "emdata1.int.janelia.org:9100",
   "mb6_paper": false,
   "dvid root": {
     "@MB6": "99ef",
@@ -216,7 +216,7 @@
       "body_label": "bodies3",
       "label_block": "labels3",
       "synapse": "mb6_synapses",
-      "user_name": ["takemuras", "zhaot"]
+      "user_name": ["takemuras", "zhaot", "olbrisd"]
     },
     {
       "address": "emdata1.int.janelia.org",

@@ -388,6 +388,27 @@ void ZDvidSynapseEnsemble::setUserName(
   setUserName(pt.getX(), pt.getY(), pt.getZ(), userName, scope);
 }
 
+void ZDvidSynapseEnsemble::setConfidence(int x, int y, int z, const double c, EDataScope scope) {
+    // copied mostly from setUserName()
+    if (scope == DATA_GLOBAL) {
+      scope = DATA_SYNC;
+    }
+    ZDvidSynapse &synapse = getSynapse(x, y, z, scope);
+    if (synapse.isValid()) {
+      synapse.setConfidence(c);
+      if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
+        ZDvidWriter writer;
+        if (writer.open(m_dvidTarget)) {
+          writer.writeSynapse(synapse);
+        }
+      }
+    }
+}
+
+void ZDvidSynapseEnsemble::setConfidence(const ZIntPoint &pt, const double c, EDataScope scope) {
+    setConfidence(pt.getX(), pt.getY(), pt.getZ(), c, scope);
+}
+
 void ZDvidSynapseEnsemble::annotateSynapse(
     int x, int y, int z, const ZJsonObject &propJson, EDataScope scope)
 {

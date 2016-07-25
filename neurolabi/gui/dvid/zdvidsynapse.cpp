@@ -63,7 +63,10 @@ void ZDvidSynapse::setConfidence(double c)
     m_propertyJson.removeKey("confidence");
   }
 
-  m_propertyJson.setEntry("conf", c);
+  // remember, store props as strings!
+  std::ostringstream stream;
+  stream << c;
+  m_propertyJson.setEntry("conf", stream.str());
 }
 
 bool ZDvidSynapse::isVerified() const

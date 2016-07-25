@@ -292,8 +292,8 @@ public slots:
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();

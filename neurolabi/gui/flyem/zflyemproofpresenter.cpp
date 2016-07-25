@@ -106,11 +106,11 @@ bool ZFlyEmProofPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_SYNAPSE_VERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
-              this, SLOT(verfifySelectedSynapse()));
+              this, SLOT(verifySelectedSynapse()));
       break;
     case ZActionFactory::ACTION_SYNAPSE_UNVERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
-              this, SLOT(unverfifySelectedSynapse()));
+              this, SLOT(unverifySelectedSynapse()));
       break;
     default:
       connected = false;
@@ -329,14 +329,14 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
   }
 }
 
-void ZFlyEmProofPresenter::verfifySelectedSynapse()
+void ZFlyEmProofPresenter::verifySelectedSynapse()
 {
-  getCompleteDocument()->verfifySelectedSynapse();
+  getCompleteDocument()->verifySelectedSynapse();
 }
 
-void ZFlyEmProofPresenter::unverfifySelectedSynapse()
+void ZFlyEmProofPresenter::unverifySelectedSynapse()
 {
-  getCompleteDocument()->unverfifySelectedSynapse();
+  getCompleteDocument()->unverifySelectedSynapse();
 }
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
