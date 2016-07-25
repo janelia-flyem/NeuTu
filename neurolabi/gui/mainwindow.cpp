@@ -4022,6 +4022,7 @@ void MainWindow::on_actionExtract_body_triggered()
   }
 }
 
+/*
 void MainWindow::on_actionPredict_errors_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -4032,7 +4033,7 @@ void MainWindow::on_actionPredict_errors_triggered()
     }
   }
 }
-
+*/
 void MainWindow::on_actionCompute_Features_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -5542,10 +5543,16 @@ void MainWindow::createDvidFrame()
 #endif
 }
 
+#if 0
 void MainWindow::on_actionDVID_Object_triggered()
 {
 
 }
+void MainWindow::on_actionDvid_Object_triggered()
+{
+
+}
+#endif
 
 void MainWindow::cancelDvidRequest()
 {
@@ -5556,10 +5563,7 @@ void MainWindow::cancelDvidRequest()
   getProgressDialog()->setCancelButton(0);
 }
 
-void MainWindow::on_actionDvid_Object_triggered()
-{
 
-}
 
 void MainWindow::on_actionAssign_Clustering_triggered()
 {
@@ -6929,10 +6933,10 @@ void MainWindow::on_actionCreate_Databundle_triggered()
 {
 
 }
-
+#if 0
 void MainWindow::on_actionCreate_Thumbnails_triggered()
 {
-#if 0
+
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -6965,9 +6969,9 @@ void MainWindow::on_actionCreate_Thumbnails_triggered()
       }
     }
   }
-#endif
-}
 
+}
+#endif
 void MainWindow::on_actionCreate_ROI_triggered()
 {
 

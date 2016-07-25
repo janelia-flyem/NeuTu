@@ -1302,11 +1302,12 @@ void ZFlyEmRoiDialog::exportResult()
     array.dump(fileName + ".json");
   }
 }
-
+/*
 void ZFlyEmRoiDialog::on_exportPushButton_clicked()
 {
   exportResult();
 }
+*/
 
 int ZFlyEmRoiDialog::getNextZ() const
 {

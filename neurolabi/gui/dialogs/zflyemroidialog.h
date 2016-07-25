@@ -136,7 +136,7 @@ private slots:
 
   void on_estimateVolumePushButton_clicked();
 
-  void on_exportPushButton_clicked();
+//  void on_exportPushButton_clicked();
 
   void on_nextSlicePushButton_clicked();
 
