@@ -3507,6 +3507,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       }
       op.setOperation(ZStackOperator::OP_NULL);
     }
+//    processed = false;
     break;
 
   case ZStackOperator::OP_STACK_LOCATE_SLICE:
@@ -3640,9 +3641,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   }
 
-  if (!processed) {
-    processed = processCustomOperator(op, &interactionEvent);
-  }
+//  if (!processed) {
+  processed = processCustomOperator(op, &interactionEvent) || processed;
+//  }
 
   processEvent(interactionEvent);
 
