@@ -7,6 +7,7 @@
 #include <QtGui>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QtAlgorithms>
 
 #include "synapsepredictioninputdialog.h"
 
@@ -499,11 +500,24 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
           }
         }
 
+        // order the list; DVID can return things in variable order,
+        //  and people don't like that
+        // in a perfect world, we would cluster the synapses spatially,
+        //  to keep multi-synapses together, but in practice, that's
+        //  hard; so I'll just sort on x-y (ignoring z) and hope that
+        //  helps enough
+        qSort(m_pendingList.begin(), m_pendingList.end(), SynapsePredictionProtocol::sortXY);
 
-        // order somehow?  here or earlier?
-        // in a perfect world, I'd sort the pre-synaptic sites spatially, but
-        //  for now, it's just the order DVID returns
+    }
+}
 
+bool SynapsePredictionProtocol::sortXY(const ZIntPoint &p1, const ZIntPoint &p2) {
+    if (p1.getX() < p2.getX()) {
+        return true;
+    } else if (p1.getX() > p2.getX()) {
+        return false;
+    } else {
+        return (p1.getY() < p2.getY());
     }
 }
 

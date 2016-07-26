@@ -91,7 +91,7 @@ private:
     void clearSitesTable();
     void updateSitesTable(std::vector<ZDvidSynapse>);
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
-
+    static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
