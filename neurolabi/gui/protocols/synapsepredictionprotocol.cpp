@@ -411,6 +411,19 @@ void SynapsePredictionProtocol::updateLabels() {
         ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
         std::vector<ZDvidSynapse> synapse = getWholeSynapse(currentPoint);
 
+        if (synapse.size() == 0) {
+            QMessageBox mb;
+            mb.setText("Can't find T-bar");
+            mb.setInformativeText("The current T-bar appears to have been moved or deleted; refreshing data...");
+            mb.setStandardButtons(QMessageBox::Ok);
+            mb.setDefaultButton(QMessageBox::Ok);
+            mb.exec();
+
+            loadInitialSynapseList();
+            onFirstButton();
+            return;
+        }
+
         // first item in that list is the pre-synaptic element
         ui->preLocationLabel->setText(QString::fromStdString(currentPoint.toString()));
         ui->preConfLabel->setText(QString("Confidence: %1").arg(synapse[0].getConfidence(), 3, 'f', 1));
