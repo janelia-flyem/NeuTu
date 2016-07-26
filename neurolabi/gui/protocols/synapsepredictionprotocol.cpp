@@ -440,14 +440,13 @@ void SynapsePredictionProtocol::updateLabels() {
                 nPSDverified++;
             }
         }
-        ui->postSummaryLabel->setText(QString("PSDs verified: %1/%2").arg(nPSDverified).arg(synapse.size() - 1));
+        ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
 
         updateSitesTable(synapse);
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
         ui->preStatusLabel->setText(QString("Verified: --"));
-        ui->postSummaryLabel->setText(QString("PSDs verified: --/--"));
 
         clearSitesTable();
     }
