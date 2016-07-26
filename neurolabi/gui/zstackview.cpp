@@ -2166,10 +2166,10 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
   zoomTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
-void ZStackView::zoomTo(int x, int y, int z)
+void ZStackView::zoomTo(int x, int y, int z, int w)
 {
   QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-  int width = imin3(800, viewPort.width(), viewPort.height());
+  int width = imin3(w, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }
@@ -2190,6 +2190,11 @@ void ZStackView::zoomTo(int x, int y, int z)
   }
 
   setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+}
+
+void ZStackView::zoomTo(int x, int y, int z)
+{
+  zoomTo(x, y, z, 800);
 }
 
 void ZStackView::increaseZoomRatio()

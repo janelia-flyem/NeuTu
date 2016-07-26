@@ -1011,6 +1011,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkOutBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
+  connect(getCompletePresenter(), SIGNAL(goingToTBar()),
+          this, SLOT(goToTBar()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
   connect(getCompletePresenter(), SIGNAL(goingToBodyBottom()),
@@ -2421,6 +2423,26 @@ void ZFlyEmProofMvc::openTodo()
   m_todoDlg->raise();
 }
 
+void ZFlyEmProofMvc::goToTBar()
+{
+  ZDvidSynapseEnsemble *se =
+      getCompleteDocument()->getDvidSynapseEnsemble(getView()->getSliceAxis());
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+
+    if (selected.size() == 1) {
+      const ZIntPoint &pt = *(selected.begin());
+      ZDvidSynapse &synapse =
+          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        const std::vector<ZIntPoint> &partners = synapse.getPartners();
+        if (!partners.empty()) {
+          zoomTo(partners.front());
+        }
+      }
+    }
+  }
+}
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {

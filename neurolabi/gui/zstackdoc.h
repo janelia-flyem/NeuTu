@@ -152,6 +152,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject() const;
 
+  bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
 

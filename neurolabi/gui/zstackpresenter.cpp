@@ -1494,8 +1494,7 @@ bool ZStackPresenter::processKeyPressEventForStack(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
-      taken = true;
-      process(op);
+      taken = process(op);
     }
   }
 
@@ -1514,8 +1513,7 @@ bool ZStackPresenter::processKeyPressEventForActiveStroke(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
-      taken = true;
-      process(op);
+      taken = process(op);
     }
   }
 
@@ -1532,8 +1530,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
-      taken = true;
-      process(op);
+      taken = process(op);
     }
   }
 
@@ -1550,8 +1547,7 @@ bool ZStackPresenter::processKeyPressEventForObject(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
-      taken = true;
-      process(op);
+      taken = process(op);
     }
   }
 
@@ -2805,10 +2801,10 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
   emit viewModeChanged();
 }
 
-void ZStackPresenter::processCustomOperator(
+bool ZStackPresenter::processCustomOperator(
     const ZStackOperator &/*op*/, ZInteractionEvent */*e*/)
 {
-
+  return false;
 }
 
 bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
@@ -2844,8 +2840,10 @@ static void SyncDvidLabelSliceSelection(
   }
 }
 
-void ZStackPresenter::process(ZStackOperator &op)
+bool ZStackPresenter::process(ZStackOperator &op)
 {
+  bool processed = true;
+
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   QPoint currentWidgetPos(event.getPosition().getX(),
@@ -3467,7 +3465,12 @@ void ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY:
-    buddyDocument()->toggleVisibility(ZStackObjectRole::ROLE_TMP_RESULT);
+    if (buddyDocument()->hasObject(ZStackObjectRole::ROLE_TMP_RESULT)) {
+      buddyDocument()->toggleVisibility(ZStackObjectRole::ROLE_TMP_RESULT);
+    } else {
+      processed = false;
+      op.setOperation(ZStackOperator::OP_NULL);
+    }
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
@@ -3633,13 +3636,17 @@ void ZStackPresenter::process(ZStackOperator &op)
     break;
 #endif
   default:
-
+    processed = false;
     break;
   }
 
-  processCustomOperator(op, &interactionEvent);
+  if (!processed) {
+    processed = processCustomOperator(op, &interactionEvent);
+  }
 
   processEvent(interactionEvent);
+
+  return processed;
 }
 
 void ZStackPresenter::acceptActiveStroke()

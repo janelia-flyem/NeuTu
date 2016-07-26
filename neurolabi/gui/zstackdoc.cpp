@@ -544,6 +544,11 @@ bool ZStackDoc::hasObject() const
   return !m_objectGroup.isEmpty();
 }
 
+bool ZStackDoc::hasObject(ZStackObjectRole::TRole role) const
+{
+  return m_playerList.hasPlayer(role);
+}
+
 bool ZStackDoc::hasObject(ZStackObject::EType type) const
 {
   return !m_objectGroup.getObjectList(type).isEmpty();

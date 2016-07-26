@@ -988,7 +988,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
 }
 
 void ZFlyEmBodySplitProject::commitResultFunc(
-    ZObject3dScan *wholeBody, const ZStack *stack, const ZIntPoint &dsIntv,
+    ZObject3dScan *wholeBody, const ZStack *labelField, const ZIntPoint &dsIntv,
     size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
@@ -1039,9 +1039,9 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   ZObject3dScan mainBody;
 
   emitMessage(QString("Processing splits ..."));
-  if (stack != NULL) { //Process splits
+  if (labelField != NULL) { //Process splits
     std::vector<ZObject3dScan*> objArray =
-        ZObject3dScan::extractAllObject(*stack);
+        ZObject3dScan::extractAllObject(*labelField);
     emitMessage(QString("%1 labels extracted.").arg(objArray.size()));
     QString sizeMessage = "Object sizes: ";
     for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();

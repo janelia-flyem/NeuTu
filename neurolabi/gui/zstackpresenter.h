@@ -146,7 +146,7 @@ public:
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   virtual bool customKeyProcess(QKeyEvent *event);
-  virtual void processCustomOperator(const ZStackOperator &op,
+  virtual bool processCustomOperator(const ZStackOperator &op,
                                      ZInteractionEvent *e  = NULL);
 
   void createActions();
@@ -446,7 +446,7 @@ protected:
   bool estimateActiveStrokeWidth();
 
   void processEvent(ZInteractionEvent &event);
-  void process(ZStackOperator &op);
+  bool process(ZStackOperator &op);
 
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);

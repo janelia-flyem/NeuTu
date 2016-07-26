@@ -174,6 +174,7 @@ public slots:
   void runSplit();
 
   void loadSynapse();
+  void goToTBar();
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);

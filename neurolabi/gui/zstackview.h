@@ -230,6 +230,8 @@ public:
   void zoomTo(int x, int y, int z);
   void zoomTo(const ZIntPoint &pt);
 
+  void zoomTo(int x, int y, int z, int w);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:

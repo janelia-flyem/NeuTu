@@ -38,7 +38,7 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(
+  bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
@@ -77,6 +77,7 @@ signals:
   void runningSplit();
   void goingToBody();
   void selectingBody();
+  void goingToTBar();
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
