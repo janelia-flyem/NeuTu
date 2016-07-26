@@ -289,13 +289,21 @@ void SynapsePredictionProtocol::processSynapseMoving(
 void SynapsePredictionProtocol::processSynapseVerification(
     int x, int y, int z, bool verified)
 {
+  int oldPendingListSize = m_pendingList.size();
+
   if (verified) {
     verifySynapse(ZIntPoint(x, y, z));
   } else {
     unverifySynapse(ZIntPoint(x, y, z));
   }
 
-  updateLabels();
+  // if pending list has fewer items, that means the whole
+  //    synapse got verified, and it's time to move to the next one
+  if (m_pendingList.size() < oldPendingListSize) {
+      onNextButton();
+  } else {
+      updateLabels();
+  }
 }
 
 void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
