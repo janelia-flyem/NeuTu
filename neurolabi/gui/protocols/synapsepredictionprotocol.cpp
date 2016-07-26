@@ -50,6 +50,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
+    connect(ui->lastVerifiedButton, SIGNAL(clicked(bool)), this, SLOT(onLastVerifiedButton()));
 
     connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
@@ -192,6 +193,17 @@ void SynapsePredictionProtocol::onReviewNextButton()
   } else {
     m_currentFinishedIndex = -1;
   }
+}
+
+void SynapsePredictionProtocol::onLastVerifiedButton() {
+    // note that this only really works while a session is active; if
+    //  you reload the data, the finished list may be in a different
+    //  order; while we're active, we know that we always append the
+    //  most recently verified synapse at the end of the list
+    if (m_finishedList.size() > 0) {
+        ZIntPoint pt = m_finishedList[m_finishedList.size() - 1];
+        emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
+    }
 }
 
 void SynapsePredictionProtocol::onGotoButton() {

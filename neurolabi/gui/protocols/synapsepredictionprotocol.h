@@ -51,6 +51,7 @@ private slots:
     void onReviewFirstButton();
     void onReviewPrevButton();
     void onReviewNextButton();
+    void onLastVerifiedButton();
 
     void onGotoButton();
     void onExitButton();
