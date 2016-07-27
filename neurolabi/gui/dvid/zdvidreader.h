@@ -21,6 +21,11 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 
+
+#if defined(_ENABLE_LOWTIS_)
+#include <lowtis/LowtisConfig.h>
+#endif
+
 class ZDvidFilter;
 class ZArray;
 class ZJsonObject;
@@ -280,6 +285,10 @@ protected:
   mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+#endif
+
+#if defined(_ENABLE_LOWTIS_)
+  mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
   mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
 #endif
 

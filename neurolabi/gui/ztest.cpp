@@ -20412,6 +20412,67 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "372c", 8500);
+
+
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "372c";
+  config.datatypename = "labels";
+  //config.refresh_rate = 0;
+  srand(5);
+  lowtis::ImageService service(config);
+
+  config.bytedepth = 0;
+  for (int i = 0; i < 5; i++) {
+    ZDvidReader reader;
+    reader.open(target);
+
+    int width = 800;
+    int height = 600;
+    std::vector<int> offset(3, 0);
+    int xoff = rand() % 1000 + 4000;
+    int yoff = rand() % 1000 + 4000;
+    int zoff = rand() % 1000 + 4000;
+
+    mylib::Dimn_Type arrayDims[3];
+    arrayDims[0] = width;
+    arrayDims[1] = height;
+    arrayDims[2] = 1;
+    ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+
+    //  4570 4303 4439
+
+    //   offset[0] = 4570;
+    //   offset[1] = 4303;
+    //   offset[2] = 4439;
+
+    offset[0] = xoff;
+    offset[1] = yoff;
+    offset[2] = zoff;
+
+    std::cout << i << " " << xoff << " " << yoff << " " << zoff <<std::endl;
+
+    array = reader.readLabels64Lowtis(offset[0], offset[1], offset[2],
+        width, height);
+//    service.retrieve_image(width, height, offset, array->getDataPointer<char>());
+
+     ZObject3dScanArray m_objArray;
+    ZObject3dFactory::MakeObject3dScanArray(
+          *array, NeuTube::Z_AXIS, true, &m_objArray);
+
+    delete array;
+    //          char *buffer = new char[width * height * 8];
+
+    //          service.retrieve_image(width, height, offset, buffer);
+
+    //          delete []buffer;
+  }
+#endif
+
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/system/split_test/test.sobj");
   obj.getSlice(2742, 2813).save(GET_TEST_DATA_DIR + "/system/split_test/body.sobj");
