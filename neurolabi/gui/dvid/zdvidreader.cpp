@@ -1500,13 +1500,14 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 
   if (m_lowtisService.get() == NULL) {
     try {
-      lowtis::DVIDLabelblkConfig config;
-      config.username = NeuTube::GetCurrentUserName();
-      config.dvid_server = getDvidTarget().getAddressWithPort();
-      config.dvid_uuid = getDvidTarget().getUuid();
-      config.datatypename = getDvidTarget().getLabelBlockName();
+//      lowtis::DVIDLabelblkConfig config;
+      m_lowtisConfig.username = NeuTube::GetCurrentUserName();
+      m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
+      m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
+      m_lowtisConfig.datatypename = getDvidTarget().getLabelBlockName();
 
-      m_lowtisService = ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
+      m_lowtisService = ZSharedPointer<lowtis::ImageService>(
+            new lowtis::ImageService(m_lowtisConfig));
     } catch (libdvid::DVIDException &e) {
       m_lowtisService.reset();
 
@@ -1519,6 +1520,8 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
   QElapsedTimer timer;
   timer.start();
   if (m_lowtisService.get() != NULL) {
+//    m_lowtisService->config.bytedepth = 8;
+
     mylib::Dimn_Type arrayDims[3];
     arrayDims[0] = width;
     arrayDims[1] = height;

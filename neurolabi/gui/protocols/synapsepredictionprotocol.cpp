@@ -7,6 +7,7 @@
 #include <QtGui>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QtAlgorithms>
 
 #include "synapsepredictioninputdialog.h"
 
@@ -49,6 +50,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
+    connect(ui->lastVerifiedButton, SIGNAL(clicked(bool)), this, SLOT(onLastVerifiedButton()));
 
     connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(onDoubleClickSitesTable(QModelIndex)));
@@ -194,6 +196,17 @@ void SynapsePredictionProtocol::onReviewNextButton()
   }
 }
 
+void SynapsePredictionProtocol::onLastVerifiedButton() {
+    // note that this only really works while a session is active; if
+    //  you reload the data, the finished list may be in a different
+    //  order; while we're active, we know that we always append the
+    //  most recently verified synapse at the end of the list
+    if (m_finishedList.size() > 0) {
+        ZIntPoint pt = m_finishedList[m_finishedList.size() - 1];
+        emit requestDisplayPoint(pt.getX(), pt.getY(), pt.getZ());
+    }
+}
+
 void SynapsePredictionProtocol::onGotoButton() {
     gotoCurrent();
 }
@@ -289,13 +302,21 @@ void SynapsePredictionProtocol::processSynapseMoving(
 void SynapsePredictionProtocol::processSynapseVerification(
     int x, int y, int z, bool verified)
 {
+  int oldPendingListSize = m_pendingList.size();
+
   if (verified) {
     verifySynapse(ZIntPoint(x, y, z));
   } else {
     unverifySynapse(ZIntPoint(x, y, z));
   }
 
-  updateLabels();
+  // if pending list has fewer items, that means the whole
+  //    synapse got verified, and it's time to move to the next one
+  if (m_pendingList.size() < oldPendingListSize) {
+      onNextButton();
+  } else {
+      updateLabels();
+  }
 }
 
 void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
@@ -412,6 +433,19 @@ void SynapsePredictionProtocol::updateLabels() {
         ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
         std::vector<ZDvidSynapse> synapse = getWholeSynapse(currentPoint);
 
+        if (synapse.size() == 0) {
+            QMessageBox mb;
+            mb.setText("Can't find T-bar");
+            mb.setInformativeText("The current T-bar appears to have been moved or deleted; refreshing data...");
+            mb.setStandardButtons(QMessageBox::Ok);
+            mb.setDefaultButton(QMessageBox::Ok);
+            mb.exec();
+
+            loadInitialSynapseList();
+            onFirstButton();
+            return;
+        }
+
         // first item in that list is the pre-synaptic element
         ui->preLocationLabel->setText(QString::fromStdString(currentPoint.toString()));
         ui->preConfLabel->setText(QString("Confidence: %1").arg(synapse[0].getConfidence(), 3, 'f', 1));
@@ -427,14 +461,13 @@ void SynapsePredictionProtocol::updateLabels() {
                 nPSDverified++;
             }
         }
-        ui->postSummaryLabel->setText(QString("PSDs verified: %1/%2").arg(nPSDverified).arg(synapse.size() - 1));
+        ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
 
         updateSitesTable(synapse);
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
         ui->preStatusLabel->setText(QString("Verified: --"));
-        ui->postSummaryLabel->setText(QString("PSDs verified: --/--"));
 
         clearSitesTable();
     }
@@ -487,11 +520,24 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
           }
         }
 
+        // order the list; DVID can return things in variable order,
+        //  and people don't like that
+        // in a perfect world, we would cluster the synapses spatially,
+        //  to keep multi-synapses together, but in practice, that's
+        //  hard; so I'll just sort on x-y (ignoring z) and hope that
+        //  helps enough
+        qSort(m_pendingList.begin(), m_pendingList.end(), SynapsePredictionProtocol::sortXY);
 
-        // order somehow?  here or earlier?
-        // in a perfect world, I'd sort the pre-synaptic sites spatially, but
-        //  for now, it's just the order DVID returns
+    }
+}
 
+bool SynapsePredictionProtocol::sortXY(const ZIntPoint &p1, const ZIntPoint &p2) {
+    if (p1.getX() < p2.getX()) {
+        return true;
+    } else if (p1.getX() > p2.getX()) {
+        return false;
+    } else {
+        return (p1.getY() < p2.getY());
     }
 }
 
