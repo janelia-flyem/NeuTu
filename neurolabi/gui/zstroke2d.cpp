@@ -504,6 +504,11 @@ void ZStroke2d::print() const
   }
 }
 
+QColor ZStroke2d::GetLabelColor(int label)
+{
+  return m_colorTable.getColor(label);
+}
+
 const QColor& ZStroke2d::getLabelColor() const
 {
   return m_colorTable.getColor(m_label);

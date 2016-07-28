@@ -166,6 +166,11 @@ void ZFlyEmRoiDialog::createMenu()
 //  m_importRoiAction->setCheckable(true);
   connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
 
+  QAction *createRoiAction = new QAction("Create ROI Data", this);
+  m_mainMenu->addAction(createRoiAction);
+  connect(createRoiAction, SIGNAL(triggered()),
+          this, SLOT(createRoiData()));
+
   m_autoStepAction = new QAction("Auto Step", this);
   m_mainMenu->addAction(m_autoStepAction);
   m_autoStepAction->setCheckable(true);
@@ -1271,6 +1276,61 @@ void ZFlyEmRoiDialog::exportRoiObject()
               xIntv, yIntv, zIntv);
         //endProgress();
       }
+    }
+  }
+}
+
+void ZFlyEmRoiDialog::createRoiData()
+{
+  ZObject3dScan obj = m_project->getRoiSlice();
+
+  if (obj.isEmpty()) {
+    return;
+  }
+
+  bool ok = false;
+  QString roiName = QInputDialog::getText(
+        this, tr("Create ROI Data"), tr("Data name:"), QLineEdit::Normal,
+        m_project->getName().c_str(), &ok);
+
+  if (!roiName.isEmpty() && ok) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZDvidWriter writer;
+      writer.open(getDvidTarget());
+      if (reader.hasData(roiName.toStdString())) {
+        std::string type = reader.getType(roiName.toStdString());
+        if (type != "roi") {
+          QMessageBox::warning(this, "Name Conflict",
+                               QString("%1 has been used by type %2").
+                               arg(roiName).arg(type.c_str()));
+          return;
+        }
+
+        if (!ZDialogFactory::Ask(
+              "Overwrite Data",
+              QString("The data %1 already exists. "
+                      "Do you want to overwrite it?").arg(roiName), this)) {
+          return;
+        }
+      } else {
+        writer.createData("roi", roiName.toStdString());
+      }
+
+      ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+      int minZ = blockObj.getMinZ();
+      int maxZ = blockObj.getMaxZ();
+
+      ZObject3dScan interpolated;
+      for (int z = minZ; z <= maxZ; ++z) {
+        interpolated.concat(blockObj.interpolateSlice(z));
+      }
+
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(
+            interpolated, ZJsonFactory::OBJECT_SPARSE);
+      writer.writeJson(
+            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName.toStdString()),
+            array);
     }
   }
 }

@@ -110,10 +110,24 @@ void ZSparseStack::assignStackValue(
   }
 }
 
+bool ZSparseStack::DownsampleRequired(const ZIntCuboid &box)
+{
+  return box.getVolume() > MAX_STACK_VOLUME;
+}
+
+bool ZSparseStack::downsampleRequired() const
+{
+  if (m_objectMask != NULL) {
+    return DownsampleRequired(m_objectMask->getBoundBox());
+  }
+
+  return false;
+}
+
 ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
 {
   ZStack *out = NULL;
-  if (m_objectMask != NULL || m_stackGrid != NULL) {
+  if (m_objectMask != NULL && m_stackGrid != NULL) {
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
     cuboid.intersect(box);
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {

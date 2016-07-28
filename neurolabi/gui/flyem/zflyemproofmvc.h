@@ -167,6 +167,7 @@ public slots:
   void xorSelectionAt(int x, int y, int z);
   void deselectAllBody();
   void selectSeed();
+  void setMainSeed();
   void selectAllSeed();
   void recoverSeed();
   void exportSeed();
@@ -414,6 +415,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(settingMainSeed()), this, SLOT(setMainSeed()));
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
   connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));

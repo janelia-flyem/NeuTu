@@ -375,6 +375,8 @@ public: /* attributes */
    */
   void setOne();
 
+  void swapValue(int v1, int v2);
+
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
 

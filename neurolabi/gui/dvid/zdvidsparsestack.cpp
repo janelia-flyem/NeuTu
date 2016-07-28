@@ -409,6 +409,13 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   return m_sparseStack.getStack();
 }
 
+bool ZDvidSparseStack::stackDownsampleRequired()
+{
+  syncObjectMask();
+
+  return m_sparseStack.downsampleRequired();
+}
+
 uint64_t ZDvidSparseStack::getLabel() const
 {
   return m_label;

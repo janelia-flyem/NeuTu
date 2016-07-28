@@ -1,6 +1,6 @@
 {
   "librarian": "emdata1.int.janelia.org:9100",
-  "mb6_paper": false,
+  "mb6_paper": true,
   "dvid root": {
     "@MB6": "99ef",
     "@FIB19": "752d"

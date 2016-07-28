@@ -95,6 +95,7 @@ public:
   int selectSeed(int label);
   int selectAllSeed();
   void loadSeed(const ZJsonObject &obj);
+  void swapMainSeedLabel(int label);
 
   void exportSplits();
   void commitResult();

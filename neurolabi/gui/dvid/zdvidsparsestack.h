@@ -30,6 +30,8 @@ public:
   ZStack* getStack();
   ZStack* getStack(const ZIntCuboid &updateBox);
 
+  bool stackDownsampleRequired();
+
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }

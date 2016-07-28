@@ -907,6 +907,10 @@ public:
     return m_labelField;
   }
 
+  ZStack* getLabelField() {
+    return m_labelField;
+  }
+
   void setLabelField(ZStack *getStack);
 
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
@@ -1174,6 +1178,8 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
 private:
   void init();
@@ -1186,9 +1192,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
                                 const std::set<Swc_Tree_Node*> &swcSet);

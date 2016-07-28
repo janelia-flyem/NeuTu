@@ -1812,6 +1812,39 @@ void ZStack::setOne()
   }
 }
 
+template <typename T>
+void SwapValue(T *array, size_t length, int v1, int v2)
+{
+  for (size_t i = 0; i < length; ++i) {
+    if (array[i] == v1) {
+      array[i] = v2;
+    } else if (array[i] = v2) {
+      array[i] = v1;
+    }
+  }
+}
+
+void ZStack::swapValue(int v1, int v2)
+{
+  size_t voxelNumber = getVoxelNumber();
+  for (int c = 0; c < channelNumber(); ++c) {
+    switch (kind()) {
+    case GREY:
+      SwapValue(array8(c), voxelNumber, v1, v2);
+      break;
+    case GREY16:
+      SwapValue(array16(c), voxelNumber, v1, v2);
+      break;
+    case FLOAT32:
+      SwapValue(array32(c), voxelNumber, v1, v2);
+      break;
+    case FLOAT64:
+      SwapValue(array64(c), voxelNumber, v1, v2);
+      break;
+    }
+  }
+}
+
 void ZStack::printInfo() const
 {
   std::cout << "Stack: " << std::endl;

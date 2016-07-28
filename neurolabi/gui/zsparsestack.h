@@ -34,6 +34,9 @@ public:
 
   ZStack *getStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
 
+  static bool DownsampleRequired(const ZIntCuboid &box);
+  bool downsampleRequired() const;
+
   /*!
    * \brief Get the downsample interval for producing the dense stack.
    */

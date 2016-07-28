@@ -1247,6 +1247,28 @@ bool ZDvidReader::hasData(const std::string &dataName) const
   return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
 }
 
+std::string ZDvidReader::getType(const std::string &dataName) const
+{
+  std::string type;
+
+  if (!dataName.empty()) {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZDvidBufferReader bufferReader;
+
+    bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str());
+
+    const QByteArray &buffer = bufferReader.getBuffer();
+    ZJsonObject json;
+    json.decodeString(buffer.data());
+
+    if (json.hasKey("TypeName")) {
+      type = ZJsonParser::stringValue(json["TypeName"]);
+    }
+  }
+
+  return type;
+}
+
 ZArray* ZDvidReader::readLabels64(
     int x0, int y0, int z0, int width, int height, int depth) const
 {

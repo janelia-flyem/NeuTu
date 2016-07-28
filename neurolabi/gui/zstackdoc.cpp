@@ -8726,7 +8726,7 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
 }
 
 
-std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
+std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
   std::vector<ZStack*> maskArray;
 
@@ -8736,7 +8736,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
 //  bool hasSelected = false;
   QMutexLocker locker(m_playerList.getMutex());
 
-  QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
+  const QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
   if (selectedOnly) {
     for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
          iter != playerList.end(); ++iter) {

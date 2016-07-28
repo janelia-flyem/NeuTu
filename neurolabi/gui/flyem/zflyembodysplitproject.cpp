@@ -41,6 +41,7 @@
 #include "zwidgetmessage.h"
 #include "zflyemmisc.h"
 #include "zstackdochelper.h"
+#include "zintcuboidobj.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
@@ -1350,9 +1351,22 @@ void ZFlyEmBodySplitProject::backupSeed()
 
     ZDvidWriter writer;
     if (writer.open(getDvidTarget())) {
+      ZJsonObject rootObj;
+
+      ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
+      if (proofDoc != NULL) {
+        ZIntCuboidObj *roi = proofDoc->getSplitRoi();
+        if (roi != NULL) {
+          ZJsonArray roiJson = roi->getCuboid().toJsonArray();
+          rootObj.setEntry("roi", roiJson);
+        }
+      }
+
       if (!jsonArray.isEmpty()) {
-        ZJsonObject rootObj;
         rootObj.setEntry("seeds", jsonArray);
+      }
+
+      if (!rootObj.isEmpty()) {
         writer.writeJson(getSplitLabelName(), getBackupSeedKey(getBodyId()),
                          rootObj);
       }
@@ -1378,6 +1392,65 @@ void ZFlyEmBodySplitProject::deleteSavedSeed()
     writer.deleteKey(getSplitLabelName(), getSeedKey(getBodyId()));
     emit messageGenerated(QString("All seeds of %1 have been deleted").
                           arg(getBodyId()));
+  }
+}
+
+void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
+{
+  if (getDocument() != NULL && label != 1) {
+    QList<ZDocPlayer*> playerList =
+        getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+
+    //Check if the label exists
+    QSet<ZDocPlayer*> newSeedSet;
+    QSet<ZDocPlayer*> oldSeedSet;
+    foreach (ZDocPlayer *player, playerList) {
+      if (player->getLabel() == label) {
+        newSeedSet.insert(player);
+      } else if (player->getLabel() == 1) {
+        oldSeedSet.insert(player);
+      }
+    }
+
+    for (QSet<ZDocPlayer*>::iterator iter = newSeedSet.begin();
+         iter != newSeedSet.end(); ++iter) {
+      ZDocPlayer *seed = *iter;
+      seed->setLabel(1);
+    }
+
+    for (QSet<ZDocPlayer*>::iterator iter = oldSeedSet.begin();
+         iter != oldSeedSet.end(); ++iter) {
+      ZDocPlayer *seed = *iter;
+      seed->setLabel(label);
+    }
+
+    TStackObjectList objList =
+        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+
+    for (TStackObjectList::const_iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      if (splitObj != NULL) {
+        if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+          if ((int) splitObj->getLabel() == label) {
+            splitObj->setLabel(1);
+            splitObj->setColor(ZStroke2d::GetLabelColor(1));
+          } else if (splitObj->getLabel() == 1) {
+            splitObj->setLabel(label);
+            splitObj->setColor(ZStroke2d::GetLabelColor(label));
+          }
+        }
+      }
+    }
+
+    ZStack *labelField = getDocument()->getLabelField();
+    if (labelField != NULL) {
+      labelField->swapValue(1, label);
+    }
+
+    if (m_dataFrame != NULL) {
+      m_dataFrame->view()->paintObject();
+    }
   }
 }
 
@@ -1464,6 +1537,17 @@ void ZFlyEmBodySplitProject::loadSeed(const ZJsonObject &obj)
           delete obj3d;
         }
       }
+    }
+
+    if (obj.hasKey("roi")) {
+      ZIntCuboid box;
+      box.loadJson(ZJsonArray(obj.value("roi")));
+
+      ZIntCuboidObj *roiObj = new ZIntCuboidObj;
+      roiObj->setCuboid(box);
+      roiObj->setColor(QColor(255, 255, 255));
+      roiObj->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+      getDocument()->addObject(roiObj);
     }
   }
 }
@@ -1792,7 +1876,12 @@ void ZFlyEmBodySplitProject::runSplit()
 {
   if (getDocument() != NULL) {
     backupSeed();
-    getDocument()->runSeededWatershed();
+    ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
+    if (proofdoc != NULL) {
+      proofdoc->runSplit();
+    } else {
+      getDocument()->runSeededWatershed();
+    }
   }
 
   /*

@@ -74,7 +74,7 @@ QString ZFlyEmMB6Analyzer::getPunctumName(
   return preName + "_" + postName;
 }
 
-QString ZFlyEmMB6Analyzer::getPunctumName(const ZIntPoint &pt)
+QString ZFlyEmMB6Analyzer::getPunctumName(const ZIntPoint &/*pt*/)
 {
   return "";
 }

@@ -117,6 +117,7 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -170,6 +171,9 @@ public:
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
   }
+
+public:
+  void runSplit();
 
 public:
   void notifyBodyMerged();
@@ -337,6 +341,9 @@ private:
   bool isActive(EBodyColorMap type);
 
   void updateBodyColor(EBodyColorMap type);
+
+  void runSplitFunc();
+  ZIntCuboid estimateSplitRoi();
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;

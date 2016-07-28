@@ -2638,6 +2638,21 @@ void ZFlyEmProofMvc::selectSeed()
   delete dlg;
 }
 
+void ZFlyEmProofMvc::setMainSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+    m_splitProject.swapMainSeedLabel(label);
+    getView()->paintObject();
+    emit messageGenerated(QString("Label %1 is set the main seed.").arg(label));
+  }
+  delete dlg;
+}
+
 void ZFlyEmProofMvc::selectAllSeed()
 {
   int nSelected = m_splitProject.selectAllSeed();

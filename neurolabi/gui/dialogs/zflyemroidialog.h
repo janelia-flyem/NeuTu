@@ -150,6 +150,7 @@ private slots:
   void exportRoiObject();
   void exportRoiBlockObject();
   void importRoi();
+  void createRoiData();
   void cloneProject();
 
 private:
