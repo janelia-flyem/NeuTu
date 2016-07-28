@@ -138,16 +138,16 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="postSummaryLabel">
+        <widget class="QPushButton" name="gotoButton">
          <property name="text">
-          <string>PSDs verified: --/--</string>
+          <string>Go to current</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="gotoButton">
+        <widget class="QPushButton" name="lastVerifiedButton">
          <property name="text">
-          <string>Go to current</string>
+          <string>Last verified</string>
          </property>
         </widget>
        </item>
@@ -178,9 +178,9 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="postTableLabel">
          <property name="text">
-          <string>PSDs</string>
+          <string>PSDs (--/-- verified)</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
