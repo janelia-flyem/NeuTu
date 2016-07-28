@@ -67,6 +67,7 @@ public slots:
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
+  void keyPressEvent(QKeyEvent *event);
 
 private:
   void init();

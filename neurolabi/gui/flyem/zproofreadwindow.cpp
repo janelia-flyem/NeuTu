@@ -44,6 +44,7 @@ void ZProofreadWindow::connectMessagePipe(T *source)
 
 void ZProofreadWindow::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
   setAttribute(Qt::WA_DeleteOnClose);
 
   QWidget *widget = new QWidget(this);
@@ -536,6 +537,11 @@ void ZProofreadWindow::changeEvent(QEvent *event)
   if (event->type() == QEvent::ActivationChange) {
     displayActiveHint(isActiveWindow());
   }
+}
+
+void ZProofreadWindow::keyPressEvent(QKeyEvent *event)
+{
+  event->ignore();
 }
 
 void ZProofreadWindow::displayActiveHint(bool on)

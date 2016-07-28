@@ -35,6 +35,7 @@ public:
   ZStack *getStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
 
   static bool DownsampleRequired(const ZIntCuboid &box);
+  static size_t GetMaxStackVolume();
   bool downsampleRequired() const;
 
   /*!

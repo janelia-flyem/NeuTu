@@ -82,6 +82,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 
 void ZFlyEmProofMvc::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
+
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
     m_protocolSwitcher = new ProtocolSwitcher(this);
@@ -1121,6 +1123,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(runningLocalSplit()),
+          this, SLOT(runLocalSplit()));
   connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
@@ -1440,6 +1444,18 @@ void ZFlyEmProofMvc::runSplitFunc()
   getProgressSignal()->startProgress(1.0);
   m_splitProject.runSplit();
   getProgressSignal()->endProgress();
+}
+
+void ZFlyEmProofMvc::runLocalSplitFunc()
+{
+  getProgressSignal()->startProgress(1.0);
+  m_splitProject.runLocalSplit();
+  getProgressSignal()->endProgress();
+}
+
+void ZFlyEmProofMvc::runLocalSplit()
+{
+  runLocalSplitFunc();
 }
 
 void ZFlyEmProofMvc::runSplit()
@@ -1814,6 +1830,7 @@ void ZFlyEmProofMvc::updateSplitBody()
   if (m_splitProject.getBodyId() > 0) {
     ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
+    getCompleteDocument()->deprecateSplitSource();
     /*
     QColor color =
         getCompleteDocument()->getDvidSparseStack()->getObjectMask()->getColor();
@@ -1988,12 +2005,13 @@ void ZFlyEmProofMvc::exitSplit()
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
-      body->cancelFillValueFunc();
+      body->cancelFillValueSync();
     }
 
     m_paintLabelWidget->hide();
 //    m_latencyLabelWidget->show();
 
+    getCompleteDocument()->deprecateSplitSource();
     m_splitProject.clear();
 
     disableSplit();

@@ -196,6 +196,10 @@ public:
   virtual void wheelEvent(QWheelEvent *event);
   virtual void resizeEvent(QResizeEvent *event);
 
+protected:
+  void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
+
 public slots:
   void updateView();
 

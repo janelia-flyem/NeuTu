@@ -1224,24 +1224,6 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   }
 }
 
-/*
-void ZStackPresenter::setViewPortCenter(int x, int y, int z)
-{
-  buddyView()->imageWidget()->setViewPortOffset(
-        x - buddyView()->imageWidget()->viewPort().width() / 2,
-        y - buddyView()->imageWidget()->viewPort().height() / 2);
-  buddyView()->setSliceIndex(z);
-  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-}
-*/
-
-/*
-void ZStackPresenter::moveImage(int mouseX, int mouseY)
-{
-  moveImageToMouse(m_grabPosition.x(), m_grabPosition.y(), mouseX, mouseY);
-}
-*/
-
 void ZStackPresenter::moveImageToMouse(
     double srcX, double srcY, int mouseX, int mouseY)
 {

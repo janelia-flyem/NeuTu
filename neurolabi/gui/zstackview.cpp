@@ -83,16 +83,18 @@ ZStackView::~ZStackView()
 
 void ZStackView::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
 
   m_zSpinBox = new ZLabeledSpinBoxWidget(this);
   m_zSpinBox->setLabel("Z:");
+  m_zSpinBox->setFocusPolicy(Qt::ClickFocus);
 
   m_imageWidget = new ZImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding,
                                QSizePolicy::Expanding);
-  m_imageWidget->setFocusPolicy(Qt::StrongFocus);
+  m_imageWidget->setFocusPolicy(Qt::ClickFocus);
   m_imageWidget->setPaintBundle(&m_paintBundle);
 
   setSliceAxis(NeuTube::Z_AXIS);
@@ -235,6 +237,20 @@ void ZStackView::setInfo(QString info)
   }
 }
 
+bool ZStackView::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *ke = dynamic_cast<QKeyEvent*>(event);
+    if (ke != NULL) {
+      if (ke->key() == Qt::Key_Tab) {
+        event->ignore();
+        return false;
+      }
+    }
+  }
+
+  return QWidget::event(event);
+}
 
 
 void ZStackView::connectSignalSlot()

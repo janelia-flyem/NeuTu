@@ -1486,15 +1486,13 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
-
+#if defined(_ENABLE_LOWTIS_)
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height) const
 {
 
   ZArray *array = NULL;
 
-
-#if defined(_ENABLE_LOWTIS_)
   qDebug() << "Using lowtis";
 
 
@@ -1564,13 +1562,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     m_readingTime = timer.elapsed();
     LINFO() << "label reading time: " << m_readingTime;
   }
-#endif
-
-
 
   return array;
 }
-
+#endif
 
 bool ZDvidReader::hasSparseVolume() const
 {

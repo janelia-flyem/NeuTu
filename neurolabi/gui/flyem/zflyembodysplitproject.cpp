@@ -1872,6 +1872,19 @@ std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
       ZString::num2str(bodyId);
 }
 
+void ZFlyEmBodySplitProject::runLocalSplit()
+{
+  if (getDocument() != NULL) {
+    backupSeed();
+    ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
+    if (proofdoc != NULL) {
+      proofdoc->runLocalSplit();
+    } else {
+      getDocument()->runLocalSeededWatershed();
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::runSplit()
 {
   if (getDocument() != NULL) {

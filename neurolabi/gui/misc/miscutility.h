@@ -41,6 +41,8 @@ ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
 ZIntPoint getDsIntvFor3DVolume(double dsRatio);
 
+double GetExpansionScale(size_t currentVol, size_t maxVol);
+
 /*!
  * \brief A function for computing confidence
  *

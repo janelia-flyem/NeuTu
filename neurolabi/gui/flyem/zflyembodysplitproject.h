@@ -176,6 +176,7 @@ public slots:
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
+  void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
   void startBodyQuickView();

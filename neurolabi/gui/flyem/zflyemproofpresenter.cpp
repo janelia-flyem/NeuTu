@@ -221,12 +221,15 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_Tab:
+    if (event->modifiers() == Qt::NoModifier) {
+      emit goingToTBar();
+      processed = true;
+    }
+    break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
       emit goingToBodyTop();
-      processed = true;
-    } else if (event->modifiers() == Qt::ControlModifier) {
-      emit goingToTBar();
       processed = true;
     }
     break;
@@ -292,6 +295,9 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Space:
     if (event->modifiers() == Qt::ShiftModifier) {
       emit runningSplit();
+      processed = true;
+    } else if (event->modifiers() == Qt::NoModifier) {
+      emit runningLocalSplit();
       processed = true;
     }
     break;

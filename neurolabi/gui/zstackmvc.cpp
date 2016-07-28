@@ -299,6 +299,20 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
   }
 }
 
+bool ZStackMvc::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    if (m_presenter != NULL) {
+      if (m_presenter->processKeyPressEvent((QKeyEvent*) event)) {
+        event->accept();
+      }
+    }
+    return true;
+  }
+
+  return QWidget::event(event);
+}
+
 void ZStackMvc::processViewChange()
 {
   processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
@@ -550,15 +564,6 @@ void ZStackMvc::zoomTo(int x, int y, int z, int width)
 
   getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
 #endif
-/*
-  getView()->imageWidget()->setViewPortOffset(
-        x - getView()->imageWidget()->viewPort().width() / 2,
-        y - getView()->imageWidget()->viewPort().height() / 2);
-  getView()->setSliceIndex(z);
-  */
-//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-
-//  getPresenter()->setViewPortCenter(x, y, z);
 
   getView()->highlightPosition(x, y, z);
 }

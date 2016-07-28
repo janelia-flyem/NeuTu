@@ -20,7 +20,8 @@ ZDvidSparseStack::~ZDvidSparseStack()
   std::cout << "Deleting dvid sparsestack: " << ": " << getSource() << std::endl;
 #endif
 
-  m_cancelingValueFill = true;
+  setCancelFillValue(true);
+//  m_cancelingValueFill = true;
   m_futureMap.waitForFinished();
 }
 
@@ -30,7 +31,8 @@ void ZDvidSparseStack::init()
   m_type = GetType();
   m_isValueFilled = false;
   m_label = 0;
-  m_cancelingValueFill = false;
+  setCancelFillValue(false);
+//  m_cancelingValueFill = false;
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -125,6 +127,11 @@ void ZDvidSparseStack::display(
   }
 }
 
+void ZDvidSparseStack::setCancelFillValue(bool flag)
+{
+  m_cancelingValueFill = flag;
+}
+
 ZIntCuboid ZDvidSparseStack::getBoundBox() const
 {
   ZIntCuboid box;
@@ -207,31 +214,64 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
 
 void ZDvidSparseStack::runFillValueFunc()
 {
-  runFillValueFunc(ZIntCuboid());
+  runFillValueFunc(ZIntCuboid(), false);
 }
 
-void ZDvidSparseStack::cancelFillValueFunc()
+//void ZDvidSparseStack::cancelFillValueFunc()
+//{
+//  m_cancelingValueFill = true;
+
+//}
+
+void ZDvidSparseStack::cancelFillValueSync()
 {
-  m_cancelingValueFill = true;
+//  cancelFillValueFunc();
+  QString threadId = getFillValueThreadId();
+  if (m_futureMap.isAlive(threadId)) {
+    setCancelFillValue(true);
+    m_futureMap[threadId].waitForFinished();
+  }
 }
 
-void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box)
+void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box, bool syncing)
 {
   if (!m_isValueFilled) {
     QString threadId = getFillValueThreadId();
+
+    if (box.isEmpty()) {
+      if (m_futureMap.isAlive(threadId)) {
+        if (syncing) {
+          m_futureMap[threadId].waitForFinished();
+        }
+        return;
+      }
+    }
+
+    cancelFillValueSync();
+
     if (!m_futureMap.isAlive(threadId)) {
-      QFuture<void> future =
-          QtConcurrent::run(this, &ZDvidSparseStack::fillValue, box, true);
-      m_futureMap[threadId] = future;
+      if (syncing) {
+        QFuture<void> future = QtConcurrent::run(
+              this, &ZDvidSparseStack::fillValue, box, true, false);
+        future.waitForFinished();
+        if (!m_isValueFilled) {
+          runFillValueFunc();
+        }
+      } else {
+        QFuture<void> future =
+            QtConcurrent::run(this, &ZDvidSparseStack::fillValue, box, true);
+        m_futureMap[threadId] = future;
+      }
     }
   }
 }
 
 bool ZDvidSparseStack::fillValue(
-    const ZIntCuboid &box, bool cancelable)
+    const ZIntCuboid &box, bool cancelable, bool fillingAll)
 {
   if (!cancelable) {
-    m_cancelingValueFill = true;
+//    m_cancelingValueFill = true;
+    setCancelFillValue(true);
   }
 
   if (m_isValueFilled) {
@@ -246,6 +286,9 @@ bool ZDvidSparseStack::fillValue(
       QMutexLocker locker(&m_fillValueMutex);
 
       qDebug() << "Downloading grayscale ...";
+      if (!box.isEmpty()) {
+        qDebug() << "  Range: " << box.toJsonArray().dumpString(0);
+      }
       //    tic();
       ZDvidInfo dvidInfo;
       dvidInfo.setFromJsonString(
@@ -263,7 +306,9 @@ bool ZDvidSparseStack::fillValue(
 
       for (size_t s = 0; s < stripeNumber; ++s) {
         if (cancelable && m_cancelingValueFill) {
-          m_cancelingValueFill = false;
+//          m_cancelingValueFill = false;
+          setCancelFillValue(false);
+          qDebug() << "Grayscale fetching canceled";
           return blockCount > 0;
         }
 
@@ -328,13 +373,21 @@ bool ZDvidSparseStack::fillValue(
 
   if (box.isEmpty()) {
     m_isValueFilled =  true;
+    qDebug() << "All blocks filled";
   }
 
-  if (!m_isValueFilled) {
-    runFillValueFunc();
+  if (!m_isValueFilled && fillingAll) {
+//    runFillValueFunc();
+    qDebug() << "Filling remaining blocks ...";
+    fillValue(true);
   }
 
   return (blockCount > 0);
+}
+
+bool ZDvidSparseStack::fillValue(const ZIntCuboid &box, bool cancelable)
+{
+  return fillValue(box, cancelable, true);
 }
 
 bool ZDvidSparseStack::fillValue(bool cancelable)
@@ -393,18 +446,32 @@ bool ZDvidSparseStack::fillValue(bool cancelable)
 
 ZStack* ZDvidSparseStack::getStack()
 {
+  /*
+  cancelFillValueSync();
+
   if (fillValue()) {
     m_sparseStack.deprecate(ZSparseStack::STACK);
   }
+  */
+
+  runFillValueFunc(ZIntCuboid(), true);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
 
   return m_sparseStack.getStack();
 }
 
 ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
 {
+  /*
+  cancelFillValueSync();
+
   if (fillValue(updateBox)) {
     m_sparseStack.deprecate(ZSparseStack::STACK);
   }
+  */
+
+  runFillValueFunc(updateBox, true);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
 
   return m_sparseStack.getStack();
 }
@@ -457,6 +524,11 @@ const ZObject3dScan* ZDvidSparseStack::getObjectMask() const
   return m_sparseStack.getObjectMask();
 }
 */
+
+ZStackBlockGrid* ZDvidSparseStack::getStackGrid()
+{
+  return m_sparseStack.getStackGrid();
+}
 
 ZObject3dScan* ZDvidSparseStack::getObjectMask()
 {
@@ -526,7 +598,7 @@ ZDvidSparseStack* ZDvidSparseStack::getCrop(const ZIntCuboid &box) const
   stack->m_sparseStack.setBaseValue(m_sparseStack.getBaseValue());
   ZObject3dScan *submask = new ZObject3dScan;
   const_cast<ZDvidSparseStack&>(*this).getObjectMask()->subobject(box, submask);
-  stack->m_sparseStack.setObjectMask(submask);
+  stack->m_sparseStack.setObjectMask(submask);  
 
   return stack;
 }

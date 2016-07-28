@@ -65,6 +65,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
 
+  ZStackBlockGrid* getStackGrid();
+
   //bool hasSparseStack() const;
   bool hasVisibleSparseStack() const;
 
@@ -174,6 +176,7 @@ public:
 
 public:
   void runSplit();
+  void runLocalSplit();
 
 public:
   void notifyBodyMerged();
@@ -343,7 +346,9 @@ private:
   void updateBodyColor(EBodyColorMap type);
 
   void runSplitFunc();
+  void localSplitFunc();
   ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateLocalSplitRoi();
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;

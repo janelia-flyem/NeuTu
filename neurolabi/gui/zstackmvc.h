@@ -79,6 +79,7 @@ public:
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
 
 signals:
   void stackChanged();

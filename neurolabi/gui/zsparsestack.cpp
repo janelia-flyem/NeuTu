@@ -110,6 +110,11 @@ void ZSparseStack::assignStackValue(
   }
 }
 
+size_t ZSparseStack::GetMaxStackVolume()
+{
+  return MAX_STACK_VOLUME;
+}
+
 bool ZSparseStack::DownsampleRequired(const ZIntCuboid &box)
 {
   return box.getVolume() > MAX_STACK_VOLUME;

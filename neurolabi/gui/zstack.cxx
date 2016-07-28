@@ -1818,7 +1818,7 @@ void SwapValue(T *array, size_t length, int v1, int v2)
   for (size_t i = 0; i < length; ++i) {
     if (array[i] == v1) {
       array[i] = v2;
-    } else if (array[i] = v2) {
+    } else if (array[i] == v2) {
       array[i] = v1;
     }
   }

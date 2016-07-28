@@ -11,6 +11,7 @@ ZLabeledSpinBoxWidget::ZLabeledSpinBoxWidget(QWidget *parent) :
 
   m_mainWidget = new ZSpinBox(this);
   m_layout->addWidget(m_mainWidget);
+  m_mainWidget->setFocusPolicy(Qt::ClickFocus);
 
   connect(m_mainWidget, SIGNAL(valueConfirmed(int)),
           this, SIGNAL(valueConfirmed(int)));

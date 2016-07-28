@@ -421,6 +421,8 @@ protected:
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
 
+  bool event(QEvent *event);
+
 protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;

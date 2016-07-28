@@ -55,6 +55,7 @@ public:
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
+  ZStackBlockGrid* getStackGrid();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
@@ -75,15 +76,18 @@ public:
   int getReadStatusCode() const;
 
   void runFillValueFunc();
-  void runFillValueFunc(const ZIntCuboid &box);
+  void runFillValueFunc(const ZIntCuboid &box, bool syncing);
 
-  void cancelFillValueFunc();
+  void setCancelFillValue(bool flag);
+  void cancelFillValueSync();
+//  void cancelFillValueFunc();
 
 private:
   void init();
   void initBlockGrid();
   bool fillValue(bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable = false);
+  bool fillValue(const ZIntCuboid &box, bool cancelable, bool fillingAll);
   QString getLoadBodyThreadId() const;
   QString getFillValueThreadId() const;
   void pushMaskColor();

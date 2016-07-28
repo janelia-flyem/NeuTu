@@ -75,6 +75,7 @@ signals:
   void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningLocalSplit();
   void goingToBody();
   void selectingBody();
   void goingToTBar();

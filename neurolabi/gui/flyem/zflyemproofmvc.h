@@ -173,6 +173,7 @@ public slots:
   void exportSeed();
   void importSeed();
   void runSplit();
+  void runLocalSplit();
 
   void loadSynapse();
   void goToTBar();
@@ -264,6 +265,7 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void runLocalSplitFunc();
   void notifyBookmarkUpdated();
   void notifyBookmarkDeleted();
 
