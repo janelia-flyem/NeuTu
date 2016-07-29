@@ -316,7 +316,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-            this->getView(), SLOT(setView(ZStackViewParam)));
+            this, SLOT(zoomTo(ZStackViewParam)));
   }
 }
 

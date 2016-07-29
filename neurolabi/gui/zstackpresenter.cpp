@@ -1402,68 +1402,6 @@ QMutableListIterator<objtype*> iter(list);	\
 bool ZStackPresenter::isOperatable(ZStackOperator::EOperation op)
 {
   return ZStackOperator::IsOperable(op, buddyDocument());
-#if 0
-  bool opable = true;
-  switch (op) {
-  case ZStackOperator::OP_NULL:
-    opable = false;
-    break;
-  case ZStackOperator::OP_SWC_DELETE_NODE:
-  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
-  case ZStackOperator::OP_SWC_MOVE_NODE_LEFT_FAST:
-  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT:
-  case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
-  case ZStackOperator::OP_SWC_MOVE_NODE_UP:
-  case ZStackOperator::OP_SWC_MOVE_NODE_UP_FAST:
-  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN:
-  case ZStackOperator::OP_SWC_MOVE_NODE_DOWN_FAST:
-  case ZStackOperator::OP_SWC_CONNECT_NODE:
-  case ZStackOperator::OP_SWC_CONNECT_NODE_SMART:
-  case ZStackOperator::OP_SWC_CONNECT_ISOLATE:
-  case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
-  case ZStackOperator::OP_SWC_MOVE_NODE:
-  case ZStackOperator::OP_SWC_CHANGE_NODE_FOCUS:
-  case ZStackOperator::OP_SWC_SELECT_CONNECTION:
-  case ZStackOperator::OP_SWC_SELECT_FLOOD:
-    if (buddyDocument()->getSelectedSwcNodeList().isEmpty()) {
-      opable = false;
-    }
-    break;
-  case ZStackOperator::OP_SWC_EXTEND:
-  case ZStackOperator::OP_SWC_SMART_EXTEND:
-  case ZStackOperator::OP_SWC_RESET_BRANCH_POINT:
-  case ZStackOperator::OP_SWC_CONNECT_TO:
-  case ZStackOperator::OP_SWC_LOCATE_FOCUS:
-  case ZStackOperator::OP_SWC_ENTER_EXTEND_NODE:
-    if (buddyDocument()->getSelectedSwcNodeList().size() != 1) {
-      opable = false;
-    }
-    break;
-  case ZStackOperator::OP_SWC_BREAK_NODE:
-  case ZStackOperator::OP_SWC_INSERT_NODE:
-    if (buddyDocument()->getSelectedSwcNodeList().size() <= 1) {
-      opable = false;
-    }
-    break;
-  case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
-    if (buddyDocument()->getTag() != NeuTube::Document::NORMAL &&
-        buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_STACK &&
-        buddyDocument()->getTag() != NeuTube::Document::FLYEM_ROI) {
-      opable = false;
-    }
-    break;
-  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
-  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
-    if (buddyDocument()->getSelectedSwcNodeList().isEmpty() || isStrokeOn()) {
-      opable = false;
-    }
-    break;
-  default:
-    break;
-  }
-
-  return opable;
-#endif
 }
 
 bool ZStackPresenter::processKeyPressEventForStack(QKeyEvent *event)

@@ -948,7 +948,8 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
             tree->rescale(m_dvidInfo.getBlockSize().getX(),
                           m_dvidInfo.getBlockSize().getY(),
                           m_dvidInfo.getBlockSize().getZ());
-            tree->translate(m_dvidInfo.getStartCoordinates());
+            tree->translate(m_dvidInfo.getStartCoordinates() +
+                            m_dvidInfo.getBlockSize() / 2);
           }
         }
       } else {

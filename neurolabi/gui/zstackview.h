@@ -372,6 +372,7 @@ public: //Change view parameters
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
+  void highlightPosition(const ZIntPoint &pt);
 
   void updateContrastProtocal();
 

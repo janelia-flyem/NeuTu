@@ -543,7 +543,17 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 
   getView()->processViewChange(true, depthChanged);
 
+  getView()->highlightPosition(pt);
+
 //  getView()->notifyViewChanged();
+}
+
+void ZStackMvc::zoomTo(const ZStackViewParam &param)
+{
+  getView()->setView(param);
+  getView()->highlightPosition(param.getViewPort().center().x(),
+                               param.getViewPort().center().y(),
+                               param.getZ());
 }
 
 void ZStackMvc::zoomTo(int x, int y, int z, int width)

@@ -2855,6 +2855,11 @@ void ZStackView::dump(const QString &msg)
   m_msgLabel->setText(msg);
 }
 
+void ZStackView::highlightPosition(const ZIntPoint &pt)
+{
+  highlightPosition(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZStackView::highlightPosition(int x, int y, int z)
 {
   ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
