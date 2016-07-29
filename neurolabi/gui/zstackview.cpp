@@ -1444,6 +1444,8 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
           QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
     transform.setScale(1.0, 1.0);
     transform.setOffset(-viewPort.left(), -viewPort.top());
+  } else {
+    canvas->getProjTransform().setScale(1.0, 1.0);
   }
 
   canvas->setTransform(transform);
@@ -1467,85 +1469,6 @@ void ZStackView::updateActiveDecorationCanvas()
 {
   m_activeDecorationCanvas = updateProjCanvas(m_activeDecorationCanvas);
   m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-#if 0
-//  if (m_activeDecorationCanvas != NULL) {
-//    if (m_activeDecorationCanvas->width() != m_image->width() ||
-//        m_activeDecorationCanvas->height() != m_image->height()) {
-//      delete m_activeDecorationCanvas;
-//      m_activeDecorationCanvas = NULL;
-//    }
-//  }
-
-  qDebug() << "Updating active decoration";
-  qDebug() << "  Projection:" << getProjRegion();
-
-  ZStTransform transform = getViewTransform();
-
-  QSize newSize = getProjRegion().size().toSize();
-
-  if (transform.getSx() > 1.1) {
-    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-    newSize = viewPort.size();
-    m_activeDecorationCanvas->getProjTransform().estimate(
-          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
-    transform.setScale(1.0, 1.0);
-    transform.setOffset(-viewPort.left(), -viewPort.top());
-  }
-
-  qDebug() << "  Canvas size" << newSize;
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->size() != newSize) {
-      delete m_activeDecorationCanvas;
-      m_activeDecorationCanvas = NULL;
-    }
-  }
-
-  if (m_activeDecorationCanvas == NULL) {
-    m_activeDecorationCanvas = new ZPixmap(newSize);
-  }
-
-
-#if 0
-  ZStTransform transform;
-  QRectF targetRect = getProjRegion();
-  targetRect.setSize(newSize);
-  transform.estimate(m_imageWidget->viewPort(), targetRect);
-#endif
-
-  m_activeDecorationCanvas->setTransform(transform);
-
-  m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->isVisible()){
-      m_activeDecorationCanvas->cleanUp();
-    }
-  }
-
-#if 0
-  resetCanvasWithStack(m_activeDecorationCanvas, NULL);
-
-  if (m_activeDecorationCanvas == NULL) {
-    QSize canvasSize = getCanvasSize();
-    if (!canvasSize.isEmpty()) {
-      m_activeDecorationCanvas = new ZPixmap(canvasSize);//m_image->createMask();
-      ZIntCuboid box = getViewBoundBox();
-      m_activeDecorationCanvas->setOffset(
-            -box.getFirstCorner().getX(),
-            -box.getFirstCorner().getY());
-      m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-//      m_imageWidget->setMask(m_activeDecorationCanvas, 2);
-    }
-  }
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->isVisible()){
-      m_activeDecorationCanvas->cleanUp();
-    }
-  }
-#endif
-#endif
 }
 
 void ZStackView::paintMultiresImageTest(int resLevel)

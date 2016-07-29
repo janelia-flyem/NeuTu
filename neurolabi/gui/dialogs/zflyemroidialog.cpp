@@ -1302,7 +1302,7 @@ void ZFlyEmRoiDialog::createRoiData()
         std::string type = reader.getType(roiName.toStdString());
         if (type != "roi") {
           QMessageBox::warning(this, "Name Conflict",
-                               QString("%1 has been used by type %2").
+                               QString("Cannot create ROI data. %1 has been used by type %2").
                                arg(roiName).arg(type.c_str()));
           return;
         }
@@ -1315,6 +1315,12 @@ void ZFlyEmRoiDialog::createRoiData()
         }
       } else {
         writer.createData("roi", roiName.toStdString());
+        if (writer.getStatusCode() == 200) {
+          dump(QString("ROI data %1 has been created.").arg(roiName), true);
+        } else {
+          dump(QString("WARNING: Failed to create ROI data").arg(roiName), true);
+          return;
+        }
       }
 
       ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
@@ -1331,6 +1337,12 @@ void ZFlyEmRoiDialog::createRoiData()
       writer.writeJson(
             ZDvidUrl(getDvidTarget()).getRoiUrl(roiName.toStdString()),
             array);
+      if (writer.getStatusCode() == 200) {
+        dump(QString("ROI data %1 has been uploaded.").arg(roiName), true);
+      } else {
+        dump(QString("WARNING: Failed to upload ROI data").arg(roiName), true);
+        return;
+      }
     }
   }
 }

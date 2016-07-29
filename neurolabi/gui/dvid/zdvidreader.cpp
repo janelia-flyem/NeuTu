@@ -1261,8 +1261,11 @@ std::string ZDvidReader::getType(const std::string &dataName) const
     ZJsonObject json;
     json.decodeString(buffer.data());
 
-    if (json.hasKey("TypeName")) {
-      type = ZJsonParser::stringValue(json["TypeName"]);
+    if (json.hasKey("Base")) {
+      ZJsonObject baseJson(json.value("Base"));
+      if (baseJson.hasKey("TypeName")) {
+        type = ZJsonParser::stringValue(baseJson["TypeName"]);
+      }
     }
   }
 
