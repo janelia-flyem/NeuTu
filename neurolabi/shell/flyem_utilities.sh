@@ -33,6 +33,11 @@ function flyem_neutu_update {
     conda install -y -n dvidenv -c flyem libdvid-cpp
   fi
 
+  if [ -d $condaEnv/include/lowtis ]
+  then
+    build_flag="-d _ENABLE_LOWTIS_"
+  fi
+
   if [ `uname` == 'Darwin' ]; then
     QMAKE_SPEC=$install_dir/Trolltech/Qt$qtver/mkspecs/macx-g++
   else
@@ -40,9 +45,9 @@ function flyem_neutu_update {
   fi
   if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
   then
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q CONDA_ENV=$condaEnv -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q CONDA_ENV=$condaEnv -c $debug_config $build_flag
   else
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config $build_flag
   fi
 
   build_dir=build
