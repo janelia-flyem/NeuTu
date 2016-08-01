@@ -334,7 +334,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           this, SLOT(updateBodyWindowDeep()));
-
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           this, SLOT(updateCoarseBodyWindowDeep()));
 
@@ -860,7 +859,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   getProgressSignal()->startProgress("Loading data ...");
 
   if (getCompleteDocument() != NULL) {
-#if 1
+#if 0
 //    QByteArray geometry;
     bool isMaximized = false;
     if (getMainWindow() != NULL) {
@@ -1103,6 +1102,8 @@ void ZFlyEmProofMvc::customInit()
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateBodyMerge()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -1825,9 +1826,16 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
   }
 }
 
+void ZFlyEmProofMvc::updateBodyMerge()
+{
+
+}
+
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    getCompleteDocument()->refreshDvidLabelBuffer(2000);
+
     ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
     getCompleteDocument()->deprecateSplitSource();

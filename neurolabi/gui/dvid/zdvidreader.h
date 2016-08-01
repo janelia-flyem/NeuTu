@@ -258,6 +258,8 @@ public:
   }
 #endif
 
+  void refreshLabelBuffer();
+
 signals:
   void readingDone();
 

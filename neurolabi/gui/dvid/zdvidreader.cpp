@@ -1489,6 +1489,15 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
+void ZDvidReader::refreshLabelBuffer()
+{
+#if defined(_ENABLE_LOWTIS_)
+  if (m_lowtisService.get() != NULL) {
+    m_lowtisService->flush_cache();
+  }
+#endif
+}
+
 #if defined(_ENABLE_LOWTIS_)
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height) const

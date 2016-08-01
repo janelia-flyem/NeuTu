@@ -42,6 +42,7 @@
 #include "zprogresssignal.h"
 #include "zstackwatershed.h"
 #include "zstackarray.h"
+#include "zsleeper.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -2036,6 +2037,17 @@ void ZFlyEmProofDoc::notifyBodyLock(uint64_t bodyId, bool locking)
   emit requestingBodyLock(bodyId, locking);
 }
 
+void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
+{
+  if (delay > 0) {
+    ZSleeper::msleep(delay);
+  }
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->refreshReaderBuffer();
+  }
+}
+
 ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {
   return dynamic_cast<ZIntCuboidObj*>(
@@ -3049,3 +3061,4 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 
   return bookmark;
 }
+

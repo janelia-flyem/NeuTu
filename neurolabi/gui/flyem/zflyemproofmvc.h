@@ -246,6 +246,7 @@ protected slots:
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
+  void updateBodyMerge();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();

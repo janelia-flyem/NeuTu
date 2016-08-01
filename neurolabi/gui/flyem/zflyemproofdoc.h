@@ -177,6 +177,7 @@ public:
 public:
   void runSplit();
   void runLocalSplit();
+  void refreshDvidLabelBuffer(unsigned long delay);
 
 public:
   void notifyBodyMerged();
