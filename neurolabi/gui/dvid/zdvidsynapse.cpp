@@ -174,18 +174,23 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     if (radius > 0.0) {
       double oldWidth = pen.widthF();
+      QColor oldColor = pen.color();
       if (getKind() == KIND_POST_SYN) {
         pen.setWidthF(oldWidth + 1.0);
-      }
-
-      if (isSelected()) {
-        pen.setWidthF(pen.widthF() + 1.0);
+        if (isSelected()) {
+          pen.setColor(QColor(160, 32, 255, oldColor.alpha()));
+        }
+      } else {
+        if (isSelected()) {
+          pen.setWidthF(pen.widthF() + 1.0);
+        }
       }
 
       painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
       pen.setWidthF(oldWidth);
+      pen.setColor(oldColor);
     }
     QString decorationText;
 
