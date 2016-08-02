@@ -2,7 +2,7 @@ function flyem_build_lowtis {
   install_dir=$1
   downloadDir=$install_dir/Download
   scriptDir=$2
-  condaDir=$Download/miniconda
+  condaDir=$downloadDir/miniconda
   envDir=$condaDir/envs/dvidenv
 
   if [ `uname` != 'Darwin' ]
@@ -49,16 +49,19 @@ function flyem_neutu_update {
   condaDir=$install_dir/Download/miniconda
   condaEnv=$condaDir/envs/dvidenv
   CONDA_ROOT=`$condaDir/bin/conda info --root`
-  if [ -d $condaEnv ]
+  if [ -d $install_dir/update_dvidcpp ]
   then
-    source ${CONDA_ROOT}/bin/activate root
-    conda update -y conda
-    conda remove -y libdvid-cpp -n dvidenv
-    if [ -d $condaEnv/include/libdvid ]
+    if [ -d $condaEnv ]
     then
-      rm -rf $condaEnv/include/libdvid
+      source ${CONDA_ROOT}/bin/activate root
+      conda update -y conda
+      conda remove -y libdvid-cpp -n dvidenv
+      if [ -d $condaEnv/include/libdvid ]
+      then
+        rm -rf $condaEnv/include/libdvid
+      fi
+      conda install -y -n dvidenv -c flyem libdvid-cpp
     fi
-    conda install -y -n dvidenv -c flyem libdvid-cpp
   fi
 
   if [ -d $condaEnv/include/lowtis ]
