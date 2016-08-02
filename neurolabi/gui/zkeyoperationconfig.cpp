@@ -14,6 +14,7 @@ void ZKeyOperationConfig::configure(
   switch (group) {
   case ZKeyOperation::OG_SWC_TREE_NODE:
     ConfigureSwcNodeMap(map);
+    (*map.getPlainMap())[Qt::Key_G] = ZStackOperator::OP_NULL;
     break;
   case ZKeyOperation::OG_STACK:
     ConfigureStackMap(map);
