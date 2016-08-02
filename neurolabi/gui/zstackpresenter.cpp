@@ -149,18 +149,6 @@ void ZStackPresenter::init()
   addActiveObject(ROLE_TODO_ITEM, stroke);
 
 
-
-  /*
-  m_stroke.setVisible(false);
-  m_stroke.setPenetrating(true);
-  m_stroke.hideStart(true);
-  m_swcStroke.setPenetrating(true);
-  m_swcStroke.setVisible(false);
-  */
-
-//  m_activeDecorationList.append(&m_stroke);
-//  m_activeDecorationList.append(&m_swcStroke);
-
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
   m_highlightDecoration.setVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL);
@@ -183,15 +171,6 @@ void ZStackPresenter::init()
 
   m_menuFactory = NULL;
   m_actionFactory = new ZActionFactory;
-
-  /*
-  ZKeyOperationConfig::Configure(m_activeStrokeOperationMap,
-                                 ZKeyOperation::OG_ACTIVE_STROKE);
-  ZKeyOperationConfig::Configure(
-        m_swcKeyOperationMap, ZKeyOperation::OG_SWC_TREE_NODE);
-  ZKeyOperationConfig::Configure(
-        m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
-        */
 }
 
 void ZStackPresenter::addActiveObject(EObjectRole role, ZStackObject *obj)
