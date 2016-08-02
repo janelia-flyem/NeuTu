@@ -3,6 +3,8 @@
 #Example:
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
+echo "Build args: $*"
+
 if [ $# -lt 1 ]
 then
   echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
@@ -93,13 +95,10 @@ fi
 
 if [ -n "$ext_qmake_args" ]
 then
+  ext_qmake_args=`echo "$ext_qmake_args" | sed -e 's/^"//' -e 's/"$//'`
   echo $ext_qmake_args
   qmake_args="$qmake_args $ext_qmake_args"
 fi
-
-#exit 1
-
-echo $qmake_args
 
 cd neurolabi
 
@@ -124,8 +123,12 @@ then
 fi
 
 cd $build_dir
+echo "qmake_args: $qmake_args"
 echo $qmake_args > source.qmake
-$QMAKE $qmake_args 
+echo $qmake_args | xargs $QMAKE
+echo "qmake done"
+
+
 make -j3
 
 bin_dir=.

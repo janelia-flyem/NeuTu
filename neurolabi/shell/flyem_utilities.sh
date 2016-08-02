@@ -1,3 +1,31 @@
+function flyem_build_lowtis {
+  install_dir=$1
+  downloadDir=$install_dir/Download
+  scriptDir=$2
+  condaDir=$Download/miniconda
+  envDir=$condaDir/envs/dvidenv
+
+  if [ `uname` != 'Darwin' ]
+  then
+    git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
+    cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
+    cd $downloadDir/lowtis
+    mkdir build
+    cd build
+    cmake -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    mkdir build_debug
+    cd build_debug
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    cp -r lowtis $envDir/include
+    cp build/liblowtis.so $envDir/lib/
+    cp build_debug/liblowtis-g.so $envDir/lib/
+  fi
+}
+
 function flyem_neutu_update {
   if [ $# -ge 1 ]
   then
@@ -36,6 +64,7 @@ function flyem_neutu_update {
   if [ -d $condaEnv/include/lowtis ]
   then
     build_flag="-d _ENABLE_LOWTIS_"
+    ext_qt_flag="CONFIG+=c++11"
   fi
 
   if [ `uname` == 'Darwin' ]; then
@@ -45,9 +74,9 @@ function flyem_neutu_update {
   fi
   if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
   then
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q CONDA_ENV=$condaEnv -c $debug_config $build_flag
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "\"CONDA_ENV=$condaEnv $ext_qt_flag\"" -c $debug_config $build_flag 
   else
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config $build_flag
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "BUILDEM_DIR=$install_dir/Download/buildem $ext_qt_flag" -c $debug_config $build_flag 
   fi
 
   build_dir=build
