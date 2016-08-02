@@ -39,24 +39,10 @@ then
 fi
 
 #install lowtis
-if [ `uname` != 'Darwin' ]
+if [ -d $install_dir/use_lowtis ]
 then
-  git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
-  cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
-  cd $downloadDir/lowtis
-  mkdir build
-  cd build
-  cmake -DCMAKE_PREFIX_PATH=$envDir ..
-  make -j3
-  cd ..
-  mkdir build_debug
-  cd build_debug
-  cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$envDir ..
-  make -j3
-  cd ..
-  cp -r lowtis $envDir/include
-  cp build/liblowtis.so $envDir/lib/
-  cp build_debug/liblowtis-g.so $envDir/lib/
+  source $scriptDir/flyem_utilities.sh
+  flyem_build_lowtis $install_dir $scriptDir
 fi
 
 if [ `uname` != 'Darwin' ]
