@@ -24,7 +24,7 @@ void ZMessageManager::registerWidget(
   }
 
   if (m_widget != NULL) {
-    connect(static_cast<QObject*>(m_widget), SIGNAL(destroyed()),
+    connect(qobject_cast<QObject*>(m_widget), SIGNAL(destroyed()),
             this, SLOT(deleteLater()));
   }
 
@@ -33,8 +33,10 @@ void ZMessageManager::registerWidget(
 
 void ZMessageManager::detachWidget()
 {
-  disconnect(qobject_cast<QObject*>(m_widget), SIGNAL(destroyed()),
-             this, SLOT(detachWidget()));
+  if (m_widget != NULL) {
+    disconnect(qobject_cast<QObject*>(m_widget), SIGNAL(destroyed()),
+               this, SLOT(detachWidget()));
+  }
   m_widget = NULL;
   setParent(&(getRootManager()));
 }

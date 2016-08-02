@@ -82,6 +82,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 
 void ZFlyEmProofMvc::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
+
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
     m_protocolSwitcher = new ProtocolSwitcher(this);
@@ -314,7 +316,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-            this->getView(), SLOT(setView(ZStackViewParam)));
+            this, SLOT(zoomTo(ZStackViewParam)));
   }
 }
 
@@ -332,7 +334,6 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           this, SLOT(updateBodyWindowDeep()));
-
   connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
           this, SLOT(updateCoarseBodyWindowDeep()));
 
@@ -858,7 +859,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   getProgressSignal()->startProgress("Loading data ...");
 
   if (getCompleteDocument() != NULL) {
-#if 1
+#if 0
 //    QByteArray geometry;
     bool isMaximized = false;
     if (getMainWindow() != NULL) {
@@ -1011,6 +1012,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkOutBody()));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
+  connect(getCompletePresenter(), SIGNAL(goingToTBar()),
+          this, SLOT(goToTBar()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
           this, SLOT(goToBody()));
   connect(getCompletePresenter(), SIGNAL(goingToBodyBottom()),
@@ -1099,6 +1102,8 @@ void ZFlyEmProofMvc::customInit()
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+          this, SLOT(updateBodyMerge()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -1119,6 +1124,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(runningLocalSplit()),
+          this, SLOT(runLocalSplit()));
   connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
@@ -1438,6 +1445,18 @@ void ZFlyEmProofMvc::runSplitFunc()
   getProgressSignal()->startProgress(1.0);
   m_splitProject.runSplit();
   getProgressSignal()->endProgress();
+}
+
+void ZFlyEmProofMvc::runLocalSplitFunc()
+{
+  getProgressSignal()->startProgress(1.0);
+  m_splitProject.runLocalSplit();
+  getProgressSignal()->endProgress();
+}
+
+void ZFlyEmProofMvc::runLocalSplit()
+{
+  runLocalSplitFunc();
 }
 
 void ZFlyEmProofMvc::runSplit()
@@ -1807,11 +1826,19 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
   }
 }
 
+void ZFlyEmProofMvc::updateBodyMerge()
+{
+
+}
+
 void ZFlyEmProofMvc::updateSplitBody()
 {
   if (m_splitProject.getBodyId() > 0) {
+    getCompleteDocument()->refreshDvidLabelBuffer(2000);
+
     ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
+    getCompleteDocument()->deprecateSplitSource();
     /*
     QColor color =
         getCompleteDocument()->getDvidSparseStack()->getObjectMask()->getColor();
@@ -1986,12 +2013,13 @@ void ZFlyEmProofMvc::exitSplit()
             ZStackObject::TYPE_DVID_SPARSE_STACK,
             ZStackObjectSourceFactory::MakeSplitObjectSource()));
     if (body != NULL) {
-      body->cancelFillValueFunc();
+      body->cancelFillValueSync();
     }
 
     m_paintLabelWidget->hide();
 //    m_latencyLabelWidget->show();
 
+    getCompleteDocument()->deprecateSplitSource();
     m_splitProject.clear();
 
     disableSplit();
@@ -2421,6 +2449,26 @@ void ZFlyEmProofMvc::openTodo()
   m_todoDlg->raise();
 }
 
+void ZFlyEmProofMvc::goToTBar()
+{
+  ZDvidSynapseEnsemble *se =
+      getCompleteDocument()->getDvidSynapseEnsemble(getView()->getSliceAxis());
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
+
+    if (selected.size() == 1) {
+      const ZIntPoint &pt = *(selected.begin());
+      ZDvidSynapse &synapse =
+          se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        const std::vector<ZIntPoint> &partners = synapse.getPartners();
+        if (!partners.empty()) {
+          zoomTo(partners.front());
+        }
+      }
+    }
+  }
+}
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
@@ -2612,6 +2660,21 @@ void ZFlyEmProofMvc::selectSeed()
    int nSelected = m_splitProject.selectSeed(label);
    getView()->paintObject();
    emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
+  }
+  delete dlg;
+}
+
+void ZFlyEmProofMvc::setMainSeed()
+{
+  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+  dlg->setValueLabel("Label");
+  dlg->getButton(ZButtonBox::ROLE_SKIP)->hide();
+  dlg->setValue(1);
+  if (dlg->exec()) {
+    int label = dlg->getValue();
+    m_splitProject.swapMainSeedLabel(label);
+    getView()->paintObject();
+    emit messageGenerated(QString("Label %1 is set the main seed.").arg(label));
   }
   delete dlg;
 }

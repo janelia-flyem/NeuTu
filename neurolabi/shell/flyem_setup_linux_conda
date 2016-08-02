@@ -7,6 +7,12 @@ else
   install_dir=/opt
 fi
 
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
 echo $PATH
 
 downloadDir=$install_dir/Download
@@ -25,10 +31,18 @@ then
 fi
 
 CONDA_ROOT=`$condaDir/bin/conda info --root`
-if [ ! -d $condaDir/envs/dvidenv ]
+envDir=$condaDir/envs/dvidenv
+if [ ! -d $envDir ]
 then
   source ${CONDA_ROOT}/bin/activate root
   { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
+fi
+
+#install lowtis
+if [ -d $install_dir/use_lowtis ]
+then
+  source $scriptDir/flyem_utilities.sh
+  flyem_build_lowtis $install_dir $scriptDir
 fi
 
 if [ `uname` != 'Darwin' ]

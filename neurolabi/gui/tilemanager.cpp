@@ -96,6 +96,7 @@ void TileManager::updateView()
   ui->tileView->viewport()->update();
 }
 
+#if 0
 void TileManager::on_actionShowSWC_triggered()
 {
   ui->tileView->setSWCVisibility(true);
@@ -107,6 +108,7 @@ void TileManager::on_actionTurnOffSWC_triggered()
   ui->tileView->setSWCVisibility(false);
   updateView();
 }
+#endif
 
 void TileManager::showSwc(bool on)
 {

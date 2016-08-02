@@ -101,6 +101,7 @@ void ZKeyOperationConfig::ConfigureSwcNodeMap(ZKeyOperationMap &map)
   plainKeyMap[Qt::Key_R] = ZStackOperator::OP_SWC_RESET_BRANCH_POINT;
   plainKeyMap[Qt::Key_Space] = ZStackOperator::OP_SWC_ENTER_EXTEND_NODE;
   plainKeyMap[Qt::Key_X] = ZStackOperator::OP_SWC_DELETE_NODE;
+  plainKeyMap[Qt::Key_L] = ZStackOperator::OP_SWC_ENTER_ADD_NODE;
 
   QMap<int, ZStackOperator::EOperation> &shiftKeyMap = *(map.getShiftMap());
 

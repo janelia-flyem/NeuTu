@@ -95,6 +95,7 @@ public:
   int selectSeed(int label);
   int selectAllSeed();
   void loadSeed(const ZJsonObject &obj);
+  void swapMainSeedLabel(int label);
 
   void exportSplits();
   void commitResult();
@@ -175,6 +176,7 @@ public slots:
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
+  void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
   void startBodyQuickView();

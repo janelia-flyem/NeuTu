@@ -230,6 +230,8 @@ public:
   void zoomTo(int x, int y, int z);
   void zoomTo(const ZIntPoint &pt);
 
+  void zoomTo(int x, int y, int z, int w);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -370,6 +372,7 @@ public: //Change view parameters
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
+  void highlightPosition(const ZIntPoint &pt);
 
   void updateContrastProtocal();
 
@@ -418,6 +421,8 @@ protected:
   ZPixmap* getCanvas(ZStackObject::ETarget target);
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
+
+  bool event(QEvent *event);
 
 protected:
   //ZStackFrame *m_parent;

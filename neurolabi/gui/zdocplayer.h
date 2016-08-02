@@ -68,6 +68,7 @@ public:
 
   virtual ZStack* toStack() const { return NULL; }
   virtual int getLabel() const { return 0; }
+  virtual void setLabel(int /*label*/) {}
   virtual QString getTypeName() const { return "Unknown"; }
   virtual ZSwcTree* getSwcDecoration() const { return NULL; }
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
@@ -205,6 +206,7 @@ public:
   void labelStack(ZStack*stack) const;
   ZStack* toStack() const;
   int getLabel() const;
+  void setLabel(int label);
   QString getTypeName() const;
   ZJsonObject toJsonObject() const;
 
@@ -233,13 +235,14 @@ public:
         const int *offset, int xIntv, int yIntv, int zIntv) const;
 
   int getLabel() const;
+  void setLabel(int label);
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
   ZJsonObject toJsonObject() const;
   QString getTypeName() const { return "Object3d"; }
 
   const ZObject3d *getCompleteData() const;
-
+  ZObject3d *getCompleteData();
 };
 
 /***************************************************/

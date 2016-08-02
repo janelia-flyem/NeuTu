@@ -38,7 +38,7 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(
+  bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
@@ -75,8 +75,10 @@ signals:
   void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningLocalSplit();
   void goingToBody();
   void selectingBody();
+  void goingToTBar();
   void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
@@ -89,8 +91,8 @@ signals:
 
 public slots:
   void deleteSelectedSynapse();
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
   void linkSelectedSynapse();
   void unlinkSelectedSynapse();
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);

@@ -124,6 +124,10 @@ void FlyEmSplitControlForm::createMenu()
   seedMenu->addAction(selectAllSeedAction);
   connect(selectAllSeedAction, SIGNAL(triggered()), this, SLOT(selectAllSeed()));
 
+  QAction *setMainSeedAction = new QAction("Set Main Label", this);
+  seedMenu->addAction(setMainSeedAction);
+  connect(setMainSeedAction, SIGNAL(triggered()), this, SLOT(setMainSeed()));
+
   QAction *exportSeedAction = new QAction("Export", this);
   seedMenu->addAction(exportSeedAction);
   connect(exportSeedAction, SIGNAL(triggered()), this, SLOT(exportSeed()));
@@ -236,6 +240,11 @@ void FlyEmSplitControlForm::selectSeed()
 void FlyEmSplitControlForm::selectAllSeed()
 {
   emit selectingAllSeed();
+}
+
+void FlyEmSplitControlForm::setMainSeed()
+{
+  emit settingMainSeed();
 }
 
 void FlyEmSplitControlForm::commitResult()

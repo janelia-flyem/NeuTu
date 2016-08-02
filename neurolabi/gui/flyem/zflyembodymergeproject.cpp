@@ -459,6 +459,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
             mergeMap[targetId].push_back(sourceId);
           }
         }
+        getProgressSignal()->advanceProgress(0.1);
 
         const std::set<uint64_t> &bodySet =
             getSelection(NeuTube::BODY_LABEL_ORIGINAL);
@@ -495,8 +496,22 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
             slice->mapSelection();
           }
         }
+        getProgressSignal()->advanceProgress(0.1);
 
         emit mergeUploaded(m_selectedOriginal);
+
+        if (getDocument<ZFlyEmProofDoc>() != NULL) {
+          getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
+        }
+#if 0
+        ZSleeper::msleep(2000);
+
+        QList<ZDvidLabelSlice*> labelList =
+            getDocument()->getDvidLabelSliceList();
+        foreach (ZDvidLabelSlice *slice, labelList) {
+          slice->refreshReaderBuffer();
+        }
+#endif
 
         std::set<uint64_t> selectionSet =
             getSelection(NeuTube::BODY_LABEL_MAPPED);
@@ -527,6 +542,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
         if (warnMsg.hasMessage()) {
           emit messageGenerated(warnMsg);
         }
+        getProgressSignal()->advanceProgress(0.1);
       }
     }
     getProgressSignal()->endProgress();
@@ -535,7 +551,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
 void ZFlyEmBodyMergeProject::uploadResult()
 {
-  uploadResultFunc();
+  QtConcurrent::run(this, &ZFlyEmBodyMergeProject::uploadResultFunc);
+//  uploadResultFunc();
 }
 
 void ZFlyEmBodyMergeProject::detachBodyWindow()

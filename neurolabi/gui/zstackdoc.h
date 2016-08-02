@@ -152,6 +152,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject() const;
 
+  bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -788,6 +789,7 @@ public:
   }
 
   void disconnectSwcNodeModelUpdate();
+  void disconnectPunctaModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
@@ -902,6 +904,10 @@ public:
   }
 
   inline const ZStack* getLabelField() const {
+    return m_labelField;
+  }
+
+  ZStack* getLabelField() {
     return m_labelField;
   }
 
@@ -1172,6 +1178,8 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
 private:
   void init();
@@ -1184,9 +1192,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
                                 const std::set<Swc_Tree_Node*> &swcSet);

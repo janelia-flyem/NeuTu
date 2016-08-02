@@ -463,7 +463,7 @@ std::string ProtocolSwitcher::generateIdentifier() {
     bool status;
     QString ans = QInputDialog::getText(m_parent, "Input identifier",
         "Input an identifier to be used as part of the key for saved data (no spaces or hyphens!): ",
-        QLineEdit::Normal, "myData", &status);
+        QLineEdit::Normal, "", &status);
     if (status && !ans.isEmpty()) {
         if (ans.contains('-') || ans.contains(' ')) {
             QMessageBox::warning(m_parent, "Invalid identifier",

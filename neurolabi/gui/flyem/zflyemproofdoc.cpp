@@ -39,6 +39,10 @@
 #include "dvid/zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
+#include "zprogresssignal.h"
+#include "zstackwatershed.h"
+#include "zstackarray.h"
+#include "zsleeper.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -884,6 +888,7 @@ void ZFlyEmProofDoc::moveSynapse(
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     se->moveSynapse(from, to, scope);
+    se->setConfidence(to, 1.0, scope);
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
@@ -944,7 +949,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
   notifyObjectModified();
 }
 
-void ZFlyEmProofDoc::verfifySelectedSynapse()
+void ZFlyEmProofDoc::verifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -957,6 +962,7 @@ void ZFlyEmProofDoc::verfifySelectedSynapse()
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, userName, scope);
+      se->setConfidence(pt, 1.0, scope);
       emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), true);
     }
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
@@ -965,7 +971,7 @@ void ZFlyEmProofDoc::verfifySelectedSynapse()
   notifyObjectModified();
 }
 
-void ZFlyEmProofDoc::unverfifySelectedSynapse()
+void ZFlyEmProofDoc::unverifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -978,6 +984,7 @@ void ZFlyEmProofDoc::unverfifySelectedSynapse()
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
       se->setUserName(pt, "$" + userName, scope);
+      se->setConfidence(pt, 0.5, scope);
       emit synapseVerified(pt.getX(), pt.getY(), pt.getZ(), false);
     }
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
@@ -2030,12 +2037,215 @@ void ZFlyEmProofDoc::notifyBodyLock(uint64_t bodyId, bool locking)
   emit requestingBodyLock(bodyId, locking);
 }
 
+void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
+{
+  if (delay > 0) {
+    ZSleeper::msleep(delay);
+  }
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->refreshReaderBuffer();
+  }
+}
+
 ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {
   return dynamic_cast<ZIntCuboidObj*>(
       getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_INT_CUBOID,
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
+}
+
+void ZFlyEmProofDoc::runSplit()
+{
+  QList<ZDocPlayer*> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_SEED);
+
+  ZOUT(LINFO(), 3) << "Retrieving label set";
+
+  QSet<int> labelSet;
+  foreach (const ZDocPlayer *player, playerList) {
+    labelSet.insert(player->getLabel());
+  }
+
+  if (labelSet.size() < 2) {
+    ZWidgetMessage message(
+          QString("The seed has no more than one label. No split is done"));
+    message.setType(NeuTube::MSG_WARNING);
+
+    emit messageGenerated(message);
+    return;
+  }
+
+  const QString threadId = "seededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc);
+    m_futureMap[threadId] = future;
+  }
+}
+
+void ZFlyEmProofDoc::runLocalSplit()
+{
+  QList<ZDocPlayer*> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_SEED);
+
+  ZOUT(LINFO(), 3) << "Retrieving label set";
+
+  QSet<int> labelSet;
+  foreach (const ZDocPlayer *player, playerList) {
+    labelSet.insert(player->getLabel());
+  }
+
+  if (labelSet.size() < 2) {
+    ZWidgetMessage message(
+          QString("The seed has no more than one label. No split is done"));
+    message.setType(NeuTube::MSG_WARNING);
+
+    emit messageGenerated(message);
+    return;
+  }
+
+  const QString threadId = "seededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::localSplitFunc);
+    m_futureMap[threadId] = future;
+  }
+}
+
+void ZFlyEmProofDoc::runSplitFunc()
+{
+  getProgressSignal()->startProgress("Splitting ...");
+
+  ZOUT(LINFO(), 3) << "Removing old result ...";
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+  //removeAllObj3d();
+  ZStackWatershed engine;
+
+  ZOUT(LINFO(), 3) << "Creating seed mask ...";
+  ZStackArray seedMask = createWatershedMask(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  if (!seedMask.empty()) {
+    ZStack *signalStack = getStack();
+    ZIntPoint dsIntv(0, 0, 0);
+    if (signalStack->isVirtual()) {
+      signalStack = NULL;
+      ZOUT(LINFO(), 3) << "Retrieving signal stack";
+      ZIntCuboid cuboid = estimateSplitRoi();
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      if (sparseStack != NULL) {
+        signalStack = sparseStack->getStack();
+        dsIntv = sparseStack->getDownsampleInterval();
+      }
+    }
+    getProgressSignal()->advanceProgress(0.1);
+
+    if (signalStack != NULL) {
+      ZOUT(LINFO(), 3) << "Downsampling ..." << dsIntv.toString();
+      seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+
+#ifdef _DEBUG_2
+      seedMask[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+      signalStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+#endif
+
+      ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
+
+      ZOUT(LINFO(), 3) << "Updating watershed boundary object";
+      updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
+
+//      notifyObj3dModified();
+
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+//      m_isSegmentationReady = true;
+      setSegmentationReady(true);
+
+      emit messageGenerated(ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
+    } else {
+      std::cout << "No signal for watershed." << std::endl;
+    }
+  }
+  getProgressSignal()->endProgress();
+  emit labelFieldModified();
+}
+
+void ZFlyEmProofDoc::localSplitFunc()
+{
+  getProgressSignal()->startProgress("Splitting ...");
+
+  ZOUT(LINFO(), 3) << "Removing old result ...";
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+  //removeAllObj3d();
+  ZStackWatershed engine;
+
+  ZOUT(LINFO(), 3) << "Creating seed mask ...";
+  ZStackArray seedMask = createWatershedMask(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  if (!seedMask.empty()) {
+    ZStack *signalStack = getStack();
+    ZIntPoint dsIntv(0, 0, 0);
+    if (signalStack->isVirtual()) {
+      signalStack = NULL;
+      ZOUT(LINFO(), 3) << "Retrieving signal stack";
+      ZIntCuboid cuboid = estimateLocalSplitRoi();
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      if (sparseStack != NULL) {
+        signalStack = sparseStack->getStack();
+        dsIntv = sparseStack->getDownsampleInterval();
+      }
+    }
+    getProgressSignal()->advanceProgress(0.1);
+
+    if (signalStack != NULL) {
+      ZOUT(LINFO(), 3) << "Downsampling ..." << dsIntv.toString();
+      seedMask.downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+
+#ifdef _DEBUG_2
+      seedMask[0]->save(GET_TEST_DATA_DIR + "/test.tif");
+      signalStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+#endif
+
+      ZStack *out = engine.run(signalStack, seedMask);
+      getProgressSignal()->advanceProgress(0.3);
+
+      ZOUT(LINFO(), 3) << "Updating watershed boundary object";
+      updateWatershedBoundaryObject(out, dsIntv);
+      getProgressSignal()->advanceProgress(0.1);
+
+//      notifyObj3dModified();
+
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+//      m_isSegmentationReady = true;
+      setSegmentationReady(true);
+
+      emit messageGenerated(ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
+    } else {
+      std::cout << "No signal for watershed." << std::endl;
+    }
+  }
+  getProgressSignal()->endProgress();
+  emit labelFieldModified();
 }
 
 void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
@@ -2071,7 +2281,8 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
       roi->setLastCorner(roi->getFirstCorner());
     }
   }
-  m_splitSource.reset();
+  deprecateSplitSource();
+//  m_splitSource.reset();
 
   if (appending) {
     ZIntCuboidObj *oldRoi = getSplitRoi();
@@ -2095,6 +2306,131 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
   notifyObjectModified();
 }
 
+ZIntCuboid ZFlyEmProofDoc::estimateLocalSplitRoi()
+{
+  ZIntCuboid cuboid;
+
+  ZStackArray seedMask = createWatershedMask(true);
+
+  Cuboid_I box;
+  seedMask.getBoundBox(&box);
+  const int xMargin = 10;
+  const int yMargin = 10;
+  const int zMargin = 20;
+  Cuboid_I_Expand_X(&box, xMargin);
+  Cuboid_I_Expand_Y(&box, yMargin);
+  Cuboid_I_Expand_Z(&box, zMargin);
+
+  cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
+      box.ce[2]);
+
+  return cuboid;
+}
+
+ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
+{
+  ZIntCuboid cuboid;
+
+  ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+  if (originalStack != NULL) {
+    ZIntCuboidObj *roi = getSplitRoi();
+    if (roi == NULL) {
+      if (originalStack->stackDownsampleRequired()) {
+        ZStackArray seedMask = createWatershedMask(true);
+
+        Cuboid_I box;
+        seedMask.getBoundBox(&box);
+
+        Cuboid_I_Expand_Z(&box, 10);
+
+        int v = Cuboid_I_Volume(&box);
+
+        double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+        if (s > 1) {
+          int dw = iround(Cuboid_I_Width(&box) * s) - Cuboid_I_Width(&box);
+          int dh = iround(Cuboid_I_Height(&box) * s) - Cuboid_I_Height(&box);
+          int dd = iround(Cuboid_I_Depth(&box) * s) - Cuboid_I_Depth(&box);
+
+          const int xMargin = dw / 2;
+          const int yMargin = dh / 2;
+          const int zMargin = dd / 2;
+          Cuboid_I_Expand_X(&box, xMargin);
+          Cuboid_I_Expand_Y(&box, yMargin);
+          Cuboid_I_Expand_Z(&box, zMargin);
+        }
+
+        cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
+            box.ce[2]);
+      }
+    } else {
+      cuboid = roi->getCuboid();
+    }
+  }
+
+  return cuboid;
+}
+
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) const
+{
+  ZDvidSparseStack *stack = NULL;
+
+  ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+  if (originalStack != NULL) {
+    if (!roi.isEmpty()) {
+      if (m_splitSource.get() != NULL) {
+        if (!roi.equals(m_splitSource->getBoundBox())) {
+          m_splitSource.reset();
+        }
+      }
+
+      if (m_splitSource.get() == NULL) {
+        m_splitSource = ZSharedPointer<ZDvidSparseStack>(
+              originalStack->getCrop(roi));
+
+        originalStack->runFillValueFunc(roi, true);
+
+        ZDvidInfo dvidInfo;
+        dvidInfo.setFromJsonString(
+              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
+              toStdString());
+
+        ZObject3dScan *objMask = m_splitSource->getObjectMask();
+        ZObject3dScan blockObj = dvidInfo.getBlockIndex(*objMask);
+        size_t stripeNumber = blockObj.getStripeNumber();
+
+        for (size_t s = 0; s < stripeNumber; ++s) {
+          const ZObject3dStripe &stripe = blockObj.getStripe(s);
+          int segmentNumber = stripe.getSegmentNumber();
+          int y = stripe.getY();
+          int z = stripe.getZ();
+          for (int i = 0; i < segmentNumber; ++i) {
+            int x0 = stripe.getSegmentStart(i);
+            int x1 = stripe.getSegmentEnd(i);
+
+            ZIntPoint blockIndex =
+                ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+            for (int x = x0; x <= x1; ++x) {
+              ZStack *stack =
+                  originalStack->getStackGrid()->getStack(blockIndex);
+              m_splitSource->getStackGrid()->consumeStack(
+                    blockIndex, stack->clone());
+              blockIndex.setX(blockIndex.getX() + 1);
+            }
+          }
+        }
+      }
+
+      stack = m_splitSource.get();
+    }
+  }
+
+  if (stack == NULL) {
+    stack = originalStack;
+  }
+
+  return stack;
+}
+
 ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 {
   ZDvidSparseStack *stack = NULL;
@@ -2102,6 +2438,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
   ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
   if (originalStack != NULL) {
     ZIntCuboidObj *roi = getSplitRoi();
+
     if (roi != NULL) {
       if (roi->isValid()) {
         if (m_splitSource.get() == NULL) {
@@ -2724,3 +3061,4 @@ ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 
   return bookmark;
 }
+

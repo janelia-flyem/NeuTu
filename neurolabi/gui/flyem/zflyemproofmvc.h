@@ -167,13 +167,16 @@ public slots:
   void xorSelectionAt(int x, int y, int z);
   void deselectAllBody();
   void selectSeed();
+  void setMainSeed();
   void selectAllSeed();
   void recoverSeed();
   void exportSeed();
   void importSeed();
   void runSplit();
+  void runLocalSplit();
 
   void loadSynapse();
+  void goToTBar();
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
@@ -243,6 +246,7 @@ protected slots:
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
+  void updateBodyMerge();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
@@ -262,6 +266,7 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void runLocalSplitFunc();
   void notifyBookmarkUpdated();
   void notifyBookmarkDeleted();
 
@@ -413,6 +418,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
           panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(settingMainSeed()), this, SLOT(setMainSeed()));
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
   connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));

@@ -19,6 +19,7 @@ ZKeyEventMapper* ZKeyEventMapperFactory::MakeSwcNodeMapper()
   mapper->setOperation(Qt::Key_D, ZStackOperator::OP_SWC_MOVE_NODE_RIGHT);
 
   mapper->setOperation(Qt::Key_G, ZStackOperator::OP_SWC_ADD_NODE);
+  mapper->setOperation(Qt::Key_L, ZStackOperator::OP_SWC_ADD_NODE);
 /*
   m_plainKeyMap[Qt::Key_Comma] = ZSwcTree::OPERATION_DECREASE_NODE_SIZE;
   m_plainKeyMap[Qt::Key_Q] = ZSwcTree::OPERATION_DECREASE_NODE_SIZE;

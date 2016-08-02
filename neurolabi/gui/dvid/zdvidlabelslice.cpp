@@ -699,3 +699,8 @@ void ZDvidLabelSlice::clearCache()
 {
   m_objCache.clear();
 }
+
+void ZDvidLabelSlice::refreshReaderBuffer()
+{
+  m_reader.refreshLabelBuffer();
+}

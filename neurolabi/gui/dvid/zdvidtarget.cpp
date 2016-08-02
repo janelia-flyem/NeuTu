@@ -79,6 +79,8 @@ void ZDvidTarget::clear()
   m_synapseName = "";
   m_roiList.clear();
   m_userList.clear();
+  m_supervisorServer.clear();
+  m_isSupervised = true;
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -238,6 +240,8 @@ ZJsonObject ZDvidTarget::toJsonObject() const
 
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
   obj.setEntry(m_synapseNameKey, m_synapseName);
+  obj.setEntry(m_supervisorKey, m_isSupervised);
+  obj.setEntry(m_supervisorServerKey, m_supervisorServer);
 
   return obj;
 }

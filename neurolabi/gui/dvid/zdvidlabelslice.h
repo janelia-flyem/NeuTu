@@ -140,6 +140,7 @@ public:
   int64_t getReadingTime() const;
 
   void clearCache();
+  void refreshReaderBuffer();
 
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }

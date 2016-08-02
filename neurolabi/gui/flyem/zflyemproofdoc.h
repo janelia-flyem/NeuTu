@@ -65,6 +65,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
 
+  ZStackBlockGrid* getStackGrid();
+
   //bool hasSparseStack() const;
   bool hasVisibleSparseStack() const;
 
@@ -117,6 +119,7 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -170,6 +173,11 @@ public:
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
   }
+
+public:
+  void runSplit();
+  void runLocalSplit();
+  void refreshDvidLabelBuffer(unsigned long delay);
 
 public:
   void notifyBodyMerged();
@@ -292,8 +300,8 @@ public slots:
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
@@ -337,6 +345,11 @@ private:
   bool isActive(EBodyColorMap type);
 
   void updateBodyColor(EBodyColorMap type);
+
+  void runSplitFunc();
+  void localSplitFunc();
+  ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateLocalSplitRoi();
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
