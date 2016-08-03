@@ -70,6 +70,14 @@ function flyem_neutu_update {
     ext_qt_flag="CONFIG+=c++11"
   fi
 
+  if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
+  then
+    export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
+  elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+  then
+    export PATH=/opt/gcc482/bin:$PATH
+  fi
+
   if [ `uname` == 'Darwin' ]; then
     QMAKE_SPEC=$install_dir/Trolltech/Qt$qtver/mkspecs/macx-g++
   else
