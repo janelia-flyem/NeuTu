@@ -338,7 +338,7 @@ void ZDvidAnnotation::loadJsonObject(
 
     if (obj.hasKey("Prop")) {
       m_propertyJson.setValue(obj.value("Prop").clone());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << m_propertyJson.dumpString(2) << std::endl;
 #endif
     }

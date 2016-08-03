@@ -645,11 +645,16 @@ bool ZDvidSynapseEnsemble::toggleHitSelect()
 
 void ZDvidSynapseEnsemble::selectHit(bool appending)
 {
+  selectElement(m_hitPoint, appending);
+}
+
+void ZDvidSynapseEnsemble::selectElement(const ZIntPoint &pt, bool appending)
+{
   if (!appending) {
     deselectSub();
   }
-  m_selector.selectObject(m_hitPoint);
-  ZDvidSynapse &synapse = getSynapse(m_hitPoint, DATA_LOCAL);
+  m_selector.selectObject(pt);
+  ZDvidSynapse &synapse = getSynapse(pt, DATA_LOCAL);
   if (synapse.isValid()) {
     synapse.setSelected(true);
   }
@@ -705,6 +710,22 @@ void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
   }
 
   updatePartner(selectedSynapse);
+}
+
+void ZDvidSynapseEnsemble::selectWithPartner(const ZIntPoint &pt, bool appending)
+{
+  selectElement(pt, appending);
+  ZDvidSynapse &selectedSynapse = getSynapse(pt, DATA_LOCAL);
+  if (!selectedSynapse.isValid()) {
+    return;
+  }
+
+  updatePartner(selectedSynapse);
+}
+
+bool ZDvidSynapseEnsemble::hit(const ZIntPoint &pt)
+{
+  return hit(pt.getX(), pt.getY(), pt.getZ());
 }
 
 bool ZDvidSynapseEnsemble::hit(double x, double y, double z)

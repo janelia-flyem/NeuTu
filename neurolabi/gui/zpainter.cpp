@@ -597,8 +597,30 @@ void ZPainter::drawRect(int x, int y, int width, int height)
 void ZPainter::drawPolyline(const QPointF * points, int pointCount)
 {
   if (points != NULL && pointCount > 0) {
-    m_painter.drawPolyline(points, pointCount);
-    setPainted(true);
+    double x1 = points[0].x();
+    double y1 = points[0].y();
+    double x2 = x1;
+    double y2 = y1;
+
+    for (int i = 1; i < pointCount; ++i) {
+      const QPointF &pt = points[i];
+      if (x1 > pt.x()) {
+        x1 = pt.x();
+      } else if (x2 < pt.x()) {
+        x2 = pt.x();
+      }
+
+      if (y1 > pt.y()) {
+        y1 = pt.y();
+      } else if (y2 < pt.y()) {
+        y2 = pt.y();
+      }
+    }
+
+    if (isVisible(x1, y1, x2, y2)) {
+      m_painter.drawPolyline(points, pointCount);
+      setPainted(true);
+    }
   }
 
 #ifdef _QT_GUI_USED_

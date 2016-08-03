@@ -15,6 +15,7 @@
 #include "tz_constant.h"
 #include "dvid/zdvidreader.h"
 #include "zvaa3dmarker.h"
+#include "flyem/zflyemmisc.h"
 
 ZDvidSynapse::ZDvidSynapse()
 {
@@ -174,18 +175,23 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     if (radius > 0.0) {
       double oldWidth = pen.widthF();
+      QColor oldColor = pen.color();
       if (getKind() == KIND_POST_SYN) {
         pen.setWidthF(oldWidth + 1.0);
-      }
-
-      if (isSelected()) {
-        pen.setWidthF(pen.widthF() + 1.0);
+        if (isSelected()) {
+          pen.setColor(QColor(255, 0, 255, oldColor.alpha()));
+        }
+      } else {
+        if (isSelected()) {
+          pen.setWidthF(pen.widthF() + 1.0);
+        }
       }
 
       painter.setPen(pen);
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
       pen.setWidthF(oldWidth);
+      pen.setColor(oldColor);
     }
     QString decorationText;
 
@@ -284,8 +290,14 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
   pen.setCosmetic(m_usingCosmeticPen);
 
   bool drawingBoundBox = false;
+  bool drawingArrow = false;
   if (isSelected()) {
-    drawingBoundBox = true;
+    if (visible) {
+      drawingBoundBox = true;
+    } else {
+      drawingArrow = true;
+    }
+
     QColor color;
     color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
@@ -316,35 +328,43 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
     painter.setPen(pen);
     painter.drawRect(rect);
+  }
 
-#if 0
-    if (!visible) {
-      pen.setStyle(Qt::SolidLine);
-      pen.setColor(GetArrowColor(isVerified()));
-      painter.setPen(pen);
-      QPointF pt[3];
-      double s = 5.0;
-      if (z > center.getZ()) {
+  if (drawingArrow) {
+    painter.setPen(pen);
+    QRectF rect(center.getX() - m_radius, center.getY() - m_radius,
+                m_radius + m_radius, m_radius + m_radius);
+
+//    pen.setStyle(Qt::SolidLine);
+//    pen.setColor(GetArrowColor(isVerified()));
+//    painter.setPen(pen);
+    QPointF ptArray[4];
+    //      double s = 5.0;
+    if (z > center.getZ()) {
+      ZFlyEmMisc::MakeTriangle(rect, ptArray, NeuTube::CD_NORTH);
+      /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.top() + rect.height() / s);
         pt[1] = QPointF(rect.center().x(),
                         rect.top() - rect.height() / s);
         pt[2] = QPointF(rect.center().x() + rect.width() / s,
                         rect.top() + rect.height() / s);
-
-      } else {
+*/
+    } else {
+      ZFlyEmMisc::MakeTriangle(rect, ptArray, NeuTube::CD_SOUTH);
+      /*
         pt[0] = QPointF(rect.center().x() - rect.width() / s,
                         rect.bottom() - rect.height() / s);
         pt[1] = QPointF(rect.center().x(),
                         rect.bottom() + rect.height() / s);
         pt[2] = QPointF(rect.center().x() + rect.width() / s,
                         rect.bottom() - rect.height() / s);
-      }
-      painter.drawLine(pt[0], pt[1]);
-      painter.drawLine(pt[1], pt[2]);
-      painter.drawLine(pt[0], pt[2]);
+                        */
     }
-#endif
+    painter.drawPolyline(ptArray, 4);
+//      painter.drawLine(pt[0], pt[1]);
+//      painter.drawLine(pt[1], pt[2]);
+//      painter.drawLine(pt[0], pt[2]);
   }
 
   if (isSelected()) {

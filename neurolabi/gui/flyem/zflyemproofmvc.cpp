@@ -2463,8 +2463,11 @@ void ZFlyEmProofMvc::goToTBar()
       if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
         const std::vector<ZIntPoint> &partners = synapse.getPartners();
         if (!partners.empty()) {
+          se->selectWithPartner(partners.front(), false);
           zoomTo(partners.front());
         }
+      } else {
+        zoomTo(pt);
       }
     }
   }
