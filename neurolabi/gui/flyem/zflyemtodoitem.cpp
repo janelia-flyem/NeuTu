@@ -5,7 +5,7 @@
 
 #include "zpainter.h"
 #include "zjsonparser.h"
-
+#include "flyem/zflyemmisc.h"
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -61,8 +61,7 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
 {
   QColor color = getColor();
   if (!isChecked()) {
-    color.setRgb(
-          color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
+    color.setRgb(255, 0, 0, 192);
   }
 
   return color;
@@ -117,15 +116,20 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
       painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
       painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
-      painter.drawLine(QPointF(x - radius, y - radius),
-                       QPointF(x + radius, y + radius));
-      painter.drawLine(QPointF(x - radius, y + radius),
-                       QPointF(x + radius, y - radius));
+//      painter.drawLine(QPointF(x - radius, y - radius),
+//                       QPointF(x + radius, y + radius));
+//      painter.drawLine(QPointF(x - radius, y + radius),
+//                       QPointF(x + radius, y - radius));
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
+      QPointF ptArray[9];
+      ZFlyEmMisc::MakeStar(QPointF(x, y), radius, ptArray);
+      painter.drawPolyline(ptArray, 9);
+      /*
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
+                          */
     }
 
     /*
