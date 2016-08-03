@@ -634,3 +634,31 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
   }
 }
 
+void ZFlyEmMisc::MakeTriangle(
+    const QRectF &rect, QPointF *ptArray, NeuTube::ECardinalDirection direction)
+{
+  switch (direction) {
+  case NeuTube::CD_EAST:
+    ptArray[0] = QPointF(rect.right(), rect.center().y());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.bottomLeft();
+    break;
+  case NeuTube::CD_WEST:
+    ptArray[0] = QPointF(rect.left(), rect.center().y());
+    ptArray[1] = rect.topRight();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case NeuTube::CD_NORTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.top());
+    ptArray[1] = rect.bottomLeft();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case NeuTube::CD_SOUTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.bottom());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.topRight();
+    break;
+  }
+
+  ptArray[3] = ptArray[0];
+}

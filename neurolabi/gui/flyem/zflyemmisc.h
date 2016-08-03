@@ -17,6 +17,7 @@ class ZDvidTarget;
 class ZDvidReader;
 class ZStackViewParam;
 class ZObject3dScan;
+class QPointF;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -40,6 +41,9 @@ void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
 void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo);
+
+void MakeTriangle(const QRectF &rect, QPointF *ptArray,
+                  NeuTube::ECardinalDirection direction);
 
 
 class HackathonEvaluator {

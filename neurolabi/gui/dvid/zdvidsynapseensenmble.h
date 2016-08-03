@@ -148,11 +148,15 @@ public:
   void selectHitWithPartner(bool appending);
   void toggleHitSelectWithPartner();
 
+  void selectElement(const ZIntPoint &pt, bool appending);
+  void selectWithPartner(const ZIntPoint &pt, bool appending);
+
   void deselect(bool recursive);
 
   const std::string& className() const;
 
   bool hit(double x, double y, double z);
+  bool hit(const ZIntPoint &pt);
 
   void downloadForLabel(uint64_t label);
   void download(int z);

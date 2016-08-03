@@ -78,6 +78,10 @@ enum EBiDirection {
   DIRECTION_FORWARD, DIRECTION_BACKWARD
 };
 
+enum ECardinalDirection {
+  CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
+};
+
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
