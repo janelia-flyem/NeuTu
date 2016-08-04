@@ -47,6 +47,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
             this, SLOT(onReviewNextButton()));
 
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
+    connect(ui->finishCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onFinishCurrentButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -211,6 +212,48 @@ void SynapsePredictionProtocol::onGotoButton() {
     gotoCurrent();
 }
 
+void SynapsePredictionProtocol::onFinishCurrentButton() {
+    if (m_currentPendingIndex < 0 || m_currentPendingIndex >= m_pendingList.size()) {
+        return;
+    }
+
+    // ensure the thing is 100% verified
+    ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
+    std::vector<ZDvidSynapse> synapseElements = getWholeSynapse(currentPoint);
+    bool verified = true;
+    for (size_t i=0; i<synapseElements.size(); i++) {
+        if (!synapseElements[i].isVerified()) {
+            verified = false;
+            break;
+        }
+    }
+    if (!verified) {
+        QMessageBox mb;
+        mb.setText("Not all verified!");
+        mb.setInformativeText("Not all elements of the current T-bar are verified!  Verify the T-bar and all PSDs before finishing.");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+        return;
+    }
+
+    // advance protocol and go to next point
+    m_pendingList.removeOne(currentPoint);
+    m_finishedList.append(currentPoint);
+    if (!m_pendingList.empty()) {
+        // having removed the point at the current index, the current
+        //  index now points to the next point or past the end of
+        //  the list; if the latter, loop back to the top
+        if (m_currentPendingIndex >= m_pendingList.size()) {
+            m_currentPendingIndex = 0;
+        }
+    } else {
+        m_currentPendingIndex = -1;
+    }
+    gotoCurrent();
+    updateLabels();
+}
+
 void SynapsePredictionProtocol::onCompleteButton() {
     QMessageBox mb;
     mb.setText("Complete protocol");
@@ -227,8 +270,21 @@ void SynapsePredictionProtocol::onCompleteButton() {
 
 void SynapsePredictionProtocol::onRefreshButton()
 {
-  loadInitialSynapseList();
-  updateLabels();
+    // try to keep the same current T-bar across the refresh
+    ZIntPoint savedPoint;
+    bool saved = false;
+    if (m_currentPendingIndex >= 0) {
+        savedPoint = m_pendingList[m_currentPendingIndex];
+        saved = true;
+    }
+    loadInitialSynapseList();
+    if (saved) {
+        int index = m_pendingList.indexOf(savedPoint);
+        if (index >= 0) {
+            m_currentPendingIndex = index;
+        }
+    }
+    updateLabels();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
@@ -368,14 +424,6 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
     }
   }
 
-  if (isVerified) {
-    if (m_pendingList.removeOne(targetPoint)) {
-      if (m_currentPendingIndex >= m_pendingList.size()) {
-        m_currentPendingIndex = m_pendingList.size() - 1;
-      }
-      m_finishedList.append(targetPoint);
-    }
-  }
 }
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)

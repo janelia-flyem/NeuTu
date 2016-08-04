@@ -54,6 +54,7 @@ private slots:
     void onLastVerifiedButton();
 
     void onGotoButton();
+    void onFinishCurrentButton();
     void onExitButton();
     void onCompleteButton();
     void onRefreshButton();
