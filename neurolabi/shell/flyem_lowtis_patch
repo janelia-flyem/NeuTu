@@ -18,5 +18,9 @@ source $scriptDir/flyem_utilities.sh
 flyem_build_lowtis $install_dir $scriptDir
 
 rm -rf $install_dir/Download/neutube/neurolabi/build
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+then
+  rm -rf $install_dir/Download/neutube/neurolabi/build_debug
+fi
 $install_dir/bin/ntupd
 

@@ -56,5 +56,14 @@ then
       $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
     fi
   fi
+
+  if [ $GCCVER \< '4.8.0' ]
+  then
+    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+    then
+      source ${CONDA_ROOT}/bin/activate dvidenv
+      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+    fi
+  fi
 fi
 

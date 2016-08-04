@@ -634,3 +634,71 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
   }
 }
 
+void ZFlyEmMisc::MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray)
+{
+  const double shapeFactor = 0.25;
+  double sw = radius * shapeFactor;
+  double left = center.x() - radius;
+  double right = center.x() + radius;
+  double top = center.y() - radius;
+  double bottom = center.y() + radius;
+
+  ptArray[0] = QPointF(center.x(), top);
+  ptArray[1] = QPointF(center.x() + sw, center.y() - sw);
+  ptArray[2] = QPointF(right, center.y());
+  ptArray[3] = QPointF(center.x() + sw, center.y() + sw);
+  ptArray[4] = QPointF(center.x(), bottom);
+  ptArray[5] = QPointF(center.x() - sw, center.y() + sw);
+  ptArray[6] = QPointF(left, center.y());
+  ptArray[7] = QPointF(center.x() - sw, center.y() - sw);
+  ptArray[8] = ptArray[0];
+}
+
+void ZFlyEmMisc::MakeStar(const QRectF &rect, QPointF *ptArray)
+{
+  QPointF center = rect.center();
+  double width= rect.width();
+  double height = rect.height();
+  const double shapeFactor = 0.125;
+  double sw = width * shapeFactor;
+  double sh = height * shapeFactor;
+  ptArray[0] = QPointF(center.x(), rect.top());
+  ptArray[1] = QPointF(center.x() + sw, center.y() - sh);
+  ptArray[2] = QPointF(rect.right(), center.y());
+  ptArray[3] = QPointF(center.x() + sw, center.y() + sh);
+  ptArray[4] = QPointF(center.x(), rect.bottom());
+  ptArray[5] = QPointF(center.x() - sw, center.y() + sh);
+  ptArray[6] = QPointF(rect.left(), center.y());
+  ptArray[7] = QPointF(center.x() - sw, center.y() - sh);
+  ptArray[8] = ptArray[0];
+}
+
+void ZFlyEmMisc::MakeTriangle(
+    const QRectF &rect, QPointF *ptArray, NeuTube::ECardinalDirection direction)
+{
+  switch (direction) {
+  case NeuTube::CD_EAST:
+    ptArray[0] = QPointF(rect.right(), rect.center().y());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.bottomLeft();
+    break;
+  case NeuTube::CD_WEST:
+    ptArray[0] = QPointF(rect.left(), rect.center().y());
+    ptArray[1] = rect.topRight();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case NeuTube::CD_NORTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.top());
+    ptArray[1] = rect.bottomLeft();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case NeuTube::CD_SOUTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.bottom());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.topRight();
+    break;
+  }
+
+  ptArray[3] = ptArray[0];
+}
