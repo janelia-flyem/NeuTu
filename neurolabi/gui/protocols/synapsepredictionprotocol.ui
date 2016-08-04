@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>444</width>
-    <height>446</height>
+    <height>507</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -64,7 +64,7 @@
      <item>
       <widget class="QLabel" name="reviewedLabel">
        <property name="text">
-        <string>Reviewed sites:</string>
+        <string>Finished sites:</string>
        </property>
       </widget>
      </item>
@@ -145,9 +145,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="finishCurrentButton">
+         <property name="text">
+          <string>Finish current</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="lastVerifiedButton">
          <property name="text">
-          <string>Last verified</string>
+          <string>Last finished</string>
          </property>
         </widget>
        </item>
