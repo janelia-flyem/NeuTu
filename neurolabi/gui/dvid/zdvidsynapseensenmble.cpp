@@ -35,6 +35,7 @@ void ZDvidSynapseEnsemble::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
+  addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
 }
 
 ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
@@ -509,20 +510,25 @@ void ZDvidSynapseEnsemble::display(
       SynapseSlice &synapseSlice =
           const_cast<ZDvidSynapseEnsemble&>(*this).getSlice(z, ADJUST_FULL);
 
-
-
+      //Paint unselected synapses
       for (int i = 0; i < synapseSlice.size(); ++i) {
         QMap<int, ZDvidSynapse> &synapseMap = synapseSlice[i];
         for (QMap<int, ZDvidSynapse>::const_iterator iter = synapseMap.begin();
              iter != synapseMap.end(); ++iter) {
           const ZDvidSynapse &synapse = iter.value();
           if (!synapse.isSelected()) {
-            synapse.display(painter, slice, option, sliceAxis);
+            EDisplayStyle tmpOption = option;
+            if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
+                hasVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT)) {
+              tmpOption = SKELETON;
+            }
+            synapse.display(painter, slice, tmpOption, sliceAxis);
           }
         }
       }  
     }
 
+    //Paint selected synapses
     const std::set<ZIntPoint>& selected = m_selector.getSelectedSet();
     for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {

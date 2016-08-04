@@ -1178,7 +1178,7 @@ void ZImageWidget::keyPressEvent(QKeyEvent *event)
 bool ZImageWidget::event(QEvent *event)
 {
   if (event->type() == QEvent::KeyPress) {
-    QKeyEvent *ke = dynamic_cast<QKeyEvent*>(event);
+    QKeyEvent *ke = (QKeyEvent*) (event);
     if (ke != NULL) {
       if (ke->key() == Qt::Key_Tab) {
         event->ignore();
