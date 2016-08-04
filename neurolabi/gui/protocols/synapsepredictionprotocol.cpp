@@ -226,8 +226,21 @@ void SynapsePredictionProtocol::onCompleteButton() {
 
 void SynapsePredictionProtocol::onRefreshButton()
 {
-  loadInitialSynapseList();
-  updateLabels();
+    // try to keep the same current T-bar across the refresh
+    ZIntPoint savedPoint;
+    bool saved = false;
+    if (m_currentPendingIndex >= 0) {
+        savedPoint = m_pendingList[m_currentPendingIndex];
+        saved = true;
+    }
+    loadInitialSynapseList();
+    if (saved) {
+        int index = m_pendingList.indexOf(savedPoint);
+        if (index >= 0) {
+            m_currentPendingIndex = index;
+        }
+    }
+    updateLabels();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
