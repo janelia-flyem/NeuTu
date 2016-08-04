@@ -319,7 +319,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
   */
-  QString msg = QString("Synapse moved from (%1, %2, %3) to (%1, %2, %3)").
+  QString msg = QString("Synapse moved from (%1, %2, %3) to (%4, %5, %6)").
       arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
       arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
   m_doc->notify(msg);

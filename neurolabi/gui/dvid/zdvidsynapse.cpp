@@ -154,13 +154,18 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     QPen pen;
 
     QColor color = getColor();
+
     double alpha = 1.0;
-    if (!isFocused) {
-      alpha = radius / m_radius;
-      alpha *= alpha * 0.5;
-      alpha += 0.1;
-      color.setAlphaF(alpha * color.alphaF());
+    if (option == SKELETON) {
+      alpha = 0.1;
     }
+
+    if (!isFocused) {
+      alpha *= radius / m_radius;
+      alpha *= alpha * 0.5;
+      alpha += 0.1;  
+    }
+    color.setAlphaF(alpha * color.alphaF());
 
     pen.setColor(color);
 
@@ -177,7 +182,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       double oldWidth = pen.widthF();
       QColor oldColor = pen.color();
       if (getKind() == KIND_POST_SYN) {
-        pen.setWidthF(oldWidth + 1.0);
+        if (option != SKELETON) {
+          pen.setWidthF(oldWidth + 1.0);
+        }
         if (isSelected()) {
           pen.setColor(QColor(255, 0, 255, oldColor.alpha()));
         }
@@ -400,6 +407,17 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           painter.drawLine(pt[0], pt[1]);
           painter.drawLine(pt[1], pt[2]);
           painter.drawLine(pt[0], pt[2]);
+        }
+
+        if (getKind() == KIND_PRE_SYN) {
+          ZDvidSynapse partnerSynapse;
+          partnerSynapse.setKind(KIND_POST_SYN);
+          partnerSynapse.setPosition(partner);
+          partnerSynapse.setDefaultColor();
+          partnerSynapse.setDefaultRadius();
+          painter.save();
+          partnerSynapse.display(painter, slice, ZStackObject::NORMAL, sliceAxis);
+          painter.restore();
         }
       }
     }
