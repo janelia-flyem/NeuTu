@@ -4,6 +4,8 @@
 #include <QMap>
 #include <QVector>
 #include <QCache>
+#include <QMutex>
+#include <QVector>
 
 #include <iostream>
 
@@ -91,6 +93,9 @@ public:
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
 
+  bool removeSynapseUnsync(const ZIntPoint &pt, EDataScope scope);
+  bool removeSynapseUnsync(int x, int y, int z, EDataScope scope);
+
   /*!
    * \brief Add a synapse
    *
@@ -101,19 +106,38 @@ public:
    * \param synapse synapse to add
    * \param scope Operation scope
    */
+  void addSynapseUnsync(const ZDvidSynapse &synapse, EDataScope scope);
   void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
+
 //  void commitSynapse(const ZIntPoint &pt);
+  void moveSynapseUnsync(const ZIntPoint &from, const ZIntPoint &to,
+                   EDataScope scope);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,
                    EDataScope scope);
 
+  void annotateSynapseUnsync(int x, int y, int z, const ZJsonObject &propJson,
+                       EDataScope scope);
+  void annotateSynapseUnsync(const ZIntPoint &pt, const ZJsonObject &propJson,
+                       EDataScope scope);
   void annotateSynapse(int x, int y, int z, const ZJsonObject &propJson,
                        EDataScope scope);
   void annotateSynapse(const ZIntPoint &pt, const ZJsonObject &propJson,
                        EDataScope scope);
+
+  void setUserNameUnsync(const ZIntPoint &pt, const std::string &userName,
+                   EDataScope scope);
+  void setUserNameUnsync(int x, int y, int z, const std::string &userName,
+                   EDataScope scope);
+
   void setUserName(const ZIntPoint &pt, const std::string &userName,
                    EDataScope scope);
   void setUserName(int x, int y, int z, const std::string &userName,
                    EDataScope scope);
+
+  void setConfidenceUnsync(int x, int y, int z, const double c,
+                     EDataScope scope);
+  void setConfidenceUnsync(const ZIntPoint &pt, const double c,
+                     EDataScope scope);
 
   void setConfidence(int x, int y, int z, const double c,
                      EDataScope scope);
@@ -122,18 +146,22 @@ public:
 
   void removeSynapseLink(const ZIntPoint &v1, const ZIntPoint &v2);
 
+  ZDvidSynapse &getSynapseUnsync(int x, int y, int z, EDataScope scope);
+  ZDvidSynapse &getSynapseUnsync(const ZIntPoint &center, EDataScope scope);
+
   ZDvidSynapse &getSynapse(int x, int y, int z, EDataScope scope);
   ZDvidSynapse &getSynapse(const ZIntPoint &center, EDataScope scope);
 
-  SynapseMap& getSynapseMap(int y, int z);
-  const SynapseMap &getSynapseMap(int y, int z) const;
-  SynapseMap& getSynapseMap(int y, int z, EAdjustment adjust);
+  SynapseMap& getSynapseMapUnsync(int y, int z);
+  const SynapseMap &getSynapseMapUnsync(int y, int z) const;
+  SynapseMap& getSynapseMapUnsync(int y, int z, EAdjustment adjust);
 
 
-  const SynapseSlice& getSlice(int z) const;
-  SynapseSlice& getSlice(int z);
-  SynapseSlice& getSlice(int z, EAdjustment adjust);
+  const SynapseSlice& getSliceUnsync(int z) const;
+  SynapseSlice& getSliceUnsync(int z);
+  SynapseSlice& getSliceUnsync(int z, EAdjustment adjust);
 
+  void setReadyUnsync(const ZIntCuboid &box);
   void setReady(const ZIntCuboid &box);
 
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
@@ -141,37 +169,52 @@ public:
 
 //  bool deleteSynapse(int x, int y, int z);
 
-  int getMinZ() const;
-  int getMaxZ() const;
+  int getMinZUnsync() const;
+  int getMaxZUnsync() const;
 
-  bool hasLocalSynapse(int x, int y, int z) const;
+  bool hasLocalSynapseUnsync(int x, int y, int z) const;
 
-  bool toggleHitSelect();
-  void selectHit(bool appending);
+  bool toggleHitSelectUnsync();
+  void selectHitUnsync(bool appending);
+  void selectHitWithPartnerUnsync(bool appending);
+  void toggleHitSelectWithPartnerUnsync();
+
   void selectHitWithPartner(bool appending);
   void toggleHitSelectWithPartner();
 
-  void selectElement(const ZIntPoint &pt, bool appending);
+  void selectElementUnsync(const ZIntPoint &pt, bool appending);
+  void selectWithPartnerUnsync(const ZIntPoint &pt, bool appending);
+
   void selectWithPartner(const ZIntPoint &pt, bool appending);
 
-  void deselect(bool recursive);
+  void deselectUnsync(bool recursive);
 
   const std::string& className() const;
 
   bool hit(double x, double y, double z);
   bool hit(const ZIntPoint &pt);
 
-  void downloadForLabel(uint64_t label);
+  void downloadForLabelUnsync(uint64_t label);
+  void downloadUnsync(int z);
   void download(int z);
+  void downloadUnsync(const QVector<int> &zs);
   void setDataFetcher(ZFlyEmSynapseDataFetcher *fetcher);
 
   bool hasSelected() const;
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
   ZSelector<ZIntPoint>& getSelector() { return m_selector; }
 
+  ZIntCuboid updateUnsync(const ZIntCuboid &box);
   ZIntCuboid update(const ZIntCuboid &box);
+
+  void updateUnsync(int x, int y, int z);
+  void updateUnsync(const ZIntPoint &pt);
+
   void update(int x, int y, int z);
   void update(const ZIntPoint &pt);
+
+  void updatePartnerUnsync(const ZIntPoint &pt);
+  void updatePartner(const ZIntPoint &pt);
 
   void updatePartner(ZDvidSynapse &synapse);
 
@@ -199,12 +242,14 @@ public:
     QVectorIterator<SynapseSlice> m_zIterator;
     QVectorIterator<SynapseMap> m_yIterator;
     QMapIterator<int, ZDvidSynapse> m_xIterator;
+
+    QMutex m_dataMutex;
   };
 
 private:
   void init();
-  void updateFromCache(int z);
-  void deselectSub();
+  void updateFromCacheUnsync(int z);
+  void deselectSubUnsync();
 
 private:
   QVector<SynapseSlice> m_synapseEnsemble;
@@ -229,6 +274,7 @@ private:
 
   ZFlyEmSynapseDataFetcher *m_dataFetcher;
 
+  mutable QMutex m_dataMutex;
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };
 

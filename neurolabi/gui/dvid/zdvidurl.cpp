@@ -898,12 +898,18 @@ std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
                        box.getDepth());
 }
 
-std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
+std::string ZDvidUrl::getSynapseUrl(uint64_t label, bool relation) const
 {
   std::ostringstream stream;
 
   stream << getSynapseUrl() << "/" << m_annotationLabelCommand << "/"
-         << label;
+         << label << "?relationships=";
+
+  if (relation) {
+    stream << "true";
+  } else {
+    stream << "false";
+  }
 
   return stream.str();
 }

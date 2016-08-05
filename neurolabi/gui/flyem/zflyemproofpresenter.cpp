@@ -880,7 +880,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         se->getSelector().getSelectedSet();
     if (selectedSet.size() == 1) {
       const ZIntPoint &pt = *(selectedSet.begin());
-      const ZDvidSynapse &synapse = se->getSynapse(
+      ZDvidSynapse synapse = se->getSynapse(
             pt, ZDvidSynapseEnsemble::DATA_LOCAL);
       if (synapse.isValid()) {
         ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);

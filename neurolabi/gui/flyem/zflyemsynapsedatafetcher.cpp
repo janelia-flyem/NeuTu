@@ -2,6 +2,7 @@
 
 #include <QMutexLocker>
 #include <QtConcurrentRun>
+#include <QElapsedTimer>
 
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
@@ -44,30 +45,30 @@ void ZFlyEmSynapseDataFetcher::resetRegion()
 {
   QMutexLocker locker(&m_regionMutex);
 
-  m_fetchingRegion.reset();
+  m_fetchingRegion.clear();
 }
 
-ZIntCuboid ZFlyEmSynapseDataFetcher::takeRegion()
+QVector<ZIntCuboid> ZFlyEmSynapseDataFetcher::takeRegion()
 {
   QMutexLocker locker(&m_regionMutex);
 
-  ZIntCuboid region = m_fetchingRegion;
+  QVector<ZIntCuboid> region = m_fetchingRegion;
 
-  m_fetchingRegion.reset();
+  m_fetchingRegion.clear();
 
   return region;
 }
 
-void ZFlyEmSynapseDataFetcher::setRegion(const ZIntCuboid &box)
+void ZFlyEmSynapseDataFetcher::setRegion(const QVector<ZIntCuboid> &region)
 {
   QMutexLocker locker(&m_regionMutex);
 
-  m_fetchingRegion = box;
+  m_fetchingRegion = region;
 }
 
-void ZFlyEmSynapseDataFetcher::submit(const ZIntCuboid &box)
+void ZFlyEmSynapseDataFetcher::submit(const QVector<ZIntCuboid> &region)
 {
-  setRegion(box);
+  setRegion(region);
 }
 
 void ZFlyEmSynapseDataFetcher::startFetching()
@@ -75,24 +76,47 @@ void ZFlyEmSynapseDataFetcher::startFetching()
   const QString threadId = "ZFlyEmSynapseDataFetcher::fetchFunc";
 
   if (!m_futureMap.isAlive(threadId)) {
-    QtConcurrent::run(this, &ZFlyEmSynapseDataFetcher::fetchFunc);
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmSynapseDataFetcher::fetchFunc);
+    m_futureMap[threadId] = future;
   }
 }
 
 
 void ZFlyEmSynapseDataFetcher::fetchFunc()
 {
-  QMutexLocker locker(&m_dataMutex);
+  QVector<ZIntCuboid> region = takeRegion();
 
-  ZIntCuboid dataBox = takeRegion();
+  while (!region.isEmpty()) {
+    foreach (const ZIntCuboid &dataBox, region) {
+      bool fetching = true;
+      foreach (const ZIntCuboid &lastBox, m_lastFetchingRegion) {
+        if (lastBox.contains(dataBox)) {
+          fetching = false;
+          break;
+        }
+      }
 
-  while (!dataBox.isEmpty() && !m_dataRange.contains(dataBox)) {
-    ZDvidUrl dvidUrl(m_dvidTarget);
-    m_data = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
-    m_dataRange = dataBox;
-    emit dataFetched(this);
+      if (!dataBox.isEmpty() && fetching) {
+        ZDvidUrl dvidUrl(m_dvidTarget);
+        LINFO() << "Reading synapses: ";
+        QElapsedTimer timer;
+        timer.start();
+        ZJsonArray data = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
+        LINFO() << "Synapse reading time: " << timer.elapsed();
 
-    dataBox = takeRegion();
+        {
+          QMutexLocker locker(&m_dataMutex);
+          m_data = data;
+          m_dataRange = dataBox;
+        }
+
+        emit dataFetched(this);
+      }
+    }
+
+    m_lastFetchingRegion = region;
+    region = takeRegion();
   }
 }
 

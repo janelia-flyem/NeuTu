@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QVector>
 
 #include "zintcuboid.h"
 #include "zjsonarray.h"
@@ -21,11 +22,12 @@ public:
 
   void setDvidTarget(const ZDvidTarget &dvidTarget);
 
-  void setRegion(const ZIntCuboid &box);
+  void setRegion(const QVector<ZIntCuboid> &region);
   void resetRegion();
-  ZIntCuboid takeRegion();
+  QVector<ZIntCuboid> takeRegion();
 
   void submit(const ZIntCuboid &box);
+  void submit(const QVector<ZIntCuboid> &region);
   void addSynapse(ZDvidSynapseEnsemble *se);
 
 private:
@@ -40,13 +42,15 @@ public slots:
   void startFetching();
 
 private:
-  ZIntCuboid m_fetchingRegion;
+  QVector<ZIntCuboid> m_fetchingRegion;
   QMutex m_regionMutex;
   QMutex m_dataMutex;
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
 
+
+  QVector<ZIntCuboid> m_lastFetchingRegion;
   ZJsonArray m_data;
   ZIntCuboid m_dataRange;
 

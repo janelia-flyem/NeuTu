@@ -2470,7 +2470,7 @@ void ZFlyEmProofMvc::goToTBar()
 
     if (selected.size() == 1) {
       const ZIntPoint &pt = *(selected.begin());
-      ZDvidSynapse &synapse =
+      ZDvidSynapse synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
       if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
         const std::vector<ZIntPoint> &partners = synapse.getPartners();
