@@ -17,6 +17,7 @@
 
 class ZStackView;
 class ZIntCuboid;
+class ZFlyEmSynapseDataFetcher;
 
 class ZDvidSynapseEnsemble : public ZStackObject
 {
@@ -133,6 +134,8 @@ public:
   SynapseSlice& getSlice(int z);
   SynapseSlice& getSlice(int z, EAdjustment adjust);
 
+  void setReady(const ZIntCuboid &box);
+
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
 
@@ -160,6 +163,7 @@ public:
 
   void downloadForLabel(uint64_t label);
   void download(int z);
+  void setDataFetcher(ZFlyEmSynapseDataFetcher *fetcher);
 
   bool hasSelected() const;
   const ZSelector<ZIntPoint>& getSelector() const { return m_selector; }
@@ -222,6 +226,8 @@ private:
 //  NeuTube::EAxis m_sliceAxis;
 
   ZIntCuboid m_dataRange;
+
+  ZFlyEmSynapseDataFetcher *m_dataFetcher;
 
   mutable QCache<int, SynapseSlice> m_sliceCache;
 };

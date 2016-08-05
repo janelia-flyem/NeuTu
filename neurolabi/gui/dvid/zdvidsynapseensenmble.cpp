@@ -7,7 +7,7 @@
 #include "tz_math.h"
 #include "dvid/zdvidwriter.h"
 #include "zstackview.h"
-
+#include "flyem/zflyemsynapsedatafetcher.h"
 
 ZDvidSynapseEnsemble::SynapseSlice
 ZDvidSynapseEnsemble::m_emptySlice(ZDvidSynapseEnsemble::STATUS_NULL);
@@ -36,6 +36,7 @@ void ZDvidSynapseEnsemble::init()
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
   addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+  m_dataFetcher = NULL;
 }
 
 ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
@@ -80,6 +81,11 @@ void ZDvidSynapseEnsemble::update(const ZIntPoint &pt)
 void ZDvidSynapseEnsemble::attachView(ZStackView *view)
 {
   m_view = view;
+}
+
+void ZDvidSynapseEnsemble::setDataFetcher(ZFlyEmSynapseDataFetcher *fetcher)
+{
+  m_dataFetcher = fetcher;
 }
 
 void ZDvidSynapseEnsemble::download(int z)
@@ -128,20 +134,37 @@ void ZDvidSynapseEnsemble::download(int z)
 
     box.shiftSliceAxisInverse(m_sliceAxis);
 
-    box = update(box);
+    if (m_dataFetcher == NULL) {
+      box = update(box);
 
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
-      SynapseSlice &slice = getSlice(cz, ADJUST_FULL);
-      if (m_dataRange.isEmpty()) {
-        slice.setStatus(STATUS_READY);
-      } else {
-        slice.setDataRect(
-              QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                    box.getWidth(), box.getHeight()));
-        slice.setStatus(STATUS_PARTIAL_READY);
+      for (int cz = blockBox.getFirstCorner().getZ();
+           cz <= blockBox.getLastCorner().getZ(); ++cz) {
+        SynapseSlice &slice = getSlice(cz, ADJUST_FULL);
+        if (m_dataRange.isEmpty()) {
+          slice.setStatus(STATUS_READY);
+        } else {
+          slice.setDataRect(
+                QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                      box.getWidth(), box.getHeight()));
+          slice.setStatus(STATUS_PARTIAL_READY);
+        }
       }
+    } else {
+      m_dataFetcher->submit(box);
+//      m_dataFetcher->addSynapse(this); //for testing
     }
+  }
+}
+
+void ZDvidSynapseEnsemble::setReady(const ZIntCuboid &box)
+{
+  for (int cz = box.getFirstCorner().getZ();
+       cz <= box.getLastCorner().getZ(); ++cz) {
+    SynapseSlice &slice = getSlice(cz, ADJUST_FULL);
+    slice.setDataRect(
+          QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                box.getWidth(), box.getHeight()));
+    slice.setStatus(STATUS_PARTIAL_READY);
   }
 }
 

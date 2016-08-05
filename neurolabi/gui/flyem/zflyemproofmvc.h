@@ -29,6 +29,8 @@ class ZFlyEmDataFrame;
 class FlyEmTodoDialog;
 class ZClickableColorLabel;
 class ZColorLabel;
+class ZFlyEmSynapseDataFetcher;
+class ZFlyEmSynapseDataUpdater;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -331,6 +333,10 @@ protected:
   std::vector<std::string> m_roiList;
   std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
+
+  //Data fetching
+  ZFlyEmSynapseDataFetcher *m_seFetcher;
+  ZFlyEmSynapseDataUpdater *m_seUpdater;
 
 };
 

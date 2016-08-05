@@ -57,6 +57,8 @@
 #include "widgets/zcolorlabel.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zflyemorthodoc.h"
+#include "flyem/zflyemsynapsedatafetcher.h"
+#include "flyem/zflyemsynapsedataupdater.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -98,6 +100,13 @@ void ZFlyEmProofMvc::init()
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
+
+  m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
+  m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
+
+  connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
+          m_seUpdater, SLOT(updateData(ZFlyEmSynapseDataFetcher*)),
+          Qt::QueuedConnection);
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -937,6 +946,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
       if (se != NULL) {
         se->attachView(getView());
+        m_seFetcher->setDvidTarget(getDvidTarget());
+        m_seUpdater->setData(se, m_doc);
+        se->setDataFetcher(m_seFetcher);
       }
 
       getCompleteDocument()->downloadBookmark();

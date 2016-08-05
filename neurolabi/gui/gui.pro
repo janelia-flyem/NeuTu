@@ -643,7 +643,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
     dialogs/zcontrastprotocaldialog.h \
-    flyem/zflyemsynapsedatafetcher.h
+    flyem/zflyemsynapsedatafetcher.h \
+    flyem/zflyemsynapsedataupdater.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1141,7 +1142,8 @@ SOURCES += main.cpp \
     dialogs/zflyemsynapseannotationdialog.cpp \
     zdvidutil.cpp \
     dialogs/zcontrastprotocaldialog.cpp \
-    flyem/zflyemsynapsedatafetcher.cpp
+    flyem/zflyemsynapsedatafetcher.cpp \
+    flyem/zflyemsynapsedataupdater.cpp
 
 OTHER_FILES += \
     extlib.pri \
