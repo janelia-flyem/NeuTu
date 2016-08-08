@@ -337,7 +337,7 @@ ZObject3dScan ZDvidReader::readBody(uint64_t bodyId)
   return obj;
 }
 
-ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId)
+ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
 {
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -1349,6 +1349,39 @@ ZJsonObject ZDvidReader::readSkeletonConfig() const
   return config;
 }
 
+ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
+{
+  ZIntPoint pt;
+
+  ZSwcTree *tree = readSwc(bodyId);
+  if (tree != NULL) {
+    if (!tree->isEmpty()) {
+      ZSwcPath path = tree->getLongestPath();
+      Swc_Tree_Node *tn = path[path.size() / 2];
+      pt = SwcTreeNode::center(tn).toIntPoint();
+    }
+  }
+
+  delete tree;
+
+  if (bodyId != readBodyIdAt(pt)) {
+    ZObject3dScan body = readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = readGrayScaleInfo();
+
+    ZObject3dScan objSlice = body.getMedianSlice();
+    ZVoxel voxel = objSlice.getMarker();
+//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+    ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
+    pt -= dvidInfo.getStartBlockIndex();
+    pt *= dvidInfo.getBlockSize();
+    pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+                    dvidInfo.getBlockSize().getY() / 2, 0);
+    pt += dvidInfo.getStartCoordinates();
+  }
+
+  return pt;
+}
+
 ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 {
   ZIntCuboid box;
@@ -1862,12 +1895,12 @@ ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
   return obj;
 }
 
-uint64_t ZDvidReader::readBodyIdAt(const ZIntPoint &pt)
+uint64_t ZDvidReader::readBodyIdAt(const ZIntPoint &pt) const
 {
   return readBodyIdAt(pt.getX(), pt.getY(), pt.getZ());
 }
 
-uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z)
+uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
 {
   ZDvidBufferReader bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)

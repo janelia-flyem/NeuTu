@@ -76,7 +76,7 @@ public:
   bool isReady() const;
 
   //ZSwcTree* readSwc(const QString &key);
-  ZSwcTree *readSwc(uint64_t bodyId);
+  ZSwcTree *readSwc(uint64_t bodyId) const;
   ZObject3dScan readBody(uint64_t bodyId);
   ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
@@ -160,8 +160,8 @@ public:
 
   uint64_t readMaxBodyId();
 
-  uint64_t readBodyIdAt(int x, int y, int z);
-  uint64_t readBodyIdAt(const ZIntPoint &pt);
+  uint64_t readBodyIdAt(int x, int y, int z) const;
+  uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(
       const std::vector<ZIntPoint> &ptArray) const;
   template <typename InputIterator>
@@ -240,6 +240,7 @@ public:
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
+  ZIntPoint readBodyPosition(uint64_t bodyId) const;
 
   ZJsonObject readSkeletonConfig() const;
 

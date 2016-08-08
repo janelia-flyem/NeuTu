@@ -2835,8 +2835,8 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+    if (reader.isReady()) {
       ZObject3dScan body = reader.readCoarseBody(bodyId);
       if (body.isEmpty()) {
         emit messageGenerated(

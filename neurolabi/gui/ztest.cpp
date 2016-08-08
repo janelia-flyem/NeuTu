@@ -20481,7 +20481,8 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZPixmap pixmap(512, 512);
   ZStTransform transform;
-  transform.setOffset(-100, -200);
+  transform.setOffset(-50, -100);
+  transform.setScale(0.5, 0.5);
   pixmap.setTransform(transform);
 
   ZPainter painter(&pixmap);
