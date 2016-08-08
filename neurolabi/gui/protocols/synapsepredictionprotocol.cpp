@@ -271,9 +271,11 @@ void SynapsePredictionProtocol::onRefreshButton()
 {
     // try to keep the same current T-bar across the refresh
     ZIntPoint savedPoint;
+    int savedIndex = -1;
     bool saved = false;
     if (m_currentPendingIndex >= 0) {
         savedPoint = m_pendingList[m_currentPendingIndex];
+        savedIndex = m_currentPendingIndex;
         saved = true;
     }
     loadInitialSynapseList();
@@ -281,6 +283,15 @@ void SynapsePredictionProtocol::onRefreshButton()
         int index = m_pendingList.indexOf(savedPoint);
         if (index >= 0) {
             m_currentPendingIndex = index;
+        } else {
+            // if we make it here, that means the current synapse was
+            //  all verified but not yet finished when the list was
+            //  refreshed, and it got finished because that's a side
+            //  effect of the refresh; move it back from the finished list to
+            //  the pending list, at the same position
+            m_finishedList.removeOne(savedPoint);
+            m_pendingList.insert(savedIndex, savedPoint);
+            m_currentPendingIndex = savedIndex;
         }
     }
     updateLabels();
