@@ -566,9 +566,14 @@ void ZImageWidget::setViewPortOffset(int x, int y)
     }
   }
 
+  m_viewPort = QRect(x + m_canvasRegion.left(),
+                     y + m_canvasRegion.top(),
+                     m_viewPort.width(), m_viewPort.height());
+  /*
   setViewPort(QRect(x + m_canvasRegion.left(),
                     y + m_canvasRegion.top(),
                     m_viewPort.width(), m_viewPort.height()));
+                    */
 }
 
 void ZImageWidget::setZoomRatio(double zoomRatio)
@@ -1163,6 +1168,26 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
 {
   setValidViewPort(m_viewPort);
+}
+
+void ZImageWidget::keyPressEvent(QKeyEvent *event)
+{
+  event->ignore();
+}
+
+bool ZImageWidget::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *ke = (QKeyEvent*) (event);
+    if (ke != NULL) {
+      if (ke->key() == Qt::Key_Tab) {
+        event->ignore();
+        return false;
+      }
+    }
+  }
+
+  return QWidget::event(event);
 }
 
 int ZImageWidget::getMaxZoomRatio() const

@@ -44,6 +44,7 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 include(extratarget.pri)
@@ -641,7 +642,9 @@ HEADERS += mainwindow.h \
     flyem/zflyemmb6analyzer.h \
     dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
-    dialogs/zcontrastprotocaldialog.h
+    dialogs/zcontrastprotocaldialog.h \
+    flyem/zflyemsynapsedatafetcher.h \
+    flyem/zflyemsynapsedataupdater.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1138,7 +1141,9 @@ SOURCES += main.cpp \
     flyem/zflyemmb6analyzer.cpp \
     dialogs/zflyemsynapseannotationdialog.cpp \
     zdvidutil.cpp \
-    dialogs/zcontrastprotocaldialog.cpp
+    dialogs/zcontrastprotocaldialog.cpp \
+    flyem/zflyemsynapsedatafetcher.cpp \
+    flyem/zflyemsynapsedataupdater.cpp
 
 OTHER_FILES += \
     extlib.pri \

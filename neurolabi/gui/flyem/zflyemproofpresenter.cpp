@@ -221,6 +221,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_Tab:
+    if (event->modifiers() == Qt::NoModifier) {
+      emit goingToTBar();
+      processed = true;
+    }
+    break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
       emit goingToBodyTop();
@@ -275,11 +281,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   if (!processed) {
     op.setOperation(m_bookmarkKeyOperationMap.getOperation(
                       event->key(), event->modifiers()));
-  }
-
-  if (!op.isNull()) {
-    process(op);
-    processed = true;
+    processed = process(op);
   }
 
   return processed;
@@ -294,6 +296,9 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ShiftModifier) {
       emit runningSplit();
       processed = true;
+    } else if (event->modifiers() == Qt::NoModifier) {
+      emit runningLocalSplit();
+      processed = true;
     }
     break;
   case Qt::Key_F1:
@@ -305,8 +310,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     processed = true;
     break;
   case Qt::Key_D:
-    emit togglingData();
-    processed = true;
+    if (event->modifiers() == Qt::NoModifier) {
+      emit togglingData();
+      processed = true;
+    }
     break;
   default:
     break;
@@ -622,11 +629,13 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   }
 }
 
-void ZFlyEmProofPresenter::processCustomOperator(
+bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+
+  bool processed = true;
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
@@ -786,6 +795,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     getCompleteDocument()->rewriteSegmentation();
     break;
   default:
+    processed = false;
     break;
   }
 
@@ -793,6 +803,8 @@ void ZFlyEmProofPresenter::processCustomOperator(
         !isSplitWindow());
   getAction(ZActionFactory::ACTION_BODY_DECOMPOSE)->setVisible(
         isSplitWindow());
+
+  return processed;
 }
 
 bool ZFlyEmProofPresenter::highTileContrast() const
@@ -868,7 +880,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         se->getSelector().getSelectedSet();
     if (selectedSet.size() == 1) {
       const ZIntPoint &pt = *(selectedSet.begin());
-      const ZDvidSynapse &synapse = se->getSynapse(
+      ZDvidSynapse synapse = se->getSynapse(
             pt, ZDvidSynapseEnsemble::DATA_LOCAL);
       if (synapse.isValid()) {
         ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);

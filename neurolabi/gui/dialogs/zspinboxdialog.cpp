@@ -10,7 +10,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
 
-  QHBoxLayout *spinBoxLayout = new QHBoxLayout(this);
+  QHBoxLayout *spinBoxLayout = new QHBoxLayout;
 
   m_label = new QLabel("Value");
   spinBoxLayout->addWidget(m_label);
@@ -21,7 +21,7 @@ ZSpinBoxDialog::ZSpinBoxDialog(QWidget *parent) :
   m_spinBox->setValue(0);
   spinBoxLayout->addWidget(m_spinBox);
 
-  QHBoxLayout *buttonLayout = new QHBoxLayout(this);
+  QHBoxLayout *buttonLayout = new QHBoxLayout;
   buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
 
   m_buttonBox = ZWidgetFactory::makeButtonBox(

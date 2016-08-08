@@ -305,6 +305,13 @@ void ZStackDoc::disconnectSwcNodeModelUpdate()
              m_swcNodeObjsModel, SLOT(updateModelData()));
 }
 
+
+void ZStackDoc::disconnectPunctaModelUpdate()
+{
+  disconnect(this, SIGNAL(punctaModified()),
+             m_punctaObjsModel, SLOT(updateModelData()));
+}
+
 void ZStackDoc::connectSignalSlot()
 {
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
@@ -535,6 +542,11 @@ bool ZStackDoc::isEmpty()
 bool ZStackDoc::hasObject() const
 {
   return !m_objectGroup.isEmpty();
+}
+
+bool ZStackDoc::hasObject(ZStackObjectRole::TRole role) const
+{
+  return m_playerList.hasPlayer(role);
 }
 
 bool ZStackDoc::hasObject(ZStackObject::EType type) const
@@ -8714,7 +8726,7 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
 }
 
 
-std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
+std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
   std::vector<ZStack*> maskArray;
 
@@ -8724,7 +8736,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly)
 //  bool hasSelected = false;
   QMutexLocker locker(m_playerList.getMutex());
 
-  QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
+  const QList<ZDocPlayer*> &playerList = m_playerList.getPlayerList();
   if (selectedOnly) {
     for (QList<ZDocPlayer*>::const_iterator iter = playerList.begin();
          iter != playerList.end(); ++iter) {

@@ -53,7 +53,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
     connect(ui->lastVerifiedButton, SIGNAL(clicked(bool)), this, SLOT(onLastVerifiedButton()));
 
-    connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickSitesTable(QModelIndex)));
+    connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);

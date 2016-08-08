@@ -894,22 +894,37 @@ void FlyEmBodyInfoDialog::exportBodies(QString filename) {
 
     // tab-separated text file, with header
     QTextStream outputStream(&outputFile);
-    for (int i=0; i<m_bodyModel->columnCount(); i++) {
-        if (i != 0) {
-            outputStream << "\t";
-        }
-        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
-    }
-    outputStream << "\n";
 
-    for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+    if (filename.endsWith(".csv")) { //Export headerless csv file
+      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
         for (int i=0; i<m_bodyProxy->columnCount(); i++) {
-            if (i != 0) {
-                outputStream << "\t";
-            }
-            outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+          if (i != 0) {
+            outputStream << ",";
+          }
+          outputStream << '"'
+                       << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString()
+                       << '"';
         }
         outputStream << "\n";
+      }
+    } else {
+      for (int i=0; i<m_bodyModel->columnCount(); i++) {
+        if (i != 0) {
+          outputStream << "\t";
+        }
+        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
+      }
+      outputStream << "\n";
+
+      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
+        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
+          if (i != 0) {
+            outputStream << "\t";
+          }
+          outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
+        }
+        outputStream << "\n";
+      }
     }
 
     outputFile.close();

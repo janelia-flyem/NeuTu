@@ -358,7 +358,7 @@ private slots:
   void on_actionFlyEmSelect_connection_triggered();
   void on_actionAxon_Export_triggered();
   void on_actionExtract_body_triggered();
-  void on_actionPredict_errors_triggered();
+//  void on_actionPredict_errors_triggered();
   void on_actionCompute_Features_triggered();
   void on_actionMexican_Hat_triggered();
   void on_actionInvert_triggered();
@@ -388,8 +388,8 @@ private slots:
   void on_actionSparse_objects_triggered();
   void on_actionDendrogram_triggered();
   void on_actionPen_Width_for_SWC_Display_triggered();
-  void on_actionDVID_Object_triggered();
-  void on_actionDvid_Object_triggered();
+//  void on_actionDVID_Object_triggered();
+//  void on_actionDvid_Object_triggered();
   void on_actionAssign_Clustering_triggered();
   void on_actionSWC_Rescaling_triggered();
   void on_actionSurface_detection_triggered();
@@ -424,7 +424,7 @@ private slots:
 
   void on_actionCreate_Databundle_triggered();
 
-  void on_actionCreate_Thumbnails_triggered();
+//  void on_actionCreate_Thumbnails_triggered();
   
   void on_actionCreate_ROI_triggered();
 
@@ -475,6 +475,18 @@ private slots:
   void on_actionGenerate_KC_c_Actor_triggered();
 
   void on_actionMake_Movie_MB_triggered();
+
+  void on_actionGenerate_KC_s_Actor_triggered();
+
+  void on_actionGenerate_MB_Actor_triggered();
+
+  void on_actionGenerate_KC_p_Actor_triggered();
+
+  void on_actionGenerate_All_KC_Actor_triggered();
+
+  void on_actionGenerate_PAM_Actor_triggered();
+
+  void on_actionGenerate_MB_Conn_Actor_triggered();
 
 private:
   void createActions();
@@ -540,6 +552,12 @@ private:
       const FlyEmSkeletonizationDialog &dlg);
 
   void makeMovie();
+
+  void generateMBKcCast(const std::string &movieFolder);
+  void generateMBAllKcCast(const std::string &movieFolder);
+  void generateMBPAMCast(const std::string &movieFolder);
+  void generateMBONCast(const std::string &movieFolder);
+  void generateMBONConnCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;

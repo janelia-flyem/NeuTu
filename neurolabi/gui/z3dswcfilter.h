@@ -83,6 +83,9 @@ public:
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
   inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
+  void enablePicking(bool picking) {
+    m_enablePicking = picking;
+  }
 
   void setVisible(bool v);
   bool isVisible() const;
@@ -229,6 +232,7 @@ private:
   ZSwcColorScheme m_colorScheme;
 
   bool m_enableCutting;
+  bool m_enablePicking;
 
   QVector<QString> m_guiNameList;
 

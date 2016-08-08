@@ -21,6 +21,11 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
 
+
+#if defined(_ENABLE_LOWTIS_)
+#include <lowtis/LowtisConfig.h>
+#endif
+
 class ZDvidFilter;
 class ZArray;
 class ZJsonObject;
@@ -121,6 +126,7 @@ public:
   ZJsonObject readInfo() const;
 
   bool hasData(const std::string &dataName) const;
+  std::string getType(const std::string &dataName) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
@@ -128,8 +134,10 @@ public:
                        int width, int height, int depth) const;
   ZArray* readLabels64(const ZIntCuboid &box);
 
+#if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
-      int width, int height) const;
+                             int width, int height) const;
+#endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
                          int dim1, int dim2, int width, int height);
@@ -250,6 +258,8 @@ public:
   }
 #endif
 
+  void refreshLabelBuffer();
+
 signals:
   void readingDone();
 
@@ -280,6 +290,10 @@ protected:
   mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+#endif
+
+#if defined(_ENABLE_LOWTIS_)
+  mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
   mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
 #endif
 

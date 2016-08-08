@@ -23,7 +23,7 @@ void ZFlyEmTodoListFilter::init()
   m_lineRenderer = NULL;
   m_sphereRenderer = NULL;
   m_dataIsInvalid = false;
-
+  m_pressedItem = NULL;
 
   m_widgetsGroup = NULL;
 

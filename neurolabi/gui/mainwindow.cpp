@@ -4022,6 +4022,7 @@ void MainWindow::on_actionExtract_body_triggered()
   }
 }
 
+/*
 void MainWindow::on_actionPredict_errors_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -4032,7 +4033,7 @@ void MainWindow::on_actionPredict_errors_triggered()
     }
   }
 }
-
+*/
 void MainWindow::on_actionCompute_Features_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -4588,7 +4589,6 @@ void MainWindow::on_actionMake_Movie_MB_triggered()
 
   makeMovie();
 }
-
 
 void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
@@ -5543,10 +5543,16 @@ void MainWindow::createDvidFrame()
 #endif
 }
 
+#if 0
 void MainWindow::on_actionDVID_Object_triggered()
 {
 
 }
+void MainWindow::on_actionDvid_Object_triggered()
+{
+
+}
+#endif
 
 void MainWindow::cancelDvidRequest()
 {
@@ -5557,10 +5563,7 @@ void MainWindow::cancelDvidRequest()
   getProgressDialog()->setCancelButton(0);
 }
 
-void MainWindow::on_actionDvid_Object_triggered()
-{
 
-}
 
 void MainWindow::on_actionAssign_Clustering_triggered()
 {
@@ -6930,10 +6933,10 @@ void MainWindow::on_actionCreate_Databundle_triggered()
 {
 
 }
-
+#if 0
 void MainWindow::on_actionCreate_Thumbnails_triggered()
 {
-#if 0
+
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -6966,9 +6969,9 @@ void MainWindow::on_actionCreate_Thumbnails_triggered()
       }
     }
   }
-#endif
-}
 
+}
+#endif
 void MainWindow::on_actionCreate_ROI_triggered()
 {
 
@@ -7613,9 +7616,9 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
   }
 }
 
-void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+void MainWindow::generateMBKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie1/cast").c_str());
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7624,11 +7627,195 @@ void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
   target.setLabelBlockName("labels3");
   target.setGrayScaleName("grayscale");
 
-  QVector<uint64_t> neuronArray;
-  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
 
-  std::ofstream stream;
-  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+
+//  QVector<uint64_t> neuronArray;
+//  neuronArray << 11815 << 13291 << 18498 << 20359 << 33862;
+
+//  std::ofstream stream;
+//  stream.open(outDir.absoluteFilePath("neuron_list.csv").toStdString().c_str());
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    int index = 0;
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+
+      if (index < 5) {
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+
+        //      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        //      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
+
+        std::vector<ZVaa3dMarker> markerArray;
+        for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+             iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+
+          if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+            markerArray.push_back(marker);
+          }
+        }
+
+        outFileName = QString("%1.marker").arg(bodyId);
+        outPath = outDir.absoluteFilePath(outFileName);
+        FlyEm::ZFileParser::writeVaa3dMakerFile(
+              outPath.toStdString(), markerArray);
+      }
+
+      ++index;
+
+      delete tree;
+    }
+  }
+}
+
+void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> kCcNeuronArray;
+  QVector<uint64_t> kCsNeuronArray;
+  QVector<uint64_t> kCpNeuronArray;
+
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (wordList.size() > 1) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        QString name = wordList[1];
+        if (name.startsWith('"')) {
+          name.remove(0, 1);
+//          name = name.right(1);
+        }
+        if (name.endsWith('"')) {
+          name.chop(1);
+        }
+        if (name == "KC-c") {
+          kCcNeuronArray.append(idArray.front());
+        } else if (name == "KC-s") {
+          kCsNeuronArray.append(idArray.front());
+        } else if (name == "KC-p") {
+          kCpNeuronArray.append(idArray.front());
+        }
+      }
+    }
+  }
+
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZSwcTree kCcTree;
+    foreach (uint64_t bodyId, kCcNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCcTree.merge(tree, true);
+    }
+    QString outFileName = "KC_c.swc";
+    QString outPath = outDir.absoluteFilePath(outFileName);
+    kCcTree.save(outPath.toStdString());
+
+    ZSwcTree kCsTree;
+    foreach (uint64_t bodyId, kCsNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCsTree.merge(tree, true);
+    }
+    outFileName = "KC_s.swc";
+    outPath = outDir.absoluteFilePath(outFileName);
+    kCsTree.save(outPath.toStdString());
+
+    ZSwcTree kCpTree;
+    foreach (uint64_t bodyId, kCpNeuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+      kCpTree.merge(tree, true);
+    }
+    outFileName = "KC_p.swc";
+    outPath = outDir.absoluteFilePath(outFileName);
+    kCpTree.save(outPath.toStdString());
+  }
+}
+
+void MainWindow::generateMBPAMCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
 
   ZDvidReader reader;
   if (reader.open(target)) {
@@ -7638,30 +7825,258 @@ void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
       QString outFileName = QString("%1.swc").arg(bodyId);
       QString outPath = outDir.absoluteFilePath(outFileName);
       tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+}
 
-      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+void MainWindow::generateMBONCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
 
-      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-      stream << bodyId << ",\"" <<  annotation.getName() << "\"" << std::endl;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
 
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+}
+
+void MainWindow::generateMBONConnCast(const std::string &movieFolder)
+{
+  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
+  if (!neuronListFile.open(QIODevice::ReadOnly)) {
+    report("Reading Failed",
+           ("Failed to read " + neuronListFile.fileName() + ":" +
+            neuronListFile.errorString()).toStdString(),
+           NeuTube::MSG_WARNING);
+    return;
+  }
+
+  QVector<uint64_t> neuronArray;
+
+  while (!neuronListFile.atEnd()) {
+    QString line = QString(neuronListFile.readLine());
+    QStringList wordList = line.split(',');
+
+    if (!wordList.isEmpty()) {
+      ZString str(wordList[0].toStdString());
+      std::vector<uint64_t> idArray = str.toUint64Array();
+      if (!idArray.empty()) {
+        neuronArray.append(idArray.front());
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+
+    double radius = 80;
+    {
+      int bodyId = 1190582;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
         const ZDvidSynapse &synapse = *iter;
 
         if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-          ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
-          markerArray.push_back(marker);
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 8862577 || bodyIdArray[i] == 2089450) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
         }
       }
 
-      outFileName = QString("%1.marker").arg(bodyId);
-      outPath = outDir.absoluteFilePath(outFileName);
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
       FlyEm::ZFileParser::writeVaa3dMakerFile(
             outPath.toStdString(), markerArray);
+    }
 
-      delete tree;
+    {
+      int bodyId = 8862577;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 1190582) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+    }
+    {
+      int bodyId = 2089450;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 1190582) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
     }
   }
+}
 
+void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
+{
+  generateMBKcCast("movie1");
+}
+
+void MainWindow::on_actionGenerate_KC_s_Actor_triggered()
+{
+  generateMBKcCast("movie2");
+}
+
+void MainWindow::on_actionGenerate_MB_Actor_triggered()
+{
+  generateMBONCast("movie6");
+}
+
+void MainWindow::on_actionGenerate_KC_p_Actor_triggered()
+{
+  generateMBKcCast("movie3");
+}
+
+void MainWindow::on_actionGenerate_All_KC_Actor_triggered()
+{
+  generateMBAllKcCast("movie4");
+}
+
+void MainWindow::on_actionGenerate_PAM_Actor_triggered()
+{
+  generateMBPAMCast("movie5");
+}
+
+void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
+{
+  generateMBONConnCast("movie7");
 }

@@ -1,4 +1,6 @@
 #include "flyemsettingdialog.h"
+#include <QFileInfo>
+
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
 
@@ -21,6 +23,7 @@ void FlyEmSettingDialog::init()
   loadSetting();
   connectSignalSlot();
   ui->configPushButton->hide();
+  ui->dataDirPushButton->hide();
 }
 
 void FlyEmSettingDialog::loadSetting()
@@ -39,6 +42,8 @@ void FlyEmSettingDialog::loadSetting()
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
   ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
+  std::string dataDir = GET_DATA_DIR;
+  ui->dataDirLineEdit->setText(QFileInfo(dataDir.c_str()).absoluteFilePath());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -70,4 +75,5 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
   NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
   NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
+  NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
 }

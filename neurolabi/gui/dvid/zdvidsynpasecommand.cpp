@@ -319,7 +319,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
   */
-  QString msg = QString("Synapse moved from (%1, %2, %3) to (%1, %2, %3)").
+  QString msg = QString("Synapse moved from (%1, %2, %3) to (%4, %5, %6)").
       arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
       arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
   m_doc->notify(msg);
@@ -413,33 +413,6 @@ void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::redo()
       }
     }
   }
-#if 0
-  ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
-  if (se != NULL) {
-    ZDvidReader reader;
-    if (reader.open(m_doc->getDvidTarget())) {
-      ZJsonObject synapseJson = reader.readSynapseJson(m_from);
-
-      if (synapseJson.hasKey("Pos")) {
-        ZDvidWriter writer;
-        if (writer.open(m_doc->getDvidTarget())) {
-          m_synapseBackup = synapseJson.clone();
-
-//          std::cout << this << std::endl;
-//          m_relJson.print();
-          ZDvidSynapse::AddRelation(synapseJson, m_relJson);
-//          synapseJson.print();
-          writer.writeSynapse(synapseJson);
-
-          se->updatePartner(
-                se->getSynapse(m_from, ZDvidSynapseEnsemble::DATA_LOCAL));
-          m_doc->processObjectModified(se);
-          m_doc->notifyObjectModified();
-        }
-      }
-    }
-  }
-#endif
 }
 
 void ZStackDocCommand::DvidSynapseEdit::LinkSynapse::undo()

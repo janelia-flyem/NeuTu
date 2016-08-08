@@ -14,6 +14,7 @@ class ZMenuFactory
 {
 public:
   ZMenuFactory();
+  virtual ~ZMenuFactory() {}
 
   void setAdminState(bool state) { m_isAdmin = state; }
   bool isAdmin() const { return m_isAdmin; }

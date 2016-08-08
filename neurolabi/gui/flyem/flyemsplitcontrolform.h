@@ -43,6 +43,7 @@ signals:
   void importingSeed();
   void selectingSeed();
   void selectingAllSeed();
+  void settingMainSeed();
   void loadingSynapse();
   void bookmarkChecked(QString key, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
@@ -57,6 +58,7 @@ public slots:
   void importSeed();
   void selectSeed();
   void selectAllSeed();
+  void setMainSeed();
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateUserBookmarkTable(ZStackDoc *doc);

@@ -78,10 +78,15 @@ enum EBiDirection {
   DIRECTION_FORWARD, DIRECTION_BACKWARD
 };
 
+enum ECardinalDirection {
+  CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
+};
+
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
 static const TVisualEffect VE_Z_PROJ = 0x0000000100000000;
+static const TVisualEffect VE_GRUOP_HIGHLIGHT = 0x0000001000000000;
 
 namespace Image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;

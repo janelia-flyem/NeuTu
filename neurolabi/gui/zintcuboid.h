@@ -106,6 +106,7 @@ public:
    */
   bool contains(int x, int y, int z) const;
   bool contains(const ZIntPoint &pt) const;
+  bool contains(const ZIntCuboid &box) const;
 
   bool containYZ(int y, int z) const;
 
@@ -127,6 +128,14 @@ public:
   int getDim(NeuTube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+
+
+  /*!
+   * \brief Turn the cuboid into a JSON array
+   *
+   * \return [x1, y1, z1, x2, y2, z2]
+   */
+  ZJsonArray toJsonArray() const;
 
   /*!
    * \brief Set corners from a json array

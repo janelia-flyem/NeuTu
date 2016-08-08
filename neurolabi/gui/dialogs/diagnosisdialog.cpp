@@ -24,31 +24,45 @@ DiagnosisDialog::~DiagnosisDialog()
   delete ui;
 }
 
+void DiagnosisDialog::LoadFile(
+    const std::string &filePath, QTextBrowser *browser)
+{
+  if (!filePath.empty()) {
+    QFile file(filePath.c_str());
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      browser->setPlainText(QTextStream(&file).readAll());
+      file.close();
+    }
+  }
+}
+
 void DiagnosisDialog::loadErrorFile()
 {
+  LoadFile(NeuTube::getErrorFile(), ui->errorTextBrowser);
+#if 0
   QFile file(NeuTube::getErrorFile().c_str());
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     ui->errorTextBrowser->setPlainText(QTextStream(&file).readAll());
     file.close();
   }
+#endif
 }
 
 void DiagnosisDialog::loadWarnFile()
 {
-  QFile file(NeuTube::getWarnFile().c_str());
-  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    ui->warnTextBrowser->setPlainText(QTextStream(&file).readAll());
-    file.close();
-  }
+  LoadFile(NeuTube::getWarnFile(), ui->warnTextBrowser);
 }
 
 void DiagnosisDialog::loadInfoFile()
 {
+  LoadFile(NeuTube::getInfoFile(), ui->infoTextBrowser);
+#if 0
   QFile file(NeuTube::getInfoFile().c_str());
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     ui->infoTextBrowser->setPlainText(QTextStream(&file).readAll());
     file.close();
   }
+#endif
 }
 
 void DiagnosisDialog::scrollToBottom(int index)

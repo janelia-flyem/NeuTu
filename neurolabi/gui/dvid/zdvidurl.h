@@ -199,7 +199,7 @@ public:
   std::string getSynapseUrl(int x, int y, int z,
                             int width, int height, int depth) const;
   std::string getSynapseUrl(const ZIntCuboid &box) const;
-  std::string getSynapseUrl(uint64_t label) const;
+  std::string getSynapseUrl(uint64_t label, bool relation) const;
   std::string getSynapseElementsUrl() const;
   std::string getSynapseMoveUrl(
       const ZIntPoint &from, const ZIntPoint &to) const;
