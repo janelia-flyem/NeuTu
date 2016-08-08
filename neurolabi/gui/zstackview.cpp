@@ -1220,7 +1220,8 @@ void ZStackView::updateImageCanvas()
     if (m_image == NULL) {
 //      double scale = 0.5;
       if (buddyDocument()->hasStackData() &&
-          buddyDocument()->getStack()->kind() == GREY) {
+          buddyDocument()->getStack()->kind() == GREY &&
+          buddyDocument()->getStack()->channelNumber() == 1) {
         m_image = new ZImage(
               box.getWidth(), box.getHeight(), QImage::Format_Indexed8);
       } else {

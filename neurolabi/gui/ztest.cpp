@@ -20478,5 +20478,21 @@ void ZTest::test(MainWindow *host)
   obj.getSlice(2742, 2813).save(GET_TEST_DATA_DIR + "/system/split_test/body.sobj");
 #endif
 
+#if 1
+  ZPixmap pixmap(512, 512);
+  ZStTransform transform;
+  transform.setOffset(-100, -200);
+  pixmap.setTransform(transform);
+
+  ZPainter painter(&pixmap);
+
+  painter.setPen(QColor(255, 0, 0));
+
+  painter.drawLine(100, 200, 300, 500);
+
+  pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
