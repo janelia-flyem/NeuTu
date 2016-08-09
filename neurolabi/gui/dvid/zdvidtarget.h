@@ -145,6 +145,8 @@ public:
 
   void setNullBodyLabelName();
 
+  bool hasBodyLabel() const;
+
   std::string getLabelBlockName() const;
   void setLabelBlockName(const std::string &name);
 
@@ -196,6 +198,17 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
+  int getMaxLabelZoom() const {
+    return m_maxLabelZoom;
+  }
+
+  void setMaxLabelZoom(int zoom) {
+    m_maxLabelZoom = zoom;
+  }
+
+private:
+  void init();
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -212,6 +225,7 @@ private:
   std::set<std::string> m_userList;
   bool m_isSupervised;
   std::string m_supervisorServer;
+  int m_maxLabelZoom;
 //  std::string m_userName;
 //  std::string m_tileName;
 
@@ -236,6 +250,7 @@ private:
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
+  const static char* m_maxLabelZoomKey;
 };
 
 #endif // ZDVIDTARGET_H

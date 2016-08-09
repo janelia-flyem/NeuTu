@@ -142,6 +142,9 @@ public:
   void clearCache();
   void refreshReaderBuffer();
 
+//  int getZoom() const;
+  int getZoom(const ZStackViewParam &viewParam) const;
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
@@ -170,6 +173,7 @@ private:
 
   int m_maxWidth;
   int m_maxHeight;
+//  int m_zoom;
 
   bool m_selectionFrozen;
   bool m_isFullView;

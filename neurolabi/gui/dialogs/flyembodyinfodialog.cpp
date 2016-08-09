@@ -537,10 +537,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
 
         ZJsonArray bodies;
         bool ok;
-        qlonglong bodyID;
+//        qlonglong bodyID;
         foreach (const QString &bodyIDstr, keyList) {
             // skip the few non-numeric keys mixed in there
-            bodyID = bodyIDstr.toLongLong(&ok);
+            /*bodyID =*/ bodyIDstr.toLongLong(&ok);
             if (ok) {
                 // get body annotations and transform to what we need
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);

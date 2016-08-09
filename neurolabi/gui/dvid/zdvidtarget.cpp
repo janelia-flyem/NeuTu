@@ -26,17 +26,28 @@ const char* ZDvidTarget::m_userNameKey = "user_name";
 const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
 const char* ZDvidTarget::m_roiNameKey = "roi";
+const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255),
-  m_isEditable(true)
+ZDvidTarget::ZDvidTarget()
 {
+  init();
 }
 
 ZDvidTarget::ZDvidTarget(
-    const std::string &address, const std::string &uuid, int port) :
-  m_isSupervised(true), m_bgValue(255), m_isEditable(true)
+    const std::string &address, const std::string &uuid, int port)
 {
+  init();
+
   set(address, uuid, port);
+}
+
+void ZDvidTarget::init()
+{
+  m_port = -1;
+  m_isSupervised = true;
+  m_bgValue = 255;
+  m_isEditable = true;
+  m_maxLabelZoom = 0;
 }
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
@@ -68,6 +79,7 @@ void ZDvidTarget::set(
 void ZDvidTarget::clear()
 {
   set("", "", -1);
+  init();
   m_name = "";
   m_comment = "";
   m_localFolder = "";
@@ -80,7 +92,6 @@ void ZDvidTarget::clear()
   m_roiList.clear();
   m_userList.clear();
   m_supervisorServer.clear();
-  m_isSupervised = true;
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -230,6 +241,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bgValueKey, m_bgValue);
   obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+  obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
@@ -293,6 +305,10 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     }
     if (obj.hasKey(m_synapseNameKey)) {
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
+    }
+
+    if (obj.hasKey(m_maxLabelZoomKey)) {
+      setMaxLabelZoom(ZJsonParser::integerValue(obj[m_maxLabelZoomKey]));
     }
 
     if (obj.hasKey(m_userNameKey)) {
@@ -372,6 +388,15 @@ std::string ZDvidTarget::getBodyLabelName() const
   }
 
   return m_bodyLabelName;
+}
+
+bool ZDvidTarget::hasBodyLabel() const
+{
+  if (ZDvidData::IsNullName(getBodyLabelName())) {
+    return false;
+  }
+
+  return true;
 }
 
 std::string ZDvidTarget::getLabelBlockName() const

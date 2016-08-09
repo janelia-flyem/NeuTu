@@ -1594,8 +1594,16 @@ void ZDvidReader::refreshLabelBuffer()
 
 #if defined(_ENABLE_LOWTIS_)
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
-    int width, int height) const
+    int width, int height, int zoom) const
 {
+  if (zoom > 0) {
+    int scale = pow(2, zoom);
+    width /= scale;
+    height /= scale;
+//    x0 /= scale;
+//    y0 /= scale;
+//    z0 /= scale;
+  }
 
   ZArray *array = NULL;
 
@@ -1654,7 +1662,8 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 //      service->retrieve_image(width, height, offset, array->getDataPointer<char>());
 
 
-      m_lowtisService->retrieve_image(width, height, offset, array->getDataPointer<char>());
+      m_lowtisService->retrieve_image(
+            width, height, offset, array->getDataPointer<char>(), zoom);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -2142,16 +2151,19 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
 
 ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 {
-  ZDvidUrl url(getDvidTarget());
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
-  bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str(), isVerbose());
-
   ZFlyEmBodyAnnotation annotation;
-  annotation.loadJsonString(bufferReader.getBuffer().constData());
-  annotation.setBodyId(bodyId);
+
+  if (getDvidTarget().hasBodyLabel()) {
+    ZDvidUrl url(getDvidTarget());
+    ZDvidBufferReader bufferReader;
+#if defined(_ENABLE_LIBDVIDCPP_)
+    bufferReader.setService(m_service);
+#endif
+    bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str(), isVerbose());
+
+    annotation.loadJsonString(bufferReader.getBuffer().constData());
+    annotation.setBodyId(bodyId);
+  }
 
   return annotation;
 }

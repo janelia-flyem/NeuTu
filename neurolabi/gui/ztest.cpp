@@ -20411,6 +20411,43 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "test";
+  config.dvid_server = "emdata2.int.janelia.org:9000";
+  config.dvid_uuid = "2ad1";
+  config.datatypename = "groundtruth";
+
+  lowtis::ImageService service(config);
+
+  int width = 512;
+  int height = 512;
+  std::vector<int> offset(3, 0);
+  offset[0] = 2357;
+  offset[1] = 2216;
+  offset[2] = 4053;
+
+  char *buffer = new char[width * height * 8];
+  service.retrieve_image(width, height, offset, buffer, 2);
+
+
+  ZStack *stack = new ZStack(GREY, 512, 512, 1, 1);
+
+  uint64_t *dataArray = (uint64_t*) buffer;
+  uint8_t *stackArray = stack->array8();
+
+  int index = 0;
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      stackArray[index] = dataArray[index] % 255;
+      ++index;
+    }
+  }
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#endif
+
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
@@ -20478,7 +20515,7 @@ void ZTest::test(MainWindow *host)
   obj.getSlice(2742, 2813).save(GET_TEST_DATA_DIR + "/system/split_test/body.sobj");
 #endif
 
-#if 1
+#if 0
   ZPixmap pixmap(512, 512);
   ZStTransform transform;
   transform.setOffset(-50, -100);

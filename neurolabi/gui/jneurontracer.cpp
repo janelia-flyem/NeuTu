@@ -48,7 +48,7 @@ static int comp (const void * elem1, const void * elem2)
 void JNeuronTracer::createMask2D(int nx, int ny, float *I, float *bw)
 {
   int i,j,nxy,ii,jj,kk;
-  float mu, sigma,dt,expCompr;
+  float mu, sigma,expCompr;
   float *Is, *Ix, *Iy, *Ixy, *v, *u, *edge, dx=1.0, dy=1.0;
   unsigned int Wx, Wy;
   float thrSparse,lambdaRatioThr;
@@ -61,7 +61,7 @@ void JNeuronTracer::createMask2D(int nx, int ny, float *I, float *bw)
   sigma = 1.0;			//Gaussian smoothing withs in pixel unit.
   Wx = 5; Wy = 5;			//window size for gaussian filter.
   mu = 10.0;				//width in gradient flow.
-  dt = 0.02/mu;
+//  float dt = 0.02/mu;
   thrSparse = 0.1;		//sparseness of determining the threshold.
   expCompr = 0.1;			//compression exponent.
   lambdaRatioThr = 2.0;	//threshold for the ratio lambda1/lambda2 in Hessian to supress blob.
@@ -241,6 +241,8 @@ Stack* JNeuronTracer::makeMask(const Stack *stack)
   int height = C_Stack::height(stack);
   int depth = C_Stack::depth(stack);
 #endif
+
+  type = C_Stack::kind(stack);
 
   nx = C_Stack::height(stack);
   ny = C_Stack::width(stack);

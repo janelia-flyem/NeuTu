@@ -2262,6 +2262,7 @@ ZStackViewParam ZStackView::getViewParameter(
   ZStackViewParam param(coordSys);
   param.setZ(getZ(coordSys));
   param.setViewPort(getViewPort(coordSys));
+  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
   //param.setViewPort(imageWidget()->viewPort());
