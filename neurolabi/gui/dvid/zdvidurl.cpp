@@ -208,6 +208,31 @@ std::string ZDvidUrl::getSparsevolUrl(
   return url;
 }
 
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, const ZIntCuboid &box) const
+{
+  ZString url = getSparsevolUrl(bodyId);
+
+  if (!box.isEmpty()) {
+    url += "?minx=";
+    url.appendNumber(box.getFirstCorner().getX());
+    url += "&maxx=";
+    url.appendNumber(box.getLastCorner().getX());
+
+    url += "&miny=";
+    url.appendNumber(box.getFirstCorner().getY());
+    url += "&maxy=";
+    url.appendNumber(box.getLastCorner().getY());
+
+    url += "&minz=";
+    url.appendNumber(box.getFirstCorner().getZ());
+    url += "&maxz=";
+    url.appendNumber(box.getLastCorner().getZ());
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
 {
   /*

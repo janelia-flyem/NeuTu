@@ -83,6 +83,8 @@ public:
                           ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           NeuTube::EAxis axis, ZObject3dScan *result);
+  ZObject3dScan* readBody(
+      uint64_t bodyId, const ZIntCuboid &box, ZObject3dScan *result) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
 

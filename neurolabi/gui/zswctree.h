@@ -191,7 +191,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.
@@ -593,6 +593,8 @@ public:
 
   //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
+
+  Swc_Tree_Node* getThickestNode() const;
 
   /*!
    * \brief Mark soma nodes

@@ -18,5 +18,6 @@
 
 #define MAX_PATH_LENGTH 500
 #define MAX_INT32 2147483647
+#define MIN_INT32 -2147483648
 
 #endif

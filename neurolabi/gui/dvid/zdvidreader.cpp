@@ -276,6 +276,32 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, const ZIntCuboid &box, ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+
+  ZDvidBufferReader reader;
+#if defined(_ENABLE_LIBDVIDCPP_)
+//  reader.setService(m_service);
+#endif
+
+//  reader.tryCompress(true);
+  ZDvidUrl dvidUrl(getDvidTarget());
+  reader.read(dvidUrl.getSparsevolUrl(bodyId, box).c_str(),
+              isVerbose());
+  const QByteArray &buffer = reader.getBuffer();
+  result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+  result->setLabel(bodyId);
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
 {
   if (result == NULL) {
@@ -1353,30 +1379,65 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
 {
   ZIntPoint pt;
 
+  pt.invalidate();
+
   ZSwcTree *tree = readSwc(bodyId);
   if (tree != NULL) {
+    Swc_Tree_Node *tn = tree->getThickestNode();
+    if (tn != NULL) {
+      pt = SwcTreeNode::center(tn).toIntPoint();
+    }
+    /*
     if (!tree->isEmpty()) {
       ZSwcPath path = tree->getLongestPath();
-      Swc_Tree_Node *tn = path[path.size() / 2];
-      pt = SwcTreeNode::center(tn).toIntPoint();
+
+      if (!path.empty()) {
+        Swc_Tree_Node *tn = path[path.size() / 2];
+        pt = SwcTreeNode::center(tn).toIntPoint();
+      }
+    }
+    */
+
+    delete tree;
+  }
+
+  if (pt.isValid()) {
+    if (bodyId != readBodyIdAt(pt)) {
+      pt.invalidate();
     }
   }
 
-  delete tree;
-
-  if (bodyId != readBodyIdAt(pt)) {
+  if (!pt.isValid()) {
     ZObject3dScan body = readCoarseBody(bodyId);
-    ZDvidInfo dvidInfo = readGrayScaleInfo();
+    if (!body.isEmpty()) {
+      ZDvidInfo dvidInfo = readGrayScaleInfo();
 
-    ZObject3dScan objSlice = body.getMedianSlice();
-    ZVoxel voxel = objSlice.getMarker();
-//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
-    ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
-    pt -= dvidInfo.getStartBlockIndex();
-    pt *= dvidInfo.getBlockSize();
-    pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
-                    dvidInfo.getBlockSize().getY() / 2, 0);
-    pt += dvidInfo.getStartCoordinates();
+      ZObject3dScan objSlice = body.getMedianSlice();
+      ZVoxel voxel = objSlice.getMarker();
+      //        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
+      pt.set(voxel.x(), voxel.y(), voxel.z());
+      pt -= dvidInfo.getStartBlockIndex();
+      pt *= dvidInfo.getBlockSize();
+//      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
+//                      dvidInfo.getBlockSize().getY() / 2, 0);
+      pt += dvidInfo.getStartCoordinates();
+
+      ZIntCuboid box;
+      box.setFirstCorner(pt);
+      box.setSize(dvidInfo.getBlockSize().getX(),
+                  dvidInfo.getBlockSize().getY(),
+                  dvidInfo.getBlockSize().getZ());
+      ZObject3dScan *fineBody = readBody(bodyId, box, NULL);
+
+      if (fineBody != NULL) {
+        ZObject3dScan objSlice = fineBody->getMedianSlice();
+        if (!objSlice.isEmpty()) {
+          voxel = objSlice.getMarker();
+          pt.set(voxel.x(), voxel.y(), voxel.z());
+        }
+        delete fineBody;
+      }
+    }
   }
 
   return pt;
@@ -1647,6 +1708,8 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
 
 ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 {
+  return readBodyPosition(bodyId);
+#if 0
   ZIntPoint location;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -1694,6 +1757,7 @@ ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 #endif
 
   return location;
+#endif
 }
 
 bool ZDvidReader::hasSparseVolume(uint64_t bodyId) const

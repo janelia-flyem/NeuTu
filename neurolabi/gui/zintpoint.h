@@ -10,6 +10,8 @@ class ZPoint;
 
 /*!
  * \brief The class of 3D points with integer coordinates
+ *
+ * The point (INT_MIN, INT_MIN, INT_MIN) is reserved for invalid point.
  */
 class ZIntPoint
 {
@@ -79,6 +81,9 @@ public:
   void shiftSliceAxis(NeuTube::EAxis axis);
   void shiftSliceAxisInverse(NeuTube::EAxis axis);
   int getSliceCoord(NeuTube::EAxis axis) const;
+
+  void invalidate();
+  bool isValid() const;
 
 public:
   int m_x;

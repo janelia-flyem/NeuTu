@@ -1,5 +1,7 @@
 #include "zintpoint.h"
 #include <iostream>
+#include <stdint.h>
+
 #include "tz_error.h"
 #include "zerror.h"
 #include "zpoint.h"
@@ -216,4 +218,14 @@ int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
   }
 
   return m_z;
+}
+
+void ZIntPoint::invalidate()
+{
+  set(INT_MIN, INT_MIN, INT_MIN);
+}
+
+bool ZIntPoint::isValid() const
+{
+  return m_x != INT_MIN || m_y != INT_MIN || m_z != INT_MIN;
 }
