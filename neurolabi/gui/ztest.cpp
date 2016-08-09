@@ -20412,6 +20412,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+#if defined(_ENABLE_LOWTIS_)
   lowtis::DVIDLabelblkConfig config;
   config.username = "test";
   config.dvid_server = "emdata2.int.janelia.org:9000";
@@ -20445,6 +20446,7 @@ void ZTest::test(MainWindow *host)
   }
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
 #endif
 
