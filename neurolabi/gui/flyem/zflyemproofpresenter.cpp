@@ -79,6 +79,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SYNAPSE_UNLINK:
       connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
       break;
+    case ZActionFactory::ACTION_SYNAPSE_HLPSD:
+      connect(action, SIGNAL(triggered(bool)), this, SLOT(highlightPsd(bool)));
+      break;
     case ZActionFactory::ACTION_ADD_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
       break;
@@ -360,6 +363,11 @@ void ZFlyEmProofPresenter::linkSelectedSynapse()
 void ZFlyEmProofPresenter::unlinkSelectedSynapse()
 {
   getCompleteDocument()->executeUnlinkSynapseCommand();
+}
+
+void ZFlyEmProofPresenter::highlightPsd(bool on)
+{
+  getCompleteDocument()->highlightPsd(on);
 }
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()

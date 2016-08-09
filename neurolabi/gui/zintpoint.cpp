@@ -1,6 +1,6 @@
 #include "zintpoint.h"
 #include <iostream>
-#include <stdint.h>
+#include "tz_stdint.h"
 
 #include "tz_error.h"
 #include "zerror.h"

@@ -121,5 +121,6 @@
         <file>images/zoom2.png</file>
         <file>images/view_todo.png</file>
         <file>images/smooth.png</file>
+        <file>images/hl_post.png</file>
     </qresource>
 </RCC>

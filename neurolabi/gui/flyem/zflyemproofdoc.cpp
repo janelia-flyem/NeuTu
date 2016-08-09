@@ -948,6 +948,25 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
   notifyObjectModified();
 }
 
+void ZFlyEmProofDoc::highlightPsd(bool on)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    if (on) {
+      se->addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+    } else {
+      se->removeVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+    }
+    processObjectModified(se);
+  }
+  endObjectModifiedMode();
+
+  notifyObjectModified();
+}
+
 void ZFlyEmProofDoc::verifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
