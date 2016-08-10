@@ -558,7 +558,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
-      std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
+        std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
             volume, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
 
         // filter by roi (coming soon)
@@ -566,37 +566,59 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
         //  that call not in ZDvidReader() yet
 
 
-        // build the list of pre-synaptic sites; if already verified,
-        //  then they are "finished"
+        // build the lists of pre-synaptic sites; if a site is
+        //  already verified, then it is "finished"; if not,
+        //  add to the pending synapse list that we will then sort;
+        //  only after that transfer the positions to the pending position list
+        QList<ZDvidSynapse> pendingSynapses;
         for (size_t i=0; i<synapseList.size(); i++) {
-          ZDvidSynapse &synapse = synapseList[i];
-          if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-            if (synapse.isProtocolVerified(m_dvidTarget)) {
-              m_finishedList.append(synapse.getPosition());
-            } else {
-              m_pendingList.append(synapse.getPosition());
+            ZDvidSynapse &synapse = synapseList[i];
+            if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+                if (synapse.isProtocolVerified(m_dvidTarget)) {
+                    m_finishedList.append(synapse.getPosition());
+                } else {
+                    pendingSynapses.append(synapse);
+                }
             }
-          }
         }
 
-        // order the list; DVID can return things in variable order,
+        // sort the pending synapse list; DVID can return things in variable order,
         //  and people don't like that
-        // in a perfect world, we would cluster the synapses spatially,
-        //  to keep multi-synapses together, but in practice, that's
-        //  hard; so I'll just sort on x-y (ignoring z) and hope that
-        //  helps enough
-        qSort(m_pendingList.begin(), m_pendingList.end(), SynapsePredictionProtocol::sortXY);
-
+        qSort(pendingSynapses.begin(), pendingSynapses.end(), SynapsePredictionProtocol::compareSynapses);
+        for (int i=0; i<pendingSynapses.size(); i++) {
+            m_pendingList.append(pendingSynapses[i].getPosition());
+        }
     }
 }
 
-bool SynapsePredictionProtocol::sortXY(const ZIntPoint &p1, const ZIntPoint &p2) {
-    if (p1.getX() < p2.getX()) {
+bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2) {
+    // how to sort?  proofreaders like to do synapses together with other
+    //  nearby synapses (especially helps when untangling multi-T-bars);
+    //  it would be a pain (and more calculation) to do a proper distance clustering,
+    //  so instead start by sorting on body ID, which we expect will almost always
+    //  be available; that already spatially clusters the T-bars
+
+    // hmm...that helps, but doesn't help enough; if you then sort by x,y, etc.,
+    //  you're still going to jump around, just within the body
+
+    // starting to think I may need to calculate the distance matrix and
+    //  do some heuristic clustering; if we sort first by body ID, that
+    //  will cut down on the amount of calculation
+
+
+
+
+    // test: Steve says the current data may not have body IDs
+    // std::cout << "sorting; synapse1 body ID: " << synapse1.getBodyId() << std::endl;
+
+
+    // the old sort: x, then y (ignore z)
+    if (synapse1.getPosition().getX() < synapse2.getPosition().getX()) {
         return true;
-    } else if (p1.getX() > p2.getX()) {
+    } else if (synapse1.getPosition().getX() > synapse2.getPosition().getX()) {
         return false;
     } else {
-        return (p1.getY() < p2.getY());
+        return ((synapse1.getPosition().getY() < synapse2.getPosition().getY()));
     }
 }
 
