@@ -235,9 +235,14 @@ int ZDvidLabelSlice::getZoom(const ZStackViewParam &viewParam) const
   }
 
   int zoom = (int) std::floor(1.0 / zoomRatio);
+
+#if defined _ENABLE_LOWTIS_
   if (zoom > getDvidTarget().getMaxLabelZoom()) {
     zoom = getDvidTarget().getMaxLabelZoom();
   }
+#else
+  zoom = 0;
+#endif
 
   return zoom;
 }
