@@ -446,6 +446,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Filter Synapses", parent);
     action->setStatusTip("Filter synapses in the window");
     break;
+  case ACTION_SYNAPSE_HLPSD:
+    action = new QAction("Highlight Partner PSDs", parent);
+    action->setIcon(QIcon(":/images/hl_post.png"));
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
   case ACTION_TOGGLE_SWC_SKELETON:
     action = new QAction("Show Full Skeleton", parent);
     action->setCheckable(true);

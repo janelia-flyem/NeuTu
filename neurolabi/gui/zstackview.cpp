@@ -1220,7 +1220,8 @@ void ZStackView::updateImageCanvas()
     if (m_image == NULL) {
 //      double scale = 0.5;
       if (buddyDocument()->hasStackData() &&
-          buddyDocument()->getStack()->kind() == GREY) {
+          buddyDocument()->getStack()->kind() == GREY &&
+          buddyDocument()->getStack()->channelNumber() == 1) {
         m_image = new ZImage(
               box.getWidth(), box.getHeight(), QImage::Format_Indexed8);
       } else {
@@ -2261,6 +2262,7 @@ ZStackViewParam ZStackView::getViewParameter(
   ZStackViewParam param(coordSys);
   param.setZ(getZ(coordSys));
   param.setViewPort(getViewPort(coordSys));
+  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
   //param.setViewPort(imageWidget()->viewPort());

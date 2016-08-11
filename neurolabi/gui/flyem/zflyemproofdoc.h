@@ -209,6 +209,7 @@ public: //Synapse functions
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+  void highlightPsd(bool on);
 
 public: //Todo list functions
   void removeTodoItem(

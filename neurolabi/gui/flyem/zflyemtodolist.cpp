@@ -139,10 +139,11 @@ void ZFlyEmToDoList::download(int z)
   }
 }
 
+/*
 void ZFlyEmToDoList::downloadForLabel(uint64_t label)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label));
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getTodoListUrl(label, false));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -153,7 +154,7 @@ void ZFlyEmToDoList::downloadForLabel(uint64_t label)
     }
   }
 }
-
+*/
 ZFlyEmToDoList::ItemSlice& ZFlyEmToDoList::getSlice(int z, EAdjustment adjust)
 {
   if (adjust == ADJUST_NONE) {

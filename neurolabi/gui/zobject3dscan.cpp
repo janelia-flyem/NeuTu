@@ -2706,6 +2706,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
   size_t currentIndex = 0;
   tz_uint8 flag = 0;
   READ_BYTE_BUFFER(flag, tz_uint8);
+  UNUSED_PARAMETER(flag);
 
 
   tz_uint8 numberOfDimensions = 0;

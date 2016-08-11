@@ -49,4 +49,12 @@ typedef int16_t word_t;
 #define bzero(dest,count) memset(dest,0,count)
 #endif
 
+#if !defined(INT_MAX)
+#define INTMAX 2147483647
+#endif
+
+#if !defined(INT_MIN)
+#define INT_MIN -2147483648
+#endif
+
 #endif

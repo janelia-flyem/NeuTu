@@ -87,6 +87,14 @@ void ZObject3dScanArray::downsample(int xintv, int yintv, int zintv)
   }
 }
 
+void ZObject3dScanArray::upsample(int xintv, int yintv, int zintv)
+{
+  for (ZObject3dScanArray::iterator iter = begin(); iter != end(); ++iter) {
+    ZObject3dScan &obj = *iter;
+    obj.upSample(xintv, yintv, zintv);
+  }
+}
+
 void ZObject3dScanArray::translate(int dx, int dy, int dz)
 {
   for (ZObject3dScanArray::iterator iter = begin(); iter != end(); ++iter) {

@@ -731,7 +731,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
   if (se != NULL) {
     if (se->getSelector().getSelectedSet().size() == 1) {
       ZIntPoint pt = *(se->getSelector().getSelectedSet().begin());
-      const ZDvidSynapse &synapse =
+      ZDvidSynapse synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
       dlg->setOption(synapse.getKind());
       dlg->setConfidence(synapse.getConfidence());
@@ -925,7 +925,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const ZIntPoint &pos)
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
-    se->updatePartner(se->getSynapse(pos, ZDvidSynapseEnsemble::DATA_LOCAL));
+    se->updatePartner(pos);
     processObjectModified(se);
   }
 
@@ -940,11 +940,29 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
     ZDvidSynapseEnsemble *se = *iter;
     for (std::set<ZIntPoint>::const_iterator iter = posArray.begin();
          iter != posArray.end(); ++iter) {
-      se->updatePartner(
-            se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_LOCAL));
+      se->updatePartner(*iter);
     }
     processObjectModified(se);
   }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::highlightPsd(bool on)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+  for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
+       iter != synapseList.end(); ++iter) {
+    ZDvidSynapseEnsemble *se = *iter;
+    if (on) {
+      se->addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+    } else {
+      se->removeVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+    }
+    processObjectModified(se);
+  }
+  endObjectModifiedMode();
 
   notifyObjectModified();
 }

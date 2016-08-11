@@ -7,6 +7,7 @@
 #include <QtConcurrent>
 #endif
 
+#include "tz_math.h"
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
 #include "zobject3dfactory.h"
@@ -48,6 +49,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAx
   m_selectionFrozen = false;
   m_isFullView = false;
   m_sliceAxis = sliceAxis;
+//  m_zoom = 0;
 
 //  m_objCache.setMaxCost();
 }
@@ -218,12 +220,40 @@ int64_t ZDvidLabelSlice::getReadingTime() const
 {
   return m_reader.getReadingTime();
 }
+/*
+int ZDvidLabelSlice::getZoom() const
+{
+  return std::min(m_zoom, getDvidTarget().getMaxLabelZoom());
+}
+*/
+
+int ZDvidLabelSlice::getZoom(const ZStackViewParam &viewParam) const
+{
+  double zoomRatio = viewParam.getZoomRatio();
+  if (zoomRatio == 0.0) {
+    return 0;
+  }
+
+  int zoom = (int) std::floor(1.0 / zoomRatio);
+
+#if defined _ENABLE_LOWTIS_
+  if (zoom > getDvidTarget().getMaxLabelZoom()) {
+    zoom = getDvidTarget().getMaxLabelZoom();
+  }
+#else
+  zoom = 0;
+#endif
+
+  return zoom;
+}
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 {
   if (viewParam.getSliceAxis() != m_sliceAxis) {
     return;
   }
+
+  int zoom = getZoom(viewParam);
 
   m_objArray.clear();
   if (isVisible()) {
@@ -259,7 +289,8 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 #if defined(_ENABLE_LOWTIS_)
         m_labelArray = m_reader.readLabels64Lowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight());
+              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              zoom);
 #else
         m_labelArray = m_reader.readLabels64(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
@@ -277,6 +308,10 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
       ZObject3dFactory::MakeObject3dScanArray(
             *m_labelArray, m_sliceAxis, true, &m_objArray);
 
+      if (zoom > 0) {
+        int intv = pow(2, zoom) - 1;
+        m_objArray.upsample(intv, intv, intv);
+      }
       m_objArray.translate(box.getFirstCorner().getX(),
                            box.getFirstCorner().getY(),
                            box.getFirstCorner().getZ());

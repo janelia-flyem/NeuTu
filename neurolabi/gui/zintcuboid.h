@@ -106,6 +106,7 @@ public:
    */
   bool contains(int x, int y, int z) const;
   bool contains(const ZIntPoint &pt) const;
+  bool contains(const ZIntCuboid &box) const;
 
   bool containYZ(int y, int z) const;
 

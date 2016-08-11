@@ -307,6 +307,9 @@ void ZProofreadWindow::addSynapseActionToToolbar()
   m_synapseToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_UNLINK));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_HLPSD));
 
   m_synapseToolbar->addSeparator();
   m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(

@@ -161,6 +161,11 @@ bool ZIntCuboid::contains(const ZIntPoint &pt) const
   return contains(pt.getX(), pt.getY(), pt.getZ());
 }
 
+bool ZIntCuboid::contains(const ZIntCuboid &box) const
+{
+  return contains(box.getFirstCorner()) && contains(box.getLastCorner());
+}
+
 bool ZIntCuboid::containYZ(int y, int z) const
 {
   return IS_IN_CLOSE_RANGE(y, m_firstCorner.getY(), m_lastCorner.getY()) &&

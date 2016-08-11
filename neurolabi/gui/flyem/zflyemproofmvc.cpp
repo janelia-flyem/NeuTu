@@ -57,6 +57,8 @@
 #include "widgets/zcolorlabel.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zflyemorthodoc.h"
+#include "flyem/zflyemsynapsedatafetcher.h"
+#include "flyem/zflyemsynapsedataupdater.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -98,6 +100,13 @@ void ZFlyEmProofMvc::init()
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
+
+  m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
+  m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
+
+  connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
+          m_seUpdater, SLOT(updateData(ZFlyEmSynapseDataFetcher*)),
+          Qt::QueuedConnection);
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -937,6 +946,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
       if (se != NULL) {
         se->attachView(getView());
+        m_seFetcher->setDvidTarget(getDvidTarget());
+        m_seUpdater->setData(se, m_doc);
+        se->setDataFetcher(m_seFetcher);
       }
 
       getCompleteDocument()->downloadBookmark();
@@ -2458,7 +2470,7 @@ void ZFlyEmProofMvc::goToTBar()
 
     if (selected.size() == 1) {
       const ZIntPoint &pt = *(selected.begin());
-      ZDvidSynapse &synapse =
+      ZDvidSynapse synapse =
           se->getSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
       if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
         const std::vector<ZIntPoint> &partners = synapse.getPartners();
@@ -2823,29 +2835,10 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-      ZObject3dScan body = reader.readCoarseBody(bodyId);
-      if (body.isEmpty()) {
-        emit messageGenerated(
-              ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
-                             arg(bodyId), NeuTube::MSG_ERROR));
-      } else {
-        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-
-        ZObject3dScan objSlice = body.getMedianSlice();
-        ZVoxel voxel = objSlice.getMarker();
-//        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
-        ZIntPoint pt(voxel.x(), voxel.y(), voxel.z());
-        pt -= dvidInfo.getStartBlockIndex();
-        pt *= dvidInfo.getBlockSize();
-        pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
-                        dvidInfo.getBlockSize().getY() / 2, 0);
-        pt += dvidInfo.getStartCoordinates();
-
-        //    std::set<uint64_t> bodySet;
-        //    bodySet.insert(bodyId);
-
+    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+    if (reader.isReady()) {
+      ZIntPoint pt = reader.readBodyLocation(bodyId);
+      if (pt.isValid()) {
         ZDvidLabelSlice *slice = getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
@@ -2859,12 +2852,14 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
           processLabelSliceSelectionChange();
         }
         updateBodySelection();
-
-        if (!objSlice.isEmpty()) {
-          zoomTo(pt);
-        } else {
-          emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
-                                               NeuTube::MSG_ERROR));
+        zoomTo(pt);
+      } else {
+        emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
+                                             NeuTube::MSG_ERROR));
+        if (!reader.hasBody(bodyId)) {
+          emit messageGenerated(
+                ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
+                               arg(bodyId), NeuTube::MSG_ERROR));
         }
       }
     }

@@ -17,6 +17,7 @@ public:
 
   void importDir(const std::string &dirPath);
   void downsample(int xintv, int yintv, int zintv);
+  void upsample(int xIntv, int yIntv, int zIntv);
   void translate(int dx, int dy, int dz);
 
   ZStack* toStackObject() const;

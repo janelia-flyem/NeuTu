@@ -208,6 +208,31 @@ std::string ZDvidUrl::getSparsevolUrl(
   return url;
 }
 
+std::string ZDvidUrl::getSparsevolUrl(
+    uint64_t bodyId, const ZIntCuboid &box) const
+{
+  ZString url = getSparsevolUrl(bodyId);
+
+  if (!box.isEmpty()) {
+    url += "?minx=";
+    url.appendNumber(box.getFirstCorner().getX());
+    url += "&maxx=";
+    url.appendNumber(box.getLastCorner().getX());
+
+    url += "&miny=";
+    url.appendNumber(box.getFirstCorner().getY());
+    url += "&maxy=";
+    url.appendNumber(box.getLastCorner().getY());
+
+    url += "&minz=";
+    url.appendNumber(box.getFirstCorner().getZ());
+    url += "&maxz=";
+    url.appendNumber(box.getLastCorner().getZ());
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
 {
   /*
@@ -898,12 +923,18 @@ std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
                        box.getDepth());
 }
 
-std::string ZDvidUrl::getSynapseUrl(uint64_t label) const
+std::string ZDvidUrl::getSynapseUrl(uint64_t label, bool relation) const
 {
   std::ostringstream stream;
 
   stream << getSynapseUrl() << "/" << m_annotationLabelCommand << "/"
-         << label;
+         << label << "?relationships=";
+
+  if (relation) {
+    stream << "true";
+  } else {
+    stream << "false";
+  }
 
   return stream.str();
 }

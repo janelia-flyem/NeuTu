@@ -118,7 +118,7 @@ public:
 
   bool hit(double x, double y, double z);
 
-  void downloadForLabel(uint64_t label);
+//  void downloadForLabel(uint64_t label);
   void download(int z);
 
   bool hasSelected() const;

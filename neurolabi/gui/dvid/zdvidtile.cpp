@@ -227,10 +227,10 @@ void ZDvidTile::display(
     return;
   }
 
-  bool isProj = false;
+//  bool isProj = false;
   int z = painter.getZOffset() + slice;
   if (slice < 0) {
-    isProj = true;
+//    isProj = true;
     z = painter.getZOffset() - slice - 1;
   }
   //if (!m_image.isNull()) {
