@@ -174,20 +174,7 @@ protected:
   mutable QStaticText m_textDecoration;
 };
 
-template <typename InputIterator>
-int ZDvidAnnotation::AddRelation(
-    ZJsonObject &json, const InputIterator &first,
-    const InputIterator &last, const std::string &rel)
-{
-  int count = 0;
-  for (InputIterator iter = first; iter != last; ++iter) {
-    if (AddRelation(json, *iter, rel)) {
-      ++count;
-    }
-  }
-
-  return count;
-}
+#include "dvid/zdvidannotation.hpp"
 
 
 #endif // ZDVIDANNOTATION_H

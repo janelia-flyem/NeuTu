@@ -20,7 +20,7 @@
 #include "zswcforest.h"
 #include "zswctree.h"
 
-const double ZFlyEmRoiProject::m_defaultSynpaseRadius = 20.0;
+const double ZFlyEmRoiProject::m_defaultSynapseRadius = 20.0;
 
 ZFlyEmRoiProject::ZFlyEmRoiProject(const std::string &name, QObject *parent) :
   QObject(parent), m_name(name), m_z(-1), m_dataFrame(NULL)
@@ -205,7 +205,7 @@ QList<ZPunctum*> ZFlyEmRoiProject::makePunctumList(bool dsScaled) const
 void ZFlyEmRoiProject::updateSynapse()
 {
   int z = getDataZ();
-  int range = m_defaultSynpaseRadius;
+  int range = m_defaultSynapseRadius;
 
   ZPunctum markPunctum;
   markPunctum.setZ(z - range);
@@ -1072,7 +1072,7 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 {
   m_synapseArray.clear();
   m_puncta.clear();
-  const double radius = m_defaultSynpaseRadius;
+  const double radius = m_defaultSynapseRadius;
   switch (ZFileType::fileType(filePath)) {
   case ZFileType::JSON_FILE:
   {

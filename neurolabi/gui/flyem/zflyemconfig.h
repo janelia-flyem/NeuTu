@@ -27,10 +27,20 @@ public:
     return m_emptyDvidTarget;
   }
 
-  void loadConfig(const std::string &filePath);
+//  void loadConfig(const std::string &filePath);
+  void loadConfig();
+
+  void setConfigPath(const std::string &filePath) {
+    m_configPath = filePath;
+  }
 
   std::string getConfigPath() const {
     return m_configPath;
+  }
+
+  void setDefaultConfigPath(const std::string &path);
+  std::string getDefaultConfigPath() const {
+    return m_defaultConfigPath;
   }
 
   inline const std::vector<ZDvidTarget> &getDvidRepo() const {
@@ -68,6 +78,14 @@ public:
     m_analyzingMb6 = on;
   }
 
+  void useDefaultConfig(bool on) {
+    m_usingDefaultConfig = on;
+  }
+
+  bool usingDefaultConfig() const {
+    return m_usingDefaultConfig;
+  }
+
 private:
   void init();
 
@@ -80,6 +98,8 @@ private:
   ZNeutuService m_neutuService;
 #endif
   std::string m_configPath;
+  std::string m_defaultConfigPath;
+  bool m_usingDefaultConfig;
   std::string m_defaultLibrarian;
   std::string m_userName;
 

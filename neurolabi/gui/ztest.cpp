@@ -20411,7 +20411,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
 #if defined(_ENABLE_LOWTIS_)
   lowtis::DVIDLabelblkConfig config;
   config.username = "test";
@@ -20532,6 +20532,11 @@ void ZTest::test(MainWindow *host)
 
   pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.setFromSourceString("http:hackathon.janelia.org:-1:2a3");
 #endif
 
   std::cout << "Done." << std::endl;

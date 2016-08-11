@@ -644,7 +644,8 @@ HEADERS += mainwindow.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
     flyem/zflyemsynapsedataupdater.h \
-    dvid/zdvidsynapsecommand.h
+    dvid/zdvidsynapsecommand.h \
+    dvid/zdvidannotation.hpp
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \

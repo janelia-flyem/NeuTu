@@ -44,12 +44,18 @@ void FlyEmSettingDialog::loadSetting()
   ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
   std::string dataDir = GET_DATA_DIR;
   ui->dataDirLineEdit->setText(QFileInfo(dataDir.c_str()).absoluteFilePath());
+  ui->defaultConfigFileCheckBox->setChecked(GET_FLYEM_CONFIG.usingDefaultConfig());
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
 {
   connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()));
   connect(ui->closePushButton, SIGNAL(clicked()), this, SLOT(close()));
+}
+
+bool FlyEmSettingDialog::usingDefaultConfig() const
+{
+  return ui->defaultConfigFileCheckBox->isChecked();
 }
 
 std::string FlyEmSettingDialog::getNeuTuServer() const
@@ -70,10 +76,15 @@ void FlyEmSettingDialog::update()
   } else {
     ui->statusLabel->setText("Down");
   }
-  GET_FLYEM_CONFIG.loadConfig(getConfigPath());
+  GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
+  GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
+  GET_FLYEM_CONFIG.loadConfig();
+
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
   NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
   NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
+  NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
+  NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
 }

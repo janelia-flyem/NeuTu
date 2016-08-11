@@ -33,7 +33,7 @@
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
 #include "dvid/zdvidsynapseensenmble.h"
-#include "dvid/zdvidsynpasecommand.h"
+#include "dvid/zdvidsynapsecommand.h"
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"

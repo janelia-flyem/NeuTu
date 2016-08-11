@@ -180,7 +180,7 @@ private:
   std::vector<ZPunctum*> m_puncta;
   std::vector<QColor> m_punctaColorMap;
 
-  static const double m_defaultSynpaseRadius;
+  static const double m_defaultSynapseRadius;
 };
 
 #endif // ZFLYEMROIPROJECT_H

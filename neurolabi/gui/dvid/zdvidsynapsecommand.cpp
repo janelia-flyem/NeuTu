@@ -355,6 +355,74 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
   */
 }
 
+////////////////////////////////////
+ZStackDocCommand::DvidSynapseEdit::GroupSynapse::GroupSynapse(
+    ZFlyEmProofDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent)
+{
+  m_doc = doc;
+}
+
+ZStackDocCommand::DvidSynapseEdit::GroupSynapse::~GroupSynapse()
+{
+
+}
+
+void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::addSynapse(const ZIntPoint &pt)
+{
+  m_synapseSet.insert(pt);
+}
+
+void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::addSynapse(
+    const QList<ZIntPoint> &ptArray)
+{
+  foreach (const ZIntPoint &pt, ptArray) {
+    addSynapse(pt);
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::backupSynapse()
+{
+  if (m_doc != NULL) {
+    ZDvidReader &reader = m_doc->getDvidReader();
+    if (reader.isReady()) {
+      m_synapseBackup = reader.readSynapseJson(m_synapseSet.begin(),
+                                               m_synapseSet.end());
+    }
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::redo()
+{
+  if (m_synapseSet.size() > 1) {
+    ZDvidReader &reader = m_doc->getDvidReader();
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+
+    if (reader.isReady()) {
+      backupSynapse();
+      for (size_t i = 0; i < m_synapseBackup.size(); ++i) {
+        ZJsonObject synapseJson(m_synapseBackup.value(i).clone());
+        ZIntPoint currentPos = ZDvidAnnotation::GetPosition(synapseJson);
+        for (std::set<ZIntPoint>::const_iterator iter = m_synapseSet.begin();
+             iter != m_synapseSet.end(); ++iter) {
+          const ZIntPoint &pt = *iter;
+          if (pt != currentPos) {
+            ZDvidSynapse::AddRelation(synapseJson, pt, "GroupedWith");
+          }
+        }
+        writer.writeSynapse(synapseJson);
+      }
+    }
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::undo()
+{
+  if (!m_synapseBackup.isEmpty()) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    writer.writeSynapse(m_synapseBackup);
+  }
+}
+
 ////////////////////////////////
 ZStackDocCommand::DvidSynapseEdit::LinkSynapse::LinkSynapse(
     ZFlyEmProofDoc *doc, const ZIntPoint &from, QUndoCommand *parent) :

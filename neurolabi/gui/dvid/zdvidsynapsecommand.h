@@ -1,5 +1,9 @@
-#ifndef ZDVIDSYNPASECOMMAND_H
-#define ZDVIDSYNPASECOMMAND_H
+#ifndef ZDVIDSYANPSECOMMAND_H
+#define ZDVIDSYANPSECOMMAND_H
+
+#include <QList>
+#include <QSet>
+#include <set>
 
 #include "zstackdoccommand.h"
 #include "dvid/zdvidsynapse.h"
@@ -92,6 +96,26 @@ private:
   ZIntPoint m_to;
 };
 
+class GroupSynapse : public ZUndoCommand
+{
+public:
+  GroupSynapse(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~GroupSynapse();
+  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
 class LinkSynapse : public ZUndoCommand
 {
 public:
@@ -132,4 +156,4 @@ private:
 }
 }
 
-#endif // ZDVIDSYNPASECOMMAND_H
+#endif // ZDVIDSYNAPSECOMMAND_H
