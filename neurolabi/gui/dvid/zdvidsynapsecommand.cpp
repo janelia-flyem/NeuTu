@@ -1,4 +1,4 @@
-#include "zdvidsynpasecommand.h"
+#include "zdvidsynapsecommand.h"
 #include "zintpoint.h"
 #include "zdvidsynapse.h"
 #include "zjsonobject.h"

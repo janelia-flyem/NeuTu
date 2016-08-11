@@ -603,7 +603,6 @@ HEADERS += mainwindow.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
     zcubearray.h \
-    dvid/zdvidsynpasecommand.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     misc/zstackyzview.h \
@@ -644,7 +643,8 @@ HEADERS += mainwindow.h \
     zdvidutil.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
-    flyem/zflyemsynapsedataupdater.h
+    flyem/zflyemsynapsedataupdater.h \
+    dvid/zdvidsynapsecommand.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1102,7 +1102,7 @@ SOURCES += main.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \
     zcubearray.cpp \
-    dvid/zdvidsynpasecommand.cpp \
+    dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     misc/zstackyzview.cpp \

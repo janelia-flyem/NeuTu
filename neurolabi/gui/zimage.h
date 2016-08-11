@@ -165,6 +165,7 @@ public:
 
   void loadHighContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
+  void setContrastProtocol(double scale, double offset, bool nonlinear);
 
 
 private:
