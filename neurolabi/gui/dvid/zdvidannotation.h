@@ -145,12 +145,16 @@ public: //Json APIs
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
   static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
+  static bool RemoveRelation(ZJsonArray &json, const std::string &rel);
+  static bool RemoveRelation(ZJsonObject &json, const std::string &rel);
 
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
   static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
+  static std::vector<ZIntPoint> GetPartners(
+      const ZJsonObject &json, const std::string &relation);
   static ZIntPoint GetPosition(const ZJsonObject &json);
 
 protected:

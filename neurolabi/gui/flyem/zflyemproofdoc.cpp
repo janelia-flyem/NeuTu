@@ -2680,14 +2680,39 @@ void ZFlyEmProofDoc::processBodySelection()
 
 void ZFlyEmProofDoc::executeUnlinkSynapseCommand()
 {
-
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected = se->getSelector().getSelectedSet();
-    if (selected.size() > 1) {
-      ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
-          new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
-      pushUndoCommand(command);
+    std::vector<ZDvidSynapse> selectedPresyn;
+    std::vector<ZDvidSynapse> selectedPostsyn;
+
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      ZDvidSynapse &synapse =
+          se->getSynapse(*iter, ZDvidSynapseEnsemble::DATA_GLOBAL);
+      if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
+        selectedPresyn.push_back(synapse);
+      } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        selectedPostsyn.push_back(synapse);
+      }
+    }
+
+    if (!selectedPresyn.empty()) {
+      if (!selectedPostsyn.empty()) {
+        ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse *command =
+            new ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse(this, selected);
+        pushUndoCommand(command);
+      } else {
+        ZStackDocCommand::DvidSynapseEdit::UngroupSynapse *command =
+            new ZStackDocCommand::DvidSynapseEdit::UngroupSynapse(this, NULL);
+        for (std::vector<ZDvidSynapse>::const_iterator
+             iter = selectedPresyn.begin(); iter != selectedPresyn.end();
+             ++iter) {
+          const ZDvidSynapse& presyn = *iter;
+          command->addSynapse(presyn.getPosition());
+        }
+        pushUndoCommand(command);
+      }
     }
   }
 }
@@ -2732,6 +2757,16 @@ void ZFlyEmProofDoc::executeLinkSynapseCommand()
               ZDvidSynapse::Relation::GetName(
                 ZDvidSynapse::Relation::RELATION_POSTSYN_TO),
               command);
+      }
+    } else {
+      ZStackDocCommand::DvidSynapseEdit::GroupSynapse *groupCommand =
+          new ZStackDocCommand::DvidSynapseEdit::GroupSynapse(
+            this, command);
+      for (std::vector<ZDvidSynapse>::const_iterator
+           iter = selectedPresyn.begin(); iter != selectedPresyn.end();
+           ++iter) {
+        const ZDvidSynapse& presyn = *iter;
+        groupCommand->addSynapse(presyn.getPosition());
       }
     }
 

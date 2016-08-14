@@ -116,6 +116,27 @@ private:
   ZJsonArray m_synapseBackup;
 };
 
+class UngroupSynapse : public ZUndoCommand
+{
+public:
+public:
+  UngroupSynapse(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~UngroupSynapse();
+  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
 class LinkSynapse : public ZUndoCommand
 {
 public:

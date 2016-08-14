@@ -42,7 +42,7 @@ public:
 
   ZVaa3dMarker toVaa3dMarker(double radius) const;
 
-  void updatePartnerVerification(ZDvidReader &reader);
+  void updatePartnerProperty(ZDvidReader &reader);
 
 //  void setPosition(int x, int y, int z);
 //  void setPosition(const ZIntPoint &pos);
@@ -157,6 +157,7 @@ private:
 
 private:
   std::vector<bool> m_isPartnerVerified;
+  std::vector<EKind> m_partnerKind;
 };
 
 #endif // ZDVIDSYNAPSE_H

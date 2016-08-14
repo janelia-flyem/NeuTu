@@ -934,7 +934,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
       ZJsonObject obj(objArray.value(0));
       synapse.loadJsonObject(obj, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
       synapse.updatePartner();
-      synapse.updatePartnerVerification(m_reader);
+      synapse.updatePartnerProperty(m_reader);
 #if 0
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
