@@ -29,6 +29,8 @@ ZTiledStackFrame *ZTiledStackFrame::Make(
 
   BaseConstruct(frame, doc);
 
+//  doc->setResolution(1, 1, 8, 'p');
+
   return frame;
 }
 

@@ -666,6 +666,13 @@ void Z3DRendererBase::generateDisplayList()
   m_lastOpenglRenderingState = m_renderers;
 }
 
+void Z3DRendererBase::setCoordScales(glm::vec3 scale)
+{
+  m_coordXScale.set(scale[0]);
+  m_coordYScale.set(scale[1]);
+  m_coordZScale.set(scale[2]);
+}
+
 void Z3DRendererBase::generatePickingDisplayList()
 {
   if (glIsList(m_pickingDisplayList))

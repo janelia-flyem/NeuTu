@@ -23,12 +23,13 @@ public:
     return m_voxelSize[index];
   }
 
+  void set(double x, double y, double z, char unit);
+
   inline void setVoxelSize(double x, double y, double z) {
     m_voxelSize[0] = x;
     m_voxelSize[1] = y;
     m_voxelSize[2] = z;
   }
-
   inline void setUnit(char unit) { m_unit = unit; }
   void setUnit(const std::string &unit);
   std::string getUnitName() const;

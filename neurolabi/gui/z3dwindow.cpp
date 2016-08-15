@@ -1739,6 +1739,10 @@ void Z3DWindow::volumeScaleChanged()
 
 void Z3DWindow::swcCoordScaleChanged()
 {
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_graphFilter->getRendererBase()->setCoordScales(
+          m_swcFilter->getRendererBase()->getCoordScales());
+  }
   if (!m_doc->hasSwc())
     return;
   updateSwcBoundBox();

@@ -210,7 +210,9 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);;
+//    QFont font("Helvetica", 24);
+    QFont font;
+    font.setPointSize(24);
     painter->setFont(font);
     painter->drawText(
           QRectF(10, 10, 300, 200),
