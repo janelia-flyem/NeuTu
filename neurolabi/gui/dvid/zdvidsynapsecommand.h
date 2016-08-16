@@ -27,6 +27,26 @@ protected:
   bool m_isExecuted;
 };
 
+class RemoveSynapseOp : public ZUndoCommand
+{
+public:
+  RemoveSynapseOp(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RemoveSynapseOp();
+  void addRemoval(const ZIntPoint &pt);
+  void addRemoval(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
 class RemoveSynapse : public ZUndoCommand
 {
 public:

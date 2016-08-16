@@ -781,7 +781,8 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
 }
 
 void ZFlyEmProofDoc::addSynapse(
-    const ZIntPoint &pt, ZDvidSynapse::EKind kind)
+    const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+    ZDvidSynapseEnsemble::EDataScope scope)
 {
   ZDvidSynapse synapse;
   synapse.setPosition(pt);
@@ -790,7 +791,7 @@ void ZFlyEmProofDoc::addSynapse(
   synapse.setDefaultColor();
   synapse.setUserName(NeuTube::GetCurrentUserName());
 
-  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
+//  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL;
   QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
@@ -911,6 +912,55 @@ void ZFlyEmProofDoc::syncSynapse(const ZIntPoint &pt)
   endObjectModifiedMode();
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::repairSynapse(const ZIntPoint &pt)
+{
+//  QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
+
+//  getDvidReader().readSynapseJson(pt);
+  ZJsonObject synapseJson = getDvidReader().readSynapseJson(pt);
+  ZJsonArray modifiedJson;
+  if (synapseJson.isEmpty()) {
+    removeSynapse(pt, ZDvidSynapseEnsemble::DATA_LOCAL);
+  } else {
+    ZJsonArray relJsonArray = ZDvidAnnotation::GetRelationJson(synapseJson);
+    int removalCount = 0;
+    std::vector<ZIntPoint> partnerArray =
+        ZDvidAnnotation::GetPartners(synapseJson);
+//    ZDvidAnnotation::EKind hostKind = ZDvidAnnotation::GetKind(synapseJson);
+    for (size_t i = 0; i < relJsonArray.size(); ++i) {
+      const ZIntPoint &partnerPos = partnerArray[i];
+      ZJsonObject partnerJson = getDvidReader().readSynapseJson(partnerPos);
+      if (partnerJson.isEmpty()) {
+        removeSynapse(partnerPos, ZDvidSynapseEnsemble::DATA_LOCAL);
+        relJsonArray.remove(i);
+        ++removalCount;
+        --i;
+      } else {
+        ZJsonObject forwardRelJson(relJsonArray.value(i));
+        ZJsonArray backwardRelJsonArray =
+            ZDvidAnnotation::GetRelationJson(partnerJson);
+
+        if (ZDvidAnnotation::MatchRelation(
+              backwardRelJsonArray, pt, forwardRelJson) < 0) {
+          ZDvidAnnotation::RemoveRelation(partnerJson, pt);
+          ZDvidAnnotation::AddRelation(
+                partnerJson, pt, ZDvidAnnotation::GetMatchingRelation(
+                  ZDvidAnnotation::GetRelationType(forwardRelJson)));
+          modifiedJson.append(partnerJson);
+        }
+      }
+    }
+
+    if (removalCount > 0) {
+      modifiedJson.append(synapseJson);
+    }
+  }
+  if (!modifiedJson.isEmpty()) {
+    getDvidWriter().writeSynapse(modifiedJson);
+    updateSynapsePartner(pt);
+  }
 }
 
 void ZFlyEmProofDoc::syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to)
@@ -2818,16 +2868,40 @@ void ZFlyEmProofDoc::executeAddBookmarkCommand(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofDoc::repairSelectedSynapses()
+{
+  ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+  if (se != NULL) {
+    const std::set<ZIntPoint> &selected =
+        se->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      repairSynapse(*iter);
+    }
+  }
+}
+
 void ZFlyEmProofDoc::executeRemoveSynapseCommand()
 {
 //  QUndoCommand *command =
 //      new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
 
+
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(NeuTube::Z_AXIS);
   if (se != NULL) {
     const std::set<ZIntPoint> &selected =
         se->getSelector().getSelectedSet();
-    std::set<ZIntPoint> removingSet;
+    if (!selected.empty()) {
+      ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp *command =
+          new ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp(this);
+      for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
+           iter != selected.end(); ++iter) {
+        command->addRemoval(*iter);
+      }
+      pushUndoCommand(command);
+    }
+
+#if 0
     for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
          iter != selected.end(); ++iter) {
       const ZIntPoint &pt = *iter;
@@ -2846,6 +2920,7 @@ void ZFlyEmProofDoc::executeRemoveSynapseCommand()
     command->setRemoval(removingSet);
 
     pushUndoCommand(command);
+#endif
 
 #if 0
     for (std::set<ZIntPoint>::const_iterator iter = removingSet.begin();

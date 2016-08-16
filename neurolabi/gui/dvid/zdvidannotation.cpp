@@ -249,6 +249,41 @@ ZIntPoint ZDvidAnnotation::GetPosition(const ZJsonObject &json)
   return pt;
 }
 
+ZIntPoint ZDvidAnnotation::GetRelPosition(const ZJsonObject &json)
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  if (json.hasKey("To")) {
+    ZJsonArray posJson(json.value("To"));
+    std::vector<int> coords = posJson.toIntegerArray();
+    pt.set(coords[0], coords[1], coords[2]);
+  }
+
+  return pt;
+}
+
+std::string ZDvidAnnotation::GetRelationType(const ZJsonObject &relJson)
+{
+  std::string type;
+  if (relJson.hasKey("Rel")) {
+    type = ZJsonParser::stringValue(relJson["Rel"]);
+  }
+
+  return type;
+}
+
+ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const ZJsonObject &obj)
+{
+  EKind kind = KIND_INVALID;
+
+  if (obj.hasKey("Kind")) {
+    kind = GetKind(ZJsonParser::stringValue(obj["Kind"]));
+  }
+
+  return kind;
+}
+
 void ZDvidAnnotation::updatePartner(const ZJsonArray &jsonArray)
 {
   m_partnerHint.clear();
@@ -647,8 +682,9 @@ bool ZDvidAnnotation::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &
     ZIntPoint to = ZJsonParser::toIntPoint(toJson["To"]);
     if (pt == to) {
       relArrayJson.remove(i);
+      --i;
       removed = true;
-      break;
+//      break;
     }
   }
 
@@ -712,6 +748,59 @@ bool ZDvidAnnotation::AddRelation(
   }
 
   return adding;
+}
+
+std::string ZDvidAnnotation::GetMatchingRelation(const std::string &relType)
+{
+  std::string type = "UnknownRelationship";
+
+  if (relType == "PreSynTo" || relType == "ConvergentTo") {
+    type = "PostSynTo";
+  } else if (relType == "PostSynTo") {
+    type = "PreSynTo";
+  } else if (relType == "GroupedWith") {
+    type = relType;
+  }
+
+  return type;
+}
+
+int ZDvidAnnotation::MatchRelation(
+    const ZJsonArray &relArray, const ZIntPoint &pos, const std::string &relType)
+{
+  int index = -1;
+
+  for (size_t i = 0; i < relArray.size(); ++i) {
+    ZJsonObject testRel(relArray.value(i));
+    if (GetRelPosition(testRel) == pos) {
+      std::string testRelType = GetRelationType(testRel);
+      if (relType == "PreSynTo" || relType == "ConvergentTo") {
+        if (testRelType == "PostSynTo") {
+          index = i;
+          break;
+        }
+      } else if (relType == "PostSynTo") {
+        if (testRelType == "PreSynTo") {
+          index = i;
+          break;
+        }
+      } else if (relType == testRelType) {
+        index = i;
+        break;
+      }
+    }
+  }
+
+  return index;
+}
+
+
+int ZDvidAnnotation::MatchRelation(
+    const ZJsonArray &relArray, const ZIntPoint &pos, const ZJsonObject &rel)
+{
+  std::string relType = GetRelationType(rel);
+
+  return MatchRelation(relArray, pos, relType);
 }
 
 bool ZDvidAnnotation::AddRelation(

@@ -756,7 +756,7 @@ void MainWindow::createActions()
   testAction = new QAction(tr("&Test"), this);
   testAction->setShortcut(tr("Ctrl+T"));
   testAction->setStatusTip(tr("Test"));
-  testAction->setIcon(QIcon(":/images/test.png"));
+  testAction->setIcon(QIcon(":/images/science.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
 
   testAction2 = new QAction(tr("Test2"), this);
@@ -2183,7 +2183,7 @@ void MainWindow::about()
   }
 #endif
   QString thirdPartyLib = QString(
-        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +

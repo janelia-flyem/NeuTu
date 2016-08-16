@@ -200,6 +200,24 @@ public: //Synapse functions
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
                                NeuTube::EAxis axis);
 
+  /*!
+   * \brief Sync the synapse with DVID
+   *
+   * If \a pt does not exist in DVID, it will be removed from all synapse
+   * ensembles. If it exists, the function checks the partners of the synapses
+   * and try to remove all 'ghost' partners. For each of actual partners, the
+   * function checks the relationship consistency and apply fixes based on the
+   * following rules:
+   *   1. If the host synapse (the one at \a pt) rels to its partner but not
+   * vice versa, the missing relationship will be added to the partner.
+   *   2. If the host synapse rels to its partner and vice versa, but
+   * relationships are not consistent, the partner synapse is changed to have
+   * the consistency.
+   *
+   * \param pt Synapse position to sync.
+   */
+  void repairSynapse(const ZIntPoint &pt);
+
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
   void addSynapse(
@@ -269,6 +287,7 @@ signals:
   void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots: //Commands
+  void repairSelectedSynapses();
   void executeRemoveSynapseCommand();
   void executeLinkSynapseCommand();
   void executeUnlinkSynapseCommand();
@@ -300,7 +319,8 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
-  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                  ZDvidSynapseEnsemble::EDataScope scope);
   void verifySelectedSynapse();
   void unverifySelectedSynapse();
 

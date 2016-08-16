@@ -230,7 +230,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zswctreenodeselector.h \
    $${PWD}/swc/zswcsignalfitter.h \
    $${PWD}/zneurontracerconfig.h \
-    zobject3dscan.hpp
+   $${PWD}/zobject3dscan.hpp
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \

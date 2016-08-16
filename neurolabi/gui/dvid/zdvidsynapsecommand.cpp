@@ -44,6 +44,133 @@ void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::undo()
   m_isExecuted = false;
 }
 
+//////////////////////////////////
+ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::RemoveSynapseOp(
+    ZFlyEmProofDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent)
+{
+  m_doc = doc;
+}
+
+ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::~RemoveSynapseOp()
+{
+
+}
+
+void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::addRemoval(
+    const ZIntPoint &pt)
+{
+  m_synapseSet.insert(pt);
+
+  ZDvidReader &reader = m_doc->getDvidReader();
+  if (reader.isReady()) {
+    ZDvidSynapse synapse =
+        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+    if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+      synapse.updatePartnerProperty(reader);
+      std::vector<ZIntPoint> partnerArray = synapse.getPartners();
+      for (size_t i = 0; i < partnerArray.size(); ++i) {
+        const ZIntPoint &pt = partnerArray[i];
+        if (synapse.getParterKind(i) == ZDvidAnnotation::KIND_POST_SYN) {
+          m_synapseSet.insert(pt);
+        }
+      }
+    }
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::addRemoval(
+    const QList<ZIntPoint> &ptArray)
+{
+  foreach (const ZIntPoint &pt, ptArray) {
+    addRemoval(pt);
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::backupSynapse()
+{
+  if (m_doc != NULL) {
+    ZDvidReader &reader = m_doc->getDvidReader();
+    if (reader.isReady()) {
+      std::set<ZIntPoint> synapseSet;
+      synapseSet.insert(m_synapseSet.begin(), m_synapseSet.end());
+
+      ZJsonArray synapseArray = reader.readSynapseJson(m_synapseSet.begin(),
+                                                       m_synapseSet.end());
+      for (size_t i = 0; i < synapseArray.size(); ++i) {
+        ZJsonObject synapseJson(synapseArray.value(i));
+        std::vector<ZIntPoint> partnerArray =
+            ZDvidAnnotation::GetPartners(synapseJson);
+        synapseSet.insert(partnerArray.begin(), partnerArray.end());
+      }
+
+      m_synapseBackup = reader.readSynapseJson(
+            synapseSet.begin(), synapseSet.end());
+    }
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
+{
+  if (!m_synapseSet.empty()) {
+    ZDvidReader &reader = m_doc->getDvidReader();
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+
+    if (reader.isReady()) {
+      backupSynapse();
+
+      QString synapseString;
+      for (size_t i = 0; i < m_synapseBackup.size(); ++i) {
+        bool removed = false;
+        ZJsonObject synapseJson(m_synapseBackup.value(i).clone());
+        ZIntPoint currentPos = ZDvidAnnotation::GetPosition(synapseJson);
+        if (m_synapseSet.count(currentPos) == 0) { //related synapses
+          for (std::set<ZIntPoint>::const_iterator iter = m_synapseSet.begin();
+               iter != m_synapseSet.end(); ++iter) {
+            const ZIntPoint &pt = *iter;
+            if (pt != currentPos) {
+              removed =
+                  ZDvidSynapse::RemoveRelation(synapseJson, pt) || removed;
+            }
+          }
+          if (removed) {
+            writer.writeSynapse(synapseJson);
+          }
+          m_doc->updateSynapsePartner(currentPos);
+        } else { //host synapses
+          m_doc->removeSynapse(currentPos, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        }
+      }
+
+      QString msg = QString("Synapse removed: %1").arg(synapseString);
+      ZWidgetMessage message(
+            msg, NeuTube::MSG_INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
+      m_doc->notify(message);
+    }
+  }
+}
+
+void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::undo()
+{
+  if (!m_synapseBackup.isEmpty()) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    writer.writeSynapse(m_synapseBackup);
+
+    for (size_t i = 0; i < m_synapseBackup.size(); ++i) {
+      ZJsonObject synapseJson(m_synapseBackup.value(i));
+      ZIntPoint currentPos = ZDvidAnnotation::GetPosition(synapseJson);
+      if (m_synapseSet.count(currentPos) == 0) { //related synapses
+        m_doc->updateSynapsePartner(ZDvidAnnotation::GetPosition(synapseJson));
+      } else {
+        m_doc->addSynapse(currentPos, ZDvidAnnotation::GetKind(synapseJson),
+                          ZDvidSynapseEnsemble::DATA_LOCAL);
+      }
+    }
+
+    QString msg = QString("Synapses grouped back.");
+    m_doc->notify(msg);
+  }
+}
+
 /////////////////////////////////////////////
 ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::RemoveSynapse(
     ZFlyEmProofDoc *doc, int x, int y, int z, QUndoCommand *parent) :

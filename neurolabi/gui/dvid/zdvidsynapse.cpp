@@ -432,7 +432,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);
-      if (m_partnerKind[index] == KIND_PRE_SYN) {
+      if (getKind() == KIND_PRE_SYN && m_partnerKind[index] == KIND_PRE_SYN) {
         line.setColor(QColor(0, 255, 255));
         line.setFocusColor(QColor(0, 255, 255));
       } else {
@@ -492,6 +492,16 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
   }
 
   return MakeRelJson(pt, rel);
+}
+
+ZDvidAnnotation::EKind ZDvidSynapse::getParterKind(size_t i) const
+{
+  EKind kind = KIND_INVALID;
+  if (i < m_partnerKind.size()) {
+    kind = m_partnerKind[i];
+  }
+
+  return kind;
 }
 
 ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const

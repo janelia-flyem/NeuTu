@@ -231,6 +231,7 @@ using namespace std;
 #include "test/zclosedcurvetest.h"
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
+#include "test/zdvidannotationtest.h"
 #include "zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
@@ -20216,12 +20217,26 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.set("emdata1.int.janelia.org", "@FIB19", 7000);
 
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("32a2");
+  writer.writeMasterNode("d7c37");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+//  reader.open(target);
+  std::vector<std::string> nodeList = ZDvidReader::ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
 #endif
 
 #if 0
@@ -20534,7 +20549,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.setFromSourceString("http:hackathon.janelia.org:-1:2a3");
 #endif

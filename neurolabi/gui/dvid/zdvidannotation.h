@@ -152,10 +152,22 @@ public: //Json APIs
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+
   static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
   static std::vector<ZIntPoint> GetPartners(
       const ZJsonObject &json, const std::string &relation);
   static ZIntPoint GetPosition(const ZJsonObject &json);
+  static ZIntPoint GetRelPosition(const ZJsonObject &json);
+  static std::string GetRelationType(const ZJsonObject &relJson);
+  static int MatchRelation(
+      const ZJsonArray &relArray, const ZIntPoint &pos, const ZJsonObject &rel);
+  static int MatchRelation(
+      const ZJsonArray &relArray, const ZIntPoint &pos,
+      const std::string &relType);
+
+  static std::string GetMatchingRelation(const std::string &relType);
+
+  static EKind GetKind(const ZJsonObject &json);
 
 protected:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;

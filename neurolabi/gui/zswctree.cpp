@@ -36,6 +36,7 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#include "zintcuboid.h"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
 #endif
