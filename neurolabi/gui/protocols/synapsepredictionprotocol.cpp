@@ -177,10 +177,10 @@ void SynapsePredictionProtocol::onNextButton()
       m_currentPendingIndex = 0;
     }
     gotoCurrent();
-    updateLabels();
   } else {
     m_currentPendingIndex = -1;
   }
+  updateLabels();
 }
 
 void SynapsePredictionProtocol::onReviewNextButton()
