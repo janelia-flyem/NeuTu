@@ -599,26 +599,29 @@ bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, co
     //  be available; that already spatially clusters the T-bars
 
     // hmm...that helps, but doesn't help enough; if you then sort by x,y, etc.,
-    //  you're still going to jump around, just within the body
+    //  you're still going to jump around, just within the body; maybe that's enough;
+    //  the volumes we use are small, so maybe there aren't a lot of T-bars in
+    //  a small volume on each body unless they are multis, which is the case
+    //  we want to catch
 
-    // starting to think I may need to calculate the distance matrix and
-    //  do some heuristic clustering; if we sort first by body ID, that
-    //  will cut down on the amount of calculation
-
-
-
-
-    // test: Steve says the current data may not have body IDs
-    // std::cout << "sorting; synapse1 body ID: " << synapse1.getBodyId() << std::endl;
+    // but in the long run, I'm starting to think I may need to calculate
+    //  the distance matrix and do some clustering; at least if we group
+    //  first by body ID, that would cut down on the amount of calculation
 
 
-    // the old sort: x, then y (ignore z)
-    if (synapse1.getPosition().getX() < synapse2.getPosition().getX()) {
+    // but for now, it's sort by body ID, then x, then y (ignore z)
+    if (synapse1.getBodyId() < synapse2.getBodyId()) {
         return true;
-    } else if (synapse1.getPosition().getX() > synapse2.getPosition().getX()) {
+    } else if (synapse1.getBodyId() > synapse2.getBodyId()) {
         return false;
     } else {
-        return ((synapse1.getPosition().getY() < synapse2.getPosition().getY()));
+        if (synapse1.getPosition().getX() < synapse2.getPosition().getX()) {
+            return true;
+        } else if (synapse1.getPosition().getX() > synapse2.getPosition().getX()) {
+            return false;
+        } else {
+            return ((synapse1.getPosition().getY() < synapse2.getPosition().getY()));
+        }
     }
 }
 
