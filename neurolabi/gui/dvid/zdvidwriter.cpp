@@ -88,6 +88,11 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   return startService();;
 }
 
+void ZDvidWriter::clear()
+{
+  m_dvidTarget.clear();
+}
+
 bool ZDvidWriter::good() const
 {
 #if defined(_ENABLE_LIBDVIDCPP_)

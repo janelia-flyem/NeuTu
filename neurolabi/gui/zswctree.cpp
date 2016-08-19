@@ -584,6 +584,33 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   }
 
   if (getStructrualMode() == ZSwcTree::STRUCT_CLOSED_CURVE) {
+    ZSwcTree::RegularRootIterator rootIter(this);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
+      ZSwcTree::DownstreamIterator dsIter(tn);
+//      std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair;
+      std::vector<Swc_Tree_Node*> nodeArray;
+      while (dsIter.hasNext()) {
+        Swc_Tree_Node *tn = dsIter.next();
+        if (SwcTreeNode::isTerminal(tn)) {
+          nodeArray.push_back(tn);
+        }
+      }
+
+      if (nodeArray.size() == 2) {
+        QPointF lineStart, lineEnd;
+        bool visible = false;
+        computeLineSegment(
+              nodeArray[0], nodeArray[1], lineStart, lineEnd, visible,
+              dataFocus, isProj);
+        if (visible) {
+          pen.setColor(QColor(0, 255, 0));
+          painter.setPen(pen);
+          painter.drawLine(lineStart, lineEnd);
+        }
+      }
+    }
+    /*
     std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair =
         extractCurveTerminal();
     if (nodePair.first != NULL && nodePair.second != NULL) {
@@ -598,6 +625,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         painter.drawLine(lineStart, lineEnd);
       }
     }
+    */
   }
   //pen.setCosmetic(false);
 

@@ -48,6 +48,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  void clear();
+
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }

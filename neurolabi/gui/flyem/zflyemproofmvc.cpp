@@ -59,6 +59,9 @@
 #include "zflyemorthodoc.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
 #include "flyem/zflyemsynapsedataupdater.h"
+#include "dialogs/zflyemroitooldialog.h"
+#include "flyem/zflyemroiproject.h"
+#include "zflyemutilities.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -92,6 +95,13 @@ void ZFlyEmProofMvc::init()
   m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
+  m_roiDlg = new ZFlyEmRoiToolDialog(this);
+  connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(syncRoiProject()));
+  connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
+  connect(m_roiDlg, SIGNAL(showing3DRoiCurve()), this, SLOT(showRoi3dWindow()));
+  connect(m_roiDlg, SIGNAL(goingToSlice(int)), this, SLOT(goToSlice(int)));
+  connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
+  connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -959,6 +969,13 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     emit dvidTargetChanged(reader.getDvidTarget());
   }
+
+  m_roiDlg->clear();
+  m_roiDlg->updateDvidTarget();
+  m_roiDlg->downloadAllProject();
+
+  getProgressSignal()->advanceProgress(0.1);
+
   getProgressSignal()->endProgress();
 
   emit messageGenerated(
@@ -2156,6 +2173,11 @@ void ZFlyEmProofMvc::showFineBody3d()
   m_bodyViewWindow->raise();
 }
 
+void ZFlyEmProofMvc::showRoi3dWindow()
+{
+  showObjectWindow();
+}
+
 void ZFlyEmProofMvc::showObjectWindow()
 {
   if (m_objectWindow == NULL) {
@@ -2453,6 +2475,58 @@ void ZFlyEmProofMvc::openSequencer()
 void ZFlyEmProofMvc::openProtocol()
 {
   m_protocolSwitcher->openProtocolDialogRequested();
+}
+
+void ZFlyEmProofMvc::openRoiTool()
+{
+  m_roiDlg->show();
+  m_roiDlg->raise();
+}
+
+void ZFlyEmProofMvc::goToNearestRoi()
+{
+  ZFlyEmRoiProject *project = m_roiDlg->getProject();
+  if (project != NULL) {
+    if (project->hasRoi()) {
+      int z = project->getNearestRoiZ(getView()->getCurrentZ());
+      goToSlice(z);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::syncRoiProject()
+{
+  updateRoiCurve();
+  getPresenter()->setActiveObjectSize(
+        ZStackPresenter::ROLE_SWC,
+        FlyEm::GetFlyEmRoiMarkerRadius(getDocument()->getStackWidth(),
+                                       getDocument()->getStackHeight()));
+}
+
+void ZFlyEmProofMvc::closeRoiProject()
+{
+  updateRoiCurve();
+  getPresenter()->setDefaultActiveObjectSize(ZStackPresenter::ROLE_SWC);
+  close3DWindow(m_objectWindow);
+}
+
+
+void ZFlyEmProofMvc::updateRoiCurve()
+{
+  getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
+  ZFlyEmRoiProject *project = m_roiDlg->getProject();
+  if (project != NULL) {
+    getCompletePresenter()->setPaintingRoi(true);
+    ZSwcTree *tree = project->getAllRoiSwc();
+    if (tree != NULL) {
+      tree->addRole(ZStackObjectRole::ROLE_ROI);
+      tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+      getCompleteDocument()->addObject(tree);
+    }
+  } else {
+    getCompletePresenter()->setPaintingRoi(false);
+  }
 }
 
 void ZFlyEmProofMvc::openTodo()

@@ -3,11 +3,13 @@
 
 #include <QUndoCommand>
 #include <QList>
+#include <QMap>
+
 #include "swctreenode.h"
 #include "neutube.h"
 #include "zswcpath.h"
 #include "zdocplayer.h"
-#include <QMap>
+#include "zstackobjectrole.h"
 
 class ZSwcTree;
 class ZLocsegChain;
@@ -232,7 +234,8 @@ private:
 class AddSwcNode : public ZUndoCommand
 {
 public:
-  AddSwcNode(ZStackDoc *doc, Swc_Tree_Node* tn, QUndoCommand *parent = NULL);
+  AddSwcNode(ZStackDoc *doc, Swc_Tree_Node* tn, ZStackObjectRole::TRole role,
+             QUndoCommand *parent = NULL);
   virtual ~AddSwcNode();
   void undo();
   void redo();

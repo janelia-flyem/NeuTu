@@ -17,6 +17,8 @@ class ZStackDoc;
 
 /*!
  * \brief The class of managing a FlyEM ROI project
+ *
+ * NOTE: It does not support negative Z value yet.
  */
 class ZFlyEmRoiProject : public QObject
 {
@@ -48,12 +50,13 @@ public:
    *
    * \return true iff the DVID target is writable
    */
-  bool setDvidTarget(const ZDvidTarget &target);
+  bool setDvidTarget(const ZDvidTarget &target, bool downloadingData);
 
   void showDataFrame() const;
   void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
+  void setDataRange(const ZIntCuboid &box);
   void setDocData(ZStackDocReader &docReader);
   void loadSynapse(const std::string &filePath, bool isVisible);
   void shallowClearDataFrame();
@@ -80,6 +83,7 @@ public:
   ZSwcTree* getRoiSwc(int z, double radius = -1.0) const;
   ZSwcTree* getAllRoiSwc() const;
 
+  static double GetMarkerRadius(double s);
   double getMarkerRadius() const;
 
   void clearRoi();
@@ -93,7 +97,8 @@ public:
   void downloadAllRoi();
   ZClosedCurve estimateRoi(int z);
   ZClosedCurve* estimateRoi(int z, ZClosedCurve *result) const;
-  void estimateRoi();
+//  void estimateRoi();
+  ZSwcTree* estimateRoi();
   inline const ZDvidInfo& getDvidInfo() const {
     return m_dvidInfo;
   }
@@ -104,6 +109,8 @@ public:
   void setRoiUploaded(int z, bool uploaded);
   bool isRoiCurveUploaded(int z) const;
   bool isAllRoiCurveUploaded() const;
+
+  int getNearestRoiZ(int z) const;
 
   ZObject3dScan getFilledRoi(int z) const;
   ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
@@ -150,13 +157,21 @@ public:
     return m_currentDsIntv;
   }
 
-  void importRoiFromSwc(ZSwcTree *tree);
+  void importRoiFromSwc(ZSwcTree *tree, bool appending = false);
 
   void deleteAllData();
 
   void applyTranslate();
 
   void test();
+
+
+public: //utilties
+  static bool IsValidName(const std::string &name);
+  template<typename InputIterator>
+  static bool IsValidName(const std::string &name, const InputIterator &first,
+                   const InputIterator &last);
+  static ZFlyEmRoiProject* Make(const std::string &name, QObject *parent);
 
 private:
   ZObject3dScan* getFilledRoi(
@@ -174,6 +189,7 @@ private:
   int m_z;
   ZIntPoint m_currentDsIntv;
   ZStackFrame *m_dataFrame;
+  ZIntCuboid m_dataRange;
   std::vector<bool> m_isRoiCurveUploaded;
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position
   FlyEm::ZSynapseAnnotationArray m_synapseArray;
@@ -182,5 +198,24 @@ private:
 
   static const double m_defaultSynapseRadius;
 };
+
+template<typename InputIterator>
+bool ZFlyEmRoiProject::IsValidName(
+    const std::string &name, const InputIterator &first,
+    const InputIterator &last)
+{
+  bool isValid = false;
+  if (IsValidName(name)) {
+    isValid = true;
+    for (InputIterator iter = first; iter != last; ++iter) {
+      if (name == *iter) {
+        isValid = false;
+        break;
+      }
+    }
+  }
+
+  return isValid;
+}
 
 #endif // ZFLYEMROIPROJECT_H

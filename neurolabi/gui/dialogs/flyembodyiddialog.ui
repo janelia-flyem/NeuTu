@@ -95,8 +95,6 @@
     </widget>
    </item>
   </layout>
-  <zorder>layoutWidget</zorder>
-  <zorder>buttonBox</zorder>
  </widget>
  <resources/>
  <connections>

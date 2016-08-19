@@ -5832,7 +5832,8 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
 //            free(branch);
 
             command = new ZStackDocCommand::SwcEdit::CompositeCommand(this);
-            new ZStackDocCommand::SwcEdit::AddSwcNode(this, begin, command);
+            new ZStackDocCommand::SwcEdit::AddSwcNode(
+                  this, begin, ZStackObjectRole::ROLE_NONE, command);
             std::set<Swc_Tree_Node*> nodeSet;
             nodeSet.insert(leaf);
             //new ZStackDocCommand::SwcEdit::SetSwcNodeSeletion(
@@ -7284,12 +7285,13 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
   return succ;
 }
 
-bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
+bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius,
+                                         ZStackObjectRole::TRole role)
 {
   if (radius > 0) {
     Swc_Tree_Node *tn = SwcTreeNode::makePointer(center, radius);
     ZStackDocCommand::SwcEdit::AddSwcNode *command = new
-        ZStackDocCommand::SwcEdit::AddSwcNode(this, tn);
+        ZStackDocCommand::SwcEdit::AddSwcNode(this, tn, role);
     command->setLogMessage("Add SWC node");
     pushUndoCommand(command);
     deprecateTraceMask();

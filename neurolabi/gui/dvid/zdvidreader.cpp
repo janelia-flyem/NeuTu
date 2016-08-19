@@ -47,19 +47,19 @@ ZDvidReader::~ZDvidReader()
 
 void ZDvidReader::init()
 {
-  m_eventLoop = new QEventLoop(this);
+//  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
-  m_timer = new QTimer(this);
+//  m_timer = new QTimer(this);
 #if defined(_ENABLE_LIBDVIDCPP_)
 //  m_service = NULL;
 #endif
   //m_timer->setInterval(1000);
 
-  m_isReadingDone = false;
+//  m_isReadingDone = false;
 
   //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
 //  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
-  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
+//  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
 //  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
@@ -80,6 +80,15 @@ void ZDvidReader::setStatusCode(int code) const
   m_statusCode = code;
 }
 
+void ZDvidReader::clear()
+{
+  m_dvidTarget.clear();
+#if defined(_ENABLE_LOWTIS_)
+  m_lowtisService.reset();
+#endif
+}
+
+/*
 void ZDvidReader::slotTest()
 {
   qDebug() << "ZDvidReader::slotTest";
@@ -99,7 +108,7 @@ void ZDvidReader::endReading()
 
   emit readingDone();
 }
-
+*/
 bool ZDvidReader::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -212,7 +221,7 @@ bool ZDvidReader::open(const QString &sourceString)
   target.setFromSourceString(sourceString.toStdString());
   return open(target);
 }
-
+#if 0
 void ZDvidReader::waitForReading()
 {
 #ifdef _DEBUG_
@@ -223,6 +232,7 @@ void ZDvidReader::waitForReading()
     m_eventLoop->exec();
   }
 }
+#endif
 
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
@@ -736,10 +746,12 @@ ZStack* ZDvidReader::readGrayScale(
 #endif
 }
 
+/*
 bool ZDvidReader::isReadingDone()
 {
   return m_isReadingDone;
 }
+*/
 
 ZJsonObject ZDvidReader::readInfo() const
 {

@@ -229,6 +229,10 @@ void ZProofreadWindow::createMenu()
   connect(m_openObject3dAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showObjectWindow()));
 
+  m_openRoi3dAction = new QAction("3D ROI", this);
+  connect(m_openRoi3dAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showRoi3dWindow()));
+
   m_queryTableAction = new QAction("Query Table", this);
   connect(m_queryTableAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showQueryTabel()));
@@ -265,6 +269,11 @@ void ZProofreadWindow::createMenu()
   m_openTodoAction->setIcon(QIcon(":/images/todo.png"));
   connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
   m_toolMenu->addAction(m_openTodoAction);
+
+  m_roiToolAction = new QAction("ROI Tool", this);
+  m_roiToolAction->setIcon(QIcon(":images/roi.png"));
+  connect(m_roiToolAction, SIGNAL(triggered()), m_mainMvc, SLOT(openRoiTool()));
+  m_toolMenu->addAction(m_roiToolAction);
 
   m_openProtocolsAction = new QAction("Open Protocols", this);
   m_openProtocolsAction->setIcon(QIcon(":/images/protocol.png"));
@@ -339,6 +348,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openSequencerAction);
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
+  m_toolBar->addAction(m_roiToolAction);
 
   addSynapseActionToToolbar();
 }

@@ -526,17 +526,18 @@ void ZStackDocCommand::SwcEdit::AddSwc::undo()
 int ZStackDocCommand::SwcEdit::AddSwcNode::m_index = 1;
 
 ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
-    ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent)
+    ZStackDoc *doc, Swc_Tree_Node *tn, ZStackObjectRole::TRole role,
+    QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc), m_node(tn), m_treeInDoc(false)
 {
   setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
-  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+  m_tree->setRole(role);
+//  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+  if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-  }
-  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
-    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+//    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
   m_tree->setDataFromNode(m_node);

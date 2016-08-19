@@ -1123,7 +1123,7 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
     project = new ZFlyEmRoiProject(name, this);
-    project->setDvidTarget(getDvidTarget());
+    project->setDvidTarget(getDvidTarget(), false);
   } else {
     QMessageBox::warning(
               this, "Failed to Create A Project",

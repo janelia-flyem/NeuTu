@@ -535,8 +535,13 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse = reader.readSynapse(m_partnerHint[i]);
-      m_isPartnerVerified[i] = synapse.isVerified();
-      m_partnerKind[i] = synapse.getKind();
+      if (synapse.isValid()) {
+        m_isPartnerVerified[i] = synapse.isVerified();
+        m_partnerKind[i] = synapse.getKind();
+      } else {
+        m_isPartnerVerified[i] = false;
+        m_partnerKind[i] = ZDvidSynapse::KIND_INVALID;
+      }
     }
   }
 }

@@ -113,12 +113,20 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
 {
   if (!m_synapseSet.empty()) {
     ZDvidReader &reader = m_doc->getDvidReader();
-    ZDvidWriter &writer = m_doc->getDvidWriter();
+//    ZDvidWriter &writer = m_doc->getDvidWriter();
 
     if (reader.isReady()) {
       backupSynapse();
 
       QString synapseString;
+      for (std::set<ZIntPoint>::const_iterator iter = m_synapseSet.begin();
+           iter != m_synapseSet.end(); ++iter) {
+        const ZIntPoint &pt = *iter;
+        m_doc->removeSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        synapseString.append(pt.toString().c_str());
+      }
+#if 0
+
       for (size_t i = 0; i < m_synapseBackup.size(); ++i) {
         bool removed = false;
         ZJsonObject synapseJson(m_synapseBackup.value(i).clone());
@@ -140,7 +148,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
           m_doc->removeSynapse(currentPos, ZDvidSynapseEnsemble::DATA_GLOBAL);
         }
       }
-
+#endif
       QString msg = QString("Synapse removed: %1").arg(synapseString);
       ZWidgetMessage message(
             msg, NeuTube::MSG_INFORMATION, ZWidgetMessage::TARGET_TEXT_APPENDING);
@@ -468,7 +476,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
   m_doc->notifySynapseEdited(m_from);
   m_doc->notifySynapseEdited(m_to);
   */
-  QString msg = QString("Synapse moving undone: (%1, %2, %3) <- (%1, %2, %3)").
+  QString msg = QString("Synapse moving undone: (%1, %2, %3) <- (%4, %5, %6)").
       arg(m_from.getX()).arg(m_from.getY()).arg(m_from.getZ()).
       arg(m_to.getX()).arg(m_to.getY()).arg(m_to.getZ());
   m_doc->notify(msg);
