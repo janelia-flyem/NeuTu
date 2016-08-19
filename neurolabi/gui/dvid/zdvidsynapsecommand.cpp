@@ -449,6 +449,20 @@ ZStackDocCommand::DvidSynapseEdit::MoveSynapse::~MoveSynapse()
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 {
   m_doc->moveSynapse(m_from, m_to);
+  ZDvidWriter &writer = m_doc->getDvidWriter();
+  ZDvidReader &reader = m_doc->getDvidReader();
+  ZJsonObject synapseJson = reader.readSynapseJson(m_to);
+  ZJsonObject propJson(synapseJson.value("Prop"));
+  m_propertyBackup = propJson.clone();
+
+  if (!synapseJson.isEmpty()) {
+    ZDvidSynapse::AddProperty(
+          synapseJson, "user", NeuTube::GetCurrentUserName());
+    ZDvidSynapse::SetConfidence(synapseJson, 1.0);
+    writer.writeSynapse(synapseJson);
+    m_doc->syncSynapse(m_to);
+  }
+
   m_doc->notifySynapseMoved(m_from, m_to);
   /*
   m_doc->notifySynapseEdited(m_from);
@@ -470,7 +484,21 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
 
 void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
 {
-  m_doc->moveSynapse(m_to, m_from);
+  m_doc->moveSynapse(m_to, m_from); 
+  ZDvidWriter &writer = m_doc->getDvidWriter();
+  ZDvidReader &reader = m_doc->getDvidReader();
+  ZJsonObject synapseJson = reader.readSynapseJson(m_from);
+  if (!synapseJson.isEmpty()) {
+    ZDvidAnnotation::SetProperty(synapseJson, m_propertyBackup);
+    writer.writeSynapse(synapseJson);
+    m_doc->syncSynapse(m_from);
+    std::vector<ZIntPoint> ptArray = ZDvidAnnotation::GetPartners(synapseJson);
+    for (std::vector<ZIntPoint>::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      m_doc->updateSynapsePartner(*iter);
+    }
+  }
+
   m_doc->notifySynapseMoved(m_to, m_from);
   /*
   m_doc->notifySynapseEdited(m_from);

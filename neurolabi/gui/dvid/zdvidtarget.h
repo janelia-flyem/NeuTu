@@ -206,6 +206,13 @@ public:
     m_maxLabelZoom = zoom;
   }
 
+  /*
+  void setLabelszName(const std::string &name);
+  std::string getLabelszName() const;
+  */
+
+  std::string getSynapseLabelszName() const;
+
 private:
   void init();
 
@@ -220,6 +227,7 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
   std::string m_grayScaleName;
+  std::string m_labelszName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
@@ -251,6 +259,7 @@ private:
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
+  const static char* m_labelszKey;
 };
 
 #endif // ZDVIDTARGET_H

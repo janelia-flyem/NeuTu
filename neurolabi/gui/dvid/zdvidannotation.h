@@ -141,7 +141,9 @@ public: //Json APIs
   static int AddRelation(
       ZJsonObject &json, const InputIterator &first,
       const InputIterator &last, const std::string &rel);
-   static ZJsonArray GetRelationJson(ZJsonObject &json);
+  static ZJsonArray GetRelationJson(ZJsonObject &json);
+
+  static void SetProperty(ZJsonObject &json, ZJsonObject propJson);
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
   static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
@@ -150,6 +152,8 @@ public: //Json APIs
 
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
+  static void AddProperty(ZJsonObject &json, const std::string &key,
+                          const char* value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
 

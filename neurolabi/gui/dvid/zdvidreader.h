@@ -147,6 +147,9 @@ public:
                          int dim1, int dim2, int width, int height);
                          */
 
+  ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
+
+
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(uint64_t bodyId) const;

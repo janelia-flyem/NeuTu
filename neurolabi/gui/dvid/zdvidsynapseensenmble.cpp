@@ -776,12 +776,7 @@ void ZDvidSynapseEnsemble::moveSynapseUnsync(
       if (writer.open(m_dvidTarget)) {
         writer.moveSynapse(from, to);
         if (writer.isStatusOk()) {
-          writer.addSynapseProperty(to, "user", NeuTube::GetCurrentUserName());
           moveSynapseUnsync(from, to, DATA_LOCAL);
-          ZDvidSynapse &synapse = getSynapseUnsync(to, DATA_LOCAL);
-          if (synapse.isValid()) {
-            synapse.setUserName(NeuTube::GetCurrentUserName());
-          }
         }
       }
     }

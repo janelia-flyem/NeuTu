@@ -2277,6 +2277,14 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   return synapseArray;
 }
 
+ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszUrl(n, index));
+
+  return obj;
+}
+
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     uint64_t label, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
 {

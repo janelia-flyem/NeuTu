@@ -20554,5 +20554,53 @@ void ZTest::test(MainWindow *host)
   target.setFromSourceString("http:hackathon.janelia.org:-1:2a3");
 #endif
 
+#if 0
+  ZDvidSynapse synapse;
+  synapse.setPosition(30, 30, 30);
+  synapse.setKind(ZDvidSynapse::KIND_PRE_SYN);
+  synapse.setDefaultRadius();
+  synapse.setDefaultColor();
+
+  ZJsonObject json = synapse.toJsonObject();
+
+  ZDvidAnnotation::AddProperty(json, "user", "test");
+  ZDvidSynapse::SetConfidence(json, 1.0);
+
+  std::cout << json.dumpString(2) << std::endl;
+
+  ZJsonObject obj;
+  obj.setEntry("conf", "0.5");
+  ZDvidAnnotation::SetProperty(json, obj);
+  std::cout << json.dumpString(2) << std::endl;
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "0c7e", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation-labelvol");
+  target.setSynapseName("annot_synapse_060616");
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.createSynapseLabelsz();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "0c7e", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation-labelvol");
+  target.setSynapseName("annot_synapse_060616");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZJsonArray json = reader.readSynapseLabelsz(10, ZDvid::INDEX_PRE_SYN);
+  std::cout << json.dumpString(2) << std::endl;
+#endif
+
+
   std::cout << "Done." << std::endl;
 }

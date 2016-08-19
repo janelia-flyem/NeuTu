@@ -27,6 +27,7 @@ const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
+const char* ZDvidTarget::m_labelszKey = "labelsz";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -243,6 +244,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
+  obj.setEntry(m_labelszKey, m_labelszName);
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
        iter != m_roiList.end(); ++iter) {
@@ -256,6 +258,28 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_supervisorServerKey, m_supervisorServer);
 
   return obj;
+}
+
+/*
+void ZDvidTarget::setLabelszName(const std::string &name)
+{
+  m_labelszName = name;
+}
+
+std::string ZDvidTarget::getLabelszName() const
+{
+  return m_labelszName;
+}
+*/
+
+std::string ZDvidTarget::getSynapseLabelszName() const
+{
+  if (getSynapseName().empty()) {
+    return "";
+  }
+
+  return ZDvidData::GetName(ZDvidData::ROLE_LABELSZ, ZDvidData::ROLE_SYNAPSE,
+                            getSynapseName());
 }
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
@@ -310,6 +334,12 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_maxLabelZoomKey)) {
       setMaxLabelZoom(ZJsonParser::integerValue(obj[m_maxLabelZoomKey]));
     }
+
+    /*
+    if (obj.hasKey(m_labelszKey)) {
+      setLabelszName(ZJsonParser::stringValue(obj[m_labelszKey]));
+    }
+    */
 
     if (obj.hasKey(m_userNameKey)) {
       ZJsonValue value = obj.value(m_userNameKey);

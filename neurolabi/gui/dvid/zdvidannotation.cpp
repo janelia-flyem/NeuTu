@@ -562,6 +562,17 @@ void ZDvidAnnotation::AddProperty(
 }
 
 void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, const char *value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  propJson.setEntry(key, value);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+
+void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, bool value)
 {
   ZJsonObject propJson = json.value("Prop");
@@ -671,6 +682,15 @@ bool ZDvidAnnotation::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
   ZJsonArray relArrayJson = GetRelationJson(json);
 
   return AddRelation(relArrayJson, relJson);
+}
+
+void ZDvidAnnotation::SetProperty(ZJsonObject &json, ZJsonObject propJson)
+{
+  if (propJson.isEmpty()) {
+    json.removeKey("Prop");
+  } else {
+    json.setEntry("Prop", propJson);
+  }
 }
 
 bool ZDvidAnnotation::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)

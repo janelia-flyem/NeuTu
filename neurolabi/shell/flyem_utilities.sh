@@ -7,7 +7,14 @@ function flyem_build_lowtis {
 
   if [ `uname` != 'Darwin' ]
   then
-    git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
+    if [ -d $downloadDir/lowtis ]
+    then
+      cd $downloadDir/lowtis
+      git pull
+    else
+      git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
+    fi
+
     cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
     cd $downloadDir/lowtis
     mkdir build
