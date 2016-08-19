@@ -888,7 +888,7 @@ void ZFlyEmProofDoc::moveSynapse(
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     se->moveSynapse(from, to, scope);
-    se->setConfidence(to, 1.0, scope);
+//    se->setConfidence(to, 1.0, scope);
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }

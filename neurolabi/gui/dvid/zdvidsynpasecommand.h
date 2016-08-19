@@ -90,6 +90,7 @@ private:
   ZFlyEmProofDoc *m_doc;
   ZIntPoint m_from;
   ZIntPoint m_to;
+  ZJsonObject m_propertyBackup;
 };
 
 class LinkSynapse : public ZUndoCommand
