@@ -110,8 +110,7 @@ public:
   void addSynapse(const ZDvidSynapse &synapse, EDataScope scope);
 
 //  void commitSynapse(const ZIntPoint &pt);
-  void moveSynapseUnsync(const ZIntPoint &from, const ZIntPoint &to,
-                   EDataScope scope);
+  void moveSynapseUnsync(const ZIntPoint &from, const ZIntPoint &to, EDataScope scope);
   void moveSynapse(const ZIntPoint &from, const ZIntPoint &to,
                    EDataScope scope);
 
