@@ -115,6 +115,10 @@ public:
   };
   */
 
+
+  static void SetConfidenceProp(ZJsonObject &propJson, double conf);
+  static void SetConfidence(ZJsonObject &json, double conf);
+
 #if 0
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);

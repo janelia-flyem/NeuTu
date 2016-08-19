@@ -60,6 +60,7 @@ std::string ZDvidSynapse::getAnnotation() const
 
 void ZDvidSynapse::setConfidence(double c)
 {
+#if 0
   if (m_propertyJson.hasKey("confidence")) {
     m_propertyJson.removeKey("confidence");
   }
@@ -68,6 +69,30 @@ void ZDvidSynapse::setConfidence(double c)
   std::ostringstream stream;
   stream << c;
   m_propertyJson.setEntry("conf", stream.str());
+#endif
+
+  SetConfidenceProp(m_propertyJson, c);
+}
+
+void ZDvidSynapse::SetConfidenceProp(ZJsonObject &propJson, double conf)
+{
+  if (propJson.hasKey("confidence")) {
+    propJson.removeKey("confidence");
+  }
+
+  // remember, store props as strings!
+  std::ostringstream stream;
+  stream << conf;
+  propJson.setEntry("conf", stream.str());
+}
+
+void ZDvidSynapse::SetConfidence(ZJsonObject &json, double conf)
+{
+  ZJsonObject propJson = json.value("Prop");
+  SetConfidenceProp(propJson, conf);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
 }
 
 bool ZDvidSynapse::isVerified() const
