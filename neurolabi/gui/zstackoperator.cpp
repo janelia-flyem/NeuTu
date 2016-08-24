@@ -45,6 +45,11 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
   case ZStackOperator::OP_NULL:
     opable = false;
     break;
+  case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
+    if (!doc->hasSelectedObject()) {
+      opable = false;
+    }
+    break;
   case ZStackOperator::OP_SWC_DELETE_NODE:
   case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
   case ZStackOperator::OP_SWC_MOVE_NODE_LEFT_FAST:
@@ -100,6 +105,7 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     if (!doc->getRect2dRoi().isValid()) {
       opable = false;
     }
+    break;
   default:
     break;
   }

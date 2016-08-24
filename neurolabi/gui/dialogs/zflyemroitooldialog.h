@@ -40,6 +40,7 @@ public:
   void downloadAllProject();
 
   void goToNearestRoiSlice(int z);
+  void updateRoi();
 
 public slots:
   void openProject(int index);
@@ -49,6 +50,7 @@ public slots:
   void uploadRoi();
   void prevSlice();
   void nextSlice();
+  void estimateRoi();
 
 signals:
   void projectActivited();
@@ -61,7 +63,6 @@ signals:
 
 private:
   void init();
-  void updateRoi();
   ZFlyEmRoiProject* newProject(const QString &name);
   bool isValidName(const QString &name) const;
   void uploadProjectList();

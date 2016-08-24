@@ -123,6 +123,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::redo()
            iter != m_synapseSet.end(); ++iter) {
         const ZIntPoint &pt = *iter;
         m_doc->removeSynapse(pt, ZDvidSynapseEnsemble::DATA_GLOBAL);
+        m_doc->notifySynapseEdited(pt);
         synapseString.append(pt.toString().c_str());
       }
 #if 0
@@ -172,6 +173,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::undo()
         m_doc->addSynapse(currentPos, ZDvidAnnotation::GetKind(synapseJson),
                           ZDvidSynapseEnsemble::DATA_LOCAL);
       }
+      m_doc->notifySynapseEdited(currentPos);
     }
 
     QString msg = QString("Synapses grouped back.");

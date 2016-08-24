@@ -86,6 +86,8 @@ public:
   void scale(double sx, double sy, double sz);
   void translate(double dx, double dy);
 
+  void setZ(double z);
+
   ZClosedCurve* clone() const;
 
 private:

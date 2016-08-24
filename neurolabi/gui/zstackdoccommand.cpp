@@ -537,6 +537,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
   if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
+    m_tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
@@ -2324,6 +2325,8 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::setPunctaCoordScale(double x, d
 
 bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *other)
 {
+//  return true;
+
   if (other->id() != id())
     return false;
 

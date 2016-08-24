@@ -606,6 +606,22 @@ ZClosedCurve* ZFlyEmRoiProject::estimateRoi(int z, ZClosedCurve *result) const
     if (result != NULL) {
       result->resampleF(50);
     }
+  } else {
+    const ZClosedCurve *curve = NULL;
+    if (minZ >= 0) {
+      curve = getRoi(minZ);
+    } else {
+      curve = getRoi(maxZ);
+    }
+
+    if (curve != NULL) {
+      if (result == NULL) {
+        result = curve->clone();
+      } else {
+        *result = *curve;
+      }
+      result->setZ(z);
+    }
   }
 
   return result;
@@ -1242,19 +1258,20 @@ void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree, bool appending)
   }
 
   if (tree != NULL) {
-    ZSwcForest *forest = tree->toSwcTreeArray();
-    for (ZSwcForest::iterator iter = forest->begin();
-         iter != forest->end(); ++iter) {
-      ZSwcTree *roiSwc = *iter;
-      ZSwcTree::DepthFirstIterator swcIter(roiSwc);
+    ZSwcTree::RegularRootIterator rootIter(tree);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *root = rootIter.next();
+      ZSwcTree::DownstreamIterator dsIter(root);
       ZClosedCurve *roiCurve = new ZClosedCurve;
       double z = 0.0;
-      for (Swc_Tree_Node *tn = swcIter.begin(); tn != NULL; tn = swcIter.next()) {
+      while (dsIter.hasNext()) {
+        Swc_Tree_Node *tn = dsIter.next();
         if (SwcTreeNode::isRegular(tn)) {
           z = SwcTreeNode::z(tn);
           roiCurve->append(SwcTreeNode::center(tn));
         }
       }
+
       if (!roiCurve->isEmpty()) {
         setRoi(roiCurve, iround(z));
       } else {

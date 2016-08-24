@@ -716,6 +716,8 @@ public:
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
 
+  bool hasSelectedObject() const;
+
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
   void setVisible(ZStackObject::EType type, std::string source, bool visible);

@@ -96,7 +96,7 @@ void ZFlyEmProofMvc::init()
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
-  connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(syncRoiProject()));
+  connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
   connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
   connect(m_roiDlg, SIGNAL(showing3DRoiCurve()), this, SLOT(showRoi3dWindow()));
   connect(m_roiDlg, SIGNAL(goingToSlice(int)), this, SLOT(goToSlice(int)));
@@ -2488,6 +2488,7 @@ void ZFlyEmProofMvc::goToNearestRoi()
 {
   ZFlyEmRoiProject *project = m_roiDlg->getProject();
   if (project != NULL) {
+    m_roiDlg->updateRoi();
     if (project->hasRoi()) {
       int z = project->getNearestRoiZ(getView()->getCurrentZ());
       goToSlice(z);
@@ -2499,19 +2500,20 @@ void ZFlyEmProofMvc::estimateRoi()
 {
   ZFlyEmRoiProject *project = m_roiDlg->getProject();
   if (project != NULL) {
+    m_roiDlg->updateRoi();
     if (project->hasRoi()) {
       int z = getView()->getCurrentZ();
       ZClosedCurve *roi = new ZClosedCurve;
       project->estimateRoi(z, roi);
       project->setRoi(roi, z);
-      updateRoiCurve();
+      updateRoiGlyph();
     }
   }
 }
 
-void ZFlyEmProofMvc::syncRoiProject()
+void ZFlyEmProofMvc::loadRoiProject()
 {
-  updateRoiCurve();
+  updateRoiGlyph();
   getPresenter()->setActiveObjectSize(
         ZStackPresenter::ROLE_SWC,
         FlyEm::GetFlyEmRoiMarkerRadius(getDocument()->getStackWidth(),
@@ -2520,13 +2522,13 @@ void ZFlyEmProofMvc::syncRoiProject()
 
 void ZFlyEmProofMvc::closeRoiProject()
 {
-  updateRoiCurve();
+  updateRoiGlyph();
   getPresenter()->setDefaultActiveObjectSize(ZStackPresenter::ROLE_SWC);
   close3DWindow(m_objectWindow);
 }
 
 
-void ZFlyEmProofMvc::updateRoiCurve()
+void ZFlyEmProofMvc::updateRoiGlyph()
 {
   getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 

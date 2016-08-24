@@ -1441,6 +1441,12 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
 {
   bool taken = false;
 
+#ifdef _DEBUG_2
+  std::cout << "Key V mapped to "
+            << m_swcKeyOperationMap.getOperation(Qt::Key_V, Qt::NoModifier)
+            << std::endl;
+#endif
+
   ZStackOperator::EOperation opId =
       m_swcKeyOperationMap.getOperation(event->key(), event->modifiers());
   if (isOperatable(opId)) {
