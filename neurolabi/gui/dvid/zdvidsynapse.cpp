@@ -234,11 +234,15 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       if (isSelected()) {
         if (getKind() == KIND_PRE_SYN) {
           color.setRgb(0, 255, 0);
+          size_t index = 0;
           for (std::vector<bool>::const_iterator iter = m_isPartnerVerified.begin();
-               iter != m_isPartnerVerified.end(); ++iter) {
-            if (!(*iter)) {
-              color.setRgb(0, 0, 0);
-              break;
+               iter != m_isPartnerVerified.end(); ++iter, ++index) {
+            bool verified = *iter;
+            if (m_partnerKind[index] == KIND_POST_SYN) {
+              if (!verified) {
+                color.setRgb(0, 0, 0);
+                break;
+              }
             }
           }
         }
@@ -434,7 +438,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
           painter.drawLine(pt[0], pt[2]);
         }
 
-        if (getKind() == KIND_PRE_SYN) {
+        if (m_partnerKind[index] == KIND_POST_SYN) {
           ZDvidSynapse partnerSynapse;
           partnerSynapse.setKind(KIND_POST_SYN);
           partnerSynapse.setPosition(partner);
@@ -447,13 +451,20 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       }
     }
 
+    index = 0;
     for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
-         iter != m_partnerHint.end(); ++iter) {
+         iter != m_partnerHint.end(); ++iter, ++index) {
       ZLineSegmentObject line;
       line.setStartPoint(getPosition());
       line.setEndPoint(*iter);
-      line.setColor(QColor(255, 255, 0));
-      line.setFocusColor(QColor(255, 0, 255));
+      if (getKind() == KIND_PRE_SYN && m_partnerKind[index] == KIND_PRE_SYN) {
+        line.setColor(QColor(0, 255, 255));
+        line.setFocusColor(QColor(0, 255, 255));
+      } else {
+        line.setColor(QColor(255, 255, 0));
+        line.setFocusColor(QColor(255, 0, 255));
+      }
+
       line.setVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option, sliceAxis);
 
@@ -508,6 +519,16 @@ ZJsonObject ZDvidSynapse::makeRelJson(const ZIntPoint &pt) const
   return MakeRelJson(pt, rel);
 }
 
+ZDvidAnnotation::EKind ZDvidSynapse::getParterKind(size_t i) const
+{
+  EKind kind = KIND_INVALID;
+  if (i < m_partnerKind.size()) {
+    kind = m_partnerKind[i];
+  }
+
+  return kind;
+}
+
 ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
 {
   ZVaa3dMarker marker;
@@ -531,14 +552,21 @@ ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
   return marker;
 }
 
-void ZDvidSynapse::updatePartnerVerification(ZDvidReader &reader)
+void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
+  m_partnerKind.resize(m_partnerHint.size(), KIND_UNKNOWN);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse = reader.readSynapse(m_partnerHint[i]);
-      m_isPartnerVerified[i] = synapse.isVerified();
+      if (synapse.isValid()) {
+        m_isPartnerVerified[i] = synapse.isVerified();
+        m_partnerKind[i] = synapse.getKind();
+      } else {
+        m_isPartnerVerified[i] = false;
+        m_partnerKind[i] = ZDvidSynapse::KIND_INVALID;
+      }
     }
   }
 }

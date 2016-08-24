@@ -584,6 +584,16 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt)
   zoomTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
+void ZStackMvc::goToSlice(int z)
+{
+  getView()->setZ(z);
+}
+
+void ZStackMvc::stepSlice(int dz)
+{
+  getView()->stepSlice(dz);
+}
+
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
   zoomTo(x, y, z, 800);

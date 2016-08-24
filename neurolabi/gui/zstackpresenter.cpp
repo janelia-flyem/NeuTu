@@ -94,6 +94,8 @@ void ZStackPresenter::init()
 
   m_usingHighContrast = false;
 
+  m_paintingRoi = false;
+
   for (int i = 0; i < 3; i++) {
     m_mouseLeftReleasePosition[i] = -1;
     m_mouseRightReleasePosition[i] = -1;
@@ -884,6 +886,22 @@ ZStackObject* ZStackPresenter::getFirstOnActiveObject() const
   }
 
   return NULL;
+}
+
+void ZStackPresenter::setActiveObjectSize(EObjectRole role, double radius)
+{
+  ZStackObject *obj = getActiveObject(role);
+  ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+  if (stroke != NULL) {
+    stroke->setWidth(radius * 2.0);
+  }
+}
+
+void ZStackPresenter::setDefaultActiveObjectSize(EObjectRole role)
+{
+  if (role == ROLE_SWC) {
+    setActiveObjectSize(role, 6.0);
+  }
 }
 
 void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
@@ -2228,6 +2246,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+#if 0
   if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
     stroke->setWidth(
           20.0 + imax2(buddyDocument()->getStack()->width(),
@@ -2235,6 +2254,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   } else {
     stroke->setWidth(6.0);
   }
+#endif
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   stroke->set(x, y);
 
@@ -2914,9 +2934,14 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_SWC_ADD_NODE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+    ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+    if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI ||
+        paintingRoi()) {
+      role = ZStackObjectRole::ROLE_ROI;
+    }
     if (buddyDocument()->executeAddSwcNodeCommand(
           m_mouseEventProcessor.getLatestStackPosition(),
-          stroke->getWidth() / 2.0)) {
+          stroke->getWidth() / 2.0, role)) {
       //status = MOUSE_COMMAND_EXECUTED;
       if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
         buddyDocument()->selectSwcTreeNode(

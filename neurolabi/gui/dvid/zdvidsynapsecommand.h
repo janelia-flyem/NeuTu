@@ -1,5 +1,9 @@
-#ifndef ZDVIDSYNPASECOMMAND_H
-#define ZDVIDSYNPASECOMMAND_H
+#ifndef ZDVIDSYANPSECOMMAND_H
+#define ZDVIDSYANPSECOMMAND_H
+
+#include <QList>
+#include <QSet>
+#include <set>
 
 #include "zstackdoccommand.h"
 #include "dvid/zdvidsynapse.h"
@@ -21,6 +25,26 @@ public:
 protected:
   ZFlyEmProofDoc *m_doc;
   bool m_isExecuted;
+};
+
+class RemoveSynapseOp : public ZUndoCommand
+{
+public:
+  RemoveSynapseOp(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RemoveSynapseOp();
+  void addRemoval(const ZIntPoint &pt);
+  void addRemoval(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
 };
 
 class RemoveSynapse : public ZUndoCommand
@@ -93,6 +117,47 @@ private:
   ZJsonObject m_propertyBackup;
 };
 
+class GroupSynapse : public ZUndoCommand
+{
+public:
+  GroupSynapse(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~GroupSynapse();
+  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
+class UngroupSynapse : public ZUndoCommand
+{
+public:
+public:
+  UngroupSynapse(ZFlyEmProofDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~UngroupSynapse();
+  void addSynapse(const ZIntPoint &pt);
+  void addSynapse(const QList<ZIntPoint> &ptArray);
+
+  void undo();
+  void redo();
+
+private:
+  void backupSynapse();
+
+private:
+  ZFlyEmProofDoc *m_doc;
+  std::set<ZIntPoint> m_synapseSet;
+  ZJsonArray m_synapseBackup;
+};
+
 class LinkSynapse : public ZUndoCommand
 {
 public:
@@ -133,4 +198,4 @@ private:
 }
 }
 
-#endif // ZDVIDSYNPASECOMMAND_H
+#endif // ZDVIDSYNAPSECOMMAND_H

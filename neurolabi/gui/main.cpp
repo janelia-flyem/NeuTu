@@ -202,13 +202,15 @@ int main(int argc, char *argv[])
   }
 
 #ifdef _FLYEM_
+  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
+  QString defaultFlyemConfigPath = QFileInfo(
+        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+      absoluteFilePath();
+  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
+
   QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
   if (flyemConfigPath.isEmpty()) {
     QFileInfo configFileInfo(configPath);
-
-    QString defaultFlyemConfigPath = QFileInfo(
-          QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
-        absoluteFilePath();
 
     flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
     if (flyemConfigPath.isEmpty()) {
@@ -222,7 +224,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.loadConfig();
 
 #ifdef _DEBUG_
   std::cout << config.GetNeuTuServer().toStdString() << std::endl;

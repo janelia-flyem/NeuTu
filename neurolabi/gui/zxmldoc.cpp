@@ -220,7 +220,7 @@ string ZXmlNode::getAttribute(const char *attribute) const
     xmlChar *prop = xmlGetProp(m_node, CONST_XML_STRING(attribute));
     char *tmpStr = Xml_String_To_String(prop);
     attributeValue = tmpStr;
-    free(tmpStr);
+    free(prop);
   }
 #endif
   return attributeValue;

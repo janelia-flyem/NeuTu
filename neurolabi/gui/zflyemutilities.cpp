@@ -4,7 +4,7 @@
 
 double FlyEm::GetFlyEmRoiMarkerRadius(double s)
 {
-  return 20.0 + s / 200;
+  return 10.0 + s / 2000;
 }
 
 double FlyEm::GetFlyEmRoiMarkerRadius(double width, double height)

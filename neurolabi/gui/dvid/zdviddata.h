@@ -37,6 +37,7 @@ public:
     ROLE_BOOKMARK, //Bookmark
     ROLE_BOOKMARK_KEY,
     ROLE_BODY_SYNAPSES,
+    ROLE_LABELSZ,
     ROLE_SYNAPSE,
     ROLE_TODO_LIST,
     ROLE_NEUTU_CONFIG
@@ -85,6 +86,7 @@ private:
   static const char *m_synapseName;
   static const char *m_todoListName;
   static const char *m_neutuConfigName;
+  static const char *m_labelszName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_nullName;

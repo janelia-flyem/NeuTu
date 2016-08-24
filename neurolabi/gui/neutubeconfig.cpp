@@ -726,9 +726,23 @@ void NeutubeConfig::SetFlyEmConfigPath(const QString &path)
   GetSettings().setValue("flyem_config", path);
 }
 
+void NeutubeConfig::UseDefaultFlyEmConfig(bool on)
+{
+  GetSettings().setValue("default_flyem_config", on);
+}
+
 QString NeutubeConfig::GetNeuTuServer()
 {
   return GetSettings().value("neutu_server").toString();
+}
+
+bool NeutubeConfig::UsingDefaultFlyemConfig()
+{
+  if (GetSettings().contains("default_flyem_config")) {
+    return GetSettings().value("default_flyem_config").toBool();
+  }
+
+  return true;
 }
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)

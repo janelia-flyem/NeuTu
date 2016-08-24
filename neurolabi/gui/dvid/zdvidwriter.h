@@ -48,6 +48,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  void clear();
+
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
@@ -78,6 +80,10 @@ public:
       const std::string &type, const std::string &name, bool versioned = true);
 
   void syncAnnotation(const std::string &name);
+  void syncLabelsz(const std::string &dataName,
+                   const std::string &annotationName);
+  void syncSynapseLabelsz();
+  void createSynapseLabelsz();
 
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);

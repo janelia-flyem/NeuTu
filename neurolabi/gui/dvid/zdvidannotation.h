@@ -147,6 +147,8 @@ public: //Json APIs
 
   static bool RemoveRelation(ZJsonArray &json, const ZIntPoint &pt);
   static bool RemoveRelation(ZJsonObject &json, const ZIntPoint &pt);
+  static bool RemoveRelation(ZJsonArray &json, const std::string &rel);
+  static bool RemoveRelation(ZJsonObject &json, const std::string &rel);
 
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
@@ -154,8 +156,23 @@ public: //Json APIs
                           const char* value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+  static void Annotate(ZJsonObject &json, const std::string &annot);
+
   static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
+  static std::vector<ZIntPoint> GetPartners(
+      const ZJsonObject &json, const std::string &relation);
   static ZIntPoint GetPosition(const ZJsonObject &json);
+  static ZIntPoint GetRelPosition(const ZJsonObject &json);
+  static std::string GetRelationType(const ZJsonObject &relJson);
+  static int MatchRelation(
+      const ZJsonArray &relArray, const ZIntPoint &pos, const ZJsonObject &rel);
+  static int MatchRelation(
+      const ZJsonArray &relArray, const ZIntPoint &pos,
+      const std::string &relType);
+
+  static std::string GetMatchingRelation(const std::string &relType);
+
+  static EKind GetKind(const ZJsonObject &json);
 
 protected:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
@@ -178,20 +195,7 @@ protected:
   mutable QStaticText m_textDecoration;
 };
 
-template <typename InputIterator>
-int ZDvidAnnotation::AddRelation(
-    ZJsonObject &json, const InputIterator &first,
-    const InputIterator &last, const std::string &rel)
-{
-  int count = 0;
-  for (InputIterator iter = first; iter != last; ++iter) {
-    if (AddRelation(json, *iter, rel)) {
-      ++count;
-    }
-  }
-
-  return count;
-}
+#include "dvid/zdvidannotation.hpp"
 
 
 #endif // ZDVIDANNOTATION_H

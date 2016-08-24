@@ -841,10 +841,12 @@ void ZStackView::redraw(EUpdateOption option)
         box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
 
+  /*
   buddyDocument()->blockSignals(true);
   buddyDocument()->showSwcFullSkeleton(
         buddyPresenter()->isSwcFullSkeletonVisible());
   buddyDocument()->blockSignals(false);
+  */
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();

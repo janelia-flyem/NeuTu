@@ -761,6 +761,15 @@ std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
   return getAnnotationUrl(dataName) + "/sync";
 }
 
+std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
+{
+  if (dataName.empty()) {
+    return "";
+  }
+
+  return getDataUrl(dataName) + "/sync";
+}
+
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
 {
@@ -983,6 +992,53 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getFirstCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
+}
+
+std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
+{
+  std::string name;
+
+  std::string dataName = m_dvidTarget.getSynapseLabelszName();
+  if (!dataName.empty()) {
+    name = getDataUrl(dataName);
+    name += "/top/";
+    name += ZString::num2str(n);
+  }
+
+  return name;
+}
+
+std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
+{
+  std::string name;
+  switch (type) {
+  case ZDvid::INDEX_PRE_SYN:
+    name = "PreSyn";
+    break;
+  case ZDvid::INDEX_POST_SYN:
+    name = "PostSyn";
+    break;
+  case ZDvid::INDEX_ALL_SYN:
+    name = "AllSyn";
+    break;
+  case ZDvid::INDEX_GAP:
+    name = "Gap";
+    break;
+  case ZDvid::INDEX_NOTE:
+    name = "Note";
+    break;
+  case ZDvid::INDEX_VOXEL:
+    name = "Voxels";
+    break;
+  }
+
+  return name;
+}
+
+std::string ZDvidUrl::getSynapseLabelszUrl(
+    int n, ZDvid::ELabelIndexType indexType) const
+{
+  return getSynapseLabelszUrl(n) + "/" + GetLabelszIndexTypeStr(indexType);
 }
 
 void ZDvidUrl::setUuid(const std::string &uuid)

@@ -2201,7 +2201,8 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
 
 void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
 {
-  m_doc->executeAddSwcNodeCommand(ZPoint(x, y, z), r);
+  m_doc->executeAddSwcNodeCommand(
+        ZPoint(x, y, z), r, ZStackObjectRole::ROLE_NONE);
       /*
   QUndoCommand *insertNewSwcTreeNodeCommand =
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);

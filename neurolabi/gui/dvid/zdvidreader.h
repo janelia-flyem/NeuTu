@@ -61,6 +61,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  void clear();
+
   /*!
    * \brief Get the status code of the latest request (NOT functioning yet)
    * \return
@@ -144,6 +146,9 @@ public:
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
                          int dim1, int dim2, int width, int height);
                          */
+
+  ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
+
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -253,7 +258,9 @@ public:
   bool good() const;
 
   std::string readMasterNode() const;
+//  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
+  static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {
@@ -267,26 +274,26 @@ signals:
   void readingDone();
 
 public slots:
-  void slotTest();
-  void startReading();
-  void endReading();
+//  void slotTest();
+//  void startReading();
+//  void endReading();
 
   std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
-  bool isReadingDone();
-  void waitForReading();
+//  bool isReadingDone();
+//  void waitForReading();
   bool startService();
 
   void init();
 
 protected:
-  QEventLoop *m_eventLoop;
+//  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
-  QTimer *m_timer;
-  bool m_isReadingDone;
+//  QTimer *m_timer;
+//  bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;

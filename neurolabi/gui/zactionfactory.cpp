@@ -404,6 +404,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_VERIFY:
     action = new QAction("Verify", parent);
+    action->setIcon(QIcon(":/images/verify.png"));
     break;
   case ACTION_SYNAPSE_UNVERIFY:
     action = new QAction("Unverfiy", parent);
@@ -451,6 +452,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/hl_post.png"));
     action->setCheckable(true);
     action->setChecked(true);
+    break;
+  case ACTION_SYNAPSE_REPAIR:
+    action = new QAction("Repair Synapses", parent);
+    action->setIcon(QIcon(":/images/repair.png"));
+    action->setStatusTip("Repair selected synapses");
     break;
   case ACTION_TOGGLE_SWC_SKELETON:
     action = new QAction("Show Full Skeleton", parent);

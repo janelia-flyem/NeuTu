@@ -3,9 +3,10 @@
 
 #include <string>
 
+#include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
-#include "neutube_def.h"
+#include "dvid/zdviddef.h"
 
 class ZIntPoint;
 class ZIntCuboid;
@@ -192,6 +193,7 @@ public:
       const std::string &dataName, const ZIntCuboid &box) const;
 
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
+  std::string getLabelszSyncUrl(const std::string &dataName) const;
 
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
@@ -220,6 +222,12 @@ public:
   static std::string GetSkeletonKey(uint64_t bodyId);
 
   void setUuid(const std::string &uuid);
+
+
+  std::string getSynapseLabelszUrl(int n) const;
+
+  static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
+  std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
 
 private:
   std::string getSplitUrl(
