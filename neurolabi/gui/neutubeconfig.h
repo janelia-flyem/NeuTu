@@ -43,6 +43,8 @@ public:
 
   static QString GetFlyEmConfigPath();
   static void SetFlyEmConfigPath(const QString &path);
+  static void UseDefaultFlyEmConfig(bool on);
+  static bool UsingDefaultFlyemConfig();
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);

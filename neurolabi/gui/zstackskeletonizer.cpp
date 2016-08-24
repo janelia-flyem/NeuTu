@@ -813,6 +813,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     }
 
     if (m_connectingBranch) {
+      std::cout << "Reconnecting ..." << std::endl;
       reconnect(wholeTree);
     }
 

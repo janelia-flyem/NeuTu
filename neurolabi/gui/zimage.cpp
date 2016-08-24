@@ -55,6 +55,13 @@ void ZImage::setDefaultContrastProtocal()
   m_grayScale = 1.5;
 }
 
+void ZImage::setContrastProtocol(double scale, double offset, bool nonlinear)
+{
+  m_grayOffset = offset;
+  m_grayScale = scale;
+  m_nonlinear = nonlinear;
+}
+
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
                      bool offsetAdjust)
 {

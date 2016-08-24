@@ -27,6 +27,8 @@ private slots:
 
   void on_contrastPushButton_clicked();
 
+  void on_addMasterPushButton_clicked();
+
 private:
   Ui::DvidOperateDialog *ui;
 

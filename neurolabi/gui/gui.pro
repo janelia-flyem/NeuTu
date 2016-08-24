@@ -603,7 +603,6 @@ HEADERS += mainwindow.h \
     flyem/zflyemnamebodycolorscheme.h \
     dvid/zdvidsynapseensenmble.h \
     zcubearray.h \
-    dvid/zdvidsynpasecommand.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     misc/zstackyzview.h \
@@ -644,7 +643,10 @@ HEADERS += mainwindow.h \
     zdvidutil.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
-    flyem/zflyemsynapsedataupdater.h
+    flyem/zflyemsynapsedataupdater.h \
+    dvid/zdvidsynapsecommand.h \
+    dvid/zdvidannotation.hpp \
+    dialogs/zflyemroitooldialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -727,7 +729,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
-    dialogs/zcontrastprotocaldialog.ui
+    dialogs/zcontrastprotocaldialog.ui \
+    dialogs/zflyemroitooldialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1102,7 +1105,7 @@ SOURCES += main.cpp \
     flyem/zflyemnamebodycolorscheme.cpp \
     dvid/zdvidsynapseensenmble.cpp \
     zcubearray.cpp \
-    dvid/zdvidsynpasecommand.cpp \
+    dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     misc/zstackyzview.cpp \
@@ -1143,7 +1146,8 @@ SOURCES += main.cpp \
     zdvidutil.cpp \
     dialogs/zcontrastprotocaldialog.cpp \
     flyem/zflyemsynapsedatafetcher.cpp \
-    flyem/zflyemsynapsedataupdater.cpp
+    flyem/zflyemsynapsedataupdater.cpp \
+    dialogs/zflyemroitooldialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

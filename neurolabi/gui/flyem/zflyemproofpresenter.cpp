@@ -76,6 +76,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SYNAPSE_LINK:
       connect(action, SIGNAL(triggered()), this, SLOT(linkSelectedSynapse()));
       break;
+    case ZActionFactory::ACTION_SYNAPSE_REPAIR:
+      connect(action, SIGNAL(triggered()), this, SLOT(repairSelectedSynapse()));
+      break;
     case ZActionFactory::ACTION_SYNAPSE_UNLINK:
       connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
       break;
@@ -358,6 +361,11 @@ void ZFlyEmProofPresenter::deleteSelectedSynapse()
 void ZFlyEmProofPresenter::linkSelectedSynapse()
 {
   getCompleteDocument()->executeLinkSynapseCommand();
+}
+
+void ZFlyEmProofPresenter::repairSelectedSynapse()
+{
+  getCompleteDocument()->repairSelectedSynapses();
 }
 
 void ZFlyEmProofPresenter::unlinkSelectedSynapse()

@@ -1,3 +1,31 @@
+function update_gcc 
+{
+  condaDir=$1
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  if [ `uname` != 'Darwin' ]
+  then
+    GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+    if [ $GCCVER \> '4.9.0' ]
+    then
+      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+      then
+        source ${CONDA_ROOT}/bin/activate dvidenv
+        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+      fi
+    fi
+
+    if [ $GCCVER \< '4.8.0' ]
+    then
+      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+      then
+        source ${CONDA_ROOT}/bin/activate dvidenv
+        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+      fi
+    fi
+  fi
+
+}
+
 function flyem_build_lowtis {
   install_dir=$1
   downloadDir=$install_dir/Download
@@ -5,6 +33,8 @@ function flyem_build_lowtis {
   condaDir=$downloadDir/miniconda
   envDir=$condaDir/envs/dvidenv
 
+  update_gcc $condaDir
+  
   if [ `uname` != 'Darwin' ]
   then
     if [ -d $downloadDir/lowtis ]

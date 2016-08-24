@@ -47,19 +47,19 @@ ZDvidReader::~ZDvidReader()
 
 void ZDvidReader::init()
 {
-  m_eventLoop = new QEventLoop(this);
+//  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
-  m_timer = new QTimer(this);
+//  m_timer = new QTimer(this);
 #if defined(_ENABLE_LIBDVIDCPP_)
 //  m_service = NULL;
 #endif
   //m_timer->setInterval(1000);
 
-  m_isReadingDone = false;
+//  m_isReadingDone = false;
 
   //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
 //  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
-  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
+//  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
   //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
 //  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
 
@@ -80,6 +80,15 @@ void ZDvidReader::setStatusCode(int code) const
   m_statusCode = code;
 }
 
+void ZDvidReader::clear()
+{
+  m_dvidTarget.clear();
+#if defined(_ENABLE_LOWTIS_)
+  m_lowtisService.reset();
+#endif
+}
+
+/*
 void ZDvidReader::slotTest()
 {
   qDebug() << "ZDvidReader::slotTest";
@@ -99,7 +108,7 @@ void ZDvidReader::endReading()
 
   emit readingDone();
 }
-
+*/
 bool ZDvidReader::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -212,7 +221,7 @@ bool ZDvidReader::open(const QString &sourceString)
   target.setFromSourceString(sourceString.toStdString());
   return open(target);
 }
-
+#if 0
 void ZDvidReader::waitForReading()
 {
 #ifdef _DEBUG_
@@ -223,6 +232,7 @@ void ZDvidReader::waitForReading()
     m_eventLoop->exec();
   }
 }
+#endif
 
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
@@ -736,10 +746,12 @@ ZStack* ZDvidReader::readGrayScale(
 #endif
 }
 
+/*
 bool ZDvidReader::isReadingDone()
 {
   return m_isReadingDone;
 }
+*/
 
 ZJsonObject ZDvidReader::readInfo() const
 {
@@ -1596,6 +1608,10 @@ void ZDvidReader::refreshLabelBuffer()
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
+  if (!getDvidTarget().hasBodyLabel()) {
+    return NULL;
+  }
+
   if (zoom > 0) {
     int scale = pow(2, zoom);
     width /= scale;
@@ -2265,6 +2281,14 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   return synapseArray;
 }
 
+ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszUrl(n, index));
+
+  return obj;
+}
+
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     uint64_t label, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
 {
@@ -2307,6 +2331,12 @@ std::string ZDvidReader::readMasterNode() const
   return ReadMasterNode(getDvidTarget());
 }
 
+/*
+std::vector<std::string> ZDvidReader::readMasterList() const
+{
+  return ReadMasterList(getDvidTarget());
+}
+*/
 std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
 {
   std::string master;
@@ -2327,6 +2357,28 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   }
 
   return master;
+}
+
+std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
+{
+  std::vector<std::string> masterList;
+  std::string rootNode =
+      GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
+  if (!rootNode.empty()) {
+    ZDvidBufferReader reader;
+    ZDvidUrl dvidUrl(target);
+    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
+        "/branches/key/master";
+    LINFO() << "Master url: " << url;
+    reader.read(url.c_str());
+    ZJsonArray branchJson;
+    branchJson.decodeString(reader.getBuffer().data());
+    for (size_t i = 0; i < branchJson.size(); ++i) {
+      masterList.push_back(ZJsonParser::stringValue(branchJson.at(i)));
+    }
+  }
+
+  return masterList;
 }
 
 std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(

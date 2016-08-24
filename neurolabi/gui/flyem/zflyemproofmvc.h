@@ -31,6 +31,7 @@ class ZClickableColorLabel;
 class ZColorLabel;
 class ZFlyEmSynapseDataFetcher;
 class ZFlyEmSynapseDataUpdater;
+class ZFlyEmRoiToolDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -148,6 +149,7 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showRoi3dWindow();
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
 
@@ -192,6 +194,13 @@ public slots:
   void openSequencer();
   void openProtocol();
   void openTodo();
+  void openRoiTool();
+
+  void goToNearestRoi();
+  void syncRoiProject();
+  void closeRoiProject();
+  void updateRoiCurve();
+  void estimateRoi();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -312,6 +321,7 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
+  ZFlyEmRoiToolDialog *m_roiDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

@@ -13,81 +13,83 @@
   <property name="windowTitle">
    <string>DVID Operation</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>200</y>
-     <width>141</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>20</y>
-     <width>191</width>
-     <height>158</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QPushButton" name="dvidPushButton">
-      <property name="text">
-       <string>Select Database</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="contrastPushButton">
-      <property name="text">
-       <string>Set Contrast</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="dvidLabel">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QComboBox" name="typeComboBox">
-      <item>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QPushButton" name="dvidPushButton">
+     <property name="text">
+      <string>Select Database</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="contrastPushButton">
+     <property name="text">
+      <string>Set Contrast</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="addMasterPushButton">
+     <property name="text">
+      <string>Add Master Node</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="dvidLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="creatDataPushButton">
        <property name="text">
-        <string>keyvalue</string>
+        <string>Create </string>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>roi</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>annotation</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="creatDataPushButton">
-      <property name="text">
-       <string>Create Data</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="typeComboBox">
+       <item>
+        <property name="text">
+         <string>keyvalue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>roi</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>annotation</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

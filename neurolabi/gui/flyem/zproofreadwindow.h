@@ -104,10 +104,12 @@ private:
   QAction *m_contrastAction;
   QAction *m_smoothAction;
   QAction *m_openTodoAction;
+  QAction *m_roiToolAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
+  QAction *m_openRoi3dAction;
   QAction *m_queryTableAction;
 
   QToolBar *m_toolBar;

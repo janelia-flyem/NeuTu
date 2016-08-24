@@ -134,6 +134,14 @@ public:
 
   void setSliceAxis(NeuTube::EAxis axis);
 
+  bool paintingRoi() const {
+    return m_paintingRoi;
+  }
+
+  void setPaintingRoi(bool on) {
+    m_paintingRoi = on;
+  }
+
   /*
   void updateZoomOffset(int cx, int cy, int r0);
   void updateZoomOffset(int cx, int cy, int wx, int wy);
@@ -379,6 +387,8 @@ public slots:
 //  void turnOnStroke();
   void turnOnActiveObject(EObjectRole role, bool refreshing = true);
 
+  void setActiveObjectSize(EObjectRole role, double radius);
+  void setDefaultActiveObjectSize(EObjectRole role);
 
   /*!
    * \brief Turn off the active stroke
@@ -462,6 +472,7 @@ protected:
 
   bool m_showObject;
   bool m_oldShowObject;
+  bool m_paintingRoi;
   std::vector<double> m_grayScale;
   std::vector<double> m_grayOffset;
   int m_threshold;

@@ -88,6 +88,11 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   return startService();;
 }
 
+void ZDvidWriter::clear()
+{
+  m_dvidTarget.clear();
+}
+
 bool ZDvidWriter::good() const
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -428,6 +433,31 @@ void ZDvidWriter::syncAnnotation(const std::string &name)
                    getDvidTarget().getBodyLabelName());
   post(url.getAnnotationSyncUrl(name), jsonObj);
 }
+
+void ZDvidWriter::syncLabelsz(
+    const std::string &dataName, const std::string &annotationName)
+{
+  ZDvidUrl url(getDvidTarget());
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("sync", annotationName);
+  post(url.getLabelszSyncUrl(dataName), jsonObj);
+}
+
+void ZDvidWriter::syncSynapseLabelsz()
+{
+  syncLabelsz(getDvidTarget().getSynapseLabelszName(),
+              getDvidTarget().getSynapseName());
+}
+
+void ZDvidWriter::createSynapseLabelsz()
+{
+  std::string dataName = getDvidTarget().getSynapseLabelszName();
+  if (!dataName.empty()) {
+    createData("labelsz", dataName);
+    syncSynapseLabelsz();
+  }
+}
+
 
 void ZDvidWriter::createData(
     const std::string &type, const std::string &name, bool versioned)

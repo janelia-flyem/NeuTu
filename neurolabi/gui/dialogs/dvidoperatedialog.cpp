@@ -75,3 +75,31 @@ void DvidOperateDialog::on_contrastPushButton_clicked()
     }
   }
 }
+
+void DvidOperateDialog::on_addMasterPushButton_clicked()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Create Master Node"),
+                                       tr("uuid:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    ZDvidTarget target = m_dvidDlg->getDvidTarget();
+    target.setUuid(text.toStdString());
+    ZDvidReader reader;
+    if (reader.open(target)) {
+      ZDvidWriter writer;
+      writer.open(m_dvidDlg->getDvidTarget());
+      writer.writeMasterNode(text.toStdString());
+      if (writer.getStatusCode() == 200) {
+        QMessageBox::information(
+              this, "Master Node Updated",
+              QString("The master node is changed to %1").arg(text));
+      } else {
+        QMessageBox::warning(this, "Update Failed", "Unable to set the master node.");
+      }
+    } else {
+      QMessageBox::warning(this, "Update Failed",
+                           QString("Unable to open the uuid %1.").arg(text));
+    }
+  }
+}

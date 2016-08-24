@@ -95,6 +95,7 @@ public slots:
   void unverifySelectedSynapse();
   void linkSelectedSynapse();
   void unlinkSelectedSynapse();
+  void repairSelectedSynapse();
   void highlightPsd(bool on);
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);
   void tryAddPreSynapseMode();
