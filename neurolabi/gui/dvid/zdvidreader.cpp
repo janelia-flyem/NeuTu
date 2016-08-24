@@ -1608,6 +1608,10 @@ void ZDvidReader::refreshLabelBuffer()
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
+  if (!getDvidTarget().hasBodyLabel()) {
+    return NULL;
+  }
+
   if (zoom > 0) {
     int scale = pow(2, zoom);
     width /= scale;
