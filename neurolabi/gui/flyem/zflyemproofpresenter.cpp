@@ -195,6 +195,12 @@ void ZFlyEmProofPresenter::configKeyMap()
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
   config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
   config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+
+#ifdef _DEBUG_
+  std::cout << "Key V mapped to "
+            << m_swcKeyOperationMap.getOperation(Qt::Key_V, Qt::NoModifier)
+            << std::endl;
+#endif
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)

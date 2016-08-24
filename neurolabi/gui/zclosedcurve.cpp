@@ -43,6 +43,15 @@ const ZPoint& ZClosedCurve::getLandmark(int index) const
   return m_landmarkArray[index];
 }
 
+void ZClosedCurve::setZ(double z)
+{
+  for (ZPointArray::iterator iter = m_landmarkArray.begin();
+       iter != m_landmarkArray.end(); ++iter) {
+    ZPoint &pt = *iter;
+    pt.setZ(z);
+  }
+}
+
 int ZClosedCurve::findMatchShift(const ZClosedCurve &target) const
 {
   ZPoint center1 = computeCenter();

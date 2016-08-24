@@ -197,9 +197,9 @@ public slots:
   void openRoiTool();
 
   void goToNearestRoi();
-  void syncRoiProject();
+  void loadRoiProject();
   void closeRoiProject();
-  void updateRoiCurve();
+  void updateRoiGlyph();
   void estimateRoi();
 
   void checkSelectedBookmark(bool checking);

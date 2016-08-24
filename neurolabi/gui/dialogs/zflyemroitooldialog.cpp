@@ -34,6 +34,7 @@ void ZFlyEmRoiToolDialog::init()
           this, SIGNAL(goingToNearestRoi()));
   connect(ui->prevPushButton, SIGNAL(clicked()), this, SLOT(prevSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()), this, SLOT(nextSlice()));
+  connect(ui->estimatePushButton, SIGNAL(clicked()), this, SLOT(estimateRoi()));
 
   clear();
   downloadAllProject();
@@ -245,6 +246,11 @@ void ZFlyEmRoiToolDialog::updateRoi()
       }
     }
   }
+}
+
+void ZFlyEmRoiToolDialog::estimateRoi()
+{
+  emit estimatingRoi();
 }
 
 void ZFlyEmRoiToolDialog::uploadRoi()

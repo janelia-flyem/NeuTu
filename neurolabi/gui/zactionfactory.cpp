@@ -422,12 +422,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
     action->setIcon(QIcon(":/images/move.png"));
-    action->setShortcut(Qt::Key_V);
+//    action->setShortcut(Qt::Key_V);
     action->setStatusTip("Move a synapse with mouse click");
     break;
   case ACTION_SYNAPSE_DELETE:
     action = new QAction("Delete Synapse", parent);
-    action->setShortcut(Qt::Key_X);
+//    action->setShortcut(Qt::Key_X);
     action->setIcon(QIcon(":/images/delete.png"));
     action->setStatusTip("Delete selected synapses");
     break;

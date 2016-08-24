@@ -4367,6 +4367,11 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
                          m_objectGroup.getSelector()->getDeselectedSet());
 }
 
+bool ZStackDoc::hasSelectedObject() const
+{
+  return m_objectGroup.hasSelected();
+}
+
 TStackObjectSet &ZStackDoc::getSelected(ZStackObject::EType type)
 {
   return m_objectGroup.getSelectedSet(type);
@@ -8168,8 +8173,8 @@ void ZStackDoc::pushUndoCommand(QUndoCommand *command)
 
 void ZStackDoc::pushUndoCommand(ZUndoCommand *command)
 {
-  m_undoStack->push(command);
   command->logCommand();
+  m_undoStack->push(command);
 }
 
 bool ZStackDoc::executeInsertSwcNode()
