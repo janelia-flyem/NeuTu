@@ -613,6 +613,7 @@ void ZStackDocCommand::DvidSynapseEdit::GroupSynapse::redo()
           }
         }
         if (added) {
+          ZDvidSynapse::Annotate(synapseJson, "Multi");
           synapseString.append(currentPos.toString().c_str());
           writer.writeSynapse(synapseJson);
         }

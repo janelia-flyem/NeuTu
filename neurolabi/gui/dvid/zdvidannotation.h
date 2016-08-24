@@ -156,6 +156,7 @@ public: //Json APIs
                           const char* value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           bool value);
+  static void Annotate(ZJsonObject &json, const std::string &annot);
 
   static std::vector<ZIntPoint> GetPartners(const ZJsonObject &json);
   static std::vector<ZIntPoint> GetPartners(

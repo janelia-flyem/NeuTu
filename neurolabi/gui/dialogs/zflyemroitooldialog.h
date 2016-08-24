@@ -57,7 +57,7 @@ signals:
   void steppingSlice(int);
   void goingToSlice(int);
   void goingToNearestRoi();
-
+  void estimatingRoi();
 
 private:
   void init();

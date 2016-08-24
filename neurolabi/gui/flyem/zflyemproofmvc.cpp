@@ -102,6 +102,7 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(goingToSlice(int)), this, SLOT(goToSlice(int)));
   connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
   connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
+  connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -2490,6 +2491,20 @@ void ZFlyEmProofMvc::goToNearestRoi()
     if (project->hasRoi()) {
       int z = project->getNearestRoiZ(getView()->getCurrentZ());
       goToSlice(z);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::estimateRoi()
+{
+  ZFlyEmRoiProject *project = m_roiDlg->getProject();
+  if (project != NULL) {
+    if (project->hasRoi()) {
+      int z = getView()->getCurrentZ();
+      ZClosedCurve *roi = new ZClosedCurve;
+      project->estimateRoi(z, roi);
+      project->setRoi(roi, z);
+      updateRoiCurve();
     }
   }
 }

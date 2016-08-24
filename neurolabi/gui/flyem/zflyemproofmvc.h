@@ -200,6 +200,7 @@ public slots:
   void syncRoiProject();
   void closeRoiProject();
   void updateRoiCurve();
+  void estimateRoi();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);

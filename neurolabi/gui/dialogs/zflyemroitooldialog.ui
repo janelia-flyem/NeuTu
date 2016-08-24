@@ -131,6 +131,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QPushButton" name="estimatePushButton">
+     <property name="text">
+      <string>Estimate ROI</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="uploadPushButton">
      <property name="text">
       <string>Upload</string>

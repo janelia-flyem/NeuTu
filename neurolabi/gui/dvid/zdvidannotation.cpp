@@ -571,6 +571,10 @@ void ZDvidAnnotation::AddProperty(
   }
 }
 
+void ZDvidAnnotation::Annotate(ZJsonObject &json, const std::string &annot)
+{
+  AddProperty(json, "annotation", annot);
+}
 
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, bool value)

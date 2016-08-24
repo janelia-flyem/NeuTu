@@ -6979,8 +6979,12 @@ void MainWindow::on_actionCreate_ROI_triggered()
 
 void MainWindow::on_actionFlyEmROI_triggered()
 {
+  report("Warning", "The ROI tool is under maintainence. Please wait for the update.",
+         NeuTube::MSG_WARNING);
+#if 0
   m_roiDlg->show();
   m_roiDlg->raise();
+#endif
 }
 
 void MainWindow::on_actionShape_Matching_triggered()
