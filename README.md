@@ -7,7 +7,7 @@ Software package for neuron reconstruction and visualization
 
 ## Download
 
-    git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
+    git clone -b biocytin https://github.com/janelia-flyem/NeuTu.git NeuTu
 
 ## Build
 
@@ -21,37 +21,18 @@ Software package for neuron reconstruction and visualization
 
 ####
 
-    sh build.sh <qmake_path> <qmake_spec_path>
-
-by specifying the qmake command path and the corresponding spec path. 
-
-Additional flags are needed to build special editions:
-
-#### FlyEM Edition
-    
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem
-
-#### FlyEM Edition with DVID support
-    
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem -q "DVIDCPP_PATH=<dvidcpp_apth>"
-    
-Here \<dvidcpp_path\> is the install path of libdvid-cpp.
-
-#### Bright Field (Biocytin) Edition
-
     sh build.sh <qmake_path> <qmake_spec_path> -e biocytin
+by specifying the qmake command path and the corresponding spec path, or
 
-### Windows
+    sh build.sh <qt_dir> -e biocytin
+    
+The executable is 
+
+    NeuTu/neurolabi/build/neuTube
+
+### Windows (NOT tested)
 
 See neurolabi/Compile_Windows.txt for more details.
-
-## Configuration
-
-### The edition for dark field neuron reconstruction
-Copy neurolabi/gui/config.xml to the folder containing the executable 
-
-### The edition for FLyEM
-Copy config_flyem.xml and neurolabi/json to the folder containing the executable
 
 ## Other information
  
