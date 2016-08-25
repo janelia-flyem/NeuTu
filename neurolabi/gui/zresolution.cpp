@@ -59,6 +59,12 @@ void ZResolution::convertUnit(char unit)
   m_unit = unit;
 }
 
+void ZResolution::set(double x, double y, double z, char unit)
+{
+  setVoxelSize(x, y, z);
+  setUnit(unit);
+}
+
 void ZResolution::loadJsonObject(const ZJsonObject &obj)
 {
   reset();

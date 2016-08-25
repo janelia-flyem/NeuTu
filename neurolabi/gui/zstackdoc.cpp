@@ -8166,8 +8166,8 @@ void ZStackDoc::pushUndoCommand(QUndoCommand *command)
 
 void ZStackDoc::pushUndoCommand(ZUndoCommand *command)
 {
-  m_undoStack->push(command);
   command->logCommand();
+  m_undoStack->push(command);
 }
 
 bool ZStackDoc::executeInsertSwcNode()
