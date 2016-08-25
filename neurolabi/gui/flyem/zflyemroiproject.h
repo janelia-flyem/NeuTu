@@ -8,12 +8,14 @@
 #include "dvid/zdvidinfo.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "dvid/zdvidwriter.h"
+#include "zwidgetmessage.h"
 
 class ZStackFrame;
 class ZSwcTree;
 class ZObject3dScan;
 class ZStackDocReader;
 class ZStackDoc;
+class QWidget;
 
 /*!
  * \brief The class of managing a FlyEM ROI project
@@ -90,6 +92,7 @@ public:
 
   bool hasOpenedRoi() const;
   int uploadRoi();
+  bool createRoiData(const std::string &roiName, QWidget *parent);
   int uploadRoi(int z);
   void downloadRoi();
   void downloadRoi(int z);
@@ -178,6 +181,7 @@ private:
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
 
 signals:
+  void messageGenerated(ZWidgetMessage msg);
 
 public slots:
 

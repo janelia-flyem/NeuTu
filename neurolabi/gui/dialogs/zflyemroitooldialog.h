@@ -51,6 +51,7 @@ public slots:
   void prevSlice();
   void nextSlice();
   void estimateRoi();
+  void createRoiData();
 
 signals:
   void projectActivited();

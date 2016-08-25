@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QWidget>
 
 #include "ui_zflyemroitooldialog.h"
 #include "flyem/zflyemproofmvc.h"
@@ -35,6 +36,7 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->prevPushButton, SIGNAL(clicked()), this, SLOT(prevSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()), this, SLOT(nextSlice()));
   connect(ui->estimatePushButton, SIGNAL(clicked()), this, SLOT(estimateRoi()));
+  connect(ui->dvidRoiPushButton, SIGNAL(clicked()), this, SLOT(createRoiData()));
 
   clear();
   downloadAllProject();
@@ -72,6 +74,7 @@ ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProject(const QString &name)
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
     project = new ZFlyEmRoiProject(name.toStdString(), this);
+    ZWidgetMessage::ConnectMessagePipe(project, this);
     project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
   } else {
 
@@ -259,6 +262,22 @@ void ZFlyEmRoiToolDialog::uploadRoi()
   if (project != NULL) {
     updateRoi();
     project->uploadRoi();
+  }
+}
+
+void ZFlyEmRoiToolDialog::createRoiData()
+{
+  ZFlyEmRoiProject *project = getProject();
+  if (project != NULL) {
+    updateRoi();
+    bool ok = false;
+    QString roiName = QInputDialog::getText(
+          this, tr("Create ROI Data"), tr("Data name:"), QLineEdit::Normal,
+          project->getName().c_str(), &ok);
+
+    if (!roiName.isEmpty() && ok) {
+      project->createRoiData(roiName.toStdString(), this);
+    }
   }
 }
 

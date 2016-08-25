@@ -2,6 +2,9 @@
 #include <QStringList>
 #include <ostream>
 #include <fstream>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMessageBox>
 
 #include "neutubeconfig.h"
 #include "zstackframe.h"
@@ -19,6 +22,8 @@
 #include "zfiletype.h"
 #include "zswcforest.h"
 #include "zswctree.h"
+#include "zjsonfactory.h"
+#include "zdialogfactory.h"
 
 const double ZFlyEmRoiProject::m_defaultSynapseRadius = 20.0;
 
@@ -499,6 +504,75 @@ int ZFlyEmRoiProject::uploadRoi(int z)
   }
 
   return count;
+}
+
+bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent)
+{
+  bool succ = false;
+
+  ZObject3dScan obj = getRoiSlice();
+
+  if (obj.isEmpty()) {
+    return succ;
+  }
+
+  if (!roiName.empty()) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      if (reader.hasData(roiName)) {
+        std::string type = reader.getType(roiName);
+        if (type != "roi") {
+          QMessageBox::warning(parent, "Name Conflict",
+                               QString("Cannot create ROI data. %1 has been used by type %2").
+                               arg(roiName.c_str()).arg(type.c_str()));
+          return false;
+        }
+
+        if (!ZDialogFactory::Ask(
+              "Overwrite Data",
+              QString("The data %1 already exists. "
+                      "Do you want to overwrite it?").arg(roiName.c_str()), parent)) {
+          return false;
+        }
+      } else {
+        m_dvidWriter.createData("roi", roiName);
+        if (m_dvidWriter.getStatusCode() == 200) {
+          emit messageGenerated(ZWidgetMessage(
+                                  QString("ROI data %1 has been created.").
+                                  arg(roiName.c_str())));
+        } else {
+          emit messageGenerated(
+                ZWidgetMessage("Failed to create ROI data.", NeuTube::MSG_WARNING));
+          return false;
+        }
+      }
+
+      ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
+      int minZ = blockObj.getMinZ();
+      int maxZ = blockObj.getMaxZ();
+
+      ZObject3dScan interpolated;
+      for (int z = minZ; z <= maxZ; ++z) {
+        interpolated.concat(blockObj.interpolateSlice(z));
+      }
+
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(
+            interpolated, ZJsonFactory::OBJECT_SPARSE);
+      m_dvidWriter.writeJson(
+            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName),
+            array);
+      if (m_dvidWriter.getStatusCode() == 200) {
+        emit messageGenerated(ZWidgetMessage("ROI data %1 has been uploaded."));
+        succ = true;
+      } else {
+        emit messageGenerated(
+              ZWidgetMessage("Failed to create ROI data.", NeuTube::MSG_WARNING));
+        return false;
+      }
+    }
+  }
+
+  return succ;
 }
 
 int ZFlyEmRoiProject::uploadRoi()

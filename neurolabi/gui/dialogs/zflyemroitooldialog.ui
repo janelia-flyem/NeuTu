@@ -138,11 +138,22 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="uploadPushButton">
-     <property name="text">
-      <string>Upload</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="uploadPushButton">
+       <property name="text">
+        <string>Upload</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="dvidRoiPushButton">
+       <property name="text">
+        <string>Create DVID ROI</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
