@@ -184,6 +184,7 @@ public slots:
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showRoiMask(bool visible);
   void showData(bool visible);
   void setHighContrast(bool on);
   void toggleSegmentation();
@@ -240,6 +241,7 @@ protected slots:
   void detachSplitWindow();
   void detachSkeletonWindow();
   void detachObjectWindow();
+  void detachRoiWindow();
   void detachExternalNeuronWindow();
   void detachOrthoWindow();
   void detachQueryWindow();
@@ -331,6 +333,7 @@ protected:
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
+  Z3DWindow *m_roiWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
 //  ZFlyEmDataFrame *m_queryWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;

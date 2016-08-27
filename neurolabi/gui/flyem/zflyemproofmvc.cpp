@@ -108,6 +108,7 @@ void ZFlyEmProofMvc::init()
 
   initBodyWindow();
   m_objectWindow = NULL;
+  m_roiWindow = NULL;
   m_orthoWindow = NULL;
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
@@ -305,6 +306,11 @@ void ZFlyEmProofMvc::detachObjectWindow()
   m_objectWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachRoiWindow()
+{
+  m_roiWindow = NULL;
+}
+
 void ZFlyEmProofMvc::detachExternalNeuronWindow()
 {
   m_externalNeuronWindow = NULL;
@@ -334,6 +340,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachSkeletonWindow()));
     } else if (window == m_objectWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
+    } else if (window == m_roiWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachRoiWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
             this, SLOT(zoomTo(ZStackViewParam)));
@@ -2176,7 +2184,19 @@ void ZFlyEmProofMvc::showFineBody3d()
 
 void ZFlyEmProofMvc::showRoi3dWindow()
 {
-  showObjectWindow();
+  if (m_roiWindow == NULL) {
+    ZWindowFactory factory;
+    factory.setDeleteOnClose(true);
+    factory.setVisible(Z3DWindow::LAYER_PUNCTA, false);
+    m_roiWindow =
+        factory.make3DWindow(m_doc, Z3DWindow::INIT_EXCLUDE_VOLUME);
+    m_roiWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
+    m_roiWindow->getSwcFilter()->setColorMode("Topology");
+    setWindowSignalSlot(m_roiWindow);
+  }
+
+  m_roiWindow->show();
+  m_roiWindow->raise();
 }
 
 void ZFlyEmProofMvc::showObjectWindow()
@@ -2264,6 +2284,7 @@ void ZFlyEmProofMvc::closeBodyWindow(Z3DWindow *window)
 void ZFlyEmProofMvc::closeAllAssociatedWindow()
 {
   close3DWindow(m_objectWindow);
+  close3DWindow(m_roiWindow);
   close3DWindow(m_externalNeuronWindow);
   if (m_bodyViewWindow != NULL) {
     m_bodyViewWindow->close();
@@ -2524,13 +2545,20 @@ void ZFlyEmProofMvc::closeRoiProject()
 {
   updateRoiGlyph();
   getPresenter()->setDefaultActiveObjectSize(ZStackPresenter::ROLE_SWC);
-  close3DWindow(m_objectWindow);
+  close3DWindow(m_roiWindow);
 }
 
 
 void ZFlyEmProofMvc::updateRoiGlyph()
 {
-  getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+  QList<ZStackObject*> objList =
+      getCompleteDocument()->getObjectList(ZStackObjectRole::ROLE_ROI);
+  for (QList<ZStackObject*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    getCompleteDocument()->executeRemoveObjectCommand(obj);
+  }
+//  getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
   ZFlyEmRoiProject *project = m_roiDlg->getProject();
   if (project != NULL) {
@@ -2539,7 +2567,7 @@ void ZFlyEmProofMvc::updateRoiGlyph()
     if (tree != NULL) {
       tree->addRole(ZStackObjectRole::ROLE_ROI);
       tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
-      getCompleteDocument()->addObject(tree);
+      getCompleteDocument()->executeAddObjectCommand(tree);
     }
   } else {
     getCompletePresenter()->setPaintingRoi(false);
@@ -2595,6 +2623,11 @@ void ZFlyEmProofMvc::showBookmark(bool visible)
   getCompleteDocument()->setVisible(ZStackObject::TYPE_FLYEM_BOOKMARK, visible);
 //  m_splitProject.setBookmarkVisible(visible);
 //  m_mergeProject.setBookmarkVisible(visible);
+}
+
+void ZFlyEmProofMvc::showRoiMask(bool visible)
+{
+  getCompleteDocument()->setVisible(ZStackObjectRole::ROLE_ROI_MASK, visible);
 }
 
 void ZFlyEmProofMvc::showSegmentation(bool visible)

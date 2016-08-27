@@ -246,6 +246,9 @@ public:
   const TStackObjectList& getObjectListUnsync(ZStackObject::EType type)
   const;
 
+  QList<ZStackObject*> getObjectListUnsync(ZStackObjectRole::TRole role) const;
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
+
   template<typename T>
   QList<T*> getObjectListUnsync() const;
 

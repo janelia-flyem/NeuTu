@@ -20587,7 +20587,7 @@ void ZTest::test(MainWindow *host)
   writer.createSynapseLabelsz();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "0c7e", 7000);
   target.setBodyLabelName("segmentation-labelvol");
@@ -20601,6 +20601,11 @@ void ZTest::test(MainWindow *host)
   std::cout << json.dumpString(2) << std::endl;
 #endif
 
+#if 1
+  for (int i = 0; i < 66; ++i) {
+    std::cout << i << ": " << BIT_FLAG(i) << std::endl;
+  }
+#endif
 
   std::cout << "Done." << std::endl;
 }

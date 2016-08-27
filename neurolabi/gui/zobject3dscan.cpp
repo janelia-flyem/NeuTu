@@ -1603,6 +1603,12 @@ void ZObject3dScan::displaySolid(
         int x1 = stripe.getSegmentEnd(j);// - offsetX;
         int y = stripe.getY();// - offsetY;
 
+        if (!m_dsIntv.isZero()) {
+          x0 *= (m_dsIntv.getX() + 1);
+          x1 *= (m_dsIntv.getX() + 1);
+          y *= m_dsIntv.getY() + 1;
+        }
+
         //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
         //        for (int x = x0; x <= x1; ++x) {
         //          pointArray.push_back(QPoint(x, y));
@@ -1652,9 +1658,15 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
 
   QPen pen(m_color);
 
+
+  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY)) {
+    style = ZStackObject::BOUNDARY;
+  }
+
   if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::SOLID;
   }
+
   //QImage *targetImage = dynamic_cast<QImage*>(painter.device());
 
   switch (style) {
@@ -1702,8 +1714,14 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
         for (int y = 0; y < height; ++y) {
           for (int x = 0; x < width; ++x) {
             if (pre->array[offset++] > 0) {
-              ptArray.push_back(QPoint(x + stack->getOffset().getX(),
-                                       y + stack->getOffset().getY()));
+              int cx = x + stack->getOffset().getX();
+              int cy = y + stack->getOffset().getY();
+              if (!m_dsIntv.isZero()) {
+                cx *= m_dsIntv.getX() + 1;
+                cy *= m_dsIntv.getY() + 1;
+              }
+
+              ptArray.push_back(QPoint(cx, cy));
             }
           }
         }
@@ -1727,6 +1745,16 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   UNUSED_PARAMETER(slice);
   UNUSED_PARAMETER(style);
 #endif
+}
+
+void ZObject3dScan::setDsIntv(int x, int y, int z)
+{
+  m_dsIntv.set(x, y, z);
+}
+
+void ZObject3dScan::setDsIntv(const ZIntPoint &intv)
+{
+  m_dsIntv = intv;
 }
 
 void ZObject3dScan::dilatePlane()
@@ -1954,6 +1982,8 @@ ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
 
+  z /= (m_dsIntv.getZ() + 1);
+
   if (!isEmpty()) {
     const_cast<ZObject3dScan&>(*this).canonize();
 
@@ -2036,6 +2066,7 @@ ZObject3dScan ZObject3dScan::getSlice(int z) const
 #endif
   }
 
+  slice.setDsIntv(m_dsIntv);
   slice.setCanonized(true);
 
   return slice;

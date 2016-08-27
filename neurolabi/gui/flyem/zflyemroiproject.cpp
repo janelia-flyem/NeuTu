@@ -510,12 +510,6 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
 {
   bool succ = false;
 
-  ZObject3dScan obj = getRoiSlice();
-
-  if (obj.isEmpty()) {
-    return succ;
-  }
-
   if (!roiName.empty()) {
     ZDvidReader reader;
     if (reader.open(getDvidTarget())) {
@@ -547,6 +541,15 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
         }
       }
 
+      ZObject3dScan obj = getRoiSlice();
+
+      if (obj.isEmpty()) {
+        emit messageGenerated(
+              ZWidgetMessage("Failed to create ROI data. The ROI is empty.",
+                             NeuTube::MSG_WARNING));
+        return false;
+      }
+
       ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
       int minZ = blockObj.getMinZ();
       int maxZ = blockObj.getMaxZ();
@@ -562,7 +565,9 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
             ZDvidUrl(getDvidTarget()).getRoiUrl(roiName),
             array);
       if (m_dvidWriter.getStatusCode() == 200) {
-        emit messageGenerated(ZWidgetMessage("ROI data %1 has been uploaded."));
+        emit messageGenerated(ZWidgetMessage(
+                                QString("ROI data %1 has been uploaded.").
+                              arg(roiName.c_str())));
         succ = true;
       } else {
         emit messageGenerated(

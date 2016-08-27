@@ -2143,25 +2143,30 @@ bool ZDvidReader::isBookmarkChecked(const ZIntPoint &pt) const
   return isBookmarkChecked(pt.getX(), pt.getY(), pt.getZ());
 }
 
-ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
+ZObject3dScan* ZDvidReader::readRoi(
+    const std::string &dataName, ZObject3dScan *result)
 {
   ZDvidBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   bufferReader.read(dvidUrl.getRoiUrl(dataName).c_str());
-//  bufferReader.readQt(dvidUrl.getRoiUrl(dataName).c_str());
   const QByteArray &buffer = bufferReader.getBuffer();
-
-#ifdef _DEBUG_2
-  std::cout << buffer.constData() << std::endl;
-#endif
 
   ZJsonArray array;
   array.decodeString(buffer.constData());
 
-  ZObject3dScan obj;
-  obj.importDvidRoi(array);
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  }
+  result->importDvidRoi(array);
 
+  return result;
+}
+
+ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
+{
+  ZObject3dScan obj;
+  readRoi(dataName, &obj);
   return obj;
 }
 

@@ -515,6 +515,30 @@ TStackObjectList& ZStackObjectGroup::getObjectListUnsync(
   return  m_sortedGroup[type];
 }
 
+QList<ZStackObject*> ZStackObjectGroup::getObjectList(
+    ZStackObjectRole::TRole role) const
+{
+  QMutexLocker locker(&m_mutex);
+
+  return getObjectListUnsync(role);
+}
+
+QList<ZStackObject*> ZStackObjectGroup::getObjectListUnsync(
+    ZStackObjectRole::TRole role) const
+{
+  QList<ZStackObject*> objList;
+
+  for (QList<ZStackObject*>::const_iterator iter = m_objectList.begin();
+       iter != m_objectList.end(); ++iter) {
+    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
+    if (obj->hasRole(role)) {
+      objList.append(obj);
+    }
+  }
+
+  return objList;
+}
+
 TStackObjectList& ZStackObjectGroup::getObjectList(ZStackObject::EType type)
 {
   QMutexLocker locker(&m_mutex);

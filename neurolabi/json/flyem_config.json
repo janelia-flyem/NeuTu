@@ -364,7 +364,8 @@
       "name": "MB_Test",
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
-      "label_block": "labels"
+      "label_block": "labels",
+      "roi": "mb_subtracted"
     },
     {
       "address": "emdata1.int.janelia.org",

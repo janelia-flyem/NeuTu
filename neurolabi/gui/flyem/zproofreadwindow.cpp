@@ -191,6 +191,12 @@ void ZProofreadWindow::createMenu()
   connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showBookmark(bool)));
 
+  m_viewRoiAction = new QAction("ROI", this);
+  m_viewRoiAction->setCheckable(true);
+  m_viewRoiAction->setChecked(false);
+  connect(m_viewRoiAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showRoiMask(bool)));
+
   m_viewSegmentationAction = new QAction("Segmentation", this);
   m_viewSegmentationAction->setIcon(QIcon(":/images/view_segmentation.png"));
   m_viewSegmentationAction->setCheckable(true);
@@ -246,6 +252,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
+  m_viewMenu->addAction(m_viewRoiAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
@@ -341,6 +348,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
   m_toolBar->addAction(m_viewTodoAction);
+  m_toolBar->addAction(m_viewRoiAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);

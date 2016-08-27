@@ -669,6 +669,8 @@ public:
     return m_objectGroup.getObjectList(type);
   }
 
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
+
   template<typename T>
   QList<T*> getObjectList() const;
 

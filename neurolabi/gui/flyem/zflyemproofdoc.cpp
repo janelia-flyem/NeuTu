@@ -435,6 +435,31 @@ void ZFlyEmProofDoc::prepareDvidData()
 
     ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
     loadStack(stack);
+
+    //Download ROI
+    if (!getDvidTarget().getRoiName().empty()) {
+      ZObject3dScan *obj =
+          m_dvidReader.readRoi(getDvidTarget().getRoiName(), NULL);
+      if (obj != NULL) {
+        if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+          std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
+#endif
+          obj->setColor(255, 255, 255);
+          obj->setZOrder(2);
+          obj->setTarget(ZStackObject::TARGET_WIDGET);
+          obj->useCosmeticPen(true);
+          obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+          obj->setDsIntv(31, 31, 31);
+          obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+          addObject(obj);
+//          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
+        } else {
+          delete obj;
+        }
+      }
+
+    }
   }
 
 

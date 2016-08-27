@@ -69,15 +69,21 @@ bool ZFlyEmRoiToolDialog::isValidName(const QString &name) const
   return isValid;
 }
 
+ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProjectWithoutCheck(const QString &name)
+{
+  ZFlyEmRoiProject *project = new ZFlyEmRoiProject(name.toStdString(), this);
+  ZWidgetMessage::ConnectMessagePipe(project, this);
+  project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+
+  return project;
+}
+
 ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProject(const QString &name)
 {
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
-    project = new ZFlyEmRoiProject(name.toStdString(), this);
-    ZWidgetMessage::ConnectMessagePipe(project, this);
-    project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+    project = newProjectWithoutCheck(name);
   } else {
-
     QMessageBox::warning(
               this, "Failed to Create A Project",
               "Invalid project name: no space is allowed; "
@@ -119,6 +125,11 @@ void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
   dump(ZWidgetMessage(msg, NeuTube::MSG_INFORMATION,
                       ZWidgetMessage::TARGET_TEXT_APPENDING));
+}
+
+void ZFlyEmRoiToolDialog::processMessage(const ZWidgetMessage &msg)
+{
+  dump(msg);
 }
 
 bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
@@ -209,9 +220,8 @@ void ZFlyEmRoiToolDialog::downloadAllProject()
       array.decode(value.constData());
       for (size_t i = 0; i < array.size(); ++i) {
         std::string name(ZJsonParser::stringValue(array.at(i)));
-        if (!name.empty()) {
-          ZFlyEmRoiProject *project = ZFlyEmRoiProject::Make(name, this);
-          project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+        if (ZFlyEmRoiProject::IsValidName(name)) {
+          ZFlyEmRoiProject *project = newProjectWithoutCheck(name.c_str());
           if (!appendProject(project)) {
             delete project;
           }

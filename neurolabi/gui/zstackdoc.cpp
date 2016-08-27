@@ -3298,6 +3298,11 @@ void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
   }
 }
 
+QList<ZStackObject*> ZStackDoc::getObjectList(ZStackObjectRole::TRole role) const
+{
+  return m_objectGroup.getObjectList(role);
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
