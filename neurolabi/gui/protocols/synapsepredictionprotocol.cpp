@@ -104,7 +104,10 @@ bool SynapsePredictionProtocol::initialize() {
 
     } else if (m_variation == VARIATION_BODY) {
         // using text dialog because getInt() variation is 32-bit;
-        //  our body IDs get bigger
+        //  our body IDs get bigger than that
+        // note for future improvement: would be nice to let the user
+        //  enter a body name, but currently we store body names in
+        //  key-value, which is not indexed and not synced to body IDs
         bool ok;
         uint64_t bodyID;
         QString ans = QInputDialog::getText(this,
