@@ -139,7 +139,7 @@ bool SynapsePredictionProtocol::initialize() {
         }
         m_bodyID = bodyID;
     } else {
-        // should never happen
+        variationError(m_variation);
         return false;
     }
 
@@ -369,7 +369,8 @@ void SynapsePredictionProtocol::saveState() {
     } else if (m_variation == VARIATION_BODY) {
         data.setEntry(KEY_BODYID.c_str(), m_bodyID);
     } else {
-        // should never happen...
+        variationError(m_variation);
+        return;
     }
 
     // always version your output files!
@@ -420,9 +421,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         m_bodyID = ZJsonParser::integerValue(data[KEY_BODYID.c_str()]);
         loadInitialSynapseList();
     } else {
-        // should never happen
-
-
+        variationError(m_variation);
     }
 
     onFirstButton();
@@ -630,9 +629,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
             synapseList = reader.readSynapse(m_bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
             std::cout << "read synapse; number read = " << synapseList.size() << std::endl;
         } else {
-            // should never happen
-
-
+            variationError(m_variation);
         }
 
         // build the lists of pre-synaptic sites; if a site is
@@ -793,6 +790,15 @@ void SynapsePredictionProtocol::setSitesHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(SITES_X_COLUMN, new QStandardItem(QString("x")));
     model->setHorizontalHeaderItem(SITES_Y_COLUMN, new QStandardItem(QString("y")));
     model->setHorizontalHeaderItem(SITES_Z_COLUMN, new QStandardItem(QString("z")));
+}
+
+void SynapsePredictionProtocol::variationError(std::string variation) {
+    QMessageBox mb;
+    mb.setText("Unknown protocol variation!");
+    mb.setInformativeText("Unknown protocol variation " + QString::fromStdString(variation) + " was encountered!  Report this error!");
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
 }
 
 SynapsePredictionProtocol::~SynapsePredictionProtocol()

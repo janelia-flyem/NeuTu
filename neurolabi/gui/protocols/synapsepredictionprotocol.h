@@ -96,6 +96,8 @@ private:
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
+    void variationError(std::string variation);
+
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
