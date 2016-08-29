@@ -62,12 +62,17 @@ const std::string ProtocolSwitcher::PROTOCOL_DATA_NAME = "NeuTu-protocols";
 const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 
 
-// names of available protocols; thank you, C++, for making
-//  constants so hard to define
+// names of available protocols: the protocol switcher is responsible for
+//  assigning names to the various protocols and relating the names to
+//  the protocol classes; the names are listed here, and the mappings
+//  are listed in instantiateProtocol()
+
+// thank you, C++, for making constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
-        << "synapse_prediction";
+        << "synapse_prediction_body"
+        << "synapse_prediction_region";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -297,6 +302,15 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
 }
 
 void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
+    // note: this is where we map protocol names to classes;
+    //  C++ makes this difficult because classes (types) aren't
+    //  first-class languages like in higher-level languages, like Python
+
+    // note that if you decide to rename a protocol, you should keep
+    //  the old name's mapping present, to handle old saves; if not,
+    //  you'd better handle it in some other way (eg, rename, refuse to
+    //  open + dialog, whatever)
+
     // if-else chain not ideal, but C++ is too stupid to switch
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
@@ -305,10 +319,17 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     }
     if (protocolName == "doNthings") {
         m_activeProtocol = new DoNThingsProtocol(m_parent);
-    } else if (protocolName == "synapse_prediction") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent);
+    } else if (protocolName == "synapse_prediction_region") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+    } else if (protocolName == "synapse_prediction_body") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    }
+    // below here: old protocols (renamed, deleted, etc.)
+    // old synapse_prediction is always region:
+    else if (protocolName == "synapse_prediction") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else {
-        // should never happen; the null will cause errors
+        // should never happen; the null will cause errors later
         m_activeProtocol = NULL;
     }
 

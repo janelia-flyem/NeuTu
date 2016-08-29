@@ -22,10 +22,12 @@
 #include "zjsonfactory.h"
 #include "zjsonarray.h"
 
-SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
+SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::string variation) :
     ProtocolDialog(parent),
     ui(new Ui::SynapsePredictionProtocol)
 {
+    m_variation = variation;
+
     ui->setupUi(this);
 
     // sites table
@@ -63,11 +65,13 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent) :
     m_currentFinishedIndex = 0;
 }
 
-// protocol name should not contain hyphens
-const std::string SynapsePredictionProtocol::PROTOCOL_NAME = "synapse_prediction";
+const std::string SynapsePredictionProtocol::KEY_VARIATION = "variation";
+const std::string SynapsePredictionProtocol::VARIATION_REGION = "region";
+const std::string SynapsePredictionProtocol::VARIATION_BODY = "body";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
-const int SynapsePredictionProtocol::fileVersion = 1;
+const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
+const int SynapsePredictionProtocol::fileVersion = 2;
 
 
 /*
@@ -77,47 +81,77 @@ const int SynapsePredictionProtocol::fileVersion = 1;
  */
 bool SynapsePredictionProtocol::initialize() {
 
-    SynapsePredictionInputDialog inputDialog;
+    if (m_variation == VARIATION_REGION) {
+        SynapsePredictionInputDialog inputDialog;
 
-    // set initial volume here
-    // small volume for testing (has only a handful of synapses):
-    // inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
+        // set initial volume here
+        // small volume for testing (has only a handful of synapses):
+        // inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
 
-    inputDialog.setRoI("(RoI is ignored for now)");
+        inputDialog.setRoI("(RoI is ignored for now)");
 
-    int ans = inputDialog.exec();
-    if (ans == QDialog::Rejected) {
+        int ans = inputDialog.exec();
+        if (ans == QDialog::Rejected) {
+            return false;
+        }
+        ZIntCuboid volume = inputDialog.getVolume();
+        if (volume.isEmpty()) {
+            return false;
+        }
+        QString roiInput = inputDialog.getRoI();
+
+        m_protocolRange = volume;
+
+    } else if (m_variation == VARIATION_BODY) {
+        // using text dialog because getInt() variation is 32-bit;
+        //  our body IDs get bigger
+        bool ok;
+        uint64_t bodyID;
+        QString ans = QInputDialog::getText(this,
+            "Choose body", "Review synapses on body with ID:",
+            QLineEdit::Normal, "", &ok);
+        if (ok && !ans.isEmpty()) {
+            // convert to int and check that it exists:
+            bodyID = ans.toLong(&ok);
+            if (!ok) {
+                QMessageBox mb;
+                mb.setText("Can't parse body ID");
+                mb.setInformativeText("The entered body ID " + ans + " doesn't seem to be an integer!");
+                mb.setStandardButtons(QMessageBox::Ok);
+                mb.setDefaultButton(QMessageBox::Ok);
+                mb.exec();
+                return false;
+            }
+            ZDvidReader reader;
+            if (reader.open(m_dvidTarget)) {
+                if (!reader.hasBody(bodyID)) {
+                    QMessageBox mb;
+                    mb.setText("Body ID doesn't exist!");
+                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
+                    mb.setStandardButtons(QMessageBox::Ok);
+                    mb.setDefaultButton(QMessageBox::Ok);
+                    mb.exec();
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+        m_bodyID = bodyID;
+    } else {
+        // should never happen
         return false;
     }
-    ZIntCuboid volume = inputDialog.getVolume();
-    if (volume.isEmpty()) {
-        return false;
-    }
-    QString roiInput = inputDialog.getRoI();
-
-    m_protocolRange = volume;
 
     // generate pending/finished lists from user input
     // throw this into a thread?
-    loadInitialSynapseList(volume, roiInput);
-
-
-    // arrange list in some appropriate way:
-    //  -- here or in above call?
-    //  -- pre then post or the other way around?
-    //  -- cluster spatially?
-
-
+    loadInitialSynapseList();
 
     // get started
     onFirstButton();
     saveState();
 
     return true;
-}
-
-std::string SynapsePredictionProtocol::getName() {
-    return PROTOCOL_NAME;
 }
 
 void SynapsePredictionProtocol::onFirstButton() {
@@ -327,8 +361,16 @@ void SynapsePredictionProtocol::saveState() {
 
     ZJsonObject data;
 
-    ZJsonArray rangeJson = ZJsonFactory::MakeJsonArray(m_protocolRange);
-    data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
+    data.setEntry(KEY_VARIATION.c_str(), m_variation.c_str());
+
+    if (m_variation == VARIATION_REGION) {
+        ZJsonArray rangeJson = ZJsonFactory::MakeJsonArray(m_protocolRange);
+        data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
+    } else if (m_variation == VARIATION_BODY) {
+        data.setEntry(KEY_BODYID.c_str(), m_bodyID);
+    } else {
+        // should never happen...
+    }
 
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), fileVersion);
@@ -343,17 +385,44 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         ui->progressLabel->setText("No version info in saved data; data not loaded!");
         return;
     }
-    if (ZJsonParser::integerValue(data[KEY_VERSION.c_str()]) > fileVersion) {
+    int version = ZJsonParser::integerValue(data[KEY_VERSION.c_str()]);
+    if (version > fileVersion) {
         ui->progressLabel->setText("Saved data is from a newer version of NeuTu; update NeuTu and try again!");
         return;
     }
 
-    m_protocolRange.loadJson(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
-    if (!m_protocolRange.isEmpty()) {
+    // convert old versions; do in sequential order: 1 to 2, 2 to 3, etc;
+    //  worked well with Raveler, so do it here; can break these out to
+    //  separate methods if they get wordy
+    if (version != fileVersion) {
+        // 1 to 2:
+        if (version == 1) {
+            // in v2, we added the "variation" key; in v1, that was always "region"
+            data.setEntry(KEY_VARIATION.c_str(), VARIATION_REGION.c_str());
+            version = 2;
+        }
+
+
+        // at end of updates, save, because not all variations save frequently:
+        saveState();
+    }
+
+    // variation specific loading:
+    if (m_variation == VARIATION_REGION) {
+        m_protocolRange.loadJson(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
+        if (!m_protocolRange.isEmpty()) {
+            loadInitialSynapseList();
+        } else {
+            ui->progressLabel->setText("Invalid protocol range. No data loaded!");
+            return;
+        }
+    } else if (m_variation == VARIATION_BODY) {
+        m_bodyID = ZJsonParser::integerValue(data[KEY_BODYID.c_str()]);
         loadInitialSynapseList();
     } else {
-        ui->progressLabel->setText("Invalid protocol range. No data loaded!");
-        return;
+        // should never happen
+
+
     }
 
     onFirstButton();
@@ -541,15 +610,6 @@ void SynapsePredictionProtocol::updateLabels() {
 
 void SynapsePredictionProtocol::loadInitialSynapseList()
 {
-  loadInitialSynapseList(m_protocolRange, "");
-}
-
-/*
- * retrieve synapses from the input volume that are in the input RoI;
- * load into arrays
- */
-void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QString /*roi*/) {
-
     // I don't *think* there's any way these lists will already be populated, but...
     m_pendingList.clear();
     m_finishedList.clear();
@@ -558,13 +618,22 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
-        std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
-            volume, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        std::vector<ZDvidSynapse> synapseList;
+        if (m_variation == VARIATION_REGION) {
+            synapseList = reader.readSynapse(m_protocolRange, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
 
-        // filter by roi (coming soon)
-        // will need to do raw DVID call to batch ask "is point in RoI?";
-        //  that call not in ZDvidReader() yet
+            // filter by roi (coming "soon")
+            // will need to do raw DVID call to batch ask "is point in RoI?";
+            //  that call not in ZDvidReader() yet
 
+        } else if (m_variation == VARIATION_BODY) {
+            synapseList = reader.readSynapse(m_bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            std::cout << "read synapse; number read = " << synapseList.size() << std::endl;
+        } else {
+            // should never happen
+
+
+        }
 
         // build the lists of pre-synaptic sites; if a site is
         //  already verified, then it is "finished"; if not,

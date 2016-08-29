@@ -21,12 +21,11 @@ class SynapsePredictionProtocol : public ProtocolDialog
     Q_OBJECT
 
 public:
-    explicit SynapsePredictionProtocol(QWidget *parent = 0);
+    explicit SynapsePredictionProtocol(QWidget *parent = 0, std::string variation = VARIATION_REGION);
     ~SynapsePredictionProtocol();
     bool initialize();
-    std::string getName();
-
-public:
+    static const std::string VARIATION_REGION;
+    static const std::string VARIATION_BODY;
     void processSynapseVerification(int x, int y, int z, bool verified);
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -62,9 +61,10 @@ private slots:
     void onDoubleClickSitesTable(QModelIndex index);
 
 private:
-    static const std::string PROTOCOL_NAME;
+    static const std::string KEY_VARIATION;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
+    static const std::string KEY_BODYID;
     static const int fileVersion;
 
     enum SitesTableColumns {
@@ -77,17 +77,18 @@ private:
 
     Ui::SynapsePredictionProtocol *ui;
     QStandardItemModel * m_sitesModel;
+    std::string m_variation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
     int m_currentPendingIndex; //Index for locating in pending list
     int m_currentFinishedIndex;
     ZIntCuboid m_protocolRange;
+    uint64_t  m_bodyID;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
     void gotoCurrentFinished();
-    void loadInitialSynapseList(ZIntCuboid volume, QString roi);
     void loadInitialSynapseList();
     void setSitesHeaders(QStandardItemModel * model);
     void clearSitesTable();
