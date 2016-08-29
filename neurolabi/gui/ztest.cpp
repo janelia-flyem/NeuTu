@@ -20222,7 +20222,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("d7c37");
+  writer.writeMasterNode("ab896");
 #endif
 
 #if 0
@@ -20601,10 +20601,30 @@ void ZTest::test(MainWindow *host)
   std::cout << json.dumpString(2) << std::endl;
 #endif
 
-#if 1
+#if 0
   for (int i = 0; i < 66; ++i) {
     std::cout << i << ": " << BIT_FLAG(i) << std::endl;
   }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 1, 2);
+  obj.addSegment(0, 1, 5, 7);
+  obj.addSegment(0, 2, 0, 10);
+  obj.addSegment(0, 3, 1, 2);
+  obj.addSegment(0, 3, 4, 6);
+
+  ZObject3dScan slice = obj.getPlaneSurface(0);
+
+  slice.print();
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.getPlaneSurface().save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

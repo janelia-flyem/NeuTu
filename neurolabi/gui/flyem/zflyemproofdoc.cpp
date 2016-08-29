@@ -445,7 +445,7 @@ void ZFlyEmProofDoc::prepareDvidData()
 #ifdef _DEBUG_
           std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
 #endif
-          obj->setColor(255, 255, 255);
+          obj->setColor(0, 255, 0);
           obj->setZOrder(2);
           obj->setTarget(ZStackObject::TARGET_WIDGET);
           obj->useCosmeticPen(true);

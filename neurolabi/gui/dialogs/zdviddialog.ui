@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>529</height>
+    <height>562</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -270,6 +270,20 @@
         <string>Edit</string>
        </property>
       </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_16">
+     <item>
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>ROI</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="roiLineEdit"/>
      </item>
     </layout>
    </item>

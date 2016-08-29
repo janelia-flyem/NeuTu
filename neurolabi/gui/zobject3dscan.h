@@ -406,6 +406,9 @@ public:
 
   ZObject3dScan getSurfaceObject() const;
 
+  ZObject3dScan getPlaneSurface(int z) const;
+  ZObject3dScan getPlaneSurface() const;
+
   /*!
    * \brief Find all holes as a single object.
    * \return An object composed of all holes of the original object.

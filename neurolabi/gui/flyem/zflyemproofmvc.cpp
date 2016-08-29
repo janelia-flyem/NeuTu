@@ -360,9 +360,9 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
           doc, SLOT(setUnrecycable(QSet<uint64_t>)));
           */
 
-  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
           this, SLOT(updateBodyWindowDeep()));
-  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
           this, SLOT(updateCoarseBodyWindowDeep()));
 
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
@@ -1140,7 +1140,7 @@ void ZFlyEmProofMvc::customInit()
           this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
-  connect(&m_mergeProject, SIGNAL(mergeUploaded(QSet<uint64_t>)),
+  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
           this, SLOT(updateBodyMerge()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),

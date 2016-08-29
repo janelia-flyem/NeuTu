@@ -193,7 +193,8 @@ void ZProofreadWindow::createMenu()
 
   m_viewRoiAction = new QAction("ROI", this);
   m_viewRoiAction->setCheckable(true);
-  m_viewRoiAction->setChecked(false);
+  m_viewRoiAction->setChecked(true);
+  m_viewRoiAction->setIcon(QIcon(":/images/view_roi.png"));
   connect(m_viewRoiAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showRoiMask(bool)));
 
@@ -296,6 +297,7 @@ void ZProofreadWindow::createMenu()
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
   m_viewSegmentationAction->setEnabled(false);
+  m_viewRoiAction->setEnabled(false);
   m_viewTodoAction->setEnabled(false);
 }
 
@@ -518,6 +520,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
   m_viewSegmentationAction->setEnabled(target.isValid());
+  m_viewRoiAction->setEnabled(target.isValid());
   m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
