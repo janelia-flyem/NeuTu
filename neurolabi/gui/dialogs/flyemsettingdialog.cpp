@@ -1,5 +1,6 @@
 #include "flyemsettingdialog.h"
 #include <QFileInfo>
+#include "QsLog/QsLog.h"
 
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
@@ -83,6 +84,9 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());
   NeutubeConfig::SetVerboseLevel(ui->verboseSpinBox->value());
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    QsLogging::Logger::instance().setLoggingLevel(QsLogging::TraceLevel);
+  }
   NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());

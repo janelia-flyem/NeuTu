@@ -47,12 +47,23 @@ namespace QsLogging
 class QSLOG_SHARED_OBJECT Destination
 {
 public:
+  Destination();
+  Destination(Level matchingLevel);
+
+  inline Level getMatchingLevel() {
+    return m_matchingLevel;
+  }
+
+public:
     typedef void (*LogFunction)(const QString &message, Level level);
 
 public:
     virtual ~Destination();
     virtual void write(const QString& message, Level level) = 0;
     virtual bool isValid() = 0; // returns whether the destination was created correctly
+
+private:
+  Level m_matchingLevel;
 };
 typedef QSharedPointer<Destination> DestinationPtr;
 
@@ -87,7 +98,8 @@ public:
     static DestinationPtr MakeFileDestination(const QString& filePath,
         LogRotationOption rotation = DisableLogRotation,
         const MaxSizeBytes &sizeInBytesToRotateAfter = MaxSizeBytes(),
-        const MaxOldLogCount &oldLogsToKeep = MaxOldLogCount());
+        const MaxOldLogCount &oldLogsToKeep = MaxOldLogCount(),
+        Level matchingLevel = OffLevel);
     static DestinationPtr MakeDebugOutputDestination();
     // takes a pointer to a function
     static DestinationPtr MakeFunctorDestination(Destination::LogFunction f);

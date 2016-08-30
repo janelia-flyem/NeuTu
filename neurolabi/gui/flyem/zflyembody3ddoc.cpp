@@ -1073,6 +1073,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
 {
   cancelEventThread();
 
+  ZOUT(LTRACE(), 5) << "Dump puncta";
   QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
   for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
        iter != punctumList.end(); ++iter) {
@@ -1081,6 +1082,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     dumpGarbage(p, false);
   }
 
+  ZOUT(LTRACE(), 5) << "Dump todo list";
   QList<ZFlyEmToDoItem*> todoList = getObjectList<ZFlyEmToDoItem>();
   for (QList<ZFlyEmToDoItem*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -1090,6 +1092,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   }
 
 
+  ZOUT(LTRACE(), 5) << "Dump swc";
   QList<ZSwcTree*> treeList = getSwcList();
   for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
        iter != treeList.end(); ++iter) {

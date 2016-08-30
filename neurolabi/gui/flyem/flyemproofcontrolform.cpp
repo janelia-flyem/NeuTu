@@ -303,6 +303,7 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
   m_userBookmarkList.clear();
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Update user bookmark table";
     const TStackObjectList &objList =
         doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();

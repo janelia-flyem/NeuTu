@@ -140,7 +140,7 @@ void ZStackObjectGroup::setSelected(bool selected)
 
 void ZStackObjectGroup::setSelectedUnsync(bool selected)
 {
-  ZOUT(LINFO(), 5) << "Select object";
+  ZOUT(LTRACE(), 5) << "Select object";
 
   for (QList<ZStackObject*> ::iterator iter = m_objectList.begin();
        iter != m_objectList.end(); ++iter) {
@@ -161,7 +161,7 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
 
 void ZStackObjectGroup::setSelectedUnsync(ZStackObject::EType type, bool selected)
 {
-  ZOUT(LINFO(), 5) << "Select object by type";
+  ZOUT(LTRACE(), 5) << "Select object by type";
 
   TStackObjectList &objList = getObjectListUnsync(type);
   TStackObjectSet &selectedSet = getSelectedSetUnsync(type);
@@ -198,7 +198,7 @@ void ZStackObjectGroup::deselectAll()
 
 void ZStackObjectGroup::deselectAllUnsync()
 {
-  ZOUT(LINFO(), 5) << "Deselect all objects";
+  ZOUT(LTRACE(), 5) << "Deselect all objects";
 
   for (TObjectSetMap::iterator iter = m_selectedSet.begin();
        iter != m_selectedSet.end(); ++iter) {
@@ -215,7 +215,7 @@ void ZStackObjectGroup::deselectAllUnsync()
 
 ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
 {
-  ZOUT(LINFO(), 5) << "Taking object";
+  ZOUT(LTRACE(), 5) << "Taking object";
 
   ZStackObject *found = NULL;
   if (m_objectList.removeOne(obj)) {
@@ -240,7 +240,7 @@ ZStackObject* ZStackObjectGroup::take(ZStackObject *obj)
 
 TStackObjectList ZStackObjectGroup::takeUnsync(TObjectTest testFunc)
 {
-  ZOUT(LINFO(), 5) << "Taking object";
+  ZOUT(LTRACE(), 5) << "Taking object";
 
   if (testFunc == NULL) { //Shouldn't happen. Just let it crash.
     LERROR() << "Null testing function";
@@ -271,7 +271,7 @@ TStackObjectList ZStackObjectGroup::take(TObjectTest testFunc)
 TStackObjectList ZStackObjectGroup::takeUnsync(
     ZStackObject::EType type, TObjectTest testFunc)
 {
-  ZOUT(LINFO(), 5) << "Taking object by type";
+  ZOUT(LTRACE(), 5) << "Taking object by type";
 
   if (testFunc == NULL) { //Shouldn't happen. Just let it crash.
     LERROR() << "Null testing function";
@@ -303,7 +303,7 @@ TStackObjectList ZStackObjectGroup::take(
 TStackObjectList ZStackObjectGroup::takeSameSourceUnsync(
     ZStackObject::EType type, const std::string &source)
 {
-  ZOUT(LINFO(), 5) << "Taking object by source";
+  ZOUT(LTRACE(), 5) << "Taking object by source";
 
   TStackObjectList objList;
 
@@ -325,7 +325,7 @@ TStackObjectList ZStackObjectGroup::takeSameSource(
 
 TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
 {
-  ZOUT(LINFO(), 5) << "Taking object by type";
+  ZOUT(LTRACE(), 5) << "Taking object by type";
 
   TStackObjectList objSet = getObjectListUnsync(type);
   if (!objSet.empty()) {
@@ -363,7 +363,7 @@ bool ZStackObjectGroup::remove_p(TStackObjectSet &objSet, ZStackObject *obj)
 
 bool ZStackObjectGroup::removeObjectUnsync(ZStackObject *obj, bool isDeleting)
 {
-  ZOUT(LINFO(), 5) << "Removing object. Deleting:" << isDeleting;
+  ZOUT(LTRACE(), 5) << "Removing object. Deleting:" << isDeleting;
 
   ZStackObject *found = takeUnsync(obj);
 
@@ -383,7 +383,7 @@ bool ZStackObjectGroup::removeObject(ZStackObject *obj, bool isDeleting)
 
 bool ZStackObjectGroup::removeObjectUnsync(ZStackObject::EType type, bool deleting)
 {
-  ZOUT(LINFO(), 5) << "Removing object by type. Deleting" << deleting;
+  ZOUT(LTRACE(), 5) << "Removing object by type. Deleting" << deleting;
 
   TStackObjectList objSet = takeUnsync(type);
   if (deleting) {
@@ -406,7 +406,7 @@ bool ZStackObjectGroup::removeObject(ZStackObject::EType type, bool deleting)
 bool ZStackObjectGroup::removeObjectUnsync(
     const TStackObjectSet &objSet, bool deleting)
 {
-  ZOUT(LINFO(), 5) << "Removing object set. Deleting" << deleting;
+  ZOUT(LTRACE(), 5) << "Removing object set. Deleting" << deleting;
 
   bool removed = false;
 
@@ -438,7 +438,7 @@ bool ZStackObjectGroup::removeObject(
 
 bool ZStackObjectGroup::removeSelectedUnsync(bool deleting)
 {
-  ZOUT(LINFO(), 5) << "Removing seleted objects. Deleting" << deleting;
+  ZOUT(LTRACE(), 5) << "Removing seleted objects. Deleting" << deleting;
 
   TStackObjectList objSet = takeSelectedUnsync();
   if (deleting) {
@@ -461,7 +461,7 @@ bool ZStackObjectGroup::removeSelected(bool deleting)
 bool ZStackObjectGroup::removeSelectedUnsync(
     ZStackObject::EType type, bool deleting)
 {
-  ZOUT(LINFO(), 5) << "Removing seleted objects by type. Deleting" << deleting;
+  ZOUT(LTRACE(), 5) << "Removing seleted objects by type. Deleting" << deleting;
 
   TStackObjectList objSet = takeSelectedUnsync(type);
   if (deleting) {
@@ -484,7 +484,7 @@ bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 
 void ZStackObjectGroup::removeAllObjectUnsync(bool deleting)
 {
-  ZOUT(LINFO(), 5) << "Removing all objects. Deleting" << deleting;
+  ZOUT(LTRACE(), 5) << "Removing all objects. Deleting" << deleting;
 
   if (deleting) {
     for (QList<ZStackObject*>::iterator iter = m_objectList.begin();
@@ -512,7 +512,7 @@ void ZStackObjectGroup::removeAllObject(bool deleting)
 TStackObjectList& ZStackObjectGroup::getObjectListUnsync(
     ZStackObject::EType type)
 {
-  ZOUT(LINFO(), 5) << "Getting object list:" << "type" << type;
+  ZOUT(LTRACE(), 5) << "Getting object list:" << "type" << type;
 
   if (!m_sortedGroup.contains(type)) {
     m_sortedGroup[type] = TStackObjectList();

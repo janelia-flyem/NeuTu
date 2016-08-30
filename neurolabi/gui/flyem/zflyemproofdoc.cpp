@@ -540,6 +540,7 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
 template<typename T>
 static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
 {
+  ZOUT(LTRACE(), 5) << "Update dvid target";
   QList<T*> objList = doc->getObjectList<T>();
   for (typename QList<T*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -589,6 +590,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(NeuTube::EAxis axis) const
 ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
     NeuTube::EAxis axis) const
 {
+  ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZDvidSynapseEnsemble*> teList = getObjectList<ZDvidSynapseEnsemble>();
 //  QList<ZStackObject*> teList = getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = teList.begin();
@@ -604,6 +606,7 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
 
 QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
 {
+  ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> objList =
       getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
 
@@ -648,6 +651,7 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
 
 bool ZFlyEmProofDoc::hasTodoItemSelected() const
 {
+  ZOUT(LTRACE(), 5) << "Check todo selection";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -695,6 +699,7 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
 
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 {
+  ZOUT(LTRACE(), 5) << "Check to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -847,6 +852,7 @@ void ZFlyEmProofDoc::removeSynapse(
 void ZFlyEmProofDoc::removeTodoItem(
     const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope)
 {
+  ZOUT(LTRACE(), 5) << "Remove to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -872,6 +878,7 @@ void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
 void ZFlyEmProofDoc::addTodoItem(
     const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope)
 {
+  ZOUT(LTRACE(), 5) << "Add to do item";
   QList<ZFlyEmToDoList*> seList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
@@ -1299,6 +1306,7 @@ void ZFlyEmProofDoc::clearBodyMerger()
 void ZFlyEmProofDoc::updateDvidLabelObject()
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
@@ -1307,7 +1315,6 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
     obj->forceUpdate();
     processObjectModified(obj);
   }
-
 
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
   for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
@@ -1447,6 +1454,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
 {
+  ZOUT(LTRACE(), 5) << "Download to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -1460,6 +1468,7 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
+  ZOUT(LTRACE(), 5) << "Download synapses";
   QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
 //  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
@@ -1930,6 +1939,7 @@ void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 
 ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 {
+  ZOUT(LTRACE(), 5) << "Find bookmark";
   const TStackObjectList &objList =
       getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
@@ -3087,6 +3097,7 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
 std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
 {
   std::set<ZIntPoint> selected;
+  ZOUT(LTRACE(), 5) << "Get selected todo positions";
   QList<ZFlyEmToDoList*> objList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -3120,6 +3131,7 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
 
 void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
 {
+  ZOUT(LTRACE(), 5) << "Copy bookmarks";
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
@@ -3217,6 +3229,7 @@ void ZFlyEmProofDoc::addLocalBookmark(
 
 ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 {
+  ZOUT(LTRACE(), 5) << "Get bookmarks";
   QList<ZFlyEmBookmark*> bookmarkList = getObjectList<ZFlyEmBookmark>();
 
   ZFlyEmBookmark *bookmark = NULL;

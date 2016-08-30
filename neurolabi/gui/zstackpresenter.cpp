@@ -2753,6 +2753,7 @@ NeuTube::EAxis ZStackPresenter::getSliceAxis() const
 static void SyncDvidLabelSliceSelection(
     ZStackDoc *doc, ZDvidLabelSlice *labelSlice)
 {
+  ZOUT(LTRACE(), 5) << "Sync dvid label selection";
   QList<ZDvidLabelSlice*> sliceList = doc->getObjectList<ZDvidLabelSlice>();
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {

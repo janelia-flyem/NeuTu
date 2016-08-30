@@ -1363,6 +1363,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
     labelSlice->setVisible(!hl);
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
+    ZOUT(LTRACE(), 5) << "Toggle highlight";
     TStackObjectList objList =
         doc->getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
 
@@ -2399,6 +2400,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
 
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
+    ZOUT(LTRACE(), 5) << "Sync dvid bookmark";
     TStackObjectList &objList =
         getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::iterator iter = objList.begin();
@@ -2553,6 +2555,7 @@ void ZFlyEmProofMvc::closeRoiProject()
 
 void ZFlyEmProofMvc::updateRoiGlyph()
 {
+  ZOUT(LTRACE(), 5) << "Update ROI glyph";
   QList<ZStackObject*> objList =
       getCompleteDocument()->getObjectList(ZStackObjectRole::ROLE_ROI);
   for (QList<ZStackObject*>::iterator iter = objList.begin();
@@ -2667,6 +2670,7 @@ void ZFlyEmProofMvc::showData(bool visible)
   getDocument()->beginObjectModifiedMode(
         ZStackDoc::OBJECT_MODIFIED_CACHE);
 
+  ZOUT(LTRACE(), 5) << "Show data";
 //  QMutexLocker locker(getDocument()->getObjectGroup().getMutex());
   QList<ZStackObject*> &objList =
       getDocument()->getObjectGroup().getObjectList();

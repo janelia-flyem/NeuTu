@@ -785,6 +785,7 @@ void Z3DWindow::init(EInitMode mode)
 
 
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  ZOUT(LTRACE(), 5) << "Getting 3d graph";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -1975,6 +1976,7 @@ void Z3DWindow::updateNetworkDisplay()
 
 void Z3DWindow::update3DGraphDisplay()
 {
+  ZOUT(LTRACE(), 5) << "Update 3d graph";
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
@@ -1993,6 +1995,7 @@ void Z3DWindow::update3DGraphDisplay()
 void Z3DWindow::update3DCubeDisplay()
 {
   m_surfaceFilter->clearSources();
+  ZOUT(LTRACE(), 5) << "Update 3d cube";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -2014,6 +2017,7 @@ void Z3DWindow::updateTodoList()
 #if defined(_FLYEM_)
   ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Update todo list";
     QList<ZFlyEmToDoItem*> objList = doc->getObjectList<ZFlyEmToDoItem>();
     m_todoFilter->setData(objList);
 /*
@@ -2079,6 +2083,7 @@ void Z3DWindow::swcCoordScaleChanged()
 
 void Z3DWindow::punctaCoordScaleChanged()
 {
+  ZOUT(LTRACE(), 5) << "Punctum scale changed";
   if (m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM).empty())
     return;
   updatePunctaBoundBox();

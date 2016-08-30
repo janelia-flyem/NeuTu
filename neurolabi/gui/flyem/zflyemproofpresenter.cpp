@@ -15,6 +15,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
+#include "neutubeconfig.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -693,6 +694,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE:
   {
+    ZOUT(LTRACE(), 5) << "Get todo list selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
@@ -716,6 +718,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_MULTIPLE:
   {
+    ZOUT(LTRACE(), 5) << "Get todo list selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
@@ -733,6 +736,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_TOGGLE:
   {
+    ZOUT(LTRACE(), 5) << "Toggle todo selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();

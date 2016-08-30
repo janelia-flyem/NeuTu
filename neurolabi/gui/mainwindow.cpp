@@ -3227,6 +3227,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       ZStack backupStack;
       ZObject3dScan *obj = NULL;
       if (stackData == NULL) {
+        ZOUT(LTRACE(), 5) << "Skeletonization";
         QList<ZSparseObject*> objList =
             frame->document()->getObjectList<ZSparseObject>();
         if (!objList.isEmpty()) {

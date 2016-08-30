@@ -568,7 +568,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       if (tree != NULL) {
         m_docReader.addObject(tree);
       }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
