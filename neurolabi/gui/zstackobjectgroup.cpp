@@ -192,6 +192,12 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
 
 void ZStackObjectGroup::deselectAll()
 {
+  QMutexLocker locker(&m_mutex);
+  deselectAllUnsync();
+}
+
+void ZStackObjectGroup::deselectAllUnsync()
+{
   ZOUT(LINFO(), 5) << "Deselect all objects";
 
   for (TObjectSetMap::iterator iter = m_selectedSet.begin();

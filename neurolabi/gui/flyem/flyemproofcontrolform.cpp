@@ -286,7 +286,7 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   setInfo(info.c_str());
 }
 
-
+/*
 void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
 {
   if (bookmark != NULL) {
@@ -297,6 +297,7 @@ void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
     }
   }
 }
+*/
 
 void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {

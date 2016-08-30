@@ -1098,6 +1098,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
           this, SLOT(updateUserBookmarkTable()));
+  connect(getCompleteDocument(), SIGNAL(assignedBookmarkModified()),
+          this, SLOT(notifyBookmarkDeleted()));
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
@@ -2451,7 +2453,7 @@ void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
   //    ZDvidInfo info = reader.readGrayScaleInfo();
   //    converter.configure(info);
       getProgressSignal()->advanceProgress(0.1);
-      notifyBookmarkDeleted();
+//      notifyBookmarkDeleted();
       getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
       getProgressSignal()->advanceProgress(0.5);
   //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);

@@ -202,6 +202,16 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
         writer.deleteBookmark(m_bookmarkArray);
       }
 
+      for (std::vector<ZFlyEmBookmark*>::const_iterator
+           iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
+           ++iter) {
+        const ZFlyEmBookmark *bookmark = *iter;
+        if (!bookmark->isCustom()) {
+          m_doc->notifyAssignedBookmarkModified();
+          break;
+        }
+      }
+
       m_doc->removeLocalBookmark(m_bookmarkArray);
       m_doc->notifyBookmarkEdited(m_bookmarkArray);
       m_isInDoc = false;

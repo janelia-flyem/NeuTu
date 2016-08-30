@@ -1954,7 +1954,12 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
-    std::vector<ZStackObject*> removed;
+//    std::vector<ZStackObject*> removed;
+
+    ZUndoCommand *command = new ZUndoCommand;
+
+    ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *removeCommand =
+        new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL, command);
 
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -1962,12 +1967,16 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-          ZOUT(LINFO(), 5) << "Removing bookmark: " << bookmark;
-          removeObject(*iter, false);
-          removed.push_back(*iter);
+//          ZOUT(LINFO(), 5) << "Removing bookmark: " << bookmark;
+//          removeObject(*iter, false);
+//          removed.push_back(*iter);
+          removeCommand->addRemoving(bookmark);
         }
       }
     }
+
+    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *addCommand =
+        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, NULL, command);
 
     ZJsonObject obj;
 
@@ -2012,17 +2021,22 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
               bookmark->setChecked(true);
             }
-            ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
-            addObject(bookmark);
+            addCommand->addBookmark(bookmark);
+//            ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
+//            addObject(bookmark);
           }
         }
       }
     }
+
+    pushUndoCommand(command);
+    /*
     for (std::vector<ZStackObject*>::iterator iter = removed.begin();
          iter != removed.end(); ++iter) {
       ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
       delete *iter;
     }
+    */
   }
   endObjectModifiedMode();
 
@@ -3139,6 +3153,11 @@ void ZFlyEmProofDoc::notifySynapseMoved(
 void ZFlyEmProofDoc::notifyTodoEdited(const ZIntPoint &item)
 {
   emit todoEdited(item.getX(), item.getY(), item.getZ());
+}
+
+void ZFlyEmProofDoc::notifyAssignedBookmarkModified()
+{
+  emit assignedBookmarkModified();
 }
 
 void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)

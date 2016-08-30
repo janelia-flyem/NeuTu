@@ -60,7 +60,7 @@ public slots:
   void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
   void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
   void updateUserBookmarkTable(ZStackDoc *doc);
-  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
+//  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
   void updateLatency(int t);
 
 private slots:

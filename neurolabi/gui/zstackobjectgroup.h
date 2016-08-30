@@ -43,6 +43,7 @@ public:
   void setSelected(ZStackObject::EType type, bool selected);
 
   void deselectAll();
+  void deselectAllUnsync();
 
   bool isEmpty() const;
 

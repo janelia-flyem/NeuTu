@@ -155,6 +155,11 @@
        </item>
        <item>
         <property name="text">
+         <string>Traced in ROI</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Partially Traced</string>
         </property>
        </item>

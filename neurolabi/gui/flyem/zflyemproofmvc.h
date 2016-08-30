@@ -266,6 +266,7 @@ protected slots:
   void exportSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+  void notifyBookmarkDeleted();
 
 protected:
   void customInit();
@@ -281,7 +282,6 @@ private:
   void runSplitFunc();
   void runLocalSplitFunc();
   void notifyBookmarkUpdated();
-  void notifyBookmarkDeleted();
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
