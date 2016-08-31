@@ -149,6 +149,8 @@ void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
+  ZOUT(LTRACE(), 5) << "Clear garbage objects ...";
+
   int currentTime = m_objectTime.elapsed();
   QMutableMapIterator<ZStackObject*, ObjectStatus> iter(m_garbageMap);
    while (iter.hasNext()) {
@@ -789,6 +791,8 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
 void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
+    ZOUT(LTRACE(), 5) << "Add synases";
+
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
 //    removeObject(source, true);
     TStackObjectList objList = getObjectGroup().findSameSource(source);
@@ -822,6 +826,8 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
+    ZOUT(LTRACE(), 5) << "Add todo items";
+
     beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
@@ -854,6 +860,8 @@ void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
+  ZOUT(LTRACE(), 5) << "Remove body: " << bodyId;
+
   QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
     //TStackObjectList objList = getObjectGroup().findSameSource(
