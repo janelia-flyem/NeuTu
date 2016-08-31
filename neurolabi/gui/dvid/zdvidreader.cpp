@@ -2271,7 +2271,7 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
+    const ZIntCuboid &box, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
@@ -2295,12 +2295,12 @@ ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) 
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    uint64_t label, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
+    uint64_t label, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != NeuTube::FlyEM::LOAD_NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, mode != FlyEM::LOAD_NO_PARTNER));
 
   std::vector<ZDvidSynapse> synapseArray(obj.size());
 
@@ -2314,7 +2314,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    int x, int y, int z, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
+    int x, int y, int z, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
@@ -2326,7 +2326,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    const ZIntPoint &pt, NeuTube::FlyEM::EDvidAnnotationLoadMode mode) const
+    const ZIntPoint &pt, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
 }
@@ -2397,7 +2397,7 @@ std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZFlyEmToDoItem &item = itemArray[i];
-    item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+    item.loadJsonObject(itemJson, FlyEM::LOAD_PARTNER_RELJSON);
   }
 
   return itemArray;

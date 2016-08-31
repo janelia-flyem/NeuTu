@@ -18,8 +18,8 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
-  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+//  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
+//  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
 
 //  ui->bookmarkView->setModel(&m_bookmarkList);
 //  ui->bookmarkView->resizeColumnsToContents();
@@ -69,15 +69,15 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
 //          this, SLOT(loadBookmark()));
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
@@ -147,6 +147,8 @@ void FlyEmSplitControlForm::createMenu()
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
 {
+  getAssignedBookmarkView()->checkCurrentBookmark(checking);
+  /*
   QItemSelectionModel *sel = getAssignedBookmarkView()->selectionModel();
   QModelIndexList selected = sel->selectedIndexes();
 
@@ -155,6 +157,7 @@ void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
     bookmark->setChecked(checking);
     m_assignedBookmarkList.update(index.row());
   }
+  */
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark()
@@ -252,6 +255,7 @@ void FlyEmSplitControlForm::commitResult()
   emit committingResult();
 }
 
+#if 0
 void FlyEmSplitControlForm::clearBookmarkTable(ZFlyEmBodySplitProject */*project*/)
 {
   m_assignedBookmarkList.clear();
@@ -283,6 +287,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
     }
   }
 }
+#endif
 
 void FlyEmSplitControlForm::loadBookmark()
 {
@@ -304,6 +309,7 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
   ui->infoWidget->setText(text);
 }
 
+#if 0
 void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
   ZOUT(LINFO(), 3) << "Updating user bookmark table for split control form";
@@ -326,3 +332,4 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 
   getUserBookmarkView()->sort();
 }
+#endif

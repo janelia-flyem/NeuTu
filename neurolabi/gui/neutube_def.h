@@ -120,15 +120,17 @@ namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
 static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
-
+}
 }
 
 namespace FlyEM {
 enum EDvidAnnotationLoadMode {
   LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
 };
-}
 
+enum EProofreadingMode {
+  PR_NORMAL, PR_SPLIT
+};
 }
 
 

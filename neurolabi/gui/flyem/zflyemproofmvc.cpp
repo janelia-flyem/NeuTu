@@ -62,6 +62,7 @@
 #include "dialogs/zflyemroitooldialog.h"
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
+#include "zflyembookmarkview.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -115,6 +116,24 @@ void ZFlyEmProofMvc::init()
 
   m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
   m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
+
+  m_assignedBookmarkModel[FlyEM::PR_NORMAL] =
+      new ZFlyEmBookmarkListModel(this);
+  m_assignedBookmarkModel[FlyEM::PR_SPLIT] =
+      new ZFlyEmBookmarkListModel(this);
+  m_userBookmarkModel[FlyEM::PR_NORMAL] =
+      new ZFlyEmBookmarkListModel(this);
+  m_userBookmarkModel[FlyEM::PR_SPLIT] =
+      new ZFlyEmBookmarkListModel(this);
+
+
+//  m_assignedBookmarkList = new ZFlyEmBookmarkListModel(this);
+//  m_assignedBookmarkProxy = new QSortFilterProxyModel(this);
+//  prepareBookmarkModel(m_assignedBookmarkList, m_assignedBookmarkProxy);
+
+//  m_userBookmarkList = new ZFlyEmBookmarkListModel(this);
+//  m_userBookmarkProxy = new QSortFilterProxyModel(this);
+//  prepareBookmarkModel(m_userBookmarkList, m_userBookmarkProxy);
 
   connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
           m_seUpdater, SLOT(updateData(ZFlyEmSynapseDataFetcher*)),
@@ -321,6 +340,18 @@ void ZFlyEmProofMvc::detachQueryWindow()
 //  m_queryWindow = NULL;
 }
 
+void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
+{
+  connect(view, SIGNAL(bookmarkChecked(QString,bool)),
+          this, SLOT(recordCheckedBookmark(QString,bool)));
+  connect(view, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
+  connect(view, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
+  connect(view, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
+}
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -364,6 +395,9 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
           this, SLOT(updateBodyWindowDeep()));
   connect(&m_mergeProject, SIGNAL(mergeUploaded()),
           this, SLOT(updateCoarseBodyWindowDeep()));
+  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
+          this, SLOT(updateBookmarkTable()));
+
 
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
@@ -1099,7 +1133,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
           this, SLOT(updateUserBookmarkTable()));
   connect(getCompleteDocument(), SIGNAL(assignedBookmarkModified()),
-          this, SLOT(notifyBookmarkDeleted()));
+          this, SLOT(updateAssignedBookmarkTable()));
+
   connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
@@ -1166,8 +1201,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
   connect(getCompletePresenter(), SIGNAL(runningLocalSplit()),
           this, SLOT(runLocalSplit()));
-  connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
-          this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
+//  connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
+//          this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingBookmark(ZFlyEmBookmark*)),
           this, SLOT(annotateBookmark(ZFlyEmBookmark*)));
   connect(getCompletePresenter(), SIGNAL(annotatingSynapse()),
@@ -1860,7 +1895,6 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       emit errorGenerated(msg);
     }
 
-
     //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
 
     getProgressSignal()->endProgress();
@@ -1960,7 +1994,11 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 
   m_splitProject.setBodyId(bodyId);
   m_splitProject.downloadSeed();
-  emit bookmarkUpdated(&m_splitProject);
+
+  updateAssignedBookmarkTable();
+  updateUserBookmarkTable();
+
+//  emit bookmarkUpdated(&m_splitProject);
   getView()->redrawObject();
 }
 
@@ -2062,8 +2100,10 @@ void ZFlyEmProofMvc::exitSplit()
 
     getCompleteDocument()->deprecateSplitSource();
     m_splitProject.clear();
-
     disableSplit();
+
+    updateAssignedBookmarkTable();
+    updateUserBookmarkTable();
   }
 }
 
@@ -2425,6 +2465,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
   ZOUT(LINFO(), 3) << "Bookmark synced";
 }
 
+#if 0
 void ZFlyEmProofMvc::notifyBookmarkUpdated()
 {
   syncDvidBookmark();
@@ -2441,6 +2482,49 @@ void ZFlyEmProofMvc::notifyBookmarkDeleted()
   emit bookmarkDeleted(&m_mergeProject);
   emit bookmarkDeleted(&m_splitProject);
 }
+#endif
+
+/*
+ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getAssignedBookmarkModel() const
+{
+  return m_assignedBookmarkList;
+}
+
+ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getUserBookmarkModel() const
+{
+  return m_userBookmarkList;
+}
+
+QSortFilterProxyModel* ZFlyEmProofMvc::getAssignedBookmarkProxy() const
+{
+  return m_assignedBookmarkProxy;
+}
+
+QSortFilterProxyModel* ZFlyEmProofMvc::getUserBookmarkProxy() const
+{
+  return m_userBookmarkProxy;
+}
+*/
+
+void ZFlyEmProofMvc::clearAssignedBookmarkModel()
+{
+  for (QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
+       iter = m_assignedBookmarkModel.begin();
+       iter != m_assignedBookmarkModel.end(); ++iter) {
+    ZFlyEmBookmarkListModel *model = *iter;
+    model->clear();
+  }
+}
+
+void ZFlyEmProofMvc::clearUserBookmarkModel()
+{
+  for (QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
+       iter = m_userBookmarkModel.begin();
+       iter != m_userBookmarkModel.end(); ++iter) {
+    ZFlyEmBookmarkListModel *model = *iter;
+    model->clear();
+  }
+}
 
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
@@ -2455,13 +2539,20 @@ void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
   //    ZDvidInfo info = reader.readGrayScaleInfo();
   //    converter.configure(info);
       getProgressSignal()->advanceProgress(0.1);
+
+      clearAssignedBookmarkModel();
 //      notifyBookmarkDeleted();
-      getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
+//      m_assignedBookmarkList->clear();
+      QList<ZFlyEmBookmark*> bookmarkList =
+          getCompleteDocument()->importFlyEmBookmark(filePath.toStdString());
+
+      appendAssignedBookmarkTable(bookmarkList);
+//      m_assignedBookmarkList->append(bookmarkList);
       getProgressSignal()->advanceProgress(0.5);
   //    m_bookmarkArray.importJsonFile(filePath.toStdString(), NULL/*&converter*/);
     }
 
-    notifyBookmarkUpdated();
+//    notifyBookmarkUpdated();
 
     getProgressSignal()->advanceProgress(0.3);
 
@@ -3155,11 +3246,198 @@ void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
   getCompleteDocument()->selectBodyInRoi(
         getView()->getCurrentZ(), appending, true);
 }
+/*
+void ZFlyEmProofMvc::prepareBookmarkModel(
+    ZFlyEmBookmarkListModel *model, QSortFilterProxyModel *proxy)
+{
+  if (proxy != NULL) {
+    proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxy->setFilterKeyColumn(-1);
+    proxy->setSourceModel(model);
+  }
+}
+*/
+
+void ZFlyEmProofMvc::sortAssignedBookmarkTable()
+{
+  getAssignedBookmarkModel()->sort();
+//  m_assignedBookmarkProxy->sort(m_assignedBookmarkProxy->sortColumn(),
+//                                m_assignedBookmarkProxy->sortOrder());
+}
+
+void ZFlyEmProofMvc::sortUserBookmarkTable()
+{
+  getUserBookmarkModel()->sort();
+//  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
+//                            m_userBookmarkProxy->sortOrder());
+}
+
+ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getUserBookmarkModel() const
+{
+  ZFlyEmBookmarkListModel *model = NULL;
+  if (getCompletePresenter()->isSplitOn()) {
+    model = m_userBookmarkModel[FlyEM::PR_SPLIT];
+  } else {
+    model = m_userBookmarkModel[FlyEM::PR_NORMAL];
+  }
+
+  return model;
+}
+
+ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getAssignedBookmarkModel() const
+{
+  ZFlyEmBookmarkListModel *model = NULL;
+  if (getCompletePresenter()->isSplitOn()) {
+    model = m_assignedBookmarkModel[FlyEM::PR_SPLIT];
+  } else {
+    model = m_assignedBookmarkModel[FlyEM::PR_NORMAL];
+  }
+
+  return model;
+}
+
+#if 0
+void ZFlyEmProofMvc::updateAssignedBookmarkTable()
+{
+  model->clear();
+  ZOUT(LTRACE(), 5) << "Update assgined bookmark table";
+  const TStackObjectList &objList =
+      getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+    if (bookmark != NULL) {
+      if (!bookmark->isCustom()) {
+        model->append(bookmark);
+      }
+    }
+  }
+
+  model->sort();
+}
+#endif
+
+void ZFlyEmProofMvc::updateAssignedBookmarkTable()
+{
+  ZFlyEmBookmarkListModel *model = getAssignedBookmarkModel();
+
+  model->clear();
+  ZOUT(LTRACE(), 5) << "Update user bookmark table";
+  QList<ZFlyEmBookmark*> bookmarkList =
+      getDocument()->getObjectList<ZFlyEmBookmark>();
+  appendAssignedBookmarkTable(bookmarkList);
+
+  model->sort();
+}
+
+void ZFlyEmProofMvc::updateBookmarkTable()
+{
+  updateUserBookmarkTable();
+  updateAssignedBookmarkTable();
+}
 
 void ZFlyEmProofMvc::updateUserBookmarkTable()
 {
-  emit userBookmarkUpdated(getDocument().get());
+  ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
+
+  model->clear();
+  ZOUT(LTRACE(), 5) << "Update user bookmark table";
+  QList<ZFlyEmBookmark*> bookmarkList =
+      getDocument()->getObjectList<ZFlyEmBookmark>();
+  appendUserBookmarkTable(bookmarkList);
+//  const TStackObjectList &objList =
+//      getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+  /*
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+    if (bookmark != NULL) {
+      if (bookmark->isCustom()) {
+        model->append(bookmark);
+      }
+    }
+  }
+  */
+
+  model->sort();
+
+//  sortUserBookmarkTable();
+//  getUserBookmarkView()->sort();
+
+//  emit userBookmarkUpdated(getDocument().get());
 }
+
+void ZFlyEmProofMvc::appendAssignedBookmarkTable(
+    const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZFlyEmBookmarkListModel *model = getAssignedBookmarkModel();
+
+  for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    if (!bookmark->isCustom()) {
+      if (getCompletePresenter()->isSplitOn()) {
+        if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+            (bookmark->getBodyId() == m_splitProject.getBodyId())) {
+            model->append(bookmark);
+        }
+      } else {
+        model->append(bookmark);
+      }
+    }
+  }
+
+  model->sort();
+}
+
+void ZFlyEmProofMvc::appendUserBookmarkTable(
+    const QList<ZFlyEmBookmark *> &bookmarkList)
+{
+  ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
+
+  for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = *iter;
+    if (bookmark->isCustom()) {
+      if (getCompletePresenter()->isSplitOn()) {
+        if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+            (bookmark->getBodyId() == m_splitProject.getBodyId())) {
+            model->append(bookmark);
+        }
+      } else {
+        model->append(bookmark);
+      }
+    }
+  }
+
+  model->sort();
+}
+
+#if 0
+void ZFlyEmProofMvc::updateAssignedBookmarkTable()
+{
+  ZOUT(LINFO(), 3) << "Update bookmark table for merge project";
+  m_assignedBookmarkList->clear();
+
+  ZOUT(LINFO(), 3) << "Bookmark list cleared";
+
+  const TStackObjectList &objList =
+      getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
+    if (/*bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&*/
+        !bookmark->isCustom()) {
+      m_assignedBookmarkList->append(bookmark);
+    }
+  }
+
+//  getAssignedBookmarkView()->sort();
+//  ZOUT(LINFO(), 3) << "Bookmark sorted";
+}
+#endif
 
 void ZFlyEmProofMvc::changeColorMap(const QString &option)
 {

@@ -393,7 +393,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
   bool isVerified = true;
   if (reader.open(m_dvidTarget)) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
       std::vector<ZIntPoint> psdArray = synapse.getPartners();
@@ -401,7 +401,7 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
            iter != psdArray.end(); ++iter) {
         const ZIntPoint &pt = *iter;
         ZDvidSynapse synapse =
-            reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+            reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
         if (!synapse.isVerified()) {
           isVerified = false;
           break;
@@ -415,14 +415,14 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
       if (!partnerArray.empty()) {
         targetPoint = partnerArray.front();
         ZDvidSynapse presyn =
-            reader.readSynapse(targetPoint, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            reader.readSynapse(targetPoint, FlyEM::LOAD_PARTNER_LOCATION);
 
         std::vector<ZIntPoint> psdArray = presyn.getPartners();
         for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+              reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
           if (!synapse.isVerified()) {
             isVerified = false;
             break;
@@ -444,7 +444,7 @@ void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 
   if (reader.open(m_dvidTarget)) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
@@ -559,7 +559,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList(ZIntCuboid volume, QStrin
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
         std::vector<ZDvidSynapse> synapseList = reader.readSynapse(
-            volume, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            volume, FlyEM::LOAD_PARTNER_LOCATION);
 
         // filter by roi (coming soon)
         // will need to do raw DVID call to batch ask "is point in RoI?";
@@ -694,13 +694,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
 
     ZDvidReader reader;
     if (reader.open(m_dvidTarget)) {
-        ZDvidSynapse synapse = reader.readSynapse(point, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        ZDvidSynapse synapse = reader.readSynapse(point, FlyEM::LOAD_PARTNER_LOCATION);
 
         // find the presynaptic site
         if (!(synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN)) {
             if (synapse.getPartners().size() > 0) {
                 ZIntPoint preLocation = synapse.getPartners().front();
-                synapse = reader.readSynapse(preLocation, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+                synapse = reader.readSynapse(preLocation, FlyEM::LOAD_PARTNER_LOCATION);
             } else {
                 // can't find presynaptic site, so give up
                 return result;
@@ -711,7 +711,7 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
         // get all the post-synaptic sites
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], NeuTube::FlyEM::LOAD_NO_PARTNER);
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
             result.push_back(post);
         }
     }

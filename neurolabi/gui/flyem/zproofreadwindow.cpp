@@ -24,6 +24,7 @@
 #include "QsLog.h"
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
+#include "zflyembookmarkview.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -84,9 +85,25 @@ void ZProofreadWindow::init()
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
   FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
+  controlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
+  controlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
+  m_mainMvc->registerBookmarkView(controlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(controlForm->getAssignedBookmarkView());
+  controlForm->getAssignedBookmarkView()->enableDeletion(false);
+
   m_controlGroup->addWidget(controlForm);
 
   FlyEmSplitControlForm *splitControlForm = new FlyEmSplitControlForm;
+  splitControlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
+  splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
+  m_mainMvc->registerBookmarkView(splitControlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(splitControlForm->getAssignedBookmarkView());
+  splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
+
   m_controlGroup->addWidget(splitControlForm);
   splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 

@@ -57,9 +57,9 @@ signals:
 public slots:
   void setInfo(const QString &info);
   void setDvidInfo(const ZDvidTarget &target);
-  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
-  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
-  void updateUserBookmarkTable(ZStackDoc *doc);
+//  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
+//  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
+//  void updateUserBookmarkTable(ZStackDoc *doc);
 //  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
   void updateLatency(int t);
 
@@ -87,8 +87,8 @@ private:
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
-  ZFlyEmBookmarkListModel m_assignedBookmarkList;
-  ZFlyEmBookmarkListModel m_userBookmarkList;
+//  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
+//  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
   QAction *m_nameColorAction;
   QAction *m_sequencerColorAction;

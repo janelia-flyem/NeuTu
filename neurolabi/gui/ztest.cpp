@@ -19536,7 +19536,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
   std::vector<ZDvidSynapse> synapseArray =
-      reader.readSynapse(1, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      reader.readSynapse(1, FlyEM::LOAD_PARTNER_LOCATION);
   for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
        iter != synapseArray.end(); ++iter) {
     const ZDvidSynapse &synapse = *iter;

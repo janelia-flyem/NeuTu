@@ -527,6 +527,11 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
   }
 }
 
+void FlyEmBodySplitProjectDialog::clearAssignedBookmarkTable()
+{
+  m_bookmarkList.clear();
+}
+
 /*
 void FlyEmBodySplitProjectDialog::showBookmarkContextMenu(const QModelIndex &index)
 {

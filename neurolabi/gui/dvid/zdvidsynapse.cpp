@@ -124,7 +124,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, NeuTube::FlyEM::LOAD_NO_PARTNER);
+              reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
