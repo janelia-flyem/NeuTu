@@ -2,6 +2,7 @@
 #define ZDVIDLABELSLICE_H
 
 #include <QCache>
+#include <QMutex>
 
 #include "zstackobject.h"
 #include "zdvidtarget.h"
@@ -167,6 +168,7 @@ private:
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
   ZArray *m_labelArray;
+  QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels

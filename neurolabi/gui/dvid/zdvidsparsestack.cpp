@@ -348,7 +348,7 @@ bool ZDvidSparseStack::fillValue(
           for (size_t i = 0; i < blockSpan.size(); i += 2) {
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
-            ZOUT(LINFO(), 5) << "Reading" << blockNumber << "blocks";
+            ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
             std::vector<ZStack*> stackArray= m_dvidReader.readGrayScaleBlock(
                   blockIndex, dvidInfo, blockNumber);
             grid->consumeStack(blockIndex, stackArray);

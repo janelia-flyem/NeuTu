@@ -648,7 +648,11 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 //    delete tree;
     beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     removeBodyFunc(bodyId, false);
-    addObject(tree, true);
+    TStackObjectList objList = takeObject(tree->getType(), tree->getSource());
+    if (!objList.empty()) {
+      dumpGarbage(objList.begin(), objList.end(), false);
+    }
+    addObject(tree, false);
     processObjectModified(tree);
     endObjectModifiedMode();
     notifyObjectModified(true);
@@ -1055,6 +1059,21 @@ void ZFlyEmBody3dDoc::forceBodyUpdate()
   QSet<uint64_t> bodySet = m_bodySet;
   dumpAllBody(false);
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
+template <typename InputIterator>
+void ZFlyEmBody3dDoc::dumpGarbage(
+    const InputIterator &first, const InputIterator &last, bool recycable)
+{
+  QMutexLocker locker(&m_garbageMutex);
+
+
+  for (InputIterator iter = first; iter != last; ++iter) {
+    m_garbageMap[*iter].setTimeStamp(m_objectTime.elapsed());
+    m_garbageMap[*iter].setRecycable(recycable);
+  }
+
+  m_garbageJustDumped = true;
 }
 
 void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)

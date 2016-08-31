@@ -400,6 +400,8 @@ public:
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
 
+  TStackObjectList takeObject(
+      ZStackObject::EType type, const std::string &source);
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
 

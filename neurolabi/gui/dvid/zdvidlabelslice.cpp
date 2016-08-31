@@ -253,10 +253,14 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
+  QMutexLocker locker(&m_updateMutex);
+
   int zoom = getZoom(viewParam);
 
   m_objArray.clear();
   if (isVisible()) {
+
+
 //    int yStep = 1;
 
     //    ZDvidReader reader;
