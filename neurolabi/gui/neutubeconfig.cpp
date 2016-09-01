@@ -334,7 +334,7 @@ std::string NeutubeConfig::getPath(Config_Item item) const
 #endif
   case LOG_TRACE:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(WORKING_DIR).c_str()).filePath("log_trace.txt").toStdString();
+    return QDir(getPath(LOG_DIR).c_str()).filePath("log_trace.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_trace.txt");
 #endif
