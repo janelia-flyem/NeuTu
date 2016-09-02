@@ -96,6 +96,7 @@ void ZDvidTarget::clear()
   m_roiList.clear();
   m_userList.clear();
   m_supervisorServer.clear();
+  m_tileJson = ZJsonArray();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -256,7 +257,13 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   }
   obj.setEntry(m_roiListKey, jsonArray);
 
-  obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+//
+  if (m_tileJson.isEmpty()) {
+    obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  } else {
+    obj.setEntry(m_multiscale2dNameKey, const_cast<ZJsonArray&>(m_tileJson));
+  }
+
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
   obj.setEntry(m_supervisorServerKey, m_supervisorServer);
@@ -314,7 +321,13 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
     }
     if (obj.hasKey(m_multiscale2dNameKey)) {
-      setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
+      if (ZJsonParser::isArray(obj[m_multiscale2dNameKey])) {
+        m_tileJson = ZJsonArray(obj.value(m_multiscale2dNameKey));
+        setMultiscale2dName(getLossTileName());
+      } else {
+        setMultiscale2dName(
+              ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
+      }
     }
     if (obj.hasKey(m_roiListKey)) {
       ZJsonArray jsonArray(obj.value(m_roiListKey));
@@ -451,6 +464,42 @@ std::string ZDvidTarget::getMultiscale2dName() const
   }
 
   return m_multiscale2dName;
+}
+
+std::string ZDvidTarget::getLossTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (!lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return "";
+}
+
+std::string ZDvidTarget::getLosslessTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return getMultiscale2dName();
 }
 
 std::string ZDvidTarget::getGrayScaleName() const

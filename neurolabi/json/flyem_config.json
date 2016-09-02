@@ -84,7 +84,7 @@
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "synapse": "annot_synapse_083116",
-      "multires_tile": "tiles-jpg",
+      "multires_tile": [{"name": "tiles-jpg", "lossless": false}, {"name": "graytiles"}],
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "cheathamn"]
     },
     {

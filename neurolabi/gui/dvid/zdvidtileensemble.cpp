@@ -212,9 +212,16 @@ bool ZDvidTileEnsemble::update(
       std::vector<libdvid::BinaryDataPtr> data;
       try {
 //#if DVID_TILE_THREAD_FETCH
+        std::string tileName;
+        if (tile_locs_array.size() < 5) {
+          tileName = m_dvidTarget.getLosslessTileName();
+        } else {
+          tileName = m_dvidTarget.getMultiscale2dName();
+        }
+
         if (NeutubeConfig::ParallelTileFetching()) {
           data = get_tile_array_binary(
-                *(m_reader.getService()), m_dvidTarget.getMultiscale2dName(),
+                *(m_reader.getService()), tileName,
                 libdvid::XY, resLevel, tile_locs_array);
         } else {
           //#else
@@ -222,8 +229,7 @@ bool ZDvidTileEnsemble::update(
           //        std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
           for (size_t i = 0; i < tile_locs_array.size(); ++i) {
             data[i] = m_reader.getService()->get_tile_slice_binary(
-                  m_dvidTarget.getMultiscale2dName(),
-                  libdvid::XY, resLevel, tile_locs_array[i]);
+                  tileName, libdvid::XY, resLevel, tile_locs_array[i]);
           }
         }
 //#endif
@@ -430,7 +436,7 @@ void ZDvidTileEnsemble::display(
       }
     }
 //  } else {
-
+#if 0
   if (highresViewPort.width() < 512 || highresViewPort.height() < 512) {
     QElapsedTimer timer;
     timer.start();
@@ -468,7 +474,7 @@ void ZDvidTileEnsemble::display(
     }
     std::cout << "High-res patching time: " << timer.elapsed() << std::endl;
   }
-
+#endif
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
 

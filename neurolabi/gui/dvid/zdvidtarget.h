@@ -5,6 +5,7 @@
 #include <set>
 
 #include "zjsonobject.h"
+#include "zjsonarray.h"
 #include "zdviddata.h"
 
 /*!
@@ -154,6 +155,8 @@ public:
 
   std::string getMultiscale2dName() const;
   void setMultiscale2dName(const std::string &name);
+  std::string getLosslessTileName() const;
+  std::string getLossTileName() const;
 
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
@@ -229,6 +232,7 @@ private:
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
+  ZJsonArray m_tileJson;
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
