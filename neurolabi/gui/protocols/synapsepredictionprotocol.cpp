@@ -398,6 +398,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     // convert old versions; do in sequential order: 1 to 2, 2 to 3, etc;
     //  worked well with Raveler, so do it here; can break these out to
     //  separate methods if they get wordy
+    bool updated = false;
     if (version != fileVersion) {
         // 1 to 2:
         if (version == 1) {
@@ -407,8 +408,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         }
 
 
-        // at end of updates, save, because not all variations save frequently:
-        saveState();
+        updated = true;
     }
 
     // variation specific loading:
@@ -425,6 +425,12 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         loadInitialSynapseList();
     } else {
         variationError(m_variation);
+    }
+
+    // at end of updates, save, because not all variations save frequently;
+    //  has to be done here, after everything is loaded
+    if (updated) {
+        saveState();
     }
 
     onFirstButton();
