@@ -275,8 +275,10 @@ bool ZStackPresenter::connectAction(
               this, SLOT(toggleSwcSkeleton(bool)));
       break;
     case ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
-      connect(action, SIGNAL(triggered()),
-              getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+      if (getParentFrame() != NULL) {
+        connect(action, SIGNAL(triggered()),
+                getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+      }
       break;
     case ZActionFactory::ACTION_CONNECT_TO_SWC_NODE:
       connect(action, SIGNAL(triggered()),
@@ -447,13 +449,17 @@ void ZStackPresenter::createTraceActions()
   {
     QAction *action =
         ZActionFactory::MakeAction(ZActionFactory::ACTION_FITSEG, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(fitSegment()));
+    }
   }
 
   {
     QAction *action =
         ZActionFactory::MakeAction(ZActionFactory::ACTION_DROPSEG, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(dropSegment()));
+    }
   }
 }
 
@@ -462,31 +468,41 @@ void ZStackPresenter::createPunctaActions()
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_PUNCTA_MARK, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(markPuncta()));
+    }
   }
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_PUNCTA_ENLARGE, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(enlargePuncta()));
+    }
   }
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_PUNCTA_NARROW, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(narrowPuncta()));
+    }
   }
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_PUNCTA_MEANSHIFT, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(meanshiftPuncta()));
+    }
   }
 
   {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL, this);
-    connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
+    }
   }
 }
 
@@ -542,9 +558,11 @@ void ZStackPresenter::createSwcActions()
   if (getParentFrame() != NULL) {
     QAction *action = ZActionFactory::MakeAction(
           ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D, this);
-    connect(action, SIGNAL(triggered()),
-            getParentFrame(), SLOT(locateSwcNodeIn3DView()));
-    m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+    if (action != NULL) {
+      connect(action, SIGNAL(triggered()),
+              getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+      m_actionMap[ZActionFactory::ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D] = action;
+    }
   }
 
   {

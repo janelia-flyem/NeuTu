@@ -94,7 +94,7 @@ public:
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
-      int x0, int y0, int z0, int width, int height, int depth);
+      int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
   ZStack* readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);

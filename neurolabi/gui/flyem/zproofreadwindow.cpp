@@ -257,9 +257,9 @@ void ZProofreadWindow::createMenu()
   connect(m_openRoi3dAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showRoi3dWindow()));
 
-  m_queryTableAction = new QAction("Query Table", this);
-  connect(m_queryTableAction, SIGNAL(triggered()),
-          m_mainMvc, SLOT(showQueryTabel()));
+//  m_queryTableAction = new QAction("Query Table", this);
+//  connect(m_queryTableAction, SIGNAL(triggered()),
+//          m_mainMvc, SLOT(showQueryTabel()));
 
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));

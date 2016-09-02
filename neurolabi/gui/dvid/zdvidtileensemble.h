@@ -1,6 +1,7 @@
 #ifndef ZDVIDTILEENSEMBLE_H
 #define ZDVIDTILEENSEMBLE_H
 
+#include <QMutex>
 #include <vector>
 
 #include "libdvidheader.h"
@@ -63,8 +64,11 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZStackView *m_view;
+  mutable ZImage *m_patch;
   bool m_highContrast;
   ZJsonObject m_contrastProtocal;
+
+  mutable QMutex m_updateMutex;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<ZSharedPointer<libdvid::DVIDNodeService> > m_serviceArray;

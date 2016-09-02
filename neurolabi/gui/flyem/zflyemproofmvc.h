@@ -408,8 +408,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
-  connect(panel, SIGNAL(edgeModeToggled(bool)),
-          this, SLOT(toggleEdgeMode(bool)));
+//  connect(panel, SIGNAL(edgeModeToggled(bool)),
+//          this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           panel, SLOT(setDvidInfo(ZDvidTarget)));

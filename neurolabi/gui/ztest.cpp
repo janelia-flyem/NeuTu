@@ -20587,6 +20587,25 @@ void ZTest::test(MainWindow *host)
   writer.createSynapseLabelsz();
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "ab89", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation-labelvol");
+  target.setSynapseName("annot_synapse_083116");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonArray array = reader.readSynapseLabelsz(10, ZDvid::INDEX_ALL_SYN);
+  std::cout << array.dumpString(2);
+
+  /*
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.createSynapseLabelsz();
+  */
+#endif
+
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "0c7e", 7000);
@@ -20621,11 +20640,12 @@ void ZTest::test(MainWindow *host)
   slice.print();
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
   obj.getPlaneSurface().save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
+
 
   std::cout << "Done." << std::endl;
 }

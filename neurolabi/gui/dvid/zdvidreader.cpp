@@ -651,11 +651,42 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
 }
 
 ZStack* ZDvidReader::readGrayScale(
-    int x0, int y0, int z0, int width, int height, int depth)
+    int x0, int y0, int z0, int width, int height, int depth) const
 {
 #if 1
   ZStack *stack = NULL;
 
+  QElapsedTimer timer;
+  timer.start();
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  libdvid::Dims_t dims(3);
+  dims[0] = width;
+  dims[1] = height;
+  dims[2] = depth;
+  std::vector<int> offset(3);
+  offset[0] = x0;
+  offset[1] = y0;
+  offset[2] = z0;
+
+  try {
+    libdvid::Grayscale3D data = m_service->get_gray3D(
+          getDvidTarget().getGrayScaleName(), dims, offset);
+    ZIntCuboid box(x0, y0, z0, x0 + width - 1, y0 + height - 1, z0 + depth - 1);
+    stack = new ZStack(GREY, box, 1);
+    memcpy(stack->array8(), data.get_binary()->get_raw(),
+           width * height * depth);
+
+    setStatusCode(200);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    setStatusCode(e.getStatus());
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    setStatusCode(0);
+  }
+
+#else
   ZDvidBufferReader bufferReader;
   ZDvidUrl url(getDvidTarget());
   /*
@@ -677,6 +708,9 @@ ZStack* ZDvidReader::readGrayScale(
 
     memcpy(stack->array8(), buffer.constData(), buffer.size());
   }
+#endif
+
+  ZOUT(LTRACE(), 5) << "Grayscale reading time: " << timer.elapsed();
 
   return stack;
 #else

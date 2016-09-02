@@ -364,6 +364,10 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
     return false;
   }
 
+  if (viewParam.getViewPort().isEmpty()) {
+    return false;
+  }
+
   bool updated = false;
   if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
     ZStackViewParam newViewParam = viewParam;

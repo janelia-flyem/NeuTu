@@ -2,6 +2,7 @@
 #include <QRect>
 #include <QElapsedTimer>
 #include <QtCore>
+#include <QMutexLocker>
 
 #include "neutubeconfig.h"
 #include "zstackview.h"
@@ -17,6 +18,8 @@ ZDvidTileEnsemble::ZDvidTileEnsemble()
   m_type = GetType();
   m_highContrast = false;
   m_view = NULL;
+  m_patch = NULL;
+//  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 
 ZDvidTileEnsemble::~ZDvidTileEnsemble()
@@ -33,6 +36,8 @@ void ZDvidTileEnsemble::clear()
       delete tileIter->second;
     }
   }
+
+  delete m_patch;
 }
 
 void ZDvidTileEnsemble::enhanceContrast(bool high)
@@ -372,6 +377,8 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
+  QMutexLocker locker(&m_updateMutex);
+
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
 
@@ -391,7 +398,9 @@ void ZDvidTileEnsemble::display(
   }
 
 
-  m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+
+
+
   int resLevel = std::min(m_tilingInfo.getMaxLevel(), level);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
@@ -404,19 +413,60 @@ void ZDvidTileEnsemble::display(
     }
   }
 
-  const_cast<ZDvidTileEnsemble&>(*this).update(
-        tileIndices, resLevel, painter.getZ(slice));
+  QRect highresViewPort =
+      m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+//  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
+    const_cast<ZDvidTileEnsemble&>(*this).update(
+          tileIndices, resLevel, painter.getZ(slice));
+    //  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
 
-//  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
-
-  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
-       iter != tileIndices.end(); ++iter) {
-    const ZDvidTileInfo::TIndex &index = *iter;
-    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
-    if (tile != NULL) {
-//      tile->enhanceContrast(m_highContrast, true);
-      tile->display(painter, slice, option, sliceAxis);
+    for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+         iter != tileIndices.end(); ++iter) {
+      const ZDvidTileInfo::TIndex &index = *iter;
+      ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+      if (tile != NULL) {
+        //      tile->enhanceContrast(m_highContrast, true);
+        tile->display(painter, slice, option, sliceAxis);
+      }
     }
+//  } else {
+
+  if (highresViewPort.width() < 512 || highresViewPort.height() < 512) {
+    QElapsedTimer timer;
+    timer.start();
+
+    QPoint center = highresViewPort.center();
+    int x0 = center.x() - 128;
+    int y0 = center.y() - 128;
+//    int x0 = highresViewPort.left();
+//    int y0 = highresViewPort.top();
+    int width = 256;
+    int height = 256;
+    int z = m_view->getZ(NeuTube::COORD_STACK);
+
+    ZDvidBufferReader bufferReader;
+    ZDvidUrl url(getDvidTarget());
+    bufferReader.read(url.getGrayscaleUrl(width, height, x0, y0, z).c_str());
+
+    std::cout << "High-res reading time: " << timer.elapsed() << std::endl;
+
+
+    if (m_patch != NULL) {
+      if (m_patch->width() != width || m_patch->height() != height) {
+        delete m_patch;
+        m_patch = NULL;
+      }
+    }
+
+    if (m_patch == NULL) {
+      m_patch = new ZImage(width, height, QImage::Format_Indexed8);
+    }
+    if (m_patch->loadFromData(bufferReader.getBuffer(), "png")) {
+      m_patch->loadHighContrastProtocal(m_contrastProtocal);
+      m_patch->enhanceContrast(m_highContrast);
+      painter.drawImage(x0, y0, *m_patch);
+    }
+    std::cout << "High-res patching time: " << timer.elapsed() << std::endl;
   }
 
 //  std::cout << "Draw image time: " << toc() << std::endl;
