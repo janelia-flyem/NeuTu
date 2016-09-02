@@ -716,6 +716,12 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
         for (size_t i=1; i<synapse.size(); i++) {
             ZDvidSynapse site = synapse[i];
 
+            // need to exclude other things that could be linked;
+            //  eg, other T-bars (in a multi- or convergent configuration)
+            if (site.getKind() != ZDvidAnnotation::KIND_POST_SYN) {
+                continue;
+            }
+
             if (site.isVerified()) {
                 // text marker in "status" column
                 QStandardItem * statusItem = new QStandardItem();
