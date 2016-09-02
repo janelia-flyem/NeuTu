@@ -203,6 +203,13 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     m_protocolStatus = PROTOCOL_INITIALIZING;
 
     instantiateProtocol(protocolName);
+    if (m_activeProtocol == NULL) {
+        // instantiation failed!
+        QMessageBox::warning(m_parent, "Protocol not started!",
+            "The protocol could not be started!  Please report this error.", QMessageBox::Ok);
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
 
     // connect happens here, because if init succeeds, it'll
     //  want to request a save
@@ -263,6 +270,14 @@ void ProtocolSwitcher::loadProtocolRequested() {
     m_protocolStatus = PROTOCOL_LOADING;
 
     instantiateProtocol(QString::fromStdString(m_activeMetadata.getActiveProtocolName()));
+    if (m_activeProtocol == NULL) {
+        // instantiation failed!
+        QMessageBox::warning(m_parent, "Protocol not started!",
+            "The protocol could not be started!  Please report this error.", QMessageBox::Ok);
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
+
     connectProtocolSignals();
 
     // load data from dvid and send to protocol
