@@ -636,7 +636,6 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
 
         } else if (m_variation == VARIATION_BODY) {
             synapseList = reader.readSynapse(m_bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
-            std::cout << "read synapse; number read = " << synapseList.size() << std::endl;
         } else {
             variationError(m_variation);
         }
@@ -683,6 +682,9 @@ bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, co
     //  the distance matrix and do some clustering; at least if we group
     //  first by body ID, that would cut down on the amount of calculation
 
+    // August 2016: we now store a "GroupedWith" relationship in DVID,
+    //  expected to be used for noting T-bars that are part of a multi-T-bar;
+    //  we should at some point group them in the list, too
 
     // but for now, it's sort by body ID, then x, then y (ignore z)
     if (synapse1.getBodyId() < synapse2.getBodyId()) {
