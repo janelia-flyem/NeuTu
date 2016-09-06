@@ -24,6 +24,7 @@
 #include "QsLog.h"
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
+#include "zflyembookmarkview.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -84,9 +85,25 @@ void ZProofreadWindow::init()
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
   FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
+  controlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
+  controlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
+  m_mainMvc->registerBookmarkView(controlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(controlForm->getAssignedBookmarkView());
+  controlForm->getAssignedBookmarkView()->enableDeletion(false);
+
   m_controlGroup->addWidget(controlForm);
 
   FlyEmSplitControlForm *splitControlForm = new FlyEmSplitControlForm;
+  splitControlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
+  splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
+  m_mainMvc->registerBookmarkView(splitControlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(splitControlForm->getAssignedBookmarkView());
+  splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
+
   m_controlGroup->addWidget(splitControlForm);
   splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
@@ -191,6 +208,13 @@ void ZProofreadWindow::createMenu()
   connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showBookmark(bool)));
 
+  m_viewRoiAction = new QAction("ROI", this);
+  m_viewRoiAction->setCheckable(true);
+  m_viewRoiAction->setChecked(true);
+  m_viewRoiAction->setIcon(QIcon(":/images/view_roi.png"));
+  connect(m_viewRoiAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showRoiMask(bool)));
+
   m_viewSegmentationAction = new QAction("Segmentation", this);
   m_viewSegmentationAction->setIcon(QIcon(":/images/view_segmentation.png"));
   m_viewSegmentationAction->setCheckable(true);
@@ -233,9 +257,9 @@ void ZProofreadWindow::createMenu()
   connect(m_openRoi3dAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showRoi3dWindow()));
 
-  m_queryTableAction = new QAction("Query Table", this);
-  connect(m_queryTableAction, SIGNAL(triggered()),
-          m_mainMvc, SLOT(showQueryTabel()));
+//  m_queryTableAction = new QAction("Query Table", this);
+//  connect(m_queryTableAction, SIGNAL(triggered()),
+//          m_mainMvc, SLOT(showQueryTabel()));
 
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
@@ -246,6 +270,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
+  m_viewMenu->addAction(m_viewRoiAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
@@ -289,6 +314,7 @@ void ZProofreadWindow::createMenu()
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
   m_viewSegmentationAction->setEnabled(false);
+  m_viewRoiAction->setEnabled(false);
   m_viewTodoAction->setEnabled(false);
 }
 
@@ -341,6 +367,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_viewBookmarkAction);
   m_toolBar->addAction(m_viewSegmentationAction);
   m_toolBar->addAction(m_viewTodoAction);
+  m_toolBar->addAction(m_viewRoiAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
@@ -510,6 +537,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
   m_viewSegmentationAction->setEnabled(target.isValid());
+  m_viewRoiAction->setEnabled(target.isValid());
   m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);

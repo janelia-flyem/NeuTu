@@ -2,6 +2,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackobjectsourcefactory.h"
 #include "zcrosshair.h"
+#include "neutubeconfig.h"
 
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
@@ -76,6 +77,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
     NeuTube::EAxis axis) const
 {
+  ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> teList =
       getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
   for (QList<ZStackObject*>::iterator iter = teList.begin();

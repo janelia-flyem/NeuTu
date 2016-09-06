@@ -74,7 +74,7 @@ public:
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode);
+      FlyEM::EDvidAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();

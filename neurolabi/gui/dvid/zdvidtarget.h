@@ -5,6 +5,7 @@
 #include <set>
 
 #include "zjsonobject.h"
+#include "zjsonarray.h"
 #include "zdviddata.h"
 
 /*!
@@ -154,9 +155,14 @@ public:
 
   std::string getMultiscale2dName() const;
   void setMultiscale2dName(const std::string &name);
+  std::string getLosslessTileName() const;
+  std::string getLossTileName() const;
 
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
+
+  std::string getRoiName() const;
+  void setRoiName(const std::string &name);
 
   std::string getRoiName(size_t index) const;
   void addRoiName(const std::string &name);
@@ -226,8 +232,10 @@ private:
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
   std::string m_multiscale2dName;
+  ZJsonArray m_tileJson;
   std::string m_grayScaleName;
-  std::string m_labelszName;
+  std::string m_synapseLabelszName;
+  std::string m_roiName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
@@ -253,13 +261,14 @@ private:
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
+  const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
-  const static char* m_labelszKey;
+  const static char* m_synapseLabelszKey;
 };
 
 #endif // ZDVIDTARGET_H

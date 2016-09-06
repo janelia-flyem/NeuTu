@@ -94,7 +94,7 @@ public:
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
-      int x0, int y0, int z0, int width, int height, int depth);
+      int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
   ZStack* readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
@@ -187,6 +187,7 @@ public:
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
 
   ZObject3dScan readRoi(const std::string &dataName);
+  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
@@ -218,16 +219,16 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

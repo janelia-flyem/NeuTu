@@ -19536,7 +19536,7 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
   std::vector<ZDvidSynapse> synapseArray =
-      reader.readSynapse(1, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+      reader.readSynapse(1, FlyEM::LOAD_PARTNER_LOCATION);
   for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
        iter != synapseArray.end(); ++iter) {
     const ZDvidSynapse &synapse = *iter;
@@ -20222,7 +20222,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("d7c37");
+  writer.writeMasterNode("ab896");
 #endif
 
 #if 0
@@ -20589,6 +20589,25 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "ab89", 7000);
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setLabelBlockName("segmentation-labelvol");
+  target.setSynapseName("annot_synapse_083116");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonArray array = reader.readSynapseLabelsz(10, ZDvid::INDEX_ALL_SYN);
+  std::cout << array.dumpString(2);
+
+  /*
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.createSynapseLabelsz();
+  */
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "0c7e", 7000);
   target.setBodyLabelName("segmentation-labelvol");
   target.setLabelBlockName("segmentation-labelvol");
@@ -20599,6 +20618,32 @@ void ZTest::test(MainWindow *host)
 
   ZJsonArray json = reader.readSynapseLabelsz(10, ZDvid::INDEX_PRE_SYN);
   std::cout << json.dumpString(2) << std::endl;
+#endif
+
+#if 0
+  for (int i = 0; i < 66; ++i) {
+    std::cout << i << ": " << BIT_FLAG(i) << std::endl;
+  }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 1, 2);
+  obj.addSegment(0, 1, 5, 7);
+  obj.addSegment(0, 2, 0, 10);
+  obj.addSegment(0, 3, 1, 2);
+  obj.addSegment(0, 3, 4, 6);
+
+  ZObject3dScan slice = obj.getPlaneSurface(0);
+
+  slice.print();
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.getPlaneSurface().save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
 

@@ -1036,7 +1036,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
     if (reader.open(target)) {
         // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
 
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
         // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;

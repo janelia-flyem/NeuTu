@@ -248,9 +248,22 @@ void Logger::enqueueWrite(const QString& message, Level level)
 void Logger::write(const QString& message, Level level)
 {
     QMutexLocker lock(&d->logMutex);
+
+    bool matched = false;
     for (DestinationList::iterator it = d->destList.begin(),
         endIt = d->destList.end();it != endIt;++it) {
+      DestinationPtr &dest = (*it);
+      if (dest->getMatchingLevel() == level) {
+        matched = true;
         (*it)->write(message, level);
+      }
+    }
+
+    if (!matched) {
+      for (DestinationList::iterator it = d->destList.begin(),
+           endIt = d->destList.end();it != endIt;++it) {
+        (*it)->write(message, level);
+      }
     }
 }
 

@@ -3227,6 +3227,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       ZStack backupStack;
       ZObject3dScan *obj = NULL;
       if (stackData == NULL) {
+        ZOUT(LTRACE(), 5) << "Skeletonization";
         QList<ZSparseObject*> objList =
             frame->document()->getObjectList<ZSparseObject>();
         if (!objList.isEmpty()) {
@@ -7932,7 +7933,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 1190582;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -7972,7 +7973,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 8862577;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8011,7 +8012,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 2089450;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {

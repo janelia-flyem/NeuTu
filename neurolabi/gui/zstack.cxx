@@ -107,6 +107,8 @@ ZStack::ZStack(const ZStack &/*src*/)
 
 ZStack::~ZStack()
 {
+  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+
   clear();
 }
 

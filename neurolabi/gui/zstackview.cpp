@@ -1728,22 +1728,28 @@ void ZStackView::paintObjectBuffer()
     std::cout << "ZStackView::paintObjectBuffer" << std::endl;
   }
 
-  updateObjectCanvas();
 
-  /*
+  if (buddyPresenter()->isObjectVisible()) {
+    updateObjectCanvas();
+
+    /*
   ZPixmap *objectCanvas = imageWidget()->getObjectCanvas();
   if (objectCanvas != NULL) {
     objectCanvas->cleanUp();
   }
   */
 
-  /*
+    /*
   if (m_objectCanvas == NULL) {
     return;
   }
   */
 
-  paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
+    paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
+  } else {
+    m_objectCanvasPainter.setPainted(false);
+    m_objectCanvas.setVisible(false);
+  }
 
   /*
   if (m_objectCanvasPainter.isPainted()) {

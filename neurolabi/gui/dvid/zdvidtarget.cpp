@@ -25,9 +25,10 @@ const char* ZDvidTarget::m_synapseNameKey = "synapse";
 const char* ZDvidTarget::m_userNameKey = "user_name";
 const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
+const char* ZDvidTarget::m_roiListKey = "roi_list";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
-const char* ZDvidTarget::m_labelszKey = "labelsz";
+const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -88,11 +89,14 @@ void ZDvidTarget::clear()
   m_labelBlockName = "";
   m_multiscale2dName = "";
   m_grayScaleName = "";
+  m_synapseLabelszName = "";
 //  m_roiName = "";
   m_synapseName = "";
+  m_roiName = "";
   m_roiList.clear();
   m_userList.clear();
   m_supervisorServer.clear();
+  m_tileJson = ZJsonArray();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -244,15 +248,22 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
-  obj.setEntry(m_labelszKey, m_labelszName);
+  obj.setEntry(m_synapseLabelszKey, m_synapseLabelszName);
+  obj.setEntry(m_roiNameKey, m_roiName);
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
        iter != m_roiList.end(); ++iter) {
     jsonArray.append(*iter);
   }
-  obj.setEntry(m_roiNameKey, jsonArray);
+  obj.setEntry(m_roiListKey, jsonArray);
 
-  obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+//
+  if (m_tileJson.isEmpty()) {
+    obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  } else {
+    obj.setEntry(m_multiscale2dNameKey, const_cast<ZJsonArray&>(m_tileJson));
+  }
+
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
   obj.setEntry(m_supervisorServerKey, m_supervisorServer);
@@ -260,20 +271,12 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   return obj;
 }
 
-/*
-void ZDvidTarget::setLabelszName(const std::string &name)
-{
-  m_labelszName = name;
-}
-
-std::string ZDvidTarget::getLabelszName() const
-{
-  return m_labelszName;
-}
-*/
-
 std::string ZDvidTarget::getSynapseLabelszName() const
 {
+  if (!m_synapseLabelszName.empty()) {
+    return m_synapseLabelszName;
+  }
+
   if (getSynapseName().empty()) {
     return "";
   }
@@ -318,14 +321,23 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
     }
     if (obj.hasKey(m_multiscale2dNameKey)) {
-      setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
+      if (ZJsonParser::isArray(obj[m_multiscale2dNameKey])) {
+        m_tileJson = ZJsonArray(obj.value(m_multiscale2dNameKey));
+        setMultiscale2dName(getLossTileName());
+      } else {
+        setMultiscale2dName(
+              ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
+      }
     }
-    if (obj.hasKey(m_roiNameKey)) {
-      ZJsonArray jsonArray(obj.value(m_roiNameKey));
+    if (obj.hasKey(m_roiListKey)) {
+      ZJsonArray jsonArray(obj.value(m_roiListKey));
       for (size_t i = 0; i < jsonArray.size(); ++i) {
         addRoiName(ZJsonParser::stringValue(jsonArray.getData(), i));
       }
 //      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
+    }
+    if (obj.hasKey(m_roiNameKey)) {
+      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
     }
     if (obj.hasKey(m_synapseNameKey)) {
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
@@ -454,6 +466,42 @@ std::string ZDvidTarget::getMultiscale2dName() const
   return m_multiscale2dName;
 }
 
+std::string ZDvidTarget::getLossTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (!lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return "";
+}
+
+std::string ZDvidTarget::getLosslessTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return getMultiscale2dName();
+}
+
 std::string ZDvidTarget::getGrayScaleName() const
 {
   if (m_grayScaleName.empty()) {
@@ -491,6 +539,16 @@ void ZDvidTarget::setMultiscale2dName(const std::string &name)
 std::string ZDvidTarget::getRoiName(size_t index) const
 {
   return m_roiList[index];
+}
+
+std::string ZDvidTarget::getRoiName() const
+{
+  return m_roiName;
+}
+
+void ZDvidTarget::setRoiName(const std::string &name)
+{
+  m_roiName = name;
 }
 
 void ZDvidTarget::addRoiName(const std::string &name)

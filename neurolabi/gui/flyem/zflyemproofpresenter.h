@@ -79,7 +79,7 @@ signals:
   void goingToBody();
   void selectingBody();
   void goingToTBar();
-  void bookmarkAdded(ZFlyEmBookmark*);
+//  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
   void mergingBody();

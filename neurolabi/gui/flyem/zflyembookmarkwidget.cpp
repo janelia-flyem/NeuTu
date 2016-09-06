@@ -14,7 +14,8 @@ ZFlyEmBookmarkWidget::~ZFlyEmBookmarkWidget()
 }
 
 void ZFlyEmBookmarkWidget::setBookmarkModel(
-    ZFlyEmBookmarkListModel *model, EBookmarkSource source)
+    ZFlyEmBookmarkListModel *model,
+    EBookmarkSource source)
 {
   getBookmarkView(source)->setBookmarkModel(model);
 }

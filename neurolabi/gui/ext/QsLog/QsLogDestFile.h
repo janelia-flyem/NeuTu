@@ -86,7 +86,8 @@ typedef QSharedPointer<RotationStrategy> RotationStrategyPtr;
 class FileDestination : public Destination
 {
 public:
-    FileDestination(const QString& filePath, RotationStrategyPtr rotationStrategy);
+    FileDestination(const QString& filePath, RotationStrategyPtr rotationStrategy,
+        Level matchingLevel);
     virtual void write(const QString& message, Level level);
     virtual bool isValid();
 

@@ -732,6 +732,7 @@ void ZFlyEmBodySplitProject::setDataFrame(ZStackFrame *frame)
 bool ZFlyEmBodySplitProject::hasBookmark() const
 {
   if (getDocument() != NULL) {
+    ZOUT(LTRACE(), 5) << "Checking bookmarks";
     return !getDocument()->getObjectList(
           ZStackObject::TYPE_FLYEM_BOOKMARK).isEmpty();
   }
@@ -742,6 +743,7 @@ bool ZFlyEmBodySplitProject::hasBookmark() const
 int ZFlyEmBodySplitProject::getBookmarkCount() const
 {
   if (getDocument() != NULL) {
+    ZOUT(LTRACE(), 5) << "Get bookmark count";
     return getDocument()->getObjectList(
           ZStackObject::TYPE_FLYEM_BOOKMARK).size();
   }
@@ -779,6 +781,7 @@ std::set<int> ZFlyEmBodySplitProject::getBookmarkBodySet() const
   std::set<int> bodySet;
   ZStackDoc *doc = getDocument();
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Get bookmark body set";
     const TStackObjectList &objList =
         doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
@@ -1424,6 +1427,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
       seed->setLabel(label);
     }
 
+    ZOUT(LTRACE(), 5) << "Swap seed label";
     TStackObjectList objList =
         getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
 

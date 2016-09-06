@@ -135,6 +135,7 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
     target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
+    target.setRoiName(ui->roiLineEdit->text().toStdString());
 //    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
@@ -172,6 +173,7 @@ void ZDvidDialog::setServer(int index)
         dvidTarget.getSupervisor().empty() ?
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
+  ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
@@ -184,6 +186,7 @@ void ZDvidDialog::setServer(int index)
   ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
   ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
+  ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
 //  ui->labelszLineEdit->setReadOnly(!dvidTarget.isEditable());
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());

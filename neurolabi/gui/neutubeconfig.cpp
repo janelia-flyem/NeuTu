@@ -5,6 +5,9 @@
 #ifdef _QT_GUI_USED_
 #include <QDir>
 #include <QsLog.h>
+#include <QDebug>
+#include <QFileInfo>
+#include <QString>
 #endif
 
 #include "tz_cdefs.h"
@@ -28,6 +31,18 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_softwareName = "NeuTu";
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
+
+  QString traceFilePath(getPath(NeutubeConfig::LOG_TRACE).c_str());
+  QFileInfo fileInfo(traceFilePath);
+  if (fileInfo.exists()) {
+    QFile::rename(traceFilePath, traceFilePath + ".bk");
+  }
+  QFile *file = new QFile(traceFilePath);
+  if (file->open(QIODevice::WriteOnly)) {
+    m_traceStream = new QDebug(file);
+  } else {
+    m_traceStream = new QDebug(QtDebugMsg);
+  }
 //  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
 
@@ -46,6 +61,9 @@ NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
 NeutubeConfig::~NeutubeConfig()
 {
   delete m_messageReporter;
+#ifdef _QT_GUI_USED_
+  delete m_traceStream;
+#endif
 }
 
 void NeutubeConfig::setWorkDir(const string str)
@@ -313,6 +331,12 @@ std::string NeutubeConfig::getPath(Config_Item item) const
     return QDir(getPath(WORKING_DIR).c_str()).filePath("log_appout.txt").toStdString();
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log_appout.txt");
+#endif
+  case LOG_TRACE:
+#ifdef _QT_GUI_USED_
+    return QDir(getPath(LOG_DIR).c_str()).filePath("log_trace.txt").toStdString();
+#else
+    return ZString::fullPath(getPath(WORKING_DIR), "log_trace.txt");
 #endif
   case LOG_WARN:
 #ifdef _QT_GUI_USED_

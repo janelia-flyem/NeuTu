@@ -3,6 +3,8 @@
 
 #include "tz_stdint.h"
 
+#define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
+
 namespace NeuTube {
 
 enum ESyncOption {
@@ -85,24 +87,24 @@ enum ECardinalDirection {
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
-static const TVisualEffect VE_Z_PROJ = 0x0000000100000000;
-static const TVisualEffect VE_GRUOP_HIGHLIGHT = 0x0000001000000000;
+static const TVisualEffect VE_Z_PROJ = BIT_FLAG(9);
+static const TVisualEffect VE_GRUOP_HIGHLIGHT = BIT_FLAG(10);
 
 namespace Image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;
 }
 
 namespace Sphere {
-static const TVisualEffect VE_DASH_PATTERN = 1;
-static const TVisualEffect VE_BOUND_BOX = 2;
-static const TVisualEffect VE_NO_CIRCLE = 4;
-static const TVisualEffect VE_NO_FILL = 8;
-static const TVisualEffect VE_GRADIENT_FILL = 16;
-static const TVisualEffect VE_OUT_FOCUS_DIM = 32;
-static const TVisualEffect VE_DOT_CENTER = 64;
-static const TVisualEffect VE_RECTANGLE_SHAPE = 128;
-static const TVisualEffect VE_CROSS_CENTER = 256;
-static const TVisualEffect VE_FORCE_FILL = 512;
+static const TVisualEffect VE_DASH_PATTERN = BIT_FLAG(1);
+static const TVisualEffect VE_BOUND_BOX = BIT_FLAG(2);
+static const TVisualEffect VE_NO_CIRCLE = BIT_FLAG(3);
+static const TVisualEffect VE_NO_FILL = BIT_FLAG(4);
+static const TVisualEffect VE_GRADIENT_FILL = BIT_FLAG(5);
+static const TVisualEffect VE_OUT_FOCUS_DIM = BIT_FLAG(6);
+static const TVisualEffect VE_DOT_CENTER = BIT_FLAG(7);
+static const TVisualEffect VE_RECTANGLE_SHAPE = BIT_FLAG(8);
+static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
+static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
 }
 
 namespace SwcTree {
@@ -116,16 +118,19 @@ static const TVisualEffect VE_LINE_FADING_PROJ = 2;
 
 namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
+static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
-
+}
 }
 
 namespace FlyEM {
 enum EDvidAnnotationLoadMode {
   LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
 };
-}
 
+enum EProofreadingMode {
+  PR_NORMAL, PR_SPLIT
+};
 }
 
 

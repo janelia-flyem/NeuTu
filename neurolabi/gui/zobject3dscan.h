@@ -328,6 +328,9 @@ public:
   void dilate();
   void dilatePlane();
 
+  void setDsIntv(int x, int y, int z);
+  void setDsIntv(const ZIntPoint &intv);
+
   ZPoint getCentroid() const;
   /*!
    * \brief Get the single voxel representing the object
@@ -402,6 +405,9 @@ public:
   ZObject3dScan getComplementObject();
 
   ZObject3dScan getSurfaceObject() const;
+
+  ZObject3dScan getPlaneSurface(int z) const;
+  ZObject3dScan getPlaneSurface() const;
 
   /*!
    * \brief Find all holes as a single object.
@@ -571,6 +577,7 @@ protected:
   bool m_isCanonized;
   uint64_t m_label;
   bool m_blockingEvent;
+  ZIntPoint m_dsIntv;
 //  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;

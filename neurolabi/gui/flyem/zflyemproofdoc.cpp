@@ -435,6 +435,31 @@ void ZFlyEmProofDoc::prepareDvidData()
 
     ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
     loadStack(stack);
+
+    //Download ROI
+    if (!getDvidTarget().getRoiName().empty()) {
+      ZObject3dScan *obj =
+          m_dvidReader.readRoi(getDvidTarget().getRoiName(), NULL);
+      if (obj != NULL) {
+        if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+          std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
+#endif
+          obj->setColor(0, 255, 0);
+          obj->setZOrder(2);
+          obj->setTarget(ZStackObject::TARGET_WIDGET);
+          obj->useCosmeticPen(true);
+          obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+          obj->setDsIntv(31, 31, 31);
+          obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+          addObject(obj);
+//          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
+        } else {
+          delete obj;
+        }
+      }
+
+    }
   }
 
 
@@ -515,6 +540,7 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
 template<typename T>
 static void UpdateDvidTargetForObject(ZFlyEmProofDoc *doc)
 {
+  ZOUT(LTRACE(), 5) << "Update dvid target";
   QList<T*> objList = doc->getObjectList<T>();
   for (typename QList<T*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -564,6 +590,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(NeuTube::EAxis axis) const
 ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
     NeuTube::EAxis axis) const
 {
+  ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZDvidSynapseEnsemble*> teList = getObjectList<ZDvidSynapseEnsemble>();
 //  QList<ZStackObject*> teList = getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = teList.begin();
@@ -579,6 +606,7 @@ ZDvidSynapseEnsemble* ZFlyEmProofDoc::getDvidSynapseEnsemble(
 
 QList<ZDvidSynapseEnsemble*> ZFlyEmProofDoc::getDvidSynapseEnsembleList() const
 {
+  ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> objList =
       getObjectList(ZStackObject::TYPE_DVID_SYNAPE_ENSEMBLE);
 
@@ -623,6 +651,7 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
 
 bool ZFlyEmProofDoc::hasTodoItemSelected() const
 {
+  ZOUT(LTRACE(), 5) << "Check todo selection";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -670,6 +699,7 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
 
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 {
+  ZOUT(LTRACE(), 5) << "Check to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
   std::vector<ZIntPoint> ptArray;
@@ -822,6 +852,7 @@ void ZFlyEmProofDoc::removeSynapse(
 void ZFlyEmProofDoc::removeTodoItem(
     const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope)
 {
+  ZOUT(LTRACE(), 5) << "Remove to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -847,6 +878,7 @@ void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
 void ZFlyEmProofDoc::addTodoItem(
     const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope)
 {
+  ZOUT(LTRACE(), 5) << "Add to do item";
   QList<ZFlyEmToDoList*> seList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
@@ -1274,6 +1306,7 @@ void ZFlyEmProofDoc::clearBodyMerger()
 void ZFlyEmProofDoc::updateDvidLabelObject()
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
@@ -1282,7 +1315,6 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
     obj->forceUpdate();
     processObjectModified(obj);
   }
-
 
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
   for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
@@ -1422,6 +1454,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
 
 void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
 {
+  ZOUT(LTRACE(), 5) << "Download to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -1435,6 +1468,7 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
 {
+  ZOUT(LTRACE(), 5) << "Download synapses";
   QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
 //  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
@@ -1630,7 +1664,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
   const double radius = 50.0;
   if (reader.open(getDvidTarget())) {
     std::vector<ZDvidSynapse> synapseArray =
-        reader.readSynapse(bodyId, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+        reader.readSynapse(bodyId, FlyEM::LOAD_PARTNER_RELJSON);
 
     std::vector<ZPunctum*> &tbar = synapse.first;
     std::vector<ZPunctum*> &psd = synapse.second;
@@ -1668,7 +1702,7 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId) const
       ZFlyEmToDoItem *item = new ZFlyEmToDoItem;
 
       ZJsonObject objJson(annotationJson.value(i));
-      item->loadJsonObject(objJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
+      item->loadJsonObject(objJson, FlyEM::LOAD_NO_PARTNER);
 
       item->setBodyId(bodyId);
 
@@ -1699,7 +1733,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId) const
       ZFlyEmToDoItem item;
 
       ZJsonObject objJson(annotationJson.value(i));
-      item.loadJsonObject(objJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+      item.loadJsonObject(objJson, FlyEM::LOAD_PARTNER_RELJSON);
 
       ZPunctum *punctum = new ZPunctum(item.getPosition(), radius);
       punctum->setColor(item.getDisplayColor());
@@ -1905,6 +1939,7 @@ void ZFlyEmProofDoc::loadSynapse(const std::string &filePath)
 
 ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
 {
+  ZOUT(LTRACE(), 5) << "Find bookmark";
   const TStackObjectList &objList =
       getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
   for (TStackObjectList::const_iterator iter = objList.begin();
@@ -1918,18 +1953,27 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
   return NULL;
 }
 
-void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
+QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
+    const std::string &filePath)
 {
   ZOUT(LINFO(), 3) << "Importing flyem bookmarks";
+
+  QList<ZFlyEmBookmark*> bookmarkList;
 
   m_loadingAssignedBookmark = true;
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   if (!filePath.empty()) {
 //    removeObject(ZStackObject::TYPE_FLYEM_BOOKMARK, true);
+#if 1
     TStackObjectList objList = getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     ZOUT(LINFO(), 3) << objList.size() << " bookmarks";
     std::vector<ZStackObject*> removed;
+
+//    ZUndoCommand *command = new ZUndoCommand;
+
+//    ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark *removeCommand =
+//        new ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark(this, NULL, command);
 
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
@@ -1937,12 +1981,17 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
       ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(obj);
       if (bookmark != NULL) {
         if (!bookmark->isCustom()) {
-          ZOUT(LINFO(), 5) << "Removing bookmark: " << bookmark;
+          ZOUT(LTRACE(), 5) << "Removing bookmark: " << bookmark;
           removeObject(*iter, false);
           removed.push_back(*iter);
+//          removeCommand->addRemoving(bookmark);
         }
       }
     }
+#endif
+
+//    ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark *addCommand =
+//        new ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark(this, NULL, command);
 
     ZJsonObject obj;
 
@@ -1987,12 +2036,17 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
             if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
               bookmark->setChecked(true);
             }
-            ZOUT(LINFO(), 5) << "Adding bookmark: " << bookmark;
+//            addCommand->addBookmark(bookmark);
+            ZOUT(LTRACE(), 5) << "Adding bookmark: " << bookmark;
+            bookmarkList.append(bookmark);
             addObject(bookmark);
           }
         }
       }
     }
+
+//    pushUndoCommand(command);
+
     for (std::vector<ZStackObject*>::iterator iter = removed.begin();
          iter != removed.end(); ++iter) {
       ZOUT(LINFO(), 5) << "Deleting bookmark: " << *iter;
@@ -2006,6 +2060,8 @@ void ZFlyEmProofDoc::importFlyEmBookmark(const std::string &filePath)
   m_loadingAssignedBookmark = false;
 
   ZOUT(LINFO(), 3) << "Bookmark imported";
+
+  return bookmarkList;
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
@@ -3048,6 +3104,7 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
 std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
 {
   std::set<ZIntPoint> selected;
+  ZOUT(LTRACE(), 5) << "Get selected todo positions";
   QList<ZFlyEmToDoList*> objList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -3081,6 +3138,7 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
 
 void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
 {
+  ZOUT(LTRACE(), 5) << "Copy bookmarks";
   QList<ZFlyEmBookmark*> objList = doc->getObjectList<ZFlyEmBookmark>();
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
@@ -3114,6 +3172,11 @@ void ZFlyEmProofDoc::notifySynapseMoved(
 void ZFlyEmProofDoc::notifyTodoEdited(const ZIntPoint &item)
 {
   emit todoEdited(item.getX(), item.getY(), item.getZ());
+}
+
+void ZFlyEmProofDoc::notifyAssignedBookmarkModified()
+{
+  emit assignedBookmarkModified();
 }
 
 void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
@@ -3173,6 +3236,7 @@ void ZFlyEmProofDoc::addLocalBookmark(
 
 ZFlyEmBookmark* ZFlyEmProofDoc::getBookmark(int x, int y, int z) const
 {
+  ZOUT(LTRACE(), 5) << "Get bookmarks";
   QList<ZFlyEmBookmark*> bookmarkList = getObjectList<ZFlyEmBookmark>();
 
   ZFlyEmBookmark *bookmark = NULL;

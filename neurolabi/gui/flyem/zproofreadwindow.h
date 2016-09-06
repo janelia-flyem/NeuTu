@@ -97,6 +97,7 @@ private:
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
   QAction *m_viewTodoAction;
+  QAction *m_viewRoiAction;
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
@@ -110,7 +111,7 @@ private:
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
   QAction *m_openRoi3dAction;
-  QAction *m_queryTableAction;
+//  QAction *m_queryTableAction;
 
   QToolBar *m_toolBar;
   QToolBar *m_synapseToolbar;

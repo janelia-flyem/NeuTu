@@ -68,7 +68,7 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
         addSynapseUnsync(synapse, DATA_LOCAL);
       }
     }
@@ -280,7 +280,7 @@ void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+    synapse.loadJsonObject(synapseJson, FlyEM::LOAD_PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }
@@ -927,7 +927,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
-      synapse.loadJsonObject(obj, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+      synapse.loadJsonObject(obj, FlyEM::LOAD_PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
 #if 0

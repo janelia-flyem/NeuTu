@@ -512,6 +512,7 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
     if (isBodyLoaded()) {
       //        m_project.clearBookmarkDecoration();
       //      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      ZOUT(LTRACE(), 5) << "Update bookmark table";
       const TStackObjectList &objList = m_project.getDocument()->
           getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
@@ -524,6 +525,11 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
       //      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
     }
   }
+}
+
+void FlyEmBodySplitProjectDialog::clearAssignedBookmarkTable()
+{
+  m_bookmarkList.clear();
 }
 
 /*
