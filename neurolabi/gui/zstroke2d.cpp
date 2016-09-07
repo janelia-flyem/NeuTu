@@ -48,6 +48,8 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 
 ZStroke2d::~ZStroke2d()
 {
+  ZOUT(LTRACE(), 5) << "Deconstructing " << this << ": ZStroke2d " << ", "
+            << getSource();
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)

@@ -20222,7 +20222,29 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.writeMasterNode("ab896");
+  writer.writeMasterNode("3e179");
+
+  std::vector<std::string> nodeList = ZDvidReader::ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeMasterNode("7abee");
+
+  std::vector<std::string> nodeList = ZDvidReader::ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
 #endif
 
 #if 0
@@ -20587,7 +20609,7 @@ void ZTest::test(MainWindow *host)
   writer.createSynapseLabelsz();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "ab89", 7000);
   target.setBodyLabelName("segmentation-labelvol");
@@ -20646,6 +20668,13 @@ void ZTest::test(MainWindow *host)
   obj.getPlaneSurface().save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/flyem/AL/lightseg.tif");
+
+  Stack slice = C_Stack::sliceView(stack.c_stack(), 128, 128);
+  C_Stack::write(GET_TEST_DATA_DIR + "/misc/segtest2.tif", &slice);
+#endif
 
   std::cout << "Done." << std::endl;
 }

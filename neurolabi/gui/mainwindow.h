@@ -131,6 +131,8 @@ public: /* File and message dialogs */
               NeuTube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
+  QMenu* getSandboxMenu() const;
+
 public:
   bool initBodySplitProject();
 

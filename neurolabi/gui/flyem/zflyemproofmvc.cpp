@@ -63,6 +63,8 @@
 #include "flyem/zflyemroiproject.h"
 #include "zflyemutilities.h"
 #include "zflyembookmarkview.h"
+#include "dvid/zdvidpatchdatafetcher.h"
+#include "dvid/zdvidpatchdataupdater.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -114,9 +116,6 @@ void ZFlyEmProofMvc::init()
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
 
-  m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
-  m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
-
   m_assignedBookmarkModel[FlyEM::PR_NORMAL] =
       new ZFlyEmBookmarkListModel(this);
   m_assignedBookmarkModel[FlyEM::PR_SPLIT] =
@@ -135,6 +134,8 @@ void ZFlyEmProofMvc::init()
 //  m_userBookmarkProxy = new QSortFilterProxyModel(this);
 //  prepareBookmarkModel(m_userBookmarkList, m_userBookmarkProxy);
 
+  m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
+  m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
   connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
           m_seUpdater, SLOT(updateData(ZFlyEmSynapseDataFetcher*)),
           Qt::QueuedConnection);
@@ -458,6 +459,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           doc, SLOT(showTodo(bool)));
   setWindowSignalSlot(m_coarseBodyWindow);
 
+  m_coarseBodyWindow->setWindowType(NeuTube3D::TYPE_COARSE_BODY);
+  m_coarseBodyWindow->readSettings();
+
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_coarseBodyWindow, m_dvidInfo,
@@ -465,8 +469,11 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //    ZFlyEmMisc::Decorate3dBodyWindowRoi(
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
 
-    if(m_ROILoaded)
-        m_coarseBodyWindow->getROIsDockWidget()->getROIs(m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+    if(m_ROILoaded) {
+        m_coarseBodyWindow->getROIsDockWidget()->getROIs(
+              m_coarseBodyWindow, m_dvidInfo, m_roiList,
+              m_loadedROIs, m_roiSourceList);
+    }
   }
 
   //connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(toBeClosed()), m_bodyViewers, SLOT(resetROIButton()));
@@ -948,7 +955,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
       te->enhanceContrast(getCompletePresenter()->highTileContrast());
       te->attachView(getView());
+      ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
+      ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
+      patchFetcher->setDvidTarget(getDvidTarget());
+      patchUpdater->setData(te, getDocument());
+      connect(patchFetcher, SIGNAL(dataFetched(ZDvidPatchDataFetcher*)),
+              patchUpdater, SLOT(updateData(ZDvidPatchDataFetcher*)),
+              Qt::QueuedConnection);
+      te->setDataFetcher(patchFetcher);
+      patchFetcher->start(100);
     }
+
     getView()->reset(false);
     getProgressSignal()->advanceProgress(0.1);
 

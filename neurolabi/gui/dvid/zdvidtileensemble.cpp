@@ -11,6 +11,7 @@
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
+#include "zdvidpatchdatafetcher.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -19,6 +20,7 @@ ZDvidTileEnsemble::ZDvidTileEnsemble()
   m_highContrast = false;
   m_view = NULL;
   m_patch = NULL;
+  m_dataFetcher = NULL;
 //  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 
@@ -36,8 +38,15 @@ void ZDvidTileEnsemble::clear()
       delete tileIter->second;
     }
   }
+  m_tileGroup.clear();
 
   delete m_patch;
+  m_patch = NULL;
+}
+
+void ZDvidTileEnsemble::setDataFetcher(ZDvidPatchDataFetcher *fetcher)
+{
+  m_dataFetcher = fetcher;
 }
 
 void ZDvidTileEnsemble::enhanceContrast(bool high)
@@ -49,6 +58,20 @@ void ZDvidTileEnsemble::enhanceContrast(bool high)
 void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
 {
   m_contrastProtocal = obj;
+}
+
+void ZDvidTileEnsemble::updatePatch(
+    const ZImage *patch, const ZIntCuboid &region)
+{
+  if (m_patch != NULL) {
+    delete m_patch;
+    m_patch = NULL;
+  }
+
+  m_patch = new ZImage(*patch);
+  m_patch->loadHighContrastProtocal(m_contrastProtocal);
+  m_patch->enhanceContrast(m_highContrast);
+  m_patchRange = region;
 }
 
 void ZDvidTileEnsemble::updateContrast()
@@ -210,14 +233,14 @@ bool ZDvidTileEnsemble::update(
 //#define DVID_TILE_THREAD_FETCH 1
 
       std::vector<libdvid::BinaryDataPtr> data;
+      std::string tileName;
       try {
 //#if DVID_TILE_THREAD_FETCH
-        std::string tileName;
-        if (tile_locs_array.size() < 5) {
-          tileName = m_dvidTarget.getLosslessTileName();
-        } else {
+//        if (tile_locs_array.size() < 5) {
+//          tileName = m_dvidTarget.getLosslessTileName();
+//        } else {
           tileName = m_dvidTarget.getMultiscale2dName();
-        }
+//        }
 
         if (NeutubeConfig::ParallelTileFetching()) {
           data = get_tile_array_binary(
@@ -297,6 +320,25 @@ bool ZDvidTileEnsemble::update(
       }
 
       updated = true;
+
+      if (m_dataFetcher != NULL &&
+          tileName != m_dvidTarget.getLosslessTileName()) {
+        QRect highresViewPort =
+            m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+        if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
+          int z = m_view->getZ(NeuTube::COORD_STACK);
+          QPoint center = highresViewPort.center();
+          int width = 512;
+          int height = 512;
+          int x0 = center.x() - width / 2 - 1;
+          int y0 = center.y() - height / 2 - 1;
+          int x1 = x0 + width;
+          int y1 = y0 + height;
+
+          ZIntCuboid region(x0, y0, z, x1, y1, z);
+          m_dataFetcher->submit(region);
+        }
+      }
 
 #if 0
 //      QThreadFutureMap futureMap;
@@ -475,6 +517,14 @@ void ZDvidTileEnsemble::display(
     std::cout << "High-res patching time: " << timer.elapsed() << std::endl;
   }
 #endif
+
+  if (m_patch != NULL) {
+    if (m_patchRange.getFirstCorner().getZ() == painter.getZOffset() + slice) {
+      painter.drawImage(m_patchRange.getFirstCorner().getX(),
+                        m_patchRange.getFirstCorner().getY(),
+                        *m_patch);
+    }
+  }
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
 

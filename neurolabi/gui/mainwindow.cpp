@@ -8085,3 +8085,8 @@ void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
 {
   generateMBONConnCast("movie7");
 }
+
+QMenu* MainWindow::getSandboxMenu() const
+{
+  return m_ui->menuSandbox;
+}

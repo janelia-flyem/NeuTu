@@ -190,6 +190,7 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
   m_windowGeometry = rect;
 }
 
+
 void ZWindowFactory::configure(Z3DWindow */*window*/)
 {
 

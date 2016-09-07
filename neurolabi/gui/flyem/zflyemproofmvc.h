@@ -34,6 +34,8 @@ class ZClickableColorLabel;
 class ZColorLabel;
 class ZFlyEmSynapseDataFetcher;
 class ZFlyEmSynapseDataUpdater;
+class ZDvidPatchDataFetcher;
+class ZDvidPatchDataUpdater;
 class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
@@ -399,7 +401,8 @@ protected:
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
-
+//  ZDvidPatchDataFetcher *m_patchFetcher;
+//  ZDvidPatchDataUpdater *m_patchUpdater;
 };
 
 template <typename T>

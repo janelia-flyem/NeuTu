@@ -34,9 +34,20 @@ public:
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
+  ZImage(const ZImage &image);
+
   void clear();
 
   void init();
+
+  int getZ() const {
+    return m_z;
+  }
+
+  void setZ(int z) {
+    m_z = z;
+  }
+
 
   /*!
    * \brief Set data function
@@ -171,6 +182,7 @@ public:
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
+private:
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
 
   //high constrast protocal
@@ -178,6 +190,8 @@ private:
   double m_grayScale;
   double m_grayOffset;
   //ZIntPoint m_offset;
+
+  int m_z;
 };
 
 #include "zimage_tmpl.cpp"

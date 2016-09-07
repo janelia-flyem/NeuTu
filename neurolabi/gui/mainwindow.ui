@@ -430,8 +430,15 @@
      <addaction name="actionGenerate_Mask"/>
      <addaction name="actionBigNeuron_Trace"/>
     </widget>
+    <widget class="QMenu" name="menuSandbox">
+     <property name="title">
+      <string>Sandbox</string>
+     </property>
+    </widget>
     <addaction name="menuFLy_EM"/>
     <addaction name="menuBiocytin"/>
+    <addaction name="separator"/>
+    <addaction name="menuSandbox"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1500,6 +1507,11 @@
   <action name="actionMake_Movie_MB">
    <property name="text">
     <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

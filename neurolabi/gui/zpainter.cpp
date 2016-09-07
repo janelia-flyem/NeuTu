@@ -216,6 +216,8 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
     //  QRect targetRect = transform().mapRect(QRect(
     //        x, y, iround(image.width() / image.getTransform().getSx()),
     //        iround(image.height() / image.getTransform().getSy())));
+//    x = iround(image.getTransform().transformX(x));
+//    y = iround(image.getTransform().transformY(y));
     QRect targetRect = QRect(
           x, y, iround(image.width() / image.getTransform().getSx()),
           iround(image.height() / image.getTransform().getSy()));

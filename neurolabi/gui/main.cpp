@@ -16,6 +16,8 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "sandbox/zsandboxproject.h"
+#include "sandbox/zsandbox.h"
 
 #ifdef _QT5_
 #include <QSurfaceFormat>
@@ -332,6 +334,9 @@ int main(int argc, char *argv[])
     } /*else {
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
+
+    ZSandbox::SetMainWindow(mainWin);
+    ZSandboxProject::InitSandbox();
 
     int result = app.exec();
 

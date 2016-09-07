@@ -33,6 +33,15 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
 
 }
 
+ZImage::ZImage(const ZImage &image) : QImage(image)
+{
+  m_transform = image.m_transform;
+  m_nonlinear = image.m_nonlinear;
+  m_grayScale = image.m_grayScale;
+  m_grayOffset = image.m_grayOffset;
+  m_z = image.m_z;
+}
+
 void ZImage::init()
 {
   if (width() > 0 && height() > 0) {
@@ -46,6 +55,8 @@ void ZImage::init()
   }
 
   setDefaultContrastProtocal();
+
+  m_z = NeuTube::INVALID_Z_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
