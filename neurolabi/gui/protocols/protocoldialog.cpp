@@ -19,7 +19,6 @@
  * -- subclass ProtocolDialog
  * -- implement initialize(); this is called when the protocol is
  *      started for the first time
- * -- implement getName(); returns protocol name; must not have hyphens
  * -- signal protocolExiting(): emit when the protocol is being closed
  *      by the user but can be reopened later for more work; your
  *      responsibility to save first
@@ -32,9 +31,16 @@
  *      to this slot when a saved protocol is loaded
  * -- ProtocolSwitcher::protocolNames: add to list
  * -- in ProtocolSwitcher::instantiateProtocol: add else-if
+ * --> note that you can map more than one name to one protocol
+ *      class and then pass different parameters into the constructor
+ *      to change its behavior at initialization time (and later)
  *
  * other signals you can use:
  * -- emit requestDisplayPoint(x, y, z) to have the 2d view move to a point
+ *
+ * notes:
+ * -- the protocol class does not know its name!  names are managed by
+ *      the switcher
  *
  */
 ProtocolDialog::ProtocolDialog(QWidget *parent) :
@@ -54,16 +60,6 @@ bool ProtocolDialog::initialize() {
     std::cout << "in ProtocolDialog::initialize" << std::endl;
     return true;
 
-}
-
-/*
- * return the protocol's name; must not include hyphens; should probably
- * not contain space, though I don't *think* it'll break anything
- */
-std::string ProtocolDialog::getName() {
-
-    std::cout << "in ProtocolDialog::getName" << std::endl;
-    return "protocol_name";
 }
 
 void ProtocolDialog::setDvidTarget(ZDvidTarget target) {
