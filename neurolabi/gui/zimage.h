@@ -145,6 +145,8 @@ public:
 
   void drawRaster(const void *data, int kind, double scale = 1.0,
                   double offset = 0.0, int threshold = -1);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha);
 
   void setBackground();
 
@@ -184,6 +186,7 @@ private:
 
 private:
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+  ZStTransform m_projTransform; //Transform from image coordinates to screen coordinates
 
   //high constrast protocal
   bool m_nonlinear;

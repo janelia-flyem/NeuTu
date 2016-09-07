@@ -20676,5 +20676,58 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/misc/segtest2.tif", &slice);
 #endif
 
+
+#if 0
+  tic();
+  ZPixmap pixmap(QSize(1000, 1000));
+  pixmap.fill(Qt::transparent);
+
+  QPainter painter(&pixmap);
+  painter.setPen(QColor(0, 128, 0, 128));
+
+  ZImage image(1000, 1000);
+  int w = image.width();
+  int h = image.height();
+
+  for (int j = 0; j < h; j++) {
+    uchar *line = image.scanLine(j);
+    for (int i = 0; i < w; i++) {
+      *line++ = 0;
+      *line++ = 128;
+      *line++ = 0;
+      *line++ = 128;
+    }
+  }
+
+  pixmap.fromImage(image);
+
+  std::cout << "Painting time: " << toc() << std::endl;
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
+  target.setLabelBlockName("labels3");
+  reader.open(target);
+  ZArray *array = reader.readLabels64(4327, 5443, 6341, 1024, 1024, 1);
+
+  tic();
+  ZObjectColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+
+  ZImage image(1024, 1024);
+  image.drawLabelField(array->getDataPointer<uint64_t>(),
+                       colorScheme.getColorTable(), 128);
+
+//  ZPixmap pixmap;
+//  pixmap.fromImage(image);
+
+  std::cout << "Painting time: " << toc() << std::endl;
+
+  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+  delete array;
+#endif
+
   std::cout << "Done." << std::endl;
 }

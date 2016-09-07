@@ -683,6 +683,44 @@ void ZImage::setCData(const uint8_t *data, uint8_t alpha)
   }
 }
 
+void ZImage::drawLabelField(
+    uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha)
+{
+  int i, j;
+  QVector<int> rgbaTable(colorTable.size());
+  int newAlpha = alpha;
+  newAlpha <<= 24;
+  for (int i = 0; i < colorTable.size(); ++i) {
+    const QColor &color = colorTable[i];
+    rgbaTable[i] = newAlpha + (color.red() << 16) + (color.green() << 8) +
+        color.blue();
+  }
+
+  int colorCount = colorTable.size();
+
+//  uint16_t *colorIndex = (uint16_t*) data;
+  int h = height();
+  int w = width();
+
+  for (j = 0; j < h; j++) {
+//    uchar *line = scanLine(j);
+    int *line = (int*) scanLine(j);
+    for (i = 0; i < w; i++) {
+//      const QColor &color = colorTable[*data++ % colorCount];
+
+//      *data++ % colorCount;
+//      int color = rgbaTable[colorIndex[2]];
+      *line++ = rgbaTable[*data++ % colorCount] ;
+//      colorIndex += 4;
+
+//      *line++ = color.red();
+//      *line++ = color.green();
+//      *line++ = color.blue();
+//      *line++ = alpha;
+    }
+  }
+}
+
 void ZImage::drawRaster(const void *data, int kind, double scale,
 			double offset, int threshold)
 {
