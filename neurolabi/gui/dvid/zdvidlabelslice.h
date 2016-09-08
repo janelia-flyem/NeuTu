@@ -16,8 +16,8 @@
 #include "dvid/zdvidreader.h"
 #include "zsharedpointer.h"
 #include "flyem/zflyembodycolorscheme.h"
+#include "flyem/zflyembodymerger.h"
 
-class ZFlyEmBodyMerger;
 class QColor;
 class ZArray;
 
@@ -160,6 +160,8 @@ private:
   void remapId(ZArray *label);
   void remapId();
   void updateRgbTable();
+
+  ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
 
 private:
   ZDvidTarget m_dvidTarget;

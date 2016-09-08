@@ -37,6 +37,18 @@ ZDvidUrl::ZDvidUrl(const ZDvidTarget &target)
   m_dvidTarget = target;
 }
 
+std::string ZDvidUrl::GetFullUrl(
+      const std::string &prefix, const std::string &endpoint)
+{
+  std::string url;
+
+  if (!prefix.empty()) {
+    url = prefix + "/" + endpoint;
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getNodeUrl() const
 {
   return m_dvidTarget.getUrl();
@@ -44,11 +56,7 @@ std::string ZDvidUrl::getNodeUrl() const
 
 std::string ZDvidUrl::getDataUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return m_dvidTarget.getUrl() + "/" + dataName;
+  return GetFullUrl(m_dvidTarget.getUrl(), dataName);
 }
 
 std::string ZDvidUrl::getDataUrl(ZDvidData::ERole role) const
@@ -65,26 +73,26 @@ std::string ZDvidUrl::getDataUrl(
 
 std::string ZDvidUrl::getInfoUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getDataUrl(dataName) + "/" + m_infoCommand;
+  return GetFullUrl(getDataUrl(dataName), m_infoCommand);
 }
 
 std::string ZDvidUrl::getApiUrl() const
 {
-  return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+  if (!m_dvidTarget.getAddress().empty()) {
+    return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+  }
+
+  return "";
 }
 
 std::string ZDvidUrl::getHelpUrl() const
 {
-  return getApiUrl() + "/help";
+  return GetFullUrl(getApiUrl(), "help");
 }
 
 std::string ZDvidUrl::getServerInfoUrl() const
 {
-  return getApiUrl() + "/server/info";
+  return GetFullUrl(getApiUrl(), "server/info");
 }
 
 std::string ZDvidUrl::getSkeletonUrl() const
@@ -103,13 +111,8 @@ std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 std::string
 ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  std::string url = GetKeyCommandUrl(getSkeletonUrl(bodyLabelName));
-
-  if (!url.empty()) {
-    url += "/" + GetSkeletonKey(bodyId);// + str + "_swc";
-  }
-
-  return url;
+  return GetFullUrl(GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)),
+                    GetSkeletonKey(bodyId));
 }
 
 std::string ZDvidUrl::getSkeletonUrl(uint64_t bodyId) const
@@ -119,18 +122,17 @@ std::string ZDvidUrl::getSkeletonUrl(uint64_t bodyId) const
 
 std::string ZDvidUrl::getSkeletonConfigUrl(const std::string &bodyLabelName)
 {
-  return getSkeletonUrl(bodyLabelName) + "/key/config.json";
+  return GetFullUrl(getSkeletonUrl(bodyLabelName), "key/config.json");
 }
 
 std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
 {
-  return dataUrl + "/" + m_keyCommand;
+  return GetFullUrl(dataUrl, m_keyCommand);
 }
 
 std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
 {
-  return getDataUrl(dataName) + "/" + m_sparsevolCommand;
-//      ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL);
+  return GetFullUrl(getDataUrl(dataName), m_sparsevolCommand);
 }
 
 std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
@@ -142,6 +144,10 @@ std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, NeuTube::EAxis axis) const
 {
   ZString url = getSparsevolUrl(bodyId);
+
+  if (url.empty()) {
+    return "";
+  }
 
   switch (axis) {
   case NeuTube::Z_AXIS:
@@ -173,6 +179,10 @@ std::string ZDvidUrl::getSparsevolUrl(
 {
   ZString url = getSparsevolUrl(bodyId);
 
+  if (url.empty()) {
+    return "";
+  }
+
   switch (axis) {
   case NeuTube::Z_AXIS:
     url += "?minz=";
@@ -201,6 +211,10 @@ std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, const ZIntCuboid &box) const
 {
   ZString url = getSparsevolUrl(bodyId);
+
+  if (url.empty()) {
+    return "";
+  }
 
   if (!box.isEmpty()) {
     url += "?minx=";
@@ -233,12 +247,12 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataNa
   ZString str;
   str.appendNumber(bodyId);
 
-  return getSparsevolUrl(dataName) + "/" + str;
+  return GetFullUrl(getSparsevolUrl(dataName), str);
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
 {
-  return getDataUrl(dataName) + "/" + m_coarseSparsevolCommand;
+  return GetFullUrl(getDataUrl(dataName), m_coarseSparsevolCommand);
 //      ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_COARSE);
 }
 
@@ -252,7 +266,7 @@ std::string ZDvidUrl::getCoarseSparsevolUrl(
   ZString str;
   str.appendNumber(bodyId);
 
-  return getCoarseSparsevolUrl(dataName) + "/" + str;
+  return GetFullUrl(getCoarseSparsevolUrl(dataName), str);
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(uint64_t bodyId) const
@@ -291,17 +305,21 @@ std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLa
 
 std::string ZDvidUrl::getRepoUrl() const
 {
-  return getApiUrl() + "/repo/" + m_dvidTarget.getUuid();
+  if (m_dvidTarget.isValid()) {
+    return GetFullUrl(getApiUrl(), "repo/" + m_dvidTarget.getUuid());
+  }
+
+  return "";
 }
 
 std::string ZDvidUrl::getInfoUrl() const
 {
-  return getRepoUrl() + "/info";
+  return GetFullUrl(getRepoUrl(), "info");
 }
 
 std::string ZDvidUrl::getInstanceUrl() const
 {
-  return getRepoUrl() + "/instance";
+  return GetFullUrl(getRepoUrl(), "instance");
 }
 
 
@@ -312,7 +330,7 @@ std::string ZDvidUrl::getSp2bodyUrl() const
 
 std::string ZDvidUrl::getSp2bodyUrl(const std::string &suffix) const
 {
-  return getSp2bodyUrl() + "/" + suffix;
+  return GetFullUrl(getSp2bodyUrl(), suffix);
 }
 
 std::string ZDvidUrl::getGrayscaleUrl() const
@@ -326,20 +344,20 @@ std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int x0, int y0, int z0,
 const
 {
   std::ostringstream stream;
-  stream << "/raw/0_1/" << sx << "_" << sy << "/" << x0 << "_" << y0 << "_" << z0;
+  stream << "raw/0_1/" << sx << "_" << sy << "/" << x0 << "_" << y0 << "_" << z0;
   if (!format.empty()) {
     stream << "/" << format;
   }
-  return getGrayscaleUrl() + stream.str();
+  return GetFullUrl(getGrayscaleUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,
                                       int x0, int y0, int z0) const
 {
   std::ostringstream stream;
-  stream << "/raw/0_1_2/" << sx << "_" << sy << "_" << sz << "/"
+  stream << "raw/0_1_2/" << sx << "_" << sy << "_" << sz << "/"
          << x0 << "_" << y0 << "_" << z0;
-  return getGrayscaleUrl() + stream.str();
+  return GetFullUrl(getGrayscaleUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getGrayScaleBlockUrl(

@@ -233,6 +233,8 @@ private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &endpoint);
 
 private:
   ZDvidTarget m_dvidTarget;

@@ -60,6 +60,7 @@ ZStackView::~ZStackView()
   m_imagePainter.end();
   m_objectCanvasPainter.end();
   m_tileCanvasPainter.end();
+//  m_dynamicObjectCanvasPainter.end();
 
   if (m_image != NULL) {
     delete m_image;
@@ -1464,8 +1465,18 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
 void ZStackView::updateDynamicObjectCanvas()
 {
-  m_dynamicObjectCanvas = updateProjCanvas(m_dynamicObjectCanvas);
-  m_imageWidget->setDynamicObjectCanvas(m_dynamicObjectCanvas);
+  ZPixmap *newCanvas = updateProjCanvas(m_dynamicObjectCanvas);
+  m_imageWidget->setDynamicObjectCanvas(newCanvas);
+
+  if (m_dynamicObjectCanvas != newCanvas) {
+    m_dynamicObjectCanvas = newCanvas;
+    /* //doesn't work here. not sure why
+    m_dynamicObjectCanvasPainter.end();
+    if (m_dynamicObjectCanvas != NULL) {
+      m_dynamicObjectCanvasPainter.begin(m_dynamicObjectCanvas);
+    }
+    */
+  }
 }
 
 void ZStackView::updateActiveDecorationCanvas()
@@ -2810,6 +2821,15 @@ ZPainter* ZStackView::getPainter(ZStackObject::ETarget target)
     }
 
     return &m_tileCanvasPainter;
+#if 0
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    updateDynamicObjectCanvas();
+    if (!m_dynamicObjectCanvasPainter.isActive()) {
+      return NULL;
+    }
+
+    return &m_dynamicObjectCanvasPainter;
+#endif
   default:
     break;
   }
@@ -2824,9 +2844,7 @@ void ZStackView::paintObjectBuffer(ZStackObject::ETarget target)
     paintObjectBuffer(*painter, target);
   } else {
     if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
-      updateDynamicObjectCanvas();
-      ZPainter painter(m_dynamicObjectCanvas);
-      paintObjectBuffer(painter, target);
+      paintDynamicObjectBuffer();
     }
   }
 }
@@ -2839,10 +2857,11 @@ void ZStackView::paintObject(ZStackObject::ETarget target)
 //    if (painter->isPainted()) {
       updateImageScreen(UPDATE_QUEUED);
 //    }
-  } else {
-    if (target == ZStackObject::TARGET_WIDGET) {
-      updateImageScreen(UPDATE_QUEUED);
-    }
+  } else if (target == ZStackObject::TARGET_WIDGET) {
+    updateImageScreen(UPDATE_QUEUED);
+  } else if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+    paintDynamicObjectBuffer();
+    updateImageScreen(UPDATE_QUEUED);
   }
 }
 
@@ -2862,6 +2881,9 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
       isPainted = true;
     } else if (target == ZStackObject::TARGET_WIDGET) {
       isPainted = true;
+    } else if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+       paintDynamicObjectBuffer();
+       isPainted = true;
     }
   }
 

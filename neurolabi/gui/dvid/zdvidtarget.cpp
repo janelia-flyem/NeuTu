@@ -378,12 +378,15 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 
 std::string ZDvidTarget::getUrl() const
 {
-  ZString url = "http://" + m_address;
-  if (m_port >= 0) {
-    url += ":";
-    url.appendNumber(m_port);
+  ZString url = "";
+  if (isValid()) {
+    url = "http://" + m_address;
+    if (m_port >= 0) {
+      url += ":";
+      url.appendNumber(m_port);
+    }
+    url += "/api/node/" + m_uuid;
   }
-  url += "/api/node/" + m_uuid;
 
   return url;
 }

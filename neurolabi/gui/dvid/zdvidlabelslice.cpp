@@ -278,12 +278,12 @@ void ZDvidLabelSlice::paintBufferUnsync()
         m_labelArray->dim(1) == m_paintBuffer->height()) {
       updateRgbTable();
       remapId();
-      if (m_selectedOriginal.empty()) {
+      if (m_selectedOriginal.empty() && getLabelMap().empty()) {
         m_paintBuffer->drawLabelField(m_labelArray->getDataPointer<uint64_t>(),
-                                      m_rgbTable, 0, 0x40FFFFFF);
+                                      m_rgbTable, 0, 0xA4FFFFFF);
       } else {
         m_paintBuffer->drawLabelField(m_mappedLabelArray->getDataPointer<uint64_t>(),
-                                      m_rgbTable, 0, 0x40FFFFFF);
+                                      m_rgbTable, 0, 0x80FFFFFF);
       }
     }
   }
@@ -549,12 +549,40 @@ void ZDvidLabelSlice::remapId(ZArray *label)
     uint64_t *array = label->getDataPointer<uint64_t>();
     const uint64_t *originalArray = m_labelArray->getDataPointer<uint64_t>();
     size_t v = label->getElementNumber();
-    if (!m_selectedOriginal.empty()) {
-      for (size_t i = 0; i < v; ++i) {
-        if (m_selectedOriginal.count(originalArray[i]) > 0) {
-          array[i] = FlyEM::LABEL_ID_SELECTION;
-        } else {
-          array[i] = originalArray[i];
+    ZFlyEmBodyMerger::TLabelMap bodyMap = getLabelMap();
+    if (!bodyMap.empty() || !m_selectedOriginal.empty()) {
+      if (bodyMap.empty()) {
+        for (size_t i = 0; i < v; ++i) {
+          if (m_selectedOriginal.count(originalArray[i]) > 0) {
+            array[i] = FlyEM::LABEL_ID_SELECTION;
+          } else {
+            array[i] = originalArray[i];
+          }
+        }
+      } else if (m_selectedOriginal.empty()) {
+        for (size_t i = 0; i < v; ++i) {
+          if (bodyMap.count(originalArray[i]) > 0) {
+            array[i] = bodyMap[originalArray[i]];
+          } else {
+            array[i] = originalArray[i];
+          }
+        }
+      } else {
+        std::set<uint64_t> selectedSet = m_selectedOriginal;
+        for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+             iter != m_selectedOriginal.end(); ++iter) {
+          if (bodyMap.count(*iter) > 0) {
+            selectedSet.insert(bodyMap[*iter]);
+          }
+        }
+        for (size_t i = 0; i < v; ++i) {
+          if (selectedSet.count(originalArray[i]) > 0) {
+            array[i] = FlyEM::LABEL_ID_SELECTION;
+          } else if (bodyMap.count(originalArray[i]) > 0) {
+            array[i] = bodyMap[originalArray[i]];
+          } else {
+            array[i] = originalArray[i];
+          }
         }
       }
     }
@@ -596,6 +624,16 @@ void ZDvidLabelSlice::selectHit(bool appending)
 //    addSelection(m_hitLabel);
 //    m_selectedOriginal.insert(m_hitLabel);
   }
+}
+
+ZFlyEmBodyMerger::TLabelMap ZDvidLabelSlice::getLabelMap() const
+{
+  ZFlyEmBodyMerger::TLabelMap labelMap;
+  if (m_bodyMerger != NULL) {
+    labelMap = m_bodyMerger->getFinalMap();
+  }
+
+  return labelMap;
 }
 
 void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
@@ -706,7 +744,7 @@ void ZDvidLabelSlice::toggleHitSelection(bool appending)
     }
   }
 
-  paintBuffer();
+//  paintBuffer();
   //xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
 
   /*

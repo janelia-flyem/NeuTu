@@ -81,7 +81,7 @@ public:
   }
 
   std::string getUrl() const;
-  std::string getUrl(const std::string &dataName) const;
+//  std::string getUrl(const std::string &dataName) const;
 
   /*!
    * \brief Get a single string to represent the target
