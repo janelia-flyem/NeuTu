@@ -1344,20 +1344,6 @@ std::string ZDvidReader::getType(const std::string &dataName) const
   return type;
 }
 
-ZArray* ZDvidReader::readLabels64(
-    int x0, int y0, int z0, int width, int height, int depth) const
-{
-  return readLabels64(getDvidTarget().getLabelBlockName(),
-                     x0, y0, z0, width, height, depth);
-}
-
-ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
-{
-  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                      box.getFirstCorner().getZ(), box.getWidth(),
-                      box.getHeight(), box.getDepth());
-}
-
 ZIntPoint ZDvidReader::readBodyBottom(uint64_t bodyId) const
 {
   ZIntPoint pt;
@@ -1528,6 +1514,20 @@ ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 #endif
 
   return box;
+}
+
+ZArray* ZDvidReader::readLabels64(
+    int x0, int y0, int z0, int width, int height, int depth) const
+{
+  return readLabels64(getDvidTarget().getLabelBlockName(),
+                     x0, y0, z0, width, height, depth);
+}
+
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
+{
+  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                      box.getFirstCorner().getZ(), box.getWidth(),
+                      box.getHeight(), box.getDepth());
 }
 
 ZArray* ZDvidReader::readLabels64(

@@ -69,6 +69,7 @@ bool ZPainter::begin(ZImage *image)
     transform.translate(imageTransform.getTx(), imageTransform.getTy());
     transform.scale(imageTransform.getSx(), imageTransform.getSy());
     m_painter.setTransform(transform);
+    m_transform = imageTransform;
     return true;
   }
 
@@ -84,6 +85,7 @@ bool ZPainter::begin(ZPixmap *image)
     const ZStTransform &imageTransform = image->getTransform();
     t.translate(imageTransform.getTx(), imageTransform.getTy());
     t.scale(imageTransform.getSx(), imageTransform.getSy());
+    m_transform = imageTransform;
 
     m_painter.setTransform(t);
 

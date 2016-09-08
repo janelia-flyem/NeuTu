@@ -1,11 +1,14 @@
 #include "zsandboxproject.h"
+
 #include "zsandbox.h"
 #include "zexamplemodule.h"
 
-//Include your module headers here
+/***Include your module headers here***/
 #include "zsandboxmodule.h"
 #include "zaboutmodule.h"
 #include "zrgb2graymodule.h"
+/*************************************/
+
 
 template<typename T>
 void RegisterModule()

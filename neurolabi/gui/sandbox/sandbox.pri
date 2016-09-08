@@ -4,6 +4,7 @@ HEADERS += sandbox/zsandbox.h \
     sandbox/zsandboxproject.h \
     sandbox/zaboutmodule.h \
     sandbox/zrgb2graymodule.h
+
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zexamplemodule.cpp \
     sandbox/zsandboxmodule.cpp \

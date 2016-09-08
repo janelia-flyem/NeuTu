@@ -20704,7 +20704,41 @@ void ZTest::test(MainWindow *host)
   std::cout << "Painting time: " << toc() << std::endl;
 #endif
 
+
 #if 1
+  ZPixmap pixmap(512, 512);
+
+  ZStTransform transform;
+  transform.setOffset(100, 0);
+//  transform.setScale(0.5, 0.5);
+  pixmap.setTransform(transform);
+
+  ZPainter painter(&pixmap);
+  QPen pen(QColor(0, 255, 0));
+  pen.setWidth(2);
+  painter.setPen(pen);
+
+  painter.drawLine(100, 100, 200, 300);
+
+  ZPixmap pixmap2(512, 512);
+
+
+  transform.setScale(0.5, 0.3);
+  pixmap2.setTransform(transform);
+
+  ZPainter painter2(&pixmap2);
+  pen.setColor(QColor(255, 0, 0, 128));
+  painter2.setPen(pen);
+  painter2.drawLine(100, 100, 200, 300);
+
+  pixmap2.matchProj();
+
+  painter.drawPixmap(pixmap2);
+  pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+#endif
+
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
   target.setLabelBlockName("labels3");

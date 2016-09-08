@@ -693,7 +693,7 @@ void ZImage::drawLabelField(
   for (int i = 0; i < colorTable.size(); ++i) {
     const QColor &color = colorTable[i];
     rgbaTable[i] = newAlpha + (color.red() << 16) + (color.green() << 8) +
-        color.blue();
+        (color.blue());
   }
 
   int colorCount = colorTable.size();

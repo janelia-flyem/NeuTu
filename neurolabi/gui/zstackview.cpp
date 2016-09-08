@@ -1839,7 +1839,7 @@ void ZStackView::paintObject(
 
 void ZStackView::paintDynamicObjectBuffer()
 {
-#if 0
+#if 1
   updateDynamicObjectCanvas();
 
   if (m_dynamicObjectCanvas != NULL) {
@@ -2163,7 +2163,6 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
     imageWidget()->blockPaint(true);
     imageWidget()->increaseZoomRatio(x, y, usingRef);
 //    reloadCanvas();
-
     if (buddyPresenter()->interactiveContext().exploreMode() !=
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
       reloadTileCanvas();
@@ -2281,7 +2280,7 @@ ZStackViewParam ZStackView::getViewParameter(
 ZStTransform ZStackView::getViewTransform() const
 {
   ZStTransform transform;
-  transform.estimate(m_imageWidget->viewPort(), getProjRegion());
+  transform.estimate(getViewPort(NeuTube::COORD_STACK), getProjRegion());
 
   return transform;
 }
@@ -2763,6 +2762,9 @@ void ZStackView::setCanvasVisible(ZStackObject::ETarget target, bool visible)
     }
     */
     break;
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    m_dynamicObjectCanvas->setVisible(true);
+    break;
   default:
     break;
   }
@@ -2775,6 +2777,8 @@ ZPixmap* ZStackView::getCanvas(ZStackObject::ETarget target)
     return imageWidget()->getObjectCanvas();
   case ZStackObject::TARGET_TILE_CANVAS:
     return imageWidget()->getTileCanvas();
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    return imageWidget()->getDynamicObjectCanvas();
   default:
     break;
   }
@@ -2818,6 +2822,12 @@ void ZStackView::paintObjectBuffer(ZStackObject::ETarget target)
   ZPainter *painter = getPainter(target);
   if (painter != NULL) {
     paintObjectBuffer(*painter, target);
+  } else {
+    if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+      updateDynamicObjectCanvas();
+      ZPainter painter(m_dynamicObjectCanvas);
+      paintObjectBuffer(painter, target);
+    }
   }
 }
 

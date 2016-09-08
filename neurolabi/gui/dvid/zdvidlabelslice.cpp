@@ -15,6 +15,7 @@
 #include "zimage.h"
 #include "zpainter.h"
 #include "neutubeconfig.h"
+#include "zpixmap.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -34,7 +35,7 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAxis)
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = 0;
@@ -44,7 +45,8 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAx
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;
 
-  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+  m_paintBuffer = NULL;
+//  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
   m_selectionFrozen = false;
   m_isFullView = false;
@@ -119,6 +121,16 @@ void ZDvidLabelSlice::display(
 #endif
 
   if (isVisible()) {
+    if (m_paintBuffer != NULL) {
+      ZPixmap pixmap;
+      pixmap.convertFromImage(*m_paintBuffer, Qt::ColorOnly);
+      pixmap.setTransform(m_paintBuffer->getTransform());
+
+      pixmap.matchProj();
+      painter.drawPixmap(pixmap);
+      painter.setPainted(true);
+    }
+#if 0
     if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
         m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
       for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
@@ -181,6 +193,7 @@ void ZDvidLabelSlice::display(
       painter.drawImage(m_currentViewParam.getViewPort().x(),
                         m_currentViewParam.getViewPort().y(),
                         *m_paintBuffer);
+
     }
 
 #ifdef _DEBUG_
@@ -190,6 +203,7 @@ void ZDvidLabelSlice::display(
 
 #ifdef _DEBUG_2
 //      m_paintBuffer->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
 #endif
   }
 }
@@ -309,6 +323,19 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     if (m_labelArray != NULL) {
 //      ZObject3dFactory::MakeObject3dScanArray(
 //            *m_labelArray, yStep, &m_objArray, true);
+      delete m_paintBuffer;
+      m_paintBuffer = new ZImage(
+            m_labelArray->dim(0), m_labelArray->dim(1),
+            QImage::Format_ARGB32);
+      m_paintBuffer->drawLabelField(m_labelArray->getDataPointer<uint64_t>(),
+                                    m_objColorSheme.getColorTable(), 64);
+      ZStTransform transform;
+      int zoomRatio = pow(2, zoom);
+      transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
+      transform.setOffset(
+            -box.getFirstCorner().getX(), -box.getFirstCorner().getY());
+      m_paintBuffer->setTransform(transform);
+#if 0
       ZObject3dFactory::MakeObject3dScanArray(
             *m_labelArray, m_sliceAxis, true, &m_objArray);
 
@@ -334,6 +361,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
         }
         */
       assignColorMap();
+#endif
 
       //        delete labelArray;
     }
