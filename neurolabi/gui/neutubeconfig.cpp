@@ -31,7 +31,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   m_softwareName = "NeuTu";
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
-
+#if 0
   QString traceFilePath(getPath(NeutubeConfig::LOG_TRACE).c_str());
   QFileInfo fileInfo(traceFilePath);
   if (fileInfo.exists()) {
@@ -43,6 +43,7 @@ NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
   } else {
     m_traceStream = new QDebug(QtDebugMsg);
   }
+#endif
 //  std::cout << m_settings.fileName().toStdString() << std::endl;
 #endif
 
@@ -62,7 +63,7 @@ NeutubeConfig::~NeutubeConfig()
 {
   delete m_messageReporter;
 #ifdef _QT_GUI_USED_
-  delete m_traceStream;
+//  delete m_traceStream;
 #endif
 }
 
