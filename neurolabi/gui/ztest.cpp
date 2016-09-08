@@ -20705,7 +20705,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZPixmap pixmap(512, 512);
 
   ZStTransform transform;
@@ -20738,7 +20738,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
   target.setLabelBlockName("labels3");
@@ -20750,8 +20750,10 @@ void ZTest::test(MainWindow *host)
   colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
 
   ZImage image(1024, 1024);
+  std::set<uint64_t> selected;
+  selected.insert(1);
   image.drawLabelField(array->getDataPointer<uint64_t>(),
-                       colorScheme.getColorTable(), 128);
+                       colorScheme.getColorTable(), 128, selected);
 
 //  ZPixmap pixmap;
 //  pixmap.fromImage(image);

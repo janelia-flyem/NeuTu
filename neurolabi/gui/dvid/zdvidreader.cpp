@@ -1517,17 +1517,20 @@ ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 }
 
 ZArray* ZDvidReader::readLabels64(
-    int x0, int y0, int z0, int width, int height, int depth) const
+    int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
-  return readLabels64(getDvidTarget().getLabelBlockName(),
-                     x0, y0, z0, width, height, depth);
+  int zoomRatio = pow(2, zoom);
+
+  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+                     x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
+                      width / zoomRatio, height / zoomRatio, depth);
 }
 
-ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box, int zoom)
 {
   return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                       box.getFirstCorner().getZ(), box.getWidth(),
-                      box.getHeight(), box.getDepth());
+                      box.getHeight(), box.getDepth(), zoom);
 }
 
 ZArray* ZDvidReader::readLabels64(

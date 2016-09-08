@@ -135,8 +135,8 @@ public:
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
   ZArray* readLabels64(int x0, int y0, int z0,
-                       int width, int height, int depth) const;
-  ZArray* readLabels64(const ZIntCuboid &box);
+                       int width, int height, int depth, int zoom = 0) const;
+  ZArray* readLabels64(const ZIntCuboid &box, int zoom = 0);
 
 #if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,

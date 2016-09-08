@@ -103,24 +103,13 @@ std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 std::string
 ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  /*
-  if (bodyId == 0) {
-    return "";
+  std::string url = GetKeyCommandUrl(getSkeletonUrl(bodyLabelName));
+
+  if (!url.empty()) {
+    url += "/" + GetSkeletonKey(bodyId);// + str + "_swc";
   }
-  */
 
-//  ZString str;
-//  str.appendNumber(bodyId);
-
-  return GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)) + "/" +
-      GetSkeletonKey(bodyId);// + str + "_swc";
-
-#if 0
-  ZString str;
-  str.appendNumber(bodyId);
-
-  return getSkeletonUrl(dataName) + "/" + str + ".swc";
-#endif
+  return url;
 }
 
 std::string ZDvidUrl::getSkeletonUrl(uint64_t bodyId) const
@@ -356,9 +345,15 @@ std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,
 std::string ZDvidUrl::getGrayScaleBlockUrl(
     int ix, int iy, int iz, int blockNumber) const
 {
-  std::ostringstream stream;
-  stream << "/blocks/" << ix << "_" << iy << "_" << iz << "/" << blockNumber;
-  return getGrayscaleUrl() + stream.str();
+  std::string url = getGrayscaleUrl();
+
+  if (!url.empty()) {
+    std::ostringstream stream;
+    stream << "/blocks/" << ix << "_" << iy << "_" << iz << "/" << blockNumber;
+    url += stream.str();
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getLabels64Url() const
@@ -366,10 +361,21 @@ std::string ZDvidUrl::getLabels64Url() const
   return getDataUrl(m_dvidTarget.getLabelBlockName());
 }
 
+std::string ZDvidUrl::getLabels64Url(int zoom) const
+{
+  std::string dataName = m_dvidTarget.getLabelBlockName(zoom);
+
+  return getDataUrl(dataName);
+}
+
 std::string ZDvidUrl::getLabels64Url(
     const std::string &name, int sx, int sy, int sz,
     int x0, int y0, int z0) const
 {
+  if (name.empty()) {
+    return "";
+  }
+
   std::ostringstream stream;
   stream << "/raw/0_1_2/" << sx << "_" << sy << "_" << sz << "/"
          << x0 << "_" << y0 << "_" << z0;
@@ -377,9 +383,10 @@ std::string ZDvidUrl::getLabels64Url(
 }
 
 std::string ZDvidUrl::getLabels64Url(int sx, int sy, int sz,
-    int x0, int y0, int z0) const
+    int x0, int y0, int z0, int zoom) const
 {
-  return getLabels64Url(m_dvidTarget.getLabelBlockName(), sx, sy, sz, x0, y0, z0);
+  return getLabels64Url(m_dvidTarget.getLabelBlockName(zoom),
+                        sx, sy, sz, x0, y0, z0);
 }
 
 std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key) const

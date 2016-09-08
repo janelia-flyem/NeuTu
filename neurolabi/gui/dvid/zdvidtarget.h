@@ -149,6 +149,7 @@ public:
   bool hasBodyLabel() const;
 
   std::string getLabelBlockName() const;
+  std::string getLabelBlockName(int zoom) const;
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();

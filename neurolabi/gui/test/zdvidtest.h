@@ -170,6 +170,7 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getLabels64Url("labels", 100, 200, 300, 1, 2, 3));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labels/raw/0_1_2/100_200_300/1_2_3",
             dvidUrl.getLabels64Url(100, 200, 300, 1, 2, 3));
+  ASSERT_TRUE(dvidUrl.getLabels64Url(100, 200, 300, 1, 2, 3, 1).empty());
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labels/raw/0_1_2/100_200_300/1_2_3",
             dvidUrl2.getLabels64Url("labels", 100, 200, 300, 1, 2, 3));
@@ -248,12 +249,18 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getTileUrl("tiles", 0, 1, 2, 3));
 
 
-
-//  std::string getRepoInfoUrl() const;
-//  std::string getLockUrl() const;
-//  std::string getBranchUrl() const;
-
-//  static std::string GetEndPoint(const std::string &url);
+  target.setLabelBlockName("labelstest");
+  target.setMaxLabelZoom(5);
+  ZDvidUrl dvidUrl3(target);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_2/raw/0_1_2/100_200_300/1_2_3",
+            dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 2));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest/raw/0_1_2/100_200_300/1_2_3",
+            dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_5/raw/0_1_2/100_200_300/1_2_3",
+            dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 5));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_1/raw/0_1_2/100_200_300/1_2_3",
+            dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 1));
+  ASSERT_EQ("", dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 6));
 }
 
 #endif

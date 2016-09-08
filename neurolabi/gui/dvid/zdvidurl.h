@@ -81,11 +81,11 @@ public:
       int ix, int iy, int iz, int blockNumber = 1) const;
 
   std::string getLabels64Url() const;
-  std::string getLabels64Url(
-      const std::string &name,
+  std::string getLabels64Url(int zoom) const;
+  std::string getLabels64Url(const std::string &name,
       int sx, int sy, int sz, int x0, int y0, int z0) const;
   std::string getLabels64Url(
-      int sx, int sy, int sz, int x0, int y0, int z0) const;
+      int sx, int sy, int sz, int x0, int y0, int z0, int zoom = 0) const;
   /*
   std::string getLabelSliceUrl(const std::string &name, int dim1, int dim2,
                                int )

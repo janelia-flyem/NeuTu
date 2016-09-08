@@ -1,6 +1,7 @@
 #ifndef NEUTUBE_DEF_H
 #define NEUTUBE_DEF_H
 
+#include <limits>
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
@@ -133,6 +134,9 @@ enum EDvidAnnotationLoadMode {
 enum EProofreadingMode {
   PR_NORMAL, PR_SPLIT
 };
+
+static const uint64_t LABEL_ID_SELECTION = std::numeric_limits<uint64_t>::max() - 1;
+
 }
 
 

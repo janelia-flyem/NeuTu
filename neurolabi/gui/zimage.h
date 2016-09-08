@@ -2,6 +2,7 @@
 #define _ZIMAGE_H_
 
 #include <QImage>
+#include <set>
 
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
@@ -147,6 +148,10 @@ public:
                   double offset = 0.0, int threshold = -1);
   void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
                       uint8_t alpha);
+  void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
+                      int bgColor, int selColor);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha, const std::set<uint64_t> &selected);
 
   void setBackground();
 

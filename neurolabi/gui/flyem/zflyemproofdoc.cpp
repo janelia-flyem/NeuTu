@@ -1152,8 +1152,9 @@ void ZFlyEmProofDoc::updateBodyObject()
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->paintBuffer();
 //    slice->clearSelection();
-    slice->updateLabelColor();
+//    slice->updateLabelColor();
   }
 
   QList<ZDvidSparsevolSlice*> sparsevolSliceList = getDvidSparsevolSliceList();

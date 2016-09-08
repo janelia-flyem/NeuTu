@@ -146,6 +146,8 @@ public:
 //  int getZoom() const;
   int getZoom(const ZStackViewParam &viewParam) const;
 
+  void paintBuffer();
+
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam);
@@ -153,6 +155,11 @@ private:
   void init(int maxWidth, int maxHeight,
             NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
   QColor getCustomColor(uint64_t label) const;
+
+  void paintBufferUnsync();
+  void remapId(ZArray *label);
+  void remapId();
+  void updateRgbTable();
 
 private:
   ZDvidTarget m_dvidTarget;
@@ -162,6 +169,8 @@ private:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 
+  QVector<int> m_rgbTable;
+
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
@@ -169,6 +178,7 @@ private:
   ZImage *m_paintBuffer;
 
   ZArray *m_labelArray;
+  ZArray *m_mappedLabelArray;
   QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
@@ -226,6 +236,7 @@ void ZDvidLabelSlice::setSelection(
 {
   clearSelection();
   addSelection(begin, end, labelType);
+  paintBuffer();
 }
 
 template <typename InputIterator>
