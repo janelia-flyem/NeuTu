@@ -1041,6 +1041,33 @@ std::string ZDvidUrl::getSynapseLabelszUrl(
   return getSynapseLabelszUrl(n) + "/" + GetLabelszIndexTypeStr(indexType);
 }
 
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
+    std::string name;
+
+    std::string dataName = m_dvidTarget.getSynapseLabelszName();
+    if (!dataName.empty()) {
+      name = getDataUrl(dataName);
+      name += "/threshold/";
+      name += ZString::num2str(threshold);
+    }
+
+    return name;
+}
+
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType)  const {
+    return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
+}
+
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType,
+        int offset, int number)  const {
+    std::string url = getSynapseLabelszThresholdUrl(threshold, indexType);
+    url += "/?offset=";
+    url += ZString::num2str(offset);
+    url += "&n=";
+    url += ZString::num2str(number);
+    return url;
+}
+
 void ZDvidUrl::setUuid(const std::string &uuid)
 {
   m_dvidTarget.setUuid(uuid);
