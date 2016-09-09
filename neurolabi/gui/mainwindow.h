@@ -75,6 +75,7 @@ class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
 class FlyEmSettingDialog;
+class ZDvidBodyPositionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -490,6 +491,8 @@ private slots:
 
   void on_actionGenerate_MB_Conn_Actor_triggered();
 
+  void on_actionGet_Body_Positions_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -717,6 +720,7 @@ private:
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   FlyEmSettingDialog *m_flyemSettingDlg;
+  ZDvidBodyPositionDialog *m_bodyPosDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

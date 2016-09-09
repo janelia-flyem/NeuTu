@@ -176,6 +176,7 @@
 #include "neutubeconfig.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zfileparser.h"
+#include "dialogs/zdvidbodypositiondialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -467,6 +468,9 @@ void MainWindow::initDialog()
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
   m_testDlg2 = new ZTestDialog2(this);
+
+  m_bodyPosDlg = new ZDvidBodyPositionDialog(this);
+  m_bodyPosDlg->setDvidDialog(m_dvidDlg);
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
@@ -8089,4 +8093,10 @@ void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
 QMenu* MainWindow::getSandboxMenu() const
 {
   return m_ui->menuSandbox;
+}
+
+void MainWindow::on_actionGet_Body_Positions_triggered()
+{
+  m_bodyPosDlg->show();
+  m_bodyPosDlg->raise();
 }

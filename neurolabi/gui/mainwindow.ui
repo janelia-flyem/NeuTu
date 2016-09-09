@@ -339,6 +339,7 @@
       <addaction name="actionGenerate_Local_Grayscale"/>
       <addaction name="actionUpload_Annotations"/>
       <addaction name="actionRemove_Obsolete_Annotations"/>
+      <addaction name="actionGet_Body_Positions"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -1512,6 +1513,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionGet_Body_Positions">
+   <property name="text">
+    <string>Get Body Positions</string>
    </property>
   </action>
  </widget>

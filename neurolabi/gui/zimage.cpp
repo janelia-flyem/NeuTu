@@ -721,7 +721,7 @@ void ZImage::drawLabelFieldTranspose(
       dataLine = data + j;
       for (int i = 0; i < w; i++) {
         uint64_t v = *dataLine;
-        dataLine += w;
+        dataLine += h;
         if (v == 0) {
           *line++ = bgColor;
         } else if (v == FlyEM::LABEL_ID_SELECTION) {
