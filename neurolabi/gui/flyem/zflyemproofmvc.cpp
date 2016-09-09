@@ -1586,8 +1586,14 @@ void ZFlyEmProofMvc::updateBodySelection()
       highlightSelectedObject(true);
 //      m_mergeProject.highlightSelectedObject(true);
     } else {
-      slice->paintBuffer();
-      getCompleteDocument()->processObjectModified(slice, true);
+      QList<ZDvidLabelSlice*> sliceList =
+          getCompleteDocument()->getDvidLabelSliceList();
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *tmpSlice =*iter;
+        tmpSlice->paintBuffer();
+        getCompleteDocument()->processObjectModified(tmpSlice, true);
+      }
     }
     processLabelSliceSelectionChange();
   }

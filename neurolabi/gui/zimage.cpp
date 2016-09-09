@@ -707,6 +707,33 @@ void ZImage::drawLabelField(
   }
 }
 
+void ZImage::drawLabelFieldTranspose(
+    uint64_t *data, const QVector<int> &colorTable, int bgColor, int selColor)
+{
+  int colorCount = colorTable.size();
+  if (colorCount > 0) {
+    int h = height();
+    int w = width();
+
+    uint64_t *dataLine = data;
+    for (int j = 0; j < h; j++) {
+      int *line = (int*) scanLine(j);
+      dataLine = data + j;
+      for (int i = 0; i < w; i++) {
+        uint64_t v = *dataLine;
+        dataLine += w;
+        if (v == 0) {
+          *line++ = bgColor;
+        } else if (v == FlyEM::LABEL_ID_SELECTION) {
+          *line++ = selColor;
+        } else {
+          *line++ = colorTable[v % colorCount] ;
+        }
+      }
+    }
+  }
+}
+
 void ZImage::drawLabelField(
     uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha)
 {

@@ -138,6 +138,22 @@ public:
                        int width, int height, int depth, int zoom = 0) const;
   ZArray* readLabels64(const ZIntCuboid &box, int zoom = 0);
 
+  /*!
+   * \brief Read labels in the zoomed space
+   *
+   * \param x0 zoomed X
+   * \param y0 zoomed Y
+   * \param z0 zoomed Z
+   * \param width zoomed width
+   * \param height zoomed height
+   * \param depth zoomed depth
+   * \param zoom zoom level
+   * \return
+   */
+  ZArray* readLabels64Raw(
+      int x0, int y0, int z0,
+      int width, int height, int depth, int zoom = 0) const;
+
 #if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
