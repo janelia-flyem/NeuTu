@@ -457,14 +457,16 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   bool updated = false;
   if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
     ZStackViewParam newViewParam = viewParam;
-    /*
-    int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
-    //  const int maxWidth = 512;
-    //  const int maxHeight = 512;
-    if (area > m_maxWidth * m_maxHeight) {
-      newViewParam.resize(m_maxWidth, m_maxHeight);
+
+    if (getDvidTarget().getMaxLabelZoom() < 5) {
+      int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
+      //  const int maxWidth = 512;
+      //  const int maxHeight = 512;
+      if (area > m_maxWidth * m_maxHeight) {
+        newViewParam.resize(m_maxWidth, m_maxHeight);
+      }
     }
-    */
+
 
     if (!m_currentViewParam.contains(newViewParam) ||
         getZoom(viewParam) != getZoom(m_currentViewParam)) {
