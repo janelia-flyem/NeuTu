@@ -430,6 +430,8 @@ std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
     return ZDvidData::GetName(ZDvidData::ROLE_BODY_LABEL);
+  } else if (ZDvidData::IsNullName(m_bodyLabelName)) {
+    return "";
   }
 
   return m_bodyLabelName;
@@ -437,11 +439,7 @@ std::string ZDvidTarget::getBodyLabelName() const
 
 bool ZDvidTarget::hasBodyLabel() const
 {
-  if (ZDvidData::IsNullName(getBodyLabelName())) {
-    return false;
-  }
-
-  return true;
+  return !getBodyLabelName().empty();
 }
 
 std::string ZDvidTarget::getLabelBlockName() const
