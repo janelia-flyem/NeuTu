@@ -144,7 +144,7 @@ public:
   void refreshReaderBuffer();
 
 //  int getZoom() const;
-  int getZoom(const ZStackViewParam &viewParam) const;
+  int getZoomLevel(const ZStackViewParam &viewParam) const;
 
   void paintBuffer();
 
