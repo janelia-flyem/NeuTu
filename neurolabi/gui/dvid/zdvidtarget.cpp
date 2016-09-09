@@ -442,6 +442,11 @@ bool ZDvidTarget::hasBodyLabel() const
   return !getBodyLabelName().empty();
 }
 
+bool ZDvidTarget::hasLabelBlock() const
+{
+  return !getLabelBlockName().empty();
+}
+
 std::string ZDvidTarget::getLabelBlockName() const
 { 
   if (m_labelBlockName.empty()) {

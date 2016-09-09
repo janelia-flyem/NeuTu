@@ -244,14 +244,24 @@ int ZDvidLabelSlice::getZoom() const
 }
 */
 
-int ZDvidLabelSlice::getZoom(const ZStackViewParam &viewParam) const
+int ZDvidLabelSlice::getZoomLevel(const ZStackViewParam &viewParam) const
 {
   double zoomRatio = viewParam.getZoomRatio();
   if (zoomRatio == 0.0) {
     return 0;
   }
 
-  int zoom = (int) std::floor(1.0 / zoomRatio);
+  int zoom = (int) std::round(std::log(1.0 / zoomRatio) / std::log(2.0) );
+
+  if (zoom < 0) {
+    zoom = 0;
+  }
+
+  int scale = pow(2, zoom);
+  if (viewParam.getViewPort().width() * viewParam.getViewPort().height() /
+      scale / scale > 512 * 512) {
+    zoom += 1;
+  }
 
   if (zoom > getDvidTarget().getMaxLabelZoom()) {
     zoom = getDvidTarget().getMaxLabelZoom();
@@ -303,11 +313,10 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 
   QMutexLocker locker(&m_updateMutex);
 
-  int zoom = getZoom(viewParam);
-
   m_objArray.clear();
   if (isVisible()) {
-
+    int zoom = getZoomLevel(viewParam);
+    int zoomRatio = pow(2, zoom);
 
 //    int yStep = 1;
 
@@ -365,7 +374,6 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
             QImage::Format_ARGB32);
       paintBufferUnsync();
       ZStTransform transform;
-      int zoomRatio = pow(2, zoom);
       transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
       transform.setOffset(
             -(double) box.getFirstCorner().getX() / zoomRatio,
@@ -477,7 +485,7 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 
 
     if (!m_currentViewParam.contains(newViewParam) ||
-        getZoom(viewParam) != getZoom(m_currentViewParam)) {
+        getZoomLevel(viewParam) != getZoomLevel(m_currentViewParam)) {
       forceUpdate(newViewParam);
       updated = true;
 

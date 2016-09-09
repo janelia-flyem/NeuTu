@@ -1645,7 +1645,7 @@ void ZDvidReader::refreshLabelBuffer()
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  if (!getDvidTarget().hasBodyLabel()) {
+  if (!getDvidTarget().hasLabelBlock()) {
     return NULL;
   }
 
@@ -1660,7 +1660,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 
   ZArray *array = NULL;
 
-  qDebug() << "Using lowtis";
+  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
 
   if (m_lowtisService.get() == NULL) {
