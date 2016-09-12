@@ -1649,8 +1649,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     return NULL;
   }
 
+  int scale = 1;
   if (zoom > 0) {
-    int scale = pow(2, zoom);
+    scale = pow(2, zoom);
     width /= scale;
     height /= scale;
 //    x0 /= scale;
@@ -1692,6 +1693,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     arrayDims[1] = height;
     arrayDims[2] = 1;
     array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+
+    array->setStartCoordinate(0, x0 / scale);
+    array->setStartCoordinate(1, y0 / scale);
+    array->setStartCoordinate(2, z0 / scale);
 
     try {
       std::vector<int> offset(3);
