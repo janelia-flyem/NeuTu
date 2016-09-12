@@ -7,6 +7,7 @@
 #include "zwidgetmessage.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "neutubeconfig.h"
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -16,7 +17,7 @@ ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::redo()

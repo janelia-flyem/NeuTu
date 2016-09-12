@@ -1125,9 +1125,7 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 
 void Z3DWindow::createActions()
 {
-#ifdef _DEBUG_
-  qDebug() << "Create actions";
-#endif
+  ZOUT(LTRACE(), 5) << "Create actions";
   /*
   m_undoAction = m_doc->undoStack()->createUndoAction(this, tr("&Undo"));
   m_undoAction->setIcon(QIcon(":/images/undo.png"));
@@ -1382,9 +1380,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
-#ifdef _DEBUG_
-  qDebug() << "Create swc node menu";
-#endif
+  ZOUT(LTRACE(), 5) << "Create swc node menu";
 
   //Swc node
   contextMenu = new QMenu(this);

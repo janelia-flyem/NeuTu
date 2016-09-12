@@ -1788,7 +1788,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
        //   buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
          // buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
         if (event->modifiers() == Qt::ShiftModifier) {
-          qDebug() << "Starting watershed ...";
+          ZOUT(LTRACE(), 5) << "Starting watershed ...";
           buddyDocument()->runSeededWatershed();
         } else {
           buddyDocument()->runLocalSeededWatershed();

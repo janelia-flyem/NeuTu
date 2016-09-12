@@ -7,7 +7,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "zwidgetmessage.h"
-
+#include "neutubeconfig.h"
 
 ZStackDocCommand::DvidSynapseEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -17,7 +17,7 @@ ZStackDocCommand::DvidSynapseEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::DvidSynapseEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5)<< "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::redo()

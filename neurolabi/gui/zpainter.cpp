@@ -6,6 +6,8 @@
 #include <QPaintDevice>
 #include <QStaticText>
 
+#include "QsLog.h"
+#include "neutubeconfig.h"
 #include "zintpoint.h"
 #include "zimage.h"
 #include "tz_math.h"
@@ -89,11 +91,10 @@ bool ZPainter::begin(ZPixmap *image)
 
     m_painter.setTransform(t);
 
-#ifdef _DEBUG_2
-    qDebug() << t;
-    qDebug() << this->getTransform();
+    ZOUT(LTRACE(), 5) << t;
+    ZOUT(LTRACE(), 5) << this->getTransform();
     //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
-#endif
+
     return true;
   }
 

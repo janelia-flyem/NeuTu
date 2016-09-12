@@ -1797,7 +1797,7 @@ void ZFlyEmProofMvc::annotateBody()
         }
       }
     } else {
-      qDebug() << "Unexpected body ID: 0";
+      ZOUT(LTRACE(), 5) << "Unexpected body ID: 0";
     }
   } else {
     QString msg;

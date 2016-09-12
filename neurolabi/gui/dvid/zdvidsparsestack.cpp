@@ -285,9 +285,9 @@ bool ZDvidSparseStack::fillValue(
     if (!objMask->isEmpty()) {
       QMutexLocker locker(&m_fillValueMutex);
 
-      qDebug() << "Downloading grayscale ...";
+      ZOUT(LTRACE(), 5) << "Downloading grayscale ...";
       if (!box.isEmpty()) {
-        qDebug() << "  Range: " << box.toJsonArray().dumpString(0);
+        ZOUT(LTRACE(), 5) << "  Range: " << box.toJsonArray().dumpString(0);
       }
       //    tic();
       ZDvidInfo dvidInfo;
@@ -308,7 +308,7 @@ bool ZDvidSparseStack::fillValue(
         if (cancelable && m_cancelingValueFill) {
 //          m_cancelingValueFill = false;
           setCancelFillValue(false);
-          qDebug() << "Grayscale fetching canceled";
+          ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
           return blockCount > 0;
         }
 
@@ -367,18 +367,18 @@ bool ZDvidSparseStack::fillValue(
       }
       //    ptoc();
 
-      qDebug() << blockCount << " blocks downloaded.";
+      ZOUT(LTRACE(), 5)<< blockCount << " blocks downloaded.";
     }
   }
 
   if (box.isEmpty()) {
     m_isValueFilled =  true;
-    qDebug() << "All blocks filled";
+    ZOUT(LTRACE(), 5) << "All blocks filled";
   }
 
   if (!m_isValueFilled && fillingAll) {
 //    runFillValueFunc();
-    qDebug() << "Filling remaining blocks ...";
+    ZOUT(LTRACE(), 5) << "Filling remaining blocks ...";
     fillValue(true);
   }
 
