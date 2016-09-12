@@ -370,7 +370,7 @@ void ZFlyEmProofDoc::annotateBody(
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
-    qDebug() << writer.getStandardOutput();
+    ZOUT(LTRACE(), 5) << writer.getStandardOutput();
     emit messageGenerated(
           ZWidgetMessage("Cannot save annotation.", NeuTube::MSG_ERROR));
   }
@@ -1683,7 +1683,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
         psd.push_back(punctum);
       }
     }
-    qDebug() << "Synapse loading time: " << timer.restart();
+    ZOUT(LTRACE(), 5) << "Synapse loading time: " << timer.restart();
   }
 
   return synapse;

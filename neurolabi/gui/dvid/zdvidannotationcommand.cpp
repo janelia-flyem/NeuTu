@@ -1,6 +1,7 @@
 #include "zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackdoccommand.h"
+#include "neutubeconfig.h"
 
 ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -10,7 +11,7 @@ ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::redo()

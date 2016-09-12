@@ -1,4 +1,5 @@
 #include "zdviddatafetcher.h"
+#include "neutubeconfig.h"
 
 #include <QtConcurrentRun>
 
@@ -10,7 +11,7 @@ ZDvidDataFetcher::ZDvidDataFetcher(QObject *parent) :
 
 ZDvidDataFetcher::~ZDvidDataFetcher()
 {
-  qDebug() << "ZDvidDataFetcher destroyed";
+  ZOUT(LTRACE(), 5)<< "ZDvidDataFetcher destroyed";
 
   m_futureMap.waitForFinished();
 }

@@ -183,9 +183,7 @@ void ZDvidLabelSlice::display(
                         *m_paintBuffer);
     }
 
-#ifdef _DEBUG_
-      qDebug() << "Body buffer painting time: " << timer.elapsed();
-#endif
+    ZOUT(LTRACE(), 5) << "Body buffer painting time: " << timer.elapsed();
 //    painter.restore();
 
 #ifdef _DEBUG_2

@@ -2018,7 +2018,7 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
 
 void ZFlyEmBodySplitProject::emitMessage(const QString &msg, bool appending)
 {
-  qDebug() << "Outputting message: " << msg;
+  ZOUT(LTRACE(), 5) << "Outputting message: " << msg;
 
   ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
   if (appending) {

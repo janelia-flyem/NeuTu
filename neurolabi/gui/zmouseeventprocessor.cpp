@@ -1,5 +1,6 @@
 #include "zmouseeventprocessor.h"
 #include "widgets/zimagewidget.h"
+#include "neutubeconfig.h"
 #include "zstackdoc.h"
 #include "zinteractivecontext.h"
 #include "zstackoperator.h"
@@ -13,7 +14,7 @@ ZMouseEventProcessor::ZMouseEventProcessor() :
 
 ZMouseEventProcessor::~ZMouseEventProcessor()
 {
-  qDebug() << "ZMouseEventProcessor destroyed";
+  ZOUT(LTRACE(), 5) << "ZMouseEventProcessor destroyed";
 }
 
 void ZMouseEventProcessor::registerMapper()

@@ -491,7 +491,7 @@ void ZStackFrame::setupDisplay()
 {
   prepareDisplay();
 
-  qDebug() << "ready(this) emitted";
+  ZOUT(LTRACE(), 5) << "ready(this) emitted";
 
   //To prevent strange duplcated signal emit
   disconnect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));

@@ -639,10 +639,8 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_2
-  qDebug() << "ZStackView::updateImageScreen: index="
+  ZOUT(LTRACE(), 5) << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
-#endif
 
   if (option != UPDATE_NONE) {
     updatePaintBundle();
@@ -652,10 +650,7 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     m_imageWidget->blockPaint(blockingPaint);
 
-    if (NeutubeConfig::GetVerboseLevel() >= 2) {
-      qDebug() << "Blocking paint:" <<blockingPaint;
-      qDebug() << "Updating image widget" << m_imageWidget->screenSize();
-    }
+    ZOUT(LTRACE(), 5) << "Updating image widget" << m_imageWidget->screenSize();
 
     switch (option) {
     case UPDATE_QUEUED:
@@ -850,16 +845,16 @@ void ZStackView::redraw(EUpdateOption option)
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
   paintMaskBuffer();
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
-  std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint tile per frame: " << tilePaintTime;
   paintActiveDecorationBuffer();
   paintDynamicObjectBuffer();
   paintObjectBuffer();
   qint64 objectPaintTime = timer.elapsed();
-  std::cout << "paint object per frame: " << objectPaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint object per frame: " << objectPaintTime;
 
   updateImageScreen(option);
 
@@ -869,7 +864,7 @@ void ZStackView::redraw(EUpdateOption option)
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
 
-  qDebug() << "paint time per frame: " << paintTime;
+  LINFO() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
     LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
             << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
@@ -1628,9 +1623,7 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZPainter &painter, ZStackObject::ETarget target)
 {
-  if (NeutubeConfig::GetVerboseLevel() >= 2) {
-    qDebug() << painter.getTransform();
-  }
+  ZOUT(LTRACE(), 5) << painter.getTransform();
 
   ZStackObjectPainter paintHelper;
   paintHelper.setRestoringPainter(true);
@@ -2409,7 +2402,7 @@ void ZStackView::processDepthSliderValueChange()
 
 void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
-  qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
+  ZOUT(LTRACE(), 5)<< "ZStackView::processDepthSliderValueChange" << sliceIndex;
   /*
   bool hasActiveSlice = false;
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
