@@ -150,6 +150,8 @@ public:
                       uint8_t alpha);
   void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
                       int bgColor, int selColor);
+  void drawLabelFieldTranspose(uint64_t *data, const QVector<int> &colorTable,
+                               int bgColor, int selColor);
   void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
                       uint8_t alpha, const std::set<uint64_t> &selected);
 

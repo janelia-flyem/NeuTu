@@ -1526,6 +1526,13 @@ ZArray* ZDvidReader::readLabels64(
                       width / zoomRatio, height / zoomRatio, depth);
 }
 
+ZArray* ZDvidReader::readLabels64Raw(
+    int x0, int y0, int z0, int width, int height, int depth, int zoom) const
+{
+  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+                     x0, y0, z0, width, height, depth);
+}
+
 ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box, int zoom)
 {
   return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),

@@ -18,6 +18,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemmb6analyzer.h"
+#include "dvid/zdvidversiondag.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -382,6 +383,10 @@ protected:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidWriter m_dvidWriter;
+
+  //Dvid info
+  ZDvidInfo m_dvidInfo;
+  ZDvidVersionDag m_versionDag;
 
 //  bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;

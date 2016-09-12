@@ -251,7 +251,7 @@ int ZDvidLabelSlice::getZoomLevel(const ZStackViewParam &viewParam) const
     return 0;
   }
 
-  int zoom = (int) std::round(std::log(1.0 / zoomRatio) / std::log(2.0) );
+  int zoom = iround(std::log(1.0 / zoomRatio) / std::log(2.0) );
 
   if (zoom < 0) {
     zoom = 0;
@@ -284,16 +284,25 @@ void ZDvidLabelSlice::updateRgbTable()
 void ZDvidLabelSlice::paintBufferUnsync()
 {
   if (m_labelArray != NULL && m_paintBuffer != NULL) {
-    if (m_labelArray->dim(0) == m_paintBuffer->width() &&
-        m_labelArray->dim(1) == m_paintBuffer->height()) {
+    if ((int) m_labelArray->getElementNumber() ==
+        m_paintBuffer->width() * m_paintBuffer->height()) {
       updateRgbTable();
       remapId();
+      uint64_t *labelArray = NULL;
+
       if (m_selectedOriginal.empty() && getLabelMap().empty()) {
-        m_paintBuffer->drawLabelField(m_labelArray->getDataPointer<uint64_t>(),
-                                      m_rgbTable, 0, 0xA4FFFFFF);
+        labelArray = m_labelArray->getDataPointer<uint64_t>();
       } else {
-        m_paintBuffer->drawLabelField(m_mappedLabelArray->getDataPointer<uint64_t>(),
-                                      m_rgbTable, 0, 0x80FFFFFF);
+        labelArray = m_mappedLabelArray->getDataPointer<uint64_t>();
+      }
+
+      if (labelArray != NULL) {
+        if (getSliceAxis() == NeuTube::X_AXIS) {
+          m_paintBuffer->drawLabelFieldTranspose(
+                labelArray, m_rgbTable, 0, 0xA4FFFFFF);
+        } else {
+          m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xA4FFFFFF);
+        }
       }
     }
   }
@@ -318,6 +327,8 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     int zoom = getZoomLevel(viewParam);
     int zoomRatio = pow(2, zoom);
 
+
+
 //    int yStep = 1;
 
     //    ZDvidReader reader;
@@ -331,6 +342,18 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     ZIntCuboid box;
     box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
     box.setSize(viewPort.width(), viewPort.height(), 1);
+
+    int width = box.getWidth() / zoomRatio;
+    int height = box.getHeight() / zoomRatio;
+    int depth = box.getDepth();
+    int x0 = box.getFirstCorner().getX() / zoomRatio;
+    int y0 = box.getFirstCorner().getY() / zoomRatio;
+    int z0 = box.getFirstCorner().getZ();
+
+    ZGeometry::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
+    ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+
+
     box.shiftSliceAxisInverse(m_sliceAxis);
 
     delete m_labelArray;
@@ -362,22 +385,26 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
               zoom);
 #endif
       } else {
-        m_labelArray = m_reader.readLabels64(box, zoom);
+        m_labelArray = m_reader.readLabels64Raw(
+              x0, y0, z0, width, height, depth, zoom);
+//        m_labelArray = m_reader.readLabels64(box, zoom);
       }
-
     }
 
     if (m_labelArray != NULL) {
+
+      ZGeometry::shiftSliceAxis(width, height, depth, getSliceAxis());
+      ZGeometry::shiftSliceAxis(x0, y0, z0, getSliceAxis());
+
       delete m_paintBuffer;
-      m_paintBuffer = new ZImage(
-            m_labelArray->dim(0), m_labelArray->dim(1),
-            QImage::Format_ARGB32);
+      m_paintBuffer = new ZImage(width, height, QImage::Format_ARGB32);
       paintBufferUnsync();
       ZStTransform transform;
       transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
-      transform.setOffset(
-            -(double) box.getFirstCorner().getX() / zoomRatio,
-            -(double) box.getFirstCorner().getY() / zoomRatio);
+      transform.setOffset(-x0, -y0);;
+//      transform.setOffset(
+//            -(double) box.getFirstCorner().getX() / zoomRatio,
+//            -(double) box.getFirstCorner().getY() / zoomRatio);
       m_paintBuffer->setTransform(transform);
 
 //      ZObject3dFactory::MakeObject3dScanArray(
@@ -467,11 +494,19 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
     ZStackViewParam newViewParam = viewParam;
 
     if (getDvidTarget().getMaxLabelZoom() < 5) {
-      int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
+      int width = viewParam.getViewPort().width();
+      int height = viewParam.getViewPort().height();
+      int area = width * height;
       //  const int maxWidth = 512;
       //  const int maxHeight = 512;
       if (area > m_maxWidth * m_maxHeight) {
-        newViewParam.resize(m_maxWidth, m_maxHeight);
+        if (width > m_maxWidth) {
+          width = m_maxWidth;
+        }
+        if (height > m_maxHeight) {
+          height = m_maxHeight;
+        }
+        newViewParam.resize(width, height);
       }
     }
 
