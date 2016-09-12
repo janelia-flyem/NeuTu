@@ -3233,7 +3233,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
 //        op.getHitObject<ZDvidLabelSlice>()->clearSelection();
         ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
         labelSlice->recordSelection();
-        op.getHitObject<ZDvidLabelSlice>()->toggleHitSelection(false);
+        labelSlice->toggleHitSelection(
+              labelSlice->hasVisualEffect(
+                NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED));
         labelSlice->processSelection();
         SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(

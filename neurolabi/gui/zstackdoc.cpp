@@ -3477,6 +3477,11 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   */
 }
 
+TStackObjectList ZStackDoc::takeObject(ZStackObject::EType type)
+{
+  return m_objectGroup.take(type);
+}
+
 TStackObjectList ZStackDoc::takeObject(
     ZStackObject::EType type, const string &source)
 {

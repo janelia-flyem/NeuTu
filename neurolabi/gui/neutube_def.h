@@ -88,11 +88,15 @@ enum ECardinalDirection {
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
-static const TVisualEffect VE_Z_PROJ = BIT_FLAG(9);
-static const TVisualEffect VE_GRUOP_HIGHLIGHT = BIT_FLAG(10);
+static const TVisualEffect VE_Z_PROJ = BIT_FLAG(19);
+static const TVisualEffect VE_GROUP_HIGHLIGHT = BIT_FLAG(20);
 
 namespace Image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;
+}
+
+namespace LabelField {
+static const TVisualEffect VE_HIGHLIGHT_SELECTED = 1;
 }
 
 namespace Sphere {

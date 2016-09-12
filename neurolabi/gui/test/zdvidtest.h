@@ -44,12 +44,14 @@ TEST(ZDvidTest, ZDvidUrl)
   std::cout << dvidUrl.getHelpUrl() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
 
-  std::cout << dvidUrl.getSkeletonUrl("") << std::endl;
+//  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons",
-            dvidUrl.getSkeletonUrl(""));
+            dvidUrl.getSkeletonUrl());
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons/key/1_swc",
             dvidUrl.getSkeletonUrl(1));
+
+  ASSERT_TRUE(dvidUrl.getSkeletonUrl("").empty());
 
 //  std::cout << dvidUrl.getMergeOperationUrl(
 //                 ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))

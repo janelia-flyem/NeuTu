@@ -42,7 +42,7 @@ std::string ZDvidUrl::GetFullUrl(
 {
   std::string url;
 
-  if (!prefix.empty()) {
+  if (!prefix.empty() && !endpoint.empty()) {
     url = prefix + "/" + endpoint;
   }
 

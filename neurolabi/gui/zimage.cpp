@@ -56,6 +56,7 @@ void ZImage::init()
 
   setDefaultContrastProtocal();
 
+  m_visible = true;
   m_z = NeuTube::INVALID_Z_INDEX;
 }
 
@@ -71,6 +72,16 @@ void ZImage::setContrastProtocol(double scale, double offset, bool nonlinear)
   m_grayOffset = offset;
   m_grayScale = scale;
   m_nonlinear = nonlinear;
+}
+
+void ZImage::setVisible(bool visible)
+{
+  m_visible = visible;
+}
+
+bool ZImage::isVisible() const
+{
+  return m_visible;
 }
 
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,

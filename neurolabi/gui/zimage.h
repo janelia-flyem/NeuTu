@@ -187,6 +187,8 @@ public:
   void setDefaultContrastProtocal();
   void setContrastProtocol(double scale, double offset, bool nonlinear);
 
+  void setVisible(bool visible);
+  bool isVisible() const;
 
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
@@ -200,6 +202,8 @@ private:
   double m_grayScale;
   double m_grayOffset;
   //ZIntPoint m_offset;
+
+  bool m_visible;
 
   int m_z;
 };

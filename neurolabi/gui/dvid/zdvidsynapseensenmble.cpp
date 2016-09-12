@@ -39,7 +39,7 @@ void ZDvidSynapseEnsemble::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
-  addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+  addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
 }
 
@@ -717,7 +717,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
-                hasVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT)) {
+                hasVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);

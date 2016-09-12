@@ -1410,9 +1410,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
       labelSlice->setVisible(true);
       labelSlice->update(getView()->getViewParameter());
     }
-
 //    m_mergeProject.highlightSelectedObject(hl);
-    labelSlice->setVisible(!hl);
+
     doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
     ZOUT(LTRACE(), 5) << "Toggle highlight";
@@ -1429,22 +1428,36 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 //    doc->removeObject(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE, true);
 
     if (hl) {
-      const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
-
-      for (std::set<uint64_t>::const_iterator iter = selected.begin();
-           iter != selected.end(); ++iter) {
-        uint64_t bodyId = *iter;
-        ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
-        obj->setSliceAxis(getView()->getSliceAxis());
-        obj->setDvidTarget(getDvidTarget());
-        obj->setLabel(bodyId);
-        obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(labelSlice->getColor(
-                        bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-        doc->addObject(obj);
+      if (getCompleteDocument()->getDvidTarget().hasBodyLabel()) {
+        labelSlice->setVisible(!hl);
+        const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
+        for (std::set<uint64_t>::const_iterator iter = selected.begin();
+             iter != selected.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
+          obj->setSliceAxis(getView()->getSliceAxis());
+          obj->setDvidTarget(getDvidTarget());
+          obj->setLabel(bodyId);
+          obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+          obj->setColor(labelSlice->getColor(
+                          bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+          doc->addObject(obj);
+        }
+      } else {
+        labelSlice->addVisualEffect(
+              NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+        labelSlice->paintBuffer();
+        doc->processObjectModified(labelSlice);
       }
     } else {
-      doc->notifyActiveViewModified();
+      labelSlice->removeVisualEffect(
+            NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+      if (getCompleteDocument()->getDvidTarget().hasBodyLabel()) {
+        doc->notifyActiveViewModified();
+      } else {
+        labelSlice->paintBuffer();
+        doc->processObjectModified(labelSlice);
+      }
     }
     doc->endObjectModifiedMode();
     doc->notifyObjectModified();

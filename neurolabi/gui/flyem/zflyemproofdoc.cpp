@@ -1038,9 +1038,9 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     if (on) {
-      se->addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+      se->addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
     } else {
-      se->removeVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+      se->removeVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
     }
     processObjectModified(se);
   }
