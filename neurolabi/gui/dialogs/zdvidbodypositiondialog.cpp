@@ -36,6 +36,15 @@ void ZDvidBodyPositionDialog::loadInputFile()
 {
   QString filePath = ZDialogFactory::GetOpenFileName("Body File", "", this);
   if (!filePath.isEmpty()) {
+    ui->fileLineEdit->setText(filePath);
+  }
+}
+
+void ZDvidBodyPositionDialog::generatePosition()
+{
+  QString filePath = ui->fileLineEdit->text();
+  QList<uint64_t> bodyList;
+  if (!filePath.isEmpty()) {
     FILE *fp = fopen(filePath.toStdString().c_str(), "r");
     ZString str;
     while (str.readLine(fp)) {
@@ -44,23 +53,20 @@ void ZDvidBodyPositionDialog::loadInputFile()
            iter != bodyIdArray.end(); ++iter) {
         uint64_t bodyId = *iter;
         if (bodyId > 0) {
-          m_bodyList.append(bodyId);
+          bodyList.append(bodyId);
         }
       }
     }
   }
-}
 
-void ZDvidBodyPositionDialog::generatePosition()
-{
   ZDvidReader reader;
-  if (!m_bodyList.isEmpty() && reader.open(m_dvidDlg->getDvidTarget())) {
+  if (!bodyList.isEmpty() && reader.open(m_dvidDlg->getDvidTarget())) {
     QString filePath = ZDialogFactory::GetSaveFileName("Position File", "", this);
     if (!filePath.isEmpty()) {
       std::ofstream stream;
       stream.open(filePath.toStdString().c_str());
       if (stream.is_open()) {
-        foreach (uint64_t bodyId, m_bodyList) {
+        foreach (uint64_t bodyId, bodyList) {
           ZIntPoint pt = reader.readBodyLocation(bodyId);
           stream << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << std::endl;
         }

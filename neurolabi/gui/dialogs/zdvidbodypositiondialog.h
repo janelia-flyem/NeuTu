@@ -29,7 +29,6 @@ private:
   Ui::ZDvidBodyPositionDialog *ui;
 
   ZDvidDialog *m_dvidDlg;
-  QList<uint64_t> m_bodyList;
 };
 
 #endif // ZDVIDBODYPOSITIONDIALOG_H

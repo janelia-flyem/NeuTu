@@ -43,7 +43,11 @@ std::string ZDvidUrl::GetFullUrl(
   std::string url;
 
   if (!prefix.empty() && !endpoint.empty()) {
-    url = prefix + "/" + endpoint;
+    if (endpoint[0] == '/') {
+      url = prefix + endpoint;
+    } else {
+      url = prefix + "/" + endpoint;
+    }
   }
 
   return url;
@@ -365,13 +369,12 @@ std::string ZDvidUrl::getGrayScaleBlockUrl(
 {
   std::string url = getGrayscaleUrl();
 
+  std::ostringstream stream;
   if (!url.empty()) {
-    std::ostringstream stream;
-    stream << "/blocks/" << ix << "_" << iy << "_" << iz << "/" << blockNumber;
-    url += stream.str();
+    stream << "blocks/" << ix << "_" << iy << "_" << iz << "/" << blockNumber;
   }
 
-  return url;
+  return GetFullUrl(url, stream.str());
 }
 
 std::string ZDvidUrl::getLabels64Url() const
@@ -397,7 +400,8 @@ std::string ZDvidUrl::getLabels64Url(
   std::ostringstream stream;
   stream << "/raw/0_1_2/" << sx << "_" << sy << "_" << sz << "/"
          << x0 << "_" << y0 << "_" << z0;
-  return getDataUrl(name) + stream.str();
+//  return getDataUrl(name) + stream.str();
+  return GetFullUrl(getDataUrl(name), stream.str());
 }
 
 std::string ZDvidUrl::getLabels64Url(int sx, int sy, int sz,
@@ -410,19 +414,22 @@ std::string ZDvidUrl::getLabels64Url(int sx, int sy, int sz,
 std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key) const
 {
   //new dvid api
-  return GetKeyCommandUrl(getDataUrl(name)) + "/" + key;
+//  return GetKeyCommandUrl(getDataUrl(name)) + "/" + key;
+
+  return GetFullUrl(GetKeyCommandUrl(getDataUrl(name)), key);
 }
 
 std::string ZDvidUrl::getAllKeyUrl(const std::string &name) const
 {
-  return getDataUrl(name) + "/" + m_keysCommand;
+//  return getDataUrl(name) + "/" + m_keysCommand;
+  return GetFullUrl(getDataUrl(name), m_keysCommand);
 }
 
 std::string ZDvidUrl::getKeyRangeUrl(
     const std::string &name,
     const std::string &key1, const std::string &key2) const
 {
-  return getDataUrl(name) + "/" + m_keyRangeCommand + "/" + key1 + "/" + key2;
+//  return getDataUrl(name) + "/" + m_keyRangeCommand + "/" + key1 + "/" + key2;
 
   /*
   std::string url = getDataUrl(name) + "/" + key1;
@@ -432,6 +439,8 @@ std::string ZDvidUrl::getKeyRangeUrl(
 
   return url;
   */
+
+  return GetFullUrl(getDataUrl(name), m_keyRangeCommand + "/" + key1 + "/" + key2);
 }
 
 std::string ZDvidUrl::getBodyAnnotationName() const
@@ -451,8 +460,11 @@ std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) con
 std::string ZDvidUrl::getBodyAnnotationUrl(
     uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  return GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)) + "/" +
-      ZString::num2str(bodyId);
+//  return GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)) + "/" +
+//      ZString::num2str(bodyId);
+
+  return GetFullUrl(GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)),
+                    ZString::num2str(bodyId));
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
@@ -486,7 +498,10 @@ std::string ZDvidUrl::getBoundBoxUrl() const
 
 std::string ZDvidUrl::getBoundBoxUrl(int z) const
 {
-  return GetKeyCommandUrl(getBoundBoxUrl()) + "/" + ZString::num2str(z);
+//  return GetKeyCommandUrl(getBoundBoxUrl()) + "/" + ZString::num2str(z);
+
+  return GetFullUrl(GetKeyCommandUrl(getBoundBoxUrl()),
+                    ZString::num2str(z));
 }
 
 std::string ZDvidUrl::getBodyLabelUrl(const std::string &dataName) const
@@ -523,28 +538,34 @@ std::string ZDvidUrl::getBodyLabelUrl(
 std::string ZDvidUrl::getBodyListUrl(int minSize) const
 {
   std::ostringstream stream;
-  stream << "/sizerange/" << minSize;
+  stream << "sizerange/" << minSize;
 
-  return getBodyLabelUrl() + stream.str();
+//  return getBodyLabelUrl() + stream.str();
+
+  return GetFullUrl(getBodyLabelUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getBodyListUrl(int minSize, int maxSize) const
 {
   std::ostringstream stream;
-  stream << "/sizerange/" << minSize << "/" << maxSize;
+  stream << "sizerange/" << minSize << "/" << maxSize;
 
-  return getBodyLabelUrl() + stream.str();
+//  return getBodyLabelUrl() + stream.str();
+  return GetFullUrl(getBodyLabelUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getSynapseListUrl() const
 {
-  return getBodyLabelUrl(m_dvidTarget.getBodyLabelName()) + "/allsynapse";
+//  return getBodyLabelUrl(m_dvidTarget.getBodyLabelName()) + "/allsynapse";
+  return GetFullUrl(getBodyLabelUrl(m_dvidTarget.getBodyLabelName()),
+                    "allsynapse");
 }
 
 std::string ZDvidUrl::getSynapseAnnotationUrl(const std::string &name) const
 {
-  return  GetKeyCommandUrl(getBodyAnnotationUrl(m_dvidTarget.getBodyLabelName())) +
-      "/" + name;
+  return  GetFullUrl(
+        GetKeyCommandUrl(getBodyAnnotationUrl(m_dvidTarget.getBodyLabelName())),
+        name);
 }
 
 std::string ZDvidUrl::getSynapseAnnotationUrl() const
@@ -554,7 +575,7 @@ std::string ZDvidUrl::getSynapseAnnotationUrl() const
 
 std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
 {
-  return getDataUrl(dataName) + "/merge";
+  return GetFullUrl(getDataUrl(dataName), "merge");
 }
 
 /*
@@ -575,9 +596,8 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
     key += "_" + userName;
   }
 
-  return GetKeyCommandUrl(
-        getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))) + "/" +
-      key;
+  return GetFullUrl(GetKeyCommandUrl(
+        getDataUrl(ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))), key);
 }
 
 std::string ZDvidUrl::getSplitUrl(
@@ -586,12 +606,13 @@ std::string ZDvidUrl::getSplitUrl(
 {
   std::ostringstream stream;
   if (command.empty()) {
-    stream << getDataUrl(dataName) << "/" << originalLabel;
+    stream << originalLabel;
   } else {
-    stream << getDataUrl(dataName) << "/" << command << "/" << originalLabel;
+    stream << command << "/" << originalLabel;
   }
 
-  return stream.str();
+//  return stream.str();
+  return GetFullUrl(getDataUrl(dataName), stream.str());
 }
 
 std::string ZDvidUrl::getSplitUrl(
@@ -606,7 +627,13 @@ std::string ZDvidUrl::getSplitUrl(
   std::ostringstream stream;
   stream << newLabel;
 
-  return getSplitUrl(dataName, originalLabel) + "?splitlabel=" + stream.str();
+  std::string url = getSplitUrl(dataName, originalLabel);
+
+  if (url.empty()) {
+    return "";
+  }
+
+  return url + "?splitlabel=" + stream.str();
 }
 
 std::string ZDvidUrl::getCoarseSplitUrl(
@@ -886,9 +913,9 @@ std::string ZDvidUrl::getAnnotationDeleteUrl(
   }
 
   std::ostringstream stream;
-  stream << getAnnotationDeleteUrl(dataName) << "/" << x << "_" << y << "_"
-         << z;
-  return stream.str();
+  stream << x << "_" << y << "_" << z;
+
+  return GetFullUrl(getAnnotationDeleteUrl(dataName), stream.str());
 }
 
 std::string ZDvidUrl::getSynapseUrl() const
@@ -900,10 +927,10 @@ std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_annotationElementCommand << "/" << x
+  stream << m_annotationElementCommand << "/" << x
          << "_" << y << "_" << z;
 
-  return stream.str();
+  return GetFullUrl(getSynapseUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntPoint &pos) const
@@ -916,20 +943,18 @@ std::string ZDvidUrl::getSynapseUrl(
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_annotationElementsCommand << "/"
+  stream << m_annotationElementsCommand << "/"
          << width << "_" << height << "_" << depth << "/"
          << x << "_" << y << "_" << z;
 
-  return stream.str();
+  return GetFullUrl(getSynapseUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getSynapseElementsUrl() const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_annotationElementsCommand;
-
-  return stream.str();
+  return GetFullUrl(getSynapseUrl(), m_annotationElementCommand);
 }
 
 std::string ZDvidUrl::getSynapseUrl(
@@ -944,11 +969,13 @@ std::string ZDvidUrl::getSynapseMoveUrl(
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_annotationMoveCommand << "/"
+  stream << m_annotationMoveCommand << "/"
          << from.getX() << "_" << from.getY() << "_" << from.getZ() << "/"
          << to.getX() << "_" << to.getY() << "_" << to.getZ();
 
-  return stream.str();
+
+
+  return GetFullUrl(getSynapseUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
@@ -961,8 +988,7 @@ std::string ZDvidUrl::getSynapseUrl(uint64_t label, bool relation) const
 {
   std::ostringstream stream;
 
-  stream << getSynapseUrl() << "/" << m_annotationLabelCommand << "/"
-         << label << "?relationships=";
+  stream << m_annotationLabelCommand << "/" << label << "?relationships=";
 
   if (relation) {
     stream << "true";
@@ -970,7 +996,7 @@ std::string ZDvidUrl::getSynapseUrl(uint64_t label, bool relation) const
     stream << "false";
   }
 
-  return stream.str();
+  return GetFullUrl(getSynapseUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getTodoListUrl() const

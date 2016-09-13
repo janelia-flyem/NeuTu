@@ -239,7 +239,23 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/neutu_merge_opr/key/labels",
             dvidUrl.getMergeOperationUrl(""));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/neutu_merge_opr/key/labels_zhaot",
+            dvidUrl.getMergeOperationUrl("zhaot"));
 //  std::cout << dvidUrl.getMergeOperationUrl() << std::endl;
+
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split/1",
+            dvidUrl.getSplitUrl("test", 1));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split/1?splitlabel=2",
+            dvidUrl.getSplitUrl("test", 1, 2));
+
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split-coarse/1",
+            dvidUrl.getCoarseSplitUrl("test", 1));
+
+
 
 //  std::string getMergeOperationUrl(const std::string &dataName) const;
 
@@ -249,6 +265,9 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getTileUrl("tiles", 1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/tiles/tile/xy/0/1_2_3",
             dvidUrl.getTileUrl("tiles", 0, 1, 2, 3));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/new_roi/roi",
+            dvidUrl.getRoiUrl("new_roi"));
 
 
   target.setLabelBlockName("labelstest");
