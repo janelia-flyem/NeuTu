@@ -128,9 +128,10 @@ private:
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent(ZDvidTarget target);
-    bool bodies3Present(ZDvidTarget target);
+    bool bodyAnnotationsPresent(ZDvidTarget target);
     void importBookmarksDvid(ZDvidTarget target);
     void importBodiesDvid(ZDvidTarget target);
+    void importBodiesDvid2(ZDvidTarget target);
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
