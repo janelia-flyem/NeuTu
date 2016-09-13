@@ -1671,13 +1671,9 @@ void ZStackView::paintObjectBuffer(
       std::sort(visibleObject.begin(), visibleObject.end(),
                 ZStackObject::ZOrderLessThan());
 
-#ifdef _DEBUG_2
-      std::cout << "---" << std::endl;
-      std::cout << slice << " " << m_depthControl->value() <<  std::endl;
-#endif
-      if (NeutubeConfig::GetVerboseLevel() >= 2) {
-        std::cout << "Displaying objects ..." << std::endl;
-      }
+
+      ZOUT(LTRACE(), 5) << "Displaying objects ...";
+
       for (int i = 0; i < visibleObject.size(); ++i) {
         /*
       }
@@ -1688,9 +1684,8 @@ void ZStackView::paintObjectBuffer(
         */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
-          if (NeutubeConfig::GetVerboseLevel() >= 2) {
-            std::cout << obj->className() << std::endl;
-          }
+          ZOUT(LTRACE(), 5) << obj->className();
+
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);

@@ -127,7 +127,7 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
-  void highlightModeEnabled(bool);
+//  void highlightModeEnabled(bool);
   void highlightModeChanged();
   void roiLoaded();
 
@@ -256,6 +256,7 @@ public slots:
   void removeBookmark(ZFlyEmBookmark *bookmark);
   void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
 
+  void highlightSelectedObject(ZDvidLabelSlice *labelSlice, bool hl);
   void highlightSelectedObject(bool hl);
 
   void syncMergeWithDvid();
@@ -306,6 +307,7 @@ protected:
   void customInit();
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
+  void enableSynapseFetcher();
 
 private:
   void init();

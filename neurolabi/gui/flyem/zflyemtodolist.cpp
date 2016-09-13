@@ -39,6 +39,7 @@ void ZFlyEmToDoList::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
+  m_isReady = false;
 }
 
 ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
@@ -130,6 +131,7 @@ void ZFlyEmToDoList::download(int z)
       if (m_dataRange.isEmpty()) {
         slice.setStatus(STATUS_READY);
       } else {
+        box.shiftSliceAxisInverse(getSliceAxis());
         slice.setDataRect(
               QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                     box.getWidth(), box.getHeight()));
@@ -316,6 +318,16 @@ void ZFlyEmToDoList::setRange(const ZIntCuboid &dataRange)
   m_dataRange = dataRange;
 }
 
+void ZFlyEmToDoList::setReady(bool ready)
+{
+  m_isReady = ready;
+}
+
+bool ZFlyEmToDoList::isReady() const
+{
+  return m_isReady;
+}
+
 void ZFlyEmToDoList::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     NeuTube::EAxis sliceAxis) const
@@ -339,23 +351,25 @@ void ZFlyEmToDoList::display(
       rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
     }
 
-    for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
-      int z = painter.getZ(slice + ds);
-      if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
-          z <= m_dvidInfo.getEndCoordinates().getZ()) {
-        ItemSlice &itemSlice =
-            const_cast<ZFlyEmToDoList&>(*this).getSlice(z, ADJUST_FULL);
-        bool isReady = itemSlice.isReady();
+    if (!isReady()) {
+      for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
+        int z = painter.getZ(slice + ds);
+        if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
+            z <= m_dvidInfo.getEndCoordinates().getZ()) {
+          ItemSlice &itemSlice =
+              const_cast<ZFlyEmToDoList&>(*this).getSlice(z, ADJUST_FULL);
+          bool ready = itemSlice.isReady();
 
-        if (!isReady && m_view != NULL) {
-          isReady =itemSlice.isReady(
-                m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
-        }
-        if (!isReady) {
-          int blockZ = m_dvidInfo.getBlockIndexZ(z);
-          if (blockZ != currentBlockZ) {
-            currentBlockZ = blockZ;
-            const_cast<ZFlyEmToDoList&>(*this).download(z);
+          if (!ready && m_view != NULL) {
+            ready =itemSlice.isReady(
+                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+          }
+          if (!ready) {
+            int blockZ = m_dvidInfo.getBlockIndexZ(z);
+            if (blockZ != currentBlockZ) {
+              currentBlockZ = blockZ;
+              const_cast<ZFlyEmToDoList&>(*this).download(z);
+            }
           }
         }
       }

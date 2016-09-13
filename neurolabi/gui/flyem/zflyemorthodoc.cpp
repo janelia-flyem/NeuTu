@@ -1,8 +1,12 @@
 #include "zflyemorthodoc.h"
+
+#include <QElapsedTimer>
+
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackobjectsourcefactory.h"
 #include "zcrosshair.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
@@ -33,6 +37,7 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
   se->setSource(ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(axis));
+  se->setReady(true);
   addObject(se);
 }
 
@@ -68,9 +73,47 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
     ZStack *stack = m_dvidReader.readGrayScale(box);
     loadStack(stack);
 
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    QElapsedTimer timer;
+    timer.start();
+    ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));
+    LINFO() << "Synapse reading time: " << timer.elapsed();
+
+    QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();
+    for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+         iter != seList.end(); ++iter) {
+      ZDvidSynapseEnsemble *se = *iter;
+      se->setRange(box);
+//      se->setReady(true);
+    }
+
+    for (size_t i = 0; i < obj.size(); ++i) {
+      ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (synapseJson.hasKey("Pos")) {
+        ZDvidSynapse synapse;
+        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
+        for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
+             iter != seList.end(); ++iter) {
+          ZDvidSynapseEnsemble *se = *iter;
+          se->addSynapseUnsync(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+        }
+      }
+    }
+
+    /*
     getDvidSynapseEnsemble(NeuTube::X_AXIS)->setRange(box);
     getDvidSynapseEnsemble(NeuTube::Y_AXIS)->setRange(box);
     getDvidSynapseEnsemble(NeuTube::Z_AXIS)->setRange(box);
+    */
+
+
+
+    QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+    for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+         iter != todoList.end(); ++iter) {
+      ZFlyEmToDoList *obj = *iter;
+      obj->setRange(box);
+    }
   }
 }
 

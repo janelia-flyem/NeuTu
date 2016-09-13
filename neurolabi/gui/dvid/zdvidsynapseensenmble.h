@@ -65,6 +65,7 @@ public:
 
     bool isValid() const { return m_status != STATUS_NULL; }
     bool isReady() const { return m_status == STATUS_READY; }
+    bool isReady(const QRect &rect) const;
     bool isReady(const QRect &rect, const QRect &range) const;
 
     void setStatus(EDataStatus status) {
@@ -162,6 +163,9 @@ public:
 
   void setReadyUnsync(const ZIntCuboid &box);
   void setReady(const ZIntCuboid &box);
+
+  void setReady(bool ready);
+  bool isReady() const;
 
 //  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
@@ -268,6 +272,8 @@ private:
   int m_maxPartialArea;
 
 //  NeuTube::EAxis m_sliceAxis;
+
+  bool m_isReady;
 
   ZIntCuboid m_dataRange;
 
