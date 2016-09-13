@@ -70,6 +70,7 @@ private slots:
     void onIONoBodiesLoaded();
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
+    void onMaxBodiesChanged(int maxBodies);
 
 private:
     enum Tabs {
@@ -118,6 +119,7 @@ private:
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
+    int m_currentMaxBodies;
     bool m_connectionsLoading;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;

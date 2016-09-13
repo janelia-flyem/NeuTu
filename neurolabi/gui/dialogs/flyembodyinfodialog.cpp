@@ -65,8 +65,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // top body list stuff
 
-    // top body list stuff
-
     // first table manages list of bodies
     m_bodyModel = new QStandardItemModel(0, 5, ui->bodyTableView);
     setBodyHeaders(m_bodyModel);
@@ -81,6 +79,15 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
     // store body names for later use
     m_bodyNames = QMap<uint64_t, QString>();
+
+    // max body possibilities; should probably generate from a list at some point
+    ui->maxBodiesMenu->addItem("100", QVariant(100));
+    ui->maxBodiesMenu->addItem("500", QVariant(500));
+    ui->maxBodiesMenu->addItem("1000", QVariant(1000));
+    ui->maxBodiesMenu->addItem("5000", QVariant(5000));
+    ui->maxBodiesMenu->addItem("10000", QVariant(10000));
+    ui->maxBodiesMenu->setCurrentIndex(1);
+    m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
 
     // color filter stuff
 
@@ -127,6 +134,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
+    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
@@ -515,6 +523,11 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
     }
 }
 
+void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
+    m_currentMaxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+    onRefreshButton();
+}
+
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     // validation is admittedly limited for now; ultimately, I
     //  expect we'll be getting the info from DVID rather than
@@ -619,38 +632,26 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
  * did not include all information
  */
 void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
-    // DVID target assumed to be valid
 
     QElapsedTimer fullTimer;
     QElapsedTimer dvidTimer;
     int64_t dvidTime = 0;
     int64_t fullTime = 0;
-
     fullTimer.start();
 
+    // DVID target assumed to be valid
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(target)) {
 
-        // basic plan for this version:
-        // use labelsz threshold calls to get bodies with synapses
-
-        // note: might actually be using the "top N" call after all!
-
-        // first implementation: do single call
-        // second implementation: need to iterate in case there's
-        //  more than one page of results (but have some max
-        //  value and show a dialog if you reach it!)
-
-
+        // you would use this call to get all bodies with any synapses:
         // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::INDEX_ALL_SYN);
-        // test: read the same number as Lowell's file has, for FIB-19
+
+        // as it turns out, that's usually too many (and you would have to retrieve
+        //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
-        ZJsonArray thresholdData = reader.readSynapseLabelsz(1039, ZDvid::INDEX_ALL_SYN);
+        ZJsonArray thresholdData = reader.readSynapseLabelsz(m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
         dvidTime += dvidTimer.elapsed();
-        std::cout << "# bodies with synapses = " << thresholdData.size() << std::endl;
-
-
 
         // first, get the list of bodies that actually have annotations,
         //  so we don't try to retrieve annotations that aren't there
@@ -659,8 +660,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
         QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
 
         #ifdef _DEBUG_
-            std::cout << "reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
-            std::cout << "# body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
+            std::cout << "populating body info dialog:" << std::endl;
+            std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
+            std::cout << "    # body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
+            std::cout << "    # bodies read with synapses = " << thresholdData.size() << std::endl;
         #endif
 
         // build the data structure we pass along to the table
@@ -696,7 +699,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
             }
 
             // synapse info
-            // LOAD_NO_PARTNER is enough; it has kind populated
+            // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
             std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_NO_PARTNER);
             dvidTime += dvidTimer.elapsed();
