@@ -321,8 +321,7 @@ bool ZDvidTileEnsemble::update(
 
       updated = true;
 
-      if (m_dataFetcher != NULL &&
-          tileName != m_dvidTarget.getLosslessTileName()) {
+      if (m_dataFetcher != NULL && m_dvidTarget.isTileLowQuality()) {
         QRect highresViewPort =
             m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
         if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {

@@ -255,6 +255,11 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/split-coarse/1",
             dvidUrl.getCoarseSplitUrl("test", 1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bookmarks/key/1_2_3",
+            dvidUrl.getBookmarkKeyUrl(1, 2, 3));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bookmark_annotations/elements/100_200_300/1_2_3",
+            dvidUrl.getBookmarkUrl(1, 2, 3, 100, 200, 300));
 
 
 //  std::string getMergeOperationUrl(const std::string &dataName) const;
@@ -266,9 +271,70 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/tiles/tile/xy/0/1_2_3",
             dvidUrl.getTileUrl("tiles", 0, 1, 2, 3));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labels/label/1_2_3",
+            dvidUrl.getLocalBodyIdUrl(1, 2, 3));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labels/labels",
+            dvidUrl.getLocalBodyIdArrayUrl());
+
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/new_roi/roi",
             dvidUrl.getRoiUrl("new_roi"));
 
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test",
+            dvidUrl.getAnnotationUrl("test"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
+            dvidUrl.getAnnotationSyncUrl("test"));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
+            dvidUrl.getLabelszSyncUrl("test"));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/tag/zhaot",
+            dvidUrl.getAnnotationUrl("test", "zhaot"));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/label/123",
+            dvidUrl.getAnnotationUrl("test", 123));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/elements/100_200_300/1_2_3",
+            dvidUrl.getAnnotationUrl("test", 1, 2, 3, 100, 200, 300));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/elements",
+            dvidUrl.getAnnotationElementsUrl("test"));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/element/1_2_3",
+            dvidUrl.getAnnotationDeleteUrl("test", 1, 2, 3));
+
+  ASSERT_EQ("",
+            dvidUrl.getSynapseUrl(1, 2, 3));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseUrl(1, 2, 3, 100, 200, 300));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseMoveUrl(ZIntPoint(1, 2, 3), ZIntPoint(4, 5, 6)));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseUrl(1, true));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseUrl(1, false));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseLabelszUrl(1));
+  ASSERT_EQ("",
+            dvidUrl.getSynapseLabelszUrl(ZDvid::INDEX_ALL_SYN));
+
+  target.setSynapseName("synapse");
+  dvidUrl.setDvidTarget(target);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse/element/1_2_3",
+            dvidUrl.getSynapseUrl(1, 2, 3));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse/elements/100_200_300/1_2_3",
+            dvidUrl.getSynapseUrl(1, 2, 3, 100, 200, 300));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse/move/1_2_3/4_5_6",
+            dvidUrl.getSynapseMoveUrl(ZIntPoint(1, 2, 3), ZIntPoint(4, 5, 6)));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse/label/1?relationships=true",
+            dvidUrl.getSynapseUrl(1, true));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse/label/1?relationships=false",
+            dvidUrl.getSynapseUrl(1, false));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1",
+            dvidUrl.getSynapseLabelszUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
+            dvidUrl.getSynapseLabelszUrl(1, ZDvid::INDEX_ALL_SYN));
 
   target.setLabelBlockName("labelstest");
   target.setMaxLabelZoom(5);

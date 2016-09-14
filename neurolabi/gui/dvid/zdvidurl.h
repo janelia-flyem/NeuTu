@@ -18,6 +18,8 @@ public:
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
   ZDvidUrl(const ZDvidTarget &target);
 
+  void setDvidTarget(const ZDvidTarget &target);
+
   std::string getNodeUrl() const;
   std::string getDataUrl(const std::string &dataName) const;
   std::string getDataUrl(ZDvidData::ERole role) const;

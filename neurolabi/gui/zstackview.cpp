@@ -2455,6 +2455,7 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData(
     }
   } else {
     updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);
+    updater.exclude(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   }
 
   updater.update(param);

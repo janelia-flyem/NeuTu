@@ -37,6 +37,11 @@ ZDvidUrl::ZDvidUrl(const ZDvidTarget &target)
   m_dvidTarget = target;
 }
 
+void ZDvidUrl::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidTarget = target;
+}
+
 std::string ZDvidUrl::GetFullUrl(
       const std::string &prefix, const std::string &endpoint)
 {
@@ -624,14 +629,14 @@ std::string ZDvidUrl::getSplitUrl(
 std::string ZDvidUrl::getSplitUrl(
     const std::string &dataName, uint64_t originalLabel, uint64_t newLabel) const
 {
-  std::ostringstream stream;
-  stream << newLabel;
-
   std::string url = getSplitUrl(dataName, originalLabel);
 
   if (url.empty()) {
     return "";
   }
+
+  std::ostringstream stream;
+  stream << newLabel;
 
   return url + "?splitlabel=" + stream.str();
 }
@@ -678,10 +683,10 @@ std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
 {
   std::ostringstream stream;
 
-  stream << getBookmarkKeyUrl() << "/" << m_keyCommand << "/"
-         << x << "_" << y << "_" << z;
+  stream << m_keyCommand << "/" << x << "_" << y << "_" << z;
 
-  return stream.str();
+//  return stream.str();
+  return GetFullUrl(getBookmarkKeyUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
@@ -699,11 +704,13 @@ std::string ZDvidUrl::getBookmarkUrl(
 {
   std::ostringstream stream;
 
-  stream << getBookmarkUrl() << "/" << m_annotationElementsCommand << "/"
+  stream << m_annotationElementsCommand << "/"
          << width << "_" << height << "_" << depth << "/"
          << x << "_" << y << "_" << z;
 
-  return stream.str();
+//  return stream.str();
+
+  return GetFullUrl(getBookmarkUrl(), stream.str());
 }
 
 std::string ZDvidUrl::getBookmarkUrl(
@@ -727,8 +734,11 @@ std::string ZDvidUrl::getTileUrl(
     const std::string &dataName, int resLevel) const
 {
   ZString url = getTileUrl(dataName);
-  url += "/tile/xy/";
-  url.appendNumber(resLevel);
+
+  if (!url.empty()) {
+    url += "/tile/xy/";
+    url.appendNumber(resLevel);
+  }
 
   return url;
 }
@@ -737,29 +747,32 @@ std::string ZDvidUrl::getTileUrl(
     const std::string &dataName, int resLevel, int xi0, int yi0, int z0) const
 {
   ZString url = getTileUrl(dataName, resLevel);
-  url += "/";
-  url.appendNumber(xi0);
-  url += "_";
-  url.appendNumber(yi0);
-  url += "_";
-  url.appendNumber(z0);
+
+  if (!url.empty()) {
+    url += "/";
+    url.appendNumber(xi0);
+    url += "_";
+    url.appendNumber(yi0);
+    url += "_";
+    url.appendNumber(z0);
+  }
 
   return url;
 }
 
 std::string ZDvidUrl::getRepoInfoUrl() const
 {
-  return getApiUrl() + "/repos/info";
+  return GetFullUrl(getApiUrl(), "/repos/info");
 }
 
 std::string ZDvidUrl::getLockUrl() const
 {
-  return getNodeUrl() + "/lock";
+  return GetFullUrl(getNodeUrl(), "/lock");
 }
 
 std::string ZDvidUrl::getBranchUrl() const
 {
-  return getNodeUrl() + "/branch";
+  return GetFullUrl(getNodeUrl(), "/branch");
 }
 
 std::string ZDvidUrl::GetEndPoint(const std::string &url)
@@ -773,30 +786,28 @@ std::string ZDvidUrl::GetEndPoint(const std::string &url)
 
 std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
 {
-  ZString url = getLabels64Url() + "/" + m_labelCommand + "/";
-  url.appendNumber(x);
-  url += "_";
-  url.appendNumber(y);
-  url += "_";
-  url.appendNumber(z);
+  ZString url = getLabels64Url();
+
+  if (!url.empty()) {
+    url += "/" + m_labelCommand + "/";
+    url.appendNumber(x);
+    url += "_";
+    url.appendNumber(y);
+    url += "_";
+    url.appendNumber(z);
+  }
 
   return url;
 }
 
 std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 {
-  ZString url = getLabels64Url() + "/" + m_labelArrayCommand;
-
-  return url;
+  return GetFullUrl(getLabels64Url(), m_labelArrayCommand);
 }
 
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getDataUrl(dataName) + "/" + m_roiCommand;
+  return GetFullUrl(getDataUrl(dataName), m_roiCommand);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
@@ -806,76 +817,68 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
 
 std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getAnnotationUrl(dataName) + "/sync";
+  return GetFullUrl(getAnnotationUrl(dataName), "sync");
 }
 
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getDataUrl(dataName) + "/sync";
+  return GetFullUrl(getDataUrl(dataName), "sync");
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
-{
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getAnnotationUrl(dataName) + "/" + m_annotationTagCommand + "/" + tag;
+{  
+  return GetFullUrl(getAnnotationUrl(dataName),
+                    m_annotationTagCommand + "/" + tag);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, uint64_t label) const
 {
-  if (dataName.empty()) {
-    return "";
+  std::string url = getAnnotationUrl(dataName);
+
+  if (!url.empty()) {
+    std::ostringstream stream;
+    stream << label;
+    url += "/" + m_annotationLabelCommand + "/" +
+        stream.str();
   }
 
-  std::ostringstream stream;
-  stream << label;
-  return getAnnotationUrl(dataName) + "/" + m_annotationLabelCommand + "/" +
-      stream.str();
+  return url;
 }
 
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, int x, int y, int z) const
 {
-  if (dataName.empty()) {
-    return "";
+  std::string url = getAnnotationUrl(dataName);
+
+  if (!url.empty()) {
+    std::ostringstream stream;
+    stream << "/" << m_annotationElementCommand << "/" << x << "_" << y << "_" << z;
+
+    url += stream.str();
   }
 
-  std::ostringstream stream;
-
-  stream << getAnnotationUrl(dataName) << "/"
-         << m_annotationElementCommand << "/" << x << "_" << y << "_" << z;
-
-  return stream.str();
+  return url;
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName,
     int x, int y, int z, int width, int height, int depth) const
 {
-  if (dataName.empty()) {
-    return "";
+  std::string url = getAnnotationUrl(dataName);
+
+  if (!url.empty()) {
+    std::ostringstream stream;
+
+    stream << "/" << m_annotationElementsCommand << "/"
+           << width << "_" << height << "_" << depth << "/"
+           << x << "_" << y << "_" << z;
+    url += stream.str();
   }
 
-  std::ostringstream stream;
-
-  stream << getAnnotationUrl(dataName) << "/" << m_annotationElementsCommand << "/"
-         << width << "_" << height << "_" << depth << "/"
-         << x << "_" << y << "_" << z;
-
-  return stream.str();
+  return url;
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
@@ -889,11 +892,7 @@ std::string ZDvidUrl::getAnnotationUrl(
 
 std::string ZDvidUrl::getAnnotationElementsUrl(const std::string &dataName) const
 {
-  if (dataName.empty()) {
-    return "";
-  }
-
-  return getAnnotationUrl(dataName) + "/" + m_annotationElementsCommand;
+  return GetFullUrl(getAnnotationUrl(dataName), m_annotationElementsCommand);
 }
 
 std::string ZDvidUrl::getAnnotationDeleteUrl(const std::string &dataName) const
@@ -1047,16 +1046,13 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
 
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
-  std::string name;
+  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
 
-  std::string dataName = m_dvidTarget.getSynapseLabelszName();
-  if (!dataName.empty()) {
-    name = getDataUrl(dataName);
-    name += "/top/";
-    name += ZString::num2str(n);
+  if (!url.empty()) {
+    url += "/top/" + ZString::num2str(n);
   }
 
-  return name;
+  return url;
 }
 
 std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
@@ -1089,7 +1085,7 @@ std::string ZDvidUrl::GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type)
 std::string ZDvidUrl::getSynapseLabelszUrl(
     int n, ZDvid::ELabelIndexType indexType) const
 {
-  return getSynapseLabelszUrl(n) + "/" + GetLabelszIndexTypeStr(indexType);
+  return GetFullUrl(getSynapseLabelszUrl(n), GetLabelszIndexTypeStr(indexType));
 }
 
 void ZDvidUrl::setUuid(const std::string &uuid)
