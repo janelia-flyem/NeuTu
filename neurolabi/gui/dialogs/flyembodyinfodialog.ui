@@ -82,6 +82,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="exportConnectionsButton">
+       <property name="text">
+        <string>Export connections...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -60,6 +60,7 @@ private slots:
     void moveToBodyList();
     void onDeleteButton();
     void onExportBodies();
+    void onExportConnections();
     void onSaveColorMap();
     void onLoadColorMap();
     void onColorMapLoaded(ZJsonValue colors);
@@ -103,6 +104,10 @@ private:
         CONNECTIONS_Y_COLUMN,
         CONNECTIONS_Z_COLUMN
     };
+    enum ExportKind {
+        EXPORT_BODIES,
+        EXPORT_CONNECTIONS
+    };
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
@@ -139,6 +144,7 @@ private:
     void init();
     void updateColorFilter(QString filter, QString oldFilter = "");
     void exportBodies(QString filename);
+    void exportConnections(QString filename);
     void saveColorMapDisk(QString filename);
     ZJsonArray getColorMapAsJson(ZJsonArray colors);
     bool isValidColorMap(ZJsonValue colors);
@@ -148,6 +154,7 @@ private:
     void setIOBodyHeaders(QStandardItemModel *model);
     void retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID);
     void setConnectionsHeaders(QStandardItemModel *model);
+    void exportData(QString filename, ExportKind kind);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

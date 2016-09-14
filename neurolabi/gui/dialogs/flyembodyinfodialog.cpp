@@ -136,6 +136,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
     connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
+    connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(onLoadColorMap()));
     connect(ui->bodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickBodyTable(QModelIndex)));
@@ -565,15 +566,16 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     return true;
 }
 
+/*
+ * this method reads body information from DVID, only from
+ * body annotations; it's the fallback routine that requires
+ * the least in DVID but also provides the least information
+ *
+ * note: max bodies number is ignored for this routine
+ */
 void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
-    // this method is a lot like importBookmarksDvid; where that method
-    //  (1) reads a json file from dvid, then (2) adds name, status 
-    //  from different DVID call, this one just goes straight to step 
-    //  two; as a result, a lot of the code is copied from there 
-    //  (and should probably be refactored to remove duplication)
 
-    // DVID target assumed to be valid 
-
+    // DVID target assumed to be valid
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(target)) {
@@ -627,9 +629,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
 }
 
 /*
- * this method loads body information directly from DVID;
- * previous versions either used a pregenerated file or
- * did not include all information
+ * this method loads body information directly from DVID,
+ * from body annotations and from the labelsz data type;
+ * other versions either use a pregenerated file or
+ * do not require labelsz (and thus do not include all information)
  */
 void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
 
@@ -851,6 +854,13 @@ void FlyEmBodyInfoDialog::onExportBodies() {
     }
 }
 
+void FlyEmBodyInfoDialog::onExportConnections() {
+    QString filename = QFileDialog::getSaveFileName(this, "Export connections");
+    if (!filename.isNull()) {
+        exportConnections(filename);
+    }
+}
+
 void FlyEmBodyInfoDialog::onSaveColorMap() {
     QString filename = QFileDialog::getSaveFileName(this, "Save color map");
     if (!filename.isNull()) {
@@ -1040,52 +1050,78 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
 }
 
 void FlyEmBodyInfoDialog::exportBodies(QString filename) {
+    exportData(filename, EXPORT_BODIES);
+}
+
+void FlyEmBodyInfoDialog::exportConnections(QString filename) {
+    exportData(filename, EXPORT_CONNECTIONS);
+}
+
+/*
+ * this method outputs a text file with tabular data;
+ * usually it's tab-separated, but there's a hack in
+ * there for a headerless csv file, too
+ */
+void FlyEmBodyInfoDialog::exportData(QString filename, ExportKind kind) {
+    QSortFilterProxyModel * proxy;
+    QStandardItemModel * model;
+    if (kind == EXPORT_BODIES) {
+        proxy = m_bodyProxy;
+        model = m_bodyModel;
+    } else if (kind == EXPORT_CONNECTIONS) {
+        proxy = m_ioBodyProxy;
+        model = m_ioBodyModel;
+    }
+
+    // hack to support tab-separated and csv
+    bool csv = filename.endsWith(".csv");
+    std::string separator;
+    if (csv) {
+        separator = ",";
+    } else {
+        separator = "\t";
+    }
+
     QFile outputFile(filename);
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox errorBox;
         errorBox.setText("Error");
-        errorBox.setInformativeText("Error opening file for export");
+        errorBox.setInformativeText("Error opening file " + filename + " for export");
         errorBox.setStandardButtons(QMessageBox::Ok);
         errorBox.setIcon(QMessageBox::Warning);
         errorBox.exec();
         return;
     }
 
-    // tab-separated text file, with header
     QTextStream outputStream(&outputFile);
 
-    if (filename.endsWith(".csv")) { //Export headerless csv file
-      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
-        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
-          if (i != 0) {
-            outputStream << ",";
-          }
-          outputStream << '"'
-                       << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString()
-                       << '"';
+    // if csv file, no header
+    if (!csv) {
+        for (int i=0; i<model->columnCount(); i++) {
+            if (i != 0) {
+                outputStream << separator.c_str();
+            }
+            outputStream << model->horizontalHeaderItem(i)->text();
         }
         outputStream << "\n";
-      }
-    } else {
-      for (int i=0; i<m_bodyModel->columnCount(); i++) {
-        if (i != 0) {
-          outputStream << "\t";
-        }
-        outputStream << m_bodyModel->horizontalHeaderItem(i)->text();
-      }
-      outputStream << "\n";
-
-      for (int j=0; j<m_bodyProxy->rowCount(); j++) {
-        for (int i=0; i<m_bodyProxy->columnCount(); i++) {
-          if (i != 0) {
-            outputStream << "\t";
-          }
-          outputStream << m_bodyProxy->data(m_bodyProxy->index(j, i)).toString();
-        }
-        outputStream << "\n";
-      }
     }
 
+    // csv needs to quote values
+    for (int j=0; j<proxy->rowCount(); j++) {
+        for (int i=0; i<proxy->columnCount(); i++) {
+            if (i != 0) {
+                outputStream << separator.c_str();
+            }
+            if (csv) {
+                outputStream << '"';
+            }
+            outputStream << proxy->data(proxy->index(j, i)).toString();
+            if (csv) {
+                outputStream << '"';
+            }
+        }
+        outputStream << "\n";
+    }
     outputFile.close();
 }
 
