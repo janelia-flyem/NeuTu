@@ -20,9 +20,9 @@ if(ZLIB_STATIC_LIBRARY)
 endif(ZLIB_STATIC_LIBRARY)
 
 # additional hints
-if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
-endif(MINGW)
+if(MSVC)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/msvc/zlib)
+endif(MSVC)
 
 # Include dir
 find_path(ZLIB_INCLUDE_DIR
@@ -32,7 +32,7 @@ find_path(ZLIB_INCLUDE_DIR
 
 # Finally the library itself
 find_library(ZLIB_LIBRARY
-  NAMES ${ZLIB_STATIC} z zlib
+  NAMES ${ZLIB_STATIC} zlibstatic z zlib
   PATHS ${ZLIB_PKGCONF_LIBRARY_DIRS}
 )
 

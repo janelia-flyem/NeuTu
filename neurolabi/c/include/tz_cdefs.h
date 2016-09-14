@@ -145,10 +145,4 @@ static const double Infinity = _INFINITY;
 
 #ifdef _MSC_VER
 #define __func__ __FUNCTION__
-#include <cmath>
-#define isnan _isnan
-#define lrint(x) (floor((x)+((x)>0) ? 0.5 : -0.5))
-#define isinf(x) ((x)==_INFINITY)
-#define INFINITY _INFINITY
-#define round(x) floor((x)+.5)
 #endif
