@@ -847,17 +847,20 @@ void FlyEmBodyInfoDialog::onSaveColorFilter() {
 }
 
 void FlyEmBodyInfoDialog::onExportBodies() {
-    // note that you can't specify a default name for a new file
-    QString filename = QFileDialog::getSaveFileName(this, "Export bodies");
-    if (!filename.isNull()) {
-        exportBodies(filename);
+    if (m_bodyProxy->rowCount() > 0) {
+        QString filename = QFileDialog::getSaveFileName(this, "Export bodies");
+        if (!filename.isNull()) {
+            exportBodies(filename);
+        }
     }
 }
 
 void FlyEmBodyInfoDialog::onExportConnections() {
-    QString filename = QFileDialog::getSaveFileName(this, "Export connections");
-    if (!filename.isNull()) {
-        exportConnections(filename);
+    if (m_ioBodyProxy->rowCount() > 0) {
+        QString filename = QFileDialog::getSaveFileName(this, "Export connections");
+        if (!filename.isNull()) {
+            exportConnections(filename);
+        }
     }
 }
 
@@ -1071,6 +1074,14 @@ void FlyEmBodyInfoDialog::exportData(QString filename, ExportKind kind) {
     } else if (kind == EXPORT_CONNECTIONS) {
         proxy = m_ioBodyProxy;
         model = m_ioBodyModel;
+    } else {
+        QMessageBox errorBox;
+        errorBox.setText("Data error!");
+        errorBox.setInformativeText("Unknown export kind!  Export canceled.");
+        errorBox.setStandardButtons(QMessageBox::Ok);
+        errorBox.setIcon(QMessageBox::Warning);
+        errorBox.exec();
+        return;
     }
 
     // hack to support tab-separated and csv
