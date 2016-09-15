@@ -87,6 +87,8 @@ public:
   QPointF transform(const QPoint &pt) const;
   QRectF transform(const QRectF &rect) const;
 
+  ZStTransform transform(const ZStTransform &transform) const;
+
   /*!
    * \brief Estimate transformation
    *

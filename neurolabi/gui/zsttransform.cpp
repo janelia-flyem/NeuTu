@@ -149,6 +149,19 @@ QRectF ZStTransform::transform(const QRectF &rect) const
                 rect.width() * getSx(), rect.height() * getSy());
 }
 
+ZStTransform ZStTransform::transform(const ZStTransform &transform) const
+{
+  ZStTransform t;
+  t.setOffset(getTx() * transform.getSx() + transform.getTx(),
+              getTy() * transform.getSy() + transform.getTy(),
+              getTz() * transform.getSz() + transform.getTz());
+  t.setScale(getSx() * transform.getSx(),
+             getSy() * transform.getSy(),
+             getSz() * transform.getSz());
+
+  return t;
+}
+
 bool ZStTransform::isIdentity() const
 {
   return !hasOffset() && !hasScale();

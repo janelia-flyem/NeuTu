@@ -189,6 +189,7 @@ include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
+include(sandbox/sandbox.pri)
 
 # Input
 RESOURCES = gui.qrc
@@ -646,7 +647,12 @@ HEADERS += mainwindow.h \
     flyem/zflyemsynapsedataupdater.h \
     dvid/zdvidsynapsecommand.h \
     dvid/zdvidannotation.hpp \
-    dialogs/zflyemroitooldialog.h
+    dialogs/zflyemroitooldialog.h \
+    dvid/zdvidpatchdatafetcher.h \
+    dvid/zdvidpatchdataupdater.h \
+    dvid/zdviddatafetcher.h \
+    dvid/zdviddataupdater.h \
+    dialogs/zdvidbodypositiondialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -730,7 +736,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
     dialogs/zcontrastprotocaldialog.ui \
-    dialogs/zflyemroitooldialog.ui
+    dialogs/zflyemroitooldialog.ui \
+    dialogs/zdvidbodypositiondialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1147,7 +1154,12 @@ SOURCES += main.cpp \
     dialogs/zcontrastprotocaldialog.cpp \
     flyem/zflyemsynapsedatafetcher.cpp \
     flyem/zflyemsynapsedataupdater.cpp \
-    dialogs/zflyemroitooldialog.cpp
+    dialogs/zflyemroitooldialog.cpp \
+    dvid/zdvidpatchdatafetcher.cpp \
+    dvid/zdvidpatchdataupdater.cpp \
+    dvid/zdviddatafetcher.cpp \
+    dvid/zdviddataupdater.cpp \
+    dialogs/zdvidbodypositiondialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

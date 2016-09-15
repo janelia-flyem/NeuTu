@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QWidget>
 
 #include "ui_zflyemroitooldialog.h"
 #include "flyem/zflyemproofmvc.h"
@@ -35,6 +36,7 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->prevPushButton, SIGNAL(clicked()), this, SLOT(prevSlice()));
   connect(ui->nextPushButton, SIGNAL(clicked()), this, SLOT(nextSlice()));
   connect(ui->estimatePushButton, SIGNAL(clicked()), this, SLOT(estimateRoi()));
+  connect(ui->dvidRoiPushButton, SIGNAL(clicked()), this, SLOT(createRoiData()));
 
   clear();
   downloadAllProject();
@@ -67,14 +69,21 @@ bool ZFlyEmRoiToolDialog::isValidName(const QString &name) const
   return isValid;
 }
 
+ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProjectWithoutCheck(const QString &name)
+{
+  ZFlyEmRoiProject *project = new ZFlyEmRoiProject(name.toStdString(), this);
+  ZWidgetMessage::ConnectMessagePipe(project, this);
+  project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+
+  return project;
+}
+
 ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProject(const QString &name)
 {
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
-    project = new ZFlyEmRoiProject(name.toStdString(), this);
-    project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+    project = newProjectWithoutCheck(name);
   } else {
-
     QMessageBox::warning(
               this, "Failed to Create A Project",
               "Invalid project name: no space is allowed; "
@@ -116,6 +125,11 @@ void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
   dump(ZWidgetMessage(msg, NeuTube::MSG_INFORMATION,
                       ZWidgetMessage::TARGET_TEXT_APPENDING));
+}
+
+void ZFlyEmRoiToolDialog::processMessage(const ZWidgetMessage &msg)
+{
+  dump(msg);
 }
 
 bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
@@ -206,9 +220,8 @@ void ZFlyEmRoiToolDialog::downloadAllProject()
       array.decode(value.constData());
       for (size_t i = 0; i < array.size(); ++i) {
         std::string name(ZJsonParser::stringValue(array.at(i)));
-        if (!name.empty()) {
-          ZFlyEmRoiProject *project = ZFlyEmRoiProject::Make(name, this);
-          project->setDvidTarget(m_dvidReader.getDvidTarget(), false);
+        if (ZFlyEmRoiProject::IsValidName(name)) {
+          ZFlyEmRoiProject *project = newProjectWithoutCheck(name.c_str());
           if (!appendProject(project)) {
             delete project;
           }
@@ -259,6 +272,22 @@ void ZFlyEmRoiToolDialog::uploadRoi()
   if (project != NULL) {
     updateRoi();
     project->uploadRoi();
+  }
+}
+
+void ZFlyEmRoiToolDialog::createRoiData()
+{
+  ZFlyEmRoiProject *project = getProject();
+  if (project != NULL) {
+    updateRoi();
+    bool ok = false;
+    QString roiName = QInputDialog::getText(
+          this, tr("Create ROI Data"), tr("Data name:"), QLineEdit::Normal,
+          project->getName().c_str(), &ok);
+
+    if (!roiName.isEmpty() && ok) {
+      project->createRoiData(roiName.toStdString(), this);
+    }
   }
 }
 

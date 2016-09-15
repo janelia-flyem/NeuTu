@@ -32,6 +32,19 @@
 namespace QsLogging
 {
 
+Destination::Destination(Level matchingLevel) :
+  m_matchingLevel(matchingLevel)
+{
+
+}
+
+Destination::Destination() :
+  m_matchingLevel(OffLevel)
+{
+
+}
+
+
 Destination::~Destination()
 {
 }
@@ -39,17 +52,23 @@ Destination::~Destination()
 //! destination factory
 DestinationPtr DestinationFactory::MakeFileDestination(const QString& filePath,
     LogRotationOption rotation, const MaxSizeBytes &sizeInBytesToRotateAfter,
-    const MaxOldLogCount &oldLogsToKeep)
+    const MaxOldLogCount &oldLogsToKeep, Level matchingLevel)
 {
     if (EnableLogRotation == rotation) {
         QScopedPointer<SizeRotationStrategy> logRotation(new SizeRotationStrategy);
         logRotation->setMaximumSizeInBytes(sizeInBytesToRotateAfter.size);
         logRotation->setBackupCount(oldLogsToKeep.count);
 
-        return DestinationPtr(new FileDestination(filePath, RotationStrategyPtr(logRotation.take())));
+        return DestinationPtr(
+              new FileDestination(filePath,
+                                  RotationStrategyPtr(logRotation.take()),
+                                  matchingLevel));
     }
 
-    return DestinationPtr(new FileDestination(filePath, RotationStrategyPtr(new NullRotationStrategy)));
+    return DestinationPtr(
+          new FileDestination(filePath,
+                              RotationStrategyPtr(new NullRotationStrategy),
+                              matchingLevel));
 }
 
 DestinationPtr DestinationFactory::MakeDebugOutputDestination()

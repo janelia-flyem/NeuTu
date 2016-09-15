@@ -18,6 +18,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemmb6analyzer.h"
+#include "dvid/zdvidversiondag.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -109,7 +110,7 @@ public:
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
 
-  void importFlyEmBookmark(const std::string &filePath);
+  QList<ZFlyEmBookmark*> importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
 //  void saveCustomBookmark();
@@ -251,6 +252,7 @@ public: //Bookmark functions
   void notifyBookmarkEdited(
       const std::vector<ZFlyEmBookmark *> &bookmarkArray);
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
+  void notifyAssignedBookmarkModified();
   void notifySynapseEdited(const ZDvidSynapse &synapse);
   void notifySynapseEdited(const ZIntPoint &synapse);
   void notifySynapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -273,8 +275,12 @@ signals:
   void bodyUnmerged();
   void bodyMergeEdited();
   void userBookmarkModified();
+  void assignedBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
+  void bookmarkDeleted(int x, int y, int z);
+  void bookmarkModified(int x, int y, int z);
+
   void synapseEdited(int x, int y, int z);
   void synapseVerified(int x, int y, int z, bool verified);
   void synapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -377,6 +383,10 @@ protected:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidWriter m_dvidWriter;
+
+  //Dvid info
+  ZDvidInfo m_dvidInfo;
+  ZDvidVersionDag m_versionDag;
 
 //  bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;

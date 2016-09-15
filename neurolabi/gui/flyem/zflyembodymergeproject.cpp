@@ -498,7 +498,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
         }
         getProgressSignal()->advanceProgress(0.1);
 
-        emit mergeUploaded(m_selectedOriginal);
+        emit mergeUploaded();
 
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
           getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);

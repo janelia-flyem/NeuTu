@@ -628,7 +628,9 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
   if (m_enableUpdate) {
     ZDvidLabelSlice *obj = getCompleteData();
     if (obj != NULL) {
-      updated = obj->update(viewParam);
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
     }
   }
 

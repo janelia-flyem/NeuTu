@@ -7,7 +7,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "zwidgetmessage.h"
-
+#include "neutubeconfig.h"
 
 ZStackDocCommand::DvidSynapseEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -17,7 +17,7 @@ ZStackDocCommand::DvidSynapseEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::DvidSynapseEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5)<< "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::redo()
@@ -64,7 +64,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::addRemoval(
   ZDvidReader &reader = m_doc->getDvidReader();
   if (reader.isReady()) {
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
     if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
       synapse.updatePartnerProperty(reader);
       std::vector<ZIntPoint> partnerArray = synapse.getPartners();
@@ -250,7 +250,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
       if (writer.isStatusOk()) {
         ZDvidSynapse synapse;
         synapse.loadJsonObject(
-              m_synapseBackup, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+              m_synapseBackup, FlyEM::LOAD_PARTNER_LOCATION);
         m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
         m_doc->notifySynapseEdited(synapse);
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").
@@ -371,7 +371,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::undo()
            iter = m_synapseBackup.begin(); iter != m_synapseBackup.end();
            ++iter) {
         synapse.loadJsonObject(
-              *iter, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+              *iter, FlyEM::LOAD_PARTNER_LOCATION);
         m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
         m_doc->notifySynapseEdited(synapse);
 

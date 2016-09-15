@@ -730,6 +730,11 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
+void C_Stack::neighborOffset(int conn, int width, int height, int neighbor[])
+{
+  Stack_Neighbor_Offset(conn, width, height, neighbor);
+}
+
 int C_Stack::neighborTest(int conn, int width, int height, int depth,
                           int x, int y, int z, int *isInBound)
 {

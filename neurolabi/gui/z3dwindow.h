@@ -19,6 +19,7 @@
 #include "z3dvolumeraycasterrenderer.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
+#include "z3ddef.h"
 //#include "zstackviewparam.h"
 
 
@@ -53,6 +54,8 @@ class ZRect2d;
 class ZROIWidget;
 class ZActionLibrary;
 class ZMenuFactory;
+class ZJsonObject;
+class Z3DGeometryFilter;
 
 class Z3DTabWidget : public QTabWidget
 {
@@ -156,7 +159,8 @@ public:
   };
 
   enum ERendererLayer {
-    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_VOLUME, LAYER_TODO
+    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
+    LAYER_TODO
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -173,6 +177,9 @@ public: //Creators
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
+public: //utilties
+  static std::string GetLayerString(ERendererLayer layer);
+
 public: //properties
   void setZScale(ERendererLayer layer, double scale);
   void setScale(ERendererLayer layer, double sx, double sy, double sz);
@@ -182,6 +189,19 @@ public: //properties
   using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setVisible(ERendererLayer layer, bool visible);
   bool isVisible(ERendererLayer layer) const;
+
+  void configure(const ZJsonObject &obj);
+
+  NeuTube3D::EWindowType getWindowType() const {
+    return m_windowType;
+  }
+
+  void setWindowType(NeuTube3D::EWindowType type) {
+    m_windowType = type;
+  }
+
+  void writeSettings();
+  void readSettings();
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -203,6 +223,9 @@ public: //Components
   Z3DRendererBase* getRendererBase(ERendererLayer layer);
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
+
+  Z3DGeometryFilter* getFilter(ERendererLayer layer) const;
+
   inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
   inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
   inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_todoFilter; }
@@ -272,6 +295,10 @@ private:
   void createDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
+
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
 
   // init 3D view
   void init(EInitMode mode = INIT_NORMAL);
@@ -454,6 +481,10 @@ private:
   void updateTodoList();
 
 private:
+  NeuTube3D::EWindowType m_windowType;
+
+  QList<ERendererLayer> m_layerList;
+
   // menu
   std::map<QString, QMenu*> m_contextMenuGroup;
   QMenu *m_mergedContextMenu;

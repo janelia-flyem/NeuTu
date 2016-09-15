@@ -119,8 +119,10 @@ void QsLogging::SizeRotationStrategy::setBackupCount(int backups)
 }
 
 
-QsLogging::FileDestination::FileDestination(const QString& filePath, RotationStrategyPtr rotationStrategy)
-    : mRotationStrategy(rotationStrategy)
+QsLogging::FileDestination::FileDestination(
+    const QString& filePath, RotationStrategyPtr rotationStrategy,
+    Level matchingLevel)
+    : Destination(matchingLevel), mRotationStrategy(rotationStrategy)
 {
     mFile.setFileName(filePath);
     if (!mFile.open(QFile::WriteOnly | QFile::Text | mRotationStrategy->recommendedOpenModeFlag()))

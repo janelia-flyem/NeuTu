@@ -5,6 +5,7 @@
 #include <set>
 
 #include "zjsonobject.h"
+#include "zjsonarray.h"
 #include "zdviddata.h"
 
 /*!
@@ -80,7 +81,7 @@ public:
   }
 
   std::string getUrl() const;
-  std::string getUrl(const std::string &dataName) const;
+//  std::string getUrl(const std::string &dataName) const;
 
   /*!
    * \brief Get a single string to represent the target
@@ -138,7 +139,7 @@ public:
     m_bgValue = v;
   }
 
-  std::string getName(ZDvidData::ERole role) const;
+//  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
@@ -146,17 +147,29 @@ public:
   void setNullBodyLabelName();
 
   bool hasBodyLabel() const;
+  bool hasLabelBlock() const;
 
   std::string getLabelBlockName() const;
+  std::string getLabelBlockName(int zoom) const;
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();
 
   std::string getMultiscale2dName() const;
+  bool isTileLowQuality() const;
+
   void setMultiscale2dName(const std::string &name);
+  void configTile(const std::string &name, bool lowQuality);
+//  void setLossTileName(const std::string &name);
+//  std::string getLosslessTileName() const;
+//  std::string getLossTileName() const;
+  bool isLowQualityTile(const std::string &name) const;
 
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
+
+  std::string getRoiName() const;
+  void setRoiName(const std::string &name);
 
   std::string getRoiName(size_t index) const;
   void addRoiName(const std::string &name);
@@ -225,9 +238,11 @@ private:
   std::string m_localFolder;
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
-  std::string m_multiscale2dName;
+  std::string m_multiscale2dName; //default lossless tile name
+  ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
   std::string m_grayScaleName;
-  std::string m_labelszName;
+  std::string m_synapseLabelszName;
+  std::string m_roiName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
@@ -253,13 +268,15 @@ private:
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
+  const static char* m_tileConfigKey;
+  const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
-  const static char* m_labelszKey;
+  const static char* m_synapseLabelszKey;
 };
 
 #endif // ZDVIDTARGET_H

@@ -47,10 +47,12 @@ public slots:
   void newProject();
   void dump(const ZWidgetMessage &msg);
   void dump(const QString &msg);
+  void processMessage(const ZWidgetMessage &msg);
   void uploadRoi();
   void prevSlice();
   void nextSlice();
   void estimateRoi();
+  void createRoiData();
 
 signals:
   void projectActivited();
@@ -64,6 +66,7 @@ signals:
 private:
   void init();
   ZFlyEmRoiProject* newProject(const QString &name);
+  ZFlyEmRoiProject* newProjectWithoutCheck(const QString &name);
   bool isValidName(const QString &name) const;
   void uploadProjectList();
   int getSliceStep() const;

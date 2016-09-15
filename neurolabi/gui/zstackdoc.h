@@ -400,6 +400,11 @@ public:
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
 
+  TStackObjectList takeObject(
+      ZStackObject::EType type, const std::string &source);
+  TStackObjectList takeObject(ZStackObject::EType type);
+
+
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
 
@@ -668,6 +673,8 @@ public:
   inline TStackObjectList& getObjectList(ZStackObject::EType type) {
     return m_objectGroup.getObjectList(type);
   }
+
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
 
   template<typename T>
   QList<T*> getObjectList() const;

@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "neutubeconfig.h"
 
 ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
   QObject(parent)
@@ -16,7 +17,7 @@ ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
 
 ZFlyEmSynapseDataFetcher::~ZFlyEmSynapseDataFetcher()
 {
-  qDebug() << "ZFlyEmSynapseDataFetcher destroyed";
+  ZOUT(LTRACE(), 5) << "ZFlyEmSynapseDataFetcher destroyed";
 
   m_futureMap.waitForFinished();
 }
@@ -129,7 +130,7 @@ void ZFlyEmSynapseDataFetcher::addSynapse(ZDvidSynapseEnsemble *se)
       ZJsonObject synapseJson(m_data.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, NeuTube::FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
         se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
       }
     }

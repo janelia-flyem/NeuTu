@@ -6,6 +6,7 @@
 #include "zarrayfactory.h"
 #include "dvid/zdvidwriter.h"
 #include "zwidgetmessage.h"
+#include "neutubeconfig.h"
 
 ZFlyEmBodyMergeDoc::ZFlyEmBodyMergeDoc(QObject *parent) :
   ZStackDoc(parent), m_originalLabel(NULL)
@@ -164,6 +165,7 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
     ZArray *array, QSet<uint64_t> *selected)
 {
   updateOriginalLabel(array);
+  ZOUT(LTRACE(), 5) << "Update label";
   TStackObjectList objList =
       getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
 //  std::set<uint64_t> selectedBodySet;

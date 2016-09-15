@@ -1,10 +1,23 @@
 #include "zflyembookmarklistmodel.h"
 
+#include <QSortFilterProxyModel>
+
 ZFlyEmBookmarkListModel::ZFlyEmBookmarkListModel(QObject *parent) :
   QAbstractTableModel(parent)
 {
+  init(parent);
+}
+
+void ZFlyEmBookmarkListModel::init(QObject *parent)
+{
   m_defaultPresenter = new ZFlyEmBookmarkPresenter(this);
   m_presenter = m_defaultPresenter;
+
+  m_proxy = new QSortFilterProxyModel(parent);
+  m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+  m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  m_proxy->setFilterKeyColumn(-1);
+  m_proxy->setSourceModel(this);
 }
 
 QVariant ZFlyEmBookmarkListModel::headerData(
@@ -85,6 +98,16 @@ void ZFlyEmBookmarkListModel::append(const ZFlyEmBookmark *bookmark)
   //emit dataChanged(topLeft, bottomRight);
 }
 
+void ZFlyEmBookmarkListModel::append(const QList<ZFlyEmBookmark*> &bookmarkList)
+{
+  int row = rowCount();
+  for (QList<ZFlyEmBookmark*>::const_iterator iter = bookmarkList.begin();
+       iter != bookmarkList.end(); ++iter) {
+    m_bookmarkArray.append(const_cast<ZFlyEmBookmark*>(*iter));
+  }
+  insertRows(row, bookmarkList.size());
+}
+
 bool ZFlyEmBookmarkListModel::insertRows(
     int row, int count, const QModelIndex &parent)
 {
@@ -96,6 +119,11 @@ bool ZFlyEmBookmarkListModel::insertRows(
   }
 
   return false;
+}
+
+void ZFlyEmBookmarkListModel::sort()
+{
+  m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
 }
 
 bool ZFlyEmBookmarkListModel::insertColumns(

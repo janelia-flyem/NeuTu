@@ -7,6 +7,7 @@
 #include "zwidgetmessage.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
+#include "neutubeconfig.h"
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -16,7 +17,7 @@ ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::FlyEmBookmarkEdit::CompositeCommand::redo()
@@ -200,6 +201,16 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
       ZDvidWriter writer;
       if (writer.open(m_doc->getDvidTarget())) {
         writer.deleteBookmark(m_bookmarkArray);
+      }
+
+      for (std::vector<ZFlyEmBookmark*>::const_iterator
+           iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
+           ++iter) {
+        const ZFlyEmBookmark *bookmark = *iter;
+        if (!bookmark->isCustom()) {
+          m_doc->notifyAssignedBookmarkModified();
+          break;
+        }
       }
 
       m_doc->removeLocalBookmark(m_bookmarkArray);

@@ -130,11 +130,16 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
       target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
     }
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
-    target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
+
+    std::string tileName = ui->tileLineEdit->text().toStdString();
+    target.setMultiscale2dName(tileName);
+    target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
+
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
     target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
+    target.setRoiName(ui->roiLineEdit->text().toStdString());
 //    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
@@ -166,12 +171,19 @@ void ZDvidDialog::setServer(int index)
   ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
 //  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
+  if (index == 0) {
+    ui->lowQualityCheckBox->setChecked(false);
+  } else {
+    ui->lowQualityCheckBox->setChecked(
+          dvidTarget.isLowQualityTile(dvidTarget.getMultiscale2dName()));
+  }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
   ui->librarianLineEdit->setText(
         dvidTarget.getSupervisor().empty() ?
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
+  ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
@@ -184,6 +196,7 @@ void ZDvidDialog::setServer(int index)
   ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
   ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
+  ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
 //  ui->labelszLineEdit->setReadOnly(!dvidTarget.isEditable());
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());

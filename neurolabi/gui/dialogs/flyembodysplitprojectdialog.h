@@ -63,6 +63,7 @@ public:
   void updateButton();
   void updateWidget();
   void updateBookmarkTable();
+  void clearAssignedBookmarkTable();
 
   bool isBodyLoaded() const;
 

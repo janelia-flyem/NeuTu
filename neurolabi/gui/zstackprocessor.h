@@ -41,6 +41,8 @@ public:
   static void SubtractBackground(ZStack *stack, double minFr, int maxIter);
   static void SubtractBackground(Stack *stack, double minFr, int maxIter);
 
+  static ZStack* Rgb2Gray(const ZStack *stack);
+
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
   //
   void patchBasedDenoising(ZStack *stack, const int numIterations = 2, const int numThreads = 2,

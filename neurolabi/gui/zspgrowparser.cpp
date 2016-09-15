@@ -222,19 +222,19 @@ ZVoxelArray ZSpGrowParser::extractLongestPath(double *length, bool masked)
       int neighbor[26];
       int is_in_bound[26];
       int n_in_bound;
-      int cwidth = m_workspace->width;
-      int cheight = m_workspace->height;
-      int cdepth = m_workspace->depth;
+      int width = m_workspace->width;
+      int height = m_workspace->height;
+      int depth = m_workspace->depth;
       int conn = 6;
 
-      Stack_Neighbor_Offset(conn, cwidth, cheight, neighbor);
+      Stack_Neighbor_Offset(conn, width, height, neighbor);
 
       int fgCount = 0;
       for (i = 0; i < m_workspace->size; i++) {
         if (m_workspace->mask[i] != SP_GROW_BARRIER) {
           ++fgCount;
           n_in_bound = C_Stack::neighborTest(
-                conn, cwidth, cheight, cdepth, i, is_in_bound);
+                conn, width, height, depth, i, is_in_bound);
           bool isBoundary = false;
           if (n_in_bound == conn) {
             for (int n = 0; n < n_in_bound; n++) {

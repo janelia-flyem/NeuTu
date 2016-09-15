@@ -169,6 +169,9 @@ public:
   void dumpAllBody(bool recycable);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
+  template<typename InputIterator>
+  void dumpGarbage(const InputIterator &first, const InputIterator &last,
+                   bool recycable);
   void mergeBodyModel(const ZFlyEmBodyMerger &merger);
 
   void processEventFunc();
