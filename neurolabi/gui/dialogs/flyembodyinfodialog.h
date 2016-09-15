@@ -156,6 +156,7 @@ private:
     void retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID);
     void setConnectionsHeaders(QStandardItemModel *model);
     void exportData(QString filename, ExportKind kind);
+    void setupMaxBodyMenu();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

@@ -80,14 +80,10 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // store body names for later use
     m_bodyNames = QMap<uint64_t, QString>();
 
-    // max body possibilities; should probably generate from a list at some point
-    ui->maxBodiesMenu->addItem("100", QVariant(100));
-    ui->maxBodiesMenu->addItem("500", QVariant(500));
-    ui->maxBodiesMenu->addItem("1000", QVariant(1000));
-    ui->maxBodiesMenu->addItem("5000", QVariant(5000));
-    ui->maxBodiesMenu->addItem("10000", QVariant(10000));
-    ui->maxBodiesMenu->setCurrentIndex(1);
-    m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
+    // max body menu; not used by all data load methods; it's
+    //  populated when appropriate
+    ui->maxBodiesMenu->addItem("n/a");
+    m_currentMaxBodies = 0;
 
     // color filter stuff
 
@@ -167,6 +163,18 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
 
 }
 
+void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
+    // should probably generate from a list at some point
+    ui->maxBodiesMenu->clear();
+    ui->maxBodiesMenu->addItem("100", QVariant(100));
+    ui->maxBodiesMenu->addItem("500", QVariant(500));
+    ui->maxBodiesMenu->addItem("1000", QVariant(1000));
+    ui->maxBodiesMenu->addItem("5000", QVariant(5000));
+    ui->maxBodiesMenu->addItem("10000", QVariant(10000));
+    ui->maxBodiesMenu->setCurrentIndex(1);
+    m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
+}
+
 void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
 {
     if (modelIndex.column() == BODY_ID_COLUMN) {
@@ -214,58 +222,36 @@ void FlyEmBodyInfoDialog::onGotoBodies() {
 }
 
 void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
-#ifdef _DEBUG_
-    std::cout << "dvid target changed to " << target.getUuid() << std::endl;
-#endif
+    #ifdef _DEBUG_
+        std::cout << "dvid target changed to " << target.getUuid() << std::endl;
+    #endif
 
-    // store dvid target (may not be necessary, now that I removed the
-    //  option to turn off autoload?)
+    // if target isn't null, trigger data load in a thread
     m_currentDvidTarget = target;
-
-    // if target isn't null, trigger load in thread
     if (target.isValid()) {
         // clear the model regardless at this point
         m_bodyModel->clear();
         setStatusLabel("Loading...");
 
-
-        // testing:
-        // working on new version of body info loading; make sure it's
-        //  always called
-
-        if (bodyAnnotationsPresent(target)) {
-            m_futureMap["importBodiesDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2, target);
-        } else {
-            QMessageBox errorBox;
-            errorBox.setText("body annotations not found");
-            errorBox.setInformativeText("This UUID doesn't have body annotations!  Data not loaded.");
-            errorBox.setStandardButtons(QMessageBox::Ok);
-            errorBox.setIcon(QMessageBox::Warning);
-            errorBox.exec();
-        }
-
-
-
-        // still hiding the final dispatch code; want the new code to run
-        // 100% of the time right now
-        return;
-
-
         // we can load this info from different sources, depending on
         //  what's available in DVID
         if (dvidBookmarksPresent(target)) {
             // is the synapse file present?
+            // note: this option will (should) be removed sometime after mid-Sept. 2016
             m_futureMap["importBookmarksDvid"] =
                 QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
-        } else if (labelszPresent(target)) {
-            // how about labelsz data?
-            m_futureMap["importBodiesDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2, target);
         } else if (bodyAnnotationsPresent(target)) {
-            // this is the fallback method; it needs body annotations only
-            m_futureMap["importBodiesDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+            // both of these need body annotations:
+            if (labelszPresent(target)) {
+                // how about labelsz data?
+                setupMaxBodyMenu();
+                m_futureMap["importBodiesDvid"] =
+                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2, target);
+            } else {
+                // this is the fallback method; it needs body annotations only
+                m_futureMap["importBodiesDvid"] =
+                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+            }
         } else {
             // ...but sometimes, we've got nothing
             emit loadCompleted();
