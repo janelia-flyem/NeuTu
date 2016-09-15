@@ -159,6 +159,7 @@ public:
   bool isTileLowQuality() const;
 
   void setMultiscale2dName(const std::string &name);
+  void setDefaultMultiscale2dName();
   void configTile(const std::string &name, bool lowQuality);
 //  void setLossTileName(const std::string &name);
 //  std::string getLosslessTileName() const;

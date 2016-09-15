@@ -52,6 +52,8 @@ public:
 
   bool contains(const ZStackViewParam &param) const;
 
+  bool contains(int x, int y, int z);
+
   /*!
    * \brief Resize the parameter by keeping the center relatively constant
    */

@@ -52,7 +52,8 @@ void ZDvidTarget::init()
   m_isEditable = true;
   m_maxLabelZoom = 0;
 
-  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
+  setDefaultMultiscale2dName();
+//  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
@@ -90,7 +91,7 @@ void ZDvidTarget::clear()
   m_localFolder = "";
   m_bodyLabelName = "";
   m_labelBlockName = "";
-  m_multiscale2dName = "";
+//  m_multiscale2dName = "";
 
   m_grayScaleName = "";
   m_synapseLabelszName = "";
@@ -587,6 +588,11 @@ void ZDvidTarget::setNullLabelBlockName()
 void ZDvidTarget::setMultiscale2dName(const std::string &name)
 {
   m_multiscale2dName = name;
+}
+
+void ZDvidTarget::setDefaultMultiscale2dName()
+{
+  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 
 void ZDvidTarget::configTile(const std::string &name, bool lowQuality)
