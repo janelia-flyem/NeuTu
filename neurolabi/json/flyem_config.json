@@ -392,16 +392,6 @@
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
-      "name": "MB_changl",
-      "comment": "MB seg (branched from df22)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["changl", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "0f33",
       "name": "MB_lauchies",
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
@@ -442,26 +432,6 @@
       "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
-      "name": "MB_tranj",
-      "comment": "MB seg (branched from df22)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["tranj", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "0f33",
-      "name": "MB_anicetor",
-      "comment": "MB seg (branched from df22)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["anicetor", "zhaot"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "0f33",
       "name": "MB_shinomiyak",
       "comment": "MB seg (branched from df22)",
       "body_label": "bodies",
@@ -497,16 +467,6 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": "rivlinp"
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "3664",
-      "name": "MB_changl_Training",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["changl"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -597,16 +557,6 @@
       "body_label": "bodies",
       "label_block": "labels",
       "user_name": ["tranj"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "8ed1",
-      "name": "MB_anicetor_Training",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["anicetor"]
     },
     {
       "address": "emdata1.int.janelia.org",

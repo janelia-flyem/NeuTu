@@ -699,26 +699,34 @@ void ZDvidLabelSlice::remapId(ZArray *label)
 
 bool ZDvidLabelSlice::hit(double x, double y, double z)
 {
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    m_hitLabel = reader.readBodyIdAt(x, y, z);
-  }
+  m_hitLabel = 0;
 
-  return m_hitLabel > 0;
+  if (!m_objArray.empty()) {
+    for (ZObject3dScanArray::iterator iter = m_objArray.begin();
+         iter != m_objArray.end(); ++iter) {
+      ZObject3dScan &obj = *iter;
+      if (obj.hit(x, y, z)) {
+        //m_hitLabel = obj.getLabel();
+        m_hitLabel = getMappedLabel(obj);
+        return true;
+      }
+    }
+  } else {
+    int nx = iround(x);
+    int ny = iround(y);
+    int nz = iround(z);
 
-  /*
-  for (ZObject3dScanArray::iterator iter = m_objArray.begin();
-       iter != m_objArray.end(); ++iter) {
-    ZObject3dScan &obj = *iter;
-    if (obj.hit(x, y, z)) {
-      //m_hitLabel = obj.getLabel();
-      m_hitLabel = getMappedLabel(obj);
-      return true;
+    if (m_currentViewParam.contains(nx, ny, nz)) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        m_hitLabel = reader.readBodyIdAt(nx, ny, nz);
+      }
+
+      return m_hitLabel > 0;
     }
   }
 
   return false;
-  */
 }
 
 void ZDvidLabelSlice::selectHit(bool appending)
