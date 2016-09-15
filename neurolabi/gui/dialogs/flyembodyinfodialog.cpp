@@ -228,8 +228,6 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         m_bodyModel->clear();
         setStatusLabel("Loading...");
 
-        // we can load this info from different sources, depending on
-        //  what's available in DVID
 
         // testing:
         // working on new version of body info loading; make sure it's
@@ -247,21 +245,31 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
             errorBox.exec();
         }
 
-        /*
-        // is the synapse file present?
+
+
+        // still hiding the final dispatch code; want the new code to run
+        // 100% of the time right now
+        return;
+
+
+        // we can load this info from different sources, depending on
+        //  what's available in DVID
         if (dvidBookmarksPresent(target)) {
+            // is the synapse file present?
             m_futureMap["importBookmarksDvid"] =
                 QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
+        } else if (labelszPresent(target)) {
+            // how about labelsz data?
+            m_futureMap["importBodiesDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2, target);
         } else if (bodyAnnotationsPresent(target)) {
-            // this is the current expected fallback method...
+            // this is the fallback method; it needs body annotations only
             m_futureMap["importBodiesDvid"] =
                 QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
         } else {
             // ...but sometimes, we've got nothing
             emit loadCompleted();
         }
-        */
-
     }
 }
 
@@ -393,10 +401,26 @@ bool FlyEmBodyInfoDialog::bodyAnnotationsPresent(ZDvidTarget target) {
     }
 }
 
+bool FlyEmBodyInfoDialog::labelszPresent(ZDvidTarget target) {
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(target)) {
+        if (!reader.hasData(target.getSynapseLabelszName())) {
+            #ifdef _DEBUG_
+                std::cout << "UUID doesn't have labelsz instance" << std::endl;
+            #endif
+            return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
-#ifdef _DEBUG_
-    std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
-#endif
+    #ifdef _DEBUG_
+        std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
+    #endif
 
     // this method assumes DVID target is valid, and necessary DVID keys
     //  are present
@@ -405,33 +429,6 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 
     if (reader.open(target)) {
         reader.setVerbose(true);
-
-        /* tests of labelsz stuff, to be removed at some point
-        // get top 10, all synapses:
-        std::cout << "testing labelz, top" << std::endl;
-        ZJsonArray top = reader.readSynapseLabelsz(10, ZDvid::INDEX_ALL_SYN);
-        for (size_t i=0; i<top.size(); i++) {
-            ZJsonObject entry(top.value(i));
-            std::cout << i << ": " << ZJsonParser::integerValue(entry["Label"]) << " has " << ZJsonParser::integerValue(entry["Size"]) << " things" << std::endl;
-        }
-
-        // test threshold, bare: get > 8000 (should be 9 at time of testing)
-        std::cout << "testing labelz, simple threshold" << std::endl;
-        ZJsonArray thresh1 = reader.readSynapseLabelszThreshold(8000, ZDvid::INDEX_ALL_SYN);
-        for (size_t i=0; i<thresh1.size(); i++) {
-            ZJsonObject entry(thresh1.value(i));
-            std::cout << i << ": " << ZJsonParser::integerValue(entry["Label"]) << " has " << ZJsonParser::integerValue(entry["Size"]) << " things" << std::endl;
-        }
-
-        // test threshold with offset: get subset of entries from previous test
-        std::cout << "testing labelz, threshold with offset" << std::endl;
-        ZJsonArray thresh2 = reader.readSynapseLabelszThreshold(8000, ZDvid::INDEX_ALL_SYN, 4, 4);
-        for (size_t i=0; i<thresh2.size(); i++) {
-            ZJsonObject entry(thresh2.value(i));
-            std::cout << i << ": " << ZJsonParser::integerValue(entry["Label"]) << " has " << ZJsonParser::integerValue(entry["Size"]) << " things" << std::endl;
-        }
-        */
-
         #ifdef _DEBUG_
             std::cout << "getting file from dataname " << ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION) << " and key " << ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES) << std::endl;
         #endif
@@ -525,8 +522,23 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
 }
 
 void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
-    m_currentMaxBodies = ui->maxBodiesMenu->itemData(index).toInt();
-    onRefreshButton();
+    int maxBodies = ui->maxBodiesMenu->itemData(index).toInt();
+    if (maxBodies > 1000) {
+        QMessageBox mb;
+        mb.setText("That's a lot of bodies!");
+        mb.setInformativeText("Warning!  Loading more than 1000 bodies may take 5-10 minutes or potentially longer.\n\nContinue loading?");
+        mb.setIcon(QMessageBox::Warning);
+        mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Cancel);
+        int ans = mb.exec();
+
+        if (ans == QMessageBox::Ok) {
+            m_currentMaxBodies = maxBodies;
+            onRefreshButton();
+        } else {
+            ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
+        }
+    }
 }
 
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
@@ -723,8 +735,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
 
 
         fullTime = fullTimer.elapsed();
-        std::cout << "total time (ms) = " << fullTime << std::endl;
-        std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
+        // I left the timers active; I think we'll want them later, plus
+        //  they should be very low overhead
+        // std::cout << "total time (ms) = " << fullTime << std::endl;
+        // std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
 
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done

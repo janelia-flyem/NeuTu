@@ -136,6 +136,7 @@ private:
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent(ZDvidTarget target);
     bool bodyAnnotationsPresent(ZDvidTarget target);
+    bool labelszPresent(ZDvidTarget target);
     void importBookmarksDvid(ZDvidTarget target);
     void importBodiesDvid(ZDvidTarget target);
     void importBodiesDvid2(ZDvidTarget target);
