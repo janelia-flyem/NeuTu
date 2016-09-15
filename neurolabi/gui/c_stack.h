@@ -37,6 +37,8 @@ int neighborTest(int conn, int width, int height, int depth, size_t index,
 int neighborTest(int conn, int width, int height, int depth,
                  int x, int y, int z, int *isInBound);
 
+void neighborOffset(int conn, int width, int height, int neighbor[]);
+
 //Functions for Stack
 
 //Stack deallocator, mainly used for constructing a ZStack object

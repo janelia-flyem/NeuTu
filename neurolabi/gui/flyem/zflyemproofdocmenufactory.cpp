@@ -181,10 +181,11 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
           actionList.append(ZActionFactory::ACTION_SYNAPSE_MOVE);
         } else {
           actionList.append(ZActionFactory::ACTION_SYNAPSE_LINK);
-          actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
         }
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
         actionList.append(ZActionFactory::ACTION_SYNAPSE_VERIFY);
         actionList.append(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_REPAIR);
       }
 
       if (!actionList.isEmpty()) {

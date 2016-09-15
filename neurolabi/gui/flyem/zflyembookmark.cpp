@@ -2,6 +2,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "QsLog.h"
+#include "neutubeconfig.h"
+
 #include "zjsonobject.h"
 #include "tz_math.h"
 #include "zpainter.h"
@@ -17,6 +20,8 @@ ZFlyEmBookmark::ZFlyEmBookmark()
 
 ZFlyEmBookmark::~ZFlyEmBookmark()
 {
+  ZOUT(LTRACE(), 5) << "Deconstructing " << this << ": bookmark " << ", "
+                    << getSource();
 #ifdef _DEBUG_2
   std::cout << "Deconstructing " << this << ": bookmark " << ", "
             << getSource() << std::endl;

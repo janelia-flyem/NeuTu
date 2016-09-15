@@ -1,6 +1,7 @@
 #include "zglew.h"
 #include "z3dshadergroup.h"
 
+#include "neutubeconfig.h"
 #include "z3dgpuinfo.h"
 
 Z3DShaderGroup::Z3DShaderGroup()
@@ -207,7 +208,7 @@ void Z3DShaderGroup::buildWeightedBlendedShader(Z3DShaderProgram *shader)
   QStringList allshaders(m_shaderFiles);
   allshaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
 
-  qDebug()<<"buildWeightedBlendedShader header ... "<<m_header;
+  ZOUT(LTRACE(), 5) <<"buildWeightedBlendedShader header ... "<<m_header;
 
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");

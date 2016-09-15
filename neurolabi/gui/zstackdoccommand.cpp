@@ -526,17 +526,19 @@ void ZStackDocCommand::SwcEdit::AddSwc::undo()
 int ZStackDocCommand::SwcEdit::AddSwcNode::m_index = 1;
 
 ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
-    ZStackDoc *doc, Swc_Tree_Node *tn, QUndoCommand *parent)
+    ZStackDoc *doc, Swc_Tree_Node *tn, ZStackObjectRole::TRole role,
+    QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc), m_node(tn), m_treeInDoc(false)
 {
   setText(QObject::tr("Add Neuron Node"));
   m_tree = new ZSwcTree();
-  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+  m_tree->setRole(role);
+//  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
+  if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-  }
-  if (doc->getTag() == NeuTube::Document::FLYEM_ROI) {
-    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+    m_tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+//    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
   m_tree->setDataFromNode(m_node);
@@ -1143,7 +1145,7 @@ ZStackDocCommand::SwcEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::SwcEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
@@ -2323,6 +2325,8 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::setPunctaCoordScale(double x, d
 
 bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *other)
 {
+//  return true;
+
   if (other->id() != id())
     return false;
 
@@ -2520,7 +2524,7 @@ ZStackDocCommand::StrokeEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::StrokeEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Stroke composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Stroke composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()

@@ -82,6 +82,8 @@ public:
   };
 
   void setRange(const ZIntCuboid &dataRange);
+  void setReady(bool ready);
+  bool isReady() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
@@ -118,7 +120,7 @@ public:
 
   bool hit(double x, double y, double z);
 
-  void downloadForLabel(uint64_t label);
+//  void downloadForLabel(uint64_t label);
   void download(int z);
 
   bool hasSelected() const;
@@ -180,6 +182,7 @@ private:
   int m_maxPartialArea;
 
   ZIntCuboid m_dataRange;
+  bool m_isReady;
 };
 
 #endif // ZFLYEMTODOLIST_H

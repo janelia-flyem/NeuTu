@@ -15,6 +15,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
+#include "neutubeconfig.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -76,8 +77,14 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_SYNAPSE_LINK:
       connect(action, SIGNAL(triggered()), this, SLOT(linkSelectedSynapse()));
       break;
+    case ZActionFactory::ACTION_SYNAPSE_REPAIR:
+      connect(action, SIGNAL(triggered()), this, SLOT(repairSelectedSynapse()));
+      break;
     case ZActionFactory::ACTION_SYNAPSE_UNLINK:
       connect(action, SIGNAL(triggered()), this, SLOT(unlinkSelectedSynapse()));
+      break;
+    case ZActionFactory::ACTION_SYNAPSE_HLPSD:
+      connect(action, SIGNAL(triggered(bool)), this, SLOT(highlightPsd(bool)));
       break;
     case ZActionFactory::ACTION_ADD_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddTodoItem()));
@@ -106,11 +113,11 @@ bool ZFlyEmProofPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_SYNAPSE_VERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
-              this, SLOT(verfifySelectedSynapse()));
+              this, SLOT(verifySelectedSynapse()));
       break;
     case ZActionFactory::ACTION_SYNAPSE_UNVERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_UNVERIFY), SIGNAL(triggered()),
-              this, SLOT(unverfifySelectedSynapse()));
+              this, SLOT(unverifySelectedSynapse()));
       break;
     default:
       connected = false;
@@ -189,6 +196,12 @@ void ZFlyEmProofPresenter::configKeyMap()
         m_stackKeyOperationMap, ZKeyOperation::OG_STACK);
   config->configure(m_objectKeyOperationMap, ZKeyOperation::OG_STACK_OBJECT);
   config->configure(m_bookmarkKeyOperationMap, ZKeyOperation::OG_FLYEM_BOOKMARK);
+
+#ifdef _DEBUG_
+  std::cout << "Key V mapped to "
+            << m_swcKeyOperationMap.getOperation(Qt::Key_V, Qt::NoModifier)
+            << std::endl;
+#endif
 }
 
 bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
@@ -219,6 +232,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
         emit goingToBodyBottom();
         processed = true;
       }
+    }
+    break;
+  case Qt::Key_Tab:
+    if (event->modifiers() == Qt::NoModifier) {
+      emit goingToTBar();
+      processed = true;
     }
     break;
   case Qt::Key_T:
@@ -275,11 +294,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   if (!processed) {
     op.setOperation(m_bookmarkKeyOperationMap.getOperation(
                       event->key(), event->modifiers()));
-  }
-
-  if (!op.isNull()) {
-    process(op);
-    processed = true;
+    processed = process(op);
   }
 
   return processed;
@@ -294,6 +309,9 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ShiftModifier) {
       emit runningSplit();
       processed = true;
+    } else if (event->modifiers() == Qt::NoModifier) {
+      emit runningLocalSplit();
+      processed = true;
     }
     break;
   case Qt::Key_F1:
@@ -305,8 +323,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     processed = true;
     break;
   case Qt::Key_D:
-    emit togglingData();
-    processed = true;
+    if (event->modifiers() == Qt::NoModifier) {
+      emit togglingData();
+      processed = true;
+    }
     break;
   default:
     break;
@@ -329,14 +349,14 @@ void ZFlyEmProofPresenter::createSynapseContextMenu()
   }
 }
 
-void ZFlyEmProofPresenter::verfifySelectedSynapse()
+void ZFlyEmProofPresenter::verifySelectedSynapse()
 {
-  getCompleteDocument()->verfifySelectedSynapse();
+  getCompleteDocument()->verifySelectedSynapse();
 }
 
-void ZFlyEmProofPresenter::unverfifySelectedSynapse()
+void ZFlyEmProofPresenter::unverifySelectedSynapse()
 {
-  getCompleteDocument()->unverfifySelectedSynapse();
+  getCompleteDocument()->unverifySelectedSynapse();
 }
 
 void ZFlyEmProofPresenter::deleteSelectedSynapse()
@@ -350,9 +370,19 @@ void ZFlyEmProofPresenter::linkSelectedSynapse()
   getCompleteDocument()->executeLinkSynapseCommand();
 }
 
+void ZFlyEmProofPresenter::repairSelectedSynapse()
+{
+  getCompleteDocument()->repairSelectedSynapses();
+}
+
 void ZFlyEmProofPresenter::unlinkSelectedSynapse()
 {
   getCompleteDocument()->executeUnlinkSynapseCommand();
+}
+
+void ZFlyEmProofPresenter::highlightPsd(bool on)
+{
+  getCompleteDocument()->highlightPsd(on);
 }
 
 void ZFlyEmProofPresenter::tryAddPreSynapseMode()
@@ -622,11 +652,13 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   }
 }
 
-void ZFlyEmProofPresenter::processCustomOperator(
+bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+
+  bool processed = true;
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
@@ -662,6 +694,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE:
   {
+    ZOUT(LTRACE(), 5) << "Get todo list selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
@@ -685,6 +718,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_MULTIPLE:
   {
+    ZOUT(LTRACE(), 5) << "Get todo list selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
@@ -702,6 +736,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_TOGGLE:
   {
+    ZOUT(LTRACE(), 5) << "Toggle todo selection";
     QList<ZFlyEmToDoList*> todoList =
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
@@ -786,6 +821,7 @@ void ZFlyEmProofPresenter::processCustomOperator(
     getCompleteDocument()->rewriteSegmentation();
     break;
   default:
+    processed = false;
     break;
   }
 
@@ -793,6 +829,8 @@ void ZFlyEmProofPresenter::processCustomOperator(
         !isSplitWindow());
   getAction(ZActionFactory::ACTION_BODY_DECOMPOSE)->setVisible(
         isSplitWindow());
+
+  return processed;
 }
 
 bool ZFlyEmProofPresenter::highTileContrast() const
@@ -868,7 +906,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         se->getSelector().getSelectedSet();
     if (selectedSet.size() == 1) {
       const ZIntPoint &pt = *(selectedSet.begin());
-      const ZDvidSynapse &synapse = se->getSynapse(
+      ZDvidSynapse synapse = se->getSynapse(
             pt, ZDvidSynapseEnsemble::DATA_LOCAL);
       if (synapse.isValid()) {
         ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);

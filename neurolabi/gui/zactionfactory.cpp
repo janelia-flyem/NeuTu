@@ -404,6 +404,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SYNAPSE_VERIFY:
     action = new QAction("Verify", parent);
+    action->setIcon(QIcon(":/images/verify.png"));
     break;
   case ACTION_SYNAPSE_UNVERIFY:
     action = new QAction("Unverfiy", parent);
@@ -421,12 +422,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SYNAPSE_MOVE:
     action = new QAction("Move Synapse", parent);
     action->setIcon(QIcon(":/images/move.png"));
-    action->setShortcut(Qt::Key_V);
+//    action->setShortcut(Qt::Key_V);
     action->setStatusTip("Move a synapse with mouse click");
     break;
   case ACTION_SYNAPSE_DELETE:
     action = new QAction("Delete Synapse", parent);
-    action->setShortcut(Qt::Key_X);
+//    action->setShortcut(Qt::Key_X);
     action->setIcon(QIcon(":/images/delete.png"));
     action->setStatusTip("Delete selected synapses");
     break;
@@ -445,6 +446,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SYNAPSE_FILTER:
     action = new QAction("Filter Synapses", parent);
     action->setStatusTip("Filter synapses in the window");
+    break;
+  case ACTION_SYNAPSE_HLPSD:
+    action = new QAction("Highlight Partner PSDs", parent);
+    action->setIcon(QIcon(":/images/hl_post.png"));
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
+  case ACTION_SYNAPSE_REPAIR:
+    action = new QAction("Repair Synapses", parent);
+    action->setIcon(QIcon(":/images/repair.png"));
+    action->setStatusTip("Repair selected synapses");
     break;
   case ACTION_TOGGLE_SWC_SKELETON:
     action = new QAction("Show Full Skeleton", parent);

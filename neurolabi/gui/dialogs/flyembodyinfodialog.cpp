@@ -537,10 +537,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
 
         ZJsonArray bodies;
         bool ok;
-        qlonglong bodyID;
+//        qlonglong bodyID;
         foreach (const QString &bodyIDstr, keyList) {
             // skip the few non-numeric keys mixed in there
-            bodyID = bodyIDstr.toLongLong(&ok);
+            /*bodyID =*/ bodyIDstr.toLongLong(&ok);
             if (ok) {
                 // get body annotations and transform to what we need
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);
@@ -1036,7 +1036,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
 
     if (reader.open(target)) {
         // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
 
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
         // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
@@ -1231,7 +1231,7 @@ void FlyEmBodyInfoDialog::onDoubleClickIOBodyTable(QModelIndex proxyIndex) {
 
 void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex) {
 
-    std::cout << "in onDoubleClickIOConnectionsTable at index " << proxyIndex.row() << ", " << proxyIndex.column() << std::endl;
+    // std::cout << "in onDoubleClickIOConnectionsTable at index " << proxyIndex.row() << ", " << proxyIndex.column() << std::endl;
 
     QModelIndex modelIndex = m_connectionsProxy->mapToSource(proxyIndex);
 

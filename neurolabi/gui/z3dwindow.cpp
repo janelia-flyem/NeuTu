@@ -641,6 +641,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
   m_buttonStatus[3] = false; // ROIs
+
+  setWindowType(NeuTube3D::TYPE_GENERAL);
 }
 
 Z3DWindow::~Z3DWindow()
@@ -755,12 +757,16 @@ void Z3DWindow::init(EInitMode mode)
   // more processors: init geometry filters
   m_compositor = new Z3DCompositor();
   m_punctaFilter = new Z3DPunctaFilter();
+  m_layerList.append(LAYER_PUNCTA);
   m_punctaFilter->setData(m_doc->getPunctumList());
   m_swcFilter = new Z3DSwcFilter();
+  m_layerList.append(LAYER_SWC);
   m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
+  m_layerList.append(LAYER_GRAPH);
 #if defined _FLYEM_
   m_todoFilter = new ZFlyEmTodoListFilter;
+  m_layerList.append(LAYER_TODO);
   updateTodoList();
 #else
   m_todoFilter = NULL;
@@ -785,6 +791,7 @@ void Z3DWindow::init(EInitMode mode)
 
 
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  ZOUT(LTRACE(), 5) << "Getting 3d graph";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -793,6 +800,7 @@ void Z3DWindow::init(EInitMode mode)
 
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
+  m_layerList.append(LAYER_SURFACE);
 
   //  qDebug()<<"hard coded ...";
 
@@ -950,6 +958,7 @@ void Z3DWindow::init(EInitMode mode)
 
   // more processors: init raycaster
   m_volumeRaycaster = new Z3DVolumeRaycaster();
+  m_layerList.append(LAYER_VOLUME);
   connect(m_volumeRaycaster,
           SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
           this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
@@ -1116,9 +1125,7 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 
 void Z3DWindow::createActions()
 {
-#ifdef _DEBUG_
-  qDebug() << "Create actions";
-#endif
+  ZOUT(LTRACE(), 5) << "Create actions";
   /*
   m_undoAction = m_doc->undoStack()->createUndoAction(this, tr("&Undo"));
   m_undoAction->setIcon(QIcon(":/images/undo.png"));
@@ -1373,9 +1380,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
-#ifdef _DEBUG_
-  qDebug() << "Create swc node menu";
-#endif
+  ZOUT(LTRACE(), 5) << "Create swc node menu";
 
   //Swc node
   contextMenu = new QMenu(this);
@@ -1789,6 +1794,102 @@ void Z3DWindow::loadView()
   }
 }
 
+void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
+{
+  Z3DGeometryFilter *filter = getFilter(layer);
+  if (filter != NULL) {
+    if (obj.hasKey("visible")) {
+      setVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
+    }
+    if (obj.hasKey("front")) {
+      filter->setStayOnTop(ZJsonParser::booleanValue(obj["front"]));
+    }
+  }
+}
+
+std::string Z3DWindow::GetLayerString(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    return "Graph";
+  case LAYER_SWC:
+    return "SWC";
+  case LAYER_PUNCTA:
+    return "Puncta";
+  case LAYER_SURFACE:
+    return "Surface";
+  case LAYER_TODO:
+    return "Todo";
+  case LAYER_VOLUME:
+    return "Volume";
+  }
+
+  return "";
+}
+
+void Z3DWindow::configure(const ZJsonObject &obj)
+{
+  for (QList<ERendererLayer>::const_iterator iter = m_layerList.begin();
+       iter != m_layerList.end(); ++iter) {
+    ERendererLayer layer = *iter;
+    std::string layerKey = GetLayerString(layer);
+    if (obj.hasKey(layerKey.c_str())) {
+      ZJsonObject layerJson(obj.value(layerKey.c_str()));
+      configureLayer(layer, layerJson);
+    }
+  }
+}
+
+ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
+{
+  ZJsonObject configJson;
+  Z3DGeometryFilter *filter = getFilter(layer);
+  if (filter != NULL) {
+    configJson.setEntry("visible", isVisible(layer));
+    configJson.setEntry("front", filter->isStayOnTop());
+  }
+
+  return configJson;
+}
+
+void Z3DWindow::readSettings()
+{
+  QString windowKey = NeuTube3D::GetWindowKeyString(getWindowType()).c_str();
+  QString settingString = NeutubeConfig::GetSettings().value(windowKey).
+      toString();
+
+  ZJsonObject jsonObj;
+
+  qDebug() << settingString;
+
+  jsonObj.decodeString(settingString.toStdString().c_str());
+
+  configure(jsonObj);
+}
+
+void Z3DWindow::writeSettings()
+{
+  //ignore general window type for now
+  if (getWindowType() != NeuTube3D::TYPE_GENERAL) {
+    ZJsonObject configJson;
+    for (QList<ERendererLayer>::const_iterator iter = m_layerList.begin();
+         iter != m_layerList.end(); ++iter) {
+      ERendererLayer layer = *iter;
+      ZJsonObject layerJson = getConfigJson(layer);
+      configJson.setEntry(GetLayerString(layer).c_str(), layerJson);
+    }
+
+    std::string settingString = configJson.dumpString(0);
+
+#ifdef _DEBUG_
+    std::cout << settingString << std::endl;
+#endif
+    NeutubeConfig::GetSettings().setValue(
+          NeuTube3D::GetWindowKeyString(getWindowType()).c_str(),
+          settingString.c_str());
+  }
+}
+
 bool Z3DWindow::hasRectRoi() const
 {
   return getCanvas()->getInteractionEngine()->hasRectDecoration();
@@ -1975,6 +2076,7 @@ void Z3DWindow::updateNetworkDisplay()
 
 void Z3DWindow::update3DGraphDisplay()
 {
+  ZOUT(LTRACE(), 5) << "Update 3d graph";
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
@@ -1993,6 +2095,7 @@ void Z3DWindow::update3DGraphDisplay()
 void Z3DWindow::update3DCubeDisplay()
 {
   m_surfaceFilter->clearSources();
+  ZOUT(LTRACE(), 5) << "Update 3d cube";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -2014,6 +2117,7 @@ void Z3DWindow::updateTodoList()
 #if defined(_FLYEM_)
   ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Update todo list";
     QList<ZFlyEmToDoItem*> objList = doc->getObjectList<ZFlyEmToDoItem>();
     m_todoFilter->setData(objList);
 /*
@@ -2079,6 +2183,7 @@ void Z3DWindow::swcCoordScaleChanged()
 
 void Z3DWindow::punctaCoordScaleChanged()
 {
+  ZOUT(LTRACE(), 5) << "Punctum scale changed";
   if (m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM).empty())
     return;
   updatePunctaBoundBox();
@@ -2201,7 +2306,8 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
 
 void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
 {
-  m_doc->executeAddSwcNodeCommand(ZPoint(x, y, z), r);
+  m_doc->executeAddSwcNodeCommand(
+        ZPoint(x, y, z), r, ZStackObjectRole::ROLE_NONE);
       /*
   QUndoCommand *insertNewSwcTreeNodeCommand =
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);
@@ -2987,6 +3093,7 @@ void Z3DWindow::dropEvent(QDropEvent *event)
 
 void Z3DWindow::closeEvent(QCloseEvent */*event*/)
 {
+  writeSettings();
   emit closed();
 }
 
@@ -4541,19 +4648,43 @@ Z3DWindow* Z3DWindow::Open(
   return window;
 }
 
+Z3DGeometryFilter* Z3DWindow::getFilter(ERendererLayer layer) const
+{
+  switch (layer) {
+  case LAYER_SWC:
+    return getSwcFilter();
+  case LAYER_GRAPH:
+    return getGraphFilter();
+  case LAYER_PUNCTA:
+    return getPunctaFilter();
+  case LAYER_TODO:
+    return getTodoFilter();
+  case LAYER_SURFACE:
+    return getSurfaceFilter();
+  case LAYER_VOLUME:
+    break;
+  }
+
+  return NULL;
+}
+
 Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
 {
   switch (layer) {
   case LAYER_SWC:
-    return getSwcFilter()->getRendererBase();
   case LAYER_GRAPH:
-    return getGraphFilter()->getRendererBase();
   case LAYER_PUNCTA:
-    return getPunctaFilter()->getRendererBase();
+  case LAYER_TODO:
+  case LAYER_SURFACE:
+  {
+    Z3DGeometryFilter *filter = getFilter(layer);
+    if (filter != NULL) {
+      return filter->getRendererBase();
+    }
+  }
+    break;
   case LAYER_VOLUME:
     return getVolumeRaycasterRenderer()->getRendererBase();
-  case LAYER_TODO:
-    return getTodoFilter()->getRendererBase();
   }
 
   return NULL;
@@ -4598,6 +4729,11 @@ void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
       getTodoFilter()->setVisible(visible);
     }
     break;
+  case LAYER_SURFACE:
+    if (getSurfaceFilter() != NULL) {
+      getSurfaceFilter()->setVisible(visible);
+    }
+    break;
   case LAYER_VOLUME:
     break;
   }
@@ -4620,6 +4756,10 @@ bool Z3DWindow::isVisible(ERendererLayer layer) const
       return getTodoFilter()->isVisible();
     }
     break;
+  case LAYER_SURFACE:
+    if (getSurfaceFilter() != NULL) {
+      return getSurfaceFilter()->isVisible();
+    }
   case LAYER_VOLUME:
     break;
   }
@@ -4634,6 +4774,7 @@ void Z3DWindow::setZScale(double scale)
   setZScale(LAYER_PUNCTA, scale);
   setZScale(LAYER_VOLUME, scale);
   setZScale(LAYER_TODO, scale);
+  setZScale(LAYER_SURFACE, scale);
 }
 
 void Z3DWindow::setScale(double sx, double sy, double sz)
@@ -4643,6 +4784,7 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
   setScale(LAYER_PUNCTA, sx, sy, sz);
   setScale(LAYER_VOLUME, sx, sy, sz);
   setScale(LAYER_TODO, sx, sy, sz);
+  setScale(LAYER_SURFACE, sx, sy, sz);
 }
 
 void Z3DWindow::cropSwcInRoi()

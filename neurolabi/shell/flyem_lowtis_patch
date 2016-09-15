@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ $# -ge 1 ] 
+then
+  install_dir=$1
+else 
+  install_dir=/opt
+fi
+
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else 
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+ 
+#install lowtis
+source $scriptDir/flyem_utilities.sh
+flyem_build_lowtis $install_dir $scriptDir
+
+if [ -d $install_dir/Download/neutube/neurolabi/build ]
+then
+  rm -rf $install_dir/Download/neutube/neurolabi/build
+fi
+
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
+then
+  rm -rf $install_dir/Download/neutube/neurolabi/build_debug
+fi
+$install_dir/bin/ntupd
+

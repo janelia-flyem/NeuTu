@@ -16,6 +16,8 @@
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "sandbox/zsandboxproject.h"
+#include "sandbox/zsandbox.h"
 
 #ifdef _QT5_
 #include <QSurfaceFormat>
@@ -202,13 +204,15 @@ int main(int argc, char *argv[])
   }
 
 #ifdef _FLYEM_
+  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
+  QString defaultFlyemConfigPath = QFileInfo(
+        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+      absoluteFilePath();
+  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
+
   QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
   if (flyemConfigPath.isEmpty()) {
     QFileInfo configFileInfo(configPath);
-
-    QString defaultFlyemConfigPath = QFileInfo(
-          QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
-        absoluteFilePath();
 
     flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
     if (flyemConfigPath.isEmpty()) {
@@ -222,7 +226,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  GET_FLYEM_CONFIG.loadConfig(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.loadConfig();
 
 #ifdef _DEBUG_
   std::cout << config.GetNeuTuServer().toStdString() << std::endl;
@@ -251,19 +256,31 @@ int main(int argc, char *argv[])
   QsLogging::Logger& logger = QsLogging::Logger::instance();
   const QString sLogPath(
         NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
+  const QString traceLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
   QsLogging::DestinationPtr fileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           sLogPath, QsLogging::EnableLogRotation,
           QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(50)));
+  QsLogging::DestinationPtr traceFileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          traceLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(5),
+          QsLogging::TraceLevel));
   QsLogging::DestinationPtr debugDestination(
         QsLogging::DestinationFactory::MakeDebugOutputDestination());
   logger.addDestination(debugDestination);
+  logger.addDestination(traceFileDestination);
   logger.addDestination(fileDestination);
 #if defined _DEBUG_
   logger.setLoggingLevel(QsLogging::DebugLevel);
 #else
   logger.setLoggingLevel(QsLogging::InfoLevel);
 #endif
+
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    logger.setLoggingLevel(QsLogging::TraceLevel);
+  }
 
   RECORD_INFORMATION("************* Start ******************");
 
@@ -317,6 +334,9 @@ int main(int argc, char *argv[])
     } /*else {
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
+
+    ZSandbox::SetMainWindow(mainWin);
+    ZSandboxProject::InitSandbox();
 
     int result = app.exec();
 

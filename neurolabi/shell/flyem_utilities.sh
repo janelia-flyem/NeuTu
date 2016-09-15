@@ -1,3 +1,68 @@
+function update_gcc 
+{
+  condaDir=$1
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  if [ `uname` != 'Darwin' ]
+  then
+    GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+    if [ $GCCVER \> '4.9.0' ]
+    then
+      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+      then
+        source ${CONDA_ROOT}/bin/activate dvidenv
+        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+      fi
+    fi
+
+    if [ $GCCVER \< '4.8.0' ]
+    then
+      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+      then
+        source ${CONDA_ROOT}/bin/activate dvidenv
+        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+      fi
+    fi
+  fi
+
+}
+
+function flyem_build_lowtis {
+  install_dir=$1
+  downloadDir=$install_dir/Download
+  scriptDir=$2
+  condaDir=$downloadDir/miniconda
+  envDir=$condaDir/envs/dvidenv
+
+  update_gcc $condaDir
+  
+  if [ `uname` != 'Darwin' ]
+  then
+    if [ -d $downloadDir/lowtis ]
+    then
+      cd $downloadDir/lowtis
+      git pull
+    else
+      git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
+    fi
+
+    cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
+    cd $downloadDir/lowtis
+    mkdir build
+    cd build
+    cmake -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    mkdir build_debug
+    cd build_debug
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    cp -r lowtis $envDir/include
+    cp build/liblowtis.so $envDir/lib/
+    cp build_debug/liblowtis-g.so $envDir/lib/
+  fi
+}
+
 function flyem_neutu_update {
   if [ $# -ge 1 ]
   then
@@ -21,16 +86,33 @@ function flyem_neutu_update {
   condaDir=$install_dir/Download/miniconda
   condaEnv=$condaDir/envs/dvidenv
   CONDA_ROOT=`$condaDir/bin/conda info --root`
-  if [ -d $condaEnv ]
+  if [ -d $install_dir/update_dvidcpp ]
   then
-    source ${CONDA_ROOT}/bin/activate root
-    conda update -y conda
-    conda remove -y libdvid-cpp -n dvidenv
-    if [ -d $condaEnv/include/libdvid ]
+    if [ -d $condaEnv ]
     then
-      rm -rf $condaEnv/include/libdvid
+      source ${CONDA_ROOT}/bin/activate root
+      conda update -y conda
+      conda remove -y libdvid-cpp -n dvidenv
+      if [ -d $condaEnv/include/libdvid ]
+      then
+        rm -rf $condaEnv/include/libdvid
+      fi
+      conda install -y -n dvidenv -c flyem libdvid-cpp
     fi
-    conda install -y -n dvidenv -c flyem libdvid-cpp
+  fi
+
+  if [ -d $condaEnv/include/lowtis ]
+  then
+    build_flag="-d _ENABLE_LOWTIS_"
+    ext_qt_flag="CONFIG+=c++11"
+  fi
+
+  if [ -f $condaEnv/bin/gcc ]
+  then
+    export PATH=$condaEnv/bin:$PATH
+  elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+  then
+    export PATH=/opt/gcc482/bin:$PATH
   fi
 
   if [ `uname` == 'Darwin' ]; then
@@ -40,9 +122,9 @@ function flyem_neutu_update {
   fi
   if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
   then
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q CONDA_ENV=$condaEnv -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "\"CONDA_ENV=$condaEnv $ext_qt_flag\"" -c $debug_config $build_flag 
   else
-    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "BUILDEM_DIR=$install_dir/Download/buildem $ext_qt_flag" -c $debug_config $build_flag 
   fi
 
   build_dir=build

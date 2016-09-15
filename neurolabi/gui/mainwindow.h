@@ -75,6 +75,7 @@ class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
 class FlyEmSettingDialog;
+class ZDvidBodyPositionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -130,6 +131,8 @@ public: /* File and message dialogs */
   void report(const std::string &title, const std::string &msg,
               NeuTube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
+
+  QMenu* getSandboxMenu() const;
 
 public:
   bool initBodySplitProject();
@@ -358,7 +361,7 @@ private slots:
   void on_actionFlyEmSelect_connection_triggered();
   void on_actionAxon_Export_triggered();
   void on_actionExtract_body_triggered();
-  void on_actionPredict_errors_triggered();
+//  void on_actionPredict_errors_triggered();
   void on_actionCompute_Features_triggered();
   void on_actionMexican_Hat_triggered();
   void on_actionInvert_triggered();
@@ -388,8 +391,8 @@ private slots:
   void on_actionSparse_objects_triggered();
   void on_actionDendrogram_triggered();
   void on_actionPen_Width_for_SWC_Display_triggered();
-  void on_actionDVID_Object_triggered();
-  void on_actionDvid_Object_triggered();
+//  void on_actionDVID_Object_triggered();
+//  void on_actionDvid_Object_triggered();
   void on_actionAssign_Clustering_triggered();
   void on_actionSWC_Rescaling_triggered();
   void on_actionSurface_detection_triggered();
@@ -424,7 +427,7 @@ private slots:
 
   void on_actionCreate_Databundle_triggered();
 
-  void on_actionCreate_Thumbnails_triggered();
+//  void on_actionCreate_Thumbnails_triggered();
   
   void on_actionCreate_ROI_triggered();
 
@@ -487,6 +490,8 @@ private slots:
   void on_actionGenerate_PAM_Actor_triggered();
 
   void on_actionGenerate_MB_Conn_Actor_triggered();
+
+  void on_actionGet_Body_Positions_triggered();
 
 private:
   void createActions();
@@ -715,6 +720,7 @@ private:
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   FlyEmSettingDialog *m_flyemSettingDlg;
+  ZDvidBodyPositionDialog *m_bodyPosDlg;
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

@@ -22,26 +22,8 @@ public:
     QString getRoI();
     void setRoI(QString roi);
 
-private slots:
-#ifdef _DON_
-    void xRangeChanged(int x);
-    void yRangeChanged(int y);
-    void zRangeChanged(int z);
-#endif
-
-
 private:
     Ui::SynapsePredictionInputDialog *ui;
-
-    QPalette m_defaultPalette;
-    QPalette m_redbgPalette;
-#ifdef _DON_
-    bool xValid();
-    bool yValid();
-    bool zValid();
-    bool isValid();
-#endif
-    void accept();
 
 };
 

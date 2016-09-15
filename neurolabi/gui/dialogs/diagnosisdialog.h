@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QTextBrowser;
+
 namespace Ui {
 class DiagnosisDialog;
 }
@@ -26,6 +28,7 @@ private:
   void loadErrorFile();
   void loadWarnFile();
   void loadInfoFile();
+  static void LoadFile(const std::string &filePath, QTextBrowser *browser);
 
 private:
   Ui::DiagnosisDialog *ui;

@@ -6,6 +6,7 @@
 class ZFlyEmBookmarkListModel;
 class ZFlyEmBookmarkView;
 class ZFlyEmBookmark;
+class QSortFilterProxyModel;
 
 namespace Ui {
 class ZFlyEmBookmarkWidget;

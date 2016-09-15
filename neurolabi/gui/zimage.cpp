@@ -33,6 +33,15 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
 
 }
 
+ZImage::ZImage(const ZImage &image) : QImage(image)
+{
+  m_transform = image.m_transform;
+  m_nonlinear = image.m_nonlinear;
+  m_grayScale = image.m_grayScale;
+  m_grayOffset = image.m_grayOffset;
+  m_z = image.m_z;
+}
+
 void ZImage::init()
 {
   if (width() > 0 && height() > 0) {
@@ -46,6 +55,9 @@ void ZImage::init()
   }
 
   setDefaultContrastProtocal();
+
+  m_visible = true;
+  m_z = NeuTube::INVALID_Z_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -53,6 +65,23 @@ void ZImage::setDefaultContrastProtocal()
   m_nonlinear = true;
   m_grayOffset = 0.0;
   m_grayScale = 1.5;
+}
+
+void ZImage::setContrastProtocol(double scale, double offset, bool nonlinear)
+{
+  m_grayOffset = offset;
+  m_grayScale = scale;
+  m_nonlinear = nonlinear;
+}
+
+void ZImage::setVisible(bool visible)
+{
+  m_visible = visible;
+}
+
+bool ZImage::isVisible() const
+{
+  return m_visible;
 }
 
 void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
@@ -661,6 +690,129 @@ void ZImage::setCData(const uint8_t *data, uint8_t alpha)
       *line++ = *data;
       *line++ = *data++;
       *line++ = alpha;
+    }
+  }
+}
+
+void ZImage::drawLabelField(
+    uint64_t *data, const QVector<int> &colorTable, int bgColor, int selColor)
+{
+  int colorCount = colorTable.size();
+  if (colorCount > 0) {
+    int h = height();
+    int w = width();
+
+    for (int j = 0; j < h; j++) {
+      int *line = (int*) scanLine(j);
+      for (int i = 0; i < w; i++) {
+        uint64_t v = *data++;
+        if (v == 0) {
+          *line++ = bgColor;
+        } else if (v == FlyEM::LABEL_ID_SELECTION) {
+          *line++ = selColor;
+        } else {
+          *line++ = colorTable[v % colorCount] ;
+        }
+      }
+    }
+  }
+}
+
+void ZImage::drawLabelFieldTranspose(
+    uint64_t *data, const QVector<int> &colorTable, int bgColor, int selColor)
+{
+  int colorCount = colorTable.size();
+  if (colorCount > 0) {
+    int h = height();
+    int w = width();
+
+    uint64_t *dataLine = data;
+    for (int j = 0; j < h; j++) {
+      int *line = (int*) scanLine(j);
+      dataLine = data + j;
+      for (int i = 0; i < w; i++) {
+        uint64_t v = *dataLine;
+        dataLine += h;
+        if (v == 0) {
+          *line++ = bgColor;
+        } else if (v == FlyEM::LABEL_ID_SELECTION) {
+          *line++ = selColor;
+        } else {
+          *line++ = colorTable[v % colorCount] ;
+        }
+      }
+    }
+  }
+}
+
+void ZImage::drawLabelField(
+    uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha)
+{
+  int i, j;
+  QVector<int> rgbaTable(colorTable.size());
+  int newAlpha = alpha;
+  newAlpha <<= 24;
+  for (int i = 0; i < colorTable.size(); ++i) {
+    const QColor &color = colorTable[i];
+    rgbaTable[i] = newAlpha + (color.red() << 16) + (color.green() << 8) +
+        (color.blue());
+  }
+
+  int colorCount = colorTable.size();
+
+//  uint16_t *colorIndex = (uint16_t*) data;
+  int h = height();
+  int w = width();
+
+  for (j = 0; j < h; j++) {
+//    uchar *line = scanLine(j);
+    int *line = (int*) scanLine(j);
+    for (i = 0; i < w; i++) {
+//      const QColor &color = colorTable[*data++ % colorCount];
+
+//      *data++ % colorCount;
+//      int color = rgbaTable[colorIndex[2]];
+      *line++ = rgbaTable[*data++ % colorCount] ;
+//      colorIndex += 4;
+
+//      *line++ = color.red();
+//      *line++ = color.green();
+//      *line++ = color.blue();
+//      *line++ = alpha;
+    }
+  }
+}
+
+void ZImage::drawLabelField(
+    uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha,
+    const std::set<uint64_t> &selected)
+{
+  int i, j;
+  QVector<int> rgbaTable(colorTable.size());
+  int newAlpha = alpha;
+  newAlpha <<= 24;
+  for (int i = 0; i < colorTable.size(); ++i) {
+    const QColor &color = colorTable[i];
+    rgbaTable[i] = newAlpha + (color.red() << 16) + (color.green() << 8) +
+        (color.blue());
+  }
+
+  int colorCount = colorTable.size();
+
+//  uint16_t *colorIndex = (uint16_t*) data;
+  int h = height();
+  int w = width();
+
+  for (j = 0; j < h; j++) {
+//    uchar *line = scanLine(j);
+    int *line = (int*) scanLine(j);
+    for (i = 0; i < w; i++) {
+      uint64_t label = *data++;
+      if (selected.count(label) > 0) {
+        *line++ = 0;
+      } else {
+        *line++ = rgbaTable[label % colorCount] ;
+      }
     }
   }
 }

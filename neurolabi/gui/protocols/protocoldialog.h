@@ -20,7 +20,6 @@ public:
     explicit ProtocolDialog(QWidget *parent = 0);
     virtual ~ProtocolDialog();
     virtual bool initialize() = 0;
-    virtual std::string getName() = 0;
     void setDvidTarget(ZDvidTarget target);
 
 public:

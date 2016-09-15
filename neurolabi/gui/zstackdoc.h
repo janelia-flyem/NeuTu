@@ -152,6 +152,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject() const;
 
+  bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -398,6 +399,11 @@ public:
       */
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
+
+  TStackObjectList takeObject(
+      ZStackObject::EType type, const std::string &source);
+  TStackObjectList takeObject(ZStackObject::EType type);
+
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
@@ -668,6 +674,8 @@ public:
     return m_objectGroup.getObjectList(type);
   }
 
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
+
   template<typename T>
   QList<T*> getObjectList() const;
 
@@ -714,6 +722,8 @@ public:
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
+
+  bool hasSelectedObject() const;
 
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
@@ -906,6 +916,10 @@ public:
     return m_labelField;
   }
 
+  ZStack* getLabelField() {
+    return m_labelField;
+  }
+
   void setLabelField(ZStack *getStack);
 
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
@@ -1014,7 +1028,8 @@ public slots: //undoable commands
   virtual bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   virtual bool executeSmartConnectSwcNodeCommand();
   virtual bool executeBreakSwcConnectionCommand();
-  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
+  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius,
+                                        ZStackObjectRole::TRole role);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);
   virtual bool executeMergeSwcNodeCommand();
   virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
@@ -1173,6 +1188,8 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
 private:
   void init();
@@ -1185,9 +1202,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
                                 const std::set<Swc_Tree_Node*> &swcSet);

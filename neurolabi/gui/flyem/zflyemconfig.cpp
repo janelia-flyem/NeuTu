@@ -29,6 +29,7 @@ void ZFlyEmConfig::init()
 //  m_neutuService.updateStatus();
 //  m_neutuServer = "http://zhaot-ws1:8080";
   m_analyzingMb6 = false;
+  m_usingDefaultConfig = true;
 }
 
 void ZFlyEmConfig::setDvidTarget(const std::string &repo)
@@ -46,6 +47,11 @@ std::string ZFlyEmConfig::getUserName() const
   return m_userName;
 }
 
+void ZFlyEmConfig::setDefaultConfigPath(const std::string &path)
+{
+  m_defaultConfigPath = path;
+}
+
 void ZFlyEmConfig::print() const
 {
   std::cout << "FlyEM Configuration:" << std::endl;
@@ -57,14 +63,20 @@ void ZFlyEmConfig::print() const
   }
 }
 
-void ZFlyEmConfig::loadConfig(const std::string &filePath)
+void ZFlyEmConfig::loadConfig()
 {
-  m_configPath = filePath;
-  NeutubeConfig::SetFlyEmConfigPath(filePath.c_str());
-
   m_dvidRepo.clear();
   m_rootMap.clear();
   m_addressMap.clear();
+
+  std::string filePath;
+  if (usingDefaultConfig()) {
+    filePath = m_defaultConfigPath;
+  } else {
+    filePath = m_configPath;
+  }
+
+  std::cout << "Loading config: " << filePath << std::endl;
 
   if (!filePath.empty()) {
     ZJsonObject obj;
@@ -122,6 +134,16 @@ void ZFlyEmConfig::loadConfig(const std::string &filePath)
     }
   }
 }
+
+/*
+void ZFlyEmConfig::loadConfig(const std::string &filePath)
+{
+  m_configPath = filePath;
+  NeutubeConfig::SetFlyEmConfigPath(filePath.c_str());
+
+  loadConfig();
+}
+*/
 
 std::string ZFlyEmConfig::mapAddress(const std::string &address) const
 {

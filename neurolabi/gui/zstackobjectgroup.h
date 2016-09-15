@@ -43,6 +43,7 @@ public:
   void setSelected(ZStackObject::EType type, bool selected);
 
   void deselectAll();
+  void deselectAllUnsync();
 
   bool isEmpty() const;
 
@@ -245,6 +246,9 @@ public:
   TStackObjectList& getObjectListUnsync(ZStackObject::EType type);
   const TStackObjectList& getObjectListUnsync(ZStackObject::EType type)
   const;
+
+  QList<ZStackObject*> getObjectListUnsync(ZStackObjectRole::TRole role) const;
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
 
   template<typename T>
   QList<T*> getObjectListUnsync() const;

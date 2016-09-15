@@ -18,6 +18,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemmb6analyzer.h"
+#include "dvid/zdvidversiondag.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -65,6 +66,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
 
+  ZStackBlockGrid* getStackGrid();
+
   //bool hasSparseStack() const;
   bool hasVisibleSparseStack() const;
 
@@ -107,7 +110,7 @@ public:
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
 
-  void importFlyEmBookmark(const std::string &filePath);
+  QList<ZFlyEmBookmark*> importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
 //  void saveCustomBookmark();
@@ -117,6 +120,7 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -172,6 +176,11 @@ public:
   }
 
 public:
+  void runSplit();
+  void runLocalSplit();
+  void refreshDvidLabelBuffer(unsigned long delay);
+
+public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
   void notifyBodyMergeEdited();
@@ -192,6 +201,24 @@ public: //Synapse functions
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
                                NeuTube::EAxis axis);
 
+  /*!
+   * \brief Sync the synapse with DVID
+   *
+   * If \a pt does not exist in DVID, it will be removed from all synapse
+   * ensembles. If it exists, the function checks the partners of the synapses
+   * and try to remove all 'ghost' partners. For each of actual partners, the
+   * function checks the relationship consistency and apply fixes based on the
+   * following rules:
+   *   1. If the host synapse (the one at \a pt) rels to its partner but not
+   * vice versa, the missing relationship will be added to the partner.
+   *   2. If the host synapse rels to its partner and vice versa, but
+   * relationships are not consistent, the partner synapse is changed to have
+   * the consistency.
+   *
+   * \param pt Synapse position to sync.
+   */
+  void repairSynapse(const ZIntPoint &pt);
+
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
   void addSynapse(
@@ -201,6 +228,7 @@ public: //Synapse functions
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+  void highlightPsd(bool on);
 
 public: //Todo list functions
   void removeTodoItem(
@@ -224,6 +252,7 @@ public: //Bookmark functions
   void notifyBookmarkEdited(
       const std::vector<ZFlyEmBookmark *> &bookmarkArray);
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
+  void notifyAssignedBookmarkModified();
   void notifySynapseEdited(const ZDvidSynapse &synapse);
   void notifySynapseEdited(const ZIntPoint &synapse);
   void notifySynapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -246,8 +275,12 @@ signals:
   void bodyUnmerged();
   void bodyMergeEdited();
   void userBookmarkModified();
+  void assignedBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
+  void bookmarkDeleted(int x, int y, int z);
+  void bookmarkModified(int x, int y, int z);
+
   void synapseEdited(int x, int y, int z);
   void synapseVerified(int x, int y, int z, bool verified);
   void synapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -260,6 +293,7 @@ signals:
   void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots: //Commands
+  void repairSelectedSynapses();
   void executeRemoveSynapseCommand();
   void executeLinkSynapseCommand();
   void executeUnlinkSynapseCommand();
@@ -291,9 +325,10 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
-  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                  ZDvidSynapseEnsemble::EDataScope scope);
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
@@ -338,11 +373,20 @@ private:
 
   void updateBodyColor(EBodyColorMap type);
 
+  void runSplitFunc();
+  void localSplitFunc();
+  ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateLocalSplitRoi();
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidWriter m_dvidWriter;
+
+  //Dvid info
+  ZDvidInfo m_dvidInfo;
+  ZDvidVersionDag m_versionDag;
 
 //  bool m_isCustomBookmarkSaved;
   QTimer *m_bookmarkTimer;

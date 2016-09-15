@@ -1,6 +1,7 @@
 #ifndef ZDVIDTILEENSEMBLE_H
 #define ZDVIDTILEENSEMBLE_H
 
+#include <QMutex>
 #include <vector>
 
 #include "libdvidheader.h"
@@ -12,6 +13,7 @@
 #include "zsharedpointer.h"
 
 class ZStackView;
+class ZDvidPatchDataFetcher;
 
 class ZDvidTileEnsemble : public ZStackObject
 {
@@ -47,10 +49,13 @@ public:
   void enhanceContrast(bool high);
   void setContrastProtocal(const ZJsonObject &obj);
 
+  void setDataFetcher(ZDvidPatchDataFetcher *fetcher);
+
 public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
   void updateContrast();
+  void updatePatch(const ZImage *patch, const ZIntCuboid &region);
 //#if defined(_ENABLE_LIBDVIDCPP_)
 //  void updateTile(libdvid::Slice2D slice,
 //                  int resLevel, const std::vector<int> &loc,
@@ -63,8 +68,14 @@ private:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZStackView *m_view;
+  mutable ZImage *m_patch;
+  mutable ZIntCuboid m_patchRange;
   bool m_highContrast;
   ZJsonObject m_contrastProtocal;
+
+  ZDvidPatchDataFetcher *m_dataFetcher;
+
+  mutable QMutex m_updateMutex;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::vector<ZSharedPointer<libdvid::DVIDNodeService> > m_serviceArray;

@@ -67,6 +67,7 @@ public slots:
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
+  void keyPressEvent(QKeyEvent *event);
 
 private:
   void init();
@@ -96,6 +97,7 @@ private:
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
   QAction *m_viewTodoAction;
+  QAction *m_viewRoiAction;
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
@@ -103,11 +105,13 @@ private:
   QAction *m_contrastAction;
   QAction *m_smoothAction;
   QAction *m_openTodoAction;
+  QAction *m_roiToolAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
-  QAction *m_queryTableAction;
+  QAction *m_openRoi3dAction;
+//  QAction *m_queryTableAction;
 
   QToolBar *m_toolBar;
   QToolBar *m_synapseToolbar;

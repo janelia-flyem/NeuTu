@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 
+#include "neutubeconfig.h"
 #include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -32,7 +33,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
 ZStackMvc::~ZStackMvc()
 {
-  qDebug() << "ZStackMvc destroyed";
+  ZOUT(LTRACE(), 5) << "ZStackMvc destroyed";
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
@@ -299,6 +300,20 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
   }
 }
 
+bool ZStackMvc::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    if (m_presenter != NULL) {
+      if (m_presenter->processKeyPressEvent((QKeyEvent*) event)) {
+        event->accept();
+      }
+    }
+    return true;
+  }
+
+  return QWidget::event(event);
+}
+
 void ZStackMvc::processViewChange()
 {
   processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
@@ -529,11 +544,23 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 
   getView()->processViewChange(true, depthChanged);
 
+  getView()->highlightPosition(pt);
+
 //  getView()->notifyViewChanged();
+}
+
+void ZStackMvc::zoomTo(const ZStackViewParam &param)
+{
+  getView()->setView(param);
+  getView()->highlightPosition(param.getViewPort().center().x(),
+                               param.getViewPort().center().y(),
+                               param.getZ());
 }
 
 void ZStackMvc::zoomTo(int x, int y, int z, int width)
 {
+  getView()->zoomTo(x, y, z, width);
+#if 0
   ZGeometry::shiftSliceAxis(x, y, z, getView()->getSliceAxis());
 
 //  z -= getDocument()->getStackOffset().getSliceCoord(getView()->getSliceAxis());
@@ -547,16 +574,7 @@ void ZStackMvc::zoomTo(int x, int y, int z, int width)
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
   getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
-
-/*
-  getView()->imageWidget()->setViewPortOffset(
-        x - getView()->imageWidget()->viewPort().width() / 2,
-        y - getView()->imageWidget()->viewPort().height() / 2);
-  getView()->setSliceIndex(z);
-  */
-//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-
-//  getPresenter()->setViewPortCenter(x, y, z);
+#endif
 
   getView()->highlightPosition(x, y, z);
 }
@@ -567,24 +585,40 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt)
   zoomTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
+void ZStackMvc::goToSlice(int z)
+{
+  getView()->setZ(z);
+}
+
+void ZStackMvc::stepSlice(int dz)
+{
+  getView()->stepSlice(dz);
+}
+
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
+  zoomTo(x, y, z, 800);
+  /*
   QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
   int width = imin3(800, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }
   zoomTo(x, y, z, width);
+  */
 }
 
 void ZStackMvc::zoomToL1(int x, int y, int z)
 {
+  zoomTo(x, y, z, 400);
+  /*
   QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
   int width = imin3(400, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }
   zoomTo(x, y, z, width);
+  */
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

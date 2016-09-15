@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>524</height>
+    <width>408</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -176,6 +176,24 @@
      <item>
       <widget class="QLineEdit" name="labelBlockLineEdit"/>
      </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <item>
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Multires</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="maxZoomSpinBox">
+         <property name="maximum">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </item>
    <item>
@@ -203,6 +221,13 @@
      </item>
      <item>
       <widget class="QLineEdit" name="tileLineEdit"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="lowQualityCheckBox">
+       <property name="text">
+        <string>low quality</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -252,6 +277,20 @@
         <string>Edit</string>
        </property>
       </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_16">
+     <item>
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>ROI</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="roiLineEdit"/>
      </item>
     </layout>
    </item>

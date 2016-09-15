@@ -33,8 +33,8 @@ public slots:
 
 private slots:
     void ShowContextMenu(const QPoint& pos);
-    void on_actionShowSWC_triggered();
-    void on_actionTurnOffSWC_triggered();
+//    void on_actionShowSWC_triggered();
+//    void on_actionTurnOffSWC_triggered();
     void keyPressEvent(QKeyEvent *event);
     void showSwc(bool on);
 

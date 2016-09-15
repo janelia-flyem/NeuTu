@@ -5,7 +5,7 @@
 #include "zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
-
+#include "neutubeconfig.h"
 
 ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -87,6 +87,7 @@ void ZGraphObjsModel::updateModelData()
   QList<QVariant> rootData;
   rootData << "Graph" << "Source";
 
+  ZOUT(LTRACE(), 5) << "Update graph model";
   m_rootItem = new ZObjsItem(
         rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH)));
   setupModelData(m_rootItem);
@@ -103,6 +104,7 @@ void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
   m_graphSourceParentToRow.clear();
   m_graphSeparatedByFile.clear();
   int sourceParentRow = 0;
+  ZOUT(LTRACE(), 5) << "Setup graph model";
   QList<ZStackObject*> graphList =
       m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   int numDigit = numDigits(graphList.size()+1);

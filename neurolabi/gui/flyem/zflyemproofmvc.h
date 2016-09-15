@@ -5,6 +5,9 @@
 #include <QString>
 #include <QMetaType>
 #include <QSharedPointer>
+#include <QMap>
+
+#include "neutube_def.h"
 #include "zstackmvc.h"
 #include "flyem/zflyembodysplitproject.h"
 #include "flyem/zflyembodymergeproject.h"
@@ -29,6 +32,13 @@ class ZFlyEmDataFrame;
 class FlyEmTodoDialog;
 class ZClickableColorLabel;
 class ZColorLabel;
+class ZFlyEmSynapseDataFetcher;
+class ZFlyEmSynapseDataUpdater;
+class ZDvidPatchDataFetcher;
+class ZDvidPatchDataUpdater;
+class ZFlyEmRoiToolDialog;
+class QSortFilterProxyModel;
+class ZFlyEmBookmarkView;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -81,6 +91,26 @@ public:
     return &m_mergeProject;
   }
 
+//  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+//  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
+//  QSortFilterProxyModel* getAssignedBookmarkProxy() const;
+//  QSortFilterProxyModel* getUserBookmarkProxy() const;
+
+  ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
+     FlyEM::EProofreadingMode mode) const {
+    return m_assignedBookmarkModel[mode];
+  }
+
+  ZFlyEmBookmarkListModel* getUserBookmarkModel(
+     FlyEM::EProofreadingMode mode) const {
+    return m_userBookmarkModel[mode];
+  }
+
+  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
+  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+
+  void registerBookmarkView(ZFlyEmBookmarkView *view);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -97,7 +127,7 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
-  void highlightModeEnabled(bool);
+//  void highlightModeEnabled(bool);
   void highlightModeChanged();
   void roiLoaded();
 
@@ -146,6 +176,7 @@ public slots:
   void showSkeletonWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
+  void showRoi3dWindow();
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
 
@@ -167,16 +198,20 @@ public slots:
   void xorSelectionAt(int x, int y, int z);
   void deselectAllBody();
   void selectSeed();
+  void setMainSeed();
   void selectAllSeed();
   void recoverSeed();
   void exportSeed();
   void importSeed();
   void runSplit();
+  void runLocalSplit();
 
   void loadSynapse();
+  void goToTBar();
   void showSynapseAnnotation(bool visible);
   void showBookmark(bool visible);
   void showSegmentation(bool visible);
+  void showRoiMask(bool visible);
   void showData(bool visible);
   void setHighContrast(bool on);
   void toggleSegmentation();
@@ -187,6 +222,13 @@ public slots:
   void openSequencer();
   void openProtocol();
   void openTodo();
+  void openRoiTool();
+
+  void goToNearestRoi();
+  void loadRoiProject();
+  void closeRoiProject();
+  void updateRoiGlyph();
+  void estimateRoi();
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -195,7 +237,14 @@ public slots:
 
   void annotateBookmark(ZFlyEmBookmark *bookmark);
 
+  void updateBookmarkTable();
   void updateUserBookmarkTable();
+  void updateAssignedBookmarkTable();
+  void appendAssignedBookmarkTable(const QList<ZFlyEmBookmark*> &bookmarkList);
+  void appendUserBookmarkTable(const QList<ZFlyEmBookmark*> &bookmarkList);
+//  void updateAssignedBookmarkTable();
+  void sortUserBookmarkTable();
+  void sortAssignedBookmarkTable();
 
   void processCheckedUserBookmark(ZFlyEmBookmark *bookmark);
 
@@ -207,6 +256,7 @@ public slots:
   void removeBookmark(ZFlyEmBookmark *bookmark);
   void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
 
+  void highlightSelectedObject(ZDvidLabelSlice *labelSlice, bool hl);
   void highlightSelectedObject(bool hl);
 
   void syncMergeWithDvid();
@@ -226,6 +276,7 @@ protected slots:
   void detachSplitWindow();
   void detachSkeletonWindow();
   void detachObjectWindow();
+  void detachRoiWindow();
   void detachExternalNeuronWindow();
   void detachOrthoWindow();
   void detachQueryWindow();
@@ -243,17 +294,20 @@ protected slots:
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
+  void updateBodyMerge();
   void updateCoarseBodyWindowColor();
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+//  void notifyBookmarkDeleted();
 
 protected:
   void customInit();
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
+  void enableSynapseFetcher();
 
 private:
   void init();
@@ -262,8 +316,8 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
-  void notifyBookmarkUpdated();
-  void notifyBookmarkDeleted();
+  void runLocalSplitFunc();
+//  void notifyBookmarkUpdated();
 
   void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
@@ -288,10 +342,27 @@ private:
   void updateBodyWindowPlane(
       Z3DWindow *window, const ZStackViewParam &viewParam);
   ZDvidLabelSlice* getDvidLabelSlice() const;
+
+  void clearAssignedBookmarkModel();
+  void clearUserBookmarkModel();
+//  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
+//                            QSortFilterProxyModel *proxy);
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
   ZFlyEmBodyMergeProject m_mergeProject;
+
+  QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
+  m_assignedBookmarkModel;
+  QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
+  m_userBookmarkModel;
+
+//  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
+//  ZFlyEmBookmarkListModel *m_userBookmarkList;
+
+//  QSortFilterProxyModel *m_assignedBookmarkProxy;
+//  QSortFilterProxyModel *m_userBookmarkProxy;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
 
   ZThreadFutureMap m_futureMap;
@@ -305,6 +376,7 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
+  ZFlyEmRoiToolDialog *m_roiDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -314,6 +386,7 @@ protected:
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
+  Z3DWindow *m_roiWindow;
   ZFlyEmOrthoWindow *m_orthoWindow;
 //  ZFlyEmDataFrame *m_queryWindow;
   QSharedPointer<ZWindowFactory> m_bodyWindowFactory;
@@ -327,6 +400,11 @@ protected:
   std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
 
+  //Data fetching
+  ZFlyEmSynapseDataFetcher *m_seFetcher;
+  ZFlyEmSynapseDataUpdater *m_seUpdater;
+//  ZDvidPatchDataFetcher *m_patchFetcher;
+//  ZDvidPatchDataUpdater *m_patchUpdater;
 };
 
 template <typename T>
@@ -335,8 +413,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
   connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
-  connect(panel, SIGNAL(edgeModeToggled(bool)),
-          this, SLOT(toggleEdgeMode(bool)));
+//  connect(panel, SIGNAL(edgeModeToggled(bool)),
+//          this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           panel, SLOT(setDvidInfo(ZDvidTarget)));
@@ -360,22 +438,22 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
-  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
-          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
-  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),
-          panel, SLOT(clearBookmarkTable(ZFlyEmBodyMergeProject*)));
-  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
-          this, SLOT(recordCheckedBookmark(QString, bool)));
-  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
-  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
-          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
-  connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
-          this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
-  connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
-  connect(panel, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
-          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
+//  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
+//          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
+//  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),
+//          panel, SLOT(clearBookmarkTable(ZFlyEmBodyMergeProject*)));
+//  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
+//          this, SLOT(recordCheckedBookmark(QString, bool)));
+//  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
+//  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
+//          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
+//  connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
+//          this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
+//  connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
+//          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
+//  connect(panel, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
+//          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
   connect(this, SIGNAL(nameColorMapReady(bool)),
@@ -405,14 +483,15 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
   connect(panel, SIGNAL(loadingBookmark(QString)),
           this, SLOT(loadBookmark(QString)));
-  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
-          panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
-  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodySplitProject*)),
-          panel, SLOT(clearBookmarkTable(ZFlyEmBodySplitProject*)));
-  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
-          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
+//  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
+//          panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
+//  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodySplitProject*)),
+//          panel, SLOT(clearBookmarkTable(ZFlyEmBodySplitProject*)));
+//  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
+//          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),
           this, SLOT(zoomTo(int, int, int)));
+  connect(panel, SIGNAL(settingMainSeed()), this, SLOT(setMainSeed()));
   connect(panel, SIGNAL(selectingSeed()), this, SLOT(selectSeed()));
   connect(panel, SIGNAL(selectingAllSeed()), this, SLOT(selectAllSeed()));
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));

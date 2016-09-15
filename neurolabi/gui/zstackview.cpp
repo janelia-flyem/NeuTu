@@ -60,6 +60,7 @@ ZStackView::~ZStackView()
   m_imagePainter.end();
   m_objectCanvasPainter.end();
   m_tileCanvasPainter.end();
+//  m_dynamicObjectCanvasPainter.end();
 
   if (m_image != NULL) {
     delete m_image;
@@ -83,16 +84,18 @@ ZStackView::~ZStackView()
 
 void ZStackView::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
 
   m_zSpinBox = new ZLabeledSpinBoxWidget(this);
   m_zSpinBox->setLabel("Z:");
+  m_zSpinBox->setFocusPolicy(Qt::ClickFocus);
 
   m_imageWidget = new ZImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding,
                                QSizePolicy::Expanding);
-  m_imageWidget->setFocusPolicy(Qt::StrongFocus);
+  m_imageWidget->setFocusPolicy(Qt::ClickFocus);
   m_imageWidget->setPaintBundle(&m_paintBundle);
 
   setSliceAxis(NeuTube::Z_AXIS);
@@ -235,6 +238,20 @@ void ZStackView::setInfo(QString info)
   }
 }
 
+bool ZStackView::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *ke = (QKeyEvent*)(event);
+    if (ke != NULL) {
+      if (ke->key() == Qt::Key_Tab) {
+        event->ignore();
+        return false;
+      }
+    }
+  }
+
+  return QWidget::event(event);
+}
 
 
 void ZStackView::connectSignalSlot()
@@ -623,10 +640,8 @@ void ZStackView::updatePaintBundle()
 
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
-#ifdef _DEBUG_2
-  qDebug() << "ZStackView::updateImageScreen: index="
+  ZOUT(LTRACE(), 5) << "ZStackView::updateImageScreen: index="
            << this->getZ(NeuTube::COORD_STACK);
-#endif
 
   if (option != UPDATE_NONE) {
     updatePaintBundle();
@@ -636,10 +651,7 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     m_imageWidget->blockPaint(blockingPaint);
 
-    if (NeutubeConfig::GetVerboseLevel() >= 2) {
-      qDebug() << "Blocking paint:" <<blockingPaint;
-      qDebug() << "Updating image widget" << m_imageWidget->screenSize();
-    }
+    ZOUT(LTRACE(), 5) << "Updating image widget" << m_imageWidget->screenSize();
 
     switch (option) {
     case UPDATE_QUEUED:
@@ -825,23 +837,25 @@ void ZStackView::redraw(EUpdateOption option)
         box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
 
+  /*
   buddyDocument()->blockSignals(true);
   buddyDocument()->showSwcFullSkeleton(
         buddyPresenter()->isSwcFullSkeletonVisible());
   buddyDocument()->blockSignals(false);
+  */
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
-  std::cout << "paint stack per frame: " << stackPaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint stack per frame: " << stackPaintTime;
   paintMaskBuffer();
   paintTileCanvasBuffer();
   qint64 tilePaintTime = timer.elapsed();
-  std::cout << "paint tile per frame: " << tilePaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint tile per frame: " << tilePaintTime;
   paintActiveDecorationBuffer();
   paintDynamicObjectBuffer();
   paintObjectBuffer();
   qint64 objectPaintTime = timer.elapsed();
-  std::cout << "paint object per frame: " << objectPaintTime << std::endl;
+  ZOUT(LTRACE(), 5) << "paint object per frame: " << objectPaintTime;
 
   updateImageScreen(option);
 
@@ -851,7 +865,7 @@ void ZStackView::redraw(EUpdateOption option)
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
 
-  qDebug() << "paint time per frame: " << paintTime;
+  LINFO() << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
     LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
             << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
@@ -1204,7 +1218,8 @@ void ZStackView::updateImageCanvas()
     if (m_image == NULL) {
 //      double scale = 0.5;
       if (buddyDocument()->hasStackData() &&
-          buddyDocument()->getStack()->kind() == GREY) {
+          buddyDocument()->getStack()->kind() == GREY &&
+          buddyDocument()->getStack()->channelNumber() == 1) {
         m_image = new ZImage(
               box.getWidth(), box.getHeight(), QImage::Format_Indexed8);
       } else {
@@ -1428,6 +1443,8 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
           QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
     transform.setScale(1.0, 1.0);
     transform.setOffset(-viewPort.left(), -viewPort.top());
+  } else {
+    canvas->getProjTransform().setScale(1.0, 1.0);
   }
 
   canvas->setTransform(transform);
@@ -1443,93 +1460,24 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
 void ZStackView::updateDynamicObjectCanvas()
 {
-  m_dynamicObjectCanvas = updateProjCanvas(m_dynamicObjectCanvas);
-  m_imageWidget->setDynamicObjectCanvas(m_dynamicObjectCanvas);
+  ZPixmap *newCanvas = updateProjCanvas(m_dynamicObjectCanvas);
+  m_imageWidget->setDynamicObjectCanvas(newCanvas);
+
+  if (m_dynamicObjectCanvas != newCanvas) {
+    m_dynamicObjectCanvas = newCanvas;
+    /* //doesn't work here. not sure why
+    m_dynamicObjectCanvasPainter.end();
+    if (m_dynamicObjectCanvas != NULL) {
+      m_dynamicObjectCanvasPainter.begin(m_dynamicObjectCanvas);
+    }
+    */
+  }
 }
 
 void ZStackView::updateActiveDecorationCanvas()
 {
   m_activeDecorationCanvas = updateProjCanvas(m_activeDecorationCanvas);
   m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-#if 0
-//  if (m_activeDecorationCanvas != NULL) {
-//    if (m_activeDecorationCanvas->width() != m_image->width() ||
-//        m_activeDecorationCanvas->height() != m_image->height()) {
-//      delete m_activeDecorationCanvas;
-//      m_activeDecorationCanvas = NULL;
-//    }
-//  }
-
-  qDebug() << "Updating active decoration";
-  qDebug() << "  Projection:" << getProjRegion();
-
-  ZStTransform transform = getViewTransform();
-
-  QSize newSize = getProjRegion().size().toSize();
-
-  if (transform.getSx() > 1.1) {
-    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-    newSize = viewPort.size();
-    m_activeDecorationCanvas->getProjTransform().estimate(
-          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
-    transform.setScale(1.0, 1.0);
-    transform.setOffset(-viewPort.left(), -viewPort.top());
-  }
-
-  qDebug() << "  Canvas size" << newSize;
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->size() != newSize) {
-      delete m_activeDecorationCanvas;
-      m_activeDecorationCanvas = NULL;
-    }
-  }
-
-  if (m_activeDecorationCanvas == NULL) {
-    m_activeDecorationCanvas = new ZPixmap(newSize);
-  }
-
-
-#if 0
-  ZStTransform transform;
-  QRectF targetRect = getProjRegion();
-  targetRect.setSize(newSize);
-  transform.estimate(m_imageWidget->viewPort(), targetRect);
-#endif
-
-  m_activeDecorationCanvas->setTransform(transform);
-
-  m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->isVisible()){
-      m_activeDecorationCanvas->cleanUp();
-    }
-  }
-
-#if 0
-  resetCanvasWithStack(m_activeDecorationCanvas, NULL);
-
-  if (m_activeDecorationCanvas == NULL) {
-    QSize canvasSize = getCanvasSize();
-    if (!canvasSize.isEmpty()) {
-      m_activeDecorationCanvas = new ZPixmap(canvasSize);//m_image->createMask();
-      ZIntCuboid box = getViewBoundBox();
-      m_activeDecorationCanvas->setOffset(
-            -box.getFirstCorner().getX(),
-            -box.getFirstCorner().getY());
-      m_imageWidget->setActiveDecorationCanvas(m_activeDecorationCanvas);
-//      m_imageWidget->setMask(m_activeDecorationCanvas, 2);
-    }
-  }
-
-  if (m_activeDecorationCanvas != NULL) {
-    if (m_activeDecorationCanvas->isVisible()){
-      m_activeDecorationCanvas->cleanUp();
-    }
-  }
-#endif
-#endif
 }
 
 void ZStackView::paintMultiresImageTest(int resLevel)
@@ -1686,9 +1634,7 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZPainter &painter, ZStackObject::ETarget target)
 {
-  if (NeutubeConfig::GetVerboseLevel() >= 2) {
-    qDebug() << painter.getTransform();
-  }
+  ZOUT(LTRACE(), 5) << painter.getTransform();
 
   ZStackObjectPainter paintHelper;
   paintHelper.setRestoringPainter(true);
@@ -1725,13 +1671,9 @@ void ZStackView::paintObjectBuffer(
       std::sort(visibleObject.begin(), visibleObject.end(),
                 ZStackObject::ZOrderLessThan());
 
-#ifdef _DEBUG_2
-      std::cout << "---" << std::endl;
-      std::cout << slice << " " << m_depthControl->value() <<  std::endl;
-#endif
-      if (NeutubeConfig::GetVerboseLevel() >= 2) {
-        std::cout << "Displaying objects ..." << std::endl;
-      }
+
+      ZOUT(LTRACE(), 5) << "Displaying objects ...";
+
       for (int i = 0; i < visibleObject.size(); ++i) {
         /*
       }
@@ -1742,9 +1684,8 @@ void ZStackView::paintObjectBuffer(
         */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
-          if (NeutubeConfig::GetVerboseLevel() >= 2) {
-            std::cout << obj->className() << std::endl;
-          }
+          ZOUT(LTRACE(), 5) << obj->className();
+
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);
@@ -1786,22 +1727,28 @@ void ZStackView::paintObjectBuffer()
     std::cout << "ZStackView::paintObjectBuffer" << std::endl;
   }
 
-  updateObjectCanvas();
 
-  /*
+  if (buddyPresenter()->isObjectVisible()) {
+    updateObjectCanvas();
+
+    /*
   ZPixmap *objectCanvas = imageWidget()->getObjectCanvas();
   if (objectCanvas != NULL) {
     objectCanvas->cleanUp();
   }
   */
 
-  /*
+    /*
   if (m_objectCanvas == NULL) {
     return;
   }
   */
 
-  paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
+    paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
+  } else {
+    m_objectCanvasPainter.setPainted(false);
+    m_objectCanvas.setVisible(false);
+  }
 
   /*
   if (m_objectCanvasPainter.isPainted()) {
@@ -1891,7 +1838,7 @@ void ZStackView::paintObject(
 
 void ZStackView::paintDynamicObjectBuffer()
 {
-#if 0
+#if 1
   updateDynamicObjectCanvas();
 
   if (m_dynamicObjectCanvas != NULL) {
@@ -2166,10 +2113,10 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
   zoomTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
-void ZStackView::zoomTo(int x, int y, int z)
+void ZStackView::zoomTo(int x, int y, int z, int w)
 {
   QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-  int width = imin3(800, viewPort.width(), viewPort.height());
+  int width = imin3(w, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }
@@ -2192,6 +2139,11 @@ void ZStackView::zoomTo(int x, int y, int z)
   setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
 }
 
+void ZStackView::zoomTo(int x, int y, int z)
+{
+  zoomTo(x, y, z, 800);
+}
+
 void ZStackView::increaseZoomRatio()
 {
   increaseZoomRatio(0, 0, false);
@@ -2210,7 +2162,6 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
     imageWidget()->blockPaint(true);
     imageWidget()->increaseZoomRatio(x, y, usingRef);
 //    reloadCanvas();
-
     if (buddyPresenter()->interactiveContext().exploreMode() !=
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
       reloadTileCanvas();
@@ -2317,6 +2268,7 @@ ZStackViewParam ZStackView::getViewParameter(
   ZStackViewParam param(coordSys);
   param.setZ(getZ(coordSys));
   param.setViewPort(getViewPort(coordSys));
+  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
   //param.setViewPort(imageWidget()->viewPort());
@@ -2327,7 +2279,7 @@ ZStackViewParam ZStackView::getViewParameter(
 ZStTransform ZStackView::getViewTransform() const
 {
   ZStTransform transform;
-  transform.estimate(m_imageWidget->viewPort(), getProjRegion());
+  transform.estimate(getViewPort(NeuTube::COORD_STACK), getProjRegion());
 
   return transform;
 }
@@ -2455,7 +2407,7 @@ void ZStackView::processDepthSliderValueChange()
 
 void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
-  qDebug() << "ZStackView::processDepthSliderValueChange" << sliceIndex;
+  ZOUT(LTRACE(), 5)<< "ZStackView::processDepthSliderValueChange" << sliceIndex;
   /*
   bool hasActiveSlice = false;
   QList<ZDvidLabelSlice*> sliceList = buddyDocument()->getDvidLabelSliceList();
@@ -2503,6 +2455,7 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData(
     }
   } else {
     updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);
+    updater.exclude(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   }
 
   updater.update(param);
@@ -2809,6 +2762,9 @@ void ZStackView::setCanvasVisible(ZStackObject::ETarget target, bool visible)
     }
     */
     break;
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    m_dynamicObjectCanvas->setVisible(true);
+    break;
   default:
     break;
   }
@@ -2821,6 +2777,8 @@ ZPixmap* ZStackView::getCanvas(ZStackObject::ETarget target)
     return imageWidget()->getObjectCanvas();
   case ZStackObject::TARGET_TILE_CANVAS:
     return imageWidget()->getTileCanvas();
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    return imageWidget()->getDynamicObjectCanvas();
   default:
     break;
   }
@@ -2852,6 +2810,15 @@ ZPainter* ZStackView::getPainter(ZStackObject::ETarget target)
     }
 
     return &m_tileCanvasPainter;
+#if 0
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    updateDynamicObjectCanvas();
+    if (!m_dynamicObjectCanvasPainter.isActive()) {
+      return NULL;
+    }
+
+    return &m_dynamicObjectCanvasPainter;
+#endif
   default:
     break;
   }
@@ -2864,6 +2831,10 @@ void ZStackView::paintObjectBuffer(ZStackObject::ETarget target)
   ZPainter *painter = getPainter(target);
   if (painter != NULL) {
     paintObjectBuffer(*painter, target);
+  } else {
+    if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+      paintDynamicObjectBuffer();
+    }
   }
 }
 
@@ -2875,10 +2846,11 @@ void ZStackView::paintObject(ZStackObject::ETarget target)
 //    if (painter->isPainted()) {
       updateImageScreen(UPDATE_QUEUED);
 //    }
-  } else {
-    if (target == ZStackObject::TARGET_WIDGET) {
-      updateImageScreen(UPDATE_QUEUED);
-    }
+  } else if (target == ZStackObject::TARGET_WIDGET) {
+    updateImageScreen(UPDATE_QUEUED);
+  } else if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+    paintDynamicObjectBuffer();
+    updateImageScreen(UPDATE_QUEUED);
   }
 }
 
@@ -2898,6 +2870,9 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
       isPainted = true;
     } else if (target == ZStackObject::TARGET_WIDGET) {
       isPainted = true;
+    } else if (target == ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS) {
+       paintDynamicObjectBuffer();
+       isPainted = true;
     }
   }
 
@@ -2909,6 +2884,11 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
 void ZStackView::dump(const QString &msg)
 {
   m_msgLabel->setText(msg);
+}
+
+void ZStackView::highlightPosition(const ZIntPoint &pt)
+{
+  highlightPosition(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZStackView::highlightPosition(int x, int y, int z)

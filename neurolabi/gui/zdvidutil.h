@@ -6,6 +6,7 @@
 
 class ZJsonValue;
 class ZDvidTarget;
+class ZJsonObject;
 
 namespace ZDvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -40,6 +41,13 @@ libdvid::BinaryDataPtr Post(
 libdvid::BinaryDataPtr Post(
     const std::string &url, const std::string &payload, bool isJson);
 */
+
+//Functions for extracing DVID info
+ZJsonObject GetDag(const ZJsonObject &obj);
+ZJsonObject GetDataInstances(const ZJsonObject &obj);
+ZJsonObject GetDataInstances(const std::string &uuid);
+ZJsonObject GetDataInstances(const std::string &type);
+
 #endif
 }
 

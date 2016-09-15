@@ -176,6 +176,7 @@
 #include "neutubeconfig.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zfileparser.h"
+#include "dialogs/zdvidbodypositiondialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -468,6 +469,9 @@ void MainWindow::initDialog()
   m_testDlg = new ZTestDialog(this);
   m_testDlg2 = new ZTestDialog2(this);
 
+  m_bodyPosDlg = new ZDvidBodyPositionDialog(this);
+  m_bodyPosDlg->setDvidDialog(m_dvidDlg);
+
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
   m_bodySplitProjectDialog = NULL;
@@ -756,7 +760,7 @@ void MainWindow::createActions()
   testAction = new QAction(tr("&Test"), this);
   testAction->setShortcut(tr("Ctrl+T"));
   testAction->setStatusTip(tr("Test"));
-  testAction->setIcon(QIcon(":/images/test.png"));
+  testAction->setIcon(QIcon(":/images/science.png"));
   connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
 
   testAction2 = new QAction(tr("Test2"), this);
@@ -1413,7 +1417,7 @@ void MainWindow::updateViewMode(QAction *action)
       frame->setViewMode(ZInteractiveContext::VIEW_NORMAL);
       frame->updateView();
     } else if (action == m_ui->actionProject) {
-      qDebug() << action->isChecked();
+      ZOUT(LTRACE(), 5) << action->isChecked();
       frame->setViewMode(ZInteractiveContext::VIEW_PROJECT);
       frame->updateView();
     }
@@ -2183,7 +2187,7 @@ void MainWindow::about()
   }
 #endif
   QString thirdPartyLib = QString(
-        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
+        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
       .arg(QApplication::applicationDirPath());
   QMessageBox::about(this, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
                      title +
@@ -2549,13 +2553,13 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
       for (int i=0; i<std::min(nChannel, m_bcDlg->getMaxNumOfChannel()); i++) {
         m_bcDlg->setRange(frame->document()->getStack()->min(i),
                           frame->document()->getStack()->max(i), i);
-        qDebug() << frame->document()->getStack()->min(i) <<
+        ZOUT(LTRACE(), 5) << frame->document()->getStack()->min(i) <<
                     ' ' << frame->document()->getStack()->max(i) << "\n";
 
         m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
                           iround(frame->displayGreyMax(i)), i);
 
-        qDebug() << frame->displayGreyMin(i) << ' ' <<
+        ZOUT(LTRACE(), 5) << frame->displayGreyMin(i) << ' ' <<
                     iround(frame->displayGreyMax(i)) << "\n";
       }
     }
@@ -2676,7 +2680,7 @@ void MainWindow::on_actionUpdate_triggered()
 {
   if (currentStackFrame() != NULL) {
     currentStackFrame()->document()->reloadStack();
-    qDebug() << "Updating slider\n";
+    ZOUT(LTRACE(), 5)<< "Updating slider\n";
     currentStackFrame()->view()->updateSlider();
     currentStackFrame()->updateView();
   }
@@ -2725,8 +2729,8 @@ void MainWindow::on_actionManual_triggered()
 {
   QStringList args;
   args.append(QApplication::applicationDirPath() + "/../../itube_manual.pdf");
-  qDebug() << args << '\n';
-  qDebug() << QProcess::execute("/usr/bin/open", args)<< '\n';
+  ZOUT(LTRACE(), 5)<< args << '\n';
+  ZOUT(LTRACE(), 5) << QProcess::execute("/usr/bin/open", args)<< '\n';
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -2770,7 +2774,7 @@ void MainWindow::on_actionSave_triggered()
       }
       dataFile.truncate(dataFile.lastIndexOf('/'));
 
-      qDebug() << dataFile;
+      ZOUT(LTRACE(), 5) << dataFile;
 
       QString fileName = getSaveFileName(
             "Save tracing project", "Tracing project",
@@ -2780,7 +2784,7 @@ void MainWindow::on_actionSave_triggered()
                                        dataFile + "/untitled.trace",
                                        tr("Tracing project"), 0);
 #endif
-      qDebug() << fileName;
+      ZOUT(LTRACE(), 5) << fileName;
 
       if (!fileName.isEmpty()) {
         frame->saveProjectAs(fileName);
@@ -2882,7 +2886,7 @@ void MainWindow::on_actionSave_As_triggered()
     }
     dataFile.truncate(dataFile.lastIndexOf('/'));
 
-    qDebug() << dataFile;
+    ZOUT(LTRACE(), 5) << dataFile;
 
     QString fileName = getSaveFileName(
           "Save tracing project", "Tracing project",
@@ -3227,6 +3231,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       ZStack backupStack;
       ZObject3dScan *obj = NULL;
       if (stackData == NULL) {
+        ZOUT(LTRACE(), 5) << "Skeletonization";
         QList<ZSparseObject*> objList =
             frame->document()->getObjectList<ZSparseObject>();
         if (!objList.isEmpty()) {
@@ -4022,6 +4027,7 @@ void MainWindow::on_actionExtract_body_triggered()
   }
 }
 
+/*
 void MainWindow::on_actionPredict_errors_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -4032,7 +4038,7 @@ void MainWindow::on_actionPredict_errors_triggered()
     }
   }
 }
-
+*/
 void MainWindow::on_actionCompute_Features_triggered()
 {
   ZStackFrame *frame = activeStackFrame();
@@ -5542,10 +5548,16 @@ void MainWindow::createDvidFrame()
 #endif
 }
 
+#if 0
 void MainWindow::on_actionDVID_Object_triggered()
 {
 
 }
+void MainWindow::on_actionDvid_Object_triggered()
+{
+
+}
+#endif
 
 void MainWindow::cancelDvidRequest()
 {
@@ -5556,10 +5568,7 @@ void MainWindow::cancelDvidRequest()
   getProgressDialog()->setCancelButton(0);
 }
 
-void MainWindow::on_actionDvid_Object_triggered()
-{
 
-}
 
 void MainWindow::on_actionAssign_Clustering_triggered()
 {
@@ -6044,7 +6053,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   uint64_t sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
 
-  qDebug() << "Model loaded.";
+  ZOUT(LTRACE(), 5) << "Model loaded.";
 
   ZSwcTree *unscaledTree = tree->clone();
   tree->scale(dvidInfo.getVoxelResolution().voxelSizeX(),
@@ -6165,7 +6174,7 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
     ZStackFrame *frame =
         hotSpotDemo(bodyId, m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
 #else
-    qDebug() << dataInfo.getDvidAddressWithPort().c_str();
+    ZOUT(LTRACE(), 5) << dataInfo.getDvidAddressWithPort().c_str();
 
     QFuture<ZStackDocReader*> res;
 
@@ -6929,10 +6938,10 @@ void MainWindow::on_actionCreate_Databundle_triggered()
 {
 
 }
-
+#if 0
 void MainWindow::on_actionCreate_Thumbnails_triggered()
 {
-#if 0
+
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -6965,9 +6974,9 @@ void MainWindow::on_actionCreate_Thumbnails_triggered()
       }
     }
   }
-#endif
-}
 
+}
+#endif
 void MainWindow::on_actionCreate_ROI_triggered()
 {
 
@@ -6975,8 +6984,12 @@ void MainWindow::on_actionCreate_ROI_triggered()
 
 void MainWindow::on_actionFlyEmROI_triggered()
 {
+  report("Warning", "The ROI tool is under maintainence. Please wait for the update.",
+         NeuTube::MSG_WARNING);
+#if 0
   m_roiDlg->show();
   m_roiDlg->raise();
+#endif
 }
 
 void MainWindow::on_actionShape_Matching_triggered()
@@ -7924,7 +7937,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 1190582;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -7964,7 +7977,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 8862577;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8003,7 +8016,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 2089450;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, NeuTube::FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8075,4 +8088,15 @@ void MainWindow::on_actionGenerate_PAM_Actor_triggered()
 void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
 {
   generateMBONConnCast("movie7");
+}
+
+QMenu* MainWindow::getSandboxMenu() const
+{
+  return m_ui->menuSandbox;
+}
+
+void MainWindow::on_actionGet_Body_Positions_triggered()
+{
+  m_bodyPosDlg->show();
+  m_bodyPosDlg->raise();
 }

@@ -48,8 +48,10 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(loadBody()));
   connect(ui->loadBookmarkButton, SIGNAL(clicked()),
           this, SLOT(loadBookmark()));
+  /*
   connect(ui->bookmarkVisibleCheckBox, SIGNAL(toggled(bool)),
           &m_project, SLOT(showBookmark(bool)));
+          */
   connect(ui->quickViewPushButton, SIGNAL(clicked()), this, SLOT(quickView()));
   connect(ui->fullGrayscaleCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(viewFullGrayscale(bool)));
@@ -148,9 +150,10 @@ void FlyEmBodySplitProjectDialog::createMenu()
 
   QAction *removeBookmarkAction = new QAction("Remove All Bookmarks", this);
   m_mainMenu->addAction(removeBookmarkAction);
+  /*
   connect(removeBookmarkAction, SIGNAL(triggered()),
           this, SLOT(removeAllBookmark()));
-
+*/
   QAction *exportSplitAction = new QAction("Export splits", this);
   m_mainMenu->addAction(exportSplitAction);
   connect(exportSplitAction, SIGNAL(triggered()), this, SLOT(exportSplits()));
@@ -509,6 +512,7 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
     if (isBodyLoaded()) {
       //        m_project.clearBookmarkDecoration();
       //      foreach (ZFlyEmBookmark bookmark, bookmarkArray) {
+      ZOUT(LTRACE(), 5) << "Update bookmark table";
       const TStackObjectList &objList = m_project.getDocument()->
           getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
       for (TStackObjectList::const_iterator iter = objList.begin();
@@ -521,6 +525,11 @@ void FlyEmBodySplitProjectDialog::updateBookmarkTable()
       //      m_project.addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
     }
   }
+}
+
+void FlyEmBodySplitProjectDialog::clearAssignedBookmarkTable()
+{
+  m_bookmarkList.clear();
 }
 
 /*

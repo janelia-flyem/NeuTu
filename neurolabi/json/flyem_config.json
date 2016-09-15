@@ -1,5 +1,5 @@
 {
-  "librarian": "emdata2.int.janelia.org:9100",
+  "librarian": "emdata1.int.janelia.org:9100",
   "mb6_paper": false,
   "dvid root": {
     "@MB6": "99ef",
@@ -41,14 +41,16 @@
       "user_name": ["zhaot", "takemuras"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8000,
-      "uuid": "1c6e",
-      "name": "FIB19 (emdata1)",
-      "body_label": "segmentation012915nograph",
-      "comment": "FIB-19 data at MLOLP-Z1112-19R/align2/iso_rav (emdata1)",
-      "local": "/groups/flyem/data/zhaot/local/FIB19-emdata1",
-      "user_name": "[]"
+      "uuid": "dd02",
+      "name": "CX-PB",
+      "background": 0,
+      "body_label": "label2", 
+      "label_block": "pb-seg-np0.2-conservative-stitch",
+      "synapse": "rough_PB26_syn_flt_nms_unq",
+      "comment": "central complex",
+      "user_name": ["zhaot", "takemuras"]
     },
     {
       "address": "emdata2.int.janelia.org",
@@ -62,27 +64,28 @@
       "user_name": ["zhaot", "takemuras"] 
     },
     {
-      "address": "emdata2.int.janelia.org",
+      "address": "emdata1.int.janelia.org",
       "port": 7000,
       "uuid": "@FIB19",
-      "name": "FIB19 (emdata2)",
+      "name": "FIB19 (emdata1)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
       "multires_tile": "graytiles",
-      "synapse": "annot_synapse_060616",
+      "synapse": "annot_synapse_083116",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn"]
     },
     {
-      "address": "emdata2.int.janelia.org",
+      "address": "emdata1.int.janelia.org",
       "port": 7000,
       "uuid": "@FIB19",
-      "name": "FIB19_jpg (emdata2)",
+      "name": "FIB19_jpg (emdata1)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation",
-      "synapse": "annot_synapse_060616",
+      "synapse": "annot_synapse_083116",
       "multires_tile": "tiles-jpg",
+      "multires_tile_config": {"tiles-jpg": {"low_quality": true}},
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "cheathamn"]
     },
     {
@@ -216,7 +219,7 @@
       "body_label": "bodies3",
       "label_block": "labels3",
       "synapse": "mb6_synapses",
-      "user_name": ["takemuras", "zhaot"]
+      "user_name": ["takemuras", "zhaot", "olbrisd"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -362,7 +365,8 @@
       "name": "MB_Test",
       "comment": "MB seg (branched from febc)",
       "body_label": "bodies",
-      "label_block": "labels"
+      "label_block": "labels",
+      "roi": "mb_subtracted"
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -633,7 +637,7 @@
       "body_label": "bodies3",
       "label_block": "labels3",
       "roi": "mbroi",
-      "synapse": "mb6_synapses",
+      "synapse": "mb6_synapses_07182016",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd", "ansarin"]
     },
     {

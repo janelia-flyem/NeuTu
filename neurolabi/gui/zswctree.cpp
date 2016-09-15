@@ -36,6 +36,7 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#include "zintcuboid.h"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
 #endif
@@ -115,7 +116,7 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
   deprecate(ALL_COMPONENT);
 }
 
-bool ZSwcTree::hasRegularNode()
+bool ZSwcTree::hasRegularNode() const
 {
   if (m_tree != NULL) {
     if (SwcTreeNode::isRegular(m_tree->root)) {
@@ -583,6 +584,33 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   }
 
   if (getStructrualMode() == ZSwcTree::STRUCT_CLOSED_CURVE) {
+    ZSwcTree::RegularRootIterator rootIter(this);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
+      ZSwcTree::DownstreamIterator dsIter(tn);
+//      std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair;
+      std::vector<Swc_Tree_Node*> nodeArray;
+      while (dsIter.hasNext()) {
+        Swc_Tree_Node *tn = dsIter.next();
+        if (SwcTreeNode::isTerminal(tn)) {
+          nodeArray.push_back(tn);
+        }
+      }
+
+      if (nodeArray.size() == 2) {
+        QPointF lineStart, lineEnd;
+        bool visible = false;
+        computeLineSegment(
+              nodeArray[0], nodeArray[1], lineStart, lineEnd, visible,
+              dataFocus, isProj);
+        if (visible) {
+          pen.setColor(QColor(0, 255, 0));
+          painter.setPen(pen);
+          painter.drawLine(lineStart, lineEnd);
+        }
+      }
+    }
+    /*
     std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair =
         extractCurveTerminal();
     if (nodePair.first != NULL && nodePair.second != NULL) {
@@ -597,6 +625,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         painter.drawLine(lineStart, lineEnd);
       }
     }
+    */
   }
   //pen.setCosmetic(false);
 
@@ -1947,7 +1976,7 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
 
 ZSwcPath ZSwcTree::getLongestPath()
 {
-  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
+//  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
 
   const std::vector<Swc_Tree_Node*> leafArray =
       getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
@@ -1968,13 +1997,15 @@ ZSwcPath ZSwcTree::getLongestPath()
         //Find the common ancestor of the leaves
         Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(leafArray[i],
                                                               leafArray[j]);
-        double length = distanceArray[SwcTreeNode::index(leafArray[i])] +
-            distanceArray[SwcTreeNode::index(leafArray[j])] -
-            2.0 * distanceArray[SwcTreeNode::index(ancestor)];
-        if (length > maxLength) {
-          maxLength = length;
-          leaf1 = leafArray[i];
-          leaf2 = leafArray[j];
+        if (SwcTreeNode::isRegular(ancestor)) {
+          double length = distanceArray[SwcTreeNode::index(leafArray[i])] +
+              distanceArray[SwcTreeNode::index(leafArray[j])] -
+              2.0 * distanceArray[SwcTreeNode::index(ancestor)];
+          if (length > maxLength) {
+            maxLength = length;
+            leaf1 = leafArray[i];
+            leaf2 = leafArray[j];
+          }
         }
       }
     }
@@ -2648,6 +2679,15 @@ void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
   return;
 #endif
   }
+}
+
+Swc_Tree_Node* ZSwcTree::getThickestNode() const
+{
+  if (hasRegularNode()) {
+    return Swc_Tree_Thickest_Node(m_tree);
+  }
+
+  return NULL;
 }
 
 void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)

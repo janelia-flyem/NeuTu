@@ -27,7 +27,7 @@ public:
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
-    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
+    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
   };
 
   static NeutubeConfig& getInstance() {
@@ -43,6 +43,8 @@ public:
 
   static QString GetFlyEmConfigPath();
   static void SetFlyEmConfigPath(const QString &path);
+  static void UseDefaultFlyEmConfig(bool on);
+  static bool UsingDefaultFlyemConfig();
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
@@ -114,6 +116,15 @@ public:
   inline QSettings& getSettings() {
     return m_settings;
   }
+#if 0
+  inline QDebug& getTraceStream() {
+    return *m_traceStream;
+  }
+
+  static QDebug& GetTraceStream() {
+    return NeutubeConfig::getInstance().getTraceStream();
+  }
+#endif
 #endif
 
   class MainWindowConfig {
@@ -368,6 +379,7 @@ private:
   ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
+//  QDebug *m_traceStream;
   QSettings m_settings;
 #endif
 };

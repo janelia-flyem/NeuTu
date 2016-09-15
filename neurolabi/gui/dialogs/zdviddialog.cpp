@@ -86,7 +86,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentTarget()));
   connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
 
-  setFixedSize(size());
+//  setFixedSize(size());
 
   ui->roiLabel->hide();
   ui->roiPushButton->hide();
@@ -97,37 +97,6 @@ ZDvidDialog::~ZDvidDialog()
   delete ui;
 }
 
-/*
-void ZDvidDialog::loadConfig(const std::string &filePath)
-{
-  m_dvidRepo.resize(1);
-
-  ZJsonObject obj;
-  if (obj.load(filePath)) {
-    if (obj.hasKey(m_dvidRepoKey)) {
-      ZJsonArray dvidArray(obj[m_dvidRepoKey], false);
-      for (size_t i = 0; i < dvidArray.size(); ++i) {
-        ZJsonObject dvidObj(dvidArray.at(i), false);
-        ZDvidTarget target;
-        target.loadJsonObject(dvidObj);
-        if (target.isValid()) {
-          m_dvidRepo.push_back(target);
-          if (!target.getName().empty()) {
-            ui->serverComboBox->addItem(target.getName().c_str());
-          } else {
-            ui->serverComboBox->addItem(target.getSourceString(false).c_str());
-          }
-        }
-      }
-    }
-  }
-
-  if (m_dvidRepo.size() > 1) {
-    ui->serverComboBox->setCurrentIndex(1);
-    //setServer(1);
-  }
-}
-*/
 int ZDvidDialog::getPort() const
 {
   return ui->portSpinBox->value();
@@ -161,10 +130,17 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
       target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
     }
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
-    target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
+
+    std::string tileName = ui->tileLineEdit->text().toStdString();
+    target.setMultiscale2dName(tileName);
+    target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
+
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
+    target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
+    target.setRoiName(ui->roiLineEdit->text().toStdString());
+//    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
 
@@ -192,13 +168,22 @@ void ZDvidDialog::setServer(int index)
   ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
+  ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
+//  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
+  if (index == 0) {
+    ui->lowQualityCheckBox->setChecked(false);
+  } else {
+    ui->lowQualityCheckBox->setChecked(
+          dvidTarget.isLowQualityTile(dvidTarget.getMultiscale2dName()));
+  }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
   ui->librarianLineEdit->setText(
         dvidTarget.getSupervisor().empty() ?
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
+  ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
@@ -210,6 +195,9 @@ void ZDvidDialog::setServer(int index)
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
   ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
+  ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
+//  ui->labelszLineEdit->setReadOnly(!dvidTarget.isEditable());
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&

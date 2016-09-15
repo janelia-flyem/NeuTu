@@ -24,6 +24,7 @@ void ZFlyEmKeyOperationConfig::configure(
   {
     QMap<int, ZStackOperator::EOperation> &plainKeyMap = *(map.getPlainMap());
     plainKeyMap.remove(Qt::Key_F);
+    plainKeyMap.remove(Qt::Key_G);
   }
     break;
   default:

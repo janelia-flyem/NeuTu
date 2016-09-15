@@ -6,6 +6,8 @@
 #include <QPaintDevice>
 #include <QStaticText>
 
+#include "QsLog.h"
+#include "neutubeconfig.h"
 #include "zintpoint.h"
 #include "zimage.h"
 #include "tz_math.h"
@@ -69,6 +71,7 @@ bool ZPainter::begin(ZImage *image)
     transform.translate(imageTransform.getTx(), imageTransform.getTy());
     transform.scale(imageTransform.getSx(), imageTransform.getSy());
     m_painter.setTransform(transform);
+    m_transform = imageTransform;
     return true;
   }
 
@@ -84,14 +87,14 @@ bool ZPainter::begin(ZPixmap *image)
     const ZStTransform &imageTransform = image->getTransform();
     t.translate(imageTransform.getTx(), imageTransform.getTy());
     t.scale(imageTransform.getSx(), imageTransform.getSy());
+    m_transform = imageTransform;
 
     m_painter.setTransform(t);
 
-#ifdef _DEBUG_2
-    qDebug() << t;
-    qDebug() << this->getTransform();
+    ZOUT(LTRACE(), 5) << t;
+    ZOUT(LTRACE(), 5) << this->getTransform();
     //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
-#endif
+
     return true;
   }
 
@@ -216,6 +219,8 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
     //  QRect targetRect = transform().mapRect(QRect(
     //        x, y, iround(image.width() / image.getTransform().getSx()),
     //        iround(image.height() / image.getTransform().getSy())));
+//    x = iround(image.getTransform().transformX(x));
+//    y = iround(image.getTransform().transformY(y));
     QRect targetRect = QRect(
           x, y, iround(image.width() / image.getTransform().getSx()),
           iround(image.height() / image.getTransform().getSy()));
@@ -597,8 +602,30 @@ void ZPainter::drawRect(int x, int y, int width, int height)
 void ZPainter::drawPolyline(const QPointF * points, int pointCount)
 {
   if (points != NULL && pointCount > 0) {
-    m_painter.drawPolyline(points, pointCount);
-    setPainted(true);
+    double x1 = points[0].x();
+    double y1 = points[0].y();
+    double x2 = x1;
+    double y2 = y1;
+
+    for (int i = 1; i < pointCount; ++i) {
+      const QPointF &pt = points[i];
+      if (x1 > pt.x()) {
+        x1 = pt.x();
+      } else if (x2 < pt.x()) {
+        x2 = pt.x();
+      }
+
+      if (y1 > pt.y()) {
+        y1 = pt.y();
+      } else if (y2 < pt.y()) {
+        y2 = pt.y();
+      }
+    }
+
+    if (isVisible(x1, y1, x2, y2)) {
+      m_painter.drawPolyline(points, pointCount);
+      setPainted(true);
+    }
   }
 
 #ifdef _QT_GUI_USED_

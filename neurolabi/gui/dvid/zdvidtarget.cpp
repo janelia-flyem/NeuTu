@@ -21,22 +21,38 @@ const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
+const char* ZDvidTarget::m_tileConfigKey = "multires_tile_config";
 const char* ZDvidTarget::m_synapseNameKey = "synapse";
 const char* ZDvidTarget::m_userNameKey = "user_name";
 const char* ZDvidTarget::m_supervisorKey = "supervised";
 const char* ZDvidTarget::m_supervisorServerKey = "librarian";
+const char* ZDvidTarget::m_roiListKey = "roi_list";
 const char* ZDvidTarget::m_roiNameKey = "roi";
+const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
+const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
 
-ZDvidTarget::ZDvidTarget() : m_port(-1), m_isSupervised(true), m_bgValue(255),
-  m_isEditable(true)
+ZDvidTarget::ZDvidTarget()
 {
+  init();
 }
 
 ZDvidTarget::ZDvidTarget(
-    const std::string &address, const std::string &uuid, int port) :
-  m_isSupervised(true), m_bgValue(255), m_isEditable(true)
+    const std::string &address, const std::string &uuid, int port)
 {
+  init();
+
   set(address, uuid, port);
+}
+
+void ZDvidTarget::init()
+{
+  m_port = -1;
+  m_isSupervised = true;
+  m_bgValue = 255;
+  m_isEditable = true;
+  m_maxLabelZoom = 0;
+
+  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
@@ -68,17 +84,24 @@ void ZDvidTarget::set(
 void ZDvidTarget::clear()
 {
   set("", "", -1);
+  init();
   m_name = "";
   m_comment = "";
   m_localFolder = "";
   m_bodyLabelName = "";
   m_labelBlockName = "";
   m_multiscale2dName = "";
+
   m_grayScaleName = "";
+  m_synapseLabelszName = "";
 //  m_roiName = "";
   m_synapseName = "";
+  m_roiName = "";
   m_roiList.clear();
   m_userList.clear();
+  m_supervisorServer.clear();
+  m_tileConfig.clear();
+//  m_tileJson = ZJsonArray();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -160,7 +183,7 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 
   if (tokens.size() < 4 || tokens[0] != "http") {
 #if defined(_QT_APPLICATION_)
-    qWarning() << "Invalid source string for dvid target";
+    qWarning() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
     RECORD_WARNING_UNCOND("Invalid source string");
 #endif
@@ -228,18 +251,41 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bgValueKey, m_bgValue);
   obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+  obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
   obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
+  obj.setEntry(m_synapseLabelszKey, m_synapseLabelszName);
+  obj.setEntry(m_roiNameKey, m_roiName);
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
        iter != m_roiList.end(); ++iter) {
     jsonArray.append(*iter);
   }
-  obj.setEntry(m_roiNameKey, jsonArray);
+  obj.setEntry(m_roiListKey, jsonArray);
 
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  if (!m_tileConfig.isEmpty()) {
+    obj.setEntry(m_tileConfigKey, const_cast<ZJsonObject&>(m_tileConfig));
+  }
+
   obj.setEntry(m_synapseNameKey, m_synapseName);
+  obj.setEntry(m_supervisorKey, m_isSupervised);
+  obj.setEntry(m_supervisorServerKey, m_supervisorServer);
 
   return obj;
+}
+
+std::string ZDvidTarget::getSynapseLabelszName() const
+{
+  if (!m_synapseLabelszName.empty()) {
+    return m_synapseLabelszName;
+  }
+
+  if (getSynapseName().empty()) {
+    return "";
+  }
+
+  return ZDvidData::GetName(ZDvidData::ROLE_LABELSZ, ZDvidData::ROLE_SYNAPSE,
+                            getSynapseName());
 }
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
@@ -278,18 +324,36 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
     }
     if (obj.hasKey(m_multiscale2dNameKey)) {
-      setMultiscale2dName(ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
+      setMultiscale2dName(
+            ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
     }
-    if (obj.hasKey(m_roiNameKey)) {
-      ZJsonArray jsonArray(obj.value(m_roiNameKey));
+    if (obj.hasKey(m_tileConfigKey)) {
+      m_tileConfig = ZJsonObject(obj.value(m_tileConfigKey));
+    }
+
+    if (obj.hasKey(m_roiListKey)) {
+      ZJsonArray jsonArray(obj.value(m_roiListKey));
       for (size_t i = 0; i < jsonArray.size(); ++i) {
         addRoiName(ZJsonParser::stringValue(jsonArray.getData(), i));
       }
 //      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
     }
+    if (obj.hasKey(m_roiNameKey)) {
+      setRoiName(ZJsonParser::stringValue(obj[m_roiNameKey]));
+    }
     if (obj.hasKey(m_synapseNameKey)) {
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
     }
+
+    if (obj.hasKey(m_maxLabelZoomKey)) {
+      setMaxLabelZoom(ZJsonParser::integerValue(obj[m_maxLabelZoomKey]));
+    }
+
+    /*
+    if (obj.hasKey(m_labelszKey)) {
+      setLabelszName(ZJsonParser::stringValue(obj[m_labelszKey]));
+    }
+    */
 
     if (obj.hasKey(m_userNameKey)) {
       ZJsonValue value = obj.value(m_userNameKey);
@@ -316,12 +380,15 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
 
 std::string ZDvidTarget::getUrl() const
 {
-  ZString url = "http://" + m_address;
-  if (m_port >= 0) {
-    url += ":";
-    url.appendNumber(m_port);
+  ZString url = "";
+  if (isValid()) {
+    url = "http://" + m_address;
+    if (m_port >= 0) {
+      url += ":";
+      url.appendNumber(m_port);
+    }
+    url += "/api/node/" + m_uuid;
   }
-  url += "/api/node/" + m_uuid;
 
   return url;
 }
@@ -365,9 +432,21 @@ std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {
     return ZDvidData::GetName(ZDvidData::ROLE_BODY_LABEL);
+  } else if (ZDvidData::IsNullName(m_bodyLabelName)) {
+    return "";
   }
 
   return m_bodyLabelName;
+}
+
+bool ZDvidTarget::hasBodyLabel() const
+{
+  return !getBodyLabelName().empty();
+}
+
+bool ZDvidTarget::hasLabelBlock() const
+{
+  return !getLabelBlockName().empty();
 }
 
 std::string ZDvidTarget::getLabelBlockName() const
@@ -381,6 +460,20 @@ std::string ZDvidTarget::getLabelBlockName() const
   return m_labelBlockName;
 }
 
+std::string ZDvidTarget::getLabelBlockName(int zoom) const
+{
+  if (zoom < 0 || zoom > getMaxLabelZoom()) {
+    return "";
+  }
+
+  std::string name = getLabelBlockName();
+  if (!name.empty() && zoom > 0) {
+    name = name + "_" + ZString::num2str(zoom);
+  }
+
+  return name;
+}
+
 void ZDvidTarget::setLabelBlockName(const std::string &name)
 {
   m_labelBlockName = name;
@@ -388,13 +481,80 @@ void ZDvidTarget::setLabelBlockName(const std::string &name)
 
 std::string ZDvidTarget::getMultiscale2dName() const
 {
-  if (m_multiscale2dName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
-  }
-
   return m_multiscale2dName;
 }
 
+bool ZDvidTarget::isTileLowQuality() const
+{
+  return isLowQualityTile(getMultiscale2dName());
+}
+
+bool ZDvidTarget::isLowQualityTile(const std::string &name) const
+{
+  bool lowQuality = true;
+
+  if (!name.empty()) {
+    lowQuality = false;
+    if (m_tileConfig.hasKey(name.c_str())) {
+      ZJsonObject obj(m_tileConfig.value(name.c_str()));
+      if (obj.hasKey("low_quality")) {
+        lowQuality = ZJsonParser::booleanValue(obj["low_quality"]);
+      }
+    }
+  }
+
+  return lowQuality;
+}
+/*
+std::string ZDvidTarget::getLossTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (!lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return "";
+}
+
+void ZDvidTarget::setLossTileName(const std::string &name)
+{
+  if (m_multiscale2dName == name) {
+    m_multiscale2dName = "";
+  }
+
+  ZJsonObject obj;
+  obj.setEntry("name", name);
+  obj.setEntry("lossless", false);
+
+  m_tileJson.append(obj);
+}
+
+std::string ZDvidTarget::getLosslessTileName() const
+{
+  if (!m_tileJson.isEmpty()) {
+    for (size_t i = 0; i < m_tileJson.size(); ++i) {
+      ZJsonObject obj(m_tileJson.value(i));
+      bool lossless = true;
+      if (obj.hasKey("lossless")) {
+        lossless = ZJsonParser::booleanValue(obj["lossless"]);
+      }
+      if (lossless) {
+        return ZJsonParser::stringValue(obj["name"]);
+      }
+    }
+  }
+
+  return getMultiscale2dName();
+}
+*/
 std::string ZDvidTarget::getGrayScaleName() const
 {
   if (m_grayScaleName.empty()) {
@@ -429,9 +589,41 @@ void ZDvidTarget::setMultiscale2dName(const std::string &name)
   m_multiscale2dName = name;
 }
 
+void ZDvidTarget::configTile(const std::string &name, bool lowQuality)
+{
+  if (!name.empty()) {
+    if (lowQuality) {
+      ZJsonObject obj;
+      if (m_tileConfig.hasKey(name.c_str())) {
+        obj = ZJsonObject(m_tileConfig.value(name.c_str()));
+      } else {
+        m_tileConfig.setEntry(name.c_str(), obj);
+      }
+      obj.setEntry("low_quality", true);
+    } else {
+      if (m_tileConfig.hasKey(name.c_str())) {
+        ZJsonObject obj(m_tileConfig.value(name.c_str()));
+        if (obj.hasKey("low_quality")) {
+          obj.setEntry("low_quality", false);
+        }
+      }
+    }
+  }
+}
+
 std::string ZDvidTarget::getRoiName(size_t index) const
 {
   return m_roiList[index];
+}
+
+std::string ZDvidTarget::getRoiName() const
+{
+  return m_roiName;
+}
+
+void ZDvidTarget::setRoiName(const std::string &name)
+{
+  m_roiName = name;
 }
 
 void ZDvidTarget::addRoiName(const std::string &name)
@@ -501,6 +693,7 @@ const std::set<std::string>& ZDvidTarget::getUserNameSet() const
   return m_userList;
 }
 
+/*
 std::string ZDvidTarget::getName(ZDvidData::ERole role) const
 {
   std::string name;
@@ -528,7 +721,7 @@ std::string ZDvidTarget::getName(ZDvidData::ERole role) const
 
   return name;
 }
-
+*/
 bool ZDvidTarget::isDvidTarget(const std::string &source)
 {
   return ZString(source).startsWith("http:");
