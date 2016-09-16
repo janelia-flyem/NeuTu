@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include "zglew.h"
 #include <vector>
 #include <QString>
 #include <QMetaType>

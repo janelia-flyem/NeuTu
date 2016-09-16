@@ -1,5 +1,4 @@
 #if defined(_QT_GUI_USED_)
-#include <QtGui>
 #include <QtConcurrentRun>
 #endif
 

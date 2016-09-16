@@ -1652,9 +1652,11 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
       }
     }
 
+#if defined(_ENABLE_LIBDVIDCPP_)
     ZDvid::MakeRequest(
           url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
           m_statusCode);
+#endif
 
 //    ZFlyEmMisc::MakeRequest(url,
 //    post(url, branchJson);

@@ -5,6 +5,7 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <cmath>
 
 #include "neutubeconfig.h"
 #include "zstackframe.h"
@@ -782,7 +783,7 @@ int ZFlyEmRoiProject::getNearestRoiZ(int z) const
   int dzMin = z;
   for (size_t tz = 1; tz < m_curveArray.size(); ++tz) {
     if (m_curveArray[tz] != NULL) {
-      int dz = abs(z - tz);
+      int dz = std::abs(z - (int)tz);
       if (dzMin > dz) {
         dzMin = dz;
         nz = tz;

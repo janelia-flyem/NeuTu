@@ -1,5 +1,4 @@
 #include "zstringparameter.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif

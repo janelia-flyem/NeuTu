@@ -1,7 +1,5 @@
 #include <iostream>
 
-#include <QtGui>
-
 #include "ztestdialog2.h"
 #include "flyembodyinfodialog.h"
 #include "ui_ztestdialog2.h"

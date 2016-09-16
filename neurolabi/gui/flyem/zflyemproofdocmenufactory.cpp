@@ -16,7 +16,7 @@ ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -43,7 +43,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);

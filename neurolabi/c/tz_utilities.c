@@ -28,8 +28,9 @@
 #endif
 #include "tz_error.h"
 
-
+#ifdef HAVE_SYS_TIME_H
 static struct timeval start_time,end_time;
+#endif
 
 void tic()
 {

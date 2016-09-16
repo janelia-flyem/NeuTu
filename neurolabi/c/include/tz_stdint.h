@@ -3,22 +3,7 @@
 
 #include "neurolabi_config.h"
 
-#if !defined(HAVE_STDINT_H)
-#  if SIZEOF_CHAR == 1
-#    define int8_t char
-#    define uint8_t unsigned char
-#    define int16_t short int
-#    define uint16_t unsigned short int
-#    define int32_t int
-#    define uint32_t unsigned int
-#    define int64_t long long
-#    define uint64_t unsigned long long
-#  else
-#    error "Unspported system: the char size is not 1"
-#  endif
-#else
 #  include <stdint.h>
-#endif
 
 #    ifdef HAVE_SYS_TYPES_H
 #      include <sys/types.h>
@@ -49,6 +34,7 @@ typedef int16_t word_t;
 #define bzero(dest,count) memset(dest,0,count)
 #endif
 
+/*
 #if !defined(INT_MAX)
 #define INTMAX 2147483647
 #endif
@@ -56,5 +42,6 @@ typedef int16_t word_t;
 #if !defined(INT_MIN)
 #define INT_MIN -2147483648
 #endif
+*/
 
 #endif

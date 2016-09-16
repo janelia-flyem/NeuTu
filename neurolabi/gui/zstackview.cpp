@@ -38,7 +38,6 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif
@@ -2680,7 +2679,7 @@ void ZStackView::requestMerge()
 }
 
 void ZStackView::MessageProcessor::processMessage(
-    ZMessage */*message*/, QWidget */*host*/) const
+    ZMessage * /*message*/, QWidget * /*host*/) const
 {
 #ifdef _DEBUG_
   std::cout << "ZStackView::MessageProcessor::processMessage" << std::endl;

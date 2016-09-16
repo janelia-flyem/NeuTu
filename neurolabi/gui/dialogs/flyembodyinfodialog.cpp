@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include <QtGui>
 #include <QMessageBox>
 #include <QColor>
 
@@ -9,6 +8,7 @@
 #include <QtConcurrent>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QStandardItemModel>
 #else
 #include <QtCore>
 #endif

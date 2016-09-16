@@ -1512,7 +1512,7 @@ void ZFlyEmProofDoc::downloadTodoList()
   addObject(todoList);
 }
 
-void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark */*bookmark*/)
+void ZFlyEmProofDoc::processBookmarkAnnotationEvent(ZFlyEmBookmark * /*bookmark*/)
 {
 //  m_isCustomBookmarkSaved = false;
 }

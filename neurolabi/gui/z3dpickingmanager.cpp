@@ -15,6 +15,7 @@
 
 #include "zglew.h"
 #include "z3dpickingmanager.h"
+#include <functional>
 
 #include "z3dtexture.h"
 #include "QsLog.h"

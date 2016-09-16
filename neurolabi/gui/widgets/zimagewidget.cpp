@@ -1,4 +1,3 @@
-#include <QtGui>
 #include <QElapsedTimer>
 
 #include <cstring>
@@ -1185,7 +1184,7 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
   emit mouseWheelRolled(event);
 }
 
-void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
+void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   setValidViewPort(m_viewPort);
 }

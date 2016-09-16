@@ -1,4 +1,3 @@
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif

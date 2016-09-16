@@ -40,7 +40,7 @@ typedef CONDITION_VARIABLE pthread_cond_t;
   //  Simple thread support
 
 typedef struct
-  { HANDLE *handle;
+  { HANDLE handle;
     void   *(*fct)(void *);
     void   *arg;
     void   *retval;
@@ -70,7 +70,7 @@ static int pthread_create(pthread_t *thread, void *attr,
     };
   tv->fct    = fct;
   tv->arg    = arg;
-  tv->handle = CreateThread(NULL,0,MyStart,tv,0,&tv->id);
+  tv->handle = CreateThread(NULL,0,MyStart,tv,0,(LPDWORD)&tv->id);
   if (tv->handle == NULL)
     return (EAGAIN);
   else

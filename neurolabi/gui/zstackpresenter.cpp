@@ -1,5 +1,4 @@
 #include "z3dgl.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #include <QtConcurrent>
@@ -1824,7 +1823,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   return processed;
 }
 
-bool ZStackPresenter::customKeyProcess(QKeyEvent */*event*/)
+bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 {
   return false;
 }
@@ -2745,7 +2744,7 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
 }
 
 bool ZStackPresenter::processCustomOperator(
-    const ZStackOperator &/*op*/, ZInteractionEvent */*e*/)
+    const ZStackOperator &/*op*/, ZInteractionEvent * /*e*/)
 {
   return false;
 }

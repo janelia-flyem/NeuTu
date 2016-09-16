@@ -4,14 +4,15 @@
 // This file includes some commonly used headers from glm and defines some useful functions
 // for glm
 
-#define GLM_FORCE_SSE2
+#define GLM_FORCE_CXX11
+#define GLM_FORCE_SSE3
 //#define GLM_FORCE_INLINE
 #define GLM_FORCE_SIZE_T_LENGTH
-#define GLM_FORCE_SIZE_FUNC
 #define GLM_FORCE_NO_CTOR_INIT
 #define GLM_FORCE_EXPLICIT_CTOR
-//#define GLM_MESSAGES
-#define GLM_SWIZZLE
+//#define GLM_FORCE_MESSAGES
+#define GLM_FORCE_SWIZZLE
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,6 +26,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QColor>
+#include <cstdint>
 
 namespace glm {
 typedef tvec3<unsigned char, highp> col3;

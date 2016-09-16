@@ -2,6 +2,7 @@
 #define ZTESTHEADER_H
 
 #ifdef _USE_GTEST_
+#undef Infinity
 #include "gtest/gtest.h"
 #endif
 

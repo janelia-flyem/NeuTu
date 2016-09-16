@@ -163,6 +163,7 @@ neurolabi/lib/msvc/zlib*/
 #deploy folder
 /neuTube.app/
 /neuTube_win64/
+/neuTube_win64_mingw/
 /neuTube/
 
 # more auto-generated files

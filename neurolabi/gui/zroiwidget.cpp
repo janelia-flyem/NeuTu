@@ -3,13 +3,16 @@
 #include <string>
 #include <iostream>
 
-#include <QtGui>
 #include <QWidget>
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QSpinBox>
+#include <QColorDialog>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
@@ -141,7 +144,7 @@ void ZROIWidget::makeGUI()
     QStringList labels;
     labels << tr("ROI Name") << tr("Color");
     tw_ROIs->setHorizontalHeaderLabels(labels);
-    tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     tw_ROIs->verticalHeader()->hide();
     tw_ROIs->setShowGrid(false);
 

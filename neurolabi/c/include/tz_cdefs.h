@@ -59,6 +59,9 @@
 #  define INVALID_ARRAY_INDEX 9223372036854775807L
 #endif
 
+#ifdef _MSC_VER
+#include <windows.h>
+#else
 /* The BOOL type is the same as the type of a logical statement, e.g. 2 > 1 */
 #ifndef HAVE_BOOL
 #  ifdef C99
@@ -74,6 +77,7 @@
 #      define FALSE 0
 #    endif
 #  endif
+#endif
 #endif
 
 /* typedef enum {FALSE = 0, TRUE} BOOL; */ /* might not work for C++*/
