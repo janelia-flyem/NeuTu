@@ -11,7 +11,7 @@ Software for proofreading EM connectomics
 
 ## Installation
 
-Currently only Mac (OSX 10.10+ preferable) is supported.
+Currently only Mac (OSX 10.10+ preferred) is supported.
 
 ### Mac
     wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
