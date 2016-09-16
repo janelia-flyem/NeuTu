@@ -12,6 +12,11 @@
 // This file has no include guards or namespaces - it's expanded inline inside default_ops.hpp
 // 
 
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:6326)  // comparison of two constants
+#endif
+
 namespace detail{
 
 template<typename T, typename U> 
@@ -160,7 +165,7 @@ void hyp1F0(T& H1F0, const T& a, const T& x)
    si_type n;
    T term, part;
 
-   static const unsigned series_limit = 
+   static const si_type series_limit =
       boost::multiprecision::detail::digits2<number<T, et_on> >::value < 100
       ? 100 : boost::multiprecision::detail::digits2<number<T, et_on> >::value;
    // Series expansion of hyperg_1f0(a; ; x).
@@ -454,26 +459,31 @@ inline void eval_pow(T& result, const T& x, const T& a)
    
    typename boost::multiprecision::detail::canonical<boost::intmax_t, T>::type an;
    T fa;
+#ifndef BOOST_NO_EXCEPTIONS
    try
    {
+#endif
       eval_convert_to(&an, a);
       if(a.compare(an) == 0)
       {
          detail::pow_imp(result, x, an, mpl::true_());
          return;
       }
+#ifndef BOOST_NO_EXCEPTIONS
    }
    catch(const std::exception&)
    {
       // conversion failed, just fall through, value is not an integer.
       an = (std::numeric_limits<boost::intmax_t>::max)();
    }
-
+#endif
    if((eval_get_sign(x) < 0))
    {
       typename boost::multiprecision::detail::canonical<boost::uintmax_t, T>::type aun;
+#ifndef BOOST_NO_EXCEPTIONS
       try
       {
+#endif
          eval_convert_to(&aun, a);
          if(a.compare(aun) == 0)
          {
@@ -484,11 +494,13 @@ inline void eval_pow(T& result, const T& x, const T& a)
                result.negate();
             return;
          }
+#ifndef BOOST_NO_EXCEPTIONS
       }
       catch(const std::exception&)
       {
          // conversion failed, just fall through, value is not an integer.
       }
+#endif
       if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
          result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
       else
@@ -692,3 +704,6 @@ inline void eval_tanh(T& result, const T& x)
   eval_divide(result, c);
 }
 
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif

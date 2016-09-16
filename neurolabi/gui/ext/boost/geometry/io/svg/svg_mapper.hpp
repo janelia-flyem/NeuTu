@@ -1,6 +1,12 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2009-2012 Barend Gehrels, Amsterdam, the Netherlands.
+// Copyright (c) 2009-2015 Barend Gehrels, Amsterdam, the Netherlands.
+
+// This file was modified by Oracle on 2015, 2016.
+// Modifications copyright (c) 2015-2016, Oracle and/or its affiliates.
+
+// Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -16,6 +22,7 @@
 
 #include <vector>
 
+#include <boost/config.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -31,14 +38,10 @@
 
 #include <boost/geometry/algorithms/envelope.hpp>
 #include <boost/geometry/algorithms/expand.hpp>
+#include <boost/geometry/algorithms/is_empty.hpp>
 #include <boost/geometry/algorithms/transform.hpp>
-#include <boost/geometry/algorithms/num_points.hpp>
-#include <boost/geometry/strategies/transform.hpp>
 #include <boost/geometry/strategies/transform/map_transformer.hpp>
 #include <boost/geometry/views/segment_view.hpp>
-
-#include <boost/geometry/multi/algorithms/envelope.hpp>
-#include <boost/geometry/multi/algorithms/num_points.hpp>
 
 #include <boost/geometry/io/svg/write_svg.hpp>
 
@@ -88,20 +91,35 @@ struct svg_map<point_tag, Point>
     }
 };
 
-template <typename Box>
-struct svg_map<box_tag, Box>
+template <typename BoxSeg1, typename BoxSeg2>
+struct svg_map_box_seg
 {
     template <typename TransformStrategy>
     static inline void apply(std::ostream& stream,
                     std::string const& style, int size,
-                    Box const& box, TransformStrategy const& strategy)
+                    BoxSeg1 const& box_seg, TransformStrategy const& strategy)
     {
-        model::box<detail::svg::svg_point_type> ibox;
-        geometry::transform(box, ibox, strategy);
+        BoxSeg2 ibox_seg;
 
-        stream << geometry::svg(ibox, style, size) << std::endl;
+        // Fix bug in gcc compiler warning for possible uninitialization
+#if defined(BOOST_GCC)
+        geometry::assign_zero(ibox_seg);
+#endif
+        geometry::transform(box_seg, ibox_seg, strategy);
+
+        stream << geometry::svg(ibox_seg, style, size) << std::endl;
     }
 };
+
+template <typename Box>
+struct svg_map<box_tag, Box>
+    : svg_map_box_seg<Box, model::box<detail::svg::svg_point_type> >
+{};
+
+template <typename Segment>
+struct svg_map<segment_tag, Segment>
+    : svg_map_box_seg<Segment, model::segment<detail::svg::svg_point_type> >
+{};
 
 
 template <typename Range1, typename Range2>
@@ -117,25 +135,6 @@ struct svg_map_range
         stream << geometry::svg(irange, style, size) << std::endl;
     }
 };
-
-template <typename Segment>
-struct svg_map<segment_tag, Segment>
-{
-    template <typename TransformStrategy>
-    static inline void apply(std::ostream& stream,
-                    std::string const& style, int size,
-                    Segment const& segment, TransformStrategy const& strategy)
-    {
-        typedef segment_view<Segment> view_type;
-        view_type range(segment);
-        svg_map_range
-            <
-                view_type,
-                model::linestring<detail::svg::svg_point_type>
-            >::apply(stream, style, size, range, strategy);
-    }
-};
-
 
 template <typename Ring>
 struct svg_map<ring_tag, Ring>
@@ -307,7 +306,7 @@ public :
     template <typename Geometry>
     void add(Geometry const& geometry)
     {
-        if (num_points(geometry) > 0)
+        if (! geometry::is_empty(geometry))
         {
             expand(m_bounding_box,
                 return_envelope
