@@ -20,6 +20,10 @@ public:
 
   virtual void setColorScheme(EColorScheme scheme);
 
+  const QVector<QColor>& getColorTable() const {
+    return m_colorTable;
+  }
+
 protected:
   void buildRandomColorTable(int n);
   void buildConvRandomColorTable(int n);

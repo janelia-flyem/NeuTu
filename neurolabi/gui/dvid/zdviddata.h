@@ -51,7 +51,6 @@ public:
   static const char* GetName(ERole role);
   //static const char* getName(EType type);
 
-  static std::string GetName(ERole role, const std::string &prefix);
   static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
@@ -59,6 +58,9 @@ public:
 
   static bool isDefaultName(ERole role, const std::string &name);
   static bool IsNullName(const std::string &name);
+
+private:
+  static std::string GetName(ERole role, const std::string &prefix);
 
 private:
   static const char *m_grayScaleName;

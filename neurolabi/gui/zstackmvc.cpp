@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 
+#include "neutubeconfig.h"
 #include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -32,7 +33,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
 ZStackMvc::~ZStackMvc()
 {
-  qDebug() << "ZStackMvc destroyed";
+  ZOUT(LTRACE(), 5) << "ZStackMvc destroyed";
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)

@@ -33,7 +33,6 @@ DoNThingsProtocol::DoNThingsProtocol(QWidget *parent) : ProtocolDialog(parent),
 }
 
 // protocol name should not contain hyphens
-const std::string DoNThingsProtocol::PROTOCOL_NAME = "doNthings";
 const std::string DoNThingsProtocol::KEY_FINISHED = "finished";
 const std::string DoNThingsProtocol::KEY_PENDING = "pending";
 
@@ -66,10 +65,6 @@ bool DoNThingsProtocol::initialize() {
     saveState();
 
     return true;
-}
-
-std::string DoNThingsProtocol::getName() {
-    return PROTOCOL_NAME;
 }
 
 void DoNThingsProtocol::onFirstButton() {

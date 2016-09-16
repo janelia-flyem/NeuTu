@@ -15,6 +15,7 @@
 #include "zimage.h"
 #include "zpainter.h"
 #include "neutubeconfig.h"
+#include "zpixmap.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -30,11 +31,12 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
 {
   delete m_paintBuffer;
   delete m_labelArray;
+  delete m_mappedLabelArray;
 }
 
 void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAxis)
 {
-  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
   m_objColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_hitLabel = 0;
@@ -44,8 +46,11 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , NeuTube::EAxis sliceAx
   m_maxWidth = maxWidth;
   m_maxHeight = maxHeight;
 
-  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+  m_paintBuffer = NULL;
+//  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
+  m_mappedLabelArray = NULL;
+
   m_selectionFrozen = false;
   m_isFullView = false;
   m_sliceAxis = sliceAxis;
@@ -119,6 +124,18 @@ void ZDvidLabelSlice::display(
 #endif
 
   if (isVisible()) {
+    if (m_paintBuffer != NULL) {
+      if (m_paintBuffer->isVisible()) {
+        ZPixmap pixmap;
+        pixmap.convertFromImage(*m_paintBuffer, Qt::ColorOnly);
+        pixmap.setTransform(m_paintBuffer->getTransform());
+
+        pixmap.matchProj();
+        painter.drawPixmap(pixmap);
+        painter.setPainted(true);
+      }
+    }
+#if 0
     if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
         m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
       for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
@@ -181,15 +198,15 @@ void ZDvidLabelSlice::display(
       painter.drawImage(m_currentViewParam.getViewPort().x(),
                         m_currentViewParam.getViewPort().y(),
                         *m_paintBuffer);
+
     }
 
-#ifdef _DEBUG_
-      qDebug() << "Body buffer painting time: " << timer.elapsed();
-#endif
+    ZOUT(LTRACE(), 5) << "Body buffer painting time: " << timer.elapsed();
 //    painter.restore();
 
 #ifdef _DEBUG_2
 //      m_paintBuffer->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
 #endif
   }
 }
@@ -227,24 +244,77 @@ int ZDvidLabelSlice::getZoom() const
 }
 */
 
-int ZDvidLabelSlice::getZoom(const ZStackViewParam &viewParam) const
+int ZDvidLabelSlice::getZoomLevel(const ZStackViewParam &viewParam) const
 {
   double zoomRatio = viewParam.getZoomRatio();
   if (zoomRatio == 0.0) {
     return 0;
   }
 
-  int zoom = (int) std::floor(1.0 / zoomRatio);
+  int zoom = iround(std::log(1.0 / zoomRatio) / std::log(2.0) );
 
-#if defined _ENABLE_LOWTIS_
+  if (zoom < 0) {
+    zoom = 0;
+  }
+
+  int scale = pow(2, zoom);
+  if (viewParam.getViewPort().width() * viewParam.getViewPort().height() /
+      scale / scale > 512 * 512) {
+    zoom += 1;
+  }
+
   if (zoom > getDvidTarget().getMaxLabelZoom()) {
     zoom = getDvidTarget().getMaxLabelZoom();
   }
-#else
-  zoom = 0;
-#endif
 
   return zoom;
+}
+
+void ZDvidLabelSlice::updateRgbTable()
+{
+  const QVector<QColor>& colorTable = getColorScheme().getColorTable();
+  m_rgbTable.resize(colorTable.size());
+  for (int i = 0; i < colorTable.size(); ++i) {
+    const QColor &color = colorTable[i];
+    m_rgbTable[i] = (64 << 24) + (color.red() << 16) + (color.green() << 8) +
+        (color.blue());
+  }
+}
+
+void ZDvidLabelSlice::paintBufferUnsync()
+{
+  if (m_labelArray != NULL && m_paintBuffer != NULL) {
+    if ((int) m_labelArray->getElementNumber() ==
+        m_paintBuffer->width() * m_paintBuffer->height()) {
+      updateRgbTable();
+      remapId();
+
+      uint64_t *labelArray = NULL;
+
+      if (m_paintBuffer->isVisible()) {
+        if (m_selectedOriginal.empty() && getLabelMap().empty()) {
+          labelArray = m_labelArray->getDataPointer<uint64_t>();
+        } else {
+          labelArray = m_mappedLabelArray->getDataPointer<uint64_t>();
+        }
+      }
+
+      if (labelArray != NULL) {
+        if (getSliceAxis() == NeuTube::X_AXIS) {
+          m_paintBuffer->drawLabelFieldTranspose(
+                labelArray, m_rgbTable, 0, 0xA4FFFFFF);
+        } else {
+          m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xA4FFFFFF);
+        }
+      }
+    }
+  }
+}
+
+void ZDvidLabelSlice::paintBuffer()
+{
+  QMutexLocker locker(&m_updateMutex);
+  paintBufferUnsync();
 }
 
 void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
@@ -255,10 +325,11 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 
   QMutexLocker locker(&m_updateMutex);
 
-  int zoom = getZoom(viewParam);
-
   m_objArray.clear();
   if (isVisible()) {
+    int zoom = getZoomLevel(viewParam);
+    int zoomRatio = pow(2, zoom);
+
 
 
 //    int yStep = 1;
@@ -274,9 +345,24 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
     ZIntCuboid box;
     box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
     box.setSize(viewPort.width(), viewPort.height(), 1);
+
+    int width = box.getWidth() / zoomRatio;
+    int height = box.getHeight() / zoomRatio;
+    int depth = box.getDepth();
+    int x0 = box.getFirstCorner().getX() / zoomRatio;
+    int y0 = box.getFirstCorner().getY() / zoomRatio;
+    int z0 = box.getFirstCorner().getZ();
+
+    ZGeometry::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
+    ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+
+
     box.shiftSliceAxisInverse(m_sliceAxis);
 
     delete m_labelArray;
+    m_labelArray = NULL;
+    delete m_mappedLabelArray;
+    m_mappedLabelArray = NULL;
     /*
       m_labelArray = m_reader.readLabels64(
             getDvidTarget().getLabelBlockName(),
@@ -298,17 +384,54 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
 #else
         m_labelArray = m_reader.readLabels64(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1);
+              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1,
+              zoom);
 #endif
       } else {
-        m_labelArray = m_reader.readLabels64(box);
+        m_labelArray = m_reader.readLabels64Raw(
+              x0, y0, z0, width, height, depth, zoom);
+//        m_labelArray = m_reader.readLabels64(box, zoom);
       }
-
     }
 
     if (m_labelArray != NULL) {
+
+      ZGeometry::shiftSliceAxis(width, height, depth, getSliceAxis());
+      ZGeometry::shiftSliceAxis(x0, y0, z0, getSliceAxis());
+
+      delete m_paintBuffer;
+      m_paintBuffer = new ZImage(width, height, QImage::Format_ARGB32);
+      paintBufferUnsync();
+      ZStTransform transform;
+      transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
+      transform.setOffset(-x0, -y0);;
+//      transform.setOffset(
+//            -(double) box.getFirstCorner().getX() / zoomRatio,
+//            -(double) box.getFirstCorner().getY() / zoomRatio);
+      m_paintBuffer->setTransform(transform);
+
 //      ZObject3dFactory::MakeObject3dScanArray(
 //            *m_labelArray, yStep, &m_objArray, true);
+      /*
+      updateRgbTable();
+      remapId(m_labelArray);
+
+      delete m_paintBuffer;
+      m_paintBuffer = new ZImage(
+            m_labelArray->dim(0), m_labelArray->dim(1),
+            QImage::Format_ARGB32);
+      m_paintBuffer->drawLabelField(m_labelArray->getDataPointer<uint64_t>(),
+                                    m_rgbTable, 0, 0x40FFFFFF);
+      ZStTransform transform;
+      int zoomRatio = pow(2, zoom);
+      transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
+      transform.setOffset(
+            -(double) box.getFirstCorner().getX() / zoomRatio,
+            -(double) box.getFirstCorner().getY() / zoomRatio);
+      m_paintBuffer->setTransform(transform);
+      */
+
+#if 0
       ZObject3dFactory::MakeObject3dScanArray(
             *m_labelArray, m_sliceAxis, true, &m_objArray);
 
@@ -334,6 +457,7 @@ void ZDvidLabelSlice::forceUpdate(const ZStackViewParam &viewParam)
         }
         */
       assignColorMap();
+#endif
 
       //        delete labelArray;
     }
@@ -371,14 +495,27 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   bool updated = false;
   if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
     ZStackViewParam newViewParam = viewParam;
-    int area = viewParam.getViewPort().width() * viewParam.getViewPort().height();
-    //  const int maxWidth = 512;
-    //  const int maxHeight = 512;
-    if (area > m_maxWidth * m_maxHeight) {
-      newViewParam.resize(m_maxWidth, m_maxHeight);
+
+    if (getDvidTarget().getMaxLabelZoom() < 5) {
+      int width = viewParam.getViewPort().width();
+      int height = viewParam.getViewPort().height();
+      int area = width * height;
+      //  const int maxWidth = 512;
+      //  const int maxHeight = 512;
+      if (area > m_maxWidth * m_maxHeight) {
+        if (width > m_maxWidth) {
+          width = m_maxWidth;
+        }
+        if (height > m_maxHeight) {
+          height = m_maxHeight;
+        }
+        newViewParam.resize(width, height);
+      }
     }
 
-    if (!m_currentViewParam.contains(newViewParam)) {
+
+    if (!m_currentViewParam.contains(newViewParam) ||
+        getZoomLevel(viewParam) != getZoomLevel(m_currentViewParam)) {
       forceUpdate(newViewParam);
       updated = true;
 
@@ -434,6 +571,7 @@ void ZDvidLabelSlice::removeCustomColorMap()
 
 void ZDvidLabelSlice::assignColorMap()
 {
+  updateRgbTable();
   for (ZObject3dScanArray::iterator iter = m_objArray.begin();
        iter != m_objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
@@ -442,15 +580,149 @@ void ZDvidLabelSlice::assignColorMap()
   }
 }
 
+void ZDvidLabelSlice::remapId()
+{
+//  QMutexLocker locker(&m_updateMutex);
+  if (m_labelArray != NULL && m_mappedLabelArray == NULL) {
+    m_mappedLabelArray = new ZArray(m_labelArray->valueType(),
+                                    m_labelArray->ndims(),
+                                    m_labelArray->dims());
+  }
+  remapId(m_mappedLabelArray);
+}
+
+void ZDvidLabelSlice::remapId(
+    uint64_t *array, const uint64_t *originalArray, uint64_t v,
+    std::set<uint64_t> &selected)
+{
+  if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    for (size_t i = 0; i < v; ++i) {
+      if (selected.count(originalArray[i]) > 0) {
+        array[i] = originalArray[i];
+      } else {
+        array[i] = 0;
+      }
+    }
+  } else {
+    for (size_t i = 0; i < v; ++i) {
+      if (selected.count(originalArray[i]) > 0) {
+        array[i] = FlyEM::LABEL_ID_SELECTION;
+      } else {
+        array[i] = originalArray[i];
+      }
+    }
+  }
+}
+
+void ZDvidLabelSlice::remapId(
+    uint64_t *array, const uint64_t *originalArray, uint64_t v,
+    const ZFlyEmBodyMerger::TLabelMap &bodyMap)
+{
+  if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    m_paintBuffer->setVisible(false);
+  } else {
+    for (size_t i = 0; i < v; ++i) {
+      if (bodyMap.count(originalArray[i]) > 0) {
+        array[i] = bodyMap[originalArray[i]];
+      } else {
+        array[i] = originalArray[i];
+      }
+    }
+  }
+}
+
+void ZDvidLabelSlice::remapId(
+    uint64_t *array, const uint64_t *originalArray, uint64_t v,
+    std::set<uint64_t> &selected, const ZFlyEmBodyMerger::TLabelMap &bodyMap)
+{
+  std::set<uint64_t> selectedSet = selected;
+  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+       iter != selected.end(); ++iter) {
+    if (bodyMap.count(*iter) > 0) {
+      selectedSet.insert(bodyMap[*iter]);
+    }
+  }
+
+  if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+    for (size_t i = 0; i < v; ++i) {
+      if (selectedSet.count(originalArray[i]) > 0) {
+        if (bodyMap.count(originalArray[i]) > 0) {
+          array[i] = bodyMap[originalArray[i]];
+        } else {
+          array[i] = originalArray[i];
+        }
+      } else {
+        array[i] = 0;
+      }
+    }
+  } else {
+    for (size_t i = 0; i < v; ++i) {
+      if (selectedSet.count(originalArray[i]) > 0) {
+        array[i] = FlyEM::LABEL_ID_SELECTION;
+      } else if (bodyMap.count(originalArray[i]) > 0) {
+        array[i] = bodyMap[originalArray[i]];
+      } else {
+        array[i] = originalArray[i];
+      }
+    }
+  }
+}
+
+void ZDvidLabelSlice::remapId(ZArray *label)
+{
+  if (m_paintBuffer != NULL) {
+    m_paintBuffer->setVisible(true);
+  }
+
+  if (m_labelArray != NULL && label != NULL) {
+    ZFlyEmBodyMerger::TLabelMap bodyMap = getLabelMap();
+    if (!bodyMap.empty() || !m_selectedOriginal.empty()) {
+      uint64_t *array = label->getDataPointer<uint64_t>();
+      const uint64_t *originalArray = m_labelArray->getDataPointer<uint64_t>();
+      size_t v = label->getElementNumber();
+      if (bodyMap.empty()) {
+        remapId(array, originalArray, v, m_selectedOriginal);
+      } else if (m_selectedOriginal.empty()) {
+        remapId(array, originalArray, v, bodyMap);
+      } else {
+        remapId(array, originalArray, v, m_selectedOriginal, bodyMap);
+      }
+    } else {
+      if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+        if (m_paintBuffer != NULL) {
+          m_paintBuffer->setVisible(true);
+        }
+      }
+    }
+  }
+}
+
 bool ZDvidLabelSlice::hit(double x, double y, double z)
 {
-  for (ZObject3dScanArray::iterator iter = m_objArray.begin();
-       iter != m_objArray.end(); ++iter) {
-    ZObject3dScan &obj = *iter;
-    if (obj.hit(x, y, z)) {
-      //m_hitLabel = obj.getLabel();
-      m_hitLabel = getMappedLabel(obj);
-      return true;
+  m_hitLabel = 0;
+
+  if (!m_objArray.empty()) {
+    for (ZObject3dScanArray::iterator iter = m_objArray.begin();
+         iter != m_objArray.end(); ++iter) {
+      ZObject3dScan &obj = *iter;
+      if (obj.hit(x, y, z)) {
+        //m_hitLabel = obj.getLabel();
+        m_hitLabel = getMappedLabel(obj);
+        return true;
+      }
+    }
+  } else {
+    int nx = iround(x);
+    int ny = iround(y);
+    int nz = iround(z);
+
+    if (m_currentViewParam.contains(nx, ny, nz)) {
+      ZDvidReader reader;
+      if (reader.open(getDvidTarget())) {
+        m_hitLabel = reader.readBodyIdAt(nx, ny, nz);
+      }
+
+      return m_hitLabel > 0;
     }
   }
 
@@ -468,6 +740,16 @@ void ZDvidLabelSlice::selectHit(bool appending)
 //    addSelection(m_hitLabel);
 //    m_selectedOriginal.insert(m_hitLabel);
   }
+}
+
+ZFlyEmBodyMerger::TLabelMap ZDvidLabelSlice::getLabelMap() const
+{
+  ZFlyEmBodyMerger::TLabelMap labelMap;
+  if (m_bodyMerger != NULL) {
+    labelMap = m_bodyMerger->getFinalMap();
+  }
+
+  return labelMap;
 }
 
 void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
@@ -578,6 +860,7 @@ void ZDvidLabelSlice::toggleHitSelection(bool appending)
     }
   }
 
+//  paintBuffer();
   //xorSelection(m_hitLabel, NeuTube::BODY_LABEL_MAPPED);
 
   /*

@@ -128,7 +128,7 @@ ZStackDoc::~ZStackDoc()
   deprecate(STACK);
   deprecate(SPARSE_STACK);
 
-  qDebug() << "ZStackDoc destroyed";
+  ZOUT(LTRACE(), 5) << "ZStackDoc destroyed: " << this;
 
   m_objectGroup.removeAllObject(true);
 
@@ -464,6 +464,8 @@ string ZStackDoc::getSwcSource() const
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*swcSet.begin());
     swcSource = tree->getSource();
   }
+
+  ZOUT(LTRACE(), 5) << "Source obtained: " << swcSource;
 
   return swcSource;
 }
@@ -3477,6 +3479,11 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
   */
 }
 
+TStackObjectList ZStackDoc::takeObject(ZStackObject::EType type)
+{
+  return m_objectGroup.take(type);
+}
+
 TStackObjectList ZStackDoc::takeObject(
     ZStackObject::EType type, const string &source)
 {
@@ -5190,8 +5197,7 @@ void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked "
-                        "in clearObjectModifiedTypeBuffer";
+    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.clear();
   } else {
     m_objectModifiedTypeBuffer.clear();
@@ -5244,8 +5250,7 @@ void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked "
-                        "in bufferObjectModified";
+    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.insert(type);
   } else {
     m_objectModifiedTypeBuffer.insert(type);
@@ -5272,8 +5277,7 @@ void ZStackDoc::bufferObjectModified(
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked "
-                        "in bufferObjectModified";
+    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.unite(typeSet);
   } else {
     m_objectModifiedTypeBuffer.unite(typeSet);
@@ -5439,8 +5443,7 @@ void ZStackDoc::processObjectModified(
     QSet<ZStackObject::EType> bufferTypeSet;
     {
       QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-      ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked "
-                          "in processObjectModified";
+      ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
       bufferTypeSet = typeSet;
     }
 
@@ -8080,12 +8083,10 @@ bool ZStackDoc::hasSelectedSwc() const
 bool ZStackDoc::hasSelectedSwcNode() const
 {
   bool hasSelected = false;
-  ZOUT(LTRACE(), 5) << "Has node selected?";
+  ZOUT(LTRACE(), 5) << "Has SWC selected?";
   const QList<ZStackObject*>& objList = getObjectList(ZStackObject::TYPE_SWC);
 
-#ifdef _DEBUG_
-  std::cout << "Object count: " << objList.size() << std::endl;
-#endif
+  ZOUT(LTRACE(), 5) << "Object count: " << objList.size();
 
   foreach (const ZStackObject *obj, objList) {
     const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);

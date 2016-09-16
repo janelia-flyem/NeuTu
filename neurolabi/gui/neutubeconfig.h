@@ -116,6 +116,7 @@ public:
   inline QSettings& getSettings() {
     return m_settings;
   }
+#if 0
   inline QDebug& getTraceStream() {
     return *m_traceStream;
   }
@@ -123,7 +124,7 @@ public:
   static QDebug& GetTraceStream() {
     return NeutubeConfig::getInstance().getTraceStream();
   }
-
+#endif
 #endif
 
   class MainWindowConfig {
@@ -378,7 +379,7 @@ private:
   ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
-  QDebug *m_traceStream;
+//  QDebug *m_traceStream;
   QSettings m_settings;
 #endif
 };

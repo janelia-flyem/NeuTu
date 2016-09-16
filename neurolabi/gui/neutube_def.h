@@ -1,6 +1,7 @@
 #ifndef NEUTUBE_DEF_H
 #define NEUTUBE_DEF_H
 
+#include <limits>
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
@@ -87,11 +88,15 @@ enum ECardinalDirection {
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
-static const TVisualEffect VE_Z_PROJ = BIT_FLAG(9);
-static const TVisualEffect VE_GRUOP_HIGHLIGHT = BIT_FLAG(10);
+static const TVisualEffect VE_Z_PROJ = BIT_FLAG(19);
+static const TVisualEffect VE_GROUP_HIGHLIGHT = BIT_FLAG(20);
 
 namespace Image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;
+}
+
+namespace LabelField {
+static const TVisualEffect VE_HIGHLIGHT_SELECTED = 1;
 }
 
 namespace Sphere {
@@ -121,6 +126,8 @@ static const TVisualEffect VE_FORCE_SOLID = 1;
 static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
 }
+static const int INVALID_Z_INDEX = INT_MIN;
+
 }
 
 namespace FlyEM {
@@ -131,6 +138,9 @@ enum EDvidAnnotationLoadMode {
 enum EProofreadingMode {
   PR_NORMAL, PR_SPLIT
 };
+
+static const uint64_t LABEL_ID_SELECTION = std::numeric_limits<uint64_t>::max() - 1;
+
 }
 
 

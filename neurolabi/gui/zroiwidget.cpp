@@ -11,6 +11,7 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 
+#include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dwindow.h"
@@ -412,10 +413,10 @@ void ZROIWidget::updateROIColors(int row, int column)
 
 void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 {
-    qDebug()<<"to render ROI: "<<item->text()<<item->checkState();
+    ZOUT(LTRACE(), 5)<<"to render ROI: "<<item->text()<<item->checkState();
 
 
-    qDebug()<<tw_ROIs->selectedItems();
+    ZOUT(LTRACE(), 5)<<tw_ROIs->selectedItems();
 }
 
 void ZROIWidget::updateSlider(int v)

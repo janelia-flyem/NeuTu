@@ -6,6 +6,8 @@
 #include <QPaintDevice>
 #include <QStaticText>
 
+#include "QsLog.h"
+#include "neutubeconfig.h"
 #include "zintpoint.h"
 #include "zimage.h"
 #include "tz_math.h"
@@ -69,6 +71,7 @@ bool ZPainter::begin(ZImage *image)
     transform.translate(imageTransform.getTx(), imageTransform.getTy());
     transform.scale(imageTransform.getSx(), imageTransform.getSy());
     m_painter.setTransform(transform);
+    m_transform = imageTransform;
     return true;
   }
 
@@ -84,14 +87,14 @@ bool ZPainter::begin(ZPixmap *image)
     const ZStTransform &imageTransform = image->getTransform();
     t.translate(imageTransform.getTx(), imageTransform.getTy());
     t.scale(imageTransform.getSx(), imageTransform.getSy());
+    m_transform = imageTransform;
 
     m_painter.setTransform(t);
 
-#ifdef _DEBUG_2
-    qDebug() << t;
-    qDebug() << this->getTransform();
+    ZOUT(LTRACE(), 5) << t;
+    ZOUT(LTRACE(), 5) << this->getTransform();
     //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
-#endif
+
     return true;
   }
 
@@ -216,6 +219,8 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
     //  QRect targetRect = transform().mapRect(QRect(
     //        x, y, iround(image.width() / image.getTransform().getSx()),
     //        iround(image.height() / image.getTransform().getSy())));
+//    x = iround(image.getTransform().transformX(x));
+//    y = iround(image.getTransform().transformY(y));
     QRect targetRect = QRect(
           x, y, iround(image.width() / image.getTransform().getSx()),
           iround(image.height() / image.getTransform().getSy()));

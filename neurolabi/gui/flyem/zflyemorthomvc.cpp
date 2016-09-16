@@ -5,6 +5,7 @@
 #include "zstackview.h"
 #include "zwidgetmessage.h"
 #include "zflyemproofpresenter.h"
+#include "zflyemtodolist.h"
 
 ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
   ZFlyEmProofMvc(parent)
@@ -46,6 +47,13 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
     }
   }
 
+  QList<ZFlyEmToDoList*> todoList = doc->getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *obj = *iter;
+    obj->attachView(frame->getView());
+  }
+
   connect(frame->getPresenter(), SIGNAL(savingStack()),
           frame, SLOT(saveStack()));
   connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
@@ -81,19 +89,21 @@ void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 {
-  if (getCompleteDocument() != NULL) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    ZDvidReader &reader = doc->getDvidReader();
+    if (reader.isReady()) {
       ZJsonObject contrastObj = reader.readContrastProtocal();
       getPresenter()->setHighContrastProtocal(contrastObj);
+//      enableSynapseFetcher();
     }
 
     getView()->updateContrastProtocal();
     getView()->reset(false);
     if (m_supervisor != NULL) {
-      m_supervisor->setDvidTarget(getCompleteDocument()->getDvidTarget());
+      m_supervisor->setDvidTarget(doc->getDvidTarget());
     }
-    m_mergeProject.setDvidTarget(getCompleteDocument()->getDvidTarget());
+    m_mergeProject.setDvidTarget(doc->getDvidTarget());
     m_mergeProject.syncWithDvid();
   }
 }

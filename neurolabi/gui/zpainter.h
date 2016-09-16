@@ -123,6 +123,10 @@ public:
   const QTransform& getTransform() const;
   void setTransform(const QTransform &t, bool combine = false);
 
+  const ZStTransform& getCanvasTransform() const {
+    return m_transform;
+  }
+
   void drawPoint(const QPointF &pt);
   void drawPoint(const QPoint &pt);
 
@@ -185,7 +189,7 @@ private:
   QRectF m_canvasRange;
   bool m_isPainted;
 
-  //ZStTransform m_transform; //world coordinates to canvas coordinates
+  ZStTransform m_transform; //world coordinates to canvas coordinates
 //  ZPoint m_offset;
   //QRect m_projRegion;
 };

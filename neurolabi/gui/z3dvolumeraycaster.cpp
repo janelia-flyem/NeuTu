@@ -261,7 +261,7 @@ bool Z3DVolumeRaycaster::isReady(Z3DEye eye) const
 ZWidgetsGroup *Z3DVolumeRaycaster::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
-    m_widgetsGroup = new ZWidgetsGroup("Image", NULL, 1);
+    m_widgetsGroup = new ZWidgetsGroup("Volume", NULL, 1);
     std::vector<ZParameter*> paras = getParameters();
     new ZWidgetsGroup(&m_xCut, m_widgetsGroup, 12);
     new ZWidgetsGroup(&m_yCut, m_widgetsGroup, 12);

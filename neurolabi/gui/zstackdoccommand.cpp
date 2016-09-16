@@ -1145,7 +1145,7 @@ ZStackDocCommand::SwcEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::SwcEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
@@ -2524,7 +2524,7 @@ ZStackDocCommand::StrokeEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::StrokeEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Stroke composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Stroke composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()

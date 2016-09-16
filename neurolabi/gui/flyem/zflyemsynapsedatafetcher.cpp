@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "neutubeconfig.h"
 
 ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
   QObject(parent)
@@ -16,7 +17,7 @@ ZFlyEmSynapseDataFetcher::ZFlyEmSynapseDataFetcher(QObject *parent) :
 
 ZFlyEmSynapseDataFetcher::~ZFlyEmSynapseDataFetcher()
 {
-  qDebug() << "ZFlyEmSynapseDataFetcher destroyed";
+  ZOUT(LTRACE(), 5) << "ZFlyEmSynapseDataFetcher destroyed";
 
   m_futureMap.waitForFinished();
 }

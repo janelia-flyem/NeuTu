@@ -34,6 +34,8 @@ class ZClickableColorLabel;
 class ZColorLabel;
 class ZFlyEmSynapseDataFetcher;
 class ZFlyEmSynapseDataUpdater;
+class ZDvidPatchDataFetcher;
+class ZDvidPatchDataUpdater;
 class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
@@ -125,7 +127,7 @@ signals:
   void nameColorMapReady(bool ready);
   void bodyMergeEdited();
   void updatingLatency(int);
-  void highlightModeEnabled(bool);
+//  void highlightModeEnabled(bool);
   void highlightModeChanged();
   void roiLoaded();
 
@@ -254,6 +256,7 @@ public slots:
   void removeBookmark(ZFlyEmBookmark *bookmark);
   void removeBookmark(const QList<ZFlyEmBookmark*> &bookmarkList);
 
+  void highlightSelectedObject(ZDvidLabelSlice *labelSlice, bool hl);
   void highlightSelectedObject(bool hl);
 
   void syncMergeWithDvid();
@@ -304,6 +307,7 @@ protected:
   void customInit();
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
+  void enableSynapseFetcher();
 
 private:
   void init();
@@ -399,7 +403,8 @@ protected:
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
-
+//  ZDvidPatchDataFetcher *m_patchFetcher;
+//  ZDvidPatchDataUpdater *m_patchUpdater;
 };
 
 template <typename T>

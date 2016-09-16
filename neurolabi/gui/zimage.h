@@ -2,6 +2,7 @@
 #define _ZIMAGE_H_
 
 #include <QImage>
+#include <set>
 
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
@@ -34,9 +35,20 @@ public:
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
+  ZImage(const ZImage &image);
+
   void clear();
 
   void init();
+
+  int getZ() const {
+    return m_z;
+  }
+
+  void setZ(int z) {
+    m_z = z;
+  }
+
 
   /*!
    * \brief Set data function
@@ -134,6 +146,14 @@ public:
 
   void drawRaster(const void *data, int kind, double scale = 1.0,
                   double offset = 0.0, int threshold = -1);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha);
+  void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
+                      int bgColor, int selColor);
+  void drawLabelFieldTranspose(uint64_t *data, const QVector<int> &colorTable,
+                               int bgColor, int selColor);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha, const std::set<uint64_t> &selected);
 
   void setBackground();
 
@@ -167,17 +187,25 @@ public:
   void setDefaultContrastProtocal();
   void setContrastProtocol(double scale, double offset, bool nonlinear);
 
+  void setVisible(bool visible);
+  bool isVisible() const;
 
 private:
   static bool hasSameColor(uchar *pt1, uchar *pt2);
 
+private:
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+  ZStTransform m_projTransform; //Transform from image coordinates to screen coordinates
 
   //high constrast protocal
   bool m_nonlinear;
   double m_grayScale;
   double m_grayOffset;
   //ZIntPoint m_offset;
+
+  bool m_visible;
+
+  int m_z;
 };
 
 #include "zimage_tmpl.cpp"

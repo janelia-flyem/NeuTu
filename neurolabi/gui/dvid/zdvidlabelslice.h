@@ -16,8 +16,8 @@
 #include "dvid/zdvidreader.h"
 #include "zsharedpointer.h"
 #include "flyem/zflyembodycolorscheme.h"
+#include "flyem/zflyembodymerger.h"
 
-class ZFlyEmBodyMerger;
 class QColor;
 class ZArray;
 
@@ -144,7 +144,9 @@ public:
   void refreshReaderBuffer();
 
 //  int getZoom() const;
-  int getZoom(const ZStackViewParam &viewParam) const;
+  int getZoomLevel(const ZStackViewParam &viewParam) const;
+
+  void paintBuffer();
 
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
@@ -154,6 +156,22 @@ private:
             NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
   QColor getCustomColor(uint64_t label) const;
 
+  void paintBufferUnsync();
+  void remapId(ZArray *label);
+  void remapId();
+
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               std::set<uint64_t> &selected);
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               std::set<uint64_t> &selected,
+               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+
+  void updateRgbTable();
+
+  ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
+
 private:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
@@ -162,12 +180,16 @@ private:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 
+  QVector<int> m_rgbTable;
+
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
+
   ZArray *m_labelArray;
+  ZArray *m_mappedLabelArray;
   QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
@@ -225,6 +247,7 @@ void ZDvidLabelSlice::setSelection(
 {
   clearSelection();
   addSelection(begin, end, labelType);
+  paintBuffer();
 }
 
 template <typename InputIterator>
