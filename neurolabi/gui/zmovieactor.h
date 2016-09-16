@@ -26,7 +26,7 @@ public:
 
 public:
   enum EType {
-    UNKNOWN, SWC, PUNCTA, STACK
+    UNKNOWN, SWC, PUNCTA, STACK, CUBE_ARRAY
   };
 
   virtual void show() = 0;

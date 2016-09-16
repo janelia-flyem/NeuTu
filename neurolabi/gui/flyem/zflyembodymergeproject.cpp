@@ -41,6 +41,7 @@
 #include "zsleeper.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
+#include "widgets/z3dtabwidget.h"
 
 #ifdef _WIN32
 #undef GetUserName

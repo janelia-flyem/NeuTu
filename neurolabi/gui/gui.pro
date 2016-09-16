@@ -652,7 +652,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
-    dialogs/zdvidbodypositiondialog.h
+    dialogs/zdvidbodypositiondialog.h \
+    widgets/z3dtabwidget.h \
+    zcubearraymovieactor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1159,7 +1161,9 @@ SOURCES += main.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
-    dialogs/zdvidbodypositiondialog.cpp
+    dialogs/zdvidbodypositiondialog.cpp \
+    widgets/z3dtabwidget.cpp \
+    zcubearraymovieactor.cpp
 
 OTHER_FILES += \
     extlib.pri \

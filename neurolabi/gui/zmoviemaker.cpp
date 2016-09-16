@@ -22,6 +22,11 @@
 #include "z3dvolumesource.h"
 #include "zpunctumio.h"
 #include "z3dpunctafilter.h"
+#include "zobject3dscan.h"
+#include "zcubearraymovieactor.h"
+#include "zcubearray.h"
+#include "flyem/zflyemmisc.h"
+#include "dvid/zdvidinfo.h"
 
 using namespace std;
 
@@ -102,6 +107,21 @@ void ZMovieMaker::recruitCast()
       actor->setId(iter->first);
       actor->setVisible(false);
       m_cast.push_back(actor);
+    }
+      break;
+    case ZFileType::OBJECT_SCAN_FILE:
+    {
+      ZObject3dScan obj;
+      obj.load(iter->second);
+      if (!obj.isEmpty()) {
+        ZCubeArray *cubeArray =
+            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
+        actor->setActor(cubeArray);
+        actor->setId(iter->first);
+        actor->setVisible(false);
+        m_cast.push_back(actor);
+      }
     }
       break;
     case ZFileType::TIFF_FILE:

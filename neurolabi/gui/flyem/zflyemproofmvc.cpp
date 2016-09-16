@@ -65,6 +65,7 @@
 #include "zflyembookmarkview.h"
 #include "dvid/zdvidpatchdatafetcher.h"
 #include "dvid/zdvidpatchdataupdater.h"
+#include "widgets/z3dtabwidget.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
