@@ -670,6 +670,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
         // build the data structure we pass along to the table
         ZJsonArray bodies;
         for (size_t i=0; i<thresholdData.size(); i++) {
+            // if application is quitting, return = exit thread
+            if (m_quitting) {
+                return;
+            }
             ZJsonObject thresholdEntry(thresholdData.value(i));
             int64_t bodyID = ZJsonParser::integerValue(thresholdEntry["Label"]);
             QString bodyIDstring = QString::number(bodyID);
