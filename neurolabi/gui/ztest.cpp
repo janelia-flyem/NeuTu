@@ -20738,7 +20738,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
   target.setLabelBlockName("labels3");
@@ -20763,6 +20763,17 @@ void ZTest::test(MainWindow *host)
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 
   delete array;
+#endif
+
+#if 1
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata2.int.janelia.org", "2ad1", 9000);
+  if (reader.open(target)) {
+    ZIntPoint pt = reader.readRoiBlockSize("seven_column");
+    std::cout << pt.toString() << std::endl;
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;
