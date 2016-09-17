@@ -470,9 +470,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 //          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
 
     if(m_ROILoaded) {
-        m_coarseBodyWindow->getROIsDockWidget()->getROIs(
-              m_coarseBodyWindow, m_dvidInfo, m_roiList,
-              m_loadedROIs, m_roiSourceList);
+      m_coarseBodyWindow->getROIsDockWidget()->getROIs(
+            m_coarseBodyWindow, m_dvidInfo, m_roiList,
+            m_loadedROIs, m_roiSourceList);
     }
   }
 

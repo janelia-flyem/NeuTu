@@ -127,6 +127,8 @@ public:
 
   ZDvidInfo readGrayScaleInfo() const;
 
+  ZIntPoint readRoiBlockSize(const std::string &dataName) const;
+
   ZJsonObject readInfo() const;
 
   bool hasData(const std::string &dataName) const;

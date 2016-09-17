@@ -797,8 +797,9 @@ ZJsonObject ZDvidReader::readInfo() const
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader reader;
-  reader.read(ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString()).c_str(),
-             isVerbose());
+
+  std::string url = ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString());
+  reader.read(url.c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
   const QByteArray &buffer = reader.getBuffer();
 
@@ -1297,12 +1298,36 @@ ZIntCuboid ZDvidReader::readBoundBox(int z)
   return cuboid;
 }
 
+ZIntPoint ZDvidReader::readRoiBlockSize(const std::string &dataName) const
+{
+  QString info = readInfo(dataName.c_str());
+  ZJsonObject obj;
+  obj.decodeString(info.toStdString().c_str());
+
+  ZIntPoint pt;
+  if (obj.hasKey("Extended")) {
+    ZJsonObject extJson(obj.value("Extended"));
+    if (extJson.hasKey("BlockSize")) {
+      ZJsonArray blockSizeJson(extJson.value("BlockSize"));
+      if (blockSizeJson.size() == 3) {
+        pt.set(ZJsonParser::integerValue(blockSizeJson.getData(), 0),
+               ZJsonParser::integerValue(blockSizeJson.getData(), 1),
+               ZJsonParser::integerValue(blockSizeJson.getData(), 2));
+      }
+    }
+  }
+
+  return pt;
+}
+
 ZDvidInfo ZDvidReader::readGrayScaleInfo() const
 {
   QString infoString = readInfo(getDvidTarget().getGrayScaleName().c_str());
   ZDvidInfo dvidInfo;
   if (!infoString.isEmpty()) {
     dvidInfo.setFromJsonString(infoString.toStdString());
+    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
+                         getDvidTarget().getUuid());
   }
 
   return dvidInfo;
