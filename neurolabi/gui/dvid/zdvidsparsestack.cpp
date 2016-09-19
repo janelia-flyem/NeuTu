@@ -305,6 +305,10 @@ bool ZDvidSparseStack::fillValue(
 
 
       for (size_t s = 0; s < stripeNumber; ++s) {
+#ifdef _DEBUG_2
+        std::cout << s << "/" << stripeNumber << std::endl;
+#endif
+
         if (cancelable && m_cancelingValueFill) {
 //          m_cancelingValueFill = false;
           setCancelFillValue(false);
@@ -317,6 +321,9 @@ bool ZDvidSparseStack::fillValue(
         int y = stripe.getY();
         int z = stripe.getZ();
         for (int i = 0; i < segmentNumber; ++i) {
+#ifdef _DEBUG_2
+        std::cout << "seg:" << i << "/" << segmentNumber << std::endl;
+#endif
           int x0 = stripe.getSegmentStart(i);
           int x1 = stripe.getSegmentEnd(i);
 
@@ -346,13 +353,26 @@ bool ZDvidSparseStack::fillValue(
           }
 
           for (size_t i = 0; i < blockSpan.size(); i += 2) {
+#ifdef _DEBUG_2
+        std::cout << "block:" << i << "/" << blockSpan.size() << std::endl;
+#endif
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
             ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks" << std::endl;
+#endif
             std::vector<ZStack*> stackArray= m_dvidReader.readGrayScaleBlock(
                   blockIndex, dvidInfo, blockNumber);
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
+#endif
             grid->consumeStack(blockIndex, stackArray);
             blockCount += stackArray.size();
+
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
+#endif
 #if 0
                 ZIntCuboid box = grid->getBlockBox(blockIndex);
                 ZStack *stack = m_dvidReader.readGrayScale(box);

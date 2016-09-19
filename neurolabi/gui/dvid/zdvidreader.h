@@ -308,6 +308,10 @@ private:
 
   void init();
 
+  std::vector<ZStack*> readGrayScaleBlockOld(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
+
 protected:
 //  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
