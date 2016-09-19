@@ -33,7 +33,7 @@ CONFIG(debug, debug|release) {
     LIBS += neurolabi.lib
 }
 
-    DEFINES += LIBXML_STATIC
+    DEFINES += LIBXML_STATIC PCRE2_STATIC
 
     INCLUDEPATH += $${EXTLIB_DIR}/msvc/zlib/include \
         $${EXTLIB_DIR}/msvc/libxml2/include/libxml2 \

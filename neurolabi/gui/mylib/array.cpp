@@ -147,8 +147,6 @@ static inline int pthread_is_this(pthread_id id)
 #define BND_EXTEND  3
 #define BND_INVERT  4
 
-extern int Boundary_Case_8qm5;
-
 #define SIZEOF(x) ((int) sizeof(x))
 
 /****************************************************************************************

@@ -2091,7 +2091,7 @@ static void match_required(Unit *def)
 // Return non-zero only if name[0..len] matches text where quoted characters can
 //   occur in name (but not in text).
 
-int match_text(char *name, char *text, int len)
+static int match_text(char *name, char *text, int len)
 { int i, j;
 
   for (i = j = 0; i < len; i++, j++)
@@ -2107,7 +2107,7 @@ int match_text(char *name, char *text, int len)
 //   line starting at the character pointed at by arg, which is the first string pointed
 //   at by argv (the rest of the command line following it in order).
 
-int match_option_suffix(Unit *def, int i, char *arg, char **argv)
+static int match_option_suffix(Unit *def, int i, char *arg, char **argv)
 { if (i >= def->len) 
     { if (*arg == '\0')
         return (1);

@@ -4,5 +4,5 @@ HEADERS += $${PWD}/mylib.h \
     $${PWD}/array.h
 
 SOURCES +=  $${PWD}/array.cpp \
-    $${PWD}/mylib.c \
+    $${PWD}/mylib.cpp \
     $${PWD}/utilities.cpp
