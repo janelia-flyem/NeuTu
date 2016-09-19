@@ -4537,14 +4537,19 @@ void MainWindow::makeMovie()
 
       if (script.loadScript(fileName.toStdString())) {
         QString saveFileDir = m_movieDlg->getOutputPath();
-        /*
-            QFileDialog::getExistingDirectory(this, tr("Movie Output"),
-                                              (config.getPath(NeutubeConfig::DATA) +
-                                               "/test/movie2").c_str(),
-                                              QFileDialog::ShowDirsOnly);
-                                              */
 
         if (!saveFileDir.isEmpty()) {
+          QDir dir(saveFileDir);
+          if (!dir.exists()) {
+            QString warningMsg;
+            if (!dir.mkpath(dir.absolutePath())) {
+              warningMsg = "Faile to Create output directory. Abort.";
+              QMessageBox::warning(NULL, warningMsg, "Initialization Error",
+                                   QMessageBox::Ok);
+              return;
+            }
+          }
+
           m_progress->setRange(0, 3);
           m_progress->show();
 
@@ -8099,4 +8104,9 @@ void MainWindow::on_actionGet_Body_Positions_triggered()
 {
   m_bodyPosDlg->show();
   m_bodyPosDlg->raise();
+}
+
+void MainWindow::on_actionMake_Movie_2_triggered()
+{
+  makeMovie();
 }

@@ -124,6 +124,20 @@ void ZMovieMaker::recruitCast()
       }
     }
       break;
+    case ZFileType::JSON_FILE:
+    {
+      ZObject3dScan obj;
+      obj.importDvidRoi(iter->second);
+      if (!obj.isEmpty()) {
+        ZCubeArray *cubeArray =
+            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
+        actor->setActor(cubeArray);
+        actor->setId(iter->first);
+        actor->setVisible(false);
+        m_cast.push_back(actor);
+      }
+    }
     case ZFileType::TIFF_FILE:
     {
       ZStack *stack = new ZStack();

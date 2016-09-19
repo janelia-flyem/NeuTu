@@ -493,6 +493,8 @@ private slots:
 
   void on_actionGet_Body_Positions_triggered();
 
+  void on_actionMake_Movie_2_triggered();
+
 private:
   void createActions();
   void createFileActions();

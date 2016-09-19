@@ -62,9 +62,9 @@ public:
 private:
   Z3DWindow *m_window;
   bool m_isSwcChanged;
-  bool m_isCubeArrayChanged;
   bool m_isVolumeChanged;
   bool m_isPunctaChanged;
+  bool m_isCubeArrayChanged;
 };
 
 #endif // ZMOVIESTAGE_H
