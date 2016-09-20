@@ -951,9 +951,8 @@ std::string ZDvidUrl::getSynapseUrl(
 
 std::string ZDvidUrl::getSynapseElementsUrl() const
 {
-  std::ostringstream stream;
-
-  return GetFullUrl(getSynapseUrl(), m_annotationElementCommand);
+//  std::ostringstream stream;
+  return GetFullUrl(getSynapseUrl(), m_annotationElementsCommand);
 }
 
 std::string ZDvidUrl::getSynapseUrl(
