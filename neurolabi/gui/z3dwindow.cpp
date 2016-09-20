@@ -987,8 +987,10 @@ void Z3DWindow::init(EInitMode mode)
         m_compositor->getInputPort("GeometryFilters"));
   m_surfaceFilter->getOutputPort("GeometryFilter")->connect(
         m_compositor->getInputPort("GeometryFilters"));
-  m_todoFilter->getOutputPort("GeometryFilter")->connect(
-        m_compositor->getInputPort("GeometryFilters"));
+  if (m_todoFilter != NULL) {
+    m_todoFilter->getOutputPort("GeometryFilter")->connect(
+          m_compositor->getInputPort("GeometryFilters"));
+  }
 //  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
@@ -1964,7 +1966,9 @@ void Z3DWindow::updateSurfaceBoundBox()
 
 void Z3DWindow::updateTodoBoundBox()
 {
-  m_todoBoundBox = m_todoFilter->boundBox();
+  if (m_todoFilter != NULL) {
+    m_todoBoundBox = m_todoFilter->boundBox();
+  }
 }
 
 /*
@@ -2391,7 +2395,9 @@ void Z3DWindow::updateObjectSelection(
       punctaSelectionChanged();
       break;
     case ZStackObject::TYPE_FLYEM_TODO_ITEM:
-      m_todoFilter->invalidate();
+      if (m_todoFilter != NULL) {
+        m_todoFilter->invalidate();
+      }
       break;
     default:
       break;

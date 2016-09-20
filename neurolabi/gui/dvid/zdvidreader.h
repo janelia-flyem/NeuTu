@@ -127,6 +127,8 @@ public:
 
   ZDvidInfo readGrayScaleInfo() const;
 
+  ZIntPoint readRoiBlockSize(const std::string &dataName) const;
+
   ZJsonObject readInfo() const;
 
   bool hasData(const std::string &dataName) const;
@@ -305,6 +307,10 @@ private:
   bool startService();
 
   void init();
+
+  std::vector<ZStack*> readGrayScaleBlockOld(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
 
 protected:
 //  QEventLoop *m_eventLoop;

@@ -1631,6 +1631,7 @@ void ZDvidWriter::addSynapseProperty(
 
 void ZDvidWriter::writeMasterNode(const std::string &uuid)
 {
+#if defined(_FLYEM_)
 //  std::string rootNode =
 //      GET_FLYEM_CONFIG.getDvidRootNode(getDvidTarget().getUuid());
 //  if (!rootNode.empty()) {
@@ -1655,7 +1656,7 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
     ZDvid::MakeRequest(
           url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
           m_statusCode);
-
+#endif
 //    ZFlyEmMisc::MakeRequest(url,
 //    post(url, branchJson);
 //  }
