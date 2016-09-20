@@ -179,10 +179,12 @@ void ZDvidDialog::setServer(int index)
   }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
   ui->librarianLineEdit->setText(
         dvidTarget.getSupervisor().empty() ?
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
+#endif
   ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());

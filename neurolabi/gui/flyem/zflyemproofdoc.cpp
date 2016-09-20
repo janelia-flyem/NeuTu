@@ -1674,10 +1674,11 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
          iter != synapseArray.end(); ++iter) {
       const ZDvidSynapse &synapse = *iter;
       ZPunctum *punctum = new ZPunctum(synapse.getPosition(), radius);
+#if defined(_FLYEM_)
       if (GET_FLYEM_CONFIG.anayzingMb6()) {
         punctum->setName(m_analyzer.getPunctumName(synapse));
       }
-
+#endif
       if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
         tbar.push_back(punctum);
       } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {

@@ -874,6 +874,7 @@ void ZFlyEmBodySplitProject::decomposeBody()
     emitMessage("No isolation found.");
   }
 
+#if defined(_FLYEM_)
   if (!newBodyIdList.isEmpty()) {
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
           getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
@@ -888,6 +889,7 @@ void ZFlyEmBodySplitProject::decomposeBody()
     bodyMessage += "</font>";
     emitMessage(bodyMessage);
   }
+#endif
 
   updateSplitDocument();
 
@@ -979,11 +981,12 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            arg(getBodyId()),
                            NeuTube::MSG_ERROR));
     } else {
+#if defined(_FLYEM_)
       GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
             getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
       GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
             getDvidTarget(), bodyId, ZNeutuService::UPDATE_ALL);
-
+#endif
       updateSplitDocument();
       emitMessage(QString("Done. The cropped part has bodyId %1").arg(bodyId));
       emit resultCommitted();
@@ -1267,10 +1270,12 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 
   if (!newBodyIdList.isEmpty()) {
     QString bodyMessage = QString("Body %1 splitted: ").arg(wholeBody->getLabel());
+#if defined(_FLYEM_)
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
           getDvidTarget(), wholeBody->getLabel(), ZNeutuService::UPDATE_ALL);
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
           getDvidTarget(), updateBodyArray, ZNeutuService::UPDATE_ALL);
+#endif
 
     bodyMessage += "<font color=#007700>";
     foreach (uint64_t bodyId, newBodyIdList) {

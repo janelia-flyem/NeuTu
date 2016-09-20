@@ -2447,6 +2447,7 @@ std::vector<std::string> ZDvidReader::readMasterList() const
 */
 std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
 {
+#if defined(_FLYEM_)
   std::string master;
   std::string rootNode =
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
@@ -2465,10 +2466,12 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   }
 
   return master;
+#endif
 }
 
 std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
 {
+#if defined(_FLYEM_)
   std::vector<std::string> masterList;
   std::string rootNode =
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
@@ -2487,6 +2490,7 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
   }
 
   return masterList;
+#endif
 }
 
 std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(

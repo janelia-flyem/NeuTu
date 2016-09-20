@@ -7393,9 +7393,11 @@ void MainWindow::runRoutineCheck()
 {
   if (NeutubeConfig::AutoStatusCheck()) {
     std::cout << "Running routine check ..." << std::endl;
+#if defined(_FLYEM_)
     if (!GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
+#endif
   }
 }
 
@@ -7575,6 +7577,7 @@ void MainWindow::MessageProcessor::processMessage(
 
 void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 {
+#if defined(_FLYEM_)
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -7623,6 +7626,7 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
     endProgress();
   }
+#endif
 }
 
 void MainWindow::generateMBKcCast(const std::string &movieFolder)
