@@ -1693,6 +1693,11 @@ void Z3DWindow::update3DCubeDisplay()
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
+
+#ifdef _DEBUG_
+  std::cout << "Bound box: " << m_boundBox[0] << " " << m_boundBox[1] << std::endl;
+#endif
+
   resetCameraClippingRange();
 }
 

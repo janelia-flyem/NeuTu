@@ -84,6 +84,9 @@ void ZMovieMaker::prepareStage()
        iter != m_cast.end(); ++iter) {
     (*iter)->setStage(m_stage);
   }
+
+  //For ROIs
+  window->setROIs(m_academy->getObjectList<ZCubeArray>().size());
 }
 
 void ZMovieMaker::recruitCast()
@@ -116,6 +119,7 @@ void ZMovieMaker::recruitCast()
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
             ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
         actor->setActor(cubeArray);
         actor->setId(iter->first);
@@ -131,6 +135,7 @@ void ZMovieMaker::recruitCast()
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
             ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
         actor->setActor(cubeArray);
         actor->setId(iter->first);
@@ -138,6 +143,7 @@ void ZMovieMaker::recruitCast()
         m_cast.push_back(actor);
       }
     }
+      break;
     case ZFileType::TIFF_FILE:
     {
       ZStack *stack = new ZStack();
