@@ -6,7 +6,7 @@ set buildDIR=%srcDIR%\..\jansson-build
 set installDIR=%currDIR%\jansson
 
 rd /q/s %srcDIR%
-7z x -y jansson-2.8.zip
+%currDIR%\7za.exe x -y jansson-2.8.zip
 
 rd /q/s %installDIR%
 

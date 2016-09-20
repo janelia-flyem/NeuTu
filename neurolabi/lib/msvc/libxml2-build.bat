@@ -6,7 +6,7 @@ set buildDIR=%srcDIR%\..\libxml2-build
 set installDIR=%currDIR%\libxml2
 
 rd /q/s %srcDIR%
-7z e -y libxml2-2.9.4.tar.gz && 7z x -y libxml2-2.9.4.tar
+%currDIR%\7za.exe e -y libxml2-2.9.4.tar.gz && %currDIR%\7za.exe x -y libxml2-2.9.4.tar
 
 rd /q/s %installDIR%
 

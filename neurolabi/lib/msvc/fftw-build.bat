@@ -6,7 +6,7 @@ set buildDIR=%srcDIR%\..\fftw-build
 set installDIR=%currDIR%\fftw
 
 rd /q/s %installDIR%
-7z x -y -o%installDIR% fftw-3.3.5-dll64.zip
+%currDIR%\7za.exe x -y -o%installDIR% fftw-3.3.5-dll64.zip
 
 cd %installDIR%
 

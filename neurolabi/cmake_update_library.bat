@@ -1,7 +1,27 @@
 echo %PATH%
 
 cd /d "%~dp0"
+set currDIR=%CD%
+call "%currDIR%\lib\msvc\zlib-build.bat" < nul
+echo on
+cd /d "%~dp0"
+set currDIR=%CD%
+call "%currDIR%\lib\msvc\jansson-build.bat" < nul
+echo on
+cd /d "%~dp0"
+set currDIR=%CD%
+call "%currDIR%\lib\msvc\libxml2-build.bat" < nul
+echo on
+cd /d "%~dp0"
+set currDIR=%CD%
+call "%currDIR%\lib\msvc\pcre-build.bat" < nul
+echo on
+cd /d "%~dp0"
+set currDIR=%CD%
+call "%currDIR%\lib\msvc\fftw-build.bat" < nul
 
+echo on
+cd /d "%~dp0"
 set currDIR=%CD%
 set srcDIR=%currDIR%\c
 set buildDIR=%srcDIR%\..\__neurolabi-build

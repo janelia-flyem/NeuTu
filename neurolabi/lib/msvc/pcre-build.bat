@@ -6,7 +6,7 @@ set buildDIR=%srcDIR%\..\pcre-build
 set installDIR=%currDIR%\pcre
 
 rd /q/s %srcDIR%
-7z x -y pcre2-10.22.zip
+%currDIR%\7za.exe x -y pcre2-10.22.zip
 
 rd /q/s %installDIR%
 

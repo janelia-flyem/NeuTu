@@ -6,7 +6,7 @@ set buildDIR=%srcDIR%\..\zlib-build
 set installDIR=%currDIR%\zlib
 
 rd /q/s %srcDIR%
-7z x -y zlib128.zip
+%currDIR%\7za.exe x -y zlib128.zip
 
 rd /q/s %installDIR%
 
