@@ -33,19 +33,26 @@ void FlyEmSettingDialog::loadSetting()
   if (!configPath.isEmpty()) {
     ui->configLineEdit->setText(configPath);
   } else {
+#if defined(_FLYEM_)
     ui->configLineEdit->setText(GET_FLYEM_CONFIG.getConfigPath().c_str());
+#endif
   }
+
+#if defined(_FLYEM_)
   ui->servicelineEdit->setText(
         GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
+#endif
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
   ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
   std::string dataDir = GET_DATA_DIR;
   ui->dataDirLineEdit->setText(QFileInfo(dataDir.c_str()).absoluteFilePath());
+#if defined(_FLYEM_)
   ui->defaultConfigFileCheckBox->setChecked(GET_FLYEM_CONFIG.usingDefaultConfig());
+#endif
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -71,6 +78,7 @@ std::string FlyEmSettingDialog::getConfigPath() const
 
 void FlyEmSettingDialog::update()
 {
+#if defined(_FLYEM_)
   GET_FLYEM_CONFIG.setServer(getNeuTuServer());
   if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
     ui->statusLabel->setText("Normal");
@@ -80,6 +88,7 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
   GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
   GET_FLYEM_CONFIG.loadConfig();
+#endif
 
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
   NeutubeConfig::EnableAutoStatusCheck(ui->autoStatuscCheckBox->isChecked());

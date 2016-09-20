@@ -18,11 +18,13 @@ ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
 void ZFlyEmSupervisor::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+#if defined(_FLYEM_)
   if (!target.getSupervisor().empty()) {
     setSever(m_dvidTarget.getSupervisor());
   } else {
     setSever(GET_FLYEM_CONFIG.getDefaultLibrarian());
   }
+#endif
 }
 
 const ZDvidTarget& ZFlyEmSupervisor::getDvidTarget() const
