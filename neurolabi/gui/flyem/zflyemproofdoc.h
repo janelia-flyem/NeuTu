@@ -378,6 +378,8 @@ private:
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateLocalSplitRoi();
 
+  void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
