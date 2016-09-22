@@ -287,7 +287,7 @@ public:
   }
 #endif
 
-  void refreshLabelBuffer();
+  bool refreshLabelBuffer();
 
 signals:
   void readingDone();

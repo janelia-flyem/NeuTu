@@ -1693,12 +1693,19 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
-void ZDvidReader::refreshLabelBuffer()
+bool ZDvidReader::refreshLabelBuffer()
 {
 #if defined(_ENABLE_LOWTIS_)
   if (m_lowtisService.get() != NULL) {
-    m_lowtisService->flush_cache();
+    try {
+      m_lowtisService->flush_cache();
+    } catch (std::exception &e) {
+      ZOUT(LTRACE(), 5) << e.what();
+      return false;
+    }
   }
+
+  return true;
 #endif
 }
 

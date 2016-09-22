@@ -111,7 +111,7 @@ void ZDvidLabelSlice::setSliceAxis(NeuTube::EAxis sliceAxis)
 }
 
 void ZDvidLabelSlice::display(
-    ZPainter &painter, int slice, EDisplayStyle option,
+    ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
     NeuTube::EAxis sliceAxis) const
 {
   if (m_sliceAxis != sliceAxis) {
@@ -1026,7 +1026,7 @@ void ZDvidLabelSlice::clearCache()
   m_objCache.clear();
 }
 
-void ZDvidLabelSlice::refreshReaderBuffer()
+bool ZDvidLabelSlice::refreshReaderBuffer()
 {
-  m_reader.refreshLabelBuffer();
+  return m_reader.refreshLabelBuffer();
 }

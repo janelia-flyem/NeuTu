@@ -2195,7 +2195,9 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
   }
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->refreshReaderBuffer();
+    if (!slice->refreshReaderBuffer()) {
+      notify(ZWidgetMessage("Failed to refresh labels.", NeuTube::MSG_WARNING));
+    }
   }
 }
 
