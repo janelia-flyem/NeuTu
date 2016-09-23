@@ -448,70 +448,19 @@ void SynapsePredictionProtocol::processSynapseVerification(
 {
   int oldPendingListSize = m_pendingList.size();
 
-  if (verified) {
-    verifySynapse(ZIntPoint(x, y, z));
-  } else {
+
+  if (!verified) {
+    // this method moves the point from the finished list if needed
     unverifySynapse(ZIntPoint(x, y, z));
   }
 
-  // if pending list has fewer items, that means the whole
-  //    synapse got verified, and it's time to move to the next one
+  // if pending list has fewer items than before, that means the whole
+  //    synapse got verified/finished, and it's time to move to the next one
   if (m_pendingList.size() < oldPendingListSize) {
       onNextButton();
   } else {
       updateLabels();
   }
-}
-
-void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
-{
-  ZDvidReader reader;
-  ZIntPoint targetPoint = pt;
-  bool isVerified = true;
-  if (reader.open(m_dvidTarget)) {
-    ZDvidSynapse synapse =
-        reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
-
-    if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-      std::vector<ZIntPoint> psdArray = synapse.getPartners();
-      for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
-           iter != psdArray.end(); ++iter) {
-        const ZIntPoint &pt = *iter;
-        ZDvidSynapse synapse =
-            reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
-        if (!synapse.isVerified()) {
-          isVerified = false;
-          break;
-        }
-      }
-      if (!synapse.isVerified()) {
-          isVerified = false;
-      }
-    } else if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
-      std::vector<ZIntPoint> partnerArray = synapse.getPartners();
-      if (!partnerArray.empty()) {
-        targetPoint = partnerArray.front();
-        ZDvidSynapse presyn =
-            reader.readSynapse(targetPoint, FlyEM::LOAD_PARTNER_LOCATION);
-
-        std::vector<ZIntPoint> psdArray = presyn.getPartners();
-        for (std::vector<ZIntPoint>::const_iterator iter = psdArray.begin();
-             iter != psdArray.end(); ++iter) {
-          const ZIntPoint &pt = *iter;
-          ZDvidSynapse synapse =
-              reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
-          if (!synapse.isVerified()) {
-            isVerified = false;
-            break;
-          }
-        }
-        if (!presyn.isVerified()) {
-            isVerified = false;
-        }
-      }
-    }
-  }
-
 }
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)

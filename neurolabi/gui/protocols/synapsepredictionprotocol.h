@@ -38,7 +38,6 @@ signals:
 public slots:
     void loadDataRequested(ZJsonObject data);
 
-    void verifySynapse(const ZIntPoint &pt);
     void moveSynapse(const ZIntPoint &src, const ZIntPoint &dst);
     void unverifySynapse(const ZIntPoint &pt);
 
