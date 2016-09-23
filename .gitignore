@@ -14,6 +14,8 @@
 !/neurolabi/lib/Mingw/*.zip
 /neurolabi/lib/*.tar
 /neurolabi/lib/msvc/*.tar
+!/neurolabi/lib/msvc/*.zip
+!/neurolabi/lib/msvc/*.tar.gz
 
 # qtcreator c project file
 /neurolabi/c/clib.*
