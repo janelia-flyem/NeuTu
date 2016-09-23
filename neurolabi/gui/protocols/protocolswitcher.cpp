@@ -11,6 +11,7 @@
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
+#include "focusedpathprotocol.h"
 #include "synapsepredictionprotocol.h"
 
 #include "doNthingsprotocol.h"
@@ -72,7 +73,8 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
         << "synapse_prediction_body"
-        << "synapse_prediction_region";
+        << "synapse_prediction_region"
+        << "focused_path";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -335,9 +337,11 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     if (protocolName == "doNthings") {
         m_activeProtocol = new DoNThingsProtocol(m_parent);
     } else if (protocolName == "synapse_prediction_region") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else if (protocolName == "synapse_prediction_body") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    } else if (protocolName == "focused_path") {
+        m_activeProtocol = new FocusedPathProtocol(m_parent);
     }
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
