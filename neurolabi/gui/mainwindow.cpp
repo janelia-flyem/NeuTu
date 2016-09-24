@@ -7698,7 +7698,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
           const ZDvidSynapse &synapse = *iter;
 
           if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-            ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(55.0);
             markerArray.push_back(marker);
           }
         }

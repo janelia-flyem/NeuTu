@@ -384,6 +384,8 @@ void Z3DWindow::init(EInitMode mode)
 
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
+  m_surfaceFilter->getRendererBase()->setMaterialSpecular(glm::vec4(0, 0, 0, 1));
+
   m_layerList.append(LAYER_SURFACE);
 
   //  qDebug()<<"hard coded ...";

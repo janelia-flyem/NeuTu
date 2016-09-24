@@ -77,6 +77,8 @@ void ZMovieMaker::prepareStage()
         glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
                   m_backgroundColor.blueF()));
 
+  window->getRendererBase(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
+
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
 
@@ -119,6 +121,7 @@ void ZMovieMaker::recruitCast()
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
             ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
         actor->setActor(cubeArray);
@@ -135,6 +138,7 @@ void ZMovieMaker::recruitCast()
       if (!obj.isEmpty()) {
         ZCubeArray *cubeArray =
             ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        cubeArray->setSource(iter->second);
         academy->addObject(cubeArray);
         ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
         actor->setActor(cubeArray);

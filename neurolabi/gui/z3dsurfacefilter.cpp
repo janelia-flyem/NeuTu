@@ -194,7 +194,7 @@ void Z3DSurfaceFilter::prepareData()
         {
             for(size_t j=0; j<m_cubeArrayList.size(); ++j)
             {
-                if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
+                if(m_cubeArrayList[j].getSource() == m_sourceList[i])
                 {
                     if(m_cubeRenderers[j]->isEmpty())
                     {
@@ -237,7 +237,7 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
     bool sourceAdded = false;
     for(size_t i=0; i<m_cubeArrayList.size(); i++)
     {
-        if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) == 0 )
+        if(m_cubeArrayList[i].getSource() == source.c_str())
         {
             // update color
           if (!m_cubeArrayList[i].isEmpty()) {
