@@ -7,6 +7,7 @@
 #include <QMessageBox>
 
 #include "zjsonobject.h"
+#include "zjsonparser.h"
 
 FocusedPathProtocol::FocusedPathProtocol(QWidget *parent) :
     ProtocolDialog(parent),
@@ -28,9 +29,19 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent) :
 
 }
 
+const std::string FocusedPathProtocol::KEY_VERSION = "version";
+const int FocusedPathProtocol::fileVersion = 1;
+
 bool FocusedPathProtocol::initialize() {
 
     // input dialog, get things ready to go
+
+
+
+
+
+    // everything OK; save and return
+    saveState();
     return true;
 
 }
@@ -51,7 +62,7 @@ void FocusedPathProtocol::onCompleteButton() {
     if (ans == QMessageBox::Ok) {
 
 
-        // saveState();
+        saveState();
 
 
 
@@ -61,10 +72,43 @@ void FocusedPathProtocol::onCompleteButton() {
 
 void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
-    // deal with data load
+    // check version of saved data here, once we have a second version
+    if (!data.hasKey(KEY_VERSION.c_str())) {
+
+        // display error in UI; for now, print it
+        std::cout << "No version info in saved data; data not loaded!" << std::endl;
+        return;
+    }
+    int version = ZJsonParser::integerValue(data[KEY_VERSION.c_str()]);
+    if (version > fileVersion) {
+
+        // likewise...
+        std::cout << "Saved data is from a newer version of NeuTu; update NeuTu and try again!" << std::endl;
+
+
+
+        return;
+    }
+
+
+    // convert to newer version here if needed
+
+
+
+    // do actual load
+
 
 }
 
+void FocusedPathProtocol::saveState() {
+
+    ZJsonObject data;
+
+    // always version your output files!
+    data.setEntry(KEY_VERSION.c_str(), fileVersion);
+
+    emit requestSaveProtocol(data);
+}
 
 FocusedPathProtocol::~FocusedPathProtocol()
 {

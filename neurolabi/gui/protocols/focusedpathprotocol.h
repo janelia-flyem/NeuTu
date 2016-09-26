@@ -30,8 +30,12 @@ private slots:
     void onCompleteButton();
 
 private:
+    static const std::string KEY_VERSION;
+    static const int fileVersion;
+
     Ui::FocusedPathProtocol *ui;
     bool initialize();
+    void saveState();
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
