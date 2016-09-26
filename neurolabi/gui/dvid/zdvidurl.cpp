@@ -331,6 +331,10 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
+std::string ZDvidUrl::getCommitInfoUrl() const
+{
+  return GetFullUrl(getNodeUrl(), "commit");
+}
 
 std::string ZDvidUrl::getSp2bodyUrl() const
 {

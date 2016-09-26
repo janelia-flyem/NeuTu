@@ -19,6 +19,8 @@ libdvid::BinaryDataPtr MakeRequest(
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
 libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
+void MakeHeadRequest(const std::string &url, int &statusCode);
+
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(

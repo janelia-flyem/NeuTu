@@ -34,6 +34,8 @@ public:
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
 
+  std::string getCommitInfoUrl() const;
+
   std::string getSkeletonUrl(const std::string &bodyLabelName) const;
   std::string getSkeletonUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;

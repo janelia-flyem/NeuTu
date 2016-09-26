@@ -71,6 +71,11 @@ void MovieDialog::setOutputPath(const QString &path)
   ui->outputLineEdit->setText(path);
 }
 
+bool MovieDialog::renderingAxis() const
+{
+  return ui->axisCheckBox->isChecked();
+}
+
 void MovieDialog::on_scriptPushButton_clicked()
 {
   QString fileName =

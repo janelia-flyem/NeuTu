@@ -234,6 +234,33 @@ void ZDvidReader::waitForReading()
 }
 #endif
 
+ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
+  std::string repoUrl = url.getRepoUrl();
+  if (repoUrl.empty()) {
+    status = ZDvid::NODE_INVALID;
+  } else {
+    int statusCode = 0;
+    ZDvid::MakeHeadRequest(repoUrl, statusCode);
+    if (statusCode != 200) {
+      status = ZDvid::NODE_OFFLINE;
+    } else {
+      ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
+      if (obj.hasKey("Locked")) {
+        bool locked = ZJsonParser::booleanValue(obj["Locked"]);
+        if (locked) {
+          status = ZDvid::NODE_LOCKED;
+        }
+      }
+    }
+  }
+
+  return status;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
 {

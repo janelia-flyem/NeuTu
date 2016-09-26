@@ -27,12 +27,14 @@
 #include "zcubearray.h"
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidinfo.h"
+#include "z3daxis.h"
 
 using namespace std;
 
 ZMovieMaker::ZMovieMaker() : m_stage(NULL),
   m_width(1024), m_height(1024), m_frameInterval(50)
 {
+  m_showingAxis = true;
 }
 
 ZMovieMaker::~ZMovieMaker()
@@ -76,6 +78,9 @@ void ZMovieMaker::prepareStage()
   window->getCompositor()->setBackgroundSecondColor(
         glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
                   m_backgroundColor.blueF()));
+
+  window->getAxis()->setVisible(m_showingAxis);
+
 
   window->getRendererBase(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
 

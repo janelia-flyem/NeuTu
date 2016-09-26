@@ -77,6 +77,10 @@ public:
    */
   bool isReady() const;
 
+  std::string readNodeInfo() const;
+
+  ZDvid::ENodeStatus getNodeStatus() const;
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
   ZObject3dScan readBody(uint64_t bodyId);

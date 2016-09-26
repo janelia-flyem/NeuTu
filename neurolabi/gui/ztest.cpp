@@ -270,6 +270,7 @@ using namespace std;
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
 #include "flyem/zneutuservice.h"
+#include "zdvidutil.h"
 
 using namespace std;
 
@@ -20765,7 +20766,7 @@ void ZTest::test(MainWindow *host)
   delete array;
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
 
   ZDvidTarget target("emdata2.int.janelia.org", "2ad1", 9000);
@@ -20774,6 +20775,37 @@ void ZTest::test(MainWindow *host)
     std::cout << pt.toString() << std::endl;
   }
 
+#endif
+
+#if 0
+  int statusCode;
+  std::string url = "http://emdata2.int.janelia.org:9000/api/repo/2ad2";
+  ZDvid::MakeHeadRequest(url, statusCode);
+  std::cout << statusCode << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget target("emdata2.int.janelia.org", "3c1d", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  switch (reader.getNodeStatus()) {
+  case ZDvid::NODE_INVALID:
+    std::cout << "Invalid node";
+    break;
+  case ZDvid::NODE_LOCKED:
+    std::cout << "Locked node";
+    break;
+  case ZDvid::NODE_NORMAL:
+    std::cout << "Normal node";
+    break;
+  case ZDvid::NODE_OFFLINE:
+    std::cout << "Node cannot be connected";
+    break;
+  }
+
+  std::cout << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

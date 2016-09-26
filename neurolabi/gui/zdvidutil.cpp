@@ -67,6 +67,12 @@ libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
                      statusCode);
 }
 
+void ZDvid::MakeHeadRequest(const std::string &url, int &statusCode)
+{
+  MakeRequest(url, "HEAD", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+              statusCode);
+}
+
 ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
