@@ -4,15 +4,20 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QtGui>
+#include <QInputDialog>
 #include <QMessageBox>
 
+#include "dvid/zdvidreader.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
-FocusedPathProtocol::FocusedPathProtocol(QWidget *parent) :
+FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation) :
     ProtocolDialog(parent),
     ui(new Ui::FocusedPathProtocol)
 {
+    m_variation = variation;
+
     ui->setupUi(this);
 
 
@@ -30,11 +35,53 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent) :
 }
 
 const std::string FocusedPathProtocol::KEY_VERSION = "version";
+const std::string FocusedPathProtocol::VARIATION_BODY = "body";
 const int FocusedPathProtocol::fileVersion = 1;
 
 bool FocusedPathProtocol::initialize() {
 
-    // input dialog, get things ready to go
+    if (m_variation == VARIATION_BODY) {
+        // input body ID as text because we can overflow 32-bit ints
+        bool ok;
+        uint64_t bodyID;
+        QString ans = QInputDialog::getText(this,
+            "Choose body", "Do focused proofreading on body with ID:",
+            QLineEdit::Normal, "", &ok);
+        if (ok && !ans.isEmpty()) {
+            // convert to int and check that it exists:
+            bodyID = ans.toLong(&ok);
+            if (!ok) {
+                QMessageBox mb;
+                mb.setText("Can't parse body ID");
+                mb.setInformativeText("The entered body ID " + ans + " doesn't seem to be an integer!");
+                mb.setStandardButtons(QMessageBox::Ok);
+                mb.setDefaultButton(QMessageBox::Ok);
+                mb.exec();
+                return false;
+            }
+            ZDvidReader reader;
+            if (reader.open(m_dvidTarget)) {
+                if (!reader.hasBody(bodyID)) {
+                    QMessageBox mb;
+                    mb.setText("Body ID doesn't exist!");
+                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
+                    mb.setStandardButtons(QMessageBox::Ok);
+                    mb.setDefaultButton(QMessageBox::Ok);
+                    mb.exec();
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        // do something with body ID here
+
+
+    } else {
+        variationError(m_variation);
+        return false;
+    }
 
 
 
@@ -96,6 +143,14 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
 
     // do actual load
+    if (m_variation == VARIATION_BODY) {
+        // do body load
+
+    } else {
+        variationError(m_variation);
+    }
+
+
 
 
 }
@@ -108,6 +163,15 @@ void FocusedPathProtocol::saveState() {
     data.setEntry(KEY_VERSION.c_str(), fileVersion);
 
     emit requestSaveProtocol(data);
+}
+
+void FocusedPathProtocol::variationError(std::string variation) {
+    QMessageBox mb;
+    mb.setText("Unknown protocol variation!");
+    mb.setInformativeText("Unknown protocol variation " + QString::fromStdString(variation) + " was encountered!  Report this error!");
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
 }
 
 FocusedPathProtocol::~FocusedPathProtocol()

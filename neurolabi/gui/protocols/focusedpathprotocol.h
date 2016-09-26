@@ -14,8 +14,10 @@ class FocusedPathProtocol : public ProtocolDialog
     Q_OBJECT
 
 public:
-    explicit FocusedPathProtocol(QWidget *parent = 0);
+    explicit FocusedPathProtocol(QWidget *parent = 0, std::string variation = VARIATION_BODY);
     ~FocusedPathProtocol();
+    bool initialize();
+    static const std::string VARIATION_BODY;
 
 signals:
     void protocolCompleting();
@@ -34,8 +36,9 @@ private:
     static const int fileVersion;
 
     Ui::FocusedPathProtocol *ui;
-    bool initialize();
+    std::string m_variation;
     void saveState();
+    void variationError(std::string variation);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
