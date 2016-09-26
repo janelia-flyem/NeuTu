@@ -5197,7 +5197,7 @@ void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
+    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.clear();
   } else {
     m_objectModifiedTypeBuffer.clear();
@@ -5250,7 +5250,7 @@ void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
+    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.insert(type);
   } else {
     m_objectModifiedTypeBuffer.insert(type);
@@ -5277,7 +5277,7 @@ void ZStackDoc::bufferObjectModified(
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
+    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
     m_objectModifiedTypeBuffer.unite(typeSet);
   } else {
     m_objectModifiedTypeBuffer.unite(typeSet);
