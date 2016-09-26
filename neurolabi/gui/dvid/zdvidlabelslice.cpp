@@ -530,12 +530,6 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 QColor ZDvidLabelSlice::getColor(
     uint64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  return getColor((int64_t) label, labelType);
-}
-
-QColor ZDvidLabelSlice::getColor(
-    int64_t label, NeuTube::EBodyLabelType labelType) const
-{
   QColor color;
   if (hasCustomColorMap()) {
     color = getCustomColor(label);
@@ -544,11 +538,17 @@ QColor ZDvidLabelSlice::getColor(
     }
   } else {
     color = m_objColorSheme.getColor(
-          abs((int) getMappedLabel((uint64_t) label, labelType)));
+          getMappedLabel(label, labelType));
     color.setAlpha(64);
   }
 
   return color;
+}
+
+QColor ZDvidLabelSlice::getColor(
+    int64_t label, NeuTube::EBodyLabelType labelType) const
+{
+  return getColor((uint64_t) label, labelType);
 }
 
 void ZDvidLabelSlice::setCustomColorMap(

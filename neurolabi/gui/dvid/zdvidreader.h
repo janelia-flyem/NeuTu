@@ -43,6 +43,7 @@ class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
+class DVIDConnection;
 }
 
 namespace lowtis {
@@ -289,6 +290,8 @@ public:
 
   bool refreshLabelBuffer();
 
+  void testApiLoad();
+
 signals:
   void readingDone();
 
@@ -323,6 +326,7 @@ protected:
   mutable int64_t m_readingTime;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)

@@ -11,6 +11,41 @@
 
 #include "neutube.h"
 
+libdvid::BinaryDataPtr ZDvid::MakeRequest(
+    libdvid::DVIDConnection &connection,
+    const std::string &endpoint, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode)
+{
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  } else if (method == "GET") {
+    connMethod = libdvid::GET;
+  }
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  try {
+    std::string error_msg;
+
+    //  qDebug() << "address: " << address;
+    //  qDebug() << "path: " << qurl.path();
+
+    statusCode = connection.make_request(
+          endpoint, connMethod, payload, results, error_msg, type);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    statusCode = e.getStatus();
+  }
+
+  return results;
+}
 
 libdvid::BinaryDataPtr ZDvid::MakeRequest(
     const std::string &url, const std::string &method,
@@ -81,6 +116,15 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
 {
   return MakeDvidNodeService(target.getAddressWithPort(),
                              target.getUuid());
+}
+
+ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
+    const std::string &address)
+{
+  return ZSharedPointer<libdvid::DVIDConnection>(
+        new libdvid::DVIDConnection(
+          address, GET_FLYEM_CONFIG.getUserName(),
+          NeutubeConfig::GetSoftwareName()));
 }
 
 #if defined(_ENABLE_LOWTIS_)

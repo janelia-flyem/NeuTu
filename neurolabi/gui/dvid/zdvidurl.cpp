@@ -58,6 +58,11 @@ std::string ZDvidUrl::GetFullUrl(
   return url;
 }
 
+std::string ZDvidUrl::getApiLoadUrl() const
+{
+  return GetFullUrl(getApiUrl(), "load");
+}
+
 std::string ZDvidUrl::getNodeUrl() const
 {
   return m_dvidTarget.getUrl();

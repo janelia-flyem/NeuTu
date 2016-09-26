@@ -14,15 +14,27 @@ libdvid::BinaryDataPtr MakeRequest(
     const std::string &address, const std::string &uuid, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
+
 libdvid::BinaryDataPtr MakeRequest(
     const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
+
+libdvid::BinaryDataPtr MakeRequest(
+    libdvid::DVIDConnection &connection,
+    const std::string &endpoint, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode);
+
+
 libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const ZDvidTarget &target);
+ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+    const std::string &address);
+
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
 lowtis::ImageService* MakeLowtisServicePtr(const ZDvidTarget &target);

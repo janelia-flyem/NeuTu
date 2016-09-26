@@ -60,14 +60,22 @@ void ZFlyEmProofDoc::init()
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_dvidReader);
 
+  m_routineCheck = true;
+
   connectSignalSlot();
 }
 
 void ZFlyEmProofDoc::initTimer()
 {
-  m_bookmarkTimer = new QTimer(this);
-  m_bookmarkTimer->setInterval(60000);
-  m_bookmarkTimer->start();
+//  m_bookmarkTimer = new QTimer(this);
+//  m_bookmarkTimer->setInterval(60000);
+//  m_bookmarkTimer->start();
+
+  m_routineTimer = new QTimer(this);
+  m_routineTimer->setInterval(10000);
+  if (m_routineCheck) {
+    m_routineTimer->start();
+  }
 }
 
 void ZFlyEmProofDoc::initAutoSave()
@@ -99,11 +107,37 @@ void ZFlyEmProofDoc::connectSignalSlot()
             this, SLOT(saveMergeOperation()));
     connect(this, SIGNAL(bodyUnmerged()),
             this, SLOT(saveMergeOperation()));
+    connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
           */
+}
+
+void ZFlyEmProofDoc::runRoutineCheck()
+{
+  if (m_routineCheck) {
+    if (NeutubeConfig::GetVerboseLevel() >= 5) {
+      if (!m_routineReader.isReady()) {
+        m_routineReader.open(getDvidTarget());
+      }
+
+      if (m_routineReader.isReady()) {
+        QElapsedTimer timer;
+        timer.start();
+        m_routineReader.testApiLoad();
+
+        if (m_routineReader.getStatusCode() == 200) {
+          ZOUT(LTRACE(), 5) << "API load time:"
+                            << getDvidTarget().getAddressWithPort() + ":"
+                            << timer.elapsed() << "ms";
+        } else {
+          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+        }
+      }
+    }
+  }
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -771,6 +805,11 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       }
     }
   }
+}
+
+void ZFlyEmProofDoc::setRoutineCheck(bool on)
+{
+  m_routineCheck = on;
 }
 
 void ZFlyEmProofDoc::annotateSynapse(
