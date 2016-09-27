@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
   QsLogging::DestinationPtr traceFileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           traceLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(5),
+          QsLogging::MaxSizeBytes(2e7), QsLogging::MaxOldLogCount(10),
           QsLogging::TraceLevel));
   QsLogging::DestinationPtr debugDestination(
         QsLogging::DestinationFactory::MakeDebugOutputDestination());

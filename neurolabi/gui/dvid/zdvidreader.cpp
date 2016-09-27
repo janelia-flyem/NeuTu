@@ -253,7 +253,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)
-//  reader.setService(m_service);
+  reader.setService(m_service);
 #endif
 
 //  reader.tryCompress(true);
@@ -840,6 +840,7 @@ ZJsonObject ZDvidReader::readInfo() const
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader reader;
+  reader.setService(m_service);
 
   std::string url = ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString());
   reader.read(url.c_str(), isVerbose());
