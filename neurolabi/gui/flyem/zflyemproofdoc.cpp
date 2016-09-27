@@ -54,13 +54,13 @@ void ZFlyEmProofDoc::init()
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 
-  initTimer();
-  initAutoSave();
-
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_dvidReader);
 
   m_routineCheck = true;
+
+  initTimer();
+  initAutoSave();
 
   connectSignalSlot();
 }

@@ -402,7 +402,7 @@ void ZStackDoc::autoSave()
     }
     */
 
-    qDebug() << "Auto save triggered in " << this;
+    ZOUT(LTRACE(), 5) << "Auto save triggered in" << this;
     if (hasSwc()) {
       std::string autoSaveDir = NeutubeConfig::getInstance().getPath(
             NeutubeConfig::AUTO_SAVE);
@@ -2680,13 +2680,23 @@ void ZStackDoc::exportPuncta(const char *filePath)
 
 ZSwcTree *ZStackDoc::nodeToSwcTree(Swc_Tree_Node *node) const
 {
+  ZOUT(LTRACE(), 5) << "Obtaining node host:" << node;
+
+  ZSwcTree *host = NULL;
+
   QList<ZSwcTree*> swcList = getSwcList();
   for (int i=0; i<swcList.size(); ++i) {
-    if (swcList[i]->contains(node))
-      return swcList[i];
+    ZOUT(LTRACE(), 5) << "Checking" << swcList[i];
+    if (swcList[i]->contains(node)) {
+      host = swcList[i];
+      break;
+    }
   }
   //assert(false);
-  return NULL;
+
+  ZOUT(LTRACE(), 5) << host;
+
+  return host;
 }
 
 void ZStackDoc::exportSvg(const char *filePath)
