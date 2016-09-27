@@ -514,13 +514,15 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
   connect(m_bodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showTodo(bool)));
-
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool)),
           getCompleteDocument(),
           SLOT(executeAddTodoItemCommand(int,int,int,bool)));
   setWindowSignalSlot(m_bodyWindow);
+
+  m_bodyWindow->setWindowType(NeuTube3D::TYPE_BODY);
+  m_bodyWindow->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -542,6 +544,9 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
+  m_skeletonWindow->setWindowType(NeuTube3D::TYPE_SKELETON);
+  m_skeletonWindow->readSettings();
+
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, m_dvidInfo,
@@ -559,6 +564,7 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 
   m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
   setWindowSignalSlot(m_externalNeuronWindow);
+
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_externalNeuronWindow, m_dvidInfo,
