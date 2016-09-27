@@ -20,6 +20,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
+  std::string getApiLoadUrl() const;
   std::string getNodeUrl() const;
   std::string getDataUrl(const std::string &dataName) const;
   std::string getDataUrl(ZDvidData::ERole role) const;

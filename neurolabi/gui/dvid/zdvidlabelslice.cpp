@@ -111,7 +111,7 @@ void ZDvidLabelSlice::setSliceAxis(NeuTube::EAxis sliceAxis)
 }
 
 void ZDvidLabelSlice::display(
-    ZPainter &painter, int slice, EDisplayStyle option,
+    ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
     NeuTube::EAxis sliceAxis) const
 {
   if (m_sliceAxis != sliceAxis) {
@@ -530,12 +530,6 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 QColor ZDvidLabelSlice::getColor(
     uint64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  return getColor((int64_t) label, labelType);
-}
-
-QColor ZDvidLabelSlice::getColor(
-    int64_t label, NeuTube::EBodyLabelType labelType) const
-{
   QColor color;
   if (hasCustomColorMap()) {
     color = getCustomColor(label);
@@ -544,11 +538,17 @@ QColor ZDvidLabelSlice::getColor(
     }
   } else {
     color = m_objColorSheme.getColor(
-          abs((int) getMappedLabel((uint64_t) label, labelType)));
+          getMappedLabel(label, labelType));
     color.setAlpha(64);
   }
 
   return color;
+}
+
+QColor ZDvidLabelSlice::getColor(
+    int64_t label, NeuTube::EBodyLabelType labelType) const
+{
+  return getColor((uint64_t) label, labelType);
 }
 
 void ZDvidLabelSlice::setCustomColorMap(
@@ -1026,7 +1026,7 @@ void ZDvidLabelSlice::clearCache()
   m_objCache.clear();
 }
 
-void ZDvidLabelSlice::refreshReaderBuffer()
+bool ZDvidLabelSlice::refreshReaderBuffer()
 {
-  m_reader.refreshLabelBuffer();
+  return m_reader.refreshLabelBuffer();
 }

@@ -25,6 +25,7 @@
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
+#include "neutubeconfig.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)

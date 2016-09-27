@@ -54,20 +54,28 @@ void ZFlyEmProofDoc::init()
 {
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 
-  initTimer();
-  initAutoSave();
-
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_dvidReader);
+
+  m_routineCheck = true;
+
+  initTimer();
+  initAutoSave();
 
   connectSignalSlot();
 }
 
 void ZFlyEmProofDoc::initTimer()
 {
-  m_bookmarkTimer = new QTimer(this);
-  m_bookmarkTimer->setInterval(60000);
-  m_bookmarkTimer->start();
+//  m_bookmarkTimer = new QTimer(this);
+//  m_bookmarkTimer->setInterval(60000);
+//  m_bookmarkTimer->start();
+
+  m_routineTimer = new QTimer(this);
+  m_routineTimer->setInterval(10000);
+  if (m_routineCheck) {
+    m_routineTimer->start();
+  }
 }
 
 void ZFlyEmProofDoc::initAutoSave()
@@ -99,11 +107,37 @@ void ZFlyEmProofDoc::connectSignalSlot()
             this, SLOT(saveMergeOperation()));
     connect(this, SIGNAL(bodyUnmerged()),
             this, SLOT(saveMergeOperation()));
+    connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
           */
+}
+
+void ZFlyEmProofDoc::runRoutineCheck()
+{
+  if (m_routineCheck) {
+    if (NeutubeConfig::GetVerboseLevel() >= 5) {
+      if (!m_routineReader.isReady()) {
+        m_routineReader.open(getDvidTarget());
+      }
+
+      if (m_routineReader.isReady()) {
+        QElapsedTimer timer;
+        timer.start();
+        m_routineReader.testApiLoad();
+
+        if (m_routineReader.getStatusCode() == 200) {
+          ZOUT(LTRACE(), 5) << "API load time:"
+                            << getDvidTarget().getAddressWithPort() + ":"
+                            << timer.elapsed() << "ms";
+        } else {
+          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+        }
+      }
+    }
+  }
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -771,6 +805,11 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       }
     }
   }
+}
+
+void ZFlyEmProofDoc::setRoutineCheck(bool on)
+{
+  m_routineCheck = on;
 }
 
 void ZFlyEmProofDoc::annotateSynapse(
@@ -1955,6 +1994,26 @@ ZFlyEmBookmark* ZFlyEmProofDoc::findFirstBookmark(const QString &key) const
   return NULL;
 }
 
+void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
+{
+  if (!bookmarkArray.isEmpty()) {
+    std::vector<ZIntPoint> ptArray;
+    for (QList<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
+         iter != bookmarkArray.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = *iter;
+      ptArray.push_back(bookmark->getLocation());
+    }
+
+    std::vector<uint64_t> idArray = getDvidReader().readBodyIdAt(ptArray);
+    if (bookmarkArray.size() == (int) idArray.size()) {
+      for (int i = 0; i < bookmarkArray.size(); ++i) {
+        ZFlyEmBookmark *bookmark = bookmarkArray[i];
+        bookmark->setBodyId(idArray[i]);
+      }
+    }
+  }
+}
+
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
@@ -2000,6 +2059,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     obj.load(filePath);
 
     ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
+    QList<ZFlyEmBookmark*> nullIdBookmarkList;
     for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
       ZJsonObject bookmarkObj(bookmarkArrayObj.at(i),
                               ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -2014,38 +2074,42 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
         }
 
-        if (bodyId > 0) {
-          std::vector<int> coordinates =
-              ZJsonParser::integerArray(bookmarkObj["location"]);
+        std::vector<int> coordinates =
+            ZJsonParser::integerArray(bookmarkObj["location"]);
 
-          if (coordinates.size() == 3) {
-            ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-            double x = coordinates[0];
-            double y = coordinates[1];
-            double z = coordinates[2];
-            bookmark->setLocation(iround(x), iround(y), iround(z));
-            bookmark->setBodyId(bodyId);
-            bookmark->setRadius(5.0);
-            bookmark->setColor(255, 0, 0);
-            bookmark->setHittable(false);
-            if (text.startsWith("split") || text.startsWith("small split")) {
-              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
-            } else if (text.startsWith("merge")) {
-              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
-            } else {
-              bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
-            }
-            if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
-              bookmark->setChecked(true);
-            }
-//            addCommand->addBookmark(bookmark);
-            ZOUT(LTRACE(), 5) << "Adding bookmark: " << bookmark;
-            bookmarkList.append(bookmark);
-            addObject(bookmark);
+        if (coordinates.size() == 3) {
+          ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+          double x = coordinates[0];
+          double y = coordinates[1];
+          double z = coordinates[2];
+          bookmark->setLocation(iround(x), iround(y), iround(z));
+          bookmark->setBodyId(bodyId);
+          bookmark->setRadius(5.0);
+          bookmark->setColor(255, 0, 0);
+          bookmark->setHittable(false);
+          if (text.startsWith("split") || text.startsWith("small split")) {
+            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
+          } else if (text.startsWith("merge")) {
+            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_SPLIT);
+          } else {
+            bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_LOCATION);
           }
+          if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+            bookmark->setChecked(true);
+          }
+          //            addCommand->addBookmark(bookmark);
+          ZOUT(LTRACE(), 5) << "Adding bookmark: " << bookmark;
+          bookmarkList.append(bookmark);
+          if (bodyId <= 0) {
+            nullIdBookmarkList.append(bookmark);
+          }
+          addObject(bookmark);
         }
+
       }
     }
+
+    readBookmarkBodyId(nullIdBookmarkList);
 
 //    pushUndoCommand(command);
 
@@ -2170,7 +2234,9 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
   }
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->refreshReaderBuffer();
+    if (!slice->refreshReaderBuffer()) {
+      notify(ZWidgetMessage("Failed to refresh labels.", NeuTube::MSG_WARNING));
+    }
   }
 }
 

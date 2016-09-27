@@ -120,6 +120,7 @@ bool ZDvidReader::startService()
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
           */
     m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
+    m_connection = ZDvid::MakeDvidConnection(m_dvidTarget.getAddressWithPort());
 //    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
     /*
     lowtis::DVIDLabelblkConfig config;
@@ -234,6 +235,7 @@ void ZDvidReader::waitForReading()
 }
 #endif
 
+
 ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
   ZDvidUrl url(getDvidTarget());
@@ -261,6 +263,13 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
   return status;
 }
 
+void ZDvidReader::testApiLoad()
+{
+  ZDvid::MakeRequest(*m_connection, "/../api/load", "GET",
+                     libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                     m_statusCode);
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
 {
@@ -277,7 +286,13 @@ ZObject3dScan *ZDvidReader::readBody(
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, z, axis).c_str(), isVerbose());
+
+  std::string url = dvidUrl.getSparsevolUrl(bodyId, z, z, axis);
+  QElapsedTimer timer;
+  timer.start();
+  reader.read(url.c_str(), isVerbose());
+  ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
@@ -1720,13 +1735,20 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
-void ZDvidReader::refreshLabelBuffer()
+bool ZDvidReader::refreshLabelBuffer()
 {
 #if defined(_ENABLE_LOWTIS_)
   if (m_lowtisService.get() != NULL) {
-    m_lowtisService->flush_cache();
+    try {
+      m_lowtisService->flush_cache();
+    } catch (std::exception &e) {
+      ZOUT(LTRACE(), 5) << e.what();
+      return false;
+    }
   }
+
 #endif
+  return true;
 }
 
 #if defined(_ENABLE_LOWTIS_)

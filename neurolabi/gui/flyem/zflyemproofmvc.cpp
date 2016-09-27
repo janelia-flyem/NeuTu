@@ -1463,6 +1463,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
       labelSlice->removeVisualEffect(
             NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
       if (usingSparseVol) {
+        labelSlice->paintBuffer();
         doc->notifyActiveViewModified();
       } else {
         labelSlice->paintBuffer();

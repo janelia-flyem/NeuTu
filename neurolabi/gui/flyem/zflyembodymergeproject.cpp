@@ -493,18 +493,24 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
             }
 #endif
           }
+
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();
           foreach (ZDvidLabelSlice *slice, labelList) {
             slice->mapSelection();
           }
+          ZOUT(LTRACE(), 5) << "Label slice updated";
         }
         getProgressSignal()->advanceProgress(0.1);
 
+        ZOUT(LTRACE(), 5) << "Merge uploaded.";
+
         emit mergeUploaded();
+
 
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
           getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
+          ZOUT(LTRACE(), 5) << "Label buffer refreshed";
         }
 #if 0
         ZSleeper::msleep(2000);
@@ -533,11 +539,15 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
         clearBodyMerger();
 
+        ZOUT(LTRACE(), 5) << "Body merger cleared.";
+
 //        ZSleeper::msleep(10000);
 
         emit dvidLabelChanged();
 //        bodyMerger->clear();
         saveMergeOperation();
+
+        ZOUT(LTRACE(), 5) << "Merge operation saved.";
 
         ZWidgetMessage message("Body merge finalized.");
         emit messageGenerated(message);

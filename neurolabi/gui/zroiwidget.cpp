@@ -156,7 +156,7 @@ void ZROIWidget::makeGUI()
 
         ZColorScheme zcolor;
         zcolor.setColorScheme(ZColorScheme::RANDOM_COLOR);
-        QBrush brush(zcolor.getColor(i));
+        QBrush brush(zcolor.getColor((uint64_t) i));
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);

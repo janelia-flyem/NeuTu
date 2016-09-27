@@ -337,6 +337,8 @@ public slots:
   void syncSynapse(const ZIntPoint &pt);
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
+  void runRoutineCheck();
+
 protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
@@ -345,6 +347,7 @@ protected:
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
+  void setRoutineCheck(bool on);
 
 private:
   void connectSignalSlot();
@@ -378,10 +381,13 @@ private:
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateLocalSplitRoi();
 
+  void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidReader m_routineReader;
   ZDvidWriter m_dvidWriter;
 
   //Dvid info
@@ -389,10 +395,12 @@ protected:
   ZDvidVersionDag m_versionDag;
 
 //  bool m_isCustomBookmarkSaved;
-  QTimer *m_bookmarkTimer;
+//  QTimer *m_bookmarkTimer;
+  QTimer *m_routineTimer;
 
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
+  bool m_routineCheck;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
