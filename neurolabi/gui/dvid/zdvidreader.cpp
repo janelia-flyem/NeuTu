@@ -253,7 +253,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
   ZDvidBufferReader reader;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
+//  reader.setService(m_service);
 #endif
 
 //  reader.tryCompress(true);
@@ -337,7 +337,7 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
   ZDvidBufferReader reader;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
+//  reader.setService(m_service);
 #endif
 
   reader.tryCompress(true);
