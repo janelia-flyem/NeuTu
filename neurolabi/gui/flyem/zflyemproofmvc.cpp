@@ -1501,8 +1501,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
     if (selected.size() > 0) {
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
+      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+      if (reader.isReady()) {
         ZFlyEmBodyAnnotation finalAnnotation;
         for (std::vector<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {

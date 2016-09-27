@@ -32,6 +32,9 @@ ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
     const ZDvidTarget &target);
+ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+    const libdvid::DVIDNodeService *service);
+
 ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address);
 

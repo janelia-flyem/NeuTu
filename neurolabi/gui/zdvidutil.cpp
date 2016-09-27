@@ -118,6 +118,17 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
                              target.getUuid());
 }
 
+ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+    const libdvid::DVIDNodeService *service)
+{
+  if (service != NULL) {
+    return ZSharedPointer<libdvid::DVIDNodeService>(
+          new libdvid::DVIDNodeService(*service));
+  }
+
+  return ZSharedPointer<libdvid::DVIDNodeService>();
+}
+
 ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
     const std::string &address)
 {
