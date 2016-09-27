@@ -115,7 +115,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   return tileMap[index];
 }
 //#if defined(_ENABLE_LIBDVIDCPP_)
-#if 0
+#if defined(_SERVICE_ARRAY_)
 struct UpdateTileParam {
   ZDvidTileEnsemble *te;
 //  libdvid::DVIDNodeService *service;
@@ -536,13 +536,15 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
     ZJsonObject obj = m_reader.readContrastProtocal();
     setContrastProtocal(obj);
 
-#if defined(_ENABLE_LIBDVIDCPP_)
+#if defined(_ENABLE_LIBDVIDCPP_) && defined(_SERVICE_ARRAY_)
     m_serviceArray.resize(36);
     try {
-      for (std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
-           iter = m_serviceArray.begin();
-           iter != m_serviceArray.end(); ++iter) {
-        *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
+      std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
+          iter = m_serviceArray.begin();
+      *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
+      libdvid::DVIDNodeService *firstService = (*iter).get();
+      for (++iter; iter != m_serviceArray.end(); ++iter) {
+        *iter = ZDvid::MakeDvidNodeService(firstService);
       }
     } catch (libdvid::DVIDException &e) {
       LWARN() << e.what();

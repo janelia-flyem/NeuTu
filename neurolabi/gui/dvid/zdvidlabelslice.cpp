@@ -717,9 +717,9 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int nz = iround(z);
 
     if (m_currentViewParam.contains(nx, ny, nz)) {
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        m_hitLabel = reader.readBodyIdAt(nx, ny, nz);
+//      ZDvidReader reader;
+      if (m_reader.isReady()) {
+        m_hitLabel = m_reader.readBodyIdAt(nx, ny, nz);
       }
 
       return m_hitLabel > 0;
