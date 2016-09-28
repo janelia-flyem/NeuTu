@@ -79,6 +79,8 @@ public:
     return &m_bodyMerger;
   }
 
+  ZFlyEmSupervisor* getSupervisor() const;
+
   void updateBodyObject();
 
   void clearData();
@@ -389,6 +391,7 @@ protected:
   ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
   ZDvidWriter m_dvidWriter;
+  ZFlyEmSupervisor *m_supervisor;
 
   //Dvid info
   ZDvidInfo m_dvidInfo;

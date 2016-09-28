@@ -636,12 +636,27 @@ void ZDvidLabelSlice::remapId(
     std::set<uint64_t> &selected, const ZFlyEmBodyMerger::TLabelMap &bodyMap)
 {
   std::set<uint64_t> selectedSet = selected;
-  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+  std::set<uint64_t> mappedSelected;
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
-    if (bodyMap.count(*iter) > 0) {
-      selectedSet.insert(bodyMap[*iter]);
+    mappedSelected.insert(bodyMap[*iter]);
+  }
+  selectedSet.insert(mappedSelected.begin(), mappedSelected.end());
+
+  for (ZFlyEmBodyMerger::TLabelMap::const_iterator iter = bodyMap.begin();
+       iter != bodyMap.end(); ++iter) {
+    if (mappedSelected.count(iter.value()) > 0) {
+      selectedSet.insert(iter.key());
     }
   }
+
+
+//  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+//       iter != selected.end(); ++iter) {
+//    if (bodyMap.count(*iter) > 0) {
+//      selectedSet.insert(bodyMap[*iter]);
+//    }
+//  }
 
   if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
     for (size_t i = 0; i < v; ++i) {

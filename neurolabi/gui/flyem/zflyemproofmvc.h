@@ -373,7 +373,6 @@ protected:
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ProtocolSwitcher *m_protocolSwitcher;
-  ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;
