@@ -4,6 +4,8 @@
 #include <QColor>
 #include <QVector>
 
+#include "tz_stdint.h"
+
 class ZColorScheme
 {
 public:

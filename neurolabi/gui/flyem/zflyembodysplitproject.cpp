@@ -1780,6 +1780,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
   }
 }
 
+/*
 void ZFlyEmBodySplitProject::downloadBodyMask()
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
@@ -1787,7 +1788,7 @@ void ZFlyEmBodySplitProject::downloadBodyMask()
     getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
   }
 }
-
+*/
 void ZFlyEmBodySplitProject::updateBodyMask()
 {
   ZStackFrame *frame = getDataFrame();

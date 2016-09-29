@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+#include <QElapsedTimer>
 #endif
 #include <string.h>
 #include <iostream>
@@ -107,9 +108,10 @@ ZStack::ZStack(const ZStack &/*src*/)
 
 ZStack::~ZStack()
 {
-  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
-
+//  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+  tic();
   clear();
+  ZOUT(LTRACE(), 5) << "Stack deleted" << this << toc() << "ms";
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const

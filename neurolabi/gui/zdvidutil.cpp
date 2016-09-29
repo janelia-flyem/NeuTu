@@ -124,13 +124,29 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
                              target.getUuid());
 }
 
+ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+    const libdvid::DVIDNodeService *service)
+{
+  if (service != NULL) {
+    return ZSharedPointer<libdvid::DVIDNodeService>(
+          new libdvid::DVIDNodeService(*service));
+  }
+
+  return ZSharedPointer<libdvid::DVIDNodeService>();
+}
+
 ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
     const std::string &address)
 {
-  return ZSharedPointer<libdvid::DVIDConnection>(
-        new libdvid::DVIDConnection(
-          address, GET_FLYEM_CONFIG.getUserName(),
-          NeutubeConfig::GetSoftwareName()));
+  try {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(
+            address, GET_FLYEM_CONFIG.getUserName(),
+            NeutubeConfig::GetSoftwareName()));
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    return ZSharedPointer<libdvid::DVIDConnection>();
+  }
 }
 
 #if defined(_ENABLE_LOWTIS_)

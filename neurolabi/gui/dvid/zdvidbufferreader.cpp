@@ -46,6 +46,12 @@ void ZDvidBufferReader::setService(
 {
   m_service = service;
 }
+
+void ZDvidBufferReader::setService(const ZDvidTarget &target)
+{
+  m_service = ZDvid::MakeDvidNodeService(target);
+}
+
 #endif
 
 void ZDvidBufferReader::read(

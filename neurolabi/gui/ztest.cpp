@@ -16844,7 +16844,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "86e1");
+  libdvid::DVIDNodeService service("http://emdata2.int.janelia.org:8500", "b6bc");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
   libdvid::Dims_t dims(3);
@@ -16871,7 +16871,26 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
   std::cout << std::endl;
+
+  service.custom_request("/bodies/sparsevol/200000603?minz=7313&maxz=7313",
+                         libdvid::BinaryDataPtr(), libdvid::GET, true);
+
 #endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("http://emdata2.int.janelia.org:8500", "b6bc");
+
+  target.print();
+
+  reader.open(target);
+  reader.readTileInfo("tiles");
+
+  reader.readBody(200000603, 7313, 7313, NeuTube::Z_AXIS, NULL);
+#endif
+
+
 
 #if 0
   ZPainter painter;
