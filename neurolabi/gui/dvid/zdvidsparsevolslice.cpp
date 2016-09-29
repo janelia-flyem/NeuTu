@@ -1,4 +1,6 @@
 #include "zdvidsparsevolslice.h"
+
+#include "neutubeconfig.h"
 #include "zpainter.h"
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan(), m_currentZ(-1)
@@ -12,6 +14,11 @@ ZDvidSparsevolSlice::ZDvidSparsevolSlice(const ZDvidSparsevolSlice &obj) :
 {
   m_currentZ = obj.m_currentZ;
   m_dvidTarget = obj.m_dvidTarget;
+}
+
+ZDvidSparsevolSlice::~ZDvidSparsevolSlice()
+{
+  ZOUT(LTRACE(), 5) << "Deconstructing ZDvidSparsevolSlice" << this;
 }
 
 void ZDvidSparsevolSlice::setDvidTarget(const ZDvidTarget &target)

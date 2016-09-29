@@ -181,6 +181,7 @@ public:
   void runSplit();
   void runLocalSplit();
   void refreshDvidLabelBuffer(unsigned long delay);
+//  void setLabelSliceAlpha(int alpha);
 
 public:
   void notifyBodyMerged();
@@ -341,6 +342,7 @@ public slots:
 
   void runRoutineCheck();
 
+
 protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
@@ -397,8 +399,6 @@ protected:
   ZDvidInfo m_dvidInfo;
   ZDvidVersionDag m_versionDag;
 
-//  bool m_isCustomBookmarkSaved;
-//  QTimer *m_bookmarkTimer;
   QTimer *m_routineTimer;
 
   QString m_mergeAutoSavePath;

@@ -786,7 +786,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
             ZDvidLabelSlice *labelSlice =
                 getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColor(
+              body.setColor(labelSlice->getLabelColor(
                               label, NeuTube::BODY_LABEL_MAPPED));
             }
 
@@ -922,6 +922,15 @@ void ZFlyEmProofMvc::enableSynapseFetcher()
     m_seUpdater->setData(se, m_doc);
     se->setDataFetcher(m_seFetcher);
   }
+}
+
+void ZFlyEmProofMvc::setLabelAlpha(int alpha)
+{
+  getView()->setDynamicObjectAlpha(alpha);
+  getView()->paintDynamicObjectBuffer();
+  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
+//  getCompletePresenter()->setLabelAlpha(alpha);
+//  getCompleteDocument()->setLabelSliceAlpha(alpha);
 }
 
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
@@ -1457,7 +1466,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           obj->setDvidTarget(getDvidTarget());
           obj->setLabel(bodyId);
           obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-          obj->setColor(labelSlice->getColor(
+          obj->setColor(labelSlice->getLabelColor(
                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
           doc->addObject(obj);
         }
@@ -1932,7 +1941,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setColor(labelSlice->getColor(
+        body->setColor(labelSlice->getLabelColor(
                          bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         body->setHittable(false);
         body->setSelectable(false);

@@ -20803,7 +20803,7 @@ void ZTest::test(MainWindow *host)
   std::cout << statusCode << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata2.int.janelia.org", "3c1d", 9000);
 
   ZDvidReader reader;

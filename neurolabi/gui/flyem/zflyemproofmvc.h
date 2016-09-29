@@ -268,6 +268,8 @@ public slots:
   void recoverObjectVisible();
 
   void updateRoiWidget();
+
+  void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:

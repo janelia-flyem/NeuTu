@@ -575,9 +575,9 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
       QColor color;
 
       if (getBodyType() == BODY_FULL) { //using the original color
-        color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
+        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
       } else {
-        color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
       }
       color.setAlpha(255);
       event.setBodyColor(color);

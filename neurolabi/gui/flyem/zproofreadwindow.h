@@ -14,6 +14,7 @@ class ZProgressSignal;
 class ZDvidTarget;
 class ZWidgetMessage;
 class ZDvidDialog;
+class QSlider;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -112,6 +113,8 @@ private:
   QAction *m_openObject3dAction;
   QAction *m_openRoi3dAction;
 //  QAction *m_queryTableAction;
+
+  QSlider *m_segSlider;
 
   QToolBar *m_toolBar;
   QToolBar *m_synapseToolbar;

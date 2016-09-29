@@ -1229,7 +1229,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
+    slice->setColor(getDvidLabelSlice(NeuTube::Z_AXIS)->getLabelColor(
                       slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
     //slice->updateSelection();
   }
@@ -2270,6 +2270,20 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
     }
   }
 }
+
+/*
+void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->setAlpha(alpha);
+    processObjectModified(slice->getTarget());
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+*/
 
 ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 {

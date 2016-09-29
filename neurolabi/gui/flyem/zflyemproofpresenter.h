@@ -68,6 +68,14 @@ public:
 //  QAction* makeAction(ZActionFactory::EAction item);
   bool connectAction(QAction *action, ZActionFactory::EAction item);
 
+//  void setLabelAlpha(int alpha) {
+//    m_labelAlpha = alpha;
+//  }
+
+//  int getLabelAlpha() const {
+//    return m_labelAlpha;
+//  }
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -134,6 +142,7 @@ private:
   bool m_highTileContrast;
   bool m_smoothTransform;
   bool m_showingData;
+//  int m_labelAlpha;
 
   QMenu *m_synapseContextMenu;
 

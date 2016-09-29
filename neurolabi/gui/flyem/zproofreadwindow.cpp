@@ -14,6 +14,7 @@
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "flyemproofcontrolform.h"
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
@@ -144,6 +145,11 @@ void ZProofreadWindow::init()
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
+
+  connect(m_segSlider, SIGNAL(valueChanged(int)),
+          m_mainMvc, SLOT(setLabelAlpha(int)));
+  m_mainMvc->setLabelAlpha(m_segSlider->value());
+
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 
@@ -366,9 +372,17 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
-  m_toolBar->addAction(m_viewSegmentationAction);
   m_toolBar->addAction(m_viewTodoAction);
   m_toolBar->addAction(m_viewRoiAction);
+
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_viewSegmentationAction);
+  m_segSlider = new QSlider(Qt::Horizontal, this);
+  m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_segSlider->setRange(0, 255);
+  m_segSlider->setValue(128);
+  m_toolBar->addWidget(m_segSlider);
+
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
