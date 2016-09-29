@@ -95,7 +95,7 @@ void ZFlyEmProofMvc::init()
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
     m_protocolSwitcher = new ProtocolSwitcher(this);
-  m_supervisor = new ZFlyEmSupervisor(this);
+//  m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
@@ -1026,9 +1026,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     LINFO() << startLog;
 
 
-    if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(reader.getDvidTarget());
-    }
+//    if (getSupervisor() != NULL) {
+//      getSupervisor()->setDvidTarget(reader.getDvidTarget());
+//    }
 
     if (reader.getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
@@ -3262,11 +3262,7 @@ void ZFlyEmProofMvc::smoothDisplay(bool state)
 
 ZFlyEmSupervisor* ZFlyEmProofMvc::getSupervisor() const
 {
-  if (getDvidTarget().isSupervised()) {
-    return m_supervisor;
-  }
-
-  return NULL;
+  return getCompleteDocument()->getSupervisor();
 }
 
 void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)

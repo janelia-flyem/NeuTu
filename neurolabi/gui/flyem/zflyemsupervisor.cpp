@@ -1,11 +1,13 @@
 #include "zflyemsupervisor.h"
 #include "neutube.h"
 #include "neutubeconfig.h"
+#include "dvid/libdvidheader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "zrandomgenerator.h"
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+#include "zdvidutil.h"
 
 ZFlyEmSupervisor::ZFlyEmSupervisor(QObject *parent) :
   QObject(parent)
@@ -25,6 +27,20 @@ void ZFlyEmSupervisor::setDvidTarget(const ZDvidTarget &target)
     setSever(GET_FLYEM_CONFIG.getDefaultLibrarian());
   }
 #endif
+}
+
+int ZFlyEmSupervisor::testServer()
+{
+  int statusCode = 0;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  if (m_connection.get() != NULL) {
+    ZDvid::MakeRequest(*m_connection, "/../", "HEAD",
+                       libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                       statusCode);
+  }
+#endif
+
+  return statusCode;
 }
 
 const ZDvidTarget& ZFlyEmSupervisor::getDvidTarget() const
@@ -192,4 +208,7 @@ bool ZFlyEmSupervisor::isLocked(uint64_t bodyId) const
 void ZFlyEmSupervisor::setSever(const std::string &server)
 {
   m_server = server;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  m_connection = ZDvid::MakeDvidConnection(server);
+#endif
 }

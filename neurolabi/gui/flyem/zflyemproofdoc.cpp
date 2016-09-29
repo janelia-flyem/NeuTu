@@ -56,6 +56,7 @@ void ZFlyEmProofDoc::init()
 
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_dvidReader);
+  m_supervisor = new ZFlyEmSupervisor(this);
 
   m_routineCheck = true;
 
@@ -115,10 +116,33 @@ void ZFlyEmProofDoc::connectSignalSlot()
           */
 }
 
+ZFlyEmSupervisor* ZFlyEmProofDoc::getSupervisor() const
+{
+  if (getDvidTarget().isSupervised()) {
+    return m_supervisor;
+  }
+
+  return NULL;
+}
+
 void ZFlyEmProofDoc::runRoutineCheck()
 {
   if (m_routineCheck) {
     if (NeutubeConfig::GetVerboseLevel() >= 5) {
+      if (getSupervisor() != NULL) {
+        QElapsedTimer timer;
+        timer.start();
+        int statusCode = getSupervisor()->testServer();
+        if (statusCode == 200) {
+          ZOUT(LTRACE(), 5) << "HEAD time:"
+                            << getSupervisor()->getMainUrl() + ":"
+                            << timer.elapsed() << "ms";
+        } else {
+          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+        }
+      }
+    }
+#if 0
       if (!m_routineReader.isReady()) {
         m_routineReader.open(getDvidTarget());
       }
@@ -137,6 +161,7 @@ void ZFlyEmProofDoc::runRoutineCheck()
         }
       }
     }
+#endif
   }
 }
 
@@ -448,6 +473,10 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
+  }
+
+  if (getSupervisor() != NULL) {
+    getSupervisor()->setDvidTarget(m_dvidTarget);
   }
 
   prepareDvidData();
