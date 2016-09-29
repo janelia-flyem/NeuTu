@@ -109,7 +109,7 @@ public:
   void viewFullGrayscale();
   void viewFullGrayscale(bool viewing);
   void updateBodyMask();
-  void downloadBodyMask();
+//  void downloadBodyMask();
 
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;

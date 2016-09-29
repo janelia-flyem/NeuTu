@@ -2,6 +2,7 @@
 #define ZDVIDSPARSESTACK_H
 
 #include <QMutex>
+#include <QMap>
 
 #include "zstackobject.h"
 #include "zsparsestack.h"
@@ -62,7 +63,7 @@ public:
 
   ZSparseStack *getSparseStack(const ZIntCuboid &box);
 
-  void downloadBodyMask();
+//  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
   bool hit(double x, double y, NeuTube::EAxis axis);
@@ -96,6 +97,10 @@ private:
   void finishObjectMaskLoading();
   void syncObjectMask();
   void pushAttribute();
+
+  ZDvidReader& getMaskReader() const;
+  ZDvidReader& getGrayscaleReader() const;
+
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -107,6 +112,8 @@ private:
   bool m_isValueFilled;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
+  mutable ZDvidReader m_grayScaleReader;
+  mutable ZDvidReader m_maskReader;
   ZThreadFutureMap m_futureMap;
   bool m_cancelingValueFill;
 

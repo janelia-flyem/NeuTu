@@ -1288,6 +1288,7 @@ void ZFlyEmProofDoc::backupMergeOperation()
   }
 }
 
+/*
 void ZFlyEmProofDoc::downloadBodyMask()
 {
   if (getBodyForSplit() != NULL) {
@@ -1295,6 +1296,7 @@ void ZFlyEmProofDoc::downloadBodyMask()
     notifyObjectModified();
   }
 }
+*/
 
 QList<uint64_t> ZFlyEmProofDoc::getMergedSource(uint64_t bodyId) const
 {

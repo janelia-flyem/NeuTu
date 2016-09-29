@@ -104,7 +104,7 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
-  void downloadBodyMask();
+//  void downloadBodyMask();
   void clearBodyMerger();
 
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
