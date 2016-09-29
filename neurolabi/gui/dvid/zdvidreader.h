@@ -5,6 +5,8 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QImage>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include <string>
 #include <vector>
@@ -332,6 +334,7 @@ protected:
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
   ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  QMutex m_serviceMutex;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)
