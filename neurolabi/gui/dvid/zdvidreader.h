@@ -173,7 +173,8 @@ public:
                          */
 
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
-
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;

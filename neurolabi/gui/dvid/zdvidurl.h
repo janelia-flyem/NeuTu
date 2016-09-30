@@ -234,6 +234,10 @@ public:
   static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
   std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
 
+  std::string getSynapseLabelszThresholdUrl(int threshold) const;
+  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
