@@ -3672,8 +3672,8 @@ void ZFlyEmProofMvc::loadROIFunc()
   m_roiSourceList.clear();
 
   //
-  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-  if (reader.isReady()) {
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
     ZJsonObject meta = reader.readInfo();
 
     //
