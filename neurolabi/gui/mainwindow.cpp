@@ -4560,7 +4560,7 @@ void MainWindow::makeMovie()
                 m_movieDlg->getFrameWidth(), m_movieDlg->getFrameHeight());
           director.setScript(script);
           director.setFrameInterval(1000 / m_movieDlg->getFrameRate());
-          director.setAxisVisible(m_movieDlg->renderingAxis());
+//          director.setAxisVisible(m_movieDlg->renderingAxis());
 
           m_progress->setValue(1);
 

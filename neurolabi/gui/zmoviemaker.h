@@ -72,9 +72,9 @@ public:
     m_backgroundColor.setRgb(r, g, b);
   }
 
-  void setAxisVisible(bool on) {
-    m_showingAxis = on;
-  }
+//  void setAxisVisible(bool on) {
+//    m_showingAxis = on;
+//  }
 
 private:
   ZSharedPointer<ZStackDoc> m_academy;
@@ -86,7 +86,7 @@ private:
   int m_width;
   int m_height;
   int m_frameInterval; //Always use interger value if possible
-  bool m_showingAxis;
+//  bool m_showingAxis;
   QColor m_backgroundColor;
 };
 

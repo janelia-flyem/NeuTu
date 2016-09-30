@@ -8,6 +8,7 @@ MovieDialog::MovieDialog(QWidget *parent) :
   ui(new Ui::MovieDialog)
 {
   ui->setupUi(this);
+  ui->axisCheckBox->hide();
 }
 
 MovieDialog::~MovieDialog()

@@ -34,7 +34,7 @@ using namespace std;
 ZMovieMaker::ZMovieMaker() : m_stage(NULL),
   m_width(1024), m_height(1024), m_frameInterval(50)
 {
-  m_showingAxis = true;
+//  m_showingAxis = true;
 }
 
 ZMovieMaker::~ZMovieMaker()
@@ -79,7 +79,7 @@ void ZMovieMaker::prepareStage()
         glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
                   m_backgroundColor.blueF()));
 
-  window->getAxis()->setVisible(m_showingAxis);
+//  window->getAxis()->setVisible(m_showingAxis);
 
 
   window->getRendererBase(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
@@ -294,8 +294,8 @@ int ZMovieMaker::updateAction()
     scene->print();
 #endif
 
+    scene->updateStage(m_stage->getWindow());
     scene->updateCamera(m_stage->getWindow(), timeStep);
-
     scene->updateClip(m_stage->getWindow(), &m_clipperState, timeStep);
 
     setupAction(*scene);
