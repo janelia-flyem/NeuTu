@@ -176,6 +176,7 @@
 #include "neutubeconfig.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zfileparser.h"
+#include "dialogs/zdvidbodypositiondialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -467,6 +468,9 @@ void MainWindow::initDialog()
   m_hackathonConfigDlg = new ZFlyEmHackathonConfigDlg(this);
   m_testDlg = new ZTestDialog(this);
   m_testDlg2 = new ZTestDialog2(this);
+
+  m_bodyPosDlg = new ZDvidBodyPositionDialog(this);
+  m_bodyPosDlg->setDvidDialog(m_dvidDlg);
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
@@ -1413,7 +1417,7 @@ void MainWindow::updateViewMode(QAction *action)
       frame->setViewMode(ZInteractiveContext::VIEW_NORMAL);
       frame->updateView();
     } else if (action == m_ui->actionProject) {
-      qDebug() << action->isChecked();
+      ZOUT(LTRACE(), 5) << action->isChecked();
       frame->setViewMode(ZInteractiveContext::VIEW_PROJECT);
       frame->updateView();
     }
@@ -2549,13 +2553,13 @@ void MainWindow::updateBcDlg(const ZStackFrame *frame)
       for (int i=0; i<std::min(nChannel, m_bcDlg->getMaxNumOfChannel()); i++) {
         m_bcDlg->setRange(frame->document()->getStack()->min(i),
                           frame->document()->getStack()->max(i), i);
-        qDebug() << frame->document()->getStack()->min(i) <<
+        ZOUT(LTRACE(), 5) << frame->document()->getStack()->min(i) <<
                     ' ' << frame->document()->getStack()->max(i) << "\n";
 
         m_bcDlg->setValue(iround(frame->displayGreyMin(i)),
                           iround(frame->displayGreyMax(i)), i);
 
-        qDebug() << frame->displayGreyMin(i) << ' ' <<
+        ZOUT(LTRACE(), 5) << frame->displayGreyMin(i) << ' ' <<
                     iround(frame->displayGreyMax(i)) << "\n";
       }
     }
@@ -2676,7 +2680,7 @@ void MainWindow::on_actionUpdate_triggered()
 {
   if (currentStackFrame() != NULL) {
     currentStackFrame()->document()->reloadStack();
-    qDebug() << "Updating slider\n";
+    ZOUT(LTRACE(), 5)<< "Updating slider\n";
     currentStackFrame()->view()->updateSlider();
     currentStackFrame()->updateView();
   }
@@ -2725,8 +2729,8 @@ void MainWindow::on_actionManual_triggered()
 {
   QStringList args;
   args.append(QApplication::applicationDirPath() + "/../../itube_manual.pdf");
-  qDebug() << args << '\n';
-  qDebug() << QProcess::execute("/usr/bin/open", args)<< '\n';
+  ZOUT(LTRACE(), 5)<< args << '\n';
+  ZOUT(LTRACE(), 5) << QProcess::execute("/usr/bin/open", args)<< '\n';
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -2770,7 +2774,7 @@ void MainWindow::on_actionSave_triggered()
       }
       dataFile.truncate(dataFile.lastIndexOf('/'));
 
-      qDebug() << dataFile;
+      ZOUT(LTRACE(), 5) << dataFile;
 
       QString fileName = getSaveFileName(
             "Save tracing project", "Tracing project",
@@ -2780,7 +2784,7 @@ void MainWindow::on_actionSave_triggered()
                                        dataFile + "/untitled.trace",
                                        tr("Tracing project"), 0);
 #endif
-      qDebug() << fileName;
+      ZOUT(LTRACE(), 5) << fileName;
 
       if (!fileName.isEmpty()) {
         frame->saveProjectAs(fileName);
@@ -2882,7 +2886,7 @@ void MainWindow::on_actionSave_As_triggered()
     }
     dataFile.truncate(dataFile.lastIndexOf('/'));
 
-    qDebug() << dataFile;
+    ZOUT(LTRACE(), 5) << dataFile;
 
     QString fileName = getSaveFileName(
           "Save tracing project", "Tracing project",
@@ -6049,7 +6053,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   uint64_t sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
 
-  qDebug() << "Model loaded.";
+  ZOUT(LTRACE(), 5) << "Model loaded.";
 
   ZSwcTree *unscaledTree = tree->clone();
   tree->scale(dvidInfo.getVoxelResolution().voxelSizeX(),
@@ -6170,7 +6174,7 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
     ZStackFrame *frame =
         hotSpotDemo(bodyId, m_dvidObjectDlg->getAddress(), dataInfo.getDvidUuid());
 #else
-    qDebug() << dataInfo.getDvidAddressWithPort().c_str();
+    ZOUT(LTRACE(), 5) << dataInfo.getDvidAddressWithPort().c_str();
 
     QFuture<ZStackDocReader*> res;
 
@@ -8084,4 +8088,15 @@ void MainWindow::on_actionGenerate_PAM_Actor_triggered()
 void MainWindow::on_actionGenerate_MB_Conn_Actor_triggered()
 {
   generateMBONConnCast("movie7");
+}
+
+QMenu* MainWindow::getSandboxMenu() const
+{
+  return m_ui->menuSandbox;
+}
+
+void MainWindow::on_actionGet_Body_Positions_triggered()
+{
+  m_bodyPosDlg->show();
+  m_bodyPosDlg->raise();
 }

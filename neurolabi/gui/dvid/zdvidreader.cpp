@@ -1344,20 +1344,6 @@ std::string ZDvidReader::getType(const std::string &dataName) const
   return type;
 }
 
-ZArray* ZDvidReader::readLabels64(
-    int x0, int y0, int z0, int width, int height, int depth) const
-{
-  return readLabels64(getDvidTarget().getLabelBlockName(),
-                     x0, y0, z0, width, height, depth);
-}
-
-ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box)
-{
-  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                      box.getFirstCorner().getZ(), box.getWidth(),
-                      box.getHeight(), box.getDepth());
-}
-
 ZIntPoint ZDvidReader::readBodyBottom(uint64_t bodyId) const
 {
   ZIntPoint pt;
@@ -1531,6 +1517,30 @@ ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 }
 
 ZArray* ZDvidReader::readLabels64(
+    int x0, int y0, int z0, int width, int height, int depth, int zoom) const
+{
+  int zoomRatio = pow(2, zoom);
+
+  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+                     x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
+                      width / zoomRatio, height / zoomRatio, depth);
+}
+
+ZArray* ZDvidReader::readLabels64Raw(
+    int x0, int y0, int z0, int width, int height, int depth, int zoom) const
+{
+  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+                     x0, y0, z0, width, height, depth);
+}
+
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box, int zoom)
+{
+  return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                      box.getFirstCorner().getZ(), box.getWidth(),
+                      box.getHeight(), box.getDepth(), zoom);
+}
+
+ZArray* ZDvidReader::readLabels64(
     const std::string &dataName, int x0, int y0, int z0,
     int width, int height, int depth) const
 {
@@ -1642,12 +1652,13 @@ void ZDvidReader::refreshLabelBuffer()
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  if (!getDvidTarget().hasBodyLabel()) {
+  if (!getDvidTarget().hasLabelBlock()) {
     return NULL;
   }
 
+  int scale = 1;
   if (zoom > 0) {
-    int scale = pow(2, zoom);
+    scale = pow(2, zoom);
     width /= scale;
     height /= scale;
 //    x0 /= scale;
@@ -1657,7 +1668,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 
   ZArray *array = NULL;
 
-  qDebug() << "Using lowtis";
+  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
 
   if (m_lowtisService.get() == NULL) {
@@ -1689,6 +1700,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     arrayDims[1] = height;
     arrayDims[2] = 1;
     array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+
+    array->setStartCoordinate(0, x0 / scale);
+    array->setStartCoordinate(1, y0 / scale);
+    array->setStartCoordinate(2, z0 / scale);
 
     try {
       std::vector<int> offset(3);

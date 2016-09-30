@@ -370,7 +370,7 @@ void ZFlyEmProofDoc::annotateBody(
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
-    qDebug() << writer.getStandardOutput();
+    ZOUT(LTRACE(), 5) << writer.getStandardOutput();
     emit messageGenerated(
           ZWidgetMessage("Cannot save annotation.", NeuTube::MSG_ERROR));
   }
@@ -1038,9 +1038,9 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     if (on) {
-      se->addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+      se->addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
     } else {
-      se->removeVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+      se->removeVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
     }
     processObjectModified(se);
   }
@@ -1152,8 +1152,9 @@ void ZFlyEmProofDoc::updateBodyObject()
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
+    slice->paintBuffer();
 //    slice->clearSelection();
-    slice->updateLabelColor();
+//    slice->updateLabelColor();
   }
 
   QList<ZDvidSparsevolSlice*> sparsevolSliceList = getDvidSparsevolSliceList();
@@ -1683,7 +1684,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
         psd.push_back(punctum);
       }
     }
-    qDebug() << "Synapse loading time: " << timer.restart();
+    ZOUT(LTRACE(), 5) << "Synapse loading time: " << timer.restart();
   }
 
   return synapse;

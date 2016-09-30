@@ -24,6 +24,7 @@ public:
 
   const ZStTransform& getProjTransform() const;
   ZStTransform& getProjTransform();
+  void updateProjTransform(const QRect &viewPort, const QRectF &newProjRegion);
 
   void cleanUp();
   void clean(const QRect &rect);
@@ -39,6 +40,7 @@ public:
 
   QRectF getActiveArea(NeuTube::ECoordinateSystem coord) const;
   bool isFullyActive() const;
+  void matchProj();
 
 private:
   void cleanFunc(QPixmap *pixmap);

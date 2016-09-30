@@ -47,6 +47,12 @@ ZStTransform& ZPixmap::getProjTransform()
   return m_projTransform;
 }
 
+void ZPixmap::updateProjTransform(
+    const QRect &viewPort, const QRectF &newProjRegion)
+{
+  m_projTransform.estimate(m_objTransform.transform(viewPort), newProjRegion);
+}
+
 void ZPixmap::setTransform(const ZStTransform &transform)
 {
   m_objTransform = transform;
@@ -126,6 +132,11 @@ void ZPixmap::cleanUp()
 
 //  fill(Qt::transparent);
   m_isVisible = false;
+}
+
+void ZPixmap::matchProj()
+{
+  m_projTransform = getTransform().getInverseTransform();
 }
 
 void ZPixmap::clean(const QRect &rect)

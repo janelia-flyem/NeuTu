@@ -39,8 +39,9 @@ void ZDvidSynapseEnsemble::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
-  addVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT);
+  addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
+  m_isReady = false;
 }
 
 ZIntCuboid ZDvidSynapseEnsemble::update(const ZIntCuboid &box)
@@ -143,12 +144,18 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
-    updateUnsync(box);
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
-      SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
-      slice.setDataRect(viewPort);
-      slice.setStatus(STATUS_PARTIAL_READY);
+    if (m_dataFetcher == NULL || getSliceAxis() == NeuTube::Z_AXIS) {
+      updateUnsync(box);
+      for (int cz = blockBox.getFirstCorner().getZ();
+           cz <= blockBox.getLastCorner().getZ(); ++cz) {
+        SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
+        slice.setDataRect(viewPort);
+        slice.setStatus(STATUS_PARTIAL_READY);
+      }
+    } else {
+      QVector<ZIntCuboid> region;
+      region.append(box);
+      m_dataFetcher->submit(region);
     }
   } else {
     ZIntPoint lastCorner = m_dvidInfo.getEndCoordinates();
@@ -255,12 +262,15 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
 
 void ZDvidSynapseEnsemble::setReadyUnsync(const ZIntCuboid &box)
 {
-  for (int cz = box.getFirstCorner().getZ();
-       cz <= box.getLastCorner().getZ(); ++cz) {
+  ZIntCuboid shiftedBox = box;
+  shiftedBox.shiftSliceAxis(getSliceAxis());
+  for (int cz = shiftedBox.getFirstCorner().getZ();
+       cz <= shiftedBox.getLastCorner().getZ(); ++cz) {
     SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
     slice.setDataRect(
-          QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                box.getWidth(), box.getHeight()));
+          QRect(shiftedBox.getFirstCorner().getX(),
+                shiftedBox.getFirstCorner().getY(),
+                shiftedBox.getWidth(), shiftedBox.getHeight()));
     slice.setStatus(STATUS_PARTIAL_READY);
   }
 }
@@ -270,6 +280,16 @@ void ZDvidSynapseEnsemble::setReady(const ZIntCuboid &box)
   QMutexLocker locker(&m_dataMutex);
 
   setReadyUnsync(box);
+}
+
+void ZDvidSynapseEnsemble::setReady(bool ready)
+{
+  m_isReady = ready;
+}
+
+bool ZDvidSynapseEnsemble::isReady() const
+{
+  return m_isReady;
 }
 
 void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
@@ -667,36 +687,38 @@ void ZDvidSynapseEnsemble::display(
       rangeRect.setSize(QSize(range.getWidth(), range.getHeight()));
     }
 
-    QVector<int> zs;
-    for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
-      int z = painter.getZ(slice + ds);
-      if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
-          z <= m_dvidInfo.getEndCoordinates().getZ()) {
-        SynapseSlice &synapseSlice =
-            const_cast<ZDvidSynapseEnsemble&>(*this).getSliceUnsync(
-              z, ADJUST_FULL);
-        bool isReady = synapseSlice.isReady();
+    if (!isReady()) {
+      QVector<int> zs;
+      for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
+        int z = painter.getZ(slice + ds);
+        if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
+            z <= m_dvidInfo.getEndCoordinates().getZ()) {
+          SynapseSlice &synapseSlice =
+              const_cast<ZDvidSynapseEnsemble&>(*this).getSliceUnsync(
+                z, ADJUST_FULL);
+          bool ready = synapseSlice.isReady();
 
-        if (!isReady && m_view != NULL) {
-          isReady = synapseSlice.isReady(
-                m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
-        }
-        if (!isReady) {
-          int blockZ = m_dvidInfo.getBlockIndexZ(z);
-          if (blockZ != currentBlockZ) {
-            currentBlockZ = blockZ;
-            zs.append(z);
-//            const_cast<ZDvidSynapseEnsemble&>(*this).downloadUnsync(z);
-            /*
+          if (!ready && m_view != NULL) {
+            ready = synapseSlice.isReady(
+                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+          }
+          if (!ready) {
+            int blockZ = m_dvidInfo.getBlockIndexZ(z);
+            if (blockZ != currentBlockZ) {
+              currentBlockZ = blockZ;
+              zs.append(z);
+              //            const_cast<ZDvidSynapseEnsemble&>(*this).downloadUnsync(z);
+              /*
             if (synapseSlice.isEmpty()) {
               synapseSlice.push_back(QMap<int, ZDvidSynapse>());
             }
             */
+            }
           }
         }
       }
+      const_cast<ZDvidSynapseEnsemble&>(*this).downloadUnsync(zs);
     }
-    const_cast<ZDvidSynapseEnsemble&>(*this).downloadUnsync(zs);
 
     for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
       int z = painter.getZ(slice + ds);
@@ -717,7 +739,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
-                hasVisualEffect(NeuTube::Display::VE_GRUOP_HIGHLIGHT)) {
+                hasVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -1204,6 +1226,11 @@ bool ZDvidSynapseEnsemble::SynapseSlice::isReady(
 void ZDvidSynapseEnsemble::SynapseSlice::setDataRect(const QRect &rect)
 {
   m_dataRect = rect;
+}
+
+bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
+{
+  return isReady(rect, m_dataRect);
 }
 
 

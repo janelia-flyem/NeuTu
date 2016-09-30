@@ -24,6 +24,8 @@ public:
   ZWindowFactory();
   virtual ~ZWindowFactory();
 
+
+
   Z3DWindow* make3DWindow(ZStackDoc *doc,
                           Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   Z3DWindow* open3DWindow(ZStackDoc *doc,
@@ -80,6 +82,8 @@ private:
   NeuTube3D::EVolumeRenderingMode m_volumeMode;
 
   bool m_deleteOnClose;
+
+  NeuTube3D::EWindowType m_windowType;
 
   QMap<Z3DWindow::ERendererLayer, bool> m_layerVisible;
 };

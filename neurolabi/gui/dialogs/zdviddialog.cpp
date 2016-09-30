@@ -130,7 +130,11 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
       target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
     }
     target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
-    target.setMultiscale2dName(ui->tileLineEdit->text().toStdString());
+
+    std::string tileName = ui->tileLineEdit->text().toStdString();
+    target.setMultiscale2dName(tileName);
+    target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
+
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
@@ -167,6 +171,12 @@ void ZDvidDialog::setServer(int index)
   ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
 //  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
+  if (index == 0) {
+    ui->lowQualityCheckBox->setChecked(false);
+  } else {
+    ui->lowQualityCheckBox->setChecked(
+          dvidTarget.isLowQualityTile(dvidTarget.getMultiscale2dName()));
+  }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
   ui->librarianLineEdit->setText(

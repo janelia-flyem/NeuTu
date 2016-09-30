@@ -56,7 +56,7 @@ void ZColorScheme::buildRandomColorTable(int n)
 void ZColorScheme::buildConvRandomColorTable(int n)
 {
   ZRandomGenerator generator(42);
-  const int maxInt = 65534;
+  const int maxInt = 20000;
   for (int i = 1; i < n; ++i) {
     int r = generator.rndint(maxInt)%255;
     int g = generator.rndint(maxInt)%255;

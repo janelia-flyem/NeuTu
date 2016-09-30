@@ -113,13 +113,15 @@ const char* ZDvidData::getName(EType type)
 */
 std::string ZDvidData::GetName(ERole role, const std::string &prefix)
 {
-  if (prefix == m_nullName) {
+  if (IsNullName(prefix) || prefix.empty()) {
     return "";
   }
 
+  /*
   if (prefix.empty()) {
     return ZDvidData::GetName(role);
   }
+  */
 
   return prefix + "_" + ZDvidData::GetName(role);
 }
@@ -132,6 +134,8 @@ std::string ZDvidData::GetName(
   std::string prefix = "";
   if (!isDefaultName(prefixRole, prefixName)) {
     prefix = prefixName;
+  } else {
+    return ZDvidData::GetName(role);
   }
 
   return GetName(role, prefix);

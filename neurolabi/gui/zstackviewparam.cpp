@@ -1,5 +1,7 @@
 #include "zstackviewparam.h"
 
+#include "geometry/zgeometry.h"
+
 ZStackViewParam::ZStackViewParam()
 {
   init(NeuTube::COORD_RAW_STACK);
@@ -60,6 +62,17 @@ bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
   if (m_z == param.m_z) {
     return m_viewPort.contains(param.m_viewPort);
+  }
+
+  return false;
+}
+
+bool ZStackViewParam::contains(int x, int y, int z)
+{
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
+  if (z == m_z) {
+    return getViewPort().contains(x, y);
   }
 
   return false;

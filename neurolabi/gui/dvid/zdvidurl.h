@@ -18,6 +18,8 @@ public:
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
   ZDvidUrl(const ZDvidTarget &target);
 
+  void setDvidTarget(const ZDvidTarget &target);
+
   std::string getNodeUrl() const;
   std::string getDataUrl(const std::string &dataName) const;
   std::string getDataUrl(ZDvidData::ERole role) const;
@@ -81,11 +83,11 @@ public:
       int ix, int iy, int iz, int blockNumber = 1) const;
 
   std::string getLabels64Url() const;
-  std::string getLabels64Url(
-      const std::string &name,
+  std::string getLabels64Url(int zoom) const;
+  std::string getLabels64Url(const std::string &name,
       int sx, int sy, int sz, int x0, int y0, int z0) const;
   std::string getLabels64Url(
-      int sx, int sy, int sz, int x0, int y0, int z0) const;
+      int sx, int sy, int sz, int x0, int y0, int z0, int zoom = 0) const;
   /*
   std::string getLabelSliceUrl(const std::string &name, int dim1, int dim2,
                                int )
@@ -233,6 +235,8 @@ private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &endpoint);
 
 private:
   ZDvidTarget m_dvidTarget;
