@@ -1462,6 +1462,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
              iter != selected.end(); ++iter) {
           uint64_t bodyId = *iter;
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
+          obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
           obj->setSliceAxis(labelSlice->getSliceAxis());
           obj->setDvidTarget(getDvidTarget());
           obj->setLabel(bodyId);
@@ -1939,6 +1940,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = reader.readDvidSparseStackAsync(bodyId);
 
+        body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
         body->setZOrder(0);
         body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
         body->setColor(labelSlice->getLabelColor(

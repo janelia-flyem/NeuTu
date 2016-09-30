@@ -539,12 +539,12 @@ QColor ZDvidLabelSlice::getLabelColor(
   if (hasCustomColorMap()) {
     color = getCustomColor(label);
     if (color.alpha() != 0) {
-      color.setAlpha(64);
+      color.setAlpha(164);
     }
   } else {
     color = m_objColorSheme.getColor(
           getMappedLabel(label, labelType));
-    color.setAlpha(64);
+    color.setAlpha(164);
   }
 
   return color;
