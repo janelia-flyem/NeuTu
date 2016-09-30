@@ -233,24 +233,38 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         m_bodyModel->clear();
         setStatusLabel("Loading...");
 
+        // open the reader; reuse it so we don't multiply connections on
+        //  the server
+        m_reader.setVerbose(false);
+        if (!m_reader.open(m_currentDvidTarget)) {
+            QMessageBox errorBox;
+            errorBox.setText("Error connecting to DVID");
+            errorBox.setInformativeText("Could not open DVID!  Check server information!");
+            errorBox.setStandardButtons(QMessageBox::Ok);
+            errorBox.setIcon(QMessageBox::Warning);
+            errorBox.exec();
+            setStatusLabel("Load failed!");
+            return;
+        }
+
         // we can load this info from different sources, depending on
         //  what's available in DVID
-        if (dvidBookmarksPresent(target)) {
+        if (dvidBookmarksPresent()) {
             // is the synapse file present?
             // note: this option will (should) be removed sometime after mid-Sept. 2016
             m_futureMap["importBookmarksDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid, target);
-        } else if (bodyAnnotationsPresent(target)) {
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
+        } else if (bodyAnnotationsPresent()) {
             // both of these need body annotations:
-            if (labelszPresent(target)) {
+            if (labelszPresent()) {
                 // how about labelsz data?
                 setupMaxBodyMenu();
                 m_futureMap["importBodiesDvid"] =
-                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2, target);
+                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
             } else {
                 // this is the fallback method; it needs body annotations only
                 m_futureMap["importBodiesDvid"] =
-                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid, target);
+                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
             }
         } else {
             // ...but sometimes, we've got nothing
@@ -342,78 +356,61 @@ void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
     updateStatusLabel();
 }
 
-bool FlyEmBodyInfoDialog::dvidBookmarksPresent(ZDvidTarget target) {
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(target)) {
-        // check for data name and key
-        if (!reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
-            #ifdef _DEBUG_
-                std::cout << "UUID doesn't have body annotations" << std::endl;
-            #endif
-            return false;
-        }
-
-        // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
-        //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
-        if (reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES), 
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
-            #ifdef _DEBUG_
-                std::cout << "UUID doesn't have body_synapses key" << std::endl;
-            #endif
-            return false;
-        }
-        return true;
-    } else {
+bool FlyEmBodyInfoDialog::dvidBookmarksPresent() {
+    // check for data name and key
+    if (!m_reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have body annotations" << std::endl;
+        #endif
         return false;
     }
-}
 
-bool FlyEmBodyInfoDialog::bodyAnnotationsPresent(ZDvidTarget target) {
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(target)) {
-        // check for data name and key
-        if (!reader.hasData(target.getBodyAnnotationName())) {
-            #ifdef _DEBUG_
-                std::cout << "UUID doesn't have body annotations" << std::endl;
-            #endif
-            return false;
-        }
-        return true;
-    } else {
+    // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
+    //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
+    if (m_reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES),
+        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have body_synapses key" << std::endl;
+        #endif
         return false;
     }
+    return true;
 }
 
-bool FlyEmBodyInfoDialog::labelszPresent(ZDvidTarget target) {
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(target)) {
-        if (!reader.hasData(target.getSynapseLabelszName())) {
-            #ifdef _DEBUG_
-                std::cout << "UUID doesn't have labelsz instance" << std::endl;
-            #endif
-            return false;
-        }
-        return true;
-    } else {
+bool FlyEmBodyInfoDialog::bodyAnnotationsPresent() {
+    // check for data name and key
+    if (!m_reader.hasData(m_currentDvidTarget.getBodyAnnotationName())) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have body annotations" << std::endl;
+        #endif
         return false;
     }
+    return true;
 }
 
-void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
+bool FlyEmBodyInfoDialog::labelszPresent() {
+    if (!m_reader.hasData(m_currentDvidTarget.getSynapseLabelszName())) {
+        #ifdef _DEBUG_
+            std::cout << "UUID doesn't have labelsz instance" << std::endl;
+        #endif
+        return false;
+    }
+    return true;
+}
+
+void FlyEmBodyInfoDialog::importBookmarksDvid() {
     #ifdef _DEBUG_
-        std::cout << "loading bookmarks from " << target.getUuid() << std::endl;
+        std::cout << "loading bookmarks from " << m_currentDvidTarget.getUuid() << std::endl;
     #endif
 
     // this method assumes DVID target is valid, and necessary DVID keys
     //  are present
 
+    // note: this method is run in a different thread than the rest
+    //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
-
-    if (reader.open(target)) {
+    if (reader.open(m_currentDvidTarget)) {
         reader.setVerbose(true);
         #ifdef _DEBUG_
             std::cout << "getting file from dataname " << ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION) << " and key " << ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES) << std::endl;
@@ -442,7 +439,7 @@ void FlyEmBodyInfoDialog::importBookmarksDvid(ZDvidTarget target) {
         QString bodyAnnotationName = ZDvidData::GetName(
               ZDvidData::ROLE_BODY_ANNOTATION,
               ZDvidData::ROLE_BODY_LABEL,
-              target.getBodyLabelName()).c_str();
+              m_currentDvidTarget.getBodyLabelName()).c_str();
         #ifdef _DEBUG_
             std::cout << "getting names from " << bodyAnnotationName.toStdString() << std::endl;
         #endif
@@ -571,12 +568,13 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
  *
  * note: max bodies number is ignored for this routine
  */
-void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
+void FlyEmBodyInfoDialog::importBodiesDvid() {
 
-    // DVID target assumed to be valid
+    // note: this method is run in a different thread than the rest
+    //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
     reader.setVerbose(false);
-    if (reader.open(target)) {
+    if (reader.open(m_currentDvidTarget)) {
         // we need to construct a json structure from scratch to
         //  match what we'd get out of the bookmarks annotation file;
         //  probably this should be refactored 
@@ -585,7 +583,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!)
 
-        QString bodyAnnotationName = target.getBodyAnnotationName().c_str();
+        QString bodyAnnotationName = m_currentDvidTarget.getBodyAnnotationName().c_str();
         QStringList keyList = reader.readKeys(bodyAnnotationName);
 
         ZJsonArray bodies;
@@ -632,7 +630,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid(ZDvidTarget target) {
  * other versions either use a pregenerated file or
  * do not require labelsz (and thus do not include all information)
  */
-void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
+void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
     QElapsedTimer fullTimer;
     QElapsedTimer dvidTimer;
@@ -640,10 +638,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
     int64_t fullTime = 0;
     fullTimer.start();
 
-    // DVID target assumed to be valid
+    // note: this method is run in a different thread than the rest
+    //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
     reader.setVerbose(false);
-    if (reader.open(target)) {
+    if (reader.open(m_currentDvidTarget)) {
 
         // you would use this call to get all bodies with any synapses:
         // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::INDEX_ALL_SYN);
@@ -657,7 +656,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
         // first, get the list of bodies that actually have annotations,
         //  so we don't try to retrieve annotations that aren't there
         dvidTimer.restart();
-        QString bodyAnnotationName = QString::fromStdString(target.getBodyAnnotationName());
+        QString bodyAnnotationName = QString::fromStdString(m_currentDvidTarget.getBodyAnnotationName());
         QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
 
         #ifdef _DEBUG_
@@ -740,10 +739,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2(ZDvidTarget target) {
 }
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
-    if (m_currentDvidTarget.isValid()) {
-        ui->bodyFilterField->clear();
-        dvidTargetChanged(m_currentDvidTarget);
-    }
+    ui->bodyFilterField->clear();
+    dvidTargetChanged(m_currentDvidTarget);
 }
 
 void FlyEmBodyInfoDialog::onCloseButton() {
@@ -1211,10 +1208,8 @@ void FlyEmBodyInfoDialog::gotoPrePost(QModelIndex modelIndex) {
     m_connectionsModel->clear();
 
     // trigger retrieval of synapse partners
-    if (m_currentDvidTarget.isValid()) {
-        m_futureMap["retrieveIOBodiesDvid"] =
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_currentDvidTarget, m_connectionsBody);
-    }
+    m_futureMap["retrieveIOBodiesDvid"] =
+        QtConcurrent::run(this, &FlyEmBodyInfoDialog::retrieveIOBodiesDvid, m_connectionsBody);
 }
 
 void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bodyName) {
@@ -1230,7 +1225,7 @@ void FlyEmBodyInfoDialog::updateBodyConnectionLabel(uint64_t bodyID, QString bod
 
 }
 
-void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID) {
+void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
 
     // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
@@ -1239,12 +1234,14 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(ZDvidTarget target, uint64_t body
     // QElapsedTimer timer;
     // timer.start();
 
+    // note: this method is run in a different thread than the rest
+    //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
     reader.setVerbose(false);
 
     // std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
-    if (reader.open(target)) {
+    if (reader.open(m_currentDvidTarget)) {
         // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
 

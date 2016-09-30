@@ -6,6 +6,7 @@
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidreader.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "flyem/zflyemsequencercolorscheme.h"
@@ -124,6 +125,7 @@ private:
     qlonglong m_totalPost;
     bool m_quitting;
     ZDvidTarget m_currentDvidTarget;
+    ZDvidReader m_reader;
     int m_currentMaxBodies;
     bool m_connectionsLoading;
     int m_connectionsTableState;
@@ -134,12 +136,12 @@ private:
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
     bool isValidBookmarkFile(ZJsonObject object);
-    bool dvidBookmarksPresent(ZDvidTarget target);
-    bool bodyAnnotationsPresent(ZDvidTarget target);
-    bool labelszPresent(ZDvidTarget target);
-    void importBookmarksDvid(ZDvidTarget target);
-    void importBodiesDvid(ZDvidTarget target);
-    void importBodiesDvid2(ZDvidTarget target);
+    bool dvidBookmarksPresent();
+    bool bodyAnnotationsPresent();
+    bool labelszPresent();
+    void importBookmarksDvid();
+    void importBodiesDvid();
+    void importBodiesDvid2();
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
@@ -153,7 +155,7 @@ private:
     void gotoPrePost(QModelIndex modelIndex);
     void updateBodyConnectionLabel(uint64_t bodyID, QString bodyName);
     void setIOBodyHeaders(QStandardItemModel *model);
-    void retrieveIOBodiesDvid(ZDvidTarget target, uint64_t bodyID);
+    void retrieveIOBodiesDvid(uint64_t bodyID);
     void setConnectionsHeaders(QStandardItemModel *model);
     void exportData(QString filename, ExportKind kind);
     void setupMaxBodyMenu();
