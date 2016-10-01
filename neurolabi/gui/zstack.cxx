@@ -2107,6 +2107,13 @@ void ZStack::downsampleMax(int xintv, int yintv, int zintv)
   }
 }
 
+void ZStack::pushDsIntv(int dx, int dy, int dz)
+{
+  m_dsIntv.setX((m_dsIntv.getX() + 1) * (dx + 1) - 1);
+  m_dsIntv.setY((m_dsIntv.getY() + 1) * (dy + 1) - 1);
+  m_dsIntv.setZ((m_dsIntv.getZ() + 1) * (dz + 1) - 1);
+}
+
 void ZStack::downsampleMin(int xintv, int yintv, int zintv)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {

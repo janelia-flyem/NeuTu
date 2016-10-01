@@ -907,7 +907,7 @@ void ZFlyEmBodySplitProject::commitResult()
   commitResultFunc(
         getDocument()->getSparseStackMask(),
         getDocument()->getLabelField(),
-        getDocument()->getDvidSparseStack()->getDownsampleInterval(),
+//        getDocument()->getDvidSparseStack()->getDownsampleInterval(),
 //        getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
   getProgressSignal()->endProgress();
@@ -995,7 +995,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
 }
 
 void ZFlyEmBodySplitProject::commitResultFunc(
-    ZObject3dScan *wholeBody, const ZStack *labelField, const ZIntPoint &dsIntv,
+    ZObject3dScan *wholeBody, const ZStack *labelField,
     size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
@@ -1006,6 +1006,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //      getDataFrame()->document()->getSparseStack()->getObjectMask();
 
   ZObject3dScan body = *wholeBody;
+
+  ZIntPoint dsIntv = labelField->getDsIntv();
+
+  ZOUT(LINFO(), 3) << "Label field ds: " << dsIntv.toString();
 
 //  size_t minObjSize = 20;
 
@@ -1074,6 +1078,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //    std::vector<ZObject3dScan> mainObjectArray;
 //    std::vector<ZObject3dScan> minorObjectArray;
     size_t minIsolationSize = 50;
+
 
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {

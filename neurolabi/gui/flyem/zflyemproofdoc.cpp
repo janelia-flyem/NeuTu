@@ -2382,6 +2382,7 @@ void ZFlyEmProofDoc::runSplitFunc()
 #endif
 
       ZStack *out = engine.run(signalStack, seedMask);
+      out->setDsIntv(dsIntv);
       getProgressSignal()->advanceProgress(0.3);
 
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
