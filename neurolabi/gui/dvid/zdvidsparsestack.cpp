@@ -303,9 +303,11 @@ bool ZDvidSparseStack::fillValue(
   ZDvidReader &reader = getGrayscaleReader();
   //  bool changed = false;
   int blockCount = 0;
+  ZOUT(LTRACE(), 5) << "Getting object mask";
   ZObject3dScan *objMask = getObjectMask();
   if (objMask != NULL) {
     if (!objMask->isEmpty()) {
+      ZOUT(LTRACE(), 5) << "Locking m_fillValueMutex";
       QMutexLocker locker(&m_fillValueMutex);
 
       ZOUT(LTRACE(), 5) << "Downloading grayscale ...";
