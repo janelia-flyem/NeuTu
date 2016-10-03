@@ -120,6 +120,8 @@ bool ZDvidReader::startService()
           m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
           */
     m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
+    m_connection = ZDvid::MakeDvidConnection(m_dvidTarget.getAddressWithPort());
+    m_bufferReader.setService(getDvidTarget());
 //    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
     /*
     lowtis::DVIDLabelblkConfig config;
@@ -234,6 +236,15 @@ void ZDvidReader::waitForReading()
 }
 #endif
 
+void ZDvidReader::testApiLoad()
+{
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZDvid::MakeRequest(*m_connection, "/../api/load", "GET",
+                     libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                     m_statusCode);
+#endif
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
 {
@@ -243,14 +254,17 @@ ZObject3dScan *ZDvidReader::readBody(
     result->clear();
   }
 
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
-  reader.read(dvidUrl.getSparsevolUrl(bodyId, z, z, axis).c_str(), isVerbose());
+
+  std::string url = dvidUrl.getSparsevolUrl(bodyId, z, z, axis);
+  QElapsedTimer timer;
+  timer.start();
+  reader.read(url.c_str(), isVerbose());
+  ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
+
   const QByteArray &buffer = reader.getBuffer();
   result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
@@ -269,10 +283,7 @@ ZObject3dScan *ZDvidReader::readBody(
     result->clear();
   }
 
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
@@ -295,10 +306,7 @@ ZObject3dScan *ZDvidReader::readBody(
     result->clear();
   }
 
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
 
 //  reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
@@ -320,11 +328,7 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
     result->clear();
   }
 
-  ZDvidBufferReader reader;
-
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
 
   reader.tryCompress(true);
   ZDvidUrl dvidUrl(getDvidTarget());
@@ -375,10 +379,7 @@ ZObject3dScan ZDvidReader::readBody(uint64_t bodyId)
 
 ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
 {
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
   ZDvidUrl url(getDvidTarget());
 //  qDebug() << url.getSkeletonUrl(bodyId);
 
@@ -424,7 +425,7 @@ ZStack* ZDvidReader::readThumbnail(uint64_t bodyId)
   ZDvidUrl url(getDvidTarget());
   qDebug() << url.getThumbnailUrl(bodyId);
 
-  ZDvidBufferReader reader;
+  ZDvidBufferReader &reader = m_bufferReader;
   reader.read(url.getThumbnailUrl(bodyId).c_str(), isVerbose());
 
   Mc_Stack *rawStack =
@@ -455,7 +456,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
 {
   std::vector<ZStack*> stackArray(blockNumber, NULL);
 
-  ZDvidBufferReader bufferReader;
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(getDvidTarget());
 #ifdef _DEBUG_2
   tic();
@@ -559,7 +560,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 ZStack* ZDvidReader::readGrayScaleBlock(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo)
 {
-  ZDvidBufferReader bufferReader;
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(getDvidTarget());
   bufferReader.read(dvidUrl.getGrayScaleBlockUrl(blockIndex.getX(),
                                                  blockIndex.getY(),
@@ -825,7 +826,8 @@ ZJsonObject ZDvidReader::readInfo() const
 
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
-  ZDvidBufferReader reader;
+  ZDvidBufferReader &reader = m_bufferReader;
+//  reader.setService(m_service);
 
   std::string url = ZDvidUrl(getDvidTarget()).getInfoUrl(dataName.toStdString());
   reader.read(url.c_str(), isVerbose());
@@ -964,10 +966,8 @@ std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter)
 
 std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
 {
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
+
   ZDvidUrl dvidUrl(m_dvidTarget);
   bufferReader.read(dvidUrl.getBodyListUrl(minSize).c_str(), isVerbose());
   setStatusCode(bufferReader.getStatusCode());
@@ -990,7 +990,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
 
 std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
 {
-  ZDvidBufferReader bufferReader;
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   bufferReader.read(dvidUrl.getBodyListUrl(minSize, maxSize).c_str(), isVerbose());
   setStatusCode(bufferReader.getStatusCode());
@@ -1036,10 +1036,8 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 {
   ZDvidUrl url(getDvidTarget());
 
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
+
   bufferReader.read(
         url.getKeyUrl(dataName.toStdString(), key.toStdString()).c_str(),
         isVerbose());
@@ -1078,10 +1076,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName)
     return QStringList();
   }
 
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
 
   ZDvidUrl dvidUrl(m_dvidTarget);
 
@@ -1106,10 +1101,7 @@ QStringList ZDvidReader::readKeys(const QString &dataName)
 QStringList ZDvidReader::readKeys(
     const QString &dataName, const QString &minKey)
 {
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   const std::string &maxKey = "\xff";
 
@@ -1138,10 +1130,7 @@ QStringList ZDvidReader::readKeys(
 {
   ZDvidUrl url(getDvidTarget());
 
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
   reader.read(url.getKeyRangeUrl(dataName.toStdString(), minKey.toStdString(),
                                  maxKey.toStdString()).c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
@@ -1693,13 +1682,20 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
-void ZDvidReader::refreshLabelBuffer()
+bool ZDvidReader::refreshLabelBuffer()
 {
 #if defined(_ENABLE_LOWTIS_)
   if (m_lowtisService.get() != NULL) {
-    m_lowtisService->flush_cache();
+    try {
+      m_lowtisService->flush_cache();
+    } catch (std::exception &e) {
+      ZOUT(LTRACE(), 5) << e.what();
+      return false;
+    }
   }
+
 #endif
+  return true;
 }
 
 #if defined(_ENABLE_LOWTIS_)
@@ -2022,10 +2018,7 @@ ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
   if (!dataName.empty()) {
     ZDvidUrl dvidUrl(getDvidTarget());
 
-    ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-    bufferReader.setService(m_service);
-#endif
+    ZDvidBufferReader &bufferReader = m_bufferReader;
     bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str(), isVerbose());
     setStatusCode(bufferReader.getStatusCode());
 
@@ -2048,10 +2041,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
 
   ZDvidUrl dvidUrl(getDvidTarget());
 
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   bufferReader.read(dvidUrl.getRepoInfoUrl().c_str(), isVerbose());
   setStatusCode(bufferReader.getStatusCode());
 
@@ -2070,10 +2060,7 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
 
 ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
 {
-  ZDvidBufferReader reader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  reader.setService(m_service);
-#endif
+  ZDvidBufferReader &reader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   reader.read(dvidUrl.getCoarseSparsevolUrl(
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
@@ -2094,10 +2081,7 @@ uint64_t ZDvidReader::readBodyIdAt(const ZIntPoint &pt) const
 
 uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
 {
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
   bufferReader.read(dvidUrl.getLocalBodyIdUrl(x, y, z).c_str(), isVerbose());
   setStatusCode(bufferReader.getStatusCode());
@@ -2119,10 +2103,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (!ptArray.empty()) {
-    ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-    bufferReader.setService(m_service);
-#endif
+    ZDvidBufferReader &bufferReader = m_bufferReader;
     ZDvidUrl dvidUrl(m_dvidTarget);
 
     ZJsonArray queryObj;
@@ -2249,7 +2230,7 @@ bool ZDvidReader::isBookmarkChecked(const ZIntPoint &pt) const
 ZObject3dScan* ZDvidReader::readRoi(
     const std::string &dataName, ZObject3dScan *result)
 {
-  ZDvidBufferReader bufferReader;
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   bufferReader.read(dvidUrl.getRoiUrl(dataName).c_str());
@@ -2279,10 +2260,7 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 
   if (getDvidTarget().hasBodyLabel()) {
     ZDvidUrl url(getDvidTarget());
-    ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-    bufferReader.setService(m_service);
-#endif
+    ZDvidBufferReader &bufferReader = m_bufferReader;
     bufferReader.read(url.getBodyAnnotationUrl(bodyId).c_str(), isVerbose());
 
     annotation.loadJsonString(bufferReader.getBuffer().constData());
@@ -2303,10 +2281,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 {
   ZJsonObject obj;
 
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   bufferReader.read(url.c_str(), isVerbose());
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
@@ -2320,10 +2295,7 @@ ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
 {
   ZJsonArray obj;
 
-  ZDvidBufferReader bufferReader;
-#if defined(_ENABLE_LIBDVIDCPP_)
-  bufferReader.setService(m_service);
-#endif
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   bufferReader.read(url.c_str(), isVerbose());
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {

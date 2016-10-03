@@ -612,6 +612,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       windowFactory.setWindowTitle("Splitting Result");
       ZStackDoc *doc = new ZStackDoc;
       doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
+      doc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(doc);
 
       const QString threadId = "result3dQuickFunc";
@@ -907,7 +908,7 @@ void ZFlyEmBodySplitProject::commitResult()
   commitResultFunc(
         getDocument()->getSparseStackMask(),
         getDocument()->getLabelField(),
-        getDocument()->getDvidSparseStack()->getDownsampleInterval(),
+//        getDocument()->getDvidSparseStack()->getDownsampleInterval(),
 //        getDocument()->getConstSparseStack()->getDownsampleInterval(),
         getMinObjSize());
   getProgressSignal()->endProgress();
@@ -995,7 +996,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
 }
 
 void ZFlyEmBodySplitProject::commitResultFunc(
-    ZObject3dScan *wholeBody, const ZStack *labelField, const ZIntPoint &dsIntv,
+    ZObject3dScan *wholeBody, const ZStack *labelField,
     size_t minObjSize)
 {
   getProgressSignal()->startProgress("Uploading splitted bodies");
@@ -1006,6 +1007,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //      getDataFrame()->document()->getSparseStack()->getObjectMask();
 
   ZObject3dScan body = *wholeBody;
+
+  ZIntPoint dsIntv = labelField->getDsIntv();
+
+  ZOUT(LINFO(), 3) << "Label field ds: " << dsIntv.toString();
 
 //  size_t minObjSize = 20;
 
@@ -1074,6 +1079,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
 //    std::vector<ZObject3dScan> mainObjectArray;
 //    std::vector<ZObject3dScan> minorObjectArray;
     size_t minIsolationSize = 50;
+
 
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
@@ -1780,6 +1786,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
   }
 }
 
+/*
 void ZFlyEmBodySplitProject::downloadBodyMask()
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
@@ -1787,7 +1794,7 @@ void ZFlyEmBodySplitProject::downloadBodyMask()
     getDocument<ZFlyEmProofDoc>()->downloadBodyMask();
   }
 }
-
+*/
 void ZFlyEmBodySplitProject::updateBodyMask()
 {
   ZStackFrame *frame = getDataFrame();

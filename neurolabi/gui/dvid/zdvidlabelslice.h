@@ -141,7 +141,7 @@ public:
   int64_t getReadingTime() const;
 
   void clearCache();
-  void refreshReaderBuffer();
+  bool refreshReaderBuffer();
 
 //  int getZoom() const;
   int getZoomLevel(const ZStackViewParam &viewParam) const;

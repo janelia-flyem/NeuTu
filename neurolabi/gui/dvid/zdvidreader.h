@@ -5,6 +5,8 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QImage>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include <string>
 #include <vector>
@@ -43,6 +45,7 @@ class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
+class DVIDConnection;
 }
 
 namespace lowtis {
@@ -287,7 +290,9 @@ public:
   }
 #endif
 
-  void refreshLabelBuffer();
+  bool refreshLabelBuffer();
+
+  void testApiLoad();
 
 signals:
   void readingDone();
@@ -300,6 +305,9 @@ public slots:
   std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
+  ZDvidReader(const ZDvidReader&);
+  ZDvidReader& operator=(const ZDvidReader&);
+
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
 //  bool isReadingDone();
@@ -321,8 +329,12 @@ protected:
   bool m_verbose;
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
+
+  mutable ZDvidBufferReader m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  QMutex m_serviceMutex;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)

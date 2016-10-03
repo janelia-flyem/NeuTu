@@ -111,7 +111,7 @@ void ZDvidLabelSlice::setSliceAxis(NeuTube::EAxis sliceAxis)
 }
 
 void ZDvidLabelSlice::display(
-    ZPainter &painter, int slice, EDisplayStyle option,
+    ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
     NeuTube::EAxis sliceAxis) const
 {
   if (m_sliceAxis != sliceAxis) {
@@ -530,12 +530,6 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 QColor ZDvidLabelSlice::getColor(
     uint64_t label, NeuTube::EBodyLabelType labelType) const
 {
-  return getColor((int64_t) label, labelType);
-}
-
-QColor ZDvidLabelSlice::getColor(
-    int64_t label, NeuTube::EBodyLabelType labelType) const
-{
   QColor color;
   if (hasCustomColorMap()) {
     color = getCustomColor(label);
@@ -544,11 +538,17 @@ QColor ZDvidLabelSlice::getColor(
     }
   } else {
     color = m_objColorSheme.getColor(
-          abs((int) getMappedLabel((uint64_t) label, labelType)));
+          getMappedLabel(label, labelType));
     color.setAlpha(64);
   }
 
   return color;
+}
+
+QColor ZDvidLabelSlice::getColor(
+    int64_t label, NeuTube::EBodyLabelType labelType) const
+{
+  return getColor((uint64_t) label, labelType);
 }
 
 void ZDvidLabelSlice::setCustomColorMap(
@@ -636,12 +636,27 @@ void ZDvidLabelSlice::remapId(
     std::set<uint64_t> &selected, const ZFlyEmBodyMerger::TLabelMap &bodyMap)
 {
   std::set<uint64_t> selectedSet = selected;
-  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
-       iter != selected.end(); ++iter) {
-    if (bodyMap.count(*iter) > 0) {
-      selectedSet.insert(bodyMap[*iter]);
-    }
-  }
+//  std::set<uint64_t> mappedSelected;
+//  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+//       iter != selected.end(); ++iter) {
+//    mappedSelected.insert(bodyMap[*iter]);
+//  }
+//  selectedSet.insert(mappedSelected.begin(), mappedSelected.end());
+
+//  for (ZFlyEmBodyMerger::TLabelMap::const_iterator iter = bodyMap.begin();
+//       iter != bodyMap.end(); ++iter) {
+//    if (mappedSelected.count(iter.value()) > 0) {
+//      selectedSet.insert(iter.key());
+//    }
+//  }
+
+
+//  for (std::set<uint64_t>::const_iterator iter = m_selectedOriginal.begin();
+//       iter != selected.end(); ++iter) {
+//    if (bodyMap.count(*iter) > 0) {
+//      selectedSet.insert(bodyMap[*iter]);
+//    }
+//  }
 
   if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
     for (size_t i = 0; i < v; ++i) {
@@ -717,9 +732,10 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int nz = iround(z);
 
     if (m_currentViewParam.contains(nx, ny, nz)) {
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-        m_hitLabel = reader.readBodyIdAt(nx, ny, nz);
+//      ZDvidReader reader;
+      if (m_reader.isReady()) {
+        m_hitLabel = getMappedLabel(m_reader.readBodyIdAt(nx, ny, nz),
+                                    NeuTube::BODY_LABEL_ORIGINAL);
       }
 
       return m_hitLabel > 0;
@@ -1026,7 +1042,7 @@ void ZDvidLabelSlice::clearCache()
   m_objCache.clear();
 }
 
-void ZDvidLabelSlice::refreshReaderBuffer()
+bool ZDvidLabelSlice::refreshReaderBuffer()
 {
-  m_reader.refreshLabelBuffer();
+  return m_reader.refreshLabelBuffer();
 }
