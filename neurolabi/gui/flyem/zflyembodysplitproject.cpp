@@ -612,6 +612,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       windowFactory.setWindowTitle("Splitting Result");
       ZStackDoc *doc = new ZStackDoc;
       doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
+      doc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(doc);
 
       const QString threadId = "result3dQuickFunc";
