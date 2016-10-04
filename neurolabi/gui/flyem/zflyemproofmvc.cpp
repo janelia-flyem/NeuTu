@@ -140,11 +140,18 @@ void ZFlyEmProofMvc::init()
   connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
           m_seUpdater, SLOT(updateData(ZFlyEmSynapseDataFetcher*)),
           Qt::QueuedConnection);
+
+  m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
 {
   m_dvidDlg = dlg;
+}
+
+ZDvidDialog* ZFlyEmProofMvc::getDvidDialog() const
+{
+  return m_dvidDlg;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()

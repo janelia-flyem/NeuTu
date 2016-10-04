@@ -76,6 +76,7 @@ class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
 class FlyEmSettingDialog;
 class ZDvidBodyPositionDialog;
+class ZProofreadWindow;
 
 namespace Ui {
   class MainWindow;
@@ -146,6 +147,7 @@ public:
 
 public: //Testing routines
   void testFlyEmProofread();
+  ZProofreadWindow * startProofread();
 
 signals:
   void dvidRequestCanceled();
@@ -495,6 +497,8 @@ private slots:
 
   void on_actionMake_Movie_2_triggered();
 
+  void tryToClose();
+
 private:
   void createActions();
   void createFileActions();
@@ -743,6 +747,8 @@ private:
   ZTestDialog *m_testDlg;
   ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
+
+  int m_proofreadWindowCount;
 
   QTimer *m_autoCheckTimer;
   //ZStackDocReader *m_docReader;

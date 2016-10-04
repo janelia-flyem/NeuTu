@@ -331,6 +331,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_autoCheckTimer->start();
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
+  m_proofreadWindowCount = 0;
+
 #if defined(_LIBDVIDCPP_CACHE_)
   libdvid::DVIDCache::get_cache()->set_cache_size(1000000000);
 #endif
@@ -2046,6 +2048,15 @@ void MainWindow::importImageSequence()
     m_progress->reset();
   }
   //QApplication::processEvents();
+}
+
+void MainWindow::tryToClose()
+{
+  --m_proofreadWindowCount;
+
+  if (m_proofreadWindowCount <= 0) {
+    close();
+  }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -6494,8 +6505,7 @@ void MainWindow::processArgument(const QString &arg)
 
 void MainWindow::testFlyEmProofread()
 {
-  ZProofreadWindow *window = ZProofreadWindow::Make();
-  window->showMaximized();
+  ZProofreadWindow* window = startProofread();
 
   window->test();
 
@@ -7372,6 +7382,27 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), NeuTube::MSG_INFORMATION);
 }
 
+ZProofreadWindow *MainWindow::startProofread()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+
+  ++m_proofreadWindowCount;
+
+  window->showMaximized();
+
+  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
+
+  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
+    window->dump(
+          ZWidgetMessage("Failed to initialize tmp directory. "
+                         "Some editing functions (especially split) will not work. "
+                         "Please check the permission or disk space.",
+                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+  }
+
+  return window;
+}
+
 void MainWindow::launchSplit(const QString &str)
 {
 //  ZJsonObject obj;
@@ -7383,16 +7414,7 @@ void MainWindow::launchSplit(const QString &str)
 
 void MainWindow::on_actionProof_triggered()
 {
-  ZProofreadWindow *window = ZProofreadWindow::Make();
-  window->showMaximized();
-
-  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
-    window->dump(
-          ZWidgetMessage("Failed to initialize tmp directory. "
-                         "Some editing functions (especially split) will not work. "
-                         "Please check the permission or disk space.",
-                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
-  }
+  startProofread();
 }
 
 void MainWindow::runRoutineCheck()

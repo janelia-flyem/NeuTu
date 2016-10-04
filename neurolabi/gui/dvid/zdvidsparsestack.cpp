@@ -334,13 +334,6 @@ bool ZDvidSparseStack::fillValue(
         std::cout << s << "/" << stripeNumber << std::endl;
 #endif
 
-        if (cancelable && m_cancelingValueFill) {
-//          m_cancelingValueFill = false;
-          setCancelFillValue(false);
-          ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
-          return blockCount > 0;
-        }
-
         const ZObject3dStripe &stripe = blockObj.getStripe(s);
         int segmentNumber = stripe.getSegmentNumber();
         int y = stripe.getY();
@@ -378,6 +371,13 @@ bool ZDvidSparseStack::fillValue(
           }
 
           for (size_t i = 0; i < blockSpan.size(); i += 2) {
+            if (cancelable && m_cancelingValueFill) {
+    //          m_cancelingValueFill = false;
+              setCancelFillValue(false);
+              ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
+              return blockCount > 0;
+            }
+
 #ifdef _DEBUG_2
         std::cout << "block:" << i << "/" << blockSpan.size() << std::endl;
 #endif

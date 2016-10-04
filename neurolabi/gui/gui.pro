@@ -41,9 +41,15 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
+    contains(DEFINES, _FLYEM_) {
+        TARGET = neutu_d
+    }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+    contains(DEFINES, _FLYEM_) {
+        TARGET = neutu
+    }
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 

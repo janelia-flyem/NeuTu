@@ -351,8 +351,8 @@ int main(int argc, char *argv[])
 
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
-    mainWin->show();
-    mainWin->raise();
+//    mainWin->show();
+//    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {
@@ -367,6 +367,15 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
+
+
+#if defined(_FLYEM_) && !defined(_DEBUG_)
+    mainWin->startProofread();
+#else
+    mainWin->show();
+    mainWin->raise();
+#endif
+
 
     int result = app.exec();
 

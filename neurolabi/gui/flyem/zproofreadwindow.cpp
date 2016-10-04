@@ -10,7 +10,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDragEnterEvent>
-
+#include "dialogs/dvidoperatedialog.h"
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
@@ -153,7 +153,9 @@ void ZProofreadWindow::init()
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 
-  m_defaultPal = palette();
+  createDialog();
+
+  m_defaultPal = palette(); //This has to be the last line to avoid crash
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -169,6 +171,12 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
   }
 
   return window;
+}
+
+void ZProofreadWindow::createDialog()
+{
+  m_dvidOpDlg = new DvidOperateDialog(this);
+  m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -313,6 +321,16 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  QMenu *dvidMenu = new QMenu("DVID", this);
+  m_dvidOperateAction = new QAction("Operate", this);
+  connect(m_dvidOperateAction, SIGNAL(triggered()),
+          this, SLOT(operateDvid()));
+
+  dvidMenu->addAction(m_dvidOperateAction);
+
+
+  m_toolMenu->addMenu(dvidMenu);
+
   menuBar()->addMenu(m_toolMenu);
 
 //  m_viewMenu->setEnabled(false);
@@ -403,6 +421,12 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
          QString("Body %1 loaded for split.").arg(bodyId),
          NeuTube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
+}
+
+void ZProofreadWindow::operateDvid()
+{
+  m_dvidOpDlg->show();
+  m_dvidOpDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
@@ -503,6 +527,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
     LDEBUG() << msg.toPlainString();
     break;
   }
+}
+
+void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
+{
+  emit proofreadWindowClosed();
 }
 
 

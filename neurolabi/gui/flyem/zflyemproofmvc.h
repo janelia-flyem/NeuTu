@@ -86,6 +86,7 @@ public:
   virtual ZDvidTarget getDvidTarget() const;
 
   void setDvidDialog(ZDvidDialog *dlg);
+  ZDvidDialog* getDvidDialog() const;
 
   ZFlyEmBodyMergeProject* getMergeProject() {
     return &m_mergeProject;

@@ -15,6 +15,7 @@ class ZDvidTarget;
 class ZWidgetMessage;
 class ZDvidDialog;
 class QSlider;
+class DvidOperateDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -39,6 +40,7 @@ public:
 
 signals:
   void splitTriggered(uint64_t bodyId);
+  void proofreadWindowClosed();
 //  void splitTriggered();
   /*
   void progressStarted(const QString &title, int nticks);
@@ -65,10 +67,13 @@ public slots:
   void advanceProgress(double dp);
   void endProgress();
 
+  void operateDvid();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
   void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent *event);
 
 private:
   void init();
@@ -79,6 +84,7 @@ private:
 
   void createMenu();
   void createToolbar();
+  void createDialog();
   void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
@@ -114,6 +120,8 @@ private:
   QAction *m_openRoi3dAction;
 //  QAction *m_queryTableAction;
 
+  QAction *m_dvidOperateAction;
+
   QSlider *m_segSlider;
 
   QToolBar *m_toolBar;
@@ -123,6 +131,8 @@ private:
   ZProgressSignal *m_progressSignal;
 
   QPalette m_defaultPal;
+
+  DvidOperateDialog *m_dvidOpDlg;
 };
 
 

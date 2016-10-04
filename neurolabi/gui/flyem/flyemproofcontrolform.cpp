@@ -285,6 +285,8 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   }
 #endif
   setInfo(info.c_str());
+
+  ui->dvidPushButton->setEnabled(false);
 }
 
 /*

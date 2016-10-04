@@ -1199,7 +1199,8 @@ void Z3DWindow::createDockWindows()
 #if defined(_FLYEM_)
     //graph
     wg = m_surfaceFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+            this, SLOT(openAdvancedSetting(QString)));
     m_widgetsGroup->addChildGroup(wg);
 #endif
   }
@@ -1392,6 +1393,9 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
     if (obj.hasKey("front")) {
       filter->setStayOnTop(ZJsonParser::booleanValue(obj["front"]));
     }
+    if (obj.hasKey("size_scale")) {
+      filter->setSizeScale(ZJsonParser::numberValue(obj["size_scale"]));
+    }
   }
 }
 
@@ -1435,6 +1439,7 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   if (filter != NULL) {
     configJson.setEntry("visible", isVisible(layer));
     configJson.setEntry("front", filter->isStayOnTop());
+    configJson.setEntry("size_scale", filter->getSizeScale());
   }
 
   return configJson;
