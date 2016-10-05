@@ -8,6 +8,8 @@
 #include "protocolmetadata.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 
 
 class ProtocolSwitcher : public QObject
@@ -55,6 +57,8 @@ private:
 
     QWidget * m_parent;
     ZDvidTarget m_currentDvidTarget;
+    ZDvidReader m_reader;
+    ZDvidWriter m_writer;
     ProtocolChooser * m_chooser;
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;
