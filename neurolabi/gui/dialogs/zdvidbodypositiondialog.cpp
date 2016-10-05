@@ -1,12 +1,14 @@
 #include "zdvidbodypositiondialog.h"
 
 #include <fstream>
+#include <QMessageBox>
 
 #include "ui_zdvidbodypositiondialog.h"
 #include "zdialogfactory.h"
 #include "zdviddialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstring.h"
+#include "zdialogfactory.h"
 
 ZDvidBodyPositionDialog::ZDvidBodyPositionDialog(QWidget *parent) :
   QDialog(parent),
@@ -71,6 +73,9 @@ void ZDvidBodyPositionDialog::generatePosition()
           stream << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << std::endl;
         }
       }
+
+      QMessageBox::information(
+            this, "Export Done", QString("%1 has been saved.").arg(filePath));
     }
   }
 }
