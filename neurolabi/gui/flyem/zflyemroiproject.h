@@ -88,7 +88,13 @@ public:
   static double GetMarkerRadius(double s);
   double getMarkerRadius() const;
 
+  //Clear all ROIs with a covering-safe way
   void clearRoi();
+
+  /*!
+   * \brief Delete roi curve on a slice
+   */
+  void deleteRoi(int z);
 
   bool hasOpenedRoi() const;
   int uploadRoi();
@@ -160,6 +166,7 @@ public:
     return m_currentDsIntv;
   }
 
+  //Make sure it's covering-safe
   void importRoiFromSwc(ZSwcTree *tree, bool appending = false);
 
   void deleteAllData();

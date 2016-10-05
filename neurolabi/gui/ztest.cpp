@@ -270,6 +270,7 @@ using namespace std;
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
 #include "flyem/zneutuservice.h"
+#include "flyem/zflyemroiproject.h"
 
 using namespace std;
 
@@ -20791,6 +20792,21 @@ void ZTest::test(MainWindow *host)
   if (reader.open(target)) {
     ZIntPoint pt = reader.readRoiBlockSize("seven_column");
     std::cout << pt.toString() << std::endl;
+  }
+
+#endif
+
+#if 1
+  ZFlyEmRoiProject proj("test");
+  int minZ = proj.getFirstRoiZ();
+  int maxZ = proj.getLastRoiZ();
+  if (minZ >= 0) {
+    for (int z = minZ; z <= maxZ; ++z) {
+      const ZClosedCurve *curve = proj.getRoi(z);
+      if (curve != NULL) {
+        std::cout << z << ": #" << curve->getLandmarkNumber() << std::endl;
+      }
+    }
   }
 
 #endif

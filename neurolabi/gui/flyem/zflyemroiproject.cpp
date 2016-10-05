@@ -496,7 +496,13 @@ int ZFlyEmRoiProject::uploadRoi(int z)
     const ZClosedCurve *curve = m_curveArray[z];
     if (curve != NULL) {
       if (!isRoiCurveUploaded(z)) {
-        m_dvidWriter.writeRoiCurve(*curve, getRoiKey(z));
+        if (curve->isEmpty()) {
+          m_dvidWriter.deleteRoiCurve(getRoiKey(z));
+          delete curve;
+          m_curveArray[z] = NULL;
+        } else {
+          m_dvidWriter.writeRoiCurve(*curve, getRoiKey(z));
+        }
         setRoiUploaded(z, true);
         ++count;
       }
@@ -1327,7 +1333,24 @@ ZStackDoc* ZFlyEmRoiProject::makeAllSynapseDoc() const
 
 void ZFlyEmRoiProject::clearRoi()
 {
-  m_curveArray.clear();
+//  m_curveArray.clear();
+  int z = 0;
+  for (std::vector<ZClosedCurve*>::iterator iter = m_curveArray.begin();
+       iter != m_curveArray.end(); ++iter, ++z) {
+    ZClosedCurve *curve = *iter;
+    if (curve != NULL) {
+      curve->clear();
+      setRoiUploaded(z, false);
+    }
+  }
+}
+
+void ZFlyEmRoiProject::deleteRoi(int z)
+{
+  if (z < (int) m_curveArray.size()) {
+    delete m_curveArray[z];
+    m_curveArray[z] = NULL;
+  }
 }
 
 void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree, bool appending)
