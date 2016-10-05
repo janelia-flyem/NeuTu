@@ -1331,7 +1331,7 @@ ZStackDoc* ZFlyEmRoiProject::makeAllSynapseDoc() const
   return doc;
 }
 
-void ZFlyEmRoiProject::clearRoi()
+void ZFlyEmRoiProject::resetRoi()
 {
 //  m_curveArray.clear();
   int z = 0;
@@ -1339,8 +1339,10 @@ void ZFlyEmRoiProject::clearRoi()
        iter != m_curveArray.end(); ++iter, ++z) {
     ZClosedCurve *curve = *iter;
     if (curve != NULL) {
-      curve->clear();
-      setRoiUploaded(z, false);
+      if (!curve->isEmpty()) {
+        curve->clear();
+        setRoiUploaded(z, false);
+      }
     }
   }
 }
@@ -1356,7 +1358,7 @@ void ZFlyEmRoiProject::deleteRoi(int z)
 void ZFlyEmRoiProject::importRoiFromSwc(ZSwcTree *tree, bool appending)
 {
   if (!appending) {
-    clearRoi();
+    resetRoi();
   }
 
   if (tree != NULL) {
@@ -1396,6 +1398,23 @@ ZFlyEmRoiProject* ZFlyEmRoiProject::clone(const std::string &name) const
   }
 
   return project;
+}
+
+void ZFlyEmRoiProject::printSummary() const
+{
+  int minZ = getFirstRoiZ();
+  int maxZ = getLastRoiZ();
+  if (minZ >= 0) {
+    for (int z = minZ; z <= maxZ; ++z) {
+      const ZClosedCurve *curve = getRoi(z);
+      if (curve != NULL) {
+        std::cout << z << ": " << curve->getLandmarkNumber()
+                  << " landmarks" << std::endl;
+      }
+    }
+  } else {
+    std::cout << "NULL ROI" << std::endl;
+  }
 }
 
 void ZFlyEmRoiProject::test()

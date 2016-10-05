@@ -89,7 +89,7 @@ public:
   double getMarkerRadius() const;
 
   //Clear all ROIs with a covering-safe way
-  void clearRoi();
+  void resetRoi();
 
   /*!
    * \brief Delete roi curve on a slice
@@ -175,6 +175,7 @@ public:
 
   void test();
 
+  void printSummary() const;
 
 public: //utilties
   static bool IsValidName(const std::string &name);

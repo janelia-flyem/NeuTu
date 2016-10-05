@@ -16877,7 +16877,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("http://emdata2.int.janelia.org:8500", "b6bc");
@@ -20798,17 +20798,26 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZFlyEmRoiProject proj("test");
-  int minZ = proj.getFirstRoiZ();
-  int maxZ = proj.getLastRoiZ();
-  if (minZ >= 0) {
-    for (int z = minZ; z <= maxZ; ++z) {
-      const ZClosedCurve *curve = proj.getRoi(z);
-      if (curve != NULL) {
-        std::cout << z << ": #" << curve->getLandmarkNumber() << std::endl;
-      }
-    }
-  }
 
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/test/roi_test.swc");
+
+  proj.importRoiFromSwc(&tree, false);
+  proj.printSummary();
+
+  std::cout << "Appending" << std::endl;
+  tree.translate(0, 0, 1);
+  proj.importRoiFromSwc(&tree, true);
+
+  proj.printSummary();
+
+  std::cout << "Restting" << std::endl;
+  proj.resetRoi();
+  proj.printSummary();
+
+  std::cout << "Clearing" << std::endl;
+  proj.clear();
+  proj.printSummary();
 #endif
 
   std::cout << "Done." << std::endl;
