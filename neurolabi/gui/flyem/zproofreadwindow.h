@@ -16,6 +16,8 @@ class ZWidgetMessage;
 class ZDvidDialog;
 class QSlider;
 class DvidOperateDialog;
+class FlyEmBodyFilterDialog;
+class ZFlyEmDataLoader;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -41,6 +43,7 @@ public:
 signals:
   void splitTriggered(uint64_t bodyId);
   void proofreadWindowClosed();
+  void showingMainWindow();
 //  void splitTriggered();
   /*
   void progressStarted(const QString &title, int nticks);
@@ -68,6 +71,7 @@ public slots:
   void endProgress();
 
   void operateDvid();
+  void exploreBody();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
@@ -99,6 +103,7 @@ private:
 
   QMenu *m_viewMenu;
   QMenu *m_toolMenu;
+  QMenu *m_advancedMenu;
 
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
@@ -113,6 +118,7 @@ private:
   QAction *m_smoothAction;
   QAction *m_openTodoAction;
   QAction *m_roiToolAction;
+  QAction *m_bodyExplorerAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
@@ -132,7 +138,9 @@ private:
 
   QPalette m_defaultPal;
 
+  ZFlyEmDataLoader *m_flyemDataLoader;
   DvidOperateDialog *m_dvidOpDlg;
+  FlyEmBodyFilterDialog *m_bodyFilterDlg;
 };
 
 

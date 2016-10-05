@@ -147,7 +147,7 @@ public:
 
 public: //Testing routines
   void testFlyEmProofread();
-  ZProofreadWindow * startProofread();
+
 
 signals:
   void dvidRequestCanceled();
@@ -207,6 +207,7 @@ public slots:
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
+  ZProofreadWindow * startProofread();
   void launchSplit(const QString &str);
 
 private:
@@ -498,6 +499,7 @@ private slots:
   void on_actionMake_Movie_2_triggered();
 
   void tryToClose();
+  void showAndRaise();
 
 private:
   void createActions();

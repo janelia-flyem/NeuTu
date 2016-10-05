@@ -2495,6 +2495,8 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
         paintObjectBuffer(*iter);
       }
 
+      paintDynamicObjectBuffer();
+
       if (depthChanged) {
         paintStackBuffer();
       }

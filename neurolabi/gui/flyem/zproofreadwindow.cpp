@@ -10,6 +10,8 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDragEnterEvent>
+
+#include "neutubeconfig.h"
 #include "dialogs/dvidoperatedialog.h"
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
@@ -26,7 +28,8 @@
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
-#include "neutubeconfig.h"
+#include "dialogs/flyembodyfilterdialog.h"
+#include "zflyemdataloader.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -154,6 +157,7 @@ void ZProofreadWindow::init()
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 
   createDialog();
+  m_flyemDataLoader = new ZFlyEmDataLoader(this);
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 }
@@ -177,6 +181,8 @@ void ZProofreadWindow::createDialog()
 {
   m_dvidOpDlg = new DvidOperateDialog(this);
   m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
+
+  m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -321,6 +327,12 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_bodyExplorerAction = new QAction("Explore Bodies", this);
+  m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
+  connect(m_bodyExplorerAction, SIGNAL(triggered()),
+          this, SLOT(exploreBody()));
+//  m_toolMenu->addAction(m_bodyExplorerAction);
+
   QMenu *dvidMenu = new QMenu("DVID", this);
   m_dvidOperateAction = new QAction("Operate", this);
   connect(m_dvidOperateAction, SIGNAL(triggered()),
@@ -332,6 +344,14 @@ void ZProofreadWindow::createMenu()
   m_toolMenu->addMenu(dvidMenu);
 
   menuBar()->addMenu(m_toolMenu);
+
+  m_advancedMenu = new QMenu("Advanced", this);
+  menuBar()->addMenu(m_advancedMenu);
+  QAction *mainWindowAction = new QAction("Show NeuTu Desktop", this);
+  connect(mainWindowAction, SIGNAL(triggered()),
+          this, SIGNAL(showingMainWindow()));
+  m_advancedMenu->addAction(mainWindowAction);
+
 
 //  m_viewMenu->setEnabled(false);
 
@@ -627,6 +647,26 @@ void ZProofreadWindow::changeEvent(QEvent *event)
 void ZProofreadWindow::keyPressEvent(QKeyEvent *event)
 {
   event->ignore();
+}
+
+void ZProofreadWindow::exploreBody()
+{
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_mainMvc->getDvidDialog()->exec()) {
+    target = m_mainMvc->getDvidDialog()->getDvidTarget();
+    if (!target.isValid()) {
+      ZDialogFactory::Warn("Invalid DVID", "Invalid DVID server.", this);
+    } else {
+      continueLoading = true;
+    }
+  }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
+    dvidFilter.setDvidTarget(target);
+    m_flyemDataLoader->loadDataBundle(dvidFilter);
+  }
 }
 
 void ZProofreadWindow::displayActiveHint(bool on)

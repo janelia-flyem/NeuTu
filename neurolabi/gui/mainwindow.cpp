@@ -7391,6 +7391,7 @@ ZProofreadWindow *MainWindow::startProofread()
   window->showMaximized();
 
   connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
+  connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
 
   if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
     window->dump(
@@ -7401,6 +7402,12 @@ ZProofreadWindow *MainWindow::startProofread()
   }
 
   return window;
+}
+
+void MainWindow::showAndRaise()
+{
+  show();
+  raise();
 }
 
 void MainWindow::launchSplit(const QString &str)
