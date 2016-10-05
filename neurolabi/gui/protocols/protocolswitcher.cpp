@@ -167,6 +167,13 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
 
 // start a new protocol
 void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
+    // you can try to start a protocol before you've opened a db;
+    //  show a better message in that case
+    if (!m_currentDvidTarget.isValid()) {
+        warningDialog("DVID target invalid",
+            "Couldn't validate the DVID server; have you opened a database?");
+        return;
+    }
 
     // locked dvid node check
     if (!askProceedIfNodeLocked()) {
