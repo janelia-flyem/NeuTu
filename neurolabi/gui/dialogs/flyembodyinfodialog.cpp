@@ -365,11 +365,9 @@ bool FlyEmBodyInfoDialog::dvidBookmarksPresent() {
         return false;
     }
 
-    // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
-    //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
-    if (m_reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES),
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+    // Check if the bookmark file exists
+    if (!m_reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                         ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES))) {
         #ifdef _DEBUG_
             std::cout << "UUID doesn't have body_synapses key" << std::endl;
         #endif
