@@ -66,7 +66,6 @@ private:
 
     void connectProtocolSignals();
     void disconnectProtocolSignals();
-    bool askProceedIfNodeLocked();
     bool checkCreateDataInstance();
     void warningDialog(QString title, QString message);
     std::string generateKey(QString protocolName);

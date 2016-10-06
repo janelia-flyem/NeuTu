@@ -176,7 +176,9 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     }
 
     // locked dvid node check
-    if (!askProceedIfNodeLocked()) {
+    if (m_reader.getNodeStatus() == ZDvid::NODE_LOCKED) {
+        warningDialog("Node locked!",
+            "This DVID node is locked. Because protocol results can't be saved, the protocol cannot be started.");
         return;
     }
 
@@ -270,7 +272,9 @@ void ProtocolSwitcher::loadProtocolKeyRequested(QString protocolKey) {
 // load a saved active protocol from metadata info
 void ProtocolSwitcher::loadProtocolRequested() {
     // locked dvid node check
-    if (!askProceedIfNodeLocked()) {
+    if (m_reader.getNodeStatus() == ZDvid::NODE_LOCKED) {
+        warningDialog("Node locked!",
+            "This DVID node is locked. Because protocol results can't be saved, the protocol cannot be started.");
         return;
     }
 
@@ -379,23 +383,6 @@ QStringList ProtocolSwitcher::getUserProtocolKeys(QString username, bool showCom
     }
 
     return keyList;
-}
-
-/*
- * check if dvid node is locked; if so, ask user if they want to
- * proceed even if they can't save; return true = node unlocked or
- * user says go ahead; false = user says no
- */
-bool ProtocolSwitcher::askProceedIfNodeLocked() {
-
-    // not implemented yet; not sure how to check for locked node
-
-    // check if node locked; if not, return true
-    // if locked, dialog: ask user if they want to proceed
-    //  even though they can't save (this is useful for, eg,
-    //  inspecting old uncompleted protocols in locked nodes)
-
-    return true;
 }
 
 /*
