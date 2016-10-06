@@ -58,6 +58,11 @@ std::string ZDvidUrl::GetFullUrl(
   return url;
 }
 
+std::string ZDvidUrl::getApiLoadUrl() const
+{
+  return GetFullUrl(getApiUrl(), "load");
+}
+
 std::string ZDvidUrl::getNodeUrl() const
 {
   return m_dvidTarget.getUrl();
@@ -331,6 +336,10 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
+std::string ZDvidUrl::getCommitInfoUrl() const
+{
+  return GetFullUrl(getNodeUrl(), "commit");
+}
 
 std::string ZDvidUrl::getSp2bodyUrl() const
 {
@@ -951,9 +960,8 @@ std::string ZDvidUrl::getSynapseUrl(
 
 std::string ZDvidUrl::getSynapseElementsUrl() const
 {
-  std::ostringstream stream;
-
-  return GetFullUrl(getSynapseUrl(), m_annotationElementCommand);
+//  std::ostringstream stream;
+  return GetFullUrl(getSynapseUrl(), m_annotationElementsCommand);
 }
 
 std::string ZDvidUrl::getSynapseUrl(
@@ -1086,6 +1094,33 @@ std::string ZDvidUrl::getSynapseLabelszUrl(
     int n, ZDvid::ELabelIndexType indexType) const
 {
   return GetFullUrl(getSynapseLabelszUrl(n), GetLabelszIndexTypeStr(indexType));
+}
+
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
+    std::string name;
+
+    std::string dataName = m_dvidTarget.getSynapseLabelszName();
+    if (!dataName.empty()) {
+      name = getDataUrl(dataName);
+      name += "/threshold/";
+      name += ZString::num2str(threshold);
+    }
+
+    return name;
+}
+
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType)  const {
+    return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
+}
+
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType,
+        int offset, int number)  const {
+    std::string url = getSynapseLabelszThresholdUrl(threshold, indexType);
+    url += "/?offset=";
+    url += ZString::num2str(offset);
+    url += "&n=";
+    url += ZString::num2str(number);
+    return url;
 }
 
 void ZDvidUrl::setUuid(const std::string &uuid)

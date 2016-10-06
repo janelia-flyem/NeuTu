@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <QApplication>
+#include <QProcess>
 #include <QDir>
 #include "mainwindow.h"
 #include "QsLog/QsLog.h"
@@ -105,6 +106,30 @@ void myMessageOutput(QtMsgType type, const char *msg)
   }
 }
 #endif    // qt version > 5.0.0
+
+
+static void syncLogDir(const std::string &srcDir, const std::string &destDir)
+{
+  if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
+    QDir dir(srcDir.c_str());
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+    QFileInfoList infoList = dir.entryInfoList(QStringList() << "*.txt.*");
+
+    foreach (const QFileInfo &info, infoList) {
+      QString command =
+          ("rsync -uv " + srcDir + "/" + info.fileName().toStdString() +
+           " " + destDir + "/").c_str();
+      std::cout << command.toStdString() << std::endl;
+      QProcess process;
+      process.start(command);
+      process.waitForFinished(-1);
+      QString errorOutput = process.readAllStandardError();
+      QString standardOutout = process.readAllStandardOutput();
+      std::cout << errorOutput.toStdString() << std::endl;
+      std::cout << standardOutout.toStdString() << std::endl;
+    }
+  }
+}
 
 int main(int argc, char *argv[])
 {
@@ -246,6 +271,11 @@ int main(int argc, char *argv[])
   if (!runCommandLine) { //Command line mode takes care of configuration independently
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
     tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+
+    //Sync log files
+    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
+               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
+
   }
 
 #ifdef _DEBUG_
@@ -265,7 +295,7 @@ int main(int argc, char *argv[])
   QsLogging::DestinationPtr traceFileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           traceLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(5),
+          QsLogging::MaxSizeBytes(2e7), QsLogging::MaxOldLogCount(10),
           QsLogging::TraceLevel));
   QsLogging::DestinationPtr debugDestination(
         QsLogging::DestinationFactory::MakeDebugOutputDestination());
@@ -321,8 +351,8 @@ int main(int argc, char *argv[])
 
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
-    mainWin->show();
-    mainWin->raise();
+//    mainWin->show();
+//    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {
@@ -338,11 +368,26 @@ int main(int argc, char *argv[])
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
 
+
+#if defined(_FLYEM_) && !defined(_DEBUG_)
+    mainWin->startProofread();
+#else
+    mainWin->show();
+    mainWin->raise();
+#endif
+
+
     int result = app.exec();
 
     delete mainWin;
     z3dApp.deinitializeGL();
     z3dApp.deinitialize();
+
+    if (!runCommandLine) {
+      //Sync log files
+      syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR),
+                 NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR));
+    }
 
     return result;
   } else {

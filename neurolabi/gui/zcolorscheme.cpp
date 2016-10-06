@@ -21,6 +21,19 @@ QColor ZColorScheme::getColor(int index) const
   return color;
 }
 
+QColor ZColorScheme::getColor(uint64_t index) const
+{
+  QColor color;
+
+  if (m_colorTable.isEmpty()) {
+    color = QColor(0, 0, 0);
+  } else {
+    color = m_colorTable[index % (uint64_t) m_colorTable.size()];
+  }
+
+  return color;
+}
+
 void ZColorScheme::setColorScheme(EColorScheme scheme)
 {
   switch (scheme) {

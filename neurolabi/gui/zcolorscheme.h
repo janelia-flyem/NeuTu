@@ -4,6 +4,8 @@
 #include <QColor>
 #include <QVector>
 
+#include "tz_stdint.h"
+
 class ZColorScheme
 {
 public:
@@ -16,6 +18,7 @@ public:
   };
 
   QColor getColor(int index) const;
+  QColor getColor(uint64_t index) const;
   int getColorNumber() const { return m_colorTable.size(); }
 
   virtual void setColorScheme(EColorScheme scheme);

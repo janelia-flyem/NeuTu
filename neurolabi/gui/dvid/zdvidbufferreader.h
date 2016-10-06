@@ -16,6 +16,7 @@ class DVIDNodeService;
 }
 
 class QTimer;
+class ZDvidTarget;
 
 /*!
  * \brief The class of reading dvid data into buffer
@@ -58,6 +59,7 @@ public:
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
+  void setService(const ZDvidTarget &target);
 #endif
 
 signals:

@@ -21,6 +21,8 @@ void ZFlyEmOrthoDoc::init()
   m_height = 256;
   m_depth = 256;
 
+  setRoutineCheck(false);
+
   ZCrossHair *crossHair = new ZCrossHair;
   crossHair->setCenter(m_width / 2, m_height / 2, m_depth / 2);
   crossHair->setSource(ZStackObjectSourceFactory::MakeCrossHairSource());

@@ -153,14 +153,34 @@ QString ZDvidSparseStack::getFillValueThreadId() const
   return "ZDvidSparseStack::fillValue";
 }
 
-void ZDvidSparseStack::downloadBodyMask()
+/*
+void ZDvidSparseStack::downloadBodyMask(ZDvidReader &reader)
 {
-  if (m_dvidReader.isReady()) {
+  if (reader.isReady()) {
     ZObject3dScan *obj = new ZObject3dScan;
-    m_dvidReader.readBody(getLabel(), obj);
+    reader.readBody(getLabel(), obj);
     m_sparseStack.setObjectMask(obj);
     pushAttribute();
   }
+}
+*/
+
+ZDvidReader& ZDvidSparseStack::getMaskReader() const
+{
+  if (!m_maskReader.isReady()) {
+    m_maskReader.open(getDvidTarget());
+  }
+
+  return m_maskReader;
+}
+
+ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
+{
+  if (!m_grayScaleReader.isReady()) {
+    m_grayScaleReader.open(getDvidTarget());
+  }
+
+  return m_grayScaleReader;
 }
 
 void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
@@ -168,7 +188,9 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
   m_isValueFilled = false;
 
   ZObject3dScan *obj = new ZObject3dScan;
-  m_dvidReader.readBody(bodyId, obj);
+
+  getMaskReader().readBody(bodyId, obj);
+
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
   if (canonizing) {
@@ -278,11 +300,14 @@ bool ZDvidSparseStack::fillValue(
     return true;
   }
 
+  ZDvidReader &reader = getGrayscaleReader();
   //  bool changed = false;
   int blockCount = 0;
+  ZOUT(LTRACE(), 5) << "Getting object mask";
   ZObject3dScan *objMask = getObjectMask();
   if (objMask != NULL) {
     if (!objMask->isEmpty()) {
+      ZOUT(LTRACE(), 5) << "Locking m_fillValueMutex";
       QMutexLocker locker(&m_fillValueMutex);
 
       ZOUT(LTRACE(), 5) << "Downloading grayscale ...";
@@ -292,7 +317,7 @@ bool ZDvidSparseStack::fillValue(
       //    tic();
       ZDvidInfo dvidInfo;
       dvidInfo.setFromJsonString(
-            m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
+            reader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
             toStdString());
       ZObject3dScan blockObj =
           dvidInfo.getBlockIndex(*objMask);
@@ -305,18 +330,18 @@ bool ZDvidSparseStack::fillValue(
 
 
       for (size_t s = 0; s < stripeNumber; ++s) {
-        if (cancelable && m_cancelingValueFill) {
-//          m_cancelingValueFill = false;
-          setCancelFillValue(false);
-          ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
-          return blockCount > 0;
-        }
+#ifdef _DEBUG_2
+        std::cout << s << "/" << stripeNumber << std::endl;
+#endif
 
         const ZObject3dStripe &stripe = blockObj.getStripe(s);
         int segmentNumber = stripe.getSegmentNumber();
         int y = stripe.getY();
         int z = stripe.getZ();
         for (int i = 0; i < segmentNumber; ++i) {
+#ifdef _DEBUG_2
+        std::cout << "seg:" << i << "/" << segmentNumber << std::endl;
+#endif
           int x0 = stripe.getSegmentStart(i);
           int x1 = stripe.getSegmentEnd(i);
 
@@ -346,13 +371,33 @@ bool ZDvidSparseStack::fillValue(
           }
 
           for (size_t i = 0; i < blockSpan.size(); i += 2) {
+            if (cancelable && m_cancelingValueFill) {
+    //          m_cancelingValueFill = false;
+              setCancelFillValue(false);
+              ZOUT(LTRACE(), 5) << "Grayscale fetching canceled";
+              return blockCount > 0;
+            }
+
+#ifdef _DEBUG_2
+        std::cout << "block:" << i << "/" << blockSpan.size() << std::endl;
+#endif
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
             ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
-            std::vector<ZStack*> stackArray= m_dvidReader.readGrayScaleBlock(
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks" << std::endl;
+#endif
+            std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
                   blockIndex, dvidInfo, blockNumber);
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
+#endif
             grid->consumeStack(blockIndex, stackArray);
             blockCount += stackArray.size();
+
+#ifdef _DEBUG_2
+        std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
+#endif
 #if 0
                 ZIntCuboid box = grid->getBlockBox(blockIndex);
                 ZStack *stack = m_dvidReader.readGrayScale(box);

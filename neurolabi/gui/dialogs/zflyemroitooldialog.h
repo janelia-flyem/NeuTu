@@ -40,6 +40,7 @@ public:
   void downloadAllProject();
 
   void goToNearestRoiSlice(int z);
+
   void updateRoi();
 
 public slots:

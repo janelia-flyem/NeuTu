@@ -270,6 +270,8 @@ using namespace std;
 #include "flyem/zflyemorthodoc.h"
 #include "flyem/zflyemorthowindow.h"
 #include "flyem/zneutuservice.h"
+#include "zdvidutil.h"
+#include "flyem/zflyemroiproject.h"
 
 using namespace std;
 
@@ -16843,7 +16845,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  libdvid::DVIDNodeService service("http://emdata1.int.janelia.org:8500", "86e1");
+  libdvid::DVIDNodeService service("http://emdata2.int.janelia.org:8500", "b6bc");
 //  std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
 
   libdvid::Dims_t dims(3);
@@ -16870,7 +16872,26 @@ void ZTest::test(MainWindow *host)
   }
   ptoc();
   std::cout << std::endl;
+
+  service.custom_request("/bodies/sparsevol/200000603?minz=7313&maxz=7313",
+                         libdvid::BinaryDataPtr(), libdvid::GET, true);
+
 #endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("http://emdata2.int.janelia.org:8500", "b6bc");
+
+  target.print();
+
+  reader.open(target);
+  reader.readTileInfo("tiles");
+
+  reader.readBody(200000603, 7313, 7313, NeuTube::Z_AXIS, NULL);
+#endif
+
+
 
 #if 0
   ZPainter painter;
@@ -20738,7 +20759,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target("emdata1.int.janelia.org", "eafc", 8500);
   target.setLabelBlockName("labels3");
@@ -20763,6 +20784,72 @@ void ZTest::test(MainWindow *host)
   image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 
   delete array;
+#endif
+
+#if 0
+  ZDvidReader reader;
+
+  ZDvidTarget target("emdata2.int.janelia.org", "2ad1", 9000);
+  if (reader.open(target)) {
+    ZIntPoint pt = reader.readRoiBlockSize("seven_column");
+    std::cout << pt.toString() << std::endl;
+  }
+
+#endif
+
+#if 0
+  int statusCode;
+  std::string url = "http://emdata2.int.janelia.org:9000/api/repo/2ad2";
+  ZDvid::MakeHeadRequest(url, statusCode);
+  std::cout << statusCode << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target("emdata2.int.janelia.org", "3c1d", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  switch (reader.getNodeStatus()) {
+  case ZDvid::NODE_INVALID:
+    std::cout << "Invalid node";
+    break;
+  case ZDvid::NODE_LOCKED:
+    std::cout << "Locked node";
+    break;
+  case ZDvid::NODE_NORMAL:
+    std::cout << "Normal node";
+    break;
+  case ZDvid::NODE_OFFLINE:
+    std::cout << "Node cannot be connected";
+    break;
+  }
+
+  std::cout << std::endl;
+#endif
+
+#if 1
+  ZFlyEmRoiProject proj("test");
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/test/roi_test.swc");
+
+  proj.importRoiFromSwc(&tree, false);
+  proj.printSummary();
+
+  std::cout << "Appending" << std::endl;
+  tree.translate(0, 0, 1);
+  proj.importRoiFromSwc(&tree, true);
+
+  proj.printSummary();
+
+  std::cout << "Restting" << std::endl;
+  proj.resetRoi();
+  proj.printSummary();
+
+  std::cout << "Clearing" << std::endl;
+  proj.clear();
+  proj.printSummary();
 #endif
 
   std::cout << "Done." << std::endl;

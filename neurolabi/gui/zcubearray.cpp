@@ -346,7 +346,7 @@ Z3DCube::~Z3DCube()
 //
 ZCubeArray::ZCubeArray()
 {
-    m_type = ZStackObject::TYPE_3D_CUBE;
+    m_type = ZCubeArray::GetType();
     m_target = ZStackObject::TARGET_3D_ONLY;
 }
 

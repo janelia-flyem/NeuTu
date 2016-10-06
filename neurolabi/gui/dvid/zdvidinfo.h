@@ -108,7 +108,28 @@ public:
   void setStartBlockIndex(int x, int y, int z);
   void setEndBlockIndex(int x, int y, int z);
 
+  void setBlockSize(int width, int height, int depth);
+
   void downsampleBlock(int xintv, int yintv, int zintv);
+
+  void setDvidNode(const std::string &address,
+                   int port, const std::string &uuid) {
+    m_dvidAddress = address;
+    m_dvidPort = port;
+    m_dvidUuid = uuid;
+  }
+
+  const std::string& getDvidAddress() const {
+    return m_dvidAddress;
+  }
+
+  int getDvidPort() const {
+    return m_dvidPort;
+  }
+
+  const std::string& getDvidUuid() const {
+    return m_dvidUuid;
+  }
 
 private:
   std::vector<int> m_stackSize;

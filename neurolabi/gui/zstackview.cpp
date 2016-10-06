@@ -188,6 +188,8 @@ void ZStackView::init()
 //  m_objectCanvas = NULL;
   m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+
+  m_dynamicObjectOpacity = 0.5;
 //  m_tileCanvas = NULL;
   //m_scrollEnabled = false;
   //updateScrollControl();
@@ -228,6 +230,17 @@ void ZStackView::hideThresholdControl()
   m_thresholdSlider->hide();
   m_autoThreButton->hide();
 #endif
+}
+
+void ZStackView::setDynamicObjectAlpha(int alpha)
+{
+  if (alpha < 0) {
+    m_dynamicObjectOpacity = 0;
+  } else if (alpha > 255) {
+    m_dynamicObjectOpacity = 1;
+  } else {
+    m_dynamicObjectOpacity = (double) alpha / 255.0;
+  }
 }
 
 void ZStackView::setInfo(QString info)
@@ -1843,6 +1856,7 @@ void ZStackView::paintDynamicObjectBuffer()
 
   if (m_dynamicObjectCanvas != NULL) {
     ZPainter painter(m_dynamicObjectCanvas);
+    painter.setOpacity(m_dynamicObjectOpacity);
     paintObjectBuffer(painter, ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
 
     if (painter.isPainted()) {
@@ -2480,6 +2494,8 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
            iter != targetSet.end(); ++iter) {
         paintObjectBuffer(*iter);
       }
+
+      paintDynamicObjectBuffer();
 
       if (depthChanged) {
         paintStackBuffer();

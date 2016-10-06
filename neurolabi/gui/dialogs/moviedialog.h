@@ -26,6 +26,8 @@ public:
   QString getOutputPath();
   void setScriptPath(const QString &path);
   void setOutputPath(const QString &path);
+
+  bool renderingAxis() const;
   
 private slots:
   void on_scriptPushButton_clicked();

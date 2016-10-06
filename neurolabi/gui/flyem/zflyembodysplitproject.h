@@ -100,7 +100,7 @@ public:
   void exportSplits();
   void commitResult();
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
-      const ZIntPoint &dsIntv, size_t minObjSize);
+      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody();
 
@@ -109,7 +109,7 @@ public:
   void viewFullGrayscale();
   void viewFullGrayscale(bool viewing);
   void updateBodyMask();
-  void downloadBodyMask();
+//  void downloadBodyMask();
 
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;

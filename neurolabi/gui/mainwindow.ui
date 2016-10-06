@@ -235,6 +235,7 @@
     <addaction name="menuQuery"/>
     <addaction name="separator"/>
     <addaction name="actionTile_Manager_2"/>
+    <addaction name="actionMake_Movie_2"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -1518,6 +1519,11 @@
   <action name="actionGet_Body_Positions">
    <property name="text">
     <string>Get Body Positions</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_2">
+   <property name="text">
+    <string>Make Movie</string>
    </property>
   </action>
  </widget>
