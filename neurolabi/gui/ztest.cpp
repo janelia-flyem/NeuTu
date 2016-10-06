@@ -20820,7 +20820,7 @@ void ZTest::test(MainWindow *host)
   proj.printSummary();
 #endif
 
-#if 1
+#if 0
   ZDvidWriter writer;
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "0c7e", 7000);

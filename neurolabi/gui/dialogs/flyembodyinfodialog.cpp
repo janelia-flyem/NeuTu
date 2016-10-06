@@ -249,7 +249,12 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
         // we can load this info from different sources, depending on
         //  what's available in DVID
-        if (bodyAnnotationsPresent()) {
+        if (dvidBookmarksPresent()) {
+                  // is the synapse file present?
+                  // note: this option will (should) be removed sometime after mid-Sept. 2016
+                  m_futureMap["importBookmarksDvid"] =
+                      QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
+        } else if (bodyAnnotationsPresent()) {
             // both of these need body annotations:
             if (labelszPresent()) {
                 // how about labelsz data?
@@ -261,11 +266,6 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
                 m_futureMap["importBodiesDvid"] =
                     QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
             }
-        } else if (dvidBookmarksPresent()) {
-          // is the synapse file present?
-          // note: this option will (should) be removed sometime after mid-Sept. 2016
-          m_futureMap["importBookmarksDvid"] =
-              QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
         } else {
             // ...but sometimes, we've got nothing
             emit loadCompleted();
