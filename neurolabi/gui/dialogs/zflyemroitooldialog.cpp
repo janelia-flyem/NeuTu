@@ -50,6 +50,9 @@ void ZFlyEmRoiToolDialog::openProject(int index)
   } else {
     m_project = m_projectList[index - 1];
     m_project->downloadAllRoi();
+#ifdef _DEBUG_
+      m_project->printSummary();
+#endif
     emit projectActivited();
   }
 }
@@ -250,6 +253,7 @@ void ZFlyEmRoiToolDialog::updateRoi()
   ZFlyEmRoiProject *project = getProject();
 
   if (doc != NULL && project != NULL) {
+    project->resetRoi();
     QList<ZSwcTree*> treeList = doc->getSwcList();
     for (QList<ZSwcTree*>::iterator iter = treeList.begin();
          iter != treeList.end(); ++iter) {
@@ -271,6 +275,9 @@ void ZFlyEmRoiToolDialog::uploadRoi()
   ZFlyEmRoiProject *project = getProject();
   if (project != NULL) {
     updateRoi();
+#ifdef _DEBUG_
+    project->printSummary();
+#endif
     project->uploadRoi();
   }
 }

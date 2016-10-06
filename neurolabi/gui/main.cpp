@@ -113,7 +113,7 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
   if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
     QDir dir(srcDir.c_str());
     dir.setFilter(QDir::Files | QDir::NoSymLinks);
-    QFileInfoList infoList = dir.entryInfoList(QStringList() << "*.txt");
+    QFileInfoList infoList = dir.entryInfoList(QStringList() << "*.txt.*");
 
     foreach (const QFileInfo &info, infoList) {
       QString command =
