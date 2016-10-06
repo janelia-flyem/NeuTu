@@ -20796,7 +20796,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZFlyEmRoiProject proj("test");
 
   ZSwcTree tree;
@@ -20818,6 +20818,15 @@ void ZTest::test(MainWindow *host)
   std::cout << "Clearing" << std::endl;
   proj.clear();
   proj.printSummary();
+#endif
+
+#if 1
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "0c7e", 7000);
+  writer.open(target);
+  writer.deleteKey("annotations", "body_synapses");
+
 #endif
 
   std::cout << "Done." << std::endl;

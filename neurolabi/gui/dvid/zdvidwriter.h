@@ -99,6 +99,7 @@ public:
    */
   void createKeyvalue(const std::string &name);
 
+  void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
   void deleteKey(const QString &dataName, const QString &key);
 
