@@ -5,6 +5,8 @@
 #include <QtGui>
 
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zintcuboid.h"
@@ -29,6 +31,7 @@ public:
     void processSynapseVerification(int x, int y, int z, bool verified);
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+    void setDvidTarget(ZDvidTarget target);
 
 signals:
     void protocolCompleting();
@@ -75,7 +78,9 @@ private:
     };
 
     Ui::SynapsePredictionProtocol *ui;
+    QWidget * m_parent;
     QStandardItemModel * m_sitesModel;
+    ZDvidReader m_reader;
     std::string m_variation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;

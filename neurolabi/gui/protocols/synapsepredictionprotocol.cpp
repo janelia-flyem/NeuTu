@@ -29,6 +29,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     m_variation = variation;
 
     ui->setupUi(this);
+    m_parent = parent;
 
     // sites table
     m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
@@ -125,17 +126,14 @@ bool SynapsePredictionProtocol::initialize() {
                 mb.exec();
                 return false;
             }
-            ZDvidReader reader;
-            if (reader.open(m_dvidTarget)) {
-                if (!reader.hasBody(bodyID)) {
-                    QMessageBox mb;
-                    mb.setText("Body ID doesn't exist!");
-                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
-                    mb.setStandardButtons(QMessageBox::Ok);
-                    mb.setDefaultButton(QMessageBox::Ok);
-                    mb.exec();
-                    return false;
-                }
+            if (!m_reader.hasBody(bodyID)) {
+                QMessageBox mb;
+                mb.setText("Body ID doesn't exist!");
+                mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
+                mb.setStandardButtons(QMessageBox::Ok);
+                mb.setDefaultButton(QMessageBox::Ok);
+                mb.exec();
+                return false;
             }
         } else {
             return false;
@@ -155,6 +153,17 @@ bool SynapsePredictionProtocol::initialize() {
     saveState();
 
     return true;
+}
+
+void SynapsePredictionProtocol::setDvidTarget(ZDvidTarget target) {
+    ProtocolDialog::setDvidTarget(target);
+
+    m_reader.setVerbose(false);
+    if (!m_reader.open(m_dvidTarget)) {
+        QMessageBox::warning(m_parent, "Can't connect to DVID",
+            "There was a problem connecting to the DVID server!", QMessageBox::Ok);
+        return;
+    }
 }
 
 void SynapsePredictionProtocol::onFirstButton() {
@@ -465,20 +474,16 @@ void SynapsePredictionProtocol::processSynapseVerification(
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 {
-  ZDvidReader reader;
-  ZIntPoint targetPoint = pt;
-
-  if (reader.open(m_dvidTarget)) {
+    ZIntPoint targetPoint = pt;
     ZDvidSynapse synapse =
-        reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
+        m_reader.readSynapse(pt, FlyEM::LOAD_PARTNER_LOCATION);
 
     if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
-      std::vector<ZIntPoint> partnerArray = synapse.getPartners();
-      if (!partnerArray.empty()) {
-        targetPoint = partnerArray.front();
-      }
+        std::vector<ZIntPoint> partnerArray = synapse.getPartners();
+        if (!partnerArray.empty()) {
+            targetPoint = partnerArray.front();
+        }
     }
-  }
 
   if (m_finishedList.removeOne(targetPoint)) {
     m_pendingList.append(targetPoint);
@@ -572,45 +577,43 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     m_finishedList.clear();
     m_currentPendingIndex = 0;
 
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_dvidTarget)) {
-        std::vector<ZDvidSynapse> synapseList;
-        if (m_variation == VARIATION_REGION) {
-            synapseList = reader.readSynapse(m_protocolRange, FlyEM::LOAD_PARTNER_LOCATION);
+    // note: if you decide to run this in a separate thread, you can't
+    //  use the cached reader; create a new one
+    std::vector<ZDvidSynapse> synapseList;
+    if (m_variation == VARIATION_REGION) {
+        synapseList = m_reader.readSynapse(m_protocolRange, FlyEM::LOAD_PARTNER_LOCATION);
 
-            // filter by roi (coming "soon")
-            // will need to do raw DVID call to batch ask "is point in RoI?";
-            //  that call not in ZDvidReader() yet
+        // filter by roi (coming "soon")
+        // will need to do raw DVID call to batch ask "is point in RoI?";
+        //  that call not in ZDvidReader() yet
 
-        } else if (m_variation == VARIATION_BODY) {
-            synapseList = reader.readSynapse(m_bodyID, FlyEM::LOAD_PARTNER_LOCATION);
-        } else {
-            variationError(m_variation);
-        }
+    } else if (m_variation == VARIATION_BODY) {
+        synapseList = m_reader.readSynapse(m_bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+    } else {
+        variationError(m_variation);
+    }
 
-        // build the lists of pre-synaptic sites; if a site is
-        //  already verified, then it is "finished"; if not,
-        //  add to the pending synapse list that we will then sort;
-        //  only after that transfer the positions to the pending position list
-        QList<ZDvidSynapse> pendingSynapses;
-        for (size_t i=0; i<synapseList.size(); i++) {
-            ZDvidSynapse &synapse = synapseList[i];
-            if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-                if (synapse.isProtocolVerified(m_dvidTarget)) {
-                    m_finishedList.append(synapse.getPosition());
-                } else {
-                    pendingSynapses.append(synapse);
-                }
+    // build the lists of pre-synaptic sites; if a site is
+    //  already verified, then it is "finished"; if not,
+    //  add to the pending synapse list that we will then sort;
+    //  only after that transfer the positions to the pending position list
+    QList<ZDvidSynapse> pendingSynapses;
+    for (size_t i=0; i<synapseList.size(); i++) {
+        ZDvidSynapse &synapse = synapseList[i];
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            if (synapse.isProtocolVerified(m_dvidTarget)) {
+                m_finishedList.append(synapse.getPosition());
+            } else {
+                pendingSynapses.append(synapse);
             }
         }
+    }
 
-        // sort the pending synapse list; DVID can return things in variable order,
-        //  and people don't like that
-        qSort(pendingSynapses.begin(), pendingSynapses.end(), SynapsePredictionProtocol::compareSynapses);
-        for (int i=0; i<pendingSynapses.size(); i++) {
-            m_pendingList.append(pendingSynapses[i].getPosition());
-        }
+    // sort the pending synapse list; DVID can return things in variable order,
+    //  and people don't like that
+    qSort(pendingSynapses.begin(), pendingSynapses.end(), SynapsePredictionProtocol::compareSynapses);
+    for (int i=0; i<pendingSynapses.size(); i++) {
+        m_pendingList.append(pendingSynapses[i].getPosition());
     }
 }
 
@@ -722,31 +725,28 @@ void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex index) {
 //  for the synapse; returns empty list on errors
 std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint point) {
 
-    std::vector<ZDvidSynapse> result;
+    std::vector<ZDvidSynapse> result;        
+    ZDvidSynapse synapse = m_reader.readSynapse(point, FlyEM::LOAD_PARTNER_LOCATION);
 
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
-        ZDvidSynapse synapse = reader.readSynapse(point, FlyEM::LOAD_PARTNER_LOCATION);
-
-        // find the presynaptic site
-        if (!(synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN)) {
-            if (synapse.getPartners().size() > 0) {
-                ZIntPoint preLocation = synapse.getPartners().front();
-                synapse = reader.readSynapse(preLocation, FlyEM::LOAD_PARTNER_LOCATION);
-            } else {
-                // can't find presynaptic site, so give up
-                return result;
-            }
-        }
-        result.push_back(synapse);
-
-        // get all the post-synaptic sites
-        std::vector<ZIntPoint> psdArray = synapse.getPartners();
-        for (size_t i=0; i<psdArray.size(); i++) {
-            ZDvidSynapse post = reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
-            result.push_back(post);
+    // find the presynaptic site
+    if (!(synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN)) {
+        if (synapse.getPartners().size() > 0) {
+            ZIntPoint preLocation = synapse.getPartners().front();
+            synapse = m_reader.readSynapse(preLocation, FlyEM::LOAD_PARTNER_LOCATION);
+        } else {
+            // can't find presynaptic site, so give up
+            return result;
         }
     }
+    result.push_back(synapse);
+
+    // get all the post-synaptic sites
+    std::vector<ZIntPoint> psdArray = synapse.getPartners();
+    for (size_t i=0; i<psdArray.size(); i++) {
+        ZDvidSynapse post = m_reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
+        result.push_back(post);
+    }
+
     return result;
 }
 
