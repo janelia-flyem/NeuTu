@@ -10,6 +10,7 @@ class ZDvidSparsevolSlice : public ZObject3dScan
 public:
   ZDvidSparsevolSlice();
   ZDvidSparsevolSlice(const ZDvidSparsevolSlice& obj);
+  ~ZDvidSparsevolSlice();
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_DVID_SPARSEVOL_SLICE;

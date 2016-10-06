@@ -160,6 +160,10 @@ void ZFlyEmBody3dDoc::clearGarbage()
      if (dt < 0) {
        iter.value() = 0;
      } else if (dt > OBJECT_GARBAGE_LIFE){
+       ZStackObject *obj = iter.key();
+       if (obj->getType() == ZStackObject::TYPE_SWC) {
+         ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj;
+       }
        delete iter.key();
        iter.remove();
      }
@@ -389,14 +393,9 @@ ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
   return item;
 }
 
-QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
-    bool synced, QSet<uint64_t> &bodySet)
+QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
+    QSet<uint64_t> &bodySet)
 {
-  if (synced) {
-    std::cout << "Locking process event" << std::endl;
-    QMutexLocker locker(&m_eventQueueMutex);
-  }
-
 //  QSet<uint64_t> bodySet = m_bodySet;
   QMap<uint64_t, BodyEvent> actionMap;
   for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
@@ -440,6 +439,20 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
   m_eventQueue.clear();
 
   return actionMap;
+}
+
+
+QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
+    bool synced, QSet<uint64_t> &bodySet)
+{
+  if (synced) {
+    std::cout << "Locking process event" << std::endl;
+    QMutexLocker locker(&m_eventQueueMutex);
+
+    return makeEventMapUnsync(bodySet);
+  }
+
+  return makeEventMapUnsync(bodySet);
 }
 
 void ZFlyEmBody3dDoc::cancelEventThread()
@@ -571,9 +584,9 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
       QColor color;
 
       if (getBodyType() == BODY_FULL) { //using the original color
-        color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
+        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
       } else {
-        color = labelSlice->getColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
       }
       color.setAlpha(255);
       event.setBodyColor(color);
@@ -946,23 +959,17 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
     if (bodyId > 0) {
       int t = m_objectTime.elapsed();
       if (bodyType == BODY_SKELETON) {
-        ZDvidReader reader;
-        if (reader.open(getDvidTarget())) {
-          tree = reader.readSwc(bodyId);
-        }
+        tree = m_dvidReader.readSwc(bodyId);
       } else if (bodyType == BODY_COARSE) {
-        ZDvidReader reader;
-        if (reader.open(getDvidTarget())) {
-          ZObject3dScan obj = reader.readCoarseBody(bodyId);
-          if (!obj.isEmpty()) {
-            tree = ZSwcFactory::CreateSurfaceSwc(obj);
-            tree->translate(-m_dvidInfo.getStartBlockIndex());
-            tree->rescale(m_dvidInfo.getBlockSize().getX(),
-                          m_dvidInfo.getBlockSize().getY(),
-                          m_dvidInfo.getBlockSize().getZ());
-            tree->translate(m_dvidInfo.getStartCoordinates() +
-                            m_dvidInfo.getBlockSize() / 2);
-          }
+        ZObject3dScan obj = m_dvidReader.readCoarseBody(bodyId);
+        if (!obj.isEmpty()) {
+          tree = ZSwcFactory::CreateSurfaceSwc(obj);
+          tree->translate(-m_dvidInfo.getStartBlockIndex());
+          tree->rescale(m_dvidInfo.getBlockSize().getX(),
+                        m_dvidInfo.getBlockSize().getY(),
+                        m_dvidInfo.getBlockSize().getZ());
+          tree->translate(m_dvidInfo.getStartCoordinates() +
+                          m_dvidInfo.getBlockSize() / 2);
         }
       } else {
         ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
@@ -976,14 +983,11 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         }
 
         if (cachedBody == NULL) {
-          ZDvidReader reader;
-          if (reader.open(getDvidTarget())) {
-            ZObject3dScan obj;
-            reader.readBody(bodyId, &obj);
-            if (!obj.isEmpty()) {
-              obj.canonize();
-              tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
-            }
+          ZObject3dScan obj;
+          m_dvidReader.readBody(bodyId, &obj);
+          if (!obj.isEmpty()) {
+            obj.canonize();
+            tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
           }
         } else {
           tree = ZSwcFactory::CreateSurfaceSwc(*cachedBody);
@@ -1026,6 +1030,7 @@ const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
 void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+  m_dvidReader.clear();
   updateDvidInfo();
 }
 
@@ -1033,9 +1038,12 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 {
   m_dvidInfo.clear();
 
-  ZDvidReader reader;
-  if (reader.open(getDvidTarget())) {
-    m_dvidInfo = reader.readGrayScaleInfo();
+  if (!m_dvidReader.isReady()) {
+    m_dvidReader.open(getDvidTarget());
+  }
+
+  if (m_dvidReader.isReady()) {
+    m_dvidInfo = m_dvidReader.readGrayScaleInfo();
   }
 }
 

@@ -11,9 +11,12 @@
 #include <QStatusBar>
 #include <QDragEnterEvent>
 
+#include "neutubeconfig.h"
+#include "dialogs/dvidoperatedialog.h"
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "flyemproofcontrolform.h"
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
@@ -25,6 +28,8 @@
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "zflyembookmarkview.h"
+#include "dialogs/flyembodyfilterdialog.h"
+#include "zflyemdataloader.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -144,9 +149,17 @@ void ZProofreadWindow::init()
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
 
+  connect(m_segSlider, SIGNAL(valueChanged(int)),
+          m_mainMvc, SLOT(setLabelAlpha(int)));
+  m_mainMvc->setLabelAlpha(m_segSlider->value());
+
+
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 
-  m_defaultPal = palette();
+  createDialog();
+  m_flyemDataLoader = new ZFlyEmDataLoader(this);
+
+  m_defaultPal = palette(); //This has to be the last line to avoid crash
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -162,6 +175,14 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
   }
 
   return window;
+}
+
+void ZProofreadWindow::createDialog()
+{
+  m_dvidOpDlg = new DvidOperateDialog(this);
+  m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
+
+  m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -306,7 +327,31 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_bodyExplorerAction = new QAction("Explore Bodies", this);
+  m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
+  connect(m_bodyExplorerAction, SIGNAL(triggered()),
+          this, SLOT(exploreBody()));
+//  m_toolMenu->addAction(m_bodyExplorerAction);
+
+  QMenu *dvidMenu = new QMenu("DVID", this);
+  m_dvidOperateAction = new QAction("Operate", this);
+  connect(m_dvidOperateAction, SIGNAL(triggered()),
+          this, SLOT(operateDvid()));
+
+  dvidMenu->addAction(m_dvidOperateAction);
+
+
+  m_toolMenu->addMenu(dvidMenu);
+
   menuBar()->addMenu(m_toolMenu);
+
+  m_advancedMenu = new QMenu("Advanced", this);
+  menuBar()->addMenu(m_advancedMenu);
+  QAction *mainWindowAction = new QAction("Show NeuTu Desktop", this);
+  connect(mainWindowAction, SIGNAL(triggered()),
+          this, SIGNAL(showingMainWindow()));
+  m_advancedMenu->addAction(mainWindowAction);
+
 
 //  m_viewMenu->setEnabled(false);
 
@@ -365,9 +410,17 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
-  m_toolBar->addAction(m_viewSegmentationAction);
   m_toolBar->addAction(m_viewTodoAction);
   m_toolBar->addAction(m_viewRoiAction);
+
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_viewSegmentationAction);
+  m_segSlider = new QSlider(Qt::Horizontal, this);
+  m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_segSlider->setRange(0, 255);
+  m_segSlider->setValue(128);
+  m_toolBar->addWidget(m_segSlider);
+
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
@@ -388,6 +441,12 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
          QString("Body %1 loaded for split.").arg(bodyId),
          NeuTube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
+}
+
+void ZProofreadWindow::operateDvid()
+{
+  m_dvidOpDlg->show();
+  m_dvidOpDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
@@ -490,6 +549,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   }
 }
 
+void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
+{
+  emit proofreadWindowClosed();
+}
+
 
 void ZProofreadWindow::advanceProgress(double dp)
 {
@@ -583,6 +647,26 @@ void ZProofreadWindow::changeEvent(QEvent *event)
 void ZProofreadWindow::keyPressEvent(QKeyEvent *event)
 {
   event->ignore();
+}
+
+void ZProofreadWindow::exploreBody()
+{
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_mainMvc->getDvidDialog()->exec()) {
+    target = m_mainMvc->getDvidDialog()->getDvidTarget();
+    if (!target.isValid()) {
+      ZDialogFactory::Warn("Invalid DVID", "Invalid DVID server.", this);
+    } else {
+      continueLoading = true;
+    }
+  }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
+    dvidFilter.setDvidTarget(target);
+    m_flyemDataLoader->loadDataBundle(dvidFilter);
+  }
 }
 
 void ZProofreadWindow::displayActiveHint(bool on)

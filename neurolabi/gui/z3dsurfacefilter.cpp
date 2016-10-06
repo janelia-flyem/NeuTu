@@ -194,7 +194,7 @@ void Z3DSurfaceFilter::prepareData()
         {
             for(size_t j=0; j<m_cubeArrayList.size(); ++j)
             {
-                if(std::strcmp(m_cubeArrayList[j].getSource().c_str(), m_sourceList[i].c_str()) == 0 )
+                if(m_cubeArrayList[j].getSource() == m_sourceList[i])
                 {
                     if(m_cubeRenderers[j]->isEmpty())
                     {
@@ -237,7 +237,7 @@ void Z3DSurfaceFilter::addData(ZCubeArray *cubes)
     bool sourceAdded = false;
     for(size_t i=0; i<m_cubeArrayList.size(); i++)
     {
-        if(std::strcmp(m_cubeArrayList[i].getSource().c_str(), source.c_str()) == 0 )
+        if(m_cubeArrayList[i].getSource() == source.c_str())
         {
             // update color
           if (!m_cubeArrayList[i].isEmpty()) {
@@ -284,18 +284,36 @@ vector<double> Z3DSurfaceFilter::boundBox()
     {
         std::vector<Z3DCube> cubes = m_cubeArrayList[j].getCubeArray();
 
-        for (size_t i = 0; i < m_cubeArrayList.at(j).size(); ++i)
+        for (size_t i = 0; i < cubes.size(); ++i)
         {
             const Z3DCube &cube = cubes[i];
 
-            float radius = cube.length / 2.0;
+#ifdef _DEBUG_2
+            std::cout << "Cube:" << cube.x << " " << cube.y << " " << cube.z
+                      << std::endl;
+#endif
 
-            result[0] = min(result[0], cube.x - radius);
-            result[1] = max(result[1], cube.x + radius);
-            result[2] = min(result[2], cube.y - radius);
-            result[3] = max(result[3], cube.y + radius);
-            result[4] = min(result[4], cube.z - radius);
-            result[5] = max(result[5], cube.z + radius);
+            if (cube.initByNodes) {
+              for (std::vector<glm::vec3>::const_iterator iter = cube.nodes.begin();
+                   iter != cube.nodes.end(); ++iter) {
+                const glm::vec3 &node = *iter;
+                result[0] = min(result[0], double(node[0]));
+                result[1] = max(result[1], double(node[0]));
+                result[2] = min(result[2], double(node[1]));
+                result[3] = max(result[3], double(node[1]));
+                result[4] = min(result[4], double(node[2]));
+                result[5] = max(result[5], double(node[2]));
+              }
+            } else {
+              float radius = cube.length / 2.0;
+
+              result[0] = min(result[0], cube.x - radius);
+              result[1] = max(result[1], cube.x + radius);
+              result[2] = min(result[2], cube.y - radius);
+              result[3] = max(result[3], cube.y + radius);
+              result[4] = min(result[4], cube.z - radius);
+              result[5] = max(result[5], cube.z + radius);
+            }
         }
     }
 

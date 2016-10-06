@@ -98,7 +98,7 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
 void ZNeutuService::updateStatus()
 {
   m_status = STATUS_DOWN;
-
+#if defined(_FLYEM_)
   if (!m_server.empty()) {
     int statusCode;
     if (ZDvid::MakeGetRequest(getHomeUrl(), statusCode)) {
@@ -107,6 +107,7 @@ void ZNeutuService::updateStatus()
       }
     }
   }
+#endif
 }
 
 bool ZNeutuService::isNormal() const

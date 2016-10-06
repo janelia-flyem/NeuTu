@@ -20,35 +20,12 @@
 
 using namespace std;
 
-NeutubeConfig::NeutubeConfig() : m_segmentationClassifThreshold(0.5),
-  m_isSettingOn(true), m_isStereoOn(true), m_autoSaveInterval(600000),
-  m_autoSaveEnabled(true), m_usingNativeDialog(true)
-#ifdef _QT_GUI_USED_
-  ,m_settings(QSettings::UserScope, "NeuTu-be")
-#endif
+NeutubeConfig::NeutubeConfig() :
+  #ifdef _QT_GUI_USED_
+    m_settings(QSettings::UserScope, "NeuTu-be")
+  #endif
 {
-  m_messageReporter = new ZLogMessageReporter;
-  m_softwareName = "NeuTu";
-#ifdef _QT_GUI_USED_
-  m_workDir = m_settings.value("workDir").toString().toStdString();
-#if 0
-  QString traceFilePath(getPath(NeutubeConfig::LOG_TRACE).c_str());
-  QFileInfo fileInfo(traceFilePath);
-  if (fileInfo.exists()) {
-    QFile::rename(traceFilePath, traceFilePath + ".bk");
-  }
-  QFile *file = new QFile(traceFilePath);
-  if (file->open(QIODevice::WriteOnly)) {
-    m_traceStream = new QDebug(file);
-  } else {
-    m_traceStream = new QDebug(QtDebugMsg);
-  }
-#endif
-//  std::cout << m_settings.fileName().toStdString() << std::endl;
-#endif
-
-  m_loggingProfile = false;
-  m_verboseLevel = 1;
+  init();
 }
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
@@ -67,12 +44,76 @@ NeutubeConfig::~NeutubeConfig()
 #endif
 }
 
+void NeutubeConfig::init()
+{
+  m_segmentationClassifThreshold = 0.5;
+  m_isSettingOn = true;
+  m_isStereoOn = true;
+  m_autoSaveInterval = 600000;
+  m_autoSaveEnabled =true;
+  m_usingNativeDialog = true;
+
+  m_messageReporter = new ZLogMessageReporter;
+  m_softwareName = "NeuTu";
+#ifdef _QT_GUI_USED_
+  m_workDir = m_settings.value("workDir").toString().toStdString();
+#if 0
+  QString traceFilePath(getPath(NeutubeConfig::LOG_TRACE).c_str());
+  QFileInfo fileInfo(traceFilePath);
+  if (fileInfo.exists()) {
+    QFile::rename(traceFilePath, traceFilePath + ".bk");
+  }
+  QFile *file = new QFile(traceFilePath);
+  if (file->open(QIODevice::WriteOnly)) {
+    m_traceStream = new QDebug(file);
+  } else {
+    m_traceStream = new QDebug(QtDebugMsg);
+  }
+#endif
+  //  std::cout << m_settings.fileName().toStdString() << std::endl;
+#endif
+
+  m_loggingProfile = false;
+  m_verboseLevel = 1;
+
+  updateLogDir();
+
+}
+
 void NeutubeConfig::setWorkDir(const string str)
 {
+  if (m_workDir == m_logDir) { //Reset log dir
+    m_logDir = "";
+    m_logDestDir = "";
+  }
+
   m_workDir = str;
 #ifdef _QT_GUI_USED_
   getSettings().setValue("workDir", m_workDir.c_str());
 #endif
+
+  updateLogDir();
+}
+
+void NeutubeConfig::updateLogDir()
+{
+  if (m_logDir.empty()) {
+    ZString dir = getPath(WORKING_DIR);
+#if defined(_QT_GUI_USED_) && defined(_FLYEM_)
+    if (dir.startsWith("/groups/flyem/")) {
+      m_logDir = "/opt/neutu_log/" + NeuTube::GetCurrentUserName();
+      m_logDestDir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
+      if (!QDir(m_logDir.c_str()).exists()) {
+        m_logDir = m_logDestDir;
+        m_logDestDir = "";
+      }
+    }
+#endif
+    if (m_logDir.empty()) {
+      m_logDir = dir;
+      m_logDestDir = "";
+    }
+  }
 }
 
 void NeutubeConfig::operator=(const NeutubeConfig& config)
@@ -236,6 +277,8 @@ void NeutubeConfig::print()
   cout << "Application dir: " << getApplicatinDir() << endl;
   cout << "Autosave dir: " << getPath(AUTO_SAVE) << endl;
   cout << "Autosave interval: " << m_autoSaveInterval << endl;
+  cout << "Log dir: " << getPath(LOG_DIR) << endl;
+  cout << "Log dest dir: " << getPath(LOG_DEST_DIR) << endl;
   cout << endl;
 }
 
@@ -311,16 +354,9 @@ std::string NeutubeConfig::getPath(Config_Item item) const
     }
     return m_workDir;
   case LOG_DIR:
-    if (m_logDir.empty()) {
-      ZString dir = getPath(WORKING_DIR);
-#if defined(_QT_GUI_USED_)
-      if (dir.startsWith("/groups/flyem/")) {
-        dir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
-      }
-#endif
-      return dir;
-    }
     return m_logDir;
+  case LOG_DEST_DIR:
+    return m_logDestDir;
   case LOG_FILE:
 #ifdef _QT_GUI_USED_
     return QDir(getPath(LOG_DIR).c_str()).filePath("log.txt").toStdString();

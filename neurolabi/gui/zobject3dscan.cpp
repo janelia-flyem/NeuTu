@@ -817,7 +817,7 @@ void ZObject3dScan::canonize()
   if (!isEmpty() && !isCanonized()) {
     sort();
 
-    ZOUT(std::cout, 3) << "Sorting done in canozing" << std::endl;
+    ZOUT(std::cout, 6) << "Sorting done in canozing" << std::endl;
 
 #ifdef _DEBUG_2
   int count = 0;
@@ -852,7 +852,7 @@ void ZObject3dScan::canonize()
 
     newStripeArray.resize(length);
 
-    ZOUT(std::cout, 3) << "  stripes finalized." << std::endl;
+    ZOUT(std::cout, 6) << "  stripes finalized." << std::endl;
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);

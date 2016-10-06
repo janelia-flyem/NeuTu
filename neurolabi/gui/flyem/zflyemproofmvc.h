@@ -86,6 +86,7 @@ public:
   virtual ZDvidTarget getDvidTarget() const;
 
   void setDvidDialog(ZDvidDialog *dlg);
+  ZDvidDialog* getDvidDialog() const;
 
   ZFlyEmBodyMergeProject* getMergeProject() {
     return &m_mergeProject;
@@ -268,6 +269,8 @@ public slots:
   void recoverObjectVisible();
 
   void updateRoiWidget();
+
+  void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -373,7 +376,6 @@ protected:
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ProtocolSwitcher *m_protocolSwitcher;
-  ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;

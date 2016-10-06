@@ -99,8 +99,8 @@ public:
     return m_objColorSheme;
   }
 
-  QColor getColor(uint64_t label, NeuTube::EBodyLabelType labelType) const;
-  QColor getColor(int64_t label, NeuTube::EBodyLabelType labelType) const;
+  QColor getLabelColor(uint64_t label, NeuTube::EBodyLabelType labelType) const;
+  QColor getLabelColor(int64_t label, NeuTube::EBodyLabelType labelType) const;
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
@@ -141,7 +141,7 @@ public:
   int64_t getReadingTime() const;
 
   void clearCache();
-  void refreshReaderBuffer();
+  bool refreshReaderBuffer();
 
 //  int getZoom() const;
   int getZoomLevel(const ZStackViewParam &viewParam) const;

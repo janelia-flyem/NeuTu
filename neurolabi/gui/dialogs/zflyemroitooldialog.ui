@@ -532,9 +532,7 @@
     </layout>
    </item>
    <item>
-    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true">
-     <zorder>layoutWidget</zorder>
-    </widget>
+    <widget class="ZFlyEmMessageWidget" name="messageWidget" native="true"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -542,7 +540,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>

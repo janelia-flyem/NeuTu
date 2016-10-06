@@ -5,6 +5,11 @@
 #include <QString>
 
 #include "dvid/zdvidtarget.h"
+#include "zsharedpointer.h"
+
+namespace libdvid{
+class DVIDConnection;
+}
 
 class ZFlyEmSupervisor : public QObject
 {
@@ -17,6 +22,8 @@ public:
   bool checkInAdmin(uint64_t bodyId);
 
   std::string getOwner(uint64_t bodyId) const;
+
+  int testServer();
 
   bool isLocked(uint64_t bodyId) const;
 
@@ -74,6 +81,10 @@ private:
   std::string m_userName;
   ZDvidTarget m_dvidTarget;
   std::string m_server;
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+#endif
 };
 
 #endif // ZFLYEMSUPERVISOR_H

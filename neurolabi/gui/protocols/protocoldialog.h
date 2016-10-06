@@ -20,7 +20,7 @@ public:
     explicit ProtocolDialog(QWidget *parent = 0);
     virtual ~ProtocolDialog();
     virtual bool initialize() = 0;
-    void setDvidTarget(ZDvidTarget target);
+    virtual void setDvidTarget(ZDvidTarget target);
 
 public:
     //Special behaviors

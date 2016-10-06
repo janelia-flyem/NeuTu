@@ -299,6 +299,8 @@ public slots:
 
   void hideThresholdControl();
 
+  void setDynamicObjectAlpha(int alpha);
+
 
 signals:
 //  void currentSliceChanged(int);
@@ -436,6 +438,7 @@ protected:
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
   ZPixmap *m_dynamicObjectCanvas;
+  double m_dynamicObjectOpacity;
 //  ZPainter m_dynamicObjectCanvasPainter;
 
   ZMultiscalePixmap m_objectCanvas;
