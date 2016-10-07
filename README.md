@@ -5,7 +5,7 @@ NeuTu-EM
 
 Software for proofreading EM connectomics
 
-## Download
+## Download Source Code (Not needed for installation)
 
     git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
 
