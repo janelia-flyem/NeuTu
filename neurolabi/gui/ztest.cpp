@@ -20829,5 +20829,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  libdvid::DVIDNodeService service("emdata2.int.janelia.org:8500", "b6bc");
+  service.custom_request("bodies/sparsevol/200013118", libdvid::BinaryDataPtr(), libdvid::GET, true);
+  service.custom_request("bodies/sparsevol-coarse/200013118", libdvid::BinaryDataPtr(), libdvid::GET, false);
+
+  /*
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "b6bc", 8500);
+  reader.open(target);
+//  reader.readBody(200013118);
+  reader.readCoarseBody(200013118);
+*/
+#endif
+  
   std::cout << "Done." << std::endl;
 }
