@@ -1101,6 +1101,21 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
   return newBodyId;
 }
 
+uint64_t ZDvidWriter::chopBody(
+    const ZObject3dScan &obj, const ZIntCuboid &box, uint64_t oldLabel)
+{
+  uint64_t newId = 0;
+  ZObject3dScan *subobj = obj.subobject(box, NULL, NULL);
+  if (subobj != NULL) {
+    if (!subobj->isEmpty()) {
+      newId = writePartition(obj, *subobj, oldLabel);
+    }
+    delete subobj;
+  }
+
+  return newId;
+}
+
 uint64_t ZDvidWriter::writePartition(
     const ZObject3dScan &bm, const ZObject3dScan &bs, uint64_t oldLabel)
 {

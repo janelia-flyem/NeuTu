@@ -2054,7 +2054,7 @@ void MainWindow::tryToClose()
 {
   --m_proofreadWindowCount;
 
-  if (m_proofreadWindowCount <= 0) {
+  if (m_proofreadWindowCount <= 0 && !isVisible()) {
     close();
   }
 }

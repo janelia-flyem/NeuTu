@@ -449,6 +449,7 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
     std::cout << "Locking process event" << std::endl;
     QMutexLocker locker(&m_eventQueueMutex);
 
+    std::cout << "Making event map" << std::endl;
     return makeEventMapUnsync(bodySet);
   }
 
@@ -985,6 +986,9 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         if (cachedBody == NULL) {
           ZObject3dScan obj;
           m_dvidReader.readBody(bodyId, &obj);
+#ifdef _DEBUG_2
+          m_dvidReader.readCoarseBody(bodyId);
+#endif
           if (!obj.isEmpty()) {
             obj.canonize();
             tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);

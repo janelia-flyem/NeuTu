@@ -20828,7 +20828,7 @@ void ZTest::test(MainWindow *host)
   std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
   ZFlyEmRoiProject proj("test");
 
   ZSwcTree tree;

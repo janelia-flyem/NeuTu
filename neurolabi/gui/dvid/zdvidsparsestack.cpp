@@ -642,7 +642,8 @@ ZDvidSparseStack* ZDvidSparseStack::getCrop(const ZIntCuboid &box) const
   stack->setDvidTarget(getDvidTarget());
   stack->m_sparseStack.setBaseValue(m_sparseStack.getBaseValue());
   ZObject3dScan *submask = new ZObject3dScan;
-  const_cast<ZDvidSparseStack&>(*this).getObjectMask()->subobject(box, submask);
+  const_cast<ZDvidSparseStack&>(*this).getObjectMask()->subobject(
+        box, NULL, submask);
   stack->m_sparseStack.setObjectMask(submask);  
 
   return stack;

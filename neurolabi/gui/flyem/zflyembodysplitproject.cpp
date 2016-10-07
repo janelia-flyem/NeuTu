@@ -52,6 +52,8 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
 {
   m_progressSignal = new ZProgressSignal(this);
 
+  m_skelThre = 20;
+
   connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
   connect(this, SIGNAL(result3dQuickViewReady()),
           this, SLOT(startResultQuickView()));
@@ -802,6 +804,147 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 }
 
+void ZFlyEmBodySplitProject::chopBodyZ(int z)
+{
+  ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      getProgressSignal()->startProgress("Slicing body");
+      emitMessage("Uploading results ...");
+
+      ZObject3dScan *wholeBody = doc->getBodyForSplit()->getObjectMask();
+
+      getProgressSignal()->advanceProgress(0.1);
+      if (wholeBody != NULL) {
+        uint64_t newBodyId = 0;
+        ZObject3dScan remain;
+        ZObject3dScan subobj;
+
+        wholeBody->chopZ(z, &remain, &subobj);
+        size_t subobjVoxelNumber = subobj.getVoxelNumber();
+        size_t remainVoxelNumber = remain.getVoxelNumber();
+        size_t voxelNumber = 0;
+
+        if (subobjVoxelNumber > 0 && remainVoxelNumber > 0) {
+          //Keep the larger part
+          if (subobjVoxelNumber <= remainVoxelNumber) {
+            newBodyId = writer.writePartition(*wholeBody, subobj, getBodyId());
+            *wholeBody = remain;
+            voxelNumber = subobjVoxelNumber;
+          } else {
+            newBodyId = writer.writePartition(*wholeBody, remain, getBodyId());
+            *wholeBody = subobj;
+            voxelNumber = remainVoxelNumber;
+          }
+
+
+          getProgressSignal()->advanceProgress(0.1);
+
+          std::vector<uint64_t> updateBodyArray;
+
+          if (newBodyId > 0) {
+            QString msg = QString("Cropped object uploaded as %1 (%2 voxels).").
+                arg(newBodyId).arg(voxelNumber);
+            if (voxelNumber >= m_skelThre) {
+              updateBodyArray.push_back(newBodyId);
+            }
+            emitMessage(msg);
+
+            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                  getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
+            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                  getDvidTarget(), newBodyId, ZNeutuService::UPDATE_ALL);
+
+            QString bodyMessage = QString("Body %1 splitted: ").arg(getBodyId());
+            bodyMessage += "<font color=#007700>";
+            bodyMessage.append(QString("%1 ").arg(newBodyId));
+            bodyMessage += "</font>";
+            emitMessage(bodyMessage);
+
+            getProgressSignal()->advanceProgress(0.1);
+
+            updateSplitDocument();
+            emit resultCommitted();
+          } else {
+            emitError("Warning: Something wrong happened during uploading! "
+                      "Please contact the developer as soon as possible.");
+          }
+        }
+      }
+
+      getProgressSignal()->endProgress();
+
+      emitMessage("Done.");
+    }
+  }
+}
+
+void ZFlyEmBodySplitProject::cropBody()
+{
+  ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      getProgressSignal()->startProgress("Cropping body");
+      emitMessage("Uploading results ...");
+
+      ZObject3dScan *wholeBody = doc->getBodyForSplit()->getObjectMask();
+
+      getProgressSignal()->advanceProgress(0.1);
+
+      ZIntCuboidObj *box = doc->getSplitRoi();
+      if (wholeBody != NULL) {
+        uint64_t newBodyId = 0;
+        ZObject3dScan remain;
+        ZObject3dScan subobj;
+        wholeBody->subobject(box->getCuboid(), &remain, &subobj);
+        if (!subobj.isEmpty()) {
+          newBodyId = writer.writePartition(*wholeBody, subobj, getBodyId());
+        }
+
+        getProgressSignal()->advanceProgress(0.1);
+
+        std::vector<uint64_t> updateBodyArray;
+
+        if (newBodyId > 0) {
+          *wholeBody = remain;
+          size_t voxelNumber = subobj.getVoxelNumber();
+          QString msg = QString("Cropped object uploaded as %1 (%2 voxels).").
+              arg(newBodyId).arg(voxelNumber);
+          if (voxelNumber >= m_skelThre) {
+            updateBodyArray.push_back(newBodyId);
+          }
+          emitMessage(msg);
+
+          GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
+          GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                getDvidTarget(), newBodyId, ZNeutuService::UPDATE_ALL);
+
+          QString bodyMessage = QString("Body %1 splitted: ").arg(getBodyId());
+          bodyMessage += "<font color=#007700>";
+          bodyMessage.append(QString("%1 ").arg(newBodyId));
+          bodyMessage += "</font>";
+          emitMessage(bodyMessage);
+
+          getProgressSignal()->advanceProgress(0.1);
+
+          updateSplitDocument();
+          emit resultCommitted();
+        } else {
+          emitError("Warning: Something wrong happened during uploading! "
+                    "Please contact the developer as soon as possible.");
+        }
+      }
+
+      getProgressSignal()->endProgress();
+
+      emitMessage("Done.");
+    }
+  }
+}
+
 void ZFlyEmBodySplitProject::decomposeBody()
 {
   getProgressSignal()->startProgress("Decomposing body");
@@ -843,8 +986,6 @@ void ZFlyEmBodySplitProject::decomposeBody()
     }
 
     index = 0;
-    const size_t skelThre = 20;
-
     for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter, ++index) {
       if (index != maxIndex) {
@@ -857,7 +998,7 @@ void ZFlyEmBodySplitProject::decomposeBody()
           size_t voxelNumber = obj.getVoxelNumber();
           msg = QString("Isolated object uploaded as %1 (%2 voxels) .").
               arg(newBodyId).arg(voxelNumber);
-          if (voxelNumber >= skelThre) {
+          if (voxelNumber >= m_skelThre) {
             updateBodyArray.push_back(newBodyId);
           }
           newBodyIdList.append(newBodyId);

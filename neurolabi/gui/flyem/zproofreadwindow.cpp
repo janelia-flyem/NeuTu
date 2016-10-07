@@ -595,7 +595,7 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
-  setWindowTitle(target.getSourceString(false).c_str());
+  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
   m_viewSynapseAction->setEnabled(target.isValid());
   m_importBookmarkAction->setEnabled(target.isValid());

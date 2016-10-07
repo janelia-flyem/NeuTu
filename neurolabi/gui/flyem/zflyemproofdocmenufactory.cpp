@@ -7,6 +7,7 @@
 #include "flyem/zflyemproofpresenter.h"
 #include "flyem/zflyemproofdoc.h"
 #include "z3dwindow.h"
+#include "zintcuboidobj.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -120,6 +121,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Split mode */
     if (proofPresenter->isSplitOn()) {
       actionList.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
+      actionList.append(ZActionFactory::ACTION_BODY_CHOP_Z);
+      ZIntCuboidObj *roi = doc->getSplitRoi();
+      if (roi != NULL) {
+        if (roi->isValid()) {
+          actionList.append(ZActionFactory::ACTION_BODY_CROP);
+        }
+      }
     } else {
       if (proofPresenter->interactiveContext().acceptingRect()) {
         actionList.append(ZActionFactory::ACTION_ZOOM_TO_RECT);

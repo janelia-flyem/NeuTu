@@ -103,6 +103,8 @@ public:
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody();
+  void cropBody();
+  void chopBodyZ(int z);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -238,6 +240,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+  size_t m_skelThre;
 
   ZThreadFutureMap m_futureMap;
 

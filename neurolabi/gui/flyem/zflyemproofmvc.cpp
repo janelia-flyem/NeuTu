@@ -1146,6 +1146,10 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(selectBodyInRoi()));
   connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
           this, SLOT(decomposeBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyCropTriggered()),
+          this, SLOT(cropBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyChopZTriggered()),
+          this, SLOT(chopBodyZ()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
           this, SLOT(mergeSelected()));
   connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
@@ -2476,6 +2480,31 @@ void ZFlyEmProofMvc::commitMerge()
     if (body != NULL) {
       getDocument()->getObjectGroup().removeObject(body, true);
     }
+  }
+}
+
+void ZFlyEmProofMvc::chopBodyZ()
+{
+  const QString threadId = "ZFlyEmBodySplitProject::chopBodyZ";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(
+          &m_splitProject, &ZFlyEmBodySplitProject::chopBodyZ,
+          getView()->getCurrentZ());
+    m_futureMap[threadId] = future;
+  }
+}
+
+void ZFlyEmProofMvc::cropBody()
+{
+  const QString threadId = "ZFlyEmBodySplitProject::cropBody";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(
+          &m_splitProject, &ZFlyEmBodySplitProject::cropBody);
+    m_futureMap[threadId] = future;
   }
 }
 
