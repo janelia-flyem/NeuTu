@@ -2369,6 +2369,19 @@ ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) 
   return obj;
 }
 
+ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index));
+    return obj;
+}
+
+ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index,
+    int offset, int number) const {
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index, offset, number));
+    return obj;
+}
+
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     uint64_t label, FlyEM::EDvidAnnotationLoadMode mode) const
 {

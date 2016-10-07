@@ -504,9 +504,9 @@ void ZDvidWriter::createData(
   }
 }
 
-void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+void ZDvidWriter::deleteKey(const char* dataName, const char* key)
 {
-  if (dataName.empty() || key.empty()) {
+  if (strlen(dataName) == 0 || strlen(key) == 0) {
     return;
   }
 
@@ -514,15 +514,15 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
   std::string url = dvidUrl.getKeyUrl(dataName, key);
   del(url);
 
-//  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
+}
 
-  /*
-  qDebug() << command;
+void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+{
+  if (dataName.empty() || key.empty()) {
+    return;
+  }
 
-  QProcess::execute(command);
-  */
-
-//  runCommand(command);
+  deleteKey(dataName.c_str(), key.c_str());
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)

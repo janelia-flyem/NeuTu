@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="bodiesLabel">
      <property name="text">
       <string>Bodies</string>
      </property>
@@ -52,6 +52,16 @@
       <number>0</number>
      </property>
      <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Max bodies: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="maxBodiesMenu"/>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -65,9 +75,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="statusLabel">
+      <widget class="QPushButton" name="exportBodiesButton">
        <property name="text">
-        <string/>
+        <string>Export bodies...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="exportConnectionsButton">
+       <property name="text">
+        <string>Export connections...</string>
        </property>
       </widget>
      </item>
@@ -123,13 +140,6 @@
       <widget class="QPushButton" name="saveColorFilterButton">
        <property name="text">
         <string>Save color filter</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="exportBodiesButton">
-       <property name="text">
-        <string>Export bodies...</string>
        </property>
       </widget>
      </item>

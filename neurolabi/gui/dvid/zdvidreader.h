@@ -66,10 +66,6 @@ public:
 
   void clear();
 
-  /*!
-   * \brief Get the status code of the latest request (NOT functioning yet)
-   * \return
-   */
   int getStatusCode() const;
   void setStatusCode(int code) const;
 
@@ -169,7 +165,8 @@ public:
                          */
 
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
-
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
