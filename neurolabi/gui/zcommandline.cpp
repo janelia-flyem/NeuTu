@@ -28,6 +28,14 @@
 #include "zneurontracer.h"
 #include "zneurontracerconfig.h"
 #include "dvid/zdvidurl.h"
+#include "zswctreematcher.h"
+#include "zswcdisttrunkanalyzer.h"
+#include "zswclayerfeatureanalyzer.h"
+#include "zswcshollfeatureanalyzer.h"
+#include "zswclayershollfeatureanalyzer.h"
+#include "zswclayertrunkanalyzer.h"
+#include "zswcglobalfeatureanalyzer.h"
+#include "zswcnodebufferfeatureanalyzer.h"
 //#include "mylib/utilities.h"
 
 using namespace std;
@@ -545,6 +553,91 @@ int ZCommandLine::runTest()
   return 0;
 }
 
+double ZCommandLine::compareSwc(
+    ZSwcTree *tree1, ZSwcTree *tree2, ZSwcTreeMatcher &matcher) const
+{
+  double score = 0.0;
+
+  if (tree1 != NULL && tree2 != NULL) {
+    double sampleStep = 200.0;
+    int matchingLevel = 2;
+
+    ZSwcTree *tree1ForMatch = tree1->clone();
+    tree1->resample(sampleStep);
+
+    ZSwcTree *tree2ForMatch = tree2->clone();
+    tree2->resample(sampleStep);
+
+//    double ratio1 =
+//        ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree1);
+//    double ratio2 =
+//        ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree2);
+
+//    double ratioDiff = max(ratio1, ratio2) / min(ratio1, ratio2);
+
+    matcher.matchAllG(*tree1ForMatch, *tree2ForMatch, matchingLevel);
+
+    score = matcher.matchingScore();
+
+//    if (m_scoreOption == SCORE_ORTREG) {
+//      score /= (1.0 + log(ratioDiff));
+//    }
+
+    delete tree1ForMatch;
+    delete tree2ForMatch;
+  }
+
+
+
+  return score;
+}
+
+int ZCommandLine::runCompareSwc()
+{
+  if (m_input.empty()) {
+    std::cout << "Please specify input." << std::endl;
+    return 0;
+  }
+
+  std::cout << "Computing pairwise similarity for " << std::endl;
+  std::vector<ZSwcTree*> treeArray(m_input.size(), NULL);
+  for (size_t i = 0; i < m_input.size(); ++i) {
+    std::cout << "  " << m_input[i] <<std::endl;
+    ZSwcTree *tree = new ZSwcTree;
+    tree->load(m_input[i]);
+    if (m_scale != 1.0) {
+      tree->rescale(m_scale, m_scale, m_scale);
+    }
+
+    treeArray[i] = tree;
+  }
+
+  ZSwcTreeMatcher matcher;
+  ZSwcLayerTrunkAnalyzer *trunkAnalyzer = new ZSwcLayerTrunkAnalyzer;
+  trunkAnalyzer->setStep(200.0);
+  ZSwcLayerShollFeatureAnalyzer *helperAnalyzer =
+      new ZSwcLayerShollFeatureAnalyzer;
+  helperAnalyzer->setLayerScale(4000.0);
+  helperAnalyzer->setLayerMargin(100.0);
+
+  ZSwcNodeBufferFeatureAnalyzer *analyzer = new ZSwcNodeBufferFeatureAnalyzer;
+  analyzer->setHelper(helperAnalyzer);
+
+  ZSwcFeatureAnalyzer *featureAnalyzer = dynamic_cast<ZSwcFeatureAnalyzer*>(analyzer);
+
+  matcher.setTrunkAnalyzer(trunkAnalyzer);
+  matcher.setFeatureAnalyzer(featureAnalyzer);
+
+  for (size_t i = 0; i < m_input.size(); ++i) {
+    for (size_t j = i + 1; j < m_input.size(); ++j) {
+      double score = compareSwc(treeArray[i], treeArray[j], matcher);
+      std::cout << i << "-" << j << ": " << score << std::endl;
+    }
+  }
+
+  return 1;
+}
+
 int ZCommandLine::runSkeletonize()
 {
   if (m_input.empty()) {
@@ -755,6 +848,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
+    "[--compare_swc] [--scale <double>]",
     "[--trace] [--level <int>]","[--separate <string>]",
     "[--position <int> <int> <int>]",
     "[--size <int> <int> <int>]",
@@ -813,6 +907,10 @@ int ZCommandLine::run(int argc, char *argv[])
     m_namedOnly = true;
   }
 
+  m_scale = 1.0;
+  if (Is_Arg_Matched(const_cast<char*>("--scale"))) {
+    m_scale = Get_Double_Arg(const_cast<char*>("--scale"));
+  }
 //  ZArgumentProcessor::processArguments(argc, argv, Spec);
 
   m_input.clear();
@@ -908,6 +1006,8 @@ int ZCommandLine::run(int argc, char *argv[])
       command = TRACE_NEURON;
     } else if (Is_Arg_Matched(const_cast<char*>("--test"))) {
       command = TEST_SELF;
+    } else if (Is_Arg_Matched(const_cast<char*>("--compare_swc"))) {
+      command = COMPARE_SWC;
     }
   }
 
@@ -926,6 +1026,8 @@ int ZCommandLine::run(int argc, char *argv[])
     return runComputeFlyEmNeuronFeature();
   case SKELETONIZE:
     return runSkeletonize();
+  case COMPARE_SWC:
+    return runCompareSwc();
   case SEPARATE_IMAGE:
     return runImageSeparation();
   case TRACE_NEURON:
