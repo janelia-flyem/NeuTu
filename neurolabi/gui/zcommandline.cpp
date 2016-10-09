@@ -563,10 +563,10 @@ double ZCommandLine::compareSwc(
     int matchingLevel = 2;
 
     ZSwcTree *tree1ForMatch = tree1->clone();
-    tree1->resample(sampleStep);
+    tree1ForMatch->resample(sampleStep);
 
     ZSwcTree *tree2ForMatch = tree2->clone();
-    tree2->resample(sampleStep);
+    tree2ForMatch->resample(sampleStep);
 
 //    double ratio1 =
 //        ZSwcGlobalFeatureAnalyzer::computeLateralVerticalRatio(*tree1);
@@ -628,12 +628,26 @@ int ZCommandLine::runCompareSwc()
   matcher.setTrunkAnalyzer(trunkAnalyzer);
   matcher.setFeatureAnalyzer(featureAnalyzer);
 
+  std::ostringstream stream;
+
+  std::vector<double> selfScore(m_input.size());
+  for (size_t i = 0; i < m_input.size(); ++i) {
+    selfScore[i] = compareSwc(treeArray[i], treeArray[i], matcher);
+  }
+
   for (size_t i = 0; i < m_input.size(); ++i) {
     for (size_t j = i + 1; j < m_input.size(); ++j) {
       double score = compareSwc(treeArray[i], treeArray[j], matcher);
-      std::cout << i << "-" << j << ": " << score << std::endl;
+      score /= std::max(selfScore[i], selfScore[j]);
+      stream << i << "-" << j << ": " << score  << std::endl;
     }
   }
+
+  std::cout << "Result:" << std::endl;
+  for (size_t i = 0; i < m_input.size(); ++i) {
+    std::cout << i << ": " << m_input[i] <<std::endl;
+  }
+  std::cout << stream.str();
 
   return 1;
 }
