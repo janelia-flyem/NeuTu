@@ -271,6 +271,7 @@ using namespace std;
 #include "flyem/zflyemorthowindow.h"
 #include "flyem/zneutuservice.h"
 #include "flyem/zflyemroiproject.h"
+#include "dvid/libdvidheader.h"
 
 using namespace std;
 
@@ -20830,10 +20831,11 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+#ifdef _ENABLE_LIBDVIDCPP_
   libdvid::DVIDNodeService service("emdata2.int.janelia.org:8500", "b6bc");
   service.custom_request("bodies/sparsevol/200013118", libdvid::BinaryDataPtr(), libdvid::GET, true);
   service.custom_request("bodies/sparsevol-coarse/200013118", libdvid::BinaryDataPtr(), libdvid::GET, false);
-
+#endif
   /*
   ZDvidReader reader;
   ZDvidTarget target;
