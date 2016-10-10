@@ -338,6 +338,8 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
 
   reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
 
+  reader.tryCompress(false);
+
   std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
   timer.start();
