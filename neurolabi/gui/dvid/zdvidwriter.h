@@ -99,6 +99,7 @@ public:
    */
   void createKeyvalue(const std::string &name);
 
+  void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
   void deleteKey(const QString &dataName, const QString &key);
 
@@ -115,6 +116,8 @@ public:
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);
   std::string createBranch();
+
+  uint64_t rewriteBody(uint64_t label);
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);

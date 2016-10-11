@@ -272,6 +272,7 @@ using namespace std;
 #include "flyem/zneutuservice.h"
 #include "zdvidutil.h"
 #include "flyem/zflyemroiproject.h"
+#include "dvid/libdvidheader.h"
 
 using namespace std;
 
@@ -20798,6 +20799,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
   int statusCode;
   std::string url = "http://emdata2.int.janelia.org:9000/api/repo/2ad2";
   ZDvid::MakeHeadRequest(url, statusCode);
@@ -20895,11 +20897,11 @@ void ZTest::test(MainWindow *host)
     uint64_t bodyId = *iter;
     std::cout << "  " << bodyId << std::endl;
 
-    ZObject3dScan obj = reader.readCoarseBody(bodyId);
-//    std::cout << "  " << bodyId <<  " #" << obj.getVoxelNumber() << std::endl;
-    idArray[index] = bodyId;
-    voxelCountArray[index] = obj.getVoxelNumber();
-//    supervisor.checkInAdmin(bodyId);
+//    ZObject3dScan obj = reader.readCoarseBody(bodyId);
+////    std::cout << "  " << bodyId <<  " #" << obj.getVoxelNumber() << std::endl;
+//    idArray[index] = bodyId;
+//    voxelCountArray[index] = obj.getVoxelNumber();
+    supervisor.checkIn(bodyId);
 //    supervisor.checkOut(bodyId);
   }
 
@@ -20909,19 +20911,66 @@ void ZTest::test(MainWindow *host)
       std::cout << idArray[i] << " " << voxelCountArray[i] << std::endl;
     }
   }
+
+  for (size_t i = 0; i < idArray.size(); ++i) {
+    if (voxelCountArray[i] > 0) {
+      std::cout << idArray[i] << " ";
+    }
+  }
+
+  std::cout << std::endl;
 #endif
 
-#if 1
+#if 0
+//  ZString idStr = "170 275 ";
+  ZString idStr = "391 39168 39778 44509 555931 922828 1590792 "
+      "3860200 128434283 131179769 51001411287 51002028701 51002423651 "
+      "51002431213 51002432799 51002924100 51002962389 51003258636 "
+      "51003288814 51003610271 51003950675 51003998269 51007802197 "
+      "51008111673 51008181411 51008689050 51008697212 51019820724 "
+      "51019822625 51019822853 51025529191 51025530145 51025961260 "
+      "51026028840 51027140199 53031422579 53031422587 53031432307 53031432314";
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "a0310", 7000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("segmentation-labelvol");
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  std::vector<uint64_t> idArray = idStr.toUint64Array();
+
+  for (std::vector<uint64_t>::const_iterator iter = idArray.begin();
+       iter != idArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    std::cout << "  " << bodyId << std::endl;
+    uint64_t newBodyId = writer.rewriteBody(bodyId);
+    std::cout << "  " << newBodyId << std::endl;
+
+    if (newBodyId == 0) {
+      std::cout << "WARNING: rewite falied!!!" << std::endl;
+    }
+  }
+
+
+
+#endif
+
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("http://emdata2.int.janelia.org:8500", "b6bc");
 
   ZDvidWriter writer;
   writer.open(target);
-  reader.open(target);
+//  reader.open(target);
 
-  uint64_t bodyId = 200013151;
+  uint64_t bodyId = 200013154;
+  uint64_t newBodyId =writer.rewriteBody(bodyId);
+  std::cout << newBodyId << std::endl;
 
+#if 0
   ZObject3dScan obj = reader.readBody(bodyId);
 
 
@@ -20939,8 +20988,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
-
+#endif
 
 #endif
 
@@ -21004,5 +21052,85 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "a0310", 7000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("segmentation-labelvol");
+  target.setSynapseName("annot_synapse_083116");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZString idStr = "53031432101 53031432096 53031432001 53031431446 53031431447 "
+      "53031430965 53031430964 53031430949 53031430932 53031430836 53031430833 "
+      "53031430802 53031430800 53031430438 53031430437 53031430434 53031430435 "
+      "53031430436 "
+      "53031429567 53031429562 53031429465 53031429466 53031429467 53031429468 "
+      "53031429469 53031429470 53031429471 53031429472 53031429473 53031429474 "
+      "53031429475 53031429476 53031429477 53031429478 53031429479 53031429480 "
+      "53031429481 53031429482 53031429483 53031429484 53031429485 53031429486 "
+      "53031429487 53031429488 53031429489 53031429490 53031429491 53031429492 "
+      "53031429493 53031429494 53031429495 53031429496 53031429497 53031429498 "
+      "53031429499 53031429500 53031429501 53031429502 53031429503 53031429504 "
+      "53031429505 53031429506 53031429507 53031429508 53031429509 53031429510 "
+      "53031429511 53031429512 53031429513 53031429514 53031429515 53031429516 "
+      "53031429517 53031429518 53031429519 53031429520 53031429521 53031429522 "
+      "53031429523 53031429524 53031429525 53031429526 53031429527 53031429528 "
+      "53031429529 53031429530 53031429531 53031429532 53031429533 53031429534 "
+      "53031429535 53031429536 53031429537 53031429538 53031429539 53031429540 "
+      "53031429541 53031429542 53031429543 53031429544 53031429545 53031429546 "
+      "53031429547 53031429548 53031429549 53031429550 53031429551 53031429552 "
+      "53031429553 53031429554 53031429555 53031429463 53031429459 53031429453"
+      "53031431448 53031431449 53031431450 53031431451 53031431452 53031431453 "
+      "53031430663 53031430658 53031430649 53031430646 53031430639 53031430585"
+      "53031432042 53031432043 53031432044 53031432045 53031432046 53031432047 "
+      "53031432048 53031432049 53031432050 53031432051 53031432052 53031432053 "
+      "53031432054 53031432055 53031432056 53031432057 53031432058 53031432059 "
+      "53031432060 53031432061 53031432062 53031432063 53031432064 53031432065 "
+      "53031432066 53031432067 53031432068 53031432069 53031432070 53031432071 "
+      "53031432072";
+
+  std::vector<uint64_t> idArray = idStr.toUint64Array();
+
+  std::ofstream output;
+  output.open((GET_TEST_DATA_DIR + "/test.txt").c_str());
+  for (std::vector<uint64_t>::const_iterator iter = idArray.begin();
+       iter != idArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    std::cout << "  " << bodyId << std::endl;
+    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(bodyId);
+    if (!synapseArray.empty()) {
+      output << bodyId << std::endl;
+    }
+  }
+
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "0c7e", 7000);
+  writer.open(target);
+  writer.deleteKey("annotations", "body_synapses");
+
+#endif
+
+#if 0
+#ifdef _ENABLE_LIBDVIDCPP_
+  libdvid::DVIDNodeService service("emdata2.int.janelia.org:8500", "b6bc");
+  service.custom_request("bodies/sparsevol/200013118", libdvid::BinaryDataPtr(), libdvid::GET, true);
+  service.custom_request("bodies/sparsevol-coarse/200013118", libdvid::BinaryDataPtr(), libdvid::GET, false);
+#endif
+  /*
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "b6bc", 8500);
+  reader.open(target);
+//  reader.readBody(200013118);
+  reader.readCoarseBody(200013118);
+*/
+#endif
+  
   std::cout << "Done." << std::endl;
 }
