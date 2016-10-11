@@ -35,6 +35,8 @@ public:
 
   static QSpacerItem *MakeHSpacerItem();
 
+  static QString MakeHintString(const QString &text);
+
 };
 
 #endif // ZWIDGETFACTORY_H

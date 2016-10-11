@@ -106,6 +106,7 @@ using namespace std;
 #include "tz_iarray.h"
 #include "zintpairmap.h"
 #include "tz_u8array.h"
+#include "zflyembodyannotation.h"
 #include "zfiletype.h"
 #include "tz_geometry.h"
 #include "z3dgraph.h"
@@ -273,6 +274,7 @@ using namespace std;
 #include "zdvidutil.h"
 #include "flyem/zflyemroiproject.h"
 #include "dvid/libdvidheader.h"
+#include "dialogs/zflyemsplituploadoptiondialog.h"
 
 using namespace std;
 
@@ -21052,7 +21054,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "a0310", 7000);
   target.setLabelBlockName("segmentation");
@@ -21132,5 +21134,30 @@ void ZTest::test(MainWindow *host)
 */
 #endif
   
+#if 1
+  ZFlyEmSplitUploadOptionDialog dlg;
+  ZDvidTarget target;
+  target.set("http://emdata2.int.janelia.org:8500", "b6bc");
+  dlg.setDvidTarget(target);
+
+  std::cout << "No passing" << std::endl;
+  dlg.setPassingAnnotation(false);
+  dlg.getAnnotation(14634755, 1).print();
+
+  std::cout << "No passing, with comment" << std::endl;
+  dlg.setNewComment(true);
+  dlg.setComment("split from xxx");
+  dlg.getAnnotation(14634755, 1).print();
+
+  std::cout << "Passing, no new comment" << std::endl;
+  dlg.setNewComment(false);
+  dlg.setPassingAnnotation(true);
+  dlg.getAnnotation(14634755, 1).print();
+
+  std::cout << "Passing, with new comment" << std::endl;
+  dlg.setNewComment(true);
+  dlg.getAnnotation(14634755, 1).print();
+#endif
+
   std::cout << "Done." << std::endl;
 }

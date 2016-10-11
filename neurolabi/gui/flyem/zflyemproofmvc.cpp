@@ -66,6 +66,7 @@
 #include "dvid/zdvidpatchdatafetcher.h"
 #include "dvid/zdvidpatchdataupdater.h"
 #include "widgets/z3dtabwidget.h"
+#include "dialogs/zflyemsplituploadoptiondialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -100,6 +101,8 @@ void ZFlyEmProofMvc::init()
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
+  m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
+
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
   connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
   connect(m_roiDlg, SIGNAL(showing3DRoiCurve()), this, SLOT(showRoi3dWindow()));
@@ -1021,6 +1024,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     m_splitProject.setDvidTarget(reader.getDvidTarget());
     m_mergeProject.setDvidTarget(reader.getDvidTarget());
     m_mergeProject.syncWithDvid();
+    m_splitUploadDlg->setDvidTarget(reader.getDvidTarget());
+
     getProgressSignal()->advanceProgress(0.2);
 
 
@@ -2485,38 +2490,52 @@ void ZFlyEmProofMvc::commitMerge()
 
 void ZFlyEmProofMvc::chopBodyZ()
 {
-  const QString threadId = "ZFlyEmBodySplitProject::chopBodyZ";
-  if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(
-          &m_splitProject, &ZFlyEmBodySplitProject::chopBodyZ,
-          getView()->getCurrentZ());
-    m_futureMap[threadId] = future;
+  m_splitUploadDlg->setComment(
+        QString("Split from %1").arg(m_splitProject.getBodyId()));
+  if (m_splitUploadDlg->exec()) {
+    const QString threadId = "ZFlyEmBodySplitProject::chopBodyZ";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::chopBodyZ,
+            getView()->getCurrentZ(), m_splitUploadDlg);
+      m_futureMap[threadId] = future;
+    }
   }
 }
 
 void ZFlyEmProofMvc::cropBody()
-{
-  const QString threadId = "ZFlyEmBodySplitProject::cropBody";
-  if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(
-          &m_splitProject, &ZFlyEmBodySplitProject::cropBody);
-    m_futureMap[threadId] = future;
+{ 
+  m_splitUploadDlg->setComment(
+        QString("Split from %1").arg(m_splitProject.getBodyId()));
+  if (m_splitUploadDlg->exec()) {
+    const QString threadId = "ZFlyEmBodySplitProject::cropBody";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::cropBody,
+            m_splitUploadDlg);
+      m_futureMap[threadId] = future;
+    }
   }
 }
 
 void ZFlyEmProofMvc::decomposeBody()
 {
-  const QString threadId = "ZFlyEmBodySplitProject::decomposeBody";
-  if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(
-          &m_splitProject, &ZFlyEmBodySplitProject::decomposeBody);
-    m_futureMap[threadId] = future;
+  m_splitUploadDlg->setComment(
+        QString("Split from %1").arg(m_splitProject.getBodyId()));
+  if (m_splitUploadDlg->exec()) {
+    const QString threadId = "ZFlyEmBodySplitProject::decomposeBody";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::decomposeBody,
+            m_splitUploadDlg);
+      m_futureMap[threadId] = future;
+    }
   }
 }
 

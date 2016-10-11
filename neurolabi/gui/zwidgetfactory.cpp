@@ -89,3 +89,8 @@ ZColorLabel* ZWidgetFactory::MakeColorLabel(
 
   return labelWidget;
 }
+
+QString ZWidgetFactory::MakeHintString(const QString &text)
+{
+  return "<font color=\"DarkGreen\">" + text + "</font>";
+}

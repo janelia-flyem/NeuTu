@@ -23,6 +23,7 @@ class ZStack;
 class ZStackDoc;
 class ZStackViewParam;
 class ZWidgetMessage;
+class ZFlyEmSplitUploadOptionDialog;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -102,9 +103,9 @@ public:
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
-  void decomposeBody();
-  void cropBody();
-  void chopBodyZ(int z);
+  void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
 
   void viewPreviousSlice();
   void viewNextSlice();

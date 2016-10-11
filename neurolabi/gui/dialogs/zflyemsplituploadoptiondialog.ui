@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>304</width>
-    <height>127</height>
+    <width>367</width>
+    <height>205</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,22 +16,35 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QCheckBox" name="autoAnnotationCheckBox">
+     <property name="statusTip">
+      <string>Pass current annotation to split parts</string>
+     </property>
      <property name="text">
-      <string>Auto Annotation</string>
+      <string>Pass Annotation</string>
      </property>
     </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QCheckBox" name="commentCheckBox">
+       <property name="statusTip">
+        <string>Check the box to add new comment</string>
+       </property>
        <property name="text">
         <string>Comment</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="commentLineEdit"/>
+      <widget class="QLineEdit" name="commentLineEdit">
+       <property name="statusTip">
+        <string>Comment to be added to the annotation of the split parts</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -42,6 +55,26 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="hintLabel">
+     <property name="statusTip">
+      <string>Hint: Annotation will be passed to the split parts with status 'Not examined' if 'Pass Annotation' is on, but it's comment field will be replaced if 'Comment' is on.</string>
+     </property>
+     <property name="text">
+      <string>&lt;font color=&quot;DarkGreen&quot;&gt;Hint&lt;/font&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

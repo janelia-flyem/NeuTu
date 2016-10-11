@@ -3,9 +3,14 @@
 
 #include <QDialog>
 
+#include "dvid/zdvidreader.h"
+
 namespace Ui {
 class ZFlyEmSplitUploadOptionDialog;
 }
+
+class QStatusBar;
+class ZFlyEmBodyAnnotation;
 
 class ZFlyEmSplitUploadOptionDialog : public QDialog
 {
@@ -15,8 +20,26 @@ public:
   explicit ZFlyEmSplitUploadOptionDialog(QWidget *parent = 0);
   ~ZFlyEmSplitUploadOptionDialog();
 
+
+  bool passingAnnotation() const;
+  void setPassingAnnotation(bool on);
+  bool newComment() const;
+  void setNewComment(bool on);
+  QString getComment() const;
+
+  void setComment(const QString &comment);
+
+  void setDvidTarget(const ZDvidTarget &target);
+
+  ZFlyEmBodyAnnotation getAnnotation(uint64_t bodyId, uint64_t newBodyId) const;
+
+protected:
+  bool event(QEvent *);
+
 private:
   Ui::ZFlyEmSplitUploadOptionDialog *ui;
+  ZDvidReader m_dvidReader;
+//  QStatusBar *m_statusBar;
 };
 
 #endif // ZFLYEMSPLITUPLOADOPTIONDIALOG_H

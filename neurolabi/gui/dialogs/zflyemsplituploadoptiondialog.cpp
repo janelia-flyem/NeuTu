@@ -1,14 +1,95 @@
 #include "zflyemsplituploadoptiondialog.h"
+
+#include <QStatusBar>
+#include <QStatusTipEvent>
+
 #include "ui_zflyemsplituploadoptiondialog.h"
+#include "zwidgetfactory.h"
+#include "zflyembodyannotation.h"
 
 ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::ZFlyEmSplitUploadOptionDialog)
 {
   ui->setupUi(this);
+
+//  m_statusBar = new QStatusBar(this);
+//  ui->statusBarLayout->addWidget(m_statusBar);
+}
+
+bool ZFlyEmSplitUploadOptionDialog::event(QEvent *e)
+{
+  if(e->type()==QEvent::StatusTip){
+    QStatusTipEvent *ev = (QStatusTipEvent*)e;
+//    m_statusBar->showMessage(ev->tip());
+    if (ev->tip().isEmpty()) {
+      ui->hintLabel->setText(ZWidgetFactory::MakeHintString("Hint"));
+    } else {
+      ui->hintLabel->setText(ZWidgetFactory::MakeHintString(ev->tip()));
+    }
+    return true;
+  }
+  return QDialog::event(e);
 }
 
 ZFlyEmSplitUploadOptionDialog::~ZFlyEmSplitUploadOptionDialog()
 {
   delete ui;
+}
+
+void ZFlyEmSplitUploadOptionDialog::setDvidTarget(const ZDvidTarget &target)
+{
+  m_dvidReader.open(target);
+}
+
+ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
+    uint64_t bodyId, uint64_t newBodyId) const
+{
+  ZFlyEmBodyAnnotation annot;
+  if (passingAnnotation()) {
+    if (m_dvidReader.isReady()) {
+      annot = m_dvidReader.readBodyAnnotation(bodyId);
+    }
+  }
+
+  if (newComment()) {
+    annot.setComment(getComment().toStdString());
+  }
+
+  if (!annot.isEmpty()) {
+    annot.setBodyId(newBodyId);
+    annot.setStatus("Not examined");
+  }
+
+  return annot;
+}
+
+bool ZFlyEmSplitUploadOptionDialog::passingAnnotation() const
+{
+  return ui->autoAnnotationCheckBox->isChecked();
+}
+
+void ZFlyEmSplitUploadOptionDialog::setPassingAnnotation(bool on)
+{
+  ui->autoAnnotationCheckBox->setChecked(on);
+}
+
+void ZFlyEmSplitUploadOptionDialog::setNewComment(bool on)
+{
+  ui->commentCheckBox->setChecked(on);
+}
+
+bool ZFlyEmSplitUploadOptionDialog::newComment() const
+{
+  return ui->commentCheckBox->isChecked();
+}
+
+QString ZFlyEmSplitUploadOptionDialog::getComment() const
+{
+  return ui->commentLineEdit->text();
+}
+
+void ZFlyEmSplitUploadOptionDialog::setComment(const QString &comment)
+{
+  ui->commentLineEdit->setText(comment);
 }
