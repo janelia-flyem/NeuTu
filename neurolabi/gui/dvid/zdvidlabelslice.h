@@ -160,6 +160,7 @@ private:
   void remapId(ZArray *label);
   void remapId();
 
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v);
   void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
                std::set<uint64_t> &selected);
   void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
