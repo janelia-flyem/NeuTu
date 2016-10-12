@@ -1043,6 +1043,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
             m_colorScheme.setBodyColor(bodyId, color);
         }
     }
+    m_colorScheme.buildColorTable();
 
     emit colorMapChanged(m_colorScheme);
 
