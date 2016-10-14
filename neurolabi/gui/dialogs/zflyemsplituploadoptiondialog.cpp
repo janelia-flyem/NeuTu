@@ -6,6 +6,7 @@
 #include "ui_zflyemsplituploadoptiondialog.h"
 #include "zwidgetfactory.h"
 #include "zflyembodyannotation.h"
+#include "flyem/zflyemmisc.h"
 
 ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
   QDialog(parent),
@@ -13,6 +14,7 @@ ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
 //  m_statusBar = new QStatusBar(this);
 //  ui->statusBarLayout->addWidget(m_statusBar);
 }
@@ -56,9 +58,13 @@ ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
     annot.setComment(getComment().toStdString());
   }
 
+  if (ui->statusCheckBox->isChecked()) {
+    annot.setStatus(getStatus().toStdString());
+  }
+
   if (!annot.isEmpty()) {
     annot.setBodyId(newBodyId);
-    annot.setStatus("Not examined");
+//    annot.setStatus("Not examined");
   }
 
   return annot;
@@ -87,6 +93,16 @@ bool ZFlyEmSplitUploadOptionDialog::newComment() const
 QString ZFlyEmSplitUploadOptionDialog::getComment() const
 {
   return ui->commentLineEdit->text();
+}
+
+QString ZFlyEmSplitUploadOptionDialog::getStatus() const
+{
+  QString status;
+  if (ui->statusComboBox->currentIndex() > 0) {
+    status = ui->statusComboBox->currentText();
+  }
+
+  return status;
 }
 
 void ZFlyEmSplitUploadOptionDialog::setComment(const QString &comment)

@@ -18,6 +18,7 @@ class ZDvidReader;
 class ZStackViewParam;
 class ZObject3dScan;
 class QPointF;
+class QComboBox;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -46,6 +47,8 @@ void MakeTriangle(const QRectF &rect, QPointF *ptArray,
                   NeuTube::ECardinalDirection direction);
 void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
+
+void PrepareBodyStatus(QComboBox *box);
 
 
 class HackathonEvaluator {

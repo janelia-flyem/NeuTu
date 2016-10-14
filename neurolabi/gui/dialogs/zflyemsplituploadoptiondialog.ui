@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>367</width>
-    <height>205</height>
+    <height>268</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Annotation Option</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -23,6 +23,39 @@
       <string>Pass Annotation</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="statusCheckBox">
+       <property name="statusTip">
+        <string>Check the box to set new status</string>
+       </property>
+       <property name="text">
+        <string>Status</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="statusComboBox"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -68,7 +101,7 @@
    <item>
     <widget class="QLabel" name="hintLabel">
      <property name="statusTip">
-      <string>Hint: Annotation will be passed to the split parts with status 'Not examined' if 'Pass Annotation' is on, but it's comment field will be replaced if 'Comment' is on.</string>
+      <string>Hint: Annotation will be passed to the split parts if 'Pass Annotation' is on, but it's comment/status field will be replaced if 'Comment'/'Status' is on.</string>
      </property>
      <property name="text">
       <string>&lt;font color=&quot;DarkGreen&quot;&gt;Hint&lt;/font&gt;</string>

@@ -26,6 +26,7 @@ public:
   bool newComment() const;
   void setNewComment(bool on);
   QString getComment() const;
+  QString getStatus() const;
 
   void setComment(const QString &comment);
 
