@@ -137,6 +137,7 @@ private:
 
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
+    void loadData();
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent();
     bool bodyAnnotationsPresent();

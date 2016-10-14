@@ -132,7 +132,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
     connect(ui->saveColorFilterButton, SIGNAL(clicked()), this, SLOT(onSaveColorFilter()));
-    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
     connect(ui->exportBodiesButton, SIGNAL(clicked(bool)), this, SLOT(onExportBodies()));
     connect(ui->exportConnectionsButton, SIGNAL(clicked(bool)), this, SLOT(onExportConnections()));
     connect(ui->saveButton, SIGNAL(clicked(bool)), this, SLOT(onSaveColorMap()));
@@ -175,6 +174,9 @@ void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     ui->maxBodiesMenu->addItem("10000", QVariant(10000));
     ui->maxBodiesMenu->setCurrentIndex(1);
     m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
+
+    // connect the signal now, *after* the entries added
+    connect(ui->maxBodiesMenu, SIGNAL(currentIndexChanged(int)), this, SLOT(onMaxBodiesChanged(int)));
 }
 
 void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
@@ -248,31 +250,43 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
             setStatusLabel("Load failed!");
             return;
         }
-
-        // we can load this info from different sources, depending on
-        //  what's available in DVID
-        if (dvidBookmarksPresent()) {
-            // is the synapse file present?
-            // note: this option will (should) be removed sometime after mid-Sept. 2016
-            m_futureMap["importBookmarksDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
-        } else if (bodyAnnotationsPresent()) {
-            // both of these need body annotations:
-            if (labelszPresent()) {
-                // how about labelsz data?
-                setupMaxBodyMenu();
-                m_futureMap["importBodiesDvid"] =
-                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
-            } else {
-                // this is the fallback method; it needs body annotations only
-                m_futureMap["importBodiesDvid"] =
-                    QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
-            }
-        } else {
-            // ...but sometimes, we've got nothing
-            emit loadCompleted();
-        }
+        // need to clear this to ensure it's repopulated exactly once
+        ui->maxBodiesMenu->clear();
+        loadData();
     }
+}
+
+void FlyEmBodyInfoDialog::loadData() {
+
+    setStatusLabel("Loading...");
+
+    // we can load this info from different sources, depending on
+    //  what's available in DVID
+    if (dvidBookmarksPresent()) {
+        // is the synapse file present?
+        // note: this option will (should) be removed sometime after mid-Sept. 2016
+        m_futureMap["importBookmarksDvid"] =
+            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
+    } else if (bodyAnnotationsPresent()) {
+        // both of these need body annotations:
+        if (labelszPresent()) {
+            // how about labelsz data?
+            // only set up menu on first load:
+            if (ui->maxBodiesMenu->count() == 0) {
+                setupMaxBodyMenu();
+            }
+            m_futureMap["importBodiesDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
+        } else {
+            // this is the fallback method; it needs body annotations only
+            m_futureMap["importBodiesDvid"] =
+                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
+        }
+    } else {
+        // ...but sometimes, we've got nothing
+        emit loadCompleted();
+    }
+
 }
 
 void FlyEmBodyInfoDialog::applicationQuitting() {
@@ -519,14 +533,13 @@ void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
         mb.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
         mb.setDefaultButton(QMessageBox::Cancel);
         int ans = mb.exec();
-
-        if (ans == QMessageBox::Ok) {
-            m_currentMaxBodies = maxBodies;
-            onRefreshButton();
-        } else {
+        if (ans != QMessageBox::Ok) {
             ui->maxBodiesMenu->setCurrentIndex(ui->maxBodiesMenu->findData(m_currentMaxBodies));
+            return;
         }
     }
+    m_currentMaxBodies = maxBodies;
+    onRefreshButton();
 }
 
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
@@ -753,7 +766,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
 void FlyEmBodyInfoDialog::onRefreshButton() {
     ui->bodyFilterField->clear();
-    dvidTargetChanged(m_currentDvidTarget);
+    loadData();
 }
 
 void FlyEmBodyInfoDialog::onCloseButton() {
