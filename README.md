@@ -18,6 +18,7 @@ Currently only Mac (OSX 10.10+ preferred) is supported.
     bash Miniconda-latest-MacOSX-x86_64.sh
     
     #Assuming miniconda is installed under <CONDA_ROOT>
+    #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
     conda create -n <NAME> -c flyem neutu
   
