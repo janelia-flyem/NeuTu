@@ -21,6 +21,8 @@ Currently only Mac (OSX 10.10+ preferred) is supported.
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
     conda create -n <NAME> -c flyem neutu
+    
+    #for future update, you can run 'conda update -n <name> -c flyem neutu'
   
 Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
