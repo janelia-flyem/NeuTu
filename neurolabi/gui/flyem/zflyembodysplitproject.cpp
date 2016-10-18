@@ -806,6 +806,7 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 void ZFlyEmBodySplitProject::chopBodyZ(int z)
 {
+#ifdef _FLYEM_
   ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     ZDvidWriter writer;
@@ -878,10 +879,12 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z)
       emitMessage("Done.");
     }
   }
+#endif
 }
 
 void ZFlyEmBodySplitProject::cropBody()
 {
+#ifdef _FLYEM_
   ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
     ZDvidWriter writer;
@@ -943,6 +946,7 @@ void ZFlyEmBodySplitProject::cropBody()
       emitMessage("Done.");
     }
   }
+#endif
 }
 
 void ZFlyEmBodySplitProject::decomposeBody()

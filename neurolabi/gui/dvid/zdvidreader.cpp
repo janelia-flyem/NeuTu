@@ -239,9 +239,10 @@ void ZDvidReader::waitForReading()
 
 ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
-  ZDvidUrl url(getDvidTarget());
-
   ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
+
+#ifdef _ENABLE_DVIDCPP_
+  ZDvidUrl url(getDvidTarget());
   std::string repoUrl = url.getRepoUrl();
   if (repoUrl.empty()) {
     status = ZDvid::NODE_INVALID;
@@ -260,6 +261,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
       }
     }
   }
+#endif
 
   return status;
 }

@@ -155,6 +155,12 @@ unix {
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
         }
 
+        exists($${NEUROLABI_DIR}/macosx10.12) {
+            LIBS -= -lstdc++
+            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+            QMAKE_MAC_SDK = macosx10.12
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.12
+        }
 
         doc.files = doc
         doc.path = Contents/MacOS
