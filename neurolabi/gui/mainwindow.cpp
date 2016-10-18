@@ -883,9 +883,9 @@ void MainWindow::customizeActions()
   m_ui->actionMask_SWC->setVisible(
         config.getMainWindowConfig().isMaskToSwcOn());
 
-  bool hasApplication = false;
+  bool hasApplication = true;
 
-  if (!config.getApplication().empty()) {
+  if (hasApplication) {
     if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
