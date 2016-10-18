@@ -66,10 +66,6 @@ public:
 
   void clear();
 
-  /*!
-   * \brief Get the status code of the latest request (NOT functioning yet)
-   * \return
-   */
   int getStatusCode() const;
   void setStatusCode(int code) const;
 

@@ -42,6 +42,7 @@
 #include "zflyemmisc.h"
 #include "zstackdochelper.h"
 #include "zintcuboidobj.h"
+#include "dialogs/zflyemsplituploadoptiondialog.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
@@ -804,7 +805,7 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 }
 
-void ZFlyEmBodySplitProject::chopBodyZ(int z)
+void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg)
 {
 #ifdef _FLYEM_
   ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
@@ -845,6 +846,14 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z)
           std::vector<uint64_t> updateBodyArray;
 
           if (newBodyId > 0) {
+            if (dlg != NULL) {
+              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
+                    getBodyId(), newBodyId);
+              if (!annot.isEmpty()) {
+                writer.writeBodyAnntation(annot);
+              }
+            }
+
             QString msg = QString("Cropped object uploaded as %1 (%2 voxels).").
                 arg(newBodyId).arg(voxelNumber);
             if (voxelNumber >= m_skelThre) {
@@ -882,7 +891,7 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z)
 #endif
 }
 
-void ZFlyEmBodySplitProject::cropBody()
+void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
 {
 #ifdef _FLYEM_
   ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
@@ -911,6 +920,14 @@ void ZFlyEmBodySplitProject::cropBody()
         std::vector<uint64_t> updateBodyArray;
 
         if (newBodyId > 0) {
+          if (dlg != NULL) {
+            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
+                  getBodyId(), newBodyId);
+            if (!annot.isEmpty()) {
+              writer.writeBodyAnntation(annot);
+            }
+          }
+
           *wholeBody = remain;
           size_t voxelNumber = subobj.getVoxelNumber();
           QString msg = QString("Cropped object uploaded as %1 (%2 voxels).").
@@ -949,7 +966,7 @@ void ZFlyEmBodySplitProject::cropBody()
 #endif
 }
 
-void ZFlyEmBodySplitProject::decomposeBody()
+void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
 {
   getProgressSignal()->startProgress("Decomposing body");
   emitMessage("Uploading results ...");
@@ -1006,6 +1023,14 @@ void ZFlyEmBodySplitProject::decomposeBody()
             updateBodyArray.push_back(newBodyId);
           }
           newBodyIdList.append(newBodyId);
+
+          if (dlg != NULL) {
+            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
+                  getBodyId(), newBodyId);
+            if (!annot.isEmpty()) {
+              writer.writeBodyAnntation(annot);
+            }
+          }
 
           emitMessage(msg);
         } else {

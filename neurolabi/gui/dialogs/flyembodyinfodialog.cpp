@@ -250,10 +250,10 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         // we can load this info from different sources, depending on
         //  what's available in DVID
         if (dvidBookmarksPresent()) {
-            // is the synapse file present?
-            // note: this option will (should) be removed sometime after mid-Sept. 2016
-            m_futureMap["importBookmarksDvid"] =
-                QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
+                  // is the synapse file present?
+                  // note: this option will (should) be removed sometime after mid-Sept. 2016
+                  m_futureMap["importBookmarksDvid"] =
+                      QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
         } else if (bodyAnnotationsPresent()) {
             // both of these need body annotations:
             if (labelszPresent()) {
@@ -365,11 +365,9 @@ bool FlyEmBodyInfoDialog::dvidBookmarksPresent() {
         return false;
     }
 
-    // I don't like this hack, but we seem not to have "hasKey()", or any way to detect
-    //  a failure to find a key (the reader doesn't report, eg, 404s after a call)
-    if (m_reader.readKeys(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES),
-        ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES)).size() == 0) {
+    // Check if the bookmark file exists
+    if (!m_reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
+                         ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES))) {
         #ifdef _DEBUG_
             std::cout << "UUID doesn't have body_synapses key" << std::endl;
         #endif
@@ -1045,6 +1043,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
             m_colorScheme.setBodyColor(bodyId, color);
         }
     }
+    m_colorScheme.buildColorTable();
 
     emit colorMapChanged(m_colorScheme);
 

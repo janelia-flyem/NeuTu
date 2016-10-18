@@ -383,6 +383,8 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
 
     reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
 
+    reader.tryCompress(false);
+
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
     timer.start();
@@ -755,7 +757,7 @@ ZStack* ZDvidReader::readGrayScale(
 
   try {
     libdvid::Grayscale3D data = m_service->get_gray3D(
-          getDvidTarget().getGrayScaleName(), dims, offset);
+          getDvidTarget().getGrayScaleName(), dims, offset, false);
     ZIntCuboid box(x0, y0, z0, x0 + width - 1, y0 + height - 1, z0 + depth - 1);
     stack = new ZStack(GREY, box, 1);
     memcpy(stack->array8(), data.get_binary()->get_raw(),

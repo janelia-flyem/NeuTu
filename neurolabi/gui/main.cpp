@@ -377,7 +377,13 @@ int main(int argc, char *argv[])
 #endif
 
 
-    int result = app.exec();
+    int result = 1;
+
+    try {
+      result = app.exec();
+    } catch (std::exception &e) {
+      LERROR() << "Crashed by exception:" << e.what();
+    }
 
     delete mainWin;
     z3dApp.deinitializeGL();

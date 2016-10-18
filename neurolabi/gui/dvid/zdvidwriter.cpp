@@ -504,9 +504,9 @@ void ZDvidWriter::createData(
   }
 }
 
-void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+void ZDvidWriter::deleteKey(const char* dataName, const char* key)
 {
-  if (dataName.empty() || key.empty()) {
+  if (strlen(dataName) == 0 || strlen(key) == 0) {
     return;
   }
 
@@ -514,15 +514,15 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
   std::string url = dvidUrl.getKeyUrl(dataName, key);
   del(url);
 
-//  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
+}
 
-  /*
-  qDebug() << command;
+void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+{
+  if (dataName.empty() || key.empty()) {
+    return;
+  }
 
-  QProcess::execute(command);
-  */
-
-//  runCommand(command);
+  deleteKey(dataName.c_str(), key.c_str());
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
@@ -966,6 +966,32 @@ uint64_t ZDvidWriter::writeSplit(
 {
   return writeSplit(
         m_dvidTarget.getBodyLabelName(), obj, oldLabel, label, newBodyId);
+}
+
+uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
+{
+  uint64_t newBodyId = 0;
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZObject3dScan obj = reader.readBody(bodyId);
+
+    if (!obj.isEmpty()) {
+      newBodyId = writeSplit(obj, bodyId, 0);
+//      std::cout << newBodyId << std::endl;
+
+      if (newBodyId > 0) {
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
+        if (!annotation.isEmpty()) {
+          deleteBodyAnnotation(bodyId);
+          annotation.setBodyId(newBodyId);
+          writeBodyAnntation(annotation);
+        }
+      }
+    }
+  }
+
+  return newBodyId;
 }
 
 uint64_t ZDvidWriter::writeSplit(

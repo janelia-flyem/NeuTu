@@ -39,6 +39,7 @@ class ZDvidPatchDataUpdater;
 class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZFlyEmSplitUploadOptionDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -381,6 +382,7 @@ protected:
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;
+  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

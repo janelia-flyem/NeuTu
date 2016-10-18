@@ -2758,10 +2758,12 @@ void ZFlyEmProofDoc::updateBodyColor(EBodyColorMap type)
   if (slice != NULL) {
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
     if (colorMap.get() != NULL) {
+      colorMap->update();
       slice->setCustomColorMap(colorMap);
     } else {
       slice->removeCustomColorMap();
     }
+    slice->paintBuffer();
 
     processObjectModified(slice);
     notifyObjectModified();
