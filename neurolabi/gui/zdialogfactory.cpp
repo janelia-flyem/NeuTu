@@ -203,6 +203,13 @@ bool ZDialogFactory::Ask(
       QMessageBox::Yes;
 }
 
+void ZDialogFactory::Warn(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::warning(parent, title, msg);
+}
+
+
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {
   ZSpinBoxGroupDialog *dlg = new ZSpinBoxGroupDialog(parent);

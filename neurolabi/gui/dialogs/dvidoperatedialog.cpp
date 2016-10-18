@@ -15,7 +15,6 @@ DvidOperateDialog::DvidOperateDialog(QWidget *parent) :
 
   m_dvidDlg = NULL;
   m_contrastDlg = new ZContrastProtocalDialog(this);
-//  m_dvidDlg = new ZDvidDialog(this);
 }
 
 DvidOperateDialog::~DvidOperateDialog()
@@ -25,9 +24,21 @@ DvidOperateDialog::~DvidOperateDialog()
 
 void DvidOperateDialog::on_dvidPushButton_clicked()
 {
-  if (m_dvidDlg->exec()) {
-    const ZDvidTarget &target = m_dvidDlg->getDvidTarget();
-    ui->dvidLabel->setText(target.getSourceString(false).c_str());
+  if (m_dvidDlg != NULL) {
+    if (m_dvidDlg->exec()) {
+      updateDvidTarget();
+    }
+  }
+}
+
+void DvidOperateDialog::updateDvidTarget()
+{
+  if (m_dvidDlg != NULL) {
+    m_dvidTarget = m_dvidDlg->getDvidTarget();
+    ui->dvidLabel->setText(m_dvidTarget.getSourceString(false).c_str());
+  } else {
+    m_dvidTarget.clear();
+    ui->dvidLabel->setText("");
   }
 }
 
@@ -40,7 +51,7 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
   if (ok && !text.isEmpty()) {
     ZDvidWriter writer;
     std::string dataType = ui->typeComboBox->currentText().toStdString();
-    if (writer.open(m_dvidDlg->getDvidTarget())) {
+    if (writer.open(getDvidTarget())) {
 //      writer.createKeyvalue(text.toStdString());
       writer.createData(dataType, text.toStdString());
       if (writer.getStatusCode() != 200) {
@@ -56,6 +67,7 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
 void DvidOperateDialog::setDvidDialog(ZDvidDialog *dlg)
 {
   m_dvidDlg = dlg;
+  updateDvidTarget();
 }
 
 void DvidOperateDialog::on_contrastPushButton_clicked()
@@ -63,9 +75,9 @@ void DvidOperateDialog::on_contrastPushButton_clicked()
   if (m_contrastDlg->exec()) {
     ZJsonObject obj = m_contrastDlg->getContrastProtocal();
     ZDvidReader reader;
-    if (reader.open(m_dvidDlg->getDvidTarget())) {
+    if (reader.open(getDvidTarget())) {
       ZDvidWriter writer;
-      writer.open(m_dvidDlg->getDvidTarget());
+      writer.open(getDvidTarget());
 
       if (!reader.hasData("neutu_config")) {
         writer.createData("keyvalue", "neutu_config", false);
@@ -83,12 +95,12 @@ void DvidOperateDialog::on_addMasterPushButton_clicked()
                                        tr("uuid:"), QLineEdit::Normal,
                                        "", &ok);
   if (ok && !text.isEmpty()) {
-    ZDvidTarget target = m_dvidDlg->getDvidTarget();
+    ZDvidTarget target = getDvidTarget();
     target.setUuid(text.toStdString());
     ZDvidReader reader;
     if (reader.open(target)) {
       ZDvidWriter writer;
-      writer.open(m_dvidDlg->getDvidTarget());
+      writer.open(getDvidTarget());
       writer.writeMasterNode(text.toStdString());
       if (writer.getStatusCode() == 200) {
         QMessageBox::information(

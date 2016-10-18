@@ -5,13 +5,15 @@
 #include "zstackdoc.h"
 
 ZMovieStage::ZMovieStage(Z3DWindow *window) : m_window(window),
-  m_isSwcChanged(false), m_isVolumeChanged(false), m_isPunctaChanged(false)
+  m_isSwcChanged(false), m_isVolumeChanged(false), m_isPunctaChanged(false),
+  m_isCubeArrayChanged(false)
 {
 }
 
 bool ZMovieStage::hasAnyChange()
 {
-  return isSwcChanged() || isVolumeChanged() || isPunctaChanged();
+  return isSwcChanged() || isVolumeChanged() || isPunctaChanged() ||
+      isCubeArrayChanged();
 }
 
 void ZMovieStage::updateWindow()
@@ -39,6 +41,12 @@ void ZMovieStage::updateWindow()
   if (isVolumeChanged()) {
     getWindow()->getDocument()->notifyStackModified();
     setVolumeChanged(false);
+    changed = true;
+  }
+
+  if (isCubeArrayChanged()) {
+    getWindow()->getDocument()->notify3DCubeModified();
+    setCubeArrayChanged(false);
     changed = true;
   }
 

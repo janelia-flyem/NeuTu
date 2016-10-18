@@ -548,6 +548,16 @@ public: /* processing routines */
   bool watershed(int c = 0);
 //  inline const ZResolution& getResolution() const { return m_resolution; }
 
+  void pushDsIntv(int dx, int dy, int dz);
+
+  ZIntPoint getDsIntv() const {
+    return m_dsIntv;
+  }
+
+  void setDsIntv(const ZIntPoint &dsIntv) {
+    m_dsIntv = dsIntv;
+  }
+
   /*!
    * \brief Downsample the stack with maximum assignment.
    *
@@ -614,6 +624,7 @@ private:
   Mc_Stack *m_stack; //Master data
   C_Stack::Mc_Stack_Deallocator *m_dealloc; //Dellocator of the master data
   ZIntPoint m_offset;
+  ZIntPoint m_dsIntv; //Downsampling ratio from original space
 
   ZStackFile m_source;
 

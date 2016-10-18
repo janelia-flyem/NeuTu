@@ -39,7 +39,7 @@ protected:
     virtual void renderPicking(Z3DEye eye);
 
     Z3DShaderGroup m_cubeShaderGrp;
-    QGLShaderProgram *oit2DComposeProgram;
+    Z3DShaderProgram *oit2DComposeProgram;
 
 private:
     std::vector<glm::vec4> m_pointAndRadius;

@@ -27,7 +27,8 @@ public:
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
-    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
+    WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
+    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
   };
 
   static NeutubeConfig& getInstance() {
@@ -342,6 +343,9 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
+  void init();
+  void updateLogDir();
+
 private:
   std::string m_application;
   std::string m_softwareName;
@@ -370,6 +374,7 @@ private:
   //std::string m_autoSaveDir;
   std::string m_workDir;
   std::string m_logDir;
+  std::string m_logDestDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;

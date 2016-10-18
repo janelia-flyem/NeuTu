@@ -77,7 +77,39 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
-  setServer(address);
+  ZString s(address);
+  std::string pureAddress = address;
+  if (port < 0) { //parsing address
+    if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
+      s = s.substr(7);
+      std::vector<std::string> tokenArray = s.tokenize(':');
+      if (tokenArray.empty()) {
+        pureAddress = "";
+      } else {
+        pureAddress = tokenArray[0];
+        if (tokenArray.size() > 1 && port < 0) {
+          std::string portStr = tokenArray[1];
+          std::string::size_type pos = portStr.find_first_of('/');
+          if (pos != std::string::npos) {
+            if (pos > 0) {
+              portStr = portStr.substr(0, pos + 1);
+            } else {
+              portStr = "";
+            }
+          }
+
+          if (!portStr.empty()) {
+            int tmpPort = std::atoi(portStr.c_str());
+            if (tmpPort > 0) {
+              port = tmpPort;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  setServer(pureAddress);
   setPort(port);
   setUuid(uuid);
 }

@@ -293,7 +293,7 @@ void Z3DSwcFilter::initTypeColor()
   } else {
     ZSwcColorScheme colorScheme;
     colorScheme.setColorScheme(ZSwcColorScheme::GMU_TYPE_COLOR);
-    for (size_t type = 0; type <= 276; ++type) {
+    for (int type = 0; type <= 276; ++type) {
       QColor color = colorScheme.getColor(type);
       m_colorsForDifferentType.push_back(
             new ZVec4Parameter(
@@ -1020,7 +1020,7 @@ void Z3DSwcFilter::prepareData()
     allSources.insert(m_origSwcList[i]);
     QString guiname = QString("Swc %1 Color").arg(i + 1);
     if (m_individualTreeColorMapper.find(m_origSwcList[i]) == m_individualTreeColorMapper.end()) {
-      QColor color = colorScheme.getColor(i);
+      QColor color = colorScheme.getColor((uint64_t) i);
       m_individualTreeColorMapper[m_origSwcList[i]] = new ZVec4Parameter(
             guiname,
             glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f));

@@ -356,6 +356,14 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyDecomposeTriggered()));
       break;
+    case ZActionFactory::ACTION_BODY_CROP:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyCropTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_CHOP_Z:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyChopZTriggered()));
+      break;
     case ZActionFactory::ACTION_BODY_MERGE:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyMergeTriggered()));
@@ -2620,6 +2628,16 @@ void ZStackPresenter::notifyOrthoViewTriggered()
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
+}
+
+void ZStackPresenter::notifyBodyCropTriggered()
+{
+  emit bodyCropTriggered();
+}
+
+void ZStackPresenter::notifyBodyChopZTriggered()
+{
+  emit bodyChopZTriggered();
 }
 
 void ZStackPresenter::notifyBodyMergeTriggered()

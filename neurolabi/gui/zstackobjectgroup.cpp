@@ -215,7 +215,7 @@ void ZStackObjectGroup::deselectAllUnsync()
 
 ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
 {
-  ZOUT(LTRACE(), 5) << "Taking object";
+  ZOUT(LTRACE(), 5) << "Taking object:" << obj;
 
   ZStackObject *found = NULL;
   if (m_objectList.removeOne(obj)) {

@@ -117,6 +117,14 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     }
     //std::cout << "paint object canvas: " << toc() << std::endl;
 
+    if (m_dynamicObjectCanvas != NULL) {
+      if (m_dynamicObjectCanvas->isVisible()) {
+        m_dynamicObjectCanvas->updateProjTransform(viewPort(), projectRegion());
+        painter.drawPixmap(*m_dynamicObjectCanvas);
+      }
+    }
+
+
     if (m_widgetCanvas != NULL) {
       if (m_widgetCanvas->isVisible()) {
         painter.drawPixmap(*m_widgetCanvas);
@@ -146,13 +154,6 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
         painter.drawPixmap(*m_activeDecorationCanvas);
 //        painter.drawPixmapNt(*m_activeDecorationCanvas);
 //        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
-      }
-    }
-
-    if (m_dynamicObjectCanvas != NULL) {
-      if (m_dynamicObjectCanvas->isVisible()) {
-        m_dynamicObjectCanvas->updateProjTransform(viewPort(), projectRegion());
-        painter.drawPixmap(*m_dynamicObjectCanvas);
       }
     }
 

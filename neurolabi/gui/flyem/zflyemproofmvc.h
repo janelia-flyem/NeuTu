@@ -39,6 +39,7 @@ class ZDvidPatchDataUpdater;
 class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZFlyEmSplitUploadOptionDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -86,6 +87,7 @@ public:
   virtual ZDvidTarget getDvidTarget() const;
 
   void setDvidDialog(ZDvidDialog *dlg);
+  ZDvidDialog* getDvidDialog() const;
 
   ZFlyEmBodyMergeProject* getMergeProject() {
     return &m_mergeProject;
@@ -192,6 +194,8 @@ public slots:
   void selectBody();
   void processLabelSliceSelectionChange();
   void decomposeBody();
+  void cropBody();
+  void chopBodyZ();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -268,6 +272,8 @@ public slots:
   void recoverObjectVisible();
 
   void updateRoiWidget();
+
+  void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
 protected slots:
@@ -373,10 +379,10 @@ protected:
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ProtocolSwitcher *m_protocolSwitcher;
-  ZFlyEmSupervisor *m_supervisor;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;
+  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

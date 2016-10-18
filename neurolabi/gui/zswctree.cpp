@@ -67,10 +67,11 @@ ZSwcTree::~ZSwcTree()
   }
 #endif
 
-  std::cout << "Deconstructing " << this << ": SWC " << ", "
-            << getSource() << std::endl;
-
   if (m_tree != NULL) {
+#ifdef _FLYEM_
+    std::cout << "Killing " << m_tree << ": SWC " << ", "
+              << getSource() << std::endl;
+#endif
     Kill_Swc_Tree(m_tree);
   }
   m_tree = NULL;

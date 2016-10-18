@@ -47,6 +47,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizeDecPushButton->setEnabled(false);
 
   ui->saveMergePushButton->hide();
+  ui->dataInfoWidget->hide();
 
 //  ui->bodyViewPushButton->hide();
 
@@ -285,6 +286,8 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   }
 #endif
   setInfo(info.c_str());
+
+  ui->dvidPushButton->setEnabled(false);
 }
 
 /*

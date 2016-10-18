@@ -151,7 +151,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3d33",
       "name": "mb_training_namra_split",
@@ -161,7 +161,7 @@
       "user_name": ["ansarin"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "2b46",
       "name": "split training neacee",
@@ -171,7 +171,7 @@
       "user_name": ["neacee"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3e4b",
       "name": "split training mcadowk",
@@ -181,7 +181,7 @@
       "user_name": ["mcadowk"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "c348",
       "name": "MB_seg_TEST2",
@@ -191,7 +191,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "98ec",
       "name": "MB_seg_old",
@@ -201,7 +201,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "7d44",
       "name": "MB_seg",
@@ -211,7 +211,7 @@
       "user_name": ["takemuras", "zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3303",
       "name": "MB_Demo",
@@ -222,7 +222,7 @@
       "user_name": ["takemuras", "zhaot", "olbrisd"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "fe38",
       "name": "MB_split",
@@ -232,7 +232,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "df22",
       "name": "MB_split_merge",
@@ -242,7 +242,7 @@
       "user_name": "[]"
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "372c",
       "name": "MB_zhaot",
@@ -279,7 +279,7 @@
       "user_name": []
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_Production",
@@ -289,7 +289,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "7ee9",
       "name": "mb_training_namra_orphan",
@@ -299,7 +299,7 @@
       "user_name": ["ansarin"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "8693",
       "name": "merge training neacee",
@@ -309,7 +309,7 @@
       "user_name": ["zhaot", "neacee"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3364",
       "name": "merge training mcadowk",
@@ -319,7 +319,7 @@
       "user_name": ["mcadowk"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "24b8",
       "name": "split training talebii",
@@ -329,7 +329,7 @@
       "user_name": ["talebii"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "1e80",
       "name": "split training peeld",
@@ -339,7 +339,7 @@
       "user_name": ["peeld"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "65f9",
       "name": "merge training talebii",
@@ -349,7 +349,7 @@
       "user_name": ["talebii"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "49df",
       "name": "merge training peeld",
@@ -359,7 +359,7 @@
       "user_name": ["peeld"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "b6bc",
       "name": "MB_Test",
@@ -369,7 +369,7 @@
       "roi": "mb_subtracted"
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_for_Satoko",
@@ -379,7 +379,7 @@
       "user_name": "takemurasa"
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_for_Pat",
@@ -389,7 +389,7 @@
       "user_name": "rivlinp"
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_lauchies",
@@ -399,7 +399,7 @@
       "user_name": ["lauchies", "zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_ogundeyio",
@@ -419,7 +419,7 @@
       "user_name": ["ordishc", "zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_shinomiyaa",
@@ -429,7 +429,7 @@
       "user_name": ["shinomiyaa", "zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "0f33",
       "name": "MB_shinomiyak",
@@ -439,7 +439,7 @@
       "user_name": ["shinomiyak", "zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3771",
       "name": "MB_roi",
@@ -449,7 +449,7 @@
       "user_name": ["zhaot"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "f17b",
       "name": "MB_takemurasa_Training",
@@ -459,7 +459,7 @@
       "user_name": ["takemurasa"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "afc7",
       "name": "MB_rivlinp_Training",
@@ -469,7 +469,7 @@
       "user_name": "rivlinp"
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "d5f8",
       "name": "MB_New_PR_Training",
@@ -479,7 +479,7 @@
       "user_name": ["changl"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "5515",
       "name": "MB_Training",
@@ -489,7 +489,7 @@
       "user_name": ["rivlinp", "cheathamn"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "31cc",
       "name": "MB_Training_Orphan",
@@ -499,7 +499,7 @@
       "user_name": ["rivlinp", "cheathamn"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "a8eb",
       "name": "MB_Training_Natasha",
@@ -509,7 +509,7 @@
       "user_name": ["rivlinp", "cheathamn"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "4a55",
       "name": "MB_lauchies_Training",
@@ -519,7 +519,7 @@
       "user_name": ["lauchies"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "c0a5",
       "name": "MB_ogundeyio_Training",
@@ -529,7 +529,7 @@
       "user_name": ["ogundeyio"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "3cbe",
       "name": "MB_ordishc_Training",
@@ -539,7 +539,7 @@
       "user_name": ["ordishc"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "8366",
       "name": "MB_shinomiyaa_Training",
@@ -549,17 +549,7 @@
       "user_name": ["shinomiyaa"]
     },
     {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "91d9",
-      "name": "MB_tranj_Training",
-      "comment": "MB seg (branched from ccf)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["tranj"]
-    },
-    {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "ee10",
       "name": "MB_shinomiyak_Training",
@@ -569,7 +559,7 @@
       "user_name": ["shinomiyak"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "8e0f",
       "name": "MB_Merged",
@@ -579,7 +569,7 @@
       "user_name": ["shinomiyak", "takemuras"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "@MB6",
       "name": "MB_Synapse_Shift",
@@ -587,11 +577,11 @@
       "body_label": "bodies3",
       "label_block": "labels3",
       "roi": "mbroi",
-      "synapse": "mb6_synapses_07182016",
+      "synapse": "mb6_synapses_10062016",
       "user_name": ["anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "zhaot", "takemuras", "olbrisd", "ansarin"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "5f53",
       "name": "MB_ansarin_Training",
@@ -602,7 +592,7 @@
       "user_name": ["ansarin"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "02c3",
       "name": "MB_Synapse_Pat",
@@ -613,7 +603,7 @@
       "user_name": ["rivlinp"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "d1ea",
       "name": "MB_Orphan_Link",
@@ -623,7 +613,7 @@
       "user_name": ["xxx"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "5515",
       "name": "MB_Training",
@@ -633,7 +623,7 @@
       "user_name": ["rivlinp", "cheathamn"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 8500,
       "uuid": "eafc",
       "name": "MB_Practice",

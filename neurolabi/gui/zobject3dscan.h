@@ -229,9 +229,19 @@ public:
 
   /*!
    * \brief Extract voxels within a cuboid
+   *
+   * \a remain and \a result can be NULL or any pointer other than 'this' object.
    */
-  ZObject3dScan *subobject(const ZIntCuboid &box,
-                          ZObject3dScan *result = NULL) const;
+  ZObject3dScan *subobject(const ZIntCuboid &box, ZObject3dScan *remain,
+                          ZObject3dScan *result) const;
+
+  /*!
+   * \brief Chop the object into two parts
+   *
+   * \return The part above z (<z)
+   */
+  ZObject3dScan *chopZ(int z, ZObject3dScan *remain,
+                          ZObject3dScan *result) const;
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
