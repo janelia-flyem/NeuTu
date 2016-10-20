@@ -47,6 +47,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizeDecPushButton->setEnabled(false);
 
   ui->saveMergePushButton->hide();
+  ui->dataInfoWidget->hide();
 
 //  ui->bodyViewPushButton->hide();
 
@@ -275,6 +276,7 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
   std::string info = target.toJsonObject().dumpString(2);
+#if defined(_FLYEM_)
   if (target.isSupervised()) {
     if (!target.getSupervisor().empty()) {
       info += "\nLibrarian: " + target.getSupervisor();
@@ -282,8 +284,10 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
       info += "\nLibrarian: " + GET_FLYEM_CONFIG.getDefaultLibrarian();
     }
   }
-
+#endif
   setInfo(info.c_str());
+
+  ui->dvidPushButton->setEnabled(false);
 }
 
 /*

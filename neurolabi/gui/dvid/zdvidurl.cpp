@@ -58,6 +58,11 @@ std::string ZDvidUrl::GetFullUrl(
   return url;
 }
 
+std::string ZDvidUrl::getApiLoadUrl() const
+{
+  return GetFullUrl(getApiUrl(), "load");
+}
+
 std::string ZDvidUrl::getNodeUrl() const
 {
   return m_dvidTarget.getUrl();
@@ -331,6 +336,10 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
+std::string ZDvidUrl::getCommitInfoUrl() const
+{
+  return GetFullUrl(getNodeUrl(), "commit");
+}
 
 std::string ZDvidUrl::getSp2bodyUrl() const
 {
@@ -951,9 +960,8 @@ std::string ZDvidUrl::getSynapseUrl(
 
 std::string ZDvidUrl::getSynapseElementsUrl() const
 {
-  std::ostringstream stream;
-
-  return GetFullUrl(getSynapseUrl(), m_annotationElementCommand);
+//  std::ostringstream stream;
+  return GetFullUrl(getSynapseUrl(), m_annotationElementsCommand);
 }
 
 std::string ZDvidUrl::getSynapseUrl(

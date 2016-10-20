@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Body Annotation</string>
   </property>
+  <property name="whatsThis">
+   <string/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -143,36 +146,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <item>
-        <property name="text">
-         <string>Not examined</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traced</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traced in ROI</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Partially Traced</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Orphan</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Hard to trace</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item>

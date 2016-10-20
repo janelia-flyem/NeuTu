@@ -41,6 +41,7 @@
 #include "zsleeper.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "zstackview.h"
+#include "widgets/z3dtabwidget.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -476,6 +477,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                     "Failed to upload merging results", NeuTube::MSG_ERROR));
           } else {
             std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
+#if defined(_FLYEM_)
             if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
               if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
                     getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
@@ -489,19 +491,26 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                 warnMsg.setMessage("Computing service failed");
               }
             }
+#endif
           }
+
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();
           foreach (ZDvidLabelSlice *slice, labelList) {
             slice->mapSelection();
           }
+          ZOUT(LTRACE(), 5) << "Label slice updated";
         }
         getProgressSignal()->advanceProgress(0.1);
 
+        ZOUT(LTRACE(), 5) << "Merge uploaded.";
+
         emit mergeUploaded();
+
 
         if (getDocument<ZFlyEmProofDoc>() != NULL) {
           getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
+          ZOUT(LTRACE(), 5) << "Label buffer refreshed";
         }
 #if 0
         ZSleeper::msleep(2000);
@@ -530,11 +539,15 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
         clearBodyMerger();
 
+        ZOUT(LTRACE(), 5) << "Body merger cleared.";
+
 //        ZSleeper::msleep(10000);
 
         emit dvidLabelChanged();
 //        bodyMerger->clear();
         saveMergeOperation();
+
+        ZOUT(LTRACE(), 5) << "Merge operation saved.";
 
         ZWidgetMessage message("Body merge finalized.");
         emit messageGenerated(message);
@@ -820,7 +833,7 @@ void ZFlyEmBodyMergeProject::update3DBodyViewDeep()
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_MAPPED));
+              body.setColor(labelSlice->getLabelColor(label, NeuTube::BODY_LABEL_MAPPED));
             }
           }
           body.setAlpha(255);
@@ -968,7 +981,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColor(
+              body.setColor(labelSlice->getLabelColor(
                               label, NeuTube::BODY_LABEL_MAPPED));
             }
           }
@@ -1057,7 +1070,7 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
             ZDvidLabelSlice *labelSlice =
                 getDocument<ZFlyEmProofDoc>()->getDvidLabelSlice(NeuTube::Z_AXIS);
             if (labelSlice != NULL) {
-              body.setColor(labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL));
+              body.setColor(labelSlice->getLabelColor(label, NeuTube::BODY_LABEL_ORIGINAL));
             }
           }
           body.setAlpha(255);
@@ -1431,7 +1444,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
         obj->setLabel(bodyId);
 //        uint64_t finalLabel = doc->getBodyMerger()->getFinalLabel(bodyId);
         obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-        obj->setColor(doc->getDvidLabelSlice(NeuTube::Z_AXIS)->getColor(
+        obj->setColor(doc->getDvidLabelSlice(NeuTube::Z_AXIS)->getLabelColor(
                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
         doc->addObject(obj);
       }

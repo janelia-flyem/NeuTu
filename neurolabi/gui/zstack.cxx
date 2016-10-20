@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+#include <QElapsedTimer>
 #endif
 #include <string.h>
 #include <iostream>
@@ -107,9 +108,10 @@ ZStack::ZStack(const ZStack &/*src*/)
 
 ZStack::~ZStack()
 {
-  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
-
+//  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+  tic();
   clear();
+  ZOUT(LTRACE(), 5) << "Stack deleted" << this << toc() << "ms";
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const
@@ -2103,6 +2105,13 @@ void ZStack::downsampleMax(int xintv, int yintv, int zintv)
 
     setData(result);
   }
+}
+
+void ZStack::pushDsIntv(int dx, int dy, int dz)
+{
+  m_dsIntv.setX((m_dsIntv.getX() + 1) * (dx + 1) - 1);
+  m_dsIntv.setY((m_dsIntv.getY() + 1) * (dy + 1) - 1);
+  m_dsIntv.setZ((m_dsIntv.getZ() + 1) * (dz + 1) - 1);
 }
 
 void ZStack::downsampleMin(int xintv, int yintv, int zintv)

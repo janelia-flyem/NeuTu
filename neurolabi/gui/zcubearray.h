@@ -161,6 +161,10 @@ public:
   ZCubeArray();
   ~ZCubeArray();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_CUBE;
+  }
+
 public:
   bool isEmpty() const;
   Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray);

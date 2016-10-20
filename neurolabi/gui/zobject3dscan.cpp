@@ -817,7 +817,7 @@ void ZObject3dScan::canonize()
   if (!isEmpty() && !isCanonized()) {
     sort();
 
-    ZOUT(std::cout, 3) << "Sorting done in canozing" << std::endl;
+    ZOUT(std::cout, 6) << "Sorting done in canozing" << std::endl;
 
 #ifdef _DEBUG_2
   int count = 0;
@@ -852,7 +852,7 @@ void ZObject3dScan::canonize()
 
     newStripeArray.resize(length);
 
-    ZOUT(std::cout, 3) << "  stripes finalized." << std::endl;
+    ZOUT(std::cout, 6) << "  stripes finalized." << std::endl;
 
     //m_stripeArray = newStripeArray;
     m_stripeArray.swap(newStripeArray);
@@ -1370,6 +1370,10 @@ std::vector<size_t> ZObject3dScan::getConnectedObjectSize()
       objArray[i].print();
 #endif
     }
+
+#ifdef _DEBUG_
+    objArray[0].save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
   }
 #endif
 
@@ -1411,6 +1415,10 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
     size_t index = 0;
     for (std::vector<ZGraph*>::const_iterator iter = subGraph.begin();
          iter != subGraph.end(); ++iter, ++index) {
+#ifdef _DEBUG_2
+      (*iter)->print();
+#endif
+
 #if 1
       std::cout << "  " << index + 1 << "/" << subGraph.size() << std::endl;
       std::cout << "  Processing " << (*iter)->getEdgeNumber() << " edges"
@@ -1421,12 +1429,17 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
         int v1 = (*iter)->edgeStart(edgeIndex);
         int v2 = (*iter)->edgeEnd(edgeIndex);
         int z, y, x1, x2;
-        getSegment(v1, &z, &y, &x1, &x2);
-        subobj.addSegment(z, y, x1, x2, false);
-        getSegment(v2, &z, &y, &x1, &x2);
-        subobj.addSegment(z, y, x1, x2, false);
-        isAdded[v1] = true;
-        isAdded[v2] = true;
+        if (!isAdded[v1]) {
+          getSegment(v1, &z, &y, &x1, &x2);
+          subobj.addSegment(z, y, x1, x2, false);
+          isAdded[v1] = true;
+        }
+
+        if (!isAdded[v2]) {
+          getSegment(v2, &z, &y, &x1, &x2);
+          subobj.addSegment(z, y, x1, x2, false);
+          isAdded[v2] = true;
+        }
       }
 #if 1
       std::cout << "  Edge processing done." << std::endl;
@@ -3193,11 +3206,53 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
   return result;
 }
 
-ZObject3dScan* ZObject3dScan::subobject(const ZIntCuboid &box,
-                                        ZObject3dScan *result) const
+ZObject3dScan* ZObject3dScan::chopZ(
+    int z, ZObject3dScan *remain, ZObject3dScan *result) const
 {
   if (result == NULL) {
     result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
+  }
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.getZ() < z) {
+      result->addStripe(stripe, false);
+    } else if (remain != NULL) {
+      remain->addStripe(stripe, false);
+    }
+  }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
+  result->canonize();
+  result->setSliceAxis(m_sliceAxis);
+
+  return result;
+}
+
+ZObject3dScan* ZObject3dScan::subobject(
+    const ZIntCuboid &box, ZObject3dScan *remain,
+    ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
   }
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
@@ -3207,9 +3262,37 @@ ZObject3dScan* ZObject3dScan::subobject(const ZIntCuboid &box,
       int x1 = imin2(seg.getEnd(), box.getLastCorner().getX());
       if (x0 <= x1) {
         result->addSegment(seg.getZ(), seg.getY(), x0, x1, false);
+
+        if (remain != NULL) {
+          if (seg.getStart() < x0) {
+            remain->addSegment(
+                  seg.getZ(), seg.getY(), seg.getStart(), x0 - 1, false);
+          }
+          if (seg.getEnd() > x1) {
+            remain->addSegment(
+                  seg.getZ(), seg.getY(), x1 + 1, seg.getEnd(), false);
+          }
+        }
+
+      } else if (remain != NULL) {
+        remain->addSegment(
+              seg.getZ(), seg.getY(), seg.getStart(), seg.getEnd(), false);
+      }
+    } else {
+      if (remain != NULL) {
+        remain->addSegment(
+              seg.getZ(), seg.getY(), seg.getStart(), seg.getEnd(), false);
       }
     }
   }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
   result->canonize();
 
   result->setSliceAxis(m_sliceAxis);

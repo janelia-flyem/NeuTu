@@ -74,6 +74,7 @@ public:
 
   inline bool isSingleShot() { return m_duration == 0; }
 
+  void updateStage(Z3DWindow *stage);
   void updateCamera(Z3DWindow *stage, double t);
   void updateClip(Z3DWindow *stage, ZMovieSceneClipperState *state, double t);
 
@@ -88,6 +89,7 @@ public:
 private:
   bool isDurationTag(const char *tag);
   bool isBackgroundTag(const char *tag);
+  bool isAxisTag(const char *tag);
   bool isActionListTag(const char *tag);
   bool isIdTag(const char *tag);
   bool isMovingTag(const char *tag);
@@ -99,6 +101,7 @@ private:
   bool isClipperTag(const char *tag);
   bool isFadingTag(const char *tag);
   bool isTransitTag(const char *tag);
+  void init();
 
 private:
   std::vector<MovieAction> m_actionList;
@@ -109,6 +112,7 @@ private:
   int m_duration;
   bool m_isNewScene;
   bool m_isBackground;
+  int m_showingAxis; //0: hide; 1: show; -1: keep unchanged
 };
 
 #endif // ZMOVIESCENE_H

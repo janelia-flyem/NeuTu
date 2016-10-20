@@ -27,11 +27,17 @@ public:
   void updateNameMap(const ZFlyEmBodyAnnotation &annotation);
   void updateNameMap(uint64_t bodyId, const QString &name);
 
+  QHash<uint64_t, int> getColorIndexMap() const;
+//  QVector<QColor> getColorList() const;
+  void buildColorTable();
+  void update();
+
 private:
   QHash<QString, QColor> m_colorMap;
   QHash<uint64_t, QString> m_nameMap;
   ZDvidReader m_reader;
   bool m_isMapReady;
+  QColor m_defaultColor;
 
 };
 

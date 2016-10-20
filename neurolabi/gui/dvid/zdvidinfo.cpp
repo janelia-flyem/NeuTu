@@ -200,6 +200,13 @@ ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
   return blockIndex;
 }
 
+void ZDvidInfo::setBlockSize(int width, int height, int depth)
+{
+  m_blockSize[0] = width;
+  m_blockSize[1] = height;
+  m_blockSize[2] = depth;
+}
+
 ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);

@@ -9,35 +9,31 @@
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
 #include "zjsonobject.h"
+#include "z3daxis.h"
 
 using namespace std;
 
-ZMovieScene::ZMovieScene() : m_duration(0), m_isNewScene(true),
-  m_isBackground(false)
+ZMovieScene::ZMovieScene()
 {
+  init();
 }
-/*
-bool ZMovieScene::toSingleShot(double dt, ZMovieScene *scene)
+
+void ZMovieScene::init()
 {
-  if (dt > m_duration) {
-    return false;
-  }
-
-  if (m_duration > 0.0) {
-    scene->setCameraRotation(m_cameraRotation.getAxis(),
-                            m_cameraRotation.getAngle() / m_duration);
-  }
-
-  scene->setDuration(0);
-
-  *scene = *this;
-
-  return true;
+  m_duration = 0;
+  m_isNewScene = true;
+  m_isBackground = false;
+  m_showingAxis = -1;
 }
-*/
+
 bool ZMovieScene::isDurationTag(const char *tag)
 {
   return strcmp(tag, "duration") == 0 || strcmp(tag, "Duration") == 0;
+}
+
+bool ZMovieScene::isAxisTag(const char *tag)
+{
+  return strcmp(tag, "axis") == 0 || strcmp(tag, "Axis") == 0;
 }
 
 bool ZMovieScene::isBackgroundTag(const char *tag)
@@ -114,10 +110,13 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
 #ifdef _DEBUG_2
     cout << "Scene key: " << iter->first << endl;
 #endif
+    const char *key = iter->first.c_str();
     if (isDurationTag(iter->first.c_str())) {
       setDuration(ZJsonParser::numberValue(iter->second));
     } else if (isBackgroundTag(iter->first.c_str())) {
       setBackground(ZJsonParser::booleanValue(iter->second));
+    } else if (isAxisTag(key)) {
+      m_showingAxis = ZJsonParser::integerValue(iter->second);
     } else if (isActionListTag(iter->first.c_str())) {
       ZJsonArray actionList;
       TZ_ASSERT(ZJsonParser::isArray(iter->second), "array");
@@ -202,6 +201,15 @@ void ZMovieScene::print() const
   cout << "Clipper: " << m_clipperArray.size() << endl;
   for (size_t i = 0; i < m_clipperArray.size(); ++i) {
     m_clipperArray[i].print();
+  }
+}
+
+void ZMovieScene::updateStage(Z3DWindow *stage)
+{
+  if (m_showingAxis == 0) {
+    stage->getAxis()->setVisible(false);
+  } else if (m_showingAxis == 1) {
+    stage->getAxis()->setVisible(true);
   }
 }
 

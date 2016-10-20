@@ -674,6 +674,21 @@ void ZFlyEmMisc::MakeStar(const QRectF &rect, QPointF *ptArray)
   ptArray[8] = ptArray[0];
 }
 
+void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
+{
+  if (box != NULL) {
+    box->clear();
+    box->addItem("---");
+    box->addItem("Not examined");
+    box->addItem("Traced");
+    box->addItem("Traced in ROI");
+    box->addItem("Partially traced");
+    box->addItem("Orphan");
+    box->addItem("Hard to trace");
+    box->addItem("Finalized");
+  }
+}
+
 void ZFlyEmMisc::MakeTriangle(
     const QRectF &rect, QPointF *ptArray, NeuTube::ECardinalDirection direction)
 {

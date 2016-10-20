@@ -479,24 +479,24 @@ TEST(ZObject3dScan, TestObjectSize){
   ZObject3dScan obj;
 
   std::vector<size_t> sizeArray = obj.getConnectedObjectSize();
-  EXPECT_TRUE(sizeArray.empty());
+  ASSERT_TRUE(sizeArray.empty());
 
   createObject(&obj);
   obj.print();
   sizeArray = obj.getConnectedObjectSize();
-  EXPECT_EQ(2, (int) sizeArray.size());
-  EXPECT_EQ(8, (int) sizeArray[0]);
-  EXPECT_EQ(4, (int) sizeArray[1]);
+  ASSERT_EQ(2, (int) sizeArray.size());
+  ASSERT_EQ(8, (int) sizeArray[0]);
+  ASSERT_EQ(4, (int) sizeArray[1]);
 
   obj.clear();
   Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR +
         "/benchmark/binary/2d/disk_n2.tif");
   obj.loadStack(stack);
-  EXPECT_TRUE(obj.isCanonized());
+  ASSERT_TRUE(obj.isCanonized());
   sizeArray = obj.getConnectedObjectSize();
-  EXPECT_EQ(2, (int) sizeArray.size());
-  EXPECT_EQ(489, (int) sizeArray[0]);
-  EXPECT_EQ(384, (int) sizeArray[1]);
+  ASSERT_EQ(2, (int) sizeArray.size());
+  ASSERT_EQ(489, (int) sizeArray[0]);
+  ASSERT_EQ(384, (int) sizeArray[1]);
 
   C_Stack::kill(stack);
 
@@ -506,13 +506,13 @@ TEST(ZObject3dScan, TestObjectSize){
         "/benchmark/binary/2d/ring_n10.tif");
   obj.loadStack(stack);
 
-  EXPECT_TRUE(obj.isCanonized());
+  ASSERT_TRUE(obj.isCanonized());
 
   sizeArray = obj.getConnectedObjectSize();
 
-  EXPECT_EQ(10, (int) sizeArray.size());
-  EXPECT_EQ(616, (int) sizeArray[0]);
-  EXPECT_EQ(572, (int) sizeArray[1]);
+  ASSERT_EQ(10, (int) sizeArray.size());
+  ASSERT_EQ(616, (int) sizeArray[0]);
+  ASSERT_EQ(572, (int) sizeArray[1]);
   EXPECT_EQ(352, (int) sizeArray[2]);
   EXPECT_EQ(296, (int) sizeArray[3]);
   EXPECT_EQ(293, (int) sizeArray[4]);
@@ -801,7 +801,7 @@ TEST(ZObject3dScan, TestScanArray) {
   stack2.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
   std::vector<ZObject3dScan*> objArray =
       ZObject3dScan::extractAllObject(stack2);
-  ASSERT_EQ(24, (int) objArray.size());
+  ASSERT_EQ(99, (int) objArray.size());
   for (size_t i = 0; i < objArray.size(); ++i) {
     ZObject3dScan *obj = objArray[i];
     ASSERT_EQ(1, (int) obj->getVoxelNumber());
@@ -809,7 +809,7 @@ TEST(ZObject3dScan, TestScanArray) {
 
   stack2.setOffset(ZIntPoint(30, 40, 50));
   objArray = ZObject3dScan::extractAllObject(stack2);
-  ASSERT_EQ(24, (int) objArray.size());
+  ASSERT_EQ(99, (int) objArray.size());
   for (size_t i = 0; i < objArray.size(); ++i) {
     ZObject3dScan *obj = objArray[i];
 //    obj->print();
@@ -1324,6 +1324,79 @@ TEST(ZObject3dScan, Intersect)
 
   ASSERT_EQ(1, (int) obj3.getVoxelNumber());
   ASSERT_TRUE(obj3.contains(1, 1, 1));
+}
+
+TEST(ZObject3dScan, Mainpulate)
+{
+  ZObject3dScan obj;
+  obj.addStripe(1, 1);
+  obj.addSegment(1, 1);
+
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(1, 1, 1);
+
+  ZObject3dScan subobj;
+  ZObject3dScan remain;
+
+  obj.subobject(box, &remain, &subobj);
+
+  ASSERT_EQ(1, (int) subobj.getVoxelNumber());
+  ASSERT_TRUE(remain.isEmpty());
+
+  obj.clear();
+  obj.addSegment(0, 0, 0, 2);
+  obj.addSegment(0, 1, 1, 3);
+  obj.addSegment(0, 2, 1, 4);
+  obj.addSegment(0, 3, 0, 3);
+  obj.addSegment(0, 4, 2, 4);
+
+  box.setFirstCorner(1, 1, 0);
+  box.setLastCorner(3, 3, 0);
+
+  obj.subobject(box, &remain, &subobj);
+//  subobj.print();
+  ASSERT_EQ(9, (int) subobj.getVoxelNumber());
+  ASSERT_EQ(8, (int) remain.getVoxelNumber());
+
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  box.setFirstCorner(210, 759, 348);
+  box.setLastCorner(694, 1001, 480);
+  obj.subobject(box, &remain, &subobj);
+
+//  remain.save(GET_TEST_DATA_DIR + "/test.sobj");
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+  obj.chopZ(500, &remain, &subobj);
+  ASSERT_EQ(499, subobj.getMaxZ());
+  ASSERT_EQ(500, remain.getMinZ());
+
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+
+  obj.clear();
+  obj.addStripe(1, 1);
+  obj.addSegment(1, 1);
+
+  obj.chopZ(0, &remain, &subobj);
+  ASSERT_TRUE(subobj.isEmpty());
+  ASSERT_TRUE(obj.equalsLiterally(remain));
+
+  obj.chopZ(1, &remain, &subobj);
+  ASSERT_TRUE(subobj.isEmpty());
+  ASSERT_TRUE(obj.equalsLiterally(remain));
+
+  obj.chopZ(2, &remain, &subobj);
+  ASSERT_TRUE(remain.isEmpty());
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
 }
 
 #endif

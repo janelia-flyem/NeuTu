@@ -5,6 +5,8 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QImage>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include <string>
 #include <vector>
@@ -43,6 +45,7 @@ class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
+class DVIDConnection;
 }
 
 namespace lowtis {
@@ -63,10 +66,6 @@ public:
 
   void clear();
 
-  /*!
-   * \brief Get the status code of the latest request (NOT functioning yet)
-   * \return
-   */
   int getStatusCode() const;
   void setStatusCode(int code) const;
 
@@ -76,6 +75,10 @@ public:
    * \return true iff the reader is ready.
    */
   bool isReady() const;
+
+  std::string readNodeInfo() const;
+
+  ZDvid::ENodeStatus getNodeStatus() const;
 
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
@@ -126,6 +129,8 @@ public:
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
+
+  ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
   ZJsonObject readInfo() const;
 
@@ -286,7 +291,9 @@ public:
   }
 #endif
 
-  void refreshLabelBuffer();
+  bool refreshLabelBuffer();
+
+  void testApiLoad();
 
 signals:
   void readingDone();
@@ -299,6 +306,9 @@ public slots:
   std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
+  ZDvidReader(const ZDvidReader&);
+  ZDvidReader& operator=(const ZDvidReader&);
+
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
 //  bool isReadingDone();
@@ -306,6 +316,10 @@ private:
   bool startService();
 
   void init();
+
+  std::vector<ZStack*> readGrayScaleBlockOld(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
 
 protected:
 //  QEventLoop *m_eventLoop;
@@ -316,8 +330,12 @@ protected:
   bool m_verbose;
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
+
+  mutable ZDvidBufferReader m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  QMutex m_serviceMutex;
 #endif
 
 #if defined(_ENABLE_LOWTIS_)

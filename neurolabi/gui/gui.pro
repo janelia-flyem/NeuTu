@@ -41,9 +41,15 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
+    contains(DEFINES, _FLYEM_) {
+        TARGET = neutu_d
+    }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
+    contains(DEFINES, _FLYEM_) {
+        TARGET = neutu
+    }
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
@@ -149,6 +155,12 @@ unix {
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
         }
 
+        exists($${NEUROLABI_DIR}/macosx10.12) {
+            LIBS -= -lstdc++
+            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+            QMAKE_MAC_SDK = macosx10.12
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.12
+        }
 
         doc.files = doc
         doc.path = Contents/MacOS
@@ -652,7 +664,10 @@ HEADERS += mainwindow.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
     dvid/zdviddataupdater.h \
-    dialogs/zdvidbodypositiondialog.h
+    dialogs/zdvidbodypositiondialog.h \
+    widgets/z3dtabwidget.h \
+    zcubearraymovieactor.h \
+    dialogs/zflyemsplituploadoptiondialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -737,7 +752,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
     dialogs/zcontrastprotocaldialog.ui \
     dialogs/zflyemroitooldialog.ui \
-    dialogs/zdvidbodypositiondialog.ui
+    dialogs/zdvidbodypositiondialog.ui \
+    dialogs/zflyemsplituploadoptiondialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1159,7 +1175,10 @@ SOURCES += main.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
     dvid/zdviddataupdater.cpp \
-    dialogs/zdvidbodypositiondialog.cpp
+    dialogs/zdvidbodypositiondialog.cpp \
+    widgets/z3dtabwidget.cpp \
+    zcubearraymovieactor.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

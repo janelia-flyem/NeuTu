@@ -331,6 +331,8 @@ MainWindow::MainWindow(QWidget *parent) :
   m_autoCheckTimer->start();
   connect(m_autoCheckTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
+  m_proofreadWindowCount = 0;
+
 #if defined(_LIBDVIDCPP_CACHE_)
   libdvid::DVIDCache::get_cache()->set_cache_size(1000000000);
 #endif
@@ -881,9 +883,9 @@ void MainWindow::customizeActions()
   m_ui->actionMask_SWC->setVisible(
         config.getMainWindowConfig().isMaskToSwcOn());
 
-  bool hasApplication = false;
+  bool hasApplication = true;
 
-  if (!config.getApplication().empty()) {
+  if (hasApplication) {
     if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
@@ -2046,6 +2048,15 @@ void MainWindow::importImageSequence()
     m_progress->reset();
   }
   //QApplication::processEvents();
+}
+
+void MainWindow::tryToClose()
+{
+  --m_proofreadWindowCount;
+
+  if (m_proofreadWindowCount <= 0 && !isVisible()) {
+    close();
+  }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -4537,14 +4548,19 @@ void MainWindow::makeMovie()
 
       if (script.loadScript(fileName.toStdString())) {
         QString saveFileDir = m_movieDlg->getOutputPath();
-        /*
-            QFileDialog::getExistingDirectory(this, tr("Movie Output"),
-                                              (config.getPath(NeutubeConfig::DATA) +
-                                               "/test/movie2").c_str(),
-                                              QFileDialog::ShowDirsOnly);
-                                              */
 
         if (!saveFileDir.isEmpty()) {
+          QDir dir(saveFileDir);
+          if (!dir.exists()) {
+            QString warningMsg;
+            if (!dir.mkpath(dir.absolutePath())) {
+              warningMsg = "Faile to Create output directory. Abort.";
+              QMessageBox::warning(NULL, warningMsg, "Initialization Error",
+                                   QMessageBox::Ok);
+              return;
+            }
+          }
+
           m_progress->setRange(0, 3);
           m_progress->show();
 
@@ -4555,6 +4571,7 @@ void MainWindow::makeMovie()
                 m_movieDlg->getFrameWidth(), m_movieDlg->getFrameHeight());
           director.setScript(script);
           director.setFrameInterval(1000 / m_movieDlg->getFrameRate());
+//          director.setAxisVisible(m_movieDlg->renderingAxis());
 
           m_progress->setValue(1);
 
@@ -6488,8 +6505,7 @@ void MainWindow::processArgument(const QString &arg)
 
 void MainWindow::testFlyEmProofread()
 {
-  ZProofreadWindow *window = ZProofreadWindow::Make();
-  window->showMaximized();
+  ZProofreadWindow* window = startProofread();
 
   window->test();
 
@@ -7366,6 +7382,34 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), NeuTube::MSG_INFORMATION);
 }
 
+ZProofreadWindow *MainWindow::startProofread()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+
+  ++m_proofreadWindowCount;
+
+  window->showMaximized();
+
+  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
+  connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
+
+  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
+    window->dump(
+          ZWidgetMessage("Failed to initialize tmp directory. "
+                         "Some editing functions (especially split) will not work. "
+                         "Please check the permission or disk space.",
+                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+  }
+
+  return window;
+}
+
+void MainWindow::showAndRaise()
+{
+  show();
+  raise();
+}
+
 void MainWindow::launchSplit(const QString &str)
 {
 //  ZJsonObject obj;
@@ -7377,25 +7421,18 @@ void MainWindow::launchSplit(const QString &str)
 
 void MainWindow::on_actionProof_triggered()
 {
-  ZProofreadWindow *window = ZProofreadWindow::Make();
-  window->showMaximized();
-
-  if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
-    window->dump(
-          ZWidgetMessage("Failed to initialize tmp directory. "
-                         "Some editing functions (especially split) will not work. "
-                         "Please check the permission or disk space.",
-                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
-  }
+  startProofread();
 }
 
 void MainWindow::runRoutineCheck()
 {
   if (NeutubeConfig::AutoStatusCheck()) {
     std::cout << "Running routine check ..." << std::endl;
+#if defined(_FLYEM_)
     if (!GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
+#endif
   }
 }
 
@@ -7575,6 +7612,7 @@ void MainWindow::MessageProcessor::processMessage(
 
 void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 {
+#if defined(_FLYEM_)
   bool continueLoading = false;
   ZDvidTarget target;
   if (m_dvidDlg->exec()) {
@@ -7623,6 +7661,7 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
     endProgress();
   }
+#endif
 }
 
 void MainWindow::generateMBKcCast(const std::string &movieFolder)
@@ -7689,7 +7728,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
           const ZDvidSynapse &synapse = *iter;
 
           if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-            ZVaa3dMarker marker = synapse.toVaa3dMarker(30.0);
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(55.0);
             markerArray.push_back(marker);
           }
         }
@@ -8099,4 +8138,9 @@ void MainWindow::on_actionGet_Body_Positions_triggered()
 {
   m_bodyPosDlg->show();
   m_bodyPosDlg->raise();
+}
+
+void MainWindow::on_actionMake_Movie_2_triggered()
+{
+  makeMovie();
 }

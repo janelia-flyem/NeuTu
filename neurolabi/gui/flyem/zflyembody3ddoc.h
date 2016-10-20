@@ -13,6 +13,7 @@
 
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
@@ -214,6 +215,7 @@ private:
   void processBodySetBuffer();
 
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
+  QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
   static std::string GetBodyTypeName(EBodyType bodyType);
 
@@ -244,6 +246,7 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_dvidReader;
   ZDvidInfo m_dvidInfo;
 
   ZThreadFutureMap m_futureMap;

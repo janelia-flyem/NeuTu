@@ -17,7 +17,7 @@ void ZFlyEmOrthoMvc::init()
 {
   m_dvidDlg = NULL;
   m_bodyInfoDlg = NULL;
-  m_supervisor = new ZFlyEmSupervisor(this);
+//  m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = NULL;
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
@@ -100,9 +100,9 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 
     getView()->updateContrastProtocal();
     getView()->reset(false);
-    if (m_supervisor != NULL) {
-      m_supervisor->setDvidTarget(doc->getDvidTarget());
-    }
+//    if (getSupervisor() != NULL) {
+//      getSupervisor()->setDvidTarget(doc->getDvidTarget());
+//    }
     m_mergeProject.setDvidTarget(doc->getDvidTarget());
     m_mergeProject.syncWithDvid();
   }
