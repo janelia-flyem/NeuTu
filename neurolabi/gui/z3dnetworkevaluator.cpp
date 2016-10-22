@@ -503,10 +503,10 @@ void Z3DCheckOpenGLStateProcessWrapper::checkState(const Z3DProcessor *p)
     warn(p, "A shader was active");
   }
 
-  if (Z3DRenderTarget::getCurrentBoundDrawFBO() != 0) {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    warn(p, "A render target was bound (releaseTarget() missing?)");
-  }
+//  if (Z3DRenderTarget::getCurrentBoundDrawFBO() != 0) {
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    warn(p, "A render target was bound (releaseTarget() missing?)");
+//  }
 
   if (!checkGLState(GL_DEPTH_FUNC, GL_LESS)) {
     glDepthFunc(GL_LESS);

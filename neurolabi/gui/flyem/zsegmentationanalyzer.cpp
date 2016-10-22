@@ -17,7 +17,6 @@
 #include "zpoint.h"
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
-#include "direct.h"
 
 using namespace std;
 
