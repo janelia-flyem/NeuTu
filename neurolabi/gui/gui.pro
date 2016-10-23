@@ -95,6 +95,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     QT += concurrent gui
     DEFINES += _QT5_
     CONFIG += c++11
+    DEFINES += _CPP11_
     QMAKE_MACOSX_DEPLOYMENT_TARGET=10.7
 }
 
