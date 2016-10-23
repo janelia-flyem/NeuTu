@@ -43,6 +43,7 @@
 #include "zstackdochelper.h"
 #include "zintcuboidobj.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
+#include "zneutuservice.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),

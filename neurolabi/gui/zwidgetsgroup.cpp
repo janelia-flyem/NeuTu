@@ -1,7 +1,6 @@
 #include "zwidgetsgroup.h"
 #include "z3dcameraparameter.h"
 #include "zparameter.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif

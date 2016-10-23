@@ -20,11 +20,11 @@ if(LIBXML2_STATIC_LIBRARY)
 endif(LIBXML2_STATIC_LIBRARY)
 
 # additional hints
-if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
-else(MINGW)
+if(MSVC)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/msvc/libxml2)
+else(MSVC)
   set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/../lib/xml)
-endif(MINGW)
+endif(MSVC)
 
 # Include dir
 find_path(LIBXML2_INCLUDE_DIR

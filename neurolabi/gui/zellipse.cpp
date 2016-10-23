@@ -6,7 +6,6 @@
  */
 
 #if _QT_GUI_USED_
-#include <QtGui>
 #endif
 #include "tz_cdefs.h"
 #include "zellipse.h"

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zflyemproofmvc.h"
 
 #include <QFuture>
@@ -3300,7 +3301,7 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
-void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark */*bookmark*/)
+void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark * /*bookmark*/)
 {
 //  getCompleteDocument()->setCustomBookmarkSaveState(false);
 }

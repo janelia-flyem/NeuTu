@@ -18,7 +18,6 @@
 #include "zstackfile.h"
 #include "zdoublevector.h"
 #include "zfiletype.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif

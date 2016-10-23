@@ -659,7 +659,7 @@ uint64_t *String_To_Uint64_Array(const char *str, uint64_t *array, int *n)
   }
 
   if (array == NULL) {
-    array = malloc(*n * sizeof(uint64_t));
+    array = (uint64_t*)malloc(*n * sizeof(uint64_t));
   }
 
   int i = 0;
@@ -852,7 +852,7 @@ double *String_To_Double_Array(const char *str, double *array, int *n)
   int state = 0;
 
   //char *numstr = strdup(str);
-  char *numstr = malloc(strlen(str) + 1);
+  char *numstr = (char*)malloc(strlen(str) + 1);
   memcpy(numstr, str, strlen(str) + 1);
   char *numstr_end = numstr;
   char *numstr_head = numstr;

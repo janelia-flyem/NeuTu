@@ -1,6 +1,7 @@
 #include "zintset.h"
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 ZIntSet::ZIntSet()
 {

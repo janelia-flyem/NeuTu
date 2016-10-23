@@ -24,7 +24,7 @@ void ZFlyEmNeuronFilter::setReference(const ZFlyEmNeuron *neuron)
   m_refNeuron = neuron;
 }
 
-void ZFlyEmNeuronFilter::appendFilter(ZFlyEmNeuronFilter */*filter*/)
+void ZFlyEmNeuronFilter::appendFilter(ZFlyEmNeuronFilter * /*filter*/)
 {
 
 }

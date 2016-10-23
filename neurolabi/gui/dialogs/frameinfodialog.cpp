@@ -1,5 +1,3 @@
-#include <QtGui>
-
 #include "frameinfodialog.h"
 #include "zcurve.h"
 #include "plotter.h"

@@ -1,15 +1,7 @@
 #ifndef Z3DGL_H
 #define Z3DGL_H
 
-#ifndef _QT5_
 #include "zglew.h"
-#else
-#ifdef __APPLE__
-    #include <OpenGL/gl.h>
-#else
-    #include <GL/gl.h>
-#endif // __APPLE__
-#endif
 
 #include <string>
 #include "zglmutils.h"

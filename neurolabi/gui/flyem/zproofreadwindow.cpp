@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zproofreadwindow.h"
 
 #include <QHBoxLayout>

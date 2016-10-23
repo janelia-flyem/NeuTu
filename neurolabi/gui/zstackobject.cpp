@@ -26,7 +26,7 @@ ZStackObject::~ZStackObject()
 #endif
 }
 
-bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
+bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
                            NeuTube::EAxis /*sliceAxis*/) const
 {

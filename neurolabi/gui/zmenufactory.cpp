@@ -46,7 +46,7 @@ void ZMenuFactory::addAction(
 }
 
 QMenu* ZMenuFactory::makeSwcNodeContextMenu(
-    ZStackDoc *doc, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackDoc *doc, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -116,7 +116,7 @@ QMenu* ZMenuFactory::makeSwcNodeContextMenu(
 }
 
 QMenu* ZMenuFactory::makeSwcNodeContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -143,7 +143,7 @@ QMenu* ZMenuFactory::makeSwcNodeContextMenu(
 }
 
 QMenu* ZMenuFactory::makeStrokePaintContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -156,7 +156,7 @@ QMenu* ZMenuFactory::makeStrokePaintContextMenu(
 }
 
 QMenu* ZMenuFactory::makeStackContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -183,7 +183,7 @@ QMenu* ZMenuFactory::makeStackContextMenu(
 }
 
 QMenu* ZMenuFactory::makeBodyContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -193,7 +193,7 @@ QMenu* ZMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -203,7 +203,7 @@ QMenu* ZMenuFactory::makeSynapseContextMenu(
 }
 
 QMenu* ZMenuFactory::makeContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);

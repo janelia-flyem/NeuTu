@@ -21,7 +21,6 @@
 
 #include "z3dshaderprogram.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif

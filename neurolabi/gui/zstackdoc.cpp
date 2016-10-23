@@ -1,6 +1,5 @@
 #include "z3dgl.h"
 #include <iostream>
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif
@@ -3631,7 +3630,7 @@ void ZStackDoc::deselectAllPuncta()
   notifyDeselected(deselected);
 }
 #if 1
-void ZStackDoc::setChainSelected(ZLocsegChain */*chain*/, bool /*select*/)
+void ZStackDoc::setChainSelected(ZLocsegChain * /*chain*/, bool /*select*/)
 {
 #if 0
   if (chain->isSelected() != select) {

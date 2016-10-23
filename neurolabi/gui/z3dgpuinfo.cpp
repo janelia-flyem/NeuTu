@@ -344,7 +344,12 @@ void Z3DGpuInfo::detectGpuInfo()
   m_glRendererString  = QString(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
   m_glExtensionsString = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
-  if (GLEW_VERSION_2_1) {
+  if (!parseVersionString(m_glVersionString, m_glMajorVersion, m_glMinorVersion, m_glReleaseVersion)) {
+    LERROR() << "Malformed OpenGL version string:" << m_glVersionString;
+  }
+
+  // todo: fix this
+  if (GLEW_VERSION_2_1 || m_glMajorVersion > 2) {
     if (!isFrameBufferObjectSupported()) {
       m_isSupported = false;
       m_notSupportedReason = "Frame Buffer Object (FBO) is not supported by current openGL context.";
@@ -376,10 +381,6 @@ void Z3DGpuInfo::detectGpuInfo()
       m_glslVersionString = QString(glslVS);
     else
       m_glslVersionString = "";
-
-    if (!parseVersionString(m_glVersionString, m_glMajorVersion, m_glMinorVersion, m_glReleaseVersion)) {
-      LERROR() << "Malformed OpenGL version string:" << m_glVersionString;
-    }
 
     // GPU Vendor
     if (m_glVendorString.contains("NVIDIA", Qt::CaseInsensitive))

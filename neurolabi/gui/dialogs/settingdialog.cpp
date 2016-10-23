@@ -1,5 +1,3 @@
-#include <QtGui>
-
 #include "settingdialog.h"
 #include "neutubeconfig.h"
 #include "zresolution.h"
