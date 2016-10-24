@@ -103,7 +103,8 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
     CONFIG += c++11
-    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.8
+#    QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+#    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.8
 }
 
 #Qt4
@@ -164,6 +165,12 @@ unix {
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
         }
 
+        exists($${NEUROLABI_DIR}/macosx10.12) {
+            LIBS -= -lstdc++
+            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+            QMAKE_MAC_SDK = macosx10.12
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.12
+        }
 
         doc.files = doc
         doc.path = Contents/MacOS
