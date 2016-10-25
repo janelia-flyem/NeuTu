@@ -302,8 +302,8 @@ int main(int argc, char *argv[])
 
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
-//    mainWin->show();
-//    mainWin->raise();
+    mainWin->show();
+    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {
