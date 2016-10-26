@@ -20,6 +20,8 @@
 #include "zfiletype.h"
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"

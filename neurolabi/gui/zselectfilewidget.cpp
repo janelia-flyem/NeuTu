@@ -2,7 +2,10 @@
 
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
 
 ZSelectFileWidget::ZSelectFileWidget(FileMode mode, const QString &guiname, const QString& filter, QBoxLayout::Direction direction,
                                      QWidget *parent)

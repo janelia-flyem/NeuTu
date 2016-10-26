@@ -1,9 +1,14 @@
 #include "z3dtakescreenshotwidget.h"
-#include "z3dgl.h"
+
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
 #include <QDateTime>
+
+#include "z3dgl.h"
 #include "zselectfilewidget.h"
 #include "z3dgpuinfo.h"
 

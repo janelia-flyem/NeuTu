@@ -1,5 +1,6 @@
 #include <iostream>
 #include <QElapsedTimer>
+#include <QMdiArea>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -40,6 +41,8 @@
 
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 
 using namespace std;

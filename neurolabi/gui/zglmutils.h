@@ -4,7 +4,9 @@
 // This file includes some commonly used headers from glm and defines some useful functions
 // for glm
 
+#if defined(_QT5_)
 #define GLM_FORCE_CXX11
+#endif
 #define GLM_FORCE_SSE3
 //#define GLM_FORCE_INLINE
 #define GLM_FORCE_SIZE_T_LENGTH
@@ -26,7 +28,9 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QColor>
+#if defined(_QT5_)
 #include <cstdint>
+#endif
 
 namespace glm {
 typedef tvec3<unsigned char, highp> col3;

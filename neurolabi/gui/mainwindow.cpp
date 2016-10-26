@@ -2,6 +2,8 @@
 
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 //#include <QtSvg>
 #include <QDir>

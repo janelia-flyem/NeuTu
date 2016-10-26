@@ -1,7 +1,10 @@
 #include "zstringparameter.h"
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
 
 ZStringParameter::ZStringParameter(const QString &name, const QString &str, QWidget *parent)
   : ZSingleValueParameter<QString>(name, str, parent)

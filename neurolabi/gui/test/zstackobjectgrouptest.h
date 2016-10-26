@@ -111,7 +111,7 @@ TEST(ZStackObjectGroup, Basic) {
 TEST(ZStackObjectGroup, add) {
   ZStackObjectGroup group;
 
-  group.add(nullptr, 0, false);
+  group.add(NULL, 0, false);
   ASSERT_TRUE(group.isEmpty());
 
   ZObject3d *obj1 = new ZObject3d;

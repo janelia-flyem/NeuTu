@@ -1,9 +1,13 @@
 #include "zwidgetsgroup.h"
-#include "z3dcameraparameter.h"
-#include "zparameter.h"
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
+#include "z3dcameraparameter.h"
+#include "zparameter.h"
+
 
 ZWidgetsGroup::ZWidgetsGroup(QWidget *widget, ZWidgetsGroup *parentGroup, int visibleLevel, QObject *parent)
   : QObject(parent)

@@ -3,14 +3,15 @@
 
 #include <QMessageBox>
 #include <QColor>
-
-#if QT_VERSION >= 0x050000
-#include <QtConcurrent>
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QStandardItemModel>
+#include <QElapsedTimer>
+
+#if QT_VERSION >= 0x050000
+#include <QtConcurrent>
 #else
-#include <QtCore>
+#include <QtConcurrentRun>
 #endif
 
 #include "zjsonarray.h"

@@ -1,8 +1,11 @@
 #include "z3dtransferfunctionwidgetwitheditorwindow.h"
-#include "z3dgl.h"
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
+#include "z3dgl.h"
 #include "z3dtransferfunction.h"
 #include "z3dtransferfunctioneditor.h"
 

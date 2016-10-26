@@ -1,7 +1,10 @@
 #include "zcolormapwidgetwitheditorwindow.h"
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
 #include "zcolormap.h"
 #include "zcolormapeditor.h"
 #include "QsLog.h"
