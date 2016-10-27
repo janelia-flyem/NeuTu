@@ -110,7 +110,6 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     DEFINES += _QT5_
     CONFIG += c++11
     DEFINES += _CPP11_
-    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.8
 }
 
 #Qt4
@@ -201,6 +200,7 @@ unix {
 
         contains(CONFIG, c++11) {
           message(Using C++11)
+          DEFINES += _CPP11_
           QMAKE_CXXFLAGS += -std=c++11
         }
     }
