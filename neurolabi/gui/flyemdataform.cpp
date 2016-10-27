@@ -891,7 +891,7 @@ uint64_t FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 
 Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
 {
-  Stack *stack;
+  Stack *stack = NULL;
   if (ZFileType::fileType(neuron->getThumbnailPath()) ==
       ZFileType::TIFF_FILE) {
     stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());

@@ -380,6 +380,7 @@ void MainWindow::initDialog()
 
   m_progress = new QProgressDialog(this);
   m_progress->setRange(0, 100);
+  m_progress->setValue(100);
   m_progress->setWindowModality(Qt::WindowModal);
   m_progress->setAutoClose(true);
   //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);

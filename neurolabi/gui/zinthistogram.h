@@ -31,11 +31,18 @@ public:
 
   /*!
    * \brief Get the count of a certain value.
-   * \param v
-   * \return
+   * \param v The input value for retrieving the count.
+   * \return The count of \a v.
    */
   int getCount(int v) const;
 
+  /*!
+   * \brief Get the mode of the histogram within a certain range.
+   *
+   * The function gets the mode (value at the peak) in [\a minV, \a maxV].
+   *
+   * \return The mode.
+   */
   int getMode(int minV, int maxV) const;
   int getMode() const;
 
