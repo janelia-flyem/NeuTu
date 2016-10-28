@@ -2638,8 +2638,8 @@ void ZStackDoc::addLocsegChainP(ZLocsegChain *obj)
   if (mainStack != NULL) {
     if (getTraceWorkspace()->trace_mask == NULL) {
       getTraceWorkspace()->trace_mask =
-          Make_Stack(GREY16, mainStack->width(), mainStack->height(),
-                     mainStack->depth());
+          C_Stack::make(GREY16, mainStack->width(), mainStack->height(),
+                        mainStack->depth());
       Zero_Stack(getTraceWorkspace()->trace_mask);
     }
   }

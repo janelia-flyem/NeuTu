@@ -445,10 +445,10 @@ bool ZSingleChannelStack::bwsolid()
     Stack *clean_stack = Stack_Majority_Filter_R(m_stack, NULL, 26, 4);
     Struct_Element *se = Make_Cuboid_Se(3, 3, 3);
     Stack *dilate_stack = Stack_Dilate(clean_stack, NULL, se);
-    Kill_Stack(clean_stack);
+    C_Stack::kill(clean_stack);
     Stack *fill_stack = dilate_stack;
     Stack_Erode_Fast(fill_stack, m_stack, se);
-    Kill_Stack(fill_stack);
+    C_Stack::kill(fill_stack);
     Kill_Struct_Element(se);
     //m_stamp++;
     deprecateDependent(STACK);

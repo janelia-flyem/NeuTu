@@ -1,13 +1,16 @@
 #include "z3dtransferfunctionwidgetwitheditorwindow.h"
-#ifdef _QT5_
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
+
 
 #include "z3dgl.h"
 #include "z3dtransferfunction.h"
 #include "z3dtransferfunctioneditor.h"
+
+#ifdef _QT5_
+//Must be included after z3dgl.h
+#include <QtWidgets>
+#else
+#include <QtGui>
+#endif
 
 Z3DTransferFunctionWidgetWithEditorWindow::Z3DTransferFunctionWidgetWithEditorWindow(Z3DTransferFunctionParameter *tf,
                                                                                      QMainWindow *minWin, QWidget *parent)

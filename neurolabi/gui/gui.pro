@@ -97,6 +97,12 @@ contains(GIT, .*git) {
 
 include(add_itk.pri)
 
+#Qt4
+isEqual(QT_MAJOR_VERSION,4) {
+    QT += opengl xml network
+    message("Qt 4")
+}
+
 #Qt5
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     isEqual(QT_MAJOR_VERSION,5) {
@@ -108,14 +114,15 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG += c++11
-    DEFINES += _CPP11_
+    CONFIG *= c++11
 }
 
-#Qt4
-isEqual(QT_MAJOR_VERSION,4) {
-    QT += opengl xml network
-    message("Qt 4")
+contains(CONFIG, c++11) {
+  message(Using C++11)
+  DEFINES += _CPP11_
+  unix {
+    QMAKE_CXXFLAGS += -std=c++11
+  }
 }
 
 #QT += webkit
@@ -123,11 +130,9 @@ isEqual(QT_MAJOR_VERSION,4) {
 contains(CONFIG, static_glew) { # glew from ext folder
     include($$PWD/ext/glew.pri)
 } else { # use your own glew
-
   win32 {
     LIBS += -lglew32 -lopengl32 -lglu32
   }
-
 
   macx {
     LIBS += -lGLEW -framework AGL -framework OpenGL
@@ -156,25 +161,24 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        exists($${NEUROLABI_DIR}/macosx10.9) {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-            QMAKE_MAC_SDK = macosx10.9
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+        OSX_VERSION = $$system(sw_vers -productVersion)
+        message("Mac OS X $$OSX_VERSION")
+        MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
+        OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
+        OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
+        !isEqual(OSX_MAJOR_VERSION, 10) {
+            error("Could not recognize OSX version")
         }
 
-        exists($${NEUROLABI_DIR}/macosx10.10) {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-            QMAKE_MAC_SDK = macosx10.10
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
-        }
+        OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
+        QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
+        message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
-        exists($${NEUROLABI_DIR}/macosx10.12) {
+        greaterThan(OSX_MINOR_VERSION, 8) {
             LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-            QMAKE_MAC_SDK = macosx10.12
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.12
+            QMAKE_CXXFLAGS += -stdlib=libc++
+            QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
+            message("SDK: $$QMAKE_MAC_SDK")
         }
 
         doc.files = doc
@@ -187,22 +191,13 @@ unix {
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += \#-lXt -lSM -lICE \
-          -lX11 -lm \
-          -lpthread \
-          -lGL -lrt -lGLU -lstdc++
+        LIBS += -lX11 -lm -lpthread -lGL -lrt -lGLU -lstdc++
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
         RC_FILE = images/app.icns
-
-        contains(CONFIG, c++11) {
-          message(Using C++11)
-          DEFINES += _CPP11_
-          QMAKE_CXXFLAGS += -std=c++11
-        }
     }
 }
 
@@ -216,6 +211,8 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
+
+message("Config: $$CONFIG")
 
 # Input
 RESOURCES = gui.qrc

@@ -577,7 +577,7 @@ bool ZStack::load(Stack *stack, bool isOwner)
 
     if (isOwner) {
       stack->array = NULL;
-      Kill_Stack(stack);
+      C_Stack::kill(stack);
       m_dealloc = C_Stack::systemKill;
     } else {
       m_dealloc = NULL;
@@ -1142,7 +1142,7 @@ int ZStack::autoThreshold(int ch) const
     }
 
     int *hist = Stack_Hist_M(stack, locmax);
-    Kill_Stack(locmax);
+    C_Stack::kill(locmax);
 
     int low, high;
     Int_Histogram_Range(hist, &low, &high);

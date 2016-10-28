@@ -2461,7 +2461,7 @@ ZVoxel ZObject3dScan::getMarker() const
     if (!slice.isEmpty()) {
       int currentZ = slice.getStripe(0).getZ();
       Stack *stack = slice.toStack(offset);
-      Stack *dist = Stack_Bwdist_L_U16P(stack, NULL, 0);
+      Stack *dist = C_Stack::Bwdist_L_U16P(stack, NULL, 0);
       size_t index;
       double v = sqrt(Stack_Max(dist, &index));
       if (v > voxel.value()) {
@@ -2471,8 +2471,8 @@ ZVoxel ZObject3dScan::getMarker() const
 
         voxel.set(x + offset[0], y + offset[1], currentZ, v);
       }
-      Kill_Stack(dist);
-      Kill_Stack(stack);
+      C_Stack::kill(dist);
+      C_Stack::kill(stack);
       slice.clear();
     }
   }

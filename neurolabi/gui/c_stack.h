@@ -421,6 +421,10 @@ bool isBinary(const Stack *stack);
 Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
 Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
 
+
+//Processing functions
+Stack* Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
+
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
                int dx, int dy, int dz, int transparentValue);

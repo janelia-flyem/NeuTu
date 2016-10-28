@@ -1801,6 +1801,13 @@ Stack* C_Stack::computeGradient(const Stack *stack)
   return out;
 }
 
+Stack* C_Stack::Bwdist_L_U16P(const Stack *in, Stack *out, int pad)
+{
+  STACK_MUTEX_GUARD
+
+  return Stack_Bwdist_L_U16P(in, out, pad);
+}
+
 void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
 {
   if (r == 0) {
