@@ -8,8 +8,6 @@ class ZPixelsModule : public ZSandboxModule
   public:
     explicit ZPixelsModule(QObject *parent = 0);
 
-    QAction* getAction() const;
-
   signals:
 
   public slots:
@@ -19,9 +17,6 @@ class ZPixelsModule : public ZSandboxModule
 
   private:
     void init();
-
-  private:
-    QAction *m_action;
 };
 
 #endif // ZPIXELSMODULE_H

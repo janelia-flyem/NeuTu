@@ -33,8 +33,3 @@ void ZPixelsModule::execute()
                );
   }
 }
-
-QAction* ZPixelsModule::getAction() const
-{
-  return m_action;
-}

@@ -1,10 +1,13 @@
 #ifndef ZSWCFACTORY_H
 #define ZSWCFACTORY_H
 
+#include <vector>
+
 #include "zcuboid.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuronaxis.h"
 #include "zvoxelarray.h"
+#include "zweightedpoint.h"
 
 class ZSwcTree;
 class ZPointArray;
@@ -40,7 +43,11 @@ public:
   static ZSwcTree* CreateSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
 
-  static ZSwcTree* CreateSwc(const ZPointArray &pointArray, double radius,
+//  static ZSwcTree* CreateSwc(const ZPointArray &pointArray, double radius,
+//                             bool isConnected = false);
+  static ZSwcTree* CreateSwc(const std::vector<ZPoint> &pointArray, double radius,
+                             bool isConnected = false);
+  static ZSwcTree* CreateSwc(const std::vector<ZWeightedPoint> &pointArray,
                              bool isConnected = false);
 
   static ZSwcTree* CreateSwc(const ZLineSegmentArray &lineArray, double radius);

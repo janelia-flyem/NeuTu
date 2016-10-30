@@ -98,6 +98,7 @@ exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
+
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -ljsoncpp -llz4 -lcurl -lpng -ljpeg -lboost_system -lboost_thread
     contains(DEFINES, _ENABLE_LOWTIS_) {

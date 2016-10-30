@@ -10,11 +10,6 @@ ZAboutModule::ZAboutModule(QObject *parent) :
   init();
 }
 
-QAction* ZAboutModule::getAction() const
-{
-  return m_action;
-}
-
 void ZAboutModule::init()
 {
   m_action = new QAction("About", this);

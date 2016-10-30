@@ -36,9 +36,3 @@ void ZRgb2GrayModule::execute()
   }
 }
 
-
-QAction* ZRgb2GrayModule::getAction() const
-{
-  return m_action;
-}
-

@@ -21135,6 +21135,16 @@ void ZTest::test(MainWindow *host)
 #endif
   
 #if 1
+  QProcess p;
+  p.start("sysctl", QStringList() << "kern.version" << "hw.memsize");
+  p.waitForFinished();
+  QString system_info = p.readAllStandardOutput();
+  p.close();
+
+  qDebug() << system_info;
+#endif
+
+#if 0
   ZFlyEmSplitUploadOptionDialog dlg;
   ZDvidTarget target;
   target.set("http://emdata2.int.janelia.org:8500", "b6bc");
