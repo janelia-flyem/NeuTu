@@ -4,7 +4,8 @@ HEADERS += sandbox/zsandbox.h \
     sandbox/zsandboxproject.h \
     sandbox/zaboutmodule.h \
     sandbox/zrgb2graymodule.h \
-    $$PWD/zpixelsmodule.h
+    $$PWD/qcustomplot.h \
+    $$PWD/zimageinfomodule.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zexamplemodule.cpp \
@@ -12,4 +13,5 @@ SOURCES += sandbox/zsandbox.cpp \
     sandbox/zsandboxproject.cpp \
     sandbox/zaboutmodule.cpp \
     sandbox/zrgb2graymodule.cpp \
-    $$PWD/zpixelsmodule.cpp
+    $$PWD/qcustomplot.cpp \
+    $$PWD/zimageinfomodule.cpp
