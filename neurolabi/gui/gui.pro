@@ -80,6 +80,8 @@ CONFIG += rtti exceptions
 CONFIG += static_glew
 CONFIG += static_gtest
 
+QT += printsupport
+
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ _FLYEM_
 
 #Machine information

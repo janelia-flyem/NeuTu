@@ -20,18 +20,18 @@ ZImageInfoModule::~ZImageInfoModule()
   {
     delete m_paint_window;
   }
-  if(customPlot)
-  {
-    delete customPlot;
-  }
-  if(info)
-  {
-    delete info;
-  }
-  if(bars)
-  {
-    delete bars;
-  }
+//  if(customPlot)
+//  {
+//    delete customPlot;
+//  }
+//  if(info)
+//  {
+//    delete info;
+//  }
+//  if(bars)
+//  {
+//    delete bars;
+//  }
 }
 
 void ZImageInfoModule::init()
@@ -169,10 +169,4 @@ void ZImageInfoModule::execute()
     showHistogram();
   }
 }
-
-QAction* ZImageInfoModule::getAction() const
-{
-  return m_action;
-}
-
 

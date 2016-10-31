@@ -11,7 +11,6 @@ class ZImageInfoModule : public ZSandboxModule
   public:
     explicit ZImageInfoModule(QObject *parent = 0);
     ~ZImageInfoModule();
-    QAction* getAction() const;
   signals:
   public slots:
   private slots:
@@ -21,7 +20,6 @@ class ZImageInfoModule : public ZSandboxModule
     void showHistogram();
     void showBasicInfo();
   private:
-    QAction *m_action;
     QWidget* m_paint_window;
     QCustomPlot *customPlot;
     QCPItemText *info;

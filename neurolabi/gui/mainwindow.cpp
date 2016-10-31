@@ -7435,6 +7435,11 @@ void MainWindow::runRoutineCheck()
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
 #endif
+
+    QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
+    if (!memoryUsage.isEmpty()) {
+      LINFO() << "Memory usage:" << memoryUsage;
+    }
   }
 }
 

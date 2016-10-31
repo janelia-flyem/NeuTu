@@ -19,6 +19,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+//#include <sys/time.h>
+//#include <sys/resource.h>
+
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -275,6 +278,7 @@ using namespace std;
 #include "flyem/zflyemroiproject.h"
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
+#include "flyem/zflyemmisc.h"
 
 using namespace std;
 
@@ -21134,7 +21138,7 @@ void ZTest::test(MainWindow *host)
 */
 #endif
   
-#if 1
+#if 0
   QProcess p;
   p.start("sysctl", QStringList() << "kern.version" << "hw.memsize");
   p.waitForFinished();
@@ -21142,6 +21146,22 @@ void ZTest::test(MainWindow *host)
   p.close();
 
   qDebug() << system_info;
+#endif
+
+#if 0
+  struct rusage usage;
+  getrusage(RUSAGE_SELF, &usage);
+
+  std::cout << "PID: " << getpid() << std::endl;
+  std::cout << "memory usage: " << usage.ru_maxrss << std::endl;
+  std::cout << "  shared memory: " << usage.ru_ixrss << std::endl;
+  std::cout << "  unshared data: " << usage.ru_isrss << std::endl;
+  std::cout << "  unshared stack: " << usage.ru_idrss << std::endl;
+
+#endif
+
+#if 1
+  qDebug() << ZFlyEmMisc::GetMemoryUsage();
 #endif
 
 #if 0
