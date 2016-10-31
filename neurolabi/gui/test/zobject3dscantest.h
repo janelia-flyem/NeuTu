@@ -1381,6 +1381,10 @@ TEST(ZObject3dScan, Mainpulate)
   subobj.unify(remain);
   ASSERT_TRUE(obj.equalsLiterally(subobj));
 
+  obj.chopX(500, &remain, &subobj);
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
 
   obj.clear();
   obj.addStripe(1, 1);
@@ -1397,6 +1401,8 @@ TEST(ZObject3dScan, Mainpulate)
   obj.chopZ(2, &remain, &subobj);
   ASSERT_TRUE(remain.isEmpty());
   ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+
 }
 
 #endif

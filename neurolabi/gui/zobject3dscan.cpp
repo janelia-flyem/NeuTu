@@ -3241,6 +3241,64 @@ ZObject3dScan* ZObject3dScan::chopZ(
   return result;
 }
 
+ZObject3dScan* ZObject3dScan::chopX(
+    int x, ZObject3dScan *remain, ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
+  }
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    ZObject3dStripe stripe1;
+    ZObject3dStripe stripe2;
+    stripe1.setY(stripe.getY());
+    stripe1.setZ(stripe.getZ());
+
+    stripe2.setY(stripe.getY());
+    stripe2.setZ(stripe.getZ());
+
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      int x0 = stripe.getSegmentStart(j);
+      int x1 = stripe.getSegmentEnd(j);
+      if (x1 < x) {
+        stripe1.addSegment(x0, x1, false);
+      } else if (x0 < x) {
+        stripe1.addSegment(x0, x - 1, false);
+        stripe2.addSegment(x, x1, false);
+      } else {
+        stripe2.addSegment(x0, x1, false);
+      }
+    }
+
+    if (!stripe1.isEmpty()) {
+      result->addStripe(stripe1, false);
+    }
+
+    if (!stripe2.isEmpty()) {
+      result->addStripe(stripe2, false);
+    }
+  }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
+  result->canonize();
+  result->setSliceAxis(m_sliceAxis);
+
+  return result;
+}
+
 ZObject3dScan* ZObject3dScan::subobject(
     const ZIntCuboid &box, ZObject3dScan *remain,
     ZObject3dScan *result) const

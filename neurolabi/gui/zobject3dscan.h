@@ -238,10 +238,21 @@ public:
   /*!
    * \brief Chop the object into two parts
    *
+   * The output is the same as \a result if \a result is not NULL; otherwise
+   * it returns a new pointer and the caller is responsible for freeing the
+   * memory.
+   *
    * \return The part above z (<z)
    */
   ZObject3dScan *chopZ(int z, ZObject3dScan *remain,
                           ZObject3dScan *result) const;
+
+  /*!
+   * \brief Chop the object into two parts
+   *
+   * \return The part on the left (<x)
+   */
+  ZObject3dScan *chopX(int x, ZObject3dScan *remain, ZObject3dScan *result) const;
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
