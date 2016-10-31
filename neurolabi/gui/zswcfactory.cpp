@@ -318,7 +318,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(
 }
 
 ZSwcTree* ZSwcFactory::CreateSwc(
-    const ZPointArray &pointArray, double radius, bool isConnected)
+    const std::vector<ZPoint> &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->useCosmeticPen(true);
@@ -326,14 +326,43 @@ ZSwcTree* ZSwcFactory::CreateSwc(
   Swc_Tree_Node *root = tree->forceVirtualRoot();
   Swc_Tree_Node *parent = root;
 
-  for (ZPointArray::const_iterator iter = pointArray.begin();
+  for (std::vector<ZPoint>::const_iterator iter = pointArray.begin();
        iter != pointArray.end(); ++iter) {
     const ZPoint &pt = *iter;
     Swc_Tree_Node *tn = New_Swc_Tree_Node();
 
     SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
     SwcTreeNode::setRadius(tn, radius);
-    SwcTreeNode::setParent(tn, parent);
+    SwcTreeNode::setFirstChild(parent, tn);
+//    SwcTreeNode::setParent(tn, parent);
+    if (isConnected) {
+      parent = tn;
+    }
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcFactory::CreateSwc(
+    const std::vector<ZWeightedPoint> &pointArray, bool isConnected)
+{
+  ZSwcTree *tree = new ZSwcTree;
+  tree->useCosmeticPen(true);
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = root;
+
+  for (std::vector<ZWeightedPoint>::const_iterator iter = pointArray.begin();
+       iter != pointArray.end(); ++iter) {
+    const ZWeightedPoint &pt = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
+    SwcTreeNode::setRadius(tn, pt.weight());
+    SwcTreeNode::setFirstChild(parent, tn);
+//    SwcTreeNode::setParent(tn, parent);
     if (isConnected) {
       parent = tn;
     }

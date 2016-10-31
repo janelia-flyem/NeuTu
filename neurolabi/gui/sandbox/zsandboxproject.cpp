@@ -6,7 +6,8 @@
 #include "zsandboxmodule.h"
 #include "zaboutmodule.h"
 #include "zrgb2graymodule.h"
-#include"zpixelsmodule.h"
+#include "ztracemodule.h"
+#include"zimageinfomodule.h"
 /*************************************/
 
 
@@ -23,5 +24,6 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZAboutModule>();
   RegisterModule<ZExampleModule>();
   RegisterModule<ZRgb2GrayModule>();
-   RegisterModule<ZPixelsModule>();
+  RegisterModule<ZTraceModule>();
+  RegisterModule<ZImageInfoModule>();
 }

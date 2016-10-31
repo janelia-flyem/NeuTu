@@ -14,8 +14,10 @@ ZExampleModule::ZExampleModule(QObject *parent) :
 
 void ZExampleModule::init()
 {
-  m_action = new QAction("Example", this);
-  connect(m_action, SIGNAL(triggered()), this, SLOT(execute()));
+  QAction *action = new QAction("Example", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(execute()));
+
+  setAction(action);
 }
 
 void ZExampleModule::execute()
@@ -28,9 +30,4 @@ void ZExampleModule::execute()
       doc->notifyStackModified();
     }
   }
-}
-
-QAction* ZExampleModule::getAction() const
-{
-  return m_action;
 }

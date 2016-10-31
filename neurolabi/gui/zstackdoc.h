@@ -782,6 +782,10 @@ public:
   }
 
 public:
+  ZNeuronTracer* getNeuronTracer() {
+    return &m_neuronTracer;
+  }
+
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
                             double xRes, double yRes, double zRes);

@@ -50,6 +50,7 @@ void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
 
 void PrepareBodyStatus(QComboBox *box);
 
+QString GetMemoryUsage();
 
 class HackathonEvaluator {
 public:

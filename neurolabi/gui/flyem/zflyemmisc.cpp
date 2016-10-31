@@ -1,7 +1,9 @@
 #include "zflyemmisc.h"
 
+#include <unistd.h>
 #include <iostream>
 #include <QString>
+#include <QProcess>
 
 #include "neutubeconfig.h"
 #include "zmatrix.h"
@@ -25,6 +27,8 @@
 #include "zobject3dfactory.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
+
+
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -716,4 +720,53 @@ void ZFlyEmMisc::MakeTriangle(
   }
 
   ptArray[3] = ptArray[0];
+}
+
+QString ZFlyEmMisc::GetMemoryUsage()
+{
+  QString memInfo;
+
+#ifdef __APPLE__
+  QProcess p;
+  p.start(QString("top -l 1 -pid %1").arg(getpid()));
+
+  if (p.waitForFinished(-1)) {
+    QString output = p.readAllStandardOutput();
+    QStringList lines = output.split("\n", QString::SkipEmptyParts);
+//    qDebug() << output;
+    QString fieldLine;
+    QString infoLine;
+    for (int i = 0; i < lines.size(); ++i) {
+      QString line = lines[i];
+      if (line.startsWith("PID")) {
+        fieldLine = line;
+        if (i + 1 < lines.size()) {
+          infoLine = lines[i + 1];
+        }
+        break;
+      }
+    }
+
+    QStringList fields = fieldLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << fields;
+    QStringList infoList = infoLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << infoList;
+
+    for (int i = 0; i < fields.size(); ++i) {
+      if (fields[i] == "MEM") {
+        if (infoList.size() > i) {
+          memInfo = infoList[i];
+        }
+        break;
+      }
+    }
+
+//    qDebug() << "Memory usage:" << memInfo;
+  } else {
+    qDebug() << p.readAllStandardError();
+  }
+
+
+#endif
+  return memInfo;
 }
