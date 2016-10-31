@@ -254,6 +254,12 @@ public:
    */
   ZObject3dScan *chopX(int x, ZObject3dScan *remain, ZObject3dScan *result) const;
 
+  ZObject3dScan *chopY(int y, ZObject3dScan *remain, ZObject3dScan *result) const;
+
+  ZObject3dScan* chop(
+      int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+      ZObject3dScan *result) const;
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
 

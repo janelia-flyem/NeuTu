@@ -21189,5 +21189,18 @@ void ZTest::test(MainWindow *host)
   dlg.getAnnotation(14634755, 1).print();
 #endif
 
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan remain;
+  ZObject3dScan subobj;
+
+  obj.chopX(500, &remain, &subobj);
+  subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
+
+#endif
+
   std::cout << "Done." << std::endl;
 }

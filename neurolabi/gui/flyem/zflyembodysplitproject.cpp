@@ -806,6 +806,105 @@ void ZFlyEmBodySplitProject::exportSplits()
 
 }
 
+void ZFlyEmBodySplitProject::chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg)
+{
+  chopBody(x, NeuTube::X_AXIS, dlg);
+}
+
+void ZFlyEmBodySplitProject::chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg)
+{
+  chopBody(y, NeuTube::Y_AXIS, dlg);
+}
+
+
+void ZFlyEmBodySplitProject::chopBody(
+    int v, NeuTube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg)
+{
+#ifdef _FLYEM_
+  ZFlyEmProofDoc* doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    ZDvidWriter writer;
+    if (writer.open(getDvidTarget())) {
+      getProgressSignal()->startProgress("Slicing body");
+      emitMessage("Uploading results ...");
+
+      ZObject3dScan *wholeBody = doc->getBodyForSplit()->getObjectMask();
+
+      getProgressSignal()->advanceProgress(0.1);
+      if (wholeBody != NULL) {
+        uint64_t newBodyId = 0;
+        ZObject3dScan remain;
+        ZObject3dScan subobj;
+
+        wholeBody->chop(v, axis, &remain, &subobj);
+//        wholeBody->chopZ(z, &remain, &subobj);
+        size_t subobjVoxelNumber = subobj.getVoxelNumber();
+        size_t remainVoxelNumber = remain.getVoxelNumber();
+        size_t voxelNumber = 0;
+
+        if (subobjVoxelNumber > 0 && remainVoxelNumber > 0) {
+          //Keep the larger part
+          if (subobjVoxelNumber <= remainVoxelNumber) {
+            newBodyId = writer.writePartition(*wholeBody, subobj, getBodyId());
+            *wholeBody = remain;
+            voxelNumber = subobjVoxelNumber;
+          } else {
+            newBodyId = writer.writePartition(*wholeBody, remain, getBodyId());
+            *wholeBody = subobj;
+            voxelNumber = remainVoxelNumber;
+          }
+
+
+          getProgressSignal()->advanceProgress(0.1);
+
+          std::vector<uint64_t> updateBodyArray;
+
+          if (newBodyId > 0) {
+            if (dlg != NULL) {
+              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
+                    getBodyId(), newBodyId);
+              if (!annot.isEmpty()) {
+                writer.writeBodyAnntation(annot);
+              }
+            }
+
+            QString msg = QString("Cropped object uploaded as %1 (%2 voxels).").
+                arg(newBodyId).arg(voxelNumber);
+            if (voxelNumber >= m_skelThre) {
+              updateBodyArray.push_back(newBodyId);
+            }
+            emitMessage(msg);
+
+            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                  getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
+            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+                  getDvidTarget(), newBodyId, ZNeutuService::UPDATE_ALL);
+
+            QString bodyMessage = QString("Body %1 splitted: ").arg(getBodyId());
+            bodyMessage += "<font color=#007700>";
+            bodyMessage.append(QString("%1 ").arg(newBodyId));
+            bodyMessage += "</font>";
+            emitMessage(bodyMessage);
+
+            getProgressSignal()->advanceProgress(0.1);
+
+            updateSplitDocument();
+            emit resultCommitted();
+          } else {
+            emitError("Warning: Something wrong happened during uploading! "
+                      "Please contact the developer as soon as possible.");
+          }
+        }
+      }
+
+      getProgressSignal()->endProgress();
+
+      emitMessage("Done.");
+    }
+  }
+#endif
+}
+
 void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg)
 {
 #ifdef _FLYEM_

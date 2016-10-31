@@ -3206,6 +3206,25 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
   return result;
 }
 
+ZObject3dScan* ZObject3dScan::chop(
+    int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+    ZObject3dScan *result) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return chopX(v, remain, result);
+    break;
+  case NeuTube::Y_AXIS:
+    return chopY(v, remain, result);
+    break;
+  case NeuTube::Z_AXIS:
+    return chopZ(v, remain, result);
+    break;
+  }
+
+  return NULL;
+}
+
 ZObject3dScan* ZObject3dScan::chopZ(
     int z, ZObject3dScan *remain, ZObject3dScan *result) const
 {
@@ -3240,6 +3259,42 @@ ZObject3dScan* ZObject3dScan::chopZ(
 
   return result;
 }
+
+ZObject3dScan* ZObject3dScan::chopY(
+    int y, ZObject3dScan *remain, ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
+  }
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.getY() < y) {
+      result->addStripe(stripe, false);
+    } else if (remain != NULL) {
+      remain->addStripe(stripe, false);
+    }
+  }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
+  result->canonize();
+  result->setSliceAxis(m_sliceAxis);
+
+  return result;
+}
+
 
 ZObject3dScan* ZObject3dScan::chopX(
     int x, ZObject3dScan *remain, ZObject3dScan *result) const
@@ -3281,8 +3336,8 @@ ZObject3dScan* ZObject3dScan::chopX(
       result->addStripe(stripe1, false);
     }
 
-    if (!stripe2.isEmpty()) {
-      result->addStripe(stripe2, false);
+    if (!stripe2.isEmpty() && remain != NULL) {
+      remain->addStripe(stripe2, false);
     }
   }
 

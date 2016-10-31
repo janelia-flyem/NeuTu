@@ -1154,7 +1154,7 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyCropTriggered()),
           this, SLOT(cropBody()));
-  connect(getCompletePresenter(), SIGNAL(bodyChopZTriggered()),
+  connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
           this, SLOT(chopBodyZ()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
           this, SLOT(mergeSelected()));
@@ -2501,6 +2501,32 @@ void ZFlyEmProofMvc::chopBodyZ()
           QtConcurrent::run(
             &m_splitProject, &ZFlyEmBodySplitProject::chopBodyZ,
             getView()->getCurrentZ(), m_splitUploadDlg);
+      m_futureMap[threadId] = future;
+    }
+  }
+}
+
+void ZFlyEmProofMvc::chopBody()
+{
+  m_splitUploadDlg->setComment(
+        QString("Split from %1").arg(m_splitProject.getBodyId()));
+  if (m_splitUploadDlg->exec()) {
+    const QString threadId = "ZFlyEmBodySplitProject::chopBody";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      ZIntPoint center = getView()->getCenter();
+      int v = center.getZ();
+      NeuTube::EAxis axis = NeuTube::X_AXIS;
+      if (axis == NeuTube::X_AXIS) {
+        v = center.getX();
+      } else if (axis == NeuTube::Y_AXIS) {
+        v = center.getY();
+      }
+
+      QFuture<void> future =
+          QtConcurrent::run(
+            &m_splitProject, &ZFlyEmBodySplitProject::chopBody,
+            v, axis, m_splitUploadDlg);
       m_futureMap[threadId] = future;
     }
   }

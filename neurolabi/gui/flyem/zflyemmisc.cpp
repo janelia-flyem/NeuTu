@@ -753,7 +753,7 @@ QString ZFlyEmMisc::GetMemoryUsage()
 //    qDebug() << infoList;
 
     for (int i = 0; i < fields.size(); ++i) {
-      if (fields[i] == "MEM") {
+      if (fields[i] == "MEM" || fields[i] == "RPRVT") {
         if (infoList.size() > i) {
           memInfo = infoList[i];
         }

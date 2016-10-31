@@ -359,9 +359,9 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyCropTriggered()));
       break;
-    case ZActionFactory::ACTION_BODY_CHOP_Z:
+    case ZActionFactory::ACTION_BODY_CHOP:
       connect(action, SIGNAL(triggered()),
-              this, SLOT(notifyBodyChopZTriggered()));
+              this, SLOT(notifyBodyChopTriggered()));
       break;
     case ZActionFactory::ACTION_BODY_MERGE:
       connect(action, SIGNAL(triggered()),
@@ -2634,9 +2634,9 @@ void ZStackPresenter::notifyBodyCropTriggered()
   emit bodyCropTriggered();
 }
 
-void ZStackPresenter::notifyBodyChopZTriggered()
+void ZStackPresenter::notifyBodyChopTriggered()
 {
-  emit bodyChopZTriggered();
+  emit bodyChopTriggered();
 }
 
 void ZStackPresenter::notifyBodyMergeTriggered()

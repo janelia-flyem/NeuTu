@@ -684,7 +684,8 @@ HEADERS += mainwindow.h \
     dialogs/zdvidbodypositiondialog.h \
     widgets/z3dtabwidget.h \
     zcubearraymovieactor.h \
-    dialogs/zflyemsplituploadoptiondialog.h
+    dialogs/zflyemsplituploadoptiondialog.h \
+    widgets/zaxiswidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -770,7 +771,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zcontrastprotocaldialog.ui \
     dialogs/zflyemroitooldialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
-    dialogs/zflyemsplituploadoptiondialog.ui
+    dialogs/zflyemsplituploadoptiondialog.ui \
+    widgets/zaxiswidget.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1195,7 +1197,8 @@ SOURCES += main.cpp \
     dialogs/zdvidbodypositiondialog.cpp \
     widgets/z3dtabwidget.cpp \
     zcubearraymovieactor.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    widgets/zaxiswidget.cpp
 
 OTHER_FILES += \
     extlib.pri \

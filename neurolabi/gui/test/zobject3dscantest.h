@@ -1403,6 +1403,7 @@ TEST(ZObject3dScan, Mainpulate)
   ASSERT_TRUE(obj.equalsLiterally(subobj));
 
 
+
 }
 
 #endif
