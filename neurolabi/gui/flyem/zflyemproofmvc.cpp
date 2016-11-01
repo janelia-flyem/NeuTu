@@ -68,6 +68,7 @@
 #include "dvid/zdvidpatchdataupdater.h"
 #include "widgets/z3dtabwidget.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
+#include "dialogs/zflyembodychopdialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -103,6 +104,7 @@ void ZFlyEmProofMvc::init()
   m_todoDlg = new FlyEmTodoDialog(this);
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
   m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
+  m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
   connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
@@ -1154,8 +1156,10 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(decomposeBody()));
   connect(getCompletePresenter(), SIGNAL(bodyCropTriggered()),
           this, SLOT(cropBody()));
+//  connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
+//          this, SLOT(chopBodyZ()));
   connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
-          this, SLOT(chopBodyZ()));
+            this, SLOT(chopBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
           this, SLOT(mergeSelected()));
   connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
@@ -2508,26 +2512,28 @@ void ZFlyEmProofMvc::chopBodyZ()
 
 void ZFlyEmProofMvc::chopBody()
 {
-  m_splitUploadDlg->setComment(
-        QString("Split from %1").arg(m_splitProject.getBodyId()));
-  if (m_splitUploadDlg->exec()) {
-    const QString threadId = "ZFlyEmBodySplitProject::chopBody";
-    if (!m_futureMap.isAlive(threadId)) {
-      m_futureMap.removeDeadThread();
-      ZIntPoint center = getView()->getCenter();
-      int v = center.getZ();
-      NeuTube::EAxis axis = NeuTube::X_AXIS;
-      if (axis == NeuTube::X_AXIS) {
-        v = center.getX();
-      } else if (axis == NeuTube::Y_AXIS) {
-        v = center.getY();
-      }
+  if (m_bodyChopDlg->exec()) {
+    m_splitUploadDlg->setComment(
+          QString("Split from %1").arg(m_splitProject.getBodyId()));
+    if (m_splitUploadDlg->exec()) {
+      const QString threadId = "ZFlyEmBodySplitProject::chopBody";
+      if (!m_futureMap.isAlive(threadId)) {
+        m_futureMap.removeDeadThread();
+        ZIntPoint center = getView()->getCenter();
+        int v = center.getZ();
+        NeuTube::EAxis axis = m_bodyChopDlg->getAxis();
+        if (axis == NeuTube::X_AXIS) {
+          v = center.getX();
+        } else if (axis == NeuTube::Y_AXIS) {
+          v = center.getY();
+        }
 
-      QFuture<void> future =
-          QtConcurrent::run(
-            &m_splitProject, &ZFlyEmBodySplitProject::chopBody,
-            v, axis, m_splitUploadDlg);
-      m_futureMap[threadId] = future;
+        QFuture<void> future =
+            QtConcurrent::run(
+              &m_splitProject, &ZFlyEmBodySplitProject::chopBody,
+              v, axis, m_splitUploadDlg);
+        m_futureMap[threadId] = future;
+      }
     }
   }
 }

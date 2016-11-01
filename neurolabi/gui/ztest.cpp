@@ -21196,7 +21196,7 @@ void ZTest::test(MainWindow *host)
   ZObject3dScan remain;
   ZObject3dScan subobj;
 
-  obj.chopX(500, &remain, &subobj);
+  obj.chopY(750, &remain, &subobj);
   subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
   remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
 

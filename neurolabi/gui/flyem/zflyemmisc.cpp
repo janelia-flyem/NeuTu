@@ -430,8 +430,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       Z3DGraphNode node1;
       Z3DGraphNode node2;
 
-      node1.setColor(QColor(255, 0, 0));
-      node2.setColor(QColor(255, 0, 0));
+      node1.setColor(QColor(0, 255, 0));
+      node2.setColor(QColor(0, 255, 0));
 
       double x = viewParam.getViewPort().center().x();
       double y = viewParam.getViewPort().center().y();
@@ -444,6 +444,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       graph->addNode(node2);
       graph->addEdge(node1, node2, GRAPH_LINE);
 
+      node1.setColor(QColor(255, 0, 0));
+      node2.setColor(QColor(255, 0, 0));
       node1.set(rect.getFirstX(), y, rect.getZ(), width);
       node2.set(rect.getLastX(), y, rect.getZ(), width);
 
