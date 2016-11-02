@@ -2068,7 +2068,8 @@ void ZFlyEmProofMvc::exportSelectedBody()
       if (reader.isReady()) {
         for (std::set<uint64_t>::const_iterator iter = idSet.begin();
              iter != idSet.end(); ++iter) {
-          ZObject3dScan subobj = reader.readBody(*iter);
+          ZObject3dScan subobj;
+          reader.readBody(*iter, false, &subobj);
           obj.concat(subobj);
         }
       }

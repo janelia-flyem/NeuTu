@@ -115,7 +115,7 @@ void ZDvidSparseStack::display(
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
-          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, NULL);
+          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -189,13 +189,10 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, obj);
+  getMaskReader().readBody(bodyId, canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
-  if (canonizing) {
-    obj->canonize();
-  }
 }
 
 void ZDvidSparseStack::loadBodyAsync(uint64_t bodyId)

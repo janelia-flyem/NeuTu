@@ -865,7 +865,7 @@ uint64_t FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           ZDvidReader reader;
           reader.open(target);
           ZObject3dScan body;
-          reader.readBody(neuron->getId(), &body);
+          reader.readBody(neuron->getId(), true, &body);
 
           Stack *stack = imageFactory.createSurfaceImage(body);
           writer.writeThumbnail(neuron->getId(), stack);

@@ -276,7 +276,8 @@ void ZDvidReader::testApiLoad()
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int z, NeuTube::EAxis axis, ZObject3dScan *result)
+    uint64_t bodyId, int z, NeuTube::EAxis axis, bool canonizing,
+    ZObject3dScan *result)
 {
   if (result != NULL) {
     result->clear();
@@ -300,6 +301,11 @@ ZObject3dScan *ZDvidReader::readBody(
 
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
+    reader.clearBuffer();
+
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
 
     result->setLabel(bodyId);
   }
@@ -308,7 +314,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis,
+    uint64_t bodyId, int minZ, int maxZ, bool canonizing, NeuTube::EAxis axis,
     ZObject3dScan *result)
 {
   if (result != NULL) {
@@ -328,6 +334,11 @@ ZObject3dScan *ZDvidReader::readBody(
                 isVerbose());
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
+    reader.clearBuffer();
+
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
 
     result->setLabel(bodyId);
   }
@@ -336,7 +347,8 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, const ZIntCuboid &box, ZObject3dScan *result) const
+    uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+    ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -356,13 +368,110 @@ ZObject3dScan *ZDvidReader::readBody(
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
 
+    reader.clearBuffer();
+
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
+
     result->setLabel(bodyId);
   }
 
   return result;
 }
 
-ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
+ZObject3dScan *ZDvidReader::readBodyDs(
+    uint64_t bodyId, bool canonizing, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    ZDvidBufferReader &reader = m_bufferReader;
+
+    reader.tryCompress(true);
+    ZDvidUrl dvidUrl(getDvidTarget());
+
+    QElapsedTimer timer;
+    timer.start();
+
+    reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
+
+    reader.tryCompress(false);
+
+    std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+    timer.start();
+    const QByteArray &buffer = reader.getBuffer();
+    result->importDvidObjectBufferDs(buffer.data(), buffer.size());
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
+
+    std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+
+    reader.clearBuffer();
+
+    result->setLabel(bodyId);
+  }
+
+  return result;
+}
+
+
+
+ZObject3dScan *ZDvidReader::readBodyDs(
+    uint64_t bodyId, int xIntv, int yIntv, int zIntv, bool canonizing,
+    ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    ZDvidBufferReader &reader = m_bufferReader;
+
+    reader.tryCompress(true);
+    ZDvidUrl dvidUrl(getDvidTarget());
+
+    QElapsedTimer timer;
+    timer.start();
+
+    reader.read(dvidUrl.getSparsevolUrl(bodyId).c_str(), isVerbose());
+
+    reader.tryCompress(false);
+
+    std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+    timer.start();
+    const QByteArray &buffer = reader.getBuffer();
+    result->importDvidObjectBuffer(buffer.data(), buffer.size(),
+                                   xIntv, yIntv, zIntv);
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
+
+    std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+
+    reader.clearBuffer();
+
+    result->setLabel(bodyId);
+  }
+
+  return result;
+}
+
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, bool canonizing, ZObject3dScan *result)
 {
   if (result != NULL) {
     result->clear();
@@ -390,7 +499,13 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
     timer.start();
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
+    if (canonizing) {
+      result->fullySortedCanonize();
+    }
+
     std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+
+    reader.clearBuffer();
 
     result->setLabel(bodyId);
   }
@@ -418,12 +533,15 @@ ZObject3dScan *ZDvidReader::readBody(uint64_t bodyId, ZObject3dScan *result)
   return result;
 }
 
-ZObject3dScan ZDvidReader::readBody(uint64_t bodyId)
+/*
+ZObject3dScan ZDvidReader::readBody(uint64_t bodyId, bool canonizing)
 {
   ZObject3dScan obj;
-  readBody(bodyId, &obj);
+  readBody(bodyId, canonizing, &obj);
+
   return obj;
 }
+*/
 
 ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
 {
@@ -448,6 +566,8 @@ ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
       delete tree;
       tree = NULL;
     }
+
+    reader.clearBuffer();
   }
   /*
   startReading();
@@ -486,6 +606,8 @@ ZStack* ZDvidReader::readThumbnail(uint64_t bodyId)
 
   Mc_Stack *rawStack =
       C_Stack::readMrawFromBuffer(reader.getBuffer().constData());
+
+  reader.clearBuffer();
 
   ZStack *stack = NULL;
   if (rawStack != NULL) {
@@ -636,6 +758,8 @@ ZStack* ZDvidReader::readGrayScaleBlock(
 #endif
       stack->loadValue(data.constData() + 4, data.length() - 4, stack->array8());
     }
+
+    bufferReader.clearBuffer();
   }
 
   return stack;
@@ -666,7 +790,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
 {
   ZSparseStack *spStack = NULL;
 
-  ZObject3dScan *body = readBody(bodyId, NULL);
+  ZObject3dScan *body = readBody(bodyId, true, NULL);
 
   //ZSparseObject *body = new ZSparseObject;
   //body->append(reader.readBody(bodyId));
@@ -1041,6 +1165,8 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
     bodySet.insert(idArray.begin(), idArray.end());
   }
 
+  bufferReader.clearBuffer();
+
   return bodySet;
 }
 
@@ -1063,6 +1189,8 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
     idArray = array.toIntegerArray();
     bodySet.insert(idArray.begin(), idArray.end());
   }
+
+  bufferReader.clearBuffer();
 
   return bodySet;
 }
@@ -1151,6 +1279,8 @@ QStringList ZDvidReader::readKeys(const QString &dataName)
     }
   }
 
+  reader.clearBuffer();
+
   return keys;
 }
 
@@ -1177,6 +1307,8 @@ QStringList ZDvidReader::readKeys(
       keys << ZJsonParser::stringValue(obj.at(i));
     }
   }
+
+  reader.clearBuffer();
 
   return keys;
 }
@@ -1224,6 +1356,8 @@ QStringList ZDvidReader::readKeys(
       keys << ZJsonParser::stringValue(obj.at(i));
     }
   }
+
+  reader.clearBuffer();
 
   return keys;
 }
@@ -1438,6 +1572,8 @@ std::string ZDvidReader::getType(const std::string &dataName) const
         type = ZJsonParser::stringValue(baseJson["TypeName"]);
       }
     }
+
+    bufferReader.clearBuffer();
   }
 
   return type;
@@ -1558,7 +1694,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
       box.setSize(dvidInfo.getBlockSize().getX(),
                   dvidInfo.getBlockSize().getY(),
                   dvidInfo.getBlockSize().getZ());
-      ZObject3dScan *fineBody = readBody(bodyId, box, NULL);
+      ZObject3dScan *fineBody = readBody(bodyId, box, true, NULL);
 
       if (fineBody != NULL) {
         ZObject3dScan objSlice = fineBody->getMedianSlice();
@@ -1963,6 +2099,8 @@ bool ZDvidReader::hasCoarseSparseVolume(uint64_t bodyId) const
     return *((uint32_t*) (byteArray.data() + 8)) > 0;
   }
 
+  reader.clearBuffer();
+
   return false;
 
 #if 0
@@ -2081,9 +2219,16 @@ ZDvidTileInfo ZDvidReader::readTileInfo(const std::string &dataName) const
     ZJsonObject infoJson;
     infoJson.decodeString(bufferReader.getBuffer().data());
     tileInfo.load(infoJson);
+
+    bufferReader.clearBuffer();
   }
 
   return tileInfo;
+}
+
+void ZDvidReader::clearBuffer() const
+{
+  m_bufferReader.clearBuffer();
 }
 
 ZDvidVersionDag ZDvidReader::readVersionDag() const
@@ -2111,6 +2256,8 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
 
   dag.load(infoJson, uuid);
 
+  clearBuffer();
+
   return dag;
 }
 
@@ -2127,6 +2274,8 @@ ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
   obj.importDvidObjectBuffer(
         reader.getBuffer().data(), reader.getBuffer().size());
   obj.setLabel(bodyId);
+
+  clearBuffer();
 
   return obj;
 }
@@ -2150,6 +2299,8 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
   if (infoJson.hasKey("Label")) {
     bodyId = (uint64_t) ZJsonParser::integerValue(infoJson["Label"]);
   }
+
+  clearBuffer();
 
   return bodyId;
 }

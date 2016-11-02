@@ -571,7 +571,7 @@ void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {
     ZObject3dScan obj;
-    reader.readBody(bodyId, &obj);
+    reader.readBody(bodyId, false, &obj);
     if (!obj.isEmpty()) {
       ZFlyEmNeuronBodyInfo bodyInfo;
       bodyInfo.setBodySize(obj.getVoxelNumber());
@@ -973,7 +973,8 @@ uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
   uint64_t newBodyId = 0;
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ZObject3dScan obj = reader.readBody(bodyId);
+    ZObject3dScan obj;
+    reader.readBody(bodyId, false, &obj);
 
     if (!obj.isEmpty()) {
       newBodyId = writeSplit(obj, bodyId, 0);

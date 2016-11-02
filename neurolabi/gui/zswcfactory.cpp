@@ -519,22 +519,26 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
+  int intv = 0;
+
   size_t volume = obj.getBoundBox().getVolume();
 
-  int intv = 0;
   if (volume > MAX_INT32) {
-    intv = iround(Cube_Root((double) volume / MAX_INT32));
+    intv = iround(Cube_Root((double) volume / MAX_INT32)) - 1;
   }
 
   ZStack *stack = NULL;
   std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
   tic();
+
+  ZIntPoint dsIntv = obj.getDsIntv();
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsample(intv, intv, intv);
-    stack = obj2.toStackObject();
+    stack = obj2.toStackObjectWithMargin(1, 1);
+    dsIntv = obj2.getDsIntv();
   } else {
-    stack = obj.toStackObject();
+    stack = obj.toStackObjectWithMargin(1, 1);
   }
   std::cout << "Preparing for stack time: " << toc() << std::endl;
 
@@ -543,7 +547,9 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     tree = CreateSurfaceSwc(*stack, sparseLevel);
     if (tree != NULL) {
       tree->setColor(obj.getColor());
-      tree->rescale(intv + 1, intv + 1, intv + 1);
+      tree->rescale(dsIntv.getX() + 1,
+                    dsIntv.getY() + 1,
+                    dsIntv.getZ() + 1);
     } else {
       LWARN() << "Failed to generate body surface for sparsevol: "
               << obj.getVoxelNumber() << " voxels";
@@ -576,8 +582,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
     int conn = 6;
     size_t offset = 0;
     int neighbor[26];
-    int is_in_bound[26];
-    int n_in_bound;
+//    int is_in_bound[26];
+    int n_in_bound = conn;
     int count = 0;
 
     tree = new ZSwcTree();
@@ -593,19 +599,19 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
 //          out_array[offset] = 0;
           uint8_t in_value = in_array[offset];
           if (in_value > 0) {
-            n_in_bound = Stack_Neighbor_Bound_Test_S(
-                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
+//            n_in_bound = Stack_Neighbor_Bound_Test_S(
+//                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
             bool isSurface = false;
-            if (n_in_bound == conn) {
+//            if (n_in_bound == conn) {
               for (int n = 0; n < n_in_bound; n++) {
                 if (in_array[offset + neighbor[n]] != in_value) {
                   isSurface = true;
                   break;
                 }
               }
-            } else {
-              isSurface = true;
-            }
+//            } else {
+//              isSurface = true;
+//            }
 
             if (isSurface) {
               if (count++ % sparseLevel == 0) {

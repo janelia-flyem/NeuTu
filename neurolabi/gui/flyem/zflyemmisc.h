@@ -52,6 +52,8 @@ void PrepareBodyStatus(QComboBox *box);
 
 QString GetMemoryUsage();
 
+QString ReadLastLines(const QString &filePath, int maxCount);
+
 class HackathonEvaluator {
 public:
   HackathonEvaluator(const std::string &sourceDir,

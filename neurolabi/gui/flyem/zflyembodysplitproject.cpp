@@ -245,7 +245,7 @@ ZObject3dScan* ZFlyEmBodySplitProject::readBody(ZObject3dScan *out) const
       out = new ZObject3dScan;
     }
 
-    reader.readBody(getBodyId(), out);
+    reader.readBody(getBodyId(), true, out);
   }
 
   return out;
@@ -282,10 +282,7 @@ void ZFlyEmBodySplitProject::quickViewFunc()
     if (reader.open(getDvidTarget())) {
       if (obj.isEmpty()) {
         uint64_t bodyId = getBodyId();
-        obj = reader.readBody(bodyId);
-        if (!obj.isEmpty()) {
-          obj.canonize();
-        }
+        reader.readBody(bodyId, true, &obj);
       }
     }
 

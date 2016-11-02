@@ -236,7 +236,8 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
                         "/json/skeletonize_fib25_len40.json");
           }
           skeletonizer.configure(config);
-          ZObject3dScan obj = reader.readBody(getId());
+          ZObject3dScan obj;
+          reader.readBody(getId(), true, &obj);
           if (!obj.isEmpty()) {
             m_unscaledModel = skeletonizer.makeSkeleton(obj);
             if (m_unscaledModel != NULL) {
@@ -315,7 +316,7 @@ ZObject3dScan* ZFlyEmNeuron::getBody() const
       ZDvidReader reader;
       if (reader.open(m_volumePath.c_str())) {
         m_body = new ZObject3dScan;
-        *m_body = reader.readBody(getId());
+        reader.readBody(getId(), true, m_body);
 
 #ifdef _DEBUG_2
         m_body->save(GET_TEST_DATA_DIR + "/test.sobj");

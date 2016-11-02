@@ -155,6 +155,11 @@ public:
 
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
+  bool importDvidObjectBufferDs(const char *byteArray, size_t byteNumber);
+
+  bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber,
+                              int xIntv, int yIntv, int zIntv);
+
   bool importDvidRoi(const ZJsonArray &obj);
   bool importDvidRoi(const std::string &filePath);
 
@@ -216,6 +221,8 @@ public:
    */
   void sort();
   void canonize();
+  void sortedCanonize();
+  void fullySortedCanonize();
   void unify(const ZObject3dScan &obj);
   void concat(const ZObject3dScan &obj);
 
@@ -383,6 +390,10 @@ public:
    */
   bool contains(int x, int y, int z);
   bool contains(const ZIntPoint &pt);
+
+  ZIntPoint getDsIntv() const {
+    return m_dsIntv;
+  }
 
   /*!
    * \brief Get minimal Z
@@ -598,6 +609,10 @@ private:
   int subtractForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
+
+  void mulDsIntv(int xintv, int yintv, int zintv);
+  void divDsIntv(int xintv, int yintv, int zintv);
+
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

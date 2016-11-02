@@ -54,6 +54,11 @@ void ZDvidBufferReader::setService(const ZDvidTarget &target)
 
 #endif
 
+void ZDvidBufferReader::clearBuffer()
+{
+  m_buffer.clear();
+}
+
 void ZDvidBufferReader::read(
     const QString &url, const QByteArray &payload, const std::string &method,
     bool outputingUrl)

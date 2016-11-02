@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include "neutube.h"
+#include "neutubeconfig.h"
+#include "flyem/zflyemmisc.h"
 
 DiagnosisDialog::DiagnosisDialog(QWidget *parent) :
   QDialog(parent),
@@ -30,7 +32,7 @@ void DiagnosisDialog::LoadFile(
   if (!filePath.empty()) {
     QFile file(filePath.c_str());
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      browser->setPlainText(QTextStream(&file).readAll());
+      browser->setPlainText(ZFlyEmMisc::ReadLastLines(filePath.c_str(), 1000));
       file.close();
     }
   }
@@ -55,7 +57,8 @@ void DiagnosisDialog::loadWarnFile()
 
 void DiagnosisDialog::loadInfoFile()
 {
-  LoadFile(NeuTube::getInfoFile(), ui->infoTextBrowser);
+  LoadFile(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE),
+           ui->infoTextBrowser);
 #if 0
   QFile file(NeuTube::getInfoFile().c_str());
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -95,12 +98,12 @@ void DiagnosisDialog::scrollToBottom()
         ui->infoTextBrowser->verticalScrollBar()->maximum());
 }
 
-void DiagnosisDialog::setVideoCardInfo(const QString &str)
+void DiagnosisDialog::setSystemInfo(const QString &str)
 {
   ui->videoCardInfoTextEdit->setPlainText(str);
 }
 
-void DiagnosisDialog::setVideoCardInfo(const QStringList &info)
+void DiagnosisDialog::setSystemInfo(const QStringList &info)
 {
-  setVideoCardInfo(info.join("\n"));
+  setSystemInfo(info.join("\n"));
 }

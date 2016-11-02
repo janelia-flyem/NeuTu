@@ -42,7 +42,7 @@ bool ZDvidSparsevolSlice::update(int z)
   if (m_currentZ != z) {
     m_currentZ = z;
     if (z < getMinZ() || z > getMaxZ()) {
-      m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, this);
+      m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
       updated = true;
     }
   }
@@ -52,7 +52,7 @@ bool ZDvidSparsevolSlice::update(int z)
 
 void ZDvidSparsevolSlice::update()
 {
-  m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, this);
+  m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
 }
 
 void ZDvidSparsevolSlice::display(

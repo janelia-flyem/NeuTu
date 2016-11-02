@@ -75,6 +75,7 @@ void systemKill(Stack *stack);
 inline void cppDelete(Stack *stack) { delete stack; }
 
 int stackUsage();
+int McStackUsage();
 
 /** @name Make copies
  */

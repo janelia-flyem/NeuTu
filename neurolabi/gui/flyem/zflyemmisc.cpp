@@ -772,3 +772,34 @@ QString ZFlyEmMisc::GetMemoryUsage()
 #endif
   return memInfo;
 }
+
+QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
+{
+  QString str;
+
+  QFile file(filePath);
+
+  if (file.exists()) {
+    file.open(QFile::ReadOnly);
+
+    file.seek(file.size() - 1);
+
+    int count = 0;
+
+    while ((count <= maxCount) && (file.pos() > 0))
+    {
+      char ch;
+      file.getChar(&ch);
+      file.seek(file.pos() - 2);
+      if (ch == '\n') {
+        count++;
+      }
+    }
+
+    str = file.readAll();
+
+    file.close();
+  }
+
+  return str;
+}
