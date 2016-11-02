@@ -118,6 +118,7 @@ public:
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
 
   void copyDataFrom(const ZObject3dScan &obj);
+  void copyAttributeFrom(const ZObject3dScan &obj);
 
   /*!
    * \brief Import a dvid object
@@ -610,8 +611,8 @@ private:
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
 
-  void mulDsIntv(int xintv, int yintv, int zintv);
-  void divDsIntv(int xintv, int yintv, int zintv);
+  void pushDsIntv(int xintv, int yintv, int zintv);
+  void popDsIntv(int xintv, int yintv, int zintv);
 
 
 protected:
@@ -619,7 +620,7 @@ protected:
   bool m_isCanonized;
   uint64_t m_label;
   bool m_blockingEvent;
-  ZIntPoint m_dsIntv;
+  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
 //  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;

@@ -136,6 +136,13 @@ void ZObject3dScan::copyDataFrom(const ZObject3dScan &obj)
   m_stripeArray = obj.m_stripeArray;
   m_isCanonized = obj.m_isCanonized;
   m_sliceAxis = obj.m_sliceAxis;
+  m_dsIntv = obj.m_dsIntv;
+}
+
+void ZObject3dScan::copyAttributeFrom(const ZObject3dScan &obj)
+{
+  m_sliceAxis = obj.m_sliceAxis;
+  m_dsIntv = obj.m_dsIntv;
 }
 
 
@@ -609,6 +616,7 @@ void ZObject3dScan::loadStack(const ZStack &stack)
   loadStack(stack.c_stack());
   translate(stack.getOffset().getX(), stack.getOffset().getY(),
             stack.getOffset().getZ());
+  m_dsIntv = stack.getDsIntv();
 }
 
 void ZObject3dScan::print() const
@@ -953,9 +961,12 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
     event |= EVENT_OBJECT_MODEL_CHANGED;
   }
 
+  pushDsIntv(xintv, yintv, zintv);
+  /*
   m_dsIntv.set((m_dsIntv.getX() + 1) * (xintv + 1) - 1,
                (m_dsIntv.getY() + 1) * (yintv + 1) - 1,
                (m_dsIntv.getZ() + 1) * (zintv + 1) - 1);
+               */
 
   processEvent(event);
 }
@@ -988,6 +999,8 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   }
 
   processEvent(event);
+
+  pushDsIntv(xintv, yintv, zintv);
 
   canonize();
 
@@ -1041,6 +1054,8 @@ void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 
   grownPart.setLabel(this->getLabel());
   *this = grownPart;
+
+  popDsIntv(xIntv, yIntv, zIntv);
 
   canonize();
 }
@@ -1182,6 +1197,8 @@ ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
     stackObject->setOffset(offset[0], offset[1], offset[2]);
   }
 
+  stackObject->setDsIntv(getDsIntv());
+
   return stackObject;
 }
 
@@ -1197,6 +1214,8 @@ ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
     stackObject->setOffset(offset[0], offset[1], offset[2]);
   }
 
+  stackObject->setDsIntv(getDsIntv());
+
   return stackObject;
 }
 
@@ -1207,6 +1226,8 @@ ZStack* ZObject3dScan::toVirtualStack() const
   ZStack *stack = new ZStack(GREY, box.getWidth(), box.getHeight(),
                              box.getDepth(), 1, true);
   stack->setOffset(box.getFirstCorner());
+
+  stack->setDsIntv(getDsIntv());
 
   return stack;
 }
@@ -1539,7 +1560,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
   for (std::vector<ZObject3dScan>::iterator iter = objArray.begin();
        iter != objArray.end(); ++iter) {
     ZObject3dScan &obj = *iter;
-    obj.setSliceAxis(m_sliceAxis);
+    obj.copyAttributeFrom(*this);
   }
 
   return objArray;
@@ -1902,14 +1923,14 @@ void ZObject3dScan::setDsIntv(const ZIntPoint &intv)
   m_dsIntv = intv;
 }
 
-void ZObject3dScan::mulDsIntv(int xintv, int yintv, int zintv)
+void ZObject3dScan::pushDsIntv(int xintv, int yintv, int zintv)
 {
   m_dsIntv.set((m_dsIntv.getX() + 1) * (xintv + 1) - 1,
                (m_dsIntv.getY() + 1) * (yintv + 1) - 1,
                (m_dsIntv.getZ() + 1) * (zintv + 1) - 1);
 }
 
-void ZObject3dScan::divDsIntv(int xintv, int yintv, int zintv)
+void ZObject3dScan::popDsIntv(int xintv, int yintv, int zintv)
 {
   m_dsIntv.set(std::max(0, (m_dsIntv.getX() + 1) / (xintv + 1) - 1),
                std::max(0, (m_dsIntv.getY() + 1) / (yintv + 1) - 1),
@@ -2107,6 +2128,8 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
     }
   }
 
+  slice.copyAttributeFrom(*this);
+
   return slice;
 }
 
@@ -2225,7 +2248,7 @@ ZObject3dScan ZObject3dScan::getSlice(int z) const
 #endif
   }
 
-  slice.setDsIntv(m_dsIntv);
+  slice.copyAttributeFrom(*this);
   slice.setCanonized(true);
 
   return slice;
@@ -2247,6 +2270,8 @@ ZObject3dScan ZObject3dScan::getSlice(int minZ, int maxZ) const
     slice.setCanonized(true);
   }
 
+  slice.copyAttributeFrom(*this);
+
   return slice;
 }
 
@@ -2261,6 +2286,10 @@ bool ZObject3dScan::hit(double x, double y, double z)
   int ty = iround(y);
   int tz = iround(z);
   ZGeometry::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
+  tx /= m_dsIntv.getX() + 1;
+  ty /= m_dsIntv.getY() + 1;
+  tz /= m_dsIntv.getZ() + 1;
+
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
     if (stripe.contains(tx, ty, tz)) {
@@ -2279,9 +2308,14 @@ bool ZObject3dScan::hit(double x, double y, NeuTube::EAxis axis)
   }
 
   m_hitPoint.set(0, 0, 0);
+
+  int tx = iround(x) / (getDsIntv().getX() + 1);
+  int ty = iround(y) / (getDsIntv().getY() + 1);
+
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     const ZObject3dStripe &stripe = m_stripeArray[i];
-    if (stripe.contains(iround(x), iround(y), stripe.getZ())) {
+    int tz = stripe.getZ() / (getDsIntv().getZ() + 1);
+    if (stripe.contains(tx, ty, tz)) {
       m_hitPoint.set(iround(x), iround(y), stripe.getZ());
       return true;
     }
@@ -2379,6 +2413,7 @@ void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
       }
     }
 
+    obj->copyAttributeFrom(*this);
     obj->canonize();
   }
 }
@@ -2404,6 +2439,8 @@ ZObject3dScan ZObject3dScan::makeYProjection() const
       proj.addSegment(x1, x2, false);
     }
   }
+
+  proj.copyAttributeFrom(*this);
 
   proj.canonize();
 
@@ -2574,6 +2611,10 @@ bool ZObject3dScan::equalsLiterally(const ZObject3dScan &obj) const
     return false;
   }
 
+  if (m_dsIntv != obj.m_dsIntv) {
+    return false;
+  }
+
   if (m_stripeArray.size() != obj.m_stripeArray.size()) {
     return false;
   }
@@ -2598,6 +2639,9 @@ ZObject3dScan ZObject3dScan::getComplementObject()
   compObj.translate(offset[0], offset[1], offset[2]);
 
   C_Stack::kill(stack);
+
+  compObj.setDsIntv(getDsIntv());
+  compObj.setSliceAxis(m_sliceAxis);
 
   return compObj;
 }
