@@ -77,7 +77,7 @@ void ZImageShowWindow::showHisogram()
 
   QVector<double> coor;
   QVector<QString>labels;
-  int step=ceil(20.0/size_of_bin);//we show at most 20 labels of bars
+  int step=ceil(16.0/size_of_bin);//we show at most 16 labels at x axis
   for(int i=0;i<groups;i+=step)
   {
     coor.append(i);
