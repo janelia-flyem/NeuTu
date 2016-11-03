@@ -15,6 +15,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zstring.h"
 #include "neutubeconfig.h"
+#include "z3dwindow.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -36,6 +37,7 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   enableAutoSaving(false);
 
   connectSignalSlot();
+  disconnectSwcNodeModelUpdate();
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -662,7 +664,10 @@ void ZFlyEmBody3dDoc::addBodyFunc(
     tree->setColor(color);
 
 //    delete tree;
-    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+
+    updateBodyFunc(bodyId, tree);
+    /*
     removeBodyFunc(bodyId, false);
     TStackObjectList objList = takeObject(tree->getType(), tree->getSource());
     if (!objList.empty()) {
@@ -672,6 +677,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
     processObjectModified(tree);
     endObjectModifiedMode();
     notifyObjectModified(true);
+    */
 
     if (!loaded) {
       addSynapse(bodyId);
@@ -805,7 +811,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
 void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
-    ZOUT(LTRACE(), 5) << "Add synases";
+    ZOUT(LTRACE(), 5) << "Update todo";
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
 //    removeObject(source, true);
@@ -872,6 +878,43 @@ void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
   removeBodyFunc(bodyId, true);
 }
 
+void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
+{
+  ZOUT(LTRACE(), 5) << "Update body: " << bodyId;
+
+  QString threadId = QString("updateBody(%1)").arg(bodyId);
+  if (!m_futureMap.isAlive(threadId)) {
+    //TStackObjectList objList = getObjectGroup().findSameSource(
+        //  ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+    TStackObjectList objList = getObjectGroup().findSameClass(
+          ZStackObject::TYPE_SWC,
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+
+    QMutexLocker locker(&m_garbageMutex);
+//    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    blockSignals(true);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      removeObject(*iter, false);
+      dumpGarbageUnsync(*iter, true);
+    }
+    addObject(tree);
+    blockSignals(false);
+
+    updateModelData(SWC_DATA);
+
+    QList<Z3DWindow*> windowList = getUserList<Z3DWindow>();
+    foreach (Z3DWindow *window, windowList) {
+      window->swcChanged();
+    }
+
+//    endObjectModifiedMode();
+//    notifyObjectModified(true);
+  }
+
+  ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
+}
+
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
   ZOUT(LTRACE(), 5) << "Remove body: " << bodyId;
@@ -884,11 +927,13 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
           ZStackObject::TYPE_SWC,
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    QMutexLocker locker(&m_garbageMutex);
+//    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    blockSignals(true);
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       removeObject(*iter, false);
-      dumpGarbage(*iter, true);
+      dumpGarbageUnsync(*iter, true);
     }
 
     if (removingAnnotation) {
@@ -897,7 +942,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter, true);
+        dumpGarbageUnsync(*iter, true);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -905,7 +950,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter, true);
+        dumpGarbageUnsync(*iter, true);
       }
 
       objList = getObjectGroup().findSameSource(
@@ -913,13 +958,26 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         removeObject(*iter, false);
-        dumpGarbage(*iter, true);
+        dumpGarbageUnsync(*iter, true);
       }
     }
+    blockSignals(false);
 
-    endObjectModifiedMode();
-    notifyObjectModified(true);
+    updateModelData(SWC_DATA);
+    updateModelData(PUNCTA_DATA);
+
+    QList<Z3DWindow*> windowList = getUserList<Z3DWindow>();
+    foreach (Z3DWindow *window, windowList) {
+      window->punctaChanged();
+      window->swcChanged();
+      window->updateTodoDisplay();
+    }
+
+//    endObjectModifiedMode();
+//    notifyObjectModified(true);
   }
+
+  ZOUT(LTRACE(), 5) << "Body removed: " << bodyId;
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId, EBodyType bodyType)
@@ -1095,16 +1153,21 @@ void ZFlyEmBody3dDoc::dumpGarbage(
   m_garbageJustDumped = true;
 }
 
+void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
+{
+  m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
+  m_garbageMap[obj].setRecycable(recycable);
+
+  m_garbageJustDumped = true;
+}
+
 void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
 {
   QMutexLocker locker(&m_garbageMutex);
 
 //  m_garbageList.append(obj);
 //  m_garbageMap[obj] = m_objectTime.elapsed();
-  m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
-  m_garbageMap[obj].setRecycable(recycable);
-
-  m_garbageJustDumped = true;
+  dumpGarbageUnsync(obj, recycable);
 }
 
 void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)

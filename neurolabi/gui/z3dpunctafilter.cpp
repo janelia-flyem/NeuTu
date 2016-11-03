@@ -3,6 +3,7 @@
 #include <QSet>
 #include <iostream>
 
+#include "neutubeconfig.h"
 #include "zpunctum.h"
 #include "zrandom.h"
 #include "z3dsphererenderer.h"
@@ -119,6 +120,8 @@ bool Z3DPunctaFilter::isVisible() const
 
 void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)
 {
+  ZOUT(LTRACE(), 5) << "Set puncta:" << punctaList.size();
+
   m_origPunctaList = punctaList;
   /*
   m_origPunctaList.clear();
@@ -134,6 +137,8 @@ void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)
 
 void Z3DPunctaFilter::setData(const QList<ZPunctum *> &punctaList)
 {
+  ZOUT(LTRACE(), 5) << "Set puncta:" << punctaList.size();
+
   m_origPunctaList.clear();
   m_origPunctaList.insert(m_origPunctaList.end(), punctaList.begin(),
                           punctaList.end());

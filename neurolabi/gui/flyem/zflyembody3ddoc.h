@@ -170,6 +170,8 @@ public:
   void dumpAllBody(bool recycable);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
+  void dumpGarbageUnsync(ZStackObject *obj, bool recycable);
+
   template<typename InputIterator>
   void dumpGarbage(const InputIterator &first, const InputIterator &last,
                    bool recycable);
@@ -208,6 +210,7 @@ private:
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
+  void updateBodyFunc(uint64_t bodyId, ZSwcTree *tree);
 
   void connectSignalSlot();
   void updateBodyFunc();

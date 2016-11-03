@@ -2640,8 +2640,7 @@ ZObject3dScan ZObject3dScan::getComplementObject()
 
   C_Stack::kill(stack);
 
-  compObj.setDsIntv(getDsIntv());
-  compObj.setSliceAxis(m_sliceAxis);
+  compObj.copyAttributeFrom(*this);
 
   return compObj;
 }
@@ -2658,7 +2657,7 @@ ZObject3dScan ZObject3dScan::getSurfaceObject() const
   C_Stack::kill(stack);
   C_Stack::kill(surface);
 
-  surfaceObj.setSliceAxis(m_sliceAxis);
+  surfaceObj.copyAttributeFrom(*this);
 
   return surfaceObj;
 }
@@ -2673,6 +2672,8 @@ ZObject3dScan ZObject3dScan::getPlaneSurface() const
   for (int z = minZ; z <= maxZ; ++z) {
     result.concat(getPlaneSurface(z));
   }
+
+  result.copyAttributeFrom(*this);
 
   return result;
 }
@@ -2716,6 +2717,8 @@ ZObject3dScan ZObject3dScan::getPlaneSurface(int z) const
     result.addStripeFast(slice.getStripe(count));
   }
 
+  result.copyAttributeFrom(*this);
+
   result.setCanonized(true);
 
   return result;
@@ -2745,7 +2748,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
     }
   }
 
-  obj.setSliceAxis(m_sliceAxis);
+  obj.copyAttributeFrom(*this);
 
   return obj;
 }
@@ -2768,6 +2771,7 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       subobj.canonize();
+      subobj.copyAttributeFrom(*this);
       objArray.push_back(subobj);
     }
   }
@@ -3391,8 +3395,8 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   remained.canonize();
   subtracted.canonize();
 
-  remained.setSliceAxis(m_sliceAxis);
-  subtracted.setSliceAxis(m_sliceAxis);
+  remained.copyAttributeFrom(*this);
+  subtracted.copyAttributeFrom(*this);
 
   this->copyDataFrom(remained);
 
@@ -3435,6 +3439,8 @@ ZObject3dScan operator - (
   for (; index1 < obj1.m_stripeArray.size(); ++index1) {
     remained.m_stripeArray.push_back(obj1.m_stripeArray[index1]);
   }
+
+  remained.copyAttributeFrom(obj1);
 
   remained.setCanonized(true);
 
@@ -3525,6 +3531,8 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
     }
   }
 
+  result.copyAttributeFrom(*this);
+
   result.canonize();
 
   return result;
@@ -3578,8 +3586,9 @@ ZObject3dScan* ZObject3dScan::chopZ(
     }
   }
 
+  result->copyAttributeFrom(*this);
+
   result->canonize();
-  result->setSliceAxis(m_sliceAxis);
 
   return result;
 }

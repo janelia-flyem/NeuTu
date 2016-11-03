@@ -424,9 +424,17 @@ void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
   }
 }
 
+void Z3DSwcFilter::updateData(const QList<ZSwcTree *> &swcList)
+{
+  setData(swcList);
+//  prepareData();
+}
+
 void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
 {
   m_origSwcList = swcList;
+
+  ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
 #if 0
   m_origSwcList.clear();
   if (swcList) {
@@ -451,6 +459,8 @@ void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
 #endif
+  ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
+
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
@@ -686,6 +696,10 @@ void Z3DSwcFilter::render(Z3DEye eye)
 
 void Z3DSwcFilter::renderPicking(Z3DEye eye)
 {
+  if (m_dataIsInvalid) {
+    return;
+  }
+
   if (m_enablePicking) {
     if (!m_showSwcs.get())
       return;
@@ -862,6 +876,8 @@ void Z3DSwcFilter::prepareData()
 {
   if (!m_dataIsInvalid)
     return;
+
+  ZOUT(LTRACE(), 5) << "Prepare swc data";
 
   decompseSwcTree();
 

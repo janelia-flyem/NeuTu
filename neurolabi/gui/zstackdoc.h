@@ -1480,7 +1480,7 @@ QList<T*> ZStackDoc::getUserList() const
   QList<T*> userList;
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *user = dynamic_cast<T*>(*iter);
+    T *user = qobject_cast<T*>(*iter);
     if (user != NULL) {
       userList.append(user);
     }

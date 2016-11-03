@@ -35,6 +35,9 @@ public:
 
   void setData(const std::vector<ZSwcTree*> &swcList);
   void setData(const QList<ZSwcTree*> &swcList);
+
+  void updateData(const QList<ZSwcTree*> &swcList);
+
   void setSelectedSwcs(const QSet<ZStackObject*> &selectedSwc);
   //inline void setSelectedSwcTreeNodes(const std::set<Swc_Tree_Node*> &list) {
   //  m_selectedSwcTreeNodes = list;

@@ -1,6 +1,7 @@
 #include "z3dcanvas.h"
 
 #include <QPainter>
+#include <QGraphicsTextItem>
 
 #include "z3dnetworkevaluator.h"
 #include <algorithm>
@@ -85,13 +86,6 @@ void Z3DCanvas::leaveEvent(QEvent* e)
   broadcastEvent(e, width(), height());
 }
 
-void Z3DCanvas::mousePressEvent(QMouseEvent* e)
-{
-  broadcastEvent(e, width(), height());
-
-  m_interaction.processMousePressEvent(e);
-}
-
 bool Z3DCanvas::suppressingContextMenu() const
 {
 //#if defined(_FLYEM_)
@@ -102,6 +96,13 @@ bool Z3DCanvas::suppressingContextMenu() const
 //#endif
 
   return false;
+}
+
+void Z3DCanvas::mousePressEvent(QMouseEvent* e)
+{
+  broadcastEvent(e, width(), height());
+
+  m_interaction.processMousePressEvent(e);
 }
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
