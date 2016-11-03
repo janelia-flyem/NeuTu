@@ -70,7 +70,6 @@ void ZImageShowWindow::showHisogram()
   }
   average/=groups;
   bars->setData(index,values);
-  double lower=customPlot->xAxis->range().lower,upper=customPlot->xAxis->range().upper;
   QVector<double> x(2), y(2);
   x[0]=-1,y[0]=average;
   x[1]=groups,y[1]=average;
@@ -78,7 +77,7 @@ void ZImageShowWindow::showHisogram()
 
   QVector<double> coor;
   QVector<QString>labels;
-  int step=ceil(20.0/size_of_bin);
+  int step=ceil(20.0/size_of_bin);//we show at most 20 labels of bars
   for(int i=0;i<groups;i+=step)
   {
     coor.append(i);
