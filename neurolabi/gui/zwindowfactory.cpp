@@ -14,6 +14,7 @@
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
 #include "z3dutils.h"
+#include "zstackdoc.h"
 
 ZWindowFactory::ZWindowFactory()
 {

@@ -365,12 +365,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  m_progress->setRange(0, 0);
-  m_progress->show();
-  QApplication::processEvents();
+//  m_progress->setRange(0, 0);
+//  m_progress->show();
+//  QApplication::processEvents();
   currentStackFrame()->document()->test();
-  currentStackFrame()->updateView();
-  m_progress->reset();
+//  currentStackFrame()->updateView();
+//  m_progress->reset();
 #endif
 
 #if 0
@@ -7184,13 +7184,17 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
+    QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+//    frame->document()->test();
+    /*
     if (frame != NULL) {
       frame->view()->setSizeHintOption(NeuTube::SIZE_HINT_TAKING_SPACE);
       frame->resize(frame->sizeHint());
     }
+    */
   }
 #endif
 
@@ -21160,7 +21164,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   qDebug() << ZFlyEmMisc::GetMemoryUsage();
 #endif
 

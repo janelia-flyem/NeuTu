@@ -110,6 +110,7 @@
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
 #include "zsurfaceobjsmodel.h"
+#include "zstackdocdatabuffer.h"
 
 using namespace std;
 
@@ -199,6 +200,9 @@ void ZStackDoc::init()
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
   m_progressSignal = new ZProgressSignal(this);
+
+  m_dataBuffer = new ZStackDocDataBuffer(this);
+  connect(m_dataBuffer, SIGNAL(delivering()), this, SLOT(processDataBuffer()));
 }
 
 void ZStackDoc::clearData()
@@ -682,6 +686,39 @@ void ZStackDoc::setSaved(ZStackObject::EType type, bool state)
   }
 #endif
 
+}
+
+void ZStackDoc::processDataBuffer()
+{
+  QList<ZStackDocObjectUpdate*> updateList = m_dataBuffer->take();
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
+       iter != updateList.end(); ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (u->getObject() != NULL) {
+      switch (u->getAction()) {
+      case ZStackDocObjectUpdate::ACTION_ADD:
+        addObject(u->getObject(), false);
+        break;
+      case ZStackDocObjectUpdate::ACTION_ADD_UNIQUE:
+        addObject(u->getObject(), true);
+        break;
+      case ZStackDocObjectUpdate::ACTION_EXPEL:
+        removeObject(u->getObject(), false);
+        break;
+      case ZStackDocObjectUpdate::ACTION_KILL:
+        removeObject(u->getObject(), true);
+        break;
+      default:
+        break;
+      }
+    }
+    u->reset();
+    delete u;
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 bool ZStackDoc::isSavingRequired() const
@@ -5089,6 +5126,11 @@ int ZStackDoc::maxIntesityDepth(int x, int y)
   return 0;
 }
 
+void ZStackDoc::test()
+{
+  test(NULL);
+}
+
 void ZStackDoc::test(QProgressBar *pb)
 {
 #if 0
@@ -5101,7 +5143,11 @@ void ZStackDoc::test(QProgressBar *pb)
 
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    mainStack->enhanceLine();
+//    mainStack->enhanceLine();
+    ZSwcTree *tree = new ZSwcTree;
+    tree->load(GET_TEST_DATA_DIR + "/benchmark/diadem_e1.swc");
+    m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    m_dataBuffer->deliver();
   }
 }
 
@@ -8929,7 +8975,10 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setHittable(false);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-              addObject(obj, true);
+//              addObject(obj, true);
+              m_dataBuffer->addUpdate(
+                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+              m_dataBuffer->deliver();
             }
           }
         }

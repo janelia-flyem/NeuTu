@@ -686,7 +686,8 @@ HEADERS += mainwindow.h \
     zcubearraymovieactor.h \
     dialogs/zflyemsplituploadoptiondialog.h \
     widgets/zaxiswidget.h \
-    dialogs/zflyembodychopdialog.h
+    dialogs/zflyembodychopdialog.h \
+    zstackdocdatabuffer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1200,7 +1201,8 @@ SOURCES += main.cpp \
     zcubearraymovieactor.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
     widgets/zaxiswidget.cpp \
-    dialogs/zflyembodychopdialog.cpp
+    dialogs/zflyembodychopdialog.cpp \
+    zstackdocdatabuffer.cpp
 
 OTHER_FILES += \
     extlib.pri \
