@@ -358,7 +358,7 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     }
 
     if (m_activeProtocol != NULL) {
-      m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+        m_activeProtocol->setDvidTarget(m_currentDvidTarget);
     }
 }
 

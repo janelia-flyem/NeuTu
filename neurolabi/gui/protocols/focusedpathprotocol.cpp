@@ -88,13 +88,13 @@ bool FocusedPathProtocol::initialize() {
 
         QMessageBox mb;
         mb.setText("Not implemented!");
-        mb.setInformativeText("Not implemented--no bodies added to list!");
+        mb.setInformativeText("Not implemented--dummy bodies added to list!");
         mb.setStandardButtons(QMessageBox::Ok);
         mb.setDefaultButton(QMessageBox::Ok);
         mb.exec();
 
 
-        // store body IDs
+        loadBodiesFromBookmarks();
 
 
     } else {
@@ -166,24 +166,56 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
     if (m_variation == VARIATION_BODY) {
         m_bodies.append(ZJsonParser::integerValue(data[KEY_BODYID.c_str()]));
+        emit bodyListLoaded();
+
     } else if (m_variation == VARIATION_BOOKMARK) {
         // we don't load anything out of the data, but we do
         //  load data from DVID at this point:
 
-
+        loadBodiesFromBookmarks();
 
 
 
     } else {
         variationError(m_variation);
     }
+}
+
+void FocusedPathProtocol::loadBodiesFromBookmarks() {
+
+    // look for bookmarks of the appropriate type for this
+    //  user; the bodies under those bookmarks are the bodies we want
+
+    // maybe do in a thread?
 
 
 
-    // debug:
-    std::cout << "loaded " << m_bodies.size() << " bodies" << std::endl;
+    // dummy values for testing:
+    m_bodies.append(2345);
+    m_bodies.append(3456);
+
+
+    emit bodyListLoaded();
+}
+
+void FocusedPathProtocol::onBodyListsLoaded() {
+
+    // debug
+    std::cout << m_bodies.size() << " bodies loaded" << std::endl;
     std::cout << "first body ID = " << m_bodies.first() << std::endl;
 
+
+    // body list is available; load data into the UI
+
+    // get (notes?  to do?  bookmarks?) from DVID with pathlists
+
+    // go to first pathlist, first path
+
+    // do we need to determine which have been examined, or
+    //  have we removed pathlists that are examined?
+
+
+    // look at each step in path; load all the info into the UI
 
 
 }

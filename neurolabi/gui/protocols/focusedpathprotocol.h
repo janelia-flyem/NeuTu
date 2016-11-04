@@ -24,6 +24,7 @@ signals:
     void protocolCompleting();
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
+    void bodyListLoaded();
 
 public slots:
     void loadDataRequested(ZJsonObject data);
@@ -31,6 +32,7 @@ public slots:
 private slots:
     void onExitButton();
     void onCompleteButton();
+    void onBodyListsLoaded();
 
 private:
     static const std::string KEY_VERSION;
@@ -43,6 +45,7 @@ private:
     QList<uint64_t> m_bodies;
     void saveState();
     void variationError(std::string variation);
+    void loadBodiesFromBookmarks();
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
