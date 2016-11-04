@@ -44,10 +44,11 @@ ZImageShowWindow::ZImageShowWindow(QWidget *parent)
 void ZImageShowWindow::showHisogram()
 {
   int t=0;
+  double sum=0.0,average=0.0;
   int groups=ceil(256.0/size_of_bin);
   QVector<double> index(groups),values(groups);
-  double average=0.0;
   int i=0;
+  double maxc=0;
   for(;i<groups;++i)
   {
     index[i]=i;
@@ -56,6 +57,7 @@ void ZImageShowWindow::showHisogram()
     {
       t+=basic_hist[j];
     }
+    sum+=t;
     if(y_log)
     {
       customPlot->yAxis->setLabel("count/log");
@@ -65,16 +67,18 @@ void ZImageShowWindow::showHisogram()
     {
       customPlot->yAxis->setLabel("count");
     }
-    average+=t;
     values[i] = t;
+    maxc=t>maxc?t:maxc;
   }
-  average/=groups;
-  bars->setData(index,values);
-  QVector<double> x(2), y(2);
-  x[0]=-1,y[0]=average;
-  x[1]=groups,y[1]=average;
+  for(int i=0;i<256;++i)
+  {
+    average+=i*basic_hist[i]/sum;
+  }
+  QVector<double>x(2),y(2);
+  x[0]=x[1]=average/size_of_bin;
+  y[0]=0,y[1]=maxc;
   customPlot->graph(0)->setData(x,y);
-
+  bars->setData(index,values);
   QVector<double> coor;
   QVector<QString>labels;
   int step=ceil(16.0/size_of_bin);//we show at most 16 labels at x axis
@@ -83,6 +87,8 @@ void ZImageShowWindow::showHisogram()
     coor.append(i);
     labels.append(QString::number(i*size_of_bin));
   }
+  coor.append(average/size_of_bin);
+  labels.append(QString::number(ceil(average)));
   customPlot->xAxis->setTickVector(coor);
   customPlot->xAxis->setTickVectorLabels(labels);
   customPlot->rescaleAxes();
@@ -232,7 +238,7 @@ void ZImageShowWindow::initPlot()
   pen.setWidth(2);
   pen.setStyle(Qt::DotLine);
   customPlot->graph(0)->setPen(pen);
-  customPlot->graph(0)->setName("  average line");
+  customPlot->graph(0)->setName("  average intensity");
   customPlot->legend->setVisible(true);
   customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
 }
