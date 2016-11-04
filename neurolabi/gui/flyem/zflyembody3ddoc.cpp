@@ -16,6 +16,7 @@
 #include "zstring.h"
 #include "neutubeconfig.h"
 #include "z3dwindow.h"
+#include "zstackdocdatabuffer.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -818,12 +819,13 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
     TStackObjectList objList = getObjectGroup().findSameSource(source);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
-      removeObject(*iter, false);
-      dumpGarbage(*iter, true);
+      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
+//      removeObject(*iter, false);
+//      dumpGarbage(*iter, true);
     }
 
     if (hasBody(bodyId)) {
-      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
@@ -834,12 +836,15 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         item->setRadius(30);
         //        item->setColor(255, 255, 0);
         item->setSource(source);
-        addObject(item, false);
+//        addObject(item, false);
+        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD);
       }
 
-      endObjectModifiedMode();
-      notifyObjectModified(true);
+//      endObjectModifiedMode();
+//      notifyObjectModified(true);
     }
+
+    getDataBuffer()->deliver();
   }
 }
 
@@ -913,6 +918,18 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
   }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
+}
+
+void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
+{
+  removeObject(obj, false);
+  dumpGarbageUnsync(obj, true);
+}
+
+void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
+{
+  removeObject(obj, false);
+  dumpGarbageUnsync(obj, false);
 }
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)

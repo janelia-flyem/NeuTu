@@ -196,6 +196,9 @@ public slots:
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
 
+  void recycleObject(ZStackObject *obj);
+  void killObject(ZStackObject *obj);
+
 protected:
   void autoSave() {}
 

@@ -1116,7 +1116,9 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
-  void processDataBuffer();
+  virtual void processDataBuffer();
+  virtual void recycleObject(ZStackObject *obj);
+  virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1197,6 +1199,10 @@ protected:
   void removeRect2dRoi();
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+
+  ZStackDocDataBuffer* getDataBuffer() const {
+    return m_dataBuffer;
+  }
 
 private:
   void init();

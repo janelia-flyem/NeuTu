@@ -688,6 +688,16 @@ void ZStackDoc::setSaved(ZStackObject::EType type, bool state)
 
 }
 
+void ZStackDoc::recycleObject(ZStackObject *obj)
+{
+  removeObject(obj, false);
+}
+
+void ZStackDoc::killObject(ZStackObject *obj)
+{
+  removeObject(obj, true);
+}
+
 void ZStackDoc::processDataBuffer()
 {
   QList<ZStackDocObjectUpdate*> updateList = m_dataBuffer->take();
@@ -708,7 +718,10 @@ void ZStackDoc::processDataBuffer()
         removeObject(u->getObject(), false);
         break;
       case ZStackDocObjectUpdate::ACTION_KILL:
-        removeObject(u->getObject(), true);
+        killObject(u->getObject());
+        break;
+      case ZStackDocObjectUpdate::ACTION_RECYCLE:
+        recycleObject(u->getObject());
         break;
       default:
         break;
