@@ -74,7 +74,8 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
         // << "doNthings"
         << "synapse_prediction_body"
         << "synapse_prediction_region"
-        << "focused_path_body";
+        << "focused_path_body"
+        << "focused_path_bookmark";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -344,6 +345,8 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
         m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
     } else if (protocolName == "focused_path_body") {
         m_activeProtocol = new FocusedPathProtocol(m_parent, FocusedPathProtocol::VARIATION_BODY);
+    } else if (protocolName == "focused_path_bookmark") {
+        m_activeProtocol = new FocusedPathProtocol(m_parent, FocusedPathProtocol::VARIATION_BOOKMARK);
     }
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:

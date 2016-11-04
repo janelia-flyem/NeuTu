@@ -35,8 +35,11 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 }
 
 const std::string FocusedPathProtocol::KEY_VERSION = "version";
+const std::string FocusedPathProtocol::KEY_VARIATION = "variation";
+const std::string FocusedPathProtocol::KEY_BODYID = "bodyID";
 const std::string FocusedPathProtocol::VARIATION_BODY = "body";
-const int FocusedPathProtocol::fileVersion = 1;
+const std::string FocusedPathProtocol::VARIATION_BOOKMARK = "bookmark";
+const int FocusedPathProtocol::m_fileVersion = 1;
 
 bool FocusedPathProtocol::initialize() {
 
@@ -75,7 +78,23 @@ bool FocusedPathProtocol::initialize() {
             return false;
         }
 
-        // do something with body ID here
+        m_bodies.append(bodyID);
+
+
+    } else if (m_variation == VARIATION_BOOKMARK) {
+
+        // read appropriate bookmarks for this user; the bodies they
+        //  are on are the bodies to proofread
+
+        QMessageBox mb;
+        mb.setText("Not implemented!");
+        mb.setInformativeText("Not implemented--no bodies added to list!");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+
+
+        // store body IDs
 
 
     } else {
@@ -127,7 +146,7 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
         return;
     }
     int version = ZJsonParser::integerValue(data[KEY_VERSION.c_str()]);
-    if (version > fileVersion) {
+    if (version > m_fileVersion) {
 
         // likewise...
         std::cout << "Saved data is from a newer version of NeuTu; update NeuTu and try again!" << std::endl;
@@ -143,13 +162,27 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
 
     // do actual load
+    m_bodies.clear();
+
     if (m_variation == VARIATION_BODY) {
-        // do body load
+        m_bodies.append(ZJsonParser::integerValue(data[KEY_BODYID.c_str()]));
+    } else if (m_variation == VARIATION_BOOKMARK) {
+        // we don't load anything out of the data, but we do
+        //  load data from DVID at this point:
+
+
+
+
 
     } else {
         variationError(m_variation);
     }
 
+
+
+    // debug:
+    std::cout << "loaded " << m_bodies.size() << " bodies" << std::endl;
+    std::cout << "first body ID = " << m_bodies.first() << std::endl;
 
 
 
@@ -160,7 +193,16 @@ void FocusedPathProtocol::saveState() {
     ZJsonObject data;
 
     // always version your output files!
-    data.setEntry(KEY_VERSION.c_str(), fileVersion);
+    data.setEntry(KEY_VERSION.c_str(), m_fileVersion);
+
+    if (m_variation == VARIATION_BODY) {
+        // in this variation, there's only one body ID; save it
+        data.setEntry(KEY_BODYID.c_str(), m_bodies.first());
+    } else if (m_variation == VARIATION_BOOKMARK) {
+        // nothing saved right now; we examine DVID for the data
+    } else {
+        variationError(m_variation);
+    }
 
     emit requestSaveProtocol(data);
 }
@@ -168,7 +210,7 @@ void FocusedPathProtocol::saveState() {
 void FocusedPathProtocol::variationError(std::string variation) {
     QMessageBox mb;
     mb.setText("Unknown protocol variation!");
-    mb.setInformativeText("Unknown protocol variation " + QString::fromStdString(variation) + " was encountered!  Report this error!");
+    mb.setInformativeText("Unknown protocol variation " + QString::fromStdString(variation) + " was encountered!  Please report this error!");
     mb.setStandardButtons(QMessageBox::Ok);
     mb.setDefaultButton(QMessageBox::Ok);
     mb.exec();
