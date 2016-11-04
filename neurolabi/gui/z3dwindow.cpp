@@ -1642,7 +1642,7 @@ void Z3DWindow::cleanup()
 
 void Z3DWindow::volumeChanged()
 {
-  QMutexLocker locker(&m_filterMutex);
+//  QMutexLocker locker(&m_filterMutex);
 
   if (m_volumeSource == NULL) {
     m_volumeSource = new Z3DVolumeSource(getDocument());
@@ -1656,7 +1656,7 @@ void Z3DWindow::volumeChanged()
 
 void Z3DWindow::swcChanged()
 {
-  QMutexLocker locker(&m_filterMutex);
+//  QMutexLocker locker(&m_filterMutex);
 
   m_swcFilter->updateData(m_doc->getSwcList());
 

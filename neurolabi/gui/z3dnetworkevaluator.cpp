@@ -89,6 +89,9 @@ QString Z3DNetworkEvaluator::process(bool stereo)
   for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
     Z3DProcessor* currentProcessor = m_renderingOrder[i];
 
+    qDebug() << currentProcessor->getClassName();
+
+
     // all processors should have been initialized at this point
     if (!currentProcessor->isInitialized()) {
       LWARN() << "Skipping uninitialized processor" << currentProcessor->getClassName();
@@ -97,7 +100,15 @@ QString Z3DNetworkEvaluator::process(bool stereo)
 
     Z3DEye eye = stereo ? LeftEye : CenterEye;
 
+
     // run the processor, if it needs processing and is ready
+#ifdef _DEBUG_
+    if (currentProcessor->getClassName() == "Z3DSwcFilter") {
+      qDebug() << "Valid:" << currentProcessor->isValid(eye);
+      qDebug() << "Ready:" << currentProcessor->isReady(eye);
+    }
+#endif
+
     if (!currentProcessor->isValid(eye) && currentProcessor->isReady(eye)) {
       // notify process wrappers
       for (size_t j=0; j < m_processWrappers.size(); ++j)

@@ -3114,6 +3114,9 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   const int MAX_SPAN = 50000;
 
   int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN)) - 1;
+  if (intv < 0) {
+    intv = 0;
+  }
 
   LINFO() << "Downsample interval:" << intv;
 

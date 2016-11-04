@@ -195,9 +195,7 @@ Z3DSwcFilter::~Z3DSwcFilter()
 
 void Z3DSwcFilter::process(Z3DEye)
 {
-  if (m_dataIsInvalid) {
-    prepareData();
-  }
+  prepareData();
 }
 
 void Z3DSwcFilter::initTopologyColor()
@@ -361,6 +359,11 @@ bool Z3DSwcFilter::isVisible() const
 void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
   if (m_enablePicking) {
+    ZOUT(LTRACE(), 5) << "Register picking objects";
+    if (m_swcList.size() != m_decomposedNodes.size()) {
+      ZOUT(LTRACE(), 5) << "WARNING: Unmatched SWC data.";
+    }
+
     if (pm && !m_pickingObjectsRegistered) {
       for (size_t i=0; i<m_swcList.size(); i++) {
         pm->registerObject(m_swcList[i]);
@@ -432,6 +435,8 @@ void Z3DSwcFilter::updateData(const QList<ZSwcTree *> &swcList)
 
 void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   m_origSwcList = swcList;
 
   ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
@@ -442,13 +447,15 @@ void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
 #endif
-  getVisibleData();
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
 
 void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   m_origSwcList.clear();
   m_origSwcList.insert(m_origSwcList.begin(), swcList.begin(), swcList.end());
 #if 0
@@ -461,7 +468,7 @@ void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
 #endif
   ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
 
-  getVisibleData();
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
@@ -696,6 +703,8 @@ void Z3DSwcFilter::render(Z3DEye eye)
 
 void Z3DSwcFilter::renderPicking(Z3DEye eye)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   if (m_dataIsInvalid) {
     return;
   }
@@ -815,6 +824,12 @@ void Z3DSwcFilter::addSelectionBox(
 
 void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
+  if (m_dataIsInvalid) {
+    return;
+  }
+
   if (m_swcList.size() > 0) {
     std::vector<glm::vec3> lines;
     for (std::vector<ZSwcTree*>::iterator it=m_swcList.begin();
@@ -874,6 +889,8 @@ void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 
 void Z3DSwcFilter::prepareData()
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   if (!m_dataIsInvalid)
     return;
 
@@ -1091,6 +1108,8 @@ void Z3DSwcFilter::prepareData()
   //if (numOfPrevColor != index)   // number of swc changed
   //  updateWidgetsGroup();
   m_dataIsInvalid = false;
+
+  ZOUT(LTRACE(), 5) << "SWC data ready";
 }
 
 glm::vec4 Z3DSwcFilter::getColorByDirection(Swc_Tree_Node *tn)
@@ -1602,7 +1621,9 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
 void Z3DSwcFilter::updateSwcVisibleState()
 {
-  getVisibleData();
+  QMutexLocker locker(&m_dataValidMutex);
+
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
@@ -1753,7 +1774,7 @@ void Z3DSwcFilter::updateWidgetsGroup()
   }
 }
 
-void Z3DSwcFilter::getVisibleData()
+void Z3DSwcFilter::loadVisibleData()
 {
   m_swcList.clear();
   for (size_t i=0; i<m_origSwcList.size(); ++i) {

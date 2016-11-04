@@ -142,7 +142,7 @@ private:
   void updateWidgetsGroup();
 
   // get visible data from origSwcList put into swcList
-  void getVisibleData();
+  void loadVisibleData();
 
   glm::dvec3 projectPointOnRay(
       glm::dvec3 pt, const glm::dvec3 &v1, const glm::dvec3 &v2);
@@ -240,6 +240,7 @@ private:
   QVector<QString> m_guiNameList;
 
   mutable QMutex m_nodeSelectionMutex;
+  mutable QMutex m_dataValidMutex;
 };
 
 #endif // Z3DSWCFILTER_H
