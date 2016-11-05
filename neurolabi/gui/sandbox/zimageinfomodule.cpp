@@ -58,18 +58,11 @@ void ZImageShowWindow::showHisogram()
       t+=basic_hist[j];
     }
     sum+=t;
-    if(y_log)
-    {
-      customPlot->yAxis->setLabel("count/log");
-      t=log(t);
-    }
-    else
-    {
-      customPlot->yAxis->setLabel("count");
-    }
+    t=y_log?log(t+1):t;//avoid the log(0) exception
     values[i] = t;
     maxc=t>maxc?t:maxc;
   }
+  customPlot->yAxis->setLabel(y_log?"count/log":"count");
   for(int i=0;i<256;++i)
   {
     average+=i*basic_hist[i]/sum;
