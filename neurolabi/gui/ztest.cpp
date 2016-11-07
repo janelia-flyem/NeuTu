@@ -7187,7 +7187,12 @@ void ZTest::test(MainWindow *host)
 #if 1
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
-    QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+    if (frame != NULL) {
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+    }
+
 //    frame->document()->test();
     /*
     if (frame != NULL) {
@@ -21193,7 +21198,7 @@ void ZTest::test(MainWindow *host)
   dlg.getAnnotation(14634755, 1).print();
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 
