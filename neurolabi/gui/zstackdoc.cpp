@@ -7514,7 +7514,9 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
           std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
 #endif
           //      role.addRole(m_playerList.removePlayer(obj));
-          delete oldObj;
+          if (oldObj != obj) {
+            delete oldObj;
+          }
         }
       }
     }

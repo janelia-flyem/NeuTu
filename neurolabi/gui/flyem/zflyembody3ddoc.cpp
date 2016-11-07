@@ -775,7 +775,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
     if (getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_PUNCTUM,
           ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
-      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+//      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
       std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
           getDataDocument()->getSynapse(bodyId);
       {
@@ -789,7 +789,8 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           if (punctum->name().isEmpty()) {
             punctum->setName(QString("%1").arg(bodyId));
           }
-          addObject(punctum, false);
+          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD);
+//          addObject(punctum, false);
         }
       }
       {
@@ -800,11 +801,13 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           punctum->setRadius(30);
           punctum->setColor(128, 128, 128);
           punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-          addObject(punctum, false);
+//          addObject(punctum, false);
+          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD);
         }
       }
-      endObjectModifiedMode();
-      notifyObjectModified();
+      getDataBuffer()->deliver();
+//      endObjectModifiedMode();
+//      notifyObjectModified();
     }
   }
 }
@@ -853,7 +856,7 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
   if (m_showingTodo) {
     ZOUT(LTRACE(), 5) << "Add todo items";
 
-    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
     if (getObjectGroup().findFirstSameSource(
@@ -867,12 +870,14 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
         item->setRadius(30);
 //        item->setColor(255, 255, 0);
         item->setSource(source);
-        addObject(item, false);
+        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD);
+//        addObject(item, false);
       }
     }
+    getDataBuffer()->deliver();
 
-    endObjectModifiedMode();
-    notifyObjectModified(true);
+//    endObjectModifiedMode();
+//    notifyObjectModified(true);
   }
 }
 
@@ -895,23 +900,28 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
           ZStackObject::TYPE_SWC,
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-    QMutexLocker locker(&m_garbageMutex);
+//    QMutexLocker locker(&m_garbageMutex);
 //    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-    blockSignals(true);
+//    blockSignals(true);
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
-      removeObject(*iter, false);
-      dumpGarbageUnsync(*iter, true);
+      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+//      removeObject(*iter, false);
+//      dumpGarbageUnsync(*iter, true);
     }
-    addObject(tree);
-    blockSignals(false);
 
+    getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    getDataBuffer()->deliver();
+//    addObject(tree);
+//    blockSignals(false);
+/*
     updateModelData(SWC_DATA);
 
     QList<Z3DWindow*> windowList = getUserList<Z3DWindow>();
     foreach (Z3DWindow *window, windowList) {
       window->swcChanged();
     }
+    */
 
 //    endObjectModifiedMode();
 //    notifyObjectModified(true);
@@ -923,13 +933,13 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
   removeObject(obj, false);
-  dumpGarbageUnsync(obj, true);
+  dumpGarbage(obj, true);
 }
 
 void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 {
   removeObject(obj, false);
-  dumpGarbageUnsync(obj, false);
+  dumpGarbage(obj, false);
 }
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
@@ -944,13 +954,14 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
           ZStackObject::TYPE_SWC,
           ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-    QMutexLocker locker(&m_garbageMutex);
+//    QMutexLocker locker(&m_garbageMutex);
 //    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-    blockSignals(true);
+//    blockSignals(true);
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
-      removeObject(*iter, false);
-      dumpGarbageUnsync(*iter, true);
+//      removeObject(*iter, false);
+//      dumpGarbageUnsync(*iter, true);
+      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
     }
 
     if (removingAnnotation) {
@@ -958,28 +969,34 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
-        removeObject(*iter, false);
-        dumpGarbageUnsync(*iter, true);
+//        removeObject(*iter, false);
+//        dumpGarbageUnsync(*iter, true);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
 
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
-        removeObject(*iter, false);
-        dumpGarbageUnsync(*iter, true);
+//        removeObject(*iter, false);
+//        dumpGarbageUnsync(*iter, true);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
 
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
-        removeObject(*iter, false);
-        dumpGarbageUnsync(*iter, true);
+//        removeObject(*iter, false);
+//        dumpGarbageUnsync(*iter, true);
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
     }
-    blockSignals(false);
 
+    getDataBuffer()->deliver();
+//    blockSignals(false);
+
+    /*
     updateModelData(SWC_DATA);
     updateModelData(PUNCTA_DATA);
 
@@ -989,6 +1006,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       window->swcChanged();
       window->updateTodoDisplay();
     }
+    */
 
 //    endObjectModifiedMode();
 //    notifyObjectModified(true);
