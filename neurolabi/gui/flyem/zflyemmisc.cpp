@@ -726,18 +726,23 @@ QString ZFlyEmMisc::GetMemoryUsage()
 {
   QString memInfo;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_LINUX_)
   QProcess p;
+
+#if defined(__APPLE__)
   p.start(QString("top -l 1 -pid %1").arg(getpid()));
+#else
+  p.start(QString("ps v -p %1").arg(getpid()));
+#endif
 
   if (p.waitForFinished(-1)) {
     QString output = p.readAllStandardOutput();
     QStringList lines = output.split("\n", QString::SkipEmptyParts);
-//    qDebug() << output;
+//    qDebug() << lines;
     QString fieldLine;
     QString infoLine;
     for (int i = 0; i < lines.size(); ++i) {
-      QString line = lines[i];
+      QString line = lines[i].trimmed();
       if (line.startsWith("PID")) {
         fieldLine = line;
         if (i + 1 < lines.size()) {
@@ -752,8 +757,13 @@ QString ZFlyEmMisc::GetMemoryUsage()
     QStringList infoList = infoLine.split(" ", QString::SkipEmptyParts);
 //    qDebug() << infoList;
 
+
     for (int i = 0; i < fields.size(); ++i) {
+#if defined(__APPLE__)
       if (fields[i] == "MEM") {
+#else
+      if (fields[i] == "RSS") {
+#endif
         if (infoList.size() > i) {
           memInfo = infoList[i];
         }
@@ -766,7 +776,7 @@ QString ZFlyEmMisc::GetMemoryUsage()
     qDebug() << p.readAllStandardError();
   }
 
-
+  p.close();
 #endif
   return memInfo;
 }
