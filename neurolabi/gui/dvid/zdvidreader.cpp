@@ -304,7 +304,8 @@ ZObject3dScan *ZDvidReader::readBody(
     reader.clearBuffer();
 
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
+//      result->fullySortedCanonize();
     }
 
     result->setLabel(bodyId);
@@ -337,7 +338,7 @@ ZObject3dScan *ZDvidReader::readBody(
     reader.clearBuffer();
 
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
     }
 
     result->setLabel(bodyId);
@@ -371,7 +372,7 @@ ZObject3dScan *ZDvidReader::readBody(
     reader.clearBuffer();
 
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
     }
 
     result->setLabel(bodyId);
@@ -410,7 +411,7 @@ ZObject3dScan *ZDvidReader::readBodyDs(
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBufferDs(buffer.data(), buffer.size());
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
     }
 
     std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
@@ -457,7 +458,7 @@ ZObject3dScan *ZDvidReader::readBodyDs(
     result->importDvidObjectBuffer(buffer.data(), buffer.size(),
                                    xIntv, yIntv, zIntv);
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
     }
 
     std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
@@ -500,8 +501,13 @@ ZObject3dScan *ZDvidReader::readBody(
     const QByteArray &buffer = reader.getBuffer();
     result->importDvidObjectBuffer(buffer.data(), buffer.size());
     if (canonizing) {
-      result->fullySortedCanonize();
+      result->canonize();
     }
+
+#ifdef _DEBUG_
+    std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
+//    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
 
     std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
 
