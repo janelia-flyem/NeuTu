@@ -82,6 +82,7 @@ class ZStackMvc;
 class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
+class ZStackDocDataBuffer;
 
 /*!
  * \brief The class of stack document
@@ -646,7 +647,8 @@ public:
   void setWorkdir(const char *filePath);
   void setTubePrefix(const char *filePath);
 
-  void test(QProgressBar *pb = NULL);
+  void test();
+  void test(QProgressBar *pb);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
   void pushUndoCommand(QUndoCommand *command);
@@ -1114,6 +1116,9 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
+  virtual void processDataBuffer();
+  virtual void recycleObject(ZStackObject *obj);
+  virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1195,6 +1200,10 @@ protected:
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
+  ZStackDocDataBuffer* getDataBuffer() const {
+    return m_dataBuffer;
+  }
+
 private:
   void init();
 
@@ -1272,6 +1281,8 @@ private:
   ZStackFactory *m_stackFactory;
 
   ZActionFactory *m_actionFactory;
+
+  ZStackDocDataBuffer *m_dataBuffer;
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;
@@ -1480,7 +1491,7 @@ QList<T*> ZStackDoc::getUserList() const
   QList<T*> userList;
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *user = dynamic_cast<T*>(*iter);
+    T *user = qobject_cast<T*>(*iter);
     if (user != NULL) {
       userList.append(user);
     }

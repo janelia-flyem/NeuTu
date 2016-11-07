@@ -41,6 +41,7 @@ class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
 class ZFlyEmSplitUploadOptionDialog;
+class ZFlyEmBodyChopDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -197,6 +198,7 @@ public slots:
   void decomposeBody();
   void cropBody();
   void chopBodyZ();
+  void chopBody();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -384,6 +386,7 @@ protected:
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;
   ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
+  ZFlyEmBodyChopDialog *m_bodyChopDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

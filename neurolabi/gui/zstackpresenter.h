@@ -368,7 +368,7 @@ public slots:
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyCropTriggered();
-  void notifyBodyChopZTriggered();
+  void notifyBodyChopTriggered();
   void notifyBodyMergeTriggered();
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
@@ -425,7 +425,7 @@ signals:
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
   void bodyCropTriggered();
-  void bodyChopZTriggered();
+  void bodyChopTriggered();
   void bodyMergeTriggered();
   void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);

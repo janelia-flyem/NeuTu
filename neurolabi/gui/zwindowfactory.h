@@ -6,7 +6,7 @@
 #include <QMap>
 
 #include "zsharedpointer.h"
-#include "zstackdoc.h"
+//#include "zstackdoc.h"
 #include "z3dwindow.h"
 #include "z3ddef.h"
 
@@ -14,6 +14,7 @@ class ZStackFrame;
 class QDialog;
 class ZScalableStack;
 class ZSwcTree;
+class ZStackDoc;
 
 /*!
  * \brief The factory class of creating windows

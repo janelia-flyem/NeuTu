@@ -365,12 +365,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  m_progress->setRange(0, 0);
-  m_progress->show();
-  QApplication::processEvents();
+//  m_progress->setRange(0, 0);
+//  m_progress->show();
+//  QApplication::processEvents();
   currentStackFrame()->document()->test();
-  currentStackFrame()->updateView();
-  m_progress->reset();
+//  currentStackFrame()->updateView();
+//  m_progress->reset();
 #endif
 
 #if 0
@@ -7184,13 +7184,22 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
+    if (frame != NULL) {
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+    }
+
+//    frame->document()->test();
+    /*
     if (frame != NULL) {
       frame->view()->setSizeHintOption(NeuTube::SIZE_HINT_TAKING_SPACE);
       frame->resize(frame->sizeHint());
     }
+    */
   }
 #endif
 
@@ -21162,6 +21171,7 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   qDebug() << getpid();
+
   qDebug() << ZFlyEmMisc::GetMemoryUsage();
   QProcess p;
   p.start(QString("ps v -p %1").arg(getpid()));
@@ -21192,6 +21202,19 @@ void ZTest::test(MainWindow *host)
   std::cout << "Passing, with new comment" << std::endl;
   dlg.setNewComment(true);
   dlg.getAnnotation(14634755, 1).print();
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan remain;
+  ZObject3dScan subobj;
+
+  obj.chopY(750, &remain, &subobj);
+  subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
+
 #endif
 
   std::cout << "Done." << std::endl;

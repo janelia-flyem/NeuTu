@@ -2247,6 +2247,18 @@ void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz
   processViewChange(true, depthChanged);
 }
 
+ZIntPoint ZStackView::getCenter(NeuTube::ECoordinateSystem coordSys) const
+{
+  ZIntPoint center;
+  center.setZ(getZ(coordSys));
+
+  QRect rect = getViewPort(coordSys);
+  center.setX(rect.center().x());
+  center.setY(rect.center().y());
+
+  return center;
+}
+
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();

@@ -430,8 +430,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       Z3DGraphNode node1;
       Z3DGraphNode node2;
 
-      node1.setColor(QColor(255, 0, 0));
-      node2.setColor(QColor(255, 0, 0));
+      node1.setColor(QColor(0, 255, 0));
+      node2.setColor(QColor(0, 255, 0));
 
       double x = viewParam.getViewPort().center().x();
       double y = viewParam.getViewPort().center().y();
@@ -444,6 +444,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       graph->addNode(node2);
       graph->addEdge(node1, node2, GRAPH_LINE);
 
+      node1.setColor(QColor(255, 0, 0));
+      node2.setColor(QColor(255, 0, 0));
       node1.set(rect.getFirstX(), y, rect.getZ(), width);
       node2.set(rect.getLastX(), y, rect.getZ(), width);
 
@@ -760,7 +762,7 @@ QString ZFlyEmMisc::GetMemoryUsage()
 
     for (int i = 0; i < fields.size(); ++i) {
 #if defined(__APPLE__)
-      if (fields[i] == "MEM") {
+      if (fields[i] == "MEM" || fields[i] == "RPRVT") {
 #else
       if (fields[i] == "RSS") {
 #endif
@@ -779,4 +781,35 @@ QString ZFlyEmMisc::GetMemoryUsage()
   p.close();
 #endif
   return memInfo;
+}
+
+QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
+{
+  QString str;
+
+  QFile file(filePath);
+
+  if (file.exists()) {
+    file.open(QFile::ReadOnly);
+
+    file.seek(file.size() - 1);
+
+    int count = 0;
+
+    while ((count <= maxCount) && (file.pos() > 0))
+    {
+      char ch;
+      file.getChar(&ch);
+      file.seek(file.pos() - 2);
+      if (ch == '\n') {
+        count++;
+      }
+    }
+
+    str = file.readAll();
+
+    file.close();
+  }
+
+  return str;
 }

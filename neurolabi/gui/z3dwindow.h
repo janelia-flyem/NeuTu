@@ -7,10 +7,13 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QAction>
+#include <QMutex>
+
 #include <vector>
 #include <set>
 #include <map>
 #include <QDir>
+
 #include "zparameter.h"
 #include "znumericparameter.h"
 #include "zglmutils.h"
@@ -556,6 +559,8 @@ private:
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar;
+
+  mutable QMutex m_filterMutex;
 };
 
 #endif // Z3DWINDOW_H

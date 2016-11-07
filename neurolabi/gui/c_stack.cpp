@@ -616,6 +616,13 @@ int C_Stack::stackUsage()
   return Stack_Usage();
 }
 
+int C_Stack::McStackUsage()
+{
+  STACK_MUTEX_GUARD
+
+  return Mc_Stack_Usage();
+}
+
 void C_Stack::view(const Stack *src, Mc_Stack *dst)
 {
   TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");

@@ -770,7 +770,8 @@ int ZCommandLine::runSkeletonize()
           tree = reader.readSwc(bodyId);
         }
         if (tree == NULL) {
-          ZObject3dScan obj = reader.readBody(bodyId);
+          ZObject3dScan obj;
+          reader.readBody(bodyId, true, &obj);
           tree = skeletonizer.makeSkeleton(obj);
           writer.writeSwc(bodyId, tree);
         }

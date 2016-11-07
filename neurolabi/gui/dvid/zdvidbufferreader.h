@@ -51,6 +51,8 @@ public:
     return m_buffer;
   }
 
+  void clearBuffer();
+
   void readQt(const QString &url, bool outputUrl = true);
 
   void tryCompress(bool compress) {

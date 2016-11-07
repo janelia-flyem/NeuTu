@@ -1250,7 +1250,7 @@ TEST(ZObject3dScan, Stack)
   obj.addStripe(1, 1);
   obj.addSegment(1, 1);
   ZStack *stack = obj.toStackObject(1);
-  stack->printInfo();
+//  stack->printInfo();
 
   std::vector<ZObject3dScan*> objArray =
       ZObject3dScan::extractAllObject(*stack);
@@ -1264,23 +1264,24 @@ TEST(ZObject3dScan, Stack)
 
   obj.canonize();
 
-  obj.print();
+//  obj.print();
 
   delete stack;
   stack = obj.toStackObject(2);
   Print_Stack_Value(stack->c_stack());
   objArray = ZObject3dScan::extractAllObject(*stack);
   ASSERT_EQ(1, (int) objArray.size());
-  objArray[0]->print();
+//  objArray[0]->print();
 
   ZObject3dScan obj2;
   obj2.addStripe(1, 1);
   obj2.addSegment(1, 1);
 
   ZObject3dScan obj3 = obj.subtract(obj2);
-  obj.print();
-  obj2.print();
-  obj3.print();
+//  obj.print();
+//  obj2.print();
+//  obj3.print();
+  ASSERT_EQ(1, (int) obj3.getVoxelNumber());
 
   obj.clear();
   obj.addStripe(1, 1);
@@ -1289,14 +1290,41 @@ TEST(ZObject3dScan, Stack)
   obj.addStripe(0, 0, false);
   obj.addSegment(1, 3);
 
-  obj.print();
+//  obj.print();
 
   delete stack;
   stack = ZStackFactory::makeIndexStack(3, 3, 3);
 
   obj.maskStack(stack);
 
-  Print_Stack_Value(stack->c_stack());
+//  Print_Stack_Value(stack->c_stack());
+  ASSERT_EQ(0, stack->getIntValue(0));
+  ASSERT_EQ(1, stack->getIntValue(1));
+  ASSERT_EQ(2, stack->getIntValue(2));
+  ASSERT_EQ(0, stack->getIntValue(3));
+  ASSERT_EQ(13, stack->getIntValue(13));
+  ASSERT_EQ(14, stack->getIntValue(14));
+  ASSERT_EQ(0, stack->getIntValue(18));
+
+  delete stack;
+
+  ZStack *stack2 = obj.toStackObjectWithMargin(1, 1);
+
+  ZObject3dScan obj4;
+  obj4.loadStack(*stack2);
+
+  delete stack2;
+
+  ASSERT_TRUE(obj.equalsLiterally(obj4));
+
+  obj.clear();
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/tower5.sobj");
+  stack2 = obj.toStackObjectWithMargin(1, 1);
+  obj4.loadStack(*stack2);
+
+  delete stack2;
+
+  ASSERT_TRUE(obj.equalsLiterally(obj4));
 }
 
 TEST(ZObject3dScan, Intersect)
@@ -1381,6 +1409,17 @@ TEST(ZObject3dScan, Mainpulate)
   subobj.unify(remain);
   ASSERT_TRUE(obj.equalsLiterally(subobj));
 
+  obj.chopX(500, &remain, &subobj);
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+  obj.chopY(750, &remain, &subobj);
+  ASSERT_EQ(749, subobj.getMaxY());
+  ASSERT_EQ(750, remain.getMinY());
+  ASSERT_TRUE(subobj.intersect(remain).isEmpty());
+  subobj.unify(remain);
+  ASSERT_TRUE(obj.equalsLiterally(subobj));
 
   obj.clear();
   obj.addStripe(1, 1);
@@ -1397,6 +1436,9 @@ TEST(ZObject3dScan, Mainpulate)
   obj.chopZ(2, &remain, &subobj);
   ASSERT_TRUE(remain.isEmpty());
   ASSERT_TRUE(obj.equalsLiterally(subobj));
+
+
+
 }
 
 #endif
