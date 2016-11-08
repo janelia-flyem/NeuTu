@@ -10,7 +10,7 @@ ZStackDocObjectUpdate::ZStackDocObjectUpdate(ZStackObject *obj, EAction action)
 
 ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
 {
-  if (m_action == ACTION_ADD && m_action == ACTION_ADD_UNIQUE) {
+  if (m_action == ACTION_ADD_NONUNIQUE && m_action == ACTION_ADD_UNIQUE) {
     delete m_obj;
   }
 }
