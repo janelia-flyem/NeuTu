@@ -723,6 +723,9 @@ void ZStackDoc::processDataBuffer()
       case ZStackDocObjectUpdate::ACTION_RECYCLE:
         recycleObject(u->getObject());
         break;
+      case ZStackDocObjectUpdate::ACTION_UPDATE:
+        processObjectModified(u->getObject());
+        break;
       default:
         break;
       }

@@ -52,6 +52,7 @@ const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_UNCANONIZED =
 const ZObject3dScan::TEvent ZObject3dScan::EVENT_OBJECT_CANONIZED =
     0x8 | ZObject3dScan::EVENT_OBJECT_VIEW_CHANGED;
 
+const int ZObject3dScan::MAX_SPAN_HINT = 50000;
 
 ZObject3dScan::ZObject3dScan()
 {
@@ -3111,9 +3112,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   bool newSlice = true;
   bool newStripe = true;
 
-  const int MAX_SPAN = 50000;
-
-  int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN)) - 1;
+  int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
   if (intv < 0) {
     intv = 0;
   }
