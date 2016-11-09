@@ -20,6 +20,9 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
     ui->setupUi(this);
 
+    // table setup
+    m_edgeModel = new QStandardItemModel(0, 3, ui->edgesTableView);
+
 
 
     // UI connections

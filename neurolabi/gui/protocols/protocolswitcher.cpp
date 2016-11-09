@@ -155,7 +155,7 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(PROTOCOL_DATA_NAME, target);
     if (!m_activeMetadata.ioSuccessful()) {
         warningDialog("Couldn't read metadata",
-            "There was a problem reading user metadata from DVID.  Any currently open protocols will not be reloaded.  Also, watch for othehr DVID problems!");
+            "There was a problem reading user metadata from DVID.  Any currently open protocols will not be reloaded.  Also, watch for other DVID problems!");
         return;
     }
     if (m_activeMetadata.isActive()) {

@@ -1,6 +1,8 @@
 #ifndef FOCUSEDPATHPROTOCOL_H
 #define FOCUSEDPATHPROTOCOL_H
 
+#include <QtGui>
+
 #include "zjsonobject.h"
 
 #include "protocoldialog.h"
@@ -43,6 +45,7 @@ private:
     Ui::FocusedPathProtocol *ui;
     std::string m_variation;
     QList<uint64_t> m_bodies;
+    QStandardItemModel * m_edgeModel;
     void saveState();
     void variationError(std::string variation);
     void loadBodiesFromBookmarks();
