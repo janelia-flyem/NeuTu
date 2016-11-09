@@ -7184,7 +7184,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
     if (frame != NULL) {
@@ -21209,6 +21209,10 @@ void ZTest::test(MainWindow *host)
   subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
   remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
 
+#endif
+
+#if 1
+  host->testFlyEmProofread();
 #endif
 
   std::cout << "Done." << std::endl;

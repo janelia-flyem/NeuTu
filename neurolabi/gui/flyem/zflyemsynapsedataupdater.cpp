@@ -2,6 +2,7 @@
 #include "zflyemsynapsedatafetcher.h"
 #include "zstackdoc.h"
 #include "dvid/zdvidsynapseensenmble.h"
+#include "zstackdocdatabuffer.h"
 
 ZFlyEmSynapseDataUpdater::ZFlyEmSynapseDataUpdater(QObject *parent) :
   QObject(parent)
@@ -19,6 +20,9 @@ void ZFlyEmSynapseDataUpdater::setData(
 void ZFlyEmSynapseDataUpdater::updateData(ZFlyEmSynapseDataFetcher *fetcher)
 {
   fetcher->addSynapse(m_se);
-  m_doc->processObjectModified(m_se);
-  m_doc->notifyObjectModified();
+  m_doc->getDataBuffer()->addUpdate(
+        m_se, ZStackDocObjectUpdate::ACTION_UPDATE);
+  m_doc->getDataBuffer()->deliver();
+//  m_doc->processObjectModified(m_se);
+//  m_doc->notifyObjectModified();
 }

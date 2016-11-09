@@ -1265,14 +1265,17 @@ void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
       if (finalLabel != bodyId) {
         ZSwcTree *targetTree = treeMap[finalLabel];
         if (targetTree == NULL) {
-          removeObject(tree, false);
+          getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_KILL);
+//          removeObject(tree, false);
         } else {
           targetTree->merge(tree);
+          getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_KILL);
         }
-        dumpGarbage(tree, false);
+//        dumpGarbage(tree, false);
       }
     }
-    removeEmptySwcTree(false);
+    getDataBuffer()->deliver();
+//    removeEmptySwcTree(false);
   }
 }
 

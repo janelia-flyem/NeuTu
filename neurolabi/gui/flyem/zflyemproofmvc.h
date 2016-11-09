@@ -115,6 +115,8 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
+  void test();
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);

@@ -113,7 +113,7 @@ public slots:
 
   void saveStack();
 
-  void test();
+  virtual void test();
 
 protected:
   static void BaseConstruct(

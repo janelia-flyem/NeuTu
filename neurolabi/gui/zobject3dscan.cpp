@@ -3106,11 +3106,13 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   tz_uint32 numberOfSpans = 0;
   READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
 
+  /*
   int cx = 0;
   int cy = 0;
   int cz = NeuTube::INVALID_Z_INDEX;
   bool newSlice = true;
   bool newStripe = true;
+  */
 
   int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN_HINT)) - 1;
   if (intv < 0) {
@@ -3123,7 +3125,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   int yIntv = intv;
   int zIntv = intv;
 
-  m_dsIntv.set(xIntv, yIntv, zIntv);
+  m_dsIntv.set(0, yIntv, zIntv);
 
   for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
     tz_int32 coord[3];
@@ -3139,8 +3141,19 @@ bool ZObject3dScan::importDvidObjectBufferDs(
       return false;
     }
 
+
+    int x0 = coord[0];
+    int x1 = x0 + runLength - 1;
+    int y = coord[1];
+    int z = coord[2];
+
+    if (y % (intv + 1) == 0 && z % (intv + 1) == 0) {
+      addSegment(z / (intv + 1), y / (intv + 1), x0, x1, false);
+    }
+
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
+#if 0
     int tx = coord[0] / (xIntv + 1);
     int ty = coord[1] / (yIntv + 1);
     int tz = coord[2] / (zIntv + 1);
@@ -3176,7 +3189,11 @@ bool ZObject3dScan::importDvidObjectBufferDs(
       cy = ty;
       cz = tz;
     }
+#endif
   }
+
+  canonize();
+  downsample(xIntv, 0, 0);
 
   return true;
 }

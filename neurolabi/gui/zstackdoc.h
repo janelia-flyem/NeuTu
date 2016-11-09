@@ -914,6 +914,10 @@ public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
 //  inline QAction* getRedoAction() { return m_redoAction; }
 
+  ZStackDocDataBuffer* getDataBuffer() const {
+    return m_dataBuffer;
+  }
+
   ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
     return &m_singleSwcNodeActionActivator;
   }
@@ -1199,10 +1203,6 @@ protected:
   void removeRect2dRoi();
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
-
-  ZStackDocDataBuffer* getDataBuffer() const {
-    return m_dataBuffer;
-  }
 
 private:
   void init();

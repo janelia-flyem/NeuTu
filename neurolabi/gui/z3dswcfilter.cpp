@@ -5,6 +5,7 @@
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QApplication>
+#include <QElapsedTimer>
 
 #include "zrandom.h"
 #include "tz_3dgeom.h"
@@ -359,7 +360,7 @@ bool Z3DSwcFilter::isVisible() const
 void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
   if (m_enablePicking) {
-    ZOUT(LTRACE(), 5) << "Register picking objects";
+    ZOUT(LTRACE(), 5) << "start";
     if (m_swcList.size() != m_decomposedNodes.size()) {
       ZOUT(LTRACE(), 5) << "WARNING: Unmatched SWC data.";
     }
@@ -406,12 +407,14 @@ void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
     }
 
     m_pickingObjectsRegistered = true;
+    ZOUT(LTRACE(), 5) << "end";
   }
 }
 
 void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
 {
   if (m_enablePicking) {
+    ZOUT(LTRACE(), 5) << "start";
     if (pm && m_pickingObjectsRegistered) {
       for (size_t i=0; i<m_registeredSwcList.size(); i++) {
         pm->deregisterObject(m_registeredSwcList[i]);
@@ -424,6 +427,7 @@ void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
     }
 
     m_pickingObjectsRegistered = false;
+    ZOUT(LTRACE(), 5) << "end";
   }
 }
 
@@ -896,7 +900,13 @@ void Z3DSwcFilter::prepareData()
 
   ZOUT(LTRACE(), 5) << "Prepare swc data";
 
+  QElapsedTimer timer;
+
+  timer.start();
+
   decompseSwcTree();
+
+  LINFO() << "Decomposing time:" << timer.elapsed();
 
   // get min max of type for colormap
   m_colorMap.blockSignals(true);
@@ -907,7 +917,11 @@ void Z3DSwcFilter::prepareData()
                            glm::col4(0,0,255,255), glm::col4(255,0,0,255));
   m_colorMap.blockSignals(false);
 
+  timer.restart();
+
   deregisterPickingObjects(getPickingManager());
+
+  LINFO() << "Deregistering time:" << timer.elapsed();
 
   //convert swc to format that glsl can use
   m_axisAndTopRadius.clear();
@@ -924,6 +938,8 @@ void Z3DSwcFilter::prepareData()
   int yMax = std::numeric_limits<int>::min();
   int zMin = std::numeric_limits<int>::max();
   int zMax = std::numeric_limits<int>::min();
+
+  timer.restart();
 
   bool checkRadius = m_renderingPrimitive.isSelected("Normal") /*||
       m_renderingPrimitive.isSelected("Cylinder")*/;
@@ -1008,6 +1024,8 @@ void Z3DSwcFilter::prepareData()
       }
     }
   }
+
+  LINFO() << "Premitive time:" << timer.elapsed();
   /*
   for (size_t i=0; i<m_origSwcList.size(); ++i) {
     m_sourceColorMapper.insert(std::pair<std::string, size_t>(m_origSwcList[i]->source(), 0));
