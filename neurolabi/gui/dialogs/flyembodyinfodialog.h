@@ -140,10 +140,8 @@ private:
     void setFilterHeaders(QStandardItemModel*);
     void loadData();
     bool isValidBookmarkFile(ZJsonObject object);
-    bool dvidBookmarksPresent();
     bool bodyAnnotationsPresent();
     bool labelszPresent();
-    void importBookmarksDvid();
     void importBodiesDvid();
     void importBodiesDvid2();
     void setStatusLabel(QString label);
