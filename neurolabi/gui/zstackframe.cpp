@@ -18,9 +18,10 @@
 #include "zstackfile.h"
 #include "zdoublevector.h"
 #include "zfiletype.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"

@@ -52,7 +52,7 @@ Z3DVolume::~Z3DVolume()
     delete m_histogramThread;
   }
   delete m_texture;
-  Kill_Stack(m_stack);
+  C_Stack::kill(m_stack);
 }
 
 int Z3DVolume::getBitsStored() const

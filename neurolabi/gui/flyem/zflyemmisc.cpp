@@ -1,7 +1,9 @@
 #include "zflyemmisc.h"
 
+#include <unistd.h>
 #include <iostream>
 #include <QString>
+#include <QProcess>
 
 #include "neutubeconfig.h"
 #include "zmatrix.h"
@@ -25,6 +27,8 @@
 #include "zobject3dfactory.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
+
+
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -426,8 +430,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       Z3DGraphNode node1;
       Z3DGraphNode node2;
 
-      node1.setColor(QColor(255, 0, 0));
-      node2.setColor(QColor(255, 0, 0));
+      node1.setColor(QColor(0, 255, 0));
+      node2.setColor(QColor(0, 255, 0));
 
       double x = viewParam.getViewPort().center().x();
       double y = viewParam.getViewPort().center().y();
@@ -440,6 +444,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       graph->addNode(node2);
       graph->addEdge(node1, node2, GRAPH_LINE);
 
+      node1.setColor(QColor(255, 0, 0));
+      node2.setColor(QColor(255, 0, 0));
       node1.set(rect.getFirstX(), y, rect.getZ(), width);
       node2.set(rect.getLastX(), y, rect.getZ(), width);
 
@@ -716,4 +722,84 @@ void ZFlyEmMisc::MakeTriangle(
   }
 
   ptArray[3] = ptArray[0];
+}
+
+QString ZFlyEmMisc::GetMemoryUsage()
+{
+  QString memInfo;
+
+#ifdef __APPLE__
+  QProcess p;
+  p.start(QString("top -l 1 -pid %1").arg(getpid()));
+
+  if (p.waitForFinished(-1)) {
+    QString output = p.readAllStandardOutput();
+    QStringList lines = output.split("\n", QString::SkipEmptyParts);
+//    qDebug() << output;
+    QString fieldLine;
+    QString infoLine;
+    for (int i = 0; i < lines.size(); ++i) {
+      QString line = lines[i];
+      if (line.startsWith("PID")) {
+        fieldLine = line;
+        if (i + 1 < lines.size()) {
+          infoLine = lines[i + 1];
+        }
+        break;
+      }
+    }
+
+    QStringList fields = fieldLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << fields;
+    QStringList infoList = infoLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << infoList;
+
+    for (int i = 0; i < fields.size(); ++i) {
+      if (fields[i] == "MEM" || fields[i] == "RPRVT") {
+        if (infoList.size() > i) {
+          memInfo = infoList[i];
+        }
+        break;
+      }
+    }
+
+//    qDebug() << "Memory usage:" << memInfo;
+  } else {
+    qDebug() << p.readAllStandardError();
+  }
+
+
+#endif
+  return memInfo;
+}
+
+QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
+{
+  QString str;
+
+  QFile file(filePath);
+
+  if (file.exists()) {
+    file.open(QFile::ReadOnly);
+
+    file.seek(file.size() - 1);
+
+    int count = 0;
+
+    while ((count <= maxCount) && (file.pos() > 0))
+    {
+      char ch;
+      file.getChar(&ch);
+      file.seek(file.pos() - 2);
+      if (ch == '\n') {
+        count++;
+      }
+    }
+
+    str = file.readAll();
+
+    file.close();
+  }
+
+  return str;
 }

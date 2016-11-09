@@ -3,9 +3,10 @@
 #include <iostream>
 #include <sstream>
 #include <z3dgl.h>
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 #include <limits>
 #include <QToolBar>
@@ -2017,7 +2018,7 @@ void Z3DWindow::swcNodeDoubleClicked(Swc_Tree_Node *node)
 void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 {
   std::vector<double> boundBox = m_punctaFilter->getPunctumBound(p);
-  if (hasVolume() > 0) {
+  if (hasVolume()) {
     if (m_volumeSource->isSubvolume())
       m_volumeSource->exitZoomInView();
   }
@@ -2087,7 +2088,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
 
   QList<QAction*> actions;
 
-  if (m_doc->hasSelectedSwc() > 0) {
+  if (m_doc->hasSelectedSwc()) {
     //m_contextMenuGroup["swc"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swc"]->actions();
     if (actions.empty()) {
@@ -2135,7 +2136,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   }
 
 
-  if (m_doc->hasSelectedPuncta() > 0) {
+  if (m_doc->hasSelectedPuncta()) {
     updateContextMenu("puncta");
     //m_contextMenuGroup["puncta"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["puncta"]->actions();
@@ -2693,7 +2694,7 @@ void Z3DWindow::dropEvent(QDropEvent *event)
   m_doc->loadFileList(urls);
 }
 
-void Z3DWindow::closeEvent(QCloseEvent */*event*/)
+void Z3DWindow::closeEvent(QCloseEvent * /*event*/)
 {
   writeSettings();
   emit closed();

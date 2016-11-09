@@ -1,5 +1,4 @@
 #include "z3dgl.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #include <QtConcurrent>
@@ -360,9 +359,9 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyCropTriggered()));
       break;
-    case ZActionFactory::ACTION_BODY_CHOP_Z:
+    case ZActionFactory::ACTION_BODY_CHOP:
       connect(action, SIGNAL(triggered()),
-              this, SLOT(notifyBodyChopZTriggered()));
+              this, SLOT(notifyBodyChopTriggered()));
       break;
     case ZActionFactory::ACTION_BODY_MERGE:
       connect(action, SIGNAL(triggered()),
@@ -1832,7 +1831,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   return processed;
 }
 
-bool ZStackPresenter::customKeyProcess(QKeyEvent */*event*/)
+bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 {
   return false;
 }
@@ -2635,9 +2634,9 @@ void ZStackPresenter::notifyBodyCropTriggered()
   emit bodyCropTriggered();
 }
 
-void ZStackPresenter::notifyBodyChopZTriggered()
+void ZStackPresenter::notifyBodyChopTriggered()
 {
-  emit bodyChopZTriggered();
+  emit bodyChopTriggered();
 }
 
 void ZStackPresenter::notifyBodyMergeTriggered()
@@ -2763,7 +2762,7 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
 }
 
 bool ZStackPresenter::processCustomOperator(
-    const ZStackOperator &/*op*/, ZInteractionEvent */*e*/)
+    const ZStackOperator &/*op*/, ZInteractionEvent * /*e*/)
 {
   return false;
 }

@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstring>
 #if _QT_GUI_USED_
-#include <QtGui>
+
 #endif
 
 #include "zobject3d.h"
@@ -93,6 +93,7 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   m_label = obj.m_label;
   m_blockingEvent = false;
   m_sliceAxis = obj.m_sliceAxis;
+  m_dsIntv = obj.m_dsIntv;
 //  uint64_t m_label;
 
 //  this->m_zProjection = NULL;
@@ -812,6 +813,72 @@ void ZObject3dScan::sort()
   }
 }
 
+void ZObject3dScan::sortedCanonize()
+{
+  if (!isEmpty() && !isCanonized()) {
+    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    size_t length = 0;
+    //newStripeArray.reserve(m_stripeArray.size());
+    m_stripeArray[0].sortedCanonize();
+    //newStripeArray.push_back(m_stripeArray[0]);
+    newStripeArray[length++] = m_stripeArray[0];
+    for (size_t i = 1; i < m_stripeArray.size(); ++i) {
+      ZObject3dStripe &newStripe = newStripeArray[length - 1];
+      ZObject3dStripe &stripe = m_stripeArray[i];
+      if (!newStripe.unify(stripe)) {
+        stripe.canonize();
+        //newStripeArray.push_back(m_stripeArray[i]);
+        newStripeArray[length++] = stripe;
+      }
+    }
+
+    newStripeArray.resize(length);
+
+//    ZOUT(std::cout, 6) << "  stripes finalized." << std::endl;
+
+    //m_stripeArray = newStripeArray;
+    m_stripeArray.swap(newStripeArray);
+
+    //m_isCanonized = true;
+    processEvent(EVENT_OBJECT_CANONIZED);
+  }
+}
+
+void ZObject3dScan::fullySortedCanonize()
+{
+  if (!isEmpty() && !isCanonized()) {
+    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    size_t length = 0;
+    //newStripeArray.reserve(m_stripeArray.size());
+    m_stripeArray[0].sortedCanonize();
+    //newStripeArray.push_back(m_stripeArray[0]);
+    newStripeArray[length++] = m_stripeArray[0];
+    for (size_t i = 1; i < m_stripeArray.size(); ++i) {
+      ZObject3dStripe &newStripe = newStripeArray[length - 1];
+      ZObject3dStripe &stripe = m_stripeArray[i];
+
+      if (newStripe.unify(stripe, false)) {
+        newStripe.sortedCanonize();
+      } else {
+        stripe.sortedCanonize();
+        //newStripeArray.push_back(m_stripeArray[i]);
+        newStripeArray[length++] = stripe;
+      }
+    }
+
+    newStripeArray.resize(length);
+
+//    ZOUT(std::cout, 6) << "  stripes finalized." << std::endl;
+
+    //m_stripeArray = newStripeArray;
+    m_stripeArray.swap(newStripeArray);
+
+    //m_isCanonized = true;
+    processEvent(EVENT_OBJECT_CANONIZED);
+  }
+}
+
+
 void ZObject3dScan::canonize()
 {
   if (!isEmpty() && !isCanonized()) {
@@ -833,32 +900,7 @@ void ZObject3dScan::canonize()
   std::cout << "Canonized: " << count << std::endl;
   std::cout << "Uncanonized: " << ncount << std::endl;
 #endif
-
-    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
-    size_t length = 0;
-    //newStripeArray.reserve(m_stripeArray.size());
-    m_stripeArray[0].canonize();
-    //newStripeArray.push_back(m_stripeArray[0]);
-    newStripeArray[length++] = m_stripeArray[0];
-    for (size_t i = 1; i < m_stripeArray.size(); ++i) {
-      ZObject3dStripe &newStripe = newStripeArray[length - 1];
-      ZObject3dStripe &stripe = m_stripeArray[i];
-      if (!newStripe.unify(stripe)) {
-        stripe.canonize();
-        //newStripeArray.push_back(m_stripeArray[i]);
-        newStripeArray[length++] = stripe;
-      }
-    }
-
-    newStripeArray.resize(length);
-
-    ZOUT(std::cout, 6) << "  stripes finalized." << std::endl;
-
-    //m_stripeArray = newStripeArray;
-    m_stripeArray.swap(newStripeArray);
-
-    //m_isCanonized = true;
-    processEvent(EVENT_OBJECT_CANONIZED);
+    sortedCanonize();
   }
 }
 
@@ -910,6 +952,10 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
     //deprecate(ALL_COMPONENT);
     event |= EVENT_OBJECT_MODEL_CHANGED;
   }
+
+  m_dsIntv.set((m_dsIntv.getX() + 1) * (xintv + 1) - 1,
+               (m_dsIntv.getY() + 1) * (yintv + 1) - 1,
+               (m_dsIntv.getZ() + 1) * (zintv + 1) - 1);
 
   processEvent(event);
 }
@@ -1094,9 +1140,9 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
 
   ZIntCuboid boundBox = getBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.getFirstCorner().getX();
-    offset[1] = boundBox.getFirstCorner().getY();
-    offset[2] = boundBox.getFirstCorner().getZ();
+    offset[0] = boundBox.getFirstCorner().getX() - margin;
+    offset[1] = boundBox.getFirstCorner().getY() - margin;
+    offset[2] = boundBox.getFirstCorner().getZ() - margin;
   }
 
 #if 0
@@ -1327,6 +1373,7 @@ ZGraph* ZObject3dScan::buildConnectionGraph()
 void ZObject3dScan::clear()
 {
   m_stripeArray.clear();
+  m_dsIntv.set(0, 0, 0);
   m_isCanonized = true;
   deprecate(COMPONENT_ALL);
 }
@@ -1853,6 +1900,20 @@ void ZObject3dScan::setDsIntv(int x, int y, int z)
 void ZObject3dScan::setDsIntv(const ZIntPoint &intv)
 {
   m_dsIntv = intv;
+}
+
+void ZObject3dScan::mulDsIntv(int xintv, int yintv, int zintv)
+{
+  m_dsIntv.set((m_dsIntv.getX() + 1) * (xintv + 1) - 1,
+               (m_dsIntv.getY() + 1) * (yintv + 1) - 1,
+               (m_dsIntv.getZ() + 1) * (zintv + 1) - 1);
+}
+
+void ZObject3dScan::divDsIntv(int xintv, int yintv, int zintv)
+{
+  m_dsIntv.set(std::max(0, (m_dsIntv.getX() + 1) / (xintv + 1) - 1),
+               std::max(0, (m_dsIntv.getY() + 1) / (yintv + 1) - 1),
+               std::max(0, (m_dsIntv.getZ() + 1) / (zintv + 1) - 1));
 }
 
 void ZObject3dScan::dilatePlane()
@@ -2461,7 +2522,7 @@ ZVoxel ZObject3dScan::getMarker() const
     if (!slice.isEmpty()) {
       int currentZ = slice.getStripe(0).getZ();
       Stack *stack = slice.toStack(offset);
-      Stack *dist = Stack_Bwdist_L_U16P(stack, NULL, 0);
+      Stack *dist = C_Stack::Bwdist_L_U16P(stack, NULL, 0);
       size_t index;
       double v = sqrt(Stack_Max(dist, &index));
       if (v > voxel.value()) {
@@ -2471,8 +2532,8 @@ ZVoxel ZObject3dScan::getMarker() const
 
         voxel.set(x + offset[0], y + offset[1], currentZ, v);
       }
-      Kill_Stack(dist);
-      Kill_Stack(stack);
+      C_Stack::kill(dist);
+      C_Stack::kill(stack);
       slice.clear();
     }
   }
@@ -2956,6 +3017,225 @@ bool ZObject3dScan::importDvidObjectBuffer(
   return importDvidObjectBuffer(&(byteArray[0]), byteArray.size());
 }
 
+bool ZObject3dScan::importDvidObjectBufferDs(
+    const char *byteArray, size_t byteNumber)
+{
+  clear();
+
+  if (byteArray == NULL || byteNumber <= 12) {
+    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    return false;
+  }
+
+  size_t currentIndex = 0;
+  tz_uint8 flag = 0;
+  READ_BYTE_BUFFER(flag, tz_uint8);
+  UNUSED_PARAMETER(flag);
+
+
+  tz_uint8 numberOfDimensions = 0;
+  READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
+
+  if (numberOfDimensions != 3) {
+    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    return false;
+  }
+
+  tz_uint8 dimOfRun = 0;
+  READ_BYTE_BUFFER(dimOfRun, tz_uint8);
+  if (dimOfRun != 0) {
+    RECORD_ERROR_UNCOND("Unspported run dimension");
+    return false;
+  }
+
+  //tz_uint8 reserved = *static_cast<tz_uint8*>(byteArray + currentIndex);
+  ++currentIndex;
+
+  //tz_uint32 numberOfVoxels = *static_cast<tz_uint32*>(byteArray + currentIndex);
+  currentIndex += 4;
+
+  tz_uint32 numberOfSpans = 0;
+  READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
+
+  int cx = 0;
+  int cy = 0;
+  int cz = NeuTube::INVALID_Z_INDEX;
+  bool newSlice = true;
+  bool newStripe = true;
+
+  const int MAX_SPAN = 50000;
+
+  int intv = iround(Cube_Root((double) numberOfSpans / MAX_SPAN)) - 1;
+
+  LINFO() << "Downsample interval:" << intv;
+
+  int xIntv = intv;
+  int yIntv = intv;
+  int zIntv = intv;
+
+  m_dsIntv.set(xIntv, yIntv, zIntv);
+
+  for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
+    tz_int32 coord[3];
+    for (int i = 0; i < 3; ++i) {
+      READ_BYTE_BUFFER(coord[i], tz_int32);
+    }
+
+    tz_int32 runLength = 0;
+    READ_BYTE_BUFFER(runLength, tz_int32);
+
+    if (runLength <= 0) {
+      RECORD_ERROR_UNCOND("Invalid run length");
+      return false;
+    }
+
+//    addStripeFast(coord[2], coord[1]);
+//    addSegmentFast(coord[0], coord[0] + runLength - 1);
+    int tx = coord[0] / (xIntv + 1);
+    int ty = coord[1] / (yIntv + 1);
+    int tz = coord[2] / (zIntv + 1);
+    runLength /= (xIntv + 1);
+
+    if (cz != tz) {
+      newSlice = true;
+      newStripe = true;
+    } else if (cy != ty) {
+      newStripe = true;
+      newSlice = false;
+    } else {
+      newStripe = false;
+    }
+
+    bool adding = false;
+    if (newSlice) {
+      if (cz != tz) {
+        adding = true;
+      }
+    } else if (newStripe) {
+      if (cy != ty) {
+        adding = true;
+      }
+    } else if (tx + runLength - 1 != cx) {
+      adding = true;
+    }
+
+    if (adding) {
+      addSegment(tz, ty, tx, tx + runLength - 1, false);
+
+      cx = tx + runLength - 1;
+      cy = ty;
+      cz = tz;
+    }
+  }
+
+  return true;
+}
+
+bool ZObject3dScan::importDvidObjectBuffer(
+    const char *byteArray, size_t byteNumber, int xIntv, int yIntv, int zIntv)
+{
+  clear();
+
+  m_dsIntv.set(xIntv, yIntv, zIntv);
+
+  if (byteArray == NULL || byteNumber <= 12) {
+    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    return false;
+  }
+
+  size_t currentIndex = 0;
+  tz_uint8 flag = 0;
+  READ_BYTE_BUFFER(flag, tz_uint8);
+  UNUSED_PARAMETER(flag);
+
+
+  tz_uint8 numberOfDimensions = 0;
+  READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
+
+  if (numberOfDimensions != 3) {
+    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    return false;
+  }
+
+  tz_uint8 dimOfRun = 0;
+  READ_BYTE_BUFFER(dimOfRun, tz_uint8);
+  if (dimOfRun != 0) {
+    RECORD_ERROR_UNCOND("Unspported run dimension");
+    return false;
+  }
+
+  //tz_uint8 reserved = *static_cast<tz_uint8*>(byteArray + currentIndex);
+  ++currentIndex;
+
+  //tz_uint32 numberOfVoxels = *static_cast<tz_uint32*>(byteArray + currentIndex);
+  currentIndex += 4;
+
+  tz_uint32 numberOfSpans = 0;
+  READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
+
+  int cx = 0;
+  int cy = 0;
+  int cz = NeuTube::INVALID_Z_INDEX;
+  bool newSlice = true;
+  bool newStripe = true;
+
+  for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
+    tz_int32 coord[3];
+    for (int i = 0; i < 3; ++i) {
+      READ_BYTE_BUFFER(coord[i], tz_int32);
+    }
+
+    tz_int32 runLength = 0;
+    READ_BYTE_BUFFER(runLength, tz_int32);
+
+    if (runLength <= 0) {
+      RECORD_ERROR_UNCOND("Invalid run length");
+      return false;
+    }
+
+//    addStripeFast(coord[2], coord[1]);
+//    addSegmentFast(coord[0], coord[0] + runLength - 1);
+    int tx = coord[0] / (xIntv + 1);
+    int ty = coord[1] / (yIntv + 1);
+    int tz = coord[2] / (zIntv + 1);
+    runLength /= (xIntv + 1);
+
+    if (cz != tz) {
+      newSlice = true;
+      newStripe = true;
+    } else if (cy != ty) {
+      newStripe = true;
+      newSlice = false;
+    } else {
+      newStripe = false;
+    }
+
+    bool adding = false;
+    if (newSlice) {
+      if (cz != tz) {
+        adding = true;
+      }
+    } else if (newStripe) {
+      if (cy != ty) {
+        adding = true;
+      }
+    } else if (tx + runLength - 1 != cx) {
+      adding = true;
+    }
+
+    if (adding) {
+      addSegment(tz, ty, tx, tx + runLength - 1, false);
+
+      cx = tx + runLength - 1;
+      cy = ty;
+      cz = tz;
+    }
+  }
+
+  return true;
+}
+
+
 void ZObject3dScan::addForeground(ZStack *stack)
 {
   ConstSegmentIterator iterator(this);
@@ -3206,6 +3486,25 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
   return result;
 }
 
+ZObject3dScan* ZObject3dScan::chop(
+    int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+    ZObject3dScan *result) const
+{
+  switch (axis) {
+  case NeuTube::X_AXIS:
+    return chopX(v, remain, result);
+    break;
+  case NeuTube::Y_AXIS:
+    return chopY(v, remain, result);
+    break;
+  case NeuTube::Z_AXIS:
+    return chopZ(v, remain, result);
+    break;
+  }
+
+  return NULL;
+}
+
 ZObject3dScan* ZObject3dScan::chopZ(
     int z, ZObject3dScan *remain, ZObject3dScan *result) const
 {
@@ -3225,6 +3524,100 @@ ZObject3dScan* ZObject3dScan::chopZ(
       result->addStripe(stripe, false);
     } else if (remain != NULL) {
       remain->addStripe(stripe, false);
+    }
+  }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
+  result->canonize();
+  result->setSliceAxis(m_sliceAxis);
+
+  return result;
+}
+
+ZObject3dScan* ZObject3dScan::chopY(
+    int y, ZObject3dScan *remain, ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
+  }
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    if (stripe.getY() < y) {
+      result->addStripe(stripe, false);
+    } else if (remain != NULL) {
+      remain->addStripe(stripe, false);
+    }
+  }
+
+  if (isCanonized()) {
+    result->setCanonized(true);
+    if (remain != NULL) {
+      remain->setCanonized(true);
+    }
+  }
+
+  result->canonize();
+  result->setSliceAxis(m_sliceAxis);
+
+  return result;
+}
+
+
+ZObject3dScan* ZObject3dScan::chopX(
+    int x, ZObject3dScan *remain, ZObject3dScan *result) const
+{
+  if (result == NULL) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+  if (remain != NULL) {
+    remain->clear();
+    remain->setSliceAxis(m_sliceAxis);
+  }
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    const ZObject3dStripe &stripe = m_stripeArray[i];
+    ZObject3dStripe stripe1;
+    ZObject3dStripe stripe2;
+    stripe1.setY(stripe.getY());
+    stripe1.setZ(stripe.getZ());
+
+    stripe2.setY(stripe.getY());
+    stripe2.setZ(stripe.getZ());
+
+    for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
+      int x0 = stripe.getSegmentStart(j);
+      int x1 = stripe.getSegmentEnd(j);
+      if (x1 < x) {
+        stripe1.addSegment(x0, x1, false);
+      } else if (x0 < x) {
+        stripe1.addSegment(x0, x - 1, false);
+        stripe2.addSegment(x, x1, false);
+      } else {
+        stripe2.addSegment(x0, x1, false);
+      }
+    }
+
+    if (!stripe1.isEmpty()) {
+      result->addStripe(stripe1, false);
+    }
+
+    if (!stripe2.isEmpty() && remain != NULL) {
+      remain->addStripe(stripe2, false);
     }
   }
 

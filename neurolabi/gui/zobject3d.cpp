@@ -1,6 +1,6 @@
 #include "zobject3d.h"
 #if _QT_GUI_USED_
-#include <QtGui>
+
 #endif
 
 #include <string.h>

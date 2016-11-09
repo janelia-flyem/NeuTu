@@ -2,7 +2,8 @@
 #define FLYEMBODYINFODIALOG_H
 
 #include <QDialog>
-#include <QtGui>
+#include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidsynapse.h"

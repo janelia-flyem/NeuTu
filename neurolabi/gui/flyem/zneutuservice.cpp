@@ -101,11 +101,13 @@ void ZNeutuService::updateStatus()
 #if defined(_FLYEM_)
   if (!m_server.empty()) {
     int statusCode;
+#if defined(_ENABLE_LIBDVIDCPP_)
     if (ZDvid::MakeGetRequest(getHomeUrl(), statusCode)) {
       if (statusCode == 200) {
         m_status = STATUS_NORMAL;
       }
     }
+#endif
   }
 #endif
 }

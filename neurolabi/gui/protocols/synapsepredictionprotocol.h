@@ -2,7 +2,7 @@
 #define SYNAPSEPREDICTIONPROTOCOL_H
 
 #include <QDialog>
-#include <QtGui>
+#include <QStandardItemModel>
 
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"

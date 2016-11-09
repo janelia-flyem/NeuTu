@@ -1,5 +1,4 @@
 #if defined(_QT_GUI_USED_)
-#include <QtGui>
 #include <QtConcurrentRun>
 #endif
 
@@ -10,6 +9,7 @@
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_attribute.h"
 #include "zpainter.h"
+#include "c_stack.h"
 
 ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
 {
@@ -36,7 +36,7 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
     delete []m_profile;
   }
   if (m_filterStack != NULL) {
-    Kill_Stack(m_filterStack);
+    C_Stack::kill(m_filterStack);
     m_filterStack = NULL;
   }
 }
@@ -545,7 +545,7 @@ void ZLocalNeuroseg::generateFilterStack()
   double *filter = Neurofilter(&(m_locseg->seg), NULL, NULL,
                                &m_fieldRange, offpos, m_zscale);
   if (m_filterStack != NULL) {
-    Kill_Stack(m_filterStack);
+    C_Stack::kill(m_filterStack);
     m_filterStack = NULL;
   }
   m_filterStack = Scale_Double_Stack_P(filter, m_fieldRange.size[0],

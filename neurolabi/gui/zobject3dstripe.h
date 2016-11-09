@@ -57,6 +57,7 @@ public:
 
   void sort();
   void canonize();
+  void sortedCanonize();
   bool unify(const ZObject3dStripe &stripe, bool canonizing = true);
 
   void print(int indent = 0) const;

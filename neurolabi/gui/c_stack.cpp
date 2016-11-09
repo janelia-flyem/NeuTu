@@ -616,6 +616,13 @@ int C_Stack::stackUsage()
   return Stack_Usage();
 }
 
+int C_Stack::McStackUsage()
+{
+  STACK_MUTEX_GUARD
+
+  return Mc_Stack_Usage();
+}
+
 void C_Stack::view(const Stack *src, Mc_Stack *dst)
 {
   TZ_ASSERT(src != NULL && dst != NULL, "Null pointer");
@@ -1799,6 +1806,13 @@ Stack* C_Stack::computeGradient(const Stack *stack)
   }
 
   return out;
+}
+
+Stack* C_Stack::Bwdist_L_U16P(const Stack *in, Stack *out, int pad)
+{
+  STACK_MUTEX_GUARD
+
+  return Stack_Bwdist_L_U16P(in, out, pad);
 }
 
 void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)

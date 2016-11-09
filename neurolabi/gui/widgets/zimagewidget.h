@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QVector>
+#include <QKeyEvent>
 
 #include "neutube_def.h"
 

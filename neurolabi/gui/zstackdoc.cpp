@@ -1,6 +1,5 @@
 #include "z3dgl.h"
 #include <iostream>
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif
@@ -2639,8 +2638,8 @@ void ZStackDoc::addLocsegChainP(ZLocsegChain *obj)
   if (mainStack != NULL) {
     if (getTraceWorkspace()->trace_mask == NULL) {
       getTraceWorkspace()->trace_mask =
-          Make_Stack(GREY16, mainStack->width(), mainStack->height(),
-                     mainStack->depth());
+          C_Stack::make(GREY16, mainStack->width(), mainStack->height(),
+                        mainStack->depth());
       Zero_Stack(getTraceWorkspace()->trace_mask);
     }
   }
@@ -3631,7 +3630,7 @@ void ZStackDoc::deselectAllPuncta()
   notifyDeselected(deselected);
 }
 #if 1
-void ZStackDoc::setChainSelected(ZLocsegChain */*chain*/, bool /*select*/)
+void ZStackDoc::setChainSelected(ZLocsegChain * /*chain*/, bool /*select*/)
 {
 #if 0
   if (chain->isSelected() != select) {

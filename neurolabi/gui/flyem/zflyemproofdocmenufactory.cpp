@@ -17,7 +17,7 @@ ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -44,7 +44,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -121,7 +121,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Split mode */
     if (proofPresenter->isSplitOn()) {
       actionList.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
-      actionList.append(ZActionFactory::ACTION_BODY_CHOP_Z);
+      actionList.append(ZActionFactory::ACTION_BODY_CHOP);
       ZIntCuboidObj *roi = doc->getSplitRoi();
       if (roi != NULL) {
         if (roi->isValid()) {

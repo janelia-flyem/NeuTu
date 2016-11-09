@@ -403,7 +403,8 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBody(
   size_t bodyIndex = 0;
   for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter, ++bodyIndex) {
-    ZObject3dScan obj = reader.readBody(*iter);
+    ZObject3dScan obj;
+    reader.readBody(*iter, true, &obj);
 
     m_bodySizeArray[bodyIndex] = obj.getVoxelNumber();
 
@@ -559,7 +560,8 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
     json_t *value = json_integer(bodyId);
     obj.consumeEntry("id", value);
 
-    ZObject3dScan body = reader.readBody(bodyId);
+    ZObject3dScan body;
+    reader.readBody(bodyId, true, &body);
 
     value = json_integer(body.getVoxelNumber());
     obj.consumeEntry("size", value);

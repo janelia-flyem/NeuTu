@@ -146,6 +146,10 @@ void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 
 void Z3DCanvas::resizeEvent(QResizeEvent *event)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
+
   getGLFocus();
   QGraphicsView::resizeEvent(event);
   if (m_3dScene)
@@ -173,6 +177,10 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 
 void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
+
   if (!m_networkEvaluator) {
     return;
   }
@@ -216,6 +224,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
 
+  CHECK_GL_ERROR;
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)

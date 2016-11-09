@@ -191,7 +191,7 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
 }
 
 
-void ZWindowFactory::configure(Z3DWindow */*window*/)
+void ZWindowFactory::configure(Z3DWindow * /*window*/)
 {
 
 }

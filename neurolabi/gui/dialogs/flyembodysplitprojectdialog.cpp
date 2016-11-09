@@ -601,7 +601,7 @@ void FlyEmBodySplitProjectDialog::updateSideViewFunc()
       ZDvidWriter writer;
       if (writer.open(getDvidTarget())) {
         ZObject3dScan body;
-        reader.readBody(bodyId, &body);
+        reader.readBody(bodyId, true, &body);
         ZFlyEmNeuronImageFactory factory;
 
         factory.setSizePolicy(ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX,

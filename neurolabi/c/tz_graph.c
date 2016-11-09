@@ -1563,7 +1563,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
           }
           /* Move the node the set prior to s */
           int w = Int_Arraylist_Take(s, current_index);
-          Int_Arraylist_Add(prior_set->data, w);
+          Int_Arraylist_Add((Int_Arraylist*)prior_set->data, w);
         } else {
           ++iter;
           ++current_index;
@@ -1579,7 +1579,7 @@ Arrayqueue Graph_Traverse_Lbfs(Graph *graph, Graph_Workspace *gw)
           sigma = set_node->next;
         }
 
-        Kill_Int_Arraylist(set_node->data);
+        Kill_Int_Arraylist((Int_Arraylist*)set_node->data);
         free(set_node);
         set_node = NULL;
 

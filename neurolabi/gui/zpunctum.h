@@ -102,10 +102,9 @@ public:
   ZVaa3dMarker toVaa3dMarker() const;
 
   // update radius from volSize
-  inline void updateRadius() { setRadius(Cube_Root(0.75 / M_PI * m_volSize)); }
+  void updateRadius();
   // update volSize from radius
-  inline void updateVolSize() {
-    m_volSize = M_PI * 1.333333333 * getRadius() * getRadius() * getRadius(); }
+  void updateVolSize();
   // update mass
   inline void updateMass() { m_mass = m_volSize * m_meanIntensity; }
 

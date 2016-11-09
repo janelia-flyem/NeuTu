@@ -15,18 +15,19 @@
 
 #include "z3dtransferfunctioneditor.h"
 
+#include <math.h>
+
 #include "z3dtransferfunction.h"
 #include "zclickablelabel.h"
 #include "z3dvolume.h"
 
 #include "z3dshaderprogram.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
-
-#include <math.h>
 
 Z3DTransferFunctionWidget::Z3DTransferFunctionWidget(Z3DTransferFunctionParameter *tf, bool showHistogram, const QString &histogramNormalizeMethod,
                                                      QString xAxisText, QString yAxisText, QWidget* parent)

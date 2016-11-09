@@ -144,7 +144,10 @@ public:
    * \a tree will be owned by the object.
    *
    * \param tree The data.
-   * \param option Optioni of handling existing data.
+   * \param option Option of handling existing data:
+   *    CLEAN_ALL (default): Clean all old data.
+   *    FREE_WRAPPER: Free the old wrapper only.
+   *    LEAVE_ONLY: Don't do anything.
    */
   void setData(Swc_Tree *tree, ESetDataOption option = CLEAN_ALL);
 

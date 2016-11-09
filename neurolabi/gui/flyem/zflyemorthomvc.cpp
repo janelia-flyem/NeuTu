@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zflyemorthomvc.h"
 #include "zflyemorthodoc.h"
 #include "zstackpresenter.h"

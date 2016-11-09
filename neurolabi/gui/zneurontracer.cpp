@@ -576,6 +576,26 @@ Swc_Tree* ZNeuronTracer::trace(double x1, double y1, double z1, double r1,
   return tree;
 }
 
+Stack* ZNeuronTracer::binarize(const Stack *stack, Stack *out)
+{
+  if (out == NULL) {
+    C_Stack::clone(stack);
+  }
+
+  if (stack != out) {
+    C_Stack::copyValue(stack, out);
+  }
+
+  ZStackBinarizer binarizer;
+  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+  binarizer.setRetryCount(3);
+  if (binarizer.binarize(out) == false) {
+    std::cout << "Thresholding failed" << std::endl;
+  }
+
+  return out;
+}
+
 Stack *ZNeuronTracer::binarize(const Stack *stack)
 {
   Stack *out = C_Stack::clone(stack);
@@ -851,6 +871,8 @@ std::vector<Locseg_Chain*> ZNeuronTracer::trace(const Stack *stack,
 {
   prepareTraceScoreThreshold(TRACING_AUTO);
 
+//  m_traceWorkspace->min_chain_length = 15.0;
+
   int nchain;
   Locseg_Chain **chain =
       Trace_Locseg_S(stack, 1.0, &(locsegArray[0]), &(values[0]),
@@ -990,13 +1012,124 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
   return tree;
 }
 
+ZSwcTree* ZNeuronTracer::computeInitialTrace(const Stack *stack)
+{
+  ZSwcTree *tree = NULL;
+
+  return tree;
+}
+
+std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition()
+{
+  return computeSeedPosition(getIntensityData());
+}
+
+std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
+    const Stack *stack)
+{
+  std::vector<ZWeightedPoint> result;
+
+  if (stack != NULL) {
+    startProgress();
+    Stack *bw = C_Stack::clone(stack);
+    ZStackProcessor::SubtractBackground(bw, 0.5, 3);
+    binarize(bw, bw);
+    C_Stack::translate(bw, GREY, 1);
+
+    advanceProgress(0.05);
+
+    std::cout << "Removing noise ..." << std::endl;
+
+    /* <mask> allocated */
+    Stack *mask = bwsolid(bw);
+    advanceProgress(0.05);
+
+    /* <bw> freed */
+    C_Stack::kill(bw);
+
+    //Thin line mask
+    /* <mask2> allocated */
+    Stack *mask2 = NULL;
+
+    if (m_enhancingMask) {
+      std::cout << "Enhancing thin branches ..." << std::endl;
+      mask2 = enhanceLine(stack);
+      advanceProgress(0.05);
+    }
+
+    if (mask2 != NULL) {
+      std::cout << "Making mask for thin branches ..." << std::endl;
+      ZStackBinarizer binarizer;
+      binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+      binarizer.setRetryCount(5);
+      binarizer.setMinObjectSize(27);
+
+      if (binarizer.binarize(mask2) == false) {
+        std::cout << "Thresholding failed" << std::endl;
+        C_Stack::kill(mask2);
+        mask2 = NULL;
+      }
+    }
+
+    /* <mask2> freed */
+    if (mask2 != NULL) {
+      C_Stack::translate(mask2, GREY, 1);
+      Stack_Or(mask, mask2, mask);
+      C_Stack::kill(mask2);
+      mask2 = NULL;
+    }
+    advanceProgress(0.05);
+
+    //Trace each seed
+    std::cout << "Extracting seed points ..." << std::endl;
+
+    /* <seedPointArray> allocated */
+    Geo3d_Scalar_Field *seedPointArray = extractSeed(mask);
+
+    int minSeedSize = 0;
+
+    if (seedPointArray->size > 15000) {
+      minSeedSize = 125;
+    } else if (seedPointArray->size > 5000) {
+      minSeedSize = 64;
+    }
+
+    if (minSeedSize > 0) {
+      std::cout << "Too many seeds. Screening ..." << std::endl;
+      Stack *tmpStack = C_Stack::clone(mask);
+      mask = Stack_Remove_Small_Object(tmpStack, mask, minSeedSize, 26);
+      C_Stack::kill(tmpStack);
+
+      if (C_Stack::kind(mask) != GREY) {
+        C_Stack::translate(mask, GREY, 1);
+      }
+      Kill_Geo3d_Scalar_Field(seedPointArray);
+      seedPointArray = extractSeed(mask);
+      C_Stack::kill(mask);
+    }
+
+    result.resize(seedPointArray->size);
+    for (int i = 0; i < seedPointArray->size; ++i) {
+      ZWeightedPoint &pt = result[i];
+      pt.set(seedPointArray->points[i][0],
+          seedPointArray->points[i][1], seedPointArray->points[i][2]);
+      pt.setWeight(seedPointArray->values[i]);
+    }
+
+    endProgress();
+  }
+
+  return result;
+}
 
 
-ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
+ZSwcTree* ZNeuronTracer::trace(Stack *signal, bool doResampleAfterTracing)
 {
   startProgress();
 
   ZSwcTree *tree = NULL;
+
+  Stack *stack = C_Stack::clone(signal);
 
   ZStackProcessor::SubtractBackground(stack, 0.5, 3);
 
@@ -1161,6 +1294,10 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   pruner.removeOrphanBlob(tree);
 
   advanceProgress(0.1);
+
+  if (stack != signal) {
+    C_Stack::kill(stack);
+  }
 
   std::cout << "Done!" << std::endl;
   endProgress();

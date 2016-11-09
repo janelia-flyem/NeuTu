@@ -1,5 +1,6 @@
 #include "zlinesegment.h"
 #include "tz_utilities.h"
+#include <algorithm>
 
 ZLineSegment::ZLineSegment()
 {

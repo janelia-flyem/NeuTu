@@ -50,6 +50,9 @@ void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
 
 void PrepareBodyStatus(QComboBox *box);
 
+QString GetMemoryUsage();
+
+QString ReadLastLines(const QString &filePath, int maxCount);
 
 class HackathonEvaluator {
 public:

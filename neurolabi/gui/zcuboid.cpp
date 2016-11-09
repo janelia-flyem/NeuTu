@@ -3,6 +3,7 @@
 #include <math.h>
 #include <cstddef>
 #include <iostream>
+#include <algorithm>
 
 #include "tz_error.h"
 #include "tz_utilities.h"
@@ -116,16 +117,16 @@ double ZCuboid::volume() const
 void ZCuboid::intersect(const ZCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = max(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = min(m_lastCorner[i], cuboid.m_lastCorner[i]);
+    m_firstCorner[i] = std::max(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = std::min(m_lastCorner[i], cuboid.m_lastCorner[i]);
   }
 }
 
 void ZCuboid::bind(const ZCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = min(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = max(m_lastCorner[i], cuboid.m_lastCorner[i]);
+    m_firstCorner[i] = std::min(m_firstCorner[i], cuboid.m_firstCorner[i]);
+    m_lastCorner[i] = std::max(m_lastCorner[i], cuboid.m_lastCorner[i]);
   }
 }
 

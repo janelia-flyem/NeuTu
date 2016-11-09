@@ -38,7 +38,7 @@ bool windowsVersionName(std::wstring &osString)
   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
   bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
-  if(bOsVersionInfoEx == 0)
+  if(!bOsVersionInfoEx)
     return false; // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
   PGNSI pGNSI = (PGNSI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
   if(NULL != pGNSI)
@@ -50,16 +50,18 @@ bool windowsVersionName(std::wstring &osString)
   std::wstringstream os;
   os << L"Microsoft "; // Test for the specific product. if ( osvi.dwMajorVersion == 6 )
   {
-    if( osvi.dwMinorVersion == 0 )
-    {
+    if( osvi.dwMinorVersion == 0 ) {
       if( osvi.wProductType == VER_NT_WORKSTATION )
         os << "Windows Vista ";
       else os << "Windows Server 2008 ";
-    }  if ( osvi.dwMinorVersion == 1 )
-    {
+    } else if ( osvi.dwMinorVersion == 1 ) {
       if( osvi.wProductType == VER_NT_WORKSTATION )
         os << "Windows 7 ";
       else os << "Windows Server 2008 R2 ";
+    } else if (osvi.dwMinorVersion == 2) {
+      if (osvi.wProductType == VER_NT_WORKSTATION)
+        os << "Windows 8 ";
+      else os << "Windows Server 2012";
     }
     PGPI pGPI = (PGPI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
     pGPI( osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
@@ -224,7 +226,14 @@ void Z3DApplication::initialize()
   }
 
   detectOS();
+#ifdef _QT5_
+  LINFO() << "OS:" << QSysInfo::prettyProductName();
+  LINFO() << "Kernel:" << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
+  LINFO() << "Build ABI:" << QSysInfo::buildAbi();
+  LINFO() << "Current CPU:" << QSysInfo::currentCpuArchitecture();
+#else
   LINFO() << "OS:" << m_osString;
+#endif
 
   // shader path
   m_shaderPath = ":/Resources/shader";
@@ -264,9 +273,8 @@ bool Z3DApplication::initializeGL()
     //LINFO() << "GLEW version:" << (const char*)(glewGetString(GLEW_VERSION));
     RECORD_TITLED_INFORMATION(
           "GLEW version:", (const char*)(glewGetString(GLEW_VERSION)));
-#ifdef _DEBUG_
+
     Z3DGpuInfoInstance.logGpuInfo();
-#endif
     if (Z3DGpuInfoInstance.isSupported()) {
       m_glInitialized = true;
       return m_glInitialized;
@@ -323,6 +331,15 @@ void Z3DApplication::detectOS()
     case QSysInfo::WV_WINDOWS7:
       m_osString = "Windows 7, Windows Server 2008 R2 (operating system version 6.1)";
       break;
+    case QSysInfo::WV_WINDOWS8:
+      m_osString = "Windows 8 (operating system version 6.2)";
+      break;
+    case QSysInfo::WV_WINDOWS8_1:
+      m_osString = "Windows 8.1 (operating system version 6.3), introduced in Qt 4.8.6";
+      break;
+    case QSysInfo::WV_WINDOWS10:
+      m_osString = "Windows 10 (operating system version 10.0), introduced in Qt 4.8.7";
+      break;
     default:
       m_osString = "unknown win os";
     }
@@ -350,9 +367,12 @@ void Z3DApplication::detectOS()
     m_osString = "Mac OS X MAVERICKS";
     break;
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 7))
   case QSysInfo::MV_10_10:
     m_osString = "Mac OS X YOSEMITE";
+    break;
+  case QSysInfo::MV_10_11:
+    m_osString = "Mac OS X El Capitan";
     break;
 #endif
   default:

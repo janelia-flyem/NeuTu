@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 
-#include <QtGui>
 #include <QWidget>
 #include <QCheckBox>
 #include <QLabel>
@@ -146,11 +145,14 @@ void ZROIWidget::makeGUI()
     QStringList labels;
     labels << tr("ROI Name") << tr("Color");
     tw_ROIs->setHorizontalHeaderLabels(labels);
+
 #ifdef _QT5_
     tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 #else
     tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
 #endif
+//    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
     tw_ROIs->verticalHeader()->hide();
     tw_ROIs->setShowGrid(false);
 

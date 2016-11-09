@@ -167,7 +167,7 @@ static inline int start(int cont)
     return (-cont);
 }
 
-inline Level_Set *Level_Set_Child(Level_Set *r)
+Level_Set *Level_Set_Child(Level_Set *r)
 { regtree *p;
   int      x;
 
@@ -188,7 +188,7 @@ inline Level_Set *Level_Set_Child(Level_Set *r)
   return ((Level_Set *) p);
 }
 
-inline Level_Set *Level_Set_Sibling(Level_Set *r)
+Level_Set *Level_Set_Sibling(Level_Set *r)
 { regtree *p;
   int      x;
 
@@ -209,25 +209,25 @@ inline Level_Set *Level_Set_Sibling(Level_Set *r)
   return ((Level_Set *) p);
 }
 
-inline int Level_Set_Size(Level_Set *r)
+int Level_Set_Size(Level_Set *r)
 { return (size(((regtree *) r)->right)); }
 
-inline int Level_Set_Level(Level_Set *r)
+int Level_Set_Level(Level_Set *r)
 { return (level(((regtree *) r)->right)); }
 
-inline int Level_Set_Peak(Level_Set *r)
+int Level_Set_Peak(Level_Set *r)
 { return (peak(((regtree *) r)->right)); }
 
-inline int Level_Set_Leftmost(Level_Set *r)
+int Level_Set_Leftmost(Level_Set *r)
 { return (start(((regtree *) r)->right)); }
 
-inline int Level_Set_Background(Level_Set *r)
+int Level_Set_Background(Level_Set *r)
 { return (((regtree *) r)->level); }
 
-inline int Level_Set_Id(Level_Set *r)
+int Level_Set_Id(Level_Set *r)
 { return (((regtree *) r) - regtrees); }
 
-inline Level_Set *Level_Set_Root()
+Level_Set *Level_Set_Root()
 { return ((Level_Set *) (regtrees + carea)); }
 
   /* List every pixel in the subtree rooted at p */

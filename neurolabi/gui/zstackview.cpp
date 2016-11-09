@@ -1,5 +1,6 @@
 #include <iostream>
 #include <QElapsedTimer>
+#include <QMdiArea>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -38,9 +39,10 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 
 using namespace std;
@@ -2245,6 +2247,18 @@ void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz
   processViewChange(true, depthChanged);
 }
 
+ZIntPoint ZStackView::getCenter(NeuTube::ECoordinateSystem coordSys) const
+{
+  ZIntPoint center;
+  center.setZ(getZ(coordSys));
+
+  QRect rect = getViewPort(coordSys);
+  center.setX(rect.center().x());
+  center.setY(rect.center().y());
+
+  return center;
+}
+
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
@@ -2697,7 +2711,7 @@ void ZStackView::requestMerge()
 }
 
 void ZStackView::MessageProcessor::processMessage(
-    ZMessage */*message*/, QWidget */*host*/) const
+    ZMessage * /*message*/, QWidget * /*host*/) const
 {
 #ifdef _DEBUG_
   std::cout << "ZStackView::MessageProcessor::processMessage" << std::endl;

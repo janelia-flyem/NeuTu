@@ -19,6 +19,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+//#include <sys/time.h>
+//#include <sys/resource.h>
+
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -275,6 +278,7 @@ using namespace std;
 #include "flyem/zflyemroiproject.h"
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
+#include "flyem/zflyemmisc.h"
 
 using namespace std;
 
@@ -21134,7 +21138,33 @@ void ZTest::test(MainWindow *host)
 */
 #endif
   
+#if 0
+  QProcess p;
+  p.start("sysctl", QStringList() << "kern.version" << "hw.memsize");
+  p.waitForFinished();
+  QString system_info = p.readAllStandardOutput();
+  p.close();
+
+  qDebug() << system_info;
+#endif
+
+#if 0
+  struct rusage usage;
+  getrusage(RUSAGE_SELF, &usage);
+
+  std::cout << "PID: " << getpid() << std::endl;
+  std::cout << "memory usage: " << usage.ru_maxrss << std::endl;
+  std::cout << "  shared memory: " << usage.ru_ixrss << std::endl;
+  std::cout << "  unshared data: " << usage.ru_isrss << std::endl;
+  std::cout << "  unshared stack: " << usage.ru_idrss << std::endl;
+
+#endif
+
 #if 1
+  qDebug() << ZFlyEmMisc::GetMemoryUsage();
+#endif
+
+#if 0
   ZFlyEmSplitUploadOptionDialog dlg;
   ZDvidTarget target;
   target.set("http://emdata2.int.janelia.org:8500", "b6bc");
@@ -21157,6 +21187,19 @@ void ZTest::test(MainWindow *host)
   std::cout << "Passing, with new comment" << std::endl;
   dlg.setNewComment(true);
   dlg.getAnnotation(14634755, 1).print();
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+
+  ZObject3dScan remain;
+  ZObject3dScan subobj;
+
+  obj.chopY(750, &remain, &subobj);
+  subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
+  remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
+
 #endif
 
   std::cout << "Done." << std::endl;

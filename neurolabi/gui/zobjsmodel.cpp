@@ -1,7 +1,5 @@
 #include "zobjsmodel.h"
 
-#include <QtGui>
-
 #include "zobjsitem.h"
 #include "QsLog.h"
 

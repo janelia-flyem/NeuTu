@@ -1,16 +1,17 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include <QtGui>
 #include <QMessageBox>
 #include <QColor>
+#include <QFileDialog>
+#include <QColorDialog>
+#include <QStandardItemModel>
+#include <QElapsedTimer>
 
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
-#include <QFileDialog>
-#include <QColorDialog>
 #else
-#include <QtCore>
+#include <QtConcurrentRun>
 #endif
 
 #include "zjsonarray.h"

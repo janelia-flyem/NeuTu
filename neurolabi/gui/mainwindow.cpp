@@ -1,8 +1,9 @@
 #include "mainwindow.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 //#include <QtSvg>
 #include <QDir>
@@ -379,6 +380,7 @@ void MainWindow::initDialog()
 
   m_progress = new QProgressDialog(this);
   m_progress->setRange(0, 100);
+  m_progress->setValue(100);
   m_progress->setWindowModality(Qt::WindowModal);
   m_progress->setAutoClose(true);
   //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
@@ -5260,7 +5262,17 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 void MainWindow::on_actionDiagnosis_triggered()
 {
   m_DiagnosisDlg->show();
-  m_DiagnosisDlg->setVideoCardInfo(Z3DGpuInfoInstance.getGpuInfo());
+  QStringList info;
+
+#if defined(_FLYEM_)
+  info << "Memory usage: " + ZFlyEmMisc::GetMemoryUsage();
+  info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
+  info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
+#endif
+
+  info.append(Z3DGpuInfoInstance.getGpuInfo());
+
+  m_DiagnosisDlg->setSystemInfo(info);
   m_DiagnosisDlg->scrollToBottom();
   m_DiagnosisDlg->raise();
 }
@@ -6565,7 +6577,8 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
         std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
         if (!bodyIdArray.empty()) {
           int bodyId = bodyIdArray[0];
-          ZObject3dScan body = reader.readBody(bodyId);
+          ZObject3dScan body;
+          reader.readBody(bodyId, true, &body);
 
 #ifdef _DEBUG_
           std::cout << "Body size: " << body.getVoxelNumber() << std::endl;
@@ -6934,7 +6947,8 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
             tree = reader.readSwc(bodyId);
           }
           if (tree == NULL) {
-            ZObject3dScan obj = reader.readBody(bodyId);
+            ZObject3dScan obj;
+            reader.readBody(bodyId, true, &obj);
             tree = skeletonizer.makeSkeleton(obj);
             writer.writeSwc(bodyId, tree);
 
@@ -7169,7 +7183,8 @@ void MainWindow::on_actionOne_Column_triggered()
     ZSwcTree *tree = reader.readSwc(bodyId);
 
     if (tree == NULL) {
-      ZObject3dScan obj = reader.readBody(bodyId);
+      ZObject3dScan obj;
+      reader.readBody(bodyId, true, &obj);
       tree = skeletonizer.makeSkeleton(obj);
       writer.writeSwc(bodyId, tree);
     }
@@ -7433,6 +7448,13 @@ void MainWindow::runRoutineCheck()
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
 #endif
+
+    QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
+    if (!memoryUsage.isEmpty()) {
+      LINFO() << "Memory usage:" << memoryUsage;
+      LINFO() << "Stack usage:" << C_Stack::stackUsage();
+      LINFO() << "Mc_Stack usage:" << C_Stack::McStackUsage();
+    }
   }
 }
 
@@ -7576,7 +7598,8 @@ void MainWindow::on_actionNeuroMorpho_triggered()
   reader.setVerbose(false);
   for (std::vector<uint64_t>::const_iterator iter = emptyBody.begin();
        iter != emptyBody.end(); ++iter) {
-    ZObject3dScan body = reader.readBody(*iter);
+    ZObject3dScan body;
+    reader.readBody(*iter, false, &body);
     std::cout << "  " << *iter << " " << body.getVoxelNumber()
               << std::endl;
   }

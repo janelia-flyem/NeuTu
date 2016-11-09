@@ -744,19 +744,19 @@ static inline size_t rastercon_dsize(const RasterCon *region)
 static inline void allocate_rastercon_raster(
     RasterCon *rastercon, size_t rsize, char *routine)
 { 
-  rastercon->raster = Guarded_Realloc(rastercon->raster, rsize,routine);
+  rastercon->raster = (mylib_Indx_Type*)Guarded_Realloc(rastercon->raster, rsize,routine);
 }
 
 static inline void allocate_rastercon_ishole(
     RasterCon *rastercon, size_t hsize, char *routine)
 {
-  rastercon->ishole = Guarded_Malloc(hsize, routine);
+  rastercon->ishole = (uint8_t*)Guarded_Malloc(hsize, routine);
 }
 
 static inline void allocate_rastercon_dims(
     RasterCon *rastercon, int dsize, char *routine)
 { 
-  rastercon->dims = Guarded_Malloc(dsize, routine);
+  rastercon->dims = (mylib_Dimn_Type*)Guarded_Malloc(dsize, routine);
 }
 
 static inline void kill_rastercon(RasterCon *rastercon)
@@ -1324,7 +1324,7 @@ void merge_rastercon(RasterCon *master, const RasterCon *slave)
   if (slave->surflen > 0) {
     int new_rastlen = master->rastlen + slave->rastlen;
     int newlen = master->surflen + slave->surflen;
-    master->raster = Guarded_Realloc(master->raster, 
+    master->raster = (mylib_Indx_Type*)Guarded_Realloc(master->raster, 
         sizeof(mylib_Indx_Type) * newlen, Program_Name());
     int master_non_raster_len = master->surflen - master->rastlen;
     int slave_non_raster_len = slave->surflen - slave->rastlen;
@@ -1350,7 +1350,7 @@ void merge_rastercon(RasterCon *master, const RasterCon *slave)
     /* copy holes*/
     if (rastercon_hsize(slave) > 0) {
       size_t hsize = rastercon_hsize(slave) + rastercon_hsize(master);
-      master->ishole = Guarded_Realloc(master->ishole, hsize, Program_Name());
+      master->ishole = (uint8_t*)Guarded_Realloc(master->ishole, hsize, Program_Name());
       memcpy(master->ishole + rastercon_hsize(master),
           slave->ishole, rastercon_hsize(slave));
     }

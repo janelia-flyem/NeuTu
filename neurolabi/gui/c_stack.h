@@ -75,6 +75,7 @@ void systemKill(Stack *stack);
 inline void cppDelete(Stack *stack) { delete stack; }
 
 int stackUsage();
+int McStackUsage();
 
 /** @name Make copies
  */
@@ -262,7 +263,21 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+
+/*!
+ * \brief Get the histogram of a stack.
+ *
+ * The function computes the histogram of \a stack. It stores the result in
+ * \a out and returns the same pointer as \a out if it is not NULL. If \a out is
+ * NULL, it returns a new pointer for the result. The caller is responsible to
+ * delete the returned pointer.
+ *
+ * \param stack Input stack.
+ * \param out Output histogram.
+ * \return The object of the output histogram.
+ */
 ZIntHistogram* hist(const Stack *stack, ZIntHistogram *out);
+
 double mean(const Stack *stack);
 double mode(const Stack *stack);
 
@@ -406,6 +421,10 @@ bool isBinary(const Stack *stack);
 
 Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
 Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
+
+
+//Processing functions
+Stack* Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
