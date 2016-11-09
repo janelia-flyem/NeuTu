@@ -2,6 +2,7 @@
 #include "zdvidtileensemble.h"
 #include "zstackdoc.h"
 #include "zdvidpatchdatafetcher.h"
+#include "zstackdocdatabuffer.h"
 
 ZDvidPatchDataUpdater::ZDvidPatchDataUpdater(QObject *parent) :
   QObject(parent)
@@ -19,7 +20,10 @@ void ZDvidPatchDataUpdater::setData(
 void ZDvidPatchDataUpdater::updateData(ZDvidPatchDataFetcher *fetcher)
 {
   if (fetcher->updatePatch(m_se)) {
-    m_doc->processObjectModified(m_se);
-    m_doc->notifyObjectModified();
+    m_doc->getDataBuffer()->addUpdate(
+          m_se, ZStackDocObjectUpdate::ACTION_UPDATE);
+    m_doc->getDataBuffer()->deliver();
+//    m_doc->processObjectModified(m_se);
+//    m_doc->notifyObjectModified();
   }
 }

@@ -60,6 +60,8 @@ public:
     ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
   };
 
+  static const int MAX_SPAN_HINT;
+
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
   void deprecateDependent(EComponent comp);

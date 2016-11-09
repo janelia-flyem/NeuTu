@@ -329,6 +329,7 @@ void Z3DPunctaFilter::renderSelectionBox(Z3DEye eye)
 
 void Z3DPunctaFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
+  ZOUT(LTRACE(), 5) << "start";
   if (pm && !m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_punctaList.size(); i++) {
       pm->registerObject(m_punctaList[i]);
@@ -344,10 +345,12 @@ void Z3DPunctaFilter::registerPickingObjects(Z3DPickingManager *pm)
   }
 
   m_pickingObjectsRegistered = true;
+  ZOUT(LTRACE(), 5) << "end";
 }
 
 void Z3DPunctaFilter::deregisterPickingObjects(Z3DPickingManager *pm)
 {
+  ZOUT(LTRACE(), 5) << "start";
   if (pm && m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_registeredPunctaList.size(); i++) {
       pm->deregisterObject(m_registeredPunctaList[i]);
@@ -356,6 +359,7 @@ void Z3DPunctaFilter::deregisterPickingObjects(Z3DPickingManager *pm)
   }
 
   m_pickingObjectsRegistered = false;
+  ZOUT(LTRACE(), 5) << "end";
 }
 
 void Z3DPunctaFilter::prepareData()

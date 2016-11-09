@@ -1683,6 +1683,11 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
+void ZFlyEmProofMvc::test()
+{
+  getView()->increaseZoomRatio();
+}
+
 bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
 {
   bool succ = true;

@@ -519,12 +519,24 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  int intv = 0;
+  ZIntCuboid box = obj.getBoundBox();
+  size_t voxelNumber = obj.getVoxelNumber();
 
-  size_t volume = obj.getBoundBox().getVolume();
+  int intv =
+      iround(Cube_Root(double(voxelNumber) / ZObject3dScan::MAX_SPAN_HINT)) - 1;
+  if (intv < 0) {
+    intv = 0;
+  }
+
+
+  size_t volume = (box.getWidth() + 2) / (intv + 1) *
+      (box.getHeight() + 2) / (intv + 1) * (box.getDepth() + 2) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = iround(Cube_Root((double) volume / MAX_INT32)) - 1;
+    intv = iround(Cube_Root(double(volume) / MAX_INT32)) - 1;
+    if (intv < 0) {
+      intv = 0;
+    }
   }
 
   ZStack *stack = NULL;
