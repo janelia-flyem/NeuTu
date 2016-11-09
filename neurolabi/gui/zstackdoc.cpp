@@ -708,7 +708,7 @@ void ZStackDoc::processDataBuffer()
     ZStackDocObjectUpdate *u = *iter;
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
-      case ZStackDocObjectUpdate::ACTION_ADD:
+      case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
         addObject(u->getObject(), false);
         break;
       case ZStackDocObjectUpdate::ACTION_ADD_UNIQUE:
