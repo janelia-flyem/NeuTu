@@ -789,7 +789,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           if (punctum->name().isEmpty()) {
             punctum->setName(QString("%1").arg(bodyId));
           }
-          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD);
+          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
 //          addObject(punctum, false);
         }
       }
@@ -802,7 +802,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           punctum->setColor(128, 128, 128);
           punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
 //          addObject(punctum, false);
-          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD);
+          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
         }
       }
       getDataBuffer()->deliver();
@@ -840,7 +840,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         //        item->setColor(255, 255, 0);
         item->setSource(source);
 //        addObject(item, false);
-        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD);
+        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
 
 //      endObjectModifiedMode();
@@ -870,7 +870,7 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
         item->setRadius(30);
 //        item->setColor(255, 255, 0);
         item->setSource(source);
-        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD);
+        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
 //        addObject(item, false);
       }
     }
