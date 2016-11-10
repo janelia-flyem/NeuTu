@@ -69,6 +69,7 @@
 #include "widgets/z3dtabwidget.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "dialogs/zflyembodychopdialog.h"
+#include "zrandomgenerator.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -148,6 +149,12 @@ void ZFlyEmProofMvc::init()
           Qt::QueuedConnection);
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
+
+  m_testTimer = new QTimer(this);
+
+#ifdef _DEBUG_
+  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+#endif
 }
 
 void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
@@ -1683,9 +1690,58 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
+void ZFlyEmProofMvc::testSlot()
+{
+  static ZRandomGenerator rand;
+  uint64_t bodyId = 0;
+  int minX = m_dvidInfo.getMinX();
+  int minY = m_dvidInfo.getMinY();
+  int minZ = m_dvidInfo.getMinZ();
+  int maxX = m_dvidInfo.getMaxX();
+  int maxY = m_dvidInfo.getMaxY();
+  int maxZ = m_dvidInfo.getMaxZ();
+
+  int x = 0;
+  int y = 0;
+  int z = 0;
+
+  while (bodyId == 0) {
+    x = rand.rndint(minX, maxX);
+    y = rand.rndint(minY, maxY);
+    z = rand.rndint(minZ, maxZ);
+
+    bodyId = getCompleteDocument()->getDvidReader().readBodyIdAt(x, y, z);
+  }
+
+  if (rand.rndint(10) % 2 ==0) {
+    zoomTo(x, y, z);
+  } else {
+    if (bodyId % 9 == 0) {
+      getCompleteDocument()->deselectAllObject();
+    }
+
+    std::vector<uint64_t> bodyArray;
+    bodyArray.push_back(bodyId);
+    if (!bodyArray.empty()) {
+      getCompleteDocument()->recordBodySelection();
+      getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+      getCompleteDocument()->processBodySelection();
+      updateBodySelection();
+      zoomTo(x, y, z);
+    }
+  }
+}
+
 void ZFlyEmProofMvc::test()
 {
-  getView()->increaseZoomRatio();
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+  } else {
+    showFineBody3d();
+    m_testTimer->setInterval(500);
+    m_testTimer->start();
+  }
+//  getView()->increaseZoomRatio();
 }
 
 bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)

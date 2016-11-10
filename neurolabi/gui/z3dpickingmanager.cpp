@@ -191,6 +191,6 @@ void Z3DPickingManager::increaseColor()
     ++(*reinterpret_cast<uint32_t*>(&m_currentColor[0]));
   else {
     m_currentColor = glm::col4(0,0,0,128);
-    //LERROR() << "Out of colors...";
+    LERROR() << "Out of colors...";
   }
 }
