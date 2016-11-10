@@ -82,7 +82,7 @@ CONFIG += static_gtest
 
 QT += printsupport
 
-DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ _FLYEM_
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -687,7 +687,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemsplituploadoptiondialog.h \
     widgets/zaxiswidget.h \
     dialogs/zflyembodychopdialog.h \
-    zstackdocdatabuffer.h
+    zstackdocdatabuffer.h \
+    dialogs/ztestoptiondialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -774,7 +775,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemroitooldialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
-    widgets/zaxiswidget.ui
+    widgets/zaxiswidget.ui \
+    dialogs/ztestoptiondialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1202,7 +1204,8 @@ SOURCES += main.cpp \
     dialogs/zflyemsplituploadoptiondialog.cpp \
     widgets/zaxiswidget.cpp \
     dialogs/zflyembodychopdialog.cpp \
-    zstackdocdatabuffer.cpp
+    zstackdocdatabuffer.cpp \
+    dialogs/ztestoptiondialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

@@ -77,6 +77,7 @@ class ZWidgetMessage;
 class FlyEmSettingDialog;
 class ZDvidBodyPositionDialog;
 class ZProofreadWindow;
+class ZTestOptionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -322,6 +323,8 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test(ZTestOptionDialog *dlg);
+
   void test2();
 
   // slots for frame
@@ -729,6 +732,8 @@ private:
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   FlyEmSettingDialog *m_flyemSettingDlg;
   ZDvidBodyPositionDialog *m_bodyPosDlg;
+  ZTestOptionDialog *m_testOptionDlg;
+
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

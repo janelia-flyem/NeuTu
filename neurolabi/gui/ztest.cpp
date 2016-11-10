@@ -308,6 +308,20 @@ int ZTest::runUnitTest(int argc, char *argv[])
 #endif
 }
 
+void ZTest::stressTest(MainWindow *host)
+{
+  if (host != NULL) {
+#if defined(_FLYEM_)
+    host->testFlyEmProofread();
+#else
+    ZStackFrame *frame = host->currentStackFrame();
+    if (frame != NULL) {
+      frame->stressTest();
+    }
+#endif
+  }
+}
+
 void ZTest::test(MainWindow *host)
 {
   std::cout << "Start testing ..." << std::endl;
@@ -21211,7 +21225,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   host->testFlyEmProofread();
 #endif
 

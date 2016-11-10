@@ -1,6 +1,9 @@
 #include "zstackframe.h"
 #include <QUndoCommand>
 #include <iostream>
+#include <QTimer>
+#include <QtConcurrentRun>
+
 #include "tz_error.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
@@ -65,6 +68,9 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   qDebug() << m_doc.get();
   m_presenter = NULL;
   m_view = NULL;
+
+  m_testTimer = new QTimer(this);
+  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
   /*
   if (preparingModel) {
     constructFrame();
@@ -1796,6 +1802,20 @@ void ZStackFrame::customizeWidget()
   if (!m_isWidgetReady) {
     view()->customizeWidget();
     m_isWidgetReady = true;
+  }
+}
+
+void ZStackFrame::testSlot()
+{
+  QtConcurrent::run(document().get(), &ZStackDoc::test);
+}
+
+void ZStackFrame::stressTest()
+{
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+  } else {
+    m_testTimer->start(500);
   }
 }
 

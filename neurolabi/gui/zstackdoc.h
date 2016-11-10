@@ -648,6 +648,7 @@ public:
   void setTubePrefix(const char *filePath);
 
   void test();
+
   void test(QProgressBar *pb);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
