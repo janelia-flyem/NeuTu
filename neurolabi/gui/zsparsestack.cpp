@@ -165,6 +165,8 @@ ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
         if (dsIntv != NULL) {
           dsIntv->set(0, 0, 0);
         }
+
+        delete obj;
       }
     }
   }

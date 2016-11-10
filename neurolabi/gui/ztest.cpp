@@ -21183,8 +21183,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
+  qDebug() << getpid();
+
   qDebug() << ZFlyEmMisc::GetMemoryUsage();
+  QProcess p;
+  p.start(QString("ps v -p %1").arg(getpid()));
+  p.waitForFinished();
+  qDebug() << p.readAllStandardOutput();
 #endif
 
 #if 0

@@ -303,6 +303,8 @@ public:
 public: //test functions
   void testBiocytinProjectionMask();
 
+  void processEvent(ZInteractionEvent &event);
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -459,7 +461,6 @@ protected:
 
   bool estimateActiveStrokeWidth();
 
-  void processEvent(ZInteractionEvent &event);
   bool process(ZStackOperator &op);
 
   void acceptActiveStroke();
