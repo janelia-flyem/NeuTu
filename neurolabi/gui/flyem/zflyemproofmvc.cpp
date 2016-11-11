@@ -1723,6 +1723,10 @@ void ZFlyEmProofMvc::testSlot()
       appending = false;
     }
 
+    if (bodyId % 13 == 0) {
+      m_bodyWindow->updateBody();
+    }
+
     locateBody(bodyId, appending);
 
 //    std::vector<uint64_t> bodyArray;
