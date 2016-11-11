@@ -191,9 +191,16 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
+void ZProofreadWindow::testSlot()
+{
+  m_mainMvc->test();
+}
+
 void ZProofreadWindow::test()
 {
-  m_mainMvc->setDvidTarget();
+  if (!m_mainMvc->getDvidTarget().isValid()) {
+    m_mainMvc->setDvidTarget();
+  }
   /*
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "3303", 8500);
@@ -205,7 +212,7 @@ void ZProofreadWindow::test()
   m_mainMvc->getPresenter()->setObjectVisible(false);
   */
 
-  m_mainMvc->test();
+  testSlot();
 }
 
 void ZProofreadWindow::createMenu()
@@ -360,7 +367,7 @@ void ZProofreadWindow::createMenu()
   m_advancedMenu->addAction(mainWindowAction);
 
   QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
+  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
   m_advancedMenu->addAction(testAction);
 
 

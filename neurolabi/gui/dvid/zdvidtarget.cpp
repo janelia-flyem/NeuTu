@@ -495,16 +495,21 @@ std::string ZDvidTarget::getLabelBlockName() const
 
 std::string ZDvidTarget::getLabelBlockName(int zoom) const
 {
-  if (zoom < 0 || zoom > getMaxLabelZoom()) {
-    return "";
-  }
-
   std::string name = getLabelBlockName();
   if (!name.empty() && zoom > 0) {
     name = name + "_" + ZString::num2str(zoom);
   }
 
   return name;
+}
+
+std::string ZDvidTarget::getValidLabelBlockName(int zoom) const
+{
+  if (zoom < 0 || zoom > getMaxLabelZoom()) {
+    return "";
+  }
+
+  return getLabelBlockName(zoom);
 }
 
 void ZDvidTarget::setLabelBlockName(const std::string &name)

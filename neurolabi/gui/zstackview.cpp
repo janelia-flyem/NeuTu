@@ -880,7 +880,7 @@ void ZStackView::redraw(EUpdateOption option)
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
 
-  LINFO() << "paint time per frame: " << paintTime;
+  ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
     LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
             << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
