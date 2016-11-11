@@ -21183,7 +21183,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   qDebug() << getpid();
 
   qDebug() << ZFlyEmMisc::GetMemoryUsage();
@@ -21191,6 +21191,25 @@ void ZTest::test(MainWindow *host)
   p.start(QString("ps v -p %1").arg(getpid()));
   p.waitForFinished();
   qDebug() << p.readAllStandardOutput();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "a42a", 9000);
+  target.setBodyLabelName("gtpruned-bodies");
+  target.setLabelBlockName("groundtruth_pruned");
+
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZJsonObject jsonObj = reader.readInfo();
+
+  jsonObj.print();
+
+  reader.updateMaxLabelZoom();
+
+  std::cout << "Level: " << reader.getDvidTarget().getMaxLabelZoom() << std::endl;
 #endif
 
 #if 0

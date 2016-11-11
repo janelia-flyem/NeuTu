@@ -138,7 +138,7 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
-    target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
+    //target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
     target.setRoiName(ui->roiLineEdit->text().toStdString());
 //    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
@@ -168,7 +168,7 @@ void ZDvidDialog::setServer(int index)
   ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
-  ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
+  //ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
 //  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
   if (index == 0) {
@@ -197,7 +197,7 @@ void ZDvidDialog::setServer(int index)
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
   ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
-  ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
+  //ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
 //  ui->labelszLineEdit->setReadOnly(!dvidTarget.isEditable());
 

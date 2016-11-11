@@ -988,6 +988,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
+
+    reader.updateMaxLabelZoom();
+
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();

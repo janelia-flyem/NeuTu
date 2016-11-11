@@ -944,7 +944,7 @@ void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
-  ZOUT(LTRACE(), 5) << "Remove body: " << bodyId;
+  ZOUT(LTRACE(), 5) << "Remove body:" << bodyId;
 
   QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
@@ -1012,7 +1012,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 //    notifyObjectModified(true);
   }
 
-  ZOUT(LTRACE(), 5) << "Body removed: " << bodyId;
+  ZOUT(LTRACE(), 5) << "Remove body:" << bodyId << "Done.";
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId, EBodyType bodyType)
@@ -1079,9 +1079,9 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         if (cachedBody == NULL) {
           ZObject3dScan obj;
 //          m_dvidReader.readBody(bodyId, true, &obj);
-#ifdef _DEBUG_
+//#ifdef _DEBUG_
           m_dvidReader.readBodyDs(bodyId, true, &obj);
-#endif
+//#endif
           if (!obj.isEmpty()) {
             tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
           }

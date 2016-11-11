@@ -1762,7 +1762,7 @@ ZArray* ZDvidReader::readLabels64(
 {
   int zoomRatio = pow(2, zoom);
 
-  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+  return readLabels64(getDvidTarget().getValidLabelBlockName(zoom),
                      x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
                       width / zoomRatio, height / zoomRatio, depth);
 }
@@ -1770,7 +1770,7 @@ ZArray* ZDvidReader::readLabels64(
 ZArray* ZDvidReader::readLabels64Raw(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
-  return readLabels64(getDvidTarget().getLabelBlockName(zoom),
+  return readLabels64(getDvidTarget().getValidLabelBlockName(zoom),
                      x0, y0, z0, width, height, depth);
 }
 
@@ -2146,6 +2146,23 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
   bodyInfo.loadJsonObject(obj);
 
   return bodyInfo;
+}
+
+void ZDvidReader::updateMaxLabelZoom()
+{
+  if (m_dvidTarget.isValid()) {
+    int maxLabelLevel = 0;
+    int level = 1;
+    while (level < 50) {
+      if (hasData(m_dvidTarget.getLabelBlockName(level))) {
+        maxLabelLevel = level;
+      } else {
+        break;
+      }
+      ++level;
+    }
+    m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
+  }
 }
 
 #define MAX_BODY_ID_START 50000000
