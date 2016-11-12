@@ -200,6 +200,8 @@ public:
 
   uint64_t readMaxBodyId();
 
+  void updateMaxLabelZoom();
+
   uint64_t readBodyIdAt(int x, int y, int z) const;
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(

@@ -70,6 +70,7 @@
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "dialogs/zflyembodychopdialog.h"
 #include "zrandomgenerator.h"
+#include "zinteractionevent.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -987,6 +988,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
+
+    reader.updateMaxLabelZoom();
+
     clear();
     getProgressSignal()->advanceProgress(0.1);
 //    getCompleteDocument()->clearData();
@@ -1716,19 +1720,27 @@ void ZFlyEmProofMvc::testSlot()
   if (rand.rndint(10) % 2 ==0) {
     zoomTo(x, y, z);
   } else {
+    bool appending = true;
     if (bodyId % 9 == 0) {
-      getCompleteDocument()->deselectAllObject();
+//      getCompleteDocument()->deselectAllObject();
+      appending = false;
     }
 
-    std::vector<uint64_t> bodyArray;
-    bodyArray.push_back(bodyId);
-    if (!bodyArray.empty()) {
-      getCompleteDocument()->recordBodySelection();
-      getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
-      getCompleteDocument()->processBodySelection();
-      updateBodySelection();
-      zoomTo(x, y, z);
-    }
+    locateBody(bodyId, appending);
+
+//    std::vector<uint64_t> bodyArray;
+//    bodyArray.push_back(bodyId);
+//    if (!bodyArray.empty()) {
+//      getCompleteDocument()->recordBodySelection();
+//      getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+//      ZInteractionEvent interactionEvent;
+//      interactionEvent.setEvent(
+//            ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
+//      getPresenter()->processEvent(interactionEvent);
+//      getCompleteDocument()->processBodySelection();
+//      updateBodySelection();
+//      zoomTo(x, y, z);
+//    }
   }
 }
 

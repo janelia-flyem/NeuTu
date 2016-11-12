@@ -73,6 +73,8 @@ public slots:
   void operateDvid();
   void exploreBody();
 
+  void testSlot();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);

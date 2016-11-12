@@ -151,6 +151,7 @@ public:
 
   std::string getLabelBlockName() const;
   std::string getLabelBlockName(int zoom) const;
+  std::string getValidLabelBlockName(int zoom) const;
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();
