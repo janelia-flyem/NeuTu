@@ -337,7 +337,7 @@ Stack *ZStack::averageOfAllChannels()
     stack = C_Stack::clone(c_stack());
   }
   if (nchannel > 1) {
-    stack = Make_Stack(data()->kind, data()->width, data()->height, data()->depth);
+    stack = C_Stack::make(data()->kind, data()->width, data()->height, data()->depth);
     size_t nvoxel = getVoxelNumber();
     Image_Array ima;
     ima.array = stack->array;
