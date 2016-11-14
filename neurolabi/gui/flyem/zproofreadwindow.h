@@ -18,6 +18,8 @@ class QSlider;
 class DvidOperateDialog;
 class FlyEmBodyFilterDialog;
 class ZFlyEmDataLoader;
+class FlyEmProofControlForm;
+class FlyEmSplitControlForm;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -137,6 +139,9 @@ private:
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
+
+  FlyEmProofControlForm *m_controlForm;
+  FlyEmSplitControlForm *m_splitControlForm;
 
   QPalette m_defaultPal;
 

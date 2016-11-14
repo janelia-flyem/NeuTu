@@ -103,6 +103,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="loadBodyPushButton">
+         <property name="toolTip">
+          <string>Load a body to split</string>
+         </property>
          <property name="text">
           <string>Load Body</string>
          </property>
@@ -110,6 +113,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="saveSeedPushButton">
+         <property name="toolTip">
+          <string>Save current seeds</string>
+         </property>
          <property name="text">
           <string>Save Seeds</string>
          </property>
@@ -135,6 +141,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="exitPushButton">
+         <property name="toolTip">
+          <string>Exit split and back to the proofreading mode</string>
+         </property>
          <property name="text">
           <string>Exit Split</string>
          </property>
@@ -230,6 +239,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QPushButton" name="coarseBodyViewPushButton">
+       <property name="toolTip">
+        <string>3D body visualization (low resolution)</string>
+       </property>
        <property name="text">
         <string>Coarse Body View</string>
        </property>
@@ -237,6 +249,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="quickViewPushButton">
+       <property name="toolTip">
+        <string>3D body visualization (high resolution)</string>
+       </property>
        <property name="text">
         <string>Body View</string>
        </property>
@@ -249,6 +264,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>3D split visualization</string>
        </property>
        <property name="text">
         <string>Split Quick View</string>
@@ -293,15 +311,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ZSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">zspinbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
    <header location="global">flyem/zflyembookmarkwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ZSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">zspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

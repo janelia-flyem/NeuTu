@@ -268,6 +268,18 @@ void FlyEmProofControlForm::goToPosition()
   }
 }
 
+void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
+{
+  setDvidInfo(target);
+  ui->dvidPushButton->setEnabled(false);
+
+  if (target.readOnly()) {
+    ui->menuPushButton->setEnabled(false);
+    ui->uploadPushButton->setEnabled(false);
+    ui->splitPushButton->setEnabled(false);
+  }
+}
+
 void FlyEmProofControlForm::setInfo(const QString &info)
 {
   ui->dataInfoWidget->setText(info);
@@ -286,8 +298,6 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   }
 #endif
   setInfo(info.c_str());
-
-  ui->dvidPushButton->setEnabled(false);
 }
 
 /*

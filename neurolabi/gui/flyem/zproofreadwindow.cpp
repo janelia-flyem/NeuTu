@@ -90,39 +90,39 @@ void ZProofreadWindow::init()
 
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-  FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
-  controlForm->getUserBookmarkView()->setBookmarkModel(
+  m_controlForm = new FlyEmProofControlForm;
+  m_controlForm->getUserBookmarkView()->setBookmarkModel(
         m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
-  controlForm->getAssignedBookmarkView()->setBookmarkModel(
+  m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
         m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
-  m_mainMvc->registerBookmarkView(controlForm->getUserBookmarkView());
-  m_mainMvc->registerBookmarkView(controlForm->getAssignedBookmarkView());
-  controlForm->getAssignedBookmarkView()->enableDeletion(false);
+  m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
+  m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  m_controlGroup->addWidget(controlForm);
+  m_controlGroup->addWidget(m_controlForm);
 
-  FlyEmSplitControlForm *splitControlForm = new FlyEmSplitControlForm;
-  splitControlForm->getUserBookmarkView()->setBookmarkModel(
+  m_splitControlForm = new FlyEmSplitControlForm;
+  m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
         m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
-  splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
+  m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
         m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
-  m_mainMvc->registerBookmarkView(splitControlForm->getUserBookmarkView());
-  m_mainMvc->registerBookmarkView(splitControlForm->getAssignedBookmarkView());
-  splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
+  m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  m_controlGroup->addWidget(splitControlForm);
-  splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_controlGroup->addWidget(m_splitControlForm);
+  m_splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-  m_mainMvc->connectControlPanel(controlForm);
-  m_mainMvc->connectSplitControlPanel(splitControlForm);
+  m_mainMvc->connectControlPanel(m_controlForm);
+  m_mainMvc->connectSplitControlPanel(m_splitControlForm);
 
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
           this, SLOT(launchSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
-          splitControlForm, SLOT(setSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered()),
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
+          m_splitControlForm, SLOT(setSplit(uint64_t)));
+  connect(m_controlForm, SIGNAL(splitTriggered()),
           this, SLOT(launchSplit()));
-  connect(splitControlForm, SIGNAL(exitingSplit()),
+  connect(m_splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
   connectMessagePipe(m_mainMvc);

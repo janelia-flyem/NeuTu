@@ -507,7 +507,7 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   if (!m_isFullView || (viewParam.getZ() != m_currentViewParam.getZ())) {
     ZStackViewParam newViewParam = viewParam;
 
-    if (getDvidTarget().getMaxLabelZoom() < 3) {
+    if (!getDvidTarget().usingMulitresBodylabel()) {
       int width = viewParam.getViewPort().width();
       int height = viewParam.getViewPort().height();
       int area = width * height;
