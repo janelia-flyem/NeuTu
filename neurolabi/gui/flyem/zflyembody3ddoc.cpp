@@ -1210,6 +1210,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   cancelEventThread();
 
   ZOUT(LTRACE(), 5) << "Dump puncta";
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
   for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
        iter != punctumList.end(); ++iter) {
@@ -1237,6 +1238,8 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     dumpGarbage(tree, recycable);
   }
   m_bodySet.clear();
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
