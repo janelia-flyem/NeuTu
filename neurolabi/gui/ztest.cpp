@@ -308,6 +308,20 @@ int ZTest::runUnitTest(int argc, char *argv[])
 #endif
 }
 
+void ZTest::stressTest(MainWindow *host)
+{
+  if (host != NULL) {
+#if defined(_FLYEM_)
+    host->testFlyEmProofread();
+#else
+    ZStackFrame *frame = host->currentStackFrame();
+    if (frame != NULL) {
+      frame->stressTest();
+    }
+#endif
+  }
+}
+
 void ZTest::test(MainWindow *host)
 {
   std::cout << "Start testing ..." << std::endl;
@@ -365,12 +379,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  m_progress->setRange(0, 0);
-  m_progress->show();
-  QApplication::processEvents();
+//  m_progress->setRange(0, 0);
+//  m_progress->show();
+//  QApplication::processEvents();
   currentStackFrame()->document()->test();
-  currentStackFrame()->updateView();
-  m_progress->reset();
+//  currentStackFrame()->updateView();
+//  m_progress->reset();
 #endif
 
 #if 0
@@ -7188,9 +7202,18 @@ void ZTest::test(MainWindow *host)
   if (host != NULL) {
     ZStackFrame *frame = host->currentStackFrame();
     if (frame != NULL) {
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+      QtConcurrent::run(frame->document().get(), &ZStackDoc::test);
+    }
+
+//    frame->document()->test();
+    /*
+    if (frame != NULL) {
       frame->view()->setSizeHintOption(NeuTube::SIZE_HINT_TAKING_SPACE);
       frame->resize(frame->sizeHint());
     }
+    */
   }
 #endif
 
@@ -21161,7 +21184,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  qDebug() << getpid();
+
   qDebug() << ZFlyEmMisc::GetMemoryUsage();
+  QProcess p;
+  p.start(QString("ps v -p %1").arg(getpid()));
+  p.waitForFinished();
+  qDebug() << p.readAllStandardOutput();
 #endif
 
 #if 0
@@ -21189,7 +21218,7 @@ void ZTest::test(MainWindow *host)
   dlg.getAnnotation(14634755, 1).print();
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
 
@@ -21200,6 +21229,10 @@ void ZTest::test(MainWindow *host)
   subobj.save(GET_TEST_DATA_DIR + "/test.sobj");
   remain.save(GET_TEST_DATA_DIR + "/test2.sobj");
 
+#endif
+
+#if 0
+  host->testFlyEmProofread();
 #endif
 
   std::cout << "Done." << std::endl;

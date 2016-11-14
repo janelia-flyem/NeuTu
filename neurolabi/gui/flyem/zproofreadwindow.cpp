@@ -193,12 +193,18 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
 
 void ZProofreadWindow::test()
 {
+  m_mainMvc->setDvidTarget();
+  /*
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "86e1", 8500);
-  target.setBodyLabelName("bodies");
-  target.setLabelBlockName("labels");
+  target.set("emdata2.int.janelia.org", "3303", 8500);
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setSynapseName("mb6_synapses");
+
   m_mainMvc->setDvidTarget(target);
   m_mainMvc->getPresenter()->setObjectVisible(false);
+  */
+
   m_mainMvc->test();
 }
 
@@ -352,6 +358,10 @@ void ZProofreadWindow::createMenu()
   connect(mainWindowAction, SIGNAL(triggered()),
           this, SIGNAL(showingMainWindow()));
   m_advancedMenu->addAction(mainWindowAction);
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(test()));
+  m_advancedMenu->addAction(testAction);
 
 
 //  m_viewMenu->setEnabled(false);

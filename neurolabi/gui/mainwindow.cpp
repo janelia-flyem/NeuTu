@@ -178,6 +178,7 @@
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zfileparser.h"
 #include "dialogs/zdvidbodypositiondialog.h"
+#include "dialogs/ztestoptiondialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -475,6 +476,8 @@ void MainWindow::initDialog()
 
   m_bodyPosDlg = new ZDvidBodyPositionDialog(this);
   m_bodyPosDlg->setDvidDialog(m_dvidDlg);
+
+  m_testOptionDlg = new ZTestOptionDialog(this);
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else
@@ -3376,6 +3379,18 @@ void MainWindow::testProgressBarFunc()
   emit progressDone();
 }
 
+void MainWindow::test(ZTestOptionDialog *dlg)
+{
+  switch (dlg->getOption()) {
+  case ZTestOptionDialog::OPTION_NORMAL:
+    ZTest::test(this);
+    break;
+  case ZTestOptionDialog::OPTION_STRESS:
+    ZTest::stressTest(this);
+    break;
+  }
+}
+
 void MainWindow::test()
 {
 #if 0
@@ -3506,18 +3521,20 @@ void MainWindow::test()
 #endif
 
 #if 1
-  m_progress->setRange(0, 2);
-  m_progress->setLabelText(QString("Testing ..."));
-  int currentProgress = 0;
-  m_progress->setValue(++currentProgress);
-  m_progress->show();
+  if (m_testOptionDlg->exec()) {
+    m_progress->setRange(0, 2);
+    m_progress->setLabelText(QString("Testing ..."));
+    int currentProgress = 0;
+    m_progress->setValue(++currentProgress);
+    m_progress->show();
 
-  //res.waitForFinished();
-  ZTest::test(this);
+    //res.waitForFinished();
+    test(m_testOptionDlg);
 
-  m_progress->reset();
+    m_progress->reset();
 
-  statusBar()->showMessage(tr("Test done."));
+    statusBar()->showMessage(tr("Test done."));
+  }
 #endif
 
 #if 0
@@ -6520,7 +6537,6 @@ void MainWindow::testFlyEmProofread()
   ZProofreadWindow* window = startProofread();
 
   window->test();
-
 }
 
 void MainWindow::runBodySplit()

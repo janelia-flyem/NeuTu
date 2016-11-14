@@ -115,6 +115,8 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
+  void test();
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -279,6 +281,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
+  void testSlot();
+
 protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
@@ -415,6 +419,8 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
+
+  QTimer *m_testTimer;
 };
 
 template <typename T>

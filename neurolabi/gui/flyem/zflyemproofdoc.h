@@ -54,6 +54,10 @@ public:
     return m_dvidTarget;
   }
 
+  const ZDvidInfo& getDvidInfo() const {
+    return m_dvidInfo;
+  }
+
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
