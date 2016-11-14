@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>567</height>
+    <height>563</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,6 +36,13 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="readOnlyCheckBox">
+       <property name="text">
+        <string>Read Only</string>
        </property>
       </widget>
      </item>

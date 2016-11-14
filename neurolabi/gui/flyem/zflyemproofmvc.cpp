@@ -1486,6 +1486,10 @@ void ZFlyEmProofMvc::highlightSelectedObject(
     bool usingSparseVol =
         getCompleteDocument()->getDvidTarget().hasBodyLabel() &&
         getDocument()->getStack()->getVoxelNumber(ZStack::SINGLE_PLANE) > 300 * 300;
+    if (getDvidTarget().usingMulitresBodylabel()) {
+      usingSparseVol = false;
+    }
+
     if (hl) {
       if (usingSparseVol) {
         labelSlice->setVisible(!hl);

@@ -140,6 +140,8 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
     //target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
     target.setRoiName(ui->roiLineEdit->text().toStdString());
+    target.setReadOnly(ui->readOnlyCheckBox->isChecked());
+
 //    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
@@ -161,6 +163,7 @@ void ZDvidDialog::setServer(int index)
 {
   ZDvidTarget dvidTarget = m_dvidRepo[index];
 
+  ui->readOnlyCheckBox->setChecked(dvidTarget.readOnly());
   ui->addressLineEdit->setText(dvidTarget.getAddress().c_str());
   ui->portSpinBox->setValue(dvidTarget.getPort());
   ui->uuidLineEdit->setText(dvidTarget.getUuid().c_str());
@@ -199,6 +202,7 @@ void ZDvidDialog::setServer(int index)
   ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
   //ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->readOnlyCheckBox->setEnabled(dvidTarget.isEditable());
 //  ui->labelszLineEdit->setReadOnly(!dvidTarget.isEditable());
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());
