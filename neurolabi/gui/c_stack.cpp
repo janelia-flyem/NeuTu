@@ -1753,6 +1753,31 @@ bool C_Stack::isBinary(const Stack *stack)
   return state;
 }
 
+Stack_Watershed_Workspace* C_Stack::MakeStackWatershedWorkspace(
+    const Stack *stack)
+{
+  STACK_MUTEX_GUARD
+
+  Stack_Watershed_Workspace *ws = Make_Stack_Watershed_Workspace(stack);
+
+  return ws;
+}
+
+void C_Stack::KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws)
+{
+  STACK_MUTEX_GUARD
+
+  Kill_Stack_Watershed_Workspace(ws);
+}
+
+Stack* C_Stack::watershed(
+    const Stack *stack, Stack_Watershed_Workspace *ws)
+{
+  STACK_MUTEX_GUARD
+
+  return Stack_Watershed(stack, ws);
+}
+
 Stack* C_Stack::computeGradient(const Stack *stack)
 {
   Stack *out = NULL;

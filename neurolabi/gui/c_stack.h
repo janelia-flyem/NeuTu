@@ -435,10 +435,14 @@ int integerWidth(int n, int interval);
 int drawDigit(Stack *canvas, int n, int dx, int dy, int dz);
 void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10);
 
+//Workspace APIs
+Stack_Watershed_Workspace *MakeStackWatershedWorkspace(const Stack *stack);
+void KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws);
+
 //Experimenting APIs
 Stack* computeGradient(const Stack *stack);
 void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
-Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws, Stack *out);
+Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws);
 
 }
 
