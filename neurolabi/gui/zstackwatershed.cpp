@@ -17,7 +17,7 @@ ZStackWatershed::~ZStackWatershed()
 
 Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
 {
-  Stack_Watershed_Workspace *ws = Make_Stack_Watershed_Workspace(stack);
+  Stack_Watershed_Workspace *ws = C_Stack::MakeStackWatershedWorkspace(stack);
   ws->conn =26;
   if (C_Stack::kind(stack) == GREY) {
     ws->start_level = 255;
@@ -126,7 +126,8 @@ ZStack *ZStackWatershed::run(
       Zero_Stack(out2);
       Stack *out = C_Stack::watershed(source, ws, out2);
 #else
-      Stack *out = Stack_Watershed(source, ws);
+//      Stack *out = Stack_Watershed(source, ws);
+      Stack *out = C_Stack::watershed(source, ws);
 #endif
       std::cout << "Creating result ..." << std::endl;
       result = new ZStack;
@@ -137,7 +138,8 @@ ZStack *ZStackWatershed::run(
       if (source != stack->c_stack()) {
         C_Stack::kill(const_cast<Stack*>(source));
       }
-      Kill_Stack_Watershed_Workspace(ws);
+      C_Stack::KillStackWatershedWorkspace(ws);
+//      Kill_Stack_Watershed_Workspace(ws);
 
       std::cout << "Splitting done." << std::endl;
     }
@@ -145,47 +147,3 @@ ZStack *ZStackWatershed::run(
 
   return result;
 }
-
-#if 0
-ZStack* ZStackWatershed::run(const Stack *stack,
-                             const std::vector<ZStack *> &seedMask)
-{
-  ZStack *result = NULL;
-  const Stack *source = stack;
-
-  if (stack != NULL) {
-    Cuboid_I box = m_range;
-    if (m_range.ce[0] < 0 || m_range.ce[0] >= C_Stack::width(stack)) {
-      //extend the size to the last corner
-      box.ce[0] = C_Stack::width(stack) - 1;
-    }
-    if (m_range.ce[1] < 0 || m_range.ce[1] >= C_Stack::height(stack)) {
-      //extend the size to the last corner
-      box.ce[1] = C_Stack::height(stack) - 1;
-    }
-    if (m_range.ce[2] < 0 || m_range.ce[2] >= C_Stack::depth(stack)) {
-      //extend the size to the last corner
-      box.ce[2] = C_Stack::depth(stack) - 1;
-    }
-
-    Stack_Watershed_Workspace *ws = createWorkspace(source);
-    addSeed(ws, ZPoint(0, 0, 0), seedMask);
-
-#ifdef _DEBUG_2
-    C_Stack::write(GET_DATA_DIR + "/test.tif", ws->mask);
-#endif
-
-    Stack *out = Stack_Watershed(source, ws);
-    result = new ZStack;
-    result->consumeData(out);
-    result->setOffset(box.cb[0], box.cb[1], box.cb[2]);
-
-    if (source != stack) {
-      C_Stack::kill(const_cast<Stack*>(source));
-    }
-    Kill_Stack_Watershed_Workspace(ws);
-  }
-
-  return result;
-}
-#endif
