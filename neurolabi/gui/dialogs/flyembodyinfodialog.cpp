@@ -173,6 +173,8 @@ void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     ui->maxBodiesMenu->addItem("1000", QVariant(1000));
     ui->maxBodiesMenu->addItem("5000", QVariant(5000));
     ui->maxBodiesMenu->addItem("10000", QVariant(10000));
+    ui->maxBodiesMenu->addItem("50000", QVariant(50000));
+    ui->maxBodiesMenu->addItem("100000", QVariant(100000));
     ui->maxBodiesMenu->setCurrentIndex(1);
     m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
 
