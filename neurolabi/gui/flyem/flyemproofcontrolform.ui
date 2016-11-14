@@ -126,6 +126,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="coarseBodyPushButton">
+       <property name="toolTip">
+        <string>3D body visualization (low resolution)</string>
+       </property>
        <property name="text">
         <string>Coarse Body View</string>
        </property>
@@ -133,6 +136,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="bodyViewPushButton">
+       <property name="toolTip">
+        <string>3D body visualization (high resolution)</string>
+       </property>
        <property name="text">
         <string>Body View</string>
        </property>
@@ -140,6 +146,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="skeletonViewPushButton">
+       <property name="toolTip">
+        <string>3D skeleton visualization</string>
+       </property>
        <property name="text">
         <string>Skeleton</string>
        </property>
@@ -252,6 +261,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <widget class="QPushButton" name="mergeSegmentPushButton">
+       <property name="toolTip">
+        <string>Merge selected bodies (M)</string>
+       </property>
        <property name="text">
         <string>Merge</string>
        </property>
@@ -270,6 +282,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="uploadPushButton">
+       <property name="toolTip">
+        <string>Upload merging result (U)</string>
+       </property>
        <property name="text">
         <string>Upload Result</string>
        </property>
@@ -277,6 +292,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="splitPushButton">
+       <property name="toolTip">
+        <string>Enter split mode</string>
+       </property>
        <property name="text">
         <string>Launch Split</string>
        </property>

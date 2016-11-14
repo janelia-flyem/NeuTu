@@ -433,7 +433,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-          panel, SLOT(setDvidInfo(ZDvidTarget)));
+          panel, SLOT(updateWidget(ZDvidTarget)));
   connect(this, SIGNAL(launchingSplit(uint64_t)),
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),

@@ -50,7 +50,9 @@ void ZDvidTarget::init()
   m_isSupervised = true;
   m_bgValue = 255;
   m_isEditable = true;
+  m_readOnly = false;
   m_maxLabelZoom = 0;
+  m_usingMultresBodyLabel = false;
 
   setDefaultMultiscale2dName();
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
@@ -470,6 +472,15 @@ std::string ZDvidTarget::getBodyLabelName() const
   }
 
   return m_bodyLabelName;
+}
+
+bool ZDvidTarget::usingMulitresBodylabel() const
+{
+  if (m_usingMultresBodyLabel) {
+    return getMaxLabelZoom() > 3;
+  }
+
+  return false;
 }
 
 bool ZDvidTarget::hasBodyLabel() const

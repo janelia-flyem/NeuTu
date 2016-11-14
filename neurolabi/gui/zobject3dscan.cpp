@@ -2595,8 +2595,8 @@ ZVoxel ZObject3dScan::getMarker() const
 
         voxel.set(x + offset[0], y + offset[1], z, v);
       }
-      Kill_Stack(dist);
-      Kill_Stack(stack);
+      C_Stack::kill(dist);
+      C_Stack::kill(stack);
     }
   }
 #endif

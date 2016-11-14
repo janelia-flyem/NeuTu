@@ -21195,7 +21195,7 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "a42a", 9000);
+  target.set("emdata1.int.janelia.org", "005a", 7000);
   target.setBodyLabelName("gtpruned-bodies");
   target.setLabelBlockName("groundtruth_pruned");
 
