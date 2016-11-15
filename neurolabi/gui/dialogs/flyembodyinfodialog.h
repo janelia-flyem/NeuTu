@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QItemSelection>
 #include <QSortFilterProxyModel>
 
 #include "dvid/zdvidtarget.h"
@@ -74,6 +75,7 @@ private slots:
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
     void onMaxBodiesChanged(int maxBodies);
+    void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
 
 private:
     enum Tabs {
@@ -133,6 +135,7 @@ private:
     bool m_connectionsLoading;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
+    qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
 

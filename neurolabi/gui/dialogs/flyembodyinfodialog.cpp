@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QStandardItemModel>
+#include <QItemSelection>
 #include <QElapsedTimer>
 
 #if QT_VERSION >= 0x050000
@@ -147,6 +148,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickFilterTable(QModelIndex)));
     connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
     connect(ui->connectionsTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOConnectionsTable(QModelIndex)));
+    connect(ui->ioBodyTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -1249,7 +1252,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    quint64 totalConnections = 0;
+    m_totalConnections = 0;
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
         // carefully set data for column items so they will sort
@@ -1264,7 +1267,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
         QStandardItem * numberItem = new QStandardItem();
         quint64 itemConnections = quint64(m_connectionsSites[partnerBodyIDs[i]].size());
-        totalConnections += itemConnections;
+        m_totalConnections += itemConnections;
         numberItem->setData(QVariant(itemConnections), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
@@ -1278,7 +1281,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     } else {
         labelStream << "Outputs (" ;
     }
-    labelStream << totalConnections;
+    labelStream << m_totalConnections;
     labelStream << ")";
     ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
 
@@ -1371,6 +1374,58 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
     emit pointDisplayRequested(x, y, z);
+}
+
+void FlyEmBodyInfoDialog::onIOConnectionsSelectionChanged(QItemSelection selected,
+    QItemSelection deselected) {
+
+    // Shinya wants the label to show the number of selected connections
+
+    // input selections only contain the changes; we want the whole selection
+    QItemSelection fullSelection = ui->ioBodyTableView->selectionModel()->selection();
+
+    int total = 0;
+    if (fullSelection.size() == 0) {
+        // if there's no selection, we want the whole table
+        total = m_totalConnections;
+    } else {
+        /*
+        // this code doesn't handle shift-selects, and it double-counts if you select more than one cell per row:
+        for (int i=0; i<fullSelection.size(); i++) {
+            QModelIndex modelIndex = m_ioBodyProxy->mapToSource(fullSelection.indexes().at(i));
+            total += m_ioBodyModel->item(modelIndex.row(), IOBODY_NUMBER_COLUMN)->data(Qt::DisplayRole).toInt();
+        }
+        */
+        QModelIndexList indexList = ui->ioBodyTableView->selectionModel()->selectedIndexes();
+        QSet<int> rows;
+        foreach (QModelIndex proxyIndex, indexList) {
+            rows.insert(m_ioBodyProxy->mapToSource(proxyIndex).row());
+        }
+        /*
+        // alt:
+        for (int i=0; i<indexList.size(); i++) {
+            QModelIndex modelIndex = m_ioBodyProxy->mapToSource(indexList.at(i));
+            rows.insert(modelIndex.row());
+        }
+        */
+        foreach (int row, rows) {
+            total += m_ioBodyModel->item(row, IOBODY_NUMBER_COLUMN)->data(Qt::DisplayRole).toInt();
+        }
+    }
+
+    //  try to just print it out first
+    std::cout << "selection contains " << total << " connections" << std::endl;
+
+    // adjust the label; pick off "Input" or "Output" and build the rest
+    QString currentLabel = ui->ioBodyTableLabel->text();
+    QString firstPart = currentLabel.split("(").at(0);
+    QString newLabel = firstPart + "(" + QString::number(total);
+    if (total < m_totalConnections) {
+        newLabel += " selected";
+    }
+    newLabel += ")";
+    ui->ioBodyTableLabel->setText(newLabel);
+
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()
