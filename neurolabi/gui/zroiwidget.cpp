@@ -82,7 +82,7 @@ void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
 }
 
 void ZROIWidget::getROIs(Z3DWindow *window,
-                         ZDvidInfo &dvidInfo,
+                         const ZDvidInfo &dvidInfo,
                          std::vector<std::string> roiList,
                          std::vector<ZObject3dScan> loadedROIs,
                          std::vector<std::string> roiSourceList)

@@ -69,6 +69,8 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
+  const ZDvidInfo& getGrayScaleInfo() const;
+
   virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
 
@@ -407,7 +409,8 @@ protected:
 
   ZStackViewParam m_currentViewParam;
 
-  ZDvidInfo m_dvidInfo;
+//  ZDvidInfo m_grayScaleInfo;
+//  ZDvidInfo m_labelInfo;
   bool m_ROILoaded;
 
   std::vector<std::string> m_roiList;

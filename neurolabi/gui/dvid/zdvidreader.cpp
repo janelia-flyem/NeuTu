@@ -1547,6 +1547,19 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo() const
   return dvidInfo;
 }
 
+ZDvidInfo ZDvidReader::readLabelInfo() const
+{
+  QString infoString = readInfo(getDvidTarget().getLabelBlockName().c_str());
+  ZDvidInfo dvidInfo;
+  if (!infoString.isEmpty()) {
+    dvidInfo.setFromJsonString(infoString.toStdString());
+    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
+                         getDvidTarget().getUuid());
+  }
+
+  return dvidInfo;
+}
+
 bool ZDvidReader::hasData(const std::string &dataName) const
 {
   if (dataName.empty()) {
@@ -2148,6 +2161,25 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
   return bodyInfo;
 }
 
+void ZDvidReader::updateMaxLabelZoom(
+    const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
+{
+  if (m_dvidTarget.isValid()) {
+    int maxLabelLevel = 0;
+    int level = 1;
+    while (level < 50) {
+      if (ZDvid::IsDataValid(
+            m_dvidTarget.getLabelBlockName(level), m_dvidTarget, infoJson, dag)) {
+        maxLabelLevel = level;
+      } else {
+        break;
+      }
+      ++level;
+    }
+    m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
+  }
+}
+
 void ZDvidReader::updateMaxLabelZoom()
 {
   if (m_dvidTarget.isValid()) {
@@ -2256,7 +2288,18 @@ void ZDvidReader::clearBuffer() const
 
 ZDvidVersionDag ZDvidReader::readVersionDag() const
 {
-  return readVersionDag(getDvidTarget().getUuid());
+  ZJsonObject jsonInfo = readInfo();
+
+  std::string uuid = getDvidTarget().getUuid();
+
+  if (jsonInfo.hasKey("DAG")) {
+    ZJsonObject dagJson(jsonInfo.value("DAG"));
+    if (dagJson.hasKey("Root")) {
+      uuid = ZJsonParser::stringValue(dagJson["Root"]);
+    }
+  }
+
+  return readVersionDag(uuid);
 }
 
 ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const

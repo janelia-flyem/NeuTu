@@ -486,44 +486,14 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
-          m_coarseBodyWindow, m_dvidInfo,
+          m_coarseBodyWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-//    ZFlyEmMisc::Decorate3dBodyWindowRoi(
-//          m_coarseBodyWindow, m_dvidInfo, getDvidTarget());
-
     if(m_ROILoaded) {
       m_coarseBodyWindow->getROIsDockWidget()->getROIs(
-            m_coarseBodyWindow, m_dvidInfo, m_roiList,
+            m_coarseBodyWindow, getGrayScaleInfo(), m_roiList,
             m_loadedROIs, m_roiSourceList);
     }
   }
-
-  //connect(m_coarseBodyWindow->getROIsDockWidget(), SIGNAL(toBeClosed()), m_bodyViewers, SLOT(resetROIButton()));
-
-  /*
-  ZStackDoc *doc = new ZStackDoc;
-  doc->setTag(NeuTube::Document::FLYEM_COARSE_BODY);
-
-  getProgressSignal()->startProgress("Showing 3D coarse body ...");
-
-  getProgressSignal()->advanceProgress(0.1);
-
-  m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
-
-  setWindowSignalSlot(m_coarseBodyWindow);
-  ZFlyEmMisc::Decorate3dBodyWindow(
-        m_coarseBodyWindow, m_dvidInfo,
-        getView()->getViewParameter());
-  m_coarseBodyWindow->setYZView();
-
-  getProgressSignal()->advanceProgress(0.4);
-
-//  update3DBodyView(false, true);
-
-  getProgressSignal()->endProgress();
-
-  */
-
 }
 
 void ZFlyEmProofMvc::makeBodyWindow()
@@ -548,10 +518,12 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
-          m_bodyWindow, m_dvidInfo,
+          m_bodyWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_bodyWindow->getROIsDockWidget()->getROIs(m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_bodyWindow->getROIsDockWidget()->getROIs(
+              m_bodyWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+              m_roiSourceList);
   }
 }
 
@@ -571,10 +543,12 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
-          m_skeletonWindow, m_dvidInfo,
+          m_skeletonWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_skeletonWindow->getROIsDockWidget()->getROIs(m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_skeletonWindow->getROIsDockWidget()->getROIs(
+              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+              m_roiSourceList);
   }
 }
 
@@ -589,11 +563,13 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
-          m_externalNeuronWindow, m_dvidInfo,
+          m_externalNeuronWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
 
     if(m_ROILoaded)
-        m_externalNeuronWindow->getROIsDockWidget()->getROIs(m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+        m_externalNeuronWindow->getROIsDockWidget()->getROIs(
+              m_externalNeuronWindow, getGrayScaleInfo(), m_roiList,
+              m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -775,18 +751,6 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
       }
     }
 
-//    ZDvidReader reader;
-//    reader.open(getDvidTarget());
-
-//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-
-    /*
-    if (m_doc->getParentMvc() != NULL) {
-      ZFlyEmMisc::Decorate3dBodyWindow(
-            m_coarseBodyWindow, m_dvidInfo,
-            m_doc->getParentMvc()->getView()->getViewParameter());
-    }
-    */
     ZDvidReader &reader = getCompleteDocument()->getDvidReader();
     if (reader.isReady()) {
       for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
@@ -813,11 +777,11 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
 
             body.setAlpha(255);
             ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-            tree->translate(-m_dvidInfo.getStartBlockIndex());
-            tree->rescale(m_dvidInfo.getBlockSize().getX(),
-                          m_dvidInfo.getBlockSize().getY(),
-                          m_dvidInfo.getBlockSize().getZ());
-            tree->translate(m_dvidInfo.getStartCoordinates());
+            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
+            tree->rescale(getGrayScaleInfo().getBlockSize().getX(),
+                          getGrayScaleInfo().getBlockSize().getY(),
+                          getGrayScaleInfo().getBlockSize().getZ());
+            tree->translate(getGrayScaleInfo().getStartCoordinates());
             tree->setSource(source);
             m_coarseBodyWindow->getDocument()->addObject(tree, true);
           }
@@ -844,7 +808,7 @@ void ZFlyEmProofMvc::updateBodyWindowPlane(
     Z3DWindow *window, const ZStackViewParam &viewParam)
 {
   if (window != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindowPlane(window, m_dvidInfo, viewParam);
+    ZFlyEmMisc::Decorate3dBodyWindowPlane(window, getGrayScaleInfo(), viewParam);
   }
 }
 
@@ -909,8 +873,6 @@ void ZFlyEmProofMvc::clear()
     getPresenter()->clearData();
 //    getView()->imageWidget();
   }
-
-  m_dvidInfo.clear();
 }
 
 void ZFlyEmProofMvc::exitCurrentDoc()
@@ -943,6 +905,11 @@ void ZFlyEmProofMvc::enableSynapseFetcher()
     m_seUpdater->setData(se, m_doc);
     se->setDataFetcher(m_seFetcher);
   }
+}
+
+const ZDvidInfo& ZFlyEmProofMvc::getGrayScaleInfo() const
+{
+  return getCompleteDocument()->getGrayScaleInfo();
 }
 
 void ZFlyEmProofMvc::setLabelAlpha(int alpha)
@@ -1042,29 +1009,6 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getProgressSignal()->advanceProgress(0.2);
 
-
-    m_dvidInfo = reader.readGrayScaleInfo();
-
-    std::string startLog = "Start using UUID " +
-        reader.getDvidTarget().getUuid() + "@" +
-        reader.getDvidTarget().getAddressWithPort();
-
-    ZJsonObject infoJson = reader.readInfo();
-    if (infoJson.hasKey("Alias")) {
-      startLog += std::string("; Alias: ") +
-          ZJsonParser::stringValue(infoJson["Alias"]);
-    }
-    if (infoJson.hasKey("Description")) {
-      startLog += std::string("; Description: ") +
-          ZJsonParser::stringValue(infoJson["Description"]);
-    }
-
-    LINFO() << startLog;
-
-
-//    if (getSupervisor() != NULL) {
-//      getSupervisor()->setDvidTarget(reader.getDvidTarget());
-//    }
 
     if (reader.getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
@@ -1702,12 +1646,12 @@ void ZFlyEmProofMvc::testSlot()
 {
   static ZRandomGenerator rand;
   uint64_t bodyId = 0;
-  int minX = m_dvidInfo.getMinX();
-  int minY = m_dvidInfo.getMinY();
-  int minZ = m_dvidInfo.getMinZ();
-  int maxX = m_dvidInfo.getMaxX();
-  int maxY = m_dvidInfo.getMaxY();
-  int maxZ = m_dvidInfo.getMaxZ();
+  int minX = getGrayScaleInfo().getMinX();
+  int minY = getGrayScaleInfo().getMinY();
+  int minZ = getGrayScaleInfo().getMinZ();
+  int maxX = getGrayScaleInfo().getMaxX();
+  int maxY = getGrayScaleInfo().getMaxY();
+  int maxZ = getGrayScaleInfo().getMaxZ();
 
   int x = 0;
   int y = 0;
@@ -3901,25 +3845,29 @@ void ZFlyEmProofMvc::updateRoiWidget()
   if(m_coarseBodyWindow)
   {
     m_coarseBodyWindow->getROIsDockWidget()->getROIs(
-          m_coarseBodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+          m_coarseBodyWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+          m_roiSourceList);
   }
 
   if(m_bodyWindow)
   {
     m_bodyWindow->getROIsDockWidget()->getROIs(
-          m_bodyWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+          m_bodyWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+          m_roiSourceList);
   }
 
   if(m_externalNeuronWindow)
   {
     m_externalNeuronWindow->getROIsDockWidget()->getROIs(
-          m_externalNeuronWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+          m_externalNeuronWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+          m_roiSourceList);
   }
 
   if(m_skeletonWindow)
   {
     m_skeletonWindow->getROIsDockWidget()->getROIs(
-          m_skeletonWindow, m_dvidInfo, m_roiList, m_loadedROIs, m_roiSourceList);
+          m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+          m_roiSourceList);
   }
 }
 

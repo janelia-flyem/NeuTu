@@ -143,6 +143,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>At least 4 characters required</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -213,6 +220,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="lowQualityCheckBox">
+       <property name="toolTip">
+        <string>NeuTu will try to fetch a high-quality patch at the view center if this optoin is checked.</string>
+       </property>
        <property name="text">
         <string>low quality</string>
        </property>

@@ -140,6 +140,7 @@ public:
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
+  ZDvidInfo readLabelInfo() const;
 
   ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
@@ -201,6 +202,8 @@ public:
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
+  void updateMaxLabelZoom(
+      const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
   uint64_t readBodyIdAt(int x, int y, int z) const;
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;

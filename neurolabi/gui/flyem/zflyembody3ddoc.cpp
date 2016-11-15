@@ -1058,12 +1058,12 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         ZObject3dScan obj = m_dvidReader.readCoarseBody(bodyId);
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
-          tree->translate(-m_dvidInfo.getStartBlockIndex());
-          tree->rescale(m_dvidInfo.getBlockSize().getX(),
-                        m_dvidInfo.getBlockSize().getY(),
-                        m_dvidInfo.getBlockSize().getZ());
-          tree->translate(m_dvidInfo.getStartCoordinates() +
-                          m_dvidInfo.getBlockSize() / 2);
+          tree->translate(-getDvidInfo().getStartBlockIndex());
+          tree->rescale(getDvidInfo().getBlockSize().getX(),
+                        getDvidInfo().getBlockSize().getY(),
+                        getDvidInfo().getBlockSize().getZ());
+          tree->translate(getDvidInfo().getStartCoordinates() +
+                          getDvidInfo().getBlockSize() / 2);
         }
       } else {
         ZDvidSparseStack *cachedStack = getDataDocument()->getBodyForSplit();
@@ -1139,7 +1139,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
   }
 
   if (m_dvidReader.isReady()) {
-    m_dvidInfo = m_dvidReader.readGrayScaleInfo();
+    m_dvidInfo = m_dvidReader.readLabelInfo();
   }
 }
 
