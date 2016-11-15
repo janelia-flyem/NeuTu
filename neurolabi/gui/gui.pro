@@ -177,8 +177,13 @@ unix {
         message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
         greaterThan(OSX_MINOR_VERSION, 8) {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -stdlib=libc++
+            contains(CONFIG, libstdc++) {
+                message("Using libstdc++")
+            } else {
+                LIBS -= -lstdc++
+                QMAKE_CXXFLAGS += -stdlib=libc++
+            }
+
             QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
             message("SDK: $$QMAKE_MAC_SDK")
         }
@@ -688,7 +693,8 @@ HEADERS += mainwindow.h \
     widgets/zaxiswidget.h \
     dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
-    dialogs/ztestoptiondialog.h
+    dialogs/ztestoptiondialog.h \
+    dialogs/zinfodialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -776,7 +782,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdvidbodypositiondialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
-    dialogs/ztestoptiondialog.ui
+    dialogs/ztestoptiondialog.ui \
+    dialogs/zinfodialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1205,7 +1212,8 @@ SOURCES += main.cpp \
     widgets/zaxiswidget.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
-    dialogs/ztestoptiondialog.cpp
+    dialogs/ztestoptiondialog.cpp \
+    dialogs/zinfodialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

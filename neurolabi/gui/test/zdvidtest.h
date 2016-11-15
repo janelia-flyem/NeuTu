@@ -11,6 +11,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
+#include "zdvidutil.h"
 
 #ifdef _USE_GTEST_
 
@@ -32,6 +33,17 @@ TEST(ZDvidTest, ZDvidInfo)
   ASSERT_EQ(1, info.getStartCoordinates().getX());
   ASSERT_EQ(2, info.getStartCoordinates().getY());
   ASSERT_EQ(3, info.getStartCoordinates().getZ());
+}
+
+TEST(ZDvidTest, Util)
+{
+  ASSERT_TRUE(ZDvid::IsUuidMatched("12345", "123"));
+  ASSERT_TRUE(ZDvid::IsUuidMatched("aad345", "aad"));
+  ASSERT_TRUE(ZDvid::IsUuidMatched("123", "123fwrq424q"));
+  ASSERT_FALSE(ZDvid::IsUuidMatched("", "123"));
+  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", ""));
+  ASSERT_FALSE(ZDvid::IsUuidMatched("12345", "12346"));
+  ASSERT_FALSE(ZDvid::IsUuidMatched("234", "12346"));
 }
 
 TEST(ZDvidTest, ZDvidUrl)

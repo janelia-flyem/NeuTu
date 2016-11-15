@@ -7,6 +7,9 @@
 class ZJsonValue;
 class ZDvidTarget;
 class ZJsonObject;
+class ZDvidVersionDag;
+
+#define DVID_UUID_COMMON_LENGTH 4
 
 namespace ZDvid {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -49,7 +52,10 @@ libdvid::BinaryDataPtr MakePayload(const char *payload, int length);
 libdvid::BinaryDataPtr MakePayload(const std::string &payload);
 libdvid::BinaryDataPtr MakePayload(const ZJsonValue &payload);
 
+bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
+bool IsDataValid(const std::string &data, const ZDvidTarget &target,
+                 const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
 /*
 libdvid::BinaryDataPtr Post(

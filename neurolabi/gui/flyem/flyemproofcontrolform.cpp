@@ -177,6 +177,10 @@ void FlyEmProofControlForm::createMenu()
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
+  QAction *infoAction = new QAction("Information", this);
+  m_mainMenu->addAction(infoAction);
+  connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
+
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
   QAction *clearMergeAction = new QAction("Clear All Merges", this);

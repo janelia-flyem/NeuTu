@@ -17975,9 +17975,25 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
+#if 1
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "005a", 7000));
+  std::cout << "Valid: " << doc->isDataValid("test") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_1") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_2") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_3") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_4") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_5") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_6") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_7") << std::endl;
+  std::cout << "Valid: " << doc->isDataValid("segmentation_8") << std::endl;
+#endif
+
 #if 0
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
   doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "86e1", 8500));
+
   doc->downloadSynapseFunc();
 
   ZDvidReader reader;
@@ -21193,7 +21209,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << p.readAllStandardOutput();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "005a", 7000);
   target.setBodyLabelName("gtpruned-bodies");

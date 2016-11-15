@@ -53,6 +53,7 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void showingInfo();
 
 public slots:
   void setInfo(const QString &info);

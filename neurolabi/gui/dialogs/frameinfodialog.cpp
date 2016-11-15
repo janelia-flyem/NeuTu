@@ -17,17 +17,17 @@ FrameInfoDialog::FrameInfoDialog(QWidget *parent) : QDialog(parent)
   connect(curveComboBox, SIGNAL(currentIndexChanged(int)),
           this, SIGNAL(newCurveSelected(int)));
 
-  if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    m_curveWidget->setVisible(false);
-    curveComboBox->setVisible(false);
-    curveTypeLabel->setVisible(false);
-  }
-
-#ifndef _DEBUG_
   m_curveWidget->setVisible(false);
   curveComboBox->setVisible(false);
   curveTypeLabel->setVisible(false);
+
+  if (NeutubeConfig::getInstance().getApplication() == "General") {
+#ifdef _DEBUG_
+    m_curveWidget->setVisible(true);
+    curveComboBox->setVisible(true);
+    curveTypeLabel->setVisible(true);
 #endif
+  }
 }
 
 FrameInfoDialog::~FrameInfoDialog()

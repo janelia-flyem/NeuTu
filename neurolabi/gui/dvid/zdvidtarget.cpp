@@ -380,9 +380,11 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
     }
 
+    /*
     if (obj.hasKey(m_maxLabelZoomKey)) {
       setMaxLabelZoom(ZJsonParser::integerValue(obj[m_maxLabelZoomKey]));
     }
+    */
 
     /*
     if (obj.hasKey(m_labelszKey)) {

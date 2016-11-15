@@ -520,23 +520,21 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
   ZIntCuboid box = obj.getBoundBox();
-  size_t voxelNumber = obj.getVoxelNumber();
+//  size_t voxelNumber = obj.getVoxelNumber();
 
-  int intv =
-      iround(Cube_Root(double(voxelNumber) / ZObject3dScan::MAX_SPAN_HINT)) - 1;
-  if (intv < 0) {
-    intv = 0;
-  }
+  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+                                    ZObject3dScan::MAX_SPAN_HINT)));
 
-
-  size_t volume = (box.getWidth() + 2) / (intv + 1) *
-      (box.getHeight() + 2) / (intv + 1) * (box.getDepth() + 2) / (intv + 1);
+  size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
+      ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
   if (volume > MAX_INT32) {
-    intv = iround(Cube_Root(double(volume) / MAX_INT32)) - 1;
+    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    /*
     if (intv < 0) {
       intv = 0;
     }
+    */
   }
 
   ZStack *stack = NULL;
@@ -547,10 +545,25 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsample(intv, intv, intv);
-    stack = obj2.toStackObjectWithMargin(1, 1);
+    intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
+                                  ZObject3dScan::MAX_SPAN_HINT)));
+    if (intv > 0) {
+      obj2.downsample(intv, intv, intv);
+    }
+
     dsIntv = obj2.getDsIntv();
+    stack = obj2.toStackObjectWithMargin(1, 1);
   } else {
-    stack = obj.toStackObjectWithMargin(1, 1);
+    intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+                                  ZObject3dScan::MAX_SPAN_HINT)));
+    if (intv > 0) {
+      ZObject3dScan obj2 = obj;
+      obj2.downsample(intv, intv, intv);
+      dsIntv = obj2.getDsIntv();
+      stack = obj2.toStackObjectWithMargin(1, 1);
+    } else {
+      stack = obj.toStackObjectWithMargin(1, 1);
+    }
   }
   std::cout << "Preparing for stack time: " << toc() << std::endl;
 

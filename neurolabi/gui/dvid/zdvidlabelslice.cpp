@@ -256,20 +256,24 @@ int ZDvidLabelSlice::getZoomLevel(const ZStackViewParam &viewParam) const
     return 0;
   }
 
-  int zoom = iround(std::log(1.0 / zoomRatio) / std::log(2.0) );
+  int zoom = 0;
 
-  if (zoom < 0) {
-    zoom = 0;
-  }
+  if (getDvidTarget().usingMulitresBodylabel()) {
+    zoom = iround(std::log(1.0 / zoomRatio) / std::log(2.0) );
 
-  int scale = pow(2, zoom);
-  if (viewParam.getViewPort().width() * viewParam.getViewPort().height() /
-      scale / scale > 512 * 512) {
-    zoom += 1;
-  }
+    if (zoom < 0) {
+      zoom = 0;
+    }
 
-  if (zoom > getDvidTarget().getMaxLabelZoom()) {
-    zoom = getDvidTarget().getMaxLabelZoom();
+    int scale = pow(2, zoom);
+    if (viewParam.getViewPort().width() * viewParam.getViewPort().height() /
+        scale / scale > 512 * 512) {
+      zoom += 1;
+    }
+
+    if (zoom > getDvidTarget().getMaxLabelZoom()) {
+      zoom = getDvidTarget().getMaxLabelZoom();
+    }
   }
 
   return zoom;

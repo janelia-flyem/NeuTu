@@ -43,6 +43,7 @@
 #include "zstackwatershed.h"
 #include "zstackarray.h"
 #include "zsleeper.h"
+#include "zdvidutil.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -468,6 +469,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidWriter.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
+    readInfo();
     initData(target);
   } else {
     m_dvidTarget.clear();
@@ -482,6 +484,45 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   prepareDvidData();
 
   updateDvidTargetForObject();
+}
+
+bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
+{
+  return ZDvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
+}
+
+void ZFlyEmProofDoc::updateMaxLabelZoom()
+{
+  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
+}
+
+void ZFlyEmProofDoc::readInfo()
+{
+  m_grayScaleInfo = m_dvidReader.readGrayScaleInfo();
+  m_labelInfo = m_dvidReader.readLabelInfo();
+  m_versionDag = m_dvidReader.readVersionDag();
+#ifdef _DEBUG_
+  m_versionDag.print();
+#endif
+
+  m_infoJson = m_dvidReader.readInfo();
+
+  std::string startLog = "Start using UUID " +
+      m_dvidReader.getDvidTarget().getUuid() + "@" +
+      m_dvidReader.getDvidTarget().getAddressWithPort();
+
+  if (m_infoJson.hasKey("Alias")) {
+    startLog += std::string("; Alias: ") +
+        ZJsonParser::stringValue(m_infoJson["Alias"]);
+  }
+  if (m_infoJson.hasKey("Description")) {
+    startLog += std::string("; Description: ") +
+        ZJsonParser::stringValue(m_infoJson["Description"]);
+  }
+
+  updateMaxLabelZoom();
+
+  LINFO() << startLog;
 }
 
 void ZFlyEmProofDoc::prepareDvidData()
@@ -1241,6 +1282,10 @@ void ZFlyEmProofDoc::clearData()
   ZStackDoc::clearData();
   m_bodyMerger.clear();
   m_dvidTarget.clear();
+  m_grayScaleInfo.clear();
+  m_labelInfo.clear();
+  m_versionDag.clear();
+  m_infoJson.clear();
 }
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const

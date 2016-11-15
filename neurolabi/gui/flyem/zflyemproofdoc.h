@@ -54,8 +54,12 @@ public:
     return m_dvidTarget;
   }
 
-  const ZDvidInfo& getDvidInfo() const {
-    return m_dvidInfo;
+  const ZDvidInfo& getGrayScaleInfo() const {
+    return m_grayScaleInfo;
+  }
+
+  const ZDvidInfo& getLabelInfo() const {
+    return m_labelInfo;
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
@@ -277,6 +281,9 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
+public:
+  bool isDataValid(const std::string &data) const;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -376,6 +383,9 @@ private:
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
 
+  void readInfo();
+  void updateMaxLabelZoom();
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
   template<typename T>
   ZSharedPointer<T> getColorScheme(EBodyColorMap type);
@@ -400,8 +410,10 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
 
   //Dvid info
-  ZDvidInfo m_dvidInfo;
+  ZDvidInfo m_grayScaleInfo;
+  ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
+  ZJsonObject m_infoJson;
 
   QTimer *m_routineTimer;
 
