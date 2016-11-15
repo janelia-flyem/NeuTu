@@ -69,6 +69,7 @@
 #include "widgets/z3dtabwidget.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "dialogs/zflyembodychopdialog.h"
+#include "dialogs/zinfodialog.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
 
@@ -107,6 +108,8 @@ void ZFlyEmProofMvc::init()
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
   m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
   m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
+  m_infoDlg = new ZInfoDialog(this);
+
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
   connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
@@ -956,7 +959,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 #endif
 
 
-    reader.updateMaxLabelZoom();
+//    reader.updateMaxLabelZoom();
 
     clear();
     getProgressSignal()->advanceProgress(0.1);
@@ -1002,15 +1005,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
 #endif
 
-    m_splitProject.setDvidTarget(reader.getDvidTarget());
-    m_mergeProject.setDvidTarget(reader.getDvidTarget());
+    m_splitProject.setDvidTarget(getDvidTarget());
+    m_mergeProject.setDvidTarget(getDvidTarget());
     m_mergeProject.syncWithDvid();
-    m_splitUploadDlg->setDvidTarget(reader.getDvidTarget());
+    m_splitUploadDlg->setDvidTarget(getDvidTarget());
 
     getProgressSignal()->advanceProgress(0.2);
 
 
-    if (reader.getDvidTarget().isValid()) {
+    if (getDvidTarget().isValid()) {
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -1019,7 +1022,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
     getProgressSignal()->advanceProgress(0.5);
 
-    emit dvidTargetChanged(reader.getDvidTarget());
+    emit dvidTargetChanged(getDvidTarget());
   }
 
   m_roiDlg->clear();
@@ -3869,6 +3872,13 @@ void ZFlyEmProofMvc::updateRoiWidget()
           m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
+}
+
+void ZFlyEmProofMvc::showInfoDialog()
+{
+  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+  m_infoDlg->show();
+  m_infoDlg->raise();
 }
 
 void ZFlyEmProofMvc::getROIs()

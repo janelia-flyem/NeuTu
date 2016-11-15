@@ -42,6 +42,7 @@ class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
+class ZInfoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -316,6 +317,7 @@ protected slots:
   void exportSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+  void showInfoDialog();
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -393,6 +395,7 @@ protected:
   ZFlyEmRoiToolDialog *m_roiDlg;
   ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
   ZFlyEmBodyChopDialog *m_bodyChopDlg;
+  ZInfoDialog *m_infoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -457,6 +460,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
+  connect(panel, SIGNAL(showingInfo()), this, SLOT(showInfoDialog()));
 //  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
 //          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
 //  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),

@@ -1078,10 +1078,10 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
         if (cachedBody == NULL) {
           ZObject3dScan obj;
-//          m_dvidReader.readBody(bodyId, true, &obj);
-//#ifdef _DEBUG_
+          m_dvidReader.readBody(bodyId, true, &obj);
+#ifdef _DEBUG_2
           m_dvidReader.readBodyDs(bodyId, true, &obj);
-//#endif
+#endif
           if (!obj.isEmpty()) {
             tree = ZSwcFactory::CreateSurfaceSwc(obj, 3);
           }

@@ -493,7 +493,7 @@ bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-
+  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
 void ZFlyEmProofDoc::readInfo()
@@ -519,6 +519,8 @@ void ZFlyEmProofDoc::readInfo()
     startLog += std::string("; Description: ") +
         ZJsonParser::stringValue(m_infoJson["Description"]);
   }
+
+  updateMaxLabelZoom();
 
   LINFO() << startLog;
 }
