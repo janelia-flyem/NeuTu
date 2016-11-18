@@ -598,6 +598,22 @@ TEST(SwcTree, ExtIterator)
   }
 }
 
+TEST(SwcTree, Attributes)
+{
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn, 1.0);
+  SwcTreeNode::setY(tn, 2.0);
+  SwcTreeNode::setZ(tn, 3.0);
+  SwcTreeNode::setRadius(tn, 5.0);
+
+  ASSERT_EQ(1.0, SwcTreeNode::x(tn));
+  ASSERT_EQ(2.0, SwcTreeNode::y(tn));
+  ASSERT_EQ(3.0, SwcTreeNode::z(tn));
+  ASSERT_EQ(5.0, SwcTreeNode::radius(tn));
+
+
+}
+
 #endif
 
 #endif // ZSWCTREETEST_H

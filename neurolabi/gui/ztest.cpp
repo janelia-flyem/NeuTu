@@ -17975,7 +17975,7 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
   doc->setDvidTarget(ZDvidTarget("emdata1.int.janelia.org", "005a", 7000));
   std::cout << "Valid: " << doc->isDataValid("test") << std::endl;
@@ -17988,6 +17988,33 @@ void ZTest::test(MainWindow *host)
   std::cout << "Valid: " << doc->isDataValid("segmentation_6") << std::endl;
   std::cout << "Valid: " << doc->isDataValid("segmentation_7") << std::endl;
   std::cout << "Valid: " << doc->isDataValid("segmentation_8") << std::endl;
+#endif
+
+#if 1
+  ZRandomGenerator rand;
+
+  ZDvidSynapseEnsemble se;
+  while (1) {
+    ZDvidSynapse synapse;
+    int x = rand.rndint(0, 100);
+    int y = rand.rndint(0, 100);
+    int z = rand.rndint(0, 1000);
+
+    synapse.setPosition(x, y, z);
+    se.addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+    x = rand.rndint(0, 100);
+    y = rand.rndint(0, 100);
+    z = rand.rndint(0, 1000);
+    se.removeSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+
+    x = rand.rndint(0, 100);
+    y = rand.rndint(0, 100);
+    z = rand.rndint(0, 1000);
+    ZDvidSynapse &synapse2 =
+        se.getSynapse(x, y, z, ZDvidSynapseEnsemble::DATA_LOCAL);
+    synapse2.getX();
+  }
 #endif
 
 #if 0

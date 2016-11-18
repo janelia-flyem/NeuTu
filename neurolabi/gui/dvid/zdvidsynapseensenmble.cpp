@@ -762,6 +762,8 @@ void ZDvidSynapseEnsemble::display(
 void ZDvidSynapseEnsemble::removeSynapseLink(
     const ZIntPoint &v1, const ZIntPoint &v2)
 {
+  QMutexLocker locker(&m_dataMutex);
+
   if (m_reader.good()) {
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {

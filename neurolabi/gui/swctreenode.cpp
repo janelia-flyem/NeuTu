@@ -283,6 +283,20 @@ ZPoint SwcTreeNode::center(const Swc_Tree_Node *tn)
   return ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
 
+void SwcTreeNode::setCenter(Swc_Tree_Node *tn, double x, double y, double z)
+{
+  if (tn != NULL) {
+    tn->node.x = x;
+    tn->node.y = y;
+    tn->node.z = z;
+  }
+}
+
+void SwcTreeNode::setCenter(Swc_Tree_Node *tn, const ZPoint &center)
+{
+  setCenter(tn, center.x(), center.y(), center.z());
+}
+
 std::string SwcTreeNode::toSwcLine(const Swc_Tree_Node *tn)
 {
   std::ostringstream stream;

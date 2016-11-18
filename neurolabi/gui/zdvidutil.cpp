@@ -151,47 +151,6 @@ ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
   }
 }
 
-bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
-                        const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
-{
-  bool valid = false;
-
-  const char *instanceKey = "DataInstances";
-  if (infoJson.hasKey(instanceKey)) {
-    ZJsonObject instanceJson(infoJson.value(instanceKey));
-    if (instanceJson.hasKey(data.c_str())) {
-      ZJsonObject dataJson(instanceJson.value(data.c_str()));
-      if (dataJson.hasKey("Base")) {
-        ZJsonObject baseJson(dataJson.value("Base"));
-        std::string repoUuid = ZJsonParser::stringValue(baseJson["RepoUUID"]);
-        if (repoUuid.size() > 4) {
-          repoUuid = repoUuid.substr(0, 4);
-          if (repoUuid == target.getUuid()) {
-            valid = true;
-          } else if (dag.isAncester(target.getUuid(), repoUuid)) {
-            valid = true;
-          }
-        }
-      }
-    }
-  }
-
-  return valid;
-}
-
-bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
-{
-  bool matched = false;
-  if (!uuid1.empty() && !uuid2.empty()) {
-    if (ZString(uuid1).startsWith(uuid2)){
-      matched = true;
-    } else if (ZString(uuid2).startsWith(uuid1)) {
-      matched = true;
-    }
-  }
-
-  return matched;
-}
 
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
@@ -296,4 +255,48 @@ libdvid::BinaryDataPtr ZDvid::Post(
   return response;
 }
 #endif
+
 #endif
+
+bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
+                        const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
+{
+  bool valid = false;
+
+  const char *instanceKey = "DataInstances";
+  if (infoJson.hasKey(instanceKey)) {
+    ZJsonObject instanceJson(infoJson.value(instanceKey));
+    if (instanceJson.hasKey(data.c_str())) {
+      ZJsonObject dataJson(instanceJson.value(data.c_str()));
+      if (dataJson.hasKey("Base")) {
+        ZJsonObject baseJson(dataJson.value("Base"));
+        std::string repoUuid = ZJsonParser::stringValue(baseJson["RepoUUID"]);
+        if (repoUuid.size() > 4) {
+          repoUuid = repoUuid.substr(0, 4);
+          if (repoUuid == target.getUuid()) {
+            valid = true;
+          } else if (dag.isAncester(target.getUuid(), repoUuid)) {
+            valid = true;
+          }
+        }
+      }
+    }
+  }
+
+  return valid;
+}
+
+bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
+{
+  bool matched = false;
+  if (!uuid1.empty() && !uuid2.empty()) {
+    if (ZString(uuid1).startsWith(uuid2)){
+      matched = true;
+    } else if (ZString(uuid2).startsWith(uuid1)) {
+      matched = true;
+    }
+  }
+
+  return matched;
+}
+
