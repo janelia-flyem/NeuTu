@@ -3,6 +3,11 @@
 #include <QApplication>
 #include <QProcess>
 #include <QDir>
+
+#ifdef _QT5_
+#include <QSurfaceFormat>
+#endif
+
 #include "mainwindow.h"
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
@@ -20,6 +25,7 @@
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 
+#if 0
 #ifdef _QT5_
 #include <QSurfaceFormat>
 
@@ -61,14 +67,15 @@ void myMessageOutput(QtMsgType type, const char *msg)
   }
 }
 #endif    // qt version > 5.0.0
-
+#endif
 
 static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 {
   if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
     QDir dir(srcDir.c_str());
     dir.setFilter(QDir::Files | QDir::NoSymLinks);
-    QFileInfoList infoList = dir.entryInfoList(QStringList() << "*.txt.*");
+    QFileInfoList infoList =
+        dir.entryInfoList(QStringList() << "*.txt.*" << "*.txt");
 
     foreach (const QFileInfo &info, infoList) {
       QString command =
@@ -88,17 +95,6 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 
 int main(int argc, char *argv[])
 {
-#ifdef _QT5_
-  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
-#endif
-  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
-  QSurfaceFormat format;
-  //format.setStereo(true);
-  QSurfaceFormat::setDefaultFormat(format);
-#endif
-
 #if 0 //Disable redirect for explicit logging
 #ifndef _FLYEM_
 #ifdef _QT5_
@@ -113,11 +109,10 @@ int main(int argc, char *argv[])
   bool unitTest = false;
   bool runCommandLine = false;
 
-  QStringList fileList;
-
   bool guiEnabled = true;
 
   QString configPath;
+  QStringList fileList;
 
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
@@ -133,8 +128,6 @@ int main(int argc, char *argv[])
       return cmd.run(argc, argv);
     }
 
-
-#ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
@@ -145,7 +138,6 @@ int main(int argc, char *argv[])
         fileList << argv[i];
       }
     }
-#endif
 
     if (QString(argv[1]).endsWith(".json")) {
       configPath = argv[1];
@@ -155,6 +147,18 @@ int main(int argc, char *argv[])
     guiEnabled = false;
   }
 
+  if (guiEnabled) {
+#ifdef _QT5_
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+#endif
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
+#ifdef _QT5_
+    QSurfaceFormat format;
+    //format.setStereo(true);
+    QSurfaceFormat::setDefaultFormat(format);
+#endif
+  }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
   QApplication app(argc, argv, guiEnabled);

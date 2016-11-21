@@ -283,6 +283,10 @@ void ZStackView::connectSignalSlot()
           this, SIGNAL(sliceSliderPressed()));
   connect(m_depthControl, SIGNAL(sliderReleased()),
           this, SIGNAL(sliceSliderReleased()));
+  connect(m_zSpinBox, SIGNAL(valueChanged(int)),
+          this, SLOT(setZ(int)));
+  connect(m_depthControl, SIGNAL(valueChanged(int)),
+          this, SLOT(updateZSpinBoxValue()));
 
 //  connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
@@ -308,11 +312,6 @@ void ZStackView::connectSignalSlot()
   }
 
 //  connect(this, SIGNAL(viewPortChanged()), this, SLOT(paintActiveTile()));
-
-  connect(m_zSpinBox, SIGNAL(valueConfirmed(int)),
-          this, SLOT(setZ(int)));
-  connect(m_depthControl, SIGNAL(valueChanged(int)),
-          this, SLOT(updateZSpinBoxValue()));
 }
 
 void ZStackView::updateZSpinBoxValue()
@@ -2568,7 +2567,7 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
   if (!isViewChangeEventBlocked()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "BEFORE emit ZStackView::viewChanged" << std::endl;
 #endif
 //    processViewChange(param);

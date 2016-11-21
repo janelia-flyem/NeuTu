@@ -223,13 +223,31 @@ bool isLeaf(const Swc_Tree_Node *tn);
 bool isTerminal(const Swc_Tree_Node *tn);
 
 /*!
- * \brief The number of nodes located at the downstream of a node4
+ * \brief The number of nodes located at the downstream of a node
  *
- * \return
+ * \return The number of nodes located at the downstream of \a tn (including
+ *         \a tn)
  */
 int downstreamSize(Swc_Tree_Node *tn);
+
+/*!
+ * \brief Downstream size filtered with a comparison function
+ *
+ * It counts all the downstream nodes that satisfying \a compfunc(x) <= 0.
+ *
+ * \param tn start node.
+ * \param compfunc Comparison function.
+ * \return The number of filtered nodes of the sub-tree with \a tn as its root.
+ */
 int downstreamSize(Swc_Tree_Node *tn, Swc_Tree_Node_Compare compfunc);
+
+/*!
+ * \brief The size of the single tree that hosts a node
+ *
+ * \return The number of nodes of the regular tree that contains \a tn
+ */
 int singleTreeSize(Swc_Tree_Node *tn);
+
 double downstreamLength(Swc_Tree_Node *tn);
 
 inline Swc_Tree_Node *nextSibling(Swc_Tree_Node *tn) {
@@ -297,6 +315,9 @@ inline void setY(Swc_Tree_Node *tn, double y) {
 inline void setZ(Swc_Tree_Node *tn, double z) {
   tn->node.z = z;
 }
+
+void setCenter(Swc_Tree_Node *tn, double x, double y, double z);
+void setCenter(Swc_Tree_Node *tn, const ZPoint &center);
 
 /*!
  * \brief Set radius of the node.

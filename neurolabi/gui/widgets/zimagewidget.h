@@ -258,7 +258,7 @@ private:
   ZPixmap *m_tileCanvas;
   ZPixmap *m_dynamicObjectCanvas;
   ZPixmap *m_activeDecorationCanvas;
-  ZPixmap *m_widgetCanvas;
+//  ZPixmap *m_widgetCanvas;
 
   QRect m_viewPort; /* viewport, in world coordinates */
   QRectF m_projRegion; /* projection region */

@@ -30,6 +30,7 @@ public:
 
 signals:
   void valueConfirmed(int);
+  void valueChanged(int);
 
 public slots:
 
