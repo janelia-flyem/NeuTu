@@ -127,6 +127,11 @@ contains(CONFIG, c++11) {
   }
 }
 
+#contains(CONFIG, sanitize) {
+#  message(Using sanitize)
+#  QMAKE_CXXFLAGS += -fsanitize=kernel-address
+#}
+
 #QT += webkit
 
 contains(CONFIG, static_glew) { # glew from ext folder

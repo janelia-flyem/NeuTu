@@ -37,16 +37,18 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_objectCanvas = NULL;
   m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
-  m_widgetCanvas = NULL;
+//  m_widgetCanvas = NULL;
 
   m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 ZImageWidget::~ZImageWidget()
 {
+  /*
   if (m_widgetCanvas != NULL) {
     delete m_widgetCanvas;
   }
+  */
 
 //  if (m_isowner == true) {
 //    if (m_image != NULL) {
@@ -123,12 +125,13 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       }
     }
 
-
+/*
     if (m_widgetCanvas != NULL) {
       if (m_widgetCanvas->isVisible()) {
         painter.drawPixmap(*m_widgetCanvas);
       }
     }
+*/
 
     //tic();
     if (m_objectCanvas != NULL) {

@@ -1,4 +1,5 @@
 #include "zsandboxmodule.h"
+#include "mainwindow.h"
 
 ZSandboxModule::ZSandboxModule(QObject *parent) :
   QObject(parent)
@@ -11,6 +12,16 @@ void ZSandboxModule::init()
   m_action = NULL;
   m_menu = NULL;
 }
+
+/*
+void ZSandboxModule::initialize(MainWindow *mainWindow)
+{
+  if (mainWindow != NULL) {
+    connect(this, SIGNAL(docGenerated(ZStackDoc*)),
+            mainWindow, SLOT(showStackDoc(ZStackDoc*)));
+  }
+}
+*/
 
 QMenu* ZSandboxModule::getMenu() const
 {

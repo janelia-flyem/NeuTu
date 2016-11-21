@@ -308,7 +308,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
   connect(this, SIGNAL(docReady(ZStackDocPtr)),
-          this, SLOT(createStackFrame(ZStackDocPtr)));
+          this, SLOT(showStackDoc(ZStackDocPtr)));
+  connect(this, SIGNAL(docReady(ZStackDoc*)),
+          this, SLOT(showStackDoc(ZStackDoc*)));
   connect(this, SIGNAL(fileOpenFailed(QString,QString)),
           this, SLOT(reportFileOpenProblem(QString,QString)));
 
@@ -1558,7 +1560,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
   }
 }
 
-void MainWindow::openFileFunc2(const QString &fileName)
+void MainWindow::openFileFunc(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
@@ -1586,6 +1588,7 @@ void MainWindow::openFileFunc2(const QString &fileName)
   }
 }
 
+#if 0
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 {
   ZStackDocReader *reader = NULL;
@@ -1609,6 +1612,7 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
   return reader;
 }
+#endif
 
 void MainWindow::openFile(const QStringList &fileNameList)
 {
@@ -1636,7 +1640,7 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->show();
 
   //QFuture<ZStackDocReader*> res =
-  QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
+  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
 }
 
@@ -4899,36 +4903,6 @@ ZStackFrame *MainWindow::createStackFrame(
   return NULL;
 }
 
-#if 0
-ZStackFrame *MainWindow::createStackFrame(
-    ZStackDoc *doc, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
-{
-  if (doc != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->setParentFrame(parentFrame);
-    //debug
-    //tic();
-
-    newFrame->consumeDocument(doc);
-
-    //debug
-    //std::cout << toc() <<std::endl;
-
-    newFrame->document()->setTag(tag);
-    if (parentFrame != NULL) {
-      newFrame->document()->setStackBackground(
-            parentFrame->document()->getStackBackground());
-    }
-    //addStackFrame(newFrame);
-    //presentStackFrame(newFrame);
-
-    return newFrame;
-  }
-
-  return NULL;
-}
-#endif
-
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -6692,23 +6666,34 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
   emit progressDone();
 }
 
-ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
+ZStackFrame* MainWindow::showStackDoc(ZStackDoc *doc)
 {
-  ZStackFrame *frame = ZStackFrame::Make(NULL, doc);
+  return showStackDoc(ZStackDocPtr(doc));
+}
 
-  if (frame->document()->hasStack()) {
-    addStackFrame(frame);
-    presentStackFrame(frame);
+ZStackFrame* MainWindow::showStackDoc(ZStackDocPtr doc)
+{
+  ZStackFrame *frame = NULL;
+
+  bool progressProcessed = false;
+
+  if (!doc->isEmpty()) {
+    frame = ZStackFrame::Make(NULL, doc);
+
+    if (frame->document()->hasStack()) {
+      addStackFrame(frame);
+      presentStackFrame(frame);
       //QApplication::processEvents();
-  } else {
-    emit progressDone();
-    if (frame->document()->hasObject()) {
-      frame->open3DWindow();
     } else {
-      reportFileOpenProblem("the file", "No content is recognized in the file.");
+      emit progressDone();
+      progressProcessed = true;
+      frame->open3DWindow();
+      delete frame;
+      frame = NULL;
     }
-    delete frame;
-    frame = NULL;
+  } else {
+    ZDialogFactory::Warn(
+          "Data Presentation Failure",  "No data to display.", this);
   }
   /*
     if (!fileName.isEmpty()) {
@@ -6719,7 +6704,9 @@ ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
   }
   */
 
-  emit progressDone();
+  if (progressProcessed == false) {
+    emit progressDone();
+  }
 
   return frame;
 }

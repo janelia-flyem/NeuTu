@@ -326,6 +326,7 @@ private:
 
 protected:
   static void BaseConstruct(ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc);
+  static void BaseConstruct(ZStackFrame *frame, ZStackDoc *doc);
 
 protected:
   SettingDialog *m_settingDlg;
