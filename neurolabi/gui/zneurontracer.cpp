@@ -1012,7 +1012,7 @@ ZSwcTree* ZNeuronTracer::trace(ZStack *stack, bool doResampleAfterTracing)
   return tree;
 }
 
-ZSwcTree* ZNeuronTracer::computeInitialTrace(const Stack *stack)
+ZSwcTree* ZNeuronTracer::computeInitialTrace(const Stack */*stack*/)
 {
   ZSwcTree *tree = NULL;
 

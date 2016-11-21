@@ -384,7 +384,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (first != last) {
-    ZDvidBufferReader bufferReader;
+    ZDvidBufferReader &bufferReader = m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
     bufferReader.setService(m_service);
 #endif

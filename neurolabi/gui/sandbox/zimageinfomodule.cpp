@@ -8,7 +8,7 @@
 #include "zstackprocessor.h"
 #include "zimageinfomodule.h"
 
-ZImageShowWindow::ZImageShowWindow(QWidget *parent)
+ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)
 {
   //init this window
   resize(1000,600);

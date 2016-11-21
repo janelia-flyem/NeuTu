@@ -81,6 +81,8 @@ private slots:
   void waitForReading();
 
 private:
+  void _init();
+
   void startReading();
   void endReading(EStatus status);
 
