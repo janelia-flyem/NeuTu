@@ -334,6 +334,8 @@ private:
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
   void runLocalSplitFunc();
+
+  void mergeSelectedWithoutConflict();
 //  void notifyBookmarkUpdated();
 
   void syncDvidBookmark();

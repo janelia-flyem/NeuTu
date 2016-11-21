@@ -832,6 +832,14 @@ void ZFlyEmProofMvc::mergeSelected()
   }
 }
 
+void ZFlyEmProofMvc::mergeSelectedWithoutConflict()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->mergeSelectedWithoutConflict(getSupervisor());
+  }
+}
+
+
 void ZFlyEmProofMvc::unmergeSelected()
 {
   if (getCompleteDocument() != NULL) {
@@ -1681,7 +1689,13 @@ void ZFlyEmProofMvc::testSlot()
       m_bodyWindow->updateBody();
     }
 
+    if (rand.rndint(10000) % 17 == 0) {
+      getCompletePresenter()->toggleHighlightMode();
+    }
+
     locateBody(bodyId, appending);
+
+    mergeSelectedWithoutConflict();
 
 //    std::vector<uint64_t> bodyArray;
 //    bodyArray.push_back(bodyId);
@@ -1704,7 +1718,6 @@ void ZFlyEmProofMvc::test()
   if (m_testTimer->isActive()) {
     m_testTimer->stop();
   } else {
-    getCompletePresenter()->setHighlightMode(true);
     showFineBody3d();
     m_testTimer->setInterval(500);
     m_testTimer->start();

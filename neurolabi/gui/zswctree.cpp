@@ -53,6 +53,10 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
+
+#ifdef _FLYEM_
+    std::cout << "Creating SWC: " << this << std::endl;
+#endif
 }
 
 ZSwcTree::~ZSwcTree()
@@ -68,7 +72,7 @@ ZSwcTree::~ZSwcTree()
 
   if (m_tree != NULL) {
 #ifdef _FLYEM_
-    std::cout << "Killing " << m_tree << ": SWC " << ", "
+    std::cout << "Killing " << this << " " << m_tree << ": SWC " << ", "
               << getSource() << std::endl;
 #endif
     Kill_Swc_Tree(m_tree);
