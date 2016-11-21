@@ -107,7 +107,12 @@ public:
     return m_softwareName;
   }
 
+  void setDefaultSoftwareName();
+  void setTestSoftwareName();
+
   static std::string GetSoftwareName();
+  static void SetDefaultSoftwareName();
+  static void SetTestSoftwareName();
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;

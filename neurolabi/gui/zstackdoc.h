@@ -923,16 +923,12 @@ public:
     return &m_singleSwcNodeActionActivator;
   }
 
-  inline const ZStack* getLabelField() const {
-    return m_labelField;
-  }
+  const ZStack* getLabelFieldUnsync() const;
+  ZStack* getLabelFieldUnsync();
 
-  ZStack* getLabelField() {
-    return m_labelField;
-  }
-
+  const ZStack* getLabelField() const;
+  ZStack* getLabelField();
   void setLabelField(ZStack *getStack);
-
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
@@ -1306,6 +1302,7 @@ private:
   QMutex m_objectModifiedModeMutex;
 
   QMutex m_playerMutex;
+  mutable QMutex m_labelFieldMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;

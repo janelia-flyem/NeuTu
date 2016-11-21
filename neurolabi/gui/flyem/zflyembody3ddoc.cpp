@@ -88,7 +88,7 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
         int t = iter.value().getTimeStamp();
         int dt = currentTime - t;
         if (dt < 0) {
-          iter.value() = 0;
+          iter.value().setTimeStamp(0);
         } else if (dt < OBJECT_ACTIVE_LIFE){
           if (minDt < 0 || minDt > dt) {
             if (iter.key()->getSource() == source) {
@@ -161,7 +161,7 @@ void ZFlyEmBody3dDoc::clearGarbage()
      int t = iter.value().getTimeStamp();
      int dt = currentTime - t;
      if (dt < 0) {
-       iter.value() = 0;
+       iter.value().setTimeStamp(0);
      } else if (dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
        if (obj->getType() == ZStackObject::TYPE_SWC) {

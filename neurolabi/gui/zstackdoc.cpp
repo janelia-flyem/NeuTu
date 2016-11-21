@@ -9234,8 +9234,34 @@ void ZStackDoc::runSeededWatershed()
 //  seededWatershed();
 }
 
+const ZStack* ZStackDoc::getLabelFieldUnsync() const
+{
+  return m_labelField;
+}
+
+ZStack* ZStackDoc::getLabelFieldUnsync()
+{
+  return const_cast<ZStack*>(
+        static_cast<const ZStackDoc&>(*this).getLabelFieldUnsync());
+}
+
+const ZStack* ZStackDoc::getLabelField() const
+{
+  QMutexLocker locker(&m_labelFieldMutex);
+
+  return getLabelFieldUnsync();
+}
+
+ZStack* ZStackDoc::getLabelField()
+{
+  return const_cast<ZStack*>(
+        static_cast<const ZStackDoc&>(*this).getLabelField());
+}
+
 ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 {
+  QMutexLocker locker(&m_labelFieldMutex);
+
   ZStack *out = NULL;
 
   const ZStack *signalStack = getStack();
@@ -9247,7 +9273,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 
   TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
 
-  const ZStack* labelField = getLabelField();
+  const ZStack* labelField = getLabelFieldUnsync();
 
   out = new ZStack(signalStack->kind(), signalStack->getBoundBox(), 3);
   out->setZero();
@@ -9298,6 +9324,8 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 
 void ZStackDoc::setLabelField(ZStack *stack)
 {
+  QMutexLocker locker(&m_labelFieldMutex);
+
   if (m_labelField != NULL) {
     delete m_labelField;
   }
