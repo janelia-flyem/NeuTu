@@ -115,7 +115,7 @@ public:
 
   class ObjectStatus {
   public:
-    ObjectStatus(int timeStamp = 0);
+    explicit ObjectStatus(int timeStamp = 0);
     void setRecycable(bool on);
     void setTimeStamp(int t);
     void setResLevel(int level);
