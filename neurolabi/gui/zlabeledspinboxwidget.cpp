@@ -15,6 +15,8 @@ ZLabeledSpinBoxWidget::ZLabeledSpinBoxWidget(QWidget *parent) :
 
   connect(m_mainWidget, SIGNAL(valueConfirmed(int)),
           this, SIGNAL(valueConfirmed(int)));
+  connect(m_mainWidget, SIGNAL(valueChanged(int)),
+          this, SIGNAL(valueChanged(int)));
 }
 
 void ZLabeledSpinBoxWidget::setRange(int vmin, int vmax)

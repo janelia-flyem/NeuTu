@@ -123,6 +123,12 @@ void ZStackFrame::BaseConstruct(
   }
 }
 
+void ZStackFrame::BaseConstruct(ZStackFrame *frame, ZStackDoc *doc)
+{
+  ZSharedPointer<ZStackDoc> docPtr(doc);
+  BaseConstruct(frame, docPtr);
+}
+
 ZStackFrame*
 ZStackFrame::Make(QMdiArea *parent, NeuTube::Document::ETag docTag)
 {

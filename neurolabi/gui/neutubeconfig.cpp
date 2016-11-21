@@ -116,6 +116,11 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
+void NeutubeConfig::SetApplicationDir(const string &str)
+{
+  getInstance().setApplicationDir(str);
+}
+
 void NeutubeConfig::updateLogDir()
 {
   if (m_logDir.empty()) {

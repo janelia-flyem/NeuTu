@@ -5,6 +5,8 @@
 
 class QMenu;
 class QAction;
+class MainWindow;
+class ZStackDoc;
 
 class ZSandboxModule : public QObject
 {
@@ -15,7 +17,10 @@ public:
   QMenu* getMenu() const;
   QAction* getAction() const;
 
+//  virtual void initialize(MainWindow *mainWindow);
+
 signals:
+  void docGenerated(ZStackDoc*);
 
 public slots:
 
