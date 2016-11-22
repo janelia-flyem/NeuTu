@@ -2643,7 +2643,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
   }
 }
 
-
+#if 0
 void ZFlyEmProofMvc::syncDvidBookmark()
 {
   ZOUT(LINFO(), 3) << "Syncing dvid bookmark";
@@ -2674,6 +2674,7 @@ void ZFlyEmProofMvc::syncDvidBookmark()
 
   ZOUT(LINFO(), 3) << "Bookmark synced";
 }
+#endif
 
 #if 0
 void ZFlyEmProofMvc::notifyBookmarkUpdated()

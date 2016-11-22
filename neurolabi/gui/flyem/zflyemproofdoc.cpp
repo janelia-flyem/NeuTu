@@ -542,6 +542,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
+    m_synapseReader.open(target);
+    m_todoReader.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     readInfo();
@@ -1753,32 +1755,25 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
           ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
 
   if (tbar != NULL) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-//      ZIntCuboid box = reader.readBodyBoundBox(bodyId);
-      ZIntCuboid box = body.getBoundBox();
-      int minZ = box.getFirstCorner().getZ();
-      int maxZ = box.getLastCorner().getZ();
+    ZIntCuboid box = body.getBoundBox();
+    int minZ = box.getFirstCorner().getZ();
+    int maxZ = box.getLastCorner().getZ();
 
-//      ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
-//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    for (int z = minZ; z <= maxZ; ++z) {
+      QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
+      for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
+           iter != ballList.end(); ++iter) {
+        ZStackBall *ball = *iter;
+        ZIntPoint pt = ball->getCenter().toIntPoint();
+        if (box.contains(pt)) {
+          //            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
 
-      for (int z = minZ; z <= maxZ; ++z) {
-        QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
-        for (QList<ZStackBall*>::const_iterator iter = ballList.begin();
-             iter != ballList.end(); ++iter) {
-          ZStackBall *ball = *iter;
-          ZIntPoint pt = ball->getCenter().toIntPoint();
-          if (box.contains(pt)) {
-//            ZIntPoint blockIndex = dvidInfo.getBlockIndex(pt);
-
-//            if (coarseBody.contains(blockIndex)) {
-              if (body.contains(pt)) {
-                puncta.push_back(
-                      new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
-              }
-//            }
+          //            if (coarseBody.contains(blockIndex)) {
+          if (body.contains(pt)) {
+            puncta.push_back(
+                  new ZPunctum(ball->x(), ball->y(), ball->z(), ball->radius()));
           }
+          //            }
         }
       }
     }
@@ -1796,9 +1791,10 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
           ZStackObjectSourceFactory::MakeFlyEmTBarSource()));
 
   if (tbar != NULL) {
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(getDvidTarget())) {
+    QMutexLocker locker(&m_synapseReaderMutex);
+    ZDvidReader &reader = m_synapseReader;
+//    reader.setVerbose(false);
+    if (reader.isReady()) {
       ZIntCuboid box = reader.readBodyBoundBox(bodyId);
       int minZ = box.getFirstCorner().getZ();
       int maxZ = box.getLastCorner().getZ();
@@ -1845,16 +1841,17 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
 }
 
 std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> >
-ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
+ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
 {
   QElapsedTimer timer;
   timer.start();
 
   std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse;
-  ZDvidReader reader;
 //  reader.setVerbose(false);
   const double radius = 50.0;
-  if (reader.open(getDvidTarget())) {
+  QMutexLocker locker(&m_synapseReaderMutex);
+  ZDvidReader &reader = m_synapseReader;
+  if (reader.isReady()) {
     std::vector<ZDvidSynapse> synapseArray =
         reader.readSynapse(bodyId, FlyEM::LOAD_PARTNER_RELJSON);
 
@@ -1882,12 +1879,12 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId) const
   return synapse;
 }
 
-std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId) const
+std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId)
 {
   std::vector<ZFlyEmToDoItem*> puncta;
-  ZDvidReader reader;
-//  reader.setVerbose(false);
-  if (reader.open(getDvidTarget())) {
+  QMutexLocker locker(&m_todoReaderMutex);
+  ZDvidReader &reader = m_todoReader;
+  if (reader.isReady()) {
     ZJsonArray annotationJson = reader.readAnnotation(
           getDvidTarget().getTodoListName(), bodyId);
 
@@ -1912,13 +1909,14 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId) const
 }
 
 
-std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId) const
+std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId)
 {
   std::vector<ZPunctum*> puncta;
-  ZDvidReader reader;
 //  reader.setVerbose(false);
   const double radius = 50.0;
-  if (reader.open(getDvidTarget())) {
+  QMutexLocker locker(&m_todoReaderMutex);
+  ZDvidReader &reader = m_todoReader;
+  if (reader.isReady()) {
     ZJsonArray annotationJson = reader.readAnnotation(
           getDvidTarget().getTodoListName(), bodyId);
 
