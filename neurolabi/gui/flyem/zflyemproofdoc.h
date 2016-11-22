@@ -148,10 +148,10 @@ public:
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
-  getSynapse(uint64_t bodyId) const;
+  getSynapse(uint64_t bodyId);
 
-  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
-  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
+  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId);
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId);
 
   void downloadSynapseFunc();
 
@@ -406,8 +406,13 @@ protected:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
+  ZDvidReader m_synapseReader;
+  ZDvidReader m_todoReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
+
+  mutable QMutex m_synapseReaderMutex;
+  mutable QMutex m_todoReaderMutex;
 
   //Dvid info
   ZDvidInfo m_grayScaleInfo;

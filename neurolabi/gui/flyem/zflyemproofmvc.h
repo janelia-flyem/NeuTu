@@ -336,7 +336,7 @@ private:
   void runLocalSplitFunc();
 //  void notifyBookmarkUpdated();
 
-  void syncDvidBookmark();
+//  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
   void loadROIFunc();
 
