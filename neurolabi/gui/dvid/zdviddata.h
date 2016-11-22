@@ -31,7 +31,7 @@ public:
     ROLE_SPLIT_STATUS, //Obsolete
     ROLE_BODY_INFO, //Body information, e.g. size and bounding box
     ROLE_MERGE_TEST_BODY_LABEL, //Obsolete
-    ROLE_MAX_BODY_ID, //Maximal body ID
+    ROLE_MAX_BODY_ID, //Maximal body ID, Obsolete
     ROLE_MULTISCALE_2D, //Obsolete
     ROLE_MERGE_OPERATION, //Merge operation
     ROLE_BOOKMARK, //Bookmark

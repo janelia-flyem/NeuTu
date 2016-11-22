@@ -401,7 +401,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 void ZFlyEmProofDoc::annotateBody(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
-  ZDvidWriter writer;
+  ZDvidWriter &writer = m_dvidWriter;
   if (writer.open(getDvidTarget())) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
@@ -1339,7 +1339,7 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 
 void ZFlyEmProofDoc::saveMergeOperation()
 {
-  ZDvidWriter writer;
+  ZDvidWriter &writer = m_dvidWriter;
   if (writer.open(getDvidTarget())) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
 
