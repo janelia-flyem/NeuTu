@@ -26,6 +26,7 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
   if (m_reader.open(target)) {
+    m_writer.open(target);
     m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
 //    m_startY = m_dvidInfo.getStartCoordinates().getY();
@@ -461,8 +462,8 @@ bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope s
       return true;
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (writer.good()) {
       writer.deleteSynapse(x, y, z);
     }
 
@@ -523,8 +524,8 @@ void ZDvidSynapseEnsemble::addSynapseUnsync(
       updatePartner(targetSynapse);
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (writer.good()) {
       writer.writeSynapse(synapse);
       if (writer.isStatusOk()) {
         addSynapseUnsync(synapse, DATA_LOCAL);
@@ -557,8 +558,8 @@ void ZDvidSynapseEnsemble::setUserNameUnsync(
   if (synapse.isValid()) {
     synapse.setUserName(userName);
     if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
-      ZDvidWriter writer;
-      if (writer.open(m_dvidTarget)) {
+      ZDvidWriter &writer = m_writer;
+      if (writer.good()) {
         writer.writeSynapse(synapse);
       }
     }
@@ -590,8 +591,8 @@ void ZDvidSynapseEnsemble::setConfidenceUnsync(
     if (synapse.isValid()) {
       synapse.setConfidence(c);
       if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
-        ZDvidWriter writer;
-        if (writer.open(m_dvidTarget)) {
+        ZDvidWriter &writer = m_writer;
+        if (writer.good()) {
           writer.writeSynapse(synapse);
         }
       }
@@ -625,8 +626,8 @@ void ZDvidSynapseEnsemble::annotateSynapseUnsync(
   if (synapse.isValid()) {
     synapse.setProperty(propJson);
     if (scope == DATA_GLOBAL || scope == DATA_SYNC) {
-      ZDvidWriter writer;
-      if (writer.open(m_dvidTarget)) {
+      ZDvidWriter &writer = m_writer;
+      if (writer.good()) {
         writer.writeSynapse(synapse);
       }
     }
@@ -765,8 +766,8 @@ void ZDvidSynapseEnsemble::removeSynapseLink(
   QMutexLocker locker(&m_dataMutex);
 
   if (m_reader.good()) {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (writer.good()) {
       ZJsonObject obj1 = m_reader.readSynapseJson(v1);
       if (ZDvidSynapse::RemoveRelation(obj1, v2)) {
         writer.writeSynapse(obj1);
@@ -796,8 +797,8 @@ void ZDvidSynapseEnsemble::moveSynapseUnsync(
     case DATA_GLOBAL:
     case DATA_SYNC:
     {
-      ZDvidWriter writer;
-      if (writer.open(m_dvidTarget)) {
+      ZDvidWriter &writer = m_writer;
+      if (writer.good()) {
         writer.moveSynapse(from, to);
         if (writer.isStatusOk()) {
           moveSynapseUnsync(from, to, DATA_LOCAL);

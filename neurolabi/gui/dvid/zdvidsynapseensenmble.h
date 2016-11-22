@@ -16,6 +16,7 @@
 #include "zdvidsynapse.h"
 #include "zselector.h"
 #include "zjsonarray.h"
+#include "dvid/zdvidwriter.h"
 
 class ZStackView;
 class ZIntCuboid;
@@ -264,6 +265,7 @@ private:
 //  int m_startY;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
+  ZDvidWriter m_writer;
   ZDvidInfo m_dvidInfo;
 
   ZSelector<ZIntPoint> m_selector;

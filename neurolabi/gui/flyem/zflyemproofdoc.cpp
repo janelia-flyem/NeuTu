@@ -402,7 +402,7 @@ void ZFlyEmProofDoc::annotateBody(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
   ZDvidWriter &writer = m_dvidWriter;
-  if (writer.open(getDvidTarget())) {
+  if (writer.good()) {
     writer.writeAnnotation(bodyId, annotation.toJsonObject());
 
     QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
@@ -1340,7 +1340,7 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
 void ZFlyEmProofDoc::saveMergeOperation()
 {
   ZDvidWriter &writer = m_dvidWriter;
-  if (writer.open(getDvidTarget())) {
+  if (writer.good()) {
     writer.writeMergeOperation(m_bodyMerger.getFinalMap());
 
     if (writer.getStatusCode() == 200) {

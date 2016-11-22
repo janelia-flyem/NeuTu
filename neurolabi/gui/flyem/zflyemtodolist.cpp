@@ -27,6 +27,7 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
   if (m_reader.open(target)) {
+    m_writer.open(target);
     m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
   }
@@ -269,8 +270,8 @@ bool ZFlyEmToDoList::removeItem(int x, int y, int z, EDataScope scope)
       return true;
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (writer.good()) {
       writer.deleteToDoItem(x, y, z);
     }
 
@@ -303,8 +304,8 @@ void ZFlyEmToDoList::addItem(
       targetItem.setSelected(isSelected);
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (m_writer.good()) {
       writer.writeToDoItem(item);
       if (writer.isStatusOk()) {
         addItem(item, DATA_LOCAL);
