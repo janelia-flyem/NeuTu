@@ -376,7 +376,6 @@ protected:
   m_assignedBookmarkModel;
   QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_userBookmarkModel;
-
 //  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
