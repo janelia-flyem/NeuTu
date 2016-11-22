@@ -1447,7 +1447,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
           obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
           obj->setSliceAxis(labelSlice->getSliceAxis());
-          obj->setDvidTarget(getDvidTarget());
+          obj->setReader(doc->getSparseVolReader());
+//          obj->setDvidTarget(getDvidTarget());
           obj->setLabel(bodyId);
           obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
           obj->setColor(labelSlice->getLabelColor(

@@ -7,6 +7,7 @@ ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan(), m_currentZ(-1)
 {
   m_type = GetType();
   setHittable(false);
+  m_externalReader = NULL;
 }
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice(const ZDvidSparsevolSlice &obj) :
@@ -14,6 +15,7 @@ ZDvidSparsevolSlice::ZDvidSparsevolSlice(const ZDvidSparsevolSlice &obj) :
 {
   m_currentZ = obj.m_currentZ;
   m_dvidTarget = obj.m_dvidTarget;
+  m_externalReader = obj.m_externalReader;
 }
 
 ZDvidSparsevolSlice::~ZDvidSparsevolSlice()
@@ -25,6 +27,11 @@ void ZDvidSparsevolSlice::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
   m_reader.open(target);
+}
+
+void ZDvidSparsevolSlice::setReader(ZDvidReader *reader)
+{
+  m_externalReader = reader;
 }
 
 bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, NeuTube::EAxis axis) const
@@ -42,7 +49,12 @@ bool ZDvidSparsevolSlice::update(int z)
   if (m_currentZ != z) {
     m_currentZ = z;
     if (z < getMinZ() || z > getMaxZ()) {
-      m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
+      if (m_externalReader != NULL) {
+        m_externalReader->readBody(
+              getLabel(), m_currentZ, m_sliceAxis, true, this);
+      } else {
+        m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
+      }
       updated = true;
     }
   }

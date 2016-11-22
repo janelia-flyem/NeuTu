@@ -185,6 +185,10 @@ public:
     return m_dvidWriter;
   }
 
+  ZDvidReader* getSparseVolReader() {
+    return &m_sparseVolReader;
+  }
+
 public:
   void runSplit();
   void runLocalSplit();
@@ -408,6 +412,7 @@ protected:
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;
   ZDvidReader m_todoReader;
+  ZDvidReader m_sparseVolReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 

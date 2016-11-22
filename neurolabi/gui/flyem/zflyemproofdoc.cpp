@@ -469,6 +469,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_dvidWriter.open(target);
     m_synapseReader.open(target);
     m_todoReader.open(target);
+    m_sparseVolReader.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     readInfo();
