@@ -20,7 +20,7 @@
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 
-
+class ZStack;
 class ZSwcForest;
 class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
@@ -664,6 +664,7 @@ public:
 
   void labelStack(Stack *stack);
 
+  void labelStack(ZStack* stack,int v);
   /*!
    * \brief Get the length of the longest segment
    * \return

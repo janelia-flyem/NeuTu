@@ -11,29 +11,29 @@
 class ZImageShowWindow:public QWidget
 {
   Q_OBJECT
-public:
-  explicit ZImageShowWindow(QWidget *parent = 0);
-signals:
-public slots:
-  void checkChange();
-  void spinboxChange(int value);
-public:
-  void updateInfo(ZStackDoc* _doc);
-private :
-  void initPlot();
-  void showBasicInfo();
-  void showHisogram();
-  void getBasicHist();
-private:
-  ZStackDoc* doc;
-  QCheckBox* checkbox_y_log;
-  bool y_log;
-  int size_of_bin;
-  QSpinBox* spinbox;
-  QCustomPlot *customPlot;
-  QLabel *basic_info;
-  QCPBars *bars;
-  QVector<double> basic_hist;
+  public:
+    explicit ZImageShowWindow(QWidget *parent = 0);
+  signals:
+  public slots:
+    void checkChange();
+    void spinboxChange(int value);
+  public:
+    void updateInfo(ZStackDoc* _doc);
+  private :
+    void initPlot();
+    void showBasicInfo();
+    void showHistogram();
+    void getBasicHist();
+  private:
+    ZStackDoc* doc;
+    QCheckBox* checkbox_y_log;
+    bool y_log;
+    int size_of_bin;
+    QSpinBox* spinbox;
+    QCustomPlot *customPlot;
+    QLabel *basic_info;
+    QCPBars *bars;
+    QVector<double> basic_hist;
 };
 
 class ZImageInfoModule : public ZSandboxModule

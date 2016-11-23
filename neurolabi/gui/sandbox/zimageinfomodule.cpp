@@ -1,22 +1,22 @@
 #include<QMessageBox>
-#include <QAction>
+#include<QAction>
 #include<QGridLayout>
-#include <QPainter>
-#include <QPen>
+#include<QPainter>
+#include<QPen>
 #include<QString>
-#include "zsandbox.h"
-#include "zstackprocessor.h"
-#include "zimageinfomodule.h"
+#include"zsandbox.h"
+#include"zstackprocessor.h"
+#include"zimageinfomodule.h"
 
 ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)
 {
   //init this window
   resize(1000,600);
-  setWindowTitle("histogram of this image");
+  setWindowTitle("histogram");
   move(200,60);
-  //add a QLabel to show basic info of the image
+  //add a QLabel to show basic information of the image
   basic_info=new QLabel();
-  //add y Axis options
+  //add y Axis options:normal or log
   checkbox_y_log = new QCheckBox("yAxisLog",this);
   checkbox_y_log->setChecked(false);
   y_log=false;
@@ -29,7 +29,7 @@ ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)
   connect(spinbox, SIGNAL(valueChanged(int)),this, SLOT(spinboxChange(int)));
   //init the plot object
   initPlot();
-  //at last add a layout for this window
+  //at last, add a layout for this window
   QGridLayout* layout=new QGridLayout;
   layout->addWidget(customPlot,0,0,10,9);
   layout->addWidget(basic_info,0,9,5,1);
@@ -41,10 +41,9 @@ ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)
 }
 
 
-void ZImageShowWindow::showHisogram()
+void ZImageShowWindow::showHistogram()
 {
-  int t=0;
-  double sum=0.0,average=0.0;
+  double t=0.0,sum=0.0,average=0.0;
   int groups=ceil(256.0/size_of_bin);
   QVector<double> index(groups),values(groups);
   int i=0;
@@ -58,7 +57,7 @@ void ZImageShowWindow::showHisogram()
       t+=basic_hist[j];
     }
     sum+=t;
-    t=y_log?log(t+1):t;//avoid the log(0) exception
+    t=y_log?log(t+1):t;//add 1 to avoid log(0) exception
     values[i] = t;
     maxc=t>maxc?t:maxc;
   }
@@ -80,20 +79,20 @@ void ZImageShowWindow::showHisogram()
     coor.append(i);
     labels.append(QString::number(i*size_of_bin));
   }
-  coor.append(average/size_of_bin);
-  labels.append(QString::number(ceil(average)));
+  customPlot->graph(0)->setName(QString("  average intensity")+":"+QString::number(average,'f',2));
   customPlot->xAxis->setTickVector(coor);
   customPlot->xAxis->setTickVectorLabels(labels);
   customPlot->rescaleAxes();
   customPlot->replot();
 }
 
+
 void ZImageShowWindow::updateInfo(ZStackDoc* _doc)
 {
   doc=_doc;
   //show hisogram
   getBasicHist();
-  showHisogram();
+  showHistogram();
   //show basic information of the image
   showBasicInfo();
   //finally show the window
@@ -106,6 +105,8 @@ ZImageInfoModule::ZImageInfoModule(QObject *parent) :
 {
   init();
 }
+
+
 ZImageInfoModule::~ZImageInfoModule()
 {
   if(m_paint_window)
@@ -118,9 +119,10 @@ ZImageInfoModule::~ZImageInfoModule()
 void ZImageInfoModule::init()
 {
   m_paint_window=new ZImageShowWindow();
-  m_action = new QAction("imageInfo", this);
+  m_action = new QAction("ImageInfo", this);
   connect(m_action, SIGNAL(triggered()), this, SLOT(execute()));
 }
+
 
 void ZImageInfoModule::execute()
 {
@@ -131,22 +133,25 @@ void ZImageInfoModule::execute()
   }
 }
 
+
 void ZImageShowWindow::checkChange()
 {
   if(sender()==checkbox_y_log)
   {
     y_log=checkbox_y_log->isChecked();
   }
-  showHisogram();
+  showHistogram();
   show();
 }
+
 
 void ZImageShowWindow::spinboxChange(int value)
 {
   size_of_bin=value;
-  showHisogram();
+  showHistogram();
   show();
 }
+
 
 void ZImageShowWindow::showBasicInfo()
 {
@@ -161,6 +166,7 @@ void ZImageShowWindow::showBasicInfo()
   basic_info->setText(text);
 }
 
+
 void ZImageShowWindow::getBasicHist()
 {
   basic_hist.clear();
@@ -172,6 +178,7 @@ void ZImageShowWindow::getBasicHist()
   }
   delete hist;
 }
+
 
 void ZImageShowWindow::initPlot()
 {
@@ -224,7 +231,6 @@ void ZImageShowWindow::initPlot()
   bars->setPen(Qt::NoPen);
   bars->setBrush(QColor(10, 140, 70, 160));
   customPlot->addPlottable(bars);
-//  customPlot->addGraph();
   customPlot->addGraph();
   QPen pen;
   pen.setColor(QColor(255,170,100));

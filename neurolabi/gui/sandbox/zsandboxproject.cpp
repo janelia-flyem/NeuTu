@@ -7,7 +7,8 @@
 #include "zaboutmodule.h"
 #include "zrgb2graymodule.h"
 #include "ztracemodule.h"
-#include"zimageinfomodule.h"
+#include "zimageinfomodule.h"
+#include "zwatershedmodule.h"
 /*************************************/
 
 
@@ -26,4 +27,5 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZRgb2GrayModule>();
   RegisterModule<ZTraceModule>();
   RegisterModule<ZImageInfoModule>();
+  RegisterModule<ZWaterShedModule>();
 }

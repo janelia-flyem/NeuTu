@@ -437,7 +437,7 @@ protected:
   QLabel *m_msgLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
-  ZPainter m_imagePainter;
+//  ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
   ZPixmap *m_dynamicObjectCanvas;
