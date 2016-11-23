@@ -437,6 +437,7 @@ signals:
 
 protected:
   void init();
+  void initActiveObject();
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);

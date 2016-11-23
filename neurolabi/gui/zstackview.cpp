@@ -59,7 +59,7 @@ ZStackView::ZStackView(QWidget *parent) : QWidget(parent)
 
 ZStackView::~ZStackView()
 {
-  m_imagePainter.end();
+//  m_imagePainter.end();
   m_objectCanvasPainter.end();
   m_tileCanvasPainter.end();
 //  m_dynamicObjectCanvasPainter.end();
@@ -1175,7 +1175,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
 
 void ZStackView::clearCanvas()
 {
-  m_imagePainter.end();
+//  m_imagePainter.end();
   delete m_image;
   m_image = NULL;
 
@@ -1217,7 +1217,7 @@ void ZStackView::updateContrastProtocal()
 
 void ZStackView::updateImageCanvas()
 {
-  resetCanvasWithStack(m_image, &m_imagePainter);
+  resetCanvasWithStack(m_image, NULL);
   if (buddyDocument()->hasStackPaint()) {
     ZIntCuboid box = getViewBoundBox();
     if (m_image != NULL) {
@@ -1245,8 +1245,8 @@ void ZStackView::updateImageCanvas()
       m_image->setOffset(-box.getFirstCorner().getX(),
                          -box.getFirstCorner().getY());
 //      m_image->setScale(scale, scale);
-      m_imagePainter.begin(m_image);
-      m_imagePainter.setZOffset(box.getFirstCorner().getZ());
+//      m_imagePainter.begin(m_image);
+//      m_imagePainter.setZOffset(box.getFirstCorner().getZ());
       m_imageWidget->setImage(m_image);
     }
   }
@@ -1326,7 +1326,9 @@ void ZStackView::resetCanvasWithStack(
     clearObjectCanvas();
     canvas.setSize(canvasSize);
     canvas.setOffset(QPoint(tx, ty));
-    painter->setZOffset(box.getFirstCorner().getZ());
+    if (painter != NULL) {
+      painter->setZOffset(box.getFirstCorner().getZ());
+    }
   }
 }
 
@@ -1556,7 +1558,7 @@ void ZStackView::paintStackBuffer()
         }
       } else {
         m_image->setBackground();
-        paintObjectBuffer(m_imagePainter, ZStackObject::TARGET_STACK_CANVAS);
+//        paintObjectBuffer(m_imagePainter, ZStackObject::TARGET_STACK_CANVAS);
 
         if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =

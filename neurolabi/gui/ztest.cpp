@@ -17990,7 +17990,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Valid: " << doc->isDataValid("segmentation_8") << std::endl;
 #endif
 
-#if 1
+#if 0
   ZRandomGenerator rand;
 
   ZDvidSynapseEnsemble se;
@@ -19334,6 +19334,18 @@ void ZTest::test(MainWindow *host)
   line->addVisualEffect(NeuTube::Display::Line::VE_LINE_PROJ);
 
   frame->document()->addObject(line);
+#endif
+
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  host->addStackFrame(frame);
+  ZStack *stack = new ZStack(GREY, 10, 10, 1, 1);
+  stack->setOne();
+  stack->setIntValue(0, 0, 0, 0, 2);
+  frame->loadStack(stack);
+
+  host->presentStackFrame(frame);
 #endif
 
 #if 0

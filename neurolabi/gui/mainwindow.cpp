@@ -446,6 +446,8 @@ void MainWindow::initDialog()
 
   m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
 
+  m_testOptionDlg = new ZTestOptionDialog(this);
+
 #if defined(_FLYEM_)
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
   m_newBsProjectDialog->setDvidDialog(m_dvidDlg);
@@ -478,8 +480,6 @@ void MainWindow::initDialog()
 
   m_bodyPosDlg = new ZDvidBodyPositionDialog(this);
   m_bodyPosDlg->setDvidDialog(m_dvidDlg);
-
-  m_testOptionDlg = new ZTestOptionDialog(this);
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
 #else

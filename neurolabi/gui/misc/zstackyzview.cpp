@@ -64,7 +64,7 @@ void ZStackYZView::resetCanvasWithStack(T &canvas, ZPainter *painter)
 
 void ZStackYZView::updateImageCanvas()
 {
-  resetCanvasWithStack(m_image, &m_imagePainter);
+  resetCanvasWithStack(m_image, NULL);
   if (buddyDocument()->hasStackPaint()) {
     if (m_image != NULL) {
       m_image->setOffset(-buddyDocument()->getStackOffset().getY(),
@@ -82,8 +82,8 @@ void ZStackYZView::updateImageCanvas()
       m_image->setOffset(-buddyDocument()->getStackOffset().getY(),
                          -buddyDocument()->getStackOffset().getZ());
 //      m_image->setScale(scale, scale);
-      m_imagePainter.begin(m_image);
-      m_imagePainter.setZOffset(buddyDocument()->getStackOffset().getX());
+//      m_imagePainter.begin(m_image);
+//      m_imagePainter.setZOffset(buddyDocument()->getStackOffset().getX());
       m_imageWidget->setImage(m_image);
     }
   }
