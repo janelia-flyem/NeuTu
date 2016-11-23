@@ -73,39 +73,8 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
   return presenter;
 }
 
-void ZStackPresenter::init()
+void ZStackPresenter::initActiveObject()
 {
-  m_showObject = true;
-  m_oldShowObject = true;
-//  m_isStrokeOn = false;
-  m_skipMouseReleaseEvent = 0;
-  m_zOrder = 2;
-
-  initInteractiveContext();
-
-  m_grayScale.resize(5, 1.0);
-  m_grayOffset.resize(5, 0.0);
-
-  m_objStyle = ZStackObject::BOUNDARY;
-  m_threshold = -1;
-  m_mouseLeftButtonPressed = false;
-  m_mouseRightButtonPressed = false;
-
-  m_usingHighContrast = false;
-
-  m_paintingRoi = false;
-
-  for (int i = 0; i < 3; i++) {
-    m_mouseLeftReleasePosition[i] = -1;
-    m_mouseRightReleasePosition[i] = -1;
-    m_mouseLeftPressPosition[i] = -1;
-    m_mouseRightPressPosition[i] = -1;
-    m_mouseLeftDoubleClickPosition[i] = -1;
-    m_mouseMovePosition[i] = -1;
-  }
-
-  m_cursorRadius = 10;
-
   ZStroke2d *stroke = new ZStroke2d;
   stroke->setVisible(false);
   stroke->setFilled(true);
@@ -148,7 +117,41 @@ void ZStackPresenter::init()
   stroke->setColor(QColor(200, 128, 200));
   stroke->setTarget(ZStackObject::TARGET_WIDGET);
   addActiveObject(ROLE_TODO_ITEM, stroke);
+}
 
+void ZStackPresenter::init()
+{
+  m_showObject = true;
+  m_oldShowObject = true;
+//  m_isStrokeOn = false;
+  m_skipMouseReleaseEvent = 0;
+  m_zOrder = 2;
+
+  initInteractiveContext();
+
+  m_grayScale.resize(5, 1.0);
+  m_grayOffset.resize(5, 0.0);
+
+  m_objStyle = ZStackObject::BOUNDARY;
+  m_threshold = -1;
+  m_mouseLeftButtonPressed = false;
+  m_mouseRightButtonPressed = false;
+
+  m_usingHighContrast = false;
+
+  m_paintingRoi = false;
+
+  for (int i = 0; i < 3; i++) {
+    m_mouseLeftReleasePosition[i] = -1;
+    m_mouseRightReleasePosition[i] = -1;
+    m_mouseLeftPressPosition[i] = -1;
+    m_mouseRightPressPosition[i] = -1;
+    m_mouseLeftDoubleClickPosition[i] = -1;
+    m_mouseMovePosition[i] = -1;
+  }
+
+  m_cursorRadius = 10;
+  initActiveObject();
 
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
