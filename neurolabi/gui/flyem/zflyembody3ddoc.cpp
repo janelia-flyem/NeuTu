@@ -167,8 +167,12 @@ void ZFlyEmBody3dDoc::clearGarbage()
        if (obj->getType() == ZStackObject::TYPE_SWC) {
          ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj;
        }
+       Q_ASSERT(obj == iter.key());
+
        delete iter.key();
        iter.remove();
+
+       Q_ASSERT(!m_garbageMap.contains(obj));
      }
    }
 
