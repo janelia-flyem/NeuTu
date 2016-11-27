@@ -19337,12 +19337,13 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   host->addStackFrame(frame);
   ZStack *stack = new ZStack(GREY, 10, 10, 1, 1);
   stack->setOne();
   stack->setIntValue(0, 0, 0, 0, 2);
+//  stack->setIntValue(0, 0, 0, 0, 5);
   frame->loadStack(stack);
 
   host->presentStackFrame(frame);
@@ -20782,6 +20783,19 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/misc/segtest2.tif", &slice);
 #endif
 
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/emstack2.tif");
+
+  ZImage image(stack.width(), stack.height(), QImage::Format_ARGB32);
+
+  image.setData(stack.array8(0));
+  image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+
+  image.setData(stack.array8(0), 150);
+  image.save((GET_TEST_DATA_DIR + "/test2.tif").c_str());
+
+#endif
 
 #if 0
   tic();

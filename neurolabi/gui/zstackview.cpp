@@ -1010,8 +1010,8 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
                                               buddyPresenter()->greyScale(0),
                                               buddyPresenter()->greyOffset(0),
                                               stack->getChannelColor(0));
+        m_image->useContrastProtocal(buddyPresenter()->usingHighContrastProtocal());
         m_image->setData(stackData, getIntensityThreshold());
-        m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       }
       break;
     case GREY16:
@@ -1589,7 +1589,7 @@ void ZStackView::paintStackBuffer()
             slice->translate(-buddyDocument()->getStackOffset());
             slice->getOffset().setZ(0);
 
-            m_image->setData(slice, 0);
+            m_image->setData(slice, 0, false, true);
             delete slice;
           }
         }
