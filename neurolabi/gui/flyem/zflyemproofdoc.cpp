@@ -2576,6 +2576,10 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
               toStdString());
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
+
+#ifdef _DEBUG_2
+        objMask->save(GET_TEST_DATA_DIR + "/test3.sobj");
+#endif
         ZObject3dScan blockObj = dvidInfo.getBlockIndex(*objMask);
         size_t stripeNumber = blockObj.getStripeNumber();
 
@@ -2840,6 +2844,21 @@ void ZFlyEmProofDoc::processBodySelection()
   ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
   if (slice != NULL) {
     slice->processSelection();
+  }
+}
+
+void ZFlyEmProofDoc::syncBodySelection(ZDvidLabelSlice *labelSlice)
+{
+  ZOUT(LTRACE(), 5) << "Sync dvid label selection";
+  QList<ZDvidLabelSlice*> sliceList = getObjectList<ZDvidLabelSlice>();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *buddySlice = *iter;
+    if (buddySlice != labelSlice) {
+      const std::set<uint64_t> &selectedSet =
+          labelSlice->getSelectedOriginal();
+      buddySlice->setSelection(selectedSet, NeuTube::BODY_LABEL_ORIGINAL);
+    }
   }
 }
 

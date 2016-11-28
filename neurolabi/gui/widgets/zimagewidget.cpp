@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cmath>
+#include <QGraphicsBlurEffect>
 
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"

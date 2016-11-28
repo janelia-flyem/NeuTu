@@ -325,6 +325,10 @@ bool ZDvidSparseStack::fillValue(
       blockBox.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
       blockBox.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
 
+#ifdef _DEBUG_2
+      objMask->save(GET_TEST_DATA_DIR + "/test.sobj");
+      blockObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
 
       for (size_t s = 0; s < stripeNumber; ++s) {
 #ifdef _DEBUG_2

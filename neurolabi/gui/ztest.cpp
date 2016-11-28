@@ -20783,7 +20783,7 @@ void ZTest::test(MainWindow *host)
   C_Stack::write(GET_TEST_DATA_DIR + "/misc/segtest2.tif", &slice);
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/system/emstack2.tif");
 
@@ -20797,6 +20797,32 @@ void ZTest::test(MainWindow *host)
 
   image.setData(stack.array8(0), 2, 1, 150);
   image.save((GET_TEST_DATA_DIR + "/test3.tif").c_str());
+
+
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/432.sobj");
+
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+  tic();
+  ZObject3dScan obj2 = dvidInfo.getBlockIndex(obj);
+  ptoc();
+
+  tic();
+  obj.downsampleMax(31, 31, 31);
+  ptoc();
+  obj.setDsIntv(0, 0, 0);
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+
+//  obj2.load(GET_TEST_DATA_DIR + "/benchmark/sparsevol/test2.sobj");
+
+  std::cout << obj.equalsLiterally(obj2) << std::endl;
+
 
 
 #endif

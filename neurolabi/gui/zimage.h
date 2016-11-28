@@ -197,6 +197,7 @@ public:
   void setVisible(bool visible);
   bool isVisible() const;
 
+
 private:
   template<class T>
   void setBinaryDataIndexed8(const T *data, T bg);

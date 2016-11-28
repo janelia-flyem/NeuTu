@@ -69,6 +69,10 @@ public:
     return m_isPainted;
   }
 
+  QPainter* getPainter() {
+    return &m_painter;
+  }
+
   //inline ZPoint getOffset() { return m_transform.getOffset(); }
 
   void drawImage(
