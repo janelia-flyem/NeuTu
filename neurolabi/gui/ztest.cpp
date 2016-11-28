@@ -20795,6 +20795,10 @@ void ZTest::test(MainWindow *host)
   image.setData(stack.array8(0), 150);
   image.save((GET_TEST_DATA_DIR + "/test2.tif").c_str());
 
+  image.setData(stack.array8(0), 2, 1, 150);
+  image.save((GET_TEST_DATA_DIR + "/test3.tif").c_str());
+
+
 #endif
 
 #if 0
