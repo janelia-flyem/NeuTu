@@ -39,6 +39,7 @@
 #include "zstack.hxx"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
+#include "QsLog/QsLog.h"
 #endif
 
 using namespace std;
@@ -54,6 +55,12 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
+
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
+#endif
+#endif
 }
 
 ZSwcTree::~ZSwcTree()
@@ -69,7 +76,7 @@ ZSwcTree::~ZSwcTree()
 
   if (m_tree != NULL) {
 #ifdef _FLYEM_
-    std::cout << "Killing " << m_tree << ": SWC " << ", "
+    std::cout << "Killing " << this << " " << m_tree << ": SWC " << ", "
               << getSource() << std::endl;
 #endif
     Kill_Swc_Tree(m_tree);

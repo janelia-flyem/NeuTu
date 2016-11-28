@@ -832,6 +832,14 @@ void ZFlyEmProofMvc::mergeSelected()
   }
 }
 
+void ZFlyEmProofMvc::mergeSelectedWithoutConflict()
+{
+  if (getCompleteDocument() != NULL) {
+    getCompleteDocument()->mergeSelectedWithoutConflict(getSupervisor());
+  }
+}
+
+
 void ZFlyEmProofMvc::unmergeSelected()
 {
   if (getCompleteDocument() != NULL) {
@@ -1678,7 +1686,17 @@ void ZFlyEmProofMvc::testSlot()
       appending = false;
     }
 
+    if (bodyId % 13 == 0) {
+      m_bodyWindow->updateBody();
+    }
+
+    if (rand.rndint(10000) % 17 == 0) {
+      getCompletePresenter()->toggleHighlightMode();
+    }
+
     locateBody(bodyId, appending);
+
+    mergeSelectedWithoutConflict();
 
 //    std::vector<uint64_t> bodyArray;
 //    bodyArray.push_back(bodyId);

@@ -116,6 +116,7 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 
   if (obj != NULL) {
     m_garbageMap.remove(obj);
+    ZOUT(LTRACE(), 5) << obj << "recovered." << obj->getSource();
   }
 
   return obj;
@@ -152,8 +153,9 @@ void ZFlyEmBody3dDoc::clearGarbage()
 {
   QMutexLocker locker(&m_garbageMutex);
 
-  ZOUT(LTRACE(), 5) << "Clear garbage objects ...";
+  ZOUT(LTRACE(), 5) << "Clear garbage objects ..." << m_garbageMap.size();
 
+  int count = 0;
   int currentTime = m_objectTime.elapsed();
   QMutableMapIterator<ZStackObject*, ObjectStatus> iter(m_garbageMap);
    while (iter.hasNext()) {
@@ -165,12 +167,24 @@ void ZFlyEmBody3dDoc::clearGarbage()
      } else if (dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
        if (obj->getType() == ZStackObject::TYPE_SWC) {
-         ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj;
+         ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj << obj->getSource();
        }
+
+       if (obj != iter.key()) {
+         LTRACE() << "Deleting failed";
+       }
+
        delete iter.key();
        iter.remove();
+       ++count;
+
+       if (m_garbageMap.contains(obj)) {
+         LTRACE() << "Deleting failed";
+       }
      }
    }
+
+   ZOUT(LTRACE(), 5) << count << "removed;" << m_garbageMap.size() << "left";
 
 #if 0
   if (!m_garbageJustDumped) {
@@ -932,14 +946,16 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
 
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
-  removeObject(obj, false);
-  dumpGarbage(obj, true);
+  if (removeObject(obj, false)) {
+    dumpGarbage(obj, true);
+  }
 }
 
 void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 {
-  removeObject(obj, false);
-  dumpGarbage(obj, false);
+  if (removeObject(obj, false)) {
+    dumpGarbage(obj, false);
+  }
 }
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
@@ -1173,6 +1189,7 @@ void ZFlyEmBody3dDoc::forceBodyUpdate()
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
 
+#if 0
 template <typename InputIterator>
 void ZFlyEmBody3dDoc::dumpGarbage(
     const InputIterator &first, const InputIterator &last, bool recycable)
@@ -1181,17 +1198,22 @@ void ZFlyEmBody3dDoc::dumpGarbage(
 
 
   for (InputIterator iter = first; iter != last; ++iter) {
-    m_garbageMap[*iter].setTimeStamp(m_objectTime.elapsed());
-    m_garbageMap[*iter].setRecycable(recycable);
+    ZStackObject *obj = *iter;
+    m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
+    m_garbageMap[obj].setRecycable(recycable);
+    ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
   }
 
   m_garbageJustDumped = true;
 }
+#endif
 
 void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 {
   m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
   m_garbageMap[obj].setRecycable(recycable);
+
+  ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
 
   m_garbageJustDumped = true;
 }
@@ -1210,6 +1232,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   cancelEventThread();
 
   ZOUT(LTRACE(), 5) << "Dump puncta";
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   QList<ZPunctum*> punctumList = getObjectList<ZPunctum>();
   for (QList<ZPunctum*>::const_iterator iter = punctumList.begin();
        iter != punctumList.end(); ++iter) {
@@ -1237,6 +1260,8 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     dumpGarbage(tree, recycable);
   }
   m_bodySet.clear();
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)

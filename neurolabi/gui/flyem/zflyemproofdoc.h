@@ -44,6 +44,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
