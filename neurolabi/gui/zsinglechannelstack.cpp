@@ -425,7 +425,11 @@ bool ZSingleChannelStack::isBinary()
 
   ZStack_Stat *stat = getStat();
 
-  return stat->hist()[0] < 3;
+  if (stat->hist() != NULL) {
+    return stat->hist()[0] < 3;
+  }
+
+  return false;
 }
 
 bool ZSingleChannelStack::binarize(int threshold)
@@ -588,6 +592,7 @@ void ZStack_Stat::update(Stack *stack)
 
   if (stack->array != NULL) {
     if (stack->kind != COLOR) {
+#if 1
       double smin, smax;
       if ((stack->kind != FLOAT32) && (stack->kind != FLOAT64)) {
         m_hist = Stack_Hist(stack);
@@ -611,6 +616,11 @@ void ZStack_Stat::update(Stack *stack)
           m_greyScale = 255.0 / (smax - smin);
         m_greyOffset = -m_greyScale * smin;
 //      }
+#else
+      m_hist = Stack_Hist(stack);
+      m_min = Stack_Min(stack, NULL);
+      m_max = Stack_Max(stack, NULL);
+#endif
     }
   }
 }
