@@ -3367,12 +3367,16 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
 
 bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
+  bool removed = false;
+
   if (obj != NULL) {
     bufferObjectModified(obj);
     m_playerList.removePlayer(obj);
-    m_objectGroup.removeObject(obj, deleteObject);
+    removed = m_objectGroup.removeObject(obj, deleteObject);
     notifyObjectModified();
   }
+
+  return removed;
 }
 
 QList<ZStackObject*> ZStackDoc::getObjectList(ZStackObjectRole::TRole role) const
