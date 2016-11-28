@@ -3365,7 +3365,7 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
   return const_cast<ZSwcTree*>(dynamic_cast<const ZSwcTree*>(objList.at(index)));
 }
 
-void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
+bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
   if (obj != NULL) {
     bufferObjectModified(obj);

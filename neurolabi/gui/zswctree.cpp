@@ -38,6 +38,7 @@
 #include "zintcuboid.h"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
+#include "QsLog/QsLog.h"
 #endif
 
 using namespace std;
@@ -54,8 +55,10 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
 
+#if defined(_QT_GUI_USED_)
 #ifdef _FLYEM_
-    std::cout << "Creating SWC: " << this << std::endl;
+    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
+#endif
 #endif
 }
 

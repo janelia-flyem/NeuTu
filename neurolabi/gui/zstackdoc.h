@@ -390,7 +390,7 @@ public:
   //Those functions do not notify object modification
   //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  void removeObject(
+  bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
 
   void removeSelectedObject(bool deleteObject = false);
