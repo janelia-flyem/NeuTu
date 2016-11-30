@@ -578,7 +578,7 @@ bool ZStack::load(Stack *stack, bool isOwner)
     if (isOwner) {
       stack->array = NULL;
       C_Stack::kill(stack);
-      m_dealloc = C_Stack::systemKill;
+      m_dealloc = C_Stack::cppDelete;
     } else {
       m_dealloc = NULL;
     }
