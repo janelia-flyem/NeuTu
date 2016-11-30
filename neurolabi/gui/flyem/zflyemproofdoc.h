@@ -108,6 +108,7 @@ public:
   void setSelectedBody(
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void toggleBodySelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   void addSelectedBody(
       std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);

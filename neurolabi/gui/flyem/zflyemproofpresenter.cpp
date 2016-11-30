@@ -16,6 +16,7 @@
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidlabelslice.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -815,6 +816,76 @@ bool ZFlyEmProofPresenter::processCustomOperator(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       }
     }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_SINGLE:
+  {
+    buddyDocument()->deselectAllObject(false);
+    std::set<uint64_t> bodySet;
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+      if (label > 0) {
+        bodySet.insert(label);
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
+  {
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        if (bodySet.count(label) > 0) {
+          bodySet.erase(label);
+        } else {
+          bodySet.insert(label);
+        }
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
+  { //Deselect all other bodies. Select the hit body if it is not selected.
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    std::set<uint64_t> newBodySet;
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        if (bodySet.count(label) == 0) {
+          newBodySet.insert(label);
+        }
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          newBodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
+  {
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        bodySet.insert(label);
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
     break;

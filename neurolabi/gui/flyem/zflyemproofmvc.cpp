@@ -2972,6 +2972,9 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
   if (reader.isReady()) {
     uint64_t bodyId = reader.readBodyIdAt(x, y, z);
     if (bodyId > 0) {
+      getCompleteDocument()->toggleBodySelection(
+            bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+#if 0
 //      ZDvidLabelSlice *slice = getDvidLabelSlice();
       QList<ZDvidLabelSlice*> sliceList =
           getCompleteDocument()->getDvidLabelSliceList();
@@ -2999,6 +3002,7 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
         }
       }
       updateBodySelection();
+#endif
     }
   }
 }

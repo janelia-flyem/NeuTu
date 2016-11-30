@@ -879,6 +879,28 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
   return false;
 }
 
+std::set<uint64_t> ZDvidLabelSlice::getHitLabelSet() const
+{
+  std::set<uint64_t> labelSet;
+  if (m_hitLabel > 0) {
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(m_hitLabel);
+      labelSet.insert(
+            selectedOriginal.begin(), selectedOriginal.end());
+    } else {
+      labelSet.insert(m_hitLabel);
+    }
+  }
+
+  return labelSet;
+}
+
+uint64_t ZDvidLabelSlice::getHitLabel() const
+{
+  return m_hitLabel;
+}
+
 void ZDvidLabelSlice::selectHit(bool appending)
 {
   if (m_hitLabel > 0) {
@@ -913,6 +935,7 @@ void ZDvidLabelSlice::setSelection(const std::set<uint64_t> &selected,
     if (m_bodyMerger != NULL) {
       QSet<uint64_t> selectedOriginal =
           m_bodyMerger->getOriginalLabelSet(selected.begin(), selected.end());
+      m_selectedOriginal.clear();
       m_selectedOriginal.insert(
             selectedOriginal.begin(), selectedOriginal.end());
     } else {

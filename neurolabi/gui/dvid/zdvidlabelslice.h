@@ -110,6 +110,7 @@ public:
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
 
   uint64_t getHitLabel() const;
+  std::set<uint64_t> getHitLabelSet() const;
 
   const ZStackViewParam& getViewParam() const;
 

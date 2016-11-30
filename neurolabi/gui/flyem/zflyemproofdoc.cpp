@@ -169,21 +169,29 @@ void ZFlyEmProofDoc::runRoutineCheck()
 void ZFlyEmProofDoc::setSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  if (!sliceList.isEmpty()) {
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *slice = *iter;
-      slice->setSelection(selected, labelType);
-    }
+  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
 
-    emit bodySelectionChanged();
+  if (currentSelected != selected) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    if (!sliceList.isEmpty()) {
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        slice->setSelection(selected, labelType);
+      }
+
+      emit bodySelectionChanged();
+    }
   }
 }
 
 void ZFlyEmProofDoc::addSelectedBody(
     std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
+  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
+  currentSelected.insert(selected.begin(), selected.end());
+  setSelectedBody(currentSelected, labelType);
+#if 0
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   if (!sliceList.isEmpty()) {
     if (!selected.empty()) {
@@ -195,6 +203,7 @@ void ZFlyEmProofDoc::addSelectedBody(
       emit bodySelectionChanged();
     }
   }
+#endif
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -203,6 +212,18 @@ void ZFlyEmProofDoc::setSelectedBody(
   std::set<uint64_t> selected;
   selected.insert(bodyId);
   setSelectedBody(selected, labelType);
+}
+
+void ZFlyEmProofDoc::toggleBodySelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
+  if (currentSelected.count(bodyId) > 0) {
+    currentSelected.erase(bodyId);
+  } else {
+    currentSelected.insert(bodyId);
+  }
+  setSelectedBody(currentSelected, labelType);
 }
 
 bool ZFlyEmProofDoc::hasBodySelected() const
