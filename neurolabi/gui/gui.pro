@@ -127,10 +127,18 @@ contains(CONFIG, c++11) {
   }
 }
 
-#contains(CONFIG, sanitize) {
-#  message(Using sanitize)
-#  QMAKE_CXXFLAGS += -fsanitize=kernel-address
-#}
+contains(CONFIG, sanitize) {
+  message(Using sanitize)
+  unix {
+    macx {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    } else {
+      QMAKE_CXXFLAGS += -fsanitize=kernel-address
+      QMAKE_LFLAGS += -fsanitize=kernel-address
+    }
+  }
+}
 
 #QT += webkit
 
