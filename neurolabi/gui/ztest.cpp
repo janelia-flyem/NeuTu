@@ -20802,6 +20802,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  int *array = new int[100];
+  delete [] array;
+  int x = array[0];  // BOOM
+#endif
+
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/432.sobj");
 
