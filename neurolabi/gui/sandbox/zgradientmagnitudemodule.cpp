@@ -2,6 +2,9 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QCheckBox>
+#include <QRadioButton>
 #include "zgradientmagnitudemodule.h"
 #include "mainwindow.h"
 #include "zsandbox.h"
@@ -27,7 +30,7 @@ void ZGradientMagnitudeModule::init()
 {
   QAction *action = new QAction("GradientMagnitude", this);
   connect(action, SIGNAL(triggered()), this, SLOT(execute()));
-  select_strategy_window=new ZSelectGradientStrategyWindow;
+  select_strategy_window=new ZSelectGradientStrategyWindow();
   setAction(action);
 }
 
@@ -42,23 +45,27 @@ ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   :QWidget(parent)
 {
   this->setWindowTitle("Select Gradient Strategy");
-  QVBoxLayout* lay=new QVBoxLayout(this);
+  Qt::WindowFlags flags = this->windowFlags();
+  flags |= Qt::WindowStaysOnTopHint;
+  this->setWindowFlags(flags);
+  QHBoxLayout* lay=new QHBoxLayout(this);
   start_gradient_magnitude=new QPushButton("start");
   strategies=new QComboBox;
-  strategies->addItem("normal");
+  strategies->addItem("simple");
+  inverse=new QRadioButton("inverse");
   lay->addWidget(strategies);
+  lay->addWidget(inverse);
   lay->addWidget(start_gradient_magnitude);
   this->setLayout(lay);
-  this->resize(200,200);
+  this->resize(200,100);
   this->move(300,200);
   connect(start_gradient_magnitude,SIGNAL(clicked()),this,SLOT(onStart()));
-  strategy_map["normal"]=GradientStrategyType::NORMAL;
+  strategy_map["simple"]=GradientStrategyType::SIMPLE;
 }
 
 
 void ZSelectGradientStrategyWindow::onStart()
 {
-  this->hide();
   ZStackDoc *doc =ZSandbox::GetCurrentDoc();
   ZStack  *input_stack=doc->getStack();
   if(!doc || ! input_stack)
@@ -72,93 +79,126 @@ void ZSelectGradientStrategyWindow::onStart()
   int depth=input_stack->depth();
   int channel=input_stack->channelNumber();
 
-  ZStack* output_x=new ZStack(kind,width,height,depth,channel);
-  ZStack* output_y=new ZStack(kind,width,height,depth,channel);
-  ZStack* output_z=new ZStack(kind,width,height,depth,channel);
-  ZStack* out=new ZStack(kind,width,height,depth,channel);
+  ZStack* mag=new ZStack(kind,width,height,depth,channel);
 
   QString s=strategies->currentText();
-  GradientStrategyContext context(input_stack,output_x,output_y,output_z,strategy_map[s]);
+  GradientStrategyContext context(input_stack,mag,inverse->isChecked(),strategy_map[s]);
   context.run();
 
-  /*ZStackFrame *framex=ZSandbox::GetMainWindow()->createStackFrame(output_x);
-  ZSandbox::GetMainWindow()->addStackFrame(framex);
-  ZSandbox::GetMainWindow()->presentStackFrame(framex);
-
-  ZStackFrame *framey=ZSandbox::GetMainWindow()->createStackFrame(output_y);
-  ZSandbox::GetMainWindow()->addStackFrame(framey);
-  ZSandbox::GetMainWindow()->presentStackFrame(framey);
-
-  ZStackFrame *framez=ZSandbox::GetMainWindow()->createStackFrame(output_z);
-  ZSandbox::GetMainWindow()->addStackFrame(framez);
-  ZSandbox::GetMainWindow()->presentStackFrame(framez);*/
-
-  GradientMagnitude<uint8>::run(output_x,output_y,output_z,out);
-  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
+  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(mag);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
-  delete output_x;
-  delete output_y;
-  delete output_z;
+}
+
+
+GradientStrategyContext::GradientStrategyContext(
+    const ZStack* input_stack,ZStack* output_x,ZStack* output_y,
+    ZStack* output_z,ZStack* mag,bool inverse,GradientStrategyType::StrategyType strategy_type)
+{
+  _in=input_stack;
+  _outx=output_x;
+  _outy=output_y;
+  _outz=output_z;
+  _mag=mag;
+  _type=strategy_type;
+  _inverse=inverse;
+  delete_out_xyz=false;
+}
+
+
+GradientStrategyContext::GradientStrategyContext(
+    const ZStack* in,ZStack* out,bool inverse,GradientStrategyType::StrategyType strategy_type)
+{
+  _in=in;
+  _mag=out;
+  _inverse=inverse;
+  _outx=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
+  _outy=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
+  _outz=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
+  _type=strategy_type;
+  delete_out_xyz=true;
+}
+
+
+GradientStrategyContext::~GradientStrategyContext()
+{
+  if(delete_out_xyz)
+  {
+    delete _outx;
+    delete _outy;
+    delete _outz;
+  }
 }
 
 
 void GradientStrategyContext::run()
 {
-  for(int i=0;i<_in->channelNumber();++i)
+  if(!_in || !_outx || !_outy || !_outz)
+    return ;
+
+  switch(_in->kind())
   {
-    switch(_in->kind())
-    {
-      case GREY:
-          _run<uint8>(_in->array8(i),_outx->array8(i),_outy->array8(i),_outz->array8(i));
+    case GREY:
+          _run<uint8>();
           break;
-      case GREY16:
-          _run<uint16>(_in->array16(i),_outx->array16(i),_outy->array16(i),_outz->array16(i));
+    case GREY16:
+          _run<uint16>();
           break;
-      case FLOAT32:
-          _run<float32>(_in->array32(i),_outx->array32(i),_outy->array32(i),_outz->array32(i));
+    case FLOAT32:
+          _run<float32>();
           break;
-      case FLOAT64:
-          _run<float64>(_in->array64(i),_outx->array64(i),_outy->array64(i),_outz->array64(i));
+    case FLOAT64:
+          _run<float64>();
           break;
-      case COLOR:
-          _run<gradient_color_t>
-              (
-                (gradient_color_t*)_in->array8(i),
-                (gradient_color_t*)_outx->array8(i),
-                (gradient_color_t*)_outy->array8(i),
-                (gradient_color_t*)_outz->array8(i)
-              );
+    case COLOR:
+          _run<color_t>();
           break;
-      default:
+    default:
           break;
-    }
   }
 }
 
 
 template<typename T>
-void GradientStrategyContext:: _run(const T* in,T* out_x,T* out_y,T* out_z)
+void GradientStrategyContext:: _run()
 {
   GradientStrategy<T>* strategy=0;
   switch(_type)
   {
-    case GradientStrategyType::NORMAL:
-        strategy=new GradientStrategyNormal<T>;
+    case GradientStrategyType::SIMPLE:
+        strategy=new GradientStrategySimple<T>;
         break;
     default:
         strategy=0;
         break;
   }
-  strategy->run(in,out_x,out_y,out_z,_in->width(),_in->height(),_in->depth());
+  if(strategy)
+  {
+    GradientStrategyParam p(_in->width(),_in->height(),_in->depth(),_inverse);
+    /*process each channel*/
+    for(int i=0;i<_in->channelNumber();++i)
+    {
+      const T*in=(const T*)_in->array8(i);
+      T* out_x=(T*)_outx->array8(i);
+      T* out_y=(T*)_outy->array8(i);
+      T* out_z=(T*)_outz->array8(i);
+      T* mag=(T*)_mag->array8(i);
+      strategy->run(in,out_x,out_y,out_z,mag,p);
+    }
+    delete strategy;
+  }
 }
 
 
 template<typename T>
-void GradientStrategyNormal<T>::run(const T* in,T* out_x,T* out_y,T* out_z,uint width,uint height,uint depth)
+void GradientStrategySimple<T>::run(const T* in,T* out_x,T* out_y,T* out_z,T* mag,GradientStrategyParam p)
 {
+  uint width=p.width;
+  uint height=p.height;
+  uint depth=p.depth;
   uint t=width*height;
+
   for(uint z=0;z<depth;++z)
   {
     uint offset_s=t*z;
@@ -171,54 +211,125 @@ void GradientStrategyNormal<T>::run(const T* in,T* out_x,T* out_y,T* out_z,uint 
       T* pz=out_z+offset;
       for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
       {
+        /*convert to double to avoid substraction operation overflow*/
         if(x==0)
-          *px=*(pi+1)>*pi ? *(pi+1)-*pi : *pi-*(pi+1);
+          *px=abs(double(*px)-*(px+1));
         else if(x==width-1)
-          *px=*(pi-1)>*pi ? *(pi-1)-*pi : *pi-*(pi-1);
+          *px=abs(double(*(pi-1))-*pi);
         else
-          *px=*(pi+1)>*(pi-1) ? (*(pi+1)-*(pi-1))/2.0 : (*(pi-1)-*(pi+1))/2.0;
-
+          *px=abs(double(*(pi+1))-*(pi-1))/2.0;
         if(y==0)
-          *py=*(pi+width)>*pi ? *(pi+width)-*pi : *pi-*(pi+width);
+          *py=abs(double(*(pi+width))-*pi);
         else if(y==height-1)
-          *py=*pi>*(pi-width) ? *pi-*(pi-width) : *(pi-width)-*pi;
+          *py=abs(double(*pi)-*(pi-width));
         else
-          *py=*(pi+width)>*(pi-width) ? (*(pi+width)-*(pi-width))/2.0 : (*(pi-width)-*(pi+width))/2.0;
-
+          *py=abs(double(*(pi+width))-*(pi-width))/2.0;
         if(z==0)
-          *pz=*(pi+t)>*(pi) ? *(pi+t)-*(pi) : *(pi)-*(pi+t);
+          *pz=abs(double(*(pi+t))-*(pi));
         else if(z==depth-1)
-          *pz=*(pi)>*(pi-t) ? *(pi)-*(pi-t) : *(pi-t)-*(pi);
+          *pz=abs(double(*(pi))-*(pi-t));
         else
-          *pz=*(pi+t)>*(pi-t) ? (*(pi+t)-*(pi-t))/2.0 : (*(pi-t)-*(pi+t))/2.0;
+          *pz=abs(double(*(pi+t))-*(pi-t))/2.0;
       }
     }
   }
-}
-
-
-template<typename T>
-void GradientMagnitude<T>::run(const ZStack* in_x,const ZStack* in_y,const ZStack* in_z,ZStack* out)
-{
-  for(int c=0;c<in_x->channelNumber();++c)
+  if(mag)
   {
-    uint num=in_x->getVoxelNumber();
-    const T* p_x=(const T*)(void*)(in_x->array8(c));
+    int sign=p.inverse?-1:1;
+    double max=DBL_MAX;
+    if(typeid(uint8)==typeid(T))
+    {
+      max=255.0;
+    }
+    else if(typeid(uint16)==typeid(T))
+    {
+      max=65535.0;
+    }
+    else if(typeid(float32)==typeid(T))
+    {
+      max=FLT_MAX;
+    }
+    double inver_max=p.inverse?max:0;
+    T *p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
+    uint num=width*height*depth;
     const T* end_x=p_x+num;
-    const T* p_y=(const T*)(void*)(in_y->array8(c));
-    const T* p_z=(const T*)(void*)(in_z->array8(c));
-    T* p_o=(T*)(void*)(out->array8(c));
-
     T x,y,z;
     for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
     {
       x=*p_x;
       y=*p_y;
       z=*p_z;
-      *p_o=sqrt(static_cast<double>(x*x+y*y+z*z));
+      *p_o=inver_max+sign*std::min(sqrt(static_cast<double>(x*x+y*y+z*z)),max);
     }
   }
 }
+
+
+template<>
+void GradientStrategySimple<color_t>::run(const color_t* in,color_t* out_x,
+                                          color_t* out_y,color_t* out_z,color_t* mag,
+                                          GradientStrategyParam p)
+{
+  uint width=p.width;
+  uint height=p.height;
+  uint depth=p.depth;
+  uint t=width*height;
+  for(uint z=0;z<depth;++z)
+  {
+    uint offset_s=t*z;
+    for(uint y=0;y<height;++y)
+    {
+      uint offset=offset_s+width*y;
+      const color_t* pi=in+offset;
+      color_t* px=out_x+offset;
+      color_t* py=out_y+offset;
+      color_t* pz=out_z+offset;
+      for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
+      {
+        //convert to double to avoid substraction operation overflow
+        for(uint y=0;y<3;++y)
+        {
+          if(x==0)
+            *px[y]=abs(double((*px)[y]))-*(px+1)[y];
+          else if(x==width-1)
+            *px[y]=abs(double((*(pi-1))[y])-*pi[y]);
+          else
+            *px[y]=abs(double((*(pi+1))[y])-*(pi-1)[y])/2.0;
+          if(y==0)
+            *py[y]=abs(double((*(pi+width))[y])-*pi[y]);
+          else if(y==height-1)
+            *py[y]=abs(double((*pi)[y])-*(pi-width)[y]);
+          else
+            *py[y]=abs(double((*(pi+width))[y])-*(pi-width)[y])/2.0;
+          if(z==0)
+            *pz[y]=abs(double((*(pi+t))[y])-*(pi)[y]);
+          else if(z==depth-1)
+            *pz[y]=abs(double((*(pi))[y])-*(pi-t)[y]);
+          else
+            *pz[y]=abs(double((*(pi+t))[y])-*(pi-t)[y])/2.0;
+        }
+      }
+    }
+  }
+  if(mag)
+  {
+    int sign=p.inverse?-1:1;
+    uint8_t max=255;
+    uint8_t inver_max=p.inverse?max:0;
+    color_t* p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
+    uint num=width*height*depth;
+    const color_t* end_x=p_x+num;
+    for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
+    {
+      for(int i=0;i<3;++i)
+      {
+        *p_o[i]=inver_max+sign*std::min(255.0,
+              sqrt(static_cast<double>(*p_x[i]**p_x[i]+*p_y[i]**p_y[i]+*p_z[i]**p_z[i])));
+      }
+    }
+  }
+}
+
 
 
 
