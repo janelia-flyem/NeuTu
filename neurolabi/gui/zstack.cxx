@@ -571,14 +571,14 @@ bool ZStack::load(Stack *stack, bool isOwner)
     if (isOwner)
       C_Stack::kill(stack);
   } else {
-    m_stack = new Mc_Stack;
+    m_stack = (Mc_Stack*) malloc(sizeof(Mc_Stack));
 
     C_Stack::view(stack, m_stack);
 
     if (isOwner) {
       stack->array = NULL;
       C_Stack::kill(stack);
-      m_dealloc = C_Stack::cppDelete;
+      m_dealloc = C_Stack::systemKill;
     } else {
       m_dealloc = NULL;
     }
