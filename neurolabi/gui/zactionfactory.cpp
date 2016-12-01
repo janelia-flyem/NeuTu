@@ -533,6 +533,13 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_DECOMPOSE:
     action = new QAction("Decompose", parent);
     break;
+  case ACTION_BODY_CROP:
+    action = new QAction("Crop", parent);
+    break;
+  case ACTION_BODY_CHOP:
+    action = new QAction("Slice", parent);
+    action->setToolTip("Cut the body with plane(s) at the current position");
+    break;
   case ACTION_BODY_MERGE:
     action = new QAction("Merge", parent);
     break;

@@ -99,6 +99,7 @@ public:
    */
   void createKeyvalue(const std::string &name);
 
+  void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
   void deleteKey(const QString &dataName, const QString &key);
 
@@ -116,6 +117,8 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
+  uint64_t rewriteBody(uint64_t label);
+
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
@@ -126,6 +129,8 @@ public:
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
   uint64_t writePartition(const ZObject3dScan &bm, const ZObject3dScan &bs,
                           uint64_t oldLabel);
+  uint64_t chopBody(
+      const ZObject3dScan &obj, const ZIntCuboid &box, uint64_t oldLabel);
 
   uint64_t writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel);
 

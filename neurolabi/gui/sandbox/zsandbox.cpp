@@ -72,6 +72,7 @@ ZStackDoc* ZSandbox::GetCurrentDoc()
 void ZSandbox::registerModule(ZSandboxModule *module)
 {
   module->setParent(GetMainWindow());
+//  module->initialize(GetMainWindow());
 
   if (module->getMenu() != NULL) {
     GetMainWindow()->getSandboxMenu()->addMenu(module->getMenu());

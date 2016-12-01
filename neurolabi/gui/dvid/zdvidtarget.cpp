@@ -50,7 +50,9 @@ void ZDvidTarget::init()
   m_isSupervised = true;
   m_bgValue = 255;
   m_isEditable = true;
+  m_readOnly = false;
   m_maxLabelZoom = 0;
+  m_usingMultresBodyLabel = false;
 
   setDefaultMultiscale2dName();
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
@@ -378,9 +380,11 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
     }
 
+    /*
     if (obj.hasKey(m_maxLabelZoomKey)) {
       setMaxLabelZoom(ZJsonParser::integerValue(obj[m_maxLabelZoomKey]));
     }
+    */
 
     /*
     if (obj.hasKey(m_labelszKey)) {
@@ -472,6 +476,15 @@ std::string ZDvidTarget::getBodyLabelName() const
   return m_bodyLabelName;
 }
 
+bool ZDvidTarget::usingMulitresBodylabel() const
+{
+  if (m_usingMultresBodyLabel) {
+    return getMaxLabelZoom() > 3;
+  }
+
+  return false;
+}
+
 bool ZDvidTarget::hasBodyLabel() const
 {
   return !getBodyLabelName().empty();
@@ -495,16 +508,21 @@ std::string ZDvidTarget::getLabelBlockName() const
 
 std::string ZDvidTarget::getLabelBlockName(int zoom) const
 {
-  if (zoom < 0 || zoom > getMaxLabelZoom()) {
-    return "";
-  }
-
   std::string name = getLabelBlockName();
   if (!name.empty() && zoom > 0) {
     name = name + "_" + ZString::num2str(zoom);
   }
 
   return name;
+}
+
+std::string ZDvidTarget::getValidLabelBlockName(int zoom) const
+{
+  if (zoom < 0 || zoom > getMaxLabelZoom()) {
+    return "";
+  }
+
+  return getLabelBlockName(zoom);
 }
 
 void ZDvidTarget::setLabelBlockName(const std::string &name)

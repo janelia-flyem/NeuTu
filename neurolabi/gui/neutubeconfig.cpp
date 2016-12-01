@@ -54,7 +54,7 @@ void NeutubeConfig::init()
   m_usingNativeDialog = true;
 
   m_messageReporter = new ZLogMessageReporter;
-  m_softwareName = "NeuTu";
+  setDefaultSoftwareName();
 #ifdef _QT_GUI_USED_
   m_workDir = m_settings.value("workDir").toString().toStdString();
 #if 0
@@ -80,6 +80,27 @@ void NeutubeConfig::init()
 
 }
 
+void NeutubeConfig::setDefaultSoftwareName()
+{
+  m_softwareName = "NeuTu";
+}
+
+void NeutubeConfig::setTestSoftwareName()
+{
+  setDefaultSoftwareName();
+  m_softwareName += "_test";
+}
+
+void NeutubeConfig::SetDefaultSoftwareName()
+{
+  getInstance().setDefaultSoftwareName();
+}
+
+void NeutubeConfig::SetTestSoftwareName()
+{
+  getInstance().setTestSoftwareName();
+}
+
 void NeutubeConfig::setWorkDir(const string str)
 {
   if (m_workDir == m_logDir) { //Reset log dir
@@ -93,6 +114,11 @@ void NeutubeConfig::setWorkDir(const string str)
 #endif
 
   updateLogDir();
+}
+
+void NeutubeConfig::SetApplicationDir(const string &str)
+{
+  getInstance().setApplicationDir(str);
 }
 
 void NeutubeConfig::updateLogDir()

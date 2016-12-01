@@ -130,6 +130,12 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
   switch (event->key()) {
   case Qt::Key_R:
+#ifdef _FLYEM_
+    if (event->modifiers() == Qt::NoModifier) {
+      enterPaintStroke();
+      processed = true;
+    } else
+#endif
     if (event->modifiers() == Qt::ShiftModifier) {
       enterPaintRect();
       processed = true;

@@ -32,18 +32,27 @@ struct enrichment_info
         : travels_to_vertex_index(-1)
         , travels_to_ip_index(-1)
         , next_ip_index(-1)
+        , startable(true)
+        , count_left(0)
+        , count_right(0)
     {}
 
     // vertex to which is free travel after this IP,
     // so from "segment_index+1" to "travels_to_vertex_index", without IP-s,
     // can be -1
-    signed_index_type travels_to_vertex_index;
+    signed_size_type travels_to_vertex_index;
 
     // same but now IP index, so "next IP index" but not on THIS segment
-    int travels_to_ip_index;
+    signed_size_type travels_to_ip_index;
 
     // index of next IP on this segment, -1 if there is no one
-    int next_ip_index;
+    signed_size_type next_ip_index;
+
+    bool startable; // Can be used to start in traverse
+
+    // Counts if polygons left/right of this operation
+    std::size_t count_left;
+    std::size_t count_right;
 };
 
 

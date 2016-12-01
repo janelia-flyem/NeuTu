@@ -3,6 +3,11 @@
 #include <QElapsedTimer>
 #include <QtCore>
 #include <QMutexLocker>
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
+#endif
 
 #include "neutubeconfig.h"
 #include "zstackview.h"

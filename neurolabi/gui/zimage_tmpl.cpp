@@ -1,88 +1,138 @@
 #include <QtConcurrentRun>
 
+template<class T> void ZImage::setBinaryDataIndexed8(const T *data, T bg)
+{
+    int w = width();
+    int h = height();
+
+    for (int j = 0; j < h; j++) {
+        uchar *line = scanLine(j);
+        for (int i = 0; i < w; i++) {
+            if (*data++ == bg) {
+                *line++ = '\0';
+            } else {
+                *line++ = '\xff';
+            }
+        }
+    }
+}
+
+template <class T>
+void ZImage::setDataIndexed8(const T *data)
+{
+  int w = width();
+  int h = height();
+
+  for (int j = 0; j < h; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < w; i++) {
+        int v = *data++;
+        if (v < 0) {
+            v = 0;
+        }
+        if (v > 255) {
+            v = 255;
+        }
+        *line++ = v;
+    }
+  }
+}
+
+template <class T>
+void ZImage::setDataIndexed8(const T *data, int threshold)
+{
+    setDataIndexed8(data);
+    adjustColorTable(1.0, 0.0, threshold);
+}
+
 template<class T> void ZImage::setBinaryData(const T *data, T bg,
                                              int threshold)
 {
-  if (threshold < 0) {
-    int i, j;
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        uint8 value = '\0';
-        if (*data++ != bg) {
-          value = '\xff';
-        }
+    if (format() == Format_Indexed8) {
+        setBinaryDataIndexed8(data, bg);
+        adjustColorTable(1.0, 0.0, threshold);
+    } else if (depth() == 32){
+        if (threshold < 0) {
+            int i, j;
+            for (j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (i = 0; i < width(); i++) {
+                    uint8 value = '\0';
+                    if (*data++ != bg) {
+                        value = '\xff';
+                    }
 
-        *line++ = value;
-        *line++ = value;
-        *line++ = value;
-        *line++ = '\xff';
-      }
-    }
-  } else {
-    int i, j;
-    for (j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (i = 0; i < width(); i++) {
-        if (*data > threshold) {
-          *line++ = '\0';
-          *line++ = '\0';
-          *line++ = '\xff';
-          *line++ = '\xff';
-          ++data;
+                    *line++ = value;
+                    *line++ = value;
+                    *line++ = value;
+                    *line++ = '\xff';
+                }
+            }
         } else {
-          uint8 value = '\0';
-          if (*data++ != bg) {
-            value = '\xff';
-          }
-          
-          *line++ = value;
-          *line++ = value;
-          *line++ = value;
-          *line++ = '\xff';
+            int i, j;
+            for (j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (i = 0; i < width(); i++) {
+                    if (*data > threshold) {
+                        *line++ = '\0';
+                        *line++ = '\0';
+                        *line++ = '\xff';
+                        *line++ = '\xff';
+                        ++data;
+                    } else {
+                        uint8 value = '\0';
+                        if (*data++ != bg) {
+                            value = '\xff';
+                        }
+
+                        *line++ = value;
+                        *line++ = value;
+                        *line++ = value;
+                        *line++ = '\xff';
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 template<class T>
 void ZImage::setData(const T *data, double scale, double offset,
                      int threshold)
 {
-  if (scale == 1.0 && offset == 0.0) {
-    if (threshold < 0) {
-      int i, j;
-      int w = width();
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < w; i++) {
-          memset(line, *data++, 3);
-          line += 3;
-          *line++ = '\xff';
+    if (scale == 1.0 && offset == 0.0) {
+        if (threshold < 0) {
+            int i, j;
+            int w = width();
+            for (j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (i = 0; i < w; i++) {
+                    memset(line, *data++, 3);
+                    line += 3;
+                    *line++ = '\xff';
+                }
+            }
+        } else {
+            int i, j;
+            for (j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (i = 0; i < width(); i++) {
+                    if (*data > threshold) {
+                        *line++ = '\0';
+                        *line++ = '\0';
+                        *line++ = '\xff';
+                        ++data;
+                    } else {
+                        *line++ = *data;
+                        *line++ = *data;
+                        *line++ = *data++;
+                    }
+                    *line++ = '\xff';
+                }
+            }
         }
-      }
-    } else {
-      int i, j;
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (*data > threshold) {
-            *line++ = '\0';
-            *line++ = '\0';
-            *line++ = '\xff';
-            ++data;
-          } else {
-            *line++ = *data;
-            *line++ = *data;
-            *line++ = *data++;
-          }
-          *line++ = '\xff';
-        }
-      }
+        return;
     }
-    return;
-  }
 
 
     if (threshold < 0) {
@@ -141,61 +191,244 @@ void ZImage::setData(const T *data, double scale, double offset,
     }
 }
 
+template <class T>
+void ZImage::setDataRgba(const T *data)
+{
+    int w = width();
+    int h = height();
+
+    for (int j = 0; j < h; j++) {
+      uchar *line = scanLine(j);
+      for (int i = 0; i < w; i++) {
+          int v = *data++;
+          if (v < 0) {
+              v = 0;
+          } else if (v > 255) {
+              v = 255;
+          }
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+          *line++ = '\xff';
+      }
+    }
+}
+
+template <class T>
+void ZImage::setDataRgba(const T *data, const uint8 *valueMap)
+{
+    int w = width();
+    int h = height();
+
+    for (int j = 0; j < h; j++) {
+      uchar *line = scanLine(j);
+      for (int i = 0; i < w; i++) {
+          int v = *data++;
+          if (v < 0) {
+              v = 0;
+          } else if (v > 255) {
+              v = 255;
+          }
+          v = valueMap[v];
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+          *line++ = '\xff';
+      }
+    }
+}
+
+template <class T>
+void ZImage::setDataRgba(const T *data, const uint8 *valueMap, int threshold)
+{
+  int imageWidth = width();
+  int imageHeight = height();
+
+  for (int j = 0; j < imageHeight; j++) {
+    uchar *line = scanLine(j);
+
+    for (int i = 0; i < imageWidth; i++) {
+      int v = *data++;
+      if (v > threshold) {
+        *line++ = '\0';
+        *line++ = '\0';
+        *line++ = '\xff';
+      } else {
+        v = valueMap[v];
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+      }
+      *line++ = '\xff';
+    }
+  }
+}
+
+template <class T>
+void ZImage::setDataRgba(const T *data, int threshold)
+{
+  int w = width();
+  int h = height();
+
+  for (int j = 0; j < h; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < w; i++) {
+      if (*data > threshold) {
+        *line++ = '\0';
+        *line++ = '\0';
+        *line++ = '\xff';
+        ++data;
+      } else {
+        int v = *data++;
+        if (v < 0) {
+            v = 0;
+        } else {
+            v = 255;
+        }
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+      }
+      *line++ = '\xff';
+    }
+  }
+}
+
+template <class T>
+void ZImage::setDataRgb32(const T *data)
+{
+  int w = width();
+  int h = height();
+
+  for (int j = 0; j < h; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < w; i++) {
+        int v = *data++;
+        if (v < 0) {
+            v = 0;
+        } else if (v > 255) {
+            v = 255;
+        }
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+        line++;
+    }
+  }
+}
+
+template <class T>
+void ZImage::setDataRgb32(const T *data, int threshold)
+{
+  int w = width();
+  int h = height();
+
+  for (int j = 0; j < h; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < w; i++) {
+      if (*data > threshold) {
+        *line++ = '\0';
+        *line++ = '\0';
+        *line++ = '\xff';
+        ++data;
+      } else {
+          int v = *data++;
+          if (v < 0) {
+              v = 0;
+          } else if (v > 255) {
+              v = 255;
+          }
+
+          *line++ = v;
+          *line++ = v;
+          *line++ = v;
+      }
+      line++;
+    }
+  }
+}
+
+template <class T>
+void ZImage::setDataRgb32(const T *data, const uint8 *valueMap)
+{
+  int imageWidth = width();
+  int imageHeight = height();
+
+  for (int j = 0; j < imageHeight; j++) {
+    uchar *line = scanLine(j);
+    for (int i = 0; i < imageWidth; i++) {
+        int v = *data++;
+        if (v < 0) {
+            v = 0;
+        } else if (v > 255) {
+            v = 255;
+        }
+        v = valueMap[v];
+        *line++ = v;
+        *line++ = v;
+        *line++ = v;
+        line++;
+    }
+  }
+}
+
 template<class T>
 void ZImage::set3ChannelData(const T *data0, double scale0, double offset0,
                              const T *data1, double scale1, double offset1,
                              const T *data2, double scale2, double offset2,
                              uint8_t alpha)
 {
-  if (scale0 == 1.0 && offset0 == 0.0 && scale1 == 1.0 && offset1 == 0.0 &&
-          scale2 == 1.0 && offset2 == 0.0) {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-        *line++ = (uint8)(*data2++);
-        *line++ = (uint8)(*data1++);
-        *line++ = (uint8)(*data0++);
-        *line++ = alpha;
-        //line++;
-      }
+    if (isArgb32()) {
+        if (scale0 == 1.0 && offset0 == 0.0 && scale1 == 1.0 && offset1 == 0.0 &&
+                scale2 == 1.0 && offset2 == 0.0) {
+            for (int j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (int i = 0; i < width(); i++) {
+                    *line++ = (uint8)(*data2++);
+                    *line++ = (uint8)(*data1++);
+                    *line++ = (uint8)(*data0++);
+                    *line++ = alpha;
+                    //line++;
+                }
+            }
+        } else {
+            for (int j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (int i = 0; i < width(); i++) {
+                    double value = scale2 * (*data2++) + offset2;
+                    uint8 v;
+                    if (value <= 0.0) {
+                        v = '\0';
+                    } else if (value >= 255.0) {
+                        v = '\xff';
+                    } else {
+                        v = (uint8) value;
+                    }
+                    *line++ = v;
+                    value = scale1 * (*data1++) + offset1;
+                    if (value <= 0.0) {
+                        v = '\0';
+                    } else if (value >= 255.0) {
+                        v = '\xff';
+                    } else {
+                        v = (uint8) value;
+                    }
+                    *line++ = v;
+                    value = scale0 * (*data0++) + offset0;
+                    if (value <= 0.0) {
+                        v = '\0';
+                    } else if (value >= 255.0) {
+                        v = '\xff';
+                    } else {
+                        v = (uint8) value;
+                    }
+                    *line++ = v;
+                    //*line++ = '\xff';
+                    line++;
+                }
+            }
+        }
     }
-  } else {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-        double value = scale2 * (*data2++) + offset2;
-        uint8 v;
-        if (value <= 0.0) {
-          v = '\0';
-        } else if (value >= 255.0) {
-          v = '\xff';
-        } else {
-          v = (uint8) value;
-        }
-        *line++ = v;
-        value = scale1 * (*data1++) + offset1;
-        if (value <= 0.0) {
-          v = '\0';
-        } else if (value >= 255.0) {
-          v = '\xff';
-        } else {
-          v = (uint8) value;
-        }
-        *line++ = v;
-        value = scale0 * (*data0++) + offset0;
-        if (value <= 0.0) {
-          v = '\0';
-        } else if (value >= 255.0) {
-          v = '\xff';
-        } else {
-          v = (uint8) value;
-        }
-        *line++ = v;
-        //*line++ = '\xff';
-        line++;
-      }
-    }
-  }
 }
 
 template<class T>
@@ -203,45 +436,47 @@ void ZImage::set2ChannelData(const T *data0, double scale0, double offset0,
                              const T *data1, double scale1, double offset1,
                              uint8_t alpha)
 {
-  if (scale0 == 1.0 && offset0 == 0.0 && scale1 == 1.0 && offset1 == 0.0) {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-        *line++ = '\0';
-        *line++ = (uint8)(*data1++);
-        *line++ = (uint8)(*data0++);
-        *line++ = alpha;
-      }
-    }
-  } else {
-    for (int j = 0; j < height(); j++) {
-      uchar *line = scanLine(j);
-      for (int i = 0; i < width(); i++) {
-        uint8 v = '\0';
-        *line++ = v;
-        double value = scale1 * (*data1++) + offset1;
-        if (value <= 0.0) {
-          v = '\0';
-        } else if (value >= 255.0) {
-          v = '\xff';
+    if (isArgb32()) {
+        if (scale0 == 1.0 && offset0 == 0.0 && scale1 == 1.0 && offset1 == 0.0) {
+            for (int j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (int i = 0; i < width(); i++) {
+                    *line++ = '\0';
+                    *line++ = (uint8)(*data1++);
+                    *line++ = (uint8)(*data0++);
+                    *line++ = alpha;
+                }
+            }
         } else {
-          v = (uint8) value;
+            for (int j = 0; j < height(); j++) {
+                uchar *line = scanLine(j);
+                for (int i = 0; i < width(); i++) {
+                    uint8 v = '\0';
+                    *line++ = v;
+                    double value = scale1 * (*data1++) + offset1;
+                    if (value <= 0.0) {
+                        v = '\0';
+                    } else if (value >= 255.0) {
+                        v = '\xff';
+                    } else {
+                        v = (uint8) value;
+                    }
+                    *line++ = v;
+                    value = scale0 * (*data0++) + offset0;
+                    if (value <= 0.0) {
+                        v = '\0';
+                    } else if (value >= 255.0) {
+                        v = '\xff';
+                    } else {
+                        v = (uint8) value;
+                    }
+                    *line++ = v;
+                    *line++ = alpha;
+                    //line++;
+                }
+            }
         }
-        *line++ = v;
-        value = scale0 * (*data0++) + offset0;
-        if (value <= 0.0) {
-          v = '\0';
-        } else if (value >= 255.0) {
-          v = '\xff';
-        } else {
-          v = (uint8) value;
-        }
-        *line++ = v;
-        *line++ = alpha;
-        //line++;
-      }
     }
-  }
 }
 
 
@@ -251,6 +486,10 @@ void ZImage::setData(const ZImage::DataSource<T> &source, int threshold, bool us
   if (source.color == glm::vec3(1.f,1.f,1.f)) {
     setData(source.data, source.scale, source.offset, threshold);
     return;
+  }
+
+  if (!isArgb32()) {
+      return;
   }
 
   if (useMultithread) {
@@ -353,6 +592,10 @@ template<typename T>
 void ZImage::setData(const std::vector<ZImage::DataSource<T> > &sources, uint8_t alpha,
                      bool useMultithread)
 {
+    if (!isArgb32()) {
+        return;
+    }
+
   if (useMultithread) {
     int numBlock = std::min(height(), 16);
     int blockHeight = height() / numBlock;
@@ -421,6 +664,10 @@ template<typename T>
 void ZImage::setDataBlock(const ZImage::DataSource<T> &source, int startLine,
                           int endLine, int threshold)
 {
+    if (!isArgb32()) {
+        return;
+    }
+
   const T* data = source.data + startLine * width();
   float scale = source.scale;
   float offset = source.offset;
@@ -509,6 +756,10 @@ template<typename T>
 void ZImage::setDataBlockMS(const std::vector<ZImage::DataSource<T> > &sources, int startLine,
                     int endLine, uint8_t alpha)
 {
+    if (!isArgb32()) {
+        return;
+    }
+
   std::vector<ZImage::DataSource<T> > allSources = sources;
   bool needScaleAndClamp = false;
   for (size_t i=0; i<allSources.size(); ++i) {

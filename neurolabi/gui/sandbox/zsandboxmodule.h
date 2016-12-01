@@ -5,6 +5,8 @@
 
 class QMenu;
 class QAction;
+class MainWindow;
+class ZStackDoc;
 
 class ZSandboxModule : public QObject
 {
@@ -12,13 +14,27 @@ class ZSandboxModule : public QObject
 public:
   explicit ZSandboxModule(QObject *parent = 0);
 
-  virtual QMenu* getMenu() const;
-  virtual QAction* getAction() const;
+  QMenu* getMenu() const;
+  QAction* getAction() const;
+
+//  virtual void initialize(MainWindow *mainWindow);
 
 signals:
+  void docGenerated(ZStackDoc*);
 
 public slots:
 
+
+protected:
+  void setMenu(QMenu *menu);
+  void setAction(QAction *action);
+
+private:
+  void init();
+
+protected:
+  QAction *m_action;
+  QMenu *m_menu;
 };
 
 #endif // ZSANDBOXMODULE_H

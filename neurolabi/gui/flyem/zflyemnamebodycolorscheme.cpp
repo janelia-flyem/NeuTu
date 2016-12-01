@@ -15,12 +15,48 @@ ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
   m_colorMap["MB-APL"] = QColor(140, 255, 0);
   m_colorMap["MB-DPM"] = QColor(140, 255, 0);
   m_isMapReady = false;
+
+  m_defaultColor = QColor(0, 0, 0, 0);
+
+  buildColorTable();
 }
 
 ZFlyEmNameBodyColorScheme::~ZFlyEmNameBodyColorScheme()
 {
   m_colorMap.clear();
   m_nameMap.clear();
+}
+
+void ZFlyEmNameBodyColorScheme::buildColorTable()
+{
+  m_colorTable.resize(m_colorMap.size() + 1);
+  m_colorTable[0] = m_defaultColor;
+
+  int index = 1;
+  for (QHash<QString, QColor>::const_iterator iter = m_colorMap.begin();
+       iter != m_colorMap.end(); ++iter, ++index) {
+    m_colorTable[index] = iter.value();
+  }
+}
+
+QHash<uint64_t, int> ZFlyEmNameBodyColorScheme::getColorIndexMap() const
+{
+  QHash<QString, int> nameIndexMap;
+
+
+  QHash<uint64_t, int> indexMap;
+  int index = 1;
+  for (QHash<QString, QColor>::const_iterator iter = m_colorMap.begin();
+       iter != m_colorMap.end(); ++iter) {
+    nameIndexMap[iter.key()] = index++;
+  }
+
+  for (QHash<uint64_t, QString>::const_iterator iter = m_nameMap.begin();
+       iter != m_nameMap.end(); ++iter) {
+    indexMap[iter.key()] = nameIndexMap[iter.value()];
+  }
+
+  return indexMap;
 }
 
 QColor ZFlyEmNameBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)
@@ -89,6 +125,11 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap()
 
     m_isMapReady = true;
   }
+}
+
+void ZFlyEmNameBodyColorScheme::update()
+{
+  prepareNameMap();
 }
 
 void ZFlyEmNameBodyColorScheme::updateNameMap(const ZFlyEmBodyAnnotation &annotation)

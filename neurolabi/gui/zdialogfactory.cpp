@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zdialogfactory.h"
 #include <QVBoxLayout>
 #include <QPushButton>

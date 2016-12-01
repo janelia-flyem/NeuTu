@@ -115,7 +115,7 @@ void ZDvidSparseStack::display(
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
-          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, NULL);
+          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -189,13 +189,10 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, obj);
+  getMaskReader().readBody(bodyId, canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
-  if (canonizing) {
-    obj->canonize();
-  }
 }
 
 void ZDvidSparseStack::loadBodyAsync(uint64_t bodyId)
@@ -328,6 +325,10 @@ bool ZDvidSparseStack::fillValue(
       blockBox.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
       blockBox.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
 
+#ifdef _DEBUG_2
+      objMask->save(GET_TEST_DATA_DIR + "/test.sobj");
+      blockObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
 
       for (size_t s = 0; s < stripeNumber; ++s) {
 #ifdef _DEBUG_2
@@ -642,7 +643,8 @@ ZDvidSparseStack* ZDvidSparseStack::getCrop(const ZIntCuboid &box) const
   stack->setDvidTarget(getDvidTarget());
   stack->m_sparseStack.setBaseValue(m_sparseStack.getBaseValue());
   ZObject3dScan *submask = new ZObject3dScan;
-  const_cast<ZDvidSparseStack&>(*this).getObjectMask()->subobject(box, submask);
+  const_cast<ZDvidSparseStack&>(*this).getObjectMask()->subobject(
+        box, NULL, submask);
   stack->m_sparseStack.setObjectMask(submask);  
 
   return stack;

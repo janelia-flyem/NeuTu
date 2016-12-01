@@ -1,6 +1,5 @@
 #include "z3dgl.h"
 #include <iostream>
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #endif
@@ -111,6 +110,7 @@
 #include "swc/zswcsignalfitter.h"
 #include "zgraphobjsmodel.h"
 #include "zsurfaceobjsmodel.h"
+#include "zstackdocdatabuffer.h"
 
 using namespace std;
 
@@ -200,6 +200,9 @@ void ZStackDoc::init()
   m_objColorSheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
   m_progressSignal = new ZProgressSignal(this);
+
+  m_dataBuffer = new ZStackDocDataBuffer(this);
+  connect(m_dataBuffer, SIGNAL(delivering()), this, SLOT(processDataBuffer()));
 }
 
 void ZStackDoc::clearData()
@@ -683,6 +686,55 @@ void ZStackDoc::setSaved(ZStackObject::EType type, bool state)
   }
 #endif
 
+}
+
+void ZStackDoc::recycleObject(ZStackObject *obj)
+{
+  removeObject(obj, false);
+}
+
+void ZStackDoc::killObject(ZStackObject *obj)
+{
+  removeObject(obj, true);
+}
+
+void ZStackDoc::processDataBuffer()
+{
+  QList<ZStackDocObjectUpdate*> updateList = m_dataBuffer->take();
+
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
+       iter != updateList.end(); ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (u->getObject() != NULL) {
+      switch (u->getAction()) {
+      case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
+        addObject(u->getObject(), false);
+        break;
+      case ZStackDocObjectUpdate::ACTION_ADD_UNIQUE:
+        addObject(u->getObject(), true);
+        break;
+      case ZStackDocObjectUpdate::ACTION_EXPEL:
+        removeObject(u->getObject(), false);
+        break;
+      case ZStackDocObjectUpdate::ACTION_KILL:
+        killObject(u->getObject());
+        break;
+      case ZStackDocObjectUpdate::ACTION_RECYCLE:
+        recycleObject(u->getObject());
+        break;
+      case ZStackDocObjectUpdate::ACTION_UPDATE:
+        processObjectModified(u->getObject());
+        break;
+      default:
+        break;
+      }
+    }
+    u->reset();
+    delete u;
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 bool ZStackDoc::isSavingRequired() const
@@ -2639,8 +2691,8 @@ void ZStackDoc::addLocsegChainP(ZLocsegChain *obj)
   if (mainStack != NULL) {
     if (getTraceWorkspace()->trace_mask == NULL) {
       getTraceWorkspace()->trace_mask =
-          Make_Stack(GREY16, mainStack->width(), mainStack->height(),
-                     mainStack->depth());
+          C_Stack::make(GREY16, mainStack->width(), mainStack->height(),
+                        mainStack->depth());
       Zero_Stack(getTraceWorkspace()->trace_mask);
     }
   }
@@ -3313,14 +3365,18 @@ ZSwcTree* ZStackDoc::getSwcTree(size_t index)
   return const_cast<ZSwcTree*>(dynamic_cast<const ZSwcTree*>(objList.at(index)));
 }
 
-void ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
+bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
 {
+  bool removed = false;
+
   if (obj != NULL) {
     bufferObjectModified(obj);
     m_playerList.removePlayer(obj);
-    m_objectGroup.removeObject(obj, deleteObject);
+    removed = m_objectGroup.removeObject(obj, deleteObject);
     notifyObjectModified();
   }
+
+  return removed;
 }
 
 QList<ZStackObject*> ZStackDoc::getObjectList(ZStackObjectRole::TRole role) const
@@ -3631,7 +3687,7 @@ void ZStackDoc::deselectAllPuncta()
   notifyDeselected(deselected);
 }
 #if 1
-void ZStackDoc::setChainSelected(ZLocsegChain */*chain*/, bool /*select*/)
+void ZStackDoc::setChainSelected(ZLocsegChain * /*chain*/, bool /*select*/)
 {
 #if 0
   if (chain->isSelected() != select) {
@@ -5090,6 +5146,11 @@ int ZStackDoc::maxIntesityDepth(int x, int y)
   return 0;
 }
 
+void ZStackDoc::test()
+{
+  test(NULL);
+}
+
 void ZStackDoc::test(QProgressBar *pb)
 {
 #if 0
@@ -5102,7 +5163,11 @@ void ZStackDoc::test(QProgressBar *pb)
 
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
-    mainStack->enhanceLine();
+//    mainStack->enhanceLine();
+    ZSwcTree *tree = new ZSwcTree;
+    tree->load(GET_TEST_DATA_DIR + "/benchmark/diadem_e1.swc");
+    m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    m_dataBuffer->deliver();
   }
 }
 
@@ -7456,7 +7521,9 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
           std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
 #endif
           //      role.addRole(m_playerList.removePlayer(obj));
-          delete oldObj;
+          if (oldObj != obj) {
+            delete oldObj;
+          }
         }
       }
     }
@@ -8930,7 +8997,10 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setHittable(false);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-              addObject(obj, true);
+//              addObject(obj, true);
+              m_dataBuffer->addUpdate(
+                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+              m_dataBuffer->deliver();
             }
           }
         }
@@ -9168,8 +9238,34 @@ void ZStackDoc::runSeededWatershed()
 //  seededWatershed();
 }
 
+const ZStack* ZStackDoc::getLabelFieldUnsync() const
+{
+  return m_labelField;
+}
+
+ZStack* ZStackDoc::getLabelFieldUnsync()
+{
+  return const_cast<ZStack*>(
+        static_cast<const ZStackDoc&>(*this).getLabelFieldUnsync());
+}
+
+const ZStack* ZStackDoc::getLabelField() const
+{
+  QMutexLocker locker(&m_labelFieldMutex);
+
+  return getLabelFieldUnsync();
+}
+
+ZStack* ZStackDoc::getLabelField()
+{
+  return const_cast<ZStack*>(
+        static_cast<const ZStackDoc&>(*this).getLabelField());
+}
+
 ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 {
+  QMutexLocker locker(&m_labelFieldMutex);
+
   ZStack *out = NULL;
 
   const ZStack *signalStack = getStack();
@@ -9181,7 +9277,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 
   TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
 
-  const ZStack* labelField = getLabelField();
+  const ZStack* labelField = getLabelFieldUnsync();
 
   out = new ZStack(signalStack->kind(), signalStack->getBoundBox(), 3);
   out->setZero();
@@ -9232,6 +9328,8 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
 
 void ZStackDoc::setLabelField(ZStack *stack)
 {
+  QMutexLocker locker(&m_labelFieldMutex);
+
   if (m_labelField != NULL) {
     delete m_labelField;
   }

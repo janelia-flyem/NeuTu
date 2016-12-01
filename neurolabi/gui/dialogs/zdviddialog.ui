@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>408</width>
-    <height>562</height>
+    <height>563</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,6 +36,13 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="readOnlyCheckBox">
+       <property name="text">
+        <string>Read Only</string>
        </property>
       </widget>
      </item>
@@ -136,6 +143,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>At least 4 characters required</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -176,24 +190,6 @@
      <item>
       <widget class="QLineEdit" name="labelBlockLineEdit"/>
      </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_14">
-       <item>
-        <widget class="QLabel" name="label_12">
-         <property name="text">
-          <string>Multires</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="maxZoomSpinBox">
-         <property name="maximum">
-          <number>5</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
     </layout>
    </item>
    <item>
@@ -224,6 +220,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="lowQualityCheckBox">
+       <property name="toolTip">
+        <string>NeuTu will try to fetch a high-quality patch at the view center if this optoin is checked.</string>
+       </property>
        <property name="text">
         <string>low quality</string>
        </property>

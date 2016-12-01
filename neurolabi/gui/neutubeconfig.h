@@ -75,17 +75,25 @@ public:
   static void EnableAutoStatusCheck(bool on);
   static bool AutoStatusCheck();
 
-
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
   }
+
+  static void SetApplicationDir(const std::string &str);
 
   bool load(const std::string &filePath);
   void print();
 
   std::string getPath(Config_Item item) const;
+
+  /*!
+   * \brief Get the application directory
+   *
+   * It is supposed to be where the executable is located.
+   */
   inline const std::string& getApplicatinDir() const {
     return m_applicationDir; }
+
   inline std::string getConfigPath() const {
     return getApplicatinDir() + "/config.xml"; }
   inline std::string getHelpFilePath() const {
@@ -107,7 +115,12 @@ public:
     return m_softwareName;
   }
 
+  void setDefaultSoftwareName();
+  void setTestSoftwareName();
+
   static std::string GetSoftwareName();
+  static void SetDefaultSoftwareName();
+  static void SetTestSoftwareName();
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include <QtGui>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QtAlgorithms>

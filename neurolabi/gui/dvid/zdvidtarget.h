@@ -151,6 +151,7 @@ public:
 
   std::string getLabelBlockName() const;
   std::string getLabelBlockName(int zoom) const;
+  std::string getValidLabelBlockName(int zoom) const;
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();
@@ -212,6 +213,11 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
+  inline bool readOnly() const { return m_readOnly; }
+  void setReadOnly(bool readOnly) {
+    m_readOnly = readOnly;
+  }
+
   int getMaxLabelZoom() const {
     return m_maxLabelZoom;
   }
@@ -219,6 +225,8 @@ public:
   void setMaxLabelZoom(int zoom) {
     m_maxLabelZoom = zoom;
   }
+
+  bool usingMulitresBodylabel() const;
 
   /*
   void setLabelszName(const std::string &name);
@@ -250,12 +258,14 @@ private:
   bool m_isSupervised;
   std::string m_supervisorServer;
   int m_maxLabelZoom;
+  bool m_usingMultresBodyLabel;
 //  std::string m_userName;
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
 
   bool m_isEditable;
+  bool m_readOnly;
 
   const static char* m_addressKey;
   const static char* m_portKey;

@@ -138,7 +138,7 @@ ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
       size_t volume = cuboid.getVolume();
       double dsRatio = (double) volume / MAX_STACK_VOLUME;
-      ZObject3dScan *obj = m_objectMask->subobject(cuboid);
+      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
 
       if (dsRatio > 1.0) {
         ZIntPoint tmpDsIntv = misc::getDsIntvFor3DVolume(dsRatio);
@@ -165,6 +165,8 @@ ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
         if (dsIntv != NULL) {
           dsIntv->set(0, 0, 0);
         }
+
+        delete obj;
       }
     }
   }

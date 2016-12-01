@@ -53,9 +53,11 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void showingInfo();
 
 public slots:
   void setInfo(const QString &info);
+  void updateWidget(const ZDvidTarget &target);
   void setDvidInfo(const ZDvidTarget &target);
 //  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
 //  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);

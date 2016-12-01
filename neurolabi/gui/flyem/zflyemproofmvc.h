@@ -1,6 +1,7 @@
 #ifndef ZFLYEMPROOFMVC_H
 #define ZFLYEMPROOFMVC_H
 
+#include "zglew.h"
 #include <vector>
 #include <QString>
 #include <QMetaType>
@@ -39,6 +40,9 @@ class ZDvidPatchDataUpdater;
 class ZFlyEmRoiToolDialog;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZFlyEmSplitUploadOptionDialog;
+class ZFlyEmBodyChopDialog;
+class ZInfoDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -65,6 +69,8 @@ public:
   void connectSplitControlPanel(T *panel);
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
+
+  const ZDvidInfo& getGrayScaleInfo() const;
 
   virtual void setDvidTarget(const ZDvidTarget &target);
   void setDvidTargetFromDialog();
@@ -111,6 +117,8 @@ public:
   ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
+
+  void test();
 
 signals:
   void launchingSplit(const QString &message);
@@ -193,6 +201,9 @@ public slots:
   void selectBody();
   void processLabelSliceSelectionChange();
   void decomposeBody();
+  void cropBody();
+  void chopBodyZ();
+  void chopBody();
 
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
@@ -273,6 +284,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
+  void testSlot();
+
 protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
@@ -304,6 +317,7 @@ protected slots:
   void exportSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+  void showInfoDialog();
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -320,9 +334,11 @@ private:
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
   void runLocalSplitFunc();
+
+  void mergeSelectedWithoutConflict();
 //  void notifyBookmarkUpdated();
 
-  void syncDvidBookmark();
+//  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
   void loadROIFunc();
 
@@ -360,7 +376,6 @@ protected:
   m_assignedBookmarkModel;
   QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_userBookmarkModel;
-
 //  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
@@ -379,6 +394,9 @@ protected:
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
   ZFlyEmRoiToolDialog *m_roiDlg;
+  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
+  ZFlyEmBodyChopDialog *m_bodyChopDlg;
+  ZInfoDialog *m_infoDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -395,7 +413,8 @@ protected:
 
   ZStackViewParam m_currentViewParam;
 
-  ZDvidInfo m_dvidInfo;
+//  ZDvidInfo m_grayScaleInfo;
+//  ZDvidInfo m_labelInfo;
   bool m_ROILoaded;
 
   std::vector<std::string> m_roiList;
@@ -407,6 +426,8 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
+
+  QTimer *m_testTimer;
 };
 
 template <typename T>
@@ -419,7 +440,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 //          this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-          panel, SLOT(setDvidInfo(ZDvidTarget)));
+          panel, SLOT(updateWidget(ZDvidTarget)));
   connect(this, SIGNAL(launchingSplit(uint64_t)),
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
@@ -440,6 +461,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(locateBody(uint64_t)));
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
+  connect(panel, SIGNAL(showingInfo()), this, SLOT(showInfoDialog()));
 //  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
 //          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
 //  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),

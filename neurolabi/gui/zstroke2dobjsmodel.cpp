@@ -52,7 +52,7 @@ void ZStroke2dObjsModel::updateModelData()
   endResetModel();
 }
 
-void ZStroke2dObjsModel::setupModelData(ZObjsItem */*parent*/)
+void ZStroke2dObjsModel::setupModelData(ZObjsItem * /*parent*/)
 {
   //todo
 }

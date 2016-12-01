@@ -1,5 +1,4 @@
 #if defined(_QT_GUI_USED_)
-//#include <QtGui>
 #include <QPointF>
 #endif
 
@@ -37,8 +36,10 @@
 #include "zintpoint.h"
 #include "zpainter.h"
 #include "zintcuboid.h"
+#include "zstack.hxx"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
+#include "QsLog/QsLog.h"
 #endif
 
 using namespace std;
@@ -54,6 +55,12 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
+
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
+#endif
+#endif
 }
 
 ZSwcTree::~ZSwcTree()
@@ -67,10 +74,11 @@ ZSwcTree::~ZSwcTree()
   }
 #endif
 
-  std::cout << "Deconstructing " << this << ": SWC " << ", "
-            << getSource() << std::endl;
-
   if (m_tree != NULL) {
+#ifdef _FLYEM_
+    std::cout << "Killing " << this << " " << m_tree << ": SWC " << ", "
+              << getSource() << std::endl;
+#endif
     Kill_Swc_Tree(m_tree);
   }
   m_tree = NULL;
@@ -3191,6 +3199,34 @@ void ZSwcTree::labelStack(Stack *stack)
     }
   }
 }
+
+
+void ZSwcTree::labelStack(ZStack* stack,int v)
+{
+  Swc_Tree_Node_Label_Workspace ws;
+  Stack* _stack=stack->c_stack();
+  ws.sdw.color.r = v;
+  ws.sdw.color.g = 255;
+  ws.sdw.color.b = 255;
+  ws.sdw.h = 1.0;
+  ws.sdw.s = 1.0;
+  ws.sdw.v = 1.0;
+  ws.sdw.blend_mode = 0;
+  ws.sdw.color_mode = 0;
+  ws.sdw.z_scale = 1.0;
+  ws.label_mode = SWC_TREE_LABEL_ALL;
+  ZIntPoint offset=stack->getOffset();
+  ws.offset[0] = -offset.getX();
+  ws.offset[1] = -offset.getY();
+  ws.offset[2] = -offset.getZ();
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      Swc_Tree_Node_Label_Stack(iter, _stack, &ws);
+    }
+  }
+}
+
 
 double ZSwcTree::computeBackTraceLength()
 {

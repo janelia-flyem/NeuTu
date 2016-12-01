@@ -7,6 +7,7 @@
 #include "flyem/zflyemproofpresenter.h"
 #include "flyem/zflyemproofdoc.h"
 #include "z3dwindow.h"
+#include "zintcuboidobj.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -16,7 +17,7 @@ ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -43,7 +44,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -120,6 +121,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Split mode */
     if (proofPresenter->isSplitOn()) {
       actionList.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
+      actionList.append(ZActionFactory::ACTION_BODY_CHOP);
+      ZIntCuboidObj *roi = doc->getSplitRoi();
+      if (roi != NULL) {
+        if (roi->isValid()) {
+          actionList.append(ZActionFactory::ACTION_BODY_CROP);
+        }
+      }
     } else {
       if (proofPresenter->interactiveContext().acceptingRect()) {
         actionList.append(ZActionFactory::ACTION_ZOOM_TO_RECT);

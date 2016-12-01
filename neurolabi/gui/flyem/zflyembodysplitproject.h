@@ -23,6 +23,7 @@ class ZStack;
 class ZStackDoc;
 class ZStackViewParam;
 class ZWidgetMessage;
+class ZFlyEmSplitUploadOptionDialog;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -102,7 +103,12 @@ public:
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
-  void decomposeBody();
+  void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBody(int v, NeuTube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
 
   void viewPreviousSlice();
   void viewNextSlice();
@@ -238,6 +244,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+  size_t m_skelThre;
 
   ZThreadFutureMap m_futureMap;
 

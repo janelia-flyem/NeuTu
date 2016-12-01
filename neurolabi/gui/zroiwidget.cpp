@@ -3,13 +3,17 @@
 #include <string>
 #include <iostream>
 
-#include <QtGui>
 #include <QWidget>
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QSpinBox>
+#include <QFileDialog>
+#include <QColorDialog>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
@@ -78,7 +82,7 @@ void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
 }
 
 void ZROIWidget::getROIs(Z3DWindow *window,
-                         ZDvidInfo &dvidInfo,
+                         const ZDvidInfo &dvidInfo,
                          std::vector<std::string> roiList,
                          std::vector<ZObject3dScan> loadedROIs,
                          std::vector<std::string> roiSourceList)
@@ -141,7 +145,14 @@ void ZROIWidget::makeGUI()
     QStringList labels;
     labels << tr("ROI Name") << tr("Color");
     tw_ROIs->setHorizontalHeaderLabels(labels);
+
+#ifdef _QT5_
+    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+#else
     tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+#endif
+//    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
     tw_ROIs->verticalHeader()->hide();
     tw_ROIs->setShowGrid(false);
 

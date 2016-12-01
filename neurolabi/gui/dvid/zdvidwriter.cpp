@@ -504,9 +504,9 @@ void ZDvidWriter::createData(
   }
 }
 
-void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+void ZDvidWriter::deleteKey(const char* dataName, const char* key)
 {
-  if (dataName.empty() || key.empty()) {
+  if (strlen(dataName) == 0 || strlen(key) == 0) {
     return;
   }
 
@@ -514,15 +514,15 @@ void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
   std::string url = dvidUrl.getKeyUrl(dataName, key);
   del(url);
 
-//  QString command = QString("curl -i -X DELETE %1").arg(url.c_str());
+}
 
-  /*
-  qDebug() << command;
+void ZDvidWriter::deleteKey(const std::string &dataName, const std::string &key)
+{
+  if (dataName.empty() || key.empty()) {
+    return;
+  }
 
-  QProcess::execute(command);
-  */
-
-//  runCommand(command);
+  deleteKey(dataName.c_str(), key.c_str());
 }
 
 void ZDvidWriter::deleteKey(const QString &dataName, const QString &key)
@@ -571,7 +571,7 @@ void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
   ZDvidReader reader;
   if (reader.open(m_dvidTarget)) {
     ZObject3dScan obj;
-    reader.readBody(bodyId, &obj);
+    reader.readBody(bodyId, false, &obj);
     if (!obj.isEmpty()) {
       ZFlyEmNeuronBodyInfo bodyInfo;
       bodyInfo.setBodySize(obj.getVoxelNumber());
@@ -968,6 +968,33 @@ uint64_t ZDvidWriter::writeSplit(
         m_dvidTarget.getBodyLabelName(), obj, oldLabel, label, newBodyId);
 }
 
+uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
+{
+  uint64_t newBodyId = 0;
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, false, &obj);
+
+    if (!obj.isEmpty()) {
+      newBodyId = writeSplit(obj, bodyId, 0);
+//      std::cout << newBodyId << std::endl;
+
+      if (newBodyId > 0) {
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
+        if (!annotation.isEmpty()) {
+          deleteBodyAnnotation(bodyId);
+          annotation.setBodyId(newBodyId);
+          writeBodyAnntation(annotation);
+        }
+      }
+    }
+  }
+
+  return newBodyId;
+}
+
 uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label, uint64_t newBodyId)
@@ -1099,6 +1126,21 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
 #endif
 
   return newBodyId;
+}
+
+uint64_t ZDvidWriter::chopBody(
+    const ZObject3dScan &obj, const ZIntCuboid &box, uint64_t oldLabel)
+{
+  uint64_t newId = 0;
+  ZObject3dScan *subobj = obj.subobject(box, NULL, NULL);
+  if (subobj != NULL) {
+    if (!subobj->isEmpty()) {
+      newId = writePartition(obj, *subobj, oldLabel);
+    }
+    delete subobj;
+  }
+
+  return newId;
 }
 
 uint64_t ZDvidWriter::writePartition(
@@ -1653,6 +1695,7 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
       }
     }
 
+#if defined(_ENABLE_LIBDVIDCPP_)
     ZDvid::MakeRequest(
           url, "POST", ZDvid::MakePayload(branchJson), libdvid::JSON,
           m_statusCode);
@@ -1660,4 +1703,5 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
 //    ZFlyEmMisc::MakeRequest(url,
 //    post(url, branchJson);
 //  }
+#endif
 }

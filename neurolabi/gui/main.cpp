@@ -3,6 +3,11 @@
 #include <QApplication>
 #include <QProcess>
 #include <QDir>
+
+#ifdef _QT5_
+#include <QSurfaceFormat>
+#endif
+
 #include "mainwindow.h"
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
@@ -20,53 +25,9 @@
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 
+#if 0
 #ifdef _QT5_
 #include <QSurfaceFormat>
-
-#include <QStack>
-#include <QPointer>
-// thanks to Daniel Price for this workaround
-struct MacEventFilter : public QObject
-{
-  QStack<QPointer<QWidget> > m_activationstack; // stack of widgets to re-active on dialog close.
-
-  explicit MacEventFilter(QObject *parent = NULL)
-    : QObject(parent)
-  {}
-
-  virtual bool eventFilter(QObject *anObject, QEvent *anEvent)
-  {
-    switch (anEvent->type()) {
-    case QEvent::Show: {
-      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && qApp->activeWindow()) {
-        // Workaround for Qt bug where opened QDialogs do not re-activate previous window
-        // when accepted or rejected. We cannot rely on the parent pointers so push the previous
-        // active window onto a stack before the dialog is shown.
-        // We have to use a stack in case a dialog opens another dialog.
-        // NOTE: It's important to use QPointers so that any widgets deleted by Qt do not lead to
-        // hanging pointers in the stack.
-        m_activationstack.push(qApp->activeWindow());
-      }
-      break;
-    }
-    case QEvent::Hide: {
-      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && !m_activationstack.isEmpty()) {
-        QPointer<QWidget> widget = m_activationstack.pop();
-        if (widget) {
-          // Re-acivate widgets in the order as dialogs are closed. See Show case above.
-          widget->activateWindow();
-          widget->raise();
-        }
-      }
-      break;
-    }
-    default:
-      break;
-    }
-
-    return QObject::eventFilter(anObject, anEvent);
-  }
-};
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -106,14 +67,15 @@ void myMessageOutput(QtMsgType type, const char *msg)
   }
 }
 #endif    // qt version > 5.0.0
-
+#endif
 
 static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 {
   if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
     QDir dir(srcDir.c_str());
     dir.setFilter(QDir::Files | QDir::NoSymLinks);
-    QFileInfoList infoList = dir.entryInfoList(QStringList() << "*.txt.*");
+    QFileInfoList infoList =
+        dir.entryInfoList(QStringList() << "*.txt.*" << "*.txt");
 
     foreach (const QFileInfo &info, infoList) {
       QString command =
@@ -133,17 +95,6 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 
 int main(int argc, char *argv[])
 {
-#ifdef _QT5_
-  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
-#endif
-  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
-  QSurfaceFormat format;
-  //format.setStereo(true);
-  QSurfaceFormat::setDefaultFormat(format);
-#endif
-
 #if 0 //Disable redirect for explicit logging
 #ifndef _FLYEM_
 #ifdef _QT5_
@@ -158,11 +109,10 @@ int main(int argc, char *argv[])
   bool unitTest = false;
   bool runCommandLine = false;
 
-  QStringList fileList;
-
   bool guiEnabled = true;
 
   QString configPath;
+  QStringList fileList;
 
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
@@ -178,8 +128,6 @@ int main(int argc, char *argv[])
       return cmd.run(argc, argv);
     }
 
-
-#ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
@@ -190,7 +138,6 @@ int main(int argc, char *argv[])
         fileList << argv[i];
       }
     }
-#endif
 
     if (QString(argv[1]).endsWith(".json")) {
       configPath = argv[1];
@@ -200,6 +147,18 @@ int main(int argc, char *argv[])
     guiEnabled = false;
   }
 
+  if (guiEnabled) {
+#ifdef _QT5_
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+#endif
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
+#ifdef _QT5_
+    QSurfaceFormat format;
+    //format.setStereo(true);
+    QSurfaceFormat::setDefaultFormat(format);
+#endif
+  }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
   QApplication app(argc, argv, guiEnabled);
@@ -337,10 +296,6 @@ int main(int argc, char *argv[])
     app.setGraphicsSystem("raster");
 #endif
 
-#ifdef _QT5_
-    qApp->installEventFilter(new MacEventFilter(qApp));
-#endif
-
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 
     // init 3D
@@ -351,8 +306,8 @@ int main(int argc, char *argv[])
 
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
-//    mainWin->show();
-//    mainWin->raise();
+    mainWin->show();
+    mainWin->raise();
     mainWin->initOpenglContext();
 
     if (!fileList.isEmpty()) {
@@ -377,7 +332,13 @@ int main(int argc, char *argv[])
 #endif
 
 
-    int result = app.exec();
+    int result = 1;
+
+    try {
+      result = app.exec();
+    } catch (std::exception &e) {
+      LERROR() << "Crashed by exception:" << e.what();
+    }
 
     delete mainWin;
     z3dApp.deinitializeGL();

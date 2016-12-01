@@ -47,6 +47,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizeDecPushButton->setEnabled(false);
 
   ui->saveMergePushButton->hide();
+  ui->dataInfoWidget->hide();
 
 //  ui->bodyViewPushButton->hide();
 
@@ -176,6 +177,10 @@ void FlyEmProofControlForm::createMenu()
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
 
+  QAction *infoAction = new QAction("Information", this);
+  m_mainMenu->addAction(infoAction);
+  connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
+
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
   QAction *clearMergeAction = new QAction("Clear All Merges", this);
@@ -267,6 +272,18 @@ void FlyEmProofControlForm::goToPosition()
   }
 }
 
+void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
+{
+  setDvidInfo(target);
+  ui->dvidPushButton->setEnabled(false);
+
+  if (target.readOnly()) {
+    ui->menuPushButton->setEnabled(false);
+    ui->uploadPushButton->setEnabled(false);
+    ui->splitPushButton->setEnabled(false);
+  }
+}
+
 void FlyEmProofControlForm::setInfo(const QString &info)
 {
   ui->dataInfoWidget->setText(info);
@@ -285,8 +302,6 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
   }
 #endif
   setInfo(info.c_str());
-
-  ui->dvidPushButton->setEnabled(false);
 }
 
 /*

@@ -126,7 +126,7 @@ static const TVisualEffect VE_FORCE_SOLID = 1;
 static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
 }
-static const int INVALID_Z_INDEX = INT_MIN;
+static const int INVALID_Z_INDEX = INT32_MIN;
 
 }
 

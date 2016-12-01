@@ -20,11 +20,11 @@ if(FFTW3_STATIC_LIBRARY)
 endif(FFTW3_STATIC_LIBRARY)
 
 # additional hints
-if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
-else(MINGW)
+if(MSVC)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/msvc/fftw)
+else(MSVC)
   set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/../lib/fftw3)
-endif(MINGW)
+endif(MSVC)
 
 # Include dir
 find_path(FFTW3_INCLUDE_DIR

@@ -9,8 +9,6 @@ class ZRgb2GrayModule : public ZSandboxModule
 public:
   explicit ZRgb2GrayModule(QObject *parent = 0);
 
-  QAction* getAction() const;
-
 signals:
 
 public slots:
@@ -20,10 +18,6 @@ private slots:
 
 private:
   void init();
-
-
-private:
-  QAction *m_action;
 };
 
 #endif // ZRGB2GRAYMODULE_H

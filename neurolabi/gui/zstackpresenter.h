@@ -303,6 +303,8 @@ public:
 public: //test functions
   void testBiocytinProjectionMask();
 
+  void processEvent(ZInteractionEvent &event);
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -367,6 +369,8 @@ public slots:
 
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
+  void notifyBodyCropTriggered();
+  void notifyBodyChopTriggered();
   void notifyBodyMergeTriggered();
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
@@ -422,6 +426,8 @@ signals:
 //  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void bodyCropTriggered();
+  void bodyChopTriggered();
   void bodyMergeTriggered();
   void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
@@ -431,6 +437,7 @@ signals:
 
 protected:
   void init();
+  void initActiveObject();
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);
@@ -455,7 +462,6 @@ protected:
 
   bool estimateActiveStrokeWidth();
 
-  void processEvent(ZInteractionEvent &event);
   bool process(ZStackOperator &op);
 
   void acceptActiveStroke();

@@ -319,13 +319,13 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
       pathArray.push_back(path);
       //Update checkedMask
       if (m_checkedMask == NULL) {
-        m_checkedMask = Make_Stack(GREY, m_workspace->width,
-                                   m_workspace->height, m_workspace->depth);
+        m_checkedMask = C_Stack::make(GREY, m_workspace->width,
+                                      m_workspace->height, m_workspace->depth);
         Zero_Stack(m_checkedMask);
       }
       if (m_pathMask == NULL) {
-        m_pathMask = Make_Stack(GREY, m_workspace->width,
-                                m_workspace->height, m_workspace->depth);
+        m_pathMask = C_Stack::make(GREY, m_workspace->width,
+                                   m_workspace->height, m_workspace->depth);
         Zero_Stack(m_pathMask);
       }
 

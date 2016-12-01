@@ -193,6 +193,18 @@ TEST(ZStack, value) {
   ASSERT_EQ(3, stack9.value8(12));
 }
 
+TEST(ZStack, IO)
+{
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/binary/3d/series.tif");
+  ASSERT_EQ(200, stack.width());
+  ASSERT_EQ(200, stack.height());
+  ASSERT_EQ(15, stack.depth());
+
+  std::cout << stack.max() << std::endl;
+
+}
+
 TEST(ZStack, DataPoint)
 {
   ZStack stack(GREY, 10, 20, 30, 2);

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zproofreadwindow.h"
 
 #include <QHBoxLayout>
@@ -89,39 +90,39 @@ void ZProofreadWindow::init()
 
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-  FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
-  controlForm->getUserBookmarkView()->setBookmarkModel(
+  m_controlForm = new FlyEmProofControlForm;
+  m_controlForm->getUserBookmarkView()->setBookmarkModel(
         m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
-  controlForm->getAssignedBookmarkView()->setBookmarkModel(
+  m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
         m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
-  m_mainMvc->registerBookmarkView(controlForm->getUserBookmarkView());
-  m_mainMvc->registerBookmarkView(controlForm->getAssignedBookmarkView());
-  controlForm->getAssignedBookmarkView()->enableDeletion(false);
+  m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
+  m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  m_controlGroup->addWidget(controlForm);
+  m_controlGroup->addWidget(m_controlForm);
 
-  FlyEmSplitControlForm *splitControlForm = new FlyEmSplitControlForm;
-  splitControlForm->getUserBookmarkView()->setBookmarkModel(
+  m_splitControlForm = new FlyEmSplitControlForm;
+  m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
         m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
-  splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
+  m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
         m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
-  m_mainMvc->registerBookmarkView(splitControlForm->getUserBookmarkView());
-  m_mainMvc->registerBookmarkView(splitControlForm->getAssignedBookmarkView());
-  splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
+  m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  m_controlGroup->addWidget(splitControlForm);
-  splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_controlGroup->addWidget(m_splitControlForm);
+  m_splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-  m_mainMvc->connectControlPanel(controlForm);
-  m_mainMvc->connectSplitControlPanel(splitControlForm);
+  m_mainMvc->connectControlPanel(m_controlForm);
+  m_mainMvc->connectSplitControlPanel(m_splitControlForm);
 
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
           this, SLOT(launchSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
-          splitControlForm, SLOT(setSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered()),
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
+          m_splitControlForm, SLOT(setSplit(uint64_t)));
+  connect(m_controlForm, SIGNAL(splitTriggered()),
           this, SLOT(launchSplit()));
-  connect(splitControlForm, SIGNAL(exitingSplit()),
+  connect(m_splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
   connectMessagePipe(m_mainMvc);
@@ -190,15 +191,28 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
+void ZProofreadWindow::testSlot()
+{
+  m_mainMvc->test();
+}
+
 void ZProofreadWindow::test()
 {
+  if (!m_mainMvc->getDvidTarget().isValid()) {
+    m_mainMvc->setDvidTarget();
+  }
+  /*
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "86e1", 8500);
-  target.setBodyLabelName("bodies");
-  target.setLabelBlockName("labels");
+  target.set("emdata2.int.janelia.org", "3303", 8500);
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setSynapseName("mb6_synapses");
+
   m_mainMvc->setDvidTarget(target);
   m_mainMvc->getPresenter()->setObjectVisible(false);
-  m_mainMvc->test();
+  */
+
+  testSlot();
 }
 
 void ZProofreadWindow::createMenu()
@@ -351,6 +365,10 @@ void ZProofreadWindow::createMenu()
   connect(mainWindowAction, SIGNAL(triggered()),
           this, SIGNAL(showingMainWindow()));
   m_advancedMenu->addAction(mainWindowAction);
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  m_advancedMenu->addAction(testAction);
 
 
 //  m_viewMenu->setEnabled(false);
@@ -595,7 +613,7 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
-  setWindowTitle(target.getSourceString(false).c_str());
+  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
   m_viewSynapseAction->setEnabled(target.isValid());
   m_importBookmarkAction->setEnabled(target.isValid());

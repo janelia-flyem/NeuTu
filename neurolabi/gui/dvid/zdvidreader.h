@@ -66,10 +66,6 @@ public:
 
   void clear();
 
-  /*!
-   * \brief Get the status code of the latest request (NOT functioning yet)
-   * \return
-   */
   int getStatusCode() const;
   void setStatusCode(int code) const;
 
@@ -86,14 +82,25 @@ public:
 
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
-  ZObject3dScan readBody(uint64_t bodyId);
-  ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
+//  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
+  ZObject3dScan* readBody(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, int xIntv, int yIntv, int zIntv,
+      bool canonizing, ZObject3dScan *result);
+
   ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
-                          ZObject3dScan *result);
+                          bool canonizing, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
+                          bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
   ZObject3dScan* readBody(
-      uint64_t bodyId, const ZIntCuboid &box, ZObject3dScan *result) const;
+      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+      ZObject3dScan *result) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -133,6 +140,7 @@ public:
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
+  ZDvidInfo readLabelInfo() const;
 
   ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
@@ -192,6 +200,10 @@ public:
   }
 
   uint64_t readMaxBodyId();
+
+  void updateMaxLabelZoom();
+  void updateMaxLabelZoom(
+      const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
   uint64_t readBodyIdAt(int x, int y, int z) const;
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;
@@ -325,6 +337,8 @@ private:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
+  void clearBuffer() const;
+
 protected:
 //  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
@@ -370,7 +384,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (first != last) {
-    ZDvidBufferReader bufferReader;
+    ZDvidBufferReader &bufferReader = m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
     bufferReader.setService(m_service);
 #endif

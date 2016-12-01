@@ -1,3 +1,4 @@
+NEUROLABI_DIR = $${PWD}/..
 EXTLIB_DIR = $${NEUROLABI_DIR}/lib
 DEPENDPATH += . $${NEUROLABI_DIR}/c $${NEUROLABI_DIR}/c/include
 INCLUDEPATH += $${NEUROLABI_DIR}/gui \
@@ -6,6 +7,7 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
 
 
+unix {
 #neurolabi
 LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
@@ -15,7 +17,6 @@ CONFIG(debug, debug|release) {
     LIBS += -lneurolabi
 }
 
-unix {
     INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
         $${EXTLIB_DIR}/fftw3/include \
 #        $${EXTLIB_DIR}/png/include \
@@ -23,16 +24,30 @@ unix {
 }
 
 win32 {
-    DEFINES += LIBXML_STATIC
-    INCLUDEPATH += $${EXTLIB_DIR}/Mingw/64/include \
-        $${EXTLIB_DIR}/Mingw/64/include/libxml2
+#neurolabi
+LIBS += -L$${NEUROLABI_DIR}/c/lib
+CONFIG(debug, debug|release) {
+    LIBS += neurolabi_debug.lib
+} else {
+    #DEFINES += _ADVANCED_
+    LIBS += neurolabi.lib
+}
 
-    LIBS += -L$${EXTLIB_DIR}/Mingw/64/lib \
-        -lfftw3 \
-        -lfftw3f \
-        -lxml2 \
-#        -lpng \
-        -mwin32 -mthreads -lpcre2posix -lpcre2-8 -ljansson -lpthread
+    DEFINES += LIBXML_STATIC PCRE2_STATIC
+
+    INCLUDEPATH += $${EXTLIB_DIR}/msvc/zlib/include \
+        $${EXTLIB_DIR}/msvc/libxml2/include/libxml2 \
+        $${EXTLIB_DIR}/msvc/jansson/include \
+        $${EXTLIB_DIR}/msvc/pcre/include \
+        $${EXTLIB_DIR}/msvc/fftw
+
+    LIBS += -L$${EXTLIB_DIR}/msvc/zlib/lib zlibstatic.lib \
+        -L$${EXTLIB_DIR}/msvc/jansson/lib jansson.lib \
+        -L$${EXTLIB_DIR}/msvc/libxml2/lib libxml2_a.lib \
+        -L$${EXTLIB_DIR}/msvc/pcre/lib pcre2posix.lib pcre2-8.lib \
+        -L$${EXTLIB_DIR}/msvc/fftw libfftw3f-3.lib libfftw3-3.lib
+
+    LIBS += $${QMAKE_LIBS_OPENGL} $${QMAKE_LIBS_NETWORK} $${QMAKE_LIBS_GUI} $${QMAKE_LIBS_CORE}
 }
 
 #Self-contained libraries
@@ -82,6 +97,7 @@ exists($$DVIDCPP_PATH) {
     LIBS += -L$${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
+
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -ljsoncpp -llz4 -lcurl -lpng -ljpeg -lboost_system -lboost_thread

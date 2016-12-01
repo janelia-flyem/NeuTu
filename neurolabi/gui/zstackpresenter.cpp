@@ -1,5 +1,4 @@
 #include "z3dgl.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
 #include <QtConcurrent>
@@ -74,39 +73,8 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
   return presenter;
 }
 
-void ZStackPresenter::init()
+void ZStackPresenter::initActiveObject()
 {
-  m_showObject = true;
-  m_oldShowObject = true;
-//  m_isStrokeOn = false;
-  m_skipMouseReleaseEvent = 0;
-  m_zOrder = 2;
-
-  initInteractiveContext();
-
-  m_grayScale.resize(5, 1.0);
-  m_grayOffset.resize(5, 0.0);
-
-  m_objStyle = ZStackObject::BOUNDARY;
-  m_threshold = -1;
-  m_mouseLeftButtonPressed = false;
-  m_mouseRightButtonPressed = false;
-
-  m_usingHighContrast = false;
-
-  m_paintingRoi = false;
-
-  for (int i = 0; i < 3; i++) {
-    m_mouseLeftReleasePosition[i] = -1;
-    m_mouseRightReleasePosition[i] = -1;
-    m_mouseLeftPressPosition[i] = -1;
-    m_mouseRightPressPosition[i] = -1;
-    m_mouseLeftDoubleClickPosition[i] = -1;
-    m_mouseMovePosition[i] = -1;
-  }
-
-  m_cursorRadius = 10;
-
   ZStroke2d *stroke = new ZStroke2d;
   stroke->setVisible(false);
   stroke->setFilled(true);
@@ -149,7 +117,41 @@ void ZStackPresenter::init()
   stroke->setColor(QColor(200, 128, 200));
   stroke->setTarget(ZStackObject::TARGET_WIDGET);
   addActiveObject(ROLE_TODO_ITEM, stroke);
+}
 
+void ZStackPresenter::init()
+{
+  m_showObject = true;
+  m_oldShowObject = true;
+//  m_isStrokeOn = false;
+  m_skipMouseReleaseEvent = 0;
+  m_zOrder = 2;
+
+  initInteractiveContext();
+
+  m_grayScale.resize(5, 1.0);
+  m_grayOffset.resize(5, 0.0);
+
+  m_objStyle = ZStackObject::BOUNDARY;
+  m_threshold = -1;
+  m_mouseLeftButtonPressed = false;
+  m_mouseRightButtonPressed = false;
+
+  m_usingHighContrast = false;
+
+  m_paintingRoi = false;
+
+  for (int i = 0; i < 3; i++) {
+    m_mouseLeftReleasePosition[i] = -1;
+    m_mouseRightReleasePosition[i] = -1;
+    m_mouseLeftPressPosition[i] = -1;
+    m_mouseRightPressPosition[i] = -1;
+    m_mouseLeftDoubleClickPosition[i] = -1;
+    m_mouseMovePosition[i] = -1;
+  }
+
+  m_cursorRadius = 10;
+  initActiveObject();
 
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
@@ -355,6 +357,14 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_BODY_DECOMPOSE:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodyDecomposeTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_CROP:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyCropTriggered()));
+      break;
+    case ZActionFactory::ACTION_BODY_CHOP:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyBodyChopTriggered()));
       break;
     case ZActionFactory::ACTION_BODY_MERGE:
       connect(action, SIGNAL(triggered()),
@@ -1824,7 +1834,7 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   return processed;
 }
 
-bool ZStackPresenter::customKeyProcess(QKeyEvent */*event*/)
+bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 {
   return false;
 }
@@ -2622,6 +2632,16 @@ void ZStackPresenter::notifyBodyDecomposeTriggered()
   emit bodyDecomposeTriggered();
 }
 
+void ZStackPresenter::notifyBodyCropTriggered()
+{
+  emit bodyCropTriggered();
+}
+
+void ZStackPresenter::notifyBodyChopTriggered()
+{
+  emit bodyChopTriggered();
+}
+
 void ZStackPresenter::notifyBodyMergeTriggered()
 {
   emit bodyMergeTriggered();
@@ -2745,7 +2765,7 @@ void ZStackPresenter::setViewMode(ZInteractiveContext::ViewMode mode)
 }
 
 bool ZStackPresenter::processCustomOperator(
-    const ZStackOperator &/*op*/, ZInteractionEvent */*e*/)
+    const ZStackOperator &/*op*/, ZInteractionEvent * /*e*/)
 {
   return false;
 }

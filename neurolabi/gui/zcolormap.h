@@ -1,17 +1,12 @@
 #ifndef ZCOLORMAP_H
 #define ZCOLORMAP_H
 
-#define GLM_SWIZZLE
 #include "zglmutils.h"
 #include <vector>
 #include <QColor>
 #include <limits>
 #include "zparameter.h"
-#if defined(_WIN32) || defined(_WIN64)
-#include "stdint.h"
-#else
 #include <stdint.h>
-#endif
 
 
 class QMainWindow;

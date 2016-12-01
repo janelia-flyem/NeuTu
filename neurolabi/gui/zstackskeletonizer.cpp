@@ -270,9 +270,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
       size_t max_index;
       Stack_Max(tmpdist, &max_index);
 
-      Stack *mask = Make_Stack(GREY, Stack_Width(tmpdist),
-                               Stack_Height(tmpdist),
-                               Stack_Depth(tmpdist));
+      Stack *mask = C_Stack::make(GREY, Stack_Width(tmpdist),
+                                  Stack_Height(tmpdist),
+                                  Stack_Depth(tmpdist));
       Zero_Stack(mask);
 
       size_t nvoxel = Stack_Voxel_Number(croppedObjStack);
@@ -649,9 +649,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
       size_t max_index;
       Stack_Max(tmpdist, &max_index);
 
-      Stack *mask = Make_Stack(GREY, Stack_Width(tmpdist),
-                               Stack_Height(tmpdist),
-                               Stack_Depth(tmpdist));
+      Stack *mask = C_Stack::make(GREY, Stack_Width(tmpdist),
+                                  Stack_Height(tmpdist),
+                                  Stack_Depth(tmpdist));
       Zero_Stack(mask);
 
       size_t nvoxel = Stack_Voxel_Number(croppedObjStack);

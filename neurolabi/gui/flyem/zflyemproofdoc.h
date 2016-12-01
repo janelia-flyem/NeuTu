@@ -44,6 +44,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -52,6 +53,14 @@ public:
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
+  }
+
+  const ZDvidInfo& getGrayScaleInfo() const {
+    return m_grayScaleInfo;
+  }
+
+  const ZDvidInfo& getLabelInfo() const {
+    return m_labelInfo;
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
@@ -135,15 +144,16 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
+  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
   std::vector<ZPunctum*> getTbar(uint64_t bodyId);
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
-  getSynapse(uint64_t bodyId) const;
+  getSynapse(uint64_t bodyId);
 
-  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
-  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
+  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId);
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId);
 
   void downloadSynapseFunc();
 
@@ -175,6 +185,10 @@ public:
 
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
+  }
+
+  ZDvidReader* getSparseVolReader() {
+    return &m_sparseVolReader;
   }
 
 public:
@@ -272,6 +286,9 @@ public: //Bookmark functions
    *
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
+
+public:
+  bool isDataValid(const std::string &data) const;
 
 signals:
   void bodyMerged();
@@ -372,6 +389,9 @@ private:
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
 
+  void readInfo();
+  void updateMaxLabelZoom();
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
   template<typename T>
   ZSharedPointer<T> getColorScheme(EBodyColorMap type);
@@ -392,12 +412,20 @@ protected:
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
+  ZDvidReader m_synapseReader;
+  ZDvidReader m_todoReader;
+  ZDvidReader m_sparseVolReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  mutable QMutex m_synapseReaderMutex;
+  mutable QMutex m_todoReaderMutex;
+
   //Dvid info
-  ZDvidInfo m_dvidInfo;
+  ZDvidInfo m_grayScaleInfo;
+  ZDvidInfo m_labelInfo;
   ZDvidVersionDag m_versionDag;
+  ZJsonObject m_infoJson;
 
   QTimer *m_routineTimer;
 

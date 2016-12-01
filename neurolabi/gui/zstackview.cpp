@@ -1,5 +1,6 @@
 #include <iostream>
 #include <QElapsedTimer>
+#include <QMdiArea>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -38,9 +39,10 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 
 using namespace std;
@@ -57,7 +59,7 @@ ZStackView::ZStackView(QWidget *parent) : QWidget(parent)
 
 ZStackView::~ZStackView()
 {
-  m_imagePainter.end();
+//  m_imagePainter.end();
   m_objectCanvasPainter.end();
   m_tileCanvasPainter.end();
 //  m_dynamicObjectCanvasPainter.end();
@@ -281,6 +283,10 @@ void ZStackView::connectSignalSlot()
           this, SIGNAL(sliceSliderPressed()));
   connect(m_depthControl, SIGNAL(sliderReleased()),
           this, SIGNAL(sliceSliderReleased()));
+  connect(m_zSpinBox, SIGNAL(valueChanged(int)),
+          this, SLOT(setZ(int)));
+  connect(m_depthControl, SIGNAL(valueChanged(int)),
+          this, SLOT(updateZSpinBoxValue()));
 
 //  connect(this, SIGNAL(currentSliceChanged(int)), this, SLOT(redraw()));
 
@@ -306,11 +312,6 @@ void ZStackView::connectSignalSlot()
   }
 
 //  connect(this, SIGNAL(viewPortChanged()), this, SLOT(paintActiveTile()));
-
-  connect(m_zSpinBox, SIGNAL(valueConfirmed(int)),
-          this, SLOT(setZ(int)));
-  connect(m_depthControl, SIGNAL(valueChanged(int)),
-          this, SLOT(updateZSpinBoxValue()));
 }
 
 void ZStackView::updateZSpinBoxValue()
@@ -878,7 +879,7 @@ void ZStackView::redraw(EUpdateOption option)
 #if defined(_FLYEM_)
   qint64 paintTime = timer.elapsed();
 
-  LINFO() << "paint time per frame: " << paintTime;
+  ZOUT(LTRACE(), 3) << "paint time per frame: " << paintTime;
   if (paintTime > 3000) {
     LWARN() << "Debugging for hiccup: " << "stack: " << stackPaintTime
             << "; tile: " << tilePaintTime << "; object: " << objectPaintTime;
@@ -1009,8 +1010,8 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
                                               buddyPresenter()->greyScale(0),
                                               buddyPresenter()->greyOffset(0),
                                               stack->getChannelColor(0));
+        m_image->useContrastProtocal(buddyPresenter()->usingHighContrastProtocal());
         m_image->setData(stackData, getIntensityThreshold());
-        m_image->enhanceContrast(buddyPresenter()->usingHighContrastProtocal());
       }
       break;
     case GREY16:
@@ -1174,7 +1175,7 @@ void ZStackView::paintMultipleChannelStackMip(ZStack *stack)
 
 void ZStackView::clearCanvas()
 {
-  m_imagePainter.end();
+//  m_imagePainter.end();
   delete m_image;
   m_image = NULL;
 
@@ -1216,7 +1217,7 @@ void ZStackView::updateContrastProtocal()
 
 void ZStackView::updateImageCanvas()
 {
-  resetCanvasWithStack(m_image, &m_imagePainter);
+  resetCanvasWithStack(m_image, NULL);
   if (buddyDocument()->hasStackPaint()) {
     ZIntCuboid box = getViewBoundBox();
     if (m_image != NULL) {
@@ -1244,8 +1245,8 @@ void ZStackView::updateImageCanvas()
       m_image->setOffset(-box.getFirstCorner().getX(),
                          -box.getFirstCorner().getY());
 //      m_image->setScale(scale, scale);
-      m_imagePainter.begin(m_image);
-      m_imagePainter.setZOffset(box.getFirstCorner().getZ());
+//      m_imagePainter.begin(m_image);
+//      m_imagePainter.setZOffset(box.getFirstCorner().getZ());
       m_imageWidget->setImage(m_image);
     }
   }
@@ -1325,7 +1326,9 @@ void ZStackView::resetCanvasWithStack(
     clearObjectCanvas();
     canvas.setSize(canvasSize);
     canvas.setOffset(QPoint(tx, ty));
-    painter->setZOffset(box.getFirstCorner().getZ());
+    if (painter != NULL) {
+      painter->setZOffset(box.getFirstCorner().getZ());
+    }
   }
 }
 
@@ -1555,7 +1558,7 @@ void ZStackView::paintStackBuffer()
         }
       } else {
         m_image->setBackground();
-        paintObjectBuffer(m_imagePainter, ZStackObject::TARGET_STACK_CANVAS);
+//        paintObjectBuffer(m_imagePainter, ZStackObject::TARGET_STACK_CANVAS);
 
         if (buddyDocument()->hasVisibleSparseStack()) {
           ZStack *slice =
@@ -1586,7 +1589,7 @@ void ZStackView::paintStackBuffer()
             slice->translate(-buddyDocument()->getStackOffset());
             slice->getOffset().setZ(0);
 
-            m_image->setData(slice, 0);
+            m_image->setData(slice, 0, false, true);
             delete slice;
           }
         }
@@ -2245,6 +2248,18 @@ void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz
   processViewChange(true, depthChanged);
 }
 
+ZIntPoint ZStackView::getCenter(NeuTube::ECoordinateSystem coordSys) const
+{
+  ZIntPoint center;
+  center.setZ(getZ(coordSys));
+
+  QRect rect = getViewPort(coordSys);
+  center.setX(rect.center().x());
+  center.setY(rect.center().y());
+
+  return center;
+}
+
 int ZStackView::getZ(NeuTube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
@@ -2554,7 +2569,7 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
 #endif
   if (!isViewChangeEventBlocked()) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "BEFORE emit ZStackView::viewChanged" << std::endl;
 #endif
 //    processViewChange(param);
@@ -2697,7 +2712,7 @@ void ZStackView::requestMerge()
 }
 
 void ZStackView::MessageProcessor::processMessage(
-    ZMessage */*message*/, QWidget */*host*/) const
+    ZMessage * /*message*/, QWidget * /*host*/) const
 {
 #ifdef _DEBUG_
   std::cout << "ZStackView::MessageProcessor::processMessage" << std::endl;

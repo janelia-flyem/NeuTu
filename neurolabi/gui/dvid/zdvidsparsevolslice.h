@@ -17,6 +17,7 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setReader(ZDvidReader *reader);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
@@ -34,6 +35,7 @@ private:
   int m_currentZ;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
+  ZDvidReader *m_externalReader;
 };
 
 #endif // ZDVIDSPARSEVOLSLICE_H

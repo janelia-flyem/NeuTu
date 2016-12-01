@@ -77,6 +77,7 @@ class ZWidgetMessage;
 class FlyEmSettingDialog;
 class ZDvidBodyPositionDialog;
 class ZProofreadWindow;
+class ZTestOptionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -156,6 +157,7 @@ signals:
   void progressStarted(QString title, int nticks);
   void docReaderReady(ZStackDocReader*);
   void docReady(ZStackDocPtr);
+  void docReady(ZStackDoc*);
   void fileOpenFailed(QString fileName, QString reason);
 
 public slots:
@@ -200,7 +202,8 @@ public slots:
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
-  ZStackFrame* createStackFrame(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDoc *doc);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
@@ -229,8 +232,8 @@ protected:
 
   void createActionMap();
 
-  ZStackDocReader* openFileFunc(const QString &filePath);
-  void openFileFunc2(const QString &filePath);
+//  ZStackDocReader* openFileFunc(const QString &filePath);
+  void openFileFunc(const QString &filePath);
   void openFileListFunc(const QStringList fileList);
   void runSplitFunc(ZStackFrame *frame);
 
@@ -322,6 +325,8 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test(ZTestOptionDialog *dlg);
+
   void test2();
 
   // slots for frame
@@ -729,6 +734,8 @@ private:
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   FlyEmSettingDialog *m_flyemSettingDlg;
   ZDvidBodyPositionDialog *m_bodyPosDlg;
+  ZTestOptionDialog *m_testOptionDlg;
+
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;

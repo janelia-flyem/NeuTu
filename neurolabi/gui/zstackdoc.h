@@ -82,6 +82,7 @@ class ZStackMvc;
 class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
+class ZStackDocDataBuffer;
 
 /*!
  * \brief The class of stack document
@@ -389,7 +390,7 @@ public:
   //Those functions do not notify object modification
   //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  void removeObject(
+  bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
 
   void removeSelectedObject(bool deleteObject = false);
@@ -646,7 +647,9 @@ public:
   void setWorkdir(const char *filePath);
   void setTubePrefix(const char *filePath);
 
-  void test(QProgressBar *pb = NULL);
+  void test();
+
+  void test(QProgressBar *pb);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
   void pushUndoCommand(QUndoCommand *command);
@@ -782,6 +785,10 @@ public:
   }
 
 public:
+  ZNeuronTracer* getNeuronTracer() {
+    return &m_neuronTracer;
+  }
+
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
                             double xRes, double yRes, double zRes);
@@ -908,20 +915,20 @@ public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
 //  inline QAction* getRedoAction() { return m_redoAction; }
 
+  ZStackDocDataBuffer* getDataBuffer() const {
+    return m_dataBuffer;
+  }
+
   ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
     return &m_singleSwcNodeActionActivator;
   }
 
-  inline const ZStack* getLabelField() const {
-    return m_labelField;
-  }
+  const ZStack* getLabelFieldUnsync() const;
+  ZStack* getLabelFieldUnsync();
 
-  ZStack* getLabelField() {
-    return m_labelField;
-  }
-
+  const ZStack* getLabelField() const;
+  ZStack* getLabelField();
   void setLabelField(ZStack *getStack);
-
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
@@ -1110,6 +1117,9 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
+  virtual void processDataBuffer();
+  virtual void recycleObject(ZStackObject *obj);
+  virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1269,6 +1279,8 @@ private:
 
   ZActionFactory *m_actionFactory;
 
+  ZStackDocDataBuffer *m_dataBuffer;
+
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
@@ -1290,6 +1302,7 @@ private:
   QMutex m_objectModifiedModeMutex;
 
   QMutex m_playerMutex;
+  mutable QMutex m_labelFieldMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
@@ -1476,7 +1489,7 @@ QList<T*> ZStackDoc::getUserList() const
   QList<T*> userList;
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *user = dynamic_cast<T*>(*iter);
+    T *user = qobject_cast<T*>(*iter);
     if (user != NULL) {
       userList.append(user);
     }

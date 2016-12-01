@@ -1,8 +1,9 @@
 #include "mainwindow.h"
 
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 //#include <QtSvg>
 #include <QDir>
@@ -177,6 +178,7 @@
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zfileparser.h"
 #include "dialogs/zdvidbodypositiondialog.h"
+#include "dialogs/ztestoptiondialog.h"
 
 #include "z3dcanvas.h"
 #include "z3dapplication.h"
@@ -306,7 +308,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, SIGNAL(docReaderReady(ZStackDocReader*)),
           this, SLOT(createStackFrameFromDocReader(ZStackDocReader*)));
   connect(this, SIGNAL(docReady(ZStackDocPtr)),
-          this, SLOT(createStackFrame(ZStackDocPtr)));
+          this, SLOT(showStackDoc(ZStackDocPtr)));
+  connect(this, SIGNAL(docReady(ZStackDoc*)),
+          this, SLOT(showStackDoc(ZStackDoc*)));
   connect(this, SIGNAL(fileOpenFailed(QString,QString)),
           this, SLOT(reportFileOpenProblem(QString,QString)));
 
@@ -379,6 +383,7 @@ void MainWindow::initDialog()
 
   m_progress = new QProgressDialog(this);
   m_progress->setRange(0, 100);
+  m_progress->setValue(100);
   m_progress->setWindowModality(Qt::WindowModal);
   m_progress->setAutoClose(true);
   //m_progress->setWindowFlags(Qt::Dialog|Qt::WindowStaysOnTopHint);
@@ -440,6 +445,8 @@ void MainWindow::initDialog()
   m_projDlg = new ProjectionDialog(this);
 
   m_skeletonDlg = new FlyEmSkeletonizationDialog(this);
+
+  m_testOptionDlg = new ZTestOptionDialog(this);
 
 #if defined(_FLYEM_)
   m_newBsProjectDialog = new ZFlyEmNewBodySplitProjectDialog(this);
@@ -883,9 +890,9 @@ void MainWindow::customizeActions()
   m_ui->actionMask_SWC->setVisible(
         config.getMainWindowConfig().isMaskToSwcOn());
 
-  bool hasApplication = false;
+  bool hasApplication = true;
 
-  if (!config.getApplication().empty()) {
+  if (hasApplication) {
     if (config.getApplication() == "FlyEM") {
       m_ui->menuFLy_EM->menuAction()->setVisible(true);
       hasApplication = true;
@@ -1553,7 +1560,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
   }
 }
 
-void MainWindow::openFileFunc2(const QString &fileName)
+void MainWindow::openFileFunc(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
 
@@ -1581,6 +1588,7 @@ void MainWindow::openFileFunc2(const QString &fileName)
   }
 }
 
+#if 0
 ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 {
   ZStackDocReader *reader = NULL;
@@ -1604,6 +1612,7 @@ ZStackDocReader* MainWindow::openFileFunc(const QString &fileName)
 
   return reader;
 }
+#endif
 
 void MainWindow::openFile(const QStringList &fileNameList)
 {
@@ -1631,7 +1640,7 @@ void MainWindow::openFile(const QString &fileName)
   m_progress->show();
 
   //QFuture<ZStackDocReader*> res =
-  QtConcurrent::run(this, &MainWindow::openFileFunc2, fileName);
+  QtConcurrent::run(this, &MainWindow::openFileFunc, fileName);
 
 }
 
@@ -2054,7 +2063,7 @@ void MainWindow::tryToClose()
 {
   --m_proofreadWindowCount;
 
-  if (m_proofreadWindowCount <= 0) {
+  if (m_proofreadWindowCount <= 0 && !isVisible()) {
     close();
   }
 }
@@ -3374,6 +3383,18 @@ void MainWindow::testProgressBarFunc()
   emit progressDone();
 }
 
+void MainWindow::test(ZTestOptionDialog *dlg)
+{
+  switch (dlg->getOption()) {
+  case ZTestOptionDialog::OPTION_NORMAL:
+    ZTest::test(this);
+    break;
+  case ZTestOptionDialog::OPTION_STRESS:
+    ZTest::stressTest(this);
+    break;
+  }
+}
+
 void MainWindow::test()
 {
 #if 0
@@ -3504,18 +3525,20 @@ void MainWindow::test()
 #endif
 
 #if 1
-  m_progress->setRange(0, 2);
-  m_progress->setLabelText(QString("Testing ..."));
-  int currentProgress = 0;
-  m_progress->setValue(++currentProgress);
-  m_progress->show();
+  if (m_testOptionDlg->exec()) {
+    m_progress->setRange(0, 2);
+    m_progress->setLabelText(QString("Testing ..."));
+    int currentProgress = 0;
+    m_progress->setValue(++currentProgress);
+    m_progress->show();
 
-  //res.waitForFinished();
-  ZTest::test(this);
+    //res.waitForFinished();
+    test(m_testOptionDlg);
 
-  m_progress->reset();
+    m_progress->reset();
 
-  statusBar()->showMessage(tr("Test done."));
+    statusBar()->showMessage(tr("Test done."));
+  }
 #endif
 
 #if 0
@@ -4880,36 +4903,6 @@ ZStackFrame *MainWindow::createStackFrame(
   return NULL;
 }
 
-#if 0
-ZStackFrame *MainWindow::createStackFrame(
-    ZStackDoc *doc, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
-{
-  if (doc != NULL) {
-    ZStackFrame *newFrame = new ZStackFrame;
-    newFrame->setParentFrame(parentFrame);
-    //debug
-    //tic();
-
-    newFrame->consumeDocument(doc);
-
-    //debug
-    //std::cout << toc() <<std::endl;
-
-    newFrame->document()->setTag(tag);
-    if (parentFrame != NULL) {
-      newFrame->document()->setStackBackground(
-            parentFrame->document()->getStackBackground());
-    }
-    //addStackFrame(newFrame);
-    //presentStackFrame(newFrame);
-
-    return newFrame;
-  }
-
-  return NULL;
-}
-#endif
-
 void MainWindow::on_actionMake_Projection_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
@@ -5260,7 +5253,17 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 void MainWindow::on_actionDiagnosis_triggered()
 {
   m_DiagnosisDlg->show();
-  m_DiagnosisDlg->setVideoCardInfo(Z3DGpuInfoInstance.getGpuInfo());
+  QStringList info;
+
+#if defined(_FLYEM_)
+  info << "Memory usage: " + ZFlyEmMisc::GetMemoryUsage();
+  info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
+  info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
+#endif
+
+  info.append(Z3DGpuInfoInstance.getGpuInfo());
+
+  m_DiagnosisDlg->setSystemInfo(info);
   m_DiagnosisDlg->scrollToBottom();
   m_DiagnosisDlg->raise();
 }
@@ -6508,7 +6511,6 @@ void MainWindow::testFlyEmProofread()
   ZProofreadWindow* window = startProofread();
 
   window->test();
-
 }
 
 void MainWindow::runBodySplit()
@@ -6565,7 +6567,8 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
         std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
         if (!bodyIdArray.empty()) {
           int bodyId = bodyIdArray[0];
-          ZObject3dScan body = reader.readBody(bodyId);
+          ZObject3dScan body;
+          reader.readBody(bodyId, true, &body);
 
 #ifdef _DEBUG_
           std::cout << "Body size: " << body.getVoxelNumber() << std::endl;
@@ -6663,23 +6666,34 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
   emit progressDone();
 }
 
-ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
+ZStackFrame* MainWindow::showStackDoc(ZStackDoc *doc)
 {
-  ZStackFrame *frame = ZStackFrame::Make(NULL, doc);
+  return showStackDoc(ZStackDocPtr(doc));
+}
 
-  if (frame->document()->hasStack()) {
-    addStackFrame(frame);
-    presentStackFrame(frame);
+ZStackFrame* MainWindow::showStackDoc(ZStackDocPtr doc)
+{
+  ZStackFrame *frame = NULL;
+
+  bool progressProcessed = false;
+
+  if (!doc->isEmpty()) {
+    frame = ZStackFrame::Make(NULL, doc);
+
+    if (frame->document()->hasStack()) {
+      addStackFrame(frame);
+      presentStackFrame(frame);
       //QApplication::processEvents();
-  } else {
-    emit progressDone();
-    if (frame->document()->hasObject()) {
-      frame->open3DWindow();
     } else {
-      reportFileOpenProblem("the file", "No content is recognized in the file.");
+      emit progressDone();
+      progressProcessed = true;
+      frame->open3DWindow();
+      delete frame;
+      frame = NULL;
     }
-    delete frame;
-    frame = NULL;
+  } else {
+    ZDialogFactory::Warn(
+          "Data Presentation Failure",  "No data to display.", this);
   }
   /*
     if (!fileName.isEmpty()) {
@@ -6690,7 +6704,9 @@ ZStackFrame* MainWindow::createStackFrame(ZStackDocPtr doc)
   }
   */
 
-  emit progressDone();
+  if (progressProcessed == false) {
+    emit progressDone();
+  }
 
   return frame;
 }
@@ -6934,7 +6950,8 @@ void MainWindow::on_actionUpdate_Skeletons_triggered()
             tree = reader.readSwc(bodyId);
           }
           if (tree == NULL) {
-            ZObject3dScan obj = reader.readBody(bodyId);
+            ZObject3dScan obj;
+            reader.readBody(bodyId, true, &obj);
             tree = skeletonizer.makeSkeleton(obj);
             writer.writeSwc(bodyId, tree);
 
@@ -7169,7 +7186,8 @@ void MainWindow::on_actionOne_Column_triggered()
     ZSwcTree *tree = reader.readSwc(bodyId);
 
     if (tree == NULL) {
-      ZObject3dScan obj = reader.readBody(bodyId);
+      ZObject3dScan obj;
+      reader.readBody(bodyId, true, &obj);
       tree = skeletonizer.makeSkeleton(obj);
       writer.writeSwc(bodyId, tree);
     }
@@ -7433,6 +7451,13 @@ void MainWindow::runRoutineCheck()
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
 #endif
+
+    QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
+    if (!memoryUsage.isEmpty()) {
+      LINFO() << "Memory usage:" << memoryUsage;
+      LINFO() << "Stack usage:" << C_Stack::stackUsage();
+      LINFO() << "Mc_Stack usage:" << C_Stack::McStackUsage();
+    }
   }
 }
 
@@ -7576,7 +7601,8 @@ void MainWindow::on_actionNeuroMorpho_triggered()
   reader.setVerbose(false);
   for (std::vector<uint64_t>::const_iterator iter = emptyBody.begin();
        iter != emptyBody.end(); ++iter) {
-    ZObject3dScan body = reader.readBody(*iter);
+    ZObject3dScan body;
+    reader.readBody(*iter, false, &body);
     std::cout << "  " << *iter << " " << body.getVoxelNumber()
               << std::endl;
   }

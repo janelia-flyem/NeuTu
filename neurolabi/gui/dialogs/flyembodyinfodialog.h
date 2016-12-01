@@ -2,7 +2,8 @@
 #define FLYEMBODYINFODIALOG_H
 
 #include <QDialog>
-#include <QtGui>
+#include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidsynapse.h"
@@ -120,6 +121,8 @@ private:
     QSortFilterProxyModel* m_ioBodyProxy;
     QSortFilterProxyModel* m_connectionsProxy;
     QMap<uint64_t, QString> m_bodyNames;
+    QSet<uint64_t> m_namelessBodies;
+    QSet<QString> m_bodyAnnotationKeys;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
@@ -135,6 +138,7 @@ private:
 
     void setBodyHeaders(QStandardItemModel*);
     void setFilterHeaders(QStandardItemModel*);
+    void loadData();
     bool isValidBookmarkFile(ZJsonObject object);
     bool dvidBookmarksPresent();
     bool bodyAnnotationsPresent();

@@ -1,5 +1,9 @@
 #include "zflyemroidialog.h"
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
 #include <QtConcurrentRun>
+#endif
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QInputDialog>

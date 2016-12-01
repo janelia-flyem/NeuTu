@@ -20,7 +20,7 @@ public:
   const static TRole ROLE_PAUSE;
   const static TRole ROLE_SKIP;
 
-  QPushButton* activate(TRole role);
+  void activate(TRole role);
 
   QPushButton* getButton(TRole role);
 

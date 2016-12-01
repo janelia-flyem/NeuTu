@@ -320,6 +320,9 @@ public:
   bool isImageMovable() const;
 
   int getZ(NeuTube::ECoordinateSystem coordSys) const;
+  ZIntPoint getCenter(
+      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
+
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
@@ -434,7 +437,7 @@ protected:
   QLabel *m_msgLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
-  ZPainter m_imagePainter;
+//  ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
   ZPixmap *m_dynamicObjectCanvas;

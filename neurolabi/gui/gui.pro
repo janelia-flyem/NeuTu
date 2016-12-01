@@ -10,6 +10,17 @@ contains(TEMPLATE, app) {
 }
 
 win32 {
+    QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
+    #QMAKE_LFLAGS += /LTCG # Link-time Code Generation
+
+    DEFINES += _CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN
+
+    QMAKE_CXXFLAGS += /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
+    QMAKE_CXXFLAGS += /wd4244 # 'argument' : conversion from 'type1' to 'type2', possible loss of data
+    QMAKE_CXXFLAGS += /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
+    QMAKE_CXXFLAGS += /wd4819 # The file contains a character that cannot be represented in the current code page (number). Save the file in Unicode format to prevent data loss.
+    QMAKE_CXXFLAGS += /utf-8  # https://blogs.msdn.microsoft.com/vcblog/2016/02/22/new-options-for-managing-character-sets-in-the-microsoft-cc-compiler/
+
     DEPLOYMENT_COMMAND = $$PWD/deploy_win.bat $(QMAKE) $$OUT_PWD
 
     CONFIG(release, debug|release):!isEmpty(DEPLOYMENT_COMMAND) {
@@ -53,17 +64,23 @@ CONFIG(debug, debug|release) {
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
+unix {
 include(extratarget.pri)
-
-include(extlib.pri)
 
 # suppress warnings from 3rd party library, works for gcc and clang
 QMAKE_CXXFLAGS += -isystem ../gui/ext
+} else {
+  INCLUDEPATH += ../gui/ext
+}
+
+include(extlib.pri)
 
 CONFIG += rtti exceptions
 
 CONFIG += static_glew
 CONFIG += static_gtest
+
+QT += printsupport
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
@@ -82,8 +99,13 @@ contains(GIT, .*git) {
 
 include(add_itk.pri)
 
+#Qt4
+isEqual(QT_MAJOR_VERSION,4) {
+    QT += opengl xml network
+    message("Qt 4")
+}
+
 #Qt5
-QT += opengl xml network
 isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     isEqual(QT_MAJOR_VERSION,5) {
       lessThan(QT_MINOR_VERSION,4) {
@@ -92,15 +114,30 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
       }
     }
     message("Qt 5")
-    QT += concurrent gui
+    QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG += c++11
-    QMAKE_MACOSX_DEPLOYMENT_TARGET=10.7
+    CONFIG *= c++11
 }
 
-#Qt4
-isEqual(QT_MAJOR_VERSION,4) {
-    message("Qt 4")
+contains(CONFIG, c++11) {
+  message(Using C++11)
+  DEFINES += _CPP11_
+  unix {
+    QMAKE_CXXFLAGS += -std=c++11
+  }
+}
+
+contains(CONFIG, sanitize) {
+  message(Using sanitize)
+  unix {
+    macx {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    } else {
+      QMAKE_CXXFLAGS += -fsanitize=kernel-address
+      QMAKE_LFLAGS += -fsanitize=kernel-address
+    }
+  }
 }
 
 #QT += webkit
@@ -108,11 +145,9 @@ isEqual(QT_MAJOR_VERSION,4) {
 contains(CONFIG, static_glew) { # glew from ext folder
     include($$PWD/ext/glew.pri)
 } else { # use your own glew
-
   win32 {
     LIBS += -lglew32 -lopengl32 -lglu32
   }
-
 
   macx {
     LIBS += -lGLEW -framework AGL -framework OpenGL
@@ -127,9 +162,9 @@ contains(CONFIG, static_gtest) { # gtest from ext folder
     include($$PWD/ext/gtest.pri)
 }
 
-LIBS += -lstdc++
-
 unix {
+
+    QMAKE_CXXFLAGS += -Wno-deprecated
 
     macx {
         DEFINES += _NEUTUBE_MAC_
@@ -141,20 +176,30 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        exists($${NEUROLABI_DIR}/macosx10.9) {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-            QMAKE_MAC_SDK = macosx10.9
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.9
+        OSX_VERSION = $$system(sw_vers -productVersion)
+        message("Mac OS X $$OSX_VERSION")
+        MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
+        OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
+        OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
+        !isEqual(OSX_MAJOR_VERSION, 10) {
+            error("Could not recognize OSX version")
         }
 
-        exists($${NEUROLABI_DIR}/macosx10.10) {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-            QMAKE_MAC_SDK = macosx10.10
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
-        }
+        OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
+        QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
+        message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
+        greaterThan(OSX_MINOR_VERSION, 8) {
+            contains(CONFIG, libstdc++) {
+                message("Using libstdc++")
+            } else {
+                LIBS -= -lstdc++
+                QMAKE_CXXFLAGS += -stdlib=libc++
+            }
+
+            QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
+            message("SDK: $$QMAKE_MAC_SDK")
+        }
 
         doc.files = doc
         doc.path = Contents/MacOS
@@ -166,21 +211,13 @@ unix {
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += \#-lXt -lSM -lICE \
-          -lX11 -lm \
-          -lpthread \
-          -lGL -lrt -lGLU
+        LIBS += -lX11 -lm -lpthread -lGL -lrt -lGLU -lstdc++
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
         RC_FILE = images/app.icns
-
-        contains(CONFIG, c++11) {
-          message(Using C++11)
-          QMAKE_CXXFLAGS += -std=c++11
-        }
     }
 }
 
@@ -189,13 +226,17 @@ win32 {
     RC_FILE = images/app.rc
 }
 
-QMAKE_CXXFLAGS += -Wno-deprecated
-
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
+
+message("Config: $$CONFIG")
+
+#QMAKE_CXX = /usr/bin/g++
+#QMAKE_CC = /usr/bin/gcc
+#message($$QMAKE_CXX)
 
 # Input
 RESOURCES = gui.qrc
@@ -661,7 +702,13 @@ HEADERS += mainwindow.h \
     dvid/zdviddataupdater.h \
     dialogs/zdvidbodypositiondialog.h \
     widgets/z3dtabwidget.h \
-    zcubearraymovieactor.h
+    zcubearraymovieactor.h \
+    dialogs/zflyemsplituploadoptiondialog.h \
+    widgets/zaxiswidget.h \
+    dialogs/zflyembodychopdialog.h \
+    zstackdocdatabuffer.h \
+    dialogs/ztestoptiondialog.h \
+    dialogs/zinfodialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -747,7 +794,11 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsynapseannotationdialog.ui \
     dialogs/zcontrastprotocaldialog.ui \
     dialogs/zflyemroitooldialog.ui \
-    dialogs/zdvidbodypositiondialog.ui
+    dialogs/zdvidbodypositiondialog.ui \
+    dialogs/zflyemsplituploadoptiondialog.ui \
+    widgets/zaxiswidget.ui \
+    dialogs/ztestoptiondialog.ui \
+    dialogs/zinfodialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1172,7 +1223,13 @@ SOURCES += main.cpp \
     dvid/zdviddataupdater.cpp \
     dialogs/zdvidbodypositiondialog.cpp \
     widgets/z3dtabwidget.cpp \
-    zcubearraymovieactor.cpp
+    zcubearraymovieactor.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    widgets/zaxiswidget.cpp \
+    dialogs/zflyembodychopdialog.cpp \
+    zstackdocdatabuffer.cpp \
+    dialogs/ztestoptiondialog.cpp \
+    dialogs/zinfodialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

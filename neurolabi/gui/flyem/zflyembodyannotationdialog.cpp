@@ -2,6 +2,7 @@
 #include "ui_zflyembodyannotationdialog.h"
 #include "zflyembodyannotation.h"
 #include "neutube.h"
+#include "zflyemmisc.h"
 
 const std::string ZFlyEmBodyAnnotationDialog::m_finalizedText = "Finalized";
 
@@ -11,11 +12,18 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
+
   if (NeuTube::IsAdminUser()) {
     showFinalizedStatus();
 //    ui->statusComboBox->addItem("Finalized");
   }
   setNameEdit(ui->nameComboBox->currentText());
+
+  setWhatsThis("Annotate the selected body. You can specify the name and status"
+               "of the body as well as add any comment as you like. "
+               "The annotation will be saved into the database after 'OK' "
+               "is clicked.");
 
 //  ui->commentLineEdit->setEnabled(false);
 
@@ -64,7 +72,13 @@ void ZFlyEmBodyAnnotationDialog::setNameEdit(const QString &name)
 
 QString ZFlyEmBodyAnnotationDialog::getStatus() const
 {
-  return ui->statusComboBox->currentText();
+  QString status;
+
+  if (ui->statusComboBox->currentIndex() > 0) {
+    status = ui->statusComboBox->currentText();
+  }
+
+  return status;
   /*
   if (ui->skipCheckBox->isChecked()) {
     return "Skip";
@@ -110,7 +124,11 @@ void ZFlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 
 void ZFlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 {
-  int index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);
+  int index = 0;
+  if (!status.empty()) {
+    index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);
+  }
+
   ui->statusLabel->setText("Status");
   ui->statusComboBox->setEnabled(true);
   if (index >= 0) {

@@ -26,7 +26,7 @@ ZStackObject::~ZStackObject()
 #endif
 }
 
-bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
+bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
                            NeuTube::EAxis /*sliceAxis*/) const
 {
@@ -148,6 +148,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, NeuTube::EAxis /*axis*/)
 bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
 {
   return false;
+}
+
+bool ZStackObject::hit(const ZIntPoint &pt)
+{
+  return hit(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZStackObject::setHitPoint(const ZIntPoint &pt)

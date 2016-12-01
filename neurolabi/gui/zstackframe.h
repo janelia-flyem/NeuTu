@@ -44,6 +44,7 @@ class MainWindow;
 class QMdiArea;
 class ZMessage;
 class ZMessageManager;
+class QTimer;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -260,6 +261,9 @@ public:
 
   void createMainWindowActions();
 
+public:
+  virtual void stressTest();
+
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
@@ -277,6 +281,7 @@ public slots:
 
 private slots:
   void updateSwcExtensionHint();
+  void testSlot();
 
 signals:
   void infoChanged();
@@ -321,6 +326,7 @@ private:
 
 protected:
   static void BaseConstruct(ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc);
+  static void BaseConstruct(ZStackFrame *frame, ZStackDoc *doc);
 
 protected:
   SettingDialog *m_settingDlg;
@@ -339,6 +345,8 @@ protected:
   bool m_isClosing;
 
   //Z3DWindow *m_3dWindow;
+
+  QTimer *m_testTimer;
 
   bool m_isWidgetReady;
 

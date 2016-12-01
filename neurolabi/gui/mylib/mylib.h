@@ -45,6 +45,8 @@
 #define SIZE_SCALE 64
 #define OFFS_SCALE 64
 
+extern int Boundary_Case_8qm5;
+
 namespace mylib {
 typedef unsigned char      uint8;
 typedef unsigned short     uint16;

@@ -60,6 +60,8 @@ public:
     ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
   };
 
+  static const int MAX_SPAN_HINT;
+
   bool isDeprecated(EComponent comp) const;
   void deprecate(EComponent comp);
   void deprecateDependent(EComponent comp);
@@ -118,6 +120,7 @@ public:
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
 
   void copyDataFrom(const ZObject3dScan &obj);
+  void copyAttributeFrom(const ZObject3dScan &obj);
 
   /*!
    * \brief Import a dvid object
@@ -154,6 +157,11 @@ public:
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
 
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
+
+  bool importDvidObjectBufferDs(const char *byteArray, size_t byteNumber);
+
+  bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber,
+                              int xIntv, int yIntv, int zIntv);
 
   bool importDvidRoi(const ZJsonArray &obj);
   bool importDvidRoi(const std::string &filePath);
@@ -216,6 +224,8 @@ public:
    */
   void sort();
   void canonize();
+  void sortedCanonize();
+  void fullySortedCanonize();
   void unify(const ZObject3dScan &obj);
   void concat(const ZObject3dScan &obj);
 
@@ -229,9 +239,36 @@ public:
 
   /*!
    * \brief Extract voxels within a cuboid
+   *
+   * \a remain and \a result can be NULL or any pointer other than 'this' object.
    */
-  ZObject3dScan *subobject(const ZIntCuboid &box,
-                          ZObject3dScan *result = NULL) const;
+  ZObject3dScan *subobject(const ZIntCuboid &box, ZObject3dScan *remain,
+                          ZObject3dScan *result) const;
+
+  /*!
+   * \brief Chop the object into two parts
+   *
+   * The output is the same as \a result if \a result is not NULL; otherwise
+   * it returns a new pointer and the caller is responsible for freeing the
+   * memory.
+   *
+   * \return The part above z (<z)
+   */
+  ZObject3dScan *chopZ(int z, ZObject3dScan *remain,
+                          ZObject3dScan *result) const;
+
+  /*!
+   * \brief Chop the object into two parts
+   *
+   * \return The part on the left (<x)
+   */
+  ZObject3dScan *chopX(int x, ZObject3dScan *remain, ZObject3dScan *result) const;
+
+  ZObject3dScan *chopY(int y, ZObject3dScan *remain, ZObject3dScan *result) const;
+
+  ZObject3dScan* chop(
+      int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+      ZObject3dScan *result) const;
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
@@ -356,6 +393,10 @@ public:
    */
   bool contains(int x, int y, int z);
   bool contains(const ZIntPoint &pt);
+
+  ZIntPoint getDsIntv() const {
+    return m_dsIntv;
+  }
 
   /*!
    * \brief Get minimal Z
@@ -572,12 +613,16 @@ private:
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
 
+  void pushDsIntv(int xintv, int yintv, int zintv);
+  void popDsIntv(int xintv, int yintv, int zintv);
+
+
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   bool m_isCanonized;
   uint64_t m_label;
   bool m_blockingEvent;
-  ZIntPoint m_dsIntv;
+  ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
 //  NeuTube::EAxis m_sliceAxis;
 
   //ZIntPoint m_hitPoint;

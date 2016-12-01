@@ -544,11 +544,10 @@ void ZObject3dStripe::sort()
   }
 }
 
-void ZObject3dStripe::canonize()
+void ZObject3dStripe::sortedCanonize()
 {
   if (!m_isCanonized) {
     if (!m_segmentArray.empty()) {
-      sort();
       std::vector<int> newSegmentArray(m_segmentArray.size());
       size_t length = 0;
       //newSegmentArray.reserve(m_segmentArray.size());
@@ -575,6 +574,17 @@ void ZObject3dStripe::canonize()
       newSegmentArray.resize(length);
       m_segmentArray.swap(newSegmentArray);
       //m_segmentArray = newSegmentArray;
+    }
+    m_isCanonized = true;
+  }
+}
+
+void ZObject3dStripe::canonize()
+{
+  if (!m_isCanonized) {
+    if (!m_segmentArray.empty()) {
+      sort();
+      sortedCanonize();
     }
 
     m_isCanonized = true;

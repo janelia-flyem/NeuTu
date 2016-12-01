@@ -398,7 +398,7 @@ std::string ZDvidUrl::getLabels64Url() const
 
 std::string ZDvidUrl::getLabels64Url(int zoom) const
 {
-  std::string dataName = m_dvidTarget.getLabelBlockName(zoom);
+  std::string dataName = m_dvidTarget.getValidLabelBlockName(zoom);
 
   return getDataUrl(dataName);
 }
@@ -421,7 +421,7 @@ std::string ZDvidUrl::getLabels64Url(
 std::string ZDvidUrl::getLabels64Url(int sx, int sy, int sz,
     int x0, int y0, int z0, int zoom) const
 {
-  return getLabels64Url(m_dvidTarget.getLabelBlockName(zoom),
+  return getLabels64Url(m_dvidTarget.getValidLabelBlockName(zoom),
                         sx, sy, sz, x0, y0, z0);
 }
 

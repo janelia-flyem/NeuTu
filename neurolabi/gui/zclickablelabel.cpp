@@ -1,10 +1,13 @@
 #include "z3dgl.h"
-#include "zclickablelabel.h"
-#include "zcolormap.h"
-#include <QtGui>
+
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
+
+#include "zclickablelabel.h"
+#include "zcolormap.h"
 #include "z3dtransferfunction.h"
 #include "znumericparameter.h"
 
@@ -244,7 +247,7 @@ ZClickableTransferFunctionLabel::ZClickableTransferFunctionLabel(Z3DTransferFunc
   connect(m_transferFunction, SIGNAL(valueChanged()), this, SLOT(update()));
 }
 
-void ZClickableTransferFunctionLabel::paintEvent(QPaintEvent */*e*/)
+void ZClickableTransferFunctionLabel::paintEvent(QPaintEvent * /*e*/)
 {
   QPainter painter(this);
   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);

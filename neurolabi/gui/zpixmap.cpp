@@ -5,6 +5,10 @@
 #include <QPainter>
 #include <QtConcurrentRun>
 #include <QApplication>
+#include <QGraphicsBlurEffect>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+
 
 ZPixmap::ZPixmap() : m_isVisible(false)
 {
@@ -188,3 +192,4 @@ bool ZPixmap::isFullyActive() const
   return m_objTransform.transform(m_activeArea).contains(
         QRectF(0, 0, width(), height()));
 }
+

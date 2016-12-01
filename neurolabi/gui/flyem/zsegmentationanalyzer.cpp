@@ -458,7 +458,7 @@ void FlyEm::ZSegmentationAnalyzer::generateBcf(
     vector<vector<double> > feature =
         FlyEm::ZSegmentationAnalyzer::computeBcf(bundle, setName);
 #if defined(_WIN32) || defined(_WIN64)
-    mkdir(bundle.getBcfPath().c_str());
+    _mkdir(bundle.getBcfPath().c_str());
 #else
     mkdir(bundle.getBcfPath().c_str(), 0777);
 #endif

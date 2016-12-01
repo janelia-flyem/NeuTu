@@ -12,6 +12,7 @@
 #include "zselector.h"
 #include "zjsonarray.h"
 #include "zflyemtodoitem.h"
+#include "dvid/zdvidwriter.h"
 
 class ZStackView;
 
@@ -174,6 +175,7 @@ private:
 //  int m_startY;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
+  ZDvidWriter m_writer;
   ZDvidInfo m_dvidInfo;
 
   ZSelector<ZIntPoint> m_selector;

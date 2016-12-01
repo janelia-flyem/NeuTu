@@ -1,12 +1,14 @@
 #include "zobjsmanagerwidget.h"
 
-#include "z3dgl.h"
-#include <QtGui>
-#ifdef _QT5_
-#include <QtWidgets>
-#endif
 #include <map>
 #include <set>
+
+#include "z3dgl.h"
+#ifdef _QT5_
+#include <QtWidgets>
+#else
+#include <QtGui>
+#endif
 
 #include "zstackdoc.h"
 #include "zswcobjsmodel.h"

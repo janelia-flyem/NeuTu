@@ -1,16 +1,30 @@
-cmake_minimum_required(VERSION 2.8)
-
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE "Debug" CACHE STRING
-      "Choose the type of build, options are: Debug Release
-RelWithDebInfo MinSizeRel."
-      FORCE)
-  message ("Default to Debug build, use gui to change CMAKE_BUILD_TYPE or
-use -DCMAKE_BUILD_TYPE=Release in command line. Options are: Debug Release
-RelWithDebInfo MinSizeRel.")
-endif (NOT CMAKE_BUILD_TYPE)
-
+cmake_minimum_required(VERSION 3.6.1)
 project(neurolabi)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
+
+# Change the default build type from Debug to Release, while still
+# supporting overriding the build type.
+#
+# The CACHE STRING logic here and elsewhere is needed to force CMake
+# to pay attention to the value of these variables.
+if (NOT CMAKE_BUILD_TYPE)
+  message("-- No build type specified; defaulting to CMAKE_BUILD_TYPE=Release.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+else (NOT CMAKE_BUILD_TYPE)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("\n=================================================================================")
+    message("\n-- Build type: Debug. Performance will be terrible!")
+    message("-- Add -DCMAKE_BUILD_TYPE=Release to the CMake command line to get an optimized build.")
+    message("\n=================================================================================")
+  endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+endif (NOT CMAKE_BUILD_TYPE)
 
 set (USE_LIBFFTW ON CACHE BOOL "Use fftw3")
 set (USE_LIBFFTWF ON CACHE BOOL "Use float version of fftw")
@@ -19,21 +33,11 @@ set (USE_LIBXML2 ON CACHE BOOL "Use libxml2")
 set (USE_LIBPNG OFF CACHE BOOL "Use libpng")
 set (USE_LIBJANSSON ON CACHE BOOL "Use libjansson")
 
-set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
-
 include (CheckIncludeFiles)
 include (CheckLibraryExists)
 include (CheckFunctionExists)
 include (CheckTypeSize)
 include (CheckCInlineKeyword)
-
-#check arch bit
-if (CMAKE_SIZE_OF_VOID_P EQUAL 4)
-  set (ARCH_BIT 32)
-else()
-  set (ARCH_BIT 64)
-endif()
-add_definitions(-DARCH_BIT=${ARCH_BIT})
 
 if (USE_LIBFFTW)
   find_package(FFTW3 REQUIRED)
@@ -135,8 +139,9 @@ if (MINGW)
 endif (MINGW)
 
 if (MSVC)
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4 /D \"_CRT_SECURE_NO_WARNINGS\"")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /D \"_CRT_SECURE_NO_WARNINGS\"")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4 /EHsc")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /EHsc")
+  add_definitions (-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN -DPCRE2_STATIC -DLIBXML_STATIC)
 else (MSVC)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 endif (MSVC)
@@ -215,8 +220,6 @@ set (NEULIB_SRCS
 source_group("" FILES ${NEULIB_SRCS})
 source_group(generated FILES ${GENERATED_NEULIB_SRCS})
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include ${GENELIB_DIR})
-
 #Setup targets
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set(LIBRARY_NAME neurolabi_debug)
@@ -227,6 +230,8 @@ message("library name: ${LIBRARY_NAME}")
 
 add_library(${LIBRARY_NAME} STATIC ${NEULIB_SRCS} ${GENERATED_NEULIB_SRCS}
   ${GENELIB_SRCS} ${GENERATED_GENELIB_SRCS})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${GENELIB_DIR})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${GENELIB_DIR})
 
 # install library
 install (TARGETS ${LIBRARY_NAME} ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)
