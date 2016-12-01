@@ -134,8 +134,8 @@ contains(CONFIG, sanitize) {
       QMAKE_CXXFLAGS += -fsanitize=address
       QMAKE_LFLAGS += -fsanitize=address
     } else {
-      QMAKE_CXXFLAGS += -fsanitize=kernel-address
-      QMAKE_LFLAGS += -fsanitize=kernel-address
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
     }
   }
 }
