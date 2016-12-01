@@ -52,20 +52,21 @@ ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   start_gradient_magnitude=new QPushButton("start");
   strategies=new QComboBox;
   strategies->addItem("simple");
-  inverse=new QRadioButton("inverse");
+  reverse=new QRadioButton("reverse");
   lay->addWidget(strategies);
-  lay->addWidget(inverse);
+  lay->addWidget(reverse);
   lay->addWidget(start_gradient_magnitude);
   this->setLayout(lay);
   this->resize(200,100);
   this->move(300,200);
   connect(start_gradient_magnitude,SIGNAL(clicked()),this,SLOT(onStart()));
-  strategy_map["simple"]=GradientStrategyType::SIMPLE;
+  strategy_map["simple"]=GradientStrategyContext::SIMPLE;
 }
 
 
 void ZSelectGradientStrategyWindow::onStart()
 {
+  this->hide();
   ZStackDoc *doc =ZSandbox::GetCurrentDoc();
   ZStack  *input_stack=doc->getStack();
   if(!doc || ! input_stack)
@@ -79,80 +80,100 @@ void ZSelectGradientStrategyWindow::onStart()
   int depth=input_stack->depth();
   int channel=input_stack->channelNumber();
 
-  ZStack* mag=new ZStack(kind,width,height,depth,channel);
-
+  ZStack* out=new ZStack(kind,width,height,depth,channel);
   QString s=strategies->currentText();
-  GradientStrategyContext context(input_stack,mag,inverse->isChecked(),strategy_map[s]);
-  context.run();
+  GradientStrategyContext context(strategy_map[s]);
+  context.run(input_stack,out,reverse->isChecked());
 
-  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(mag);
+  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
 }
 
 
-GradientStrategyContext::GradientStrategyContext(
-    const ZStack* input_stack,ZStack* output_x,ZStack* output_y,
-    ZStack* output_z,ZStack* mag,bool inverse,GradientStrategyType::StrategyType strategy_type)
+template<typename T>
+GradientStrategy<T>::GradientStrategy()
 {
-  _in=input_stack;
-  _outx=output_x;
-  _outy=output_y;
-  _outz=output_z;
-  _mag=mag;
-  _type=strategy_type;
-  _inverse=inverse;
-  delete_out_xyz=false;
+  if(typeid(T)==typeid(uint8_t) || typeid(T)==typeid(color_t))
+    _max=255;
+  else if(typeid(T)==typeid(uint16_t))
+    _max=65535;
+  else if(typeid(T)==typeid(float))
+    _max=FLT_MAX;
+  else if(typeid(T)==typeid(double))
+    _max=DBL_MAX;
+  else
+    throw std::string("GradientStategy not support ")+typeid(T).name()+" yet";
 }
 
 
-GradientStrategyContext::GradientStrategyContext(
-    const ZStack* in,ZStack* out,bool inverse,GradientStrategyType::StrategyType strategy_type)
+template<typename T>
+void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool reverse)
 {
-  _in=in;
-  _mag=out;
-  _inverse=inverse;
-  _outx=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
-  _outy=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
-  _outz=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
+  _width=width;
+  _height=height;
+  _depth=depth;
+  _slice=width*height;
+  _total=_slice*depth;
+  _run(in,out);
+  if(reverse)
+  {
+    this->reverse(out,out+_total);
+  }
+}
+
+
+template<typename T>
+void GradientStrategy<T>::reverse(T* begin,T* end)
+{
+  for(T* it=begin;it!=end;++it)
+    *it=_max-*it;
+}
+
+
+template<>
+void GradientStrategy<color_t>::reverse(color_t* begin,color_t* end)
+{
+  for(color_t* it=begin;it!=end;++it)
+    for(uint i=0;i<3;++i)
+      (*it)[i]=_max-(*it)[i];
+}
+
+
+GradientStrategyContext::GradientStrategyContext(StrategyType strategy_type)
+{
   _type=strategy_type;
-  delete_out_xyz=true;
 }
 
 
 GradientStrategyContext::~GradientStrategyContext()
 {
-  if(delete_out_xyz)
-  {
-    delete _outx;
-    delete _outy;
-    delete _outz;
-  }
+
 }
 
 
-void GradientStrategyContext::run()
+void GradientStrategyContext::run(const ZStack* in,ZStack* out,bool reverse)
 {
-  if(!_in || !_outx || !_outy || !_outz)
+  if(!in || !out)
     return ;
 
-  switch(_in->kind())
+  switch(in->kind())
   {
     case GREY:
-          _run<uint8>();
+          _run<uint8>(in,out,reverse);
           break;
     case GREY16:
-          _run<uint16>();
+          _run<uint16>(in,out,reverse);
           break;
     case FLOAT32:
-          _run<float32>();
+          _run<float32>(in,out,reverse);
           break;
     case FLOAT64:
-          _run<float64>();
+          _run<float64>(in,out,reverse);
           break;
     case COLOR:
-          _run<color_t>();
+          _run<color_t>(in,out,reverse);
           break;
     default:
           break;
@@ -161,12 +182,12 @@ void GradientStrategyContext::run()
 
 
 template<typename T>
-void GradientStrategyContext:: _run()
+void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,bool reverse)
 {
   GradientStrategy<T>* strategy=0;
   switch(_type)
   {
-    case GradientStrategyType::SIMPLE:
+    case SIMPLE:
         strategy=new GradientStrategySimple<T>;
         break;
     default:
@@ -175,16 +196,12 @@ void GradientStrategyContext:: _run()
   }
   if(strategy)
   {
-    GradientStrategyParam p(_in->width(),_in->height(),_in->depth(),_inverse);
     /*process each channel*/
-    for(int i=0;i<_in->channelNumber();++i)
+    for(int i=0;i<in->channelNumber();++i)
     {
-      const T*in=(const T*)_in->array8(i);
-      T* out_x=(T*)_outx->array8(i);
-      T* out_y=(T*)_outy->array8(i);
-      T* out_z=(T*)_outz->array8(i);
-      T* mag=(T*)_mag->array8(i);
-      strategy->run(in,out_x,out_y,out_z,mag,p);
+      const T*_in=(const T*)in->array8(i);
+      T* _out=(T*)out->array8(i);
+      strategy->run(_in,_out,in->width(),in->height(),in->depth(),reverse);
     }
     delete strategy;
   }
@@ -192,142 +209,101 @@ void GradientStrategyContext:: _run()
 
 
 template<typename T>
-void GradientStrategySimple<T>::run(const T* in,T* out_x,T* out_y,T* out_z,T* mag,GradientStrategyParam p)
+void GradientStrategySimple<T>::_run(const T* in,T* out)
 {
-  uint width=p.width;
-  uint height=p.height;
-  uint depth=p.depth;
-  uint t=width*height;
+  uint width=this->_width,height=this->_height,depth=this->_depth;
+  size_t slice=this->_slice,total=this->_total;
+  double max=this->_max;
 
-  for(uint z=0;z<depth;++z)
+  T *px=new T[total],*py=new T[total],*pz=new T[total];
+  T *_px=px,*_py=py,*_pz=pz;
+  memset(px,0,sizeof(T)*total);
+  memset(py,0,sizeof(T)*total);
+  memset(pz,0,sizeof(T)*total);
+
+#define process(m,n,p,o) \
+for(uint z=0;z<depth;++z)\
+  for(uint y=0;y<height;++y)\
+    for(uint x=0;x<width;++x,++pi,++p)\
+      if(m==0)*p=abs(double(*pi)-*(pi+o));\
+      else if(m==n)*p=abs(double(*(pi-o))-*pi);\
+      else*p=abs(double(*(pi+o))-*(pi-o))/2.0;
+
+  const T* pi=in;
+  if(width>1)
   {
-    uint offset_s=t*z;
-    for(uint y=0;y<height;++y)
-    {
-      uint offset=offset_s+width*y;
-      const T* pi=in+offset;
-      T* px=out_x+offset;
-      T* py=out_y+offset;
-      T* pz=out_z+offset;
-      for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
-      {
-        /*convert to double to avoid substraction operation overflow*/
-        if(x==0)
-          *px=abs(double(*px)-*(px+1));
-        else if(x==width-1)
-          *px=abs(double(*(pi-1))-*pi);
-        else
-          *px=abs(double(*(pi+1))-*(pi-1))/2.0;
-        if(y==0)
-          *py=abs(double(*(pi+width))-*pi);
-        else if(y==height-1)
-          *py=abs(double(*pi)-*(pi-width));
-        else
-          *py=abs(double(*(pi+width))-*(pi-width))/2.0;
-        if(z==0)
-          *pz=abs(double(*(pi+t))-*(pi));
-        else if(z==depth-1)
-          *pz=abs(double(*(pi))-*(pi-t));
-        else
-          *pz=abs(double(*(pi+t))-*(pi-t))/2.0;
-      }
-    }
+    process(x,width-1,_px,1);
   }
-  if(mag)
+  pi=in;
+  if(height>1)
   {
-    int sign=p.inverse?-1:1;
-    double max=DBL_MAX;
-    if(typeid(uint8)==typeid(T))
-    {
-      max=255.0;
-    }
-    else if(typeid(uint16)==typeid(T))
-    {
-      max=65535.0;
-    }
-    else if(typeid(float32)==typeid(T))
-    {
-      max=FLT_MAX;
-    }
-    double inver_max=p.inverse?max:0;
-    T *p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
-    uint num=width*height*depth;
-    const T* end_x=p_x+num;
-    T x,y,z;
-    for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
-    {
-      x=*p_x;
-      y=*p_y;
-      z=*p_z;
-      *p_o=inver_max+sign*std::min(sqrt(static_cast<double>(x*x+y*y+z*z)),max);
-    }
+    process(y,height-1,_py,width);
   }
+  pi=in;
+  if(depth>1)
+  {
+    process(z,depth-1,_pz,slice);
+  }
+#undef process
+  for(uint i=0;i<total;++i)
+  {
+    out[i]=std::min(sqrt(static_cast<double>(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i])),max);
+  }
+  delete[] px;
+  delete[] py;
+  delete[] pz;
 }
 
 
 template<>
-void GradientStrategySimple<color_t>::run(const color_t* in,color_t* out_x,
-                                          color_t* out_y,color_t* out_z,color_t* mag,
-                                          GradientStrategyParam p)
+void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
 {
-  uint width=p.width;
-  uint height=p.height;
-  uint depth=p.depth;
-  uint t=width*height;
-  for(uint z=0;z<depth;++z)
+  uint width=this->_width,height=this->_height,depth=this->_depth;
+  size_t slice=this->_slice,total=this->_total;
+  double max=this->_max;
+
+  color_t *px=new color_t[total],*py=new color_t[total],*pz=new color_t[total];
+  color_t *_px=px,*_py=py,*_pz=pz;
+  memset(px,0,sizeof(color_t)*total);
+  memset(py,0,sizeof(color_t)*total);
+  memset(pz,0,sizeof(color_t)*total);
+
+#define process(m,n,p,o) \
+for(uint z=0;z<depth;++z)\
+  for(uint y=0;y<height;++y)\
+    for(uint x=0;x<width;++x,++pi,++p)\
+      for(uint t=0;t<3;++t)\
+        if(m==0)(*p)[t]=abs(double((*pi)[t])-(*(pi+o))[t]);\
+        else if(m==n)(*p)[t]=abs(double((*(pi-o))[t])-(*pi)[t]);\
+        else(*p)[t]=abs(double((*(pi+o))[t])-(*(pi-o))[t])/2.0;\
+
+  const color_t* pi=in;
+  if(width>1)
   {
-    uint offset_s=t*z;
-    for(uint y=0;y<height;++y)
+    process(x,width-1,_px,1);
+  }
+  if(height>1)
+  {
+    pi=in;
+    process(y,height-1,_py,width);
+  }
+  if(depth>1)
+  {
+    pi=in;
+    process(z,depth-1,_pz,slice);
+  }
+#undef process
+  for(uint i=0;i<total;++i)
+  {
+    for(uint t=0;t<3;++t)
     {
-      uint offset=offset_s+width*y;
-      const color_t* pi=in+offset;
-      color_t* px=out_x+offset;
-      color_t* py=out_y+offset;
-      color_t* pz=out_z+offset;
-      for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
-      {
-        //convert to double to avoid substraction operation overflow
-        for(uint y=0;y<3;++y)
-        {
-          if(x==0)
-            *px[y]=abs(double((*px)[y]))-*(px+1)[y];
-          else if(x==width-1)
-            *px[y]=abs(double((*(pi-1))[y])-*pi[y]);
-          else
-            *px[y]=abs(double((*(pi+1))[y])-*(pi-1)[y])/2.0;
-          if(y==0)
-            *py[y]=abs(double((*(pi+width))[y])-*pi[y]);
-          else if(y==height-1)
-            *py[y]=abs(double((*pi)[y])-*(pi-width)[y]);
-          else
-            *py[y]=abs(double((*(pi+width))[y])-*(pi-width)[y])/2.0;
-          if(z==0)
-            *pz[y]=abs(double((*(pi+t))[y])-*(pi)[y]);
-          else if(z==depth-1)
-            *pz[y]=abs(double((*(pi))[y])-*(pi-t)[y]);
-          else
-            *pz[y]=abs(double((*(pi+t))[y])-*(pi-t)[y])/2.0;
-        }
-      }
+      out[i][t]=std::min(sqrt(static_cast<double>
+        (px[i][t]*px[i][t]+py[i][t]*py[i][t]+pz[i][t]*pz[i][t])),max);
     }
   }
-  if(mag)
-  {
-    int sign=p.inverse?-1:1;
-    uint8_t max=255;
-    uint8_t inver_max=p.inverse?max:0;
-    color_t* p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
-    uint num=width*height*depth;
-    const color_t* end_x=p_x+num;
-    for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
-    {
-      for(int i=0;i<3;++i)
-      {
-        *p_o[i]=inver_max+sign*std::min(255.0,
-              sqrt(static_cast<double>(*p_x[i]**p_x[i]+*p_y[i]**p_y[i]+*p_z[i]**p_z[i])));
-      }
-    }
-  }
+  delete[] px;
+  delete[] py;
+  delete[] pz;
 }
 
 
