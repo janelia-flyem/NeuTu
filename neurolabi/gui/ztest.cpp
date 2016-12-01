@@ -279,7 +279,7 @@ using namespace std;
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-
+#include "test/zgradientmagnitudemoduletest.h"
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
