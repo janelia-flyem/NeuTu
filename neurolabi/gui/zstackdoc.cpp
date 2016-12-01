@@ -3323,8 +3323,8 @@ void ZStackDoc::removeAllObject(bool deleteObject)
     }
   }
 
-  m_objectGroup.removeAllObject(deleteObject);
   m_playerList.removeAll();
+  m_objectGroup.removeAllObject(deleteObject);
 
   notifyObjectModified();
 

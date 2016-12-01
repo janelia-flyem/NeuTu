@@ -3857,7 +3857,7 @@ bool ZObject3dScan::contains(int x, int y, int z)
 
   //Binary search
   size_t lowIndex = 0;
-  size_t highIndex = getStripeNumber();
+  size_t highIndex = getStripeNumber() - 1;
 
   while (highIndex >= lowIndex) {
     size_t medIndex = (lowIndex + highIndex) / 2;

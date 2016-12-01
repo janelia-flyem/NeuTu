@@ -20808,6 +20808,20 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  Mc_Stack *testStack = (Mc_Stack*) malloc(sizeof(Mc_Stack));
+
+  free(testStack);
+
+  ZStack *stack = new ZStack;
+  Stack *stackData = C_Stack::make(GREY, 3, 3, 3);
+  stack->load(stackData);
+
+  delete stack;
+
+  stack = NULL;
+#endif
+
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/432.sobj");
 

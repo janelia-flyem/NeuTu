@@ -571,7 +571,7 @@ bool ZStack::load(Stack *stack, bool isOwner)
     if (isOwner)
       C_Stack::kill(stack);
   } else {
-    m_stack = new Mc_Stack;
+    m_stack = (Mc_Stack*) malloc(sizeof(Mc_Stack));
 
     C_Stack::view(stack, m_stack);
 

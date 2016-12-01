@@ -128,13 +128,13 @@ TEST(ZMatrix, RowColumn)
 
   ASSERT_EQ(2, mat.getRowMax(0));
 
-  mat.set(1, 0, 3);
-  mat.set(2, 0, 2);
+  mat.set(0, 0, 3);
+  mat.set(1, 0, 2);
 
   ASSERT_EQ(3, mat.getColumnMax(0));
 
-  mat.set(1, 1, 4);
-  mat.set(2, 1, 2);
+  mat.set(0, 1, 4);
+  mat.set(1, 1, 2);
   ASSERT_EQ(4, mat.getColumnMax(1));
 
   double dst[3];

@@ -47,7 +47,6 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
   }
 
   int count = rowNumber * columnNumber;
-  m_data.resize(count, 0);
   if (columnNumber <= getColumnNumber()) {
     if (columnNumber < getColumnNumber()) {
       //Move data
@@ -65,7 +64,9 @@ void ZMatrix::resize(int rowNumber, int columnNumber)
         srcOffset += dc;
       }
     }
+    m_data.resize(count, 0);
   } else {
+    m_data.resize(count, 0);
     ZDoubleVector data(count, 0);
     int copyRowNumber = imin2(rowNumber, getRowNumber());
     size_t srcOffset = 0;
