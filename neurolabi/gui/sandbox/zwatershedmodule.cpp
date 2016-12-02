@@ -6,7 +6,7 @@
 #include"zstackdoc.h"
 #include"zsandbox.h"
 #include"mainwindow.h"
-#include "neutubeconfig.h"
+#include"neutubeconfig.h"
 
 ZWaterShedModule::ZWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)

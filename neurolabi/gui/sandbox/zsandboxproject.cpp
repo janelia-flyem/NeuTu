@@ -9,6 +9,7 @@
 #include "ztracemodule.h"
 #include "zimageinfomodule.h"
 #include "zwatershedmodule.h"
+#include "zgradientmagnitudemodule.h"
 /*************************************/
 
 
@@ -28,4 +29,5 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZTraceModule>();
   RegisterModule<ZImageInfoModule>();
   RegisterModule<ZWaterShedModule>();
+  RegisterModule<ZGradientMagnitudeModule>();
 }
