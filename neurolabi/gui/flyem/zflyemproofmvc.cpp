@@ -417,11 +417,11 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
           doc, SLOT(setUnrecycable(QSet<uint64_t>)));
           */
 
-  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateBodyWindowDeep()));
-  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateCoarseBodyWindowDeep()));
-  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateBookmarkTable()));
 
 
@@ -429,6 +429,21 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 
   return doc;
 }
+
+void ZFlyEmProofMvc::syncBodySelectionToOrthoWindow()
+{
+  m_orthoWindow->getDocument()->setSelectedBody(
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
+        NeuTube::BODY_LABEL_ORIGINAL);
+}
+
+void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
+{
+  getCompleteDocument()->setSelectedBody(
+        m_orthoWindow->getDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
+        NeuTube::BODY_LABEL_ORIGINAL);
+}
+
 
 void ZFlyEmProofMvc::makeOrthoWindow()
 {
@@ -455,6 +470,11 @@ void ZFlyEmProofMvc::makeOrthoWindow()
   connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
           m_orthoWindow->getDocument(), SLOT(syncMoveSynapse(ZIntPoint,ZIntPoint)));
 
+  connect(m_orthoWindow->getDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(syncBodySelectionFromOrthoWindow()));
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(syncBodySelectionToOrthoWindow()));
+
 
 //  connect(m_orthoWindow, SIGNAL(synapseEdited(int,int,int)),
 //          this, SIGNAL())
@@ -465,8 +485,8 @@ void ZFlyEmProofMvc::makeOrthoWindow()
   connect(m_orthoWindow, SIGNAL(zoomingTo(int,int,int)),
           this, SLOT(zoomTo(int,int,int)));
   connect(m_orthoWindow, SIGNAL(bodyMergeEdited()),
-          this, SLOT(syncMergeWithDvid()));
-  connect(this, SIGNAL(bodyMergeEdited()),
+          getCompleteDocument(), SLOT(syncMergeWithDvid()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
           m_orthoWindow, SLOT(syncMergeWithDvid()));
   m_orthoWindow->copyBookmarkFrom(getCompleteDocument());
 }
@@ -894,10 +914,12 @@ void ZFlyEmProofMvc::exitCurrentDoc()
   }
 }
 
+/*
 void ZFlyEmProofMvc::syncMergeWithDvid()
 {
   m_mergeProject.syncWithDvid();
 }
+*/
 
 void ZFlyEmProofMvc::setDvidTargetFromDialog()
 {
@@ -1014,8 +1036,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 #endif
 
     m_splitProject.setDvidTarget(getDvidTarget());
-    m_mergeProject.setDvidTarget(getDvidTarget());
-    m_mergeProject.syncWithDvid();
+    getCompleteDocument()->syncMergeWithDvid();
+//    m_mergeProject.setDvidTarget(getDvidTarget());
+//    m_mergeProject.syncWithDvid();
     m_splitUploadDlg->setDvidTarget(getDvidTarget());
 
     getProgressSignal()->advanceProgress(0.2);
@@ -1139,17 +1162,17 @@ void ZFlyEmProofMvc::customInit()
           getView(), SLOT(paintObject()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           getView(), SLOT(paintObject()));
-  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          &m_mergeProject, SLOT(update3DBodyViewDeep()));
-  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          &m_mergeProject, SLOT(update3DBodyViewDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+//          &m_mergeProject, SLOT(update3DBodyViewDeep()));
+//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+//          &m_mergeProject, SLOT(update3DBodyViewDeep()));
 
   connect(getCompleteDocument(), SIGNAL(bodyMerged()),
           this, SLOT(updateCoarseBodyWindowColor()));
   connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
           this, SLOT(updateCoarseBodyWindowColor()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
-          this, SIGNAL(bodyMergeEdited()));
+          this, SLOT(notifyBodyMergeEdited()));
 
 //  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
 //          getCompleteDocument(), SLOT(saveMergeOperation()));
@@ -1168,7 +1191,7 @@ void ZFlyEmProofMvc::customInit()
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           getCompleteDocument(), SLOT(deprecateSplitSource()));
 
-  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
+//  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
 
 
@@ -1191,20 +1214,20 @@ void ZFlyEmProofMvc::customInit()
           this, SIGNAL(messageGenerated(QString, bool)));
           */
 
-  m_mergeProject.setDocument(getDocument());
+//  m_mergeProject.setDocument(getDocument());
   connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
           this, SLOT(updateBodySelection()));
   connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
           this, SLOT(highlightSelectedObject(bool)));
 //          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
-  connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-          this->getView(), SLOT(setView(ZStackViewParam)));
-  connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
-          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
-  connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
-          this, SLOT(checkInBodyWithMessage(uint64_t)));
-  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
-          this, SLOT(updateBodyMerge()));
+//  connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
+//          this->getView(), SLOT(setView(ZStackViewParam)));
+//  connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
+//          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
+//  connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
+//          this, SLOT(checkInBodyWithMessage(uint64_t)));
+//  connect(&m_mergeProject, SIGNAL(mergeUploaded()),
+//          this, SLOT(updateBodyMerge()));
   /*
   connect(&m_mergeProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString,bool)));
@@ -1213,7 +1236,7 @@ void ZFlyEmProofMvc::customInit()
           */
 
   ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
-  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
+//  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
 
 
@@ -1618,10 +1641,11 @@ void ZFlyEmProofMvc::runSplit()
 void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
-    ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
-    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
-    m_mergeProject.setSelection(selected, NeuTube::BODY_LABEL_ORIGINAL);
+//    ZDvidLabelSlice *slice =
+//        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+//    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
+//    getCompleteDocument()->getMergeProject()->setSelection(
+//          selected, NeuTube::BODY_LABEL_ORIGINAL);
     updateCoarseBodyWindow();
     updateBodyWindow();
     updateSkeletonWindow();
@@ -2134,7 +2158,7 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 //  m_latencyLabelWidget->hide();
 
   m_paintLabelWidget->show();
-  m_mergeProject.closeBodyWindow();
+//  m_mergeProject.closeBodyWindow();
 
   m_splitProject.setBodyId(bodyId);
   m_splitProject.downloadSeed();
@@ -2529,7 +2553,8 @@ void ZFlyEmProofMvc::commitMerge()
                           "It cannot be undone. ",
                           this)) {
     mergeCoarseBodyWindow();
-    m_mergeProject.uploadResult();
+    getCompleteDocument()->getMergeProject()->uploadResult();
+//    m_mergeProject.uploadResult();
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {
       getDocument()->getObjectGroup().removeObject(body, true);
@@ -3127,6 +3152,10 @@ std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
 #endif
 }
 
+void ZFlyEmProofMvc::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
+}
 
 void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
 {
@@ -3254,7 +3283,7 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
   if (m_currentViewParam != viewParam) {
-    m_mergeProject.update3DBodyViewPlane(viewParam);
+//    m_mergeProject.update3DBodyViewPlane(viewParam);
     m_splitProject.update3DViewPlane();
 
     updateBodyWindowPlane(m_coarseBodyWindow, viewParam);

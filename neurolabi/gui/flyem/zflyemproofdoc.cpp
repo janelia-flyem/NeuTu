@@ -58,6 +58,7 @@ void ZFlyEmProofDoc::init()
   m_loadingAssignedBookmark = false;
   m_analyzer.setDvidReader(&m_dvidReader);
   m_supervisor = new ZFlyEmSupervisor(this);
+  m_mergeProject = new ZFlyEmBodyMergeProject(this);
 
   m_routineCheck = true;
 
@@ -109,6 +110,19 @@ void ZFlyEmProofDoc::connectSignalSlot()
             this, SLOT(saveMergeOperation()));
     connect(this, SIGNAL(bodyUnmerged()),
             this, SLOT(saveMergeOperation()));
+    connect(getMergeProject(), SIGNAL(mergeUploaded()),
+            this, SIGNAL(bodyMergeUploaded()));
+    connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+            getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
+
+    m_mergeProject->getProgressSignal()->connectProgress(getProgressSignal());
+
+    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
+            this, SLOT(updateDvidLabelObject()));
+    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t)),
+              this, SLOT(checkInBodyWithMessage(uint64_t)));
+    ZWidgetMessage::ConnectMessagePipe(getMergeProject(), this, false);
+
     connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
 
   /*
@@ -124,6 +138,11 @@ ZFlyEmSupervisor* ZFlyEmProofDoc::getSupervisor() const
   }
 
   return NULL;
+}
+
+void ZFlyEmProofDoc::syncMergeWithDvid()
+{
+  getMergeProject()->syncWithDvid();
 }
 
 void ZFlyEmProofDoc::runRoutineCheck()
@@ -167,7 +186,7 @@ void ZFlyEmProofDoc::runRoutineCheck()
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
-    std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
 
@@ -180,13 +199,47 @@ void ZFlyEmProofDoc::setSelectedBody(
         slice->setSelection(selected, labelType);
       }
 
-      emit bodySelectionChanged();
+      notifyBodySelectionChanged();
     }
   }
 }
 
+QString ZFlyEmProofDoc::getBodySelectionMessage() const
+{
+  QString msg;
+
+  const std::set<uint64_t> &selected =
+      getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+
+  for (std::set<uint64_t>::const_iterator iter = selected.begin();
+       iter != selected.end(); ++iter) {
+    uint64_t bodyId = *iter;
+    msg += QString("%1 ").arg(bodyId);
+    const QSet<uint64_t> &originalBodySet =
+        getBodyMerger()->getOriginalLabelSet(bodyId);
+    if (originalBodySet.size() > 1) {
+      msg += "<font color=#888888>(";
+      for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
+           iter != originalBodySet.end(); ++iter) {
+        if (selected.count(*iter) == 0) {
+          msg += QString("_%1").arg(*iter);
+        }
+      }
+      msg += ")</font> ";
+    }
+  }
+
+  if (msg.isEmpty()) {
+    msg = "No body selected.";
+  } else {
+    msg += " selected.";
+  }
+
+  return msg;
+}
+
 void ZFlyEmProofDoc::addSelectedBody(
-    std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
 {
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
   currentSelected.insert(selected.begin(), selected.end());
@@ -568,6 +621,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_sparseVolReader.open(target);
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
+    m_mergeProject->setDvidTarget(target);
     readInfo();
     initData(target);
   } else {
@@ -588,6 +642,12 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
 {
   return ZDvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
+}
+
+void ZFlyEmProofDoc::notifyBodySelectionChanged()
+{
+  emit messageGenerated(ZWidgetMessage(getBodySelectionMessage()));
+  emit bodySelectionChanged();
 }
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
@@ -1258,6 +1318,154 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
   notifyObjectModified();
 }
 
+bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    return getSupervisor()->checkIn(bodyId);
+  }
+
+  return true;
+}
+
+
+bool ZFlyEmProofDoc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+{
+  bool succ = true;
+
+  if (checkingOut) {
+    succ = checkOutBody(bodyId);
+  } else {
+    succ = checkInBodyWithMessage(bodyId);
+  }
+
+  return succ;
+}
+
+bool ZFlyEmProofDoc::checkInBodyWithMessage(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    if (bodyId > 0) {
+      if (getSupervisor()->checkIn(bodyId)) {
+        emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+        return true;
+      } else {
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("Failed to unlock body %1.").arg(bodyId),
+                NeuTube::MSG_ERROR));
+      }
+    }
+  }
+
+  return true;
+}
+
+bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId)
+{
+  if (getSupervisor() != NULL) {
+    return getSupervisor()->checkOut(bodyId);
+  }
+
+  return true;
+}
+
+std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
+    NeuTube::EBodyLabelType type) const
+{
+  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (labelSlice != NULL) {
+    return labelSlice->getSelected(type);
+  }
+
+  return std::set<uint64_t>();
+}
+
+void ZFlyEmProofDoc::checkInSelectedBody()
+{
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->checkIn(bodyId)) {
+          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+        } else {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("Failed to unlock body %1.").arg(bodyId),
+                  NeuTube::MSG_ERROR));
+        }
+      }
+    }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
+  }
+}
+
+void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
+{
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->isLocked(bodyId)) {
+          if (getSupervisor()->checkInAdmin(bodyId)) {
+            emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to unlock body %1.").arg(bodyId),
+                    NeuTube::MSG_ERROR));
+          }
+        } else {
+          emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
+        }
+      }
+    }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
+  }
+}
+
+void ZFlyEmProofDoc::checkOutBody()
+{
+  if (getSupervisor() != NULL) {
+    std::set<uint64_t> bodyIdArray =
+        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+    for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
+         iter != bodyIdArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (bodyId > 0) {
+        if (getSupervisor()->checkOut(bodyId)) {
+          emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
+        } else {
+          std::string owner = getSupervisor()->getOwner(bodyId);
+          if (owner.empty()) {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
+                    arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
+                    NeuTube::MSG_ERROR));
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Failed to lock body %1 because it has been locked by %2").
+                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
+          }
+        }
+      }
+    }
+  } else {
+    emit messageGenerated(QString("Body lock service is not available."));
+  }
+}
+
+
 void ZFlyEmProofDoc::verifySelectedSynapse()
 {
   const std::string &userName = NeuTube::GetCurrentUserName();
@@ -1506,6 +1714,11 @@ void ZFlyEmProofDoc::notifyBodyMerged()
 void ZFlyEmProofDoc::notifyBodyUnmerged()
 {
   emit bodyUnmerged();
+}
+
+void ZFlyEmProofDoc::notifyBodyMergeSaved()
+{
+  emit bodyMergeSaved();
 }
 
 void ZFlyEmProofDoc::notifyBodyMergeEdited()

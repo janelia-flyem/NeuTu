@@ -514,7 +514,7 @@ void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
     if (dlg != NULL) {
       if (ZJsonParser::integerValue(message->getMessageBody()["coarse_level"])
           == 1) {
-        dlg->getProject()->showCoarseBody3d();
+//        dlg->getProject()->showCoarseBody3d();
       }
     }
     break;

@@ -139,8 +139,8 @@ void ZStackMvc::connectSignalSlot()
 void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
 //  connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connectAction(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
-          this, SIGNAL(messageGenerated(ZWidgetMessage)));
+//  connectAction(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
+//          this, SIGNAL(messageGenerated(ZWidgetMessage)));
   connectAction(m_doc.get(), SIGNAL(stackModified()),
           m_view, SLOT(updateChannelControl()));
   connectAction(m_doc.get(), SIGNAL(stackModified()),

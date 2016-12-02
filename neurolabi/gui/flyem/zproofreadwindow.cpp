@@ -126,6 +126,7 @@ void ZProofreadWindow::init()
           this, SLOT(exitSplit()));
 
   connectMessagePipe(m_mainMvc);
+  connectMessagePipe(m_mainMvc->getDocument().get());
 
   connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentSplitInterface(uint64_t)));

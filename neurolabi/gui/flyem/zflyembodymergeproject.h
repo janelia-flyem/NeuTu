@@ -13,6 +13,8 @@
 #include "neutube.h"
 #include "dvid/zdvidinfo.h"
 #include "zflyembookmarkarray.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 
 class ZStackFrame;
 class ZFlyEmBodyMergeFrame;
@@ -56,7 +58,7 @@ public:
   void changeDvidNode(const std::string &newUuid);
 
   inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_reader.getDvidTarget();
   }
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -75,24 +77,27 @@ public:
 
   int getCurrentZ() const;
 
-  void setDocument(ZSharedPointer<ZStackDoc> doc);
+//  void setDocument(ZSharedPointer<ZStackDoc> doc);
   ZStackDoc* getDocument() const;
   template<typename T>
   T* getDocument() const;
 
   void syncWithDvid();
 
+#if 0
   void setSelection(
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
 
   void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void updateSelection();
+#endif
 
   std::set<uint64_t> getSelection(NeuTube::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
-  Z3DWindow* getBodyWindow() { return m_coarseBodyWindow; }
-  void closeBodyWindow();
+//  Z3DWindow* getBodyWindow() { return m_coarseBodyWindow; }
+//  void closeBodyWindow();
 
   uint64_t getMappedBodyId(uint64_t label) const;
 
@@ -145,30 +150,30 @@ public slots:
   void setLoadingLabel(bool state);
   void uploadResult();
   void saveMergeOperation();
-  void update3DBodyView(const ZStackObjectSelector &selector);
-  void update3DBodyView(
-      bool showingWindow = true, bool resettingCamera = false);
-  void update3DBodyViewDeep();
-  void showCoarseBody3d();
-  void showBody3d();
-  void detachCoarseBodyWindow();
-  void detachBodyWindow();
+//  void update3DBodyView(const ZStackObjectSelector &selector);
+//  void update3DBodyView(
+//      bool showingWindow = true, bool resettingCamera = false);
+//  void update3DBodyViewDeep();
+//  void showCoarseBody3d();
+//  void showBody3d();
+//  void detachCoarseBodyWindow();
+//  void detachBodyWindow();
   void notifySplit();
   void highlightSelectedObject(bool hl);
-  void update3DBodyViewPlane(const ZStackViewParam &viewParam);
+//  void update3DBodyViewPlane(const ZStackViewParam &viewParam);
 
 private slots:
-  void presentCoarseBodyView();
+//  void presentCoarseBodyView();
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
   void clearBodyMerger();
-  void update3DBodyViewPlane(
-      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
-  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
+//  void update3DBodyViewPlane(
+//      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
+//  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
   void uploadResultFunc();
-  void makeCoarseBodyWindow(ZStackDoc *doc);
-  void makeBodyWindow();
+//  void makeCoarseBodyWindow(ZStackDoc *doc);
+//  void makeBodyWindow();
   void connectSignalSlot();
 
   QString getSelectionMessage() const;
@@ -180,14 +185,16 @@ private:
 
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
-  ZSharedPointer<ZStackDoc> m_doc;
+//  ZSharedPointer<ZStackDoc> m_doc;
 
-  Z3DMainWindow* m_bodyViewWindow;
-  Z3DTabWidget* m_bodyViewers;
+//  Z3DMainWindow* m_bodyViewWindow;
+//  Z3DTabWidget* m_bodyViewers;
 
-  Z3DWindow *m_coarseBodyWindow;
-  Z3DWindow *m_bodyWindow;
-  ZDvidTarget m_dvidTarget;
+//  Z3DWindow *m_coarseBodyWindow;
+//  Z3DWindow *m_bodyWindow;
+//  ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
+  ZDvidWriter m_writer;
   ZDvidInfo m_dvidInfo;
 
 //  std::vector<ZStackObject*> m_bookmarkDecoration;

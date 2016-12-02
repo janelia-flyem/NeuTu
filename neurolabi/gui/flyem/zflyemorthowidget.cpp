@@ -84,9 +84,10 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
 
   ZWidgetMessage::ConnectMessagePipe(getDocument(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
+
+//  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
+//  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
+//  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
 
   connect(m_controlForm, SIGNAL(movingUp()), this, SLOT(moveUp()));
   connect(m_controlForm, SIGNAL(movingDown()), this, SLOT(moveDown()));
@@ -155,9 +156,12 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
 
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
 {
+  getDocument()->syncMergeWithDvid();
+  /*
   foreach (ZFlyEmProofMvc *mvc, m_mvcArray) {
     mvc->syncMergeWithDvid();
   }
+  */
 #if 0
   m_xyMvc->syncMergeWithDvid();
   m_xzMvc->syncMergeWithDvid();

@@ -471,6 +471,13 @@ ZObject3dScan *ZDvidReader::readBodyDs(
   return result;
 }
 
+QByteArray ZDvidReader::readBuffer(const std::string &url)
+{
+  m_bufferReader.read(url.c_str());
+
+  return m_bufferReader.getBuffer();
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result)
 {

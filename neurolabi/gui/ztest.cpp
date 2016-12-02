@@ -20816,7 +20816,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
   obj.setDsIntv(0, 0, 0);
 
-  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+//  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 
 
 //  obj2.load(GET_TEST_DATA_DIR + "/benchmark/sparsevol/test2.sobj");

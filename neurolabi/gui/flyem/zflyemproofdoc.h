@@ -19,6 +19,7 @@
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemmb6analyzer.h"
 #include "dvid/zdvidversiondag.h"
+#include "zflyembodymergeproject.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -88,6 +89,12 @@ public:
     return &m_bodyMerger;
   }
 
+  ZFlyEmBodyMergeProject* getMergeProject() {
+    return m_mergeProject;
+  }
+
+  void syncMergeWithDvid();
+
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
@@ -105,13 +112,12 @@ public:
   bool hasBodySelected() const;
 
   std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
-  void setSelectedBody(
-      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+  void setSelectedBody(const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void toggleBodySelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   void addSelectedBody(
-      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -201,6 +207,7 @@ public:
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
+  void notifyBodyMergeSaved();
   void notifyBodyMergeEdited();
   void notifyBodyIsolated(uint64_t bodyId);
   void notifyBodyLock(uint64_t bodyId, bool locking);
@@ -290,11 +297,14 @@ public: //Bookmark functions
 
 public:
   bool isDataValid(const std::string &data) const;
+  void notifyBodySelectionChanged();
 
 signals:
   void bodyMerged();
   void bodyUnmerged();
+  void bodyMergeSaved();
   void bodyMergeEdited();
+  void bodyMergeUploaded();
   void userBookmarkModified();
   void assignedBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
@@ -351,6 +361,14 @@ public slots:
   void verifySelectedSynapse();
   void unverifySelectedSynapse();
 
+  void checkInSelectedBody();
+  void checkInSelectedBodyAdmin();
+  void checkOutBody();
+  bool checkOutBody(uint64_t bodyId);
+  bool checkInBody(uint64_t bodyId);
+  bool checkInBodyWithMessage(uint64_t bodyId);
+  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
+
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
   void rewriteSegmentation();
@@ -380,9 +398,13 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
 
+  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+
   void init();
   void initTimer();
   void initAutoSave();
+
+  QString getBodySelectionMessage() const;
 
   /*!
    * \brief Create essential data instance if necessary
@@ -418,6 +440,8 @@ protected:
   ZDvidReader m_sparseVolReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
+
+  ZFlyEmBodyMergeProject *m_mergeProject;
 
   mutable QMutex m_synapseReaderMutex;
   mutable QMutex m_todoReaderMutex;

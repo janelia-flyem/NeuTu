@@ -7,6 +7,7 @@
 #include <QImage>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QByteArray>
 
 #include <string>
 #include <vector>
@@ -306,6 +307,8 @@ public:
     return m_service;
   }
 #endif
+
+  QByteArray readBuffer(const std::string &url);
 
   bool refreshLabelBuffer();
 
