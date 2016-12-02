@@ -508,8 +508,10 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   ZSwcTree *tree = NULL;
   if (stack != NULL) {
     tree = createSurfaceSwc(*stack, sparseLevel);
-    tree->setColor(obj.getColor());
-    tree->rescale(intv + 1, intv + 1, intv + 1);
+    if (tree != NULL) {
+      tree->setColor(obj.getColor());
+      tree->rescale(intv + 1, intv + 1, intv + 1);
+    }
     delete stack;
   }
 
