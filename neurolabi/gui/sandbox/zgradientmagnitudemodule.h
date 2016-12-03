@@ -53,6 +53,21 @@ public:
   void run(const ZStack* in,ZStack* out,bool reverse);
 private:
   template<typename T>
+  GradientStrategy<T>* getStrategy()
+  {
+    GradientStrategy<T>* strategy=0;
+    switch(_type)
+    {
+      case SIMPLE:
+          strategy=new GradientStrategySimple<T>;
+          break;
+      default:
+          strategy=0;
+          break;
+    }
+    return strategy;
+  }
+  template<typename T>
   void _run(const ZStack* in,ZStack* out,bool reverse);
 private:
   StrategyType _type;

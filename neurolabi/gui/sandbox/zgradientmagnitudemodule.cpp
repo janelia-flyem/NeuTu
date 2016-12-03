@@ -184,16 +184,7 @@ void GradientStrategyContext::run(const ZStack* in,ZStack* out,bool reverse)
 template<typename T>
 void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,bool reverse)
 {
-  GradientStrategy<T>* strategy=0;
-  switch(_type)
-  {
-    case SIMPLE:
-        strategy=new GradientStrategySimple<T>;
-        break;
-    default:
-        strategy=0;
-        break;
-  }
+  GradientStrategy<T>* strategy=getStrategy<T>();
   if(strategy)
   {
     /*process each channel*/
