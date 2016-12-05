@@ -86,6 +86,7 @@ AC_ARG_ENABLE(mylib, [AC_HELP_STRING([--enable-mylib], [use mylib])],
 AC_ARG_ENABLE(64bit, [AC_HELP_STRING([--enable-64bit], [compile 64-bit])],
     enable_64bit=$enableval, enable_64bit=no)	
 
+
 AC_ARG_ENABLE(shared, [AC_HELP_STRING([--enable-shared], [compile shared library])],
     enable_shared=$enableval, enable_shared=no)	
 
@@ -133,6 +134,7 @@ AC_SUBST(EXT_LIB_DIR)
 AC_SUBST(ARCH_FLAG)
 AC_SUBST(DEBUG_DIR)
 AC_SUBST(RELEASE_DIR)
+AC_SUBST(SANITIZE_DIR)
 AC_SUBST(GENELIB_DIR)
 AC_SUBST(GENELIB_TAG)
 AC_SUBST(LIB_FILE)
