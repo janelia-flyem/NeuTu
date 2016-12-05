@@ -7,7 +7,7 @@ echo "Build args: $*"
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
   echo "Example: "
   echo 'sh build.sh $HOME/local/lib/Trolltech/Qt-4.8.5/bin/qmake $HOME/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++'
   exit 1
@@ -21,7 +21,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
     exit 1
   fi
   QMAKE_SPEC=$1
@@ -87,7 +87,13 @@ then
   qmake_args="-spec $QMAKE_SPEC"
 fi
 
-qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+if [ $debug_config = "sanitize" ]
+then
+  qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=debug CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+else
+  qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+fi
+
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
@@ -114,7 +120,13 @@ then
   ./update_library
   build_dir=build_debug
 else
-  ./update_library --release 
+  if [ $debug_config = "sanitize" ]
+  then
+    ./update_library --sanitize
+    build_dir=build_sanitize
+  else
+    ./update_library --release 
+  fi
 fi
 
 if [ ! -d $build_dir ]

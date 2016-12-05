@@ -31,6 +31,10 @@ if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
 then
   flyem_neutu_update $install_dir debug
 fi
+if [ -d $target_dir/neurolabi/build_sanitize ]
+then
+  flyem_neutu_update $install_dir sanitize
+fi
 
 
 #cd $install_dir/Download/neutube
