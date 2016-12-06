@@ -1687,7 +1687,9 @@ void ZFlyEmProofMvc::testSlot()
     }
 
     if (bodyId % 13 == 0) {
-      m_bodyWindow->updateBody();
+      if (m_bodyWindow != NULL) {
+        m_bodyWindow->updateBody();
+      }
     }
 
     if (rand.rndint(10000) % 17 == 0) {
@@ -1719,7 +1721,7 @@ void ZFlyEmProofMvc::test()
   if (m_testTimer->isActive()) {
     m_testTimer->stop();
   } else {
-    showFineBody3d();
+//    showFineBody3d();
     m_testTimer->setInterval(500);
     m_testTimer->start();
   }
