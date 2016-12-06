@@ -34,6 +34,7 @@ public slots:
   void downloadTodo(int x, int y, int z);
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
+//  void notifyBodyMergeEdited();
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;

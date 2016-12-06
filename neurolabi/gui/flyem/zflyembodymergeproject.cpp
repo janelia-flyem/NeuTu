@@ -94,8 +94,8 @@ void ZFlyEmBodyMergeProject::clear()
 
 void ZFlyEmBodyMergeProject::connectSignalSlot()
 {
-  connect(this, SIGNAL(coarseBodyWindowCreatedInThread()),
-          this, SLOT(presentCoarseBodyView()));
+//  connect(this, SIGNAL(coarseBodyWindowCreatedInThread()),
+//          this, SLOT(presentCoarseBodyView()));
 }
 
 ZProgressSignal* ZFlyEmBodyMergeProject::getProgressSignal() const

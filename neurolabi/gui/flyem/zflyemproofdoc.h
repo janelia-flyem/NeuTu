@@ -93,8 +93,6 @@ public:
     return m_mergeProject;
   }
 
-  void syncMergeWithDvid();
-
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
@@ -343,6 +341,8 @@ public slots: //Commands
 
 
 public slots:
+  void syncMergeWithDvid();
+
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();

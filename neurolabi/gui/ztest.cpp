@@ -12205,13 +12205,13 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.load(GET_TEST_DATA_DIR + "/benchmark/obj1.sobj");
 
-  while (1) {
+//  while (1) {
     ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj, 2);
     delete tree;
-    std::cout << "Memory usage after: " + ZFlyEmMisc::GetMemoryUsage().toStdString() << std::endl;
-  }
+//    std::cout << "Memory usage after: " + ZFlyEmMisc::GetMemoryUsage().toStdString() << std::endl;
+//  }
 
 #endif
 

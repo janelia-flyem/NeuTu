@@ -113,7 +113,7 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(getDocument(), SIGNAL(todoEdited(int,int,int)),
           this, SIGNAL(todoEdited(int,int,int)));
   connect(getDocument(), SIGNAL(bodyMergeEdited()),
-          this, SIGNAL(bodyMergeEdited()));
+          this, SLOT(notifyBodyMergeEdited()));
 
   foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
     connect(mvc->getPresenter(),
@@ -152,6 +152,11 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
 #endif
 
 //  connect(m_xyMvc, SIGNAL(widgetGlyphChanged()))
+}
+
+void ZFlyEmOrthoWidget::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
 }
 
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
