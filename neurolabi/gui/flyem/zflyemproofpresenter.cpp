@@ -228,6 +228,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     emit mergingBody();
     processed = true;
     break;
+  case Qt::Key_U:
+    if (!isSplitWindow()) {
+      emit uploadingMerge();
+      processed = true;
+    }
+    break;
   case Qt::Key_B:
     if (event->modifiers() == Qt::NoModifier) {
       if (getCompleteDocument()->hasBodySelected()) {

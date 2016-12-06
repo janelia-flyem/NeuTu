@@ -64,6 +64,7 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   setDataVisible(m_controlForm->isDataVisible());
   setSegmentationVisible(m_controlForm->isShowingSeg());
 
+  syncMergeWithDvid();
 }
 
 void ZFlyEmOrthoWidget::syncView()

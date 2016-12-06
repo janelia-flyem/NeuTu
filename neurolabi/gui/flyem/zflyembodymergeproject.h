@@ -119,6 +119,8 @@ public:
 
   void setBookmarkVisible(bool visible);
 
+  void clearBodyMerger();
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -167,7 +169,6 @@ private slots:
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
-  void clearBodyMerger();
 //  void update3DBodyViewPlane(
 //      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
 //  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);

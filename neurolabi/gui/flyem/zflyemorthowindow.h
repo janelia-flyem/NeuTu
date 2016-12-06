@@ -9,6 +9,8 @@ class ZIntPoint;
 class ZFlyEmOrthoDoc;
 class ZFlyEmProofDoc;
 class ZWidgetMessage;
+class QProgressDialog;
+class ZProgressSignal;
 
 class ZFlyEmOrthoWindow : public QMainWindow
 {
@@ -38,6 +40,8 @@ public slots:
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;
+  QProgressDialog *m_progressDlg;
+  ZProgressSignal *m_progressSignal;
 };
 
 #endif // ZFLYEMORTHOWINDOW_H

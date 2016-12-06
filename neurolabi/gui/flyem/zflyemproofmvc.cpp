@@ -317,6 +317,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
           mvc->m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
   connect(mvc->getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
           mvc->m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  connect(mvc->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          mvc, SLOT(syncBodySelectionToOrthoWindow()));
 
   return mvc;
 }
@@ -424,6 +426,12 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(updateBookmarkTable()));
 
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateCoarseBodyWindowDeep()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
+          this, SLOT(updateBookmarkTable()));
 
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
@@ -432,16 +440,21 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
 
 void ZFlyEmProofMvc::syncBodySelectionToOrthoWindow()
 {
-  m_orthoWindow->getDocument()->setSelectedBody(
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
-        NeuTube::BODY_LABEL_ORIGINAL);
+  if (m_orthoWindow != NULL) {
+    m_orthoWindow->getDocument()->setSelectedBody(
+          getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
+          NeuTube::BODY_LABEL_ORIGINAL);
+  }
 }
 
 void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
 {
-  getCompleteDocument()->setSelectedBody(
-        m_orthoWindow->getDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
-        NeuTube::BODY_LABEL_ORIGINAL);
+  if (m_orthoWindow != NULL) {
+    getCompleteDocument()->setSelectedBody(
+          m_orthoWindow->getDocument()->getSelectedBodySet(
+            NeuTube::BODY_LABEL_ORIGINAL),
+          NeuTube::BODY_LABEL_ORIGINAL);
+  }
 }
 
 
@@ -472,8 +485,6 @@ void ZFlyEmProofMvc::makeOrthoWindow()
 
   connect(m_orthoWindow->getDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(syncBodySelectionFromOrthoWindow()));
-  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          this, SLOT(syncBodySelectionToOrthoWindow()));
 
 
 //  connect(m_orthoWindow, SIGNAL(synapseEdited(int,int,int)),
@@ -489,6 +500,13 @@ void ZFlyEmProofMvc::makeOrthoWindow()
   connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
           m_orthoWindow, SLOT(syncMergeWithDvid()));
   m_orthoWindow->copyBookmarkFrom(getCompleteDocument());
+
+  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
+          m_orthoWindow->getDocument(), SLOT(processExternalBodyMergeUpload()));
+  connect(m_orthoWindow->getDocument(), SIGNAL(bodyMergeUploaded()),
+          getCompleteDocument(), SLOT(processExternalBodyMergeUpload()));
+
+  syncBodySelectionToOrthoWindow();
 }
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
@@ -1258,6 +1276,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(annotateSynapse()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
           this, SLOT(mergeSelected()));
+  connect(getCompletePresenter(), SIGNAL(uploadingMerge()),
+          this, SLOT(commitMerge()));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
 
   disableSplit();
@@ -3508,31 +3528,14 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
 {
   ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
 
-  model->clear();
-  ZOUT(LTRACE(), 5) << "Update user bookmark table";
-  QList<ZFlyEmBookmark*> bookmarkList =
-      getDocument()->getObjectList<ZFlyEmBookmark>();
-  appendUserBookmarkTable(bookmarkList);
-//  const TStackObjectList &objList =
-//      getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
-  /*
-  for (TStackObjectList::const_iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-    if (bookmark != NULL) {
-      if (bookmark->isCustom()) {
-        model->append(bookmark);
-      }
-    }
+  if (model->isUsed()) {
+    model->clear();
+    ZOUT(LTRACE(), 5) << "Update user bookmark table";
+    QList<ZFlyEmBookmark*> bookmarkList =
+        getDocument()->getObjectList<ZFlyEmBookmark>();
+    appendUserBookmarkTable(bookmarkList);
+    model->sort();
   }
-  */
-
-  model->sort();
-
-//  sortUserBookmarkTable();
-//  getUserBookmarkView()->sort();
-
-//  emit userBookmarkUpdated(getDocument().get());
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(
@@ -3540,22 +3543,24 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
 {
   ZFlyEmBookmarkListModel *model = getAssignedBookmarkModel();
 
-  for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
-       iter != bookmarkList.end(); ++iter) {
-    const ZFlyEmBookmark *bookmark = *iter;
-    if (!bookmark->isCustom()) {
-      if (getCompletePresenter()->isSplitOn()) {
-        if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
-            (bookmark->getBodyId() == m_splitProject.getBodyId())) {
+  if (model->isUsed()) {
+    for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
+         iter != bookmarkList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = *iter;
+      if (!bookmark->isCustom()) {
+        if (getCompletePresenter()->isSplitOn()) {
+          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+              (bookmark->getBodyId() == m_splitProject.getBodyId())) {
             model->append(bookmark);
+          }
+        } else {
+          model->append(bookmark);
         }
-      } else {
-        model->append(bookmark);
       }
     }
-  }
 
-  model->sort();
+    model->sort();
+  }
 }
 
 void ZFlyEmProofMvc::appendUserBookmarkTable(
@@ -3563,22 +3568,24 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
 {
   ZFlyEmBookmarkListModel *model = getUserBookmarkModel();
 
-  for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
-       iter != bookmarkList.end(); ++iter) {
-    const ZFlyEmBookmark *bookmark = *iter;
-    if (bookmark->isCustom()) {
-      if (getCompletePresenter()->isSplitOn()) {
-        if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
-            (bookmark->getBodyId() == m_splitProject.getBodyId())) {
+  if (model->isUsed()) {
+    for (QList<ZFlyEmBookmark *>::const_iterator iter = bookmarkList.begin();
+         iter != bookmarkList.end(); ++iter) {
+      const ZFlyEmBookmark *bookmark = *iter;
+      if (bookmark->isCustom()) {
+        if (getCompletePresenter()->isSplitOn()) {
+          if ((bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) &&
+              (bookmark->getBodyId() == m_splitProject.getBodyId())) {
             model->append(bookmark);
+          }
+        } else {
+          model->append(bookmark);
         }
-      } else {
-        model->append(bookmark);
       }
     }
-  }
 
-  model->sort();
+    model->sort();
+  }
 }
 
 #if 0

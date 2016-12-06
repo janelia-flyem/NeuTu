@@ -145,6 +145,11 @@ void ZFlyEmProofDoc::syncMergeWithDvid()
   getMergeProject()->syncWithDvid();
 }
 
+void ZFlyEmProofDoc::uploadMergeResult()
+{
+  getMergeProject()->uploadResult();
+}
+
 void ZFlyEmProofDoc::runRoutineCheck()
 {
   if (m_routineCheck) {
@@ -1639,6 +1644,15 @@ bool ZFlyEmProofDoc::hasVisibleSparseStack() const
   */
 
   return false;
+}
+
+void ZFlyEmProofDoc::processExternalBodyMergeUpload()
+{
+  getMergeProject()->clearBodyMerger();
+  refreshDvidLabelBuffer(2000);
+  updateDvidLabelObject();
+
+  emit bodyMergeUploadedExternally();
 }
 
 void ZFlyEmProofDoc::saveMergeOperation()

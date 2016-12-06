@@ -91,6 +91,7 @@ signals:
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
   void mergingBody();
+  void uploadingMerge();
   void goingToBodyBottom();
   void goingToBodyTop();
   void togglingSegmentation();

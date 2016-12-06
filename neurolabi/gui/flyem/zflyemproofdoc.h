@@ -81,18 +81,6 @@ public:
   //bool hasSparseStack() const;
   bool hasVisibleSparseStack() const;
 
-  ZFlyEmBodyMerger* getBodyMerger() {
-    return &m_bodyMerger;
-  }
-
-  const ZFlyEmBodyMerger* getBodyMerger() const {
-    return &m_bodyMerger;
-  }
-
-  ZFlyEmBodyMergeProject* getMergeProject() {
-    return m_mergeProject;
-  }
-
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
@@ -118,6 +106,18 @@ public:
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
 
   bool isSplittable(uint64_t bodyId) const;
+
+  ZFlyEmBodyMerger* getBodyMerger() {
+    return &m_bodyMerger;
+  }
+
+  const ZFlyEmBodyMerger* getBodyMerger() const {
+    return &m_bodyMerger;
+  }
+
+  ZFlyEmBodyMergeProject* getMergeProject() {
+    return m_mergeProject;
+  }
 
   void backupMergeOperation();
 //  void downloadBodyMask();
@@ -303,6 +303,8 @@ signals:
   void bodyMergeSaved();
   void bodyMergeEdited();
   void bodyMergeUploaded();
+  void bodyMergeUploadedExternally();
+
   void userBookmarkModified();
   void assignedBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
@@ -342,6 +344,10 @@ public slots: //Commands
 
 public slots:
   void syncMergeWithDvid();
+  void saveMergeOperation();
+  void processExternalBodyMergeUpload();
+  void clearBodyMergeStage();
+  void uploadMergeResult();
 
   void updateDvidLabelObject();
   void loadSynapse(const std::string &filePath);
@@ -353,7 +359,7 @@ public slots:
 //  void saveCustomBookmarkSlot();
   void deprecateSplitSource();
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
-  void clearBodyMergeStage();
+
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
@@ -369,8 +375,7 @@ public slots:
   bool checkInBodyWithMessage(uint64_t bodyId);
   bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
 
-  void downloadBookmark(int x, int y, int z);
-  void saveMergeOperation();
+  void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();
 
   void syncSynapse(const ZIntPoint &pt);

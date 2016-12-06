@@ -18,6 +18,8 @@ void ZFlyEmBookmarkListModel::init(QObject *parent)
   m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
   m_proxy->setFilterKeyColumn(-1);
   m_proxy->setSourceModel(this);
+
+  m_isUsed = false;
 }
 
 QVariant ZFlyEmBookmarkListModel::headerData(

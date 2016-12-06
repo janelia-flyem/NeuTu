@@ -56,6 +56,7 @@ void ZFlyEmBookmarkView::setBookmarkModel(
     ZFlyEmBookmarkListModel *model)
 {
   m_bookmarkModel = model;
+  m_bookmarkModel->setUsed(true);
   resizeColumnsToContents();
   setSortingEnabled(true);
   setModel(model->getProxy());
