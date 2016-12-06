@@ -1,6 +1,7 @@
 #ifndef ZGRADIENTMAGNITUDEMODULE_H
 #define ZGRADIENTMAGNITUDEMODULE_H
 #include <map>
+#include <string>
 #include <QWidget>
 #include <QString>
 #include <QMessageBox>
@@ -8,24 +9,26 @@
 #include "zstackdoc.h"
 
 
-typedef struct _GradientStrategyParam
-{
-  _GradientStrategyParam(uint _w,uint _h,uint _d,bool _i):inverse(_i),width(_w),height(_h),depth(_d){}
-  bool inverse;
-  uint width;
-  uint height;
-  uint depth;
-}GradientStrategyParam;
-
 /* GradientStrategy
  * abstract base class of computing gradient
- * and if magnitude is not null it computes magnitude*/
+ * and subclasses should override _run method*/
 template<typename T>
 class GradientStrategy
 {
 public:
-  virtual void run(const T* in,T* out_x,T* out_y,T* out_z,T* mag,GradientStrategyParam p)=0;
+  GradientStrategy();
   //virtual ~GradientStrategy();
+  void run(const T* in,T* out,uint width,uint height,uint depth,
+           bool reverse,double edge_enhance=0.0);
+protected:
+  virtual void _run(const T* in,T* out)=0;
+private:
+  void reverse(T* begin,T* end);
+  void edgeEnhance(const T* in,T* out,double alpha);
+protected:
+  double _max;
+  uint _width,_height,_depth;
+  size_t _slice,_total;
 };
 
 
@@ -33,18 +36,8 @@ public:
 template<typename T>
 class GradientStrategySimple:public GradientStrategy<T>
 {
-public:
-  void run(const T* in,T* out_x,T* out_y,T* out_z,T* mag,GradientStrategyParam p);
-};
-
-
-class GradientStrategyType
-{
-public:
-  typedef enum _StrategyType
-  {
-    SIMPLE=0
-  }StrategyType;
+protected:
+  void _run(const T* in,T* out);
 };
 
 
@@ -52,25 +45,41 @@ public:
 class GradientStrategyContext
 {
 public:
-  GradientStrategyContext(const ZStack* input_stack,ZStack* output_x,ZStack* output_y,
-                          ZStack* output_z,ZStack* mag,bool inverse,GradientStrategyType::StrategyType strategy_type);
-  GradientStrategyContext(const ZStack* in,ZStack* out,bool inverse,GradientStrategyType::StrategyType strategy_type);
+  typedef enum
+  {
+    SIMPLE=0
+  }StrategyType;
+public:
+  GradientStrategyContext(StrategyType strategy_type);
   ~GradientStrategyContext();
-  void run();
+  void run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
 private:
   template<typename T>
-  void _run();
+  GradientStrategy<T>* getStrategy()
+  {
+    GradientStrategy<T>* strategy=0;
+    switch(_type)
+    {
+      case SIMPLE:
+          strategy=new GradientStrategySimple<T>;
+          break;
+      default:
+          strategy=0;
+          break;
+    }
+    return strategy;
+  }
+  template<typename T>
+  void _run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
 private:
-  const ZStack* _in;
-  ZStack  *_outx,*_outy,*_outz,*_mag;
-  GradientStrategyType::StrategyType _type;
-  bool delete_out_xyz,_inverse;
+  StrategyType _type;
 };
 
 
 class QComboBox;
-class QRadioButton;
+class QCheckBox;
 class QPushButton;
+class QDoubleSpinBox;
 
 class ZSelectGradientStrategyWindow:public QWidget
 {
@@ -82,8 +91,10 @@ private slots:
 private:
   QPushButton* start_gradient_magnitude;
   QComboBox*   strategies;
-  QRadioButton*   inverse;
-  std::map<QString,GradientStrategyType::StrategyType>strategy_map;
+  QCheckBox*   reverse;
+  QDoubleSpinBox*     gaussin;
+  QDoubleSpinBox*     edge_enhance;
+  std::map<QString,GradientStrategyContext::StrategyType>strategy_map;
 };
 
 

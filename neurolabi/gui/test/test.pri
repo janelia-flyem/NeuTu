@@ -46,4 +46,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zstackobjectgrouptest.h \
     test/ztestheader.h \
     test/zvoxelarraytest.h \
-    test/zdvidannotationtest.h
+    test/zdvidannotationtest.h \
+    $$PWD/zgradientmagnitudemoduletest.h
