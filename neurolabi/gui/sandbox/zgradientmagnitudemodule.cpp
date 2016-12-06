@@ -4,11 +4,13 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
+#include <QSlider>
+#include <QDoubleSpinBox>
 #include <QRadioButton>
 #include "zgradientmagnitudemodule.h"
 #include "mainwindow.h"
 #include "zsandbox.h"
-
+#include "zstackprocessor.h"
 
 ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -52,9 +54,21 @@ ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   start_gradient_magnitude=new QPushButton("start");
   strategies=new QComboBox;
   strategies->addItem("simple");
-  reverse=new QRadioButton("reverse");
+  reverse=new QCheckBox("reverse");
+  gaussin=new QDoubleSpinBox();
+  gaussin->setMaximum(1.0);
+  gaussin->setMinimum(0.0);
+  gaussin->setSingleStep(0.1);
+  edge_enhance=new QDoubleSpinBox();
+  edge_enhance->setMaximum(1.0);
+  edge_enhance->setMinimum(0.0);
+  edge_enhance->setSingleStep(0.1);
   lay->addWidget(strategies);
   lay->addWidget(reverse);
+  lay->addWidget(new QLabel("gaussinSmoothSigma:"));
+  lay->addWidget(gaussin);
+  lay->addWidget(new QLabel("edgeEnhancementAlpha:"));
+  lay->addWidget(edge_enhance);
   lay->addWidget(start_gradient_magnitude);
   this->setLayout(lay);
   this->resize(200,100);
@@ -83,8 +97,13 @@ void ZSelectGradientStrategyWindow::onStart()
   ZStack* out=new ZStack(kind,width,height,depth,channel);
   QString s=strategies->currentText();
   GradientStrategyContext context(strategy_map[s]);
-  context.run(input_stack,out,reverse->isChecked());
-
+  context.run(input_stack,out,edge_enhance->value(),reverse->isChecked());
+  double gaussin_sigma=gaussin->value();
+  if(gaussin_sigma!=0.0)
+  {
+    Stack* p=ZStackProcessor::GaussianSmooth(out->c_stack(),gaussin_sigma,gaussin_sigma,gaussin_sigma);
+    out->consume(p);
+  }
   ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
@@ -109,7 +128,7 @@ GradientStrategy<T>::GradientStrategy()
 
 
 template<typename T>
-void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool reverse)
+void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool reverse,double edge_enhance)
 {
   _width=width;
   _height=height;
@@ -117,9 +136,36 @@ void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint dep
   _slice=width*height;
   _total=_slice*depth;
   _run(in,out);
+  if(edge_enhance!=0.0)
+  {
+    this->edgeEnhance(in,out,edge_enhance);
+  }
   if(reverse)
   {
     this->reverse(out,out+_total);
+  }
+}
+
+
+template<typename T>
+void GradientStrategy<T>::edgeEnhance(const T* in,T* out,double alpha)
+{
+  for(size_t i=0;i<this->_total;++i)
+  {
+    out[i]=(1-alpha)*out[i]+in[i]*(alpha);
+  }
+}
+
+
+template<>
+void GradientStrategy<color_t>::edgeEnhance(const color_t* in,color_t* out,double alpha)
+{
+  for(size_t i=0;i<this->_total;++i)
+  {
+    for(uint j=0;j<3;++j)
+    {
+      out[i][j]=(1-alpha)*out[i][j]+in[i][j]*alpha;
+    }
   }
 }
 
@@ -153,7 +199,7 @@ GradientStrategyContext::~GradientStrategyContext()
 }
 
 
-void GradientStrategyContext::run(const ZStack* in,ZStack* out,bool reverse)
+void GradientStrategyContext::run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse)
 {
   if(!in || !out)
     return ;
@@ -161,19 +207,19 @@ void GradientStrategyContext::run(const ZStack* in,ZStack* out,bool reverse)
   switch(in->kind())
   {
     case GREY:
-          _run<uint8>(in,out,reverse);
+          _run<uint8>(in,out,edge_enhance,reverse);
           break;
     case GREY16:
-          _run<uint16>(in,out,reverse);
+          _run<uint16>(in,out,edge_enhance,reverse);
           break;
     case FLOAT32:
-          _run<float32>(in,out,reverse);
+          _run<float32>(in,out,edge_enhance,reverse);
           break;
     case FLOAT64:
-          _run<float64>(in,out,reverse);
+          _run<float64>(in,out,edge_enhance,reverse);
           break;
     case COLOR:
-          _run<color_t>(in,out,reverse);
+          _run<color_t>(in,out,edge_enhance,reverse);
           break;
     default:
           break;
@@ -182,7 +228,7 @@ void GradientStrategyContext::run(const ZStack* in,ZStack* out,bool reverse)
 
 
 template<typename T>
-void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,bool reverse)
+void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse)
 {
   GradientStrategy<T>* strategy=getStrategy<T>();
   if(strategy)
@@ -192,7 +238,7 @@ void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,bool reverse)
     {
       const T*_in=(const T*)in->array8(i);
       T* _out=(T*)out->array8(i);
-      strategy->run(_in,_out,in->width(),in->height(),in->depth(),reverse);
+      strategy->run(_in,_out,in->width(),in->height(),in->depth(),reverse,edge_enhance);
     }
     delete strategy;
   }

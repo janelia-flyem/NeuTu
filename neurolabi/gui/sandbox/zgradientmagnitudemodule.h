@@ -18,11 +18,13 @@ class GradientStrategy
 public:
   GradientStrategy();
   //virtual ~GradientStrategy();
-  void run(const T* in,T* out,uint width,uint height,uint depth,bool reverse);
+  void run(const T* in,T* out,uint width,uint height,uint depth,
+           bool reverse,double edge_enhance=0.0);
 protected:
   virtual void _run(const T* in,T* out)=0;
 private:
   void reverse(T* begin,T* end);
+  void edgeEnhance(const T* in,T* out,double alpha);
 protected:
   double _max;
   uint _width,_height,_depth;
@@ -50,7 +52,7 @@ public:
 public:
   GradientStrategyContext(StrategyType strategy_type);
   ~GradientStrategyContext();
-  void run(const ZStack* in,ZStack* out,bool reverse);
+  void run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
 private:
   template<typename T>
   GradientStrategy<T>* getStrategy()
@@ -68,15 +70,16 @@ private:
     return strategy;
   }
   template<typename T>
-  void _run(const ZStack* in,ZStack* out,bool reverse);
+  void _run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
 private:
   StrategyType _type;
 };
 
 
 class QComboBox;
-class QRadioButton;
+class QCheckBox;
 class QPushButton;
+class QDoubleSpinBox;
 
 class ZSelectGradientStrategyWindow:public QWidget
 {
@@ -88,7 +91,9 @@ private slots:
 private:
   QPushButton* start_gradient_magnitude;
   QComboBox*   strategies;
-  QRadioButton*   reverse;
+  QCheckBox*   reverse;
+  QDoubleSpinBox*     gaussin;
+  QDoubleSpinBox*     edge_enhance;
   std::map<QString,GradientStrategyContext::StrategyType>strategy_map;
 };
 
