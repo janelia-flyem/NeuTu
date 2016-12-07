@@ -323,7 +323,6 @@ int main(int argc, char *argv[])
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
 
-
 #if defined(_FLYEM_) && !defined(_DEBUG_)
     mainWin->startProofread();
 #else

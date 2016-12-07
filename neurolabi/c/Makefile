@@ -31,6 +31,12 @@ dylib:
 	@make -f Makefile.ctc dylib
 	@make -f Makefile.bin dylib OBJDIR=$(DEBUG_DIR) VERSION=${VERSION}
 
+.PHONY: lib_sanitize
+
+lib_sanitize:
+	@make -f Makefile.ctc lib
+	@make -f Makefile.bin lib OBJDIR=$(SANITIZE_DIR) VERSION=${VERSION} DEBUG_FLAG=sanitize
+
 .PHONY: release
 
 release:

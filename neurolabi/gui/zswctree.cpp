@@ -75,11 +75,16 @@ ZSwcTree::~ZSwcTree()
 #endif
 
   if (m_tree != NULL) {
-#ifdef _FLYEM_
+#ifdef _FLYEM_2
     std::cout << "Killing " << this << " " << m_tree << ": SWC " << ", "
               << getSource() << std::endl;
 #endif
     Kill_Swc_Tree(m_tree);
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "SWC killed: " << this;
+#endif
+#endif
   }
   m_tree = NULL;
 }

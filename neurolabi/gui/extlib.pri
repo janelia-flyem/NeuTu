@@ -11,7 +11,11 @@ unix {
 #neurolabi
 LIBS += -L$${NEUROLABI_DIR}/c/lib
 CONFIG(debug, debug|release) {
-    LIBS += -lneurolabi_debug
+    contains(CONFIG, sanitize) {
+      LIBS += -lneurolabi_sanitize
+    } else {
+      LIBS += -lneurolabi_debug
+    }
 } else {
     #DEFINES += _ADVANCED_
     LIBS += -lneurolabi
