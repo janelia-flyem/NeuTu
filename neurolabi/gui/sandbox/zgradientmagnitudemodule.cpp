@@ -46,35 +46,107 @@ void ZGradientMagnitudeModule::execute()
 ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   :QWidget(parent)
 {
-  this->setWindowTitle("Select Gradient Strategy");
+  this->setWindowTitle("Image Gradient");
+
   Qt::WindowFlags flags = this->windowFlags();
   flags |= Qt::WindowStaysOnTopHint;
   this->setWindowFlags(flags);
-  QHBoxLayout* lay=new QHBoxLayout(this);
+  QVBoxLayout* lay=new QVBoxLayout(this);
   start_gradient_magnitude=new QPushButton("start");
+  QPushButton* reset=new QPushButton("reset");
   strategies=new QComboBox;
   strategies->addItem("simple");
-  reverse=new QCheckBox("reverse");
-  gaussin=new QDoubleSpinBox();
-  gaussin->setMaximum(1.0);
-  gaussin->setMinimum(0.0);
-  gaussin->setSingleStep(0.1);
+  reverse=new QCheckBox("inverse gradient");
+
+  gaussin_use_same_sigma=new QCheckBox("XYZ use same standard deviation sigma");
+  gaussin_sigma_x=new QDoubleSpinBox();
+  gaussin_sigma_y=new QDoubleSpinBox();
+  gaussin_sigma_z=new QDoubleSpinBox();
+  gaussin_sigma_x->setMaximum(3.0);
+  gaussin_sigma_x->setMinimum(0.0);
+  gaussin_sigma_x->setSingleStep(0.1);
+  gaussin_sigma_y->setMaximum(3.0);
+  gaussin_sigma_y->setMinimum(0.0);
+  gaussin_sigma_y->setSingleStep(0.1);
+  gaussin_sigma_z->setMaximum(3.0);
+  gaussin_sigma_z->setMinimum(0.0);
+  gaussin_sigma_z->setSingleStep(0.1);
+
   edge_enhance=new QDoubleSpinBox();
+  edge_enhance->setToolTip(
+    "g=alpha*F+(1-alpha)*E \n where F is original value ,E is gradient and g is new value"
+    );
   edge_enhance->setMaximum(1.0);
   edge_enhance->setMinimum(0.0);
   edge_enhance->setSingleStep(0.1);
-  lay->addWidget(strategies);
+
+  QHBoxLayout* lay_s=new QHBoxLayout;
+  lay_s->addWidget(new QLabel("gradient algorithm:"));
+  lay_s->addWidget(strategies);
+  lay->addLayout(lay_s);
+  lay->addSpacing(15);
+
+  QHBoxLayout* lay_g=new QHBoxLayout;
+  lay_g->addWidget(new QLabel("gaussin smooth:"));
+  lay_g->addWidget(gaussin_use_same_sigma);
+  QHBoxLayout* lay_gs=new QHBoxLayout;
+  lay_gs->addWidget(new QLabel("sigma x"));
+  lay_gs->addWidget(gaussin_sigma_x);
+  lay_gs->addWidget(new QLabel("sigma y"));
+  lay_gs->addWidget(gaussin_sigma_y);
+  lay_gs->addWidget(new QLabel("sigma z"));
+  lay_gs->addWidget(gaussin_sigma_z);
+  lay->addLayout(lay_g);
+  lay->addLayout(lay_gs);
+  lay->addSpacing(15);
+
   lay->addWidget(reverse);
-  lay->addWidget(new QLabel("gaussinSmoothSigma:"));
-  lay->addWidget(gaussin);
-  lay->addWidget(new QLabel("edgeEnhancementAlpha:"));
-  lay->addWidget(edge_enhance);
-  lay->addWidget(start_gradient_magnitude);
+  lay->addStretch();
+
+  QHBoxLayout* lay_e=new QHBoxLayout;
+  lay_e->addWidget(new QLabel("edge enhancement alpha:"));
+  lay_e->addWidget(edge_enhance);
+  lay->addLayout(lay_e);
+  lay->addSpacing(15);
+
+  QHBoxLayout* lay_st=new QHBoxLayout;
+  lay_st->addWidget(reset);
+  lay_st->addWidget(start_gradient_magnitude);
+  lay->addLayout(lay_st);
+
   this->setLayout(lay);
-  this->resize(200,100);
   this->move(300,200);
+  connect(reset,SIGNAL(clicked()),this,SLOT(onReset()));
   connect(start_gradient_magnitude,SIGNAL(clicked()),this,SLOT(onStart()));
+  connect(gaussin_use_same_sigma,SIGNAL(stateChanged(int)),this,SLOT(onUseSameSigmaChanged(int)));
   strategy_map["simple"]=GradientStrategyContext::SIMPLE;
+}
+
+
+void ZSelectGradientStrategyWindow::onReset()
+{
+  strategies->setCurrentIndex(0);
+  gaussin_use_same_sigma->setChecked(false);
+  gaussin_sigma_x->setValue(0.0);
+  gaussin_sigma_y->setValue(0.0);
+  gaussin_sigma_z->setValue(0.0);
+  reverse->setChecked(false);
+  edge_enhance->setValue(0.0);
+}
+
+
+void ZSelectGradientStrategyWindow::onUseSameSigmaChanged(int state)
+{
+  if(state==Qt::Checked)
+  {
+    gaussin_sigma_y->setEnabled(false);
+    gaussin_sigma_z->setEnabled(false);
+  }
+  else
+  {
+    gaussin_sigma_y->setEnabled(true);
+    gaussin_sigma_z->setEnabled(true);
+  }
 }
 
 
@@ -95,15 +167,24 @@ void ZSelectGradientStrategyWindow::onStart()
   int channel=input_stack->channelNumber();
 
   ZStack* out=new ZStack(kind,width,height,depth,channel);
+
+  double sigma_x,sigma_y,sigma_z;
+  sigma_x=gaussin_sigma_x->value();
+  if(gaussin_use_same_sigma->isChecked())
+  {
+    sigma_y=sigma_z=sigma_x;
+  }
+  else
+  {
+    sigma_y=gaussin_sigma_y->value();
+    sigma_z=gaussin_sigma_z->value();
+  }
+
   QString s=strategies->currentText();
   GradientStrategyContext context(strategy_map[s]);
-  context.run(input_stack,out,edge_enhance->value(),reverse->isChecked());
-  double gaussin_sigma=gaussin->value();
-  if(gaussin_sigma!=0.0)
-  {
-    Stack* p=ZStackProcessor::GaussianSmooth(out->c_stack(),gaussin_sigma,gaussin_sigma,gaussin_sigma);
-    out->consume(p);
-  }
+  context.run(input_stack,out,reverse->isChecked(),
+              edge_enhance->value(),sigma_x,sigma_y,sigma_z);
+
   ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
@@ -128,22 +209,14 @@ GradientStrategy<T>::GradientStrategy()
 
 
 template<typename T>
-void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool reverse,double edge_enhance)
+void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth)
 {
   _width=width;
   _height=height;
   _depth=depth;
-  _slice=width*height;
-  _total=_slice*depth;
+  _slice=_width*_height;
+  _total=_slice*_depth;
   _run(in,out);
-  if(edge_enhance!=0.0)
-  {
-    this->edgeEnhance(in,out,edge_enhance);
-  }
-  if(reverse)
-  {
-    this->reverse(out,out+_total);
-  }
 }
 
 
@@ -199,38 +272,61 @@ GradientStrategyContext::~GradientStrategyContext()
 }
 
 
-void GradientStrategyContext::run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse)
+void GradientStrategyContext::run
+(
+    const ZStack* in,
+    ZStack* out,
+    bool reverse,
+    double edge_enhance_alpha,
+    double gaussin_smooth_sigma_x,
+    double gaussin_smooth_sigma_y,
+    double gaussin_smooth_sigma_z
+    )
 {
   if(!in || !out)
     return ;
 
+#define _run_(type)\
+  _run<type>(in,out,edge_enhance_alpha,gaussin_smooth_sigma_x,\
+  gaussin_smooth_sigma_y,gaussin_smooth_sigma_z,reverse)
   switch(in->kind())
   {
     case GREY:
-          _run<uint8>(in,out,edge_enhance,reverse);
+          _run_(uint8);
           break;
     case GREY16:
-          _run<uint16>(in,out,edge_enhance,reverse);
+           _run_(uint16);
           break;
     case FLOAT32:
-          _run<float32>(in,out,edge_enhance,reverse);
+          _run_(float32);
           break;
     case FLOAT64:
-          _run<float64>(in,out,edge_enhance,reverse);
+          _run_(float64);
           break;
     case COLOR:
-          _run<color_t>(in,out,edge_enhance,reverse);
+           _run_(color_t);
           break;
     default:
           break;
   }
+#undef _run_
 }
 
 
 template<typename T>
-void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse)
+void GradientStrategyContext:: _run
+(
+    const ZStack* in,
+    ZStack* out,
+    double edge_enhance_alpha,
+    double gaussin_smooth_sigma_x,
+    double gaussin_smooth_sigma_y,
+    double gaussin_smooth_sigma_z,
+    bool reverse)
 {
   GradientStrategy<T>* strategy=getStrategy<T>();
+  size_t total=in->width()*in->height()*in->depth();
+
   if(strategy)
   {
     /*process each channel*/
@@ -238,8 +334,42 @@ void GradientStrategyContext:: _run(const ZStack* in,ZStack* out,double edge_enh
     {
       const T*_in=(const T*)in->array8(i);
       T* _out=(T*)out->array8(i);
-      strategy->run(_in,_out,in->width(),in->height(),in->depth(),reverse,edge_enhance);
+      strategy->run(_in,_out,in->width(),in->height(),in->depth());
     }
+
+    if(
+       (gaussin_smooth_sigma_x!=0.0) ||
+       (gaussin_smooth_sigma_y!=0.0) ||
+       (gaussin_smooth_sigma_z!=0.0))
+    {
+      for(int i=0;i<out->channelNumber();++i)
+      {
+        Stack* p=ZStackProcessor::GaussianSmooth(
+              out->c_stack(i),gaussin_smooth_sigma_x,
+              gaussin_smooth_sigma_y,gaussin_smooth_sigma_z);
+        memcpy(out->array8(i),p->array,sizeof(T)*total);
+      }
+    }
+
+    if(reverse)
+    {
+      for(int i=0;i<in->channelNumber();++i)
+      {
+        T* _out=(T*)out->array8(i);
+        strategy->reverse(_out,_out+total);
+      }
+    }
+
+    if(edge_enhance_alpha!=0.0)
+    {
+      for(int i=0;i<in->channelNumber();++i)
+      {
+        const T*_in=(const T*)in->array8(i);
+        T* _out=(T*)out->array8(i);
+        strategy->edgeEnhance(_in,_out,edge_enhance_alpha);
+      }
+    }
+
     delete strategy;
   }
 }

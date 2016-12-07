@@ -2,6 +2,7 @@
 #define ZGRADIENTMAGNITUDEMODULE_H
 #include <map>
 #include <string>
+#include <QWindow>
 #include <QWidget>
 #include <QString>
 #include <QMessageBox>
@@ -18,13 +19,11 @@ class GradientStrategy
 public:
   GradientStrategy();
   //virtual ~GradientStrategy();
-  void run(const T* in,T* out,uint width,uint height,uint depth,
-           bool reverse,double edge_enhance=0.0);
-protected:
-  virtual void _run(const T* in,T* out)=0;
-private:
+  void run(const T* in,T* out,uint width,uint height,uint depth);
   void reverse(T* begin,T* end);
   void edgeEnhance(const T* in,T* out,double alpha);
+protected:
+  virtual void _run(const T* in,T* out)=0;
 protected:
   double _max;
   uint _width,_height,_depth;
@@ -52,7 +51,12 @@ public:
 public:
   GradientStrategyContext(StrategyType strategy_type);
   ~GradientStrategyContext();
-  void run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
+  void run(const ZStack* in,ZStack* out,
+           bool reverse=false,
+           double edge_enhance_alpha=0.0,
+           double gaussin_smooth_sigma_x=0.0,
+           double gaussin_smooth_sigma_y=0.0,
+           double gaussin_smooth_sigma_z=0.0);
 private:
   template<typename T>
   GradientStrategy<T>* getStrategy()
@@ -70,7 +74,11 @@ private:
     return strategy;
   }
   template<typename T>
-  void _run(const ZStack* in,ZStack* out,double edge_enhance,bool reverse);
+  void _run(const ZStack* in,ZStack* out,double edge_enhance_alpha=0.0,
+            double gaussin_smooth_sigma_x=0.0,
+            double gaussin_smooth_sigma_y=0.0,
+            double gaussin_smooth_sigma_z=0.0,
+            bool reverse=false);
 private:
   StrategyType _type;
 };
@@ -88,11 +96,16 @@ public:
   ZSelectGradientStrategyWindow(QWidget *parent = 0);
 private slots:
   void onStart();
+  void onReset();
+  void onUseSameSigmaChanged(int);
 private:
   QPushButton* start_gradient_magnitude;
   QComboBox*   strategies;
   QCheckBox*   reverse;
-  QDoubleSpinBox*     gaussin;
+  QDoubleSpinBox*     gaussin_sigma_x;
+  QDoubleSpinBox*     gaussin_sigma_y;
+  QDoubleSpinBox*     gaussin_sigma_z;
+  QCheckBox*          gaussin_use_same_sigma;
   QDoubleSpinBox*     edge_enhance;
   std::map<QString,GradientStrategyContext::StrategyType>strategy_map;
 };
