@@ -2353,6 +2353,8 @@ void ZFlyEmProofDoc::runSplitFunc()
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 
+      ZOUT(LINFO(), 3) << "Segmentation ready";
+
       emit messageGenerated(ZWidgetMessage(
             ZWidgetMessage::appendTime("Split done. Ready to upload.")));
     } else {
