@@ -119,7 +119,7 @@ ZStack* Biocytin::ZStackProjector::project(
                   stack->c_stack(channel), range.first, range.second);
           }
 
-          proj->loadValue(projBuffer->array,
+          proj->copyValueFrom(projBuffer->array,
                           proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
           Kill_Image(projBuffer);
         }

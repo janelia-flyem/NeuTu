@@ -139,7 +139,7 @@ TEST(ZMatrix, RowColumn)
 
   double dst[3];
   mat.copyRowValueTo(1, 0, 2, dst);
-  ASSERT_EQ(4, dst[1]);
+  ASSERT_EQ(2, dst[1]);
 
   dst[0] = 5;
   dst[1] = 6;

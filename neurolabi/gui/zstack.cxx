@@ -938,6 +938,8 @@ void ZStack::addIntValue(int x, int y, int z, int c, int v)
   }
     break;
   }
+
+  deprecateSingleChannelView(c);
 }
 int ZStack::getIntValue8WithXCheckOnly(int x, int y, int z, int c) const
 {
@@ -1144,14 +1146,16 @@ int ZStack::autoThreshold(int ch) const
     int *hist = Stack_Hist_M(stack, locmax);
     C_Stack::kill(locmax);
 
-    int low, high;
-    Int_Histogram_Range(hist, &low, &high);
+    if (hist != NULL) {
+      int low, high;
+      Int_Histogram_Range(hist, &low, &high);
 
-    thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+      thre = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
 
-    if (stack != c_stack(ch))
-      C_Stack::kill(const_cast<Stack*>(stack));
-    free(hist);
+      if (stack != c_stack(ch))
+        C_Stack::kill(const_cast<Stack*>(stack));
+      free(hist);
+    }
   }
   return thre;
 }
@@ -1579,13 +1583,13 @@ double ZStack::averageIntensity(ZStack *mask)
   return v;
 }
 
-void ZStack::loadValue(const void *buffer, size_t length, int ch)
+void ZStack::copyValueFrom(const void *buffer, size_t length, int ch)
 {
   memcpy(rawChannelData(ch), buffer, length);
   deprecateDependent(MC_STACK);
 }
 
-void ZStack::loadValue(const void *buffer, size_t length, void *loc)
+void ZStack::copyValueFrom(const void *buffer, size_t length, void *loc)
 {
   memcpy(loc, buffer, length);
   deprecateDependent(MC_STACK);
