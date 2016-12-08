@@ -187,7 +187,11 @@ ZStackObjectRole::TRole ZDocPlayerList::removeAllUnsync()
   QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
   while (iter != m_playerList.end()) {
     ZDocPlayer *player = *iter;
-    roleObj.addRole(player->getRole());
+    ZStackObjectRole::TRole role = player->getRole();
+    roleObj.addRole(role);
+#ifdef _DEBUG_2
+    std::cout << "Delete player: " << player << std::endl;
+#endif
     delete player;
     ++iter;
   }

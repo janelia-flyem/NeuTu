@@ -680,7 +680,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
 #ifdef _DEBUG_2
         std::cout << data.length() << " " << stack->getVoxelNumber() << std::endl;
 #endif
-        stackArray[i]->loadValue(data.constData() + i * currentBox.getVolume(),
+        stackArray[i]->copyValueFrom(data.constData() + i * currentBox.getVolume(),
                          currentBox.getVolume(), stackArray[i]->array8());
         currentBox.translateX(currentBox.getWidth());
       }
@@ -769,7 +769,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(
 #ifdef _DEBUG_2
       std::cout << data.length() << " " << stack->getVoxelNumber() << std::endl;
 #endif
-      stack->loadValue(data.constData() + 4, data.length() - 4, stack->array8());
+      stack->copyValueFrom(data.constData() + 4, data.length() - 4, stack->array8());
     }
 
     bufferReader.clearBuffer();
@@ -2732,6 +2732,8 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   }
 
   return master;
+#else
+  return "";
 #endif
 }
 
@@ -2756,6 +2758,8 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
   }
 
   return masterList;
+#else
+  return std::vector<std::string>();
 #endif
 }
 

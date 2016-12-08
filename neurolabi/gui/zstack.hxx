@@ -487,9 +487,9 @@ public: /* operations */
   /*!
    * \brief Copy values from a buffer to the stack.
    */
-  void loadValue(const void *buffer, size_t length, int ch = 0);
+  void copyValueFrom(const void *buffer, size_t length, int ch = 0);
 
-  void loadValue(const void *buffer, size_t length, void *loc);
+  void copyValueFrom(const void *buffer, size_t length, void *loc);
 
   void setOffset(int dx, int dy);
   void setOffset(int dx, int dy, int dz);

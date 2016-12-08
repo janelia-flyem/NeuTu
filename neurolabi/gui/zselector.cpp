@@ -120,6 +120,18 @@ bool ZSelector<T>::isInDeselectedSet(const T& obj) const
 }
 
 template <typename T>
+void ZSelector<T>::removeObject(const T &obj)
+{
+  if (m_selectedSet.count(obj) > 0) {
+      m_selectedSet.erase(obj);
+  }
+
+  if (m_deselectedSet.count(obj) > 0) {
+      m_deselectedSet.erase(obj);
+  }
+}
+
+template <typename T>
 void ZSelector<T>::print() const
 {
   std::cout << m_selectedSet.size() << " selected." << std::endl;

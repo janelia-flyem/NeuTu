@@ -12203,7 +12203,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/obj1.sobj");
 
@@ -20820,6 +20820,20 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  Mc_Stack *testStack = (Mc_Stack*) malloc(sizeof(Mc_Stack));
+
+  free(testStack);
+
+  ZStack *stack = new ZStack;
+  Stack *stackData = C_Stack::make(GREY, 3, 3, 3);
+  stack->load(stackData);
+
+  delete stack;
+
+  stack = NULL;
+#endif
+
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/benchmark/432.sobj");
 
@@ -21308,6 +21322,12 @@ void ZTest::test(MainWindow *host)
   p.start(QString("ps v -p %1").arg(getpid()));
   p.waitForFinished();
   qDebug() << p.readAllStandardOutput();
+#endif
+
+#if 1
+  //crash test
+  int a[1];
+  a[1] = 1;
 #endif
 
 #if 0

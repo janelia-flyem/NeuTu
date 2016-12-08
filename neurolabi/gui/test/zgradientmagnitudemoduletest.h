@@ -9,8 +9,7 @@
 TEST(GRADIENTMAGNITUDEMODULE,EMPTY)
 {
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  EXPECT_NO_THROW(context.run(0,0,0.0,false));
-
+  EXPECT_NO_THROW(context.run(0,0));
 }
 
 
@@ -20,7 +19,7 @@ TEST(GRADIENTMAGNITUDEMODULE,ONE)
   ZStack* out=new ZStack(GREY,1,1,1,1);
   uint8_t *po=out->array8();
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  context.run(in,out,0.0,false);
+  context.run(in,out);
   EXPECT_EQ(0,po[0]);
   delete in;
   delete out;
@@ -35,7 +34,7 @@ TEST(GRADIENTMAGNITUDEMODULE,TWO)
   pi[0]=0;
   pi[1]=255;
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  context.run(in,out,0.0,false);
+  context.run(in,out);
   EXPECT_EQ(255,po[0]);
   EXPECT_EQ(255,po[1]);
   delete in;
@@ -46,7 +45,7 @@ TEST(GRADIENTMAGNITUDEMODULE,TWO)
   pi=in->array8(),po=out->array8();
   pi[0]=0;
   pi[1]=255;
-  context.run(in,out,0.0,false);
+  context.run(in,out);
   EXPECT_EQ(255,po[0]);
   EXPECT_EQ(255,po[1]);
   delete in;
@@ -57,11 +56,51 @@ TEST(GRADIENTMAGNITUDEMODULE,TWO)
   pi=in->array8(),po=out->array8();
   pi[0]=0;
   pi[1]=255;
-  context.run(in,out,0.0,false);
+  context.run(in,out);
   EXPECT_EQ(255,po[0]);
   EXPECT_EQ(255,po[1]);
   delete in;
   delete out;
+}
+
+TEST(GRADIENTMAGNITUDEMODULE,THREE)
+{
+  ZStack* in=new ZStack(GREY,3,2,1,1);
+  ZStack* out=new ZStack(GREY,3,2,1,1);
+  uint8_t *pi=in->array8(),*po=out->array8();
+  pi[0]=0;
+  pi[1]=3;
+  pi[2]=6;
+  pi[3]=4;
+  pi[4]=7;
+  pi[5]=10;
+  GradientStrategyContext context(GradientStrategyContext::SIMPLE);
+  context.run(in,out);
+  for(uint i=0;i<out->getVoxelNumber();++i)
+  {
+    EXPECT_EQ(5,po[i]);
+  }
+  delete in;
+  delete out;
+}
+
+TEST(GRADIENTMAGNITUDEMODULE,REVERSE)
+{
+  ZStack* in=new ZStack(GREY,3,2,1,1);
+  ZStack* out=new ZStack(GREY,3,2,1,1);
+  uint8_t *pi=in->array8(),*po=out->array8();
+  pi[0]=0;
+  pi[1]=3;
+  pi[2]=6;
+  pi[3]=4;
+  pi[4]=7;
+  pi[5]=10;
+  GradientStrategyContext context(GradientStrategyContext::SIMPLE);
+  context.run(in,out,true);
+  for(uint i=0;i<out->getVoxelNumber();++i)
+  {
+    EXPECT_EQ(250,po[i]);
+  }
 }
 
 
@@ -73,7 +112,7 @@ TEST(GRADIENTMAGNITUDEMODULE,FLOAT)
   pi[0]=0;
   pi[1]=1000;
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  context.run(in,out,0.0,true);
+  context.run(in,out,true);
   EXPECT_FLOAT_EQ(FLT_MAX-1000,po[0]);
   EXPECT_FLOAT_EQ(FLT_MAX-1000,po[1]);
   delete in;
@@ -91,7 +130,7 @@ TEST(GRADIENTMAGNITUDEMODULE,RGB)
   pi[1][1]=90;
   pi[1][2]=110;
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  context.run(in,out,0.0,false);
+  context.run(in,out);
   EXPECT_EQ(123,po[0][0]);
   EXPECT_EQ(90,po[0][1]);
   EXPECT_EQ(110,po[0][2]);
@@ -108,7 +147,7 @@ TEST(GRADIENTMAGNITUDEMODULE,RGB)
   pi[1][0]=123;
   pi[1][1]=90;
   pi[1][2]=110;
-  context.run(in,out,0.0,true);
+  context.run(in,out,true);
   EXPECT_EQ(132,po[0][0]);
   EXPECT_EQ(165,po[0][1]);
   EXPECT_EQ(145,po[0][2]);
@@ -132,25 +171,20 @@ TEST(GRADIENTMAGNITUDEMODULE,NORMAL)
   pi[4]=7;
   pi[5]=10;
   GradientStrategyContext context(GradientStrategyContext::SIMPLE);
-  context.run(in,out,0.0,false);
-  for(uint i=0;i<out->getVoxelNumber();++i)
-  {
-    EXPECT_EQ(5,po[i]);
-  }
-  context.run(in,out,0.0,true);
+  context.run(in,out,true);
   for(uint i=0;i<out->getVoxelNumber();++i)
   {
     EXPECT_EQ(250,po[i]);
   }
-  context.run(in,out,0.5,false);
+  context.run(in,out,false,0.5);
   for(uint i=0;i<out->getVoxelNumber();++i)
   {
     EXPECT_EQ(int(5*0.5+0.5*pi[i]),po[i]);
   }
-  context.run(in,out,0.4,true);
+  context.run(in,out,true,0.4);
   for(uint i=0;i<out->getVoxelNumber();++i)
   {
-    EXPECT_EQ(255-int(5*0.6+0.4*pi[i]),po[i]);
+    EXPECT_EQ(int(250*0.6+0.4*pi[i]),po[i]);
   }
 }
 
