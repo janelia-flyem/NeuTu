@@ -96,15 +96,20 @@ bool FocusedPathProtocol::initialize() {
     }
 
 
-
     // validate edge instance exists
-
-
+    if (!m_reader.hasData(m_edgeDataInstance)) {
+        QMessageBox mb;
+        mb.setText("Bad instance name!");
+        mb.setInformativeText("Edge data instance " + QString::fromStdString(m_edgeDataInstance) + " does not seem to exist in DVID!");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+        return false;
+    }
 
     // everything OK; save and return
     saveState();
     return true;
-
 }
 
 void FocusedPathProtocol::setDvidTarget(ZDvidTarget target) {
