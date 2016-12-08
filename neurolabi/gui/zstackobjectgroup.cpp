@@ -226,6 +226,8 @@ ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
     //remove_p(getSet(obj->getType()), obj);
 
     getSelectedSetUnsync(obj->getType()).remove(obj);
+
+    getSelector()->removeObject(obj);
   }
 
   return found;
@@ -417,6 +419,9 @@ bool ZStackObjectGroup::removeObjectUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+        getSelectedSetUnsync(obj->getType()).remove(obj);
+        getSelector()->removeObject(obj);
+
         if (deleting) {
           delete obj;
         }

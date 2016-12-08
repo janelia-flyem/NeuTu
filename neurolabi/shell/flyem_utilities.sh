@@ -133,6 +133,11 @@ function flyem_neutu_update {
     build_dir=build_debug
   fi
 
+  if [ $debug_config == 'sanitize' ]
+  then
+    build_dir=build_sanitize
+  fi
+
   $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/$build_dir
 }
 
@@ -170,6 +175,10 @@ function update_neutu {
   if [ -d $target_dir/neurolabi/build_debug ]
   then
     flyem_neutu_update $install_dir debug
+  fi
+  if [ -d $target_dir/neurolabi/build_sanitize ]
+  then
+    flyem_neutu_update $install_dir sanitize
   fi
 }
 
