@@ -43,9 +43,14 @@ private slots:
 private:
     static const std::string KEY_VERSION;
     static const int m_fileVersion;
+    // load/save protocol keys
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
+    // read DVID keys
+    static const std::string KEY_ASSIGNMENT_BODIES;
+    static const std::string KEY_ASSIGNMENT_INSTANCE;
+
 
     Ui::FocusedPathProtocol *ui;
     QWidget * m_parent;
