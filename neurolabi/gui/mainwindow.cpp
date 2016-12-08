@@ -3392,6 +3392,9 @@ void MainWindow::test(ZTestOptionDialog *dlg)
   case ZTestOptionDialog::OPTION_STRESS:
     ZTest::stressTest(this);
     break;
+  case ZTestOptionDialog::OPTION_UNIT:
+    ZTest::getInstance().runUnitTest();
+    break;
   }
 }
 

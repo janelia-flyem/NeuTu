@@ -294,8 +294,18 @@ const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi
 const static string dataPath("/Users/zhaot/Work/neutube/neurolabi/data");
 #endif
 
+void ZTest::setCommandLineArg(int argc, char *argv[])
+{
+  m_argc = argc;
+  m_argv = argv;
+}
 
-int ZTest::runUnitTest(int argc, char *argv[])
+void ZTest::runUnitTest()
+{
+  RunUnitTest(m_argc, m_argv);
+}
+
+int ZTest::RunUnitTest(int argc, char *argv[])
 {
 #ifdef _USE_GTEST_
   ::testing::InitGoogleTest(&argc, argv);

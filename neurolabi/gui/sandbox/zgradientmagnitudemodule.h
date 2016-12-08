@@ -2,7 +2,7 @@
 #define ZGRADIENTMAGNITUDEMODULE_H
 #include <map>
 #include <string>
-#include <QWindow>
+//#include <QWindow>
 #include <QWidget>
 #include <QString>
 #include <QMessageBox>

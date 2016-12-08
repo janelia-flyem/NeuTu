@@ -21,13 +21,22 @@ class ZTest
 public:
   ZTest();
 
+  static ZTest& getInstance() {
+    static ZTest test;
+
+    return test;
+  }
+
+  void setCommandLineArg(int argc, char *argv[]);
+  void runUnitTest();
+
 public:
   template <typename T>
   static bool testEqual(const T &golden, const T &v);
   static void test(MainWindow *host);
   static void stressTest(MainWindow *host);
   static bool testTreeIterator();
-  static int runUnitTest(int argc, char *argv[]);
+  static int RunUnitTest(int argc, char *argv[]);
 
 public:
   static bool testTreeIterator(ZSwcTree &tree,
@@ -36,6 +45,10 @@ public:
                                int truthCount, bool testReverse = false);
 
   static std::ostream &m_failureStream;
+
+private:
+  int m_argc;
+  char **m_argv;
 };
 
 template<typename T>

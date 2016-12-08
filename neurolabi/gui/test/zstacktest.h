@@ -63,13 +63,13 @@ TEST(ZStack, Basic)
 
   Mc_Stack *stackData = C_Stack::make(COLOR, 3, 4, 5, 2);
   ZStack stack5(stackData);
-  ASSERT_EQ(60, stack5.getVoxelNumber());
-  ASSERT_EQ(360, stack5.getByteNumber());
+  ASSERT_EQ(60, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(360, (int) stack5.getByteNumber());
 
   Mc_Stack *stackData2 = C_Stack::make(GREY, 2, 4, 5, 2);
   stack5.setData(stackData2, C_Stack::kill);
-  ASSERT_EQ(40, stack5.getVoxelNumber());
-  ASSERT_EQ(80, stack5.getByteNumber());
+  ASSERT_EQ(40, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(80, (int) stack5.getByteNumber());
 
   Mc_Stack *stackData3 = new Mc_Stack;
   stack5.setData(stackData3, C_Stack::cppDelete);
@@ -80,13 +80,13 @@ TEST(ZStack, Basic)
 
   Stack *stackData5 = C_Stack::make(GREY, 2, 3, 4);
   stack5.consume(stackData5);
-  ASSERT_EQ(24, stack5.getVoxelNumber());
-  ASSERT_EQ(24, stack5.getByteNumber());
+  ASSERT_EQ(24, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(24, (int) stack5.getByteNumber());
 
   ZStack *stack6 = new ZStack(GREY, 2, 3, 4, 2);
   stack5.consume(stack6);
-  ASSERT_EQ(24, stack5.getVoxelNumber());
-  ASSERT_EQ(48, stack5.getByteNumber());
+  ASSERT_EQ(24, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(48, (int) stack5.getByteNumber());
 
   ZSingleChannelStack *sstack1 = stack5.singleChannelStack(0);
   ZSingleChannelStack *sstack2 = stack5.singleChannelStack(1);

@@ -944,7 +944,7 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--unit_test"))) {
-    return ZTest::runUnitTest(argc, argv);
+    return ZTest::RunUnitTest(argc, argv);
   }
 
   for (int i = 0; i < 3; ++i) {

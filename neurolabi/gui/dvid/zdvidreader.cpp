@@ -727,9 +727,10 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 #ifdef _DEBUG_2
         std::cout << "block:" << i << "/" << blockNumber << std::endl;
 #endif
-        stackArray[i] = new ZStack(GREY, currentBox, 1);
-        stackArray[i]->loadValue(blocks.get_raw() + i * currentBox.getVolume(),
-                                 currentBox.getVolume(), stackArray[i]->array8());
+        ZStack *stack = new ZStack(GREY, currentBox, 1);
+        stackArray[i] = stack;
+        stack->copyValueFrom(blocks.get_raw() + i * currentBox.getVolume(),
+                             currentBox.getVolume(), stack->array8());
         currentBox.translateX(currentBox.getWidth());
       }
       setStatusCode(200);

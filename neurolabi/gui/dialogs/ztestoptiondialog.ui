@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>268</width>
-    <height>149</height>
+    <height>176</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QRadioButton" name="unitTestRadioButton">
+        <property name="text">
+         <string>Unit Test</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="stressTestRadioButton">
         <property name="text">
          <string>Stress Test</string>
@@ -40,6 +47,7 @@
      </layout>
      <zorder>stressTestRadioButton</zorder>
      <zorder>normalTestRadioButton</zorder>
+     <zorder>unitTestRadioButton</zorder>
     </widget>
    </item>
    <item>
