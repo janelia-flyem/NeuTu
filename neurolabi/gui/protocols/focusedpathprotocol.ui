@@ -47,7 +47,7 @@
        <item>
         <widget class="QLabel" name="progressLabel">
          <property name="text">
-          <string>Progress: 1/3 edges; 1/17 (6%) connections</string>
+          <string>Progress: 1/3 edges; 1/17 (6%) paths; 1/3 (%) bodies</string>
          </property>
         </widget>
        </item>

@@ -8,6 +8,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "focusedpathbodyinputdialog.h"
+
 #include "dvid/zdvidreader.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -17,6 +19,7 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
     ui(new Ui::FocusedPathProtocol)
 {
     m_variation = variation;
+    m_parent = parent;
 
     ui->setupUi(this);
 
@@ -40,6 +43,7 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 const std::string FocusedPathProtocol::KEY_VERSION = "version";
 const std::string FocusedPathProtocol::KEY_VARIATION = "variation";
 const std::string FocusedPathProtocol::KEY_BODYID = "bodyID";
+const std::string FocusedPathProtocol::KEY_EDGE_INSTANCE = "edge-instance";
 const std::string FocusedPathProtocol::VARIATION_BODY = "body";
 const std::string FocusedPathProtocol::VARIATION_BOOKMARK = "bookmark";
 const int FocusedPathProtocol::m_fileVersion = 1;
@@ -47,40 +51,26 @@ const int FocusedPathProtocol::m_fileVersion = 1;
 bool FocusedPathProtocol::initialize() {
 
     if (m_variation == VARIATION_BODY) {
-        // input body ID as text because we can overflow 32-bit ints
-        bool ok;
-        uint64_t bodyID;
-        QString ans = QInputDialog::getText(this,
-            "Choose body", "Do focused proofreading on body with ID:",
-            QLineEdit::Normal, "", &ok);
-        if (ok && !ans.isEmpty()) {
-            // convert to int and check that it exists:
-            bodyID = ans.toLong(&ok);
-            if (!ok) {
-                QMessageBox mb;
-                mb.setText("Can't parse body ID");
-                mb.setInformativeText("The entered body ID " + ans + " doesn't seem to be an integer!");
-                mb.setStandardButtons(QMessageBox::Ok);
-                mb.setDefaultButton(QMessageBox::Ok);
-                mb.exec();
-                return false;
-            }
-            ZDvidReader reader;
-            if (reader.open(m_dvidTarget)) {
-                if (!reader.hasBody(bodyID)) {
-                    QMessageBox mb;
-                    mb.setText("Body ID doesn't exist!");
-                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
-                    mb.setStandardButtons(QMessageBox::Ok);
-                    mb.setDefaultButton(QMessageBox::Ok);
-                    mb.exec();
-                    return false;
-                }
-            }
-        } else {
+        // get input from user via dialog
+        FocusedPathBodyInputDialog inputDialog;
+        int ans = inputDialog.exec();
+        if (ans == QDialog::Rejected) {
             return false;
         }
+        // edge instance is validated below
+        m_edgeDataInstance = inputDialog.getEdgeInstance();
 
+        // validate that the body ID exists:
+        uint64_t bodyID = inputDialog.getBodyID();
+        if (!m_reader.hasBody(bodyID)) {
+            QMessageBox mb;
+            mb.setText("Body ID doesn't exist!");
+            mb.setInformativeText("The entered body ID " +  QString::number(bodyID) + " doesn't seem to exist!");
+            mb.setStandardButtons(QMessageBox::Ok);
+            mb.setDefaultButton(QMessageBox::Ok);
+            mb.exec();
+            return false;
+        }
         m_bodies.append(bodyID);
 
 
@@ -107,12 +97,25 @@ bool FocusedPathProtocol::initialize() {
 
 
 
+    // validate edge instance exists
+
 
 
     // everything OK; save and return
     saveState();
     return true;
 
+}
+
+void FocusedPathProtocol::setDvidTarget(ZDvidTarget target) {
+    ProtocolDialog::setDvidTarget(target);
+
+    m_reader.setVerbose(false);
+    if (!m_reader.open(m_dvidTarget)) {
+        QMessageBox::warning(m_parent, "Can't connect to DVID",
+            "There was a problem connecting to the DVID server!", QMessageBox::Ok);
+        return;
+    }
 }
 
 void FocusedPathProtocol::onExitButton() {
@@ -167,6 +170,8 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
     // do actual load
     m_bodies.clear();
 
+    m_edgeDataInstance = ZJsonParser::stringValue(data[KEY_EDGE_INSTANCE.c_str()]);
+
     if (m_variation == VARIATION_BODY) {
         m_bodies.append(ZJsonParser::integerValue(data[KEY_BODYID.c_str()]));
         emit bodyListLoaded();
@@ -198,7 +203,24 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     m_bodies.append(3456);
 
 
+    // edge data instance:
+    m_edgeDataInstance = "fake edge data instance name";
+
+
     emit bodyListLoaded();
+}
+
+void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
+
+    m_currentBodyPaths.clear();
+
+
+
+    // -- no DVID API for get annotations on body with tag, so
+    //      probably need to get from body and filter by hand by tag
+
+
+
 }
 
 void FocusedPathProtocol::onBodyListsLoaded() {
@@ -210,15 +232,32 @@ void FocusedPathProtocol::onBodyListsLoaded() {
 
     // body list is available; load data into the UI
 
-    // get (notes?  to do?  bookmarks?) from DVID with pathlists
-
-    // go to first pathlist, first path
-
-    // do we need to determine which have been examined, or
-    //  have we removed pathlists that are examined?
+    // read all paths from current body
+    m_currentBody = m_bodies.first();
+    loadCurrentBodyPaths(m_currentBody);
 
 
-    // look at each step in path; load all the info into the UI
+
+
+    // sort paths by other endpoint body ID
+    // -- if any paths already linked: discard
+
+    // for each other body ID:
+
+    // sort paths to that body ID by probability
+
+    // for each path:
+
+    // check prob > 0
+
+    // read all edges in path
+
+    // determine if any edges already broken
+
+    // if so, set path prob = 0 (save)
+
+    // load edges into UI and update labels 
+
 
 
 }
@@ -229,6 +268,8 @@ void FocusedPathProtocol::saveState() {
 
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), m_fileVersion);
+
+    data.setEntry(KEY_EDGE_INSTANCE.c_str(), m_edgeDataInstance);
 
     if (m_variation == VARIATION_BODY) {
         // in this variation, there's only one body ID; save it

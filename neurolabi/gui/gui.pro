@@ -195,10 +195,10 @@ unix {
             } else {
                 LIBS -= -lstdc++
                 QMAKE_CXXFLAGS += -stdlib=libc++
+                QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
+                message("SDK: $$QMAKE_MAC_SDK")
             }
 
-            QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
-            message("SDK: $$QMAKE_MAC_SDK")
         }
 
         doc.files = doc
@@ -681,6 +681,8 @@ HEADERS += mainwindow.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
     protocols/focusedpathprotocol.h \
+    protocols/focusedpathbodyinputdialog.h \ 
+    protocols/focusedpath.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -788,6 +790,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
     protocols/focusedpathprotocol.ui \
+    protocols/focusedpathbodyinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
@@ -1204,6 +1207,8 @@ SOURCES += main.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
     protocols/focusedpathprotocol.cpp \
+    protocols/focusedpath.cpp \
+    protocols/focusedpathbodyinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \

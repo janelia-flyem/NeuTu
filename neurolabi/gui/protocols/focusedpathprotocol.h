@@ -3,9 +3,12 @@
 
 #include <QtGui>
 
+#include "dvid/zdvidreader.h"
 #include "zjsonobject.h"
 
+#include "focusedpath.h"
 #include "protocoldialog.h"
+
 
 namespace Ui {
 class FocusedPathProtocol;
@@ -21,6 +24,7 @@ public:
     bool initialize();
     static const std::string VARIATION_BODY;
     static const std::string VARIATION_BOOKMARK;
+    void setDvidTarget(ZDvidTarget target);
 
 signals:
     void protocolCompleting();
@@ -41,14 +45,21 @@ private:
     static const int m_fileVersion;
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
+    static const std::string KEY_EDGE_INSTANCE;
 
     Ui::FocusedPathProtocol *ui;
+    QWidget * m_parent;
+    ZDvidReader m_reader;
     std::string m_variation;
+    std::string m_edgeDataInstance;
     QList<uint64_t> m_bodies;
+    uint64_t m_currentBody;
+    QList<FocusedPath> m_currentBodyPaths;
     QStandardItemModel * m_edgeModel;
     void saveState();
     void variationError(std::string variation);
     void loadBodiesFromBookmarks();
+    void loadCurrentBodyPaths(uint64_t bodyID);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
