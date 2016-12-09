@@ -192,7 +192,7 @@ protected:
   ZJsonObject m_propertyJson;
   ZJsonArray m_relJson;
 
-  mutable QStaticText m_textDecoration;
+//  mutable QStaticText m_textDecoration;
 };
 
 #include "dvid/zdvidannotation.hpp"

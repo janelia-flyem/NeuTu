@@ -225,7 +225,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       pen.setWidthF(oldWidth);
       pen.setColor(oldColor);
     }
-    QString decorationText;
+//    QString decorationText;
 
     if (isVerified()) {
       //        decorationText = "U";
@@ -291,7 +291,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
 //      decorationText += QString(".%1").arg(iround(conf * 10.0));
     }
 
-
+#if 0
     int height = iround(getRadius() * 1.5);
     int width = decorationText.size() * height;
 
@@ -319,6 +319,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
 //                       Qt::AlignLeft, decorationText);
       painter.setPen(oldColor);
     }
+#endif
   }
 
 
