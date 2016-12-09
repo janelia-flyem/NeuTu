@@ -1572,9 +1572,11 @@ ZDvidSparseStack* ZFlyEmProofDoc::getBodyForSplit()
 
 void ZFlyEmProofDoc::updateBodyObject()
 {
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
     slice->paintBuffer();
+    processObjectModified(slice);
 //    slice->clearSelection();
 //    slice->updateLabelColor();
   }
@@ -1585,8 +1587,11 @@ void ZFlyEmProofDoc::updateBodyObject()
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
     slice->setColor(getDvidLabelSlice(NeuTube::Z_AXIS)->getLabelColor(
                       slice->getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
+    processObjectModified(slice);
     //slice->updateSelection();
   }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZFlyEmProofDoc::clearData()
