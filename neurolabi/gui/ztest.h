@@ -37,6 +37,7 @@ public:
   static void stressTest(MainWindow *host);
   static bool testTreeIterator();
   static int RunUnitTest(int argc, char *argv[]);
+  static void CrashTest();
 
 public:
   static bool testTreeIterator(ZSwcTree &tree,

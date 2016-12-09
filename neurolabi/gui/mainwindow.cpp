@@ -3395,6 +3395,9 @@ void MainWindow::test(ZTestOptionDialog *dlg)
   case ZTestOptionDialog::OPTION_UNIT:
     ZTest::getInstance().runUnitTest();
     break;
+  case ZTestOptionDialog::OPTION_CRASH:
+    ZTest::CrashTest();
+    break;
   }
 }
 

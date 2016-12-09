@@ -318,6 +318,12 @@ int ZTest::RunUnitTest(int argc, char *argv[])
 #endif
 }
 
+void ZTest::CrashTest()
+{
+  int a[1];
+  a[1] = 1;
+}
+
 void ZTest::stressTest(MainWindow *host)
 {
   if (host != NULL) {
@@ -21334,10 +21340,16 @@ void ZTest::test(MainWindow *host)
   qDebug() << p.readAllStandardOutput();
 #endif
 
-#if 1
+#if 0
   //crash test
   int a[1];
   a[1] = 1;
+#endif
+
+#if 1
+  std::cout << sizeof(ZDvidAnnotation) << std::endl;
+  std::cout << sizeof(ZJsonObject) << std::endl;
+  std::cout << sizeof(ZIntPoint) << std::endl;
 #endif
 
 #if 0
