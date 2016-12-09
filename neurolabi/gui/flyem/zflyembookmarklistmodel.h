@@ -45,7 +45,7 @@ public:
     return m_proxy;
   }
 
-  void sort();
+  void sortBookmark();
 
   bool isUsed() const {
     return m_isUsed;

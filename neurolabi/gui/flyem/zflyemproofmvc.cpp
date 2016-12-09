@@ -3450,14 +3450,14 @@ void ZFlyEmProofMvc::prepareBookmarkModel(
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()
 {
-  getAssignedBookmarkModel()->sort();
+  getAssignedBookmarkModel()->sortBookmark();
 //  m_assignedBookmarkProxy->sort(m_assignedBookmarkProxy->sortColumn(),
 //                                m_assignedBookmarkProxy->sortOrder());
 }
 
 void ZFlyEmProofMvc::sortUserBookmarkTable()
 {
-  getUserBookmarkModel()->sort();
+  getUserBookmarkModel()->sortBookmark();
 //  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
 //                            m_userBookmarkProxy->sortOrder());
 }
@@ -3517,7 +3517,7 @@ void ZFlyEmProofMvc::updateAssignedBookmarkTable()
       getDocument()->getObjectList<ZFlyEmBookmark>();
   appendAssignedBookmarkTable(bookmarkList);
 
-  model->sort();
+  model->sortBookmark();
 }
 
 void ZFlyEmProofMvc::updateBookmarkTable()
@@ -3536,7 +3536,7 @@ void ZFlyEmProofMvc::updateUserBookmarkTable()
     QList<ZFlyEmBookmark*> bookmarkList =
         getDocument()->getObjectList<ZFlyEmBookmark>();
     appendUserBookmarkTable(bookmarkList);
-    model->sort();
+    model->sortBookmark();
   }
 }
 
@@ -3561,7 +3561,7 @@ void ZFlyEmProofMvc::appendAssignedBookmarkTable(
       }
     }
 
-    model->sort();
+    model->sortBookmark();
   }
 }
 
@@ -3586,7 +3586,7 @@ void ZFlyEmProofMvc::appendUserBookmarkTable(
       }
     }
 
-    model->sort();
+    model->sortBookmark();
   }
 }
 
