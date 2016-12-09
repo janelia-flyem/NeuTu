@@ -61,6 +61,8 @@ const std::string FocusedPathProtocol::KEY_ASSIGNMENT_BODIES= "bodies";
 const std::string FocusedPathProtocol::KEY_ASSIGNMENT_INSTANCE= "edgedata";
 const std::string FocusedPathProtocol::TAG_PATH= "path";
 const std::string FocusedPathProtocol::TAG_EDGE= "edge";
+const std::string FocusedPathProtocol::PROPERTY_PROBABILITY= "probability";
+const std::string FocusedPathProtocol::PROPERTY_PATH= "path";
 
 
 bool FocusedPathProtocol::initialize() {
@@ -249,7 +251,7 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
         ZDvidAnnotation ann;
         ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_LOCATION);
         if (ann.hasTag(TAG_PATH)) {
-            m_currentBodyPaths << FocusedPath();
+            m_currentBodyPaths << FocusedPath(ann);
         }
     }
 

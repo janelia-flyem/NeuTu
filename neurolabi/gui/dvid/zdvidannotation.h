@@ -80,6 +80,7 @@ public:
   void clearPartner();
   void addPartner(int x, int y, int z);
   void addTag(const std::string &tag);
+  bool hasTag(const std::string &tag);
 
   void clear();
 
@@ -172,8 +173,8 @@ public: //Json APIs
 
   static std::string GetMatchingRelation(const std::string &relType);
 
-  static EKind GetKind(const ZJsonObject &json);
-  bool hasTag(const std::string &tag);
+  static EKind GetKind(const ZJsonObject &json);  
+  ZJsonValue getProperty(const char *key);
 
 protected:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;

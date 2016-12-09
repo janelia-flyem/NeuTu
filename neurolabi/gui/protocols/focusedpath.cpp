@@ -1,30 +1,56 @@
 #include "focusedpath.h"
 
-#include "dvid/zdvidannotation.h"
+#include "focusedpathprotocol.h"
+#include "zintpoint.h"
 
+#include "dvid/zdvidannotation.h"
 
 FocusedPath::FocusedPath(ZDvidAnnotation annotation)
 {
+    m_firstpoint = annotation.getPosition();
 
+    // last point; assume the relation only has one point
+    m_lastpoint = ZJsonParser::toIntPoint(((ZJsonObject) annotation.getRelationJson().value(0))["To"]);
 
+    // probability
+    m_probability = annotation.getProperty(FocusedPathProtocol::PROPERTY_PROBABILITY.c_str()).toReal();
+
+    // edge points
+    ZJsonArray edgeList = ((ZJsonArray) annotation.getProperty(FocusedPathProtocol::PROPERTY_PATH.c_str()));
+    for (size_t i=0; i<edgeList.size(); i++) {
+        m_edgePoints.append(ZJsonParser::toIntPoint(edgeList.at(i)));
+    }
+
+    // we do not load the actual edges right away
 
 }
 
-// data:
-// endpoints: zintpoint x 2
-// edge points: qlist of zintpoint
-// actual edges (?): map of points to edge class instance?
-// probability: double
+ZIntPoint FocusedPath::getFirstPoint() {
+    return m_firstpoint;
+}
+
+ZIntPoint FocusedPath::getLastPoint() {
+    return m_lastpoint;
+}
+
+void FocusedPath::setProbability(double probability) {
+    m_probability = probability;
+}
+
+double FocusedPath::getProbability() {
+    return m_probability;
+}
+
+QList<ZIntPoint> FocusedPath::getEdgePoints() {
+    return m_edgePoints;
+}
+
 
 // methods:
 
-// init: from dvid annotation json (one endpoint)?
-
-
-// getters: endpoints, edges, probability
-// setters for: probability (only thing we expect to change)
+// --> keep the original annotation to make it easier to re-save?
 // save (for changing probability)
-// reload/refresh (depending on how much stuff we load at init (eg, edges))
+// load edges
 
 // below: really, its state is broken, connected, or unknown
 // isvalid (has prob > 0)

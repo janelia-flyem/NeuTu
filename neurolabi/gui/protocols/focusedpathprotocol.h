@@ -49,13 +49,17 @@ private:
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
+
+public:
     // keys for DVID stuff
     static const std::string KEY_ASSIGNMENT_BODIES;
     static const std::string KEY_ASSIGNMENT_INSTANCE;
     static const std::string TAG_PATH;
     static const std::string TAG_EDGE;
+    static const std::string PROPERTY_PROBABILITY;
+    static const std::string PROPERTY_PATH;
 
-
+private:
     Ui::FocusedPathProtocol *ui;
     QWidget * m_parent;
     ZDvidReader m_reader;

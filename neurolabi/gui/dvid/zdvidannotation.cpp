@@ -507,6 +507,10 @@ std::string ZDvidAnnotation::getUserName() const
   return ZJsonParser::stringValue(m_propertyJson["user"]);
 }
 
+ZJsonValue ZDvidAnnotation::getProperty(const char *key) {
+  return m_propertyJson.value(key);
+}
+
 int ZDvidAnnotation::getX() const
 {
   return getPosition().getX();
