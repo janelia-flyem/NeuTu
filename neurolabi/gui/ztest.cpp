@@ -21334,7 +21334,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << p.readAllStandardOutput();
 #endif
 
-#if 1
+#if 0
   //crash test
   int a[1];
   a[1] = 1;

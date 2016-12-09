@@ -105,7 +105,7 @@ exists($$DVIDCPP_PATH) {
 
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
-    LIBS *= -ldvidcpp -lboost_system -lboost_thread #-ljsoncpp -llz4 -lcurl -lpng -ljpeg
+    LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
         CONFIG(debug, debug|release) {
             LIBS *= -llowtis-g
