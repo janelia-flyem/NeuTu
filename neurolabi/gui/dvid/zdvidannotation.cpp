@@ -413,6 +413,10 @@ void ZDvidAnnotation::addTag(const std::string &tag)
   m_tagArray.push_back(tag);
 }
 
+bool ZDvidAnnotation::hasTag(const std::string &tag) {
+  return std::find(m_tagArray.begin(), m_tagArray.end(), tag) != m_tagArray.end();
+}
+
 ZJsonObject ZDvidAnnotation::MakeRelJson(
     const ZIntPoint &pt, const std::string &rel)
 {

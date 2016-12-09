@@ -11,6 +11,7 @@
 #include "focusedpathbodyinputdialog.h"
 #include "flyem/zflyembookmark.h"
 
+#include "neutube_def.h"
 #include "dvid/zdvidreader.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -28,10 +29,12 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
     m_edgeModel = new QStandardItemModel(0, 3, ui->edgesTableView);
 
 
+    // data load connections
+    connect(this, SIGNAL(bodyListLoaded()), this, SLOT(onBodyListsLoaded()));
+    connect(this, SIGNAL(currentBodyPathsLoaded()), this, SLOT(onCurrentBodyPathsLoaded()));
+
 
     // UI connections
-
-
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
@@ -41,6 +44,7 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
 }
 
+// ---------- constants ----------
 // protocol variations
 const std::string FocusedPathProtocol::VARIATION_BODY = "body";
 const std::string FocusedPathProtocol::VARIATION_BOOKMARK = "bookmark";
@@ -55,6 +59,8 @@ const std::string FocusedPathProtocol::KEY_EDGE_INSTANCE = "edge-instance";
 // keys used when reading stuff from DVID
 const std::string FocusedPathProtocol::KEY_ASSIGNMENT_BODIES= "bodies";
 const std::string FocusedPathProtocol::KEY_ASSIGNMENT_INSTANCE= "edgedata";
+const std::string FocusedPathProtocol::TAG_PATH= "path";
+const std::string FocusedPathProtocol::TAG_EDGE= "edge";
 
 
 bool FocusedPathProtocol::initialize() {
@@ -238,36 +244,37 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
 
     m_currentBodyPaths.clear();
 
+    ZJsonArray annotations = m_reader.readAnnotation(m_edgeDataInstance, bodyID);
+    for (size_t i=0; i<annotations.size(); i++) {
+        ZDvidAnnotation ann;
+        ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_LOCATION);
+        if (ann.hasTag(TAG_PATH)) {
+            m_currentBodyPaths << FocusedPath();
+        }
+    }
 
-
-    // -- no DVID API for get annotations on body with tag, so
-    //      probably need to get from body and filter by hand by tag
-
-
-
+    emit currentBodyPathsLoaded();
 }
 
+/*
+ * body list is available; set first body to current body, and
+ * read paths for it
+ */
 void FocusedPathProtocol::onBodyListsLoaded() {
-
-    // debug
-    std::cout << m_bodies.size() << " bodies loaded" << std::endl;
-    std::cout << "first body ID = " << m_bodies.first() << std::endl;
-
-
-
-
-    // body list is available; load data into the UI
     if (m_bodies.size() == 0) {
         QMessageBox::warning(m_parent, "No bodies!",
             "No bodies were loaded!", QMessageBox::Ok);
         return;
     }
-
-    // read all paths from current body
     m_currentBody = m_bodies.first();
+    // this could be started in a thread if it turns out to be slow
     loadCurrentBodyPaths(m_currentBody);
+}
+
+void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
 
 
+    std::cout << "onCurrentBodyPathsLoaded()" << std::endl;
 
 
     // sort paths by other endpoint body ID
@@ -287,7 +294,9 @@ void FocusedPathProtocol::onBodyListsLoaded() {
 
     // if so, set path prob = 0 (save)
 
-    // load edges into UI and update labels 
+    // load edges into UI and update labels
+
+
 
 
 

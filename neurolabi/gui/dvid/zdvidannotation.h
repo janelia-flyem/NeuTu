@@ -173,6 +173,7 @@ public: //Json APIs
   static std::string GetMatchingRelation(const std::string &relType);
 
   static EKind GetKind(const ZJsonObject &json);
+  bool hasTag(const std::string &tag);
 
 protected:
   bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;

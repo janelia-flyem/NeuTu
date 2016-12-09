@@ -31,6 +31,7 @@ signals:
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
     void bodyListLoaded();
+    void currentBodyPathsLoaded();
 
 public slots:
     void loadDataRequested(ZJsonObject data);
@@ -39,6 +40,7 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onBodyListsLoaded();
+    void onCurrentBodyPathsLoaded();
 
 private:
     static const std::string KEY_VERSION;
@@ -47,9 +49,11 @@ private:
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
-    // read DVID keys
+    // keys for DVID stuff
     static const std::string KEY_ASSIGNMENT_BODIES;
     static const std::string KEY_ASSIGNMENT_INSTANCE;
+    static const std::string TAG_PATH;
+    static const std::string TAG_EDGE;
 
 
     Ui::FocusedPathProtocol *ui;
