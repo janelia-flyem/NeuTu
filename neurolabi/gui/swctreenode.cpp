@@ -1255,7 +1255,7 @@ void SwcTreeNode::kill(Swc_Tree_Node *tn)
 {
 #ifdef _DEBUG_
   std::cout << "Deleting Swc node " << tn << std::endl;
-  Print_Swc_Tree_Node(tn);
+//  Print_Swc_Tree_Node(tn);
 #endif
 
   Kill_Swc_Tree_Node(tn);

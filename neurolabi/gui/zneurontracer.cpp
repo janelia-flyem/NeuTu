@@ -1025,6 +1025,25 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition()
 }
 
 std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
+    const ZStack *stack)
+{
+  std::vector<ZWeightedPoint> result;
+
+  if (stack != NULL) {
+    result = computeSeedPosition(stack->c_stack());
+  }
+
+  for (std::vector<ZWeightedPoint>::iterator iter = result.begin();
+       iter != result.end(); ++iter) {
+    ZWeightedPoint &pt = *iter;
+    pt.translate(stack->getOffset().getX(), stack->getOffset().getY(),
+                 stack->getOffset().getZ());
+  }
+
+  return result;
+}
+
+std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
     const Stack *stack)
 {
   std::vector<ZWeightedPoint> result;

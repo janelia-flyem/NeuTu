@@ -91,12 +91,12 @@ json_type ZJsonParser::type(const json_t *value)
 
 void ZJsonParser::incref(json_t *value)
 {
-  incref(value);
+  json_incref(value);
 }
 
 void ZJsonParser::decref(json_t *value)
 {
-  decref(value);
+  json_decref(value);
 }
 
 const char* ZJsonParser::stringValue(const json_t *value)

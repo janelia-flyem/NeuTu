@@ -156,8 +156,9 @@ public:
   void setGrayOffset(double v) { m_greyOffset = v; }
   void setEstimatingRadius(bool on) { m_estimatingRadius = on; }
 
-public: //for debugging
+public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
+  std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition();
   ZSwcTree *computeInitialTrace(const Stack *stack);
 

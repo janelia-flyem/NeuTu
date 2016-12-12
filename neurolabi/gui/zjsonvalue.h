@@ -84,6 +84,7 @@ public:
   /*!
    * \brief Obsolete. Will be removed.
    */
+  void decodeString(const char *str, json_error_t *error);
   void decodeString(const char *str);
 
   void clear();
@@ -99,7 +100,7 @@ public:
   /*!
    * \brief Get a string describing the current error
    */
-  std::string getErrorString() const;
+  static std::string GetErrorString(const json_error_t &error);
 
   /*!
    * \brief Dump the object to a string.
@@ -116,7 +117,7 @@ public:
   bool load(const std::string &filePath);
 
 protected:
-  json_error_t m_error;
+//  json_error_t m_error;
   json_t *m_data;
 };
 
