@@ -21,10 +21,8 @@ ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
 
 ZGradientMagnitudeModule::~ZGradientMagnitudeModule()
 {
-  if(select_strategy_window)
-  {
-    delete select_strategy_window;
-  }
+
+  delete select_strategy_window;
 }
 
 
@@ -348,6 +346,7 @@ void GradientStrategyContext:: _run
               out->c_stack(i),gaussin_smooth_sigma_x,
               gaussin_smooth_sigma_y,gaussin_smooth_sigma_z);
         memcpy(out->array8(i),p->array,sizeof(T)*total);
+        Kill_Stack(p);
       }
     }
 
@@ -388,30 +387,36 @@ void GradientStrategySimple<T>::_run(const T* in,T* out)
   memset(py,0,sizeof(T)*total);
   memset(pz,0,sizeof(T)*total);
 
-#define process(m,n,p,o) \
-for(uint z=0;z<depth;++z)\
-  for(uint y=0;y<height;++y)\
-    for(uint x=0;x<width;++x,++pi,++p)\
-      if(m==0)*p=abs(double(*pi)-*(pi+o));\
-      else if(m==n)*p=abs(double(*(pi-o))-*pi);\
-      else*p=abs(double(*(pi+o))-*(pi-o))/2.0;
-
   const T* pi=in;
   if(width>1)
   {
-    process(x,width-1,_px,1);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_px)
+          if(x==0)*_px=abs(double(*pi)-*(pi+1));
+          else if(x==width-1)*_px=abs(double(*(pi-1))-*pi);
+          else*_px=abs(double(*(pi+1))-*(pi-1))/2.0;
   }
   pi=in;
   if(height>1)
   {
-    process(y,height-1,_py,width);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_py)
+          if(y==0)*_py=abs(double(*pi)-*(pi+width));
+          else if(y==height-1)*_py=abs(double(*(pi-width))-*pi);
+          else*_py=abs(double(*(pi+width))-*(pi-width))/2.0;
   }
   pi=in;
   if(depth>1)
   {
-    process(z,depth-1,_pz,slice);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_pz)
+          if(z==0)*_pz=abs(double(*pi)-*(pi+slice));
+          else if(z==depth-1)*_pz=abs(double(*(pi-slice))-*pi);
+          else*_pz=abs(double(*(pi+slice))-*(pi-slice))/2.0;
   }
-#undef process
   for(uint i=0;i<total;++i)
   {
     out[i]=std::min(sqrt(static_cast<double>(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i])),max);
@@ -435,31 +440,39 @@ void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
   memset(py,0,sizeof(color_t)*total);
   memset(pz,0,sizeof(color_t)*total);
 
-#define process(m,n,p,o) \
-for(uint z=0;z<depth;++z)\
-  for(uint y=0;y<height;++y)\
-    for(uint x=0;x<width;++x,++pi,++p)\
-      for(uint t=0;t<3;++t)\
-        if(m==0)(*p)[t]=abs(double((*pi)[t])-(*(pi+o))[t]);\
-        else if(m==n)(*p)[t]=abs(double((*(pi-o))[t])-(*pi)[t]);\
-        else(*p)[t]=abs(double((*(pi+o))[t])-(*(pi-o))[t])/2.0;\
-
   const color_t* pi=in;
   if(width>1)
   {
-    process(x,width-1,_px,1);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_px)
+          for(uint t=0;t<3;++t)
+            if(x==0)(*_px)[t]=abs(double((*pi)[t])-(*(pi+1))[t]);
+            else if(x==width-1)(*_px)[t]=abs(double((*(pi-1))[t])-(*pi)[t]);
+            else(*_px)[t]=abs(double((*(pi+1))[t])-(*(pi-1))[t])/2.0;
   }
   if(height>1)
   {
     pi=in;
-    process(y,height-1,_py,width);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_py)
+          for(uint t=0;t<3;++t)
+            if(y==0)(*_py)[t]=abs(double((*pi)[t])-(*(pi+width))[t]);
+            else if(y==height-1)(*_py)[t]=abs(double((*(pi-width))[t])-(*pi)[t]);
+            else(*_py)[t]=abs(double((*(pi+width))[t])-(*(pi-width))[t])/2.0;
   }
   if(depth>1)
   {
     pi=in;
-    process(z,depth-1,_pz,slice);
+    for(uint z=0;z<depth;++z)
+      for(uint y=0;y<height;++y)
+        for(uint x=0;x<width;++x,++pi,++_pz)
+          for(uint t=0;t<3;++t)
+            if(z==0)(*_pz)[t]=abs(double((*pi)[t])-(*(pi+slice))[t]);
+            else if(z==depth-1)(*_pz)[t]=abs(double((*(pi-slice))[t])-(*pi)[t]);
+            else(*_pz)[t]=abs(double((*(pi+slice))[t])-(*(pi-slice))[t])/2.0;
   }
-#undef process
   for(uint i=0;i<total;++i)
   {
     for(uint t=0;t<3;++t)
