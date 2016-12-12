@@ -478,8 +478,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                   ZWidgetMessage(
                     "Failed to upload merging results", NeuTube::MSG_ERROR));
           } else {
-            std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
 #if defined(_FLYEM_)
+            std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
             if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
               if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
                     getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==

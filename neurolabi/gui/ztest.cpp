@@ -320,8 +320,31 @@ int ZTest::RunUnitTest(int argc, char *argv[])
 
 void ZTest::CrashTest()
 {
+  /*
   int a[1];
   a[1] = 1;
+  */
+
+#if 0
+  int *a = new int;
+
+  delete a;
+  delete a;
+#endif
+
+#if 1
+  ZSwcTree *obj1 = new ZSwcTree;
+  obj1->setSource(ZStackObjectSourceFactory::MakeWatershedBoundarySource(1));
+  if (1) {
+    ZSwcTree obj2;
+    obj2.setSource(ZStackObjectSourceFactory::MakeWatershedBoundarySource(1));
+    obj1 = &obj2;
+  }
+
+  std::cout << obj1->getType() << std::endl;
+  std::cout << obj1->getSource() << std::endl;
+#endif
+
 }
 
 void ZTest::stressTest(MainWindow *host)
@@ -21346,10 +21369,12 @@ void ZTest::test(MainWindow *host)
   a[1] = 1;
 #endif
 
-#if 1
+#if 0
   std::cout << sizeof(ZDvidAnnotation) << std::endl;
   std::cout << sizeof(ZJsonObject) << std::endl;
   std::cout << sizeof(ZIntPoint) << std::endl;
+  std::cout << sizeof(std::vector<ZIntPoint>) << std::endl;
+  std::cout << sizeof(std::vector<std::string>) << std::endl;
 #endif
 
 #if 0

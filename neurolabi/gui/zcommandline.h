@@ -10,6 +10,8 @@
 
 class ZSwcTree;
 class ZSwcTreeMatcher;
+class ZStack;
+class ZWeightedPoint;
 
 class ZCommandLine
 {
@@ -20,7 +22,7 @@ public:
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
     SYNAPSE_OBJECT, CLASS_LIST, FLYEM_NEURON_FEATURE,
     SKELETONIZE, SEPARATE_IMAGE, TRACE_NEURON, TEST_SELF,
-    COMPARE_SWC,
+    COMPARE_SWC, COMPUTE_SEED,
     UNKNOWN_COMMAND
   };
 
@@ -28,6 +30,8 @@ public:
 
 
 private:
+  void init();
+
   static ECommand getCommand(const char *cmd);
   int runObjectMarker();
   int runBoundaryOrphan();
@@ -39,6 +43,7 @@ private:
   int runCompareSwc();
   int runImageSeparation();
   int runTraceNeuron();
+  int runComputeSeed();
   int runTest();
 
   std::set<uint64_t> loadBodySet(const std::string &input);
@@ -50,6 +55,12 @@ private:
 
   double compareSwc(
       ZSwcTree *tree1, ZSwcTree *tree2, ZSwcTreeMatcher &matcher) const;
+
+private:
+  ZStack* readDvidStack(const ZJsonObject &dvidConfig);
+  void loadTraceConfig();
+  static void ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
+                               const std::string &outFilePath);
 
 private:
   std::vector<std::string> m_input;
@@ -65,6 +76,7 @@ private:
   int m_blockOffset[3];
   int m_position[3];
   int m_size[3];
+  int m_level;
   double m_scale;
   bool m_fullOverlapScreen;
   bool m_isVerbose;

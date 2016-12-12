@@ -61,6 +61,18 @@ TEST(Json, basic)
   ASSERT_FALSE(obj4.isNull());
 }
 
+TEST(ZJsonValue, decode)
+{
+  ZJsonArray array;
+  array.decodeString("[1, 2, 3]");
+  ASSERT_EQ(3, (int) array.size());
+
+  array.decodeString("1, 2, 3");
+  array.decodeString("1, 2, 3", NULL);
+  json_error_t error;
+  array.decodeString("1, 2, 3", &error);
+}
+
 TEST(ZJsonArray, basic)
 {
   ZJsonArray arrayObj;
