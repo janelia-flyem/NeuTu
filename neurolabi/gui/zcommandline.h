@@ -59,7 +59,7 @@ private:
 private:
   ZStack* readDvidStack(const ZJsonObject &dvidConfig);
   void loadTraceConfig();
-  static void ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
+  static bool ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
                                const std::string &outFilePath);
 
 private:

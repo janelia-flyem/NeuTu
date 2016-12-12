@@ -454,11 +454,12 @@ ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
   return stack;
 }
 
-void ZCommandLine::ExportPointArray(
+bool ZCommandLine::ExportPointArray(
     const std::vector<ZWeightedPoint> &ptArray, const string &outFilePath)
 {
   std::ofstream stream(outFilePath.c_str(), std::ofstream::out);
 
+  bool succ = false;
   if (stream.good()) {
     for (std::vector<ZWeightedPoint>::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
@@ -466,9 +467,12 @@ void ZCommandLine::ExportPointArray(
       stream << point.getX() << ',' << point.getY() << ',' << point.getZ()
              << ',' << point.weight() << std::endl;
     }
+    succ = true;
   } else {
     std::cout << "Failed to save results in " << outFilePath << std::endl;
   }
+
+  return succ;
 }
 
 int ZCommandLine::runComputeSeed()
@@ -497,6 +501,8 @@ int ZCommandLine::runComputeSeed()
 
   ZNeuronTracer tracer;
 
+  bool saved = false;
+
   ZStack *stack = readDvidStack(dvidConfig);
   if (stack != NULL) {
     tracer.setTraceLevel(m_level);
@@ -510,12 +516,18 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-
     if (ZFileType::fileType(m_output) == ZFileType::SWC_FILE) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
+
+      //Unfortunately ZSwcTree::save does not return any status, so we use this
+      //hacking way to check if saving is successful.
+      std::ofstream stream(m_output.c_str(), std::ofstream::out);
+      saved = stream.good();
+      stream.close();
+
       tree->save(m_output);
     } else {
-      ExportPointArray(ptArray, m_output);
+      saved = ExportPointArray(ptArray, m_output);
     }
   } else {
     std::cout << "No grayscale data extracted from DVID server. Abort."
@@ -523,7 +535,9 @@ int ZCommandLine::runComputeSeed()
     return 1;
   }
 
-
+  if (saved) {
+    std::cout << "Results saved in " << m_output << std::endl;
+  }
 
   return 0;
 }
