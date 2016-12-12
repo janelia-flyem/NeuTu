@@ -232,7 +232,8 @@ json_t* ZJsonParser::decode(const string &str)
 
 void ZJsonParser::printError() const
 {
-  std::cout << m_error.text << std::endl;
+  std::cout << "Line " << m_error.line << " Column " << m_error.column
+            << ": " << m_error.text << std::endl;
 }
 
 ZIntPoint ZJsonParser::toIntPoint(const json_t *value)

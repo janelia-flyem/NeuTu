@@ -484,10 +484,11 @@ int ZCommandLine::runComputeSeed()
   }
 
   ZJsonObject dvidConfig;
-  dvidConfig.decode(m_input[0]);
+  dvidConfig.load(m_input[0]);
 
   if (dvidConfig.isEmpty()) {
-    std::cout << "The input must be a JSON file with valid DVID configuration. Abort."
+    std::cout << "The input " << m_input[0]
+              << " must be a JSON file with valid DVID configuration. Abort."
               << std::endl;
     return 1;
   }
@@ -660,7 +661,7 @@ int ZCommandLine::runTest()
 
 #if 1
   ZJsonObject dvidConfig;
-  dvidConfig.setEntry("address", "localhost");
+  dvidConfig.setEntry("address", "10.101.10.80");
   dvidConfig.setEntry("port", 8000);
   dvidConfig.setEntry("uuid", "ae53");
   dvidConfig.setEntry("gray_scale", "grayscale");
@@ -1080,20 +1081,20 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--intv"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i + 1);
     }
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--position"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
     }
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--size"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i + 1);
     }
   }
 
