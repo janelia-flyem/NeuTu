@@ -33,8 +33,17 @@ TEST(ZDocPlayerList, General)
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_NONE);
+
+    ASSERT_FALSE(playerList.contains(obj));
     playerList.add(new ZDocPlayer(obj));
+    ASSERT_TRUE(playerList.contains(obj));
   }
+  {
+    ZObject3d *obj = new ZObject3d;
+    delete obj;
+    ASSERT_FALSE(playerList.contains(obj));
+  }
+
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_DISPLAY);

@@ -161,6 +161,16 @@ public:
    */
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
+  /*!
+   * \brief Check if the player list contains certain data pointer
+   *
+   * \param data A pointer to check. It can be a pointer that has already been
+   *        freed.
+   * \return true iff the list contains \a data
+   */
+  bool contains(const ZStackObject *data);
+  bool containsUnsync(const ZStackObject *data);
+
   void clear();
   void clearUnsync();
 

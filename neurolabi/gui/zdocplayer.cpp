@@ -265,6 +265,26 @@ bool ZDocPlayerList::hasPlayerUnsync(ZStackObjectRole::TRole role) const
   return false;
 }
 
+bool ZDocPlayerList::contains(const ZStackObject *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return containsUnsync(data);
+}
+
+bool ZDocPlayerList::containsUnsync(const ZStackObject *data)
+{
+  for(QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->getData() == data) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
 {
   QMutexLocker locker(&m_mutex);
