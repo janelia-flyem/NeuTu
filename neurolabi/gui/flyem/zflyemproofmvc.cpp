@@ -1765,7 +1765,7 @@ void ZFlyEmProofMvc::test()
   if (m_testTimer->isActive()) {
     m_testTimer->stop();
   } else {
-//    showFineBody3d();
+    showFineBody3d();
     m_testTimer->setInterval(500);
     m_testTimer->start();
   }

@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QtDebug>
 #include <iterator>
+#include <cassert>
 #include <QSet>
 #include <vector>
 #include <QTimer>
@@ -3370,10 +3371,18 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
   bool removed = false;
 
   if (obj != NULL) {
-    bufferObjectModified(obj);
-    m_playerList.removePlayer(obj);
-    removed = m_objectGroup.removeObject(obj, deleteObject);
-    notifyObjectModified();
+    removed = false;
+    ZStackObject *taken = m_objectGroup.take(obj);
+    if (taken != NULL) { //note obj can be invalid unless it resides in the doc
+      assert(taken == obj);
+      m_playerList.removePlayer(obj);
+      removed = true;
+      bufferObjectModified(obj);
+      notifyObjectModified();
+      if (deleteObject) {
+        delete obj;
+      }
+    }
   }
 
   return removed;
