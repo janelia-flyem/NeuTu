@@ -1498,6 +1498,104 @@ void ZFlyEmProofDoc::clearBodyMerger()
   undoStack()->clear();
 }
 
+void ZFlyEmProofDoc::updateDvidLabelSlice(NeuTube::EAxis axis)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  ZOUT(LTRACE(), 5) << "Update dvid label";
+  TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+    ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    if (obj->getSliceAxis() == axis) {
+      obj->clearCache();
+      obj->forceUpdate();
+      processObjectModified(obj);
+    }
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
+int ZFlyEmProofDoc::removeDvidSparsevol(NeuTube::EAxis axis)
+{
+  int count = 0;
+
+  TStackObjectList objList =
+      getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
+
+  for (TStackObjectList::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->getSliceAxis() == axis) {
+      removeObject(obj, true);
+      ++count;
+    }
+  }
+
+  return count;
+}
+
+
+std::vector<ZDvidSparsevolSlice*> ZFlyEmProofDoc::makeSelectedDvidSparsevol(
+    const ZDvidLabelSlice *labelSlice)
+{
+  std::vector<ZDvidSparsevolSlice*> sparsevolList;
+  if (labelSlice != NULL) {
+    const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
+    for (std::set<uint64_t>::const_iterator iter = selected.begin();
+         iter != selected.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZDvidSparsevolSlice *obj = makeDvidSparsevol(labelSlice, bodyId);
+      sparsevolList.push_back(obj);
+    }
+  }
+
+  return sparsevolList;
+}
+
+ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
+    const ZDvidLabelSlice *labelSlice, uint64_t bodyId)
+{
+  ZDvidSparsevolSlice *obj = NULL;
+  if (bodyId > 0) {
+    obj = new ZDvidSparsevolSlice;
+    obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+    obj->setSliceAxis(labelSlice->getSliceAxis());
+    obj->setReader(getSparseVolReader());
+    //          obj->setDvidTarget(getDvidTarget());
+    obj->setLabel(bodyId);
+    obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    obj->setColor(labelSlice->getLabelColor(
+                    bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+  }
+
+  return obj;
+}
+
+void ZFlyEmProofDoc::updateDvidLabelObject(NeuTube::EAxis axis)
+{
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
+  if (labelSlice != NULL) {
+    labelSlice->clearCache();
+    labelSlice->forceUpdate();
+  }
+
+  removeDvidSparsevol(axis);
+
+  std::vector<ZDvidSparsevolSlice*> sparsevolList =
+      makeSelectedDvidSparsevol(labelSlice);
+  for (std::vector<ZDvidSparsevolSlice*>::iterator iter = sparsevolList.begin();
+       iter != sparsevolList.end(); ++iter) {
+    ZDvidSparsevolSlice *sparsevol = *iter;
+    addObject(sparsevol);
+  }
+
+  endObjectModifiedMode();
+  notifyObjectModified();
+
+}
+
 void ZFlyEmProofDoc::updateDvidLabelObject()
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);

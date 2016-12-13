@@ -21310,10 +21310,15 @@ void ZTest::test(MainWindow *host)
   qDebug() << p.readAllStandardOutput();
 #endif
 
-#if 1
+#if 0
   //crash test
   int a[1];
   a[1] = 1;
+#endif
+  
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "005a", 7000);
 #endif
 
 #if 0

@@ -154,7 +154,7 @@ public slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
   void notifySplit();
-  void highlightSelectedObject(bool hl);
+//  void highlightSelectedObject(bool hl);
   void update3DBodyViewPlane(const ZStackViewParam &viewParam);
 
 private slots:

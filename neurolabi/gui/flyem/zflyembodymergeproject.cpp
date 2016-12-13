@@ -1419,6 +1419,7 @@ void ZFlyEmBodyMergeProject::closeBodyWindow()
   }
 }
 
+#if 0
 void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
@@ -1473,6 +1474,7 @@ void ZFlyEmBodyMergeProject::highlightSelectedObject(bool hl)
 //    doc->notifyObjectModified();
   }
 }
+#endif
 
 void ZFlyEmBodyMergeProject::clearBookmarkDecoration()
 {

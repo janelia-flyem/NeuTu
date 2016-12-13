@@ -1199,8 +1199,10 @@ void ZFlyEmProofMvc::customInit()
 //          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
   connect(&m_mergeProject, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
           this->getView(), SLOT(setView(ZStackViewParam)));
+//  connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
+//          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(dvidLabelChanged()),
-          this->getCompleteDocument(), SLOT(updateDvidLabelObject()));
+          this, SLOT(updateDvidLabelObject()));
   connect(&m_mergeProject, SIGNAL(checkingInBody(uint64_t)),
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(&m_mergeProject, SIGNAL(mergeUploaded()),
@@ -1409,6 +1411,15 @@ void ZFlyEmProofMvc::selectBody()
   }
 }
 
+void ZFlyEmProofMvc::updateDvidLabelObject()
+{
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+  NeuTube::EAxis axis = getView()->getSliceAxis();
+  doc->updateDvidLabelObject(axis);
+  doc->cleanBodyAnnotationMap();
+}
+
+
 void ZFlyEmProofMvc::highlightSelectedObject(
     ZDvidLabelSlice *labelSlice, bool hl)
 {
@@ -1452,6 +1463,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           uint64_t bodyId = *iter;
+          ZDvidSparsevolSlice *obj = doc->makeDvidSparsevol(labelSlice, bodyId);
+          /*
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
           obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
           obj->setSliceAxis(labelSlice->getSliceAxis());
@@ -1461,6 +1474,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
           obj->setColor(labelSlice->getLabelColor(
                           bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+                          */
           doc->addObject(obj);
         }
       } else {
