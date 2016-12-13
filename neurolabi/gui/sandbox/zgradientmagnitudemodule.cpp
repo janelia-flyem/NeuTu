@@ -375,6 +375,37 @@ void GradientStrategyContext:: _run
 
 
 template<typename T>
+void GradientStrategySimple<T>::process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end)
+{
+
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
+      {
+        if(w==0)*p=std::abs(double(*pi)-*(pi+offset));
+        else if(w==end)*p=std::abs(double(*(pi-offset))-*pi);
+        else*p=std::abs(double(*(pi+offset))-*(pi-offset))/2.0;
+      }
+}
+
+
+template<>
+void GradientStrategySimple<color_t>::process(uint& x,uint&y ,uint&z,uint& w,const color_t* pi,color_t* p,uint offset,uint end)
+{
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
+        for(uint t=0;t<3;++t)
+        {
+          if(w==0)(*p)[t]=std::abs(double((*pi)[t])-(*(pi+offset))[t]);
+          else if(w==end)(*p)[t]=std::abs(double((*(pi-offset))[t])-(*pi)[t]);
+          else(*p)[t]=std::abs(double((*(pi+offset))[t])-(*(pi-offset))[t])/2.0;
+        }
+
+}
+
+
+template<typename T>
 void GradientStrategySimple<T>::_run(const T* in,T* out)
 {
   uint width=this->_width,height=this->_height,depth=this->_depth;
@@ -386,36 +417,21 @@ void GradientStrategySimple<T>::_run(const T* in,T* out)
   memset(px,0,sizeof(T)*total);
   memset(py,0,sizeof(T)*total);
   memset(pz,0,sizeof(T)*total);
-
   const T* pi=in;
+  uint x,y,z;
   if(width>1)
   {
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_px)
-          if(x==0)*_px=abs(double(*pi)-*(pi+1));
-          else if(x==width-1)*_px=abs(double(*(pi-1))-*pi);
-          else*_px=abs(double(*(pi+1))-*(pi-1))/2.0;
+    process(x,y,z,x,pi,_px,1,width-1);
   }
   pi=in;
   if(height>1)
   {
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_py)
-          if(y==0)*_py=abs(double(*pi)-*(pi+width));
-          else if(y==height-1)*_py=abs(double(*(pi-width))-*pi);
-          else*_py=abs(double(*(pi+width))-*(pi-width))/2.0;
+    process(x,y,z,y,pi,_py,width,height-1);
   }
   pi=in;
   if(depth>1)
   {
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_pz)
-          if(z==0)*_pz=abs(double(*pi)-*(pi+slice));
-          else if(z==depth-1)*_pz=abs(double(*(pi-slice))-*pi);
-          else*_pz=abs(double(*(pi+slice))-*(pi-slice))/2.0;
+    process(x,y,z,z,pi,_pz,slice,depth-1);
   }
   for(uint i=0;i<total;++i)
   {
@@ -441,37 +457,20 @@ void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
   memset(pz,0,sizeof(color_t)*total);
 
   const color_t* pi=in;
+  uint x,y,z;
   if(width>1)
   {
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_px)
-          for(uint t=0;t<3;++t)
-            if(x==0)(*_px)[t]=abs(double((*pi)[t])-(*(pi+1))[t]);
-            else if(x==width-1)(*_px)[t]=abs(double((*(pi-1))[t])-(*pi)[t]);
-            else(*_px)[t]=abs(double((*(pi+1))[t])-(*(pi-1))[t])/2.0;
+    process(x,y,z,x,pi,_px,1,width-1);
   }
   if(height>1)
   {
     pi=in;
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_py)
-          for(uint t=0;t<3;++t)
-            if(y==0)(*_py)[t]=abs(double((*pi)[t])-(*(pi+width))[t]);
-            else if(y==height-1)(*_py)[t]=abs(double((*(pi-width))[t])-(*pi)[t]);
-            else(*_py)[t]=abs(double((*(pi+width))[t])-(*(pi-width))[t])/2.0;
+    process(x,y,z,y,pi,_py,width,height-1);
   }
   if(depth>1)
   {
     pi=in;
-    for(uint z=0;z<depth;++z)
-      for(uint y=0;y<height;++y)
-        for(uint x=0;x<width;++x,++pi,++_pz)
-          for(uint t=0;t<3;++t)
-            if(z==0)(*_pz)[t]=abs(double((*pi)[t])-(*(pi+slice))[t]);
-            else if(z==depth-1)(*_pz)[t]=abs(double((*(pi-slice))[t])-(*pi)[t]);
-            else(*_pz)[t]=abs(double((*(pi+slice))[t])-(*(pi-slice))[t])/2.0;
+    process(x,y,z,z,pi,_pz,slice,depth-1);
   }
   for(uint i=0;i<total;++i)
   {
