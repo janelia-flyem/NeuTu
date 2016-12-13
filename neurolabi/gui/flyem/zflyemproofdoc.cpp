@@ -1508,7 +1508,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(NeuTube::EAxis axis)
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
     if (obj->getSliceAxis() == axis) {
       obj->clearCache();
-      obj->forceUpdate();
+      obj->forceUpdate(false);
       processObjectModified(obj);
     }
   }
@@ -1567,6 +1567,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
     obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     obj->setColor(labelSlice->getLabelColor(
                     bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+    obj->setVisible(!labelSlice->isVisible());
   }
 
   return obj;
@@ -1578,7 +1579,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(NeuTube::EAxis axis)
   ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
   if (labelSlice != NULL) {
     labelSlice->clearCache();
-    labelSlice->forceUpdate();
+    labelSlice->forceUpdate(false);
   }
 
   removeDvidSparsevol(axis);
@@ -1593,32 +1594,41 @@ void ZFlyEmProofDoc::updateDvidLabelObject(NeuTube::EAxis axis)
 
   endObjectModifiedMode();
   notifyObjectModified();
-
 }
 
-void ZFlyEmProofDoc::updateDvidLabelObject()
+void ZFlyEmProofDoc::updateDvidLabelObjectSliently()
 {
-//  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  updateDvidLabelObject(OBJECT_MODIFIED_SLIENT);
+}
+
+#if 0
+void ZFlyEmProofDoc::updateDvidLabelSlice()
+{
   ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
     obj->clearCache();
-    obj->forceUpdate();
-//    processObjectModified(obj);
+    obj->forceUpdate(false);
+    processObjectModified(obj);
   }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+#endif
 
-  TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
-  for (TStackObjectList::iterator iter = objList2.begin(); iter != objList2.end();
-       ++iter) {
-    ZDvidSparsevolSlice *obj = dynamic_cast<ZDvidSparsevolSlice*>(*iter);
-    obj->update();
-//    processObjectModified(obj);
-  }
-//  endObjectModifiedMode();
+void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
+{
+  beginObjectModifiedMode(updateMode);
 
-//  notifyObjectModified();
+  updateDvidLabelObject(NeuTube::X_AXIS);
+  updateDvidLabelObject(NeuTube::Y_AXIS);
+  updateDvidLabelObject(NeuTube::Z_AXIS);
+
+  endObjectModifiedMode();
+  notifyObjectModified();
 
   cleanBodyAnnotationMap();
 }

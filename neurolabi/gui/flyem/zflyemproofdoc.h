@@ -294,6 +294,7 @@ public:
    * \brief Fetch DVID label slice data and set body selections
    */
   void updateDvidLabelSlice(NeuTube::EAxis axis);
+//  void updateDvidLabelSlice();
 
   /*!
    * \brief Update sparsevol based on current body selections
@@ -325,6 +326,7 @@ public:
    */
   std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol(
       const ZDvidLabelSlice *labelSlice);
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol();
 
   /*!
    * \brief Remove certain dvid sparsevol objects
@@ -376,8 +378,10 @@ public slots: //Commands
 
 
 public slots:
-  void updateDvidLabelObject();
+  void updateDvidLabelObject(EObjectModifiedMode updateMode);
+  void updateDvidLabelObjectSliently();
   void updateDvidLabelObject(NeuTube::EAxis axis);
+
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);

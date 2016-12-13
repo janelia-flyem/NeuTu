@@ -3377,8 +3377,10 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
       assert(taken == obj);
       m_playerList.removePlayer(obj);
       removed = true;
-      bufferObjectModified(obj);
+
+      processObjectModified(obj);
       notifyObjectModified();
+
       if (deleteObject) {
         delete obj;
       }

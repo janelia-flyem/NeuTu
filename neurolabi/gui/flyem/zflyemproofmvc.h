@@ -327,7 +327,7 @@ protected:
   void enableSynapseFetcher();
 
 private slots:
-  void updateDvidLabelObject();
+//  void updateDvidLabelObject();
 
 private:
   void init();

@@ -115,7 +115,7 @@ public:
 
   void mapSelection();
 
-  void forceUpdate();
+  void forceUpdate(bool ignoringHidden);
 
   //Selection events
   void recordSelection();
@@ -150,7 +150,7 @@ public:
 
 private:
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
-  void forceUpdate(const ZStackViewParam &viewParam);
+  void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
             NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
