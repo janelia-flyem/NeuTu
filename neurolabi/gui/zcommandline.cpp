@@ -454,11 +454,12 @@ ZStack* ZCommandLine::readDvidStack(const ZJsonObject &dvidConfig)
   return stack;
 }
 
-void ZCommandLine::ExportPointArray(
+bool ZCommandLine::ExportPointArray(
     const std::vector<ZWeightedPoint> &ptArray, const string &outFilePath)
 {
   std::ofstream stream(outFilePath.c_str(), std::ofstream::out);
 
+  bool succ = false;
   if (stream.good()) {
     for (std::vector<ZWeightedPoint>::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
@@ -466,9 +467,12 @@ void ZCommandLine::ExportPointArray(
       stream << point.getX() << ',' << point.getY() << ',' << point.getZ()
              << ',' << point.weight() << std::endl;
     }
+    succ = true;
   } else {
     std::cout << "Failed to save results in " << outFilePath << std::endl;
   }
+
+  return succ;
 }
 
 int ZCommandLine::runComputeSeed()
@@ -484,10 +488,11 @@ int ZCommandLine::runComputeSeed()
   }
 
   ZJsonObject dvidConfig;
-  dvidConfig.decode(m_input[0]);
+  dvidConfig.load(m_input[0]);
 
   if (dvidConfig.isEmpty()) {
-    std::cout << "The input must be a JSON file with valid DVID configuration. Abort."
+    std::cout << "The input " << m_input[0]
+              << " must be a JSON file with valid DVID configuration. Abort."
               << std::endl;
     return 1;
   }
@@ -495,6 +500,8 @@ int ZCommandLine::runComputeSeed()
   loadTraceConfig();
 
   ZNeuronTracer tracer;
+
+  bool saved = false;
 
   ZStack *stack = readDvidStack(dvidConfig);
   if (stack != NULL) {
@@ -509,12 +516,18 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-
     if (ZFileType::fileType(m_output) == ZFileType::SWC_FILE) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
+
+      //Unfortunately ZSwcTree::save does not return any status, so we use this
+      //hacking way to check if saving is successful.
+      std::ofstream stream(m_output.c_str(), std::ofstream::out);
+      saved = stream.good();
+      stream.close();
+
       tree->save(m_output);
     } else {
-      ExportPointArray(ptArray, m_output);
+      saved = ExportPointArray(ptArray, m_output);
     }
   } else {
     std::cout << "No grayscale data extracted from DVID server. Abort."
@@ -522,7 +535,9 @@ int ZCommandLine::runComputeSeed()
     return 1;
   }
 
-
+  if (saved) {
+    std::cout << "Results saved in " << m_output << std::endl;
+  }
 
   return 0;
 }
@@ -660,7 +675,7 @@ int ZCommandLine::runTest()
 
 #if 1
   ZJsonObject dvidConfig;
-  dvidConfig.setEntry("address", "localhost");
+  dvidConfig.setEntry("address", "10.101.10.80");
   dvidConfig.setEntry("port", 8000);
   dvidConfig.setEntry("uuid", "ae53");
   dvidConfig.setEntry("gray_scale", "grayscale");
@@ -1080,20 +1095,20 @@ int ZCommandLine::run(int argc, char *argv[])
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--intv"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i + 1);
     }
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--position"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_position[i] = Get_Int_Arg(const_cast<char*>("--position"), i + 1);
     }
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--size"))) {
-    for (int i = 1; i < 3; ++i) {
-      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i);
+    for (int i = 0; i < 3; ++i) {
+      m_size[i] = Get_Int_Arg(const_cast<char*>("--size"), i + 1);
     }
   }
 
