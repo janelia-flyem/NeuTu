@@ -37,6 +37,8 @@ class GradientStrategySimple:public GradientStrategy<T>
 {
 protected:
   void _run(const T* in,T* out);
+private:
+  void process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end);
 };
 
 
