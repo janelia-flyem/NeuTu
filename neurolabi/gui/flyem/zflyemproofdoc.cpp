@@ -1598,7 +1598,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(NeuTube::EAxis axis)
 
 void ZFlyEmProofDoc::updateDvidLabelObject()
 {
-  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+//  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   ZOUT(LTRACE(), 5) << "Update dvid label";
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_DVID_LABEL_SLICE);
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
@@ -1606,7 +1606,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
     obj->clearCache();
     obj->forceUpdate();
-    processObjectModified(obj);
+//    processObjectModified(obj);
   }
 
   TStackObjectList &objList2 = getObjectList(ZStackObject::TYPE_DVID_SPARSEVOL_SLICE);
@@ -1614,11 +1614,11 @@ void ZFlyEmProofDoc::updateDvidLabelObject()
        ++iter) {
     ZDvidSparsevolSlice *obj = dynamic_cast<ZDvidSparsevolSlice*>(*iter);
     obj->update();
-    processObjectModified(obj);
+//    processObjectModified(obj);
   }
-  endObjectModifiedMode();
+//  endObjectModifiedMode();
 
-  notifyObjectModified();
+//  notifyObjectModified();
 
   cleanBodyAnnotationMap();
 }
