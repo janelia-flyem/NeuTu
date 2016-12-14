@@ -579,7 +579,7 @@ void ZFlyEmProofDoc::readInfo()
   m_grayScaleInfo = m_dvidReader.readGrayScaleInfo();
   m_labelInfo = m_dvidReader.readLabelInfo();
   m_versionDag = m_dvidReader.readVersionDag();
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   m_versionDag.print();
 #endif
 

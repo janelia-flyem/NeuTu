@@ -299,7 +299,7 @@ public:
   /*!
    * \brief Update sparsevol based on current body selections
    */
-  void updateDvidSparsevolSlice();
+//  void updateDvidSparsevolSlice();
 
   /*!
    * \brief Factory function to make a new ZDvidSparsevolSlice object
