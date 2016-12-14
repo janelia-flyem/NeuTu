@@ -297,6 +297,52 @@ public:
   bool isDataValid(const std::string &data) const;
   void notifyBodySelectionChanged();
 
+  /*!
+   * \brief Fetch DVID label slice data and set body selections
+   */
+  void updateDvidLabelSlice(NeuTube::EAxis axis);
+//  void updateDvidLabelSlice();
+
+  /*!
+   * \brief Update sparsevol based on current body selections
+   */
+//  void updateDvidSparsevolSlice();
+
+  /*!
+   * \brief Factory function to make a new ZDvidSparsevolSlice object
+   *
+   * \a labelSlice is used to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   * \param bodyId Body ID of the returned object.
+   *
+   * \return A new object or NULL if \a bodyId is invalid.
+   */
+  ZDvidSparsevolSlice* makeDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice, uint64_t bodyId);
+
+  /*!
+   * \brief Factory function to make new ZDvidSparsevolSlice objects
+   *
+   * The objects created are those selected in \a labelSlice, which is also used
+   * to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   *
+   * \return A list of new objects.
+   */
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice);
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol();
+
+  /*!
+   * \brief Remove certain dvid sparsevol objects
+   *
+   * \param axis Axis of the objects to remove
+   * \return Number of objects removed
+   */
+  int removeDvidSparsevol(NeuTube::EAxis axis);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -349,7 +395,13 @@ public slots:
   void clearBodyMergeStage();
   void uploadMergeResult();
 
-  void updateDvidLabelObject();
+//  void updateDvidLabelObject();
+
+  void updateDvidLabelObject(EObjectModifiedMode updateMode);
+  void updateDvidLabelObjectSliently();
+  void updateDvidLabelObject(NeuTube::EAxis axis);
+
+
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);

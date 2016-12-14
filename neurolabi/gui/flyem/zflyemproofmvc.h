@@ -332,6 +332,9 @@ protected:
   virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
 
+private slots:
+//  void updateDvidLabelObject();
+
 private:
   void init();
   void initBodyWindow();
@@ -370,6 +373,7 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
+
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

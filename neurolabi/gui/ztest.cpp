@@ -229,6 +229,7 @@ using namespace std;
 #include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "test/zflyemproofdoctest.h"
 //#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
@@ -21367,6 +21368,11 @@ void ZTest::test(MainWindow *host)
   //crash test
   int a[1];
   a[1] = 1;
+#endif
+  
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "005a", 7000);
 #endif
 
 #if 1

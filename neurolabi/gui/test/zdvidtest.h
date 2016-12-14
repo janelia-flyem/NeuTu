@@ -362,6 +362,30 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("", dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 6));
 }
 
+TEST(ZDvidTest, Reader)
+{
+  ZDvidReader reader;
+  ASSERT_FALSE(reader.open("foo:9001"));
+  ASSERT_FALSE(reader.open("", "uuid", 1));
+  ASSERT_FALSE(reader.open("server", "", 1));
+
+
+//  ASSERT_TRUE(reader.open("http://emdata2.int.janelia.org:9000:2ad1"));
+  if (reader.open("http://emdata2.int.janelia.org:9000:2ad1")) {
+    std::cout << "Connected to " << reader.getDvidTarget().getAddressWithPort()
+              << std::endl;
+    ASSERT_TRUE(reader.good());
+    ASSERT_TRUE(reader.isReady());
+
+    ZDvidReader reader2;
+    ASSERT_FALSE(reader2.open(reader.getDvidTarget().getAddress().c_str(), "",
+                              reader.getDvidTarget().getPort()));
+    ASSERT_FALSE(reader2.open("", reader.getDvidTarget().getUuid().c_str(),
+                              reader.getDvidTarget().getPort()));
+  }
+
+}
+
 #endif
 
 #endif // ZDVIDTEST_H
