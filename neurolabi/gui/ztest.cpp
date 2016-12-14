@@ -21369,6 +21369,29 @@ void ZTest::test(MainWindow *host)
   a[1] = 1;
 #endif
 
+#if 1
+  ZStack stack;
+  Stack *desstack = C_Stack::make(GREY, 32, 32, 1);
+  stack.load(GET_TEST_DATA_DIR + "/system/diadem/diadem_e2_proj.tif");
+
+  int width = stack.width();
+  int height = stack.height();
+  for (int left = 0; left < width - 32; left += 16) {
+    for (int top = 0; top < height - 32; top += 16) {
+      C_Stack::crop(stack.c_stack(), left, top, 0, 32, 32, 1, desstack);
+      ZString output = GET_TEST_DATA_DIR + "/system/substruct/general/diadem_e2_";
+      output.appendNumber(left);
+      output += "_";
+      output.appendNumber(top);
+      if (C_Stack::mean(desstack) > 30) {
+        C_Stack::write(output, desstack);
+      }
+    }
+  }
+
+
+#endif
+
 #if 0
   std::cout << sizeof(ZDvidAnnotation) << std::endl;
   std::cout << sizeof(ZJsonObject) << std::endl;
