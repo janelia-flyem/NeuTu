@@ -763,8 +763,6 @@ void ZDvidLabelSlice::remapId(ZArray *label)
     const uint64_t *originalArray = m_labelArray->getDataPointer<uint64_t>();
     size_t v = label->getElementNumber();
     if (!bodyMap.empty() || !m_selectedOriginal.empty()) {
-
-
       if (bodyMap.empty()) {
         remapId(array, originalArray, v, m_selectedOriginal);
       } else if (m_selectedOriginal.empty()) {
@@ -773,13 +771,12 @@ void ZDvidLabelSlice::remapId(ZArray *label)
         remapId(array, originalArray, v, m_selectedOriginal, bodyMap);
       }
     } else {
-
       if (m_customColorScheme.get() != NULL) {
         remapId(array, originalArray, v);
       }
       if (hasVisualEffect(NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
         if (m_paintBuffer != NULL) {
-          m_paintBuffer->setVisible(true);
+          m_paintBuffer->setVisible(false);
         }
       }
     }

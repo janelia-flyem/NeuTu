@@ -1678,6 +1678,17 @@ void ZFlyEmProofMvc::updateBodySelection()
     updateSkeletonWindow();
 //    m_mergeProject.update3DBodyView();
     getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+    ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
+          getView()->getSliceAxis());
+    if (tmpSlice != NULL) {
+      if (getCompletePresenter()->isHighlight()) {
+        highlightSelectedObject(tmpSlice, true);
+      } else {
+        tmpSlice->paintBuffer();
+      }
+      getCompleteDocument()->processObjectModified(tmpSlice, true);
+    }
+    /*
     QList<ZDvidLabelSlice*> sliceList =
         getCompleteDocument()->getDvidLabelSliceList();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
@@ -1690,6 +1701,7 @@ void ZFlyEmProofMvc::updateBodySelection()
       }
       getCompleteDocument()->processObjectModified(tmpSlice, true);
     }
+    */
     getCompleteDocument()->endObjectModifiedMode();
     getCompleteDocument()->notifyObjectModified();
     processLabelSliceSelectionChange();
