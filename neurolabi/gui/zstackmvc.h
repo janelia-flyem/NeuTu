@@ -23,6 +23,7 @@ class ZWidgetMessage;
 class QMainWindow;
 class ZIntPoint;
 class ZPoint;
+class ZStressTestOptionDialog;
 
 /*!
  * \brief The MVC class for stack operation
@@ -77,9 +78,8 @@ public:
   double getWidthZoomRatio() const;
   double getHeightZoomRatio() const;
 
-protected: // Events
-  virtual void keyPressEvent(QKeyEvent *event);
-  bool event(QEvent *event);
+  void toggleStressTest();
+  virtual void stressTest(ZStressTestOptionDialog *dlg);
 
 signals:
   void stackChanged();
@@ -113,7 +113,15 @@ public slots:
 
   void saveStack();
 
-  virtual void test();
+  virtual void testSlot();
+
+protected: // Events
+  virtual void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
+
+protected:
+  void setStressTestEnv(ZStressTestOptionDialog *optionDlg);
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
 protected:
   static void BaseConstruct(
@@ -151,6 +159,7 @@ protected:
   ZStackView *m_view;
   QLayout *m_layout;
   ZProgressSignal *m_progressSignal;
+  QTimer *m_testTimer;
 };
 
 #endif // ZSTACKMVC_H

@@ -72,6 +72,7 @@
 #include "dialogs/zinfodialog.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -154,10 +155,10 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
-  m_testTimer = new QTimer(this);
+//  m_testTimer = new QTimer(this);
 
 #ifdef _DEBUG_
-  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+//  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
 #endif
 }
 
@@ -1669,7 +1670,7 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
-void ZFlyEmProofMvc::testSlot()
+void ZFlyEmProofMvc::testBodyMerge()
 {
   static ZRandomGenerator rand;
   uint64_t bodyId = 0;
@@ -1731,17 +1732,21 @@ void ZFlyEmProofMvc::testSlot()
   }
 }
 
-void ZFlyEmProofMvc::test()
+void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
 {
-  if (m_testTimer->isActive()) {
-    m_testTimer->stop();
-  } else {
+  switch (optionDlg->getOption()) {
+  case ZStressTestOptionDialog::OPTION_CUSTOM:
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+    break;
+  case ZStressTestOptionDialog::OPTION_BODY_MERGE:
     showFineBody3d();
-    m_testTimer->setInterval(500);
-    m_testTimer->start();
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
+    break;
+  default:
+    break;
   }
-//  getView()->increaseZoomRatio();
 }
+
 
 bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
 {

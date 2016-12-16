@@ -707,7 +707,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
     dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h
+    dialogs/zinfodialog.h \
+    dialogs/zstresstestoptiondialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -796,7 +797,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
     dialogs/ztestoptiondialog.ui \
-    dialogs/zinfodialog.ui
+    dialogs/zinfodialog.ui \
+    dialogs/zstresstestoptiondialog.ui
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1226,7 +1228,8 @@ SOURCES += main.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
     dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp
+    dialogs/zinfodialog.cpp \
+    dialogs/zstresstestoptiondialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

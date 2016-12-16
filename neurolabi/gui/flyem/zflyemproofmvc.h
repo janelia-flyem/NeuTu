@@ -118,8 +118,6 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
-  void test();
-
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -284,7 +282,7 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
-  void testSlot();
+  void testBodyMerge();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -325,6 +323,7 @@ protected:
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
 private slots:
 //  void updateDvidLabelObject();
@@ -430,8 +429,6 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
-
-  QTimer *m_testTimer;
 };
 
 template <typename T>
