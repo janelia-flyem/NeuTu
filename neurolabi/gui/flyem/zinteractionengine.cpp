@@ -1,5 +1,6 @@
 #include "zinteractionengine.h"
 #include <QMouseEvent>
+#include "z3dinteractionhandler.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),

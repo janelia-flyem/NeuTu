@@ -1166,8 +1166,10 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
           this, SLOT(checkBodyWithMessage(uint64_t,bool)));
+  /*
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           getCompleteDocument(), SLOT(deprecateSplitSource()));
+          */
 
   m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -2051,6 +2053,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       body->setProjectionVisible(false);
 
       getProgressSignal()->advanceProgress(0.1);
+
+      getCompleteDocument()->deprecateSplitSource();
 
       emit splitBodyLoaded(bodyId);
     } else {
