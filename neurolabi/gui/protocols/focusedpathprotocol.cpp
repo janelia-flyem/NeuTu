@@ -13,6 +13,7 @@
 
 #include "neutube_def.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
@@ -27,6 +28,8 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
     // table setup
     m_edgeModel = new QStandardItemModel(0, 3, ui->edgesTableView);
+    // set headers?
+    ui->edgesTableView->setModel(m_edgeModel);
 
 
     // data load connections
@@ -275,28 +278,88 @@ void FocusedPathProtocol::onBodyListsLoaded() {
 
 void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
 
+    m_currentPath = findNextPath();
+    m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
+    while (m_currentPath.isConnected()) {
+        // if a path is connected, it shouldn't be in our
+        //  list, nor should it be in DVID
+        m_currentBodyPaths.removeOne(m_currentPath);
+        deletePath(m_currentPath);
+        m_currentPath = findNextPath();
+        m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
+    }
 
-    std::cout << "onCurrentBodyPathsLoaded()" << std::endl;
+    displayCurrentPath();
+}
 
+FocusedPath FocusedPathProtocol::findNextPath() {
 
-    // sort paths by other endpoint body ID
-    // -- if any paths already linked: discard
+    // load the body IDs at all endpoints
+    std::vector<ZIntPoint> points;
+    foreach(FocusedPath path, m_currentBodyPaths) {
+        points.push_back(path.getFirstPoint());
+        points.push_back(path.getLastPoint());
+    }
+    std::vector<uint64_t> bodyIDs = m_reader.readBodyIdAt(points);
 
-    // for each other body ID:
+    m_currentPathBodyIDs.clear();
+    for (size_t i=0; i<points.size(); i++) {
+        m_currentPathBodyIDs[points[i]] = bodyIDs[i];
+    }
 
-    // sort paths to that body ID by probability
+    // candidate path; get its endpoint bodyID and
+    //  see if there are any other paths to that ID
+    //  that have higher probability (yes, we check
+    //  against itself first time through loop; it's
+    //  just easier that way
+    FocusedPath path = m_currentBodyPaths.first();
+    foreach(FocusedPath path2, m_currentBodyPaths) {
+        if (m_currentPathBodyIDs[path.getLastPoint()] == m_currentPathBodyIDs[path2.getLastPoint()] &&
+            path2.getProbability() > path.getProbability()) {
+            path = path2;
+        }
+    }
 
-    // for each path:
+    return path;
+}
 
-    // check prob > 0
+void FocusedPathProtocol::deletePath(FocusedPath path) {
+    ZDvidWriter writer;
+    if (writer.open(m_dvidTarget)) {
+        writer.deletePointAnnotation(m_edgeDataInstance, path.getFirstPoint());
+        writer.deletePointAnnotation(m_edgeDataInstance, path.getLastPoint());
+    }
+}
 
-    // read all edges in path
+void FocusedPathProtocol::displayCurrentPath() {
 
-    // determine if any edges already broken
+    std::cout << "in displayCurrentPath()" << std::endl;
 
-    // if so, set path prob = 0 (save)
+    // edges already loaded, path known to be unconnected
+
 
     // load edges into UI and update labels
+
+    // load data into model
+    m_edgeModel->clear();
+    // reset headers?
+
+    m_edgeModel->setRowCount(m_currentPath.getEdgePoints().size());
+    // for point in edge point list
+    //  get partner point
+    //  get edge body IDs
+    //  if same, status = connected
+    //  populate row
+    //  calculate edge location from points, store for later go-to
+
+
+
+
+
+
+    // update connection label (overall connection, body IDs)
+
+    // update progress label (edges, paths, bodies?)
 
 
 

@@ -68,11 +68,16 @@ private:
     QList<uint64_t> m_bodies;
     uint64_t m_currentBody;
     QList<FocusedPath> m_currentBodyPaths;
+    QMap<ZIntPoint, uint64_t> m_currentPathBodyIDs;
+    FocusedPath m_currentPath;
     QStandardItemModel * m_edgeModel;
     void saveState();
     void variationError(std::string variation);
     void loadBodiesFromBookmarks();
     void loadCurrentBodyPaths(uint64_t bodyID);
+    FocusedPath findNextPath();
+    void displayCurrentPath();
+    void deletePath(FocusedPath path);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
