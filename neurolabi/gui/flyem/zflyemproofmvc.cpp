@@ -1706,7 +1706,8 @@ void ZFlyEmProofMvc::testBodySplit()
   ZIntPoint pos;
   uint64_t bodyId = getRandomBodyId(rand, &pos);
 
-  zoomTo(pos);
+//  zoomTo(pos);
+  locateBody(bodyId, false);
   launchSplit(bodyId);
 
   runSplit();
