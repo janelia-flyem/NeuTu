@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QTimer>
 
 #include "neutubeconfig.h"
 #include "zstackdoc.h"

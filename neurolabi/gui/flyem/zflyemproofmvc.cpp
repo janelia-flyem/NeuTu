@@ -1672,9 +1672,8 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
-void ZFlyEmProofMvc::testBodyMerge()
+uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 {
-  static ZRandomGenerator rand;
   uint64_t bodyId = 0;
   int minX = getGrayScaleInfo().getMinX();
   int minY = getGrayScaleInfo().getMinY();
@@ -1695,8 +1694,37 @@ void ZFlyEmProofMvc::testBodyMerge()
     bodyId = getCompleteDocument()->getDvidReader().readBodyIdAt(x, y, z);
   }
 
+  if (pos != NULL) {
+    pos->set(x, y, z);
+  }
+
+  return bodyId;
+}
+
+void ZFlyEmProofMvc::testBodySplit()
+{
+  static ZRandomGenerator rand;
+
+  ZIntPoint pos;
+  uint64_t bodyId = getRandomBodyId(rand, &pos);
+
+  zoomTo(pos);
+  launchSplit(bodyId);
+
+  runSplit();
+
+  exitSplit();
+}
+
+void ZFlyEmProofMvc::testBodyMerge()
+{
+  static ZRandomGenerator rand;
+
+  ZIntPoint pos;
+  uint64_t bodyId = getRandomBodyId(rand, &pos);
+
   if (rand.rndint(10) % 2 ==0) {
-    zoomTo(x, y, z);
+    zoomTo(pos);
   } else {
     bool appending = true;
     if (bodyId % 9 == 0) {
@@ -1743,6 +1771,11 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
   case ZStressTestOptionDialog::OPTION_BODY_MERGE:
     showFineBody3d();
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
+    break;
+  case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
+    showFineBody3d();
+    showSplitQuickView();
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodySplit()));
     break;
   default:
     break;
