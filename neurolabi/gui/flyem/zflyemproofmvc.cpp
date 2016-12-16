@@ -1705,16 +1705,20 @@ void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
 
-  ZIntPoint pos;
-  uint64_t bodyId = getRandomBodyId(rand, &pos);
+  if (getCompletePresenter()->isSplitOn()) {
+    if (!getCompleteDocument()->isSplitRunning()) {
+      exitSplit();
+    }
+  } else {
+    ZIntPoint pos;
+    uint64_t bodyId = getRandomBodyId(rand, &pos);
 
-//  zoomTo(pos);
-  locateBody(bodyId, false);
-  launchSplit(bodyId);
+    //  zoomTo(pos);
+    locateBody(bodyId, false);
+    launchSplit(bodyId);
 
-  runSplit();
-
-  exitSplit();
+    runSplit();
+  }
 }
 
 void ZFlyEmProofMvc::testBodyMerge()

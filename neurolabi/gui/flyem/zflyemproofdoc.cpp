@@ -2344,6 +2344,13 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
+bool ZFlyEmProofDoc::isSplitRunning() const
+{
+  const QString threadId = "seededWatershed";
+
+  return m_futureMap.isAlive(threadId);
+}
+
 void ZFlyEmProofDoc::runSplit()
 {
   QList<ZDocPlayer*> playerList =
