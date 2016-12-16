@@ -16,7 +16,6 @@
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
-#include "z3dinteractionhandler.h"
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
@@ -85,6 +84,7 @@
 #include "zactionlibrary.h"
 #include "zmenufactory.h"
 #include "widgets/z3dtabwidget.h"
+#include "z3dinteractionhandler.h"
 
 class Sleeper : public QThread
 {
