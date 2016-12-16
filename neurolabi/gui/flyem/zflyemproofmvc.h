@@ -43,6 +43,7 @@ class ZFlyEmBookmarkView;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
+class ZRandomGenerator;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -283,6 +284,7 @@ public slots:
 //  void toggleEdgeMode(bool edgeOn);
 
   void testBodyMerge();
+  void testBodySplit();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -366,6 +368,8 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
+
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
 
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
