@@ -1471,7 +1471,7 @@ void Z3DWindow::saveView()
 {
   QString filename = QFileDialog::getSaveFileName(
         this, tr("Save View Parameters"), m_lastOpenedFilePath,
-         tr("Json files (*.json) "));
+         tr("Json files (*.json)"));
 
 
   if (!filename.isEmpty()) {
@@ -1485,7 +1485,7 @@ void Z3DWindow::loadView()
 {
   QString fileName = QFileDialog::getOpenFileName(
         this, tr("Load View Parameters"), m_lastOpenedFilePath,
-        tr("Json files (*.json) "));
+        tr("Json files (*.json)"));
 
   if (!fileName.isEmpty()) {
     ZJsonObject cameraJson;
@@ -2192,7 +2192,7 @@ void Z3DWindow::saveSelectedPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save Selected Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
@@ -2225,7 +2225,7 @@ void Z3DWindow::saveAllPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save All Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
