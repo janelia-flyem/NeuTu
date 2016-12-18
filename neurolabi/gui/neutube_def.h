@@ -128,11 +128,13 @@ static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 }
 
 #if defined(INT32_MIN)
-static const int INVALID_Z_INDEX = INT32_MIN;
+static const int DIM_INVALID_INDEX = INT32_MIN;
 #else
-static const int INVALID_Z_INDEX = -2147483647;
+static const int DIM_INVALID_INDEX = -2147483647;
 #endif
 
+static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
+static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 }
 
 namespace FlyEM {

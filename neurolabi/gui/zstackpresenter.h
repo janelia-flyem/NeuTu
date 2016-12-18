@@ -470,6 +470,9 @@ protected:
 
   void addActiveObject(EObjectRole role, ZStackObject *obj);
 
+  ZPoint getMousePositionInStack(
+      Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
+
 protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;

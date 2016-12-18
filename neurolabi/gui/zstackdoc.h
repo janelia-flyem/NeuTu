@@ -320,6 +320,11 @@ public: //swc tree edit
   void estimateSwcRadius(ZSwcTree *tree, int maxIter = 1);
   void estimateSwcRadius();
 
+  /*!
+   * \brief Test if the Z coordinate represents a projection
+   */
+  bool isZProjection(int z) const;
+
 public: //swc selection
   void selectSwcNodeNeighbor();
   std::string getSwcSource() const;
@@ -1041,6 +1046,7 @@ public slots: //undoable commands
   virtual bool executeMergeSwcNodeCommand();
   virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
   virtual bool executeTraceSwcBranchCommand(double x, double y);
+  virtual bool executeTraceSwcBranchCommand(double x, double y, double z, int c);
   virtual bool executeInterpolateSwcZCommand();
   virtual bool executeInterpolateSwcRadiusCommand();
   virtual bool executeInterpolateSwcPositionCommand();

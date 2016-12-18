@@ -3242,7 +3242,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::INVALID_Z_INDEX;
+  int cz = NeuTube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 

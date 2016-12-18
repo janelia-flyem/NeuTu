@@ -85,6 +85,8 @@ public:
   void invalidate();
   bool isValid() const;
 
+  static bool IsNormalDimIndex(int index);
+
 public:
   int m_x;
   int m_y;

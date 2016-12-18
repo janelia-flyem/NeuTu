@@ -6531,6 +6531,11 @@ void ZStackDoc::estimateSwcRadius()
   }
 }
 
+bool ZStackDoc::isZProjection(int z) const
+{
+  return z < getStackOffset().getZ();
+}
+
 bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
 {
   if (hasSelectedSwcNode()) {
@@ -7726,6 +7731,16 @@ bool ZStackDoc::executeTraceSwcBranchCommand(double x, double y)
   return executeTraceSwcBranchCommand(x, y, z);
 }
 
+bool ZStackDoc::executeTraceSwcBranchCommand(
+    double /*x*/, double /*y*/, double /*z*/, int /*c*/)
+{
+  emit messageGenerated(
+        ZWidgetMessage("Multi-channel image tracing is yet to be supported",
+                       NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+
+  return false;
+}
+
 void ZStackDoc::updatePunctaObjsModel(ZPunctum *punctum)
 {
   punctaObjsModel()->updateData(punctum);
@@ -7774,8 +7789,15 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
         }
       }
       if (needAdjust) {
+//        SwcTreeNode::average(SwcTreeNode::firstChild(branchRoot), conn.second,
+//                             branchRoot);
         SwcTreeNode::average(branchRoot, SwcTreeNode::firstChild(branchRoot),
                              branchRoot);
+        if (SwcTreeNode::isTurn(conn.second, conn.first,
+                                SwcTreeNode::firstChild(conn.first))) {
+          SwcTreeNode::average(SwcTreeNode::firstChild(branchRoot), conn.second,
+                                       branchRoot);
+        }
       }
     } else {
       if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
@@ -7793,24 +7815,6 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
                 branchRoot, rootNeighbor, lambda, branchRoot);
         }
       }
-#if 0
-      if (SwcTreeNode::isRegular(SwcTreeNode::firstChild(branchRoot))) {
-        Swc_Tree_Node *rootNeighbor = SwcTreeNode::firstChild(branchRoot);
-        ZPoint rootCenter = SwcTreeNode::pos(branchRoot);
-        ZPoint nbrCenter = SwcTreeNode::pos(rootNeighbor);
-        double rootIntensity = Stack_Point_Sampling(
-              stack()->c_stack(), rootCenter.x(), rootCenter.y(), rootCenter.z());
-        if (rootIntensity == 0.0) {
-          needAdjust = true;
-        } else {
-          double nbrIntensity = Stack_Point_Sampling(
-                stack()->c_stack(), nbrCenter.x(), nbrCenter.y(), nbrCenter.z());
-          if (nbrIntensity / rootIntensity >= 3.0) {
-            needAdjust = true;
-          }
-        }
-      }
-#endif
     }
 
     Swc_Tree_Node *loop = conn.second;
@@ -7853,19 +7857,6 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
       if (lambda < 1.0) {
         SwcTreeNode::interpolate(terminal, terminalNeighbor, lambda, terminal);
       }
-#if 0
-      double terminalIntensity = Stack_Point_Sampling(
-            stack()->c_stack(), terminalCenter.x(), terminalCenter.y(), terminalCenter.z());
-      if (terminalIntensity == 0.0) {
-        SwcTreeNode::average(terminal, terminalNeighbor, terminal);
-      } else {
-        double nbrIntensity = Stack_Point_Sampling(
-              stack()->c_stack(), nbrCenter.x(), nbrCenter.y(), nbrCenter.z());
-        if (nbrIntensity / terminalIntensity >= 3.0) {
-          SwcTreeNode::average(terminal, terminalNeighbor, terminal);
-        }
-      }
-#endif
     }
 
     ZSwcResampler resampler;
