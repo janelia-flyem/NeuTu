@@ -1710,14 +1710,17 @@ void ZFlyEmProofMvc::testBodySplit()
       exitSplit();
     }
   } else {
-    ZIntPoint pos;
-    uint64_t bodyId = getRandomBodyId(rand, &pos);
+    const QString threadId = "launchSplitFunc";
+    if (!m_futureMap.isAlive(threadId)) {
+      ZIntPoint pos;
+      uint64_t bodyId = getRandomBodyId(rand, &pos);
 
-    //  zoomTo(pos);
-    locateBody(bodyId, false);
-    launchSplit(bodyId);
+      //  zoomTo(pos);
+      locateBody(bodyId, false);
+      launchSplit(bodyId);
 
-    runSplit();
+      runSplit();
+    }
   }
 }
 
