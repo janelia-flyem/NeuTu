@@ -34,6 +34,7 @@ gui-build-Desktop-*/
 gui-build-Desktop*-*/
 build-gui-Desktop-*/
 build-gui-Desktop*-*/
+build-gui-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -51,6 +52,9 @@ neurolabi/lib/libxml2-2.9.1/
 neurolabi/lib/png/
 neurolabi/lib/xml/
 neurolabi/lib/Mingw/64/
+neurolabi/lib/msvc/
+neurolabi/c/lib/
+neutube_win64_*/
 
 /neurolabi/gui/gui.pro.user*
 /neurolabi/c/c_lib.creator.user*

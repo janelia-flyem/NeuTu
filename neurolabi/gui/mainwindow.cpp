@@ -5184,11 +5184,11 @@ void MainWindow::on_actionSave_SWC_triggered()
       }
 
       QString fileName = getSaveFileName(
-            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+            "Save neuron as SWC", tr("SWC file (*.swc)"), swcSource.c_str());
 #if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
-                                       tr("SWC file (*.swc) "));
+                                       tr("SWC file (*.swc)"));
 #endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
@@ -5563,9 +5563,9 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
             m_lastOpenedFilePath += ".swc";
           }
           //QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-          //                                   tr("SWC file (*.swc) "), false);
+          //                                   tr("SWC file (*.swc)"), false);
           QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-                                             tr("SWC file (*.swc) "));
+                                             tr("SWC file (*.swc)"));
           if (!fileName.isEmpty()) {
             ZSwcTree *tree = frame->document()->getMergedSwc();
             if (tree != NULL) {
