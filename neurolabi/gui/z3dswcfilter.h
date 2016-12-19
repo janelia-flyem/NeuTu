@@ -81,6 +81,9 @@ public:
   inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
   inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
+  void resetCut();
+  void setCutBox(const ZIntCuboid &box);
+
   bool isNodeRendering() const { return m_renderingPrimitive.isSelected("Sphere"); }
 
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }

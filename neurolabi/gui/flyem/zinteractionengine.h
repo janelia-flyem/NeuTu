@@ -101,6 +101,7 @@ signals:
   void strokePainted(ZStroke2d*);
   void showingContextMenu();
   void selectingSwcNodeInRoi(bool appending);
+  void selectingSwcNodeTreeInRoi(bool appending);
   void selectingDownstreamSwcNode();
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();

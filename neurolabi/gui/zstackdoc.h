@@ -164,6 +164,11 @@ public: //attributes
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+
+  // hasSwc() returns true iff it has a non-empty SWC object.
+  bool hasSwcData() const;
+
+
   bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable() const;
@@ -208,6 +213,8 @@ public: //attributes
   double getPreferredZScale() const;
 
   void setResolution(const Cz_Lsminfo &lsmInfo);
+
+  void setResolution(const ZResolution &res);
 
   /*!
    * \brief Get the data space coordinates of stack coordinates
@@ -451,6 +458,12 @@ public:
   void setSparseStack(ZSparseStack *spStack);
 
   void importSeedMask(const QString &filePath);
+
+  /*
+  ZNeuronTracer &getNeuronTracer() {
+    return m_neuronTracer;
+  }
+  */
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -755,6 +768,11 @@ public:
 
   void setStackBc(double factor, double offset, int channel);
 
+  void selectNoisyTrees(double minLength, double minDist,
+                        double sx, double sy, double sz);
+  void selectNoisyTrees(double minLength, double minDist);
+  void selectNoisyTrees();
+
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
   inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
@@ -1012,7 +1030,7 @@ public slots: //undoable commands
 
   virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   virtual bool executeRemoveTubeCommand();
-  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample);
+  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   virtual bool executeAutoTraceAxonCommand();
 
   virtual bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);
@@ -1093,7 +1111,6 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
   void inverseSwcNodeSelection();
-  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.
@@ -1196,6 +1213,7 @@ signals:
 //  void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+  void stackBoundBoxChanged();
 
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
@@ -1227,6 +1245,8 @@ private:
                                 const Swc_Tree_Node *excluded);
   template<typename T>
   const T* getFirstUserByType() const;
+
+  void updateTraceMask();
 
 private:
   //Main stack

@@ -183,6 +183,7 @@ void ZStackDoc::init()
 //  m_redoAction = NULL;
 
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
+  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   connectSignalSlot();
 
   //setReporter(new ZQtMessageReporter());
@@ -618,6 +619,20 @@ bool ZStackDoc::hasSwc() const
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SWC).isEmpty();
 }
 
+bool ZStackDoc::hasSwcData() const
+{
+  QList<ZSwcTree*> swcList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::const_iterator iter = swcList.begin();
+       iter != swcList.end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+    if (tree->hasRegularNode()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackDoc::hasPuncta() const
 {
   ZOUT(LTRACE(), 5) << "Has puncta?";
@@ -986,7 +1001,8 @@ void ZStackDoc::inverseSwcNodeSelection()
 }
 
 static double ComputeSwcNodeDistance(
-    ZSwcTree::DownstreamIterator &iter1, ZSwcTree::DownstreamIterator &iter2)
+    ZSwcTree::DownstreamIterator &iter1, ZSwcTree::DownstreamIterator &iter2,
+    double sx, double sy, double sz)
 {
   iter1.begin();
   iter2.begin();
@@ -996,7 +1012,7 @@ static double ComputeSwcNodeDistance(
     Swc_Tree_Node *tn1 = iter1.next();
     while (iter2.hasNext()) {
       Swc_Tree_Node *tn2 = iter2.next();
-      double d =SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SURFACE);
+      double d =SwcTreeNode::scaledSurfaceDistance(tn1, tn2, sx, sy, sz);
       if (d < minDist) {
         minDist = d;
       }
@@ -1004,6 +1020,74 @@ static double ComputeSwcNodeDistance(
   }
 
   return minDist;
+}
+
+void ZStackDoc::selectNoisyTrees(
+    double minLength, double minDist, double sx, double sy, double sz)
+{
+  QList<Swc_Tree_Node*> oldSelected = getSelectedSwcNodeList();
+
+  std::vector<double> sizeVector;
+//  std::vector<double> distanceVector;
+  std::vector<ZSwcTree::DownstreamIterator*> iterVector;
+  std::vector<ZSwcTree*> treeVector;
+
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    tree->deselectAllNode();
+
+    ZSwcTree::RegularRootIterator rootIter(tree);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
+      double length = SwcTreeNode::downstreamLength(tn, sx, sy, sz);
+      sizeVector.push_back(length);
+
+      iterVector.push_back(new ZSwcTree::DownstreamIterator(tn));
+      treeVector.push_back(tree);
+    }
+  }
+
+  for (size_t i = 0; i < sizeVector.size(); ++i) {
+    if (sizeVector[i] < minLength) { //small trees
+      ZSwcTree::DownstreamIterator *siter = iterVector[i];
+      double anchorDist = Infinity;
+      for (size_t j = 0; j < sizeVector.size(); ++j) {
+        if (sizeVector[j] > minLength) {
+          ZSwcTree::DownstreamIterator *anchorIter = iterVector[j];
+          double d = ComputeSwcNodeDistance(*siter, *anchorIter, sx, sy, sz);
+          if (anchorDist > d) {
+            anchorDist = d;
+          }
+        }
+      }
+
+      if (anchorDist > minDist) {
+        ZSwcTree *tree = treeVector[i];
+        ZSwcTree::DownstreamIterator *siter = iterVector[i];
+        siter->restart();
+        while (siter->hasNext()) {
+          tree->selectNode(siter->next(), true);
+        }
+      }
+    }
+  }
+
+  for (std::vector<ZSwcTree::DownstreamIterator*>::iterator
+       iter = iterVector.begin(); iter != iterVector.end(); ++iter) {
+    delete *iter;
+  }
+
+  QList<Swc_Tree_Node*> newSelected = getSelectedSwcNodeList();
+  emit swcTreeNodeSelectionChanged(newSelected, oldSelected);
+}
+
+void ZStackDoc::selectNoisyTrees(double minLength, double minDist)
+{
+  selectNoisyTrees(minLength, minDist,
+                   m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+                   m_resolution.voxelSizeZ());
 }
 
 void ZStackDoc::selectNoisyTrees()
@@ -1025,9 +1109,10 @@ void ZStackDoc::selectNoisyTrees()
     ZSwcTree *tree = *iter;
     tree->deselectAllNode();
 
-    ZSwcTree::RegularRootIterator riter(tree);
-    while (riter.hasNext()) {
-      Swc_Tree_Node *tn = riter.next();
+
+    ZSwcTree::RegularRootIterator rootIter(tree);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
       double length = SwcTreeNode::downstreamLength(tn);
       sizeVector.push_back(length);
 
@@ -1054,7 +1139,10 @@ void ZStackDoc::selectNoisyTrees()
           for (size_t j = 0; j < sizeVector.size(); ++j) {
             if (sizeVector[j] > thre) {
               ZSwcTree::DownstreamIterator *anchorIter = iterVector[j];
-              double d = ComputeSwcNodeDistance(*siter, *anchorIter);
+              double d = ComputeSwcNodeDistance(
+                    *siter, *anchorIter,
+                    m_resolution.voxelSizeX(), m_resolution.voxelSizeY(),
+                    m_resolution.voxelSizeZ());
               if (anchorDist > d) {
                 anchorDist = d;
               }
@@ -1389,6 +1477,9 @@ void ZStackDoc::loadStack(ZStack *zstack)
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
+
+//    emit stackBoundBoxChanged();
+
     notifyStackModified();
   }
 }
@@ -1597,7 +1688,7 @@ void ZStackDoc::readStack(const char *filePath, bool newThread)
     //mainStack = m_stackSource.readStack();
     loadStack(m_stackSource.readStack());
 
-    notifyStackModified();
+//    notifyStackModified();
   }
 }
 
@@ -7908,7 +7999,29 @@ bool ZStackDoc::executeRemoveTubeCommand()
   return false;
 }
 
-bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
+void ZStackDoc::updateTraceMask()
+{
+  m_neuronTracer.initTraceMask();
+
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+  ZIntPoint offset = getStackOffset();
+  workspace.offset[0] = -offset.getX();
+  workspace.offset[1] = -offset.getY();
+  workspace.offset[2] = -offset.getZ();
+
+  QList<ZSwcTree*> treeList = getObjectList<ZSwcTree>();
+  for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+
+    Swc_Tree_Label_Stack(
+          tree->data(), getTraceWorkspace()->trace_mask, &workspace);
+  }
+}
+
+
+bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
 #if 0
   if (hasStackData()) {
@@ -7932,10 +8045,27 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
 
   startProgress(0.9);
   m_neuronTracer.setTraceLevel(traceLevel);
-  ZSwcTree *tree = m_neuronTracer.trace(getStack()->c_stack(), doResample);
+  m_neuronTracer.setBackgroundType(m_stackBackground);
+
+  int recover = m_neuronTracer.getRecoverLevel();
+
+  if (hasSwcData()) {
+    m_neuronTracer.setRecoverLevel(0);
+  }
+
+  m_neuronTracer.setSignalChannel(c);
+
+  m_neuronTracer.setTraceRange(getStack()->getBoundBox());
+
+  updateTraceMask();
+
+  ZSwcTree *tree = m_neuronTracer.trace(getStack(), doResample);
+
+  m_neuronTracer.setRecoverLevel(recover);
+
   endProgress(0.9);
 
-  Zero_Stack(getTraceWorkspace()->trace_mask);
+  updateTraceMask();
 
   if (tree != NULL) {
     //ZSwcTree *tree = new ZSwcTree;
@@ -7944,7 +8074,11 @@ bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample)
     ZStackDocCommand::SwcEdit::CompositeCommand *command =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
     new ZStackDocCommand::SwcEdit::AddSwc(this, tree, command);
-    new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(this, tree->data(), command);
+    ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask *labelCommand =
+        new ZStackDocCommand::SwcEdit::SwcTreeLabeTraceMask(
+          this, tree->data(), command);
+    labelCommand->setOffset(-getStackOffset());
+
     command->setLogMessage("Run automatic tracing");
     pushUndoCommand(command);
 
@@ -8734,6 +8868,7 @@ void ZStackDoc::setStackOffset(const ZPoint &offset)
     stackRef()->setOffset(iround(offset.x()),
                           iround(offset.y()),
                           iround(offset.z()));
+    emit stackBoundBoxChanged();
   }
 }
 
@@ -9778,6 +9913,11 @@ void ZStackDoc::setResolution(double x, double y, double z, char unit)
 {
   m_resolution.setVoxelSize(x, y, z);
   m_resolution.setUnit(unit);
+}
+
+void ZStackDoc::setResolution(const ZResolution &res)
+{
+  m_resolution = res;
 }
 
 void ZStackDoc::setResolution(const Cz_Lsminfo &lsmInfo)

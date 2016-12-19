@@ -1,12 +1,20 @@
 #include "zresolution.h"
 
+#include "zjsonobject.h"
+#include "zjsonparser.h"
+
 ZResolution::ZResolution()
 {
-   m_voxelSize[0] = 1.0;
-   m_voxelSize[1] = 1.0;
-   m_voxelSize[2] = 1.0;
-   m_unit = 'p';
- }
+  reset();
+}
+
+void ZResolution::reset()
+{
+  m_voxelSize[0] = 1.0;
+  m_voxelSize[1] = 1.0;
+  m_voxelSize[2] = 1.0;
+  m_unit = 'p';
+}
 
 void ZResolution::setUnit(const std::string &unit)
 {
@@ -49,4 +57,22 @@ void ZResolution::convertUnit(char unit)
     m_voxelSize[0] = 1.0;
   }
   m_unit = unit;
+}
+
+void ZResolution::loadJsonObject(const ZJsonObject &obj)
+{
+  reset();
+
+  if (obj.hasKey("unit")) {
+    setUnit(ZJsonParser::stringValue(obj["unit"]));
+  }
+
+  if (obj.hasKey("voxel_size")) {
+    ZJsonArray sizeJson(obj.value("voxel_size"));
+    if (sizeJson.size() == 3) {
+      setVoxelSize(ZJsonParser::numberValue(sizeJson.at(0)),
+                   ZJsonParser::numberValue(sizeJson.at(1)),
+                   ZJsonParser::numberValue(sizeJson.at(2)));
+    }
+  }
 }

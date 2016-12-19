@@ -20999,7 +20999,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   int statusCode;
   std::string url = "http://emdata2.int.janelia.org:9000/api/repo/2ad2";
   ZDvid::MakeHeadRequest(url, statusCode);
@@ -21467,5 +21466,13 @@ void ZTest::test(MainWindow *host)
   host->testFlyEmProofread();
 #endif
 
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
+
+  stack.crop(ZIntCuboid(ZIntPoint(463, 382, 49), ZIntPoint(669, 547, 67)));
+
+  stack.save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
   std::cout << "Done." << std::endl;
 }

@@ -3,6 +3,8 @@
 
 #include <string>
 
+class ZJsonObject;
+
 class ZResolution {
 public:
   ZResolution();
@@ -32,6 +34,10 @@ public:
   std::string getUnitName() const;
 
   void convertUnit(char unit);
+
+  void loadJsonObject(const ZJsonObject &obj);
+
+  void reset();
 
 private:
   double m_voxelSize[3];

@@ -22,3 +22,8 @@ HelpDialog::~HelpDialog()
 {
   delete ui;
 }
+
+void HelpDialog::setSource(const QString &source)
+{
+  ui->textBrowser->setSource(source);
+}
