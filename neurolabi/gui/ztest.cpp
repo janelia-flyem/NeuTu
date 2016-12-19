@@ -199,6 +199,7 @@ using namespace std;
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
+#include "test/zflyembodycoloroptiontest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"

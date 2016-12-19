@@ -708,7 +708,8 @@ HEADERS += mainwindow.h \
     zstackdocdatabuffer.h \
     dialogs/ztestoptiondialog.h \
     dialogs/zinfodialog.h \
-    dialogs/zswcisolationdialog.h
+    dialogs/zswcisolationdialog.h \
+    flyem/zflyembodycoloroption.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1230,7 +1231,8 @@ SOURCES += main.cpp \
     zstackdocdatabuffer.cpp \
     dialogs/ztestoptiondialog.cpp \
     dialogs/zinfodialog.cpp \
-    dialogs/zswcisolationdialog.cpp
+    dialogs/zswcisolationdialog.cpp \
+    flyem/zflyembodycoloroption.cpp
 
 OTHER_FILES += \
     extlib.pri \

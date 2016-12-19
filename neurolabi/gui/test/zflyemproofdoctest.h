@@ -57,6 +57,7 @@ TEST(ZFlyEmProofDoc, DVID)
     doc.updateDvidLabelObject(NeuTube::Z_AXIS);
     sparsevolList2 = doc.getDvidSparsevolSliceList();
     ASSERT_EQ(1, sparsevolList2.size());
+    sparsevol = sparsevolList2[0];
     ASSERT_EQ(sparsevol->getLabel(), bodyId);
 
     doc.updateDvidLabelObject(NeuTube::Z_AXIS);
@@ -64,6 +65,27 @@ TEST(ZFlyEmProofDoc, DVID)
     ASSERT_EQ(1, sparsevolList2.size());
     ASSERT_EQ(sparsevol->getLabel(), bodyId);
   }
+}
+
+TEST(ZFlyEmProofDoc, ColorMap)
+{
+  ZFlyEmProofDoc doc;
+  doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
+                             ZFlyEmBodyColorOption::BODY_COLOR_NORMAL));
+  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_NORMAL));
+
+  doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
+                             ZFlyEmBodyColorOption::BODY_COLOR_NAME));
+  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_NAME));
+
+  doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
+                             ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
+  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
+
+  doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
+                             ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED));
+  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED));
+
 }
 
 #endif

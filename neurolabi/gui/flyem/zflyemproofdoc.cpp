@@ -3017,7 +3017,8 @@ void ZFlyEmProofDoc::deprecateSplitSource()
 void ZFlyEmProofDoc::prepareNameBodyMap(const ZJsonValue &bodyInfoObj)
 {
   ZSharedPointer<ZFlyEmNameBodyColorScheme> colorMap =
-      getColorScheme<ZFlyEmNameBodyColorScheme>(BODY_COLOR_NAME);
+      getColorScheme<ZFlyEmNameBodyColorScheme>(
+        ZFlyEmBodyColorOption::BODY_COLOR_NAME);
   if (colorMap.get() != NULL) {
     colorMap->prepareNameMap(bodyInfoObj);
 
@@ -3026,16 +3027,31 @@ void ZFlyEmProofDoc::prepareNameBodyMap(const ZJsonValue &bodyInfoObj)
 }
 
 void ZFlyEmProofDoc::updateSequencerBodyMap(
-    const ZFlyEmSequencerColorScheme &colorScheme)
+    const ZFlyEmSequencerColorScheme &colorScheme,
+    ZFlyEmBodyColorOption::EColorOption option)
 {
   ZSharedPointer<ZFlyEmSequencerColorScheme> colorMap =
-      getColorScheme<ZFlyEmSequencerColorScheme>(BODY_COLOR_SEQUENCER);
+      getColorScheme<ZFlyEmSequencerColorScheme>(option);
   if (colorMap.get() != NULL) {
     *(colorMap.get()) = colorScheme;
-    if (isActive(BODY_COLOR_SEQUENCER)) {
-      updateBodyColor(BODY_COLOR_SEQUENCER);
+    if (isActive(option)) {
+      updateBodyColor(option);
     }
   }
+}
+
+void ZFlyEmProofDoc::updateSequencerBodyMap(
+    const ZFlyEmSequencerColorScheme &colorScheme)
+{
+  updateSequencerBodyMap(colorScheme,
+                         ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER);
+}
+
+void ZFlyEmProofDoc::updateFocusedColorMap(
+    const ZFlyEmSequencerColorScheme &colorScheme)
+{
+  updateSequencerBodyMap(colorScheme,
+                         ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED);
 }
 
 #if 0
@@ -3065,7 +3081,7 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 }
 #endif
 
-void ZFlyEmProofDoc::updateBodyColor(EBodyColorMap type)
+void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 {
   ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
   if (slice != NULL) {
@@ -3137,14 +3153,14 @@ void ZFlyEmProofDoc::rewriteSegmentation()
 }
 
 ZSharedPointer<ZFlyEmBodyColorScheme>
-ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
 {
   if (!m_colorMapConfig.contains(type)) {
     switch (type) {
-    case BODY_COLOR_NORMAL:
+    case ZFlyEmBodyColorOption::BODY_COLOR_NORMAL:
       m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>();
       break;
-    case BODY_COLOR_NAME:
+    case ZFlyEmBodyColorOption::BODY_COLOR_NAME:
     {
       ZFlyEmNameBodyColorScheme *colorScheme = new ZFlyEmNameBodyColorScheme;
       colorScheme->setDvidTarget(getDvidTarget());
@@ -3152,7 +3168,8 @@ ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
           ZSharedPointer<ZFlyEmBodyColorScheme>(colorScheme);
     }
       break;
-    case BODY_COLOR_SEQUENCER:
+    case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER:
+    case ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED:
       m_colorMapConfig[type] =
           ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmSequencerColorScheme);
       break;
@@ -3163,7 +3180,8 @@ ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
 }
 
 template <typename T>
-ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
+ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(
+    ZFlyEmBodyColorOption::EColorOption type)
 {
   ZSharedPointer<ZFlyEmBodyColorScheme> colorScheme = getColorScheme(type);
   if (colorScheme.get() != NULL) {
@@ -3173,26 +3191,21 @@ ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(EBodyColorMap type)
   return ZSharedPointer<T>();
 }
 
-void ZFlyEmProofDoc::activateBodyColorMap(const QString &option)
+void ZFlyEmProofDoc::activateBodyColorMap(const QString &colorMapName)
 {
-  if (option == "Name") {
-    activateBodyColorMap(BODY_COLOR_NAME);
-  } else if (option == "Sequencer") {
-    activateBodyColorMap(BODY_COLOR_SEQUENCER);
-  } else {
-    activateBodyColorMap(BODY_COLOR_NORMAL);
+  activateBodyColorMap(ZFlyEmBodyColorOption::GetColorOption(colorMapName));
+}
+
+void ZFlyEmProofDoc::activateBodyColorMap(
+    ZFlyEmBodyColorOption::EColorOption option)
+{
+  if (!isActive(option)) {
+    updateBodyColor(option);
+    m_activeBodyColorMap = getColorScheme(option);
   }
 }
 
-void ZFlyEmProofDoc::activateBodyColorMap(EBodyColorMap colorMap)
-{
-  if (!isActive(colorMap)) {
-    updateBodyColor(colorMap);
-    m_activeBodyColorMap = getColorScheme(colorMap);
-  }
-}
-
-bool ZFlyEmProofDoc::isActive(EBodyColorMap type)
+bool ZFlyEmProofDoc::isActive(ZFlyEmBodyColorOption::EColorOption type)
 {
   return m_activeBodyColorMap.get() == getColorScheme(type).get();
 }

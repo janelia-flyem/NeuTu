@@ -20,6 +20,7 @@
 #include "flyem/zflyemmb6analyzer.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyembodymergeproject.h"
+#include "flyem/zflyembodycoloroption.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -40,9 +41,11 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
+  /*
   enum EBodyColorMap {
-    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_FOCUSED
   };
+  */
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
@@ -177,8 +180,8 @@ public:
    */
   void cleanBodyAnnotationMap();
 
-  void activateBodyColorMap(const QString &option);
-  void activateBodyColorMap(EBodyColorMap colorMap);
+  void activateBodyColorMap(const QString &colorMapName);
+  bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
   ZDvidReader& getDvidReader() {
     return m_dvidReader;
@@ -413,6 +416,8 @@ public slots:
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
 
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void updateFocusedColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
+
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
                   ZDvidSynapseEnsemble::EDataScope scope);
@@ -472,13 +477,12 @@ private:
   void readInfo();
   void updateMaxLabelZoom();
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
+  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
+      ZFlyEmBodyColorOption::EColorOption type);
   template<typename T>
-  ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+  ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  bool isActive(EBodyColorMap type);
-
-  void updateBodyColor(EBodyColorMap type);
+  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
   void runSplitFunc();
   void localSplitFunc();
@@ -486,6 +490,12 @@ private:
   ZIntCuboid estimateLocalSplitRoi();
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
+
+  void updateSequencerBodyMap(
+      const ZFlyEmSequencerColorScheme &colorScheme,
+      ZFlyEmBodyColorOption::EColorOption option);
+
+  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
@@ -516,7 +526,8 @@ protected:
   bool m_routineCheck;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
-  QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
+  QMap<ZFlyEmBodyColorOption::EColorOption,
+  ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZFlyEmMB6Analyzer m_analyzer;
