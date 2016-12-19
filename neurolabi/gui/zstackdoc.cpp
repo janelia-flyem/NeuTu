@@ -9006,11 +9006,11 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setHittable(false);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-//              addObject(obj, true);
               LINFO() << "Adding" << obj << obj->getSource();
-              m_dataBuffer->addUpdate(
-                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-              m_dataBuffer->deliver();
+              addObject(obj, true);
+//              m_dataBuffer->addUpdate(
+//                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//              m_dataBuffer->deliver();
             }
           }
         }
