@@ -21318,7 +21318,7 @@ void ZTest::test(MainWindow *host)
   a[1] = 1;
 #endif
   
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "005a", 7000);
 #endif
@@ -21384,7 +21384,7 @@ void ZTest::test(MainWindow *host)
   host->testFlyEmProofread();
 #endif
 
-#if 1
+#if 0
   ZStressTestOptionDialog *dlg = new ZStressTestOptionDialog(host);
   if (dlg->exec()) {
     switch (dlg->getOption()) {
@@ -21405,6 +21405,35 @@ void ZTest::test(MainWindow *host)
       break;
     }
   }
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  ZStack *stack = ZStackFactory::makeVirtualStack(obj->getBoundBox());
+  frame->loadStack(stack);
+
+  frame->document()->addObject(obj);
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  /*
+  ZObject3dScan slice = obj->getSlice(343);
+  ZStroke2d* stroke = ZFlyEmMisc::MakeSplitSeed(slice, 1);
+
+  frame->document()->addObject(stroke);
+
+  slice = obj->getSlice(344);
+  frame->document()->addObject(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+  */
+
+  std::vector<ZStroke2d*> seedList = ZFlyEmMisc::MakeSplitSeedList(*obj);
+  for (std::vector<ZStroke2d*>::iterator iter = seedList.begin();
+       iter != seedList.end(); ++iter) {
+    frame->document()->addObject(*iter);
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;

@@ -80,6 +80,7 @@ void ZObject3dScan::init()
   m_blockingEvent = false;
   m_zProjection = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
+  setColor(255, 255, 255, 255);
 }
 
 
