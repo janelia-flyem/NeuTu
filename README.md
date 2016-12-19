@@ -60,9 +60,7 @@ See neurolabi/Compile_Windows.txt for more details.
 
 ## Other information
  
-The binary version for dark field neuron reconstruction can be downloaded from 
-
-    http://www.neutracing.com
+The binary version for dark field neuron reconstruction can be downloaded from http://www.neutracing.com
 
 Software manual for the FlyEM edition: https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
