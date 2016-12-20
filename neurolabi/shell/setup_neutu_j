@@ -163,7 +163,8 @@ then
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
 else
   echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
-  echo "$downloadDir/neutube/neurolabi/build/neuTube $*" >> $run_script
+  param='$*'
+  echo "$downloadDir/neutube/neurolabi/build/neutu $param" >> $run_script
 fi
 chmod a+x $run_script
 

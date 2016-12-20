@@ -48,18 +48,9 @@ fi
 if [ `uname` != 'Darwin' ]
 then
   GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
-  if [ $GCCVER \> '4.9.0' ]
+  if [ $GCCVER \> '4.9.0' ] || [ $GCCVER \< '4.8.0' ]
   then
-    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
-    then
-      source ${CONDA_ROOT}/bin/activate dvidenv
-      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
-    fi
-  fi
-
-  if [ $GCCVER \< '4.8.0' ]
-  then
-    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+    if [ ! -f $envDir/bin/gcc ]
     then
       source ${CONDA_ROOT}/bin/activate dvidenv
       $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
