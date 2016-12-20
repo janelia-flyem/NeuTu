@@ -7624,11 +7624,9 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
              iter != objList.end(); ++iter) {
           ZStackObject *oldObj = *iter;
           bufferObjectModified(oldObj);
-#ifdef _DEBUG_
-          std::cout << "Deleting object in ZStackDoc::addObject: " <<  oldObj << std::endl;
-#endif
           //      role.addRole(m_playerList.removePlayer(obj));
           if (oldObj != obj) {
+            ZOUT(LTRACE(), 5) << "Deleting object:" <<  oldObj;
             delete oldObj;
           }
         }
@@ -9134,10 +9132,11 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setHittable(false);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-//              addObject(obj, true);
-              m_dataBuffer->addUpdate(
-                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-              m_dataBuffer->deliver();
+              LINFO() << "Adding" << obj << obj->getSource();
+              addObject(obj, true);
+//              m_dataBuffer->addUpdate(
+//                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//              m_dataBuffer->deliver();
             }
           }
         }

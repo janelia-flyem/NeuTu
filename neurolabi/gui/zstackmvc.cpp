@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QTimer>
 
 #include "neutubeconfig.h"
 #include "zstackdoc.h"
@@ -18,6 +19,7 @@
 #include "zintpoint.h"
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -30,6 +32,8 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+
+  m_testTimer = new QTimer(this);
 }
 
 ZStackMvc::~ZStackMvc()
@@ -361,11 +365,49 @@ void ZStackMvc::dump(const QString &msg)
   getView()->dump(msg);
 }
 
-void ZStackMvc::test()
+void ZStackMvc::testSlot()
 {
   for (int i = 0; i < 5000; ++i) {
     QKeyEvent *event = new QKeyEvent ( QEvent::KeyPress, Qt::Key_E, Qt::NoModifier);
     QCoreApplication::postEvent (this, event);
+  }
+}
+
+void ZStackMvc::setStressTestEnv(ZStressTestOptionDialog *optionDlg)
+{
+  assert(optionDlg != NULL);
+
+  m_testTimer->setInterval(500);
+  disconnect(m_testTimer, SIGNAL(timeout()), this, 0);
+  prepareStressTestEnv(optionDlg);
+}
+
+void ZStackMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
+{
+  switch (optionDlg->getOption()) {
+  case ZStressTestOptionDialog::OPTION_CUSTOM:
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+    break;
+  default:
+    break;
+  }
+}
+
+void ZStackMvc::stressTest(ZStressTestOptionDialog *dlg)
+{
+  setStressTestEnv(dlg);
+  toggleStressTest();
+}
+
+
+void ZStackMvc::toggleStressTest()
+{
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+    LINFO() << "Stress test started";
+  } else {
+    m_testTimer->start();
+    LINFO() << "Stress test stopped";
   }
 }
 

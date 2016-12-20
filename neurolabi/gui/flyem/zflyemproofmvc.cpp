@@ -72,6 +72,7 @@
 #include "dialogs/zinfodialog.h"
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -154,10 +155,10 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
-  m_testTimer = new QTimer(this);
+//  m_testTimer = new QTimer(this);
 
 #ifdef _DEBUG_
-  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+//  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
 #endif
 }
 
@@ -1206,8 +1207,10 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
           this, SLOT(checkBodyWithMessage(uint64_t,bool)));
+  /*
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           getCompleteDocument(), SLOT(deprecateSplitSource()));
+          */
 
 //  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
@@ -1717,9 +1720,8 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 
-void ZFlyEmProofMvc::testSlot()
+uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 {
-  static ZRandomGenerator rand;
   uint64_t bodyId = 0;
   int minX = getGrayScaleInfo().getMinX();
   int minY = getGrayScaleInfo().getMinY();
@@ -1740,8 +1742,45 @@ void ZFlyEmProofMvc::testSlot()
     bodyId = getCompleteDocument()->getDvidReader().readBodyIdAt(x, y, z);
   }
 
+  if (pos != NULL) {
+    pos->set(x, y, z);
+  }
+
+  return bodyId;
+}
+
+void ZFlyEmProofMvc::testBodySplit()
+{
+  static ZRandomGenerator rand;
+
+  if (getCompletePresenter()->isSplitOn()) {
+    if (!getCompleteDocument()->isSplitRunning()) {
+      exitSplit();
+    }
+  } else {
+    const QString threadId = "launchSplitFunc";
+    if (!m_futureMap.isAlive(threadId)) {
+      ZIntPoint pos;
+      uint64_t bodyId = getRandomBodyId(rand, &pos);
+
+      //  zoomTo(pos);
+      locateBody(bodyId, false);
+      launchSplit(bodyId);
+
+      runSplit();
+    }
+  }
+}
+
+void ZFlyEmProofMvc::testBodyMerge()
+{
+  static ZRandomGenerator rand;
+
+  ZIntPoint pos;
+  uint64_t bodyId = getRandomBodyId(rand, &pos);
+
   if (rand.rndint(10) % 2 ==0) {
-    zoomTo(x, y, z);
+    zoomTo(pos);
   } else {
     bool appending = true;
     if (bodyId % 9 == 0) {
@@ -1779,17 +1818,26 @@ void ZFlyEmProofMvc::testSlot()
   }
 }
 
-void ZFlyEmProofMvc::test()
+void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
 {
-  if (m_testTimer->isActive()) {
-    m_testTimer->stop();
-  } else {
+  switch (optionDlg->getOption()) {
+  case ZStressTestOptionDialog::OPTION_CUSTOM:
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+    break;
+  case ZStressTestOptionDialog::OPTION_BODY_MERGE:
     showFineBody3d();
-    m_testTimer->setInterval(500);
-    m_testTimer->start();
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
+    break;
+  case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
+    showFineBody3d();
+    showSplitQuickView();
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodySplit()));
+    break;
+  default:
+    break;
   }
-//  getView()->increaseZoomRatio();
 }
+
 
 bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
 {
@@ -2094,6 +2142,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       body->setProjectionVisible(false);
 
       getProgressSignal()->advanceProgress(0.1);
+
+      getCompleteDocument()->deprecateSplitSource();
 
       emit splitBodyLoaded(bodyId);
     } else {

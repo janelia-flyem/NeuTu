@@ -6524,7 +6524,7 @@ void MainWindow::testFlyEmProofread()
 {
   ZProofreadWindow* window = startProofread();
 
-  window->test();
+  window->stressTest();
 }
 
 void MainWindow::runBodySplit()

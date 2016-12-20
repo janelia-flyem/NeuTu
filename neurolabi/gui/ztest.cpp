@@ -282,6 +282,8 @@ using namespace std;
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
 #include "test/zgradientmagnitudemoduletest.h"
+#include "dialogs/zstresstestoptiondialog.h"
+
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
@@ -21370,12 +21372,12 @@ void ZTest::test(MainWindow *host)
   a[1] = 1;
 #endif
   
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "005a", 7000);
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   Stack *desstack = C_Stack::make(GREY, 32, 32, 1);
   stack.load(GET_TEST_DATA_DIR + "/system/diadem/diadem_e2_proj.tif");
@@ -21475,5 +21477,58 @@ void ZTest::test(MainWindow *host)
 
   stack.save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
+
+#if 0
+  ZStressTestOptionDialog *dlg = new ZStressTestOptionDialog(host);
+  if (dlg->exec()) {
+    switch (dlg->getOption()) {
+    case ZStressTestOptionDialog::OPTION_BODY_MERGE:
+      std::cout << "Testing body merge" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
+      std::cout << "Testing body split" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_CUSTOM:
+      std::cout << "Custom testing" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_OBJECT_MANAGEMENT:
+      std::cout << "Testing multithread object" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_BODY_3DVIS:
+      std::cout << "Testing 3D body visualization" << std::endl;
+      break;
+    }
+  }
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  ZStack *stack = ZStackFactory::makeVirtualStack(obj->getBoundBox());
+  frame->loadStack(stack);
+
+  frame->document()->addObject(obj);
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  /*
+  ZObject3dScan slice = obj->getSlice(343);
+  ZStroke2d* stroke = ZFlyEmMisc::MakeSplitSeed(slice, 1);
+
+  frame->document()->addObject(stroke);
+
+  slice = obj->getSlice(344);
+  frame->document()->addObject(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+  */
+
+  std::vector<ZStroke2d*> seedList = ZFlyEmMisc::MakeSplitSeedList(*obj);
+  for (std::vector<ZStroke2d*>::iterator iter = seedList.begin();
+       iter != seedList.end(); ++iter) {
+    frame->document()->addObject(*iter);
+  }
+
+#endif
+
   std::cout << "Done." << std::endl;
 }

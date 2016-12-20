@@ -9,7 +9,8 @@
 #include "zstroke2d.h"
 #include "zuncopyable.h"
 #include "zstackdoc.h"
-#include "z3dinteractionhandler.h"
+
+class Z3DTrackballInteractionHandler;
 
 /*!
  * \brief An experimental class of handling GUI interaction

@@ -201,6 +201,7 @@ public:
 
 public:
   void runSplit();
+  bool isSplitRunning() const;
   void runLocalSplit();
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);

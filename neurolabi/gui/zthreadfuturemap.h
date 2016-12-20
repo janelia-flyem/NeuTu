@@ -16,7 +16,7 @@ public:
   void removeDeadThread();
   int getLivingThreadNumber() const;
   QFuture<void>* getFuture(const QString &id);
-  bool isAlive(const QString &id);
+  bool isAlive(const QString &id) const;
 
   bool hasThreadAlive() const;
 
