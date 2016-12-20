@@ -44,6 +44,8 @@ function flyem_build_lowtis {
     else
       git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
     fi
+    #new version is not compatible with libdvidcpp in conda
+    git checkout f666d30
 
     cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
     cd $downloadDir/lowtis
