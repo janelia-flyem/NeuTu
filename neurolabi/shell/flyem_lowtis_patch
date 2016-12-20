@@ -15,6 +15,7 @@ fi
  
 #install lowtis
 source $scriptDir/flyem_utilities.sh
+condaDir=$install_dir/Download/miniconda
 flyem_build_lowtis $install_dir $scriptDir
 
 if [ -d $install_dir/Download/neutube/neurolabi/build ]

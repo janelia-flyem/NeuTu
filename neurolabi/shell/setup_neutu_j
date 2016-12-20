@@ -35,16 +35,16 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
-if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
-then
-  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
-elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
-then
-  export PATH=/opt/gcc482/bin:$PATH
-fi
-
-echo $PATH
 which gcc
+
+#if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
+#then
+#  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
+#elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+#then
+#  export PATH=/opt/gcc482/bin:$PATH
+#fi
+
 
 qtver=4.8.5
 if [ `uname` = 'Darwin' ]
