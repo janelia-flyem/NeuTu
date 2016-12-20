@@ -2714,8 +2714,10 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
             for (int x = x0; x <= x1; ++x) {
               ZStack *stack =
                   originalStack->getStackGrid()->getStack(blockIndex);
-              m_splitSource->getStackGrid()->consumeStack(
-                    blockIndex, stack->clone());
+              if (stack != NULL) {
+                m_splitSource->getStackGrid()->consumeStack(
+                      blockIndex, stack->clone());
+              }
               blockIndex.setX(blockIndex.getX() + 1);
             }
           }
