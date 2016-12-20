@@ -103,7 +103,7 @@ fi
 if [ ! -d $downloadDir/neutube ]
 then
   cd $master_dir
-  git rev-parse --verify flyem_release 2>devnull
+  git rev-parse --verify flyem_release 
   if [ $? -eq 0 ]
   then
     cd $downloadDir

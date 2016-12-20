@@ -99,12 +99,13 @@ exists($$DVIDCPP_PATH) {
 } else:exists($${CONDA_ENV}) {
     INCLUDEPATH +=  $${CONDA_ENV}/include
     LIBS += -L$${CONDA_ENV}/lib
+    unix: QMAKE_RPATHDIR += $${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
-    LIBS *= -ldvidcpp -ljsoncpp -llz4 -lcurl -lpng -ljpeg -lboost_system -lboost_thread
+    LIBS *= -ldvidcpp -lboost_system -lboost_thread #-ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
         CONFIG(debug, debug|release) {
             LIBS *= -llowtis-g
