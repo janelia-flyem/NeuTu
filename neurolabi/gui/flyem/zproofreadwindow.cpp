@@ -132,6 +132,7 @@ void ZProofreadWindow::init()
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+  connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
   setCentralWidget(widget);
 

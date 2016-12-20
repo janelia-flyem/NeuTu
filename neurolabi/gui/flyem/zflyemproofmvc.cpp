@@ -1705,11 +1705,14 @@ void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
 
-  if (getCompletePresenter()->isSplitOn()) {
-    if (!getCompleteDocument()->isSplitRunning()) {
-      exitSplit();
-    }
-  } else {
+  //If currently it's neither on the split mode nor entering split
+  //  Enter split
+  //If it's on the split mode
+  //  If no split is running
+  //   if there are seeds there, exit
+  //       Else try to generate seeds and run split
+  //
+  if (!getCompletePresenter()->isSplitOn()) {
     const QString threadId = "launchSplitFunc";
     if (!m_futureMap.isAlive(threadId)) {
       ZIntPoint pos;
@@ -1717,9 +1720,35 @@ void ZFlyEmProofMvc::testBodySplit()
 
       //  zoomTo(pos);
       locateBody(bodyId, false);
-      launchSplit(bodyId);
+      if (m_bodyWindow != NULL) {
+        m_bodyWindow->updateBody();
+      }
 
-      runSplit();
+      if (getCompleteDocument()->isSplittable(bodyId)) {
+        launchSplit(bodyId);
+      }
+    }
+  } else {
+    if (!getCompleteDocument()->isSplitRunning()) {
+      if (getDocument()->getObjectList(ZStackObjectRole::ROLE_SEED).isEmpty()) {
+        ZDvidSparseStack *sparseStack =
+            getCompleteDocument()->getDvidSparseStack();
+        if (sparseStack != NULL) {
+          ZObject3dScan *mask = sparseStack->getObjectMask();
+          if (mask != NULL) {
+            std::vector<ZStroke2d*> seedList =
+                ZFlyEmMisc::MakeSplitSeedList(*mask);
+            for (std::vector<ZStroke2d*>::iterator iter = seedList.begin();
+                 iter != seedList.end(); ++iter) {
+              getDocument()->addObject(*iter);
+            }
+          }
+
+          runSplit();
+        }
+      } else {
+        emit exitingSplit();
+      }
     }
   }
 }

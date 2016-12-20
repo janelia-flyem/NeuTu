@@ -377,7 +377,7 @@ void ZStackMvc::setStressTestEnv(ZStressTestOptionDialog *optionDlg)
 {
   assert(optionDlg != NULL);
 
-  m_testTimer->setInterval(500);
+  m_testTimer->setInterval(1000);
   disconnect(m_testTimer, SIGNAL(timeout()), this, 0);
   prepareStressTestEnv(optionDlg);
 }
