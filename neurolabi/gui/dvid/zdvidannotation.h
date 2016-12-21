@@ -127,6 +127,11 @@ public: //Additional properties
     return m_relJson;
   }
 
+  void addProperty(const std::string &key, const std::string &value);
+  void removeProperty(const std::string &key);
+  template <typename T>
+  T getProperty(const std::string &key) const;
+
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);
   static bool AddRelation(

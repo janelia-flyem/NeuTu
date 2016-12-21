@@ -124,6 +124,7 @@ public:
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
+  void exitingSplit();
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
