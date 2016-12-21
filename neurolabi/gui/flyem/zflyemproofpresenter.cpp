@@ -93,11 +93,26 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddDoneItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_MERGE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToMergeItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSplitItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
     case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(uncheckTodoItem()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToNormal()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_MERGE:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToMerge()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToSplit()));
       break;
     case ZActionFactory::ACTION_REMOVE_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(removeTodoItem()));
@@ -542,6 +557,16 @@ void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
   getCompleteDocument()->executeAddTodoItemCommand(pt, false);
 }
 
+void ZFlyEmProofPresenter::tryAddToMergeItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddToMergeItemCommand(pt);
+}
+
+void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddToSplitItemCommand(pt);
+}
+
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
   getCompleteDocument()->executeAddTodoItemCommand(pt, true);
@@ -562,12 +587,43 @@ void ZFlyEmProofPresenter::uncheckTodoItem()
   getCompleteDocument()->checkTodoItem(false);
 }
 
+void ZFlyEmProofPresenter::setTodoItemToNormal()
+{
+  getCompleteDocument()->setTodoItemToNormal();
+}
+
+void ZFlyEmProofPresenter::setTodoItemToMerge()
+{
+  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_MERGE);
+}
+
+void ZFlyEmProofPresenter::setTodoItemToSplit()
+{
+  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getStackPosition();
   tryAddTodoItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToMergeItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddToMergeItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToSplitItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddToSplitItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
