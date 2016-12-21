@@ -255,6 +255,10 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -374,7 +378,15 @@ public slots: //Commands
 
   void executeAddTodoItemCommand(int x, int y, int z, bool checked);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(
+      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeAddToMergeItemCommand(int x, int y, int z);
+  void executeAddToMergeItemCommand(const ZIntPoint &pt);
+  void executeAddToSplitItemCommand(int x, int y, int z);
+  void executeAddToSplitItemCommand(const ZIntPoint &pt);
+
+
   void executeRemoveTodoItemCommand();
 
 

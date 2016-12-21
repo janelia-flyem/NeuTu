@@ -881,7 +881,7 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
 }
 
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
-{
+{ //Duplicated code with setTodoItemAction
   ZOUT(LTRACE(), 5) << "Check to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
 
@@ -908,6 +908,51 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   }
 
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
+{ //Duplicated code with checkTodoItem
+  ZOUT(LTRACE(), 5) << "Set action of to do items";
+  QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
+
+  std::vector<ZIntPoint> ptArray;
+  for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *td = *iter;
+    const std::set<ZIntPoint> &selectedSet = td->getSelector().getSelectedSet();
+    for (std::set<ZIntPoint>::const_iterator iter = selectedSet.begin();
+         iter != selectedSet.end(); ++iter) {
+      ZFlyEmToDoItem item = td->getItem(*iter, ZFlyEmToDoList::DATA_LOCAL);
+      if (item.isValid()) {
+        if (action != item.getAction()) {
+          item.setAction(action);
+          td->addItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+          ptArray.push_back(item.getPosition());
+        }
+      }
+    }
+    if (!selectedSet.empty()) {
+      processObjectModified(td);
+      notifyTodoItemModified(ptArray, true);
+    }
+  }
+
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::setTodoItemToNormal()
+{
+  setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+}
+
+void ZFlyEmProofDoc::setTodoItemToMerge()
+{
+  setTodoItemAction(ZFlyEmToDoItem::TO_MERGE);
+}
+
+void ZFlyEmProofDoc::setTodoItemToSplit()
+{
+  setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
 }
 
 void ZFlyEmProofDoc::tryMoveSelectedSynapse(
@@ -3289,6 +3334,36 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked
   }
 
   executeAddTodoItemCommand(item);
+}
+
+void ZFlyEmProofDoc::executeAddTodoItemCommand(
+    int x, int y, int z, ZFlyEmToDoItem::EToDoAction action)
+{
+  ZFlyEmToDoItem item(x, y, z);
+  item.setUserName(NeuTube::GetCurrentUserName());
+  item.setAction(action);
+
+  executeAddTodoItemCommand(item);
+}
+
+void ZFlyEmProofDoc::executeAddToMergeItemCommand(int x, int y, int z)
+{
+  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_MERGE);
+}
+
+void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt)
+{
+  executeAddToMergeItemCommand(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z)
+{
+  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_SPLIT);
+}
+
+void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt)
+{
+  executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)

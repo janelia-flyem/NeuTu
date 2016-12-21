@@ -702,6 +702,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
     action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
     break;
+  case ZActionFactory::ACTION_ADD_TODO_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToMergeMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
+    break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
@@ -2344,22 +2350,79 @@ void Z3DWindow::saveSelectedPunctaAs()
   }
 }
 
-void Z3DWindow::addTodoMarker()
+void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked)
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
+  emit addingTodoMarker(x, y, z, checked);
+}
+
+void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked)
+{
+  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked);
+}
+
+void Z3DWindow::emitAddToMergeMarker(int x, int y, int z)
+{
+  emit addingToMergeMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt)
+{
+  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void Z3DWindow::emitAddToSplitMarker(int x, int y, int z)
+{
+  emit addingToSplitMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt)
+{
+  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+static void AddTodoMarker(
+    Z3DWindow *window, ZFlyEmToDoItem::EToDoAction action, bool checked)
+{
+  QList<Swc_Tree_Node*> swcNodeList =
+      window->getDocument()->getSelectedSwcNodeList();
   if (swcNodeList.size() == 1) {
     ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), false);
+    if (checked) {
+      window->emitAddTodoMarker(pt, checked);
+    } else {
+      switch (action) {
+      case ZFlyEmToDoItem::TO_DO:
+        window->emitAddTodoMarker(pt, checked);
+        break;
+      case ZFlyEmToDoItem::TO_MERGE:
+        window->emitAddToMergeMarker(pt);
+        break;
+      case ZFlyEmToDoItem::TO_SPLIT:
+        window->emitAddToSplitMarker(pt);
+        break;
+      }
+    }
   }
+}
+
+void Z3DWindow::addTodoMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
+}
+
+void Z3DWindow::addToMergeMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_MERGE, false);
+}
+
+void Z3DWindow::addToSplitMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
-  if (swcNodeList.size() == 1) {
-    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), true);
-  }
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
 }
 
 void Z3DWindow::updateBody()

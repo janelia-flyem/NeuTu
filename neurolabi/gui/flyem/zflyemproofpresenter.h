@@ -111,9 +111,14 @@ public slots:
   void tryMoveSynapseMode();
   void tryAddTodoItem();
   void tryAddDoneItem();
+  void tryAddToSplitItem();
+  void tryAddToMergeItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
   void selectBodyInRoi();
   void zoomInRectRoi();
 
@@ -131,6 +136,8 @@ private:
   void tryTodoItemMode();
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
+  void tryAddToMergeItem(const ZIntPoint &pt);
+  void tryAddToSplitItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();

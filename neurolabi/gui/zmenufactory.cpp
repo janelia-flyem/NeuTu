@@ -236,6 +236,8 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
       if (doc->getSelectedSwcNodeList().size() == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
       }
 
       if (!actionList.isEmpty()) {
