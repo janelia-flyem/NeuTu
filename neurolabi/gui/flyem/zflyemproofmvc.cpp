@@ -3268,10 +3268,12 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
   }
 }
 
+#if 0
 void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
-    ZDvidReader reader;
+//    ZDvidReader reader; //Todo: Need to use a shared reader
+    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
     if (reader.open(getDvidTarget())) {
       QList<uint64_t> goodIdList;
       QList<uint64_t> badIdList;
@@ -3294,8 +3296,6 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
       }
 
       if (!goodIdList.isEmpty()) {
-        uint64_t goodId = goodIdList.front();
-        ZIntPoint pt = reader.readBodyLocation(goodId);
         ZDvidLabelSlice *slice = getDvidLabelSlice();
         if (slice != NULL) {
           slice->recordSelection();
@@ -3310,11 +3310,14 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
         }
         updateBodySelection();
 
+        uint64_t goodId = goodIdList.front();
+        ZIntPoint pt = reader.readBodyLocation(goodId);
         zoomTo(pt);
       }
     }
   }
 }
+#endif
 
 void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
@@ -3333,7 +3336,7 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
                 slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
                 NeuTube::BODY_LABEL_MAPPED);
           slice->processSelection();
-          processLabelSliceSelectionChange();
+//          processLabelSliceSelectionChange(); //will be called in updateBodySelection
         }
         updateBodySelection();
         zoomTo(pt);

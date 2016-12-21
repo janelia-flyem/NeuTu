@@ -173,7 +173,7 @@ public slots:
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId, bool appending);
   void locateBody(uint64_t bodyId);
-  void locateBody(QList<uint64_t> bodyIdList);
+//  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending = true);
