@@ -35,6 +35,7 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
+source $downloadDir/miniconda/bin/activate dvidenv
 which gcc
 
 #if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]

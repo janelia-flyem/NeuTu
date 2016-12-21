@@ -9,11 +9,11 @@ function update_gcc
       source ${CONDA_ROOT}/bin/activate dvidenv
       $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
     fi
-    GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
-    if [ $GCCVER \> '4.9.0' ] || [ $GCCVER \< '4.8.0' ]
-    then
-      export PATH=$condaDir/envs/dvidenv/bin:$PATH
-    fi
+    #GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+    #if [ $GCCVER \> '4.9.0' ] || [ $GCCVER \< '4.8.0' ]
+    #then
+    #  source ${CONDA_ROOT}/bin/activate dvidenv
+    #fi
   fi
 }
 
@@ -38,9 +38,7 @@ function flyem_build_lowtis {
     git checkout f666d30
 
     update_gcc $condaDir
-    echo 'gcc version=============='
     source $condaDir/bin/activate dvidenv
-    which gcc
 
     cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
     mkdir -p build
