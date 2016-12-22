@@ -688,11 +688,40 @@ int ZCommandLine::runTest()
 #endif
 
 #if 1
-  m_input.push_back("http:10.101.10.80:8000:ae53");
+//  ZDvidTarget target;
+//  target.set("emdata2.int.janelia.org", "3303", 8500);
+//  target.setBodyLabelName("bodies3");
+//  target.setLabelBlockName("labels3");
+//  target.setGrayScaleName("grayscale");
+
+  m_input.push_back("http:emdata2.int.janelia.org:8500:3303:bodies3");
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0]);
+
+  m_input.push_back(GET_TEST_DATA_DIR + "/benchmark/bodies.txt");
+//  m_input.push_back(GET_APPLICATION_DIR + "/json/skeletonize_fib25_len40.json");
 
   ZDvidReader reader;
+  reader.open(target);
   ZJsonObject config = getSkeletonizeConfig(reader);
   config.print();
+
+  std::vector<uint64_t> bodyList = getSkeletonBodyList(reader);
+  std::cout << "#Bodies: " << bodyList.size() << std::endl;
+  std::cout << bodyList.back() << std::endl;
+
+  ZDvidWriter writer;
+  writer.open(target);
+  std::cout << writer.isSwcWrittable() << std::endl;
+
+  ZStackSkeletonizer skeletonizer;
+  skeletonizer.configure(config);
+  std::cout << skeletonizer.toSwcComment() << std::endl;
+
+  m_forceUpdate = true;
+  int stat = skeletonizeDvid();
+  std::cout << stat << std::endl;
+
 #endif
 
   return 0;
@@ -804,23 +833,32 @@ std::vector<uint64_t> ZCommandLine::getSkeletonBodyList(ZDvidReader &reader) con
   if (bodyIdArray.empty()) {
     std::set<uint64_t> bodyIdSet;
 
-    if (m_input.size() == 1) {
-      bodyIdSet = reader.readBodyId(100000);
-      if (bodyIdSet.empty()) {
-        bodyIdSet = reader.readAnnnotatedBodySet();
+    bool hasBodyFile = false;
+    if (m_input.size() > 1) {
+      if (m_input[1] != "#") {
+        hasBodyFile = true;
+      }
+    }
 
+    if (hasBodyFile) {
+      bodyIdSet = loadBodySet(m_input[1]);
+    } else {
+      if (m_input.size() == 1) {
+        bodyIdSet = reader.readBodyId(100000);
         if (bodyIdSet.empty()) {
-          std::cout << "Done: No annotated body found in the database."
-                    << std::endl;
+          bodyIdSet = reader.readAnnnotatedBodySet();
+
+          if (bodyIdSet.empty()) {
+            std::cout << "Done: No annotated body found in the database."
+                      << std::endl;
+          }
         }
       }
-    } else {
-      bodyIdSet = loadBodySet(m_input[1]);
     }
 
     for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
          iter != bodyIdSet.end(); ++iter) {
-      int bodyId = *iter;
+      uint64_t bodyId = *iter;
       if (m_namedOnly) {
         ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
         if (!annotation.getName().empty()) {

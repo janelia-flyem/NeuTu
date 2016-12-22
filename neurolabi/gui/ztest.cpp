@@ -21507,7 +21507,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   ZObject3dScan *obj = new ZObject3dScan;
   obj->load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -21534,6 +21534,15 @@ void ZTest::test(MainWindow *host)
     frame->document()->addObject(*iter);
   }
 
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
+  tree.addComment("Test");
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  std::cout << tree.toString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
