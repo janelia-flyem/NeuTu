@@ -322,6 +322,12 @@ int ZTest::RunUnitTest(int argc, char *argv[])
 #endif
 }
 
+void ZTest::CommandLineTest()
+{
+  ZCommandLine command;
+  command.runTest();
+}
+
 void ZTest::CrashTest()
 {
   /*

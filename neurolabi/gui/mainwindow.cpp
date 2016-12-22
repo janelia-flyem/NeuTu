@@ -3406,6 +3406,9 @@ void MainWindow::test(ZTestOptionDialog *dlg)
   case ZTestOptionDialog::OPTION_CRASH:
     ZTest::CrashTest();
     break;
+  case ZTestOptionDialog::OPTION_COMMAND:
+    ZTest::CommandLineTest();
+    break;
   }
 }
 

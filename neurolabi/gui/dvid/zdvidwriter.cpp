@@ -114,31 +114,16 @@ void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
   if (tree != NULL) {
     ZDvidUrl dvidUrl(m_dvidTarget);
     post(dvidUrl.getSkeletonUrl(bodyId), tree->toString(), false);
-#if 0
-    QString tmpPath = QString("%1/%2.swc").
-        arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
-        arg(bodyId);
-    tree->save(tmpPath.toStdString());
-
-    ZDvidUrl dvidUrl(m_dvidTarget);
-    QString command = QString("curl -i -X POST %1 --data-binary @%2").
-        arg(dvidUrl.getSkeletonUrl(
-              bodyId, m_dvidTarget.getBodyLabelName()).c_str()).arg(tmpPath);
-    /*
-    QString command = QString(
-          "curl -X POST %1/api/node/%2/skeletons/%3.swc"
-          " --data-binary @%4").arg(m_dvidClient->getServer()).
-        arg(m_dvidClient->getUuid()).
-        arg(bodyId).arg(tmpPath);
-        */
-
-
-
-    runCommand(command);
-#endif
-
-//    QProcess::execute(command);
   }
+}
+
+bool ZDvidWriter::isSwcWrittable()
+{
+  ZSwcTree testTree;
+  testTree.setDataFromNode(SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1));
+  writeSwc(0, &testTree);
+
+  return getStatusCode() == 200;
 }
 
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
@@ -149,25 +134,6 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
     ZDvidUrl dvidUrl(m_dvidTarget);
     post(dvidUrl.getThumbnailUrl(bodyId), buffer, length, false);
     free(buffer);
-#if 0
-    QString tmpPath = QString("%1/%2.mraw").
-        arg(NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).c_str()).
-        arg(bodyId);
-    stack->save(tmpPath.toStdString());
-    ZDvidUrl dvidUrl(m_dvidTarget);
-
-    QString command = QString("curl -i -X POST %1 --data-binary @%2").
-        arg(dvidUrl.getThumbnailUrl(
-              bodyId, m_dvidTarget.getBodyLabelName()).c_str()).
-        arg(tmpPath);
-
-    runCommand(command);
-#endif
-    /*
-    qDebug() << command;
-
-    QProcess::execute(command);
-    */
   }
 }
 

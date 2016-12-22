@@ -219,6 +219,8 @@ void ZJsonValue::clear()
 
 void ZJsonValue::print() const
 {
+//  std::cout << dumpString(2);
+
   ZJsonParser::print(NULL, m_data, 0);
 }
 

@@ -55,6 +55,9 @@ public:
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
+  bool isSwcWrittable();
+
+
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
