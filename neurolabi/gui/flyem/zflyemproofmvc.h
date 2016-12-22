@@ -378,6 +378,10 @@ private:
 
   uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
 
+  void exitHighlightMode();
+  ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
+  ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
+
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

@@ -2112,58 +2112,62 @@ void ZFlyEmProofMvc::notifySplitTriggered()
   */
 }
 
-void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
+void ZFlyEmProofMvc::exitHighlightMode()
+{
+  ZOUT(LINFO(), 3) << "Exiting highlight mode";
+
+  getCompletePresenter()->setHighlightMode(false);
+  highlightSelectedObject(false);
+}
+
+ZDvidSparseStack* ZFlyEmProofMvc::getCachedBodyForSplit(uint64_t bodyId)
 {
   ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
 
   ZOUT(LINFO(), 3) << "Get body for split:" << body;
-  /*
-      dynamic_cast<ZDvidSparseStack*>(
-        getDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_DVID_SPARSE_STACK,
-          ZStackObjectSourceFactory::MakeSplitObjectSource()));
-          */
+
+  if (body != NULL) {
+    if (body->getLabel() != bodyId) {
+      body = NULL;
+    }
+  }
+
+  return body;
+}
+
+ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
+    uint64_t bodyId, ZDvidReader &reader)
+{
+  ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
+  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId);
+
+  body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  body->setZOrder(0);
+  body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+  body->setHittable(false);
+  body->setSelectable(false);
+  ZOUT(LINFO(), 3) << "Adding body:" << body;
+  getDocument()->addObject(body, true);
+
+  return body;
+}
+
+void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
+{
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     getProgressSignal()->startProgress("Launching split ...");
-
-    ZOUT(LINFO(), 3) << "Exiting highlight mode";
-
-    getCompletePresenter()->setHighlightMode(false);
-    highlightSelectedObject(false);
-//    m_mergeProject.highlightSelectedObject(false);
-
-    if (body != NULL) {
-      if (body->getLabel() != bodyId) {
-        body = NULL;
-      }
-    }
-
-    getProgressSignal()->advanceProgress(0.1);
-
-    ZDvidLabelSlice *labelSlice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
-
-    ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
-
     getProgressSignal()->advanceProgress(0.1);
 
     if (reader.hasCoarseSparseVolume(bodyId)) {
+      exitHighlightMode();
+
+      getProgressSignal()->advanceProgress(0.1);
+      ZDvidSparseStack *body = getCachedBodyForSplit(bodyId);
+
       if (body == NULL) {
         ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
-        body = reader.readDvidSparseStackAsync(bodyId);
-
-        body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
-        body->setZOrder(0);
-        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        body->setColor(labelSlice->getLabelColor(
-                         bodyId, NeuTube::BODY_LABEL_ORIGINAL));
-        body->setHittable(false);
-        body->setSelectable(false);
-        ZOUT(LINFO(), 3) << "Adding body:" << body;
-        getDocument()->addObject(body, true);
-        //          body->setLabel(bodyId);
-        //        body->getObjectMask()->setLabel(bodyId);
+        body = updateBodyForSplit(bodyId, reader);
       }
 
       body->runFillValueFunc();
@@ -2172,8 +2176,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       ZOUT(LINFO(), 3) << "Removing ROI";
       getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
+      ZDvidLabelSlice *labelSlice =
+          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
       labelSlice->setHittable(false);
+
+      body->setColor(labelSlice->getLabelColor(
+                       bodyId, NeuTube::BODY_LABEL_ORIGINAL));
       body->setVisible(true);
       body->setProjectionVisible(false);
 
