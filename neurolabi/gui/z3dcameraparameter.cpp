@@ -181,7 +181,7 @@ QWidget *Z3DCameraParameter::actualCreateWidget(QWidget *parent)
   QGroupBox *groupBox = new QGroupBox("Camera Parameters", parent);
   groupBox->setLayout(lw);
 
-#ifndef _DEBUG_
+#ifndef _DEBUG_2
   groupBox->setVisible(false);
 #endif
 
