@@ -389,6 +389,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
   showSkeletonWindow();
   glm::vec3 eye = m_skeletonWindow->getCamera()->getEye();
   float nearDist = m_skeletonWindow->getCamera()->getNearDist();
+  glm::vec3 upVector = m_skeletonWindow->getCamera()->getUpVector();
 
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter) {
@@ -405,6 +406,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
 
 //    QString outDir = (GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/screenshots").c_str();
     m_skeletonWindow->getCamera()->setEye(eye);
+    m_skeletonWindow->getCamera()->setUpVector(upVector);
     m_skeletonWindow->getCamera()->setNearDist(nearDist);
     //  double eyeDist = eye[0];
     m_skeletonWindow->takeScreenShot(
