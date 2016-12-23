@@ -21536,7 +21536,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
   tree.addComment("Test");
@@ -21544,6 +21544,12 @@ void ZTest::test(MainWindow *host)
 
   std::cout << tree.toString() << std::endl;
 #endif
+
+#if 1
+  host->startProofread();
+
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

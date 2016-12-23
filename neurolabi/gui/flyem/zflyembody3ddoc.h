@@ -187,6 +187,7 @@ public:
   ZFlyEmToDoItem* getOneSelectedTodoItem() const;
 
   void forceBodyUpdate();
+  void waitForAllEvent();
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }

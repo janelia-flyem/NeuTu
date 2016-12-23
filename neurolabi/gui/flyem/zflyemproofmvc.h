@@ -121,6 +121,11 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
+  //exploratory code
+  void exportNeuronScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
