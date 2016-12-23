@@ -655,12 +655,16 @@ std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input) const
   std::set<uint64_t> bodySet;
 
   FILE *fp = fopen(input.c_str(), "r");
-  ZString str;
-  while (str.readLine(fp)) {
-    std::vector<uint64_t> bodyArray = str.toUint64Array();
-    bodySet.insert(bodyArray.begin(), bodyArray.end());
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      bodySet.insert(bodyArray.begin(), bodyArray.end());
+    }
+    fclose(fp);
+  } else {
+    std::cout << "Failed to open " << input << std::endl;
   }
-  fclose(fp);
 
   return bodySet;
 }
@@ -687,7 +691,7 @@ int ZCommandLine::runTest()
   }
 #endif
 
-#if 1
+#if 0
 //  ZDvidTarget target;
 //  target.set("emdata2.int.janelia.org", "3303", 8500);
 //  target.setBodyLabelName("bodies3");
@@ -719,6 +723,36 @@ int ZCommandLine::runTest()
   std::cout << skeletonizer.toSwcComment() << std::endl;
 
   m_forceUpdate = true;
+  int stat = skeletonizeDvid();
+  std::cout << stat << std::endl;
+
+#endif
+
+#if 1
+  m_input.push_back("http:emdata1.int.janelia.org:7000:005a:segmentation-labelvol");
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0]);
+
+  m_input.push_back(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/bodylist.txt");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonObject config = getSkeletonizeConfig(reader);
+  config.print();
+
+  std::vector<uint64_t> bodyList = getSkeletonBodyList(reader);
+  std::cout << "#Bodies: " << bodyList.size() << std::endl;
+  std::cout << bodyList.back() << std::endl;
+
+  ZDvidWriter writer;
+  writer.open(target);
+  std::cout << writer.isSwcWrittable() << std::endl;
+
+  ZStackSkeletonizer skeletonizer;
+  skeletonizer.configure(config);
+  std::cout << skeletonizer.toSwcComment() << std::endl;
+
+//  m_forceUpdate = true;
   int stat = skeletonizeDvid();
   std::cout << stat << std::endl;
 
