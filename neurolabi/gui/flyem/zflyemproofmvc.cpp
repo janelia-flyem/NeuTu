@@ -410,7 +410,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
     m_skeletonWindow->getCamera()->setNearDist(nearDist);
     //  double eyeDist = eye[0];
     m_skeletonWindow->takeScreenShot(
-          QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), MonoView);
+          QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
 
     m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
     //  m_skeletonWindow->setXZView();
