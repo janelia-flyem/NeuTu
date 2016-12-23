@@ -170,6 +170,7 @@ neurolabi/lib/msvc/zlib*/
 
 # more auto-generated files
 /neurolabi/gui/neuTube_d.app/
+/neurolabi/gui/neutu_d.app/
 /neurolabi/gui/moc_*
 /neurolabi/gui/Makefile
 /neurolabi/gui/ui_*

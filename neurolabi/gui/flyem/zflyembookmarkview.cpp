@@ -228,6 +228,6 @@ void ZFlyEmBookmarkView::uncheckCurrentBookmark()
 void ZFlyEmBookmarkView::sort()
 {
   if (getModel() != NULL) {
-    getModel()->sort();
+    getModel()->sortBookmark();
   }
 }

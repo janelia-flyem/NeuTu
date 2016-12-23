@@ -506,6 +506,10 @@ private slots:
   void tryToClose();
   void showAndRaise();
 
+  void on_actionTrace_Mask_triggered();
+  void on_actionSeed_Mask_triggered();
+
+
 private:
   void createActions();
   void createFileActions();

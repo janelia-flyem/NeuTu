@@ -44,9 +44,9 @@ public:
 
   class BodyStatus {
   private:
-    EBodyStatus m_bodyStatus;
+//    EBodyStatus m_bodyStatus;
     std::string m_user;
-    uint64_t m_bodyId;
+//    uint64_t m_bodyId;
   };
 
   std::string getUuid() const;

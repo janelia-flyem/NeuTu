@@ -16,7 +16,6 @@
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
-#include "z3dinteractionhandler.h"
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
@@ -85,6 +84,9 @@
 #include "zactionlibrary.h"
 #include "zmenufactory.h"
 #include "widgets/z3dtabwidget.h"
+#include "dialogs/zswcisolationdialog.h"
+#include "dialogs/helpdialog.h"
+#include "z3dinteractionhandler.h"
 
 class Sleeper : public QThread
 {
@@ -228,6 +230,9 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[3] = false; // ROIs
 
   setWindowType(NeuTube3D::TYPE_GENERAL);
+
+  m_cuttingStackBound = false;
+
 }
 
 Z3DWindow::~Z3DWindow()
@@ -491,6 +496,8 @@ void Z3DWindow::init(EInitMode mode)
   connect(getDocument(),
           SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
           m_swcFilter, SLOT(updateSwcVisibleState()));
+  connect(getDocument(), SIGNAL(stackBoundBoxChanged()),
+          this, SLOT(updateCuttingBox()));
   connect(m_punctaFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
           this, SLOT(punctaCoordScaleChanged()));
   connect(m_swcFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
@@ -622,6 +629,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(moveSelectedObjects(double,double,double)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeTreeInRoi(bool)),
+          this, SLOT(selectSwcTreeNodeTreeInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -640,6 +649,15 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+
+  m_swcIsolationDlg = new ZSwcIsolationDialog(this);
+  if (getDocument() != NULL) {
+    const ZResolution &res = getDocument()->getResolution();
+    m_swcIsolationDlg->setScale(res.voxelSizeX(), res.voxelSizeY(),
+                                res.voxelSizeZ());
+  }
+
+  m_helpDlg = new HelpDialog(this);
 
 #if defined(REMOTE_WORKSTATION)
   getCompositor()->setShowBackground(false);
@@ -702,6 +720,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
     action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
     break;
+  case ZActionFactory::ACTION_ADD_TODO_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToMergeMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
+    break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
@@ -733,6 +757,9 @@ void Z3DWindow::createActions()
 
   m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
   connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+
+  m_helpAction = new QAction("Help", this);
+  connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
 
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
@@ -927,10 +954,14 @@ void Z3DWindow::createMenus()
 {
   m_viewMenu = menuBar()->addMenu(tr("&View"));
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
+  m_helpMenu = menuBar()->addMenu(tr("&Help"));
+
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
   m_editMenu->addSeparator();
   m_editMenu->addAction(m_markSwcSomaAction);
+
+  m_helpMenu->addAction(m_helpAction);
 
   createContextMenu();
   customizeContextMenu();
@@ -2344,22 +2375,79 @@ void Z3DWindow::saveSelectedPunctaAs()
   }
 }
 
-void Z3DWindow::addTodoMarker()
+void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked)
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
+  emit addingTodoMarker(x, y, z, checked);
+}
+
+void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked)
+{
+  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked);
+}
+
+void Z3DWindow::emitAddToMergeMarker(int x, int y, int z)
+{
+  emit addingToMergeMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt)
+{
+  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void Z3DWindow::emitAddToSplitMarker(int x, int y, int z)
+{
+  emit addingToSplitMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt)
+{
+  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+static void AddTodoMarker(
+    Z3DWindow *window, ZFlyEmToDoItem::EToDoAction action, bool checked)
+{
+  QList<Swc_Tree_Node*> swcNodeList =
+      window->getDocument()->getSelectedSwcNodeList();
   if (swcNodeList.size() == 1) {
     ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), false);
+    if (checked) {
+      window->emitAddTodoMarker(pt, checked);
+    } else {
+      switch (action) {
+      case ZFlyEmToDoItem::TO_DO:
+        window->emitAddTodoMarker(pt, checked);
+        break;
+      case ZFlyEmToDoItem::TO_MERGE:
+        window->emitAddToMergeMarker(pt);
+        break;
+      case ZFlyEmToDoItem::TO_SPLIT:
+        window->emitAddToSplitMarker(pt);
+        break;
+      }
+    }
   }
+}
+
+void Z3DWindow::addTodoMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
+}
+
+void Z3DWindow::addToMergeMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_MERGE, false);
+}
+
+void Z3DWindow::addToSplitMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
-  if (swcNodeList.size() == 1) {
-    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), true);
-  }
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
 }
 
 void Z3DWindow::updateBody()
@@ -2786,6 +2874,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
 #endif
     if (event->modifiers() == Qt::NoModifier) {
       m_doc->executeBreakSwcConnectionCommand();
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      m_cuttingStackBound = !m_cuttingStackBound;
+      updateCuttingBox();
     }
     break;
   case Qt::Key_Equal: // increase swc size scale
@@ -2928,7 +3019,10 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_5:
     if (getCanvas()->getInteractionEngine()->getKeyMode() ==
         ZInteractionEngine::KM_SWC_SELECTION) {
-      m_doc->selectNoisyTrees();
+      if (m_swcIsolationDlg->exec()) {
+        m_doc->selectNoisyTrees(m_swcIsolationDlg->getLengthThreshold(),
+                                m_swcIsolationDlg->getDistanceThreshold());
+      }
     }
     break;
   default:
@@ -4207,6 +4301,13 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
   delete stroke;
 }
 
+void Z3DWindow::help()
+{
+  m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
+  m_helpDlg->show();
+  m_helpDlg->raise();
+}
+
 void Z3DWindow::markSwcSoma()
 {
   ZMarkSwcSomaDialog dlg;
@@ -4312,6 +4413,37 @@ void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
     base->setXScale(sx);
     base->setYScale(sy);
     base->setZScale(sz);
+  }
+}
+
+void Z3DWindow::updateCuttingBox()
+{
+  if (m_cuttingStackBound) {
+    setCutBox(LAYER_SWC, getDocument()->getStack()->getBoundBox());
+  } else {
+    resetCutBox(LAYER_SWC);
+  }
+}
+
+void Z3DWindow::setCutBox(ERendererLayer layer, const ZIntCuboid &box)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->setCutBox(box);
+    break;
+  default:
+    break;
+  }
+}
+
+void Z3DWindow::resetCutBox(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_SWC:
+    getSwcFilter()->resetCut();
+    break;
+  default:
+    break;
   }
 }
 
@@ -4451,6 +4583,55 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
     removeRectRoi();
   }
 }
+
+void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::RegularRootIterator rootIter(tree);
+      while (rootIter.hasNext()) {
+        Swc_Tree_Node *root = rootIter.next();
+        bool treeInRoi = true;
+        ZSwcTree::DownstreamIterator dsIter(root);
+        while (dsIter.hasNext()) {
+          Swc_Tree_Node *tn = dsIter.next();
+          const QPointF &pt = getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+        }
+
+        if (treeInRoi) {
+          dsIter.restart();
+          while (dsIter.hasNext()) {
+            Swc_Tree_Node *tn = dsIter.next();
+            tree->selectNode(tn, true);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
 
 void Z3DWindow::removeRectRoi()
 {

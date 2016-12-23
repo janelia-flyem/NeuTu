@@ -1,0 +1,91 @@
+<html>
+<head><title>Tracing</title></head>
+
+<body>
+<pre>neuTube --command --trace &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--level <int>] [--verbose]
+</pre>
+
+<p>Arguments:</p>
+
+<ul>
+<li>--command: this argument must be specified to use any command line function of neuTube
+
+<li>--trace: run neuTube as neuron tracing command, which only works for dark field image in this version.
+
+<li>&lt;input&gt;: input file, which must be a TIFF file 
+
+<li>-o &lt;output&gt;<output>: output SWC file, which usually ends with .swc extension.</output>
+
+<li>--config &lt;config_file&gt;: optional option for specifying a configuration file of tracing parameters. Default parameters will be used if this file is not specified.
+
+<li>--level &lt;level&gt;: tracing level. A higher tracing level means more computation and potentially better results. Currently level 1~6 is supported and any value out of the range will be reset to the closest bound. For example, level 0 is the same as level 1 and level 10 is the same as level 6. The default level is 1.
+
+<li>--verbose: output more message if this option is given
+</ul>
+
+Configuration file:
+
+A tracing config file is a json file with the following schema:
+<pre>{
+  "title": "Tracing Schema",
+  "type": "object",
+  "properties": {
+    "tag": {
+      "description": "File identification tag, which must be trace configuration",
+      "type": "string"
+    },
+    "default": {
+      "description": "Default parameter values",
+      "type": "object":,
+      "properties": {
+        "minimalScoreAuto": {
+          "description": "Minimal auto tracing score",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minimalScoreSeed": {
+          "description": "Minimal score screening score",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "refit": {
+          "description": "Aggressive parameter searching while the fitting score is too low after initial fitting",
+          "type": "boolean"
+        },
+        "spTest": {
+          "description": "Use signal path to evaluate the connection strength between two branches",
+          "type": "boolean"
+        },
+        "crossoverTest": {
+          "description": "Detect crossover patterns",
+          "type": "boolean"
+        },
+        "tuneEnd": {
+          "description": "Fine tuning of the terminal of a traced branch",
+          "type": "boolean"
+        },
+        "edgePath": {
+          "description": "Run signal path test on edge detection",
+          "type": "boolean"
+        },
+        "enhanceMask": {
+          "description": "More aggressive seed detection",
+          "type": "boolean"
+        },
+        "seedMethod": {
+          "description": "Seeding method",
+          "type": "integer" 
+        }
+      }
+    },
+    "level": {
+       "description": "Tracing level.",
+       "type": "object"
+    }
+  }
+}
+</pre>
+</body>
+</html>

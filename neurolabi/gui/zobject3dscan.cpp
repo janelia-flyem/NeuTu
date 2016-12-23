@@ -80,6 +80,7 @@ void ZObject3dScan::init()
   m_blockingEvent = false;
   m_zProjection = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
+  setColor(255, 255, 255, 255);
 }
 
 
@@ -3242,7 +3243,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::INVALID_Z_INDEX;
+  int cz = NeuTube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 

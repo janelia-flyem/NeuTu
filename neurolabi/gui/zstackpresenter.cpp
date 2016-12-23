@@ -420,6 +420,46 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
 
     if (!connectAction(action, item)) {
       LWARN() << "Failed to connect action: " << action->text();
+#if 0
+        //Body actions
+      case ZActionFactory::ACTION_BODY_ANNOTATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyAnnotationTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_SPLIT_START:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodySplitTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyForceCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKOUT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckoutTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_DECOMPOSE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyDecomposeTriggered()));
+        break;
+      case ZActionFactory::ACTION_BOOKMARK_CHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
+        break;
+      case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
+        break;
+      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(selectAllSwcTreeNode()));
+        break;
+      default:
+        break;
+      }
+#endif
     }
   } else {
     action = m_actionMap[item];
@@ -2033,48 +2073,39 @@ void ZStackPresenter::autoTrace()
 }
 */
 
+ZPoint ZStackPresenter::getMousePositionInStack(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
+{
+  const ZMouseEvent &event =
+      m_mouseEventProcessor.getMouseEvent(buttons, action);
+  ZPoint pt = event.getStackPosition();
+
+  return pt;
+}
+
 void ZStackPresenter::traceTube()
 {
   //QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyView()->setScreenCursor(Qt::BusyCursor);
-  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
-  if (buddyDocument()->getStack()->channelNumber() == 1) {
-    if (event.getRawStackPosition().z() < 0) {
-      buddyDocument()->executeTraceSwcBranchCommand(pt.x(), pt.y());
-    } else {
-      buddyDocument()->executeTraceSwcBranchCommand(pt.x(), pt.y(), pt.z());
-    }
 
-    /*
-    buddyDocument()->executeTraceSwcBranchCommand(
-          dataPos.x(), dataPos.y(), m_mouseLeftReleasePosition[2]);
-          */
-#if 0
-    QUndoCommand *traceTubeCommand = new ZStackDocTraceTubeCommand(buddyDocument(),
-                                                                   dataPos.x(), dataPos.y(),
-                                                                   m_mouseLeftReleasePosition[2]);
-    buddyDocument()->pushUndoCommand(traceTubeCommand);
-#endif
+  ZPoint pt = getMousePositionInStack(
+        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+  ZStackDoc *doc = buddyDocument();
+  if (doc->getStack()->channelNumber() == 1) {
+    if (doc->isZProjection(pt.getZ())) {
+      doc->executeTraceSwcBranchCommand(pt.x(), pt.y());
+    } else {
+      doc->executeTraceSwcBranchCommand(pt.x(), pt.y(), pt.z());
+    }
   } else if (buddyDocument()->getStack()->channelNumber() > 1) {
     ChannelDialog dlg(NULL, buddyDocument()->getStack()->channelNumber());
     if (dlg.exec() == QDialog::Accepted) {
       int channel = dlg.channel();
-      buddyDocument()->executeTraceTubeCommand(
+      buddyDocument()->executeTraceSwcBranchCommand(
             pt.x(), pt.y(), pt.z(), channel);
-#if 0
-      QUndoCommand *traceTubeCommand = new ZStackDocTraceTubeCommand(buddyDocument(),
-                                                                     dataPos.x(), dataPos.y(),
-                                                                     m_mouseLeftReleasePosition[2],
-                                                                     channel);
-      buddyDocument()->pushUndoCommand(traceTubeCommand);
-#endif
     }
   }
-  //buddyView()->setImageWidgetCursor(Qt::CrossCursor);
   updateCursor();
-  //updateView();
 }
 
 void ZStackPresenter::fitSegment()

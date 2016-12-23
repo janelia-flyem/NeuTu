@@ -21,10 +21,8 @@ ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
 
 ZGradientMagnitudeModule::~ZGradientMagnitudeModule()
 {
-  if(select_strategy_window)
-  {
-    delete select_strategy_window;
-  }
+
+  delete select_strategy_window;
 }
 
 
@@ -348,6 +346,7 @@ void GradientStrategyContext:: _run
               out->c_stack(i),gaussin_smooth_sigma_x,
               gaussin_smooth_sigma_y,gaussin_smooth_sigma_z);
         memcpy(out->array8(i),p->array,sizeof(T)*total);
+        Kill_Stack(p);
       }
     }
 
@@ -376,6 +375,37 @@ void GradientStrategyContext:: _run
 
 
 template<typename T>
+void GradientStrategySimple<T>::process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end)
+{
+
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
+      {
+        if(w==0)*p=std::abs(double(*pi)-*(pi+offset));
+        else if(w==end)*p=std::abs(double(*(pi-offset))-*pi);
+        else*p=std::abs(double(*(pi+offset))-*(pi-offset))/2.0;
+      }
+}
+
+
+template<>
+void GradientStrategySimple<color_t>::process(uint& x,uint&y ,uint&z,uint& w,const color_t* pi,color_t* p,uint offset,uint end)
+{
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
+        for(uint t=0;t<3;++t)
+        {
+          if(w==0)(*p)[t]=std::abs(double((*pi)[t])-(*(pi+offset))[t]);
+          else if(w==end)(*p)[t]=std::abs(double((*(pi-offset))[t])-(*pi)[t]);
+          else(*p)[t]=std::abs(double((*(pi+offset))[t])-(*(pi-offset))[t])/2.0;
+        }
+
+}
+
+
+template<typename T>
 void GradientStrategySimple<T>::_run(const T* in,T* out)
 {
   uint width=this->_width,height=this->_height,depth=this->_depth;
@@ -387,31 +417,22 @@ void GradientStrategySimple<T>::_run(const T* in,T* out)
   memset(px,0,sizeof(T)*total);
   memset(py,0,sizeof(T)*total);
   memset(pz,0,sizeof(T)*total);
-
-#define process(m,n,p,o) \
-for(uint z=0;z<depth;++z)\
-  for(uint y=0;y<height;++y)\
-    for(uint x=0;x<width;++x,++pi,++p)\
-      if(m==0)*p=abs(double(*pi)-*(pi+o));\
-      else if(m==n)*p=abs(double(*(pi-o))-*pi);\
-      else*p=abs(double(*(pi+o))-*(pi-o))/2.0;
-
   const T* pi=in;
+  uint x,y,z;
   if(width>1)
   {
-    process(x,width-1,_px,1);
+    process(x,y,z,x,pi,_px,1,width-1);
   }
   pi=in;
   if(height>1)
   {
-    process(y,height-1,_py,width);
+    process(x,y,z,y,pi,_py,width,height-1);
   }
   pi=in;
   if(depth>1)
   {
-    process(z,depth-1,_pz,slice);
+    process(x,y,z,z,pi,_pz,slice,depth-1);
   }
-#undef process
   for(uint i=0;i<total;++i)
   {
     out[i]=std::min(sqrt(static_cast<double>(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i])),max);
@@ -435,31 +456,22 @@ void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
   memset(py,0,sizeof(color_t)*total);
   memset(pz,0,sizeof(color_t)*total);
 
-#define process(m,n,p,o) \
-for(uint z=0;z<depth;++z)\
-  for(uint y=0;y<height;++y)\
-    for(uint x=0;x<width;++x,++pi,++p)\
-      for(uint t=0;t<3;++t)\
-        if(m==0)(*p)[t]=abs(double((*pi)[t])-(*(pi+o))[t]);\
-        else if(m==n)(*p)[t]=abs(double((*(pi-o))[t])-(*pi)[t]);\
-        else(*p)[t]=abs(double((*(pi+o))[t])-(*(pi-o))[t])/2.0;\
-
   const color_t* pi=in;
+  uint x,y,z;
   if(width>1)
   {
-    process(x,width-1,_px,1);
+    process(x,y,z,x,pi,_px,1,width-1);
   }
   if(height>1)
   {
     pi=in;
-    process(y,height-1,_py,width);
+    process(x,y,z,y,pi,_py,width,height-1);
   }
   if(depth>1)
   {
     pi=in;
-    process(z,depth-1,_pz,slice);
+    process(x,y,z,z,pi,_pz,slice,depth-1);
   }
-#undef process
   for(uint i=0;i<total;++i)
   {
     for(uint t=0;t<3;++t)

@@ -49,7 +49,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = NeuTube::INVALID_Z_INDEX;
+  m_z = NeuTube::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()

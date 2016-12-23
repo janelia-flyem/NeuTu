@@ -84,6 +84,7 @@ private slots:
 
 private:
   void createMenu();
+  void createColorMenu();
   QSortFilterProxyModel *createSortingProxy(ZFlyEmBookmarkListModel *model);
 
 private:
@@ -93,7 +94,8 @@ private:
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
   QAction *m_nameColorAction;
-  QAction *m_sequencerColorAction;
+//  QAction *m_sequencerColorAction;
+//  QAction *m_focusedColorAction;
 
   ZColorLabel *m_latencyWidget;
 

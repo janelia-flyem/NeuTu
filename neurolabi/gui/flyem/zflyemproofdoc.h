@@ -20,6 +20,7 @@
 #include "flyem/zflyemmb6analyzer.h"
 #include "dvid/zdvidversiondag.h"
 #include "zflyembodymergeproject.h"
+#include "flyem/zflyembodycoloroption.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -40,9 +41,11 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
+  /*
   enum EBodyColorMap {
-    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_FOCUSED
   };
+  */
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
@@ -177,8 +180,8 @@ public:
    */
   void cleanBodyAnnotationMap();
 
-  void activateBodyColorMap(const QString &option);
-  void activateBodyColorMap(EBodyColorMap colorMap);
+  void activateBodyColorMap(const QString &colorMapName);
+  bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
   ZDvidReader& getDvidReader() {
     return m_dvidReader;
@@ -198,6 +201,7 @@ public:
 
 public:
   void runSplit();
+  bool isSplitRunning() const;
   void runLocalSplit();
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
@@ -260,6 +264,10 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -296,6 +304,52 @@ public: //Bookmark functions
 public:
   bool isDataValid(const std::string &data) const;
   void notifyBodySelectionChanged();
+
+  /*!
+   * \brief Fetch DVID label slice data and set body selections
+   */
+  void updateDvidLabelSlice(NeuTube::EAxis axis);
+//  void updateDvidLabelSlice();
+
+  /*!
+   * \brief Update sparsevol based on current body selections
+   */
+//  void updateDvidSparsevolSlice();
+
+  /*!
+   * \brief Factory function to make a new ZDvidSparsevolSlice object
+   *
+   * \a labelSlice is used to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   * \param bodyId Body ID of the returned object.
+   *
+   * \return A new object or NULL if \a bodyId is invalid.
+   */
+  ZDvidSparsevolSlice* makeDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice, uint64_t bodyId);
+
+  /*!
+   * \brief Factory function to make new ZDvidSparsevolSlice objects
+   *
+   * The objects created are those selected in \a labelSlice, which is also used
+   * to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   *
+   * \return A list of new objects.
+   */
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice);
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol();
+
+  /*!
+   * \brief Remove certain dvid sparsevol objects
+   *
+   * \param axis Axis of the objects to remove
+   * \return Number of objects removed
+   */
+  int removeDvidSparsevol(NeuTube::EAxis axis);
 
 signals:
   void bodyMerged();
@@ -338,7 +392,15 @@ public slots: //Commands
 
   void executeAddTodoItemCommand(int x, int y, int z, bool checked);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(
+      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeAddToMergeItemCommand(int x, int y, int z);
+  void executeAddToMergeItemCommand(const ZIntPoint &pt);
+  void executeAddToSplitItemCommand(int x, int y, int z);
+  void executeAddToSplitItemCommand(const ZIntPoint &pt);
+
+
   void executeRemoveTodoItemCommand();
 
 
@@ -349,7 +411,13 @@ public slots:
   void clearBodyMergeStage();
   void uploadMergeResult();
 
-  void updateDvidLabelObject();
+//  void updateDvidLabelObject();
+
+  void updateDvidLabelObject(EObjectModifiedMode updateMode);
+  void updateDvidLabelObjectSliently();
+  void updateDvidLabelObject(NeuTube::EAxis axis);
+
+
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -361,6 +429,8 @@ public slots:
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
 
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void updateFocusedColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
+
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
                   ZDvidSynapseEnsemble::EDataScope scope);
@@ -420,13 +490,12 @@ private:
   void readInfo();
   void updateMaxLabelZoom();
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
+  ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
+      ZFlyEmBodyColorOption::EColorOption type);
   template<typename T>
-  ZSharedPointer<T> getColorScheme(EBodyColorMap type);
+  ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  bool isActive(EBodyColorMap type);
-
-  void updateBodyColor(EBodyColorMap type);
+  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
   void runSplitFunc();
   void localSplitFunc();
@@ -434,6 +503,12 @@ private:
   ZIntCuboid estimateLocalSplitRoi();
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
+
+  void updateSequencerBodyMap(
+      const ZFlyEmSequencerColorScheme &colorScheme,
+      ZFlyEmBodyColorOption::EColorOption option);
+
+  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
@@ -464,7 +539,8 @@ protected:
   bool m_routineCheck;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
-  QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
+  QMap<ZFlyEmBodyColorOption::EColorOption,
+  ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZFlyEmMB6Analyzer m_analyzer;

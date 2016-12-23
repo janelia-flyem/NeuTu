@@ -18,6 +18,7 @@ void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
   m_coordSys = coordSys;
   m_action = NeuTube::View::EXPLORE_UNKNOWN;
   m_fixingZ = false;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 void ZStackViewParam::setZ(int z)

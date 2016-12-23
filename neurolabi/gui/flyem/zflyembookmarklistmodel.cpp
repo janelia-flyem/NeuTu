@@ -123,7 +123,7 @@ bool ZFlyEmBookmarkListModel::insertRows(
   return false;
 }
 
-void ZFlyEmBookmarkListModel::sort()
+void ZFlyEmBookmarkListModel::sortBookmark()
 {
   m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
 }

@@ -53,6 +53,8 @@ class ZStroke2d;
 class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
+class ZSwcIsolationDialog;
+class HelpDialog;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
@@ -155,6 +157,9 @@ public: //properties
 
   void writeSettings();
   void readSettings();
+  void setCutBox(ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(ERendererLayer layer);
+
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -236,6 +241,14 @@ public:
 public:
   //Control panel setup
 
+public: //external signal call
+  void emitAddTodoMarker(int x, int y, int z, bool checked);
+  void emitAddToMergeMarker(int x, int y, int z);
+  void emitAddToSplitMarker(int x, int y, int z);
+  void emitAddTodoMarker(const ZIntPoint &pt, bool checked);
+  void emitAddToMergeMarker(const ZIntPoint &pt);
+  void emitAddToSplitMarker(const ZIntPoint &pt);
+
 protected:
 
 private:
@@ -260,7 +273,8 @@ private:
 
   int channelNumber();
 
-  void setupCamera(const std::vector<double> &bound, Z3DCamera::ResetCameraOptions options);
+  void setupCamera(const std::vector<double> &bound,
+                   Z3DCamera::ResetCameraOptions options);
 
   bool hasVolume();
 
@@ -275,7 +289,9 @@ signals:
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
   void addingTodoMarker(int x, int y, int z, bool checked);
-  
+  void addingToMergeMarker(int x, int y, int z);
+  void addingToSplitMarker(int x, int y, int z);
+
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
   void resetCameraCenter();
@@ -383,6 +399,8 @@ public slots:
   void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
   void addTodoMarker();
+  void addToMergeMarker();
+  void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
 
@@ -413,9 +431,13 @@ public slots:
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
   void markSwcSoma();
+  void help();
 
   void selectSwcTreeNodeInRoi(bool appending);
+  void selectSwcTreeNodeTreeInRoi(bool appending);
   void cropSwcInRoi();
+
+  void updateCuttingBox();
 
 
 protected:
@@ -448,6 +470,7 @@ private:
 
   ZActionLibrary *m_actionLibrary;
   ZMenuFactory *m_menuFactory;
+  QMenu *m_helpMenu;
 
   QAction *m_removeSelectedObjectsAction;
   QAction *m_openVolumeZoomInViewAction;
@@ -478,6 +501,7 @@ private:
   QAction *m_selectAllSwcNodeAction;
   QAction *m_translateSwcNodeAction;
   QAction *m_changeSwcNodeSizeAction;
+  QAction *m_helpAction;
 
   QAction *m_refreshTraceMaskAction;
 
@@ -553,6 +577,7 @@ private:
   ZROIWidget *m_roiDockWidget;
 
   bool m_isStereoView;
+  bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;
 
@@ -561,6 +586,8 @@ private:
   QToolBar *m_toolBar;
 
   mutable QMutex m_filterMutex;
+  ZSwcIsolationDialog *m_swcIsolationDlg;
+  HelpDialog *m_helpDlg;
 };
 
 #endif // Z3DWINDOW_H

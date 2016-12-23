@@ -5,6 +5,7 @@
 #include "zdviddata.h"
 #if _QT_APPLICATION_
 #include <QtDebug>
+#include "QsLog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"
@@ -218,7 +219,7 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 
   if (tokens.size() < 4 || tokens[0] != "http") {
 #if defined(_QT_APPLICATION_)
-    qWarning() << "Invalid source string for dvid target:" << sourceString.c_str();
+    LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
     RECORD_WARNING_UNCOND("Invalid source string");
 #endif

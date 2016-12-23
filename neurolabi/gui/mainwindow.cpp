@@ -1166,6 +1166,10 @@ void MainWindow::updateAction()
   foreach (ZActionActivator *actionActivator, m_actionActivatorList) {
     actionActivator->update(frame);
   }
+
+  if (GET_APPLICATION_NAME != "General") {
+    m_ui->actionAutomatic_Axon->setVisible(false);
+  }
 }
 
 void MainWindow::updateMenu()
@@ -2654,7 +2658,8 @@ void MainWindow::autoTrace(ZStackFrame *frame)
   frame->document()->setProgressReporter(&reporter);
 
   frame->executeAutoTraceCommand(m_autoTraceDlg->getTraceLevel(),
-                                 m_autoTraceDlg->getDoResample());
+                                 m_autoTraceDlg->getDoResample(),
+                                 m_autoTraceDlg->getChannel());
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2665,6 +2670,9 @@ void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
     if (m_autoTraceDlg->exec()) {
       m_progress->setRange(0, 100);
       m_progress->setValue(1);
@@ -3394,6 +3402,12 @@ void MainWindow::test(ZTestOptionDialog *dlg)
     break;
   case ZTestOptionDialog::OPTION_UNIT:
     ZTest::getInstance().runUnitTest();
+    break;
+  case ZTestOptionDialog::OPTION_CRASH:
+    ZTest::CrashTest();
+    break;
+  case ZTestOptionDialog::OPTION_COMMAND:
+    ZTest::CommandLineTest();
     break;
   }
 }
@@ -6513,7 +6527,7 @@ void MainWindow::testFlyEmProofread()
 {
   ZProofreadWindow* window = startProofread();
 
-  window->test();
+  window->stressTest();
 }
 
 void MainWindow::runBodySplit()
@@ -7463,6 +7477,52 @@ void MainWindow::runRoutineCheck()
     }
   }
 }
+
+void MainWindow::on_actionTrace_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    Stack *mask = frame->document()->getTraceWorkspace()->trace_mask;
+
+    if (mask != NULL) {
+      ZStackDocReader reader;
+      ZStack *stack = new ZStack;
+      Stack *stackData = C_Stack::translate(mask, GREY, 0);
+      stack->consume(stackData);
+      reader.setStack(stack);
+      ZStackFrame *newFrame = createStackFrame(reader);
+      addStackFrame(newFrame);
+      presentStackFrame(newFrame);
+    }
+  }
+}
+
+void MainWindow::on_actionSeed_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
+    Stack *stackData =
+        C_Stack::clone(
+          frame->document()->getStack()->c_stack(m_autoTraceDlg->getChannel()));
+    Stack *mask =
+        frame->document()->getNeuronTracer()->computeSeedMask(stackData);
+    C_Stack::kill(stackData);
+
+    ZStackDocReader reader;
+    ZStack *stack = new ZStack;
+    stack->consume(mask);
+    reader.setStack(stack);
+    ZStackFrame *newFrame = createStackFrame(reader);
+    addStackFrame(newFrame);
+    presentStackFrame(newFrame);
+  }
+}
+
 
 void MainWindow::on_actionSubtract_Background_triggered()
 {

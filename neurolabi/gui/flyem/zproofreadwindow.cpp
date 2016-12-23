@@ -31,6 +31,7 @@
 #include "zflyembookmarkview.h"
 #include "dialogs/flyembodyfilterdialog.h"
 #include "zflyemdataloader.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -132,6 +133,7 @@ void ZProofreadWindow::init()
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+  connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
   setCentralWidget(widget);
 
@@ -185,6 +187,7 @@ void ZProofreadWindow::createDialog()
   m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
 
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
+  m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -192,12 +195,14 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
-void ZProofreadWindow::testSlot()
+void ZProofreadWindow::stressTestSlot()
 {
-  m_mainMvc->test();
+  if (m_stressTestOptionDlg->exec()) {
+    m_mainMvc->stressTest(m_stressTestOptionDlg);
+  }
 }
 
-void ZProofreadWindow::test()
+void ZProofreadWindow::stressTest()
 {
   if (!m_mainMvc->getDvidTarget().isValid()) {
     m_mainMvc->setDvidTarget();
@@ -213,7 +218,7 @@ void ZProofreadWindow::test()
   m_mainMvc->getPresenter()->setObjectVisible(false);
   */
 
-  testSlot();
+  stressTestSlot();
 }
 
 void ZProofreadWindow::createMenu()
@@ -368,7 +373,7 @@ void ZProofreadWindow::createMenu()
   m_advancedMenu->addAction(mainWindowAction);
 
   QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
   m_advancedMenu->addAction(testAction);
 
 

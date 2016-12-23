@@ -379,24 +379,24 @@ bool ZDvidSparseStack::fillValue(
               return blockCount > 0;
             }
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "block:" << i << "/" << blockSpan.size() << std::endl;
 #endif
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
             ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "Reading" << blockNumber << "blocks" << std::endl;
 #endif
             std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
                   blockIndex, dvidInfo, blockNumber);
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
             grid->consumeStack(blockIndex, stackArray);
             blockCount += stackArray.size();
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
 #if 0

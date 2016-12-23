@@ -34,9 +34,9 @@ QFuture<void> *ZThreadFutureMap::getFuture(const QString &id)
   return future;
 }
 
-bool ZThreadFutureMap::isAlive(const QString &id)
+bool ZThreadFutureMap::isAlive(const QString &id) const
 {
-  QFuture<void> *future = getFuture(id);
+  QFuture<void> *future = const_cast<ZThreadFutureMap&>(*this).getFuture(id);
   if (future != NULL) {
     return !future->isFinished();
   }

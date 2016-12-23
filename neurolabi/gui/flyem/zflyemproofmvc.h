@@ -43,6 +43,7 @@ class ZFlyEmBookmarkView;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
+class ZRandomGenerator;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -120,11 +121,10 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
-  void test();
-
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
+  void exitingSplit();
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
@@ -174,7 +174,7 @@ public slots:
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId, bool appending);
   void locateBody(uint64_t bodyId);
-  void locateBody(QList<uint64_t> bodyIdList);
+//  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending = true);
@@ -287,7 +287,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
-  void testSlot();
+  void testBodyMerge();
+  void testBodySplit();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -331,6 +332,10 @@ protected:
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
+
+private slots:
+//  void updateDvidLabelObject();
 
 private:
   void init();
@@ -370,6 +375,13 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
+
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  void exitHighlightMode();
+  ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
+  ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
+
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 
@@ -431,8 +443,6 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
-
-  QTimer *m_testTimer;
 };
 
 template <typename T>
