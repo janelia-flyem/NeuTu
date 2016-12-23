@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QMainWindow>
 #include <QDesktopWidget>
+#include <QApplication>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -379,6 +380,48 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(ZFlyEmBookmark*)));
   connect(view, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
+}
+
+void ZFlyEmProofMvc::exportNeuronScreenshot(
+    const std::vector<uint64_t> &bodyIdArray, int width, int height,
+    const QString &outDir)
+{
+  showSkeletonWindow();
+  glm::vec3 eye = m_skeletonWindow->getCamera()->getEye();
+  float nearDist = m_skeletonWindow->getCamera()->getNearDist();
+
+  for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+
+    locateBody(bodyId);
+
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+    doc->waitForAllEvent();
+    QApplication::processEvents();
+
+    //  m_skeletonWindow->getCamera()->setProjectionType(Z3DCamera::Orthographic);
+
+//    QString outDir = (GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/screenshots").c_str();
+    m_skeletonWindow->getCamera()->setEye(eye);
+    m_skeletonWindow->getCamera()->setNearDist(nearDist);
+    //  double eyeDist = eye[0];
+    m_skeletonWindow->takeScreenShot(
+          QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), MonoView);
+
+    m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
+    //  m_skeletonWindow->setXZView();
+    //  eye = m_skeletonWindow->getCamera()->getEye();
+    //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
+    //  m_skeletonWindow->getCamera()->setEye(eye);
+    m_skeletonWindow->takeScreenShot(
+          QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+
+    m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
+    m_skeletonWindow->takeScreenShot(
+          QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+  }
 }
 
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
