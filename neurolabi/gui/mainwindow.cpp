@@ -1387,11 +1387,11 @@ void MainWindow::takeScreenshot()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     QString fileName =
-        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif) ");
+        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif)");
 #if 0
 
         QFileDialog::getSaveFileName(this, tr("Save Screenshot"), m_lastOpenedFilePath,
-                                     tr("Tiff stack files (*.tif) "), NULL/*,
+                                     tr("Tiff stack files (*.tif)"), NULL/*,
                                      QFileDialog::DontUseNativeDialog*/);
 #endif
     if (!fileName.isEmpty()) {
@@ -1741,12 +1741,12 @@ void MainWindow::saveAs()
       openFileName = frame->document()->getStack()->sourcePath().c_str();
     }
     QString fileName = getSaveFileName(
-          "Save stack", "Tiff stack files (*.tif) ", openFileName);
+          "Save stack", "Tiff stack files (*.tif)", openFileName);
 #if 0
         QFileDialog::getSaveFileName(
           this, tr("Save stack"),
           frame->document()->stack()->sourcePath().c_str(),
-          tr("Tiff stack files (*.tif) "), NULL/*,
+          tr("Tiff stack files (*.tif)"), NULL/*,
           QFileDialog::DontUseNativeDialog*/);
 #endif
 
@@ -1760,11 +1760,11 @@ void MainWindow::saveAs()
 #if 0
 void MainWindow::exportSwc()
 {
-  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
+  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save SWC"), m_lastOpenedFilePath,
-         tr("SWC files (*.swc) "));
+         tr("SWC files (*.swc)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1779,11 +1779,11 @@ void MainWindow::exportSwc()
 
 void MainWindow::exportPuncta()
 {
-  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo) ");
+  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1834,11 +1834,11 @@ void MainWindow::exportChainFileList()
 }
 void MainWindow::exportSvg()
 {
-  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
+  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg)",
                                      "./untitled.svg");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save svg file"), "./untitled.svg",
-           tr("Svg file (*.svg) "));
+           tr("Svg file (*.svg)"));
 #endif
   if (!fileName.isEmpty()) {
     activeStackFrame()->document()->exportSvg(
@@ -1848,12 +1848,12 @@ void MainWindow::exportSvg()
 
 void MainWindow::exportTraceProject()
 {
-  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml) ",
+  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml)",
                                      "./untitled.xml");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save trace project"),
                                    "./untitled.xml",
-                                   tr("XML file (*.xml) "));
+                                   tr("XML file (*.xml)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -5198,11 +5198,11 @@ void MainWindow::on_actionSave_SWC_triggered()
       }
 
       QString fileName = getSaveFileName(
-            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+            "Save neuron as SWC", tr("SWC file (*.swc)"), swcSource.c_str());
 #if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
-                                       tr("SWC file (*.swc) "));
+                                       tr("SWC file (*.swc)"));
 #endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
@@ -5577,9 +5577,9 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
             m_lastOpenedFilePath += ".swc";
           }
           //QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-          //                                   tr("SWC file (*.swc) "), false);
+          //                                   tr("SWC file (*.swc)"), false);
           QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-                                             tr("SWC file (*.swc) "));
+                                             tr("SWC file (*.swc)"));
           if (!fileName.isEmpty()) {
             ZSwcTree *tree = frame->document()->getMergedSwc();
             if (tree != NULL) {
