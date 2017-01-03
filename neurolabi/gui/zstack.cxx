@@ -570,7 +570,7 @@ bool ZStack::load(Stack *stack, bool isOwner)
 
     if (isOwner) {
       stack->array = NULL;
-      Kill_Stack(stack);
+      C_Stack::kill(stack);
       m_dealloc = C_Stack::systemKill;
     } else {
       m_dealloc = NULL;

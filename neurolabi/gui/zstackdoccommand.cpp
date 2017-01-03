@@ -49,9 +49,12 @@ bool ZUndoCommand::loggingCommand() const
 
 void ZUndoCommand::logCommand(const QString &msg) const
 {
+  //Need to add back after fixing logging too many moving messages
+#ifdef _DEBUG_
   if (loggingCommand() && !msg.isEmpty()) {
     LINFO() << msg;
   }
+#endif
 }
 
 void ZUndoCommand::setLogMessage(const QString &msg)
@@ -1700,38 +1703,6 @@ ZStackDocCommand::SwcEdit::GroupSwc::GroupSwc(
     new ZStackDocCommand::SwcEdit::RemoveEmptyTree(doc, this);
   }
 }
-
-#if 0
-ZStackDocCommand::SwcEdit::TraceSwcBranch::TraceSwcBranch(
-    ZStackDoc *doc, double x, double y, double z, int c, QUndoCommand *parent) :
-  QUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_c(c)
-{
-
-}
-
-ZStackDocCommand::SwcEdit::TraceSwcBranch::~TraceSwcBranch()
-{
-
-}
-
-void ZStackDocCommand::SwcEdit::TraceSwcBranch::redo()
-{
-  ZNeuronTracer tracer;
-  tracer.setIntensityField(m_doc->stack()->c_stack(m_c));
-  tracer.setTraceWorkspace(m_doc->getTraceWorkspace());
-  ZSwcPath branch = tracer.trace(m_x, m_y, m_z);
-  tracer.updateMask(branch);
-  ZSwcTree *tree = new ZSwcTree();
-  tree->setDataFromNode(branch.front());
-  m_doc->addSwcTree(tree, false);
-  m_doc->notifySwcModified();
-}
-
-void ZStackDocCommand::SwcEdit::TraceSwcBranch::undo()
-{
-
-}
-#endif
 
 ZStackDocCommand::ObjectEdit::RemoveSelected::RemoveSelected(
     ZStackDoc *doc, QUndoCommand *parent) : ZUndoCommand(parent), doc(doc)

@@ -134,7 +134,7 @@ public:
     return m_connWorkspace;
   }
 
-  void initTraceMask();
+  void initTraceMask(bool clearing);
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -170,6 +170,9 @@ public:
 
   Stack* computeSeedMask();
   Stack* computeSeedMask(Stack *stack);
+
+public:
+  void test();
 
 private:
   //Helper functions

@@ -1474,12 +1474,14 @@ void Z3DWindow::setXZView()
 {
   resetCamera();
   getCamera()->rotate90X();
+  resetCameraClippingRange();
 }
 
 void Z3DWindow::setYZView()
 {
   resetCamera();
   getCamera()->rotate90XZ();
+  resetCameraClippingRange();
 }
 
 void Z3DWindow::recordView()
@@ -2481,7 +2483,7 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
       m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);

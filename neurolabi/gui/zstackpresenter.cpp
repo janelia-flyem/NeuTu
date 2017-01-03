@@ -2156,7 +2156,7 @@ bool ZStackPresenter::enterSwcExtendMode()
   if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
-      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                  "Right click to exit extending mode.");
 
 //      m_stroke.setFilled(false);
@@ -2773,14 +2773,24 @@ void ZStackPresenter::process(ZStackOperator &op)
           enterSwcExtendMode();
         }
       }
+
+      if (interactiveContext().swcEditMode() ==
+          ZInteractiveContext::SWC_EDIT_SELECT) {
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+      }
     }
-//    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_ALL_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_SWC_NODE_SELECTION_CLEARED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE:
     buddyDocument()->deselectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    if (buddyDocument()->getSelectedSwcNodeNumber() == 0) {
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_SWC_NODE_SELECTION_CLEARED);
+    }
     //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), false);
     break;
   case ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE:

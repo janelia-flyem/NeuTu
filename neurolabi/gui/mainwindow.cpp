@@ -918,6 +918,7 @@ void MainWindow::customizeActions()
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
     m_ui->actionTiles->setVisible(false);
+    m_ui->actionTiles2->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
@@ -2178,7 +2179,7 @@ void MainWindow::about()
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
     title += QString("<p>") +
         NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
-        " (20aeda41166d2c2ba2dbaf927110a7fb2cffde3a)</p>";
+        " (dd874dde6650b9afed51bbad6a9617530bada738)</p>";
   }
   QString thirdPartyLib = QString("<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third Party Libraries</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2632,6 +2633,25 @@ void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    //Temporary fix
+    if (frame->document()->getStack()->depth() <= 1) {
+      QMessageBox::warning(
+            this, "Auto-Tracing Failed",
+            "Tracing can only be done on a 3D image (more than one slice). "
+            "No result is generated.");
+
+      return;
+    }
+
+    if (frame->document()->getStack()->kind() != GREY &&
+        frame->document()->getStack()->kind() != GREY16) {
+      QMessageBox::warning(this, "Auto-Tracing Failed",
+                           "The image type must be 8-bit or 16-bit grayscale. "
+                           "No result is generated.");
+
+      return;
+    }
+
     int channelNumber = frame->document()->getStack()->channelNumber();
     m_autoTraceDlg->setChannelNumber(channelNumber);
 
@@ -3741,42 +3761,6 @@ void MainWindow::on_actionImportMask_triggered()
 
 void MainWindow::on_actionFlyEmSelect_triggered()
 {
-  /*
-  ZStackFrame *frame = currentStackFrame();
-  if (frame != NULL) {
-    ParameterDialog dlg;
-    dlg.setWindowTitle(tr("Select Bodies"));
-    if (dlg.exec() == QDialog::Accepted) {
-      ZString str(dlg.parameter());
-      std::vector<int> bodyColor;
-      if (str.startsWith("b")) {
-        std::vector<int> bodyId = str.toIntegerArray();
-        for (size_t i = 0; i < bodyId.size(); ++i) {
-          std::vector<uint8_t> code =
-              FlyEm::ZSegmentationAnalyzer::idToChannelCode(bodyId[i], 3);
-          bodyColor.push_back(code[0]);
-          bodyColor.push_back(code[1]);
-          bodyColor.push_back(code[2]);
-        }
-      } else {
-        bodyColor = str.toIntegerArray();
-      }
-
-      ZStackFrame *newFrame = NULL;
-
-      if (frame->name() == "flyem") {
-        ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
-        newFrame = completeFrame->spinoffSegmentationSelection(bodyColor);
-      } else {
-        newFrame = frame->spinoffStackSelection(bodyColor);
-      }
-
-      if (newFrame != NULL) {
-        addStackFrame(newFrame);
-      }
-    }
-  }*/
-
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
