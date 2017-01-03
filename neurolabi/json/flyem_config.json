@@ -64,10 +64,10 @@
       "user_name": ["zhaot", "takemuras"] 
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 7000,
       "uuid": "@FIB19",
-      "name": "FIB19 (emdata1)",
+      "name": "FIB19 (emdata2)",
       "comment": "branched from 94b2",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
@@ -76,10 +76,10 @@
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn"]
     },
     {
-      "address": "emdata1.int.janelia.org",
+      "address": "emdata2.int.janelia.org",
       "port": 7000,
       "uuid": "@FIB19",
-      "name": "FIB19_jpg (emdata1)",
+      "name": "FIB19_jpg (emdata2)",
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
