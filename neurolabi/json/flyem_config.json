@@ -72,7 +72,7 @@
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
       "multires_tile": "graytiles",
-      "synapse": "annot_synapse_083116",
+      "synapse": "annot_synapse_010417",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn"]
     },
     {
@@ -83,7 +83,7 @@
       "comment": "Faster but lowres tile version for FIB19 production",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
-      "synapse": "annot_synapse_083116",
+      "synapse": "annot_synapse_010417",
       "multires_tile": "tiles-jpg",
       "multires_tile_config": {"tiles-jpg": {"low_quality": true}},
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "cheathamn"]
