@@ -37,9 +37,20 @@ ZDvidUrl::ZDvidUrl(const ZDvidTarget &target)
   m_dvidTarget = target;
 }
 
+ZDvidUrl::ZDvidUrl(const ZDvidTarget &target, const std::string &uuid)
+{
+  setDvidTarget(target, uuid);
+}
+
 void ZDvidUrl::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+}
+
+void ZDvidUrl::setDvidTarget(const ZDvidTarget &target, const std::string &uuid)
+{
+  m_dvidTarget = target;
+  m_dvidTarget.setUuid(uuid);
 }
 
 std::string ZDvidUrl::GetFullUrl(
@@ -334,6 +345,11 @@ std::string ZDvidUrl::getInfoUrl() const
 std::string ZDvidUrl::getInstanceUrl() const
 {
   return GetFullUrl(getRepoUrl(), "instance");
+}
+
+std::string ZDvidUrl::getMasterUrl() const
+{
+  return getKeyUrl("branches", "master");
 }
 
 std::string ZDvidUrl::getCommitInfoUrl() const

@@ -2286,6 +2286,34 @@ void ZDvidReader::clearBuffer() const
   m_bufferReader.clearBuffer();
 }
 
+std::string ZDvidReader::GetMasterNodeFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::string master;
+
+  ZJsonArray branchJson;
+  branchJson.decodeString(bufferReader.getBuffer().data());
+  if (branchJson.size() > 0) {
+    master = ZJsonParser::stringValue(branchJson.at(0));
+  }
+
+  return master;
+}
+
+std::vector<std::string> ZDvidReader::GetMasterListFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::vector<std::string> masterList;
+
+  ZJsonArray branchJson;
+  branchJson.decodeString(bufferReader.getBuffer().data());
+  for (size_t i = 0; i < branchJson.size(); ++i) {
+    masterList.push_back(ZJsonParser::stringValue(branchJson.at(i)));
+  }
+
+  return masterList;
+}
+
 ZDvidVersionDag ZDvidReader::readVersionDag() const
 {
   ZJsonObject jsonInfo = readInfo();
@@ -2695,7 +2723,30 @@ ZDvidSynapse ZDvidReader::readSynapse(
 
 std::string ZDvidReader::readMasterNode() const
 {
-  return ReadMasterNode(getDvidTarget());
+  std::string master;
+  if (good()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getMasterUrl();
+    LINFO() << "Master url: " << url;
+    m_bufferReader.read(url.c_str());
+    master = GetMasterNodeFromBuffer(m_bufferReader);
+  }
+
+  return master;
+}
+
+std::vector<std::string> ZDvidReader::readMasterList()
+{
+  std::vector<std::string> masterList;
+  if (good()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getMasterUrl();
+    LINFO() << "Master url: " << url;
+    m_bufferReader.read(url.c_str());
+    masterList = GetMasterListFromBuffer(m_bufferReader);
+  }
+
+  return masterList;
 }
 
 /*
@@ -2712,16 +2763,11 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(target);
-    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
-        "/branches/key/master";
+    ZDvidUrl dvidUrl(target, rootNode);
+    std::string url = dvidUrl.getMasterUrl();
     LINFO() << "Master url: " << url;
     reader.read(url.c_str());
-    ZJsonArray branchJson;
-    branchJson.decodeString(reader.getBuffer().data());
-    if (branchJson.size() > 0) {
-      master = ZJsonParser::stringValue(branchJson.at(0));
-    }
+    master = GetMasterNodeFromBuffer(reader);
   }
 
   return master;
@@ -2736,16 +2782,11 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(target);
-    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
-        "/branches/key/master";
+    ZDvidUrl dvidUrl(target, rootNode);
+    std::string url = dvidUrl.getMasterUrl();
     LINFO() << "Master url: " << url;
     reader.read(url.c_str());
-    ZJsonArray branchJson;
-    branchJson.decodeString(reader.getBuffer().data());
-    for (size_t i = 0; i < branchJson.size(); ++i) {
-      masterList.push_back(ZJsonParser::stringValue(branchJson.at(i)));
-    }
+    masterList = GetMasterListFromBuffer(reader);
   }
 
   return masterList;

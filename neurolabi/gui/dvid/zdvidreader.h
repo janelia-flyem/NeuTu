@@ -297,6 +297,8 @@ public:
   bool good() const;
 
   std::string readMasterNode() const;
+  std::vector<std::string> readMasterList();
+
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
@@ -338,6 +340,11 @@ private:
       int blockNumber);
 
   void clearBuffer() const;
+
+  static std::string GetMasterNodeFromBuffer(
+      const ZDvidBufferReader &bufferReader);
+  static std::vector<std::string> GetMasterListFromBuffer(
+      const ZDvidBufferReader &bufferReader);
 
 protected:
 //  QEventLoop *m_eventLoop;
