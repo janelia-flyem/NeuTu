@@ -7999,7 +7999,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
 
 void ZStackDoc::updateTraceMask()
 {
-  m_neuronTracer.initTraceMask();
+  m_neuronTracer.initTraceMask(true);
 
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -8021,24 +8021,6 @@ void ZStackDoc::updateTraceMask()
 
 bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-#if 0
-  if (hasStackData()) {
-    QUndoCommand *command = new ZStackDocCommand::TubeEdit::AutoTrace(this);
-    pushUndoCommand(command);
-
-    return true;
-  }
-
-  return false;
-#endif
-
-#if 0
-  autoTrace();
-  Swc_Tree *rawTree = this->swcReconstruction(0, false, true);
-  removeAllLocsegChain();
-  Zero_Stack(getTraceWorkspace()->trace_mask);
-#endif
-
   m_neuronTracer.setProgressReporter(getProgressReporter());
 
   startProgress(0.9);

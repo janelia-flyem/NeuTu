@@ -140,6 +140,19 @@ contains(CONFIG, sanitize) {
   }
 }
 
+contains(CONFIG, sanitize) {
+  message(Using sanitize)
+  unix {
+    macx {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    } else {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    }
+  }
+}
+
 #QT += webkit
 
 contains(CONFIG, static_glew) { # glew from ext folder

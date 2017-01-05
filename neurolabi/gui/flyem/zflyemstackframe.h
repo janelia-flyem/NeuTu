@@ -35,9 +35,11 @@ public:
   void importSegmentation(const std::string &filePath);
   bool importAxonExport(const std::string &filePath);
 
+  /*
   ZStack* spinoffStackSelection(
       const std::vector<std::vector<double> > &selected,
       bool neighborIncluded = false);
+      */
 
   ZStackFrame* spinoffSegmentationSelection(
       const std::vector<std::vector<double> > &selected);

@@ -376,6 +376,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Start testing ..." << std::endl;
 
   UNUSED_PARAMETER(host);
+
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
   if (frame != NULL) {
@@ -19916,7 +19917,11 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
+#endif
 
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
 
@@ -21545,11 +21550,15 @@ void ZTest::test(MainWindow *host)
   std::cout << tree.toString() << std::endl;
 #endif
 
-#if 1
+#if 0
   host->startProofread();
 
 #endif
 
+#if 0
+  ZNeuronTracer tracer;
+  tracer.test();
+#endif
 
   std::cout << "Done." << std::endl;
 }

@@ -505,6 +505,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style,
                        NeuTube::EAxis axis) const
 {
+  //To do: reorganize; separate node and skeleton widths
   if (!isVisible()) {
     return;
   }
@@ -571,7 +572,8 @@ void ZSwcTree::display(ZPainter &painter, int slice,
               alpha = 1.0;
             }
             lineColor.setAlphaF(alpha);
-            painter.setPen(lineColor);
+            pen.setColor(lineColor);
+            painter.setPen(pen);
             painter.drawLine(QPointF(SwcTreeNode::x(tn), SwcTreeNode::y(tn)),
                              QPointF(SwcTreeNode::x(SwcTreeNode::parent(tn)),
                                      SwcTreeNode::y(SwcTreeNode::parent(tn))));
