@@ -64,6 +64,8 @@ CONFIG(debug, debug|release) {
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
+message("Target: $$TARGET")
+
 unix {
 include(extratarget.pri)
 
