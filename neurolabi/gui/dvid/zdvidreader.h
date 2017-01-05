@@ -297,7 +297,13 @@ public:
   bool good() const;
 
   std::string readMasterNode() const;
-  std::vector<std::string> readMasterList();
+  std::vector<std::string> readMasterList() const;
+
+  enum EReadOption {
+    READ_CURRENT, READ_TRACE_BACK
+  };
+
+  ZJsonObject readDefaultDataSetting(EReadOption option) const;
 
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
@@ -345,6 +351,10 @@ private:
       const ZDvidBufferReader &bufferReader);
   static std::vector<std::string> GetMasterListFromBuffer(
       const ZDvidBufferReader &bufferReader);
+  ZJsonObject readDefaultDataSettingCurrent() const;
+  ZJsonObject readDefaultDataSettingTraceBack() const;
+  void loadDefaultDataSetting();
+  void loadDvidDataSetting(const ZJsonObject obj);
 
 protected:
 //  QEventLoop *m_eventLoop;

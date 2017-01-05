@@ -54,6 +54,7 @@ void ZDvidTarget::init()
   m_readOnly = false;
   m_maxLabelZoom = 0;
   m_usingMultresBodyLabel = false;
+  m_usingDefaultSetting = false;
 
   setDefaultMultiscale2dName();
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
@@ -322,6 +323,30 @@ std::string ZDvidTarget::getSynapseLabelszName() const
 
   return ZDvidData::GetName(ZDvidData::ROLE_LABELSZ, ZDvidData::ROLE_SYNAPSE,
                             getSynapseName());
+}
+
+void ZDvidTarget::loadDvidDataSetting(const ZJsonObject &obj)
+{
+  setLabelBlockName(ZJsonParser::stringValue(obj["segmentation"]));
+  setBodyLabelName(ZJsonParser::stringValue(obj["bodies"]));
+  setSynapseName(ZJsonParser::stringValue(obj["synapses"]));
+}
+
+ZJsonObject ZDvidTarget::toDvidDataSetting() const
+{
+  ZJsonObject obj;
+
+  obj.setEntry("segmentation", getLabelBlockName());
+  obj.setEntry("synapses", getSynapseName());
+  obj.setEntry("bodies", getBodyLabelName());
+  obj.setEntry("skeletons", getSkeletonName());
+  obj.setEntry("grayscale", getGrayScaleName());
+  obj.setEntry("body_annotations", getBodyAnnotationName());
+  obj.setEntry("todos", getTodoListName());
+  obj.setEntry("sequencer_info", getSynapseLabelszName());
+  obj.setEntry("bookmarks", getBookmarkName());
+
+  return obj;
 }
 
 void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)

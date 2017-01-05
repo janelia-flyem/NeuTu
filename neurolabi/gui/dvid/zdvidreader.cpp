@@ -209,13 +209,22 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
   m_dvidTarget = target;
 
-  std::string masterNode = readMasterNode();
+  std::string masterNode = ReadMasterNode(target);
   if (!masterNode.empty()) {
     m_dvidTarget.setUuid(masterNode.substr(0, 4));
   }
 
-  return startService();
+  bool succ = startService();
+
+  if (succ) { //Read default settings
+    if (getDvidTarget().usingDefaultDataSetting()) {
+      loadDefaultDataSetting();
+    }
+  }
+
+  return succ;
 }
+
 
 bool ZDvidReader::open(const QString &sourceString)
 {
@@ -2724,6 +2733,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
 std::string ZDvidReader::readMasterNode() const
 {
   std::string master;
+
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
     std::string url = dvidUrl.getMasterUrl();
@@ -2735,9 +2745,10 @@ std::string ZDvidReader::readMasterNode() const
   return master;
 }
 
-std::vector<std::string> ZDvidReader::readMasterList()
+std::vector<std::string> ZDvidReader::readMasterList() const
 {
   std::vector<std::string> masterList;
+
   if (good()) {
     ZDvidUrl dvidUrl(getDvidTarget());
     std::string url = dvidUrl.getMasterUrl();
@@ -2747,6 +2758,73 @@ std::vector<std::string> ZDvidReader::readMasterList()
   }
 
   return masterList;
+}
+
+
+void ZDvidReader::loadDvidDataSetting(const ZJsonObject obj)
+{
+  m_dvidTarget.loadDvidDataSetting(obj);
+}
+
+void ZDvidReader::loadDefaultDataSetting()
+{
+  ZJsonObject obj = readDefaultDataSetting(READ_CURRENT);
+  loadDvidDataSetting(obj);
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSettingCurrent() const
+{
+  ZJsonObject obj;
+
+  ZDvidUrl url(getDvidTarget());
+
+  obj = readJsonObject(url.getDefaultDataInstancesUrl());
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSettingTraceBack() const
+{
+  ZJsonObject obj;
+
+  std::vector<std::string> uuidList = readMasterList();
+  int index = -1;
+  for (size_t i = 0; i < uuidList.size(); ++i) {
+    const std::string &uuid = uuidList[i];
+    if (ZDvid::IsUuidMatched(uuid, getDvidTarget().getUuid())) {
+      index = i;
+      break;
+    }
+  }
+
+  obj = readDefaultDataSettingCurrent();
+
+  for (int i = index + 1; i < (int) uuidList.size(); ++i) {
+    ZDvidReader nodeReader;
+    ZDvidTarget target = getDvidTarget();
+    target.setUuid(uuidList[i]);
+    if (nodeReader.open(target)) {
+      ZJsonObject prevObj = nodeReader.readDefaultDataSettingCurrent();
+      obj.addEntryFrom(prevObj);
+    }
+  }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
+{
+  ZJsonObject obj;
+  switch (option) {
+  case READ_CURRENT:
+    obj = readDefaultDataSettingCurrent();
+    break;
+  case READ_TRACE_BACK:
+    obj = readDefaultDataSettingTraceBack();
+    break;
+  }
+
+  return obj;
 }
 
 /*

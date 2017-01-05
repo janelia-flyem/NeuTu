@@ -377,6 +377,8 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSkeletonUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/branches/key/master",
             dvidUrl4.getMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
+            dvidUrl4.getDefaultDataInstancesUrl());
 }
 
 TEST(ZDvidTest, Reader)

@@ -352,6 +352,11 @@ std::string ZDvidUrl::getMasterUrl() const
   return getKeyUrl("branches", "master");
 }
 
+std::string ZDvidUrl::getDefaultDataInstancesUrl() const
+{
+  return getKeyUrl("default_instances", "data");
+}
+
 std::string ZDvidUrl::getCommitInfoUrl() const
 {
   return GetFullUrl(getNodeUrl(), "commit");

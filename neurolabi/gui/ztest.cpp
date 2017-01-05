@@ -21318,7 +21318,7 @@ void ZTest::test(MainWindow *host)
   a[1] = 1;
 #endif
   
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "a031", 7000);
 
@@ -21341,6 +21341,40 @@ void ZTest::test(MainWindow *host)
        iter != nodeList.end(); ++iter) {
     std::cout << "  " << *iter << std::endl;
   }
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+
+  obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
+  obj.print();
+
+  target.setUuid("e2f0");
+  ZDvidReader reader2;
+  reader2.open(target);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  ZDvidReader reader;
+  reader.open(target);
+  reader.getDvidTarget().toDvidDataSetting().print();
+
+  /*
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+
+  target = reader.getDvidTarget();
+  target.loadDvidDataSetting(obj);
+  target.setSynapseName("annot_synapse_010417");
+  target.setLabelBlockName("segmenation2");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
+  */
 #endif
 
 #if 0

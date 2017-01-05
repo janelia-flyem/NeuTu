@@ -181,6 +181,8 @@ public:
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
+  void writeDefaultDataSetting(const ZJsonObject &obj);
+  void writeDefaultDataSetting();
 
   inline int getStatusCode() const {
     return m_statusCode;
