@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 
 #include "focusedpath.h"
+#include "focusededge.h"
 #include "protocoldialog.h"
 
 
@@ -49,6 +50,11 @@ private:
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
+    enum EdgeTableColumns {
+        BODYID1_COLUMN,
+        CONNECTION_COLUMN,
+        BODYID2_COLUMN
+        };
 
 public:
     // keys for DVID stuff

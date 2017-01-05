@@ -683,6 +683,7 @@ HEADERS += mainwindow.h \
     protocols/focusedpathprotocol.h \
     protocols/focusedpathbodyinputdialog.h \ 
     protocols/focusedpath.h \
+    protocols/focusededge.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -1208,6 +1209,7 @@ SOURCES += main.cpp \
     protocols/synapsepredictioninputdialog.cpp \
     protocols/focusedpathprotocol.cpp \
     protocols/focusedpath.cpp \
+    protocols/focusededge.cpp \
     protocols/focusedpathbodyinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \

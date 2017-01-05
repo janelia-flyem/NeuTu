@@ -344,18 +344,31 @@ void FocusedPathProtocol::displayCurrentPath() {
     m_edgeModel->clear();
     // reset headers?
 
-    m_edgeModel->setRowCount(m_currentPath.getEdgePoints().size());
-    // for point in edge point list
-    //  get partner point
-    //  get edge body IDs
-    //  if same, status = connected
-    //  populate row
-    //  calculate edge location from points, store for later go-to
+    m_edgeModel->setRowCount(m_currentPath.getNumEdges());
+    for (int i=0; i<m_currentPath.getNumEdges(); i++) {
+
+
+        FocusedEdge edge = m_currentPath.getEdge(i);
+
+        QStandardItem * bodyID1Item = new QStandardItem();
+
+
+        // ugh, edge doesn't currently have body ID...path does...
+
+
+        // bodyID1Item->setData(QVariant(edge.getBodyID1()), Qt::DisplayRole);
+        // m_edgeModel->setItem(i, BODYID1_COLUMN, bodyID1Item);
+
+
+
+        // QStandardItem * bodyID2Item = new QStandardItem();
+        // bodyID2Item->setData(QVariant(edge.getBodyID2()), Qt::DisplayRole);
+        // m_edgeModel->setItem(i, BODYID2_COLUMN, bodyID2Item);
 
 
 
 
-
+    }
 
     // update connection label (overall connection, body IDs)
 

@@ -1,6 +1,7 @@
 #include "focusedpath.h"
 
 #include "focusedpathprotocol.h"
+#include "focusededge.h"
 #include "zintpoint.h"
 #include "zjsonparser.h"
 
@@ -9,7 +10,7 @@
 
 /*
  * this class is a lightweight container for a list of edges = a path
- * between bodies; it doesn't do saves or loads itself
+ * between bodies; it does minimal loading and no saving itself
  */
 FocusedPath::FocusedPath() {
     // I hate C++
@@ -56,35 +57,35 @@ double FocusedPath::getProbability() {
     return m_probability;
 }
 
-QList<ZIntPoint> FocusedPath::getEdgePoints() {
-    return m_edgePoints;
+FocusedEdge FocusedPath::getEdge(ZIntPoint point) {
+    return m_edgeMap[point];
+}
+
+FocusedEdge FocusedPath::getEdge(int i) {
+    return getEdge(m_edgePoints[i]);
+}
+
+int FocusedPath::getNumEdges() {
+    return m_edgePoints.size();
 }
 
 void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
     // unfortunately, no way to bulk load annotations by point right now
 
     m_edgeMap.clear();
-    m_edgePairs.clear();
 
     std::vector<ZIntPoint> points;
 
     foreach(ZIntPoint point, m_edgePoints) {
 
-        // store ZJsonObject, because that's what we need if we want to save back;
-        // ZDvidAnn, though, will get us the relation faster
-        ZJsonObject edge1 = reader.readAnnotationJson(instance, point);
+        ZJsonObject jsonEdge = reader.readAnnotationJson(instance, point);
+        FocusedEdge edge(jsonEdge);
 
-        ZDvidAnnotation ann;
-        ann.loadJsonObject(edge1, FlyEM::LOAD_PARTNER_LOCATION);
-        ZIntPoint point2 = ann.getPartners()[0];
-        ZJsonObject edge2 = reader.readAnnotationJson(instance, point2);
+        m_edgeMap[edge.getFirstPoint()] = edge;
+        m_edgeMap[edge.getLastPoint()] = edge;
 
-        m_edgeMap[point] = edge1;
-        m_edgeMap[point2] = edge2;
-        m_edgePairs[point] = point2;
-
-        points.push_back(point);
-        points.push_back(point2);
+        points.push_back(edge.getFirstPoint());
+        points.push_back(edge.getLastPoint());
     }
 
     // load all the body IDs at the points
@@ -97,24 +98,25 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
 }
 
 bool FocusedPath::hasEdges() {
-    return m_edgeMap.size() > 0;
+    return getNumEdges() > 0;
 }
 
 bool FocusedPath::isConnected() {
 
     ZIntPoint prevPoint = m_edgePoints.first();
-    foreach(ZIntPoint point1, m_edgePoints) {
+    foreach(ZIntPoint point, m_edgePoints) {
         // connected to previous edge (could have been split)?
-        if (m_bodyIDs[point1] != m_bodyIDs[prevPoint]) {
+        if (m_bodyIDs[point] != m_bodyIDs[prevPoint]) {
             return false;
         }
 
         // connected across edge (could have been done some other time)?
-        if (m_bodyIDs[point1] != m_bodyIDs[m_edgePairs[point1]]) {
+        FocusedEdge edge = getEdge(point);
+        if (m_bodyIDs[point] != m_bodyIDs[edge.getOtherPoint(point)]) {
             return false;
         }
 
-        prevPoint = m_edgePairs[point1];
+        prevPoint = edge.getOtherPoint(point);
     }
     return true;
 }
