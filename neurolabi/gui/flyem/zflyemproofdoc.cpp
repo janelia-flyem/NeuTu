@@ -139,7 +139,7 @@ void ZFlyEmProofDoc::runRoutineCheck()
                             << getSupervisor()->getMainUrl() + ":"
                             << timer.elapsed() << "ms";
         } else {
-          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+          LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
         }
       }
     }

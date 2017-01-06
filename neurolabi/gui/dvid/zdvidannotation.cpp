@@ -9,6 +9,7 @@
 #include "zjsonfactory.h"
 #include "c_json.h"
 #include "zcuboid.h"
+#include "zresolution.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -130,6 +131,17 @@ void ZDvidAnnotation::setPosition(const ZIntPoint &pos)
 void ZDvidAnnotation::setPosition(int x, int y, int z)
 {
   m_position.set(x, y, z);
+}
+
+double ZDvidAnnotation::GetDefaultRadius(
+    EKind kind, const ZResolution &resolution)
+{
+  double r = GetDefaultRadius(kind);
+
+  r *= resolution.getPlaneVoxelSize(
+        NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER) / 8.0;
+
+  return r;
 }
 
 double ZDvidAnnotation::GetDefaultRadius(EKind kind)
