@@ -172,7 +172,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="settingCheckBox">
      <property name="text">
       <string>Use production settings from DVID</string>
      </property>
@@ -181,7 +181,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="bodyLabelLabel">
        <property name="text">
         <string>Body Label</string>
        </property>
@@ -195,7 +195,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="labelBlockLabel">
        <property name="text">
         <string>Label Block</string>
        </property>
@@ -209,7 +209,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QLabel" name="label_9">
+      <widget class="QLabel" name="grayscaleLabel">
        <property name="text">
         <string>Gray Scale</string>
        </property>
@@ -217,6 +217,20 @@
      </item>
      <item>
       <widget class="QLineEdit" name="grayScalelineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_12">
+     <item>
+      <widget class="QLabel" name="synapseLabel">
+       <property name="text">
+        <string>Synapse</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="synapseLineEdit"/>
      </item>
     </layout>
    </item>
@@ -241,37 +255,6 @@
         <string>low quality</string>
        </property>
       </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_12">
-     <item>
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>Synapse</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="synapseLineEdit"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_15">
-     <item>
-      <widget class="QCheckBox" name="librarianCheckBox">
-       <property name="text">
-        <string>Use librarian</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="librarianLineEdit"/>
      </item>
     </layout>
    </item>
@@ -304,6 +287,23 @@
      </item>
      <item>
       <widget class="QLineEdit" name="roiLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_15">
+     <item>
+      <widget class="QCheckBox" name="librarianCheckBox">
+       <property name="text">
+        <string>Use librarian</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="librarianLineEdit"/>
      </item>
     </layout>
    </item>

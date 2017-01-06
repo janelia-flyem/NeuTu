@@ -38,6 +38,10 @@ public slots:
   void saveCurrentTargetAs();
   void deleteCurrentTarget();
   void editRoiList();
+  void updateWidgetForDefaultSetting();
+
+private:
+  bool usingDefaultSetting() const;
 
 private:
   Ui::ZDvidDialog *ui;

@@ -31,6 +31,7 @@ const char* ZDvidTarget::m_roiListKey = "roi_list";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
 const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
+const char* ZDvidTarget::m_defaultSettingKey = "default";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -307,6 +308,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
   obj.setEntry(m_supervisorServerKey, m_supervisorServer);
+  obj.setEntry(m_defaultSettingKey, usingDefaultDataSetting());
 
   return obj;
 }
@@ -327,9 +329,18 @@ std::string ZDvidTarget::getSynapseLabelszName() const
 
 void ZDvidTarget::loadDvidDataSetting(const ZJsonObject &obj)
 {
-  setLabelBlockName(ZJsonParser::stringValue(obj["segmentation"]));
-  setBodyLabelName(ZJsonParser::stringValue(obj["bodies"]));
-  setSynapseName(ZJsonParser::stringValue(obj["synapses"]));
+  if (obj.hasKey("segmentation")) {
+    setLabelBlockName(ZJsonParser::stringValue(obj["segmentation"]));
+  }
+  if (obj.hasKey("bodies")) {
+    setBodyLabelName(ZJsonParser::stringValue(obj["bodies"]));
+  }
+  if (obj.hasKey("synapses")) {
+    setSynapseName(ZJsonParser::stringValue(obj["synapses"]));
+  }
+  if (obj.hasKey("grayscale")) {
+    setGrayScaleName(ZJsonParser::stringValue(obj["grayscale"]));
+  }
 }
 
 ZJsonObject ZDvidTarget::toDvidDataSetting() const
@@ -404,6 +415,10 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     }
     if (obj.hasKey(m_synapseNameKey)) {
       setSynapseName(ZJsonParser::stringValue(obj[m_synapseNameKey]));
+    }
+
+    if (obj.hasKey(m_defaultSettingKey)) {
+      useDefaultDataSetting(ZJsonParser::booleanValue(obj[m_defaultSettingKey]));
     }
 
     /*

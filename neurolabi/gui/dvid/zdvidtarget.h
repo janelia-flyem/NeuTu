@@ -295,6 +295,7 @@ private:
   const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
+  const static char* m_defaultSettingKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;

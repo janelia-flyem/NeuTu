@@ -21358,23 +21358,29 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+//  target.set("emdata2.int.janelia.org", "d35f", 7000);
+  target.useDefaultDataSetting(true);
+  target.setBodyLabelName("bodies_test");
+  target.setSynapseName("synapses_test");
+  target.setLabelBlockName("label_test");
+
   ZDvidReader reader;
   reader.open(target);
+
   reader.getDvidTarget().toDvidDataSetting().print();
 
-  /*
+
   ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
 
   target = reader.getDvidTarget();
   target.loadDvidDataSetting(obj);
   target.setSynapseName("annot_synapse_010417");
-  target.setLabelBlockName("segmenation2");
+  target.setLabelBlockName("segmentation2");
   target.print();
 
   ZDvidWriter writer;
   writer.open(target);
   writer.writeDefaultDataSetting();
-  */
 #endif
 
 #if 0
