@@ -95,6 +95,13 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
         m_bodyIDs[points[i]] = bodyIDs[i];
     }
 
+    // one more loop...fill in body IDs in edges; can't do earlier
+    //  because we need 2 body IDs for each edge
+    foreach (FocusedEdge edge, m_edgeMap.values()) {
+        edge.setFirstBodyID(m_bodyIDs[edge.getFirstPoint()]);
+        edge.setLastBodyID(m_bodyIDs[edge.getLastPoint()]);
+    }
+
 }
 
 bool FocusedPath::hasEdges() {

@@ -67,7 +67,6 @@ const std::string FocusedPathProtocol::TAG_EDGE= "edge";
 const std::string FocusedPathProtocol::PROPERTY_PROBABILITY= "probability";
 const std::string FocusedPathProtocol::PROPERTY_PATH= "path";
 
-
 bool FocusedPathProtocol::initialize() {
 
     if (m_variation == VARIATION_BODY) {
@@ -346,28 +345,20 @@ void FocusedPathProtocol::displayCurrentPath() {
 
     m_edgeModel->setRowCount(m_currentPath.getNumEdges());
     for (int i=0; i<m_currentPath.getNumEdges(); i++) {
-
-
         FocusedEdge edge = m_currentPath.getEdge(i);
 
         QStandardItem * bodyID1Item = new QStandardItem();
+        bodyID1Item->setData(QVariant(edge.getFirstBodyID()), Qt::DisplayRole);
+        m_edgeModel->setItem(i, BODYID1_COLUMN, bodyID1Item);
 
+        QStandardItem * bodyID2Item = new QStandardItem();
+        bodyID2Item->setData(QVariant(edge.getLastBodyID()), Qt::DisplayRole);
+        m_edgeModel->setItem(i, BODYID2_COLUMN, bodyID2Item);
 
-        // ugh, edge doesn't currently have body ID...path does...
-
-
-        // bodyID1Item->setData(QVariant(edge.getBodyID1()), Qt::DisplayRole);
-        // m_edgeModel->setItem(i, BODYID1_COLUMN, bodyID1Item);
-
-
-
-        // QStandardItem * bodyID2Item = new QStandardItem();
-        // bodyID2Item->setData(QVariant(edge.getBodyID2()), Qt::DisplayRole);
-        // m_edgeModel->setItem(i, BODYID2_COLUMN, bodyID2Item);
-
-
-
-
+        // connection status
+        QStandardItem * connectionItem = new QStandardItem();
+        connectionItem->setData(QVariant(QString::fromStdString(edge.getConnectionTextIcon())), Qt::DisplayRole);
+        m_edgeModel->setItem(i, CONNECTION_COLUMN, connectionItem);
     }
 
     // update connection label (overall connection, body IDs)

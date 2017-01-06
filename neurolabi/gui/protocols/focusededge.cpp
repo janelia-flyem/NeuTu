@@ -31,7 +31,18 @@ FocusedEdge::FocusedEdge(ZJsonObject edge)
     ZJsonObject properties = edge.value("Prop");
     m_weight = ZJsonParser::numberValue(properties["weight"]);
     m_examiner = ZJsonParser::stringValue(properties["examiner"]);
+
+    // the body IDs are not available yet, so fill in with invalid value
+    m_firstBodyID = -1;
+    m_lastBodyID = -1;
 }
+
+// ---------- constants ----------
+// text glyphs for use in table
+const std::string FocusedEdge::GLYPH_CONNECTED = "-----";
+const std::string FocusedEdge::GLYPH_UNCONNECTED = "--X--";
+const std::string FocusedEdge::GLYPH_UNKNOWN = "--?--";
+
 
 ZIntPoint FocusedEdge::getFirstPoint() const
 {
@@ -74,8 +85,44 @@ std::string FocusedEdge::getTimeExamined() const
     return m_timeExamined;
 }
 
+uint64_t FocusedEdge::getFirstBodyID() const
+{
+    return m_firstBodyID;
+}
 
+void FocusedEdge::setFirstBodyID(const uint64_t &firstBodyID)
+{
+    m_firstBodyID = firstBodyID;
+}
 
+uint64_t FocusedEdge::getLastBodyID() const
+{
+    return m_lastBodyID;
+}
 
+void FocusedEdge::setLastBodyID(const uint64_t &lastBodyID)
+{
+    m_lastBodyID = lastBodyID;
+}
+
+bool FocusedEdge::isConnected() {
+    return m_firstBodyID == m_lastBodyID && m_firstBodyID != -1UL;
+}
+
+bool FocusedEdge::isExamined() {
+    return m_examiner != "";
+}
+
+std::string FocusedEdge::getConnectionTextIcon() {
+    if (isConnected()) {
+        return GLYPH_CONNECTED;
+    } else if (isExamined()) {
+        // not connected but examined = someone said it's unconnected
+        return GLYPH_UNCONNECTED;
+    } else {
+        // not connected, not examined = unknown
+        return GLYPH_UNKNOWN;
+    }
+}
 
 
