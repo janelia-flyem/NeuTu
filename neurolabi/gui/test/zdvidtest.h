@@ -360,6 +360,25 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_1/raw/0_1_2/100_200_300/1_2_3",
             dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 1));
   ASSERT_EQ("", dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 6));
+
+
+  ZDvidUrl dvidUrl4(target, "1234");
+  std::cout << dvidUrl4.getHelpUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
+
+//  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/branches/key/master",
+            dvidUrl4.getMasterUrl());
+
+  dvidUrl4.setDvidTarget(target, "3456");
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/branches/key/master",
+            dvidUrl4.getMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
+            dvidUrl4.getDefaultDataInstancesUrl());
 }
 
 TEST(ZDvidTest, Reader)

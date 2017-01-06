@@ -231,6 +231,7 @@ using namespace std;
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "test/zflyemproofdoctest.h"
+#include "test/zresolutiontest.h"
 //#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
@@ -21380,7 +21381,67 @@ void ZTest::test(MainWindow *host)
   
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "005a", 7000);
+  target.set("emdata2.int.janelia.org", "a031", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+  std::cout << "Master node: " << reader.readMasterNode() << std::endl;
+
+  std::cout << "Node history:" << std::endl;
+  std::vector<std::string> nodeList = reader.readMasterList();
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  target.setUuid("@FIB19");
+  std::cout << "Master node: " << ZDvidReader::ReadMasterNode(target) << std::endl;
+
+  nodeList = reader.ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+
+  obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
+  obj.print();
+
+  target.setUuid("e2f0");
+  ZDvidReader reader2;
+  reader2.open(target);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+//  target.set("emdata2.int.janelia.org", "d35f", 7000);
+  target.useDefaultDataSetting(true);
+  target.setBodyLabelName("bodies_test");
+  target.setSynapseName("synapses_test");
+  target.setLabelBlockName("label_test");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().toDvidDataSetting().print();
+
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+
+  target = reader.getDvidTarget();
+  target.loadDvidDataSetting(obj);
+  target.setSynapseName("annot_synapse_010417");
+  target.setLabelBlockName("segmentation2");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
 #endif
 
 #if 0
