@@ -166,7 +166,7 @@ void ZFlyEmProofDoc::runRoutineCheck()
                             << getSupervisor()->getMainUrl() + ":"
                             << timer.elapsed() << "ms";
         } else {
-          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+          LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
         }
       }
     }
@@ -204,7 +204,9 @@ void ZFlyEmProofDoc::setSelectedBody(
       for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
            iter != sliceList.end(); ++iter) {
         ZDvidLabelSlice *slice = *iter;
+        slice->recordSelection();
         slice->setSelection(selected, labelType);
+        slice->processSelection();
       }
 
       notifyBodySelectionChanged();

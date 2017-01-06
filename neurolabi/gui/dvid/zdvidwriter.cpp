@@ -1637,6 +1637,18 @@ void ZDvidWriter::addSynapseProperty(
   }
 }
 
+void ZDvidWriter::writeDefaultDataSetting(const ZJsonObject &obj)
+{
+  ZDvidUrl url(getDvidTarget());
+  writeJson(url.getDefaultDataInstancesUrl(), obj);
+}
+
+void ZDvidWriter::writeDefaultDataSetting()
+{
+  ZJsonObject obj = getDvidTarget().toDvidDataSetting();
+  writeDefaultDataSetting(obj);
+}
+
 void ZDvidWriter::writeMasterNode(const std::string &uuid)
 {
 #if defined(_FLYEM_)

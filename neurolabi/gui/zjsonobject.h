@@ -118,6 +118,25 @@ public:
    */
   void setEntry(const char *key, ZJsonValue &value);
 
+  /*!
+   * \brief Add an entry
+   *
+   * THe function adds the entry \a key -> \a value if \a key does not exist
+   * in the current object.
+   *
+   * \return /for future/true iff the entry is added
+   */
+  void addEntry(const char *key, ZJsonValue &value);
+  void addEntry(const char *key, const std::string &value);
+  void addEntry(const char *key, const char *value);
+
+  /*!
+   * \brief Add fields from another object
+   *
+   * A field of \a obj is added to the current object iff its key does not exist
+   * in the current object.
+   */
+  void addEntryFrom(const ZJsonObject &obj);
 
   /*!
    * \brief Test if a key exists
