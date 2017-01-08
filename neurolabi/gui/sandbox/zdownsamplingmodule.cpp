@@ -12,36 +12,25 @@
 #include "zstackwatershed.h"
 
 
-void getEdges(ZStack* img,std::vector<ZIntPoint>** metrix)
+void getEdges(ZStack* plane,std::vector<ZIntPoint>** metrix)
 {
-  int width=img->width();
-  int height=img->height();
-  int depth=img->depth();
-  int slice=width*height;
-  uint8_t* po=img->array8();
-  size_t offset=0;
-  for(int k=0;k<depth;++k)
+  int width=plane->width();
+  int height=plane->height();
+  uint8_t* po=plane->array8();
+  for(int j=0;j<height;++j)
   {
-    offset=k*slice;
-    for(int j=0;j<height;++j)
+    size_t offset=j*width;
+    for(int i=0;i<width;++i)
     {
-      size_t _offset=offset+j*width;
-      for(int i=0;i<width;++i)
-      {
-        uint8_t v=po[_offset+i];
-        uint8_t t=i>0?po[_offset+i-1]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-        t=i<(width-1)?po[_offset+i+1]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-        t=j>0?po[_offset+i-width]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-        t=j<(height-1)?po[_offset+i+width]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-        t=k>0?po[_offset+i-slice]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-        t=k<(depth-1)?po[_offset+i+slice]:v;
-        if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-      }
+      uint8_t v=po[offset+i];
+      uint8_t t=i>0?po[offset+i-1]:v;
+      if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,0));
+      t=i<(width-1)?po[offset+i+1]:v;
+      if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,0));
+      t=j>0?po[offset+i-width]:v;
+      if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,0));
+      t=j<(height-1)?po[offset+i+width]:v;
+      if(v<t)metrix[v-1][t-1].push_back(ZIntPoint(i,j,0));
     }
   }
 }
@@ -80,20 +69,19 @@ ZStack* recover2OriginalSize(ZStack* original,ZStack* sampled,int step)
 }
 
 
-ZStack* getBoundBoxes(ZStack* img,std::vector<ZIntCuboid>&boxes,
-                   std::vector<int>&vvalue,std::vector<int>&tvalue)
+ZStack* getBoundBoxes(ZStack* plane,std::vector<ZIntCuboid>&boxes,
+                   std::vector<int>&vvalue,std::vector<int>&tvalue,int depth)
 {
 
-  int width=img->width();
-  int slice=width*img->height();
-  int size=std::ceil(img->max());
+  int width=plane->width();
+  int size=std::ceil(plane->max());
   std::vector<ZIntPoint>** metrix=new std::vector<ZIntPoint>*[size];
   for(int i=0;i<size;++i)
   {
     metrix[i]=new std::vector<ZIntPoint>[size];
   }
-  getEdges(img,metrix);
-  ZStack* rv=new ZStack(GREY,img->width(),img->height(),img->depth(),1);
+  getEdges(plane,metrix);
+  ZStack* rv=new ZStack(GREY,plane->width(),plane->height(),1,1);
   uint8_t* pr=rv->array8();
   rv->setZero();
   int index=1;
@@ -105,7 +93,7 @@ ZStack* getBoundBoxes(ZStack* img,std::vector<ZIntCuboid>&boxes,
       for(int k=0;k<s;++k)
       {
         ZIntPoint& p=metrix[i][j][k];
-        pr[p.m_x+p.m_y*width+p.m_z*slice]=index;
+        pr[p.m_x+p.m_y*width]=index;
       }
       if(s)
       {
@@ -125,52 +113,38 @@ ZStack* getBoundBoxes(ZStack* img,std::vector<ZIntCuboid>&boxes,
   std::vector<ZObject3dScan*>edges=ZObject3dScan::extractAllObject(*rv);
   for(uint i=0;i<edges.size();++i)
   {
-    boxes.push_back(edges[i]->getBoundBox());
+    ZIntCuboid box=edges[i]->getBoundBox();
+    box.setFirstZ(depth);
+    box.setLastZ(depth);
+    boxes.push_back(box);
     delete edges[i];
   }
   return rv;
 }
 
 
-inline int distance2Edge(const ZStack* pEdge,int x,int y,int z)
+inline int distance2Edge(const ZStack* pEdge,int x,int y)
 {
   static int max_dis=10;
   const uint8_t* p=pEdge->array8();
   int width=pEdge->width();
   int height=pEdge->height();
-  int depth=pEdge->depth();
-  int area=width*height;
+
   for(int dis=0;dis<max_dis;++dis)
   {
     for(int j=std::max(y-dis,0);j<=std::min(y+dis,height-1);++j)
     {
-      for(int k=std::max(z-dis,0);k<=std::min(z+dis,depth-1);++k)
-      {
-        if((x-dis>0) && p[k*area+j*width+x-dis])
-          return dis;
-        if((x+dis<width-1) && p[k*area+j*width+x+dis])
-          return dis;
-      }
+      if((x-dis>0) && p[j*width+x-dis])
+        return dis;
+      if((x+dis<width-1) && p[j*width+x+dis])
+        return dis;
     }
     for(int i=std::max(x-dis,0);i<=std::min(x+dis,width-1);++i)
     {
-      for(int k=std::max(z-dis,0);k<=std::min(z+dis,depth-1);++k)
-      {
-        if((y-dis>0) && p[k*area+(y-dis)*width+i])
-          return dis;
-        if((y+dis<height-1) && p[k*area+(y+dis)*width+i])
-          return dis;
-      }
-    }
-    for(int i=std::max(x-dis,0);i<=std::min(x+dis,width-1);++i)
-    {
-      for(int j=std::max(y-dis,0);j<=std::min(j+dis,height-1);++j)
-      {
-        if((z-dis>0) && p[(z-dis)*area+j*width+i])
-          return dis;
-        if((z+dis<depth-1) && p[(z+dis)*area+j*width+i])
-          return dis;
-      }
+      if((y-dis>0) && p[(y-dis)*width+i])
+        return dis;
+      if((y+dis<height-1) && p[(y+dis)*width+i])
+        return dis;
     }
   }
 
@@ -181,20 +155,17 @@ inline int distance2Edge(const ZStack* pEdge,int x,int y,int z)
 void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
                                  const ZIntCuboid& box,
                                  const ZStack* edge_map,
-                                 const ZStack* sampled_space,
-                                 const int v,const int t)
+                                 const ZStack* plane,
+                                 int v,int t)
 {
-  const int width=sampled_space->width();
-  const int area=width*sampled_space->height();
-  const uint8_t* ps=sampled_space->array8();
+  const int width=plane->width();
+  const uint8_t* ps=plane->array8();
   const ZIntPoint&p=box.getFirstCorner();
-
+  const int cur_depth=p.m_z;
   const int start_x=p.m_x;
   const int start_y=p.m_y;
-  const int start_z=p.m_z;
   const int x_width=box.getWidth();
   const int y_width=box.getHeight();
-  const int z_width=box.getDepth();
   const int max_times=box.getVolume()/5;
   const int cnt_seed_wanted=box.getVolume()>50?box.getVolume()/50:1;
   const int vec_num=10;
@@ -209,17 +180,16 @@ void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
   {
     int x=start_x+rand()%x_width;
     int y=start_y+rand()%y_width;
-    int z=start_z+rand()%z_width;
-    int value=ps[x+y*width+z*area];
+    int value=ps[x+y*width];
     if(v==value)
     {
-      int distance=distance2Edge(edge_map,x,y,z);
-      vec_x_backup[distance>(vec_num-1)?(vec_num-1):distance].push_back(ZIntPoint(x,y,z));
+      int distance=distance2Edge(edge_map,x,y);
+      vec_x_backup[distance>(vec_num-1)?(vec_num-1):distance].push_back(ZIntPoint(x,y,cur_depth));
     }
     else if(t==value)
     {
-      int distance=distance2Edge(edge_map,x,y,z);
-      vec_y_backup[distance>(vec_num-1)?(vec_num-1):distance].push_back(ZIntPoint(x,y,z));
+      int distance=distance2Edge(edge_map,x,y);
+      vec_y_backup[distance>(vec_num-1)?(vec_num-1):distance].push_back(ZIntPoint(x,y,cur_depth));
     }
   }
 
@@ -275,22 +245,18 @@ void drawSeeds(const std::vector<ZStack*>& seeds,ZStack* stack,const int v)
   uint8_t* p=stack->array8();
   const int width=stack->width();
   const int height=stack->height();
-  const int depth=stack->depth();
   const int area=width*stack->height();
   for(std::vector<ZStack*>::const_iterator it=seeds.begin();it!=seeds.end();++it)
   {
     const ZStack* seed=*it;
     const ZIntPoint point=seed->getOffset();
     const int x=point.m_x,y=point.m_y,z=point.m_z;
-    for(int k=std::max(0,z-1);k<std::min(depth,z+1);++k)
+    for(int i=std::max(0,x-1);i<std::min(width,x+1);++i)
     {
-      for(int i=std::max(0,x-1);i<std::min(width,x+1);++i)
+      for(int j=std::max(0,y-1);j<std::min(height,y+1);++j)
       {
-        for(int j=std::max(0,y-1);j<std::min(height,y+1);++j)
-        {
-          p[k*area+j*width+i]=v;
-        }
-      }
+         p[z*area+j*width+i]=v;
+       }
     }
   }
 }
@@ -349,9 +315,8 @@ Cuboid_I getRange(const ZIntCuboid& box,const ZStack* stack,int step)
   if(box_start_y<0)box_start_y=0;
   else if(box_start_y>=height)box_start_y=height-1;
 
-  int box_start_z=p.m_z*step-1;
-  if(box_start_z<0)box_start_z=0;
-  else if(box_start_z>=depth)box_start_z=depth-1;
+  int box_start_z=p.m_z*step;
+  if(box_start_z>=depth)box_start_z=depth-1;
 
   int box_w=(box_start_x+(box.getWidth()+2)*step)<width?
         (box.getWidth()+2)*step:width-box_start_x;
@@ -359,8 +324,8 @@ Cuboid_I getRange(const ZIntCuboid& box,const ZStack* stack,int step)
   int box_h=(box_start_y+(box.getHeight()+2)*step)<height?
         (box.getHeight()+2)*step:height-box_start_y;
 
-  int box_d=(box_start_z+(box.getDepth()+2)*step)<depth?
-        (box.getDepth()+2)*step:depth-box_start_z;
+  int box_d=(box_start_z+(box.getDepth())*step)<depth?
+        (box.getDepth())*step:depth-box_start_z;
 
   Cuboid_I_Set_S(&range,box_start_x,box_start_y,box_start_z,box_w,box_h,box_d);
 
@@ -382,30 +347,34 @@ void ZDownSamplingWindow::onRecover()
   std::vector<int>tvalue;
   std::vector<ZStack*> seeds;
 
-  ZStack* map=getBoundBoxes(sampled,boxes,vvalue,tvalue);
-
   std::srand(0);
-  for(uint i=0;i<boxes.size();++i)//deal with each edge
+  /*process each plane*/
+  for(int d=0;d<sampled->depth();++d)
   {
-    const ZIntCuboid& box=boxes[i];
-    Cuboid_I range=getRange(box,original,step);
-
-    generateSeedsInSampledSpace(seeds,box,map,sampled,vvalue[i],tvalue[i]);
-    mapSeeds2OriginalSpace(seeds,step,width,height,depth);
-    localWaterShed(seeds,range,recovered,original);
-
-    drawSeeds(seeds,zo,0);
-    drawRange(zo,range,0);
-
-    for(uint j=0;j<seeds.size();++j)
+    ZStack* plane=sampled->makeCrop(ZIntCuboid(0,0,d,sampled->width()-1,sampled->height()-1,d));
+    ZStack* edge=getBoundBoxes(plane,boxes,vvalue,tvalue,d);
+    for(uint i=0;i<boxes.size();++i)//deal with each edge
     {
-       delete seeds[j];
+      const ZIntCuboid& box=boxes[i];
+      Cuboid_I range=getRange(box,original,step);
+
+      generateSeedsInSampledSpace(seeds,box,edge,plane,vvalue[i],tvalue[i]);
+      mapSeeds2OriginalSpace(seeds,step,width,height,depth);
+      localWaterShed(seeds,range,recovered,original);
+
+      drawSeeds(seeds,zo,0);
+      drawRange(zo,range,i);
+
+      for(uint j=0;j<seeds.size();++j)
+      {
+         delete seeds[j];
+      }
+      seeds.clear();
     }
-    seeds.clear();
+    delete edge;
+    delete plane;
+    boxes.clear();
   }
-
-  delete map;
-
   ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(recovered);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
