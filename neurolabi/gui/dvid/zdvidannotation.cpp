@@ -163,6 +163,11 @@ void ZDvidAnnotation::setDefaultRadius()
   m_radius = GetDefaultRadius(m_kind);
 }
 
+void ZDvidAnnotation::setDefaultRadius(const ZResolution &resolution)
+{
+  m_radius = GetDefaultRadius(m_kind, resolution);
+}
+
 QColor ZDvidAnnotation::GetDefaultColor(EKind kind)
 {
   switch (kind) {

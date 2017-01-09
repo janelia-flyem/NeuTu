@@ -45,6 +45,7 @@ public:
   const ZIntPoint& getPosition() const { return m_position; }
 
   void setDefaultRadius();
+  void setDefaultRadius(const ZResolution &resolution);
   void setRadius(double r);
   double getRadius() const { return m_radius; }
 

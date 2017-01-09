@@ -2094,6 +2094,7 @@ void ZFlyEmProofDoc::downloadSynapse()
     synapseEnsemble->setDvidTarget(getDvidTarget());
     synapseEnsemble->setSource(
           ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+    synapseEnsemble->setResolution(m_grayScaleInfo.getVoxelResolution());
 
     addObject(synapseEnsemble);
   }

@@ -518,6 +518,7 @@ void ZDvidSynapseEnsemble::addSynapseUnsync(
 
     bool isSelected = targetSynapse.isSelected() || synapse.isSelected();
     targetSynapse = synapse;
+    targetSynapse.setDefaultRadius(getResolution());
 
     if (isSelected) {
       targetSynapse.setSelected(isSelected);
