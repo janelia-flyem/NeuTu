@@ -86,14 +86,14 @@ TEST(ZResolution, Basic)
   ASSERT_DOUBLE_EQ(
         3.0, resolution.getVoxelSize(NeuTube::Z_AXIS, ZResolution::UNIT_NANOMETER));
 
-  /*
-  ASSERT_DOUBLE_EQ(
-        1.0, resolution.getPlaneVoxelSize(NeuTube::X_AXIS, ZResolution::UNIT_PIXEL));
-  ASSERT_DOUBLE_EQ(
-        4.0, resolution.getPlaneVoxelSize(NeuTube::Y_AXIS, ZResolution::UNIT_PIXEL));
-  ASSERT_DOUBLE_EQ(
-        3.0, resolution.getPlaneVoxelSize(NeuTube::Z_AXIS, ZResolution::UNIT_PIXEL));
 
+  ASSERT_DOUBLE_EQ(
+        2.0, resolution.getPlaneVoxelSize(NeuTube::PLANE_XY, ZResolution::UNIT_PIXEL));
+  ASSERT_DOUBLE_EQ(
+        3.0, resolution.getPlaneVoxelSize(NeuTube::PLANE_XZ, ZResolution::UNIT_PIXEL));
+  ASSERT_DOUBLE_EQ(
+        6.0, resolution.getPlaneVoxelSize(NeuTube::PLANE_YZ, ZResolution::UNIT_PIXEL));
+  /*
   ASSERT_DOUBLE_EQ(
         0.001, resolution.getVoxelSize(NeuTube::X_AXIS, ZResolution::UNIT_MICRON));
   ASSERT_DOUBLE_EQ(

@@ -72,8 +72,17 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   item.setAction(ZFlyEmToDoItem::TO_DO);
 //  item.toJsonObject().print();
   ASSERT_EQ(ZFlyEmToDoItem::TO_DO, item.getAction());
+}
 
-
+TEST(ZDvidAnnotation, Radius)
+{
+  ZResolution resolution;
+  resolution.setUnit(ZResolution::UNIT_PIXEL);
+  resolution.setVoxelSize(1.0, 1.0, 1.0);
+  ASSERT_DOUBLE_EQ(
+        ZDvidAnnotation::GetDefaultRadius(ZDvidAnnotation::KIND_POST_SYN),
+        ZDvidAnnotation::GetDefaultRadius(
+          ZDvidAnnotation::KIND_POST_SYN, resolution));
 }
 
 #endif

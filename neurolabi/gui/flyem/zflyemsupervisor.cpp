@@ -33,10 +33,12 @@ int ZFlyEmSupervisor::testServer()
 {
   int statusCode = 0;
 #if defined(_ENABLE_LIBDVIDCPP_)
-  if (m_connection.get() != NULL) {
-    ZDvid::MakeRequest(*m_connection, "/../", "HEAD",
-                       libdvid::BinaryDataPtr(), libdvid::DEFAULT,
-                       statusCode);
+  if (!m_server.empty()) {
+    if (m_connection.get() != NULL) {
+      ZDvid::MakeRequest(*m_connection, "/../", "HEAD",
+                         libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+                         statusCode);
+    }
   }
 #endif
 
