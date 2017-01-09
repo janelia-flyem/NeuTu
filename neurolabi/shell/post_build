@@ -1,0 +1,40 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+  echo 'Usage: ./post_build <source_dir> <bin_dir> [edition]'
+  exit 1
+fi
+
+source_dir=$1
+bin_dir=$2
+edition=general
+if [ $# -ge 3 ]
+then
+  edition=$3
+fi
+
+echo "Post build: $edition"
+if [ $edition = "flyem" ]
+then
+  cp $source_dir/config_flyem.xml $bin_dir/config.xml
+  cp $source_dir/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
+  cp -r $source_dir/../json $bin_dir
+fi
+
+if [ $edition = "biocytin" ]
+then
+  cp $source_dir/biocytin_config.xml $bin_dir/config.xml
+fi
+
+if [ $edition = "general" ]
+then
+  cp $source_dir/config.xml $bin_dir/config.xml
+  mkdir -p $bin_dir/json
+  cp $source_dir/../json/command_config.json $bin_dir/json
+  cp $source_dir/../json/skeletonize.json $bin_dir/json
+  cp $source_dir/../json/trace_config.json $bin_dir/json
+  cp $source_dir/../json/skeletonize.schema.json $bin_dir/json
+  cp $source_dir/../json/trace.schema.json $bin_dir/json
+  cp $source_dir/../json/trace.json $bin_dir/json
+fi
