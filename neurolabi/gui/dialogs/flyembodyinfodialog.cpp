@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QStandardItemModel>
+#include <QItemSelection>
 #include <QElapsedTimer>
 
 #if QT_VERSION >= 0x050000
@@ -147,6 +148,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->filterTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickFilterTable(QModelIndex)));
     connect(ui->ioBodyTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOBodyTable(QModelIndex)));
     connect(ui->connectionsTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOConnectionsTable(QModelIndex)));
+    connect(ui->ioBodyTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -173,6 +176,8 @@ void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
     ui->maxBodiesMenu->addItem("1000", QVariant(1000));
     ui->maxBodiesMenu->addItem("5000", QVariant(5000));
     ui->maxBodiesMenu->addItem("10000", QVariant(10000));
+    ui->maxBodiesMenu->addItem("50000", QVariant(50000));
+    ui->maxBodiesMenu->addItem("100000", QVariant(100000));
     ui->maxBodiesMenu->setCurrentIndex(1);
     m_currentMaxBodies = ui->maxBodiesMenu->itemData(ui->maxBodiesMenu->currentIndex()).toInt();
 
@@ -263,12 +268,7 @@ void FlyEmBodyInfoDialog::loadData() {
 
     // we can load this info from different sources, depending on
     //  what's available in DVID
-    if (dvidBookmarksPresent()) {
-        // is the synapse file present?
-        // note: this option will (should) be removed sometime after mid-Sept. 2016
-        m_futureMap["importBookmarksDvid"] =
-            QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBookmarksDvid);
-    } else if (bodyAnnotationsPresent()) {
+    if (bodyAnnotationsPresent()) {
         // both of these need body annotations:
         if (labelszPresent()) {
             // how about labelsz data?
@@ -373,26 +373,6 @@ void FlyEmBodyInfoDialog::bodyFilterUpdated(QString filterText) {
     updateStatusLabel();
 }
 
-bool FlyEmBodyInfoDialog::dvidBookmarksPresent() {
-    // check for data name and key
-    if (!m_reader.hasData(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION))) {
-        #ifdef _DEBUG_
-            std::cout << "UUID doesn't have body annotations" << std::endl;
-        #endif
-        return false;
-    }
-
-    // Check if the bookmark file exists
-    if (!m_reader.hasKey(ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-                         ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES))) {
-        #ifdef _DEBUG_
-            std::cout << "UUID doesn't have body_synapses key" << std::endl;
-        #endif
-        return false;
-    }
-    return true;
-}
-
 bool FlyEmBodyInfoDialog::bodyAnnotationsPresent() {
     // check for data name and key
     if (!m_reader.hasData(m_currentDvidTarget.getBodyAnnotationName())) {
@@ -412,114 +392,6 @@ bool FlyEmBodyInfoDialog::labelszPresent() {
         return false;
     }
     return true;
-}
-
-void FlyEmBodyInfoDialog::importBookmarksDvid() {
-    #ifdef _DEBUG_
-        std::cout << "loading bookmarks from " << m_currentDvidTarget.getUuid() << std::endl;
-    #endif
-
-    // this method assumes DVID target is valid, and necessary DVID keys
-    //  are present
-
-    // note: this method is run in a different thread than the rest
-    //  of the GUI, so we must open our own DVID reader
-    ZDvidReader reader;
-    if (reader.open(m_currentDvidTarget)) {
-        reader.setVerbose(true);
-        #ifdef _DEBUG_
-            std::cout << "getting file from dataname " << ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION) << " and key " << ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES) << std::endl;
-        #endif
-        const QByteArray &bookmarkData = reader.readKeyValue(
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION),
-            ZDvidData::GetName(ZDvidData::ROLE_BODY_SYNAPSES));
-        reader.setVerbose(false);
-        ZJsonObject jsonDataObject;
-        jsonDataObject.decodeString(bookmarkData.data());
-
-        // validate; this method does its own error notifications
-        if (!isValidBookmarkFile(jsonDataObject)) {
-            emit loadCompleted();
-            return;
-        }
-
-        // now we try to fill in name and status data from more dvid calls
-        // note: not sure how well this will scale, as we're querying
-        //  every body's data individually
-        ZJsonArray bookmarks(jsonDataObject.value("data"));
-        #ifdef _DEBUG_
-            std::cout << "number of bookmarks to process = " << bookmarks.size() << std::endl;
-        #endif
-
-        QString bodyAnnotationName = ZDvidData::GetName(
-              ZDvidData::ROLE_BODY_ANNOTATION,
-              ZDvidData::ROLE_BODY_LABEL,
-              m_currentDvidTarget.getBodyLabelName()).c_str();
-        #ifdef _DEBUG_
-            std::cout << "getting names from " << bodyAnnotationName.toStdString() << std::endl;
-        #endif
-
-        // get all the keys rather than testing whether each body ID
-        //  has a name individually
-        QStringList keyList = reader.readKeys(bodyAnnotationName);
-        QSet<uint64_t> bodySet;
-        foreach (const QString &str, keyList) {
-          std::vector<uint64_t> bodyIdArray =
-              ZString(str.toStdString()).toUint64Array();
-          if (bodyIdArray.size() == 1) {
-            uint64_t bodyId = bodyIdArray.front();
-            if (bodyId > 0) {
-              bodySet.insert(bodyId);
-            }
-          }
-        }
-
-        m_bodyNames.clear();
-        m_namelessBodies.clear();
-        for (size_t i = 0; i < bookmarks.size(); ++i) {
-            // if application is quitting, return = exit thread
-            if (m_quitting) {
-                return;
-            }
-
-            ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-
-            uint64_t bodyId = ZJsonParser::integerValue(bkmk["body ID"]);
-
-            if (bodySet.contains(bodyId)) {
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, QString::number(bodyId));
-                ZJsonObject tempJson;
-                tempJson.decodeString(temp.data());
-
-                // this is way too wordy to leave on all the time, even in debug
-                // #ifdef _DEBUG_
-                //     std::cout << "parsing info for body ID = " << bkmk.value("body ID").toInteger() << std::endl;
-                //     std::cout << "name = " << ZJsonParser::stringValue(tempJson["name"]) << std::endl;
-                //     std::cout << "status = " << ZJsonParser::stringValue(tempJson["status"]) << std::endl;
-                // #endif
-
-                // now push the value back in; don't put empty strings in (messes with sorting)
-                // updateModel expects "body status", not "status" (matches original file version)
-                if (tempJson.hasKey("status") && strlen(ZJsonParser::stringValue(tempJson["status"])) > 0) {
-                    bkmk.setEntry("body status", tempJson["status"]);
-                }
-                if (tempJson.hasKey("name") && strlen(ZJsonParser::stringValue(tempJson["name"])) > 0) {
-                    bkmk.setEntry("name", tempJson["name"]);
-
-                    // store name for later use
-                    m_bodyNames[bodyId] = QString(ZJsonParser::stringValue(tempJson["name"]));
-                } else {
-                    m_namelessBodies.insert(bodyId);
-                }
-            }
-        }
-
-        // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
-        emit dataChanged(jsonDataObject.value("data"));
-    } else {
-        // but we need to clear the loading message if we can't read from DVID
-        emit loadCompleted();
-    }
 }
 
 void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
@@ -1380,7 +1252,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     QList<uint64_t> partnerBodyIDs = m_connectionsSites.keys();
 
 
-    quint64 totalConnections = 0;
+    m_totalConnections = 0;
     m_ioBodyModel->setRowCount(partnerBodyIDs.size());
     for (int i=0; i<partnerBodyIDs.size(); i++) {
         // carefully set data for column items so they will sort
@@ -1395,7 +1267,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
 
         QStandardItem * numberItem = new QStandardItem();
         quint64 itemConnections = quint64(m_connectionsSites[partnerBodyIDs[i]].size());
-        totalConnections += itemConnections;
+        m_totalConnections += itemConnections;
         numberItem->setData(QVariant(itemConnections), Qt::DisplayRole);
         m_ioBodyModel->setItem(i, IOBODY_NUMBER_COLUMN, numberItem);
     }
@@ -1409,7 +1281,7 @@ void FlyEmBodyInfoDialog::onIOBodiesLoaded() {
     } else {
         labelStream << "Outputs (" ;
     }
-    labelStream << totalConnections;
+    labelStream << m_totalConnections;
     labelStream << ")";
     ui->ioBodyTableLabel->setText(QString::fromStdString(labelStream.str()));
 
@@ -1502,6 +1374,39 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
     emit pointDisplayRequested(x, y, z);
+}
+
+void FlyEmBodyInfoDialog::onIOConnectionsSelectionChanged(QItemSelection selected,
+    QItemSelection deselected) {
+
+    // Shinya wants the table label to show the number of selected connections
+
+    // the two input selections only contain the changes; we want the whole selection
+    QModelIndexList indexList = ui->ioBodyTableView->selectionModel()->selectedIndexes();
+
+    int total = 0;
+    if (indexList.size() == 0) {
+        // if there's no selection, we want all the connections
+        total = m_totalConnections;
+    } else {
+        QSet<int> rows;
+        foreach (QModelIndex proxyIndex, indexList) {
+            rows.insert(m_ioBodyProxy->mapToSource(proxyIndex).row());
+        }
+        foreach (int row, rows) {
+            total += m_ioBodyModel->item(row, IOBODY_NUMBER_COLUMN)->data(Qt::DisplayRole).toInt();
+        }
+    }
+
+    // adjust the label; pick off the existing "Input" or "Output" and rebuild the rest
+    QString currentLabel = ui->ioBodyTableLabel->text();
+    QString firstPart = currentLabel.split("(").at(0);
+    QString newLabel = firstPart + "(" + QString::number(total);
+    if (total < m_totalConnections) {
+        newLabel += " selected";
+    }
+    newLabel += ")";
+    ui->ioBodyTableLabel->setText(newLabel);
 }
 
 FlyEmBodyInfoDialog::~FlyEmBodyInfoDialog()

@@ -23,5 +23,17 @@ ZTestOptionDialog::EOption ZTestOptionDialog::getOption() const
     return OPTION_STRESS;
   }
 
+  if (ui->unitTestRadioButton->isChecked()) {
+    return OPTION_UNIT;
+  }
+
+  if (ui->crashTestRadioButton->isChecked()) {
+    return OPTION_CRASH;
+  }
+
+  if (ui->commandTestRadioButton->isChecked()) {
+    return OPTION_COMMAND;
+  }
+
   return OPTION_NORMAL;
 }

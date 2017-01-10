@@ -16,6 +16,7 @@
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidlabelslice.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -93,11 +94,26 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
       connect(action, SIGNAL(triggered()), this, SLOT(tryAddDoneItem()));
       break;
+    case ZActionFactory::ACTION_ADD_TODO_MERGE:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToMergeItem()));
+      break;
+    case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(tryAddToSplitItem()));
+      break;
     case ZActionFactory::ACTION_CHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(checkTodoItem()));
       break;
     case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(uncheckTodoItem()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToNormal()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_MERGE:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToMerge()));
+      break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToSplit()));
       break;
     case ZActionFactory::ACTION_REMOVE_TODO_ITEM:
       connect(action, SIGNAL(triggered()), this, SLOT(removeTodoItem()));
@@ -226,6 +242,12 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   case Qt::Key_M:
     emit mergingBody();
     processed = true;
+    break;
+  case Qt::Key_U:
+    if (!isSplitWindow()) {
+      emit uploadingMerge();
+      processed = true;
+    }
     break;
   case Qt::Key_B:
     if (event->modifiers() == Qt::NoModifier) {
@@ -542,6 +564,16 @@ void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
   getCompleteDocument()->executeAddTodoItemCommand(pt, false);
 }
 
+void ZFlyEmProofPresenter::tryAddToMergeItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddToMergeItemCommand(pt);
+}
+
+void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
+{
+  getCompleteDocument()->executeAddToSplitItemCommand(pt);
+}
+
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
   getCompleteDocument()->executeAddTodoItemCommand(pt, true);
@@ -562,12 +594,43 @@ void ZFlyEmProofPresenter::uncheckTodoItem()
   getCompleteDocument()->checkTodoItem(false);
 }
 
+void ZFlyEmProofPresenter::setTodoItemToNormal()
+{
+  getCompleteDocument()->setTodoItemToNormal();
+}
+
+void ZFlyEmProofPresenter::setTodoItemToMerge()
+{
+  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_MERGE);
+}
+
+void ZFlyEmProofPresenter::setTodoItemToSplit()
+{
+  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
   ZPoint pt = event.getStackPosition();
   tryAddTodoItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToMergeItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddToMergeItem(pt.toIntPoint());
+}
+
+void ZFlyEmProofPresenter::tryAddToSplitItem()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+  tryAddToSplitItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
@@ -815,6 +878,76 @@ bool ZFlyEmProofPresenter::processCustomOperator(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       }
     }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_SINGLE:
+  {
+    buddyDocument()->deselectAllObject(false);
+    std::set<uint64_t> bodySet;
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+      if (label > 0) {
+        bodySet.insert(label);
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
+  {
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        if (bodySet.count(label) > 0) {
+          bodySet.erase(label);
+        } else {
+          bodySet.insert(label);
+        }
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
+  { //Deselect all other bodies. Select the hit body if it is not selected.
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    std::set<uint64_t> newBodySet;
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        if (bodySet.count(label) == 0) {
+          newBodySet.insert(label);
+        }
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          newBodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
+    break;
+  case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
+  {
+    std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
+          NeuTube::BODY_LABEL_MAPPED);
+    if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
+      ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+      uint64_t label = labelSlice->getHitLabel();
+
+      if (label > 0) {
+        bodySet.insert(label);
+      }
+    }
+    getCompleteDocument()->setSelectedBody(
+          bodySet, NeuTube::BODY_LABEL_MAPPED);
+  }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
     break;

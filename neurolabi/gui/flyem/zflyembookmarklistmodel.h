@@ -45,7 +45,14 @@ public:
     return m_proxy;
   }
 
-  void sort();
+  void sortBookmark();
+
+  bool isUsed() const {
+    return m_isUsed;
+  }
+  void setUsed(bool on) {
+    m_isUsed = on;
+  }
 
 //  void appendBookmark(const ZFlyEmBookmark &bookmark);
 
@@ -64,6 +71,7 @@ private:
 //  ZFlyEmBookmarkArray m_bookmarkArray;
   ZFlyEmBookmarkPresenter *m_presenter;
   ZFlyEmBookmarkPresenter *m_defaultPresenter;
+  bool m_isUsed;
 };
 
 #endif // ZFLYEMBOOKMARKLISTMODEL_H

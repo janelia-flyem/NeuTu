@@ -181,15 +181,31 @@ void ZJsonValue::set(json_t *data, ESetDataOption option)
 
 void ZJsonValue::decodeString(const char *str)
 {
+  json_error_t error;
+  decodeString(str, &error);
+}
+
+void ZJsonValue::decodeString(const char *str, json_error_t *error)
+{
   if (m_data != NULL) {
     json_decref(m_data);
   }
 
-  m_data = json_loads(str, JSON_DECODE_ANY, &m_error);
-  if (m_error.line > 0) {
-    std::cout << m_error.source << std::endl;
-    std::cout << m_error.text << std::endl;
+//  json_error_t error;
+  json_error_t *ownError = NULL;
+  if (error == NULL) {
+    error = ownError = new json_error_t;
   }
+
+  m_data = json_loads(str, JSON_DECODE_ANY, error);
+  if (error->line > 0) {
+    std::cout << "JSON decoding error: " << std::endl;
+    std::cout << "  " << GetErrorString(*error) << std::endl;
+//    std::cout << error->source << std::endl;
+//    std::cout << error->text << std::endl;
+  }
+
+  delete ownError;
 }
 
 void ZJsonValue::clear()
@@ -203,6 +219,8 @@ void ZJsonValue::clear()
 
 void ZJsonValue::print() const
 {
+//  std::cout << dumpString(2);
+
   ZJsonParser::print(NULL, m_data, 0);
 }
 
@@ -228,11 +246,11 @@ std::vector<ZJsonValue> ZJsonValue::toArray()
   return array;
 }
 
-std::string ZJsonValue::getErrorString() const
+std::string ZJsonValue::GetErrorString(const json_error_t &error)
 {
   ostringstream stream;
-  stream << "Line " << m_error.line << " Column " << m_error.column
-         << ": " << m_error.text;
+  stream << "Line " << error.line << " Column " << error.column
+         << ": " << error.text;
 
   return stream.str();
 }
@@ -281,14 +299,15 @@ bool ZJsonValue::load(const string &filePath)
     json_decref(m_data);
   }
 
-  m_data = json_load_file(filePath.c_str(), 0, &m_error);
+  json_error_t error;
+  m_data = json_load_file(filePath.c_str(), 0, &error);
   if (m_data) {
     return true;
   }
 
 
-  std::cout << filePath << "(" << m_error.line << ")" << ": "
-            << m_error.text << std::endl;
+  std::cout << filePath << "(" << error.line << ")" << ": "
+            << error.text << std::endl;
 #endif
 
   return false;

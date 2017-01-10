@@ -106,13 +106,18 @@ public:
     m_usingOriginalSignal = state;
   }
 
+  std::string toSwcComment() const;
+
 private:
   /*!
    * \a stack will be destroyed after the function call.
    */
   ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
+  ZSwcTree *makeSkeletonWithoutDs(Stack *stackData, const int *dsIntv);
 
   ZSwcTree *makeSkeletonWithoutDsTest(Stack *stack);
+  std::string toSwcComment(const int *intv) const;
+  void addSwcComment(ZSwcTree *tree, const int *dsIntv);
 
 
 private:

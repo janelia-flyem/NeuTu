@@ -35,16 +35,17 @@ fi
 
 ./flyem_setup_linux_conda $install_dir
 
-if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
-then
-  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
-elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
-then
-  export PATH=/opt/gcc482/bin:$PATH
-fi
-
-echo $PATH
+source $downloadDir/miniconda/bin/activate dvidenv
 which gcc
+
+#if [ -f $downloadDir/miniconda/envs/dvidenv/bin/gcc ]
+#then
+#  export PATH=$downloadDir/miniconda/envs/dvidenv/bin:$PATH
+#elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+#then
+#  export PATH=/opt/gcc482/bin:$PATH
+#fi
+
 
 qtver=4.8.5
 if [ `uname` = 'Darwin' ]
@@ -103,7 +104,7 @@ fi
 if [ ! -d $downloadDir/neutube ]
 then
   cd $master_dir
-  git rev-parse --verify flyem_release 2>devnull
+  git rev-parse --verify flyem_release 
   if [ $? -eq 0 ]
   then
     cd $downloadDir
@@ -163,7 +164,8 @@ then
   echo "$downloadDir/neutube/neurolabi/build/neuTube.app/Contents/MacOS/neuTube" >> $run_script
 else
   echo "export LD_LIBRARY_PATH=\$dvidlib:$LD_LIBRARY_PATH" >> $run_script
-  echo "$downloadDir/neutube/neurolabi/build/neuTube $*" >> $run_script
+  param='$*'
+  echo "$downloadDir/neutube/neurolabi/build/neutu $param" >> $run_script
 fi
 chmod a+x $run_script
 

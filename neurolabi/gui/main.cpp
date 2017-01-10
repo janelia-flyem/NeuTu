@@ -235,6 +235,12 @@ int main(int argc, char *argv[])
     syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
                NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
 
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      tracingConfig.load(
+            config.getApplicatinDir() + "/json/trace_config_biocytin.json");
+    } else {
+      tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    }
   }
 
 #ifdef _DEBUG_
@@ -298,6 +304,8 @@ int main(int argc, char *argv[])
 
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 
+    ZTest::getInstance().setCommandLineArg(argc, argv);
+
     // init 3D
     //std::cout << "Initializing 3D ..." << std::endl;
     RECORD_INFORMATION("Initializing 3D ...");
@@ -322,7 +330,6 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
-
 
 #if defined(_FLYEM_) && !defined(_DEBUG_)
     mainWin->startProofread();
@@ -373,7 +380,7 @@ int main(int argc, char *argv[])
     std::cout << curve.minY() << std::endl;
     */
     if (unitTest) {
-      ZTest::runUnitTest(argc, argv);
+      ZTest::RunUnitTest(argc, argv);
     }
 #else
     if (unitTest) {

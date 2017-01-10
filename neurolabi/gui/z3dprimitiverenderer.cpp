@@ -204,7 +204,7 @@ void Z3DPrimitiveRenderer::renderTriangleList(
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDeleteBuffers(bufObjectsSize, bufObjects);
-  delete bufObjects;
+  delete []bufObjects;
 
   glDisableVertexAttribArray(attr_vertex);
   if (attr_1dTexCoord0 != -1 && !textureCoordinates1D.empty())

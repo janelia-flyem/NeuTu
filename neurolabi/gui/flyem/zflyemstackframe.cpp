@@ -91,6 +91,7 @@ void ZFlyEmStackFrame::importSegmentation(const string &filePath)
   completeDocument()->importSegmentation(filePath);
 }
 
+/*
 ZStack* ZFlyEmStackFrame::spinoffStackSelection(
     const std::vector<std::vector<double> > &selected,
     bool neighborIncluded)
@@ -103,7 +104,7 @@ ZStack* ZFlyEmStackFrame::spinoffStackSelection(
 
   return spinoffStackSelection(newSelected);
 }
-
+*/
 void ZFlyEmStackFrame::copyDocument(ZStackFrame *frame)
 {
   document()->loadStack(frame->document()->getStack()->clone());

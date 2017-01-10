@@ -43,6 +43,7 @@ class ZFlyEmBookmarkView;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
+class ZRandomGenerator;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -94,9 +95,11 @@ public:
   void setDvidDialog(ZDvidDialog *dlg);
   ZDvidDialog* getDvidDialog() const;
 
+  /*
   ZFlyEmBodyMergeProject* getMergeProject() {
     return &m_mergeProject;
   }
+  */
 
 //  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
 //  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
@@ -118,11 +121,15 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
-  void test();
+  //exploratory code
+  void exportNeuronScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
 
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
+  void exitingSplit();
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
@@ -172,11 +179,12 @@ public slots:
   void commitCurrentSplit();
   void locateBody(uint64_t bodyId, bool appending);
   void locateBody(uint64_t bodyId);
-  void locateBody(QList<uint64_t> bodyIdList);
+//  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);
   void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
+  void notifyBodyMergeEdited();
 
   void showBody3d();
   void showSplit3d();
@@ -271,7 +279,7 @@ public slots:
   void highlightSelectedObject(ZDvidLabelSlice *labelSlice, bool hl);
   void highlightSelectedObject(bool hl);
 
-  void syncMergeWithDvid();
+//  void syncMergeWithDvid();
 
   void getROIs();
   void updateLatencyWidget(int t);
@@ -284,7 +292,8 @@ public slots:
   void setLabelAlpha(int alpha);
 //  void toggleEdgeMode(bool edgeOn);
 
-  void testSlot();
+  void testBodyMerge();
+  void testBodySplit();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -318,6 +327,9 @@ protected slots:
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
   void showInfoDialog();
+
+  void syncBodySelectionFromOrthoWindow();
+  void syncBodySelectionToOrthoWindow();
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -325,6 +337,10 @@ protected:
   void createPresenter();
   virtual void dropEvent(QDropEvent *event);
   void enableSynapseFetcher();
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
+
+private slots:
+//  void updateDvidLabelObject();
 
 private:
   void init();
@@ -364,13 +380,19 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
+
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  void exitHighlightMode();
+  ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
+  ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
+
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
-  ZFlyEmBodyMergeProject m_mergeProject;
 
   QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_assignedBookmarkModel;
@@ -426,8 +448,6 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
-
-  QTimer *m_testTimer;
 };
 
 template <typename T>

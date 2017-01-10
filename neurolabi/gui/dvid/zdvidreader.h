@@ -7,6 +7,7 @@
 #include <QImage>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QByteArray>
 
 #include <string>
 #include <vector>
@@ -297,6 +298,14 @@ public:
   bool good() const;
 
   std::string readMasterNode() const;
+  std::vector<std::string> readMasterList() const;
+
+  enum EReadOption {
+    READ_CURRENT, READ_TRACE_BACK
+  };
+
+  ZJsonObject readDefaultDataSetting(EReadOption option) const;
+
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
@@ -306,6 +315,8 @@ public:
     return m_service;
   }
 #endif
+
+  QByteArray readBuffer(const std::string &url);
 
   bool refreshLabelBuffer();
 
@@ -338,6 +349,15 @@ private:
       int blockNumber);
 
   void clearBuffer() const;
+
+  static std::string GetMasterNodeFromBuffer(
+      const ZDvidBufferReader &bufferReader);
+  static std::vector<std::string> GetMasterListFromBuffer(
+      const ZDvidBufferReader &bufferReader);
+  ZJsonObject readDefaultDataSettingCurrent() const;
+  ZJsonObject readDefaultDataSettingTraceBack() const;
+  void loadDefaultDataSetting();
+  void loadDvidDataSetting(const ZJsonObject obj);
 
 protected:
 //  QEventLoop *m_eventLoop;

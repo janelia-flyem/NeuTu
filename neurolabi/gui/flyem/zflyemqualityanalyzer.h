@@ -75,7 +75,7 @@ public:
 private:
   ZIntCuboidArray m_substackRegion;
   FlyEm::ZHotSpotArray m_hotSpotArray;
-  ZFlyEmCoordinateConverter::ESpace m_targetSpace;
+//  ZFlyEmCoordinateConverter::ESpace m_targetSpace;
 };
 
 #endif // ZFLYEMQUALITYANALYZER_H

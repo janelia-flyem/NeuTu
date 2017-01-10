@@ -55,6 +55,9 @@ public:
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
+  bool isSwcWrittable();
+
+
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
@@ -181,6 +184,8 @@ public:
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
+  void writeDefaultDataSetting(const ZJsonObject &obj);
+  void writeDefaultDataSetting();
 
   inline int getStatusCode() const {
     return m_statusCode;

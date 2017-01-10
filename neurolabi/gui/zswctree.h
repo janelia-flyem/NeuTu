@@ -27,6 +27,7 @@ class ZSwcTrunkAnalyzer;
 class QPointF;
 class ZClosedCurve;
 class ZRect2d;
+class ZJsonObject;
 
 //! SWC tree class
 /*!
@@ -227,6 +228,8 @@ public:
   void save(const std::string &filePath);
   void load(const std::string &filePath);
 
+//  void save(const std::string &filePath, const ZJsonObject &info);
+
   /*!
    * \brief Load swc from buffer
    *
@@ -268,6 +271,7 @@ public:
   inline void addComment(const std::string &comment) {
     m_comment.push_back(comment);
   }
+  void clearComment();
 
 public:
   int size();
@@ -820,6 +824,10 @@ private:
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
+
+  void writeSwc(FILE *fp);
+
+  static std::string GetCommentHeader();
 
 #ifdef _QT_GUI_USED_
   const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;

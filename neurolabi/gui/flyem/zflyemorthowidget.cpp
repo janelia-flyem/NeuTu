@@ -64,6 +64,7 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
   setDataVisible(m_controlForm->isDataVisible());
   setSegmentationVisible(m_controlForm->isShowingSeg());
 
+  syncMergeWithDvid();
 }
 
 void ZFlyEmOrthoWidget::syncView()
@@ -84,9 +85,10 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
 
   ZWidgetMessage::ConnectMessagePipe(getDocument(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
-  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
+
+//  ZWidgetMessage::ConnectMessagePipe(m_xyMvc->getMergeProject(), this);
+//  ZWidgetMessage::ConnectMessagePipe(m_yzMvc->getMergeProject(), this);
+//  ZWidgetMessage::ConnectMessagePipe(m_xzMvc->getMergeProject(), this);
 
   connect(m_controlForm, SIGNAL(movingUp()), this, SLOT(moveUp()));
   connect(m_controlForm, SIGNAL(movingDown()), this, SLOT(moveDown()));
@@ -112,7 +114,7 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
   connect(getDocument(), SIGNAL(todoEdited(int,int,int)),
           this, SIGNAL(todoEdited(int,int,int)));
   connect(getDocument(), SIGNAL(bodyMergeEdited()),
-          this, SIGNAL(bodyMergeEdited()));
+          this, SLOT(notifyBodyMergeEdited()));
 
   foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
     connect(mvc->getPresenter(),
@@ -153,11 +155,19 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
 //  connect(m_xyMvc, SIGNAL(widgetGlyphChanged()))
 }
 
+void ZFlyEmOrthoWidget::notifyBodyMergeEdited()
+{
+  emit bodyMergeEdited();
+}
+
 void ZFlyEmOrthoWidget::syncMergeWithDvid()
 {
+  getDocument()->syncMergeWithDvid();
+  /*
   foreach (ZFlyEmProofMvc *mvc, m_mvcArray) {
     mvc->syncMergeWithDvid();
   }
+  */
 #if 0
   m_xyMvc->syncMergeWithDvid();
   m_xzMvc->syncMergeWithDvid();

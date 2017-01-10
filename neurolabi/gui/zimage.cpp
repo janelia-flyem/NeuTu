@@ -49,7 +49,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = NeuTube::INVALID_Z_INDEX;
+  m_z = NeuTube::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -1110,10 +1110,10 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
         int sourceHeight = stack->height();
 
 
-        int tx0 = imax2(stack->getOffset().getX(), 0);
-        int ty0 = imax2(stack->getOffset().getY(), 0);
-        int tx1 = imin2(tx0 + sourceWidth, tx0 + targetWidth);
-        int ty1 = imin2(ty0 + sourceHeight, ty0 + targetHeight);
+        int tx0 = offsetAdjust ? imax2(stack->getOffset().getX(), 0) : 0;
+        int ty0 = offsetAdjust ? imax2(stack->getOffset().getY(), 0) : 0;
+        int tx1 = offsetAdjust ? imin2(tx0 + sourceWidth, targetWidth) : 0;
+        int ty1 = offsetAdjust ? imin2(ty0 + sourceHeight,targetHeight) : 0;
         int sx = tx0;
         int sy = ty0;
 

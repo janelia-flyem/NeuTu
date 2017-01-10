@@ -18,6 +18,8 @@ void ZFlyEmBookmarkListModel::init(QObject *parent)
   m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
   m_proxy->setFilterKeyColumn(-1);
   m_proxy->setSourceModel(this);
+
+  m_isUsed = false;
 }
 
 QVariant ZFlyEmBookmarkListModel::headerData(
@@ -121,7 +123,7 @@ bool ZFlyEmBookmarkListModel::insertRows(
   return false;
 }
 
-void ZFlyEmBookmarkListModel::sort()
+void ZFlyEmBookmarkListModel::sortBookmark()
 {
   m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
 }

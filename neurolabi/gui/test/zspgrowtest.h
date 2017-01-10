@@ -12,7 +12,7 @@ TEST(ZSpGrowParser, Basic)
   Sp_Grow_Workspace *sgw = New_Sp_Grow_Workspace();
   Stack *stack = C_Stack::make(GREY, 5, 5, 1);
   C_Stack::setZero(stack);
-  C_Stack::setPixel(stack, 1, 1, 1, 0, 1);
+  C_Stack::setPixel(stack, 1, 1, 0, 0, 1);
   size_t seeds[] = {0, 1, 2};
   size_t targets[] = {2, 3, 4};
   sgw->conn = 8;

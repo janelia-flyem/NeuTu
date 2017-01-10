@@ -9,6 +9,7 @@
 #include "zjsonfactory.h"
 #include "c_json.h"
 #include "zcuboid.h"
+#include "zresolution.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -132,6 +133,17 @@ void ZDvidAnnotation::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
+double ZDvidAnnotation::GetDefaultRadius(
+    EKind kind, const ZResolution &resolution)
+{
+  double r = GetDefaultRadius(kind);
+
+  r *= resolution.getPlaneVoxelSize(
+        NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER) / 8.0;
+
+  return r;
+}
+
 double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
@@ -149,6 +161,11 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 void ZDvidAnnotation::setDefaultRadius()
 {
   m_radius = GetDefaultRadius(m_kind);
+}
+
+void ZDvidAnnotation::setDefaultRadius(const ZResolution &resolution)
+{
+  m_radius = GetDefaultRadius(m_kind, resolution);
 }
 
 QColor ZDvidAnnotation::GetDefaultColor(EKind kind)
@@ -524,6 +541,31 @@ int ZDvidAnnotation::getY() const
 int ZDvidAnnotation::getZ() const
 {
   return getPosition().getZ();
+}
+
+template < >
+std::string ZDvidAnnotation::getProperty<std::string>(const std::string &key)
+const
+{
+  std::string prop;
+  prop = ZJsonParser::stringValue(m_propertyJson.value(key.c_str()).getData());
+
+  return prop;
+}
+
+void ZDvidAnnotation::addProperty(
+    const std::string &key, const std::string &value)
+{
+  if (!key.empty()) {
+    m_propertyJson.setEntry(key, value);
+  }
+}
+
+void ZDvidAnnotation::removeProperty(const std::string &key)
+{
+  if (m_propertyJson.hasKey(key.c_str())) {
+    m_propertyJson.removeKey(key.c_str());
+  }
 }
 
 std::string ZDvidAnnotation::GetKindName(EKind kind)

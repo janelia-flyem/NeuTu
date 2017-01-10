@@ -39,6 +39,7 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
   se->setSource(ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(axis));
+  se->setResolution(m_grayScaleInfo.getVoxelResolution());
   se->setReady(true);
   addObject(se);
 }

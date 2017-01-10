@@ -126,11 +126,14 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
       break;
     case ZStackObject::TYPE_DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
-        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
+        op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE);
+//        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT_SINGLE);
       } else if (event.getModifiers() == Qt::ShiftModifier) {
-        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE);
+//        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_SELECT_MULTIPLE);
+        op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE);
       } else if (event.getModifiers() == Qt::ControlModifier) {
-        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
+//        op.setOperation(ZStackOperator::OP_OBJECT3D_SCAN_TOGGLE_SELECT);
+        op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT);
       }
       break;
     case ZStackObject::TYPE_FLYEM_BOOKMARK:

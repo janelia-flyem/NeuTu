@@ -37,7 +37,7 @@ public:
     CASE_SENSITIVE, CASE_INSENSITIVE
   };
 
-  inline void init() { m_workspace = New_String_Workspace(); }
+  inline void init() { m_workspace = NULL; }
 
   static int firstInteger(const std::string &str);
   int firstInteger();

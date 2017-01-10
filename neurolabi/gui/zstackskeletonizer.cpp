@@ -80,21 +80,43 @@ static double AdjustedDistanceWeight(double v)
   return dmax2(0.1, sqrt(v) - 0.5);
 }
 
+void ZStackSkeletonizer::addSwcComment(ZSwcTree *tree, const int *dsIntv)
+{
+  if (tree != NULL) {
+    std::string comment = toSwcComment(dsIntv);
+    if (!comment.empty()) {
+      tree->addComment(comment);
+    }
+  }
+}
+
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 {
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
     ZIntCuboid box = obj.getBoundBox();
-    std::cout << "Downsampling " << m_downsampleInterval[0] + 1 << " x "
-              << m_downsampleInterval[1] + 1 << " x "
-              << m_downsampleInterval[2] + 1 << std::endl;
-    newObj.downsampleMax(m_downsampleInterval[0],
-                         m_downsampleInterval[1], m_downsampleInterval[2]);
+    int dsIntv[3];
+    for (int i = 0; i < 3; ++i) {
+      dsIntv[i] = m_downsampleInterval[i];
+    }
+    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
+           > m_sizeLimit) {
+      for (int i = 0; i < 3; ++i) {
+        dsIntv[i] += 1;
+      }
+    }
+    std::cout << "Downsampling "
+              << dsIntv[0] + 1 << " x "
+              << dsIntv[1] + 1 << " x "
+              << dsIntv[2] + 1 << std::endl;
+    newObj.downsampleMax(dsIntv[0], dsIntv[1], dsIntv[2]);
     int offset[3] = {0, 0, 0};
     Stack *stack = newObj.toStack(offset);
-    tree = makeSkeletonWithoutDs(stack);
+    tree = makeSkeletonWithoutDs(stack, dsIntv);
+
     if (tree != NULL) {
+      addSwcComment(tree, dsIntv);
       const ZIntPoint pt = box.getFirstCorner();
       tree->translate(pt.getX(), pt.getY(), pt.getZ());
     }
@@ -438,7 +460,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDsTest(Stack *stackData)
   return wholeTree;
 }
 
-ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
+ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(
+    Stack *stackData, const int *dsIntv)
 {
   if (C_Stack::voxelNumber(stackData) > m_sizeLimit) {
     std::cout << "Warning: " << "Too big stack. Abort." << std::endl;
@@ -531,11 +554,10 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
   }
 
 #ifdef _DEBUG_2
-    C_Stack::write("/groups/flyem/home/zhaot/Work/neutube/neurolabi/data/test.tif", stackData);
+  C_Stack::write("/groups/flyem/home/zhaot/Work/neutube/neurolabi/data/test.tif", stackData);
 #endif
 
-  int dsVol = (m_downsampleInterval[0] + 1) * (m_downsampleInterval[1] + 1) *
-      (m_downsampleInterval[2] + 1);
+  int dsVol = (dsIntv[0] + 1) * (dsIntv[1] + 1) * (dsIntv[2] + 1);
 
   cout << "Label objects ...\n" << endl;
   int minObjSize = m_minObjSize;
@@ -609,9 +631,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
 
     double linScale = 1.0;
 
-    if (m_downsampleInterval[0] == m_downsampleInterval[1] &&
-        m_downsampleInterval[1] == m_downsampleInterval[2]) {
-      linScale = m_downsampleInterval[0] + 1;
+    if (dsIntv[0] == dsIntv[1] && dsIntv[1] == dsIntv[2]) {
+      linScale = dsIntv[0] + 1;
     } else {
       linScale = Cube_Root(dsVol);
     }
@@ -806,10 +827,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
     wholeTree = new ZSwcTree;
     wholeTree->setData(tree);
 
-    if (m_downsampleInterval[0] > 0 || m_downsampleInterval[1] > 0 ||
-        m_downsampleInterval[2] > 0) {
-      wholeTree->rescale(m_downsampleInterval[0] + 1,
-          m_downsampleInterval[1] + 1, m_downsampleInterval[2] + 1);
+    if (dsIntv[0] > 0 || dsIntv[1] > 0 || dsIntv[2] > 0) {
+      wholeTree->rescale(dsIntv[0] + 1, dsIntv[1] + 1, dsIntv[2] + 1);
     }
 
     if (m_connectingBranch) {
@@ -829,6 +848,34 @@ ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
   endProgress();
 
   return wholeTree;
+}
+
+ZSwcTree* ZStackSkeletonizer::makeSkeletonWithoutDs(Stack *stackData)
+{
+  return makeSkeletonWithoutDs(stackData, m_downsampleInterval);
+}
+
+std::string ZStackSkeletonizer::toSwcComment(const int *intv) const
+{
+  //Temporary hack
+  std::string comment;
+  ZJsonObject infoJson;
+  if (intv[0] > 0 || intv[1] > 0 || intv[2] > 0) {
+    ZJsonArray dsJson;
+    for (int i = 0; i < 3; ++i) {
+      dsJson.append(intv[i]);
+    }
+    infoJson.setEntry("ds_intv", dsJson);
+    infoJson.setEntry("min_length", m_lengthThreshold);
+    comment = "<json>" + infoJson.dumpString(0) + "</json>";
+  }
+
+  return comment;
+}
+
+std::string ZStackSkeletonizer::toSwcComment() const
+{
+  return toSwcComment(m_downsampleInterval);
 }
 
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)

@@ -24,6 +24,9 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
   connect(m_orthoWidget, SIGNAL(bodyMergeEdited()),
           this, SIGNAL(bodyMergeEdited()));
   statusBar()->showMessage("Orthogonal view ready.");
+
+  m_progressDlg = NULL;
+  m_progressSignal = NULL;
 }
 
 

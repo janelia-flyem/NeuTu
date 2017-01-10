@@ -31,6 +31,8 @@
 #include "zflyembookmarkview.h"
 #include "dialogs/flyembodyfilterdialog.h"
 #include "zflyemdataloader.h"
+#include "dialogs/zstresstestoptiondialog.h"
+#include "dialogs/zflyembodyscreenshotdialog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -126,11 +128,13 @@ void ZProofreadWindow::init()
           this, SLOT(exitSplit()));
 
   connectMessagePipe(m_mainMvc);
+  connectMessagePipe(m_mainMvc->getDocument().get());
 
   connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+  connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
   setCentralWidget(widget);
 
@@ -184,6 +188,8 @@ void ZProofreadWindow::createDialog()
   m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
 
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
+  m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
+  m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -191,12 +197,14 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
-void ZProofreadWindow::testSlot()
+void ZProofreadWindow::stressTestSlot()
 {
-  m_mainMvc->test();
+  if (m_stressTestOptionDlg->exec()) {
+    m_mainMvc->stressTest(m_stressTestOptionDlg);
+  }
 }
 
-void ZProofreadWindow::test()
+void ZProofreadWindow::stressTest()
 {
   if (!m_mainMvc->getDvidTarget().isValid()) {
     m_mainMvc->setDvidTarget();
@@ -212,7 +220,7 @@ void ZProofreadWindow::test()
   m_mainMvc->getPresenter()->setObjectVisible(false);
   */
 
-  testSlot();
+  stressTestSlot();
 }
 
 void ZProofreadWindow::createMenu()
@@ -226,6 +234,13 @@ void ZProofreadWindow::createMenu()
   fileMenu->addAction(m_importBookmarkAction);
   connect(m_importBookmarkAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(loadBookmark()));
+
+  QMenu *exportMenu = new QMenu("Export", this);
+  fileMenu->addMenu(exportMenu);
+  QAction *exportScreenshotAction = new QAction("Neuron Screenshot", this);
+  connect(exportScreenshotAction, SIGNAL(triggered()),
+          this, SLOT(exportNeuronScreenshot()));
+  exportMenu->addAction(exportScreenshotAction);
 
   m_viewMenu = new QMenu("View", this);
 
@@ -367,7 +382,7 @@ void ZProofreadWindow::createMenu()
   m_advancedMenu->addAction(mainWindowAction);
 
   QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
   m_advancedMenu->addAction(testAction);
 
 
@@ -684,6 +699,22 @@ void ZProofreadWindow::exploreBody()
     ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
     dvidFilter.setDvidTarget(target);
     m_flyemDataLoader->loadDataBundle(dvidFilter);
+  }
+}
+
+void ZProofreadWindow::exportNeuronScreenshot()
+{
+  if (m_bodyScreenshotDlg->exec()) {
+    std::vector<uint64_t> bodyIdArray = m_bodyScreenshotDlg->getBodyIdArray();
+    /*
+    bodyIdArray.push_back(95963649);
+    bodyIdArray.push_back(131229029);
+    bodyIdArray.push_back(134974661);
+    */
+    m_mainMvc->exportNeuronScreenshot(
+          bodyIdArray, m_bodyScreenshotDlg->getFrameWidth(),
+          m_bodyScreenshotDlg->getFrameHeight(),
+          m_bodyScreenshotDlg->getOutputPath());
   }
 }
 

@@ -80,6 +80,7 @@ void ZObject3dScan::init()
   m_blockingEvent = false;
   m_zProjection = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
+  setColor(255, 255, 255, 255);
 }
 
 
@@ -3242,7 +3243,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::INVALID_Z_INDEX;
+  int cz = NeuTube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 
@@ -3857,7 +3858,7 @@ bool ZObject3dScan::contains(int x, int y, int z)
 
   //Binary search
   size_t lowIndex = 0;
-  size_t highIndex = getStripeNumber();
+  size_t highIndex = getStripeNumber() - 1;
 
   while (highIndex >= lowIndex) {
     size_t medIndex = (lowIndex + highIndex) / 2;

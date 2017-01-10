@@ -4,11 +4,13 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
+#include <QSlider>
+#include <QDoubleSpinBox>
 #include <QRadioButton>
 #include "zgradientmagnitudemodule.h"
 #include "mainwindow.h"
 #include "zsandbox.h"
-
+#include "zstackprocessor.h"
 
 ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -19,10 +21,8 @@ ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
 
 ZGradientMagnitudeModule::~ZGradientMagnitudeModule()
 {
-  if(select_strategy_window)
-  {
-    delete select_strategy_window;
-  }
+
+  delete select_strategy_window;
 }
 
 
@@ -44,28 +44,113 @@ void ZGradientMagnitudeModule::execute()
 ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   :QWidget(parent)
 {
-  this->setWindowTitle("Select Gradient Strategy");
+  this->setWindowTitle("Image Gradient");
+
   Qt::WindowFlags flags = this->windowFlags();
   flags |= Qt::WindowStaysOnTopHint;
   this->setWindowFlags(flags);
-  QHBoxLayout* lay=new QHBoxLayout(this);
+  QVBoxLayout* lay=new QVBoxLayout(this);
   start_gradient_magnitude=new QPushButton("start");
+  QPushButton* reset=new QPushButton("reset");
   strategies=new QComboBox;
   strategies->addItem("simple");
-  inverse=new QRadioButton("inverse");
-  lay->addWidget(strategies);
-  lay->addWidget(inverse);
-  lay->addWidget(start_gradient_magnitude);
+  reverse=new QCheckBox("inverse gradient");
+
+  gaussin_use_same_sigma=new QCheckBox("XYZ use same standard deviation sigma");
+  gaussin_sigma_x=new QDoubleSpinBox();
+  gaussin_sigma_y=new QDoubleSpinBox();
+  gaussin_sigma_z=new QDoubleSpinBox();
+  gaussin_sigma_x->setMaximum(3.0);
+  gaussin_sigma_x->setMinimum(0.0);
+  gaussin_sigma_x->setSingleStep(0.1);
+  gaussin_sigma_y->setMaximum(3.0);
+  gaussin_sigma_y->setMinimum(0.0);
+  gaussin_sigma_y->setSingleStep(0.1);
+  gaussin_sigma_z->setMaximum(3.0);
+  gaussin_sigma_z->setMinimum(0.0);
+  gaussin_sigma_z->setSingleStep(0.1);
+
+  edge_enhance=new QDoubleSpinBox();
+  edge_enhance->setToolTip(
+    "g=alpha*F+(1-alpha)*E \n where F is original value ,E is gradient and g is new value"
+    );
+  edge_enhance->setMaximum(1.0);
+  edge_enhance->setMinimum(0.0);
+  edge_enhance->setSingleStep(0.1);
+
+  QHBoxLayout* lay_s=new QHBoxLayout;
+  lay_s->addWidget(new QLabel("gradient algorithm:"));
+  lay_s->addWidget(strategies);
+  lay->addLayout(lay_s);
+  lay->addSpacing(15);
+
+  QHBoxLayout* lay_g=new QHBoxLayout;
+  lay_g->addWidget(new QLabel("gaussin smooth:"));
+  lay_g->addWidget(gaussin_use_same_sigma);
+  QHBoxLayout* lay_gs=new QHBoxLayout;
+  lay_gs->addWidget(new QLabel("sigma x"));
+  lay_gs->addWidget(gaussin_sigma_x);
+  lay_gs->addWidget(new QLabel("sigma y"));
+  lay_gs->addWidget(gaussin_sigma_y);
+  lay_gs->addWidget(new QLabel("sigma z"));
+  lay_gs->addWidget(gaussin_sigma_z);
+  lay->addLayout(lay_g);
+  lay->addLayout(lay_gs);
+  lay->addSpacing(15);
+
+  lay->addWidget(reverse);
+  lay->addStretch();
+
+  QHBoxLayout* lay_e=new QHBoxLayout;
+  lay_e->addWidget(new QLabel("edge enhancement alpha:"));
+  lay_e->addWidget(edge_enhance);
+  lay->addLayout(lay_e);
+  lay->addSpacing(15);
+
+  QHBoxLayout* lay_st=new QHBoxLayout;
+  lay_st->addWidget(reset);
+  lay_st->addWidget(start_gradient_magnitude);
+  lay->addLayout(lay_st);
+
   this->setLayout(lay);
-  this->resize(200,100);
   this->move(300,200);
+  connect(reset,SIGNAL(clicked()),this,SLOT(onReset()));
   connect(start_gradient_magnitude,SIGNAL(clicked()),this,SLOT(onStart()));
-  strategy_map["simple"]=GradientStrategyType::SIMPLE;
+  connect(gaussin_use_same_sigma,SIGNAL(stateChanged(int)),this,SLOT(onUseSameSigmaChanged(int)));
+  strategy_map["simple"]=GradientStrategyContext::SIMPLE;
+}
+
+
+void ZSelectGradientStrategyWindow::onReset()
+{
+  strategies->setCurrentIndex(0);
+  gaussin_use_same_sigma->setChecked(false);
+  gaussin_sigma_x->setValue(0.0);
+  gaussin_sigma_y->setValue(0.0);
+  gaussin_sigma_z->setValue(0.0);
+  reverse->setChecked(false);
+  edge_enhance->setValue(0.0);
+}
+
+
+void ZSelectGradientStrategyWindow::onUseSameSigmaChanged(int state)
+{
+  if(state==Qt::Checked)
+  {
+    gaussin_sigma_y->setEnabled(false);
+    gaussin_sigma_z->setEnabled(false);
+  }
+  else
+  {
+    gaussin_sigma_y->setEnabled(true);
+    gaussin_sigma_z->setEnabled(true);
+  }
 }
 
 
 void ZSelectGradientStrategyWindow::onStart()
 {
+  this->hide();
   ZStackDoc *doc =ZSandbox::GetCurrentDoc();
   ZStack  *input_stack=doc->getStack();
   if(!doc || ! input_stack)
@@ -79,255 +164,325 @@ void ZSelectGradientStrategyWindow::onStart()
   int depth=input_stack->depth();
   int channel=input_stack->channelNumber();
 
-  ZStack* mag=new ZStack(kind,width,height,depth,channel);
+  ZStack* out=new ZStack(kind,width,height,depth,channel);
+
+  double sigma_x,sigma_y,sigma_z;
+  sigma_x=gaussin_sigma_x->value();
+  if(gaussin_use_same_sigma->isChecked())
+  {
+    sigma_y=sigma_z=sigma_x;
+  }
+  else
+  {
+    sigma_y=gaussin_sigma_y->value();
+    sigma_z=gaussin_sigma_z->value();
+  }
 
   QString s=strategies->currentText();
-  GradientStrategyContext context(input_stack,mag,inverse->isChecked(),strategy_map[s]);
-  context.run();
+  GradientStrategyContext context(strategy_map[s]);
+  context.run(input_stack,out,reverse->isChecked(),
+              edge_enhance->value(),sigma_x,sigma_y,sigma_z);
 
-  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(mag);
+  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
 }
 
 
-GradientStrategyContext::GradientStrategyContext(
-    const ZStack* input_stack,ZStack* output_x,ZStack* output_y,
-    ZStack* output_z,ZStack* mag,bool inverse,GradientStrategyType::StrategyType strategy_type)
+template<typename T>
+GradientStrategy<T>::GradientStrategy()
 {
-  _in=input_stack;
-  _outx=output_x;
-  _outy=output_y;
-  _outz=output_z;
-  _mag=mag;
-  _type=strategy_type;
-  _inverse=inverse;
-  delete_out_xyz=false;
+  if(typeid(T)==typeid(uint8_t) || typeid(T)==typeid(color_t))
+    _max=255;
+  else if(typeid(T)==typeid(uint16_t))
+    _max=65535;
+  else if(typeid(T)==typeid(float))
+    _max=FLT_MAX;
+  else if(typeid(T)==typeid(double))
+    _max=DBL_MAX;
+  else
+    throw std::string("GradientStategy not support ")+typeid(T).name()+" yet";
 }
 
 
-GradientStrategyContext::GradientStrategyContext(
-    const ZStack* in,ZStack* out,bool inverse,GradientStrategyType::StrategyType strategy_type)
+template<typename T>
+void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth)
 {
-  _in=in;
-  _mag=out;
-  _inverse=inverse;
-  _outx=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
-  _outy=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
-  _outz=new ZStack(in->kind(),in->width(),in->height(),in->depth(),in->channelNumber());
-  _type=strategy_type;
-  delete_out_xyz=true;
+  _width=width;
+  _height=height;
+  _depth=depth;
+  _slice=_width*_height;
+  _total=_slice*_depth;
+  _run(in,out);
 }
 
 
-GradientStrategyContext::~GradientStrategyContext()
+template<typename T>
+void GradientStrategy<T>::edgeEnhance(const T* in,T* out,double alpha)
 {
-  if(delete_out_xyz)
+  for(size_t i=0;i<this->_total;++i)
   {
-    delete _outx;
-    delete _outy;
-    delete _outz;
+    out[i]=(1-alpha)*out[i]+in[i]*(alpha);
   }
 }
 
 
-void GradientStrategyContext::run()
+template<>
+void GradientStrategy<color_t>::edgeEnhance(const color_t* in,color_t* out,double alpha)
 {
-  if(!_in || !_outx || !_outy || !_outz)
-    return ;
-
-  switch(_in->kind())
+  for(size_t i=0;i<this->_total;++i)
   {
-    case GREY:
-          _run<uint8>();
-          break;
-    case GREY16:
-          _run<uint16>();
-          break;
-    case FLOAT32:
-          _run<float32>();
-          break;
-    case FLOAT64:
-          _run<float64>();
-          break;
-    case COLOR:
-          _run<color_t>();
-          break;
-    default:
-          break;
+    for(uint j=0;j<3;++j)
+    {
+      out[i][j]=(1-alpha)*out[i][j]+in[i][j]*alpha;
+    }
   }
 }
 
 
 template<typename T>
-void GradientStrategyContext:: _run()
+void GradientStrategy<T>::reverse(T* begin,T* end)
 {
-  GradientStrategy<T>* strategy=0;
-  switch(_type)
+  for(T* it=begin;it!=end;++it)
+    *it=_max-*it;
+}
+
+
+template<>
+void GradientStrategy<color_t>::reverse(color_t* begin,color_t* end)
+{
+  for(color_t* it=begin;it!=end;++it)
+    for(uint i=0;i<3;++i)
+      (*it)[i]=_max-(*it)[i];
+}
+
+
+GradientStrategyContext::GradientStrategyContext(StrategyType strategy_type)
+{
+  _type=strategy_type;
+}
+
+
+GradientStrategyContext::~GradientStrategyContext()
+{
+
+}
+
+
+void GradientStrategyContext::run
+(
+    const ZStack* in,
+    ZStack* out,
+    bool reverse,
+    double edge_enhance_alpha,
+    double gaussin_smooth_sigma_x,
+    double gaussin_smooth_sigma_y,
+    double gaussin_smooth_sigma_z
+    )
+{
+  if(!in || !out)
+    return ;
+
+#define _run_(type)\
+  _run<type>(in,out,edge_enhance_alpha,gaussin_smooth_sigma_x,\
+  gaussin_smooth_sigma_y,gaussin_smooth_sigma_z,reverse)
+  switch(in->kind())
   {
-    case GradientStrategyType::SIMPLE:
-        strategy=new GradientStrategySimple<T>;
-        break;
+    case GREY:
+          _run_(uint8);
+          break;
+    case GREY16:
+           _run_(uint16);
+          break;
+    case FLOAT32:
+          _run_(float32);
+          break;
+    case FLOAT64:
+          _run_(float64);
+          break;
+    case COLOR:
+           _run_(color_t);
+          break;
     default:
-        strategy=0;
-        break;
+          break;
   }
+#undef _run_
+}
+
+
+template<typename T>
+void GradientStrategyContext:: _run
+(
+    const ZStack* in,
+    ZStack* out,
+    double edge_enhance_alpha,
+    double gaussin_smooth_sigma_x,
+    double gaussin_smooth_sigma_y,
+    double gaussin_smooth_sigma_z,
+    bool reverse)
+{
+  GradientStrategy<T>* strategy=getStrategy<T>();
+  size_t total=in->width()*in->height()*in->depth();
+
   if(strategy)
   {
-    GradientStrategyParam p(_in->width(),_in->height(),_in->depth(),_inverse);
     /*process each channel*/
-    for(int i=0;i<_in->channelNumber();++i)
+    for(int i=0;i<in->channelNumber();++i)
     {
-      const T*in=(const T*)_in->array8(i);
-      T* out_x=(T*)_outx->array8(i);
-      T* out_y=(T*)_outy->array8(i);
-      T* out_z=(T*)_outz->array8(i);
-      T* mag=(T*)_mag->array8(i);
-      strategy->run(in,out_x,out_y,out_z,mag,p);
+      const T*_in=(const T*)in->array8(i);
+      T* _out=(T*)out->array8(i);
+      strategy->run(_in,_out,in->width(),in->height(),in->depth());
     }
+
+    if(
+       (gaussin_smooth_sigma_x!=0.0) ||
+       (gaussin_smooth_sigma_y!=0.0) ||
+       (gaussin_smooth_sigma_z!=0.0))
+    {
+      for(int i=0;i<out->channelNumber();++i)
+      {
+        Stack* p=ZStackProcessor::GaussianSmooth(
+              out->c_stack(i),gaussin_smooth_sigma_x,
+              gaussin_smooth_sigma_y,gaussin_smooth_sigma_z);
+        memcpy(out->array8(i),p->array,sizeof(T)*total);
+        Kill_Stack(p);
+      }
+    }
+
+    if(reverse)
+    {
+      for(int i=0;i<in->channelNumber();++i)
+      {
+        T* _out=(T*)out->array8(i);
+        strategy->reverse(_out,_out+total);
+      }
+    }
+
+    if(edge_enhance_alpha!=0.0)
+    {
+      for(int i=0;i<in->channelNumber();++i)
+      {
+        const T*_in=(const T*)in->array8(i);
+        T* _out=(T*)out->array8(i);
+        strategy->edgeEnhance(_in,_out,edge_enhance_alpha);
+      }
+    }
+
     delete strategy;
   }
 }
 
 
 template<typename T>
-void GradientStrategySimple<T>::run(const T* in,T* out_x,T* out_y,T* out_z,T* mag,GradientStrategyParam p)
+void GradientStrategySimple<T>::process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end)
 {
-  uint width=p.width;
-  uint height=p.height;
-  uint depth=p.depth;
-  uint t=width*height;
 
-  for(uint z=0;z<depth;++z)
-  {
-    uint offset_s=t*z;
-    for(uint y=0;y<height;++y)
-    {
-      uint offset=offset_s+width*y;
-      const T* pi=in+offset;
-      T* px=out_x+offset;
-      T* py=out_y+offset;
-      T* pz=out_z+offset;
-      for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
       {
-        /*convert to double to avoid substraction operation overflow*/
-        if(x==0)
-          *px=abs(double(*px)-*(px+1));
-        else if(x==width-1)
-          *px=abs(double(*(pi-1))-*pi);
-        else
-          *px=abs(double(*(pi+1))-*(pi-1))/2.0;
-        if(y==0)
-          *py=abs(double(*(pi+width))-*pi);
-        else if(y==height-1)
-          *py=abs(double(*pi)-*(pi-width));
-        else
-          *py=abs(double(*(pi+width))-*(pi-width))/2.0;
-        if(z==0)
-          *pz=abs(double(*(pi+t))-*(pi));
-        else if(z==depth-1)
-          *pz=abs(double(*(pi))-*(pi-t));
-        else
-          *pz=abs(double(*(pi+t))-*(pi-t))/2.0;
+        if(w==0)*p=std::abs(double(*pi)-*(pi+offset));
+        else if(w==end)*p=std::abs(double(*(pi-offset))-*pi);
+        else*p=std::abs(double(*(pi+offset))-*(pi-offset))/2.0;
       }
-    }
-  }
-  if(mag)
-  {
-    int sign=p.inverse?-1:1;
-    double max=DBL_MAX;
-    if(typeid(uint8)==typeid(T))
-    {
-      max=255.0;
-    }
-    else if(typeid(uint16)==typeid(T))
-    {
-      max=65535.0;
-    }
-    else if(typeid(float32)==typeid(T))
-    {
-      max=FLT_MAX;
-    }
-    double inver_max=p.inverse?max:0;
-    T *p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
-    uint num=width*height*depth;
-    const T* end_x=p_x+num;
-    T x,y,z;
-    for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
-    {
-      x=*p_x;
-      y=*p_y;
-      z=*p_z;
-      *p_o=inver_max+sign*std::min(sqrt(static_cast<double>(x*x+y*y+z*z)),max);
-    }
-  }
 }
 
 
 template<>
-void GradientStrategySimple<color_t>::run(const color_t* in,color_t* out_x,
-                                          color_t* out_y,color_t* out_z,color_t* mag,
-                                          GradientStrategyParam p)
+void GradientStrategySimple<color_t>::process(uint& x,uint&y ,uint&z,uint& w,const color_t* pi,color_t* p,uint offset,uint end)
 {
-  uint width=p.width;
-  uint height=p.height;
-  uint depth=p.depth;
-  uint t=width*height;
-  for(uint z=0;z<depth;++z)
-  {
-    uint offset_s=t*z;
-    for(uint y=0;y<height;++y)
-    {
-      uint offset=offset_s+width*y;
-      const color_t* pi=in+offset;
-      color_t* px=out_x+offset;
-      color_t* py=out_y+offset;
-      color_t* pz=out_z+offset;
-      for(uint x=0;x<width;++x,++px,++py,++pz,++pi)
-      {
-        //convert to double to avoid substraction operation overflow
-        for(uint y=0;y<3;++y)
+  for(z=0;z<this->_depth;++z)
+    for(y=0;y<this->_height;++y)
+      for(x=0;x<this->_width;++x,++pi,++p)
+        for(uint t=0;t<3;++t)
         {
-          if(x==0)
-            *px[y]=abs(double((*px)[y]))-*(px+1)[y];
-          else if(x==width-1)
-            *px[y]=abs(double((*(pi-1))[y])-*pi[y]);
-          else
-            *px[y]=abs(double((*(pi+1))[y])-*(pi-1)[y])/2.0;
-          if(y==0)
-            *py[y]=abs(double((*(pi+width))[y])-*pi[y]);
-          else if(y==height-1)
-            *py[y]=abs(double((*pi)[y])-*(pi-width)[y]);
-          else
-            *py[y]=abs(double((*(pi+width))[y])-*(pi-width)[y])/2.0;
-          if(z==0)
-            *pz[y]=abs(double((*(pi+t))[y])-*(pi)[y]);
-          else if(z==depth-1)
-            *pz[y]=abs(double((*(pi))[y])-*(pi-t)[y]);
-          else
-            *pz[y]=abs(double((*(pi+t))[y])-*(pi-t)[y])/2.0;
+          if(w==0)(*p)[t]=std::abs(double((*pi)[t])-(*(pi+offset))[t]);
+          else if(w==end)(*p)[t]=std::abs(double((*(pi-offset))[t])-(*pi)[t]);
+          else(*p)[t]=std::abs(double((*(pi+offset))[t])-(*(pi-offset))[t])/2.0;
         }
-      }
-    }
-  }
-  if(mag)
+
+}
+
+
+template<typename T>
+void GradientStrategySimple<T>::_run(const T* in,T* out)
+{
+  uint width=this->_width,height=this->_height,depth=this->_depth;
+  size_t slice=this->_slice,total=this->_total;
+  double max=this->_max;
+
+  T *px=new T[total],*py=new T[total],*pz=new T[total];
+  T *_px=px,*_py=py,*_pz=pz;
+  memset(px,0,sizeof(T)*total);
+  memset(py,0,sizeof(T)*total);
+  memset(pz,0,sizeof(T)*total);
+  const T* pi=in;
+  uint x,y,z;
+  if(width>1)
   {
-    int sign=p.inverse?-1:1;
-    uint8_t max=255;
-    uint8_t inver_max=p.inverse?max:0;
-    color_t* p_x=out_x,*p_y=out_y,*p_z=out_z,*p_o=mag;
-    uint num=width*height*depth;
-    const color_t* end_x=p_x+num;
-    for(;p_x!=end_x;++p_x,++p_y,++p_z,++p_o)
+    process(x,y,z,x,pi,_px,1,width-1);
+  }
+  pi=in;
+  if(height>1)
+  {
+    process(x,y,z,y,pi,_py,width,height-1);
+  }
+  pi=in;
+  if(depth>1)
+  {
+    process(x,y,z,z,pi,_pz,slice,depth-1);
+  }
+  for(uint i=0;i<total;++i)
+  {
+    out[i]=std::min(sqrt(static_cast<double>(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i])),max);
+  }
+  delete[] px;
+  delete[] py;
+  delete[] pz;
+}
+
+
+template<>
+void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
+{
+  uint width=this->_width,height=this->_height,depth=this->_depth;
+  size_t slice=this->_slice,total=this->_total;
+  double max=this->_max;
+
+  color_t *px=new color_t[total],*py=new color_t[total],*pz=new color_t[total];
+  color_t *_px=px,*_py=py,*_pz=pz;
+  memset(px,0,sizeof(color_t)*total);
+  memset(py,0,sizeof(color_t)*total);
+  memset(pz,0,sizeof(color_t)*total);
+
+  const color_t* pi=in;
+  uint x,y,z;
+  if(width>1)
+  {
+    process(x,y,z,x,pi,_px,1,width-1);
+  }
+  if(height>1)
+  {
+    pi=in;
+    process(x,y,z,y,pi,_py,width,height-1);
+  }
+  if(depth>1)
+  {
+    pi=in;
+    process(x,y,z,z,pi,_pz,slice,depth-1);
+  }
+  for(uint i=0;i<total;++i)
+  {
+    for(uint t=0;t<3;++t)
     {
-      for(int i=0;i<3;++i)
-      {
-        *p_o[i]=inver_max+sign*std::min(255.0,
-              sqrt(static_cast<double>(*p_x[i]**p_x[i]+*p_y[i]**p_y[i]+*p_z[i]**p_z[i])));
-      }
+      out[i][t]=std::min(sqrt(static_cast<double>
+        (px[i][t]*px[i][t]+py[i][t]*py[i][t]+pz[i][t]*pz[i][t])),max);
     }
   }
+  delete[] px;
+  delete[] py;
+  delete[] pz;
 }
 
 

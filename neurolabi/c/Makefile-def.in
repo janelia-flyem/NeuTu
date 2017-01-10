@@ -14,21 +14,25 @@ CCI =  -I./include -I$(MYERS_DIR) -I../lib/fftw3/include -I../lib/jansson/includ
 endif
 #
 
+SANITIZE_FLAG = -fsanitize=address
+
 #To enable exception handling, add -DENABLE_C_EXCEPTION and recompile
 AFLAGS = -D_OPTIONAL_CFLAG_
-CFLAGS = $(CCI) -g -Wall -std=c99 -pedantic -fPIC -D_DEBUG_ -D_TEST_ $(AFLAGS) $(EXTLIB_FLAGS) @DEFS@ -DLIBMYERS_VERSION=2 @ARCH_FLAG@ @SHARED_FLAG@
+CFLAGS = $(CCI) -g -Wall -std=c99 -pedantic -fPIC -D_DEBUG_ -D_TEST_ $(AFLAGS) $(EXTLIB_FLAGS) @DEFS@ -DLIBMYERS_VERSION=2 @ARCH_FLAG@ @SHARED_FLAG@ 
 #release version c flags
 #-fprofile-arcs -ftest-coverage
 RELEASE_CFLAGS = $(CCI) -O3 -fPIC $(AFLAGS) $(EXTLIB_FLAGS) @ARCH_FLAG@ @DEFS@ @SHARED_FLAG@
 
 DEBUG_DIR = @DEBUG_DIR@
 RELEASE_DIR = @RELEASE_DIR@
+SANITIZE_DIR=sanitize
 
 EXT_LIB_DIR = @EXT_LIB_DIR@
 
 LIB_DIR = lib
 LIB_BASE_NAME = libneurolabi
 DEBUG_SUFFIX = _debug
+SANITIZE_SUFFIX = _sanitize
 STATIC_EXT= a
 
 ifeq ($(UNAME),Darwin)

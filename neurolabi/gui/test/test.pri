@@ -46,4 +46,8 @@ HEADERS +=     test/zswctreetest.h \
     test/zstackobjectgrouptest.h \
     test/ztestheader.h \
     test/zvoxelarraytest.h \
-    test/zdvidannotationtest.h
+    test/zdvidannotationtest.h \
+    test/zgradientmagnitudemoduletest.h \
+    test/zflyemproofdoctest.h \
+    test/zflyembodycoloroptiontest.h \
+    test/zresolutiontest.h

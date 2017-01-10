@@ -187,7 +187,11 @@ ZStackObjectRole::TRole ZDocPlayerList::removeAllUnsync()
   QList<ZDocPlayer*>::iterator iter = m_playerList.begin();
   while (iter != m_playerList.end()) {
     ZDocPlayer *player = *iter;
-    roleObj.addRole(player->getRole());
+    ZStackObjectRole::TRole role = player->getRole();
+    roleObj.addRole(role);
+#ifdef _DEBUG_2
+    std::cout << "Delete player: " << player << std::endl;
+#endif
     delete player;
     ++iter;
   }
@@ -258,6 +262,26 @@ bool ZDocPlayerList::hasPlayerUnsync(ZStackObjectRole::TRole role) const
       iter != m_playerList.end(); ++iter) {
     ZDocPlayer *player = *iter;
     if (player->hasRole(role)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDocPlayerList::contains(const ZStackObject *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return containsUnsync(data);
+}
+
+bool ZDocPlayerList::containsUnsync(const ZStackObject *data)
+{
+  for(QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->getData() == data) {
       return true;
     }
   }

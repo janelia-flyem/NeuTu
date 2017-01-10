@@ -64,6 +64,8 @@ CONFIG(debug, debug|release) {
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
+message("Target: $$TARGET")
+
 unix {
 include(extratarget.pri)
 
@@ -134,8 +136,21 @@ contains(CONFIG, sanitize) {
       QMAKE_CXXFLAGS += -fsanitize=address
       QMAKE_LFLAGS += -fsanitize=address
     } else {
-      QMAKE_CXXFLAGS += -fsanitize=kernel-address
-      QMAKE_LFLAGS += -fsanitize=kernel-address
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    }
+  }
+}
+
+contains(CONFIG, sanitize) {
+  message(Using sanitize)
+  unix {
+    macx {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    } else {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
     }
   }
 }
@@ -711,7 +726,11 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
     dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h
+    dialogs/zinfodialog.h \
+    dialogs/zswcisolationdialog.h \
+    flyem/zflyembodycoloroption.h \
+    dialogs/zstresstestoptiondialog.h \
+    dialogs/zflyembodyscreenshotdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -802,7 +821,11 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
     dialogs/ztestoptiondialog.ui \
-    dialogs/zinfodialog.ui
+    dialogs/zinfodialog.ui \
+    dialogs/zswcisolationdialog.ui \
+    dialogs/zstresstestoptiondialog.ui \
+    dialogs/zflyembodyscreenshotdialog.ui
+
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1236,7 +1259,11 @@ SOURCES += main.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
     dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp
+    dialogs/zinfodialog.cpp \
+    dialogs/zswcisolationdialog.cpp \
+    flyem/zflyembodycoloroption.cpp \
+    dialogs/zstresstestoptiondialog.cpp \
+    dialogs/zflyembodyscreenshotdialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

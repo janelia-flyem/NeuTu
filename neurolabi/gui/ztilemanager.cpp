@@ -88,6 +88,15 @@ bool ZTileManager::importJsonFile(const QString &filePath)
         }
       }
     }
+
+    if (obj.hasKey("Metadata")) {
+      ZJsonObject metaObj(obj.value("Metadata"));
+      if (metaObj.hasKey("Resolution")) {
+        ZJsonObject resObj(metaObj.value("Resolution"));
+
+        m_resolution.loadJsonObject(resObj);
+      }
+    }
   }
 
   //std::cout << items().size() << " tiles" << std::endl;
@@ -165,6 +174,8 @@ void ZTileManager::updateTileStack()
 
       frame->document()->setStackOffset(
             m_selectedTileItem->getTileInfo().getOffset());
+
+      frame->document()->setResolution(m_resolution);
 
       if (GET_APPLICATION_NAME == "Biocytin") {
         frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);

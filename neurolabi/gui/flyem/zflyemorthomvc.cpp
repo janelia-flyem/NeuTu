@@ -104,8 +104,8 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 //    if (getSupervisor() != NULL) {
 //      getSupervisor()->setDvidTarget(doc->getDvidTarget());
 //    }
-    m_mergeProject.setDvidTarget(doc->getDvidTarget());
-    m_mergeProject.syncWithDvid();
+//    m_mergeProject.setDvidTarget(doc->getDvidTarget());
+//    m_mergeProject.syncWithDvid();
   }
 }
 

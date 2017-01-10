@@ -9,7 +9,8 @@
 #include "zstroke2d.h"
 #include "zuncopyable.h"
 #include "zstackdoc.h"
-#include "z3dinteractionhandler.h"
+
+class Z3DTrackballInteractionHandler;
 
 /*!
  * \brief An experimental class of handling GUI interaction
@@ -101,6 +102,7 @@ signals:
   void strokePainted(ZStroke2d*);
   void showingContextMenu();
   void selectingSwcNodeInRoi(bool appending);
+  void selectingSwcNodeTreeInRoi(bool appending);
   void selectingDownstreamSwcNode();
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();

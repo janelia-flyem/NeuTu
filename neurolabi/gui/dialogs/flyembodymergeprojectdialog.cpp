@@ -180,7 +180,7 @@ void FlyEmBodyMergeProjectDialog::createMenu()
   ui->menuPushButton->setMenu(m_mainMenu);
 
   QAction *actionView3d = new QAction("3D Body View", this);
-  connect(actionView3d, SIGNAL(triggered()), m_project, SLOT(showBody3d()));
+//  connect(actionView3d, SIGNAL(triggered()), m_project, SLOT(showBody3d()));
 
   m_mainMenu->addAction(actionView3d);
 
@@ -514,7 +514,7 @@ void FlyEmBodyMergeProjectDialog::MessageProcessor::processMessage(
     if (dlg != NULL) {
       if (ZJsonParser::integerValue(message->getMessageBody()["coarse_level"])
           == 1) {
-        dlg->getProject()->showCoarseBody3d();
+//        dlg->getProject()->showCoarseBody3d();
       }
     }
     break;

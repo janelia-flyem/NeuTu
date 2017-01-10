@@ -342,6 +342,9 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
           this, SLOT(notifyViewChanged(ZStackViewParam)));
 
   connectAction(m_view, SIGNAL(changingSetting()), this, SLOT(showSetting()));
+
+  connectAction(m_view, SIGNAL(closingChildFrame()),
+                this, SLOT(closeAllChildFrame()));
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -1060,9 +1063,9 @@ void ZStackFrame::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   document()->executeSwcRescaleCommand(setting);
 }
 
-void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample)
+void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-  document()->executeAutoTraceCommand(traceLevel, doResample);
+  document()->executeAutoTraceCommand(traceLevel, doResample, c);
 }
 
 void ZStackFrame::executeAutoTraceAxonCommand()

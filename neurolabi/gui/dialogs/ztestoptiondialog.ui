@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>268</width>
-    <height>149</height>
+    <height>217</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,15 +31,39 @@
        </widget>
       </item>
       <item>
+       <widget class="QRadioButton" name="unitTestRadioButton">
+        <property name="text">
+         <string>Unit Test</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="commandTestRadioButton">
+        <property name="text">
+         <string>Command line test</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="stressTestRadioButton">
         <property name="text">
          <string>Stress Test</string>
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="crashTestRadioButton">
+        <property name="text">
+         <string>Crash Test</string>
+        </property>
+       </widget>
+      </item>
      </layout>
      <zorder>stressTestRadioButton</zorder>
      <zorder>normalTestRadioButton</zorder>
+     <zorder>unitTestRadioButton</zorder>
+     <zorder>crashTestRadioButton</zorder>
+     <zorder>commandTestRadioButton</zorder>
     </widget>
    </item>
    <item>

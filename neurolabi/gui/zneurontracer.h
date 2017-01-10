@@ -78,6 +78,8 @@ public:
   Swc_Tree* trace(double x1, double y1, double z1, double r1,
                  double x2, double y2, double z2, double r2);
 
+  void setTraceRange(const ZIntCuboid &box);
+
   void clear();
 
   inline void setBackgroundType(NeuTube::EImageBackground bg) {
@@ -104,7 +106,7 @@ public:
    */
   ZSwcTree* trace(Stack *signal, bool doResampleAfterTracing = true);
 
-  ZSwcTree* trace(ZStack *stack, bool doResampleAfterTracing = true);
+  ZSwcTree* trace(const ZStack *stack, bool doResampleAfterTracing = true);
 
   //Autotrace configuration
   //Trace level setup: 1 - 10 (fast -> accurate)
@@ -125,6 +127,7 @@ public:
     return m_connWorkspace;
   }
 
+  void initTraceMask(bool clearing);
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -156,10 +159,20 @@ public:
   void setGrayOffset(double v) { m_greyOffset = v; }
   void setEstimatingRadius(bool on) { m_estimatingRadius = on; }
 
-public: //for debugging
+public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
+  std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
   std::vector<ZWeightedPoint> computeSeedPosition();
   ZSwcTree *computeInitialTrace(const Stack *stack);
+
+  int getRecoverLevel() const;
+  void setRecoverLevel(int level);
+
+  Stack* computeSeedMask();
+  Stack* computeSeedMask(Stack *stack);
+
+public:
+  void test();
 
 private:
   //Helper functions
@@ -188,6 +201,7 @@ private:
 
   void init();
   void config();
+
 
 private:
   ZStack *m_stack;

@@ -53,6 +53,7 @@ public slots:
   void toggleSegmentation();
   void toggleData();
   void updateImageScreen();
+  void notifyBodyMergeEdited();
 
 public:
   void keyPressEvent(QKeyEvent *event);

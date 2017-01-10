@@ -228,6 +228,10 @@ bool ZString::readLine(FILE *fp)
 {
   bool success = true;
 
+  if (m_workspace == NULL) {
+    m_workspace = New_String_Workspace();
+  }
+
   char *line = Read_Line(fp, m_workspace);
 
   if (line != NULL) {

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 if [ $# -ge 1 ]
 then
   install_dir=$1
@@ -38,32 +38,12 @@ then
   { echo y; } | $condaDir/bin/conda create -n dvidenv -c flyem libdvid-cpp
 fi
 
+source $scriptDir/flyem_utilities.sh
+update_gcc $condaDir
+
 #install lowtis
 if [ -d $install_dir/use_lowtis ]
 then
-  source $scriptDir/flyem_utilities.sh
   flyem_build_lowtis $install_dir $scriptDir
-fi
-
-if [ `uname` != 'Darwin' ]
-then
-  GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
-  if [ $GCCVER \> '4.9.0' ]
-  then
-    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
-    then
-      source ${CONDA_ROOT}/bin/activate dvidenv
-      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
-    fi
-  fi
-
-  if [ $GCCVER \< '4.8.0' ]
-  then
-    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
-    then
-      source ${CONDA_ROOT}/bin/activate dvidenv
-      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
-    fi
-  fi
 fi
 

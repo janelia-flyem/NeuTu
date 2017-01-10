@@ -100,10 +100,12 @@ int main(int argc, char *argv[])
   Write_Stack("../data/test.tif", stack);
 #endif
 
-#if 0
+#if 1
   Stack *stack = Read_Stack("../data/fly_neuron_crop.tif");
+
   Filter_3d *filter = Gaussian_Filter_3d(1.0, 1.0, 0.5);
   Stack *out = Filter_Stack(stack, filter);
+  Kill_FMatrix(filter)
 
   Write_Stack("../data/test.tif", out);
 #endif
@@ -872,7 +874,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-#if 1
+#if 0
   Stack *stack = Read_Stack_U("../data/vr/original.tif");
 
   /* Make mask */

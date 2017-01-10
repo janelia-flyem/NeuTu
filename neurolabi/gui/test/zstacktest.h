@@ -60,6 +60,52 @@ TEST(ZStack, Basic)
   ASSERT_EQ(1, (int) stack4.getVoxelNumber(ZStack::SINGLE_VOXEL));
 
   ASSERT_TRUE(stack4.sourcePath().empty());
+
+  Mc_Stack *stackData = C_Stack::make(COLOR, 3, 4, 5, 2);
+  ZStack stack5(stackData);
+  ASSERT_EQ(60, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(360, (int) stack5.getByteNumber());
+
+  Mc_Stack *stackData2 = C_Stack::make(GREY, 2, 4, 5, 2);
+  stack5.setData(stackData2, C_Stack::kill);
+  ASSERT_EQ(40, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(80, (int) stack5.getByteNumber());
+
+  Mc_Stack *stackData3 = new Mc_Stack;
+  stack5.setData(stackData3, C_Stack::cppDelete);
+
+  Mc_Stack *stackData4 = (Mc_Stack*) malloc(sizeof(Mc_Stack));
+  stackData4->array = NULL;
+  stack5.setData(stackData4, C_Stack::systemKill);
+
+  Stack *stackData5 = C_Stack::make(GREY, 2, 3, 4);
+  stack5.consume(stackData5);
+  ASSERT_EQ(24, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(24, (int) stack5.getByteNumber());
+
+  ZStack *stack6 = new ZStack(GREY, 2, 3, 4, 2);
+  stack5.consume(stack6);
+  ASSERT_EQ(24, (int) stack5.getVoxelNumber());
+  ASSERT_EQ(48, (int) stack5.getByteNumber());
+
+  ZSingleChannelStack *sstack1 = stack5.singleChannelStack(0);
+  ZSingleChannelStack *sstack2 = stack5.singleChannelStack(1);
+
+  sstack1->getStat()->hist();
+  sstack2->getStat()->hist();
+
+  ZStack *stack7 = stack5.getSingleChannel(0);
+  delete stack7;
+
+  Stack *s1 = C_Stack::make(GREY16, 3, 4, 5);
+  Stack *s2 = C_Stack::make(GREY16, 3, 4, 5);
+  Stack *s3 = C_Stack::make(GREY16, 3, 4, 5);
+  Mc_Stack *s4 = ZStack::makeMcStack(s1, s2, s3);
+
+  C_Stack::kill(s1);
+  C_Stack::kill(s2);
+  C_Stack::kill(s3);
+  C_Stack::kill(s4);
 }
 
 TEST(ZStack, value) {
@@ -106,7 +152,7 @@ TEST(ZStack, value) {
   ASSERT_EQ(355, stack4.getIntValue(0, 3, 1, 1));
 
   tic();
-  for (int i = 0; i < 100000; ++i) {
+  for (int i = 0; i < 10000; ++i) {
     stack4.setIntValue(0, 3, 1, 1, 355);
   }
   ptoc();
@@ -201,8 +247,56 @@ TEST(ZStack, IO)
   ASSERT_EQ(200, stack.height());
   ASSERT_EQ(15, stack.depth());
 
+  std::cout << stack.min() << std::endl;
   std::cout << stack.max() << std::endl;
 
+}
+
+TEST(ZStack, Shape)
+{
+  ZIntCuboid box(1, 2, 3, 4, 5, 6);
+  ZStack stack(GREY, box, 1);
+  ASSERT_TRUE(stack.contains(1, 2, 3));
+  ASSERT_FALSE(stack.contains(0, 2, 3));
+  ASSERT_TRUE(stack.contains(ZPoint(2, 3, 4)));
+  ASSERT_TRUE(stack.contains(ZIntPoint(4, 5, 6)));
+  ASSERT_TRUE(stack.contains(1, 2));
+  ASSERT_FALSE(stack.contains(0, 2));
+
+  ASSERT_TRUE(stack.containsRaw(0, 2, 3));
+  ASSERT_FALSE(stack.containsRaw(0, 2, 5));
+  ASSERT_TRUE(stack.containsRaw(ZPoint(3, 3, 3)));
+
+  ASSERT_EQ(box.getWidth(), stack.width());
+  ASSERT_EQ(box.getHeight(), stack.height());
+  ASSERT_EQ(box.getDepth(), stack.depth());
+
+  stack.reshape(3, 9, 1);
+  ASSERT_EQ(1, stack.getOffset().getX());
+  ASSERT_EQ(2, stack.getOffset().getY());
+  ASSERT_EQ(3, stack.getOffset().getZ());
+  ASSERT_EQ(4, stack.width());
+
+  stack.autoThreshold();
+
+  stack.reshape(8, 4, 2);
+
+  ZIntCuboid box2 = stack.getBoundBox();
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box2.getFirstCorner());
+  ASSERT_EQ(8, box2.getWidth());
+  ASSERT_EQ(4, box2.getHeight());
+  ASSERT_EQ(2, box2.getDepth());
+
+  Cuboid_I box3;
+  stack.getBoundBox(&box3);
+  ASSERT_EQ(1, box3.cb[0]);
+  ASSERT_EQ(2, box3.cb[1]);
+  ASSERT_EQ(3, box3.cb[2]);
+  ASSERT_EQ(8, box3.ce[0]);
+  ASSERT_EQ(5, box3.ce[1]);
+  ASSERT_EQ(4, box3.ce[2]);
+
+  ASSERT_TRUE(stack.hasOffset());
 }
 
 TEST(ZStack, DataPoint)
@@ -216,6 +310,14 @@ TEST(ZStack, DataPoint)
   stack.setOne();
   ASSERT_EQ(1.0, stack.min());
   ASSERT_EQ(1.0, stack.max());
+
+  ZStack *stack2 = stack.getSingleChannel(0);
+  ASSERT_EQ(1.0, stack2->min());
+  ASSERT_EQ(1.0, stack2->max());
+
+  stack2->addIntValue(1, 2, 3, 0, 1);
+
+  ASSERT_EQ(2.0, stack2->max());
 }
 
 TEST(ZStack, downsample)
@@ -245,7 +347,35 @@ TEST(ZStack, array)
   ASSERT_EQ(stack->array8() + 3, stack->getDataPointer(1, 3, 3));
   ASSERT_EQ(stack->array8() + 12, stack->getDataPointer(1, 2, 4));
 
+  uint8_t array[60];
+  for (size_t i = 0; i < 60; ++i) {
+    array[i] = i;
+  }
+  stack->copyValueFrom(array, 60);
+  ASSERT_EQ(5, stack->getIntValue(5));
+
   delete stack;
+}
+
+TEST(ZStack, arrayValue)
+{
+  ZStack stack(GREY, 2, 3, 4, 1);
+  stack.setZero();
+
+  ZStack stack2(GREY, 2, 3, 4, 1);
+  stack2.setOne();
+
+  stack2.paste(&stack);
+  ASSERT_EQ(1, stack.getIntValue(0));
+
+  ZStack stack3(GREY, ZIntCuboid(1, 2, 3, 4, 5, 6), 1);
+  stack3.setIntValue(1, 2, 3, 0, 2);
+  stack3.setIntValue(2, 3, 4, 0, 2);
+  stack3.paste(&stack);
+  ASSERT_EQ(1, stack.getIntValue(0));
+  ASSERT_EQ(2, stack.getIntValue(1, 2, 3));
+
+
 }
 
 TEST(ZStack, Gradient)

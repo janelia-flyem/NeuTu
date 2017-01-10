@@ -92,6 +92,8 @@ public:
   const std::set<T>& getSelectedSet() const;
   const std::set<T>& getDeselectedSet() const;
 
+  void removeObject(const T &obj);
+
 protected:
   std::set<T> m_selectedSet;
   std::set<T> m_deselectedSet;

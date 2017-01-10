@@ -27,7 +27,7 @@
 #include "zobject3dfactory.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
-
+#include "zstroke2d.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -781,6 +781,35 @@ QString ZFlyEmMisc::GetMemoryUsage()
   p.close();
 #endif
   return memInfo;
+}
+
+ZStroke2d* ZFlyEmMisc::MakeSplitSeed(const ZObject3dScan &slice, int label)
+{
+  ZVoxel voxel = slice.getMarker();
+  ZStroke2d *stroke = new ZStroke2d;
+  stroke->setWidth(10);
+  stroke->setZ(voxel.z());
+  stroke->append(voxel.x(), voxel.y());
+  stroke->addRole(ZStackObjectRole::ROLE_SEED);
+  stroke->setLabel(label);
+  stroke->setPenetrating(false);
+
+  return stroke;
+}
+
+std::vector<ZStroke2d*> ZFlyEmMisc::MakeSplitSeedList(const ZObject3dScan &obj)
+{
+  std::vector<ZStroke2d*> seedList;
+
+  ZVoxel voxel = obj.getMarker();
+
+  ZObject3dScan slice = obj.getSlice(voxel.z());
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 1));
+
+  slice = obj.getSlice(voxel.z() + 1);
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+
+  return seedList;
 }
 
 QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)

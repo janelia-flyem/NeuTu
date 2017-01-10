@@ -115,6 +115,9 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void loadDvidDataSetting(const ZJsonObject &obj);
+  ZJsonObject toDvidDataSetting() const;
+
   void print() const;
 
   //Special functions
@@ -235,6 +238,14 @@ public:
 
   std::string getSynapseLabelszName() const;
 
+  bool usingDefaultDataSetting() const {
+    return m_usingDefaultSetting;
+  }
+
+  void useDefaultDataSetting(bool on) {
+    m_usingDefaultSetting = on;
+  }
+
 private:
   void init();
 
@@ -259,6 +270,7 @@ private:
   std::string m_supervisorServer;
   int m_maxLabelZoom;
   bool m_usingMultresBodyLabel;
+  bool m_usingDefaultSetting;
 //  std::string m_userName;
 //  std::string m_tileName;
 
@@ -283,6 +295,7 @@ private:
   const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
+  const static char* m_defaultSettingKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
