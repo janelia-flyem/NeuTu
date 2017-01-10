@@ -297,6 +297,10 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getAnnotationUrl("test"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getAnnotationSyncUrl("test"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
+            dvidUrl.getAnnotationSyncUrl("test", ""));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync?replace=true",
+            dvidUrl.getAnnotationSyncUrl("test", "replace=true"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getLabelszSyncUrl("test"));

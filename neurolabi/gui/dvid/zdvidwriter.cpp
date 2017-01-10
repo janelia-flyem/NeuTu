@@ -425,13 +425,14 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
   return jsonString;
 }
 
-void ZDvidWriter::syncAnnotation(const std::string &name)
+void ZDvidWriter::syncAnnotation(
+    const std::string &name, const std::string &queryString)
 {
   ZDvidUrl url(getDvidTarget());
   ZJsonObject jsonObj;
   jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
                    getDvidTarget().getBodyLabelName());
-  post(url.getAnnotationSyncUrl(name), jsonObj);
+  post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
 }
 
 void ZDvidWriter::syncLabelsz(

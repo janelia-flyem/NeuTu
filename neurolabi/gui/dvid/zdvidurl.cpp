@@ -59,7 +59,7 @@ std::string ZDvidUrl::GetFullUrl(
   std::string url;
 
   if (!prefix.empty() && !endpoint.empty()) {
-    if (endpoint[0] == '/') {
+    if (endpoint[0] == '/' || endpoint[0] == '?') {
       url = prefix + endpoint;
     } else {
       url = prefix + "/" + endpoint;
@@ -848,6 +848,18 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
 std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
 {
   return GetFullUrl(getAnnotationUrl(dataName), "sync");
+}
+
+std::string ZDvidUrl::getAnnotationSyncUrl(
+    const std::string &dataName, const std::string &queryString) const
+{
+  std::string url = getAnnotationSyncUrl(dataName);
+
+  if (!queryString.empty()) {
+   url = GetFullUrl(url, "?" + queryString);
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
