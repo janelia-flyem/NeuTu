@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
+    <width>472</width>
     <height>476</height>
    </rect>
   </property>
@@ -47,7 +47,7 @@
        <item>
         <widget class="QLabel" name="progressLabel">
          <property name="text">
-          <string>Progress: 1/3 edges; 1/17 (6%) paths; 1/3 (%) bodies</string>
+          <string>Progress:</string>
          </property>
         </widget>
        </item>

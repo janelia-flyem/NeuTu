@@ -15,6 +15,9 @@
  * you only need one of the two point annotations to define the edge,
  * because the points have the same weight/examiner, and they have
  * a relation to each other
+ *
+ * see DVID json format here: https://wiki.janelia.org/wiki/display/flyem/NeuTu+focused+protocol+DVID+data+formats
+ *
  */
 FocusedEdge::FocusedEdge() {
 

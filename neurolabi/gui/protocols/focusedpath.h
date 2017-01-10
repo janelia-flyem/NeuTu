@@ -27,7 +27,9 @@ public:
     bool hasEdges();
     void loadEdges(ZDvidReader& reader, std::string instance);
     bool isConnected();
-    bool isExamined();    
+    std::string getConnectionTextIcon();
+    int getNumUnexaminedEdges();
+    int getFirstUnexaminedEdgeIndex();
 
 private:
     ZIntPoint m_firstpoint;

@@ -28,6 +28,8 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
     // table setup
     m_edgeModel = new QStandardItemModel(0, 3, ui->edgesTableView);
+    ui->edgesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->edgesTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     // set headers?
     ui->edgesTableView->setModel(m_edgeModel);
 
@@ -38,8 +40,13 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
 
     // UI connections
+    // buttons
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+
+    // tables
+    connect(ui->edgesTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+        this, SLOT(onEdgeSelectionChanged(QItemSelection,QItemSelection)));
 
 
     // misc UI setup
@@ -331,12 +338,7 @@ void FocusedPathProtocol::deletePath(FocusedPath path) {
 }
 
 void FocusedPathProtocol::displayCurrentPath() {
-
-    std::cout << "in displayCurrentPath()" << std::endl;
-
-    // edges already loaded, path known to be unconnected
-
-
+    // edges already loaded in path, and  path known to be unconnected;
     // load edges into UI and update labels
 
     // load data into model
@@ -355,20 +357,94 @@ void FocusedPathProtocol::displayCurrentPath() {
         bodyID2Item->setData(QVariant(edge.getLastBodyID()), Qt::DisplayRole);
         m_edgeModel->setItem(i, BODYID2_COLUMN, bodyID2Item);
 
-        // connection status
+        // connection status in text form, eg, --X-- or --?--
         QStandardItem * connectionItem = new QStandardItem();
         connectionItem->setData(QVariant(QString::fromStdString(edge.getConnectionTextIcon())), Qt::DisplayRole);
         m_edgeModel->setItem(i, CONNECTION_COLUMN, connectionItem);
     }
 
-    // update connection label (overall connection, body IDs)
+    // top label: overall connection, body IDs
+    updateConnectionLabel();
 
-    // update progress label (edges, paths, bodies?)
+    // bottom label: edges, paths, bodies
+    updateProgressLabel();
+
+
+    // set/go to first unknown edge
+    int index = m_currentPath.getFirstUnexaminedEdgeIndex();
+    if (index >= 0) {
+
+
+        // goto edge (index)
+        // which will call go to edge point
+
+
+        // update color map here or within the above call?
+        // does the color map change for edge or only path?
+        // updateColorMap();
+
+    }
 
 
 
+}
+
+void FocusedPathProtocol::updateConnectionLabel() {
+    std::ostringstream outputStream;
+    outputStream << m_currentPathBodyIDs[m_currentPath.getFirstPoint()];
+    outputStream << " " << m_currentPath.getConnectionTextIcon() << " ";
+    outputStream << m_currentPathBodyIDs[m_currentPath.getLastPoint()];
+    ui->connectionLabel->setText(QString::fromStdString(outputStream.str()));
+}
+
+void FocusedPathProtocol::updateProgressLabel() {
+
+    std::ostringstream outputStream;
+
+    // probably something like this:
+    // Progress: 1/3 edges; 1/17 (6%) paths; 1/3 (%) bodies
+
+    // that's going to be a pain to track...defer for now
+
+    // edges:
+    // (m_currentPath.getNumEdges() - m_currentPath.getNumUnexaminedEdges()) / m_currentPath.getNumEdges()
+
+    // paths:
 
 
+    // bodies:
+
+
+    outputStream << "Progress: (coming soon)";
+
+
+    ui->progressLabel->setText(QString::fromStdString(outputStream.str()));
+
+}
+
+void FocusedPathProtocol::updateColorMap() {
+
+    std::cout << "updateColorMap()" << std::endl;
+
+}
+
+void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem) {
+
+    std::cout << "onEdgeSelectionChanged()" << std::endl;
+
+    // go to new edge point
+    gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
+
+    // update color map if needed (if it depends on edge, not just path)
+
+
+}
+
+void FocusedPathProtocol::gotoEdgePoint(FocusedEdge edge) {
+    // consider the ege point to be halway between the two points
+    //  that define the edge
+    ZIntPoint point = (edge.getFirstPoint() + edge.getLastPoint()) / 2.0;
+    emit requestDisplayPoint(point.getX(), point.getY(), point.getZ());
 }
 
 void FocusedPathProtocol::saveState() {

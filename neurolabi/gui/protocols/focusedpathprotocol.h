@@ -41,7 +41,8 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onBodyListsLoaded();
-    void onCurrentBodyPathsLoaded();
+    void onCurrentBodyPathsLoaded();    
+    void onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem);
 
 private:
     static const std::string KEY_VERSION;
@@ -84,6 +85,10 @@ private:
     FocusedPath findNextPath();
     void displayCurrentPath();
     void deletePath(FocusedPath path);
+    void updateConnectionLabel();
+    void updateProgressLabel();
+    void updateColorMap();
+    void gotoEdgePoint(FocusedEdge edge);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

@@ -12,6 +12,10 @@ public:
     FocusedEdge();
     FocusedEdge(ZJsonObject edge);
 
+    static const std::string GLYPH_CONNECTED;
+    static const std::string GLYPH_UNCONNECTED;
+    static const std::string GLYPH_UNKNOWN;
+
     ZIntPoint getFirstPoint() const;
     ZIntPoint getLastPoint() const;
     ZIntPoint getOtherPoint(ZIntPoint point);
@@ -28,10 +32,6 @@ public:
     std::string getConnectionTextIcon();
 
 private:
-    static const std::string GLYPH_CONNECTED;
-    static const std::string GLYPH_UNCONNECTED;
-    static const std::string GLYPH_UNKNOWN;
-
     ZIntPoint m_firstPoint;
     ZIntPoint m_lastPoint;
     double m_weight;

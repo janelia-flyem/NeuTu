@@ -11,6 +11,9 @@
 /*
  * this class is a lightweight container for a list of edges = a path
  * between bodies; it does minimal loading and no saving itself
+ *
+ * see DVID data format here: https://wiki.janelia.org/wiki/display/flyem/NeuTu+focused+protocol+DVID+data+formats
+ *
  */
 FocusedPath::FocusedPath() {
     // I hate C++
@@ -128,23 +131,41 @@ bool FocusedPath::isConnected() {
     return true;
 }
 
-bool FocusedPath::isExamined() {
-    // look in the json and see if it's been examined; should we check both ends
-    //  and verify they match?
-
-    return false;
-
+std::string FocusedPath::getConnectionTextIcon() {
+    if (isConnected()) {
+        return FocusedEdge::GLYPH_CONNECTED;
+    } else if (getNumUnexaminedEdges() > 0) {
+        return FocusedEdge::GLYPH_UNKNOWN;
+    } else {
+        return FocusedEdge::GLYPH_UNCONNECTED;
+    }
 }
 
-// methods:
+int FocusedPath::getNumUnexaminedEdges() {
+    int total = 0;
+    foreach (ZIntPoint point, m_edgePoints) {
+        if (!m_edgeMap[point].isExamined()) {
+            total += 1;
+        }
+    }
+    return total;
+}
 
-// --> keep the original annotation to make it easier to re-save?
-// save (for changing probability)
-// load body IDs?
+int FocusedPath::getFirstUnexaminedEdgeIndex() {
+    for (int i=0; i<m_edgePoints.size(); i++) {
+        if (!getEdge(i).isExamined()) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-// below: really, its state is broken, connected, or unknown
-// isvalid (has prob > 0) (?)
-// isbroken (at least one edge has been split and/or invalidated by user)
+
+
+
+
+
+
 
 
 
