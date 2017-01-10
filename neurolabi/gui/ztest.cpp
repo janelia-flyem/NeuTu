@@ -21355,7 +21355,7 @@ void ZTest::test(MainWindow *host)
   obj.print();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 //  target.set("emdata2.int.janelia.org", "d35f", 7000);
@@ -21380,6 +21380,22 @@ void ZTest::test(MainWindow *host)
 
   ZDvidWriter writer;
   writer.open(target);
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "3b54", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setSynapseName("annot_synapse_08162016");
+  target.setLabelBlockName("labels1104");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
   writer.writeDefaultDataSetting();
 #endif
 
