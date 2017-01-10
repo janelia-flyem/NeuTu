@@ -367,7 +367,7 @@ void Z3DApplication::detectOS()
     m_osString = "Mac OS X MAVERICKS";
     break;
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 7))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
   case QSysInfo::MV_10_10:
     m_osString = "Mac OS X YOSEMITE";
     break;
