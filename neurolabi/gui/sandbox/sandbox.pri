@@ -8,7 +8,8 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/qcustomplot.h \
     $$PWD/zimageinfomodule.h \
     $$PWD/zwatershedmodule.h \
-    $$PWD/zgradientmagnitudemodule.h
+    $$PWD/zgradientmagnitudemodule.h \
+    $$PWD/zdownsamplingmodule.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zexamplemodule.cpp \
@@ -20,4 +21,5 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/qcustomplot.cpp \
     $$PWD/zimageinfomodule.cpp \
     $$PWD/zwatershedmodule.cpp \
-    $$PWD/zgradientmagnitudemodule.cpp
+    $$PWD/zgradientmagnitudemodule.cpp \
+    $$PWD/zdownsamplingmodule.cpp
