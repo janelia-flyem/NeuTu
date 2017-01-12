@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "flyem/zflyemsequencercolorscheme.h"
+
 #include "zjsonobject.h"
 #include "dvid/zdvidtarget.h"
 
@@ -33,6 +35,9 @@ signals:
     void protocolExiting();
     void requestSaveProtocol(ZJsonObject data);
     void requestDisplayPoint(int x, int y, int z);
+    void requestColorMapChange(ZFlyEmSequencerColorScheme scheme);
+    void requestActivateColorMap();
+    void requestDeactivateColorMap();
 
 public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;

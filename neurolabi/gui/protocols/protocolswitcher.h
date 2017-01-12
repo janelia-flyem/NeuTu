@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#include "flyem/zflyemsequencercolorscheme.h"
+
 #include "protocolchooser.h"
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
@@ -24,6 +26,8 @@ signals:
     void requestLoadProtocol(ZJsonObject data);
     void requestDisplaySavedProtocols(QStringList keyList);
     void requestDisplayPoint(int x, int y, int z);
+    void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
+    void activateColorMap(QString colorMapName);
 
 public slots:
     void openProtocolDialogRequested();
@@ -42,7 +46,10 @@ private slots:
 
     // these are slots that are used to pass signals from
     //  protocols to the main application
-    void displayPointRequested(int x, int y, int z);
+    void displayPointRequested(int x, int y, int z);    
+    void updateColorMapRequested(ZFlyEmSequencerColorScheme scheme);
+    void activateProtocolColorMap();
+    void deactivateProtocolColorMap();
 
 private:
     enum Status {

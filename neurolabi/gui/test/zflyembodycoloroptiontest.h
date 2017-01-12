@@ -15,8 +15,8 @@ TEST(ZFlyEmBodyColorOption, Basic)
               ZFlyEmBodyColorOption::BODY_COLOR_NAME));
   ASSERT_EQ("Sequencer", ZFlyEmBodyColorOption::GetColorMapName(
               ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
-  ASSERT_EQ("Focused", ZFlyEmBodyColorOption::GetColorMapName(
-              ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED));
+  ASSERT_EQ("Protocol", ZFlyEmBodyColorOption::GetColorMapName(
+               ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
 
   ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_NORMAL,
             ZFlyEmBodyColorOption::GetColorOption("Normal"));
@@ -24,8 +24,8 @@ TEST(ZFlyEmBodyColorOption, Basic)
             ZFlyEmBodyColorOption::GetColorOption("Name"));
   ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER,
             ZFlyEmBodyColorOption::GetColorOption("Sequencer"));
-  ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED,
-            ZFlyEmBodyColorOption::GetColorOption("Focused"));
+  ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL,
+            ZFlyEmBodyColorOption::GetColorOption("Protocol"));
 
 
   QList<ZFlyEmBodyColorOption::EColorOption> colorOptionList =
@@ -33,7 +33,7 @@ TEST(ZFlyEmBodyColorOption, Basic)
       << ZFlyEmBodyColorOption::BODY_COLOR_NORMAL
       << ZFlyEmBodyColorOption::BODY_COLOR_NAME
       << ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER
-      << ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED;
+      << ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL;
 
   foreach (ZFlyEmBodyColorOption::EColorOption option, colorOptionList) {
     ASSERT_EQ(option, ZFlyEmBodyColorOption::GetColorOption(

@@ -426,6 +426,9 @@ void FocusedPathProtocol::updateColorMap() {
 
     std::cout << "updateColorMap()" << std::endl;
 
+
+    // will need to update map and activate it
+
 }
 
 void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem) {

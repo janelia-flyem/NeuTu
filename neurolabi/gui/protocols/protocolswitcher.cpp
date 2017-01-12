@@ -18,6 +18,7 @@
 
 #include "neutube.h"
 
+#include "flyem/zflyembodycoloroption.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
@@ -366,6 +367,20 @@ void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {
     emit requestDisplayPoint(x, y, z);
 }
 
+void ProtocolSwitcher::updateColorMapRequested(ZFlyEmSequencerColorScheme scheme) {
+    emit colorMapChanged(scheme);
+}
+
+void ProtocolSwitcher::activateProtocolColorMap() {
+    emit activateColorMap(ZFlyEmBodyColorOption::GetColorMapName(ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
+}
+
+void ProtocolSwitcher::deactivateProtocolColorMap() {
+    // currently no way to read the color map in order to store it to restore later, so
+    //  just return to the default
+    emit activateColorMap(ZFlyEmBodyColorOption::GetColorMapName(ZFlyEmBodyColorOption::BODY_COLOR_NORMAL));
+}
+
 /*
  * read keys from dvid and return keys for a user; flag = whether to include
  * completed protocols or not
@@ -494,6 +509,10 @@ void ProtocolSwitcher::connectProtocolSignals() {
 
     // interaction connects
     connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
+    connect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
+        this, SLOT(updateColorMapRequested(ZFlyEmBodyColorScheme)));
+    connect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
+    connect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
 }
 
 void ProtocolSwitcher::disconnectProtocolSignals() {
@@ -505,6 +524,10 @@ void ProtocolSwitcher::disconnectProtocolSignals() {
 
     // interaction connects
     disconnect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
+    disconnect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
+        this, SLOT(updateColorMapRequested(ZFlyEmBodyColorScheme)));
+    disconnect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
+    disconnect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
 }
 
 void ProtocolSwitcher::processSynapseVerification(int x, int y, int z, bool verified)

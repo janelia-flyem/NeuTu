@@ -41,12 +41,6 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
-  /*
-  enum EBodyColorMap {
-    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_FOCUSED
-  };
-  */
-
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
@@ -429,7 +423,7 @@ public slots:
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
 
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
-  void updateFocusedColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void updateProtocolColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
 
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,

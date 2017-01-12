@@ -157,13 +157,13 @@ void FlyEmProofControlForm::createColorMenu()
   QAction *sequencerColorAction = CreateColorAction(
         ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, this);
 
-  QAction *focusedColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED, this);
+  QAction *protocolColorAction = CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, this);
 
   colorActionGroup->addAction(normalColorAction);
   colorActionGroup->addAction(m_nameColorAction);
   colorActionGroup->addAction(sequencerColorAction);
-  colorActionGroup->addAction(focusedColorAction);
+  colorActionGroup->addAction(protocolColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addActions(colorActionGroup->actions());
