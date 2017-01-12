@@ -15,6 +15,7 @@ public:
     explicit FocusedPathBodyInputDialog(QWidget *parent = 0);
     ~FocusedPathBodyInputDialog();
     std::string getEdgeInstance();
+    std::string getPathInstance();
     uint64_t getBodyID();
 
 private:

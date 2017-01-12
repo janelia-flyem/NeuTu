@@ -65,10 +65,12 @@ const std::string FocusedPathProtocol::KEY_VERSION = "version";
 const std::string FocusedPathProtocol::KEY_VARIATION = "variation";
 const std::string FocusedPathProtocol::KEY_BODYID = "bodyID";
 const std::string FocusedPathProtocol::KEY_EDGE_INSTANCE = "edge-instance";
+const std::string FocusedPathProtocol::KEY_PATH_INSTANCE = "path-instance";
 
 // keys used when reading stuff from DVID
 const std::string FocusedPathProtocol::KEY_ASSIGNMENT_BODIES= "bodies";
-const std::string FocusedPathProtocol::KEY_ASSIGNMENT_INSTANCE= "edgedata";
+const std::string FocusedPathProtocol::KEY_ASSIGNMENT_EDGE_INSTANCE= "edgedata";
+const std::string FocusedPathProtocol::KEY_ASSIGNMENT_PATH_INSTANCE= "pathdata";
 const std::string FocusedPathProtocol::TAG_PATH= "path";
 const std::string FocusedPathProtocol::TAG_EDGE= "edge";
 const std::string FocusedPathProtocol::PROPERTY_PROBABILITY= "probability";
@@ -83,8 +85,9 @@ bool FocusedPathProtocol::initialize() {
         if (ans == QDialog::Rejected) {
             return false;
         }
-        // edge instance is validated below
+        // instances are validated below
         m_edgeDataInstance = inputDialog.getEdgeInstance();
+        m_pathDataInstance = inputDialog.getPathInstance();
 
         // validate that the body ID exists:
         uint64_t bodyID = inputDialog.getBodyID();
@@ -119,13 +122,20 @@ bool FocusedPathProtocol::initialize() {
     }
 
 
-    // validate edge instance exists
+    // validate instances exist
     if (!m_reader.hasData(m_edgeDataInstance)) {
-        QMessageBox::warning(m_parent, "Bad instance name!",
+        QMessageBox::warning(m_parent, "Bad edge data instance name!",
             "Edge data instance" + QString::fromStdString(m_edgeDataInstance) + " does not seem to exist in DVID.",
             QMessageBox::Ok);
         return false;
     }
+    if (!m_reader.hasData(m_pathDataInstance)) {
+        QMessageBox::warning(m_parent, "Bad path data instance name!",
+            "Path data instance" + QString::fromStdString(m_pathDataInstance) + " does not seem to exist in DVID.",
+            QMessageBox::Ok);
+        return false;
+    }
+
 
     // everything OK; save and return
     saveState();
@@ -183,6 +193,7 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
     // do actual load
     m_bodies.clear();
     m_edgeDataInstance = ZJsonParser::stringValue(data[KEY_EDGE_INSTANCE.c_str()]);
+    m_pathDataInstance = ZJsonParser::stringValue(data[KEY_PATH_INSTANCE.c_str()]);
 
     if (m_variation == VARIATION_BODY) {
         m_bodies.append(ZJsonParser::integerValue(data[KEY_BODYID.c_str()]));
@@ -208,7 +219,7 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     ZFlyEmBookmark bookmark;
     for (size_t i=0; i<bookmarks.size(); i++) {
          bookmark.loadDvidAnnotation(bookmarks.value(i));
-         if (bookmark.getPropertyJson().hasKey(KEY_ASSIGNMENT_INSTANCE.c_str())) {
+         if (bookmark.getPropertyJson().hasKey(KEY_ASSIGNMENT_EDGE_INSTANCE.c_str())) {
              found = true;
              break;
          }
@@ -223,7 +234,8 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     }
 
     // get the values out of the bookmark
-    m_edgeDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_INSTANCE.c_str())]);
+    m_edgeDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_EDGE_INSTANCE.c_str())]);
+    m_pathDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_PATH_INSTANCE.c_str())]);
     ZJsonArray bodies = ((ZJsonArray) bookmark.getPropertyJson().value(KEY_ASSIGNMENT_BODIES.c_str()));
     for (size_t i=0; i<bodies.size(); i++) {
         m_bodies.append(ZJsonParser::integerValue(bodies.at(i)));
@@ -233,6 +245,7 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
 
     // debug
     std::cout << "edge data instance = " << m_edgeDataInstance << std::endl;
+    std::cout << "path data instance = " << m_pathDataInstance << std::endl;
     std::cout << "# bodies loaded = " << m_bodies.size() << std::endl;
 
 
@@ -246,6 +259,7 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     // this isn't an edge data instance, but it does exist,
     //  thus keeping everything happy
     m_edgeDataInstance = "labels";
+    m_pathDataInstance = "labels";
 
 
     emit bodyListLoaded();
@@ -255,13 +269,11 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
 
     m_currentBodyPaths.clear();
 
-    ZJsonArray annotations = m_reader.readAnnotation(m_edgeDataInstance, bodyID);
+    ZJsonArray annotations = m_reader.readAnnotation(m_pathDataInstance, bodyID);
     for (size_t i=0; i<annotations.size(); i++) {
         ZDvidAnnotation ann;
         ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_LOCATION);
-        if (ann.hasTag(TAG_PATH)) {
-            m_currentBodyPaths << FocusedPath(ann);
-        }
+        m_currentBodyPaths << FocusedPath(ann);
     }
 
     emit currentBodyPathsLoaded();
@@ -332,8 +344,8 @@ FocusedPath FocusedPathProtocol::findNextPath() {
 void FocusedPathProtocol::deletePath(FocusedPath path) {
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {
-        writer.deletePointAnnotation(m_edgeDataInstance, path.getFirstPoint());
-        writer.deletePointAnnotation(m_edgeDataInstance, path.getLastPoint());
+        writer.deletePointAnnotation(m_pathDataInstance, path.getFirstPoint());
+        writer.deletePointAnnotation(m_pathDataInstance, path.getLastPoint());
     }
 }
 
@@ -458,6 +470,7 @@ void FocusedPathProtocol::saveState() {
     data.setEntry(KEY_VERSION.c_str(), m_fileVersion);
 
     data.setEntry(KEY_EDGE_INSTANCE.c_str(), m_edgeDataInstance);
+    data.setEntry(KEY_PATH_INSTANCE.c_str(), m_pathDataInstance);
 
     if (m_variation == VARIATION_BODY) {
         // in this variation, there's only one body ID; save it

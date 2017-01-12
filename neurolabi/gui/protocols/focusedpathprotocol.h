@@ -51,6 +51,7 @@ private:
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
+    static const std::string KEY_PATH_INSTANCE;
     enum EdgeTableColumns {
         BODYID1_COLUMN,
         CONNECTION_COLUMN,
@@ -60,7 +61,8 @@ private:
 public:
     // keys for DVID stuff
     static const std::string KEY_ASSIGNMENT_BODIES;
-    static const std::string KEY_ASSIGNMENT_INSTANCE;
+    static const std::string KEY_ASSIGNMENT_EDGE_INSTANCE;
+    static const std::string KEY_ASSIGNMENT_PATH_INSTANCE;
     static const std::string TAG_PATH;
     static const std::string TAG_EDGE;
     static const std::string PROPERTY_PROBABILITY;
@@ -72,6 +74,7 @@ private:
     ZDvidReader m_reader;
     std::string m_variation;
     std::string m_edgeDataInstance;
+    std::string m_pathDataInstance;
     QList<uint64_t> m_bodies;
     uint64_t m_currentBody;
     QList<FocusedPath> m_currentBodyPaths;

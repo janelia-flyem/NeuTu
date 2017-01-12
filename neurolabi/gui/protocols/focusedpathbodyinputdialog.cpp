@@ -21,6 +21,10 @@ std::string FocusedPathBodyInputDialog::getEdgeInstance() {
     return ui->edgeInstanceInput->text().toStdString();
 }
 
+std::string FocusedPathBodyInputDialog::getPathInstance() {
+    return ui->pathInstanceInput->text().toStdString();
+}
+
 FocusedPathBodyInputDialog::~FocusedPathBodyInputDialog()
 {
     delete ui;

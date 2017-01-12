@@ -43,12 +43,29 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>DVID instance:</string>
+        <string>DVID edge instance:</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLineEdit" name="edgeInstanceInput"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>DVID path instance: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="pathInstanceInput"/>
      </item>
     </layout>
    </item>
