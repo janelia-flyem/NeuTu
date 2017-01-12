@@ -178,29 +178,31 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        OSX_VERSION = $$system(sw_vers -productVersion)
-        message("Mac OS X $$OSX_VERSION")
-        MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
-        OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
-        OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
-        !isEqual(OSX_MAJOR_VERSION, 10) {
+        contains(CONFIG, autotarget) {
+          OSX_VERSION = $$system(sw_vers -productVersion)
+          message("Mac OS X $$OSX_VERSION")
+          MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
+          OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
+          OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
+          !isEqual(OSX_MAJOR_VERSION, 10) {
             error("Could not recognize OSX version")
-        }
+          }
 
-        OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
-        QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
-        message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+          OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
+          QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
+          message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
-        greaterThan(OSX_MINOR_VERSION, 8) {
-            contains(CONFIG, libstdc++) {
-                message("Using libstdc++")
-            } else {
-                LIBS -= -lstdc++
-                QMAKE_CXXFLAGS += -stdlib=libc++
-            }
+          greaterThan(OSX_MINOR_VERSION, 8) {
+          contains(CONFIG, libstdc++) {
+            message("Using libstdc++")
+          } else {
+            LIBS -= -lstdc++
+            QMAKE_CXXFLAGS += -stdlib=libc++
+          }
 
             QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
             message("SDK: $$QMAKE_MAC_SDK")
+          }
         }
 
         doc.files = doc

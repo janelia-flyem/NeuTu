@@ -121,7 +121,7 @@
       "body_label": "bodies121714",
       "multires_tile": "graytiles",
       "label_block": "segmentation121714",
-      "user_name": "[]"
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -131,7 +131,7 @@
       "comment": "AL child node for splitting",
       "body_label": "bodies121714",
       "label_block": "segmentation121714",
-      "user_name": "[]"
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -141,7 +141,7 @@
       "comment": "AL child node for testing split",
       "body_label": "bodies121714",
       "label_block": "segmentation121714",
-      "user_name": "[]"
+      "user_name": ["zhaot"]
     },
     {
       "address": "emdata1.int.janelia.org",
@@ -186,26 +186,6 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 8500,
-      "uuid": "c348",
-      "name": "MB_seg_TEST2",
-      "comment": "MB seg (branched from Shinya's node 6f15)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["xxx"]
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "port": 8500,
-      "uuid": "98ec",
-      "name": "MB_seg_old",
-      "comment": "MB seg (branched from Shinya's node 6f15)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": ["xxx"]
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "port": 8500,
       "uuid": "7d44",
       "name": "MB_seg",
       "comment": "MB seg (after runniing splits in node 6f15)",
@@ -237,16 +217,6 @@
     {
       "address": "emdata2.int.janelia.org",
       "port": 8500,
-      "uuid": "df22",
-      "name": "MB_split_merge",
-      "comment": "MB seg (branched from fe38)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "user_name": "[]"
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "port": 8500,
       "uuid": "372c",
       "name": "MB_zhaot",
       "comment": "MB seg (after runniing splits in node 6f15)",
@@ -268,18 +238,6 @@
       "synapse": "annot_synapse",
       "supervised": false,
       "user_name": ["zhaot"]
-    },
-    {
-      "address": "emdata2.int.janelia.org",
-      "port": 7100,
-      "uuid": "b0f7",
-      "name": "MB_zhaot_backup",
-      "comment": "MB seg (after runniing splits in node 6f15)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "roi": "entire_mb",
-      "librarian": "emdata2.int.janelia.org:9100",
-      "user_name": []
     },
     {
       "address": "emdata2.int.janelia.org",
