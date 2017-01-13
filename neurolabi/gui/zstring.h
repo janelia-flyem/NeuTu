@@ -60,6 +60,11 @@ public:
   std::vector<std::string> toWordArray(const std::string &delim = ", \n");
   std::vector<std::string> tokenize(char c);
 
+  static std::vector<std::string> ToWordArray(
+      const std::string &input, const std::string &delim = ", \n");
+  static std::vector<std::string> Tokenize(const std::string &str, char c);
+
+
   bool readLine(FILE *fp);
   bool contains(const std::string &str);
   bool containsDigit();
