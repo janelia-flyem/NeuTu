@@ -82,7 +82,8 @@ public:
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
 
-  void syncAnnotation(const std::string &name);
+  void syncAnnotation(
+      const std::string &name, const std::string &queryString = "");
   void syncLabelsz(const std::string &dataName,
                    const std::string &annotationName);
   void syncSynapseLabelsz();
