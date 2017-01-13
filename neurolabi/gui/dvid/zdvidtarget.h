@@ -196,6 +196,7 @@ public:
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
+  void setTodoListName(const std::string &name);
 
   std::string getBodyAnnotationName() const;
 
@@ -263,6 +264,7 @@ private:
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
+  std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
@@ -301,6 +303,7 @@ private:
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
   const static char* m_synapseLabelszKey;
+  const static char* m_todoListNameKey;
 };
 
 #endif // ZDVIDTARGET_H
