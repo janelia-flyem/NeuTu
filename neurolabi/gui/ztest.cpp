@@ -20039,13 +20039,13 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.set("emdata2.int.janelia.org", "bdca", 7000);
   target.setBodyLabelName("segmentation-labelvol");
-  target.setLabelBlockName("segmentation");
+  target.setLabelBlockName("segmentation2");
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.syncAnnotation("segmentation-labelvol_todo");
+  writer.syncAnnotation("segmentation-labelvol_todo", "replace=true");
 #endif
 
 #if 0
@@ -20593,12 +20593,12 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.set("emdata2.int.janelia.org", "27b2", 7000);
 
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.createData("keyvalue", "data_test2", false);
+  writer.createData("keyvalue", "branches", false);
 #endif
 
 #if 0
@@ -21421,7 +21421,7 @@ void ZTest::test(MainWindow *host)
   obj.print();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 //  target.set("emdata2.int.janelia.org", "d35f", 7000);
@@ -21478,6 +21478,22 @@ void ZTest::test(MainWindow *host)
   std::cout << sizeof(ZIntPoint) << std::endl;
   std::cout << sizeof(std::vector<ZIntPoint>) << std::endl;
   std::cout << sizeof(std::vector<std::string>) << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "3b54", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setSynapseName("annot_synapse_08162016");
+  target.setLabelBlockName("labels1104");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
 #endif
 
 #if 0

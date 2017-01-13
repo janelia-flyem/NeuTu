@@ -203,6 +203,8 @@ public:
       const std::string &dataName, const ZIntCuboid &box) const;
 
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
+  std::string getAnnotationSyncUrl(
+      const std::string &dataName, const std::string &queryString) const;
   std::string getLabelszSyncUrl(const std::string &dataName) const;
 
   std::string getSynapseUrl() const;

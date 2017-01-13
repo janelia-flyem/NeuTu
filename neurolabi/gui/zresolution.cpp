@@ -1,5 +1,7 @@
 #include "zresolution.h"
 
+#include <cmath>
+
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
@@ -107,9 +109,9 @@ void ZResolution::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
-double ZResolution::getVoxelSize(NeuTube::EAxis axis, EUnit unit) const
+double ZResolution::getUnitVoxelSize(EUnit unit) const
 {
-  double v = m_voxelSize[axis];
+  double v = 1.0;
 
   EUnit currentUnit = getUnit();
   if (currentUnit != unit) {
@@ -132,6 +134,58 @@ double ZResolution::getVoxelSize(NeuTube::EAxis axis, EUnit unit) const
   return v;
 }
 
+double ZResolution::getVoxelSize(NeuTube::EAxis axis, EUnit unit) const
+{
+  return m_voxelSize[axis] * getUnitVoxelSize(unit);
+}
+
+double ZResolution::getPlaneVoxelSize(NeuTube::EPlane plane) const
+{
+  double v = 1.0;
+  switch (plane) {
+  case NeuTube::PLANE_XY:
+    v = voxelSizeX() * voxelSizeY();
+    break;
+  case NeuTube::PLANE_YZ:
+    v = voxelSizeY() * voxelSizeZ();
+    break;
+  case NeuTube::PLANE_XZ:
+    v = voxelSizeX() * voxelSizeZ();
+    break;
+  }
+
+  return v;
+}
+
+double ZResolution::getPlaneVoxelSpan(NeuTube::EPlane plane) const
+{
+  double v1 = 1.0;
+  double v2 = 1.0;
+  switch (plane) {
+  case NeuTube::PLANE_XY:
+    v1 = voxelSizeX();
+    v2 = voxelSizeY();
+    break;
+  case NeuTube::PLANE_YZ:
+    v1 = voxelSizeY();
+    v2 = voxelSizeZ();
+    break;
+  case NeuTube::PLANE_XZ:
+    v1 = voxelSizeX();
+    v2 = voxelSizeZ();
+    break;
+  }
+
+  double v = 1.0;
+  if (v1 == v2) {
+    v = v1;
+  } else {
+    v = sqrt(v1 * v2);
+  }
+
+  return v;
+}
+
 double ZResolution::getPlaneVoxelSize(NeuTube::EPlane plane, EUnit unit) const
 {
   double v = 1.0;
@@ -148,4 +202,9 @@ double ZResolution::getPlaneVoxelSize(NeuTube::EPlane plane, EUnit unit) const
   }
 
   return v;
+}
+
+double ZResolution::getPlaneVoxelSpan(NeuTube::EPlane plane, EUnit unit) const
+{
+  return getPlaneVoxelSpan(plane) * getUnitVoxelSize(unit);
 }

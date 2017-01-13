@@ -31,6 +31,7 @@ const char* ZDvidTarget::m_roiListKey = "roi_list";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
 const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
+const char* ZDvidTarget::m_todoListNameKey = "todo";
 const char* ZDvidTarget::m_defaultSettingKey = "default";
 
 ZDvidTarget::ZDvidTarget()

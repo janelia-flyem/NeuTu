@@ -1,5 +1,6 @@
 #include "zdvidannotation.h"
 
+#include <cmath>
 #include <QColor>
 
 #include "tz_math.h"
@@ -138,8 +139,12 @@ double ZDvidAnnotation::GetDefaultRadius(
 {
   double r = GetDefaultRadius(kind);
 
-  r *= resolution.getPlaneVoxelSize(
-        NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER) / 8.0;
+  if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
+    r *= sqrt(resolution.getPlaneVoxelSize(NeuTube::PLANE_XY));
+  } else {
+    r *= sqrt(resolution.getPlaneVoxelSize(
+                NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+  }
 
   return r;
 }
