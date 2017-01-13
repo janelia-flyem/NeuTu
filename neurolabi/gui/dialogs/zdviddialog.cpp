@@ -10,6 +10,7 @@
 #include "zjsonobject.h"
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
+#include "dialogs/zdvidadvanceddialog.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -89,6 +90,11 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
           this, SLOT(updateWidgetForDefaultSetting()));
 
 //  setFixedSize(size());
+
+  m_advancedDlg = new ZDvidAdvancedDialog(this);
+  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
+  connect(ui->advancedPushButton, SIGNAL(clicked()),
+          this, SLOT(setAdvanced()));
 
   ui->roiLabel->hide();
   ui->roiPushButton->hide();
@@ -299,6 +305,13 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
 bool ZDvidDialog::usingDefaultSetting() const
 {
   return ui->settingCheckBox->isChecked();
+}
+
+void ZDvidDialog::setAdvanced()
+{
+  if (m_advancedDlg->exec()) {
+
+  }
 }
 
 void ZDvidDialog::updateWidgetForDefaultSetting()

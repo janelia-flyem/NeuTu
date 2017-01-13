@@ -10,6 +10,7 @@ class ZDvidDialog;
 }
 
 class StringListDialog;
+class ZDvidAdvancedDialog;
 
 class ZDvidDialog : public QDialog
 {
@@ -39,6 +40,7 @@ public slots:
   void deleteCurrentTarget();
   void editRoiList();
   void updateWidgetForDefaultSetting();
+  void setAdvanced();
 
 private:
   bool usingDefaultSetting() const;
@@ -48,6 +50,7 @@ private:
   QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
   StringListDialog *m_roiDlg;
+  ZDvidAdvancedDialog *m_advancedDlg;
   const static char *m_dvidRepoKey;
 };
 
