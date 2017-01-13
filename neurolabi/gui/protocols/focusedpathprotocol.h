@@ -58,6 +58,14 @@ private:
         BODYID2_COLUMN
         };
 
+    static const QColor COLOR_BODY1;
+    static const QColor COLOR_BODY2;
+    static const QColor COLOR_EDGE1;
+    static const QColor COLOR_EDGE2;
+    static const QColor COLOR_PATH;
+    static const QColor COLOR_OTHER;
+    static const QColor COLOR_DEFAULT;
+
 public:
     // keys for DVID stuff
     static const std::string KEY_ASSIGNMENT_BODIES;
@@ -81,6 +89,7 @@ private:
     QMap<ZIntPoint, uint64_t> m_currentPathBodyIDs;
     FocusedPath m_currentPath;
     QStandardItemModel * m_edgeModel;
+    ZFlyEmSequencerColorScheme m_colorScheme;
     void saveState();
     void variationError(std::string variation);
     void loadBodiesFromBookmarks();
@@ -92,6 +101,7 @@ private:
     void updateProgressLabel();
     void updateColorMap();
     void gotoEdgePoint(FocusedEdge edge);
+    FocusedEdge getSelectedEdge();
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

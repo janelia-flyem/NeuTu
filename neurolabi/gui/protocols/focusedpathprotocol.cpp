@@ -68,13 +68,22 @@ const std::string FocusedPathProtocol::KEY_EDGE_INSTANCE = "edge-instance";
 const std::string FocusedPathProtocol::KEY_PATH_INSTANCE = "path-instance";
 
 // keys used when reading stuff from DVID
-const std::string FocusedPathProtocol::KEY_ASSIGNMENT_BODIES= "bodies";
-const std::string FocusedPathProtocol::KEY_ASSIGNMENT_EDGE_INSTANCE= "edgedata";
-const std::string FocusedPathProtocol::KEY_ASSIGNMENT_PATH_INSTANCE= "pathdata";
-const std::string FocusedPathProtocol::TAG_PATH= "path";
-const std::string FocusedPathProtocol::TAG_EDGE= "edge";
-const std::string FocusedPathProtocol::PROPERTY_PROBABILITY= "probability";
-const std::string FocusedPathProtocol::PROPERTY_PATH= "path";
+const std::string FocusedPathProtocol::KEY_ASSIGNMENT_BODIES = "bodies";
+const std::string FocusedPathProtocol::KEY_ASSIGNMENT_EDGE_INSTANCE = "edgedata";
+const std::string FocusedPathProtocol::KEY_ASSIGNMENT_PATH_INSTANCE = "pathdata";
+const std::string FocusedPathProtocol::TAG_PATH = "path";
+const std::string FocusedPathProtocol::TAG_EDGE = "edge";
+const std::string FocusedPathProtocol::PROPERTY_PROBABILITY = "probability";
+const std::string FocusedPathProtocol::PROPERTY_PATH = "path";
+
+// colors
+const QColor FocusedPathProtocol::COLOR_BODY1 = QColor(0, 0, 255);
+const QColor FocusedPathProtocol::COLOR_BODY2 = QColor(0, 128, 64);
+const QColor FocusedPathProtocol::COLOR_EDGE1 = QColor(128, 0, 255);
+const QColor FocusedPathProtocol::COLOR_EDGE2 = QColor(0, 255, 0);
+const QColor FocusedPathProtocol::COLOR_PATH = QColor(100, 200, 255);
+const QColor FocusedPathProtocol::COLOR_OTHER = QColor(128, 0, 64);
+const QColor FocusedPathProtocol::COLOR_DEFAULT = QColor(0, 0, 0);
 
 bool FocusedPathProtocol::initialize() {
 
@@ -155,6 +164,10 @@ void FocusedPathProtocol::setDvidTarget(ZDvidTarget target) {
 
 void FocusedPathProtocol::onExitButton() {
     // exit protocol; can be reopened and worked on later
+
+    // I think this is the only UI cleanup we need
+    emit requestDeactivateColorMap();
+
     emit protocolExiting();
 }
 
@@ -391,9 +404,8 @@ void FocusedPathProtocol::displayCurrentPath() {
         // which will call go to edge point
 
 
-        // update color map here or within the above call?
-        // does the color map change for edge or only path?
-        // updateColorMap();
+        updateColorMap();
+        emit requestActivateColorMap();
 
     }
 
@@ -438,9 +450,35 @@ void FocusedPathProtocol::updateColorMap() {
 
     std::cout << "updateColorMap()" << std::endl;
 
+    // rebuild from scratch
+    m_colorScheme.clear();
+    m_colorScheme.setDefaultColor(COLOR_DEFAULT);
 
-    // will need to update map and activate it
+    // bodies along the path; second body in each edge, except for the last edge;
+    //  do this first, so the end body colors applied later will win out if need be
+    for (int i=0; i<m_currentPath.getNumEdges()-1; i++) {
+        m_colorScheme.setBodyColor(m_currentPath.getEdge(i).getLastBodyID(), COLOR_PATH);
+    }
 
+    // color endpoint bodies
+    m_colorScheme.setBodyColor(m_currentPathBodyIDs[m_currentPath.getFirstPoint()], COLOR_BODY1);
+    m_colorScheme.setBodyColor(m_currentPathBodyIDs[m_currentPath.getLastPoint()], COLOR_BODY2);
+
+    // bodies for this particular edge
+    // these bodies could be the first or last body, remember, and that's OK
+    if (ui->edgesTableView->selectionModel()->hasSelection()) {
+        FocusedEdge edge = getSelectedEdge();
+        m_colorScheme.setBodyColor(edge.getFirstBodyID(), COLOR_EDGE1);
+        m_colorScheme.setBodyColor(edge.getLastBodyID(), COLOR_EDGE2);
+        }
+
+    // Steve wants other "interesting" bodies to be colored, not
+    //  yet defined (probably other anchor bodies, or named bodies?)
+    // m_colorScheme.setBodyColor(   body ID for some other body    , COLOR_OTHER);
+
+
+    m_colorScheme.buildColorTable();
+    emit requestColorMapChange(m_colorScheme);
 }
 
 void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem) {
@@ -450,9 +488,19 @@ void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSe
     // go to new edge point
     gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
 
-    // update color map if needed (if it depends on edge, not just path)
+    // update color map (it depends on edge, not just path)
+    updateColorMap();
 
+}
 
+FocusedEdge FocusedPathProtocol::getSelectedEdge() {
+    if (ui->edgesTableView->selectionModel()->hasSelection()) {
+        QItemSelection selection = ui->edgesTableView->selectionModel()->selection();
+        int index = selection.indexes().first().row();
+        return m_currentPath.getEdge(index);
+    } else {
+        return FocusedEdge();
+    }
 }
 
 void FocusedPathProtocol::gotoEdgePoint(FocusedEdge edge) {
