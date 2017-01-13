@@ -168,9 +168,15 @@ double ZString::lastDouble()
 
 std::vector<std::string> ZString::toWordArray(const string &delim)
 {
+  return ToWordArray(*this, delim);
+}
+
+std::vector<std::string> ZString::ToWordArray(
+    const std::string &input, const string &delim)
+{
   std::vector<std::string> wordArray;
 
-  char *str = strdup(c_str());
+  char *str = strdup(input.c_str());
 
   char *word = strtok(str, delim.c_str());
 
@@ -184,8 +190,51 @@ std::vector<std::string> ZString::toWordArray(const string &delim)
   return wordArray;
 }
 
+std::vector<std::string> ZString::Tokenize(const std::string &str, char c)
+{
+  std::vector<size_t> tokenPos;
+  std::vector<std::string> wordArray;
+
+  if (!str.empty()) {
+#ifdef _DEBUG_2
+    cout << wordArray.size() << endl;
+#endif
+
+    size_t currPos = str.find_first_of(c);
+
+    while (currPos != std::string::npos) {
+      tokenPos.push_back(currPos);
+      currPos = str.find_first_of(c, currPos + 1);
+    }
+
+    if (tokenPos.size() > 0) {
+      if (tokenPos[0] == 0) {
+        wordArray.push_back("");
+      } else {
+        wordArray.push_back(str.substr(0, tokenPos[0]));
+      }
+
+      for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
+  #ifdef _DEBUG_2
+        cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
+  #endif
+        wordArray.push_back(
+              str.substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      }
+      wordArray.push_back(str.substr(tokenPos.back() + 1));
+    } else {
+      wordArray.push_back(str);
+    }
+  }
+
+  return wordArray;
+}
+
 std::vector<std::string> ZString::tokenize(char c)
 {
+  return Tokenize(*this, c);
+
+#if 0
   std::vector<size_t> tokenPos;
   std::vector<std::string> wordArray;
 
@@ -222,6 +271,7 @@ std::vector<std::string> ZString::tokenize(char c)
   }
 
   return wordArray;
+#endif
 }
 
 bool ZString::readLine(FILE *fp)
