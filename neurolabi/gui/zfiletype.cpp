@@ -7,7 +7,7 @@ ZFileType::ZFileType()
 {
 }
 
-ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
+ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
 {
   ZString str(filePath.c_str());
 
@@ -80,7 +80,7 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
   return UNIDENTIFIED_FILE;
 }
 
-std::string ZFileType::typeName(EFileType type)
+std::string ZFileType::TypeName(EFileType type)
 {
   switch (type) {
   case SWC_FILE:
@@ -137,7 +137,7 @@ bool ZFileType::isImageFile(EFileType type)
 
 bool ZFileType::isImageFile(const std::string &filePath)
 {
-  return isImageFile(fileType(filePath));
+  return isImageFile(FileType(filePath));
 }
 
 bool ZFileType::isObjectFile(EFileType type)
@@ -156,12 +156,12 @@ bool ZFileType::isObjectFile(EFileType type)
 
 bool ZFileType::isObjectFile(const std::string &filePath)
 {
-  return isObjectFile(fileType(filePath));
+  return isObjectFile(FileType(filePath));
 }
 
 bool ZFileType::isNeutubeOpenable(const std::string &filePath)
 {
-  return isNeutubeOpenable(fileType(filePath));
+  return isNeutubeOpenable(FileType(filePath));
 }
 
 bool ZFileType::isNeutubeOpenable(EFileType type)

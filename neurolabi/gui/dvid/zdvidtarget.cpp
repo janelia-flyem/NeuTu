@@ -146,9 +146,9 @@ void ZDvidTarget::clear()
 
 void ZDvidTarget::setServer(const std::string &address)
 {
-  if (address.empty()) {
-    m_address = address;
-  } else {
+  m_address = address;
+
+  if (!address.empty()) {
     ZString addressObj(address);
 
     if (addressObj.startsWith("http://")) {
@@ -159,11 +159,16 @@ void ZDvidTarget::setServer(const std::string &address)
       addressObj = address;
     }
 
-    std::vector<std::string> strArray = addressObj.toWordArray(":/");
-    if (strArray.size() > 1) {
-      std::vector<int> intArray = ZString(strArray[1]).toIntegerArray();
-      if (!intArray.empty()) {
-        setPort(intArray[0]);
+    std::vector<std::string> strArray = addressObj.toWordArray("/");
+    if (!strArray.empty()) {
+      addressObj = strArray[0];
+      strArray = addressObj.toWordArray(":");
+
+      if (strArray.size() > 1) {
+        std::vector<int> intArray = ZString(strArray[1]).toIntegerArray();
+        if (!intArray.empty()) {
+          setPort(intArray[0]);
+        }
       }
     }
 
@@ -224,7 +229,7 @@ void ZDvidTarget::setFromUrl(const std::string &url)
   }
   std::string uuid;
   if (tokens.size() > 3) {
-    if (tokens[2] == "node") {
+    if (tokens[1] == "api" && tokens[2] == "node") {
       uuid = tokens[3];
     }
   }

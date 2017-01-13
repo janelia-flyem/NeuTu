@@ -3898,14 +3898,14 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   bool processed = false;
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
-    if (ZFileType::fileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
       processed = true; //todo
     }
   }
 
   if (!processed) {
     foreach (const QUrl &url, urls) {
-      if (ZFileType::fileType(url.path().toStdString()) ==
+      if (ZFileType::FileType(url.path().toStdString()) ==
           ZFileType::SWC_FILE) {
         ZSwcTree *tree = new ZSwcTree;
         tree->load(url.path().toStdString());

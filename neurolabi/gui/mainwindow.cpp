@@ -1539,7 +1539,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 {
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
-    ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+    ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
     if (ZFileType::isNeutubeOpenable(fileType)) {
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
@@ -1567,7 +1567,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 
 void MainWindow::openFileFunc(const QString &fileName)
 {
-  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+  ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
@@ -5218,7 +5218,7 @@ void MainWindow::expandCurrentFrame()
     bool swcLoaded = false;
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
-        switch (ZFileType::fileType(filePath.toStdString())) {
+        switch (ZFileType::FileType(filePath.toStdString())) {
         case ZFileType::SWC_FILE:
           frame->importSwc(filePath);
           swcLoaded = true;
@@ -5330,14 +5330,14 @@ void MainWindow::on_actionSparse_objects_triggered()
       presentStackFrame(frame);
     } else {
       foreach (QString file, fileList) {
-        if (ZFileType::fileType(file.toStdString()) ==
+        if (ZFileType::FileType(file.toStdString()) ==
             ZFileType::OBJECT_SCAN_FILE) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
-          if (ZFileType::fileType(file.toStdString()) ==
+          if (ZFileType::FileType(file.toStdString()) ==
               ZFileType::TIFF_FILE) {
             ZStack stack;
             stack.load(file.toStdString());
@@ -5883,10 +5883,10 @@ void MainWindow::showStackFrame(
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
-      if (ZFileType::fileType(file.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::TIFF_FILE) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::fileType(file.toStdString()) == ZFileType::SWC_FILE) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::SWC_FILE) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }

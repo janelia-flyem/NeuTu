@@ -114,7 +114,7 @@ void ZStackFile::retrieveAttribute(
 
   std::string filePath = firstUrl();
 
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::TIFF_FILE:
     Tiff_Attribute(filePath.c_str(), 0, kind, width, height, depth);
     break;
@@ -157,7 +157,7 @@ void ZStackFile::import(const string &filePath)
 
   m_urlList.clear();
 
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::TIFF_FILE:
   case ZFileType::LSM_FILE:
   case ZFileType::V3D_RAW_FILE:
@@ -504,9 +504,9 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       Mc_Stack *stack = NULL;
       int offset[3] = {0, 0, 0};
-      if (ZFileType::fileType(m_urlList[0].c_str()) ==
+      if (ZFileType::FileType(m_urlList[0].c_str()) ==
           ZFileType::OBJECT_SCAN_FILE ||
-          ZFileType::fileType(m_urlList[0].c_str()) ==
+          ZFileType::FileType(m_urlList[0].c_str()) ==
                     ZFileType::DVID_OBJECT_FILE) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {

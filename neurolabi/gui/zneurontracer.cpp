@@ -1287,6 +1287,7 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
 
     int minSeedSize = 0;
 
+    //todo: take account of image size
     if (seedPointArray->size > 15000) {
       minSeedSize = 125;
     } else if (seedPointArray->size > 5000) {

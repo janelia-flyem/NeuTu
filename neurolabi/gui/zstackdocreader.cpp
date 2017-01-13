@@ -27,7 +27,7 @@ bool ZStackDocReader::readFile(const QString &filePath)
 {
   m_filePath = filePath;
 
-  switch (ZFileType::fileType(filePath.toStdString())) {
+  switch (ZFileType::FileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
     loadSwc(filePath);
     break;
@@ -95,7 +95,7 @@ void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
 */
 void ZStackDocReader::loadStack(const QString &filePath)
 {
-  ZFileType::EFileType type = ZFileType::fileType(filePath.toStdString());
+  ZFileType::EFileType type = ZFileType::FileType(filePath.toStdString());
   if (type == ZFileType::OBJECT_SCAN_FILE ||
       type == ZFileType::DVID_OBJECT_FILE) {
     ZSparseObject *sobj = new ZSparseObject;

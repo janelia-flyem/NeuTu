@@ -1240,7 +1240,7 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
   m_synapseArray.clear();
   m_puncta.clear();
   const double radius = m_defaultSynapseRadius;
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::JSON_FILE:
   {
     m_synapseArray.loadJson(filePath);
