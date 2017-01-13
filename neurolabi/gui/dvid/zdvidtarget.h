@@ -301,6 +301,7 @@ private:
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
   const static char* m_synapseLabelszKey;
+  const static char* m_todoListNameKey;
 };
 
 #endif // ZDVIDTARGET_H
