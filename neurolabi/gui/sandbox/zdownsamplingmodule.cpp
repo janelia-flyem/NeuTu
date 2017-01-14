@@ -11,7 +11,6 @@
 #include "zdownsamplingmodule.h"
 #include "zstackwatershed.h"
 
-
 void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
 {
   int width=stack->width();
@@ -28,42 +27,17 @@ void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
       for(int i=0;i<width;++i)
       {
         uint8_t v=po[_offset+i];
-        uint8_t t=i>0?po[_offset+i-1]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i-1,j,k));
-        }
-        t=i<(width-1)?po[_offset+i+1]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i+1,j,k));
-        }
-        t=j>0?po[_offset+i-width]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i,j-1,k));
-        }
-        t=j<(height-1)?po[_offset+i+width]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i,j+1,k));
-        }
-        t=k>0?po[_offset+i-slice]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i,j,k-1));
-        }
-        t=k<(depth-1)?po[_offset+i+slice]:v;
-        if(v<t)
-        {
-          metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-          metrix[t-1][v-1].push_back(ZIntPoint(i,j,k+1));
-        }
+        for(int z=std::max(0,k-1);z<=std::min(depth-1,k+1);++z)
+          for(int y=std::max(0,j-1);y<=std::min(height-1,j+1);++y)
+            for(int x=std::max(0,i-1);x<=std::min(width-1,i+1);++x)
+            {
+              uint8_t t=po[z*slice+y*width+x];
+              if(v<t)
+              {
+                metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
+                metrix[t-1][v-1].push_back(ZIntPoint(x,y,z));
+              }
+            }
       }
     }
   }
@@ -204,7 +178,7 @@ inline bool hasNeighborOnEdge(const ZStack* edge_map,int x,int y,int z)
 void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
                                  const ZIntCuboid& box,
                                  const ZStack* edge_map,
-                                 const ZStack* stack)
+                                 const ZStack* stack,int step)
 {
   int width=stack->width();
   int height=stack->height();
@@ -227,8 +201,12 @@ void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
       {
         if( (!isEdgePoint(edge_map,x,y,z)) && hasNeighborOnEdge(edge_map,x,y,z))
         {
-          ZStack* seed=new ZStack(GREY,1,1,1,1);
-          seed->array8()[0]=ps[x+y*width+z*slice];
+          ZStack* seed=new ZStack(GREY,step,step,step,1);
+          int v=ps[x+y*width+z*slice];
+          for(uint i=0;i<seed->getVoxelNumber();++i)
+          {
+            seed->array8()[i]=v;
+          }
           seed->setOffset(x,y,z);
           seeds.push_back(seed);
         }
@@ -244,9 +222,9 @@ void mapSeeds2OriginalSpace(std::vector<ZStack*>& seeds,const int step,int width
   {
     ZStack* seed=*it;
     ZIntPoint offset=seed->getOffset();
-    int x=offset.m_x*step+step/2;
-    int y=offset.m_y*step+step/2;
-    int z=offset.m_z*step+step/2;
+    int x=offset.m_x*step;
+    int y=offset.m_y*step;
+    int z=offset.m_z*step;
     if(x>=width)x=width-1;
     if(y>=height)y=height-1;
     if(z>=depth)z=depth-1;
@@ -255,7 +233,7 @@ void mapSeeds2OriginalSpace(std::vector<ZStack*>& seeds,const int step,int width
 }
 
 
-void drawSeeds(const std::vector<ZStack*>& seeds,ZStack* stack,const int v)
+void drawSeeds(const std::vector<ZStack*>& seeds,ZStack* stack,int step,const int v)
 {
   uint8_t* p=stack->array8();
   const int width=stack->width();
@@ -266,9 +244,9 @@ void drawSeeds(const std::vector<ZStack*>& seeds,ZStack* stack,const int v)
     const ZStack* seed=*it;
     const ZIntPoint point=seed->getOffset();
     const int x=point.m_x,y=point.m_y,z=point.m_z;
-    for(int i=std::max(0,x-1);i<std::min(width,x+1);++i)
+    for(int i=x;i<=std::min(width-1,x+step);++i)
     {
-      for(int j=std::max(0,y-1);j<std::min(height,y+1);++j)
+      for(int j=y;j<=std::min(height-1,y+step);++j)
       {
          p[z*area+j*width+i]=v;
        }
@@ -404,14 +382,14 @@ void ZDownSamplingWindow::onRecover()
       const ZIntCuboid& box=boxes[i];
       Cuboid_I range=getRange(box,original,step);
 
-      generateSeedsInSampledSpace(seeds,box,edge_map,sampled);
+      generateSeedsInSampledSpace(seeds,box,edge_map,sampled,step);
 
       mapSeeds2OriginalSpace(seeds,step,width,height,depth);
 
       localWaterShed(seeds,range,recovered,original,edge_map,step);
 
-    //  drawSeeds(seeds,zo,0);
-    //  drawRange(zo,range,0);
+    //  drawSeeds(seeds,zo,step,0);
+     // drawRange(zo,range,0);
 
       for(uint j=0;j<seeds.size();++j)
       {
@@ -473,9 +451,13 @@ ZDownSamplingWindow::ZDownSamplingWindow(QWidget* parent)
   spin_step->setMinimum(2);
   lay->addWidget(down);
   lay->addWidget(recover);
-  lay->addWidget(spin_step);
+  QHBoxLayout* lay_spin=new QHBoxLayout();
+  lay->addLayout(lay_spin);
+  lay_spin->addWidget(new QLabel("down sample step:"));
+  lay_spin->addWidget(spin_step);
   this->setLayout(lay);
   this->move(300,200);
+  this->resize(180,150);
   connect(down,SIGNAL(clicked()),this,SLOT(onDownSampling()));
   connect(recover,SIGNAL(clicked()),this,SLOT(onRecover()));
   original=NULL;
