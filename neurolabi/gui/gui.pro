@@ -728,7 +728,9 @@ HEADERS += mainwindow.h \
     dialogs/zswcisolationdialog.h \
     flyem/zflyembodycoloroption.h \
     dialogs/zstresstestoptiondialog.h \
-    dialogs/zflyembodyscreenshotdialog.h
+    dialogs/zflyembodyscreenshotdialog.h \
+    dialogs/zstresstestoptiondialog.h \
+    dialogs/zdvidadvanceddialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -820,7 +822,9 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zinfodialog.ui \
     dialogs/zswcisolationdialog.ui \
     dialogs/zstresstestoptiondialog.ui \
-    dialogs/zflyembodyscreenshotdialog.ui
+    dialogs/zflyembodyscreenshotdialog.ui \
+    dialogs/zstresstestoptiondialog.ui \
+    dialogs/zdvidadvanceddialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1255,7 +1259,9 @@ SOURCES += main.cpp \
     dialogs/zswcisolationdialog.cpp \
     flyem/zflyembodycoloroption.cpp \
     dialogs/zstresstestoptiondialog.cpp \
-    dialogs/zflyembodyscreenshotdialog.cpp
+    dialogs/zflyembodyscreenshotdialog.cpp \
+    dialogs/zstresstestoptiondialog.cpp \
+    dialogs/zdvidadvanceddialog.cpp
 
 OTHER_FILES += \
     extlib.pri \
