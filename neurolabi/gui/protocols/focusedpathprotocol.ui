@@ -56,20 +56,6 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QPushButton" name="finishButton">
-         <property name="text">
-          <string>Finish</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="skipButton">
-         <property name="text">
-          <string>Skip</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -107,6 +93,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="finishButton">
+         <property name="text">
+          <string>Finish</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -118,6 +111,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="skipButton">
+         <property name="text">
+          <string>Skip</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="nextBodyButton">
