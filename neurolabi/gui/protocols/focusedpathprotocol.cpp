@@ -271,8 +271,8 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
 
     // this isn't an edge data instance, but it does exist,
     //  thus keeping everything happy
-    m_edgeDataInstance = "labels";
-    m_pathDataInstance = "labels";
+    m_edgeDataInstance = "focused_edges";
+    m_pathDataInstance = "focused_paths";
 
 
     emit bodyListLoaded();
