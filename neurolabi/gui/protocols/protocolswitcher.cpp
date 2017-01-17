@@ -156,7 +156,7 @@ void ProtocolSwitcher::dvidTargetChanged(ZDvidTarget target) {
     m_activeMetadata = ProtocolMetadata::ReadProtocolMetadata(PROTOCOL_DATA_NAME, target);
     if (!m_activeMetadata.ioSuccessful()) {
         warningDialog("Couldn't read metadata",
-            "There was a problem reading user metadata from DVID.  Any currently open protocols will not be reloaded.  Also, watch for other DVID problems!");
+            "There was a problem reading user protocol metadata from DVID.  Any currently open protocols will not be reloaded.  Also, watch for other DVID problems!");
         return;
     }
     if (m_activeMetadata.isActive()) {
@@ -510,7 +510,7 @@ void ProtocolSwitcher::connectProtocolSignals() {
     // interaction connects
     connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
     connect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
-        this, SLOT(updateColorMapRequested(ZFlyEmBodyColorScheme)));
+        this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     connect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
     connect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
 }
