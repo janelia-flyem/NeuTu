@@ -5,7 +5,7 @@
 #include "zstackdoc.h"
 #include "zcubearray.h"
 #include "zobjsitem.h"
-
+#include "neutubeconfig.h"
 
 ZSurfaceObjsModel::ZSurfaceObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -87,6 +87,7 @@ void ZSurfaceObjsModel::updateModelData()
   QList<QVariant> rootData;
   rootData << "Surface" << "Source";
 
+  ZOUT(LTRACE(), 5) << "Update surface object";
   m_rootItem = new ZObjsItem(
         rootData, &(m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE)));
   setupModelData(m_rootItem);
@@ -103,6 +104,7 @@ void ZSurfaceObjsModel::setupModelData(ZObjsItem *parent)
   m_surfaceSourceParentToRow.clear();
   m_surfaceSeparatedByFile.clear();
   int sourceParentRow = 0;
+  ZOUT(LTRACE(), 5) << "Setup surface model";
   QList<ZStackObject*> surfaceList =
       m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   int numDigit = numDigits(surfaceList.size()+1);

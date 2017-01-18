@@ -5,6 +5,10 @@
 #include <QPainter>
 #include <QtConcurrentRun>
 #include <QApplication>
+#include <QGraphicsBlurEffect>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+
 
 ZPixmap::ZPixmap() : m_isVisible(false)
 {
@@ -45,6 +49,12 @@ const ZStTransform& ZPixmap::getProjTransform() const
 ZStTransform& ZPixmap::getProjTransform()
 {
   return m_projTransform;
+}
+
+void ZPixmap::updateProjTransform(
+    const QRect &viewPort, const QRectF &newProjRegion)
+{
+  m_projTransform.estimate(m_objTransform.transform(viewPort), newProjRegion);
 }
 
 void ZPixmap::setTransform(const ZStTransform &transform)
@@ -128,6 +138,11 @@ void ZPixmap::cleanUp()
   m_isVisible = false;
 }
 
+void ZPixmap::matchProj()
+{
+  m_projTransform = getTransform().getInverseTransform();
+}
+
 void ZPixmap::clean(const QRect &rect)
 {
   QPainter painter;
@@ -177,3 +192,4 @@ bool ZPixmap::isFullyActive() const
   return m_objTransform.transform(m_activeArea).contains(
         QRectF(0, 0, width(), height()));
 }
+

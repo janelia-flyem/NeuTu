@@ -230,6 +230,8 @@ public:
   void zoomTo(int x, int y, int z);
   void zoomTo(const ZIntPoint &pt);
 
+  void zoomTo(int x, int y, int z, int w);
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -297,6 +299,8 @@ public slots:
 
   void hideThresholdControl();
 
+  void setDynamicObjectAlpha(int alpha);
+
 
 signals:
 //  void currentSliceChanged(int);
@@ -316,6 +320,9 @@ public:
   bool isImageMovable() const;
 
   int getZ(NeuTube::ECoordinateSystem coordSys) const;
+  ZIntPoint getCenter(
+      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
+
   QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
       NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
@@ -370,6 +377,7 @@ public: //Change view parameters
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
+  void highlightPosition(const ZIntPoint &pt);
 
   void updateContrastProtocal();
 
@@ -419,6 +427,8 @@ protected:
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
   void resetDepthControl();
 
+  bool event(QEvent *event);
+
 protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
@@ -427,10 +437,13 @@ protected:
   QLabel *m_msgLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
-  ZPainter m_imagePainter;
+//  ZPainter m_imagePainter;
   ZImage *m_imageMask;
 //  ZPixmap *m_objectCanvas;
   ZPixmap *m_dynamicObjectCanvas;
+  double m_dynamicObjectOpacity;
+//  ZPainter m_dynamicObjectCanvasPainter;
+
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
 

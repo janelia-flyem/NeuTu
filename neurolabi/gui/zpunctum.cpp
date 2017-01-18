@@ -1,10 +1,11 @@
-#include <QtGui>
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include "zpunctum.h"
 
 #include <numeric>
 #include <algorithm>
 #include <sstream>
 
-#include "zpunctum.h"
 #include "zrandom.h"
 #include "zstackball.h"
 
@@ -201,6 +202,16 @@ ZVaa3dMarker ZPunctum::toVaa3dMarker() const
   marker.setComment(m_comment.toStdString());
 
   return marker;
+}
+
+void ZPunctum::updateRadius()
+{
+  setRadius(Cube_Root(0.75 / M_PI * m_volSize));
+}
+
+void ZPunctum::updateVolSize()
+{
+  m_volSize = M_PI * 1.333333333 * getRadius() * getRadius() * getRadius();
 }
 
 void ZPunctum::setFromMarker(const ZVaa3dMarker &marker)

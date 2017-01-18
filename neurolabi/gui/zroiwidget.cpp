@@ -3,20 +3,25 @@
 #include <string>
 #include <iostream>
 
-#include <QtGui>
 #include <QWidget>
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QSpinBox>
+#include <QFileDialog>
+#include <QColorDialog>
 
+#include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
 #include "z3dwindow.h"
 #include "z3dsurfacefilter.h"
 #include "zroiwidget.h"
-
+//#include "flyem/zflyemproofdoc.h"
 //
 ZROIObjsModel::ZROIObjsModel(QObject *parent) : ZObjsModel(parent)
 {
@@ -77,7 +82,7 @@ void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
 }
 
 void ZROIWidget::getROIs(Z3DWindow *window,
-                         ZDvidInfo &dvidInfo,
+                         const ZDvidInfo &dvidInfo,
                          std::vector<std::string> roiList,
                          std::vector<ZObject3dScan> loadedROIs,
                          std::vector<std::string> roiSourceList)
@@ -140,7 +145,14 @@ void ZROIWidget::makeGUI()
     QStringList labels;
     labels << tr("ROI Name") << tr("Color");
     tw_ROIs->setHorizontalHeaderLabels(labels);
+
+#ifdef _QT5_
+    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+#else
     tw_ROIs->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+#endif
+//    tw_ROIs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
     tw_ROIs->verticalHeader()->hide();
     tw_ROIs->setShowGrid(false);
 
@@ -155,7 +167,7 @@ void ZROIWidget::makeGUI()
 
         ZColorScheme zcolor;
         zcolor.setColorScheme(ZColorScheme::RANDOM_COLOR);
-        QBrush brush(zcolor.getColor(i));
+        QBrush brush(zcolor.getColor((uint64_t) i));
 
         QTableWidgetItem *colorItem = new QTableWidgetItem(tr("@COLOR"));
         colorItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -310,48 +322,62 @@ void ZROIWidget::updateSelectedROIs()
 void ZROIWidget::updateROIs()
 {
   // render selected ROIs
-  m_window->getDocument()->blockSignals(true);
-  for(int i=0; i<tw_ROIs->rowCount(); i++)
-  {
-    QTableWidgetItem *it = tw_ROIs->item(i, 0);
+  ZDvidReader reader;
+  ZDvidTarget target(m_dvidInfo.getDvidAddress(),
+                     m_dvidInfo.getDvidUuid(),
+                     m_dvidInfo.getDvidPort());
 
-    if(it->checkState()==Qt::Checked)
+  if (reader.open(target)) {
+    m_window->getDocument()->blockSignals(true);
+    for(int i=0; i<tw_ROIs->rowCount(); i++)
     {
-      if(m_window != NULL)
-      {
-        QColor color = tw_ROIs->item(i,1)->foreground().color();
+      QTableWidgetItem *it = tw_ROIs->item(i, 0);
 
-        if(m_window->getDocument()->hasObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i] )==false)
+      if(it->checkState()==Qt::Checked)
+      {
+        if(m_window != NULL)
         {
-          ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
-                m_loadedROIs.at(i), m_dvidInfo, color, getDsIntv());
-          cubes->setSource(m_roiSourceList[i]);
-          cubes->setColor(color);
-          m_window->getDocument()->addObject(cubes, true);
-        }
-        else
-        {
-          if(colorModified[i] == true)
+          QColor color = tw_ROIs->item(i,1)->foreground().color();
+
+          if(m_window->getDocument()->hasObject(
+               ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])==false)
           {
-            qDebug()<<"~~~color is changed"<<color;
+            ZIntPoint blockSize = reader.readRoiBlockSize(m_roiList[i]);
 
-            colorModified[i] = false;
-            m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])->setColor(color);
+            ZDvidInfo dvidInfo = m_dvidInfo;
+            dvidInfo.setBlockSize(blockSize.getX(), blockSize.getY(),
+                                  blockSize.getZ());
+
+            ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
+                  m_loadedROIs.at(i), dvidInfo, color, getDsIntv());
+            cubes->setSource(m_roiSourceList[i]);
+            cubes->setColor(color);
+            m_window->getDocument()->addObject(cubes, true);
           }
-          m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], true);
+          else
+          {
+            if(colorModified[i] == true)
+            {
+              qDebug()<<"~~~color is changed"<<color;
+
+              colorModified[i] = false;
+              m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])->setColor(color);
+            }
+            m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], true);
+          }
+        }
+      }
+      else
+      {
+        if(m_window != NULL)
+        {
+          m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], false);
         }
       }
     }
-    else
-    {
-      if(m_window != NULL)
-      {
-        m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], false);
-      }
-    }
+    m_window->getDocument()->blockSignals(false);
+    m_window->update3DCubeDisplay();
   }
-  m_window->getDocument()->blockSignals(false);
-  m_window->update3DCubeDisplay();
 }
 
 void ZROIWidget::updateROISelections(int row, int column)
@@ -412,10 +438,10 @@ void ZROIWidget::updateROIColors(int row, int column)
 
 void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 {
-    qDebug()<<"to render ROI: "<<item->text()<<item->checkState();
+    ZOUT(LTRACE(), 5)<<"to render ROI: "<<item->text()<<item->checkState();
 
 
-    qDebug()<<tw_ROIs->selectedItems();
+    ZOUT(LTRACE(), 5)<<tw_ROIs->selectedItems();
 }
 
 void ZROIWidget::updateSlider(int v)

@@ -200,6 +200,13 @@ ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
   return blockIndex;
 }
 
+void ZDvidInfo::setBlockSize(int width, int height, int depth)
+{
+  m_blockSize[0] = width;
+  m_blockSize[1] = height;
+  m_blockSize[2] = depth;
+}
+
 ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
@@ -278,10 +285,10 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZIntCuboidArray &boxArray) const
 
 ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
 {
-  ZIntPoint gridSize = m_endBlockIndex - m_startBlockIndex + 1;
-  size_t area = ((size_t) gridSize.getX()) * gridSize.getY();
-  size_t blockNumber = area * gridSize.getZ();
-  std::vector<bool> isAdded(blockNumber, false);
+//  ZIntPoint gridSize = m_endBlockIndex - m_startBlockIndex + 1;
+//  size_t area = ((size_t) gridSize.getX()) * gridSize.getY();
+//  size_t blockNumber = area * gridSize.getZ();
+//  std::vector<bool> isAdded(blockNumber, false);
 
   //std::set<ZIntPoint> blockSet;
   //ZIntPointArray blockArray;
@@ -314,23 +321,24 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
         }
 
         ZIntPoint block1 = getBlockIndex(x0, y, z);
-        size_t blockIndex1 = area * block1.getZ() +
-            gridSize.getY() * block1.getY() + block1.getX();
+//        size_t blockIndex1 = area * block1.getZ() +
+//            gridSize.getY() * block1.getY() + block1.getX();
         ZIntPoint block2 = getBlockIndex(x1, y, z);
-        size_t blockIndex2 = area * block2.getZ() +
-            gridSize.getY() * block2.getY() + block2.getX();
+//        size_t blockIndex2 = area * block2.getZ() +
+//            gridSize.getY() * block2.getY() + block2.getX();
 
-        if (!isAdded[blockIndex1] || !isAdded[blockIndex2]) {
+//        if (!isAdded[blockIndex1] || !isAdded[blockIndex2]) {
           blockObj.addSegment(
                 block1.getZ(), block1.getY(), block1.getX(), block2.getX(), false);
-          isAdded[blockIndex1] = true;
-          isAdded[blockIndex2] = true;
-        }
+//          isAdded[blockIndex1] = true;
+//          isAdded[blockIndex2] = true;
+//        }
       }
     }
   }
 
   //blockArray.append(blockSet.begin(), blockSet.end());
+
   blockObj.canonize();
 
   return blockObj;

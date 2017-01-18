@@ -5,6 +5,7 @@
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QApplication>
+#include <QElapsedTimer>
 
 #include "zrandom.h"
 #include "tz_3dgeom.h"
@@ -41,6 +42,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_dataIsInvalid(false)
   , m_interactionMode(Select)
   , m_enableCutting(true)
+  , m_enablePicking(true)
 {
   initTopologyColor();
   initTypeColor();
@@ -194,9 +196,7 @@ Z3DSwcFilter::~Z3DSwcFilter()
 
 void Z3DSwcFilter::process(Z3DEye)
 {
-  if (m_dataIsInvalid) {
-    prepareData();
-  }
+  prepareData();
 }
 
 void Z3DSwcFilter::initTopologyColor()
@@ -292,7 +292,7 @@ void Z3DSwcFilter::initTypeColor()
   } else {
     ZSwcColorScheme colorScheme;
     colorScheme.setColorScheme(ZSwcColorScheme::GMU_TYPE_COLOR);
-    for (size_t type = 0; type <= 276; ++type) {
+    for (int type = 0; type <= 276; ++type) {
       QColor color = colorScheme.getColor(type);
       m_colorsForDifferentType.push_back(
             new ZVec4Parameter(
@@ -359,69 +359,91 @@ bool Z3DSwcFilter::isVisible() const
 
 void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
-  if (pm && !m_pickingObjectsRegistered) {
-    for (size_t i=0; i<m_swcList.size(); i++) {
-      pm->registerObject(m_swcList[i]);
-      for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
-        pm->registerObject(m_decomposedNodes[i][j]);
-        m_registeredSwcTreeNodeList.push_back(m_decomposedNodes[i][j]);
-      }
-    }
-    m_registeredSwcList = m_swcList;
-    m_swcPickingColors.clear();
-    m_linePickingColors.clear();
-    m_pointPickingColors.clear();
-    m_sphereForConePickingColors.clear();
-    for (size_t i=0; i < m_swcList.size(); i++) {
-      glm::col4 pickingColor = pm->getColorFromObject(m_swcList[i]);
-      glm::vec4 swcPickingColor(
-            pickingColor[0]/255.f, pickingColor[1]/255.f, pickingColor[2]/255.f,
-          pickingColor[3]/255.f);
-      for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
-        m_swcPickingColors.push_back(swcPickingColor);
-        m_linePickingColors.push_back(swcPickingColor);
-        m_linePickingColors.push_back(swcPickingColor);
-      }
-//      m_sphereForConePickingColors = m_swcPickingColors;
-//      m_sphereForConePickingColors.push_back(fPickingColor);
-      for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
-        pickingColor = pm->getColorFromObject(m_decomposedNodes[i][j]);
-        glm::vec4 fPickingColor = glm::vec4(
-              pickingColor[0]/255.f, pickingColor[1]/255.f,
-            pickingColor[2]/255.f, pickingColor[3]/255.f);
-        m_pointPickingColors.push_back(fPickingColor);
-        m_sphereForConePickingColors.push_back(swcPickingColor);
-      }
+  if (m_enablePicking) {
+    ZOUT(LTRACE(), 5) << "start";
+    if (m_swcList.size() != m_decomposedNodes.size()) {
+      ZOUT(LTRACE(), 5) << "WARNING: Unmatched SWC data.";
     }
 
-    m_coneRenderer->setDataPickingColors(&m_swcPickingColors);
-    m_sphereRendererForCone->setDataPickingColors(&m_sphereForConePickingColors);
-    m_lineRenderer->setDataPickingColors(&m_linePickingColors);
-    m_sphereRenderer->setDataPickingColors(&m_pointPickingColors);
+    if (pm && !m_pickingObjectsRegistered) {
+      for (size_t i=0; i<m_swcList.size(); i++) {
+        pm->registerObject(m_swcList[i]);
+        for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
+          pm->registerObject(m_decomposedNodes[i][j]);
+          m_registeredSwcTreeNodeList.push_back(m_decomposedNodes[i][j]);
+        }
+      }
+      m_registeredSwcList = m_swcList;
+      m_swcPickingColors.clear();
+      m_linePickingColors.clear();
+      m_pointPickingColors.clear();
+      m_sphereForConePickingColors.clear();
+      for (size_t i=0; i < m_swcList.size(); i++) {
+        glm::col4 pickingColor = pm->getColorFromObject(m_swcList[i]);
+        glm::vec4 swcPickingColor(
+              pickingColor[0]/255.f, pickingColor[1]/255.f, pickingColor[2]/255.f,
+            pickingColor[3]/255.f);
+        for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
+          m_swcPickingColors.push_back(swcPickingColor);
+          m_linePickingColors.push_back(swcPickingColor);
+          m_linePickingColors.push_back(swcPickingColor);
+        }
+        //      m_sphereForConePickingColors = m_swcPickingColors;
+        //      m_sphereForConePickingColors.push_back(fPickingColor);
+        for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
+          pickingColor = pm->getColorFromObject(m_decomposedNodes[i][j]);
+          glm::vec4 fPickingColor = glm::vec4(
+                pickingColor[0]/255.f, pickingColor[1]/255.f,
+              pickingColor[2]/255.f, pickingColor[3]/255.f);
+          m_pointPickingColors.push_back(fPickingColor);
+          m_sphereForConePickingColors.push_back(swcPickingColor);
+        }
+      }
+
+      m_coneRenderer->setDataPickingColors(&m_swcPickingColors);
+      m_sphereRendererForCone->setDataPickingColors(&m_sphereForConePickingColors);
+      m_lineRenderer->setDataPickingColors(&m_linePickingColors);
+      m_sphereRenderer->setDataPickingColors(&m_pointPickingColors);
+    }
+
+    m_pickingObjectsRegistered = true;
+    ZOUT(LTRACE(), 5) << "end";
   }
-
-  m_pickingObjectsRegistered = true;
 }
 
 void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
 {
-  if (pm && m_pickingObjectsRegistered) {
-    for (size_t i=0; i<m_registeredSwcList.size(); i++) {
-      pm->deregisterObject(m_registeredSwcList[i]);
+  if (m_enablePicking) {
+    ZOUT(LTRACE(), 5) << "start";
+    if (pm && m_pickingObjectsRegistered) {
+      for (size_t i=0; i<m_registeredSwcList.size(); i++) {
+        pm->deregisterObject(m_registeredSwcList[i]);
+      }
+      for (size_t i=0; i<m_registeredSwcTreeNodeList.size(); i++) {
+        pm->deregisterObject(m_registeredSwcTreeNodeList[i]);
+      }
+      m_registeredSwcList.clear();
+      m_registeredSwcTreeNodeList.clear();
     }
-    for (size_t i=0; i<m_registeredSwcTreeNodeList.size(); i++) {
-      pm->deregisterObject(m_registeredSwcTreeNodeList[i]);
-    }
-    m_registeredSwcList.clear();
-    m_registeredSwcTreeNodeList.clear();
-  }
 
-  m_pickingObjectsRegistered = false;
+    m_pickingObjectsRegistered = false;
+    ZOUT(LTRACE(), 5) << "end";
+  }
+}
+
+void Z3DSwcFilter::updateData(const QList<ZSwcTree *> &swcList)
+{
+  setData(swcList);
+//  prepareData();
 }
 
 void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   m_origSwcList = swcList;
+
+  ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
 #if 0
   m_origSwcList.clear();
   if (swcList) {
@@ -429,13 +451,15 @@ void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
 #endif
-  getVisibleData();
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
 
 void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   m_origSwcList.clear();
   m_origSwcList.insert(m_origSwcList.begin(), swcList.begin(), swcList.end());
 #if 0
@@ -446,7 +470,9 @@ void Z3DSwcFilter::setData(const QList<ZSwcTree *> &swcList)
     LINFO() << getClassName() << "Read" << m_origSwcList.size() << "swcs.";
   }
 #endif
-  getVisibleData();
+  ZOUT(LTRACE(), 5) << "Load" << m_origSwcList.size() << "SWCs.";
+
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
@@ -468,18 +494,59 @@ std::vector<double> Z3DSwcFilter::getTreeBound(ZSwcTree *tree) const
   std::vector<double> nodeBound(6, 0);
 
   tn = tree->next();
-  for (; tn != tree->end(); tn = tree->next()) {
-    getTreeNodeBound(tn, nodeBound);
-    result[0] = std::min(result[0], nodeBound[0]);
-    result[1] = std::max(result[1], nodeBound[1]);
-    result[2] = std::min(result[2], nodeBound[2]);
-    result[3] = std::max(result[3], nodeBound[3]);
-    result[4] = std::min(result[4], nodeBound[4]);
-    result[5] = std::max(result[5], nodeBound[5]);
+  if (getCoordScales().x == 1.0 && getCoordScales().y == 1.0 &&
+      getCoordScales().z == 1.0 && getSizeScale() == 1.0) {
+    for (; tn != tree->end(); tn = tree->next()) {
+      double d = tn->node.d;
+      double x = tn->node.x;
+      double y = tn->node.y;
+      double z = tn->node.z;
+
+      double x0 = x - d;
+      double x1 = x + d;
+      double y0 = y - d;
+      double y1 = y + d;
+      double z0 = z - d;
+      double z1 = z + d;
+
+      if (x0 < result[0]) {
+        result[0] = x0;
+      }
+
+      if (x1 > result[1]) {
+        result[1] = x1;
+      }
+
+      if (y0 < result[2]) {
+        result[2] = y0;
+      }
+
+      if (y1 > result[3]) {
+        result[3] = y1;
+      }
+
+      if (z0 < result[4]) {
+        result[4] = z0;
+      }
+
+      if (z1 > result[5]) {
+        result[5] = z1;
+      }
+    }
+  } else {
+    for (; tn != tree->end(); tn = tree->next()) {
+      getTreeNodeBound(tn, nodeBound);
+      result[0] = std::min(result[0], nodeBound[0]);
+      result[1] = std::max(result[1], nodeBound[1]);
+      result[2] = std::min(result[2], nodeBound[2]);
+      result[3] = std::max(result[3], nodeBound[3]);
+      result[4] = std::min(result[4], nodeBound[4]);
+      result[5] = std::max(result[5], nodeBound[5]);
+    }
   }
 
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << getCoordScales().z << std::endl;
   std::cout << "Bound: " << result[4] << " " << result[5] << std::endl;
 #endif
@@ -640,26 +707,34 @@ void Z3DSwcFilter::render(Z3DEye eye)
 
 void Z3DSwcFilter::renderPicking(Z3DEye eye)
 {
-  if (!m_showSwcs.get())
-      return;
-  if (!getPickingManager())
-      return;
-  if (m_swcList.empty())
+  QMutexLocker locker(&m_dataValidMutex);
+
+  if (m_dataIsInvalid) {
     return;
-
-  if (!m_pickingObjectsRegistered)
-    registerPickingObjects(getPickingManager());
-
-  if (m_renderingPrimitive.isSelected("Normal")) {
-    m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
-  } /*else if (m_renderingPrimitive.isSelected("Cylinder"))
-    m_rendererBase->activateRenderer(m_coneRenderer);*/
-  else if (m_renderingPrimitive.isSelected("Line"))
-    m_rendererBase->activateRenderer(m_lineRenderer);
-  else /* (m_renderingPrimitive.get() == "Sphere") */{
-    m_rendererBase->activateRenderer(m_lineRenderer, m_sphereRenderer);
   }
-  m_rendererBase->renderPicking(eye);
+
+  if (m_enablePicking) {
+    if (!m_showSwcs.get())
+      return;
+    if (!getPickingManager())
+      return;
+    if (m_swcList.empty())
+      return;
+
+    if (!m_pickingObjectsRegistered)
+      registerPickingObjects(getPickingManager());
+
+    if (m_renderingPrimitive.isSelected("Normal")) {
+      m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
+    } /*else if (m_renderingPrimitive.isSelected("Cylinder"))
+    m_rendererBase->activateRenderer(m_coneRenderer);*/
+    else if (m_renderingPrimitive.isSelected("Line"))
+      m_rendererBase->activateRenderer(m_lineRenderer);
+    else /* (m_renderingPrimitive.get() == "Sphere") */{
+      m_rendererBase->activateRenderer(m_lineRenderer, m_sphereRenderer);
+    }
+    m_rendererBase->renderPicking(eye);
+  }
 }
 
 void Z3DSwcFilter::addSelectionBox(
@@ -753,6 +828,12 @@ void Z3DSwcFilter::addSelectionBox(
 
 void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
+  if (m_dataIsInvalid) {
+    return;
+  }
+
   if (m_swcList.size() > 0) {
     std::vector<glm::vec3> lines;
     for (std::vector<ZSwcTree*>::iterator it=m_swcList.begin();
@@ -812,10 +893,20 @@ void Z3DSwcFilter::renderSelectionBox(Z3DEye eye)
 
 void Z3DSwcFilter::prepareData()
 {
+  QMutexLocker locker(&m_dataValidMutex);
+
   if (!m_dataIsInvalid)
     return;
 
+  ZOUT(LTRACE(), 5) << "Prepare swc data";
+
+  QElapsedTimer timer;
+
+  timer.start();
+
   decompseSwcTree();
+
+  LINFO() << "Decomposing time:" << timer.elapsed();
 
   // get min max of type for colormap
   m_colorMap.blockSignals(true);
@@ -826,7 +917,11 @@ void Z3DSwcFilter::prepareData()
                            glm::col4(0,0,255,255), glm::col4(255,0,0,255));
   m_colorMap.blockSignals(false);
 
+  timer.restart();
+
   deregisterPickingObjects(getPickingManager());
+
+  LINFO() << "Deregistering time:" << timer.elapsed();
 
   //convert swc to format that glsl can use
   m_axisAndTopRadius.clear();
@@ -843,6 +938,8 @@ void Z3DSwcFilter::prepareData()
   int yMax = std::numeric_limits<int>::min();
   int zMin = std::numeric_limits<int>::max();
   int zMax = std::numeric_limits<int>::min();
+
+  timer.restart();
 
   bool checkRadius = m_renderingPrimitive.isSelected("Normal") /*||
       m_renderingPrimitive.isSelected("Cylinder")*/;
@@ -927,6 +1024,8 @@ void Z3DSwcFilter::prepareData()
       }
     }
   }
+
+  LINFO() << "Premitive time:" << timer.elapsed();
   /*
   for (size_t i=0; i<m_origSwcList.size(); ++i) {
     m_sourceColorMapper.insert(std::pair<std::string, size_t>(m_origSwcList[i]->source(), 0));
@@ -972,7 +1071,7 @@ void Z3DSwcFilter::prepareData()
     allSources.insert(m_origSwcList[i]);
     QString guiname = QString("Swc %1 Color").arg(i + 1);
     if (m_individualTreeColorMapper.find(m_origSwcList[i]) == m_individualTreeColorMapper.end()) {
-      QColor color = colorScheme.getColor(i);
+      QColor color = colorScheme.getColor((uint64_t) i);
       m_individualTreeColorMapper[m_origSwcList[i]] = new ZVec4Parameter(
             guiname,
             glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f));
@@ -1027,6 +1126,8 @@ void Z3DSwcFilter::prepareData()
   //if (numOfPrevColor != index)   // number of swc changed
   //  updateWidgetsGroup();
   m_dataIsInvalid = false;
+
+  ZOUT(LTRACE(), 5) << "SWC data ready";
 }
 
 glm::vec4 Z3DSwcFilter::getColorByDirection(Swc_Tree_Node *tn)
@@ -1366,6 +1467,10 @@ void Z3DSwcFilter::adjustWidgets()
 
 void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 {
+  if (!m_enablePicking) {
+    return;
+  }
+
   if (m_swcList.empty())
     return;
   if (!getPickingManager())
@@ -1433,7 +1538,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
         } else {
           emit treeNodeSelected(m_pressedSwcTreeNode, appending);
           if (e->modifiers() == Qt::ShiftModifier) {
-            qDebug() << "treeNodeSelectConnection emitted";
+            ZOUT(LTRACE(), 5) << "treeNodeSelectConnection emitted";
             emit treeNodeSelectConnection(m_pressedSwcTreeNode);
           } else if (e->modifiers() == Qt::AltModifier ||
                      e->modifiers() == (Qt::AltModifier | Qt::ControlModifier)) {
@@ -1534,7 +1639,9 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
 void Z3DSwcFilter::updateSwcVisibleState()
 {
-  getVisibleData();
+  QMutexLocker locker(&m_dataValidMutex);
+
+  loadVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
 }
@@ -1580,7 +1687,9 @@ void Z3DSwcFilter::decompseSwcTree()
     }
   }
 
-  QtConcurrent::run(this, &Z3DSwcFilter::sortNodeList);
+  if (m_enablePicking) {
+    QtConcurrent::run(this, &Z3DSwcFilter::sortNodeList);
+  }
 }
 
 void Z3DSwcFilter::sortNodeList()
@@ -1683,7 +1792,7 @@ void Z3DSwcFilter::updateWidgetsGroup()
   }
 }
 
-void Z3DSwcFilter::getVisibleData()
+void Z3DSwcFilter::loadVisibleData()
 {
   m_swcList.clear();
   for (size_t i=0; i<m_origSwcList.size(); ++i) {

@@ -2,14 +2,22 @@
 #Build neurolabi
 NEUROLABI_DIR = $${PWD}/..
 CONFIG(debug, debug|release) {
-    TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
+    contains(CONFIG, sanitize) {
+      TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_sanitize.a
+    } else {
+      TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
+    }
 } else {
     TargetFile  = $${NEUROLABI_DIR}/c/lib/libneurolabi.a
 }
 
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library
+    contains(CONFIG, sanitize) {
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize
+    } else {
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library
+    }
 #make lib VERSION=
 } else {
     neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release

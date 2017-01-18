@@ -6,11 +6,48 @@
 #include "zjsonvalue.h"
 #include "zstring.h"
 #include "dvid/zdvidtarget.h"
+#include "zjsonparser.h"
+#include "dvid/zdvidversiondag.h"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
 #include "neutube.h"
 
+libdvid::BinaryDataPtr ZDvid::MakeRequest(
+    libdvid::DVIDConnection &connection,
+    const std::string &endpoint, const std::string &method,
+    libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
+    int &statusCode)
+{
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  } else if (method == "GET") {
+    connMethod = libdvid::GET;
+  }
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  try {
+    std::string error_msg;
+
+    //  qDebug() << "address: " << address;
+    //  qDebug() << "path: " << qurl.path();
+
+    statusCode = connection.make_request(
+          endpoint, connMethod, payload, results, error_msg, type);
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    statusCode = e.getStatus();
+  }
+
+  return results;
+}
 
 libdvid::BinaryDataPtr ZDvid::MakeRequest(
     const std::string &url, const std::string &method,
@@ -67,6 +104,12 @@ libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
                      statusCode);
 }
 
+void ZDvid::MakeHeadRequest(const std::string &url, int &statusCode)
+{
+  MakeRequest(url, "HEAD", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+              statusCode);
+}
+
 ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
@@ -82,6 +125,32 @@ ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
   return MakeDvidNodeService(target.getAddressWithPort(),
                              target.getUuid());
 }
+
+ZSharedPointer<libdvid::DVIDNodeService> ZDvid::MakeDvidNodeService(
+    const libdvid::DVIDNodeService *service)
+{
+  if (service != NULL) {
+    return ZSharedPointer<libdvid::DVIDNodeService>(
+          new libdvid::DVIDNodeService(*service));
+  }
+
+  return ZSharedPointer<libdvid::DVIDNodeService>();
+}
+
+ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
+    const std::string &address)
+{
+  try {
+    return ZSharedPointer<libdvid::DVIDConnection>(
+          new libdvid::DVIDConnection(
+            address, GET_FLYEM_CONFIG.getUserName(),
+            NeutubeConfig::GetSoftwareName()));
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    return ZSharedPointer<libdvid::DVIDConnection>();
+  }
+}
+
 
 #if defined(_ENABLE_LOWTIS_)
 ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
@@ -186,4 +255,48 @@ libdvid::BinaryDataPtr ZDvid::Post(
   return response;
 }
 #endif
+
 #endif
+
+bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
+                        const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
+{
+  bool valid = false;
+
+  const char *instanceKey = "DataInstances";
+  if (infoJson.hasKey(instanceKey)) {
+    ZJsonObject instanceJson(infoJson.value(instanceKey));
+    if (instanceJson.hasKey(data.c_str())) {
+      ZJsonObject dataJson(instanceJson.value(data.c_str()));
+      if (dataJson.hasKey("Base")) {
+        ZJsonObject baseJson(dataJson.value("Base"));
+        std::string repoUuid = ZJsonParser::stringValue(baseJson["RepoUUID"]);
+        if (repoUuid.size() > 4) {
+          repoUuid = repoUuid.substr(0, 4);
+          if (repoUuid == target.getUuid()) {
+            valid = true;
+          } else if (dag.isAncester(target.getUuid(), repoUuid)) {
+            valid = true;
+          }
+        }
+      }
+    }
+  }
+
+  return valid;
+}
+
+bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
+{
+  bool matched = false;
+  if (!uuid1.empty() && !uuid2.empty()) {
+    if (ZString(uuid1).startsWith(uuid2)){
+      matched = true;
+    } else if (ZString(uuid2).startsWith(uuid1)) {
+      matched = true;
+    }
+  }
+
+  return matched;
+}
+

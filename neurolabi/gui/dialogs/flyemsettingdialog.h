@@ -24,6 +24,8 @@ private:
   std::string getNeuTuServer() const;
   std::string getConfigPath() const;
 
+  bool usingDefaultConfig() const;
+
   void init();
 
   void connectSignalSlot();

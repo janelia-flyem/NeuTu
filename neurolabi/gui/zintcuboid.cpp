@@ -161,6 +161,11 @@ bool ZIntCuboid::contains(const ZIntPoint &pt) const
   return contains(pt.getX(), pt.getY(), pt.getZ());
 }
 
+bool ZIntCuboid::contains(const ZIntCuboid &box) const
+{
+  return contains(box.getFirstCorner()) && contains(box.getLastCorner());
+}
+
 bool ZIntCuboid::containYZ(int y, int z) const
 {
   return IS_IN_CLOSE_RANGE(y, m_firstCorner.getY(), m_lastCorner.getY()) &&
@@ -307,6 +312,20 @@ ZIntPoint ZIntCuboid::getCenter() const
 {
   return getFirstCorner() +
       ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
+}
+
+ZJsonArray ZIntCuboid::toJsonArray() const
+{
+  ZJsonArray json;
+  json.append(getFirstCorner().getX());
+  json.append(getFirstCorner().getY());
+  json.append(getFirstCorner().getZ());
+
+  json.append(getLastCorner().getX());
+  json.append(getLastCorner().getY());
+  json.append(getLastCorner().getZ());
+
+  return json;
 }
 
 void ZIntCuboid::loadJson(const ZJsonArray &json)

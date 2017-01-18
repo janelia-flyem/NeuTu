@@ -7,7 +7,6 @@
 #cmakedefine HAVE_LIBJANSSON
 
 #cmakedefine HAVE_STDDEF_H
-#cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_STDLIB_H
 #cmakedefine HAVE_STRING_H
 #cmakedefine HAVE_STRINGS_H
@@ -37,6 +36,8 @@
 
 /* Define to 'inline', '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef _MSC_VER
 #ifndef __cplusplus
 #define inline @INLINE_KEYWORD@
+#endif
 #endif

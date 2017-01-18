@@ -318,7 +318,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(
 }
 
 ZSwcTree* ZSwcFactory::CreateSwc(
-    const ZPointArray &pointArray, double radius, bool isConnected)
+    const std::vector<ZPoint> &pointArray, double radius, bool isConnected)
 {
   ZSwcTree *tree = new ZSwcTree;
   tree->useCosmeticPen(true);
@@ -326,14 +326,43 @@ ZSwcTree* ZSwcFactory::CreateSwc(
   Swc_Tree_Node *root = tree->forceVirtualRoot();
   Swc_Tree_Node *parent = root;
 
-  for (ZPointArray::const_iterator iter = pointArray.begin();
+  for (std::vector<ZPoint>::const_iterator iter = pointArray.begin();
        iter != pointArray.end(); ++iter) {
     const ZPoint &pt = *iter;
     Swc_Tree_Node *tn = New_Swc_Tree_Node();
 
     SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
     SwcTreeNode::setRadius(tn, radius);
-    SwcTreeNode::setParent(tn, parent);
+    SwcTreeNode::setFirstChild(parent, tn);
+//    SwcTreeNode::setParent(tn, parent);
+    if (isConnected) {
+      parent = tn;
+    }
+  }
+
+  tree->resortId();
+
+  return tree;
+}
+
+ZSwcTree* ZSwcFactory::CreateSwc(
+    const std::vector<ZWeightedPoint> &pointArray, bool isConnected)
+{
+  ZSwcTree *tree = new ZSwcTree;
+  tree->useCosmeticPen(true);
+
+  Swc_Tree_Node *root = tree->forceVirtualRoot();
+  Swc_Tree_Node *parent = root;
+
+  for (std::vector<ZWeightedPoint>::const_iterator iter = pointArray.begin();
+       iter != pointArray.end(); ++iter) {
+    const ZWeightedPoint &pt = *iter;
+    Swc_Tree_Node *tn = New_Swc_Tree_Node();
+
+    SwcTreeNode::setPos(tn, pt.x(), pt.y(), pt.z());
+    SwcTreeNode::setRadius(tn, pt.weight());
+    SwcTreeNode::setFirstChild(parent, tn);
+//    SwcTreeNode::setParent(tn, parent);
     if (isConnected) {
       parent = tn;
     }
@@ -490,22 +519,51 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  size_t volume = obj.getBoundBox().getVolume();
+  ZIntCuboid box = obj.getBoundBox();
+//  size_t voxelNumber = obj.getVoxelNumber();
 
-  int intv = 0;
+  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+                                    ZObject3dScan::MAX_SPAN_HINT)));
+
+  size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
+      ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
+
   if (volume > MAX_INT32) {
-    intv = iround(Cube_Root((double) volume / MAX_INT32));
+    intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
+    /*
+    if (intv < 0) {
+      intv = 0;
+    }
+    */
   }
 
   ZStack *stack = NULL;
   std::cout << "Creating object mask ..." << "ds: " << intv <<  std::endl;
   tic();
+
+  ZIntPoint dsIntv = obj.getDsIntv();
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsample(intv, intv, intv);
-    stack = obj2.toStackObject();
+    intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
+                                  ZObject3dScan::MAX_SPAN_HINT)));
+    if (intv > 0) {
+      obj2.downsample(intv, intv, intv);
+    }
+
+    dsIntv = obj2.getDsIntv();
+    stack = obj2.toStackObjectWithMargin(1, 1);
   } else {
-    stack = obj.toStackObject();
+    intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+                                  ZObject3dScan::MAX_SPAN_HINT)));
+    if (intv > 0) {
+      ZObject3dScan obj2 = obj;
+      obj2.downsample(intv, intv, intv);
+      dsIntv = obj2.getDsIntv();
+      stack = obj2.toStackObjectWithMargin(1, 1);
+    } else {
+      stack = obj.toStackObjectWithMargin(1, 1);
+    }
   }
   std::cout << "Preparing for stack time: " << toc() << std::endl;
 
@@ -514,7 +572,9 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     tree = CreateSurfaceSwc(*stack, sparseLevel);
     if (tree != NULL) {
       tree->setColor(obj.getColor());
-      tree->rescale(intv + 1, intv + 1, intv + 1);
+      tree->rescale(dsIntv.getX() + 1,
+                    dsIntv.getY() + 1,
+                    dsIntv.getZ() + 1);
     } else {
       LWARN() << "Failed to generate body surface for sparsevol: "
               << obj.getVoxelNumber() << " voxels";
@@ -547,8 +607,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
     int conn = 6;
     size_t offset = 0;
     int neighbor[26];
-    int is_in_bound[26];
-    int n_in_bound;
+//    int is_in_bound[26];
+    int n_in_bound = conn;
     int count = 0;
 
     tree = new ZSwcTree();
@@ -564,19 +624,19 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
 //          out_array[offset] = 0;
           uint8_t in_value = in_array[offset];
           if (in_value > 0) {
-            n_in_bound = Stack_Neighbor_Bound_Test_S(
-                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
+//            n_in_bound = Stack_Neighbor_Bound_Test_S(
+//                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
             bool isSurface = false;
-            if (n_in_bound == conn) {
+//            if (n_in_bound == conn) {
               for (int n = 0; n < n_in_bound; n++) {
                 if (in_array[offset + neighbor[n]] != in_value) {
                   isSurface = true;
                   break;
                 }
               }
-            } else {
-              isSurface = true;
-            }
+//            } else {
+//              isSurface = true;
+//            }
 
             if (isSurface) {
               if (count++ % sparseLevel == 0) {

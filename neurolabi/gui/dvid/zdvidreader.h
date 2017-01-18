@@ -5,6 +5,8 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QImage>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include <string>
 #include <vector>
@@ -20,6 +22,11 @@
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidurl.h"
+
+
+#if defined(_ENABLE_LOWTIS_)
+#include <lowtis/LowtisConfig.h>
+#endif
 
 class ZDvidFilter;
 class ZArray;
@@ -38,6 +45,7 @@ class ZFlyEmToDoItem;
 
 namespace libdvid{
 class DVIDNodeService;
+class DVIDConnection;
 }
 
 namespace lowtis {
@@ -56,10 +64,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
-  /*!
-   * \brief Get the status code of the latest request (NOT functioning yet)
-   * \return
-   */
+  void clear();
+
   int getStatusCode() const;
   void setStatusCode(int code) const;
 
@@ -70,14 +76,31 @@ public:
    */
   bool isReady() const;
 
+  std::string readNodeInfo() const;
+
+  ZDvid::ENodeStatus getNodeStatus() const;
+
   //ZSwcTree* readSwc(const QString &key);
-  ZSwcTree *readSwc(uint64_t bodyId);
-  ZObject3dScan readBody(uint64_t bodyId);
-  ZObject3dScan* readBody(uint64_t bodyId, ZObject3dScan *result);
+  ZSwcTree *readSwc(uint64_t bodyId) const;
+//  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
+  ZObject3dScan* readBody(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, int xIntv, int yIntv, int zIntv,
+      bool canonizing, ZObject3dScan *result);
+
   ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
-                          ZObject3dScan *result);
+                          bool canonizing, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
+                          bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
+  ZObject3dScan* readBody(
+      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+      ZObject3dScan *result) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -85,7 +108,7 @@ public:
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
-      int x0, int y0, int z0, int width, int height, int depth);
+      int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
   ZStack* readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
@@ -117,23 +140,49 @@ public:
   ZIntCuboid readBoundBox(int z);
 
   ZDvidInfo readGrayScaleInfo() const;
+  ZDvidInfo readLabelInfo() const;
+
+  ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
   ZJsonObject readInfo() const;
 
   bool hasData(const std::string &dataName) const;
+  std::string getType(const std::string &dataName) const;
 
   ZArray* readLabels64(const std::string &dataName, int x0, int y0, int z0,
                        int width, int height, int depth) const;
   ZArray* readLabels64(int x0, int y0, int z0,
-                       int width, int height, int depth) const;
-  ZArray* readLabels64(const ZIntCuboid &box);
+                       int width, int height, int depth, int zoom = 0) const;
+  ZArray* readLabels64(const ZIntCuboid &box, int zoom = 0);
 
+  /*!
+   * \brief Read labels in the zoomed space
+   *
+   * \param x0 zoomed X
+   * \param y0 zoomed Y
+   * \param z0 zoomed Z
+   * \param width zoomed width
+   * \param height zoomed height
+   * \param depth zoomed depth
+   * \param zoom zoom level
+   * \return
+   */
+  ZArray* readLabels64Raw(
+      int x0, int y0, int z0,
+      int width, int height, int depth, int zoom = 0) const;
+
+#if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
-      int width, int height) const;
+                             int width, int height, int zoom = 0) const;
+#endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
                          int dim1, int dim2, int width, int height);
                          */
+
+  ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -152,8 +201,12 @@ public:
 
   uint64_t readMaxBodyId();
 
-  uint64_t readBodyIdAt(int x, int y, int z);
-  uint64_t readBodyIdAt(const ZIntPoint &pt);
+  void updateMaxLabelZoom();
+  void updateMaxLabelZoom(
+      const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+
+  uint64_t readBodyIdAt(int x, int y, int z) const;
+  uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(
       const std::vector<ZIntPoint> &ptArray) const;
   template <typename InputIterator>
@@ -172,6 +225,7 @@ public:
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
 
   ZObject3dScan readRoi(const std::string &dataName);
+  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
@@ -203,16 +257,16 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER) const;
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>
@@ -232,6 +286,7 @@ public:
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
+  ZIntPoint readBodyPosition(uint64_t bodyId) const;
 
   ZJsonObject readSkeletonConfig() const;
 
@@ -242,7 +297,17 @@ public:
   bool good() const;
 
   std::string readMasterNode() const;
+  std::vector<std::string> readMasterList() const;
+
+  enum EReadOption {
+    READ_CURRENT, READ_TRACE_BACK
+  };
+
+  ZJsonObject readDefaultDataSetting(EReadOption option) const;
+
+//  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
+  static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> getService() const {
@@ -250,36 +315,66 @@ public:
   }
 #endif
 
+  bool refreshLabelBuffer();
+
+  void testApiLoad();
+
 signals:
   void readingDone();
 
 public slots:
-  void slotTest();
-  void startReading();
-  void endReading();
+//  void slotTest();
+//  void startReading();
+//  void endReading();
 
   std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
+  ZDvidReader(const ZDvidReader&);
+  ZDvidReader& operator=(const ZDvidReader&);
+
   static std::vector<std::pair<int, int> > partitionStack(
       int x0, int y0, int z0, int width, int height, int depth);
-  bool isReadingDone();
-  void waitForReading();
+//  bool isReadingDone();
+//  void waitForReading();
   bool startService();
 
   void init();
 
+  std::vector<ZStack*> readGrayScaleBlockOld(
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
+      int blockNumber);
+
+  void clearBuffer() const;
+
+  static std::string GetMasterNodeFromBuffer(
+      const ZDvidBufferReader &bufferReader);
+  static std::vector<std::string> GetMasterListFromBuffer(
+      const ZDvidBufferReader &bufferReader);
+  ZJsonObject readDefaultDataSettingCurrent() const;
+  ZJsonObject readDefaultDataSettingTraceBack() const;
+  void loadDefaultDataSetting();
+  void loadDvidDataSetting(const ZJsonObject obj);
+
 protected:
-  QEventLoop *m_eventLoop;
+//  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
-  QTimer *m_timer;
-  bool m_isReadingDone;
+//  QTimer *m_timer;
+//  bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
+
+  mutable ZDvidBufferReader m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZSharedPointer<libdvid::DVIDNodeService> m_service;
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  QMutex m_serviceMutex;
+#endif
+
+#if defined(_ENABLE_LOWTIS_)
+  mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
   mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
 #endif
 
@@ -306,7 +401,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   std::vector<uint64_t> bodyArray;
 
   if (first != last) {
-    ZDvidBufferReader bufferReader;
+    ZDvidBufferReader &bufferReader = m_bufferReader;
 #if defined(_ENABLE_LIBDVIDCPP_)
     bufferReader.setService(m_service);
 #endif

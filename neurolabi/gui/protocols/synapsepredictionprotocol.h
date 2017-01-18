@@ -2,7 +2,9 @@
 #define SYNAPSEPREDICTIONPROTOCOL_H
 
 #include <QDialog>
+#include <QStandardItemModel>
 
+#include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zintcuboid.h"
@@ -19,12 +21,11 @@ class SynapsePredictionProtocol : public ProtocolDialog
     Q_OBJECT
 
 public:
-    explicit SynapsePredictionProtocol(QWidget *parent = 0);
+    explicit SynapsePredictionProtocol(QWidget *parent = 0, std::string variation = VARIATION_REGION);
     ~SynapsePredictionProtocol();
     bool initialize();
-    std::string getName();
-
-public:
+    static const std::string VARIATION_REGION;
+    static const std::string VARIATION_BODY;
     void processSynapseVerification(int x, int y, int z, bool verified);
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -45,42 +46,57 @@ private slots:
     void onFirstButton();
     void onPrevButton();
     void onNextButton();
-#ifdef _DON_
-    void onMarkedButton();
-    void onSkipButton();
-#endif
+
+    void onReviewFirstButton();
+    void onReviewPrevButton();
+    void onReviewNextButton();
+    void onLastVerifiedButton();
+
     void onGotoButton();
+    void onFinishCurrentButton();
     void onExitButton();
     void onCompleteButton();
     void onRefreshButton();
 
+    void onDoubleClickSitesTable(QModelIndex index);
+
 private:
-    static const std::string PROTOCOL_NAME;
-    static const std::string KEY_PENDING;
-    static const std::string KEY_FINISHED;
+    static const std::string KEY_VARIATION;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
-    static const int fileVversion;
+    static const std::string KEY_BODYID;
+    static const int fileVersion;
+
+    enum SitesTableColumns {
+        SITES_STATUS_COLUMN,
+        SITES_CONFIDENCE_COLUMN,
+        SITES_X_COLUMN,
+        SITES_Y_COLUMN,
+        SITES_Z_COLUMN
+    };
 
     Ui::SynapsePredictionProtocol *ui;
+    QStandardItemModel * m_sitesModel;
+    std::string m_variation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
-#ifdef _DON_
-    ZIntPoint m_currentPoint;
-#else
-    int m_currentIndex; //Index for locating in pending list
-#endif
+    int m_currentPendingIndex; //Index for locating in pending list
+    int m_currentFinishedIndex;
     ZIntCuboid m_protocolRange;
+    uint64_t  m_bodyID;
 
     void saveState();
     void updateLabels();
     void gotoCurrent();
-#ifdef _DON_
-    ZIntPoint getNextPoint(ZIntPoint point);
-    ZIntPoint getPrevPoint(ZIntPoint point);
-#endif
-    void loadInitialSynapseList(ZIntCuboid volume, QString roi);
+    void gotoCurrentFinished();
     void loadInitialSynapseList();
+    void setSitesHeaders(QStandardItemModel * model);
+    void clearSitesTable();
+    void updateSitesTable(std::vector<ZDvidSynapse>);
+    std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
+    static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
+    static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
+    void variationError(std::string variation);
 
 };
 

@@ -19,7 +19,6 @@ public:
     explicit DoNThingsProtocol(QWidget *parent = 0);
     ~DoNThingsProtocol();    
     bool initialize();
-    std::string getName();
 
 signals:
     void protocolCompleting();
@@ -37,7 +36,6 @@ private slots:
     void onCompleteButton();
 
 private:
-    static const std::string PROTOCOL_NAME;
     static const std::string KEY_PENDING;
     static const std::string KEY_FINISHED;
 

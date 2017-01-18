@@ -17,7 +17,8 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Choose protocol to open or start</string>
+      <string>Choose protocol to start or load
+</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

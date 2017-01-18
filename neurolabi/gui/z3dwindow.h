@@ -7,10 +7,13 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QAction>
+#include <QMutex>
+
 #include <vector>
 #include <set>
 #include <map>
 #include <QDir>
+
 #include "zparameter.h"
 #include "znumericparameter.h"
 #include "zglmutils.h"
@@ -19,6 +22,7 @@
 #include "z3dvolumeraycasterrenderer.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
+#include "z3ddef.h"
 //#include "zstackviewparam.h"
 
 
@@ -53,57 +57,9 @@ class ZRect2d;
 class ZROIWidget;
 class ZActionLibrary;
 class ZMenuFactory;
-
-class Z3DTabWidget : public QTabWidget
-{
-    Q_OBJECT
-public:
-    Z3DTabWidget(QWidget* parent = 0);
-    ~Z3DTabWidget();
-    QTabBar* tabBar();
-
-    void addWindow(int index, Z3DWindow *window, const QString &title);
-    int getTabIndex(int index);
-    int getRealIndex(int index);
-
-public slots:
-    void closeWindow(int index);
-    void updateTabs(int index);
-    void updateWindow(int index);
-    void closeAllWindows();
-
-public slots:
-    void resetCamera();
-    void setXZView();
-    void setYZView();
-
-    void settingsPanel(bool v);
-    void objectsPanel(bool v);
-    void roiPanel(bool v);
-    void showGraph(bool v);
-
-    void resetSettingsButton();
-    void resetObjectsButton();
-    void resetROIButton();
-
-    void resetCameraCenter();
-
-signals:
-    void buttonShowGraphToggled(bool);
-    void buttonSettingsToggled(bool);
-    void buttonObjectsToggled(bool);
-    void buttonROIsToggled(bool);
-    void buttonROIsClicked();
-
-    void tabIndexChanged(int);
-
-private:
-    bool buttonStatus[4][4]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects 3-rois
-    bool windowStatus[4]; // 0-coarsebody 1-body 2-skeleton 3-synapse false-closed true-opened
-    int tabLUT[4]; // tab index look up table
-    int preIndex;
-
-};
+class ZJsonObject;
+class Z3DGeometryFilter;
+class Z3DTabWidget;
 
 class Z3DMainWindow : public QMainWindow
 {
@@ -156,7 +112,8 @@ public:
   };
 
   enum ERendererLayer {
-    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_VOLUME, LAYER_TODO
+    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
+    LAYER_TODO
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -173,6 +130,9 @@ public: //Creators
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
                          Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
+public: //utilties
+  static std::string GetLayerString(ERendererLayer layer);
+
 public: //properties
   void setZScale(ERendererLayer layer, double scale);
   void setScale(ERendererLayer layer, double sx, double sy, double sz);
@@ -182,6 +142,19 @@ public: //properties
   using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setVisible(ERendererLayer layer, bool visible);
   bool isVisible(ERendererLayer layer) const;
+
+  void configure(const ZJsonObject &obj);
+
+  NeuTube3D::EWindowType getWindowType() const {
+    return m_windowType;
+  }
+
+  void setWindowType(NeuTube3D::EWindowType type) {
+    m_windowType = type;
+  }
+
+  void writeSettings();
+  void readSettings();
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -203,6 +176,9 @@ public: //Components
   Z3DRendererBase* getRendererBase(ERendererLayer layer);
 
   Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
+
+  Z3DGeometryFilter* getFilter(ERendererLayer layer) const;
+
   inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
   inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
   inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_todoFilter; }
@@ -260,6 +236,14 @@ public:
 public:
   //Control panel setup
 
+public: //external signal call
+  void emitAddTodoMarker(int x, int y, int z, bool checked);
+  void emitAddToMergeMarker(int x, int y, int z);
+  void emitAddToSplitMarker(int x, int y, int z);
+  void emitAddTodoMarker(const ZIntPoint &pt, bool checked);
+  void emitAddToMergeMarker(const ZIntPoint &pt);
+  void emitAddToSplitMarker(const ZIntPoint &pt);
+
 protected:
 
 private:
@@ -272,6 +256,10 @@ private:
   void createDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
+
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
 
   // init 3D view
   void init(EInitMode mode = INIT_NORMAL);
@@ -295,7 +283,9 @@ signals:
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
   void addingTodoMarker(int x, int y, int z, bool checked);
-  
+  void addingToMergeMarker(int x, int y, int z);
+  void addingToSplitMarker(int x, int y, int z);
+
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
   void resetCameraCenter();
@@ -403,6 +393,8 @@ public slots:
   void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
   void addTodoMarker();
+  void addToMergeMarker();
+  void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
 
@@ -454,6 +446,10 @@ private:
   void updateTodoList();
 
 private:
+  NeuTube3D::EWindowType m_windowType;
+
+  QList<ERendererLayer> m_layerList;
+
   // menu
   std::map<QString, QMenu*> m_contextMenuGroup;
   QMenu *m_mergedContextMenu;
@@ -575,6 +571,8 @@ private:
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar;
+
+  mutable QMutex m_filterMutex;
 };
 
 #endif // Z3DWINDOW_H

@@ -68,6 +68,7 @@ public:
 
   virtual ZStack* toStack() const { return NULL; }
   virtual int getLabel() const { return 0; }
+  virtual void setLabel(int /*label*/) {}
   virtual QString getTypeName() const { return "Unknown"; }
   virtual ZSwcTree* getSwcDecoration() const { return NULL; }
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
@@ -160,6 +161,16 @@ public:
    */
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
+  /*!
+   * \brief Check if the player list contains certain data pointer
+   *
+   * \param data A pointer to check. It can be a pointer that has already been
+   *        freed.
+   * \return true iff the list contains \a data
+   */
+  bool contains(const ZStackObject *data);
+  bool containsUnsync(const ZStackObject *data);
+
   void clear();
   void clearUnsync();
 
@@ -205,6 +216,7 @@ public:
   void labelStack(ZStack*stack) const;
   ZStack* toStack() const;
   int getLabel() const;
+  void setLabel(int label);
   QString getTypeName() const;
   ZJsonObject toJsonObject() const;
 
@@ -233,13 +245,14 @@ public:
         const int *offset, int xIntv, int yIntv, int zIntv) const;
 
   int getLabel() const;
+  void setLabel(int label);
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
   ZJsonObject toJsonObject() const;
   QString getTypeName() const { return "Object3d"; }
 
   const ZObject3d *getCompleteData() const;
-
+  ZObject3d *getCompleteData();
 };
 
 /***************************************************/

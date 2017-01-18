@@ -17,6 +17,9 @@ class ZDvidTarget;
 class ZDvidReader;
 class ZStackViewParam;
 class ZObject3dScan;
+class QPointF;
+class QComboBox;
+class ZStroke2d;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -41,6 +44,19 @@ void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,
     const ZDvidInfo& dvidInfo);
 
+void MakeTriangle(const QRectF &rect, QPointF *ptArray,
+                  NeuTube::ECardinalDirection direction);
+void MakeStar(const QRectF &rect, QPointF *ptArray);
+void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
+
+void PrepareBodyStatus(QComboBox *box);
+
+QString GetMemoryUsage();
+
+QString ReadLastLines(const QString &filePath, int maxCount);
+
+ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
+std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 class HackathonEvaluator {
 public:

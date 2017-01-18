@@ -3,6 +3,9 @@
  * @date 10-Aug-2012
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "tz_utilities.h"
 #include "tz_image_io.h"
 #include "tz_stack_lib.h"
@@ -11,11 +14,36 @@ enum {
   DS_NEAREST, DS_MAX, DS_MEAN
 };
 
+static int help(int argc, char *argv[], char *spec[])
+{
+  if (argc == 2) {
+    if (strcmp(argv[1], "--help") == 0) {
+      printf("\nimds ");
+      Print_Argument_Spec(spec);
+      printf("\nDetails\n");
+      printf("input: input image file.\n");
+      printf("-o: output image file.\n");
+      printf("--intv: downsampling interval.\n");
+      printf("--option: downsampling option: max, mean, nearest.\n");
+      printf("--fgc: do not mix background pixels while downsampling.\n");
+
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[])
 {
   static char *Spec[] = {"<input:string> -o <string> --intv <int> <int> <int>",
-    "[--option <string>] [--fgc]",
+    "[--option <string>] [--fgc] [--help]",
     NULL};
+
+  if (help(argc, argv, Spec) == 1) {
+    return 0;
+  }
+
   Process_Arguments(argc, argv, Spec, 1);
 
   Stack *stack = Read_Stack_U(Get_String_Arg("input"));

@@ -20,6 +20,10 @@ public:
 
   void setDvidDialog(ZDvidDialog *dlg);
 
+  const ZDvidTarget& getDvidTarget() const {
+    return m_dvidTarget;
+  }
+
 private slots:
   void on_dvidPushButton_clicked();
 
@@ -27,8 +31,15 @@ private slots:
 
   void on_contrastPushButton_clicked();
 
+  void on_addMasterPushButton_clicked();
+
+private:
+  void updateDvidTarget();
+
 private:
   Ui::DvidOperateDialog *ui;
+
+  ZDvidTarget m_dvidTarget;
 
   ZDvidDialog *m_dvidDlg;
   ZContrastProtocalDialog *m_contrastDlg;

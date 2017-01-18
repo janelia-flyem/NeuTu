@@ -18,20 +18,28 @@ public:
     m_window = window;
   }
 
-  inline bool isSwcChanged() {
+  inline bool isSwcChanged() const {
     return m_isSwcChanged;
   }
 
-  inline bool isVolumeChanged() {
+  inline bool isVolumeChanged() const {
     return m_isVolumeChanged;
   }
 
-  inline bool isPunctaChanged() {
+  inline bool isPunctaChanged() const {
     return m_isPunctaChanged;
+  }
+
+  inline bool isCubeArrayChanged() const {
+    return m_isCubeArrayChanged;
   }
 
   inline void setSwcChanged(bool changed) {
     m_isSwcChanged = changed;
+  }
+
+  inline void setCubeArrayChanged(bool changed) {
+    m_isCubeArrayChanged = changed;
   }
 
   inline void setVolumeChanged(bool changed) {
@@ -56,6 +64,7 @@ private:
   bool m_isSwcChanged;
   bool m_isVolumeChanged;
   bool m_isPunctaChanged;
+  bool m_isCubeArrayChanged;
 };
 
 #endif // ZMOVIESTAGE_H

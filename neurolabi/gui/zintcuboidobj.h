@@ -43,6 +43,10 @@ public:
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }
 
+  void setCuboid(const ZIntCuboid &box) {
+    m_cuboid = box;
+  }
+
   void join(const ZIntCuboid &cuboid);
 
 

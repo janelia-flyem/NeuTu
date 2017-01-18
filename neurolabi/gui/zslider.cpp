@@ -1,8 +1,11 @@
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 
+#include "neutubeconfig.h"
+#include "QsLog.h"
 #include "zslider.h"
 
 #define USE_TOOL_BUTTON 1
@@ -144,7 +147,7 @@ void ZSlider::setValueQuietly(int value)
   if (m_slider->value() != value) {
     disconnect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
     m_slider->setValue(value);
-    qDebug() << "Value: " << value << '\n';
+    ZOUT(LTRACE(), 5) << "Value: " << value << '\n';
     connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
   }
 }

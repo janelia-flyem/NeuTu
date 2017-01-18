@@ -134,6 +134,14 @@ public:
 
   void setSliceAxis(NeuTube::EAxis axis);
 
+  bool paintingRoi() const {
+    return m_paintingRoi;
+  }
+
+  void setPaintingRoi(bool on) {
+    m_paintingRoi = on;
+  }
+
   /*
   void updateZoomOffset(int cx, int cy, int r0);
   void updateZoomOffset(int cx, int cy, int wx, int wy);
@@ -146,7 +154,7 @@ public:
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   virtual bool customKeyProcess(QKeyEvent *event);
-  virtual void processCustomOperator(const ZStackOperator &op,
+  virtual bool processCustomOperator(const ZStackOperator &op,
                                      ZInteractionEvent *e  = NULL);
 
   void createActions();
@@ -295,6 +303,8 @@ public:
 public: //test functions
   void testBiocytinProjectionMask();
 
+  void processEvent(ZInteractionEvent &event);
+
 public slots:
   void addDecoration(ZStackObject *obj, bool tail = true);
   void removeLastDecoration(ZStackObject *obj);
@@ -359,6 +369,8 @@ public slots:
 
   void notifyBodySplitTriggered();
   void notifyBodyDecomposeTriggered();
+  void notifyBodyCropTriggered();
+  void notifyBodyChopTriggered();
   void notifyBodyMergeTriggered();
   void notifyBodyUnmergeTriggered();
   void notifyBodyAnnotationTriggered();
@@ -379,6 +391,8 @@ public slots:
 //  void turnOnStroke();
   void turnOnActiveObject(EObjectRole role, bool refreshing = true);
 
+  void setActiveObjectSize(EObjectRole role, double radius);
+  void setDefaultActiveObjectSize(EObjectRole role);
 
   /*!
    * \brief Turn off the active stroke
@@ -412,6 +426,8 @@ signals:
 //  void acceptingRectRoi();
   void rectRoiUpdated();
   void bodyDecomposeTriggered();
+  void bodyCropTriggered();
+  void bodyChopTriggered();
   void bodyMergeTriggered();
   void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
@@ -421,6 +437,7 @@ signals:
 
 protected:
   void init();
+  void initActiveObject();
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);
@@ -445,8 +462,7 @@ protected:
 
   bool estimateActiveStrokeWidth();
 
-  void processEvent(ZInteractionEvent &event);
-  void process(ZStackOperator &op);
+  bool process(ZStackOperator &op);
 
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
@@ -462,6 +478,7 @@ protected:
 
   bool m_showObject;
   bool m_oldShowObject;
+  bool m_paintingRoi;
   std::vector<double> m_grayScale;
   std::vector<double> m_grayOffset;
   int m_threshold;

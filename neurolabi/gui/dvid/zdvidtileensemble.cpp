@@ -2,6 +2,12 @@
 #include <QRect>
 #include <QElapsedTimer>
 #include <QtCore>
+#include <QMutexLocker>
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
+#endif
 
 #include "neutubeconfig.h"
 #include "zstackview.h"
@@ -10,6 +16,7 @@
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
+#include "zdvidpatchdatafetcher.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -17,6 +24,9 @@ ZDvidTileEnsemble::ZDvidTileEnsemble()
   m_type = GetType();
   m_highContrast = false;
   m_view = NULL;
+  m_patch = NULL;
+  m_dataFetcher = NULL;
+//  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 
 ZDvidTileEnsemble::~ZDvidTileEnsemble()
@@ -33,6 +43,15 @@ void ZDvidTileEnsemble::clear()
       delete tileIter->second;
     }
   }
+  m_tileGroup.clear();
+
+  delete m_patch;
+  m_patch = NULL;
+}
+
+void ZDvidTileEnsemble::setDataFetcher(ZDvidPatchDataFetcher *fetcher)
+{
+  m_dataFetcher = fetcher;
 }
 
 void ZDvidTileEnsemble::enhanceContrast(bool high)
@@ -44,6 +63,20 @@ void ZDvidTileEnsemble::enhanceContrast(bool high)
 void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
 {
   m_contrastProtocal = obj;
+}
+
+void ZDvidTileEnsemble::updatePatch(
+    const ZImage *patch, const ZIntCuboid &region)
+{
+  if (m_patch != NULL) {
+    delete m_patch;
+    m_patch = NULL;
+  }
+
+  m_patch = new ZImage(*patch);
+  m_patch->loadHighContrastProtocal(m_contrastProtocal);
+  m_patch->enhanceContrast(m_highContrast);
+  m_patchRange = region;
 }
 
 void ZDvidTileEnsemble::updateContrast()
@@ -87,7 +120,7 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   return tileMap[index];
 }
 //#if defined(_ENABLE_LIBDVIDCPP_)
-#if 0
+#if defined(_SERVICE_ARRAY_)
 struct UpdateTileParam {
   ZDvidTileEnsemble *te;
 //  libdvid::DVIDNodeService *service;
@@ -205,11 +238,18 @@ bool ZDvidTileEnsemble::update(
 //#define DVID_TILE_THREAD_FETCH 1
 
       std::vector<libdvid::BinaryDataPtr> data;
+      std::string tileName;
       try {
 //#if DVID_TILE_THREAD_FETCH
+//        if (tile_locs_array.size() < 5) {
+//          tileName = m_dvidTarget.getLosslessTileName();
+//        } else {
+          tileName = m_dvidTarget.getMultiscale2dName();
+//        }
+
         if (NeutubeConfig::ParallelTileFetching()) {
           data = get_tile_array_binary(
-                *(m_reader.getService()), m_dvidTarget.getMultiscale2dName(),
+                *(m_reader.getService()), tileName,
                 libdvid::XY, resLevel, tile_locs_array);
         } else {
           //#else
@@ -217,8 +257,7 @@ bool ZDvidTileEnsemble::update(
           //        std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
           for (size_t i = 0; i < tile_locs_array.size(); ++i) {
             data[i] = m_reader.getService()->get_tile_slice_binary(
-                  m_dvidTarget.getMultiscale2dName(),
-                  libdvid::XY, resLevel, tile_locs_array[i]);
+                  tileName, libdvid::XY, resLevel, tile_locs_array[i]);
           }
         }
 //#endif
@@ -286,6 +325,24 @@ bool ZDvidTileEnsemble::update(
       }
 
       updated = true;
+
+      if (m_dataFetcher != NULL && m_dvidTarget.isTileLowQuality()) {
+        QRect highresViewPort =
+            m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+        if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
+          int z = m_view->getZ(NeuTube::COORD_STACK);
+          QPoint center = highresViewPort.center();
+          int width = 512;
+          int height = 512;
+          int x0 = center.x() - width / 2 - 1;
+          int y0 = center.y() - height / 2 - 1;
+          int x1 = x0 + width;
+          int y1 = y0 + height;
+
+          ZIntCuboid region(x0, y0, z, x1, y1, z);
+          m_dataFetcher->submit(region);
+        }
+      }
 
 #if 0
 //      QThreadFutureMap futureMap;
@@ -372,6 +429,8 @@ void ZDvidTileEnsemble::display(
     return;
   }
 
+  QMutexLocker locker(&m_updateMutex);
+
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
 
@@ -391,7 +450,9 @@ void ZDvidTileEnsemble::display(
   }
 
 
-  m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+
+
+
   int resLevel = std::min(m_tilingInfo.getMaxLevel(), level);
 
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
@@ -404,21 +465,70 @@ void ZDvidTileEnsemble::display(
     }
   }
 
-  const_cast<ZDvidTileEnsemble&>(*this).update(
-        tileIndices, resLevel, painter.getZ(slice));
+  QRect highresViewPort =
+      m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+//  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
+    const_cast<ZDvidTileEnsemble&>(*this).update(
+          tileIndices, resLevel, painter.getZ(slice));
+    //  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
 
-//  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
+    for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+         iter != tileIndices.end(); ++iter) {
+      const ZDvidTileInfo::TIndex &index = *iter;
+      ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+      if (tile != NULL) {
+        //      tile->enhanceContrast(m_highContrast, true);
+        tile->display(painter, slice, option, sliceAxis);
+      }
+    }
+//  } else {
+#if 0
+  if (highresViewPort.width() < 512 || highresViewPort.height() < 512) {
+    QElapsedTimer timer;
+    timer.start();
 
-  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
-       iter != tileIndices.end(); ++iter) {
-    const ZDvidTileInfo::TIndex &index = *iter;
-    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
-    if (tile != NULL) {
-//      tile->enhanceContrast(m_highContrast, true);
-      tile->display(painter, slice, option, sliceAxis);
+    QPoint center = highresViewPort.center();
+    int x0 = center.x() - 128;
+    int y0 = center.y() - 128;
+//    int x0 = highresViewPort.left();
+//    int y0 = highresViewPort.top();
+    int width = 256;
+    int height = 256;
+    int z = m_view->getZ(NeuTube::COORD_STACK);
+
+    ZDvidBufferReader bufferReader;
+    ZDvidUrl url(getDvidTarget());
+    bufferReader.read(url.getGrayscaleUrl(width, height, x0, y0, z).c_str());
+
+    std::cout << "High-res reading time: " << timer.elapsed() << std::endl;
+
+
+    if (m_patch != NULL) {
+      if (m_patch->width() != width || m_patch->height() != height) {
+        delete m_patch;
+        m_patch = NULL;
+      }
+    }
+
+    if (m_patch == NULL) {
+      m_patch = new ZImage(width, height, QImage::Format_Indexed8);
+    }
+    if (m_patch->loadFromData(bufferReader.getBuffer(), "png")) {
+      m_patch->loadHighContrastProtocal(m_contrastProtocal);
+      m_patch->enhanceContrast(m_highContrast);
+      painter.drawImage(x0, y0, *m_patch);
+    }
+    std::cout << "High-res patching time: " << timer.elapsed() << std::endl;
+  }
+#endif
+
+  if (m_patch != NULL) {
+    if (m_patchRange.getFirstCorner().getZ() == painter.getZOffset() + slice) {
+      painter.drawImage(m_patchRange.getFirstCorner().getX(),
+                        m_patchRange.getFirstCorner().getY(),
+                        *m_patch);
     }
   }
-
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
 
@@ -431,13 +541,15 @@ void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
     ZJsonObject obj = m_reader.readContrastProtocal();
     setContrastProtocal(obj);
 
-#if defined(_ENABLE_LIBDVIDCPP_)
+#if defined(_ENABLE_LIBDVIDCPP_) && defined(_SERVICE_ARRAY_)
     m_serviceArray.resize(36);
     try {
-      for (std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
-           iter = m_serviceArray.begin();
-           iter != m_serviceArray.end(); ++iter) {
-        *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
+      std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
+          iter = m_serviceArray.begin();
+      *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
+      libdvid::DVIDNodeService *firstService = (*iter).get();
+      for (++iter; iter != m_serviceArray.end(); ++iter) {
+        *iter = ZDvid::MakeDvidNodeService(firstService);
       }
     } catch (libdvid::DVIDException &e) {
       LWARN() << e.what();

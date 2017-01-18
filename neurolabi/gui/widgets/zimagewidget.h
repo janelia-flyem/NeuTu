@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QVector>
+#include <QKeyEvent>
 
 #include "neutube_def.h"
 
@@ -41,6 +42,7 @@ public:
   void setObjectCanvas(ZPixmap *canvas);
   ZPixmap* getObjectCanvas() { return m_objectCanvas; }
   ZPixmap* getTileCanvas() { return m_tileCanvas; }
+  ZPixmap* getDynamicObjectCanvas() { return m_dynamicObjectCanvas; }
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
   void setDynamicObjectCanvas(ZPixmap *canvas);
@@ -188,6 +190,8 @@ public:
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
+  void updateWidgetCanvas();
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -195,6 +199,10 @@ public:
   virtual void mouseDoubleClickEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
   virtual void resizeEvent(QResizeEvent *event);
+
+protected:
+  void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
 
 public slots:
   void updateView();
@@ -250,6 +258,7 @@ private:
   ZPixmap *m_tileCanvas;
   ZPixmap *m_dynamicObjectCanvas;
   ZPixmap *m_activeDecorationCanvas;
+//  ZPixmap *m_widgetCanvas;
 
   QRect m_viewPort; /* viewport, in world coordinates */
   QRectF m_projRegion; /* projection region */

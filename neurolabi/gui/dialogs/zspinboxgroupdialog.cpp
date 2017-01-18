@@ -8,7 +8,7 @@ ZSpinBoxGroupDialog::ZSpinBoxGroupDialog(QWidget *parent) :
   m_mainLayout = new QVBoxLayout(this);
   setLayout(m_mainLayout);
 
-  m_spinBoxLayout = new QVBoxLayout(this);
+  m_spinBoxLayout = new QVBoxLayout;
 
   ZButtonBox *buttonBox = ZWidgetFactory::makeButtonBox(
         ZButtonBox::ROLE_YES | ZButtonBox::ROLE_NO | ZButtonBox::ROLE_SKIP,
@@ -18,7 +18,7 @@ ZSpinBoxGroupDialog::ZSpinBoxGroupDialog(QWidget *parent) :
           this, SLOT(skip()));
 
 
-  QHBoxLayout *buttonLayout = new QHBoxLayout(this);
+  QHBoxLayout *buttonLayout = new QHBoxLayout;
   buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   buttonLayout->addWidget(buttonBox);
 

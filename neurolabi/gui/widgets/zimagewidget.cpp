@@ -1,8 +1,8 @@
-#include <QtGui>
 #include <QElapsedTimer>
 
 #include <cstring>
 #include <cmath>
+#include <QGraphicsBlurEffect>
 
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
@@ -38,11 +38,19 @@ ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
   m_objectCanvas = NULL;
   m_dynamicObjectCanvas = NULL;
   m_activeDecorationCanvas = NULL;
+//  m_widgetCanvas = NULL;
+
   m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 ZImageWidget::~ZImageWidget()
 {
+  /*
+  if (m_widgetCanvas != NULL) {
+    delete m_widgetCanvas;
+  }
+  */
+
 //  if (m_isowner == true) {
 //    if (m_image != NULL) {
 //      delete m_image;
@@ -111,6 +119,21 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     }
     //std::cout << "paint object canvas: " << toc() << std::endl;
 
+    if (m_dynamicObjectCanvas != NULL) {
+      if (m_dynamicObjectCanvas->isVisible()) {
+        m_dynamicObjectCanvas->updateProjTransform(viewPort(), projectRegion());
+        painter.drawPixmap(*m_dynamicObjectCanvas);
+      }
+    }
+
+/*
+    if (m_widgetCanvas != NULL) {
+      if (m_widgetCanvas->isVisible()) {
+        painter.drawPixmap(*m_widgetCanvas);
+      }
+    }
+*/
+
     //tic();
     if (m_objectCanvas != NULL) {
 #ifdef _DEBUG_2
@@ -137,18 +160,19 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       }
     }
 
-    if (m_dynamicObjectCanvas != NULL) {
-      if (m_dynamicObjectCanvas->isVisible()) {
-        painter.drawPixmap(*m_dynamicObjectCanvas);
-      }
-    }
-
     painter.end();
 
     paintObject();
     paintZoomHint();
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
+}
+
+void ZImageWidget::updateWidgetCanvas()
+{
+//  delete m_widgetCanvas;
+//  const QRectF& projRect = projectRegion();
+//  m_widgetCanvas =
 }
 
 
@@ -566,9 +590,14 @@ void ZImageWidget::setViewPortOffset(int x, int y)
     }
   }
 
+  m_viewPort = QRect(x + m_canvasRegion.left(),
+                     y + m_canvasRegion.top(),
+                     m_viewPort.width(), m_viewPort.height());
+  /*
   setViewPort(QRect(x + m_canvasRegion.left(),
                     y + m_canvasRegion.top(),
                     m_viewPort.width(), m_viewPort.height()));
+                    */
 }
 
 void ZImageWidget::setZoomRatio(double zoomRatio)
@@ -1160,9 +1189,29 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
   emit mouseWheelRolled(event);
 }
 
-void ZImageWidget::resizeEvent(QResizeEvent */*event*/)
+void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   setValidViewPort(m_viewPort);
+}
+
+void ZImageWidget::keyPressEvent(QKeyEvent *event)
+{
+  event->ignore();
+}
+
+bool ZImageWidget::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent *ke = (QKeyEvent*) (event);
+    if (ke != NULL) {
+      if (ke->key() == Qt::Key_Tab) {
+        event->ignore();
+        return false;
+      }
+    }
+  }
+
+  return QWidget::event(event);
 }
 
 int ZImageWidget::getMaxZoomRatio() const

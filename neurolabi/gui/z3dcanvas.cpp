@@ -1,6 +1,7 @@
 #include "z3dcanvas.h"
 
 #include <QPainter>
+#include <QGraphicsTextItem>
 
 #include "z3dnetworkevaluator.h"
 #include <algorithm>
@@ -85,13 +86,6 @@ void Z3DCanvas::leaveEvent(QEvent* e)
   broadcastEvent(e, width(), height());
 }
 
-void Z3DCanvas::mousePressEvent(QMouseEvent* e)
-{
-  broadcastEvent(e, width(), height());
-
-  m_interaction.processMousePressEvent(e);
-}
-
 bool Z3DCanvas::suppressingContextMenu() const
 {
 //#if defined(_FLYEM_)
@@ -102,6 +96,13 @@ bool Z3DCanvas::suppressingContextMenu() const
 //#endif
 
   return false;
+}
+
+void Z3DCanvas::mousePressEvent(QMouseEvent* e)
+{
+  broadcastEvent(e, width(), height());
+
+  m_interaction.processMousePressEvent(e);
 }
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
@@ -146,6 +147,10 @@ void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 
 void Z3DCanvas::resizeEvent(QResizeEvent *event)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
+
   getGLFocus();
   QGraphicsView::resizeEvent(event);
   if (m_3dScene)
@@ -173,6 +178,10 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 
 void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 {
+#ifdef _QT5_
+  glGetError(); // opengl error from qt5?
+#endif
+
   if (!m_networkEvaluator) {
     return;
   }
@@ -216,6 +225,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
   //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
 
+  CHECK_GL_ERROR;
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)

@@ -5,7 +5,7 @@
 
 #include "zpainter.h"
 #include "zjsonparser.h"
-
+#include "flyem/zflyemmisc.h"
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -26,6 +26,12 @@ ZFlyEmToDoItem::ZFlyEmToDoItem(const ZIntPoint &pos)
 {
   init(KIND_NOTE);
   setPosition(pos);
+}
+
+ZFlyEmToDoItem::ZFlyEmToDoItem(int x, int y, int z)
+{
+  init(KIND_NOTE);
+  setPosition(x, y, z);
 }
 
 
@@ -61,11 +67,50 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
 {
   QColor color = getColor();
   if (!isChecked()) {
-    color.setRgb(
-          color.red()/2, color.red()/2, color.red()/2, color.alpha() / 2);
+    switch (getAction()) {
+    case ZFlyEmToDoItem::TO_DO:
+      color.setRgb(255, 0, 0, 192);
+      break;
+    case ZFlyEmToDoItem::TO_MERGE:
+      color.setRgb(0, 0, 255, 192);
+      break;
+    case ZFlyEmToDoItem::TO_SPLIT:
+      color.setRgb(200, 0, 255, 192);
+      break;
+    }
   }
 
   return color;
+}
+
+ZFlyEmToDoItem::EToDoAction ZFlyEmToDoItem::getAction() const
+{
+  const char *key = "action"; //coupled with setAction
+  std::string value = getProperty<std::string>(key);
+  EToDoAction action = TO_DO;
+  if (value == "to merge") {
+    action = TO_MERGE;
+  } else if (value == "to split") {
+    action = TO_SPLIT;
+  }
+
+  return action;
+}
+
+void ZFlyEmToDoItem::setAction(EToDoAction action)
+{
+  const char *key = "action";
+  switch (action) {
+  case TO_DO:
+    removeProperty(key);
+    break;
+  case TO_MERGE:
+    addProperty(key, "to merge");
+    break;
+  case TO_SPLIT:
+    addProperty(key, "to split");
+    break;
+  }
 }
 
 void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
@@ -117,15 +162,20 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
 
       painter.drawLine(QPointF(x - radius, y), QPointF(x + radius, y));
       painter.drawLine(QPointF(x, y - radius), QPointF(x, y + radius));
-      painter.drawLine(QPointF(x - radius, y - radius),
-                       QPointF(x + radius, y + radius));
-      painter.drawLine(QPointF(x - radius, y + radius),
-                       QPointF(x + radius, y - radius));
+//      painter.drawLine(QPointF(x - radius, y - radius),
+//                       QPointF(x + radius, y + radius));
+//      painter.drawLine(QPointF(x - radius, y + radius),
+//                       QPointF(x + radius, y - radius));
 
       pen.setWidthF(basePenWidth);
       painter.setPen(pen);
+      QPointF ptArray[9];
+      ZFlyEmMisc::MakeStar(QPointF(x, y), radius, ptArray);
+      painter.drawPolyline(ptArray, 9);
+      /*
       painter.drawEllipse(QPointF(center.getX(), center.getY()),
                           radius, radius);
+                          */
     }
 
     /*

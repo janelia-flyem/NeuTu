@@ -5,6 +5,7 @@
 #include "zswctree.h"
 #include "tz_swc_tree.h"
 #include "QsLog.h"
+#include "neutubeconfig.h"
 
 ZSwcObjsModel::ZSwcObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -73,6 +74,7 @@ void ZSwcObjsModel::updateModelData()
               "parent_id" << "label" << "weight" << "feature" << "index" << "source";
               */
   rootData << "Neuron" << "Source";
+  ZOUT(LTRACE(), 5) << "Update swc model";
   m_rootItem = new ZObjsItem(
         rootData, &(m_doc->getObjectList(ZStackObject::TYPE_SWC)));
   setupModelData(m_rootItem);

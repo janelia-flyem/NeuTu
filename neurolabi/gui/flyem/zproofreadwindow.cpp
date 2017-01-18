@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zproofreadwindow.h"
 
 #include <QHBoxLayout>
@@ -11,9 +12,12 @@
 #include <QStatusBar>
 #include <QDragEnterEvent>
 
+#include "neutubeconfig.h"
+#include "dialogs/dvidoperatedialog.h"
 #include "flyemsplitcontrolform.h"
 #include "dvid/zdvidtarget.h"
 #include "zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "flyemproofcontrolform.h"
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetfactory.h"
@@ -24,6 +28,10 @@
 #include "QsLog.h"
 #include "zstackpresenter.h"
 #include "flyem/zflyemproofpresenter.h"
+#include "zflyembookmarkview.h"
+#include "dialogs/flyembodyfilterdialog.h"
+#include "zflyemdataloader.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -44,6 +52,7 @@ void ZProofreadWindow::connectMessagePipe(T *source)
 
 void ZProofreadWindow::init()
 {
+  setFocusPolicy(Qt::ClickFocus);
   setAttribute(Qt::WA_DeleteOnClose);
 
   QWidget *widget = new QWidget(this);
@@ -82,23 +91,39 @@ void ZProofreadWindow::init()
 
   m_controlGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-  FlyEmProofControlForm *controlForm = new FlyEmProofControlForm;
-  m_controlGroup->addWidget(controlForm);
+  m_controlForm = new FlyEmProofControlForm;
+  m_controlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
+  m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
+  m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
+  m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  FlyEmSplitControlForm *splitControlForm = new FlyEmSplitControlForm;
-  m_controlGroup->addWidget(splitControlForm);
-  splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_controlGroup->addWidget(m_controlForm);
 
-  m_mainMvc->connectControlPanel(controlForm);
-  m_mainMvc->connectSplitControlPanel(splitControlForm);
+  m_splitControlForm = new FlyEmSplitControlForm;
+  m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
+        m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
+  m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
+        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
+  m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
+  m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
 
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
+  m_controlGroup->addWidget(m_splitControlForm);
+  m_splitControlForm->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+
+  m_mainMvc->connectControlPanel(m_controlForm);
+  m_mainMvc->connectSplitControlPanel(m_splitControlForm);
+
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
           this, SLOT(launchSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered(uint64_t)),
-          splitControlForm, SLOT(setSplit(uint64_t)));
-  connect(controlForm, SIGNAL(splitTriggered()),
+  connect(m_controlForm, SIGNAL(splitTriggered(uint64_t)),
+          m_splitControlForm, SLOT(setSplit(uint64_t)));
+  connect(m_controlForm, SIGNAL(splitTriggered()),
           this, SLOT(launchSplit()));
-  connect(splitControlForm, SIGNAL(exitingSplit()),
+  connect(m_splitControlForm, SIGNAL(exitingSplit()),
           this, SLOT(exitSplit()));
 
   connectMessagePipe(m_mainMvc);
@@ -107,6 +132,7 @@ void ZProofreadWindow::init()
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
+  connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
   setCentralWidget(widget);
 
@@ -126,9 +152,17 @@ void ZProofreadWindow::init()
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
 
+  connect(m_segSlider, SIGNAL(valueChanged(int)),
+          m_mainMvc, SLOT(setLabelAlpha(int)));
+  m_mainMvc->setLabelAlpha(m_segSlider->value());
+
+
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
 
-  m_defaultPal = palette();
+  createDialog();
+  m_flyemDataLoader = new ZFlyEmDataLoader(this);
+
+  m_defaultPal = palette(); //This has to be the last line to avoid crash
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -146,20 +180,44 @@ ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent, ZDvidDialog *dvidDlg)
   return window;
 }
 
+void ZProofreadWindow::createDialog()
+{
+  m_dvidOpDlg = new DvidOperateDialog(this);
+  m_dvidOpDlg->setDvidDialog(m_mainMvc->getDvidDialog());
+
+  m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
+  m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
+}
+
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
 {
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
-void ZProofreadWindow::test()
+void ZProofreadWindow::stressTestSlot()
 {
+  if (m_stressTestOptionDlg->exec()) {
+    m_mainMvc->stressTest(m_stressTestOptionDlg);
+  }
+}
+
+void ZProofreadWindow::stressTest()
+{
+  if (!m_mainMvc->getDvidTarget().isValid()) {
+    m_mainMvc->setDvidTarget();
+  }
+  /*
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "86e1", 8500);
-  target.setBodyLabelName("bodies");
-  target.setLabelBlockName("labels");
+  target.set("emdata2.int.janelia.org", "3303", 8500);
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setSynapseName("mb6_synapses");
+
   m_mainMvc->setDvidTarget(target);
   m_mainMvc->getPresenter()->setObjectVisible(false);
-  m_mainMvc->test();
+  */
+
+  stressTestSlot();
 }
 
 void ZProofreadWindow::createMenu()
@@ -189,6 +247,13 @@ void ZProofreadWindow::createMenu()
   m_viewBookmarkAction->setChecked(true);
   connect(m_viewBookmarkAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showBookmark(bool)));
+
+  m_viewRoiAction = new QAction("ROI", this);
+  m_viewRoiAction->setCheckable(true);
+  m_viewRoiAction->setChecked(true);
+  m_viewRoiAction->setIcon(QIcon(":/images/view_roi.png"));
+  connect(m_viewRoiAction, SIGNAL(toggled(bool)),
+          m_mainMvc, SLOT(showRoiMask(bool)));
 
   m_viewSegmentationAction = new QAction("Segmentation", this);
   m_viewSegmentationAction->setIcon(QIcon(":/images/view_segmentation.png"));
@@ -228,9 +293,13 @@ void ZProofreadWindow::createMenu()
   connect(m_openObject3dAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showObjectWindow()));
 
-  m_queryTableAction = new QAction("Query Table", this);
-  connect(m_queryTableAction, SIGNAL(triggered()),
-          m_mainMvc, SLOT(showQueryTabel()));
+  m_openRoi3dAction = new QAction("3D ROI", this);
+  connect(m_openRoi3dAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showRoi3dWindow()));
+
+//  m_queryTableAction = new QAction("Query Table", this);
+//  connect(m_queryTableAction, SIGNAL(triggered()),
+//          m_mainMvc, SLOT(showQueryTabel()));
 
   m_openExtNeuronWindowAction = new QAction("3D Reference Neurons", this);
   m_openExtNeuronWindowAction->setIcon(QIcon(":images/swcpreview.png"));
@@ -241,6 +310,7 @@ void ZProofreadWindow::createMenu()
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
+  m_viewMenu->addAction(m_viewRoiAction);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
@@ -265,13 +335,46 @@ void ZProofreadWindow::createMenu()
   connect(m_openTodoAction, SIGNAL(triggered()), m_mainMvc, SLOT(openTodo()));
   m_toolMenu->addAction(m_openTodoAction);
 
+  m_roiToolAction = new QAction("ROI Tool", this);
+  m_roiToolAction->setIcon(QIcon(":images/roi.png"));
+  connect(m_roiToolAction, SIGNAL(triggered()), m_mainMvc, SLOT(openRoiTool()));
+  m_toolMenu->addAction(m_roiToolAction);
+
   m_openProtocolsAction = new QAction("Open Protocols", this);
   m_openProtocolsAction->setIcon(QIcon(":/images/protocol.png"));
   connect(m_openProtocolsAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_bodyExplorerAction = new QAction("Explore Bodies", this);
+  m_bodyExplorerAction->setIcon(QIcon(":/images/open_dvid.png"));
+  connect(m_bodyExplorerAction, SIGNAL(triggered()),
+          this, SLOT(exploreBody()));
+//  m_toolMenu->addAction(m_bodyExplorerAction);
+
+  QMenu *dvidMenu = new QMenu("DVID", this);
+  m_dvidOperateAction = new QAction("Operate", this);
+  connect(m_dvidOperateAction, SIGNAL(triggered()),
+          this, SLOT(operateDvid()));
+
+  dvidMenu->addAction(m_dvidOperateAction);
+
+
+  m_toolMenu->addMenu(dvidMenu);
+
   menuBar()->addMenu(m_toolMenu);
+
+  m_advancedMenu = new QMenu("Advanced", this);
+  menuBar()->addMenu(m_advancedMenu);
+  QAction *mainWindowAction = new QAction("Show NeuTu Desktop", this);
+  connect(mainWindowAction, SIGNAL(triggered()),
+          this, SIGNAL(showingMainWindow()));
+  m_advancedMenu->addAction(mainWindowAction);
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
+  m_advancedMenu->addAction(testAction);
+
 
 //  m_viewMenu->setEnabled(false);
 
@@ -279,6 +382,7 @@ void ZProofreadWindow::createMenu()
   m_importBookmarkAction->setEnabled(false);
   m_viewBookmarkAction->setEnabled(false);
   m_viewSegmentationAction->setEnabled(false);
+  m_viewRoiAction->setEnabled(false);
   m_viewTodoAction->setEnabled(false);
 }
 
@@ -306,6 +410,9 @@ void ZProofreadWindow::addSynapseActionToToolbar()
   m_synapseToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_UNLINK));
+  m_synapseToolbar->addAction(
+        m_mainMvc->getCompletePresenter()->getAction(
+          ZActionFactory::ACTION_SYNAPSE_HLPSD));
 
   m_synapseToolbar->addSeparator();
   m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
@@ -326,8 +433,17 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_viewSynapseAction);
   m_toolBar->addAction(m_viewBookmarkAction);
-  m_toolBar->addAction(m_viewSegmentationAction);
   m_toolBar->addAction(m_viewTodoAction);
+  m_toolBar->addAction(m_viewRoiAction);
+
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_viewSegmentationAction);
+  m_segSlider = new QSlider(Qt::Horizontal, this);
+  m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+  m_segSlider->setRange(0, 255);
+  m_segSlider->setValue(128);
+  m_toolBar->addWidget(m_segSlider);
+
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
@@ -335,6 +451,7 @@ void ZProofreadWindow::createToolbar()
   m_toolBar->addAction(m_openSequencerAction);
   m_toolBar->addAction(m_openTodoAction);
   m_toolBar->addAction(m_openProtocolsAction);
+  m_toolBar->addAction(m_roiToolAction);
 
   addSynapseActionToToolbar();
 }
@@ -347,6 +464,12 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
          QString("Body %1 loaded for split.").arg(bodyId),
          NeuTube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
+}
+
+void ZProofreadWindow::operateDvid()
+{
+  m_dvidOpDlg->show();
+  m_dvidOpDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId)
@@ -449,6 +572,11 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
   }
 }
 
+void ZProofreadWindow::closeEvent(QCloseEvent */*event*/)
+{
+  emit proofreadWindowClosed();
+}
+
 
 void ZProofreadWindow::advanceProgress(double dp)
 {
@@ -490,12 +618,13 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
-  setWindowTitle(target.getSourceString(false).c_str());
+  setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
   m_viewSynapseAction->setEnabled(target.isValid());
   m_importBookmarkAction->setEnabled(target.isValid());
   m_viewBookmarkAction->setEnabled(target.isValid());
   m_viewSegmentationAction->setEnabled(target.isValid());
+  m_viewRoiAction->setEnabled(target.isValid());
   m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
@@ -535,6 +664,31 @@ void ZProofreadWindow::changeEvent(QEvent *event)
 {
   if (event->type() == QEvent::ActivationChange) {
     displayActiveHint(isActiveWindow());
+  }
+}
+
+void ZProofreadWindow::keyPressEvent(QKeyEvent *event)
+{
+  event->ignore();
+}
+
+void ZProofreadWindow::exploreBody()
+{
+  bool continueLoading = false;
+  ZDvidTarget target;
+  if (m_mainMvc->getDvidDialog()->exec()) {
+    target = m_mainMvc->getDvidDialog()->getDvidTarget();
+    if (!target.isValid()) {
+      ZDialogFactory::Warn("Invalid DVID", "Invalid DVID server.", this);
+    } else {
+      continueLoading = true;
+    }
+  }
+
+  if (continueLoading && m_bodyFilterDlg->exec()) {
+    ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
+    dvidFilter.setDvidTarget(target);
+    m_flyemDataLoader->loadDataBundle(dvidFilter);
   }
 }
 

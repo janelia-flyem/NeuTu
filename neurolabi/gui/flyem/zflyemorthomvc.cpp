@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zflyemorthomvc.h"
 #include "zflyemorthodoc.h"
 #include "zstackpresenter.h"
@@ -5,6 +6,7 @@
 #include "zstackview.h"
 #include "zwidgetmessage.h"
 #include "zflyemproofpresenter.h"
+#include "zflyemtodolist.h"
 
 ZFlyEmOrthoMvc::ZFlyEmOrthoMvc(QWidget *parent) :
   ZFlyEmProofMvc(parent)
@@ -16,7 +18,7 @@ void ZFlyEmOrthoMvc::init()
 {
   m_dvidDlg = NULL;
   m_bodyInfoDlg = NULL;
-  m_supervisor = new ZFlyEmSupervisor(this);
+//  m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = NULL;
 
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
@@ -44,6 +46,13 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
     if (se->getSliceAxis() == frame->getView()->getSliceAxis()) {
       se->attachView(frame->getView());
     }
+  }
+
+  QList<ZFlyEmToDoList*> todoList = doc->getObjectList<ZFlyEmToDoList>();
+  for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
+       iter != todoList.end(); ++iter) {
+    ZFlyEmToDoList *obj = *iter;
+    obj->attachView(frame->getView());
   }
 
   connect(frame->getPresenter(), SIGNAL(savingStack()),
@@ -81,19 +90,21 @@ void ZFlyEmOrthoMvc::setDvidTarget(const ZDvidTarget &target)
 
 void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 {
-  if (getCompleteDocument() != NULL) {
-    ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    ZDvidReader &reader = doc->getDvidReader();
+    if (reader.isReady()) {
       ZJsonObject contrastObj = reader.readContrastProtocal();
       getPresenter()->setHighContrastProtocal(contrastObj);
+//      enableSynapseFetcher();
     }
 
     getView()->updateContrastProtocal();
     getView()->reset(false);
-    if (m_supervisor != NULL) {
-      m_supervisor->setDvidTarget(getCompleteDocument()->getDvidTarget());
-    }
-    m_mergeProject.setDvidTarget(getCompleteDocument()->getDvidTarget());
+//    if (getSupervisor() != NULL) {
+//      getSupervisor()->setDvidTarget(doc->getDvidTarget());
+//    }
+    m_mergeProject.setDvidTarget(doc->getDvidTarget());
     m_mergeProject.syncWithDvid();
   }
 }

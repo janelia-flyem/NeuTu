@@ -3,9 +3,10 @@
 #include <iostream>
 #include <sstream>
 #include <z3dgl.h>
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 #include <limits>
 #include <QToolBar>
@@ -15,7 +16,6 @@
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
-#include "z3dinteractionhandler.h"
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
@@ -83,6 +83,8 @@
 #include "flyem/zflyemtodoitem.h"
 #include "zactionlibrary.h"
 #include "zmenufactory.h"
+#include "widgets/z3dtabwidget.h"
+#include "z3dinteractionhandler.h"
 
 class Sleeper : public QThread
 {
@@ -174,423 +176,6 @@ void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
   }
 }
 
-Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
-{
-  setTabsClosable(true);
-
-  connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
-
-  // default button status
-  for(int i=0; i<4; i++)
-  {
-      buttonStatus[i][0] = true;
-      buttonStatus[i][1] = false;
-      buttonStatus[i][2] = false;
-      buttonStatus[i][3] = false;
-
-      windowStatus[i] = false;
-
-      tabLUT[i] = -1;
-  }
-
-  preIndex = -1;
-
-}
-
-QTabBar* Z3DTabWidget::tabBar()
-{
-    return QTabWidget::tabBar();
-}
-
-void Z3DTabWidget::resetCamera()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCamera();
-    }
-
-}
-
-void Z3DTabWidget::setXZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setXZView();
-    }
-
-}
-
-void Z3DTabWidget::setYZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setYZView();
-    }
-
-}
-
-void Z3DTabWidget::resetCameraCenter()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCameraCenter();
-    }
-}
-
-void Z3DTabWidget::showGraph(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setButtonStatus(0,v);
-        buttonStatus[getRealIndex(index)][0] = v;
-        cur3Dwin->getGraphFilter()->setVisible(v);
-    }
-}
-
-void Z3DTabWidget::settingsPanel(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        //
-        bool checked = cur3Dwin->getButtonStatus(1);
-
-        if(checked != v)
-        {
-            cur3Dwin->setButtonStatus(1,v);
-            buttonStatus[getRealIndex(index)][1] = v;
-            cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
-        }
-        else
-        {
-            cur3Dwin->getSettingsDockWidget()->setVisible(v);
-        }
-    }
-
-}
-
-void Z3DTabWidget::objectsPanel(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        //
-        bool checked = cur3Dwin->getButtonStatus(2);
-
-        if(checked != v)
-        {
-            cur3Dwin->setButtonStatus(2,v);
-            buttonStatus[getRealIndex(index)][2] = v;
-            cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
-        }
-        else
-        {
-            cur3Dwin->getObjectsDockWidget()->setVisible(v);
-        }
-    }
-}
-
-void Z3DTabWidget::roiPanel(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        //
-        bool checked = cur3Dwin->getButtonStatus(3);
-
-        if(checked != v)
-        {
-            cur3Dwin->setButtonStatus(3,v);
-            buttonStatus[getRealIndex(index)][3] = v;
-            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-        }
-        else
-        {
-            cur3Dwin->getROIsDockWidget()->setVisible(v);
-        }
-    }
-
-    if(v)
-    {
-        emit buttonROIsClicked();
-    }
-
-}
-
-void Z3DTabWidget::resetSettingsButton()
-{
-
-}
-
-void Z3DTabWidget::resetObjectsButton()
-{
-
-}
-
-void Z3DTabWidget::resetROIButton()
-{
-    // widget is closed
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setButtonStatus(3,false);
-        buttonStatus[getRealIndex(index)][3] = false;
-        cur3Dwin->getROIsDockWidget()->toggleViewAction()->setChecked(false);
-
-        emit buttonROIsToggled(cur3Dwin->getButtonStatus(3));
-    }
-
-}
-
-void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
-{
-  if (window != NULL) {
-
-      tabLUT[index] = insertTab(index, window, title);
-
-      setCurrentIndex(tabLUT[index]);
-
-      for(int i=index+1; i<4; i++)
-      {
-          if(tabLUT[i]>-1)
-          {
-              tabLUT[i]++;
-          }
-      }
-
-      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
-
-      windowStatus[index] = true;
-
-      updateWindow(tabLUT[index]);
-  }
-}
-
-int Z3DTabWidget::getTabIndex(int index)
-{
-    return (tabLUT[index]);
-}
-
-int Z3DTabWidget::getRealIndex(int index)
-{
-    int cur = -1;
-
-    if(index>-1)
-    {
-        for(int i=0; i<4; i++)
-        {
-            if(tabLUT[i]==index)
-            {
-                cur = i;
-            }
-        }
-    }
-
-    return cur;
-}
-
-void Z3DTabWidget::updateTabs(int index)
-{
-    emit tabIndexChanged(index);
-}
-
-void Z3DTabWidget::updateWindow(int index)
-{
-    int cur = getRealIndex(index);
-
-    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex()<<cur;
-
-    if(cur>-1 && windowStatus[cur]==true)
-    {
-        qDebug()<<"####updateWindow run";
-
-        Z3DWindow *w = (Z3DWindow *)(widget(index));
-
-        if (w != NULL)
-        {
-            bool buttonChecked;
-
-            // show graph
-            buttonChecked = w->getButtonStatus(0);
-            w->getGraphFilter()->setVisible(buttonChecked);
-            buttonStatus[cur][0] = buttonChecked;
-
-            if(preIndex>-1)
-            {
-                if(windowStatus[preIndex]==true && preIndex!=cur)
-                {
-
-                    qDebug()<<"###if###"<<preIndex<<cur;
-
-                    Z3DWindow *preWin = (Z3DWindow *)(widget(tabLUT[preIndex]));
-
-                    if(preWin)
-                    {
-                        // settings
-                        buttonChecked = w->getButtonStatus(1);
-                        if(buttonChecked != preWin->getButtonStatus(1))
-                        {
-                            w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                            buttonStatus[cur][1] = buttonChecked;
-                        }
-
-                        // objects
-                        buttonChecked = w->getButtonStatus(2);
-                        if(buttonChecked != preWin->getButtonStatus(2))
-                        {
-                            w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                            buttonStatus[cur][2] = buttonChecked;
-                        }
-
-                        // ROIs
-                        buttonChecked = w->getButtonStatus(3);
-                        if(buttonChecked != preWin->getButtonStatus(3))
-                        {
-                            w->getROIsDockWidget()->toggleViewAction()->trigger();
-                            buttonStatus[cur][3] = buttonChecked;
-                        }
-                    }
-
-                }
-                else
-                {
-                    qDebug()<<"###else###"<<preIndex<<index;
-
-                    // settings
-                    buttonChecked = w->getButtonStatus(1);
-                    if(buttonChecked != buttonStatus[preIndex][1])
-                    {
-                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][1] = buttonChecked;
-                    }
-
-                    // objects
-                    buttonChecked = w->getButtonStatus(2);
-
-                    qDebug()<<"####objects"<<buttonChecked<<buttonStatus[preIndex][2];
-
-                    if(buttonChecked != buttonStatus[preIndex][2])
-                    {
-                        qDebug()<<"####objects toggle";
-
-                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][2] = buttonChecked;
-                    }
-
-                    // ROIs
-                    buttonChecked = w->getButtonStatus(3);
-                    if(buttonChecked != buttonStatus[preIndex][3])
-                    {
-                        w->getROIsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][3] = buttonChecked;
-                    }
-                }
-            }
-
-            //
-            emit buttonShowGraphToggled(w->getButtonStatus(0));
-            emit buttonSettingsToggled(w->getButtonStatus(1));
-            emit buttonObjectsToggled(w->getButtonStatus(2));
-            emit buttonROIsToggled(w->getButtonStatus(3));
-        }
-
-        preIndex = cur;
-    }
-
-}
-
-void Z3DTabWidget::closeAllWindows()
-{
-
-    for(int i=0; i<4; i++)
-    {
-        if(tabLUT[i]==currentIndex())
-        {
-            preIndex = i;
-        }
-
-        tabLUT[i] = -1;
-    }
-
-    for(int i=0; i<4; i++)
-    {
-        closeWindow(i);
-    } 
-}
-
-void Z3DTabWidget::closeWindow(int index)
-{
-  if (NeutubeConfig::GetVerboseLevel() >= 2) {
-    qDebug()<<"####closeWindow"<<preIndex<<index<<getRealIndex(index);
-  }
-
-  Z3DWindow *w = (Z3DWindow *)(widget(index));
-  if (w != NULL) {
-
-    buttonStatus[index][0] = true;
-    buttonStatus[index][1] = false;
-    buttonStatus[index][2] = false;
-    buttonStatus[index][3] = false;
-
-    w->getGraphFilter()->setVisible(true);
-
-    bool buttonChecked = w->getButtonStatus(1);
-    if(buttonChecked != false)
-    {
-        w->getSettingsDockWidget()->toggleViewAction()->trigger();
-    }
-
-    buttonChecked = w->getButtonStatus(2);
-    if(buttonChecked != false)
-    {
-        w->getObjectsDockWidget()->toggleViewAction()->trigger();
-    }
-
-    buttonChecked = w->getButtonStatus(3);
-    if(buttonChecked != false)
-    {
-        w->getROIsDockWidget()->toggleViewAction()->trigger();
-    }
-
-    windowStatus[getRealIndex(index)] = false;
-
-    if(preIndex==getRealIndex(index))
-        preIndex = -1;
-
-    w->close();
-  }
-
-
-}
-
-Z3DTabWidget::~Z3DTabWidget()
-{
-
-}
 
 Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
                      bool stereoView, QWidget *parent)
@@ -641,6 +226,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
   m_buttonStatus[3] = false; // ROIs
+
+  setWindowType(NeuTube3D::TYPE_GENERAL);
 }
 
 Z3DWindow::~Z3DWindow()
@@ -755,12 +342,16 @@ void Z3DWindow::init(EInitMode mode)
   // more processors: init geometry filters
   m_compositor = new Z3DCompositor();
   m_punctaFilter = new Z3DPunctaFilter();
+  m_layerList.append(LAYER_PUNCTA);
   m_punctaFilter->setData(m_doc->getPunctumList());
   m_swcFilter = new Z3DSwcFilter();
+  m_layerList.append(LAYER_SWC);
   m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
+  m_layerList.append(LAYER_GRAPH);
 #if defined _FLYEM_
   m_todoFilter = new ZFlyEmTodoListFilter;
+  m_layerList.append(LAYER_TODO);
   updateTodoList();
 #else
   m_todoFilter = NULL;
@@ -785,6 +376,7 @@ void Z3DWindow::init(EInitMode mode)
 
 
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  ZOUT(LTRACE(), 5) << "Getting 3d graph";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -793,6 +385,9 @@ void Z3DWindow::init(EInitMode mode)
 
   // hard code
   m_surfaceFilter = new Z3DSurfaceFilter;
+  m_surfaceFilter->getRendererBase()->setMaterialSpecular(glm::vec4(0, 0, 0, 1));
+
+  m_layerList.append(LAYER_SURFACE);
 
   //  qDebug()<<"hard coded ...";
 
@@ -950,6 +545,7 @@ void Z3DWindow::init(EInitMode mode)
 
   // more processors: init raycaster
   m_volumeRaycaster = new Z3DVolumeRaycaster();
+  m_layerList.append(LAYER_VOLUME);
   connect(m_volumeRaycaster,
           SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
           this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
@@ -978,8 +574,10 @@ void Z3DWindow::init(EInitMode mode)
         m_compositor->getInputPort("GeometryFilters"));
   m_surfaceFilter->getOutputPort("GeometryFilter")->connect(
         m_compositor->getInputPort("GeometryFilters"));
-  m_todoFilter->getOutputPort("GeometryFilter")->connect(
-        m_compositor->getInputPort("GeometryFilters"));
+  if (m_todoFilter != NULL) {
+    m_todoFilter->getOutputPort("GeometryFilter")->connect(
+          m_compositor->getInputPort("GeometryFilters"));
+  }
 //  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
   m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
@@ -1104,6 +702,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
     action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
     break;
+  case ZActionFactory::ACTION_ADD_TODO_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToMergeMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
+    break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
@@ -1116,9 +720,7 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 
 void Z3DWindow::createActions()
 {
-#ifdef _DEBUG_
-  qDebug() << "Create actions";
-#endif
+  ZOUT(LTRACE(), 5) << "Create actions";
   /*
   m_undoAction = m_doc->undoStack()->createUndoAction(this, tr("&Undo"));
   m_undoAction->setIcon(QIcon(":/images/undo.png"));
@@ -1373,9 +975,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
-#ifdef _DEBUG_
-  qDebug() << "Create swc node menu";
-#endif
+  ZOUT(LTRACE(), 5) << "Create swc node menu";
 
   //Swc node
   contextMenu = new QMenu(this);
@@ -1606,7 +1206,8 @@ void Z3DWindow::createDockWindows()
 #if defined(_FLYEM_)
     //graph
     wg = m_surfaceFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
+            this, SLOT(openAdvancedSetting(QString)));
     m_widgetsGroup->addChildGroup(wg);
 #endif
   }
@@ -1789,6 +1390,106 @@ void Z3DWindow::loadView()
   }
 }
 
+void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
+{
+  Z3DGeometryFilter *filter = getFilter(layer);
+  if (filter != NULL) {
+    if (obj.hasKey("visible")) {
+      setVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
+    }
+    if (obj.hasKey("front")) {
+      filter->setStayOnTop(ZJsonParser::booleanValue(obj["front"]));
+    }
+    if (obj.hasKey("size_scale")) {
+      filter->setSizeScale(ZJsonParser::numberValue(obj["size_scale"]));
+    }
+  }
+}
+
+std::string Z3DWindow::GetLayerString(ERendererLayer layer)
+{
+  switch (layer) {
+  case LAYER_GRAPH:
+    return "Graph";
+  case LAYER_SWC:
+    return "SWC";
+  case LAYER_PUNCTA:
+    return "Puncta";
+  case LAYER_SURFACE:
+    return "Surface";
+  case LAYER_TODO:
+    return "Todo";
+  case LAYER_VOLUME:
+    return "Volume";
+  }
+
+  return "";
+}
+
+void Z3DWindow::configure(const ZJsonObject &obj)
+{
+  for (QList<ERendererLayer>::const_iterator iter = m_layerList.begin();
+       iter != m_layerList.end(); ++iter) {
+    ERendererLayer layer = *iter;
+    std::string layerKey = GetLayerString(layer);
+    if (obj.hasKey(layerKey.c_str())) {
+      ZJsonObject layerJson(obj.value(layerKey.c_str()));
+      configureLayer(layer, layerJson);
+    }
+  }
+}
+
+ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
+{
+  ZJsonObject configJson;
+  Z3DGeometryFilter *filter = getFilter(layer);
+  if (filter != NULL) {
+    configJson.setEntry("visible", isVisible(layer));
+    configJson.setEntry("front", filter->isStayOnTop());
+    configJson.setEntry("size_scale", filter->getSizeScale());
+  }
+
+  return configJson;
+}
+
+void Z3DWindow::readSettings()
+{
+  QString windowKey = NeuTube3D::GetWindowKeyString(getWindowType()).c_str();
+  QString settingString = NeutubeConfig::GetSettings().value(windowKey).
+      toString();
+
+  ZJsonObject jsonObj;
+
+  qDebug() << settingString;
+
+  jsonObj.decodeString(settingString.toStdString().c_str());
+
+  configure(jsonObj);
+}
+
+void Z3DWindow::writeSettings()
+{
+  //ignore general window type for now
+  if (getWindowType() != NeuTube3D::TYPE_GENERAL) {
+    ZJsonObject configJson;
+    for (QList<ERendererLayer>::const_iterator iter = m_layerList.begin();
+         iter != m_layerList.end(); ++iter) {
+      ERendererLayer layer = *iter;
+      ZJsonObject layerJson = getConfigJson(layer);
+      configJson.setEntry(GetLayerString(layer).c_str(), layerJson);
+    }
+
+    std::string settingString = configJson.dumpString(0);
+
+#ifdef _DEBUG_
+    std::cout << settingString << std::endl;
+#endif
+    NeutubeConfig::GetSettings().setValue(
+          NeuTube3D::GetWindowKeyString(getWindowType()).c_str(),
+          settingString.c_str());
+  }
+}
+
 bool Z3DWindow::hasRectRoi() const
 {
   return getCanvas()->getInteractionEngine()->hasRectDecoration();
@@ -1863,7 +1564,9 @@ void Z3DWindow::updateSurfaceBoundBox()
 
 void Z3DWindow::updateTodoBoundBox()
 {
-  m_todoBoundBox = m_todoFilter->boundBox();
+  if (m_todoFilter != NULL) {
+    m_todoBoundBox = m_todoFilter->boundBox();
+  }
 }
 
 /*
@@ -1945,6 +1648,8 @@ void Z3DWindow::cleanup()
 
 void Z3DWindow::volumeChanged()
 {
+//  QMutexLocker locker(&m_filterMutex);
+
   if (m_volumeSource == NULL) {
     m_volumeSource = new Z3DVolumeSource(getDocument());
   }
@@ -1957,7 +1662,10 @@ void Z3DWindow::volumeChanged()
 
 void Z3DWindow::swcChanged()
 {
-  m_swcFilter->setData(m_doc->getSwcList());
+//  QMutexLocker locker(&m_filterMutex);
+
+  m_swcFilter->updateData(m_doc->getSwcList());
+
   updateSwcBoundBox();
   updateOverallBoundBox();
   resetCameraClippingRange();
@@ -1975,6 +1683,7 @@ void Z3DWindow::updateNetworkDisplay()
 
 void Z3DWindow::update3DGraphDisplay()
 {
+  ZOUT(LTRACE(), 5) << "Update 3d graph";
   m_graphFilter->setData(m_doc->get3DGraphDecoration());
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin();
@@ -1993,6 +1702,7 @@ void Z3DWindow::update3DGraphDisplay()
 void Z3DWindow::update3DCubeDisplay()
 {
   m_surfaceFilter->clearSources();
+  ZOUT(LTRACE(), 5) << "Update 3d cube";
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
   for (TStackObjectList::const_iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
@@ -2006,6 +1716,11 @@ void Z3DWindow::update3DCubeDisplay()
   updateSurfaceBoundBox();
 //  updateDecorationBoundBox();
   updateOverallBoundBox();
+
+#ifdef _DEBUG_
+  std::cout << "Bound box: " << m_boundBox[0] << " " << m_boundBox[1] << std::endl;
+#endif
+
   resetCameraClippingRange();
 }
 
@@ -2014,6 +1729,7 @@ void Z3DWindow::updateTodoList()
 #if defined(_FLYEM_)
   ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Update todo list";
     QList<ZFlyEmToDoItem*> objList = doc->getObjectList<ZFlyEmToDoItem>();
     m_todoFilter->setData(objList);
 /*
@@ -2079,6 +1795,7 @@ void Z3DWindow::swcCoordScaleChanged()
 
 void Z3DWindow::punctaCoordScaleChanged()
 {
+  ZOUT(LTRACE(), 5) << "Punctum scale changed";
   if (m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM).empty())
     return;
   updatePunctaBoundBox();
@@ -2201,7 +1918,8 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
 
 void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
 {
-  m_doc->executeAddSwcNodeCommand(ZPoint(x, y, z), r);
+  m_doc->executeAddSwcNodeCommand(
+        ZPoint(x, y, z), r, ZStackObjectRole::ROLE_NONE);
       /*
   QUndoCommand *insertNewSwcTreeNodeCommand =
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);
@@ -2285,7 +2003,9 @@ void Z3DWindow::updateObjectSelection(
       punctaSelectionChanged();
       break;
     case ZStackObject::TYPE_FLYEM_TODO_ITEM:
-      m_todoFilter->invalidate();
+      if (m_todoFilter != NULL) {
+        m_todoFilter->invalidate();
+      }
       break;
     default:
       break;
@@ -2309,7 +2029,7 @@ void Z3DWindow::swcNodeDoubleClicked(Swc_Tree_Node *node)
 void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 {
   std::vector<double> boundBox = m_punctaFilter->getPunctumBound(p);
-  if (hasVolume() > 0) {
+  if (hasVolume()) {
     if (m_volumeSource->isSubvolume())
       m_volumeSource->exitZoomInView();
   }
@@ -2379,7 +2099,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
 
   QList<QAction*> actions;
 
-  if (m_doc->hasSelectedSwc() > 0) {
+  if (m_doc->hasSelectedSwc()) {
     //m_contextMenuGroup["swc"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swc"]->actions();
     if (actions.empty()) {
@@ -2427,7 +2147,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   }
 
 
-  if (m_doc->hasSelectedPuncta() > 0) {
+  if (m_doc->hasSelectedPuncta()) {
     updateContextMenu("puncta");
     //m_contextMenuGroup["puncta"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["puncta"]->actions();
@@ -2630,22 +2350,79 @@ void Z3DWindow::saveSelectedPunctaAs()
   }
 }
 
-void Z3DWindow::addTodoMarker()
+void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked)
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
+  emit addingTodoMarker(x, y, z, checked);
+}
+
+void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked)
+{
+  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked);
+}
+
+void Z3DWindow::emitAddToMergeMarker(int x, int y, int z)
+{
+  emit addingToMergeMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt)
+{
+  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void Z3DWindow::emitAddToSplitMarker(int x, int y, int z)
+{
+  emit addingToSplitMarker(x, y, z);
+}
+
+void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt)
+{
+  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ());
+}
+
+static void AddTodoMarker(
+    Z3DWindow *window, ZFlyEmToDoItem::EToDoAction action, bool checked)
+{
+  QList<Swc_Tree_Node*> swcNodeList =
+      window->getDocument()->getSelectedSwcNodeList();
   if (swcNodeList.size() == 1) {
     ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), false);
+    if (checked) {
+      window->emitAddTodoMarker(pt, checked);
+    } else {
+      switch (action) {
+      case ZFlyEmToDoItem::TO_DO:
+        window->emitAddTodoMarker(pt, checked);
+        break;
+      case ZFlyEmToDoItem::TO_MERGE:
+        window->emitAddToMergeMarker(pt);
+        break;
+      case ZFlyEmToDoItem::TO_SPLIT:
+        window->emitAddToSplitMarker(pt);
+        break;
+      }
+    }
   }
+}
+
+void Z3DWindow::addTodoMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
+}
+
+void Z3DWindow::addToMergeMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_MERGE, false);
+}
+
+void Z3DWindow::addToSplitMarker()
+{
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  QList<Swc_Tree_Node*> swcNodeList = getDocument()->getSelectedSwcNodeList();
-  if (swcNodeList.size() == 1) {
-    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
-    emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), true);
-  }
+  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
 }
 
 void Z3DWindow::updateBody()
@@ -2985,8 +2762,9 @@ void Z3DWindow::dropEvent(QDropEvent *event)
   m_doc->loadFileList(urls);
 }
 
-void Z3DWindow::closeEvent(QCloseEvent */*event*/)
+void Z3DWindow::closeEvent(QCloseEvent * /*event*/)
 {
+  writeSettings();
   emit closed();
 }
 
@@ -4541,19 +4319,43 @@ Z3DWindow* Z3DWindow::Open(
   return window;
 }
 
+Z3DGeometryFilter* Z3DWindow::getFilter(ERendererLayer layer) const
+{
+  switch (layer) {
+  case LAYER_SWC:
+    return getSwcFilter();
+  case LAYER_GRAPH:
+    return getGraphFilter();
+  case LAYER_PUNCTA:
+    return getPunctaFilter();
+  case LAYER_TODO:
+    return getTodoFilter();
+  case LAYER_SURFACE:
+    return getSurfaceFilter();
+  case LAYER_VOLUME:
+    break;
+  }
+
+  return NULL;
+}
+
 Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
 {
   switch (layer) {
   case LAYER_SWC:
-    return getSwcFilter()->getRendererBase();
   case LAYER_GRAPH:
-    return getGraphFilter()->getRendererBase();
   case LAYER_PUNCTA:
-    return getPunctaFilter()->getRendererBase();
+  case LAYER_TODO:
+  case LAYER_SURFACE:
+  {
+    Z3DGeometryFilter *filter = getFilter(layer);
+    if (filter != NULL) {
+      return filter->getRendererBase();
+    }
+  }
+    break;
   case LAYER_VOLUME:
     return getVolumeRaycasterRenderer()->getRendererBase();
-  case LAYER_TODO:
-    return getTodoFilter()->getRendererBase();
   }
 
   return NULL;
@@ -4598,6 +4400,11 @@ void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
       getTodoFilter()->setVisible(visible);
     }
     break;
+  case LAYER_SURFACE:
+    if (getSurfaceFilter() != NULL) {
+      getSurfaceFilter()->setVisible(visible);
+    }
+    break;
   case LAYER_VOLUME:
     break;
   }
@@ -4620,6 +4427,10 @@ bool Z3DWindow::isVisible(ERendererLayer layer) const
       return getTodoFilter()->isVisible();
     }
     break;
+  case LAYER_SURFACE:
+    if (getSurfaceFilter() != NULL) {
+      return getSurfaceFilter()->isVisible();
+    }
   case LAYER_VOLUME:
     break;
   }
@@ -4634,6 +4445,7 @@ void Z3DWindow::setZScale(double scale)
   setZScale(LAYER_PUNCTA, scale);
   setZScale(LAYER_VOLUME, scale);
   setZScale(LAYER_TODO, scale);
+  setZScale(LAYER_SURFACE, scale);
 }
 
 void Z3DWindow::setScale(double sx, double sy, double sz)
@@ -4643,6 +4455,7 @@ void Z3DWindow::setScale(double sx, double sy, double sz)
   setScale(LAYER_PUNCTA, sx, sy, sz);
   setScale(LAYER_VOLUME, sx, sy, sz);
   setScale(LAYER_TODO, sx, sy, sz);
+  setScale(LAYER_SURFACE, sx, sy, sz);
 }
 
 void Z3DWindow::cropSwcInRoi()

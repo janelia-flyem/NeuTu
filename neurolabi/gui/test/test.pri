@@ -45,4 +45,6 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyembodymergertest.h \
     test/zstackobjectgrouptest.h \
     test/ztestheader.h \
-    test/zvoxelarraytest.h
+    test/zvoxelarraytest.h \
+    test/zdvidannotationtest.h \
+    test/zflyemproofdoctest.h

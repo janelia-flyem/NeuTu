@@ -128,7 +128,7 @@ void ProtocolMetadata::clearActive() {
 }
 
 bool ProtocolMetadata::isActive() {
-    return m_isActive;
+    return m_isActive && !m_activeProtocolName.empty();
 }
 
 std::string ProtocolMetadata::getActiveProtocolName()

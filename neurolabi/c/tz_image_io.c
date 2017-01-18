@@ -2665,11 +2665,19 @@ Mc_Stack* Read_V3dpbd(const char *filepath, int channel)
       }
     }
 
+#ifdef _MSC_VER
+	offs = _ftelli64(file);
+#else
     offs = ftello(file);
+#endif
 
     size_t array_offset = 0;
     for (i = 0; i < chans; i++) {
+#ifdef _MSC_VER
+	  _fseeki64(file, offs, SEEK_SET);
+#else
       fseeko(file, offs, SEEK_SET);
+#endif
       if (pixel_bytes == 2) {
         decompress_read16(file, (uint16*)(stack->array + array_offset),
             size,bswap, 0);
@@ -2690,9 +2698,9 @@ Mc_Stack* Read_V3dpbd(const char *filepath, int channel)
     }
 
     if (pixel_bytes == 2) {
-      decompress_read16(file,buffer,size*chans,bswap, 1);
+      decompress_read16(file,(uint16*)buffer,size*chans,bswap, 1);
     } else {
-      decompress_read8(file,buffer,size*chans, 1);
+      decompress_read8(file,(uint8*)buffer,size*chans, 1);
     }
 
     if (channel >= 0) {

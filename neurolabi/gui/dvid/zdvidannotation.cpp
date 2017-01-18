@@ -9,6 +9,7 @@
 #include "zjsonfactory.h"
 #include "c_json.h"
 #include "zcuboid.h"
+#include "zresolution.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -132,6 +133,17 @@ void ZDvidAnnotation::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
+double ZDvidAnnotation::GetDefaultRadius(
+    EKind kind, const ZResolution &resolution)
+{
+  double r = GetDefaultRadius(kind);
+
+  r *= resolution.getPlaneVoxelSize(
+        NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER) / 8.0;
+
+  return r;
+}
+
 double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
@@ -210,7 +222,18 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
   std::map<std::string, json_t*> entryMap = propJson.toEntryMap();
   for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
        iter != entryMap.end(); ++iter) {
-    m_propertyJson.setEntry(iter->first.c_str(), iter->second);
+    const std::string &key = iter->first;
+    bool goodKey = true;
+    if (key == "annotation") {
+      if (strlen(ZJsonParser::stringValue(iter->second)) == 0) {
+        m_propertyJson.removeKey("annotation");
+        goodKey = false;
+      }
+    }
+
+    if (goodKey) {
+      m_propertyJson.setEntry(key.c_str(), iter->second);
+    }
   }
 }
 
@@ -238,8 +261,45 @@ ZIntPoint ZDvidAnnotation::GetPosition(const ZJsonObject &json)
   return pt;
 }
 
+ZIntPoint ZDvidAnnotation::GetRelPosition(const ZJsonObject &json)
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  if (json.hasKey("To")) {
+    ZJsonArray posJson(json.value("To"));
+    std::vector<int> coords = posJson.toIntegerArray();
+    pt.set(coords[0], coords[1], coords[2]);
+  }
+
+  return pt;
+}
+
+std::string ZDvidAnnotation::GetRelationType(const ZJsonObject &relJson)
+{
+  std::string type;
+  if (relJson.hasKey("Rel")) {
+    type = ZJsonParser::stringValue(relJson["Rel"]);
+  }
+
+  return type;
+}
+
+ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const ZJsonObject &obj)
+{
+  EKind kind = KIND_INVALID;
+
+  if (obj.hasKey("Kind")) {
+    kind = GetKind(ZJsonParser::stringValue(obj["Kind"]));
+  }
+
+  return kind;
+}
+
 void ZDvidAnnotation::updatePartner(const ZJsonArray &jsonArray)
 {
+  m_partnerHint.clear();
+
   for (size_t i = 0; i < jsonArray.size(); ++i) {
     ZJsonObject partnerJson(jsonArray.value(i));
     if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
@@ -263,7 +323,7 @@ void ZDvidAnnotation::updatePartner()
 
 void ZDvidAnnotation::loadJsonObject(
     const ZJsonObject &obj,
-    NeuTube::FlyEM::EDvidAnnotationLoadMode mode)
+    FlyEM::EDvidAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -285,14 +345,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != NeuTube::FlyEM::LOAD_NO_PARTNER) {
+    if (mode != FlyEM::LOAD_NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case NeuTube::FlyEM::LOAD_PARTNER_RELJSON:
+        case FlyEM::LOAD_PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case NeuTube::FlyEM::LOAD_PARTNER_LOCATION:
+        case FlyEM::LOAD_PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0
@@ -325,7 +385,7 @@ void ZDvidAnnotation::loadJsonObject(
 
     if (obj.hasKey("Prop")) {
       m_propertyJson.setValue(obj.value("Prop").clone());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << m_propertyJson.dumpString(2) << std::endl;
 #endif
     }
@@ -470,6 +530,31 @@ int ZDvidAnnotation::getZ() const
   return getPosition().getZ();
 }
 
+template < >
+std::string ZDvidAnnotation::getProperty<std::string>(const std::string &key)
+const
+{
+  std::string prop;
+  prop = ZJsonParser::stringValue(m_propertyJson.value(key.c_str()).getData());
+
+  return prop;
+}
+
+void ZDvidAnnotation::addProperty(
+    const std::string &key, const std::string &value)
+{
+  if (!key.empty()) {
+    m_propertyJson.setEntry(key, value);
+  }
+}
+
+void ZDvidAnnotation::removeProperty(const std::string &key)
+{
+  if (m_propertyJson.hasKey(key.c_str())) {
+    m_propertyJson.removeKey(key.c_str());
+  }
+}
+
 std::string ZDvidAnnotation::GetKindName(EKind kind)
 {
   switch (kind) {
@@ -514,6 +599,21 @@ void ZDvidAnnotation::AddProperty(
 }
 
 void ZDvidAnnotation::AddProperty(
+    ZJsonObject &json, const std::string &key, const char *value)
+{
+  ZJsonObject propJson = json.value("Prop");
+  propJson.setEntry(key, value);
+  if (!propJson.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+}
+
+void ZDvidAnnotation::Annotate(ZJsonObject &json, const std::string &annot)
+{
+  AddProperty(json, "annotation", annot);
+}
+
+void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, bool value)
 {
   ZJsonObject propJson = json.value("Prop");
@@ -540,6 +640,31 @@ std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(const ZJsonObject &json)
       std::vector<int> coords = posJson.toIntegerArray();
 
       partnerArray.push_back(ZIntPoint(coords[0], coords[1], coords[2]));
+    }
+  }
+
+  return partnerArray;
+}
+
+std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(
+    const ZJsonObject &json, const std::string &relation)
+{
+  std::vector<ZIntPoint> partnerArray;
+
+  ZJsonArray jsonArray(json.value("Rels"));
+
+  for (size_t i = 0; i < jsonArray.size(); ++i) {
+    ZJsonObject partnerJson(jsonArray.value(i));
+    if (partnerJson.hasKey("To") && partnerJson.hasKey("Rel")) {
+      std::string relationType =
+          ZJsonParser::stringValue(partnerJson.value("Rel").getData());
+
+      if (relationType == relation) {
+        ZJsonArray posJson(partnerJson.value("To"));
+        std::vector<int> coords = posJson.toIntegerArray();
+
+        partnerArray.push_back(ZIntPoint(coords[0], coords[1], coords[2]));
+      }
     }
   }
 
@@ -600,6 +725,15 @@ bool ZDvidAnnotation::AddRelation(ZJsonObject &json, const ZJsonObject &relJson)
   return AddRelation(relArrayJson, relJson);
 }
 
+void ZDvidAnnotation::SetProperty(ZJsonObject &json, ZJsonObject propJson)
+{
+  if (propJson.isEmpty()) {
+    json.removeKey("Prop");
+  } else {
+    json.setEntry("Prop", propJson);
+  }
+}
+
 bool ZDvidAnnotation::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &pt)
 {
   bool removed = false;
@@ -609,8 +743,29 @@ bool ZDvidAnnotation::RemoveRelation(ZJsonArray &relArrayJson, const ZIntPoint &
     ZIntPoint to = ZJsonParser::toIntPoint(toJson["To"]);
     if (pt == to) {
       relArrayJson.remove(i);
+      --i;
       removed = true;
-      break;
+//      break;
+    }
+  }
+
+  return removed;
+}
+
+bool ZDvidAnnotation::RemoveRelation(
+    ZJsonArray &relArrayJson, const std::string &rel)
+{
+  bool removed = false;
+
+  size_t removeCount = 0;
+  size_t relCount = relArrayJson.size();
+  for (size_t i = 0; i < relCount; ++i) {
+    ZJsonObject toJson(relArrayJson.value(i - removeCount));
+    std::string relationType = ZJsonParser::stringValue(toJson["Rel"]);
+    if (relationType == rel) {
+      relArrayJson.remove(i - removeCount);
+      ++removeCount;
+      removed = true;
     }
   }
 
@@ -621,6 +776,12 @@ bool ZDvidAnnotation::RemoveRelation(ZJsonObject &json, const ZIntPoint &pt)
 {
   ZJsonArray relationArray = GetRelationJson(json);
   return RemoveRelation(relationArray, pt);
+}
+
+bool ZDvidAnnotation::RemoveRelation(ZJsonObject &json, const std::string &rel)
+{
+  ZJsonArray relationArray = GetRelationJson(json);
+  return RemoveRelation(relationArray, rel);
 }
 
 bool ZDvidAnnotation::AddRelation(
@@ -648,6 +809,59 @@ bool ZDvidAnnotation::AddRelation(
   }
 
   return adding;
+}
+
+std::string ZDvidAnnotation::GetMatchingRelation(const std::string &relType)
+{
+  std::string type = "UnknownRelationship";
+
+  if (relType == "PreSynTo" || relType == "ConvergentTo") {
+    type = "PostSynTo";
+  } else if (relType == "PostSynTo") {
+    type = "PreSynTo";
+  } else if (relType == "GroupedWith") {
+    type = relType;
+  }
+
+  return type;
+}
+
+int ZDvidAnnotation::MatchRelation(
+    const ZJsonArray &relArray, const ZIntPoint &pos, const std::string &relType)
+{
+  int index = -1;
+
+  for (size_t i = 0; i < relArray.size(); ++i) {
+    ZJsonObject testRel(relArray.value(i));
+    if (GetRelPosition(testRel) == pos) {
+      std::string testRelType = GetRelationType(testRel);
+      if (relType == "PreSynTo" || relType == "ConvergentTo") {
+        if (testRelType == "PostSynTo") {
+          index = i;
+          break;
+        }
+      } else if (relType == "PostSynTo") {
+        if (testRelType == "PreSynTo") {
+          index = i;
+          break;
+        }
+      } else if (relType == testRelType) {
+        index = i;
+        break;
+      }
+    }
+  }
+
+  return index;
+}
+
+
+int ZDvidAnnotation::MatchRelation(
+    const ZJsonArray &relArray, const ZIntPoint &pos, const ZJsonObject &rel)
+{
+  std::string relType = GetRelationType(rel);
+
+  return MatchRelation(relArray, pos, relType);
 }
 
 bool ZDvidAnnotation::AddRelation(

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zflyemorthowidget.h"
 
 #include <QGridLayout>
@@ -14,6 +15,7 @@
 #include "widgets/zimagewidget.h"
 #include "zcrosshair.h"
 #include "zflyemproofpresenter.h"
+#include "neutubeconfig.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -170,9 +172,11 @@ void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
 
 void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 {
-  qDebug() << "Proj region:" << m_xyMvc->getView()->imageWidget()->projectRegion();
+  ZOUT(LTRACE(), 5) << "Proj region:"
+                    << m_xyMvc->getView()->imageWidget()->projectRegion();
   getDocument()->updateStack(center);
-  qDebug() << "Proj region:" << m_xyMvc->getView()->imageWidget()->projectRegion();
+  ZOUT(LTRACE(), 5) << "Proj region:"
+                    << m_xyMvc->getView()->imageWidget()->projectRegion();
   m_xyMvc->getView()->updateViewBox();
   /*
   m_xyMvc->getPresenter()->optimizeStackBc();

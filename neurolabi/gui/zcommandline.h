@@ -8,6 +8,9 @@
 #include "zjsonobject.h"
 #include "zmessagereporter.h"
 
+class ZSwcTree;
+class ZSwcTreeMatcher;
+
 class ZCommandLine
 {
 public:
@@ -17,6 +20,7 @@ public:
     OBJECT_MARKER, BOUNDARY_ORPHAN, OBJECT_OVERLAP,
     SYNAPSE_OBJECT, CLASS_LIST, FLYEM_NEURON_FEATURE,
     SKELETONIZE, SEPARATE_IMAGE, TRACE_NEURON, TEST_SELF,
+    COMPARE_SWC,
     UNKNOWN_COMMAND
   };
 
@@ -32,6 +36,7 @@ private:
   int runOutputClassList();
   int runComputeFlyEmNeuronFeature();
   int runSkeletonize();
+  int runCompareSwc();
   int runImageSeparation();
   int runTraceNeuron();
   int runTest();
@@ -42,6 +47,9 @@ private:
   void expandConfig(const std::string &configFilePath, const std::string &key);
   std::string extractIncludePath(
       const std::string &configFilePath, const std::string &key);
+
+  double compareSwc(
+      ZSwcTree *tree1, ZSwcTree *tree2, ZSwcTreeMatcher &matcher) const;
 
 private:
   std::vector<std::string> m_input;
@@ -57,6 +65,7 @@ private:
   int m_blockOffset[3];
   int m_position[3];
   int m_size[3];
+  double m_scale;
   bool m_fullOverlapScreen;
   bool m_isVerbose;
   bool m_forceUpdate;

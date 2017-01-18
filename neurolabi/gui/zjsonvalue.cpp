@@ -68,7 +68,7 @@ bool ZJsonValue::isObject() const
     return false;
   }
 
-  return json_is_object(m_data) > 0;
+  return json_is_object(m_data);
 }
 
 bool ZJsonValue::isArray() const
@@ -77,7 +77,7 @@ bool ZJsonValue::isArray() const
     return false;
   }
 
-  return json_is_array(m_data) > 0;
+  return json_is_array(m_data);
 }
 
 bool ZJsonValue::isString() const
@@ -86,7 +86,7 @@ bool ZJsonValue::isString() const
     return false;
   }
 
-  return json_is_string(m_data) > 0;
+  return json_is_string(m_data);
 }
 
 bool ZJsonValue::isInteger()
@@ -95,7 +95,7 @@ bool ZJsonValue::isInteger()
     return false;
   }
 
-  return json_is_integer(m_data) > 0;
+  return json_is_integer(m_data);
 }
 
 bool ZJsonValue::isReal()
@@ -104,7 +104,7 @@ bool ZJsonValue::isReal()
     return false;
   }
 
-  return json_is_real(m_data) > 0;
+  return json_is_real(m_data);
 }
 
 bool ZJsonValue::isNumber()
@@ -113,7 +113,7 @@ bool ZJsonValue::isNumber()
     return false;
   }
 
-  return json_is_number(m_data) > 0;
+  return json_is_number(m_data);
 }
 
 bool ZJsonValue::isBoolean()
@@ -122,7 +122,7 @@ bool ZJsonValue::isBoolean()
     return false;
   }
 
-  return json_is_boolean(m_data) > 0;
+  return json_is_boolean(m_data);
 }
 
 bool ZJsonValue::isEmpty() const

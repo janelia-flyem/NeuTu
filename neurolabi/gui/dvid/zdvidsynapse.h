@@ -13,6 +13,7 @@
 class ZJsonArray;
 class ZDvidTarget;
 class ZVaa3dMarker;
+class ZDvidReader;
 
 class ZDvidSynapse : public ZDvidAnnotation
 {
@@ -41,54 +42,13 @@ public:
 
   ZVaa3dMarker toVaa3dMarker(double radius) const;
 
-//  void setPosition(int x, int y, int z);
-//  void setPosition(const ZIntPoint &pos);
+  void updatePartnerProperty(ZDvidReader &reader);
 
-//  const ZIntPoint& getPosition() const { return m_position; }
+  EKind getParterKind(size_t i) const;
 
-//  void setDefaultRadius();
-//  void setRadius(double r) { m_radius = r; }
-
-//  double getRadius() const { return m_radius; }
-
-//  void setKind(EKind kind) { m_kind = kind; }
-//  EKind getKind() const { return m_kind; }
-//  static std::string GetKindName(EKind kind);
-//  static EKind GetKind(const std::string &name);
-
-//  void setTag(const std::string &tag) { m_tag = tag; }
-
-//  void setKind(const std::string &kind);
-
-//  void setDefaultColor();
-
-//  int getX() const;
-//  int getY() const;
-//  int getZ() const;
-
-
-  /*
-  void loadJsonObject(
-      const ZJsonObject &obj,
-      NeuTube::FlyEM::EDvidAnnotationLoadMode mode = NeuTube::FlyEM::LOAD_NO_PARTNER);
-  ZJsonObject toJsonObject() const;
-  */
-
-//  void clear();
 
   friend std::ostream& operator<< (
       std::ostream &stream, const ZDvidSynapse &synapse);
-
-  /*
-  void clearPartner();
-  void addPartner(int x, int y, int z);
-  void addTag(const std::string &tag);
-
-  bool isValid() const;
-
-  static QColor GetDefaultColor(EKind kind);
-  static double GetDefaultRadius(EKind kind);
-  */
 
   /*
   class Relation {
@@ -111,6 +71,10 @@ public:
     ERelation m_relation;
   };
   */
+
+
+  static void SetConfidenceProp(ZJsonObject &propJson, double conf);
+  static void SetConfidence(ZJsonObject &json, double conf);
 
 #if 0
 public: //Json APIs
@@ -150,31 +114,11 @@ private:
 //  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
-#if 0
-private:
-  ZIntPoint m_position;
-  double m_radius;
-  EKind m_kind;
-  std::vector<std::string> m_tagArray;
-//  std::vector<ZIntPoint> m_partnerHint;
-  ZJsonObject m_propertyJson;
-#endif
-};
-/*
-template <typename InputIterator>
-int ZDvidSynapse::AddRelation(
-    ZJsonObject &json, const InputIterator &first,
-    const InputIterator &last, const std::string &rel)
-{
-  int count = 0;
-  for (InputIterator iter = first; iter != last; ++iter) {
-    if (AddRelation(json, *iter, rel)) {
-      ++count;
-    }
-  }
+  static QColor GetArrowColor(bool verified);
 
-  return count;
-}
-*/
+private:
+  std::vector<bool> m_isPartnerVerified;
+  std::vector<EKind> m_partnerKind;
+};
 
 #endif // ZDVIDSYNAPSE_H

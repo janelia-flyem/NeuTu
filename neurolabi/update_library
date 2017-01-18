@@ -22,6 +22,11 @@ then
   mkdir release
 fi
 
+if [ ! -d sanitize ]
+then
+  mkdir sanitize
+fi
+
 if [ ! -d lib ]
 then
   mkdir lib
@@ -64,6 +69,12 @@ do
     force_update=1
     is_config_option=0
   fi
+  if [ $var == "--sanitize" ]
+  then
+    lib_config=${lib_config}_sanitize
+    is_config_option=0
+  fi
+
   if [ $is_config_option -eq 1 ]
   then
     all_config_option="$all_config_option $var"

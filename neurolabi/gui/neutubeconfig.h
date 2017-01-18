@@ -27,7 +27,8 @@ public:
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
-    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
+    WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
+    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
   };
 
   static NeutubeConfig& getInstance() {
@@ -43,9 +44,13 @@ public:
 
   static QString GetFlyEmConfigPath();
   static void SetFlyEmConfigPath(const QString &path);
+  static void UseDefaultFlyEmConfig(bool on);
+  static bool UsingDefaultFlyemConfig();
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
+
+  static void SetDataDir(const QString &dataDir);
 #endif
 
   void enableProfileLogging(bool on);
@@ -70,17 +75,25 @@ public:
   static void EnableAutoStatusCheck(bool on);
   static bool AutoStatusCheck();
 
-
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
   }
+
+  static void SetApplicationDir(const std::string &str);
 
   bool load(const std::string &filePath);
   void print();
 
   std::string getPath(Config_Item item) const;
+
+  /*!
+   * \brief Get the application directory
+   *
+   * It is supposed to be where the executable is located.
+   */
   inline const std::string& getApplicatinDir() const {
     return m_applicationDir; }
+
   inline std::string getConfigPath() const {
     return getApplicatinDir() + "/config.xml"; }
   inline std::string getHelpFilePath() const {
@@ -102,7 +115,12 @@ public:
     return m_softwareName;
   }
 
+  void setDefaultSoftwareName();
+  void setTestSoftwareName();
+
   static std::string GetSoftwareName();
+  static void SetDefaultSoftwareName();
+  static void SetTestSoftwareName();
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -112,6 +130,15 @@ public:
   inline QSettings& getSettings() {
     return m_settings;
   }
+#if 0
+  inline QDebug& getTraceStream() {
+    return *m_traceStream;
+  }
+
+  static QDebug& GetTraceStream() {
+    return NeutubeConfig::getInstance().getTraceStream();
+  }
+#endif
 #endif
 
   class MainWindowConfig {
@@ -329,6 +356,9 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
+  void init();
+  void updateLogDir();
+
 private:
   std::string m_application;
   std::string m_softwareName;
@@ -357,6 +387,7 @@ private:
   //std::string m_autoSaveDir;
   std::string m_workDir;
   std::string m_logDir;
+  std::string m_logDestDir;
   int m_autoSaveInterval;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
@@ -366,6 +397,7 @@ private:
   ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
+//  QDebug *m_traceStream;
   QSettings m_settings;
 #endif
 };

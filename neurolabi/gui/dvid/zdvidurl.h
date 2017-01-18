@@ -3,9 +3,10 @@
 
 #include <string>
 
+#include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
-#include "neutube_def.h"
+#include "dvid/zdviddef.h"
 
 class ZIntPoint;
 class ZIntCuboid;
@@ -16,7 +17,13 @@ public:
   ZDvidUrl();
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
   ZDvidUrl(const ZDvidTarget &target);
+  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid);
 
+
+  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target, const std::string &uuid);
+
+  std::string getApiLoadUrl() const;
   std::string getNodeUrl() const;
   std::string getDataUrl(const std::string &dataName) const;
   std::string getDataUrl(ZDvidData::ERole role) const;
@@ -30,6 +37,10 @@ public:
   std::string getApiUrl() const;
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
+  std::string getMasterUrl() const;
+  std::string getDefaultDataInstancesUrl() const;
+
+  std::string getCommitInfoUrl() const;
 
   std::string getSkeletonUrl(const std::string &bodyLabelName) const;
   std::string getSkeletonUrl(
@@ -59,6 +70,8 @@ public:
   std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
   std::string getSparsevolUrl(
       uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
+  std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
+
 
 
 //  std::string getCoarseSparsevolUrl() const;
@@ -78,11 +91,11 @@ public:
       int ix, int iy, int iz, int blockNumber = 1) const;
 
   std::string getLabels64Url() const;
-  std::string getLabels64Url(
-      const std::string &name,
+  std::string getLabels64Url(int zoom) const;
+  std::string getLabels64Url(const std::string &name,
       int sx, int sy, int sz, int x0, int y0, int z0) const;
   std::string getLabels64Url(
-      int sx, int sy, int sz, int x0, int y0, int z0) const;
+      int sx, int sy, int sz, int x0, int y0, int z0, int zoom = 0) const;
   /*
   std::string getLabelSliceUrl(const std::string &name, int dim1, int dim2,
                                int )
@@ -190,6 +203,9 @@ public:
       const std::string &dataName, const ZIntCuboid &box) const;
 
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
+  std::string getAnnotationSyncUrl(
+      const std::string &dataName, const std::string &queryString) const;
+  std::string getLabelszSyncUrl(const std::string &dataName) const;
 
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
@@ -199,7 +215,7 @@ public:
   std::string getSynapseUrl(int x, int y, int z,
                             int width, int height, int depth) const;
   std::string getSynapseUrl(const ZIntCuboid &box) const;
-  std::string getSynapseUrl(uint64_t label) const;
+  std::string getSynapseUrl(uint64_t label, bool relation) const;
   std::string getSynapseElementsUrl() const;
   std::string getSynapseMoveUrl(
       const ZIntPoint &from, const ZIntPoint &to) const;
@@ -219,10 +235,22 @@ public:
 
   void setUuid(const std::string &uuid);
 
+
+  std::string getSynapseLabelszUrl(int n) const;
+
+  static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
+  std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
+
+  std::string getSynapseLabelszThresholdUrl(int threshold) const;
+  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &endpoint);
 
 private:
   ZDvidTarget m_dvidTarget;

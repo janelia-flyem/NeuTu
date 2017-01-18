@@ -265,6 +265,26 @@ bool ZDocPlayerList::hasPlayerUnsync(ZStackObjectRole::TRole role) const
   return false;
 }
 
+bool ZDocPlayerList::contains(const ZStackObject *data)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return containsUnsync(data);
+}
+
+bool ZDocPlayerList::containsUnsync(const ZStackObject *data)
+{
+  for(QList<ZDocPlayer*>::const_iterator iter = m_playerList.begin();
+      iter != m_playerList.end(); ++iter) {
+    ZDocPlayer *player = *iter;
+    if (player->getData() == data) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZDocPlayerList::hasPlayer(ZStackObjectRole::TRole role) const
 {
   QMutexLocker locker(&m_mutex);
@@ -315,7 +335,20 @@ int ZStroke2dPlayer::getLabel() const
 {
   ZStroke2d *stroke = getCompleteData();
 
-  return stroke->getLabel();
+  if (stroke != NULL) {
+    return stroke->getLabel();
+  }
+
+  return 0;
+}
+
+void ZStroke2dPlayer::setLabel(int label)
+{
+  ZStroke2d *stroke = getCompleteData();
+
+  if (stroke != NULL) {
+    stroke->setLabel(label);
+  }
 }
 
 QString ZStroke2dPlayer::getTypeName() const
@@ -395,6 +428,11 @@ ZObject3dPlayer::ZObject3dPlayer(ZStackObject *data) :
 const ZObject3d* ZObject3dPlayer::getCompleteData() const
 {
   return dynamic_cast<const ZObject3d*>(m_data);
+}
+
+ZObject3d* ZObject3dPlayer::getCompleteData()
+{
+  return dynamic_cast<ZObject3d*>(m_data);
 }
 
 void ZObject3dPlayer::labelStack(ZStack *stack, int value) const
@@ -484,6 +522,15 @@ int ZObject3dPlayer::getLabel() const
   }
 
   return 0;
+}
+
+void ZObject3dPlayer::setLabel(int label)
+{
+  ZObject3d *obj = getCompleteData();
+
+  if (obj != NULL) {
+    obj->setLabel(label);
+  }
 }
 
 ZSwcTree* ZObject3dPlayer::getSwcDecoration() const
@@ -601,7 +648,9 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
   if (m_enableUpdate) {
     ZDvidLabelSlice *obj = getCompleteData();
     if (obj != NULL) {
-      updated = obj->update(viewParam);
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
     }
   }
 

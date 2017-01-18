@@ -75,6 +75,9 @@ class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
 class FlyEmSettingDialog;
+class ZDvidBodyPositionDialog;
+class ZProofreadWindow;
+class ZTestOptionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -131,6 +134,8 @@ public: /* File and message dialogs */
               NeuTube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
+  QMenu* getSandboxMenu() const;
+
 public:
   bool initBodySplitProject();
 
@@ -144,6 +149,7 @@ public:
 public: //Testing routines
   void testFlyEmProofread();
 
+
 signals:
   void dvidRequestCanceled();
   void progressDone();
@@ -151,6 +157,7 @@ signals:
   void progressStarted(QString title, int nticks);
   void docReaderReady(ZStackDocReader*);
   void docReady(ZStackDocPtr);
+  void docReady(ZStackDoc*);
   void fileOpenFailed(QString fileName, QString reason);
 
 public slots:
@@ -195,13 +202,15 @@ public slots:
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
 
-  ZStackFrame* createStackFrame(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDoc *doc);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
+  ZProofreadWindow * startProofread();
   void launchSplit(const QString &str);
 
 private:
@@ -223,8 +232,8 @@ protected:
 
   void createActionMap();
 
-  ZStackDocReader* openFileFunc(const QString &filePath);
-  void openFileFunc2(const QString &filePath);
+//  ZStackDocReader* openFileFunc(const QString &filePath);
+  void openFileFunc(const QString &filePath);
   void openFileListFunc(const QStringList fileList);
   void runSplitFunc(ZStackFrame *frame);
 
@@ -316,6 +325,8 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test(ZTestOptionDialog *dlg);
+
   void test2();
 
   // slots for frame
@@ -358,7 +369,7 @@ private slots:
   void on_actionFlyEmSelect_connection_triggered();
   void on_actionAxon_Export_triggered();
   void on_actionExtract_body_triggered();
-  void on_actionPredict_errors_triggered();
+//  void on_actionPredict_errors_triggered();
   void on_actionCompute_Features_triggered();
   void on_actionMexican_Hat_triggered();
   void on_actionInvert_triggered();
@@ -388,8 +399,8 @@ private slots:
   void on_actionSparse_objects_triggered();
   void on_actionDendrogram_triggered();
   void on_actionPen_Width_for_SWC_Display_triggered();
-  void on_actionDVID_Object_triggered();
-  void on_actionDvid_Object_triggered();
+//  void on_actionDVID_Object_triggered();
+//  void on_actionDvid_Object_triggered();
   void on_actionAssign_Clustering_triggered();
   void on_actionSWC_Rescaling_triggered();
   void on_actionSurface_detection_triggered();
@@ -424,7 +435,7 @@ private slots:
 
   void on_actionCreate_Databundle_triggered();
 
-  void on_actionCreate_Thumbnails_triggered();
+//  void on_actionCreate_Thumbnails_triggered();
   
   void on_actionCreate_ROI_triggered();
 
@@ -473,6 +484,27 @@ private slots:
   void on_actionRemove_Obsolete_Annotations_triggered();
 
   void on_actionGenerate_KC_c_Actor_triggered();
+
+  void on_actionMake_Movie_MB_triggered();
+
+  void on_actionGenerate_KC_s_Actor_triggered();
+
+  void on_actionGenerate_MB_Actor_triggered();
+
+  void on_actionGenerate_KC_p_Actor_triggered();
+
+  void on_actionGenerate_All_KC_Actor_triggered();
+
+  void on_actionGenerate_PAM_Actor_triggered();
+
+  void on_actionGenerate_MB_Conn_Actor_triggered();
+
+  void on_actionGet_Body_Positions_triggered();
+
+  void on_actionMake_Movie_2_triggered();
+
+  void tryToClose();
+  void showAndRaise();
 
 private:
   void createActions();
@@ -536,6 +568,14 @@ private:
   void setSkeletonizer(
       ZStackSkeletonizer &skeletonizer,
       const FlyEmSkeletonizationDialog &dlg);
+
+  void makeMovie();
+
+  void generateMBKcCast(const std::string &movieFolder);
+  void generateMBAllKcCast(const std::string &movieFolder);
+  void generateMBPAMCast(const std::string &movieFolder);
+  void generateMBONCast(const std::string &movieFolder);
+  void generateMBONConnCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;
@@ -693,6 +733,9 @@ private:
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
   FlyEmSettingDialog *m_flyemSettingDlg;
+  ZDvidBodyPositionDialog *m_bodyPosDlg;
+  ZTestOptionDialog *m_testOptionDlg;
+
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;
@@ -713,6 +756,8 @@ private:
   ZTestDialog *m_testDlg;
   ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
+
+  int m_proofreadWindowCount;
 
   QTimer *m_autoCheckTimer;
   //ZStackDocReader *m_docReader;

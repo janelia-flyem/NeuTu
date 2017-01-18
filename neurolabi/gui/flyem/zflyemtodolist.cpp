@@ -27,6 +27,7 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
   if (m_reader.open(target)) {
+    m_writer.open(target);
     m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
   }
@@ -39,6 +40,7 @@ void ZFlyEmToDoList::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = NeuTube::Z_AXIS;
+  m_isReady = false;
 }
 
 ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
@@ -56,7 +58,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (itemJson.hasKey("Pos")) {
         ZFlyEmToDoItem item;
-        item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+        item.loadJsonObject(itemJson, FlyEM::LOAD_PARTNER_RELJSON);
         addItem(item, DATA_LOCAL);
       }
     }
@@ -130,6 +132,7 @@ void ZFlyEmToDoList::download(int z)
       if (m_dataRange.isEmpty()) {
         slice.setStatus(STATUS_READY);
       } else {
+        box.shiftSliceAxisInverse(getSliceAxis());
         slice.setDataRect(
               QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                     box.getWidth(), box.getHeight()));
@@ -139,21 +142,22 @@ void ZFlyEmToDoList::download(int z)
   }
 }
 
+/*
 void ZFlyEmToDoList::downloadForLabel(uint64_t label)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label));
+  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getTodoListUrl(label, false));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZFlyEmToDoItem item;
-    item.loadJsonObject(itemJson, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+    item.loadJsonObject(itemJson, FlyEM::LOAD_PARTNER_RELJSON);
     if (item.isValid()) {
       addItem(item, DATA_LOCAL);
     }
   }
 }
-
+*/
 ZFlyEmToDoList::ItemSlice& ZFlyEmToDoList::getSlice(int z, EAdjustment adjust)
 {
   if (adjust == ADJUST_NONE) {
@@ -266,8 +270,8 @@ bool ZFlyEmToDoList::removeItem(int x, int y, int z, EDataScope scope)
       return true;
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (writer.good()) {
       writer.deleteToDoItem(x, y, z);
     }
 
@@ -300,8 +304,8 @@ void ZFlyEmToDoList::addItem(
       targetItem.setSelected(isSelected);
     }
   } else {
-    ZDvidWriter writer;
-    if (writer.open(m_dvidTarget)) {
+    ZDvidWriter &writer = m_writer;
+    if (m_writer.good()) {
       writer.writeToDoItem(item);
       if (writer.isStatusOk()) {
         addItem(item, DATA_LOCAL);
@@ -313,6 +317,16 @@ void ZFlyEmToDoList::addItem(
 void ZFlyEmToDoList::setRange(const ZIntCuboid &dataRange)
 {
   m_dataRange = dataRange;
+}
+
+void ZFlyEmToDoList::setReady(bool ready)
+{
+  m_isReady = ready;
+}
+
+bool ZFlyEmToDoList::isReady() const
+{
+  return m_isReady;
 }
 
 void ZFlyEmToDoList::display(
@@ -338,23 +352,25 @@ void ZFlyEmToDoList::display(
       rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
     }
 
-    for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
-      int z = painter.getZ(slice + ds);
-      if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
-          z <= m_dvidInfo.getEndCoordinates().getZ()) {
-        ItemSlice &itemSlice =
-            const_cast<ZFlyEmToDoList&>(*this).getSlice(z, ADJUST_FULL);
-        bool isReady = itemSlice.isReady();
+    if (!isReady()) {
+      for (int ds = -sliceRange; ds <= sliceRange; ++ds) {
+        int z = painter.getZ(slice + ds);
+        if (z >= m_dvidInfo.getStartCoordinates().getZ() ||
+            z <= m_dvidInfo.getEndCoordinates().getZ()) {
+          ItemSlice &itemSlice =
+              const_cast<ZFlyEmToDoList&>(*this).getSlice(z, ADJUST_FULL);
+          bool ready = itemSlice.isReady();
 
-        if (!isReady && m_view != NULL) {
-          isReady =itemSlice.isReady(
-                m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
-        }
-        if (!isReady) {
-          int blockZ = m_dvidInfo.getBlockIndexZ(z);
-          if (blockZ != currentBlockZ) {
-            currentBlockZ = blockZ;
-            const_cast<ZFlyEmToDoList&>(*this).download(z);
+          if (!ready && m_view != NULL) {
+            ready =itemSlice.isReady(
+                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+          }
+          if (!ready) {
+            int blockZ = m_dvidInfo.getBlockIndexZ(z);
+            if (blockZ != currentBlockZ) {
+              currentBlockZ = blockZ;
+              const_cast<ZFlyEmToDoList&>(*this).download(z);
+            }
           }
         }
       }

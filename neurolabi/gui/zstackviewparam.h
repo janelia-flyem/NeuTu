@@ -31,8 +31,17 @@ public:
     return m_action;
   }
 
+
+  inline const QRectF& getProjRect() const {
+    return m_projRect;
+  }
+
   void setZ(int z);
   void setViewPort(const QRect &rect);
+  void setProjRect(const QRectF &rect);
+
+  double getZoomRatio() const;
+
   void setViewPort(double x0, double y0, double x1, double y1);
   void setExploreAction(NeuTube::View::EExploreAction action);
   void setSliceAxis(NeuTube::EAxis sliceAxis);
@@ -42,6 +51,8 @@ public:
   bool operator !=(const ZStackViewParam &param) const;
 
   bool contains(const ZStackViewParam &param) const;
+
+  bool contains(int x, int y, int z);
 
   /*!
    * \brief Resize the parameter by keeping the center relatively constant
@@ -62,6 +73,7 @@ private:
 private:
   int m_z;
   QRect m_viewPort;
+  QRectF m_projRect;
   NeuTube::ECoordinateSystem m_coordSys;
   NeuTube::View::EExploreAction m_action;
   NeuTube::EAxis m_sliceAxis;

@@ -2,10 +2,12 @@
 #include <iostream>
 #include <queue>
 
+#include "QsLog.h"
 #include "zjsonobject.h"
 #include "zstring.h"
 #include "zjsonparser.h"
 #include "zerror.h"
+#include "zdvidutil.h"
 
 ZDvidVersionDag::ZDvidVersionDag()
 {
@@ -226,6 +228,30 @@ bool ZDvidVersionDag::addNode(
   return succ;
 }
 
+bool ZDvidVersionDag::isAncester(
+    const std::string &uuid, const std::string &ancester) const
+{
+  bool result = false;
+
+  ZTreeIterator<ZDvidVersionNode> iter(m_data->m_tree);
+  while (iter.hasNext()) {
+    ZTreeNode<ZDvidVersionNode> *tn = iter.nextNode();
+    ZString currentUuid = tn->data().getUuid();
+    if (currentUuid.startsWith(uuid)) {
+      ZTreeNode<ZDvidVersionNode> *parent = tn->parent();
+      while (parent != NULL) {
+        if (ZString(parent->data().getUuid()).startsWith(ancester)) {
+          result = true;
+        }
+        parent = parent->parent();
+      }
+      break;
+    }
+  }
+
+  return result;
+}
+
 void ZDvidVersionDag::print() const
 {
   const std::map<std::string, std::list<std::string> > &parentMap =
@@ -258,16 +284,20 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
     }
   }
 
-  ZJsonObject dagJson = ZJsonObject(ZJsonObject(obj.value(fullUuid.c_str())).value("DAG"));
+  ZJsonObject dagJson =
+      ZJsonObject(ZJsonObject(obj.value(fullUuid.c_str())).value("DAG"));
   if (!dagJson.isEmpty()) {
     std::queue<std::string> uuidQueue;
 
     std::string rootUuid = ZJsonParser::stringValue(dagJson["Root"]);
 
-    RECORD_WARNING(rootUuid.empty(), "empty root uuid");
+    if (rootUuid.empty()) {
+      LWARN() << "empty root uuid";
+      return;
+    }
 
     uuidQueue.push(rootUuid);
-    setRoot(rootUuid.substr(0, 4));
+    setRoot(rootUuid.substr(0, DVID_UUID_COMMON_LENGTH));
 
     ZJsonObject allNodeJson(dagJson.value("Nodes"));
 
@@ -302,7 +332,8 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
         if (!hasNode(childUuid)) {
           uuidQueue.push(childUuid);
         }
-        addNode(childUuid.substr(0, 4), nextUuid.substr(0, 4));
+        addNode(childUuid.substr(0, DVID_UUID_COMMON_LENGTH),
+                nextUuid.substr(0, DVID_UUID_COMMON_LENGTH));
       }
     }
 
@@ -310,7 +341,7 @@ void ZDvidVersionDag::load(const ZJsonObject &obj, const std::string &uuid)
          iter != nodeList.end(); ++iter) {
       const ZDvidVersionNode &node = *iter;
       if (node.isLocked()) {
-        lock(node.getUuid().substr(0, 4));
+        lock(node.getUuid().substr(0, DVID_UUID_COMMON_LENGTH));
       }
     }
   }

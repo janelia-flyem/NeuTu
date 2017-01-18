@@ -48,6 +48,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  void clear();
+
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
@@ -77,7 +79,12 @@ public:
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
 
-  void syncAnnotation(const std::string &name);
+  void syncAnnotation(
+      const std::string &name, const std::string &queryString = "");
+  void syncLabelsz(const std::string &dataName,
+                   const std::string &annotationName);
+  void syncSynapseLabelsz();
+  void createSynapseLabelsz();
 
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);
@@ -93,6 +100,7 @@ public:
    */
   void createKeyvalue(const std::string &name);
 
+  void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
   void deleteKey(const QString &dataName, const QString &key);
 
@@ -110,6 +118,8 @@ public:
   bool lockNode(const std::string &message);
   std::string createBranch();
 
+  uint64_t rewriteBody(uint64_t label);
+
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
@@ -120,6 +130,8 @@ public:
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
   uint64_t writePartition(const ZObject3dScan &bm, const ZObject3dScan &bs,
                           uint64_t oldLabel);
+  uint64_t chopBody(
+      const ZObject3dScan &obj, const ZIntCuboid &box, uint64_t oldLabel);
 
   uint64_t writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLabel);
 
@@ -170,6 +182,8 @@ public:
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
+  void writeDefaultDataSetting(const ZJsonObject &obj);
+  void writeDefaultDataSetting();
 
   inline int getStatusCode() const {
     return m_statusCode;

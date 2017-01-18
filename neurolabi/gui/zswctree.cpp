@@ -1,5 +1,4 @@
 #if defined(_QT_GUI_USED_)
-//#include <QtGui>
 #include <QPointF>
 #endif
 
@@ -36,8 +35,11 @@
 #include "zclosedcurve.h"
 #include "zintpoint.h"
 #include "zpainter.h"
+#include "zintcuboid.h"
+#include "zstack.hxx"
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
+#include "QsLog/QsLog.h"
 #endif
 
 using namespace std;
@@ -53,6 +55,12 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   m_type = GetType();
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
+
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
+#endif
+#endif
 }
 
 ZSwcTree::~ZSwcTree()
@@ -66,11 +74,17 @@ ZSwcTree::~ZSwcTree()
   }
 #endif
 
-  std::cout << "Deconstructing " << this << ": SWC " << ", "
-            << getSource() << std::endl;
-
   if (m_tree != NULL) {
+#ifdef _FLYEM_2
+    std::cout << "Killing " << this << " " << m_tree << ": SWC " << ", "
+              << getSource() << std::endl;
+#endif
     Kill_Swc_Tree(m_tree);
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "SWC killed: " << this;
+#endif
+#endif
   }
   m_tree = NULL;
 }
@@ -115,7 +129,7 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
   deprecate(ALL_COMPONENT);
 }
 
-bool ZSwcTree::hasRegularNode()
+bool ZSwcTree::hasRegularNode() const
 {
   if (m_tree != NULL) {
     if (SwcTreeNode::isRegular(m_tree->root)) {
@@ -583,6 +597,33 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   }
 
   if (getStructrualMode() == ZSwcTree::STRUCT_CLOSED_CURVE) {
+    ZSwcTree::RegularRootIterator rootIter(this);
+    while (rootIter.hasNext()) {
+      Swc_Tree_Node *tn = rootIter.next();
+      ZSwcTree::DownstreamIterator dsIter(tn);
+//      std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair;
+      std::vector<Swc_Tree_Node*> nodeArray;
+      while (dsIter.hasNext()) {
+        Swc_Tree_Node *tn = dsIter.next();
+        if (SwcTreeNode::isTerminal(tn)) {
+          nodeArray.push_back(tn);
+        }
+      }
+
+      if (nodeArray.size() == 2) {
+        QPointF lineStart, lineEnd;
+        bool visible = false;
+        computeLineSegment(
+              nodeArray[0], nodeArray[1], lineStart, lineEnd, visible,
+              dataFocus, isProj);
+        if (visible) {
+          pen.setColor(QColor(0, 255, 0));
+          painter.setPen(pen);
+          painter.drawLine(lineStart, lineEnd);
+        }
+      }
+    }
+    /*
     std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair =
         extractCurveTerminal();
     if (nodePair.first != NULL && nodePair.second != NULL) {
@@ -597,6 +638,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         painter.drawLine(lineStart, lineEnd);
       }
     }
+    */
   }
   //pen.setCosmetic(false);
 
@@ -1947,7 +1989,7 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
 
 ZSwcPath ZSwcTree::getLongestPath()
 {
-  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
+//  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
 
   const std::vector<Swc_Tree_Node*> leafArray =
       getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR);
@@ -1968,13 +2010,15 @@ ZSwcPath ZSwcTree::getLongestPath()
         //Find the common ancestor of the leaves
         Swc_Tree_Node *ancestor = SwcTreeNode::commonAncestor(leafArray[i],
                                                               leafArray[j]);
-        double length = distanceArray[SwcTreeNode::index(leafArray[i])] +
-            distanceArray[SwcTreeNode::index(leafArray[j])] -
-            2.0 * distanceArray[SwcTreeNode::index(ancestor)];
-        if (length > maxLength) {
-          maxLength = length;
-          leaf1 = leafArray[i];
-          leaf2 = leafArray[j];
+        if (SwcTreeNode::isRegular(ancestor)) {
+          double length = distanceArray[SwcTreeNode::index(leafArray[i])] +
+              distanceArray[SwcTreeNode::index(leafArray[j])] -
+              2.0 * distanceArray[SwcTreeNode::index(ancestor)];
+          if (length > maxLength) {
+            maxLength = length;
+            leaf1 = leafArray[i];
+            leaf2 = leafArray[j];
+          }
         }
       }
     }
@@ -2650,6 +2694,15 @@ void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
   }
 }
 
+Swc_Tree_Node* ZSwcTree::getThickestNode() const
+{
+  if (hasRegularNode()) {
+    return Swc_Tree_Thickest_Node(m_tree);
+  }
+
+  return NULL;
+}
+
 void ZSwcTree::markSoma(double radiusThre, int somaType, int otherType)
 {
   std::vector<Swc_Tree_Node*> treeRoots;
@@ -3151,6 +3204,34 @@ void ZSwcTree::labelStack(Stack *stack)
     }
   }
 }
+
+
+void ZSwcTree::labelStack(ZStack* stack,int v)
+{
+  Swc_Tree_Node_Label_Workspace ws;
+  Stack* _stack=stack->c_stack();
+  ws.sdw.color.r = v;
+  ws.sdw.color.g = 255;
+  ws.sdw.color.b = 255;
+  ws.sdw.h = 1.0;
+  ws.sdw.s = 1.0;
+  ws.sdw.v = 1.0;
+  ws.sdw.blend_mode = 0;
+  ws.sdw.color_mode = 0;
+  ws.sdw.z_scale = 1.0;
+  ws.label_mode = SWC_TREE_LABEL_ALL;
+  ZIntPoint offset=stack->getOffset();
+  ws.offset[0] = -offset.getX();
+  ws.offset[1] = -offset.getY();
+  ws.offset[2] = -offset.getZ();
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      Swc_Tree_Node_Label_Stack(iter, _stack, &ws);
+    }
+  }
+}
+
 
 double ZSwcTree::computeBackTraceLength()
 {

@@ -1,6 +1,7 @@
 #include "zpointarray.h"
 #include <fstream>
 #include <iostream>
+#include <cctype>
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zstring.h"

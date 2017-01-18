@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+#include <QElapsedTimer>
 #endif
 #include <string.h>
 #include <iostream>
@@ -107,7 +108,10 @@ ZStack::ZStack(const ZStack &/*src*/)
 
 ZStack::~ZStack()
 {
+//  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+  tic();
   clear();
+  ZOUT(LTRACE(), 5) << "Stack deleted" << this << toc() << "ms";
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const
@@ -333,7 +337,7 @@ Stack *ZStack::averageOfAllChannels()
     stack = C_Stack::clone(c_stack());
   }
   if (nchannel > 1) {
-    stack = Make_Stack(data()->kind, data()->width, data()->height, data()->depth);
+    stack = C_Stack::make(data()->kind, data()->width, data()->height, data()->depth);
     size_t nvoxel = getVoxelNumber();
     Image_Array ima;
     ima.array = stack->array;
@@ -567,13 +571,13 @@ bool ZStack::load(Stack *stack, bool isOwner)
     if (isOwner)
       C_Stack::kill(stack);
   } else {
-    m_stack = new Mc_Stack;
+    m_stack = (Mc_Stack*) malloc(sizeof(Mc_Stack));
 
     C_Stack::view(stack, m_stack);
 
     if (isOwner) {
       stack->array = NULL;
-      Kill_Stack(stack);
+      C_Stack::kill(stack);
       m_dealloc = C_Stack::systemKill;
     } else {
       m_dealloc = NULL;
@@ -1138,7 +1142,7 @@ int ZStack::autoThreshold(int ch) const
     }
 
     int *hist = Stack_Hist_M(stack, locmax);
-    Kill_Stack(locmax);
+    C_Stack::kill(locmax);
 
     int low, high;
     Int_Histogram_Range(hist, &low, &high);
@@ -1812,6 +1816,39 @@ void ZStack::setOne()
   }
 }
 
+template <typename T>
+void SwapValue(T *array, size_t length, int v1, int v2)
+{
+  for (size_t i = 0; i < length; ++i) {
+    if (array[i] == v1) {
+      array[i] = v2;
+    } else if (array[i] == v2) {
+      array[i] = v1;
+    }
+  }
+}
+
+void ZStack::swapValue(int v1, int v2)
+{
+  size_t voxelNumber = getVoxelNumber();
+  for (int c = 0; c < channelNumber(); ++c) {
+    switch (kind()) {
+    case GREY:
+      SwapValue(array8(c), voxelNumber, v1, v2);
+      break;
+    case GREY16:
+      SwapValue(array16(c), voxelNumber, v1, v2);
+      break;
+    case FLOAT32:
+      SwapValue(array32(c), voxelNumber, v1, v2);
+      break;
+    case FLOAT64:
+      SwapValue(array64(c), voxelNumber, v1, v2);
+      break;
+    }
+  }
+}
+
 void ZStack::printInfo() const
 {
   std::cout << "Stack: " << std::endl;
@@ -2068,6 +2105,13 @@ void ZStack::downsampleMax(int xintv, int yintv, int zintv)
 
     setData(result);
   }
+}
+
+void ZStack::pushDsIntv(int dx, int dy, int dz)
+{
+  m_dsIntv.setX((m_dsIntv.getX() + 1) * (dx + 1) - 1);
+  m_dsIntv.setY((m_dsIntv.getY() + 1) * (dy + 1) - 1);
+  m_dsIntv.setZ((m_dsIntv.getZ() + 1) * (dz + 1) - 1);
 }
 
 void ZStack::downsampleMin(int xintv, int yintv, int zintv)

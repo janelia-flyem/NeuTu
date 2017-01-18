@@ -1,5 +1,7 @@
 #include "zstackviewparam.h"
 
+#include "geometry/zgeometry.h"
+
 ZStackViewParam::ZStackViewParam()
 {
   init(NeuTube::COORD_RAW_STACK);
@@ -16,6 +18,7 @@ void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
   m_coordSys = coordSys;
   m_action = NeuTube::View::EXPLORE_UNKNOWN;
   m_fixingZ = false;
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 void ZStackViewParam::setZ(int z)
@@ -32,6 +35,11 @@ void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 {
   m_viewPort.setTopLeft(QPoint(x0, y0));
   m_viewPort.setBottomRight(QPoint(x1, y1));
+}
+
+void ZStackViewParam::setProjRect(const QRectF &rect)
+{
+  m_projRect = rect;
 }
 
 void ZStackViewParam::setExploreAction(NeuTube::View::EExploreAction action)
@@ -60,11 +68,31 @@ bool ZStackViewParam::contains(const ZStackViewParam &param) const
   return false;
 }
 
+bool ZStackViewParam::contains(int x, int y, int z)
+{
+  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+
+  if (z == m_z) {
+    return getViewPort().contains(x, y);
+  }
+
+  return false;
+}
+
 void ZStackViewParam::resize(int width, int height)
 {
   QPoint oldCenter = m_viewPort.center();
+
+  double xScale = (double) width / m_viewPort.width();
+  double yScale = (double) height / m_viewPort.height();
+  QPointF projCenter = m_projRect.center();
+
   m_viewPort.setSize(QSize(width, height));
   m_viewPort.moveCenter(oldCenter);
+
+  m_projRect.setSize(QSizeF(m_projRect.width() * xScale,
+                            m_projRect.height() * yScale));
+  m_projRect.moveCenter(projCenter);
 }
 
 int ZStackViewParam::getArea() const
@@ -80,4 +108,13 @@ void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
 NeuTube::EAxis ZStackViewParam::getSliceAxis() const
 {
   return m_sliceAxis;
+}
+
+double ZStackViewParam::getZoomRatio() const
+{
+  if (m_viewPort.isEmpty()) {
+    return 0.0;
+  }
+
+  return (double) m_projRect.width() / m_viewPort.width();
 }

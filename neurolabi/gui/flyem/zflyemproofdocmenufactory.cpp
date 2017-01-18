@@ -7,6 +7,7 @@
 #include "flyem/zflyemproofpresenter.h"
 #include "flyem/zflyemproofdoc.h"
 #include "z3dwindow.h"
+#include "zintcuboidobj.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -16,7 +17,7 @@ ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -43,7 +44,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -120,6 +121,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     /* Split mode */
     if (proofPresenter->isSplitOn()) {
       actionList.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
+      actionList.append(ZActionFactory::ACTION_BODY_CHOP);
+      ZIntCuboidObj *roi = doc->getSplitRoi();
+      if (roi != NULL) {
+        if (roi->isValid()) {
+          actionList.append(ZActionFactory::ACTION_BODY_CROP);
+        }
+      }
     } else {
       if (proofPresenter->interactiveContext().acceptingRect()) {
         actionList.append(ZActionFactory::ACTION_ZOOM_TO_RECT);
@@ -162,6 +170,9 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
 
       actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
       actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+      actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+      actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+      actionList.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
@@ -181,10 +192,11 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
           actionList.append(ZActionFactory::ACTION_SYNAPSE_MOVE);
         } else {
           actionList.append(ZActionFactory::ACTION_SYNAPSE_LINK);
-          actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
         }
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
         actionList.append(ZActionFactory::ACTION_SYNAPSE_VERIFY);
         actionList.append(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_REPAIR);
       }
 
       if (!actionList.isEmpty()) {

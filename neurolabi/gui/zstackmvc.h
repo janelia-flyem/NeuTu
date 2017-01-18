@@ -23,6 +23,7 @@ class ZWidgetMessage;
 class QMainWindow;
 class ZIntPoint;
 class ZPoint;
+class ZStressTestOptionDialog;
 
 /*!
  * \brief The MVC class for stack operation
@@ -77,8 +78,8 @@ public:
   double getWidthZoomRatio() const;
   double getHeightZoomRatio() const;
 
-protected: // Events
-  virtual void keyPressEvent(QKeyEvent *event);
+  void toggleStressTest();
+  virtual void stressTest(ZStressTestOptionDialog *dlg);
 
 signals:
   void stackChanged();
@@ -94,11 +95,15 @@ public slots:
 
   void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
+  void zoomToL1(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
+  void zoomTo(const ZStackViewParam &param);
   void zoomWithWidthAligned(int x0, int x1, int cy);
   void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
   void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+  void goToSlice(int z);
+  void stepSlice(int dz);
 
   void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
   void zoomWithWidthAligned(const ZStackView *view);
@@ -108,7 +113,15 @@ public slots:
 
   void saveStack();
 
-  void test();
+  virtual void testSlot();
+
+protected: // Events
+  virtual void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
+
+protected:
+  void setStressTestEnv(ZStressTestOptionDialog *optionDlg);
+  virtual void prepareStressTestEnv(ZStressTestOptionDialog *optionDlg);
 
 protected:
   static void BaseConstruct(
@@ -146,6 +159,7 @@ protected:
   ZStackView *m_view;
   QLayout *m_layout;
   ZProgressSignal *m_progressSignal;
+  QTimer *m_testTimer;
 };
 
 #endif // ZSTACKMVC_H

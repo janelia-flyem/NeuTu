@@ -25,6 +25,7 @@ public:
   template <typename T>
   static bool testEqual(const T &golden, const T &v);
   static void test(MainWindow *host);
+  static void stressTest(MainWindow *host);
   static bool testTreeIterator();
   static int runUnitTest(int argc, char *argv[]);
 

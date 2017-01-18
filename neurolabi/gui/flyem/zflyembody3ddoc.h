@@ -13,6 +13,7 @@
 
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
@@ -114,7 +115,7 @@ public:
 
   class ObjectStatus {
   public:
-    ObjectStatus(int timeStamp = 0);
+    explicit ObjectStatus(int timeStamp = 0);
     void setRecycable(bool on);
     void setTimeStamp(int t);
     void setResLevel(int level);
@@ -169,6 +170,11 @@ public:
   void dumpAllBody(bool recycable);
 
   void dumpGarbage(ZStackObject *obj, bool recycable);
+  void dumpGarbageUnsync(ZStackObject *obj, bool recycable);
+
+  template<typename InputIterator>
+  void dumpGarbage(const InputIterator &first, const InputIterator &last,
+                   bool recycable);
   void mergeBodyModel(const ZFlyEmBodyMerger &merger);
 
   void processEventFunc();
@@ -190,6 +196,9 @@ public slots:
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
 
+  void recycleObject(ZStackObject *obj);
+  void killObject(ZStackObject *obj);
+
 protected:
   void autoSave() {}
 
@@ -204,6 +213,7 @@ private:
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
+  void updateBodyFunc(uint64_t bodyId, ZSwcTree *tree);
 
   void connectSignalSlot();
   void updateBodyFunc();
@@ -211,6 +221,7 @@ private:
   void processBodySetBuffer();
 
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
+  QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
   static std::string GetBodyTypeName(EBodyType bodyType);
 
@@ -241,6 +252,7 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
   ZDvidTarget m_dvidTarget;
+  ZDvidReader m_dvidReader;
   ZDvidInfo m_dvidInfo;
 
   ZThreadFutureMap m_futureMap;

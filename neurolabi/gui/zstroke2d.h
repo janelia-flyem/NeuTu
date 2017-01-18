@@ -149,6 +149,8 @@ public:
 
   void boundBox(ZIntCuboid *box) const;
 
+  static QColor GetLabelColor(int label);
+
 private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;

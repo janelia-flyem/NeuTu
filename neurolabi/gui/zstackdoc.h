@@ -82,6 +82,7 @@ class ZStackMvc;
 class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
+class ZStackDocDataBuffer;
 
 /*!
  * \brief The class of stack document
@@ -152,6 +153,7 @@ public: //attributes
   // hasObject() returns true iff it has an object.
   bool hasObject() const;
 
+  bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -388,7 +390,7 @@ public:
   //Those functions do not notify object modification
   //void removeLastObject(bool deleteObject = false);
   void removeAllObject(bool deleteObject = true);
-  void removeObject(
+  bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
 
   void removeSelectedObject(bool deleteObject = false);
@@ -398,6 +400,11 @@ public:
       */
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
+
+  TStackObjectList takeObject(
+      ZStackObject::EType type, const std::string &source);
+  TStackObjectList takeObject(ZStackObject::EType type);
+
 
   /* Remove object with specific roles */
   void removeObject(ZStackObjectRole::TRole role, bool deleteObject = false);
@@ -640,7 +647,9 @@ public:
   void setWorkdir(const char *filePath);
   void setTubePrefix(const char *filePath);
 
-  void test(QProgressBar *pb = NULL);
+  void test();
+
+  void test(QProgressBar *pb);
 
   inline QUndoStack* undoStack() const { return m_undoStack; }
   void pushUndoCommand(QUndoCommand *command);
@@ -667,6 +676,8 @@ public:
   inline TStackObjectList& getObjectList(ZStackObject::EType type) {
     return m_objectGroup.getObjectList(type);
   }
+
+  QList<ZStackObject*> getObjectList(ZStackObjectRole::TRole role) const;
 
   template<typename T>
   QList<T*> getObjectList() const;
@@ -714,6 +725,8 @@ public:
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
+
+  bool hasSelectedObject() const;
 
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
@@ -772,6 +785,10 @@ public:
   }
 
 public:
+  ZNeuronTracer* getNeuronTracer() {
+    return &m_neuronTracer;
+  }
+
   inline void deprecateTraceMask() { m_isTraceMaskObsolete = true; }
   void updateTraceWorkspace(int traceEffort, bool traceMasked,
                             double xRes, double yRes, double zRes);
@@ -788,6 +805,7 @@ public:
   }
 
   void disconnectSwcNodeModelUpdate();
+  void disconnectPunctaModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
@@ -897,16 +915,20 @@ public:
 //  inline QAction* getUndoAction() { return m_undoAction; }
 //  inline QAction* getRedoAction() { return m_redoAction; }
 
+  ZStackDocDataBuffer* getDataBuffer() const {
+    return m_dataBuffer;
+  }
+
   ZSingleSwcNodeActionActivator* getSingleSwcNodeActionActivator()  {
     return &m_singleSwcNodeActionActivator;
   }
 
-  inline const ZStack* getLabelField() const {
-    return m_labelField;
-  }
+  const ZStack* getLabelFieldUnsync() const;
+  ZStack* getLabelFieldUnsync();
 
+  const ZStack* getLabelField() const;
+  ZStack* getLabelField();
   void setLabelField(ZStack *getStack);
-
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
@@ -1013,7 +1035,8 @@ public slots: //undoable commands
   virtual bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   virtual bool executeSmartConnectSwcNodeCommand();
   virtual bool executeBreakSwcConnectionCommand();
-  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
+  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius,
+                                        ZStackObjectRole::TRole role);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);
   virtual bool executeMergeSwcNodeCommand();
   virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
@@ -1094,6 +1117,9 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
+  virtual void processDataBuffer();
+  virtual void recycleObject(ZStackObject *obj);
+  virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
 
 signals:
@@ -1172,6 +1198,8 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
+  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
 private:
   void init();
@@ -1184,9 +1212,7 @@ private:
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
   ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly);
   ResolutionDialog* getResolutionDialog();
-  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
                                 const std::set<Swc_Tree_Node*> &swcSet);
@@ -1253,6 +1279,8 @@ private:
 
   ZActionFactory *m_actionFactory;
 
+  ZStackDocDataBuffer *m_dataBuffer;
+
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
@@ -1274,6 +1302,7 @@ private:
   QMutex m_objectModifiedModeMutex;
 
   QMutex m_playerMutex;
+  mutable QMutex m_labelFieldMutex;
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
@@ -1460,7 +1489,7 @@ QList<T*> ZStackDoc::getUserList() const
   QList<T*> userList;
   for (QList<QObject*>::const_iterator iter = m_userList.begin();
        iter != m_userList.end(); ++iter) {
-    T *user = dynamic_cast<T*>(*iter);
+    T *user = qobject_cast<T*>(*iter);
     if (user != NULL) {
       userList.append(user);
     }

@@ -20,7 +20,7 @@
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 
-
+class ZStack;
 class ZSwcForest;
 class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
@@ -144,7 +144,10 @@ public:
    * \a tree will be owned by the object.
    *
    * \param tree The data.
-   * \param option Optioni of handling existing data.
+   * \param option Option of handling existing data:
+   *    CLEAN_ALL (default): Clean all old data.
+   *    FREE_WRAPPER: Free the old wrapper only.
+   *    LEAVE_ONLY: Don't do anything.
    */
   void setData(Swc_Tree *tree, ESetDataOption option = CLEAN_ALL);
 
@@ -191,7 +194,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.
@@ -594,6 +597,8 @@ public:
   //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
 
+  Swc_Tree_Node* getThickestNode() const;
+
   /*!
    * \brief Mark soma nodes
    *
@@ -659,6 +664,7 @@ public:
 
   void labelStack(Stack *stack);
 
+  void labelStack(ZStack* stack,int v);
   /*!
    * \brief Get the length of the longest segment
    * \return

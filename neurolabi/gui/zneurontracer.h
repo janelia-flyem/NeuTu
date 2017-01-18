@@ -2,6 +2,7 @@
 #define ZNEURONTRACER_H
 
 #include <map>
+#include <vector>
 
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
@@ -11,11 +12,13 @@
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
 #include "zintpoint.h"
+#include "zweightedpoint.h"
 
 class ZStack;
 class ZSwcTree;
 class ZSwcConnector;
 class ZJsonObject;
+
 //class ZIntPoint;
 
 class ZNeuronTraceSeeder {
@@ -87,16 +90,6 @@ public:
     m_resolution[2] = z;
   }
 
-#if 0
-  inline void setStackOffset(double x, double y, double z) {
-    m_stackOffset[0] = x;
-    m_stackOffset[1] = y;
-    m_stackOffset[2] = z;
-  }
-
-  void setStackOffset(const ZIntPoint &pt);
-#endif
-
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
   }
@@ -109,7 +102,7 @@ public:
    *
    * It will also create workspaces automatically if necessary.
    */
-  ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing = true);
+  ZSwcTree* trace(Stack *signal, bool doResampleAfterTracing = true);
 
   ZSwcTree* trace(ZStack *stack, bool doResampleAfterTracing = true);
 
@@ -163,9 +156,15 @@ public:
   void setGrayOffset(double v) { m_greyOffset = v; }
   void setEstimatingRadius(bool on) { m_estimatingRadius = on; }
 
+public: //for debugging
+  std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
+  std::vector<ZWeightedPoint> computeSeedPosition();
+  ZSwcTree *computeInitialTrace(const Stack *stack);
+
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
+  Stack* binarize(const Stack *stack, Stack *out);
   Stack* bwsolid(Stack *stack);
   Stack* enhanceLine(const Stack *stack);
   Geo3d_Scalar_Field* extractSeed(const Stack *mask);

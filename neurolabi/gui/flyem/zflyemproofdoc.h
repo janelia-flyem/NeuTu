@@ -18,6 +18,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemmb6analyzer.h"
+#include "dvid/zdvidversiondag.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -43,6 +44,7 @@ public:
   };
 
   void mergeSelected(ZFlyEmSupervisor *supervisor);
+  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -51,6 +53,14 @@ public:
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
+  }
+
+  const ZDvidInfo& getGrayScaleInfo() const {
+    return m_grayScaleInfo;
+  }
+
+  const ZDvidInfo& getLabelInfo() const {
+    return m_labelInfo;
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
@@ -65,6 +75,8 @@ public:
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
 
+  ZStackBlockGrid* getStackGrid();
+
   //bool hasSparseStack() const;
   bool hasVisibleSparseStack() const;
 
@@ -75,6 +87,8 @@ public:
   const ZFlyEmBodyMerger* getBodyMerger() const {
     return &m_bodyMerger;
   }
+
+  ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
 
@@ -101,13 +115,13 @@ public:
   bool isSplittable(uint64_t bodyId) const;
 
   void backupMergeOperation();
-  void downloadBodyMask();
+//  void downloadBodyMask();
   void clearBodyMerger();
 
   QList<uint64_t> getMergedSource(uint64_t bodyId) const;
   QSet<uint64_t> getMergedSource(const QSet<uint64_t> &bodySet) const;
 
-  void importFlyEmBookmark(const std::string &filePath);
+  QList<ZFlyEmBookmark*> importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
 //  void saveCustomBookmark();
@@ -117,6 +131,7 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -129,15 +144,16 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
+  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
   std::vector<ZPunctum*> getTbar(uint64_t bodyId);
   std::vector<ZPunctum*> getTbar(ZObject3dScan &body);
 
   std::pair<std::vector<ZPunctum *>, std::vector<ZPunctum *> >
-  getSynapse(uint64_t bodyId) const;
+  getSynapse(uint64_t bodyId);
 
-  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId) const;
-  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId) const;
+  std::vector<ZPunctum*> getTodoPuncta(uint64_t bodyId);
+  std::vector<ZFlyEmToDoItem*> getTodoItem(uint64_t bodyId);
 
   void downloadSynapseFunc();
 
@@ -171,6 +187,17 @@ public:
     return m_dvidWriter;
   }
 
+  ZDvidReader* getSparseVolReader() {
+    return &m_sparseVolReader;
+  }
+
+public:
+  void runSplit();
+  bool isSplitRunning() const;
+  void runLocalSplit();
+  void refreshDvidLabelBuffer(unsigned long delay);
+//  void setLabelSliceAlpha(int alpha);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();
@@ -192,6 +219,24 @@ public: //Synapse functions
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
                                NeuTube::EAxis axis);
 
+  /*!
+   * \brief Sync the synapse with DVID
+   *
+   * If \a pt does not exist in DVID, it will be removed from all synapse
+   * ensembles. If it exists, the function checks the partners of the synapses
+   * and try to remove all 'ghost' partners. For each of actual partners, the
+   * function checks the relationship consistency and apply fixes based on the
+   * following rules:
+   *   1. If the host synapse (the one at \a pt) rels to its partner but not
+   * vice versa, the missing relationship will be added to the partner.
+   *   2. If the host synapse rels to its partner and vice versa, but
+   * relationships are not consistent, the partner synapse is changed to have
+   * the consistency.
+   *
+   * \param pt Synapse position to sync.
+   */
+  void repairSynapse(const ZIntPoint &pt);
+
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
   void addSynapse(
@@ -201,6 +246,7 @@ public: //Synapse functions
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::DATA_GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+  void highlightPsd(bool on);
 
 public: //Todo list functions
   void removeTodoItem(
@@ -209,6 +255,10 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -224,6 +274,7 @@ public: //Bookmark functions
   void notifyBookmarkEdited(
       const std::vector<ZFlyEmBookmark *> &bookmarkArray);
   void notifyBookmarkEdited(const ZFlyEmBookmark *bookmark);
+  void notifyAssignedBookmarkModified();
   void notifySynapseEdited(const ZDvidSynapse &synapse);
   void notifySynapseEdited(const ZIntPoint &synapse);
   void notifySynapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -241,13 +292,66 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
+public:
+  bool isDataValid(const std::string &data) const;
+
+  /*!
+   * \brief Fetch DVID label slice data and set body selections
+   */
+  void updateDvidLabelSlice(NeuTube::EAxis axis);
+//  void updateDvidLabelSlice();
+
+  /*!
+   * \brief Update sparsevol based on current body selections
+   */
+//  void updateDvidSparsevolSlice();
+
+  /*!
+   * \brief Factory function to make a new ZDvidSparsevolSlice object
+   *
+   * \a labelSlice is used to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   * \param bodyId Body ID of the returned object.
+   *
+   * \return A new object or NULL if \a bodyId is invalid.
+   */
+  ZDvidSparsevolSlice* makeDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice, uint64_t bodyId);
+
+  /*!
+   * \brief Factory function to make new ZDvidSparsevolSlice objects
+   *
+   * The objects created are those selected in \a labelSlice, which is also used
+   * to determine some properties including color and axis.
+   *
+   * \param labelSlice Base slice for the sparsevol object
+   *
+   * \return A list of new objects.
+   */
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol(
+      const ZDvidLabelSlice *labelSlice);
+  std::vector<ZDvidSparsevolSlice*> makeSelectedDvidSparsevol();
+
+  /*!
+   * \brief Remove certain dvid sparsevol objects
+   *
+   * \param axis Axis of the objects to remove
+   * \return Number of objects removed
+   */
+  int removeDvidSparsevol(NeuTube::EAxis axis);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
   void bodyMergeEdited();
   void userBookmarkModified();
+  void assignedBookmarkModified();
   void bookmarkAdded(int x, int y, int z);
   void bookmarkEdited(int x, int y, int z);
+  void bookmarkDeleted(int x, int y, int z);
+  void bookmarkModified(int x, int y, int z);
+
   void synapseEdited(int x, int y, int z);
   void synapseVerified(int x, int y, int z, bool verified);
   void synapseMoved(const ZIntPoint &from, const ZIntPoint &to);
@@ -260,6 +364,7 @@ signals:
   void requestingBodyLock(uint64_t bodyId, bool locking);
 
 public slots: //Commands
+  void repairSelectedSynapses();
   void executeRemoveSynapseCommand();
   void executeLinkSynapseCommand();
   void executeUnlinkSynapseCommand();
@@ -273,12 +378,23 @@ public slots: //Commands
 
   void executeAddTodoItemCommand(int x, int y, int z, bool checked);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(
+      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
+  void executeAddToMergeItemCommand(int x, int y, int z);
+  void executeAddToMergeItemCommand(const ZIntPoint &pt);
+  void executeAddToSplitItemCommand(int x, int y, int z);
+  void executeAddToSplitItemCommand(const ZIntPoint &pt);
+
+
   void executeRemoveTodoItemCommand();
 
 
 public slots:
-  void updateDvidLabelObject();
+  void updateDvidLabelObject(EObjectModifiedMode updateMode);
+  void updateDvidLabelObjectSliently();
+  void updateDvidLabelObject(NeuTube::EAxis axis);
+
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -291,9 +407,10 @@ public slots:
   void clearBodyMergeStage();
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
   void deleteSelectedSynapse();
-  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind);
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                  ZDvidSynapseEnsemble::EDataScope scope);
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
 
   void downloadBookmark(int x, int y, int z);
   void saveMergeOperation();
@@ -301,6 +418,9 @@ public slots:
 
   void syncSynapse(const ZIntPoint &pt);
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
+
+  void runRoutineCheck();
+
 
 protected:
   void autoSave();
@@ -310,6 +430,7 @@ protected:
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
+  void setRoutineCheck(bool on);
 
 private:
   void connectSignalSlot();
@@ -330,6 +451,9 @@ private:
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
 
+  void readInfo();
+  void updateMaxLabelZoom();
+
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(EBodyColorMap type);
   template<typename T>
   ZSharedPointer<T> getColorScheme(EBodyColorMap type);
@@ -338,17 +462,38 @@ private:
 
   void updateBodyColor(EBodyColorMap type);
 
+  void runSplitFunc();
+  void localSplitFunc();
+  ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateLocalSplitRoi();
+
+  void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidReader m_routineReader;
+  ZDvidReader m_synapseReader;
+  ZDvidReader m_todoReader;
+  ZDvidReader m_sparseVolReader;
   ZDvidWriter m_dvidWriter;
+  ZFlyEmSupervisor *m_supervisor;
 
-//  bool m_isCustomBookmarkSaved;
-  QTimer *m_bookmarkTimer;
+  mutable QMutex m_synapseReaderMutex;
+  mutable QMutex m_todoReaderMutex;
+
+  //Dvid info
+  ZDvidInfo m_grayScaleInfo;
+  ZDvidInfo m_labelInfo;
+  ZDvidVersionDag m_versionDag;
+  ZJsonObject m_infoJson;
+
+  QTimer *m_routineTimer;
 
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
+  bool m_routineCheck;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<EBodyColorMap, ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;

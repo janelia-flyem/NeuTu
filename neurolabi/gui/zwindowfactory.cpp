@@ -14,6 +14,7 @@
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
 #include "z3dutils.h"
+#include "zstackdoc.h"
 
 ZWindowFactory::ZWindowFactory()
 {
@@ -190,7 +191,8 @@ void ZWindowFactory::setWindowGeometry(const QRect &rect)
   m_windowGeometry = rect;
 }
 
-void ZWindowFactory::configure(Z3DWindow */*window*/)
+
+void ZWindowFactory::configure(Z3DWindow * /*window*/)
 {
 
 }

@@ -47,7 +47,7 @@ void ZStackDocMenuFactory::addAction(
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
-    ZStackDoc *doc, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackDoc *doc, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -117,7 +117,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -144,7 +144,7 @@ QMenu* ZStackDocMenuFactory::makeSwcNodeContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -157,7 +157,7 @@ QMenu* ZStackDocMenuFactory::makeSrokePaintContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeStackContextMenu(
-    ZStackPresenter *presenter, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter *presenter, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -184,7 +184,7 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -194,7 +194,7 @@ QMenu* ZStackDocMenuFactory::makeBodyContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeSynapseContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
@@ -204,7 +204,7 @@ QMenu* ZStackDocMenuFactory::makeSynapseContextMenu(
 }
 
 QMenu* ZStackDocMenuFactory::makeContextMenu(
-    ZStackPresenter */*presenter*/, QWidget */*parentWidget*/, QMenu *menu)
+    ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);

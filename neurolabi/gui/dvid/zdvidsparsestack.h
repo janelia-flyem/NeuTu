@@ -2,6 +2,7 @@
 #define ZDVIDSPARSESTACK_H
 
 #include <QMutex>
+#include <QMap>
 
 #include "zstackobject.h"
 #include "zsparsestack.h"
@@ -30,6 +31,8 @@ public:
   ZStack* getStack();
   ZStack* getStack(const ZIntCuboid &updateBox);
 
+  bool stackDownsampleRequired();
+
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
@@ -53,13 +56,14 @@ public:
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
+  ZStackBlockGrid* getStackGrid();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack *getSparseStack();
 
   ZSparseStack *getSparseStack(const ZIntCuboid &box);
 
-  void downloadBodyMask();
+//  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
   bool hit(double x, double y, NeuTube::EAxis axis);
@@ -73,15 +77,18 @@ public:
   int getReadStatusCode() const;
 
   void runFillValueFunc();
-  void runFillValueFunc(const ZIntCuboid &box);
+  void runFillValueFunc(const ZIntCuboid &box, bool syncing);
 
-  void cancelFillValueFunc();
+  void setCancelFillValue(bool flag);
+  void cancelFillValueSync();
+//  void cancelFillValueFunc();
 
 private:
   void init();
   void initBlockGrid();
   bool fillValue(bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable = false);
+  bool fillValue(const ZIntCuboid &box, bool cancelable, bool fillingAll);
   QString getLoadBodyThreadId() const;
   QString getFillValueThreadId() const;
   void pushMaskColor();
@@ -90,6 +97,10 @@ private:
   void finishObjectMaskLoading();
   void syncObjectMask();
   void pushAttribute();
+
+  ZDvidReader& getMaskReader() const;
+  ZDvidReader& getGrayscaleReader() const;
+
   /*
   void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid);
@@ -101,6 +112,10 @@ private:
   bool m_isValueFilled;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
+  mutable ZDvidReader m_grayScaleReader;
+  mutable ZDvidReader m_maskReader;
+  mutable ZDvidInfo m_grayscaleInfo;
+
   ZThreadFutureMap m_futureMap;
   bool m_cancelingValueFill;
 

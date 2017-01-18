@@ -14,6 +14,13 @@ class ZProgressSignal;
 class ZDvidTarget;
 class ZWidgetMessage;
 class ZDvidDialog;
+class QSlider;
+class DvidOperateDialog;
+class FlyEmBodyFilterDialog;
+class ZFlyEmDataLoader;
+class FlyEmProofControlForm;
+class FlyEmSplitControlForm;
+class ZStressTestOptionDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -34,10 +41,12 @@ public:
   void setDvidDialog(ZDvidDialog *dvidDlg);
 
 public:
-  void test();
+  void stressTest();
 
 signals:
   void splitTriggered(uint64_t bodyId);
+  void proofreadWindowClosed();
+  void showingMainWindow();
 //  void splitTriggered();
   /*
   void progressStarted(const QString &title, int nticks);
@@ -64,9 +73,16 @@ public slots:
   void advanceProgress(double dp);
   void endProgress();
 
+  void operateDvid();
+  void exploreBody();
+
+  void stressTestSlot();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);
+  void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent *event);
 
 private:
   void init();
@@ -77,6 +93,7 @@ private:
 
   void createMenu();
   void createToolbar();
+  void createDialog();
   void addSynapseActionToToolbar();
 
   void logMessage(const QString &msg);
@@ -91,11 +108,13 @@ private:
 
   QMenu *m_viewMenu;
   QMenu *m_toolMenu;
+  QMenu *m_advancedMenu;
 
   QAction *m_viewSynapseAction;
   QAction *m_viewBookmarkAction;
   QAction *m_viewSegmentationAction;
   QAction *m_viewTodoAction;
+  QAction *m_viewRoiAction;
 
   QAction *m_importBookmarkAction;
   QAction *m_openSequencerAction;
@@ -103,11 +122,18 @@ private:
   QAction *m_contrastAction;
   QAction *m_smoothAction;
   QAction *m_openTodoAction;
+  QAction *m_roiToolAction;
+  QAction *m_bodyExplorerAction;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
-  QAction *m_queryTableAction;
+  QAction *m_openRoi3dAction;
+//  QAction *m_queryTableAction;
+
+  QAction *m_dvidOperateAction;
+
+  QSlider *m_segSlider;
 
   QToolBar *m_toolBar;
   QToolBar *m_synapseToolbar;
@@ -115,7 +141,15 @@ private:
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
 
+  FlyEmProofControlForm *m_controlForm;
+  FlyEmSplitControlForm *m_splitControlForm;
+
   QPalette m_defaultPal;
+
+  ZFlyEmDataLoader *m_flyemDataLoader;
+  DvidOperateDialog *m_dvidOpDlg;
+  FlyEmBodyFilterDialog *m_bodyFilterDlg;
+  ZStressTestOptionDialog *m_stressTestOptionDlg;
 };
 
 

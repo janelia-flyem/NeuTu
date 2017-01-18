@@ -18,9 +18,18 @@
 #include "zdvidutil.h"
 
 ZDvidBufferReader::ZDvidBufferReader(QObject *parent) :
-  QObject(parent), m_networkReply(NULL), m_isReadingDone(false),
-  m_status(ZDvidBufferReader::READ_NULL), m_tryingCompress(false)
+  QObject(parent)
 {
+  _init();
+}
+
+void ZDvidBufferReader::_init()
+{
+  m_networkReply = NULL;
+  m_isReadingDone = false;
+  m_status = ZDvidBufferReader::READ_NULL;
+  m_tryingCompress = false;
+
   m_networkManager = new QNetworkAccessManager(this);
 
 //#if !defined(_ENABLE_LIBDVIDCPP_)
@@ -46,7 +55,18 @@ void ZDvidBufferReader::setService(
 {
   m_service = service;
 }
+
+void ZDvidBufferReader::setService(const ZDvidTarget &target)
+{
+  m_service = ZDvid::MakeDvidNodeService(target);
+}
+
 #endif
+
+void ZDvidBufferReader::clearBuffer()
+{
+  m_buffer.clear();
+}
 
 void ZDvidBufferReader::read(
     const QString &url, const QByteArray &payload, const std::string &method,
@@ -105,6 +125,10 @@ void ZDvidBufferReader::read(
 
 void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 {
+  if (url.isEmpty()) {
+    return;
+  }
+
   if (outputingUrl) {
     qDebug() << url;
   }
@@ -145,6 +169,11 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   } else {
     startReading();
 
+    if (m_networkReply != NULL) {
+      m_networkReply->disconnect();
+      m_networkReply->deleteLater();
+    }
+
     m_networkReply = m_networkManager->get(QNetworkRequest(url));
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
     connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBuffer()));
@@ -156,6 +185,12 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
 #else
   startReading();
+
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
+
 
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
   connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
@@ -180,6 +215,11 @@ void ZDvidBufferReader::readPartial(
 
   m_maxSize = maxSize;
 
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
+
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
   connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBufferPartial()));
@@ -199,6 +239,11 @@ void ZDvidBufferReader::readQt(const QString &url, bool outputUrl)
 
   startReading();
 
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
+
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
   connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));
   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(readBuffer()));
@@ -215,6 +260,11 @@ bool ZDvidBufferReader::isReadable(const QString &url)
   startReading();
 
   qDebug() << url;
+
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
 
   m_networkReply = m_networkManager->get(QNetworkRequest(url));
 
@@ -234,6 +284,11 @@ bool ZDvidBufferReader::hasHead(const QString &url)
 
   qDebug() << url;
 
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
+
   m_networkReply = m_networkManager->head(QNetworkRequest(url));
 
   connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(finishReading()));
@@ -250,6 +305,11 @@ void ZDvidBufferReader::readHead(const QString &url)
   startReading();
 
   qDebug() << url;
+
+  if (m_networkReply != NULL) {
+    m_networkReply->disconnect();
+    m_networkReply->deleteLater();
+  }
 
   m_networkReply = m_networkManager->head(QNetworkRequest(url));
   connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishReading()));

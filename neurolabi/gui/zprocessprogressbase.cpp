@@ -27,7 +27,8 @@ void ZProcessProgressBase::run()
   QsLogging::DestinationPtr fileDestination;
   QsLogging::Logger& logger = QsLogging::Logger::instance();
   if (!m_logFile.isEmpty()) {
-    fileDestination = QsLogging::DestinationFactory::MakeFileDestination(m_logFile);
+    fileDestination =
+        QsLogging::DestinationFactory::MakeFileDestination(m_logFile);
     logger.addDestination(fileDestination);
   }
   try {

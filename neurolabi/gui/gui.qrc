@@ -121,5 +121,12 @@
         <file>images/zoom2.png</file>
         <file>images/view_todo.png</file>
         <file>images/smooth.png</file>
+        <file>images/hl_post.png</file>
+        <file>images/link2.png</file>
+        <file>images/verify.png</file>
+        <file>images/repair.png</file>
+        <file>images/test2.png</file>
+        <file>images/science.png</file>
+        <file>images/view_roi.png</file>
     </qresource>
 </RCC>

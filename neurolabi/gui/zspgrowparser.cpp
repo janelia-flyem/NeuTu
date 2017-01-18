@@ -7,6 +7,8 @@
 #include "zpoint.h"
 #include "tz_stack_utils.h"
 #include "tz_error.h"
+#include "c_stack.h"
+#include "tz_stack_neighborhood.h"
 
 using namespace std;
 
@@ -113,12 +115,16 @@ double ZSpGrowParser::pathLength(ssize_t index, bool masked)
     ssize_t originalIndex = index;
     if (masked) {
       if (m_checkedMask != NULL) {
+        uint8_t *maskArray = m_checkedMask->array;
+        int *pathArray = m_workspace->path;
         while (index >= 0) {
-          if (m_checkedMask->array[index] == 1) {
+//          if (m_checkedMask->array[index] == 1) {
+          if (maskArray[index] == 1) {
             break;
           }
 
-          index = m_workspace->path[index];
+          index = pathArray[index];
+//          index = m_workspace->path[index];
         }
       } else {
         index = -1;
@@ -213,11 +219,41 @@ ZVoxelArray ZSpGrowParser::extractLongestPath(double *length, bool masked)
 
   if (m_fgArray.empty()) {
     if (m_workspace->mask != NULL) {
+      int neighbor[26];
+      int is_in_bound[26];
+      int n_in_bound;
+      int width = m_workspace->width;
+      int height = m_workspace->height;
+      int depth = m_workspace->depth;
+      int conn = 6;
+
+      Stack_Neighbor_Offset(conn, width, height, neighbor);
+
+      int fgCount = 0;
       for (i = 0; i < m_workspace->size; i++) {
         if (m_workspace->mask[i] != SP_GROW_BARRIER) {
-          m_fgArray.push_back(i);
+          ++fgCount;
+          n_in_bound = C_Stack::neighborTest(
+                conn, width, height, depth, i, is_in_bound);
+          bool isBoundary = false;
+          if (n_in_bound == conn) {
+            for (int n = 0; n < n_in_bound; n++) {
+              if (m_workspace->mask[i + neighbor[n]] == SP_GROW_BARRIER) {
+                isBoundary = true;
+                break;
+              }
+            }
+          } else {
+            isBoundary = true;
+          }
+
+          if (isBoundary) {
+            m_fgArray.push_back(i);
+          }
         }
       }
+      std::cout << "Processing " << m_fgArray.size() << " points (" << fgCount
+                << ")" << std::endl;
     }
   }
 
@@ -283,13 +319,13 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
       pathArray.push_back(path);
       //Update checkedMask
       if (m_checkedMask == NULL) {
-        m_checkedMask = Make_Stack(GREY, m_workspace->width,
-                                   m_workspace->height, m_workspace->depth);
+        m_checkedMask = C_Stack::make(GREY, m_workspace->width,
+                                      m_workspace->height, m_workspace->depth);
         Zero_Stack(m_checkedMask);
       }
       if (m_pathMask == NULL) {
-        m_pathMask = Make_Stack(GREY, m_workspace->width,
-                                m_workspace->height, m_workspace->depth);
+        m_pathMask = C_Stack::make(GREY, m_workspace->width,
+                                   m_workspace->height, m_workspace->depth);
         Zero_Stack(m_pathMask);
       }
 

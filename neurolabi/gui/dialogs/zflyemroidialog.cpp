@@ -1,5 +1,9 @@
 #include "zflyemroidialog.h"
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
 #include <QtConcurrentRun>
+#endif
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QInputDialog>
@@ -165,6 +169,11 @@ void ZFlyEmRoiDialog::createMenu()
   m_mainMenu->addAction(m_importRoiAction);
 //  m_importRoiAction->setCheckable(true);
   connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
+
+  QAction *createRoiAction = new QAction("Create ROI Data", this);
+  m_mainMenu->addAction(createRoiAction);
+  connect(createRoiAction, SIGNAL(triggered()),
+          this, SLOT(createRoiData()));
 
   m_autoStepAction = new QAction("Auto Step", this);
   m_mainMenu->addAction(m_autoStepAction);
@@ -563,7 +572,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       if (tree != NULL) {
         m_docReader.addObject(tree);
       }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
@@ -1118,7 +1127,7 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
     project = new ZFlyEmRoiProject(name, this);
-    project->setDvidTarget(getDvidTarget());
+    project->setDvidTarget(getDvidTarget(), false);
   } else {
     QMessageBox::warning(
               this, "Failed to Create A Project",
@@ -1275,6 +1284,73 @@ void ZFlyEmRoiDialog::exportRoiObject()
   }
 }
 
+void ZFlyEmRoiDialog::createRoiData()
+{
+  ZObject3dScan obj = m_project->getRoiSlice();
+
+  if (obj.isEmpty()) {
+    return;
+  }
+
+  bool ok = false;
+  QString roiName = QInputDialog::getText(
+        this, tr("Create ROI Data"), tr("Data name:"), QLineEdit::Normal,
+        m_project->getName().c_str(), &ok);
+
+  if (!roiName.isEmpty() && ok) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZDvidWriter writer;
+      writer.open(getDvidTarget());
+      if (reader.hasData(roiName.toStdString())) {
+        std::string type = reader.getType(roiName.toStdString());
+        if (type != "roi") {
+          QMessageBox::warning(this, "Name Conflict",
+                               QString("Cannot create ROI data. %1 has been used by type %2").
+                               arg(roiName).arg(type.c_str()));
+          return;
+        }
+
+        if (!ZDialogFactory::Ask(
+              "Overwrite Data",
+              QString("The data %1 already exists. "
+                      "Do you want to overwrite it?").arg(roiName), this)) {
+          return;
+        }
+      } else {
+        writer.createData("roi", roiName.toStdString());
+        if (writer.getStatusCode() == 200) {
+          dump(QString("ROI data %1 has been created.").arg(roiName), true);
+        } else {
+          dump(QString("WARNING: Failed to create ROI data").arg(roiName), true);
+          return;
+        }
+      }
+
+      ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+      int minZ = blockObj.getMinZ();
+      int maxZ = blockObj.getMaxZ();
+
+      ZObject3dScan interpolated;
+      for (int z = minZ; z <= maxZ; ++z) {
+        interpolated.concat(blockObj.interpolateSlice(z));
+      }
+
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(
+            interpolated, ZJsonFactory::OBJECT_SPARSE);
+      writer.writeJson(
+            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName.toStdString()),
+            array);
+      if (writer.getStatusCode() == 200) {
+        dump(QString("ROI data %1 has been uploaded.").arg(roiName), true);
+      } else {
+        dump(QString("WARNING: Failed to upload ROI data").arg(roiName), true);
+        return;
+      }
+    }
+  }
+}
+
 void ZFlyEmRoiDialog::exportResult()
 {
   if (m_project != NULL) {
@@ -1302,11 +1378,12 @@ void ZFlyEmRoiDialog::exportResult()
     array.dump(fileName + ".json");
   }
 }
-
+/*
 void ZFlyEmRoiDialog::on_exportPushButton_clicked()
 {
   exportResult();
 }
+*/
 
 int ZFlyEmRoiDialog::getNextZ() const
 {

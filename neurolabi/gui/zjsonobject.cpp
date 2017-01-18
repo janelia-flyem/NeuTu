@@ -246,21 +246,21 @@ void ZJsonObject::setEntry(const char *key, const string &value)
     return;
   }
 
-  if (!value.empty()) {
+//  if (!value.empty()) {
     setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
-  }
+//  }
 }
 
-void ZJsonObject::setEntry(const char *key, const char* value)
+void ZJsonObject::setEntry(const char *key, const char *value)
 {
   if (!isValidKey(key)) {
     return;
   }
 
   if (value != NULL) {
-    if (strlen(value) > 0) {
+//    if (strlen(value) > 0) {
       setEntryWithoutKeyCheck(key, json_string(value), true);
-    }
+//    }
   }
 }
 
@@ -340,6 +340,37 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
 
   value.denull();
   setEntryWithoutKeyCheck(key, value.getValue());
+}
+
+void ZJsonObject::addEntry(const char *key, ZJsonValue &value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntry(const char *key, const string &value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntry(const char *key, const char *value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntryFrom(const ZJsonObject &obj)
+{
+  const char *key;
+  json_t *value;
+  ZJsonObject_foreach(obj, key, value) {
+    ZJsonValue valueJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+    addEntry(key, valueJson);
+  }
 }
 
 json_t* ZJsonObject::setArrayEntry(const char *key)

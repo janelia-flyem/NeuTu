@@ -5,6 +5,7 @@
 #include <set>
 
 #include "zjsonobject.h"
+#include "zjsonarray.h"
 #include "zdviddata.h"
 
 /*!
@@ -80,7 +81,7 @@ public:
   }
 
   std::string getUrl() const;
-  std::string getUrl(const std::string &dataName) const;
+//  std::string getUrl(const std::string &dataName) const;
 
   /*!
    * \brief Get a single string to represent the target
@@ -114,6 +115,9 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void loadDvidDataSetting(const ZJsonObject &obj);
+  ZJsonObject toDvidDataSetting() const;
+
   void print() const;
 
   //Special functions
@@ -138,23 +142,39 @@ public:
     m_bgValue = v;
   }
 
-  std::string getName(ZDvidData::ERole role) const;
+//  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
   void setBodyLabelName(const std::string &name);
 
   void setNullBodyLabelName();
 
+  bool hasBodyLabel() const;
+  bool hasLabelBlock() const;
+
   std::string getLabelBlockName() const;
+  std::string getLabelBlockName(int zoom) const;
+  std::string getValidLabelBlockName(int zoom) const;
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();
 
   std::string getMultiscale2dName() const;
+  bool isTileLowQuality() const;
+
   void setMultiscale2dName(const std::string &name);
+  void setDefaultMultiscale2dName();
+  void configTile(const std::string &name, bool lowQuality);
+//  void setLossTileName(const std::string &name);
+//  std::string getLosslessTileName() const;
+//  std::string getLossTileName() const;
+  bool isLowQualityTile(const std::string &name) const;
 
   std::string getGrayScaleName() const;
   void setGrayScaleName(const std::string &name);
+
+  std::string getRoiName() const;
+  void setRoiName(const std::string &name);
 
   std::string getRoiName(size_t index) const;
   void addRoiName(const std::string &name);
@@ -176,6 +196,7 @@ public:
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
+  void setTodoListName(const std::string &name);
 
   std::string getBodyAnnotationName() const;
 
@@ -196,6 +217,39 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
+  inline bool readOnly() const { return m_readOnly; }
+  void setReadOnly(bool readOnly) {
+    m_readOnly = readOnly;
+  }
+
+  int getMaxLabelZoom() const {
+    return m_maxLabelZoom;
+  }
+
+  void setMaxLabelZoom(int zoom) {
+    m_maxLabelZoom = zoom;
+  }
+
+  bool usingMulitresBodylabel() const;
+
+  /*
+  void setLabelszName(const std::string &name);
+  std::string getLabelszName() const;
+  */
+
+  std::string getSynapseLabelszName() const;
+
+  bool usingDefaultDataSetting() const {
+    return m_usingDefaultSetting;
+  }
+
+  void useDefaultDataSetting(bool on) {
+    m_usingDefaultSetting = on;
+  }
+
+private:
+  void init();
+
 private:
   std::string m_address;
   std::string m_uuid;
@@ -205,19 +259,27 @@ private:
   std::string m_localFolder;
   std::string m_bodyLabelName;
   std::string m_labelBlockName;
-  std::string m_multiscale2dName;
+  std::string m_multiscale2dName; //default lossless tile name
+  ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
   std::string m_grayScaleName;
+  std::string m_synapseLabelszName;
+  std::string m_roiName;
+  std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
   bool m_isSupervised;
   std::string m_supervisorServer;
+  int m_maxLabelZoom;
+  bool m_usingMultresBodyLabel;
+  bool m_usingDefaultSetting;
 //  std::string m_userName;
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
 
   bool m_isEditable;
+  bool m_readOnly;
 
   const static char* m_addressKey;
   const static char* m_portKey;
@@ -231,11 +293,17 @@ private:
   const static char* m_bodyLabelNameKey;
   const static char* m_labelBlockNameKey;
   const static char* m_multiscale2dNameKey;
+  const static char* m_tileConfigKey;
+  const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
+  const static char* m_defaultSettingKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
+  const static char* m_maxLabelZoomKey;
+  const static char* m_synapseLabelszKey;
+  const static char* m_todoListNameKey;
 };
 
 #endif // ZDVIDTARGET_H

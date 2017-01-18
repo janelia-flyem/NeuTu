@@ -23,6 +23,7 @@ class ZStack;
 class ZStackDoc;
 class ZStackViewParam;
 class ZWidgetMessage;
+class ZFlyEmSplitUploadOptionDialog;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -95,20 +96,26 @@ public:
   int selectSeed(int label);
   int selectAllSeed();
   void loadSeed(const ZJsonObject &obj);
+  void swapMainSeedLabel(int label);
 
   void exportSplits();
   void commitResult();
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
-      const ZIntPoint &dsIntv, size_t minObjSize);
+      /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
   void commitCoarseSplit(const ZObject3dScan &splitPart);
-  void decomposeBody();
+  void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBody(int v, NeuTube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
 
   void viewPreviousSlice();
   void viewNextSlice();
   void viewFullGrayscale();
   void viewFullGrayscale(bool viewing);
   void updateBodyMask();
-  void downloadBodyMask();
+//  void downloadBodyMask();
 
   void setShowingBodyMask(bool state){
     m_showingBodyMask = state;
@@ -175,6 +182,7 @@ public slots:
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
+  void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
   void startBodyQuickView();
@@ -236,6 +244,7 @@ private:
 //  std::vector<ZStackObject*> m_bookmarkDecoration;
   bool m_isBookmarkVisible;
   bool m_showingBodyMask;
+  size_t m_skelThre;
 
   ZThreadFutureMap m_futureMap;
 

@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zdialogfactory.h"
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -202,6 +203,13 @@ bool ZDialogFactory::Ask(
         parent, title, msg, QMessageBox::No | QMessageBox::Yes) ==
       QMessageBox::Yes;
 }
+
+void ZDialogFactory::Warn(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::warning(parent, title, msg);
+}
+
 
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {

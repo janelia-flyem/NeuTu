@@ -2,6 +2,7 @@
 #define _ZIMAGE_H_
 
 #include <QImage>
+#include <set>
 
 #include "tz_image_lib_defs.h"
 #include "tz_object_3d.h"
@@ -34,9 +35,20 @@ public:
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
+  ZImage(const ZImage &image);
+
   void clear();
 
   void init();
+
+  int getZ() const {
+    return m_z;
+  }
+
+  void setZ(int z) {
+    m_z = z;
+  }
+
 
   /*!
    * \brief Set data function
@@ -128,12 +140,24 @@ public:
       const std::vector<DataSource<uint8_t> > &sources, int startLine,
       int endLine, uint8_t alpha = 255);
 
+//  void adjustColorTable(int threshold);
+//  void adjustColorTable(double scale, double offset);
+  void adjustColorTable(double scale, double offset, int threshold);
+
   template<class T>
   void setData(const T *data, double scale, double offset,
                int lowerThreshold, int upperThreshold);
 
   void drawRaster(const void *data, int kind, double scale = 1.0,
                   double offset = 0.0, int threshold = -1);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha);
+  void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
+                      int bgColor, int selColor);
+  void drawLabelFieldTranspose(uint64_t *data, const QVector<int> &colorTable,
+                               int bgColor, int selColor);
+  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+                      uint8_t alpha, const std::set<uint64_t> &selected);
 
   void setBackground();
 
@@ -162,21 +186,82 @@ public:
 
   void setHighContrastProtocal(
       double grayOffset, double grayScale, bool nonlinear);
+  void useContrastProtocal(bool on) {
+    m_usingContrastProtocal = on;
+  }
 
   void loadHighContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
+  void setContrastProtocol(double scale, double offset, bool nonlinear);
+
+  void setVisible(bool visible);
+  bool isVisible() const;
 
 
 private:
+  template<class T>
+  void setBinaryDataIndexed8(const T *data, T bg);
   static bool hasSameColor(uchar *pt1, uchar *pt2);
+  static void MakeValueMap(double scale, double offset, uint8 *valueMap);
+  void setDataIndexed8(const uint8_t *data);
+  void setDataIndexed8(const uint8_t *data, int threshold);
 
+  template<class T>
+  void setDataIndexed8(const T *data);
+  template<class T>
+  void setDataIndexed8(const T *data, int threshold);
+
+  void setDataRgba(const uint8_t *data);
+  void setDataRgba(const uint8_t *data, const uint8 *valueMap);
+  void setDataRgba(const uint8_t *data, const uint8 *valueMap, int threshold);
+
+  template<class T>
+  void setDataRgba(const T *data);
+  template<class T>
+  void setDataRgba(const T *data, const uint8 *valueMap);
+  template<class T>
+  void setDataRgba(const T *data, const uint8 *valueMap, int threshold);
+
+  void setDataRgba(const uint8_t *data, int threshold);
+  void setDataRgba(const color_t *data);
+  void setDataRgba(const color_t *data, double scale, double offset);
+
+  template <class T>
+  void setDataRgba(const T *data, int threshold);
+  template <class T>
+  void setDataRgba(const T *data, double scale, double offset);
+
+
+  void setDataRgb32(const color_t *data);
+  void setDataRgb32(const color_t *data, double scale, double offset);
+
+  void setDataRgb32(const uint8_t *data);
+  void setDataRgb32(const uint8_t *data, const uint8 *valueMap);
+  void setDataRgb32(const uint8_t *data, int threshold);
+
+  template <class T>
+  void setDataRgb32(const T *data);
+  template <class T>
+  void setDataRgb32(const T *data, const uint8 *valueMap);
+  template <class T>
+  void setDataRgb32(const T *data, int threshold);
+
+  bool isArgb32() const;
+
+private:
   ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+  ZStTransform m_projTransform; //Transform from image coordinates to screen coordinates
 
   //high constrast protocal
+  bool m_usingContrastProtocal;
   bool m_nonlinear;
   double m_grayScale;
   double m_grayOffset;
   //ZIntPoint m_offset;
+
+  bool m_visible;
+
+  int m_z;
 };
 
 #include "zimage_tmpl.cpp"

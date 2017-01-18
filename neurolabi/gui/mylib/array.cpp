@@ -40,7 +40,7 @@ typedef CONDITION_VARIABLE pthread_cond_t;
   //  Simple thread support
 
 typedef struct
-  { HANDLE *handle;
+  { HANDLE handle;
     void   *(*fct)(void *);
     void   *arg;
     void   *retval;
@@ -70,7 +70,7 @@ static int pthread_create(pthread_t *thread, void *attr,
     };
   tv->fct    = fct;
   tv->arg    = arg;
-  tv->handle = CreateThread(NULL,0,MyStart,tv,0,&tv->id);
+  tv->handle = CreateThread(NULL,0,MyStart,tv,0,(LPDWORD)&tv->id);
   if (tv->handle == NULL)
     return (EAGAIN);
   else
@@ -146,8 +146,6 @@ static inline int pthread_is_this(pthread_id id)
 #define BND_WRAP    2
 #define BND_EXTEND  3
 #define BND_INVERT  4
-
-extern int Boundary_Case_8qm5;
 
 #define SIZEOF(x) ((int) sizeof(x))
 
@@ -293,7 +291,7 @@ static inline int sizeof_array_dims(mylib::Array *array)
 }
 
 static inline int allocate_array_data(mylib::Array *array, mylib::int64  dsize,
-                                      char *routine)
+                                      const char *routine)
 { _Array *object = (_Array *) (((char *) array) - Array_Offset);
   if (object->dsize < dsize)
     { void *x = mylib::Guarded_Realloc(array->data,(size_t) dsize,routine);

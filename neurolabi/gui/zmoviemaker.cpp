@@ -21,12 +21,20 @@
 #include "zpunctum.h"
 #include "z3dvolumesource.h"
 #include "zpunctumio.h"
+#include "z3dpunctafilter.h"
+#include "zobject3dscan.h"
+#include "zcubearraymovieactor.h"
+#include "zcubearray.h"
+#include "flyem/zflyemmisc.h"
+#include "dvid/zdvidinfo.h"
+#include "z3daxis.h"
 
 using namespace std;
 
 ZMovieMaker::ZMovieMaker() : m_stage(NULL),
   m_width(1024), m_height(1024), m_frameInterval(50)
 {
+//  m_showingAxis = true;
 }
 
 ZMovieMaker::~ZMovieMaker()
@@ -49,12 +57,17 @@ void ZMovieMaker::prepareStage()
                                     false, NULL);
   m_stage = new ZMovieStage(window);
 
+  window->getDocument()->disconnectPunctaModelUpdate();
+  window->getDocument()->disconnectSwcNodeModelUpdate();
+
   m_photographer.setStage(m_stage);
   window->getVolumeSource()->setMaxVoxelNumber(1024 * 1024 * 512);
   window->getVolumeSource()->reloadVolume();
 
   window->show();
   window->getSwcFilter()->setColorMode("Intrinsic");
+  window->getSwcFilter()->enablePicking(false);
+  window->getPunctaFilter()->setColorMode("Original Point Color");
   window->getVolumeRaycaster()->getRenderer()->setOpaque(true);
   window->getVolumeRaycaster()->hideBoundBox();
   window->getVolumeRaycasterRenderer()->setCompositeMode("Direct Volume Rendering");
@@ -66,6 +79,11 @@ void ZMovieMaker::prepareStage()
         glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
                   m_backgroundColor.blueF()));
 
+//  window->getAxis()->setVisible(m_showingAxis);
+
+
+  window->getRendererBase(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
+
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
 
@@ -73,6 +91,9 @@ void ZMovieMaker::prepareStage()
        iter != m_cast.end(); ++iter) {
     (*iter)->setStage(m_stage);
   }
+
+  //For ROIs
+  window->setROIs(m_academy->getObjectList<ZCubeArray>().size());
 }
 
 void ZMovieMaker::recruitCast()
@@ -96,6 +117,40 @@ void ZMovieMaker::recruitCast()
       actor->setId(iter->first);
       actor->setVisible(false);
       m_cast.push_back(actor);
+    }
+      break;
+    case ZFileType::OBJECT_SCAN_FILE:
+    {
+      ZObject3dScan obj;
+      obj.load(iter->second);
+      if (!obj.isEmpty()) {
+        ZCubeArray *cubeArray =
+            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        cubeArray->setSource(iter->second);
+        academy->addObject(cubeArray);
+        ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
+        actor->setActor(cubeArray);
+        actor->setId(iter->first);
+        actor->setVisible(false);
+        m_cast.push_back(actor);
+      }
+    }
+      break;
+    case ZFileType::JSON_FILE:
+    {
+      ZObject3dScan obj;
+      obj.importDvidRoi(iter->second);
+      if (!obj.isEmpty()) {
+        ZCubeArray *cubeArray =
+            ZFlyEmMisc::MakeRoiCube(obj, ZDvidInfo(), QColor(), 0);
+        cubeArray->setSource(iter->second);
+        academy->addObject(cubeArray);
+        ZCubeArrayMovieActor *actor = new ZCubeArrayMovieActor;
+        actor->setActor(cubeArray);
+        actor->setId(iter->first);
+        actor->setVisible(false);
+        m_cast.push_back(actor);
+      }
     }
       break;
     case ZFileType::TIFF_FILE:
@@ -239,8 +294,8 @@ int ZMovieMaker::updateAction()
     scene->print();
 #endif
 
+    scene->updateStage(m_stage->getWindow());
     scene->updateCamera(m_stage->getWindow(), timeStep);
-
     scene->updateClip(m_stage->getWindow(), &m_clipperState, timeStep);
 
     setupAction(*scene);

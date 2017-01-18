@@ -1,6 +1,9 @@
 #include "zstackframe.h"
 #include <QUndoCommand>
 #include <iostream>
+#include <QTimer>
+#include <QtConcurrentRun>
+
 #include "tz_error.h"
 #include "zstackview.h"
 #include "zstackdoc.h"
@@ -18,9 +21,10 @@
 #include "zstackfile.h"
 #include "zdoublevector.h"
 #include "zfiletype.h"
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"
@@ -64,6 +68,9 @@ ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
   qDebug() << m_doc.get();
   m_presenter = NULL;
   m_view = NULL;
+
+  m_testTimer = new QTimer(this);
+  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
   /*
   if (preparingModel) {
     constructFrame();
@@ -114,6 +121,12 @@ void ZStackFrame::BaseConstruct(
     frame->showNormal();
   #endif
   }
+}
+
+void ZStackFrame::BaseConstruct(ZStackFrame *frame, ZStackDoc *doc)
+{
+  ZSharedPointer<ZStackDoc> docPtr(doc);
+  BaseConstruct(frame, docPtr);
 }
 
 ZStackFrame*
@@ -491,7 +504,7 @@ void ZStackFrame::setupDisplay()
 {
   prepareDisplay();
 
-  qDebug() << "ready(this) emitted";
+  ZOUT(LTRACE(), 5) << "ready(this) emitted";
 
   //To prevent strange duplcated signal emit
   disconnect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
@@ -1795,6 +1808,20 @@ void ZStackFrame::customizeWidget()
   if (!m_isWidgetReady) {
     view()->customizeWidget();
     m_isWidgetReady = true;
+  }
+}
+
+void ZStackFrame::testSlot()
+{
+  QtConcurrent::run(document().get(), &ZStackDoc::test);
+}
+
+void ZStackFrame::stressTest()
+{
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+  } else {
+    m_testTimer->start(500);
   }
 }
 

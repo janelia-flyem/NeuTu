@@ -1,5 +1,6 @@
 #include "zinteractionengine.h"
 #include <QMouseEvent>
+#include "z3dinteractionhandler.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
@@ -130,6 +131,12 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
   switch (event->key()) {
   case Qt::Key_R:
+#ifdef _FLYEM_
+    if (event->modifiers() == Qt::NoModifier) {
+      enterPaintStroke();
+      processed = true;
+    } else
+#endif
     if (event->modifiers() == Qt::ShiftModifier) {
       enterPaintRect();
       processed = true;

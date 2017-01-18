@@ -1,6 +1,7 @@
 #include "zdvidannotationcommand.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackdoccommand.h"
+#include "neutubeconfig.h"
 
 ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::CompositeCommand(
     ZFlyEmProofDoc *doc, QUndoCommand *parent) :
@@ -10,7 +11,7 @@ ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::CompositeCommand(
 
 ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::~CompositeCommand()
 {
-  qDebug() << "Composite command (" << this->text() << ") destroyed";
+  ZOUT(LTRACE(), 5) << "Composite command (" << this->text() << ") destroyed";
 }
 
 void ZStackDocCommand::DvidAnnotationEdit::CompositeCommand::redo()
@@ -67,7 +68,7 @@ void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
 {
   if (m_backup.hasKey("Pos")) {
     ZFlyEmToDoItem item;
-    item.loadJsonObject(m_backup, NeuTube::FlyEM::LOAD_PARTNER_RELJSON);
+    item.loadJsonObject(m_backup, FlyEM::LOAD_PARTNER_RELJSON);
     m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
     m_doc->notifyTodoEdited(item.getPosition());
     QString msg = QString("Todo removal undone at (%1, %2, %3)").

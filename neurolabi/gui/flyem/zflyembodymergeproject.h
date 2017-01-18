@@ -124,7 +124,7 @@ signals:
   void selectionChanged(ZStackObjectSelector selector);
   void selectionChanged();
   void bodyMerged(QList<uint64_t> objLabelList);
-  void mergeUploaded(QSet<uint64_t> bodySet);
+  void mergeUploaded();
   void splitSent(ZDvidTarget target, uint64_t bodyId);
   void locating2DViewTriggered(ZStackViewParam);
   void dvidLabelChanged();
@@ -154,7 +154,7 @@ public slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
   void notifySplit();
-  void highlightSelectedObject(bool hl);
+//  void highlightSelectedObject(bool hl);
   void update3DBodyViewPlane(const ZStackViewParam &viewParam);
 
 private slots:

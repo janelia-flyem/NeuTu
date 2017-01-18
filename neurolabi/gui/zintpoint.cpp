@@ -1,5 +1,7 @@
 #include "zintpoint.h"
 #include <iostream>
+#include "tz_stdint.h"
+
 #include "tz_error.h"
 #include "zerror.h"
 #include "zpoint.h"
@@ -100,7 +102,7 @@ ZIntPoint operator + (const ZIntPoint &pt1, int v)
 
 ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
-  return ZIntPoint(pt1.getX() - pt2.getX(), pt1.getY() - pt2.getY(),
+  return ZIntPoint(pt1.getX() - pt2.getX(),  pt1.getY() - pt2.getY(),
                    pt1.getZ() - pt2.getZ());
 }
 
@@ -216,4 +218,14 @@ int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
   }
 
   return m_z;
+}
+
+void ZIntPoint::invalidate()
+{
+  set(INT_MIN, INT_MIN, INT_MIN);
+}
+
+bool ZIntPoint::isValid() const
+{
+  return m_x != INT_MIN || m_y != INT_MIN || m_z != INT_MIN;
 }

@@ -235,6 +235,7 @@
     <addaction name="menuQuery"/>
     <addaction name="separator"/>
     <addaction name="actionTile_Manager_2"/>
+    <addaction name="actionMake_Movie_2"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -339,6 +340,7 @@
       <addaction name="actionGenerate_Local_Grayscale"/>
       <addaction name="actionUpload_Annotations"/>
       <addaction name="actionRemove_Obsolete_Annotations"/>
+      <addaction name="actionGet_Body_Positions"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -400,6 +402,8 @@
       <addaction name="actionGenerate_PAM_Actor"/>
       <addaction name="actionGenerate_MB_Actor"/>
       <addaction name="actionGenerate_MB_Conn_Actor"/>
+      <addaction name="separator"/>
+      <addaction name="actionMake_Movie_MB"/>
      </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
@@ -428,8 +432,15 @@
      <addaction name="actionGenerate_Mask"/>
      <addaction name="actionBigNeuron_Trace"/>
     </widget>
+    <widget class="QMenu" name="menuSandbox">
+     <property name="title">
+      <string>Sandbox</string>
+     </property>
+    </widget>
     <addaction name="menuFLy_EM"/>
     <addaction name="menuBiocytin"/>
+    <addaction name="separator"/>
+    <addaction name="menuSandbox"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1493,6 +1504,26 @@
   <action name="actionGenerate_MB_Conn_Actor">
    <property name="text">
     <string>Generate MB-Conn Actor</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_MB">
+   <property name="text">
+    <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionGet_Body_Positions">
+   <property name="text">
+    <string>Get Body Positions</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_2">
+   <property name="text">
+    <string>Make Movie</string>
    </property>
   </action>
  </widget>

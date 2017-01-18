@@ -38,7 +38,7 @@ public:
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(
+  bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
   inline bool isSplitWindow() const {
@@ -68,6 +68,14 @@ public:
 //  QAction* makeAction(ZActionFactory::EAction item);
   bool connectAction(QAction *action, ZActionFactory::EAction item);
 
+//  void setLabelAlpha(int alpha) {
+//    m_labelAlpha = alpha;
+//  }
+
+//  int getLabelAlpha() const {
+//    return m_labelAlpha;
+//  }
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -75,9 +83,11 @@ signals:
   void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningLocalSplit();
   void goingToBody();
   void selectingBody();
-  void bookmarkAdded(ZFlyEmBookmark*);
+  void goingToTBar();
+//  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
   void annotatingSynapse();
   void mergingBody();
@@ -89,19 +99,26 @@ signals:
 
 public slots:
   void deleteSelectedSynapse();
-  void verfifySelectedSynapse();
-  void unverfifySelectedSynapse();
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
   void linkSelectedSynapse();
   void unlinkSelectedSynapse();
+  void repairSelectedSynapse();
+  void highlightPsd(bool on);
   void tryAddSynapseMode(ZDvidSynapse::EKind kind);
   void tryAddPreSynapseMode();
   void tryAddPostSynapseMode();
   void tryMoveSynapseMode();
   void tryAddTodoItem();
   void tryAddDoneItem();
+  void tryAddToSplitItem();
+  void tryAddToMergeItem();
   void removeTodoItem();
   void checkTodoItem();
   void uncheckTodoItem();
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
   void selectBodyInRoi();
   void zoomInRectRoi();
 
@@ -119,6 +136,8 @@ private:
   void tryTodoItemMode();
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
+  void tryAddToMergeItem(const ZIntPoint &pt);
+  void tryAddToSplitItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
@@ -130,6 +149,7 @@ private:
   bool m_highTileContrast;
   bool m_smoothTransform;
   bool m_showingData;
+//  int m_labelAlpha;
 
   QMenu *m_synapseContextMenu;
 

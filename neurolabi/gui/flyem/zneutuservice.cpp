@@ -98,15 +98,18 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
 void ZNeutuService::updateStatus()
 {
   m_status = STATUS_DOWN;
-
+#if defined(_FLYEM_)
   if (!m_server.empty()) {
     int statusCode;
+#if defined(_ENABLE_LIBDVIDCPP_)
     if (ZDvid::MakeGetRequest(getHomeUrl(), statusCode)) {
       if (statusCode == 200) {
         m_status = STATUS_NORMAL;
       }
     }
+#endif
   }
+#endif
 }
 
 bool ZNeutuService::isNormal() const

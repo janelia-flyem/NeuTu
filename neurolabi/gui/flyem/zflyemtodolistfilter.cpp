@@ -9,6 +9,7 @@
 #include "z3dlinerenderer.h"
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
+#include "neutubeconfig.h"
 
 ZFlyEmTodoListFilter::ZFlyEmTodoListFilter() : m_showGraph("Visible", true),
   m_xCut("X Cut", glm::ivec2(0,0), 0, 0),
@@ -23,7 +24,7 @@ void ZFlyEmTodoListFilter::init()
   m_lineRenderer = NULL;
   m_sphereRenderer = NULL;
   m_dataIsInvalid = false;
-
+  m_pressedItem = NULL;
 
   m_widgetsGroup = NULL;
 
@@ -134,6 +135,7 @@ void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
 
 void ZFlyEmTodoListFilter::registerPickingObjects(Z3DPickingManager *pm)
 {
+  ZOUT(LTRACE(), 5) << "start";
   if (pm && !m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_itemList.size(); i++) {
       pm->registerObject(m_itemList[i]);
@@ -151,6 +153,7 @@ void ZFlyEmTodoListFilter::registerPickingObjects(Z3DPickingManager *pm)
   }
 
   m_pickingObjectsRegistered = true;
+  ZOUT(LTRACE(), 5) << "end";
 }
 
 void ZFlyEmTodoListFilter::renderSelectionBox(Z3DEye eye)
@@ -210,6 +213,7 @@ void ZFlyEmTodoListFilter::renderSelectionBox(Z3DEye eye)
 
 void ZFlyEmTodoListFilter::deregisterPickingObjects(Z3DPickingManager *pm)
 {
+  ZOUT(LTRACE(), 5) << "start";
   if (pm && m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_registeredItemList.size(); i++) {
       pm->deregisterObject(m_registeredItemList[i]);
@@ -218,6 +222,7 @@ void ZFlyEmTodoListFilter::deregisterPickingObjects(Z3DPickingManager *pm)
   }
 
   m_pickingObjectsRegistered = false;
+  ZOUT(LTRACE(), 5) << "end";
 }
 
 void ZFlyEmTodoListFilter::process(Z3DEye)

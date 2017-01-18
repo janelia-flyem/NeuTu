@@ -17,10 +17,12 @@ public:
     void clear();
     void print();
 
+    QHash<uint64_t, int> getColorIndexMap() const;
+    void buildColorTable();
+
 private:
     QHash<uint64_t, QColor> m_colorMap;
     QColor m_defaultColor;
-
 };
 
 

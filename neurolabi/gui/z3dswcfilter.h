@@ -35,6 +35,9 @@ public:
 
   void setData(const std::vector<ZSwcTree*> &swcList);
   void setData(const QList<ZSwcTree*> &swcList);
+
+  void updateData(const QList<ZSwcTree*> &swcList);
+
   void setSelectedSwcs(const QSet<ZStackObject*> &selectedSwc);
   //inline void setSelectedSwcTreeNodes(const std::set<Swc_Tree_Node*> &list) {
   //  m_selectedSwcTreeNodes = list;
@@ -83,6 +86,9 @@ public:
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
   inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
+  void enablePicking(bool picking) {
+    m_enablePicking = picking;
+  }
 
   void setVisible(bool v);
   bool isVisible() const;
@@ -136,7 +142,7 @@ private:
   void updateWidgetsGroup();
 
   // get visible data from origSwcList put into swcList
-  void getVisibleData();
+  void loadVisibleData();
 
   glm::dvec3 projectPointOnRay(
       glm::dvec3 pt, const glm::dvec3 &v1, const glm::dvec3 &v2);
@@ -229,10 +235,12 @@ private:
   ZSwcColorScheme m_colorScheme;
 
   bool m_enableCutting;
+  bool m_enablePicking;
 
   QVector<QString> m_guiNameList;
 
   mutable QMutex m_nodeSelectionMutex;
+  mutable QMutex m_dataValidMutex;
 };
 
 #endif // Z3DSWCFILTER_H

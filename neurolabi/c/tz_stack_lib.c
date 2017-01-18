@@ -1530,6 +1530,7 @@ Stack* Downsample_Stack(const Stack* stack,int wintv,int hintv,int dintv)
   if (fgcount > 0) {\
   s /= fgcount;							\
   }\
+  UNUSED_PARAMETER(wndsize_t); \
   validate_value(s);							\
   out_array[offset2] = s;						\
   offset2++;								\
@@ -1734,8 +1735,6 @@ Stack* Downsample_Stack_Mean_F(Stack* stack,int wintv,int hintv,int dintv,
   int kw,kh,kd,rw,rh,rd;
   int i,j,k,ri,rj,rk;
   double s;
-  //double sc[3];
-  //int c;
 
   kw = stack->width / (wintv+1);
   kh = stack->height / (hintv+1);
@@ -1749,8 +1748,8 @@ Stack* Downsample_Stack_Mean_F(Stack* stack,int wintv,int hintv,int dintv,
   int subheight = hintv + 1;
   int subdepth = dintv + 1;
 
-  //int subarea = subwidth * subheight;
-  //int wndsize = subwidth * subheight * subdepth;
+  int subarea = subwidth * subheight;
+  int wndsize = subarea * subdepth;
   
   if (stack2 == NULL) {
     stack2 = Make_Stack(stack->kind, kw + (rw>0), kh + (rh>0), 

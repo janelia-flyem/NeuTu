@@ -62,12 +62,17 @@ const std::string ProtocolSwitcher::PROTOCOL_DATA_NAME = "NeuTu-protocols";
 const std::string ProtocolSwitcher::PROTOCOL_COMPLETE_SUFFIX= "-complete";
 
 
-// names of available protocols; thank you, C++, for making
-//  constants so hard to define
+// names of available protocols: the protocol switcher is responsible for
+//  assigning names to the various protocols and relating the names to
+//  the protocol classes; the names are listed here, and the mappings
+//  are listed in instantiateProtocol()
+
+// thank you, C++, for making constants so hard to define
 QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
-        << "synapse_prediction";
+        << "synapse_prediction_body"
+        << "synapse_prediction_region";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -198,6 +203,13 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     m_protocolStatus = PROTOCOL_INITIALIZING;
 
     instantiateProtocol(protocolName);
+    if (m_activeProtocol == NULL) {
+        // instantiation failed!
+        QMessageBox::warning(m_parent, "Protocol not started!",
+            "The protocol could not be started!  Please report this error.", QMessageBox::Ok);
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
 
     // connect happens here, because if init succeeds, it'll
     //  want to request a save
@@ -258,6 +270,14 @@ void ProtocolSwitcher::loadProtocolRequested() {
     m_protocolStatus = PROTOCOL_LOADING;
 
     instantiateProtocol(QString::fromStdString(m_activeMetadata.getActiveProtocolName()));
+    if (m_activeProtocol == NULL) {
+        // instantiation failed!
+        QMessageBox::warning(m_parent, "Protocol not started!",
+            "The protocol could not be started!  Please report this error.", QMessageBox::Ok);
+        m_protocolStatus = PROTOCOL_INACTIVE;
+        return;
+    }
+
     connectProtocolSignals();
 
     // load data from dvid and send to protocol
@@ -297,6 +317,15 @@ void ProtocolSwitcher::saveProtocolRequested(ZJsonObject data) {
 }
 
 void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
+    // note: this is where we map protocol names to classes;
+    //  C++ makes this difficult because classes (types) aren't
+    //  first-class languages like in higher-level languages, like Python
+
+    // note that if you decide to rename a protocol, you should keep
+    //  the old name's mapping present, to handle old saves; if not,
+    //  you'd better handle it in some other way (eg, rename, refuse to
+    //  open + dialog, whatever)
+
     // if-else chain not ideal, but C++ is too stupid to switch
     //  on strings; however, the chain won't get *too* long,
     //  so it's not that bad
@@ -305,14 +334,23 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     }
     if (protocolName == "doNthings") {
         m_activeProtocol = new DoNThingsProtocol(m_parent);
-    } else if (protocolName == "synapse_prediction") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent);
+    } else if (protocolName == "synapse_prediction_region") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+    } else if (protocolName == "synapse_prediction_body") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    }
+    // below here: old protocols (renamed, deleted, etc.)
+    // old synapse_prediction is always region:
+    else if (protocolName == "synapse_prediction") {
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else {
-        // should never happen; the null will cause errors
+        // should never happen; the null will cause errors later
         m_activeProtocol = NULL;
     }
 
-    m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+    if (m_activeProtocol != NULL) {
+      m_activeProtocol->setDvidTarget(m_currentDvidTarget);
+    }
 }
 
 void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {
@@ -461,7 +499,7 @@ std::string ProtocolSwitcher::generateIdentifier() {
     bool status;
     QString ans = QInputDialog::getText(m_parent, "Input identifier",
         "Input an identifier to be used as part of the key for saved data (no spaces or hyphens!): ",
-        QLineEdit::Normal, "myData", &status);
+        QLineEdit::Normal, "", &status);
     if (status && !ans.isEmpty()) {
         if (ans.contains('-') || ans.contains(' ')) {
             QMessageBox::warning(m_parent, "Invalid identifier",

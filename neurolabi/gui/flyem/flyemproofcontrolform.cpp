@@ -47,6 +47,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->segmentSizeDecPushButton->setEnabled(false);
 
   ui->saveMergePushButton->hide();
+  ui->dataInfoWidget->hide();
 
 //  ui->bodyViewPushButton->hide();
 
@@ -88,14 +89,14 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           */
 
 //  m_userBookmarkProxy = createSortingProxy(&m_userBookmarkList);
-  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
-  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
+//  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+//  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
 //  m_bookmarkProxy = createSortingProxy(&m_bookmarkList);
 //  ui->bookmarkView->setModel(&m_bookmarkList);
 //  ui->bookmarkView->setSortingEnabled(true);
 
-  getAssignedBookmarkView()->resizeColumnsToContents();
-  getUserBookmarkView()->resizeColumnsToContents();
+//  getAssignedBookmarkView()->resizeColumnsToContents();
+//  getUserBookmarkView()->resizeColumnsToContents();
 
   createMenu();
 }
@@ -175,6 +176,10 @@ void FlyEmProofControlForm::createMenu()
 
   connect(colorActionGroup, SIGNAL(triggered(QAction*)),
           this, SLOT(changeColorMap(QAction*)));
+
+  QAction *infoAction = new QAction("Information", this);
+  m_mainMenu->addAction(infoAction);
+  connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
 
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
@@ -267,6 +272,18 @@ void FlyEmProofControlForm::goToPosition()
   }
 }
 
+void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
+{
+  setDvidInfo(target);
+  ui->dvidPushButton->setEnabled(false);
+
+  if (target.readOnly()) {
+    ui->menuPushButton->setEnabled(false);
+    ui->uploadPushButton->setEnabled(false);
+    ui->splitPushButton->setEnabled(false);
+  }
+}
+
 void FlyEmProofControlForm::setInfo(const QString &info)
 {
   ui->dataInfoWidget->setText(info);
@@ -275,6 +292,7 @@ void FlyEmProofControlForm::setInfo(const QString &info)
 void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 {
   std::string info = target.toJsonObject().dumpString(2);
+#if defined(_FLYEM_)
   if (target.isSupervised()) {
     if (!target.getSupervisor().empty()) {
       info += "\nLibrarian: " + target.getSupervisor();
@@ -282,11 +300,11 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
       info += "\nLibrarian: " + GET_FLYEM_CONFIG.getDefaultLibrarian();
     }
   }
-
+#endif
   setInfo(info.c_str());
 }
 
-
+/*
 void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
 {
   if (bookmark != NULL) {
@@ -297,11 +315,14 @@ void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
     }
   }
 }
+*/
 
+#if 0
 void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
   m_userBookmarkList.clear();
   if (doc != NULL) {
+    ZOUT(LTRACE(), 5) << "Update user bookmark table";
     const TStackObjectList &objList =
         doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
     for (TStackObjectList::const_iterator iter = objList.begin();
@@ -321,7 +342,9 @@ void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
                             */
 //  ui->userBookmarkView->resizeColumnsToContents();
 }
+#endif
 
+#if 0
 void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
 {
   if (project != NULL) {
@@ -361,6 +384,7 @@ void FlyEmProofControlForm::clearBookmarkTable(ZFlyEmBodyMergeProject */*project
 {
   m_assignedBookmarkList.clear();
 }
+#endif
 
 void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
 {

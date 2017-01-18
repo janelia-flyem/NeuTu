@@ -66,8 +66,8 @@ void ZStackProcessor::shortestPathFlow(ZStack *stack)
   size_t max_index;
   Stack_Max(tmpdist, &max_index);
 
-  Stack *mask = Make_Stack(GREY, Stack_Width(tmpdist), Stack_Height(tmpdist),
-                           Stack_Depth(tmpdist));
+  Stack *mask = C_Stack::make(GREY, Stack_Width(tmpdist), Stack_Height(tmpdist),
+                              Stack_Depth(tmpdist));
   Zero_Stack(mask);
 
   size_t nvoxel = Stack_Voxel_Number(stackData);
@@ -886,6 +886,33 @@ void ZStackProcessor::SubtractBackground(
   }
 
   delete hist;
+}
+
+ZStack* ZStackProcessor::Rgb2Gray(const ZStack *stack)
+{
+  ZStack *newStack = NULL;
+  if (stack->channelNumber() == 3 && stack->kind() == GREY) {
+    newStack = new ZStack(GREY, stack->getBoundBox(), 1);
+
+    const uint8_t *arrayR = stack->array8(0);
+    const uint8_t *arrayG = stack->array8(1);
+    const uint8_t *arrayB = stack->array8(2);
+    uint8_t *array = newStack->array8();
+
+    size_t volume = stack->getVoxelNumber();
+    for (size_t i = 0; i < volume; ++i) {
+      int v =
+          iround(0.2126 * arrayR[i] + 0.7152 * arrayG[i] + 0.0722 * arrayB[i]);
+      if (v < 0) {
+        v = 0;
+      } else if (v > 255) {
+        v = 255;
+      }
+      array[i] = v;
+    }
+  }
+
+  return newStack;
 }
 
 void ZStackProcessor::SubtractBackground(ZStack *stack, double minFr, int maxIter)

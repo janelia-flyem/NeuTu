@@ -1,3 +1,4 @@
+#include "zglew.h"
 #include "zstackmvc.h"
 
 #include <QMainWindow>
@@ -5,7 +6,9 @@
 #include <QEvent>
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QTimer>
 
+#include "neutubeconfig.h"
 #include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
@@ -16,6 +19,7 @@
 #include "zintpoint.h"
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
+#include "dialogs/zstresstestoptiondialog.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -28,11 +32,13 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+
+  m_testTimer = new QTimer(this);
 }
 
 ZStackMvc::~ZStackMvc()
 {
-  qDebug() << "ZStackMvc destroyed";
+  ZOUT(LTRACE(), 5) << "ZStackMvc destroyed";
 }
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
@@ -299,6 +305,20 @@ void ZStackMvc::keyPressEvent(QKeyEvent *event)
   }
 }
 
+bool ZStackMvc::event(QEvent *event)
+{
+  if (event->type() == QEvent::KeyPress) {
+    if (m_presenter != NULL) {
+      if (m_presenter->processKeyPressEvent((QKeyEvent*) event)) {
+        event->accept();
+      }
+    }
+    return true;
+  }
+
+  return QWidget::event(event);
+}
+
 void ZStackMvc::processViewChange()
 {
   processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
@@ -345,11 +365,49 @@ void ZStackMvc::dump(const QString &msg)
   getView()->dump(msg);
 }
 
-void ZStackMvc::test()
+void ZStackMvc::testSlot()
 {
   for (int i = 0; i < 5000; ++i) {
     QKeyEvent *event = new QKeyEvent ( QEvent::KeyPress, Qt::Key_E, Qt::NoModifier);
     QCoreApplication::postEvent (this, event);
+  }
+}
+
+void ZStackMvc::setStressTestEnv(ZStressTestOptionDialog *optionDlg)
+{
+  assert(optionDlg != NULL);
+
+  m_testTimer->setInterval(1000);
+  disconnect(m_testTimer, SIGNAL(timeout()), this, 0);
+  prepareStressTestEnv(optionDlg);
+}
+
+void ZStackMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
+{
+  switch (optionDlg->getOption()) {
+  case ZStressTestOptionDialog::OPTION_CUSTOM:
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
+    break;
+  default:
+    break;
+  }
+}
+
+void ZStackMvc::stressTest(ZStressTestOptionDialog *dlg)
+{
+  setStressTestEnv(dlg);
+  toggleStressTest();
+}
+
+
+void ZStackMvc::toggleStressTest()
+{
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+    LINFO() << "Stress test started";
+  } else {
+    m_testTimer->start();
+    LINFO() << "Stress test stopped";
   }
 }
 
@@ -529,11 +587,23 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 
   getView()->processViewChange(true, depthChanged);
 
+  getView()->highlightPosition(pt);
+
 //  getView()->notifyViewChanged();
+}
+
+void ZStackMvc::zoomTo(const ZStackViewParam &param)
+{
+  getView()->setView(param);
+  getView()->highlightPosition(param.getViewPort().center().x(),
+                               param.getViewPort().center().y(),
+                               param.getZ());
 }
 
 void ZStackMvc::zoomTo(int x, int y, int z, int width)
 {
+  getView()->zoomTo(x, y, z, width);
+#if 0
   ZGeometry::shiftSliceAxis(x, y, z, getView()->getSliceAxis());
 
 //  z -= getDocument()->getStackOffset().getSliceCoord(getView()->getSliceAxis());
@@ -547,16 +617,7 @@ void ZStackMvc::zoomTo(int x, int y, int z, int width)
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
   getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
-
-/*
-  getView()->imageWidget()->setViewPortOffset(
-        x - getView()->imageWidget()->viewPort().width() / 2,
-        y - getView()->imageWidget()->viewPort().height() / 2);
-  getView()->setSliceIndex(z);
-  */
-//  buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
-
-//  getPresenter()->setViewPortCenter(x, y, z);
+#endif
 
   getView()->highlightPosition(x, y, z);
 }
@@ -567,14 +628,40 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt)
   zoomTo(pt.getX(), pt.getY(), pt.getZ());
 }
 
+void ZStackMvc::goToSlice(int z)
+{
+  getView()->setZ(z);
+}
+
+void ZStackMvc::stepSlice(int dz)
+{
+  getView()->stepSlice(dz);
+}
+
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
+  zoomTo(x, y, z, 800);
+  /*
   QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
   int width = imin3(800, viewPort.width(), viewPort.height());
   if (width < 10) {
     width = 200;
   }
   zoomTo(x, y, z, width);
+  */
+}
+
+void ZStackMvc::zoomToL1(int x, int y, int z)
+{
+  zoomTo(x, y, z, 400);
+  /*
+  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
+  int width = imin3(400, viewPort.width(), viewPort.height());
+  if (width < 10) {
+    width = 200;
+  }
+  zoomTo(x, y, z, width);
+  */
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

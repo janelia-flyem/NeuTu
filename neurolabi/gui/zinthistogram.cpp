@@ -1,5 +1,6 @@
 #include "zinthistogram.h"
 #include <iostream>
+#include <algorithm>
 #include "tz_iarray.h"
 #include "tz_int_histogram.h"
 

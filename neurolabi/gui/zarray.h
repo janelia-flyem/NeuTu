@@ -19,6 +19,7 @@ public:
 
   inline int ndims() const { return m_data->ndims; }
   inline int dim(int index) const { return m_data->dims[index]; }
+  inline mylib::Dimn_Type* dims() const { return m_data->dims; }
   inline Value_Type valueType() const { return m_data->type; }
 
   size_t getElementNumber() const;
