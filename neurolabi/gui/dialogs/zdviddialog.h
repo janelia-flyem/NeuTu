@@ -44,6 +44,7 @@ public slots:
 
 private:
   bool usingDefaultSetting() const;
+  void resetAdvancedDlg(const ZDvidTarget &dvidTarget);
 
 private:
   Ui::ZDvidDialog *ui;

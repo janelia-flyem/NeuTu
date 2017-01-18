@@ -27,8 +27,15 @@ public:
   void setSupervised(bool supervised);
   void setSupervisorServer(const std::string &server);
 
+  void backup();
+  void recover();
+
 private:
   Ui::ZDvidAdvancedDialog *ui;
+
+  bool m_oldSupervised;
+  std::string m_oldSupervisorServer;
+  std::string m_oldTodoName;
 };
 
 #endif // ZDVIDADVANCEDDIALOG_H

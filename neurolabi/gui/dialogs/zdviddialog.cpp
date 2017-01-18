@@ -188,14 +188,7 @@ void ZDvidDialog::setServer(int index)
   }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
 
-  m_advancedDlg->setSupervised(dvidTarget.isSupervised());
-#if defined(_FLYEM_)
-  m_advancedDlg->setSupervisorServer(
-        dvidTarget.getSupervisor().empty() ?
-          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
-          dvidTarget.getSupervisor().c_str());
-#endif
-
+  resetAdvancedDlg(dvidTarget);
 #if 0
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
 #if defined(_FLYEM_)
@@ -231,7 +224,7 @@ void ZDvidDialog::setServer(int index)
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
   m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
-  m_advancedDlg->setDvidServer(dvidTarget.getSourceString().c_str());
+  m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
   m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 
@@ -329,9 +322,24 @@ bool ZDvidDialog::usingDefaultSetting() const
   return ui->settingCheckBox->isChecked();
 }
 
+void ZDvidDialog::resetAdvancedDlg(const ZDvidTarget &dvidTarget)
+{
+  m_advancedDlg->setSupervised(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
+  m_advancedDlg->setSupervisorServer(
+        dvidTarget.getSupervisor().empty() ?
+          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+          dvidTarget.getSupervisor().c_str());
+#endif
+}
+
 void ZDvidDialog::setAdvanced()
 {
-  m_advancedDlg->exec();
+  m_advancedDlg->backup();
+
+  if (!m_advancedDlg->exec()) {
+    m_advancedDlg->recover();
+  }
 }
 
 void ZDvidDialog::updateWidgetForDefaultSetting()

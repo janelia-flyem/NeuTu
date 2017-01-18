@@ -6,11 +6,26 @@ ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
   ui(new Ui::ZDvidAdvancedDialog)
 {
   ui->setupUi(this);
+  m_oldSupervised = true;
 }
 
 ZDvidAdvancedDialog::~ZDvidAdvancedDialog()
 {
   delete ui;
+}
+
+void ZDvidAdvancedDialog::backup()
+{
+  m_oldSupervised = isSupervised();
+  m_oldSupervisorServer = getSupervisorServer();
+  m_oldTodoName = getTodoName();
+}
+
+void ZDvidAdvancedDialog::recover()
+{
+  setSupervised(m_oldSupervised);
+  setSupervisorServer(m_oldSupervisorServer);
+  setTodoName(m_oldTodoName);
 }
 
 void ZDvidAdvancedDialog::setDvidServer(const QString &str)
