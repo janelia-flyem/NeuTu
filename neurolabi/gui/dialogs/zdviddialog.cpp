@@ -78,6 +78,11 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
     }
   }
 
+  m_advancedDlg = new ZDvidAdvancedDialog(this);
+  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
+  connect(ui->advancedPushButton, SIGNAL(clicked()),
+          this, SLOT(setAdvanced()));
+
   setServer(0);
   connect(ui->serverComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(setServer(int)));
@@ -91,10 +96,6 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
 
 //  setFixedSize(size());
 
-  m_advancedDlg = new ZDvidAdvancedDialog(this);
-  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
-  connect(ui->advancedPushButton, SIGNAL(clicked()),
-          this, SLOT(setAdvanced()));
 
   ui->roiLabel->hide();
   ui->roiPushButton->hide();
@@ -144,8 +145,14 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
 
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
+
+    target.enableSupervisor(m_advancedDlg->isSupervised());
+    target.setSupervisorServer(m_advancedDlg->getSupervisorServer());
+    target.setTodoListName(m_advancedDlg->getTodoName());
+#if 0
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
+#endif
     //target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
     target.setRoiName(ui->roiLineEdit->text().toStdString());
     target.setReadOnly(ui->readOnlyCheckBox->isChecked());
@@ -180,6 +187,16 @@ void ZDvidDialog::setServer(int index)
           dvidTarget.isLowQualityTile(dvidTarget.getMultiscale2dName()));
   }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
+
+  m_advancedDlg->setSupervised(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
+  m_advancedDlg->setSupervisorServer(
+        dvidTarget.getSupervisor().empty() ?
+          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+          dvidTarget.getSupervisor().c_str());
+#endif
+
+#if 0
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
 #if defined(_FLYEM_)
   ui->librarianLineEdit->setText(
@@ -187,6 +204,8 @@ void ZDvidDialog::setServer(int index)
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
 #endif
+#endif
+
   ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
   ui->settingCheckBox->setChecked(dvidTarget.usingDefaultDataSetting());
 
@@ -199,8 +218,8 @@ void ZDvidDialog::setServer(int index)
   ui->tileLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->settingCheckBox->setEnabled(dvidTarget.isEditable());
-  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
-  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
+//  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
+//  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
   //ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->readOnlyCheckBox->setEnabled(dvidTarget.isEditable());
@@ -211,6 +230,9 @@ void ZDvidDialog::setServer(int index)
                                (dvidTarget.getName() != "Custom"));
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
+  m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
+  m_advancedDlg->setDvidServer(dvidTarget.getSourceString().c_str());
+  m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const
@@ -309,9 +331,7 @@ bool ZDvidDialog::usingDefaultSetting() const
 
 void ZDvidDialog::setAdvanced()
 {
-  if (m_advancedDlg->exec()) {
-
-  }
+  m_advancedDlg->exec();
 }
 
 void ZDvidDialog::updateWidgetForDefaultSetting()
@@ -332,6 +352,8 @@ void ZDvidDialog::updateWidgetForDefaultSetting()
     ui->labelBlockLabel->setText("Label Block");
     ui->synapseLabel->setText("Synapse");
   }
+
+  m_advancedDlg->updateWidgetForDefaultSetting(usingDefaultSetting());
 }
 
 void ZDvidDialog::deleteCurrentTarget()

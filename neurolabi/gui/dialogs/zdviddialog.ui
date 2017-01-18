@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>453</width>
-    <height>601</height>
+    <height>545</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -80,19 +80,18 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Port</string>
+        <string>:</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QSpinBox" name="portSpinBox">
+       <property name="toolTip">
+        <string>Port of the server (-1 means default)</string>
+       </property>
        <property name="minimum">
         <number>-1</number>
        </property>
@@ -103,26 +102,6 @@
         <number>-1</number>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>(-1 means default)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>
@@ -235,6 +214,13 @@
     </layout>
    </item>
    <item>
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="label_10">
@@ -287,23 +273,6 @@
      </item>
      <item>
       <widget class="QLineEdit" name="roiLineEdit"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_15">
-     <item>
-      <widget class="QCheckBox" name="librarianCheckBox">
-       <property name="text">
-        <string>Use librarian</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="librarianLineEdit"/>
      </item>
     </layout>
    </item>

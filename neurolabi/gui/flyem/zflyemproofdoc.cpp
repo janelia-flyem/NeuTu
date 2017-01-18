@@ -139,7 +139,9 @@ void ZFlyEmProofDoc::runRoutineCheck()
                             << getSupervisor()->getMainUrl() + ":"
                             << timer.elapsed() << "ms";
         } else {
-          LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
+          if (!getSupervisor()->isEmpty()) {
+            LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
+          }
         }
       }
     }
