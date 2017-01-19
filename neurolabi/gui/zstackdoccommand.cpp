@@ -1482,7 +1482,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
         Swc_Tree_Node *downNode = nodeArray[e2];
 
         //Check source
-        if (ZFileType::fileType(swcMap[downNode]->getSource()) ==
+        if (ZFileType::FileType(swcMap[downNode]->getSource()) ==
             ZFileType::SWC_FILE) {
           upNode = nodeArray[e2];
           downNode = nodeArray[e1];

@@ -443,7 +443,6 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
   ASSERT_EQ(9000, target.getPort());
   ASSERT_EQ("3456", target.getUuid());
-
   target.setTodoListName("test");
   ASSERT_EQ("test", target.getTodoListName());
 }

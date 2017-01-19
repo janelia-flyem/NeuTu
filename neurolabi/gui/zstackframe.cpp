@@ -526,7 +526,7 @@ int ZStackFrame::readStack(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
 
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::SWC_FILE:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
@@ -1509,7 +1509,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);

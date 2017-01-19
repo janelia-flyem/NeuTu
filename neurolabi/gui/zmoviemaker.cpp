@@ -105,7 +105,7 @@ void ZMovieMaker::recruitCast()
   academy->blockSignals(true);
   for (std::map<string, string>::const_iterator iter = cast.begin();
        iter != cast.end(); ++iter) {
-    switch (ZFileType::fileType(iter->second)) {
+    switch (ZFileType::FileType(iter->second)) {
     case ZFileType::SWC_FILE:
     {
       ZSwcTree *tree = new ZSwcTree;

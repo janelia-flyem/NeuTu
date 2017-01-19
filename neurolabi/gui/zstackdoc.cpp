@@ -4754,7 +4754,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
-    switch (ZFileType::fileType(iter->toStdString())) {
+    switch (ZFileType::FileType(iter->toStdString())) {
     case ZFileType::SWC_FILE:
     case ZFileType::SYNAPSE_ANNOTATON_FILE:
 //      swcLoaded = true;
@@ -4844,7 +4844,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   bool succ = true;
 
   m_changingSaveState = false;
-  switch (ZFileType::fileType(filePath.toStdString())) {
+  switch (ZFileType::FileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
@@ -7167,7 +7167,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
 
   if (tree1 != tree2) {
     //Check source
-    if (ZFileType::fileType(tree2->getSource()) == ZFileType::SWC_FILE) {
+    if (ZFileType::FileType(tree2->getSource()) == ZFileType::SWC_FILE) {
       upNode = tn2;
       downNode = tn1;
     }

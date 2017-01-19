@@ -22,7 +22,7 @@ ZPunctumIO::ZPunctumIO()
 QList<ZPunctum*> ZPunctumIO::load(const QString &file)
 {
   QList<ZPunctum*> punctaList;
-  switch (ZFileType::fileType(file.toStdString())) {
+  switch (ZFileType::FileType(file.toStdString())) {
   case ZFileType::V3D_APO_FILE:
     readV3DApoFile(file, punctaList);
     break;
