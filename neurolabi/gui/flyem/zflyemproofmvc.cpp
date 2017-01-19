@@ -2314,19 +2314,15 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
       const std::set<uint64_t> &bodySet =
           getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
 
-      bool failed = false;
       if (m_skeletonUpdateDlg->isOverwriting()) {
         if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-              getDvidTarget(), bodySet, ZNeutuService::UPDATE_DELETE) ==
+              getDvidTarget(), bodySet, ZNeutuService::UPDATE_ALL) ==
             ZNeutuService::REQUEST_FAILED) {
           warnMsg.setMessage("Computing service failed");
-          failed = true;
         }
-      }
-
-      if (!failed) {
+      } else {
         if (GET_NETU_SERVICE.requestBodyUpdate(
-              getDvidTarget(), bodySet, ZNeutuService::UPDATE_ALL) ==
+              getDvidTarget(), bodySet, ZNeutuService::UPDATE_MISSING) ==
             ZNeutuService::REQUEST_FAILED) {
           warnMsg.setMessage("Computing service failed");
         }
