@@ -124,6 +124,11 @@ std::vector<std::string> ZFlyEmSupervisor::getUuidList() const
 //  reader.read(ZDvidUrl)
 }
 
+bool ZFlyEmSupervisor::isEmpty() const
+{
+  return m_server.empty();
+}
+
 std::string ZFlyEmSupervisor::getMainUrl() const
 {
   return "http://" + m_server;

@@ -74,6 +74,7 @@
 #include "zrandomgenerator.h"
 #include "zinteractionevent.h"
 #include "dialogs/zstresstestoptiondialog.h"
+#include "dialogs/zflyemskeletonupdatedialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -111,6 +112,7 @@ void ZFlyEmProofMvc::init()
   m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
   m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
   m_infoDlg = new ZInfoDialog(this);
+  m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
 
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
@@ -2298,6 +2300,47 @@ void ZFlyEmProofMvc::recoverObjectVisible()
 {
   getPresenter()->suppressObjectVisible(false);
   getView()->processDepthSliderValueChange();
+}
+
+void ZFlyEmProofMvc::skeletonizeSelectedBody()
+{
+#if defined(_FLYEM_)
+  ZWidgetMessage warnMsg;
+  warnMsg.setType(NeuTube::MSG_WARNING);
+  if (GET_NETU_SERVICE.isNormal()) {
+    m_skeletonUpdateDlg->setComputingServer(
+          GET_NETU_SERVICE.getServer().c_str());
+    if (m_skeletonUpdateDlg->exec()) {
+      const std::set<uint64_t> &bodySet =
+          getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+
+      bool failed = false;
+      if (m_skeletonUpdateDlg->isOverwriting()) {
+        if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
+              getDvidTarget(), bodySet, ZNeutuService::UPDATE_DELETE) ==
+            ZNeutuService::REQUEST_FAILED) {
+          warnMsg.setMessage("Computing service failed");
+          failed = true;
+        }
+      }
+
+      if (!failed) {
+        if (GET_NETU_SERVICE.requestBodyUpdate(
+              getDvidTarget(), bodySet, ZNeutuService::UPDATE_ALL) ==
+            ZNeutuService::REQUEST_FAILED) {
+          warnMsg.setMessage("Computing service failed");
+        }
+      }
+    }
+  } else {
+    warnMsg.setMessage(
+          "Skeletonization failed: The skeletonization service is not available.");
+  }
+
+  if (warnMsg.hasMessage()) {
+    emit messageGenerated(warnMsg);
+  }
+#endif
 }
 
 void ZFlyEmProofMvc::exportSelectedBody()

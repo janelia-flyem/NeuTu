@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "tz_stdint.h"
+#include "dvid/zdvidwriter.h"
 
 class ZDvidTarget;
 
@@ -24,7 +25,7 @@ public:
   };
 
   enum EUpdateOption {
-    UPDATE_ALL, UPDATE_INVALIDATE, UPDATE_DELETE
+    UPDATE_ALL, UPDATE_INVALIDATE, UPDATE_DELETE, UPDATE_MISSING
   };
 
   enum ERequestStatus {
@@ -36,6 +37,9 @@ public:
   ERequestStatus requestBodyUpdate(const ZDvidTarget &target,
                          const std::vector<uint64_t> &bodyIdArray,
                          EUpdateOption option);
+  ERequestStatus requestBodyUpdate(const ZDvidTarget &target,
+                         const std::set<uint64_t> &bodyIdArray,
+                         EUpdateOption option);
 
   std::string getBodyUpdateUrl() const;
   std::string getHomeUrl() const;
@@ -46,6 +50,12 @@ public:
   void updateStatus();
 
   bool isNormal() const;
+
+private:
+  template <class InputIterator>
+  ERequestStatus requestBodyUpdate(
+      const ZDvidTarget &target, const InputIterator &first,
+      const InputIterator &last, EUpdateOption option);
 
 private:
   std::string m_server;

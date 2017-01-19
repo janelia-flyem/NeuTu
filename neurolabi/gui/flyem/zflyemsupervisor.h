@@ -36,6 +36,8 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   const ZDvidTarget& getDvidTarget() const;
 
+  bool isEmpty() const;
+
   void setSever(const std::string &server);
 
   inline const std::string &getUserName() const {
