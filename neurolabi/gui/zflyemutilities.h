@@ -4,6 +4,8 @@
 #include <string>
 #include <set>
 
+#include "tz_stdint.h"
+
 namespace FlyEm
 {
 
