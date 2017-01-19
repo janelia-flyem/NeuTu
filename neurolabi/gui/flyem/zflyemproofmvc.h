@@ -44,6 +44,7 @@ class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
 class ZRandomGenerator;
+class ZFlyEmSkeletonUpdateDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -324,6 +325,7 @@ protected slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void skeletonizeSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
   void showInfoDialog();
@@ -419,6 +421,8 @@ protected:
   ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
   ZFlyEmBodyChopDialog *m_bodyChopDlg;
   ZInfoDialog *m_infoDlg;
+  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
+
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -506,6 +510,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(panel, SIGNAL(skeletonizingSelectedBody()),
+          this, SLOT(skeletonizeSelectedBody()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
 }
 

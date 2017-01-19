@@ -369,7 +369,7 @@ void Z3DWindow::init(EInitMode mode)
     m_graphFilter->setData(*network, NULL);
 
     delete network;
-  } else if (ZFileType::fileType(m_doc->additionalSource()) ==
+  } else if (ZFileType::FileType(m_doc->additionalSource()) ==
              ZFileType::JSON_FILE) {
     Z3DGraph graph;
     graph.importJsonFile(m_doc->additionalSource());
@@ -1364,12 +1364,14 @@ void Z3DWindow::setXZView()
 {
   resetCamera();
   getCamera()->rotate90X();
+  resetCameraClippingRange();
 }
 
 void Z3DWindow::setYZView()
 {
   resetCamera();
   getCamera()->rotate90XZ();
+  resetCameraClippingRange();
 }
 
 void Z3DWindow::recordView()
@@ -1391,7 +1393,7 @@ void Z3DWindow::saveView()
 {
   QString filename = QFileDialog::getSaveFileName(
         this, tr("Save View Parameters"), m_lastOpenedFilePath,
-         tr("Json files (*.json) "));
+         tr("Json files (*.json)"));
 
 
   if (!filename.isEmpty()) {
@@ -1405,7 +1407,7 @@ void Z3DWindow::loadView()
 {
   QString fileName = QFileDialog::getOpenFileName(
         this, tr("Load View Parameters"), m_lastOpenedFilePath,
-        tr("Json files (*.json) "));
+        tr("Json files (*.json)"));
 
   if (!fileName.isEmpty()) {
     ZJsonObject cameraJson;
@@ -2365,7 +2367,7 @@ void Z3DWindow::saveSelectedPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save Selected Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
@@ -2481,7 +2483,7 @@ void Z3DWindow::saveAllPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save All Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
@@ -2707,7 +2709,7 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
       m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);

@@ -23,6 +23,7 @@
 #include "swc/zswcsignalfitter.h"
 #include "zneurontracerconfig.h"
 #include "swc/zswcpruner.h"
+#include "tz_stack_threshold.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {
@@ -316,12 +317,17 @@ void ZNeuronTracer::setTraceRange(const ZIntCuboid &box)
   }
 }
 
-void ZNeuronTracer::initTraceMask()
+void ZNeuronTracer::initTraceMask(bool clearing)
 {
   if (m_traceWorkspace->trace_mask == NULL) {
     m_traceWorkspace->trace_mask =
         C_Stack::make(GREY16, getStack()->width(), getStack()->height(),
                       getStack()->depth());
+
+    clearing = true;
+  }
+
+  if (clearing) {
     Zero_Stack(m_traceWorkspace->trace_mask);
   }
 }
@@ -330,7 +336,7 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
 {
   prepareTraceScoreThreshold(TRACING_INTERACTIVE);
 
-  initTraceMask();
+  initTraceMask(false);
 
   Stack *stackData = getIntensityData();
 
@@ -653,14 +659,28 @@ Stack* ZNeuronTracer::binarize(const Stack *stack, Stack *out)
 Stack *ZNeuronTracer::binarize(const Stack *stack)
 {
   Stack *out = C_Stack::clone(stack);
-
   ZStackBinarizer binarizer;
-  binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
-  binarizer.setRetryCount(3);
-  if (binarizer.binarize(out) == false) {
+
+  int *histData = C_Stack::hist(stack);
+
+  ZIntHistogram hist;
+  hist.setData(histData);
+  if (hist.getMinValue() == hist.getMaxValue()) {
     std::cout << "Thresholding failed" << std::endl;
     C_Stack::kill(out);
     out = NULL;
+  } else if (hist.getCount(hist.getMinValue()) + hist.getCount(hist.getMaxValue()) ==
+             (int) C_Stack::voxelNumber(stack)) { //Only two values
+    //To do: need to handle large stack
+    Stack_Threshold_Binarize(out, hist.getMinValue());
+  } else {
+    binarizer.setMethod(ZStackBinarizer::BM_LOCMAX);
+    binarizer.setRetryCount(3);
+    if (binarizer.binarize(out) == false) {
+      std::cout << "Thresholding failed" << std::endl;
+      C_Stack::kill(out);
+      out = NULL;
+    }
   }
 
   return out;
@@ -1267,6 +1287,7 @@ std::vector<ZWeightedPoint> ZNeuronTracer::computeSeedPosition(
 
     int minSeedSize = 0;
 
+    //todo: take account of image size
     if (seedPointArray->size > 15000) {
       minSeedSize = 125;
     } else if (seedPointArray->size > 5000) {
@@ -1795,4 +1816,14 @@ void ZNeuronTracer::loadJsonObject(const ZJsonObject &obj)
   if (obj.hasKey(key)) {
     m_usingEdgePath = ZJsonParser::booleanValue(obj[key]);
   }
+}
+
+void ZNeuronTracer::test()
+{
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/crash/Binary.tif");
+  Stack *out = binarize(stack.c_stack());
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
+#endif
 }

@@ -71,7 +71,7 @@ void ZTraceProject::save()
   switch (stackSource.type()) {
   case ZStackFile::SINGLE_FILE:
   {
-    switch (ZFileType::fileType(stackSource.firstUrl())) {
+    switch (ZFileType::FileType(stackSource.firstUrl())) {
     case ZFileType::TIFF_FILE:
       out << "\"tif\">" << endl;
       out << "<url>" << stackSource.firstUrl().c_str() << "</url>" << endl;

@@ -102,7 +102,7 @@ bool ZPuncta::load(const std::string &filePath, double radius)
 
   bool succ = false;
 
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::JSON_FILE:
   {
     ZJsonObject obj;

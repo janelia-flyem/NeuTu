@@ -178,6 +178,7 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
 {
   if (!m_grayScaleReader.isReady()) {
     m_grayScaleReader.open(getDvidTarget());
+    m_grayscaleInfo = m_grayScaleReader.readGrayScaleInfo();
   }
 
   return m_grayScaleReader;
@@ -312,18 +313,21 @@ bool ZDvidSparseStack::fillValue(
         ZOUT(LTRACE(), 5) << "  Range: " << box.toJsonArray().dumpString(0);
       }
       //    tic();
+      /*
       ZDvidInfo dvidInfo;
       dvidInfo.setFromJsonString(
             reader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
             toStdString());
-      ZObject3dScan blockObj =
-          dvidInfo.getBlockIndex(*objMask);
+            */
+      ZObject3dScan blockObj = m_grayscaleInfo.getBlockIndex(*objMask);
       ZStackBlockGrid *grid = m_sparseStack.getStackGrid();
 
       size_t stripeNumber = blockObj.getStripeNumber();
       ZIntCuboid blockBox;
-      blockBox.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
-      blockBox.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
+      blockBox.setFirstCorner(
+            m_grayscaleInfo.getBlockIndex(box.getFirstCorner()));
+      blockBox.setLastCorner(
+            m_grayscaleInfo.getBlockIndex(box.getLastCorner()));
 
 #ifdef _DEBUG_2
       objMask->save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -331,7 +335,7 @@ bool ZDvidSparseStack::fillValue(
 #endif
 
       for (size_t s = 0; s < stripeNumber; ++s) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << s << "/" << stripeNumber << std::endl;
 #endif
 
@@ -348,7 +352,7 @@ bool ZDvidSparseStack::fillValue(
 
           std::vector<int> blockSpan;
           ZIntPoint blockIndex =
-              ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+              ZIntPoint(x0, y, z) - m_grayscaleInfo.getStartBlockIndex();
           for (int x = x0; x <= x1; ++x) {
             bool isValidBlock = true;
             if (!box.isEmpty()) {
@@ -389,7 +393,7 @@ bool ZDvidSparseStack::fillValue(
         std::cout << "Reading" << blockNumber << "blocks" << std::endl;
 #endif
             std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
-                  blockIndex, dvidInfo, blockNumber);
+                  blockIndex, m_grayscaleInfo, blockNumber);
 #ifdef _DEBUG_
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif

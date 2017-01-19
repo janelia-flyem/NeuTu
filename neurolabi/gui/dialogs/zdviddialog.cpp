@@ -10,6 +10,7 @@
 #include "zjsonobject.h"
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
+#include "dialogs/zdvidadvanceddialog.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -77,6 +78,11 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
     }
   }
 
+  m_advancedDlg = new ZDvidAdvancedDialog(this);
+  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
+  connect(ui->advancedPushButton, SIGNAL(clicked()),
+          this, SLOT(setAdvanced()));
+
   setServer(0);
   connect(ui->serverComboBox, SIGNAL(currentIndexChanged(int)),
           this, SLOT(setServer(int)));
@@ -85,8 +91,11 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   connect(ui->saveAsButton, SIGNAL(clicked()), this, SLOT(saveCurrentTargetAs()));
   connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteCurrentTarget()));
   connect(ui->roiPushButton, SIGNAL(clicked()), this, SLOT(editRoiList()));
+  connect(ui->settingCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateWidgetForDefaultSetting()));
 
 //  setFixedSize(size());
+
 
   ui->roiLabel->hide();
   ui->roiPushButton->hide();
@@ -136,27 +145,24 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
 
     target.setSynapseName(ui->synapseLineEdit->text().toStdString());
+
+    target.enableSupervisor(m_advancedDlg->isSupervised());
+    target.setSupervisorServer(m_advancedDlg->getSupervisorServer());
+    target.setTodoListName(m_advancedDlg->getTodoName());
+#if 0
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
+#endif
     //target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
     target.setRoiName(ui->roiLineEdit->text().toStdString());
     target.setReadOnly(ui->readOnlyCheckBox->isChecked());
+    target.useDefaultDataSetting(usingDefaultSetting());
 
 //    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
 //    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
 
   return target;
-  /*
-  ZDvidTarget target(
-        getAddress().toStdString(), getUuid().toStdString(), getPort());
-  target.setName(
-        ui->serverComboBox->itemText(ui->serverComboBox->currentIndex()).
-        toStdString());
-  target.setComment(ui->infoLabel->text().toStdString());
-
-  return target;
-  */
 }
 
 void ZDvidDialog::setServer(int index)
@@ -181,6 +187,9 @@ void ZDvidDialog::setServer(int index)
           dvidTarget.isLowQualityTile(dvidTarget.getMultiscale2dName()));
   }
   ui->synapseLineEdit->setText(dvidTarget.getSynapseName().c_str());
+
+  resetAdvancedDlg(dvidTarget);
+#if 0
   ui->librarianCheckBox->setChecked(dvidTarget.isSupervised());
 #if defined(_FLYEM_)
   ui->librarianLineEdit->setText(
@@ -188,7 +197,10 @@ void ZDvidDialog::setServer(int index)
         GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
         dvidTarget.getSupervisor().c_str());
 #endif
+#endif
+
   ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
+  ui->settingCheckBox->setChecked(dvidTarget.usingDefaultDataSetting());
 
   ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
@@ -198,8 +210,9 @@ void ZDvidDialog::setServer(int index)
   ui->grayScalelineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->tileLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->synapseLineEdit->setReadOnly(!dvidTarget.isEditable());
-  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
-  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->settingCheckBox->setEnabled(dvidTarget.isEditable());
+//  ui->librarianCheckBox->setEnabled(dvidTarget.isEditable());
+//  ui->librarianLineEdit->setReadOnly(!dvidTarget.isEditable());
   //ui->maxZoomSpinBox->setReadOnly(!dvidTarget.isEditable());
   ui->roiLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->readOnlyCheckBox->setEnabled(dvidTarget.isEditable());
@@ -210,6 +223,9 @@ void ZDvidDialog::setServer(int index)
                                (dvidTarget.getName() != "Custom"));
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
+  m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
+  m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
+  m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const
@@ -299,6 +315,53 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
 #endif
     settings.setValue("DVID", QString(dvidJson.dumpString(0).c_str()));
   }
+}
+
+bool ZDvidDialog::usingDefaultSetting() const
+{
+  return ui->settingCheckBox->isChecked();
+}
+
+void ZDvidDialog::resetAdvancedDlg(const ZDvidTarget &dvidTarget)
+{
+  m_advancedDlg->setSupervised(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
+  m_advancedDlg->setSupervisorServer(
+        dvidTarget.getSupervisor().empty() ?
+          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+          dvidTarget.getSupervisor().c_str());
+#endif
+}
+
+void ZDvidDialog::setAdvanced()
+{
+  m_advancedDlg->backup();
+
+  if (!m_advancedDlg->exec()) {
+    m_advancedDlg->recover();
+  }
+}
+
+void ZDvidDialog::updateWidgetForDefaultSetting()
+{
+  ui->grayScalelineEdit->setVisible(!usingDefaultSetting());
+  ui->bodyLineEdit->setVisible(!usingDefaultSetting());
+  ui->labelBlockLineEdit->setVisible(!usingDefaultSetting());
+  ui->synapseLineEdit->setVisible(!usingDefaultSetting());
+
+  if (usingDefaultSetting()) {
+    ui->grayscaleLabel->setText("Gray Scale <default>");
+    ui->bodyLabelLabel->setText("Body Label <default>");
+    ui->labelBlockLabel->setText("Label Block <default>");
+    ui->synapseLabel->setText("Synapse <default>");
+  } else {
+    ui->grayscaleLabel->setText("Gray Scale");
+    ui->bodyLabelLabel->setText("Body Label");
+    ui->labelBlockLabel->setText("Label Block");
+    ui->synapseLabel->setText("Synapse");
+  }
+
+  m_advancedDlg->updateWidgetForDefaultSetting(usingDefaultSetting());
 }
 
 void ZDvidDialog::deleteCurrentTarget()

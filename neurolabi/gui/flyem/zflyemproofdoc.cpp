@@ -166,7 +166,9 @@ void ZFlyEmProofDoc::runRoutineCheck()
                             << getSupervisor()->getMainUrl() + ":"
                             << timer.elapsed() << "ms";
         } else {
-          LWARN() << "API load failed:" << getDvidTarget().getAddressWithPort();
+          if (!getSupervisor()->isEmpty()) {
+            LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
+          }
         }
       }
     }
@@ -2094,6 +2096,7 @@ void ZFlyEmProofDoc::downloadSynapse()
     synapseEnsemble->setDvidTarget(getDvidTarget());
     synapseEnsemble->setSource(
           ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
+    synapseEnsemble->setResolution(m_grayScaleInfo.getVoxelResolution());
 
     addObject(synapseEnsemble);
   }

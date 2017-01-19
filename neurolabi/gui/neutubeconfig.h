@@ -420,6 +420,7 @@ private:
 
 #if defined(_FLYEM_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
+#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
 #endif
 
 #define ZOUT(out, level) \

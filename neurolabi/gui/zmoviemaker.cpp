@@ -105,7 +105,7 @@ void ZMovieMaker::recruitCast()
   academy->blockSignals(true);
   for (std::map<string, string>::const_iterator iter = cast.begin();
        iter != cast.end(); ++iter) {
-    switch (ZFileType::fileType(iter->second)) {
+    switch (ZFileType::FileType(iter->second)) {
     case ZFileType::SWC_FILE:
     {
       ZSwcTree *tree = new ZSwcTree;
@@ -285,27 +285,33 @@ int ZMovieMaker::updateAction()
   ZMovieScene *scene = NULL;
   for (int i = 0; i < actionNumber; ++i) {
     scene = m_script.nextScene(timeStep);
-
-    if (scene == NULL) {
-      return 0;
-    }
-
 #ifdef _DEBUG_2
     scene->print();
 #endif
 
-    scene->updateStage(m_stage->getWindow());
-    scene->updateCamera(m_stage->getWindow(), timeStep);
-    scene->updateClip(m_stage->getWindow(), &m_clipperState, timeStep);
+    if (scene != NULL) {
+      scene->updateStage(m_stage->getWindow());
+      scene->updateCamera(m_stage->getWindow(), timeStep);
+      scene->updateClip(m_stage->getWindow(), &m_clipperState, timeStep);
 
-    setupAction(*scene);
-    act(timeStep);
+      setupAction(*scene);
+      act(timeStep);
+    } else {
+      break;
+    }
   }
 
+  //No scene left
+  if (scene == NULL) {
+    return 0;
+  }
+
+  //The last scene is background
   if (scene->isBackground()) {
     return 1;
   }
 
+  //The last scene is normal
   return 2;
 }
 

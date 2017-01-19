@@ -2,6 +2,7 @@
 #define ZRESOLUTION_H
 
 #include <string>
+#include "neutube_def.h"
 
 class ZJsonObject;
 
@@ -29,15 +30,64 @@ public:
     m_voxelSize[2] = z;
   }
 
+  enum EUnit {
+    UNIT_PIXEL, UNIT_MICRON, UNIT_NANOMETER
+  };
+
   inline void setUnit(char unit) { m_unit = unit; }
   void setUnit(const std::string &unit);
   std::string getUnitName() const;
 
   void convertUnit(char unit);
-
   void loadJsonObject(const ZJsonObject &obj);
 
   void reset();
+
+  EUnit getUnit() const;
+  void setUnit(EUnit unit);
+
+  /*!
+   * \brief Get the voxel size along a certain dimension
+   *
+   * It computes the size along \a axis base on the following rules:
+   *   1. If \a unit is the same as the unit of the object, or,
+   *      either \a unit is pixel or the unit of the object is pixel and the
+   *      other is not, it returns the orignal value
+   *   2. If \a unit is um or mm and the unit of the object is mm or um, then do
+   *      the unit conversion
+   *
+   * \return Voxel size based on the unit.
+   */
+  double getVoxelSize(NeuTube::EAxis axis, EUnit unit) const;
+
+  /*!
+   * \brief Get the unit voxel size after unit conversion
+   *
+   * It computes the size base on the following rules:
+   *   1. If \a unit is the same as the unit of the object, or,
+   *      either \a unit is pixel or the unit of the object is pixel and the
+   *      other is not, it returns the orignal value
+   *   2. If \a unit is um or mm and the unit of the object is mm or um, then do
+   *      the unit conversion
+   *
+   * \return Voxel size based on the unit.
+   */
+  double getUnitVoxelSize(EUnit unit) const;
+
+  /*!
+   * \brief Get voxel size on a plane.
+   *
+   * \return area of a voxel on the plane.
+   */
+  double getPlaneVoxelSize(NeuTube::EPlane plane, EUnit unit) const;
+
+  double getPlaneVoxelSize(NeuTube::EPlane plane) const;
+
+  /*!
+   * \brief Get sqrt(voxel area)
+   */
+  double getPlaneVoxelSpan(NeuTube::EPlane plane, EUnit unit) const;
+  double getPlaneVoxelSpan(NeuTube::EPlane plane) const;
 
 private:
   double m_voxelSize[3];

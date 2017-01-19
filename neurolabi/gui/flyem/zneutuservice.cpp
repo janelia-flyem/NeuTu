@@ -49,14 +49,15 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
   return REQUEST_IGNORED;
 }
 
+template <class InputIterator>
 ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
-    const ZDvidTarget &target, const std::vector<uint64_t> &bodyIdArray,
-    EUpdateOption option)
+    const ZDvidTarget &target, const InputIterator &first,
+    const InputIterator &last, EUpdateOption option)
 {
   ERequestStatus status = REQUEST_IGNORED;
 
   if (!m_server.empty() && isNormal()) {
-    if (target.isValid() && !bodyIdArray.empty()) {
+    if (target.isValid() && (first != last)) {
       ZJsonObject obj;
       obj.setEntry("dvid-server", target.getAddressWithPort());
       obj.setEntry("uuid", target.getUuid());
@@ -71,11 +72,13 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
       case UPDATE_INVALIDATE:
         obj.setEntry("option", "invalidate");
         break;
+      case UPDATE_MISSING:
+        obj.setEntry("option" ,"add");
+        break;
       }
 
       ZJsonArray bodyJson;
-      for (std::vector<uint64_t>::const_iterator
-           iter = bodyIdArray.begin(); iter != bodyIdArray.end(); ++iter) {
+      for (InputIterator iter = first; iter != last; ++iter) {
         bodyJson.append(*iter);
       }
       obj.setEntry("bodies", bodyJson);
@@ -93,6 +96,22 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
   }
 
   return status;
+}
+
+ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
+    const ZDvidTarget &target, const std::vector<uint64_t> &bodyIdArray,
+    EUpdateOption option)
+{
+  return
+      requestBodyUpdate(target, bodyIdArray.begin(), bodyIdArray.end(), option);
+}
+
+ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
+    const ZDvidTarget &target, const std::set<uint64_t> &bodyIdArray,
+    EUpdateOption option)
+{
+  return
+      requestBodyUpdate(target, bodyIdArray.begin(), bodyIdArray.end(), option);
 }
 
 void ZNeutuService::updateStatus()

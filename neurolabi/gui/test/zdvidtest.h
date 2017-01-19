@@ -297,6 +297,10 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getAnnotationUrl("test"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getAnnotationSyncUrl("test"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
+            dvidUrl.getAnnotationSyncUrl("test", ""));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync?replace=true",
+            dvidUrl.getAnnotationSyncUrl("test", "replace=true"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getLabelszSyncUrl("test"));
@@ -360,6 +364,25 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_1/raw/0_1_2/100_200_300/1_2_3",
             dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 1));
   ASSERT_EQ("", dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 6));
+
+
+  ZDvidUrl dvidUrl4(target, "1234");
+  std::cout << dvidUrl4.getHelpUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
+
+//  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/branches/key/master",
+            dvidUrl4.getMasterUrl());
+
+  dvidUrl4.setDvidTarget(target, "3456");
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/branches/key/master",
+            dvidUrl4.getMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
+            dvidUrl4.getDefaultDataInstancesUrl());
 }
 
 TEST(ZDvidTest, Reader)
@@ -383,7 +406,45 @@ TEST(ZDvidTest, Reader)
     ASSERT_FALSE(reader2.open("", reader.getDvidTarget().getUuid().c_str(),
                               reader.getDvidTarget().getPort()));
   }
+}
 
+TEST(ZDvidTest, ZDvidTarget)
+{
+  ZDvidTarget target;
+  target.setServer("http://emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.setServer("http://emdata2.int.janelia.org");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(-1, target.getPort());
+
+  target.setUuid("234");
+  ASSERT_EQ("234", target.getUuid());
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddressWithPort());
+
+  target.setServer("emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+  ASSERT_EQ("3456", target.getUuid());
+  target.setTodoListName("test");
+  ASSERT_EQ("test", target.getTodoListName());
 }
 
 #endif

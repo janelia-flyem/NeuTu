@@ -79,6 +79,7 @@ void Z3DCameraParameter::flipViewDirection()
 
 void Z3DCameraParameter::rotate90X()
 {
+//  azimuth(glm::radians(90.f));
   rotate(glm::radians(90.f), glm::vec3(1, 0, 0));
 }
 

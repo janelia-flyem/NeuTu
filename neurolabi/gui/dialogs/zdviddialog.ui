@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>563</height>
+    <width>453</width>
+    <height>545</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -80,19 +80,18 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Port</string>
+        <string>:</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QSpinBox" name="portSpinBox">
+       <property name="toolTip">
+        <string>Port of the server (-1 means default)</string>
+       </property>
        <property name="minimum">
         <number>-1</number>
        </property>
@@ -103,26 +102,6 @@
         <number>-1</number>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>(-1 means default)</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>
@@ -165,9 +144,23 @@
     </layout>
    </item>
    <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="settingCheckBox">
+     <property name="text">
+      <string>Use production settings from DVID</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="bodyLabelLabel">
        <property name="text">
         <string>Body Label</string>
        </property>
@@ -181,7 +174,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="labelBlockLabel">
        <property name="text">
         <string>Label Block</string>
        </property>
@@ -195,7 +188,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QLabel" name="label_9">
+      <widget class="QLabel" name="grayscaleLabel">
        <property name="text">
         <string>Gray Scale</string>
        </property>
@@ -205,6 +198,27 @@
       <widget class="QLineEdit" name="grayScalelineEdit"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_12">
+     <item>
+      <widget class="QLabel" name="synapseLabel">
+       <property name="text">
+        <string>Synapse</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="synapseLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -227,37 +241,6 @@
         <string>low quality</string>
        </property>
       </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_12">
-     <item>
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>Synapse</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="synapseLineEdit"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_15">
-     <item>
-      <widget class="QCheckBox" name="librarianCheckBox">
-       <property name="text">
-        <string>Use librarian</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="librarianLineEdit"/>
      </item>
     </layout>
    </item>
@@ -319,6 +302,13 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_11">
+     <item>
+      <widget class="QPushButton" name="advancedPushButton">
+       <property name="text">
+        <string>Advanced</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="saveButton">
        <property name="text">

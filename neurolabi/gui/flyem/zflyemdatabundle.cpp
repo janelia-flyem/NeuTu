@@ -950,7 +950,7 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
     m_boundBox = NULL;
   }
 
-  if (ZFileType::fileType(filePath) == ZFileType::SWC_FILE) {
+  if (ZFileType::FileType(filePath) == ZFileType::SWC_FILE) {
     m_boundBox = new ZSwcTree;
     m_boundBox->load(filePath);
   } else {

@@ -10,6 +10,7 @@
 
 class ZJsonObject;
 class ZCuboid;
+class ZResolution;
 
 /*
  * Annotation json example:
@@ -44,6 +45,7 @@ public:
   const ZIntPoint& getPosition() const { return m_position; }
 
   void setDefaultRadius();
+  void setDefaultRadius(const ZResolution &resolution);
   void setRadius(double r);
   double getRadius() const { return m_radius; }
 
@@ -87,6 +89,7 @@ public:
 
   static QColor GetDefaultColor(EKind kind);
   static double GetDefaultRadius(EKind kind);
+  static double GetDefaultRadius(EKind kind, const ZResolution &resolution);
 
   class Relation {
   public:

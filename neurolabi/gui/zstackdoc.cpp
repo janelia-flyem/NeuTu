@@ -4754,7 +4754,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
 
   for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end();
        ++iter) {
-    switch (ZFileType::fileType(iter->toStdString())) {
+    switch (ZFileType::FileType(iter->toStdString())) {
     case ZFileType::SWC_FILE:
     case ZFileType::SYNAPSE_ANNOTATON_FILE:
 //      swcLoaded = true;
@@ -4844,7 +4844,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   bool succ = true;
 
   m_changingSaveState = false;
-  switch (ZFileType::fileType(filePath.toStdString())) {
+  switch (ZFileType::FileType(filePath.toStdString())) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
@@ -7167,7 +7167,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
 
   if (tree1 != tree2) {
     //Check source
-    if (ZFileType::fileType(tree2->getSource()) == ZFileType::SWC_FILE) {
+    if (ZFileType::FileType(tree2->getSource()) == ZFileType::SWC_FILE) {
       upNode = tn2;
       downNode = tn1;
     }
@@ -7999,7 +7999,7 @@ bool ZStackDoc::executeRemoveTubeCommand()
 
 void ZStackDoc::updateTraceMask()
 {
-  m_neuronTracer.initTraceMask();
+  m_neuronTracer.initTraceMask(true);
 
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -8021,24 +8021,6 @@ void ZStackDoc::updateTraceMask()
 
 bool ZStackDoc::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-#if 0
-  if (hasStackData()) {
-    QUndoCommand *command = new ZStackDocCommand::TubeEdit::AutoTrace(this);
-    pushUndoCommand(command);
-
-    return true;
-  }
-
-  return false;
-#endif
-
-#if 0
-  autoTrace();
-  Swc_Tree *rawTree = this->swcReconstruction(0, false, true);
-  removeAllLocsegChain();
-  Zero_Stack(getTraceWorkspace()->trace_mask);
-#endif
-
   m_neuronTracer.setProgressReporter(getProgressReporter());
 
   startProgress(0.9);

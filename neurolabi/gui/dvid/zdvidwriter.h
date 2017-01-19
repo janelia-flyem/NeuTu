@@ -82,7 +82,8 @@ public:
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
 
-  void syncAnnotation(const std::string &name);
+  void syncAnnotation(
+      const std::string &name, const std::string &queryString = "");
   void syncLabelsz(const std::string &dataName,
                    const std::string &annotationName);
   void syncSynapseLabelsz();
@@ -184,6 +185,8 @@ public:
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
+  void writeDefaultDataSetting(const ZJsonObject &obj);
+  void writeDefaultDataSetting();
 
   inline int getStatusCode() const {
     return m_statusCode;

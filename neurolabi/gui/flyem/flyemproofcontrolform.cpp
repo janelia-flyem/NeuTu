@@ -208,6 +208,11 @@ void FlyEmProofControlForm::createMenu()
   connect(exportBodyAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBody()));
   developerMenu->addAction(exportBodyAction);
+
+  QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
+  connect(skeletonizeAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeSelectedBody()));
+  developerMenu->addAction(skeletonizeAction);
 #endif
 //  colorMenu->setEnabled(false);
 }
@@ -215,6 +220,11 @@ void FlyEmProofControlForm::createMenu()
 void FlyEmProofControlForm::exportSelectedBody()
 {
   emit exportingSelectedBody();
+}
+
+void FlyEmProofControlForm::skeletonizeSelectedBody()
+{
+  emit skeletonizingSelectedBody();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)

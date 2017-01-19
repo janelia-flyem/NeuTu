@@ -17,8 +17,11 @@ public:
   ZDvidUrl();
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
   ZDvidUrl(const ZDvidTarget &target);
+  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid);
+
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target, const std::string &uuid);
 
   std::string getApiLoadUrl() const;
   std::string getNodeUrl() const;
@@ -34,6 +37,8 @@ public:
   std::string getApiUrl() const;
   std::string getRepoUrl() const;
   std::string getInstanceUrl() const;
+  std::string getMasterUrl() const;
+  std::string getDefaultDataInstancesUrl() const;
 
   std::string getCommitInfoUrl() const;
 
@@ -198,6 +203,8 @@ public:
       const std::string &dataName, const ZIntCuboid &box) const;
 
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
+  std::string getAnnotationSyncUrl(
+      const std::string &dataName, const std::string &queryString) const;
   std::string getLabelszSyncUrl(const std::string &dataName) const;
 
   std::string getSynapseUrl() const;

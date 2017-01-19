@@ -645,13 +645,13 @@ bool ZObject3dScan::load(const string &filePath)
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
-      if (ZFileType::fileType(strArray[0]) == ZFileType::HDF5_FILE) {
+      if (ZFileType::FileType(strArray[0]) == ZFileType::HDF5_FILE) {
         succ = importHdf5(strArray[0], strArray[1]);
       }
     }
-  } else if (ZFileType::fileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
     succ = importDvidObject(filePath);
-  } else if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
       int stripeNumber = 0;

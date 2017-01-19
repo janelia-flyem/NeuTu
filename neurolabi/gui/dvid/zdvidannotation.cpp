@@ -1,5 +1,6 @@
 #include "zdvidannotation.h"
 
+#include <cmath>
 #include <QColor>
 
 #include "tz_math.h"
@@ -9,6 +10,7 @@
 #include "zjsonfactory.h"
 #include "c_json.h"
 #include "zcuboid.h"
+#include "zresolution.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -132,6 +134,21 @@ void ZDvidAnnotation::setPosition(int x, int y, int z)
   m_position.set(x, y, z);
 }
 
+double ZDvidAnnotation::GetDefaultRadius(
+    EKind kind, const ZResolution &resolution)
+{
+  double r = GetDefaultRadius(kind);
+
+  if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
+    r *= sqrt(resolution.getPlaneVoxelSize(NeuTube::PLANE_XY));
+  } else {
+    r *= sqrt(resolution.getPlaneVoxelSize(
+                NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+  }
+
+  return r;
+}
+
 double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
@@ -149,6 +166,11 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 void ZDvidAnnotation::setDefaultRadius()
 {
   m_radius = GetDefaultRadius(m_kind);
+}
+
+void ZDvidAnnotation::setDefaultRadius(const ZResolution &resolution)
+{
+  m_radius = GetDefaultRadius(m_kind, resolution);
 }
 
 QColor ZDvidAnnotation::GetDefaultColor(EKind kind)

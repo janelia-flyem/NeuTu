@@ -47,6 +47,10 @@ QString ZInteractionEvent::getMessage() const
   case EVENT_VIEW_SLICE:
     message = "Switch to slice view.";
     break;
+  case EVENT_SWC_NODE_SELECTION_CLEARED:
+  case EVENT_ALL_OBJECT_DESELCTED:
+    message = " ";
+    break;
   default:
     break;
   }

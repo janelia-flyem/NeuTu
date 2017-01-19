@@ -935,6 +935,7 @@ void MainWindow::customizeActions()
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
     m_ui->actionTiles->setVisible(false);
+    m_ui->actionTiles2->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
@@ -1404,11 +1405,11 @@ void MainWindow::takeScreenshot()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     QString fileName =
-        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif) ");
+        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif)");
 #if 0
 
         QFileDialog::getSaveFileName(this, tr("Save Screenshot"), m_lastOpenedFilePath,
-                                     tr("Tiff stack files (*.tif) "), NULL/*,
+                                     tr("Tiff stack files (*.tif)"), NULL/*,
                                      QFileDialog::DontUseNativeDialog*/);
 #endif
     if (!fileName.isEmpty()) {
@@ -1538,7 +1539,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 {
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
-    ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+    ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
     if (ZFileType::isNeutubeOpenable(fileType)) {
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
@@ -1566,7 +1567,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 
 void MainWindow::openFileFunc(const QString &fileName)
 {
-  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+  ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
@@ -1760,12 +1761,12 @@ void MainWindow::saveAs()
       openFileName = frame->document()->getStack()->sourcePath().c_str();
     }
     QString fileName = getSaveFileName(
-          "Save stack", "Tiff stack files (*.tif) ", openFileName);
+          "Save stack", "Tiff stack files (*.tif)", openFileName);
 #if 0
         QFileDialog::getSaveFileName(
           this, tr("Save stack"),
           frame->document()->stack()->sourcePath().c_str(),
-          tr("Tiff stack files (*.tif) "), NULL/*,
+          tr("Tiff stack files (*.tif)"), NULL/*,
           QFileDialog::DontUseNativeDialog*/);
 #endif
 
@@ -1779,11 +1780,11 @@ void MainWindow::saveAs()
 #if 0
 void MainWindow::exportSwc()
 {
-  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
+  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save SWC"), m_lastOpenedFilePath,
-         tr("SWC files (*.swc) "));
+         tr("SWC files (*.swc)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1798,11 +1799,11 @@ void MainWindow::exportSwc()
 
 void MainWindow::exportPuncta()
 {
-  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo) ");
+  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1853,11 +1854,11 @@ void MainWindow::exportChainFileList()
 }
 void MainWindow::exportSvg()
 {
-  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
+  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg)",
                                      "./untitled.svg");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save svg file"), "./untitled.svg",
-           tr("Svg file (*.svg) "));
+           tr("Svg file (*.svg)"));
 #endif
   if (!fileName.isEmpty()) {
     activeStackFrame()->document()->exportSvg(
@@ -1867,12 +1868,12 @@ void MainWindow::exportSvg()
 
 void MainWindow::exportTraceProject()
 {
-  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml) ",
+  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml)",
                                      "./untitled.xml");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save trace project"),
                                    "./untitled.xml",
-                                   tr("XML file (*.xml) "));
+                                   tr("XML file (*.xml)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -2670,6 +2671,25 @@ void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    //Temporary fix
+    if (frame->document()->getStack()->depth() <= 1) {
+      QMessageBox::warning(
+            this, "Auto-Tracing Failed",
+            "Tracing can only be done on a 3D image (more than one slice). "
+            "No result is generated.");
+
+      return;
+    }
+
+    if (frame->document()->getStack()->kind() != GREY &&
+        frame->document()->getStack()->kind() != GREY16) {
+      QMessageBox::warning(this, "Auto-Tracing Failed",
+                           "The image type must be 8-bit or 16-bit grayscale. "
+                           "No result is generated.");
+
+      return;
+    }
+
     int channelNumber = frame->document()->getStack()->channelNumber();
     m_autoTraceDlg->setChannelNumber(channelNumber);
 
@@ -3827,42 +3847,6 @@ void MainWindow::on_actionImportMask_triggered()
 
 void MainWindow::on_actionFlyEmSelect_triggered()
 {
-  /*
-  ZStackFrame *frame = currentStackFrame();
-  if (frame != NULL) {
-    ParameterDialog dlg;
-    dlg.setWindowTitle(tr("Select Bodies"));
-    if (dlg.exec() == QDialog::Accepted) {
-      ZString str(dlg.parameter());
-      std::vector<int> bodyColor;
-      if (str.startsWith("b")) {
-        std::vector<int> bodyId = str.toIntegerArray();
-        for (size_t i = 0; i < bodyId.size(); ++i) {
-          std::vector<uint8_t> code =
-              FlyEm::ZSegmentationAnalyzer::idToChannelCode(bodyId[i], 3);
-          bodyColor.push_back(code[0]);
-          bodyColor.push_back(code[1]);
-          bodyColor.push_back(code[2]);
-        }
-      } else {
-        bodyColor = str.toIntegerArray();
-      }
-
-      ZStackFrame *newFrame = NULL;
-
-      if (frame->name() == "flyem") {
-        ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
-        newFrame = completeFrame->spinoffSegmentationSelection(bodyColor);
-      } else {
-        newFrame = frame->spinoffStackSelection(bodyColor);
-      }
-
-      if (newFrame != NULL) {
-        addStackFrame(newFrame);
-      }
-    }
-  }*/
-
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
@@ -5234,7 +5218,7 @@ void MainWindow::expandCurrentFrame()
     bool swcLoaded = false;
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
-        switch (ZFileType::fileType(filePath.toStdString())) {
+        switch (ZFileType::FileType(filePath.toStdString())) {
         case ZFileType::SWC_FILE:
           frame->importSwc(filePath);
           swcLoaded = true;
@@ -5296,11 +5280,11 @@ void MainWindow::on_actionSave_SWC_triggered()
       }
 
       QString fileName = getSaveFileName(
-            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+            "Save neuron as SWC", tr("SWC file (*.swc)"), swcSource.c_str());
 #if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
-                                       tr("SWC file (*.swc) "));
+                                       tr("SWC file (*.swc)"));
 #endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
@@ -5346,14 +5330,14 @@ void MainWindow::on_actionSparse_objects_triggered()
       presentStackFrame(frame);
     } else {
       foreach (QString file, fileList) {
-        if (ZFileType::fileType(file.toStdString()) ==
+        if (ZFileType::FileType(file.toStdString()) ==
             ZFileType::OBJECT_SCAN_FILE) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
-          if (ZFileType::fileType(file.toStdString()) ==
+          if (ZFileType::FileType(file.toStdString()) ==
               ZFileType::TIFF_FILE) {
             ZStack stack;
             stack.load(file.toStdString());
@@ -5678,9 +5662,9 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
             m_lastOpenedFilePath += ".swc";
           }
           //QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-          //                                   tr("SWC file (*.swc) "), false);
+          //                                   tr("SWC file (*.swc)"), false);
           QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-                                             tr("SWC file (*.swc) "));
+                                             tr("SWC file (*.swc)"));
           if (!fileName.isEmpty()) {
             ZSwcTree *tree = frame->document()->getMergedSwc();
             if (tree != NULL) {
@@ -5899,10 +5883,10 @@ void MainWindow::showStackFrame(
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
-      if (ZFileType::fileType(file.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::TIFF_FILE) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::fileType(file.toStdString()) == ZFileType::SWC_FILE) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::SWC_FILE) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }
