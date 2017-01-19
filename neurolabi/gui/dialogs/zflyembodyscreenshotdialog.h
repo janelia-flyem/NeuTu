@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "tz_stdint.h"
+
 namespace Ui {
 class ZFlyEmBodyScreenshotDialog;
 }

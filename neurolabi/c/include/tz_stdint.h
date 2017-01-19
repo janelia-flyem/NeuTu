@@ -34,11 +34,6 @@ typedef int16_t word_t;
 #define bzero(dest,count) memset(dest,0,count)
 #endif
 
-#ifndef _UINT64_T
-#define _UINT64_T
-typedef unsigned long long   uint64_t;
-#endif /* _UINT64_T */
-
 /*
 #if !defined(INT_MAX)
 #define INTMAX 2147483647
