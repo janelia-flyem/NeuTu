@@ -66,6 +66,9 @@ FocusedEdge FocusedPath::getEdge(ZIntPoint point) {
 }
 
 FocusedEdge FocusedPath::getEdge(int i) {
+
+    std::cout << "getEdge: body ID = " << getEdge(m_edgePoints[i]).getFirstBodyID() << std::endl;
+
     return getEdge(m_edgePoints[i]);
 }
 
@@ -84,7 +87,6 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
 
         ZJsonObject jsonEdge = reader.readAnnotationJson(instance, point);
         FocusedEdge edge(jsonEdge);
-
         m_edgeMap[edge.getFirstPoint()] = edge;
         m_edgeMap[edge.getLastPoint()] = edge;
 
@@ -101,9 +103,10 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
 
     // one more loop...fill in body IDs in edges; can't do earlier
     //  because we need 2 body IDs for each edge
-    foreach (FocusedEdge edge, m_edgeMap.values()) {
-        edge.setFirstBodyID(m_bodyIDs[edge.getFirstPoint()]);
-        edge.setLastBodyID(m_bodyIDs[edge.getLastPoint()]);
+    foreach(ZIntPoint point, m_edgePoints) {
+        m_edgeMap[point].setFirstBodyID(m_bodyIDs[point]);
+        ZIntPoint otherPoint = m_edgeMap[point].getOtherPoint(point);
+        m_edgeMap[point].setLastBodyID(m_bodyIDs[otherPoint]);
     }
 
 }

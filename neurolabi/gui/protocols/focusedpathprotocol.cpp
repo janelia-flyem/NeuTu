@@ -369,6 +369,14 @@ void FocusedPathProtocol::displayCurrentPath() {
     // edges already loaded in path, and  path known to be unconnected;
     // load edges into UI and update labels
 
+    std::cout << "displayCurrentPath()" << std::endl;
+    std::cout << "first point = " << m_currentPath.getFirstPoint().toString() << std::endl;
+    FocusedEdge firstEdge = m_currentPath.getEdge(0);
+    std::cout << "first edge, first point = " << firstEdge.getFirstPoint().toString() << std::endl;
+    std::cout << "first edge, first body ID = " << firstEdge.getFirstBodyID() << std::endl;
+    std::cout << "first edge, last point = " << firstEdge.getLastPoint().toString() << std::endl;
+    std::cout << "first edge, last body ID = " << firstEdge.getLastBodyID() << std::endl;
+
     // load data into model
     m_edgeModel->clear();
     // reset headers?
@@ -376,6 +384,9 @@ void FocusedPathProtocol::displayCurrentPath() {
     m_edgeModel->setRowCount(m_currentPath.getNumEdges());
     for (int i=0; i<m_currentPath.getNumEdges(); i++) {
         FocusedEdge edge = m_currentPath.getEdge(i);
+
+        std::cout << "displayCurrentPath(): first body ID = " << edge.getFirstBodyID() << std::endl;
+        std::cout << "displayCurrentPath(): last body ID = " << edge.getLastBodyID() << std::endl;
 
         QStandardItem * bodyID1Item = new QStandardItem();
         bodyID1Item->setData(QVariant(edge.getFirstBodyID()), Qt::DisplayRole);
@@ -388,8 +399,21 @@ void FocusedPathProtocol::displayCurrentPath() {
         // connection status in text form, eg, --X-- or --?--
         QStandardItem * connectionItem = new QStandardItem();
         connectionItem->setData(QVariant(QString::fromStdString(edge.getConnectionTextIcon())), Qt::DisplayRole);
+        connectionItem->setTextAlignment(Qt::AlignCenter);
         m_edgeModel->setItem(i, CONNECTION_COLUMN, connectionItem);
     }
+
+    // other table adjustments
+#if QT_VERSION >= 0x050000
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID1_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(CONNECTION_COLUMN, QHeaderView::Stretch);
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID2_COLUMN, QHeaderView::ResizeToContents);
+#else
+    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID1_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setResizeMode(CONNECTION_COLUMN, QHeaderView::Stretch);
+    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID2_COLUMN, QHeaderView::ResizeToContents);
+#endif
+
 
     // top label: overall connection, body IDs
     updateConnectionLabel();
@@ -403,12 +427,11 @@ void FocusedPathProtocol::displayCurrentPath() {
     if (index >= 0) {
 
 
-        // goto edge (index)
-        // which will call go to edge point
+        gotoEdgePoint(m_currentPath.getEdge(index));
 
 
-        updateColorMap();
-        emit requestActivateColorMap();
+        // updateColorMap();
+        // emit requestActivateColorMap();
 
     }
 
@@ -489,10 +512,10 @@ void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSe
     std::cout << "onEdgeSelectionChanged()" << std::endl;
 
     // go to new edge point
-    gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
+    // gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
 
     // update color map (it depends on edge, not just path)
-    updateColorMap();
+    // updateColorMap();
 
 }
 
