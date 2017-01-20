@@ -856,14 +856,19 @@ std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
-    const std::string &dataName, const std::string tag) const
+    const std::string &dataName, const std::string tag, bool relation) const
 {  
-  return GetFullUrl(getAnnotationUrl(dataName),
+  std::string url = GetFullUrl(getAnnotationUrl(dataName),
                     m_annotationTagCommand + "/" + tag);
+  if (relation) {
+      url += "?relationships=true";
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
-    const std::string &dataName, uint64_t label) const
+    const std::string &dataName, uint64_t label, bool relation) const
 {
   std::string url = getAnnotationUrl(dataName);
 
@@ -872,6 +877,10 @@ std::string ZDvidUrl::getAnnotationUrl(
     stream << label;
     url += "/" + m_annotationLabelCommand + "/" +
         stream.str();
+  }
+
+  if (relation) {
+      url += "?relationships=true";
   }
 
   return url;

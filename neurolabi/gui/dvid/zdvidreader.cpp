@@ -2465,20 +2465,20 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
   return bodyArray;
 }
 
-ZJsonArray ZDvidReader::readAnnotation(
-    const std::string &dataName, const std::string &tag) const
+ZJsonArray ZDvidReader::readAnnotation(const std::string &dataName,
+    const std::string &tag, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl url(getDvidTarget());
 
-  return readJsonArray(url.getAnnotationUrl(dataName, tag));
+  return readJsonArray(url.getAnnotationUrl(dataName, tag, mode != FlyEM::LOAD_NO_PARTNER));
 }
 
 ZJsonArray ZDvidReader::readAnnotation(
-    const std::string &dataName, uint64_t label) const
+    const std::string &dataName, uint64_t label, FlyEM::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl url(getDvidTarget());
 
-  return readJsonArray(url.getAnnotationUrl(dataName, label));
+  return readJsonArray(url.getAnnotationUrl(dataName, label, mode != FlyEM::LOAD_NO_PARTNER));
 }
 
 ZJsonArray ZDvidReader::readTaggedBookmark(const std::string &tag) const

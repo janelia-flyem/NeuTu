@@ -234,14 +234,15 @@ public:
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
 
-  ZJsonArray readAnnotation(
-      const std::string &dataName, const std::string &tag) const;
+  ZJsonArray readAnnotation(const std::string &dataName, const std::string &tag,
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
   /*!
    * \brief Read all point annotations within the given label.
    * \param dataName Annotation data name
    * \param label Annotation label
    */
-  ZJsonArray readAnnotation(const std::string &dataName, uint64_t label) const;
+  ZJsonArray readAnnotation(const std::string &dataName, uint64_t label,
+      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
 
 
   ZJsonArray readTaggedBookmark(const std::string &tag) const;
