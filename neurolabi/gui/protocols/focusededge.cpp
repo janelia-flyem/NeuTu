@@ -1,5 +1,6 @@
 #include "focusededge.h"
 
+#include <iostream>
 #include <stdexcept>
 
 # include "zintpoint.h"

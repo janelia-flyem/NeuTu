@@ -23,9 +23,6 @@ FocusedPath::FocusedPath(ZDvidAnnotation annotation)
 {
     m_firstPoint = annotation.getPosition();
 
-    std::cout << "FocusedPath()" << std::endl;
-
-
     // last point; the relation should only have one point
     m_lastPoint = ZJsonParser::toIntPoint(((ZJsonObject) annotation.getRelationJson().value(0))["To"]);
 
@@ -33,7 +30,8 @@ FocusedPath::FocusedPath(ZDvidAnnotation annotation)
     m_probability = atof(annotation.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PROBABILITY).c_str());
 
     // edge points
-    ZJsonArray edgeList = ((ZJsonArray) annotation.getProperty(FocusedPathProtocol::PROPERTY_PATH.c_str()));
+    ZJsonArray edgeList;
+    edgeList.decode(annotation.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PATH));
     for (size_t i=0; i<edgeList.size(); i++) {
         m_edgePoints.append(ZJsonParser::toIntPoint(edgeList.at(i)));
     }
