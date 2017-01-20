@@ -282,10 +282,15 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
 
     m_currentBodyPaths.clear();
 
-    ZJsonArray annotations = m_reader.readAnnotation(m_pathDataInstance, bodyID);
+    ZJsonArray annotations = m_reader.readAnnotation(m_pathDataInstance, bodyID,
+        FlyEM::LOAD_PARTNER_LOCATION);
+
+    // debug
+    // std::cout << "loadCurrentBodyPaths(): annotations json = " << annotations.dumpString() << std::endl;
+
     for (size_t i=0; i<annotations.size(); i++) {
         ZDvidAnnotation ann;
-        ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_LOCATION);
+        ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_RELJSON);
         m_currentBodyPaths << FocusedPath(ann);
     }
 
@@ -308,6 +313,8 @@ void FocusedPathProtocol::onBodyListsLoaded() {
 }
 
 void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
+
+    std::cout << "onCurrentBodyPathsLoaded" << std::endl;
 
     m_currentPath = findNextPath();
     m_currentPath.loadEdges(m_reader, m_edgeDataInstance);

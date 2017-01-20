@@ -21,13 +21,16 @@ FocusedPath::FocusedPath() {
 
 FocusedPath::FocusedPath(ZDvidAnnotation annotation)
 {
-    m_firstpoint = annotation.getPosition();
+    m_firstPoint = annotation.getPosition();
 
-    // last point; assume the relation only has one point
-    m_lastpoint = ZJsonParser::toIntPoint(((ZJsonObject) annotation.getRelationJson().value(0))["To"]);
+    std::cout << "FocusedPath()" << std::endl;
+
+
+    // last point; the relation should only have one point
+    m_lastPoint = ZJsonParser::toIntPoint(((ZJsonObject) annotation.getRelationJson().value(0))["To"]);
 
     // probability
-    m_probability = annotation.getProperty(FocusedPathProtocol::PROPERTY_PROBABILITY.c_str()).toReal();
+    m_probability = atof(annotation.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PROBABILITY).c_str());
 
     // edge points
     ZJsonArray edgeList = ((ZJsonArray) annotation.getProperty(FocusedPathProtocol::PROPERTY_PATH.c_str()));
@@ -41,15 +44,15 @@ FocusedPath::FocusedPath(ZDvidAnnotation annotation)
 
 bool FocusedPath::operator ==(const FocusedPath& other) const {
     // needed to get QList to behave
-    return m_firstpoint == other.getFirstPoint() && m_lastpoint == other.getLastPoint();
+    return m_firstPoint == other.getFirstPoint() && m_lastPoint == other.getLastPoint();
 }
 
 ZIntPoint FocusedPath::getFirstPoint() const {
-    return m_firstpoint;
+    return m_firstPoint;
 }
 
 ZIntPoint FocusedPath::getLastPoint() const {
-    return m_lastpoint;
+    return m_lastPoint;
 }
 
 void FocusedPath::setProbability(double probability) {

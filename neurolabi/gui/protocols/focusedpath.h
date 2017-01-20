@@ -32,8 +32,8 @@ public:
     int getFirstUnexaminedEdgeIndex();
 
 private:
-    ZIntPoint m_firstpoint;
-    ZIntPoint m_lastpoint;
+    ZIntPoint m_firstPoint;
+    ZIntPoint m_lastPoint;
     QList<ZIntPoint> m_edgePoints;
     QMap<ZIntPoint, FocusedEdge> m_edgeMap;
     QMap<ZIntPoint, uint64_t> m_bodyIDs;
