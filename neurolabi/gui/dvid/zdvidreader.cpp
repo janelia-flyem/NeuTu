@@ -2581,6 +2581,11 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
   return annotation;
 }
 
+bool ZDvidReader::hasBodyAnnotation() const
+{
+  return hasData(getDvidTarget().getBodyAnnotationName());
+}
+
 ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
 {
   ZDvidUrl url(getDvidTarget());
@@ -2823,6 +2828,17 @@ ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
     obj = readDefaultDataSettingTraceBack();
     break;
   }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDataMap() const
+{
+  ZJsonObject obj;
+
+  ZDvidUrl url(getDvidTarget());
+
+  obj = readJsonObject(url.getDataMapUrl());
 
   return obj;
 }

@@ -21355,7 +21355,7 @@ void ZTest::test(MainWindow *host)
   obj.print();
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
@@ -21396,6 +21396,32 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
   writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject labelszObj;
+  labelszObj.setEntry("ROI_LOP_15", "hp_roi_lop_15_labelz");
+
+  ZJsonObject obj;
+  obj.setEntry("roi_synapse_labelsz", labelszObj);
+
+  writer.writeDataMap(obj);
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZJsonObject obj = reader.readDataMap();
+  obj.print();
 #endif
 
 #if 0

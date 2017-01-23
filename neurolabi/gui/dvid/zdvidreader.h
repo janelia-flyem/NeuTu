@@ -199,6 +199,10 @@ public:
     return m_dvidTarget;
   }
 
+  ZDvidTarget& getDvidTarget() {
+    return m_dvidTarget;
+  }
+
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
@@ -229,6 +233,8 @@ public:
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
+
+  bool hasBodyAnnotation() const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
@@ -304,6 +310,8 @@ public:
   };
 
   ZJsonObject readDefaultDataSetting(EReadOption option) const;
+
+  ZJsonObject readDataMap() const;
 
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
