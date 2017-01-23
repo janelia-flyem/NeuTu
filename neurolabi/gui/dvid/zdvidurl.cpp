@@ -357,6 +357,11 @@ std::string ZDvidUrl::getDefaultDataInstancesUrl() const
   return getKeyUrl("default_instances", "data");
 }
 
+std::string ZDvidUrl::getDataMapUrl() const
+{
+  return getKeyUrl("default_instances", "data_map");
+}
+
 std::string ZDvidUrl::getCommitInfoUrl() const
 {
   return GetFullUrl(getNodeUrl(), "commit");

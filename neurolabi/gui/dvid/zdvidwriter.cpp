@@ -1644,6 +1644,12 @@ void ZDvidWriter::writeDefaultDataSetting(const ZJsonObject &obj)
   writeJson(url.getDefaultDataInstancesUrl(), obj);
 }
 
+void ZDvidWriter::writeDataMap(const ZJsonObject &obj)
+{
+  ZDvidUrl url(getDvidTarget());
+  writeJson(url.getDataMapUrl(), obj);
+}
+
 void ZDvidWriter::writeDefaultDataSetting()
 {
   ZJsonObject obj = getDvidTarget().toDvidDataSetting();

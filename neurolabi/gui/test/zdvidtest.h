@@ -19,7 +19,6 @@ TEST(ZDvidTest, ZDvidInfo)
 {
   ZDvidInfo info;
   info.print();
-
   /*
   const char* ZDvidInfo::m_minPointKey = "MinPoint";
   const char* ZDvidInfo::m_maxPointKey = "MaxPoint";

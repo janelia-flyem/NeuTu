@@ -730,7 +730,9 @@ HEADERS += mainwindow.h \
     dialogs/zstresstestoptiondialog.h \
     dialogs/zflyembodyscreenshotdialog.h\
     dialogs/zdvidadvanceddialog.h \
-    dialogs/zflyemskeletonupdatedialog.h
+    dialogs/zflyemskeletonupdatedialog.h \
+    dialogs/zdvidadvanceddialog.h \
+    dvid/zdvidroi.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1261,7 +1263,9 @@ SOURCES += main.cpp \
     dialogs/zstresstestoptiondialog.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dialogs/zflyemskeletonupdatedialog.cpp
+    dialogs/zflyemskeletonupdatedialog.cpp \
+    dialogs/zdvidadvanceddialog.cpp \
+    dvid/zdvidroi.cpp
 
 OTHER_FILES += \
     extlib.pri \

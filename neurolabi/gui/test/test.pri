@@ -50,4 +50,6 @@ HEADERS +=     test/zswctreetest.h \
     test/zgradientmagnitudemoduletest.h \
     test/zflyemproofdoctest.h \
     test/zflyembodycoloroptiontest.h \
-    test/zresolutiontest.h
+    test/zresolutiontest.h \
+    test/zflyemproofdoctest.h \
+    test/zdvidroitest.h

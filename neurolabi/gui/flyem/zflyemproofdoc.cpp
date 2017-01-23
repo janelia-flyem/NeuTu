@@ -714,7 +714,7 @@ void ZFlyEmProofDoc::prepareDvidData()
     //Download ROI
     if (!getDvidTarget().getRoiName().empty()) {
       ZObject3dScan *obj =
-          m_dvidReader.readRoi(getDvidTarget().getRoiName(), NULL);
+          m_dvidReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
       if (obj != NULL) {
         if (!obj->isEmpty()) {
 #ifdef _DEBUG_
