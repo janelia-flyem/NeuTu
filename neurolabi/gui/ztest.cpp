@@ -211,6 +211,7 @@ using namespace std;
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidroi.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
@@ -221,6 +222,7 @@ using namespace std;
 #include "test/zopenvdbtest.h"
 #include "zsparseobject.h"
 #include "test/zdvidtest.h"
+#include "test/zdvidroitest.h"
 #include "bigdata/zdvidblockgrid.h"
 #include "test/zblockgridtest.h"
 #include "test/zsparsestacktest.h"
@@ -405,7 +407,6 @@ void ZTest::test(MainWindow *host)
   gv->show();
 
 #endif
-
 
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
@@ -20408,6 +20409,25 @@ void ZTest::test(MainWindow *host)
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 
   ZDvidReader reader;
+
+  if (reader.open(target)) {
+    ZDvidRoi roi;
+    reader.readRoi("ROI_LOP_15", &roi);
+
+    std::cout << roi.getRoiRef()->getVoxelNumber() << std::endl;
+    std::cout << roi.getBlockSize().toString() << std::endl;
+    std::cout << roi.getName() << std::endl;
+
+    std::cout << roi.contains(8781, 5368, 14824) << std::endl;
+    std::cout << roi.contains(5778, 5564, 15442) << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
   if (reader.open(target)) {
     ZObject3dScan roi;
     roi.load(GET_TEST_DATA_DIR +
@@ -21405,7 +21425,8 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   ZJsonObject labelszObj;
-  labelszObj.setEntry("ROI_LOP_15", "hp_roi_lop_15_labelz");
+  labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
+  labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
 
   ZJsonObject obj;
   obj.setEntry("roi_synapse_labelsz", labelszObj);
@@ -21413,7 +21434,7 @@ void ZTest::test(MainWindow *host)
   writer.writeDataMap(obj);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 

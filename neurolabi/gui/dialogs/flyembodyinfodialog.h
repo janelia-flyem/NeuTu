@@ -126,6 +126,7 @@ private:
     QMap<uint64_t, QString> m_bodyNames;
     QSet<uint64_t> m_namelessBodies;
     QSet<QString> m_bodyAnnotationKeys;
+    QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
@@ -168,6 +169,7 @@ private:
     void setupMaxBodyMenu();
     void updateRoi();
     void updateRoi(const std::vector<std::string> &roiList);
+    ZDvidRoi* getRoi(const QString &name);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

@@ -23,6 +23,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidroi.h"
 
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
@@ -312,6 +313,17 @@ void FlyEmBodyInfoDialog::updateRoi(const std::vector<std::string> &roiList)
     const std::string &roi = *iter;
     ui->roiComboBox->addItem(roi.c_str());
   }
+}
+
+ZDvidRoi* FlyEmBodyInfoDialog::getRoi(const QString &name)
+{
+  m_reader.readRoi(name.toStdString(), &(m_roiStore[name]));
+
+  if (m_roiStore.contains(name)){
+    return &(m_roiStore[name]);
+  }
+
+  return NULL;
 }
 
 void FlyEmBodyInfoDialog::applicationQuitting() {
@@ -1184,7 +1196,14 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
     if (reader.open(m_currentDvidTarget)) {
         // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+        std::vector<ZDvidSynapse> synapses;
+        if (ui->roiComboBox->currentIndex() > 0) {
+          synapses = reader.readSynapse(
+                bodyID, *getRoi(ui->roiComboBox->currentText()),
+                FlyEM::LOAD_PARTNER_LOCATION);
+        } else {
+          synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+        }
 
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
         // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
