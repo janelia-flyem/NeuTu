@@ -185,6 +185,8 @@ public:
   void writeDefaultDataSetting(const ZJsonObject &obj);
   void writeDefaultDataSetting();
 
+  void writeDataMap(const ZJsonObject &obj);
+
   inline int getStatusCode() const {
     return m_statusCode;
   }

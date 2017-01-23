@@ -30,6 +30,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
+#include "dvid/zdvidroi.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -2565,6 +2566,21 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
   return obj;
 }
 
+ZDvidRoi* ZDvidReader::readRoi(const std::string &dataName, ZDvidRoi *roi)
+{
+  if (roi == NULL) {
+    roi = new ZDvidRoi();
+  } else {
+    roi->clear();
+  }
+
+  readRoi(dataName, roi->getRoiRef());
+  roi->setName(dataName);
+  roi->setBlockSize(readRoiBlockSize(dataName));
+
+  return roi;
+}
+
 ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
 {
   ZFlyEmBodyAnnotation annotation;
@@ -2579,6 +2595,11 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
   }
 
   return annotation;
+}
+
+bool ZDvidReader::hasBodyAnnotation() const
+{
+  return hasData(getDvidTarget().getBodyAnnotationName());
 }
 
 ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
@@ -2712,6 +2733,30 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   return synapseArray;
 }
 
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    uint64_t label, const ZDvidRoi &roi,
+    FlyEM::EDvidAnnotationLoadMode mode) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZJsonArray obj = readJsonArray(
+        dvidUrl.getSynapseUrl(label, mode != FlyEM::LOAD_NO_PARTNER));
+
+  std::vector<ZDvidSynapse> synapseArray;
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZIntPoint position = ZDvidAnnotation::GetPosition(synapseJson);
+    if (roi.contains(position)) {
+      synapseArray.resize(synapseArray.size() + 1);
+      synapseArray.back().loadJsonObject(synapseJson, mode);
+      synapseArray.back().setBodyId(label);
+    }
+  }
+
+  return synapseArray;
+}
+
 ZDvidSynapse ZDvidReader::readSynapse(
     int x, int y, int z, FlyEM::EDvidAnnotationLoadMode mode) const
 {
@@ -2823,6 +2868,17 @@ ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
     obj = readDefaultDataSettingTraceBack();
     break;
   }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDataMap() const
+{
+  ZJsonObject obj;
+
+  ZDvidUrl url(getDvidTarget());
+
+  obj = readJsonObject(url.getDataMapUrl());
 
   return obj;
 }

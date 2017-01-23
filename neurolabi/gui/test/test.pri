@@ -47,4 +47,5 @@ HEADERS +=     test/zswctreetest.h \
     test/ztestheader.h \
     test/zvoxelarraytest.h \
     test/zdvidannotationtest.h \
-    test/zflyemproofdoctest.h
+    test/zflyemproofdoctest.h \
+    test/zdvidroitest.h

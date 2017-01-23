@@ -713,7 +713,8 @@ HEADERS += mainwindow.h \
     dialogs/ztestoptiondialog.h \
     dialogs/zinfodialog.h \
     dialogs/zstresstestoptiondialog.h \
-    dialogs/zdvidadvanceddialog.h
+    dialogs/zdvidadvanceddialog.h \
+    dvid/zdvidroi.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1236,7 +1237,8 @@ SOURCES += main.cpp \
     dialogs/ztestoptiondialog.cpp \
     dialogs/zinfodialog.cpp \
     dialogs/zstresstestoptiondialog.cpp \
-    dialogs/zdvidadvanceddialog.cpp
+    dialogs/zdvidadvanceddialog.cpp \
+    dvid/zdvidroi.cpp
 
 OTHER_FILES += \
     extlib.pri \

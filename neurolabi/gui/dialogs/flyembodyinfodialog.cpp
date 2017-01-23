@@ -23,6 +23,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidroi.h"
 
 #include "flyembodyinfodialog.h"
 #include "ui_flyembodyinfodialog.h"
@@ -150,6 +151,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(ui->connectionsTableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClickIOConnectionsTable(QModelIndex)));
     connect(ui->ioBodyTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
+    connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(onRoiChanged(int)));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
@@ -238,6 +241,7 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
 
     // if target isn't null, trigger data load in a thread
     m_currentDvidTarget = target;
+    m_defaultSynapseLabelsz = target.getSynapseLabelszName();
     if (target.isValid()) {
         // clear the model regardless at this point
         m_bodyModel->clear();
@@ -258,6 +262,8 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         }
         // need to clear this to ensure it's repopulated exactly once
         ui->maxBodiesMenu->clear();
+        updateRoi();
+
         loadData();
     }
 }
@@ -288,6 +294,36 @@ void FlyEmBodyInfoDialog::loadData() {
         emit loadCompleted();
     }
 
+}
+
+void FlyEmBodyInfoDialog::updateRoi()
+{
+  ZJsonObject obj = m_reader.readDataMap();
+  ZJsonObject labelszObj = obj.value("roi_synapse_labelsz");
+  std::vector<std::string> keyList = labelszObj.getAllKey();
+  updateRoi(keyList);
+}
+
+void FlyEmBodyInfoDialog::updateRoi(const std::vector<std::string> &roiList)
+{
+  ui->roiComboBox->clear();
+  ui->roiComboBox->addItem("---");
+  for (std::vector<std::string>::const_iterator iter = roiList.begin();
+       iter != roiList.end(); ++iter) {
+    const std::string &roi = *iter;
+    ui->roiComboBox->addItem(roi.c_str());
+  }
+}
+
+ZDvidRoi* FlyEmBodyInfoDialog::getRoi(const QString &name)
+{
+  m_reader.readRoi(name.toStdString(), &(m_roiStore[name]));
+
+  if (m_roiStore.contains(name)){
+    return &(m_roiStore[name]);
+  }
+
+  return NULL;
 }
 
 void FlyEmBodyInfoDialog::applicationQuitting() {
@@ -413,6 +449,23 @@ void FlyEmBodyInfoDialog::onMaxBodiesChanged(int index) {
     onRefreshButton();
 }
 
+void FlyEmBodyInfoDialog::onRoiChanged(int index)
+{
+  std::string labelszName = m_defaultSynapseLabelsz;
+  if (index > 0) {
+    ZJsonObject obj = m_reader.readDataMap();
+    ZJsonObject labelszObj(obj.value("roi_synapse_labelsz"));
+    std::string roiName = ui->roiComboBox->itemText(index).toStdString();
+    if (labelszObj.hasKey(roiName.c_str())) {
+      labelszName = ZJsonParser::stringValue(labelszObj[roiName.c_str()]);
+    }
+  }
+  m_reader.getDvidTarget().setSynapseLabelszName(labelszName);
+  m_currentDvidTarget.setSynapseLabelszName(labelszName);
+
+  onRefreshButton();
+}
+
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     // validation is admittedly limited for now; ultimately, I
     //  expect we'll be getting the info from DVID rather than
@@ -472,8 +525,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid() {
         // note that this list contains body IDs in strings, *plus*
         //  some other nonnumeric strings (!!)
 
-        QString bodyAnnotationName = m_currentDvidTarget.getBodyAnnotationName().c_str();
-        QStringList keyList = reader.readKeys(bodyAnnotationName);
+//        QString bodyAnnotationName = m_currentDvidTarget.getBodyAnnotationName().c_str();
+      QString bodyAnnotationName =
+          reader.getDvidTarget().getBodyAnnotationName().c_str();
+      QStringList keyList = reader.readKeys(bodyAnnotationName);
 
         ZJsonArray bodies;
         bool ok;
@@ -1141,7 +1196,14 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
     if (reader.open(m_currentDvidTarget)) {
         // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
-        std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+        std::vector<ZDvidSynapse> synapses;
+        if (ui->roiComboBox->currentIndex() > 0) {
+          synapses = reader.readSynapse(
+                bodyID, *getRoi(ui->roiComboBox->currentText()),
+                FlyEM::LOAD_PARTNER_LOCATION);
+        } else {
+          synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+        }
 
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
         // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
@@ -1376,8 +1438,8 @@ void FlyEmBodyInfoDialog::onDoubleClickIOConnectionsTable(QModelIndex proxyIndex
     emit pointDisplayRequested(x, y, z);
 }
 
-void FlyEmBodyInfoDialog::onIOConnectionsSelectionChanged(QItemSelection selected,
-    QItemSelection deselected) {
+void FlyEmBodyInfoDialog::onIOConnectionsSelectionChanged(QItemSelection /*selected*/,
+    QItemSelection /*deselected*/) {
 
     // Shinya wants the table label to show the number of selected connections
 
