@@ -729,7 +729,6 @@ HEADERS += mainwindow.h \
     flyem/zflyembodycoloroption.h \
     dialogs/zstresstestoptiondialog.h \
     dialogs/zflyembodyscreenshotdialog.h\
-    dialogs/zdvidadvanceddialog.h \
     dialogs/zflyemskeletonupdatedialog.h \
     dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h
@@ -1262,7 +1261,6 @@ SOURCES += main.cpp \
     flyem/zflyembodycoloroption.cpp \
     dialogs/zstresstestoptiondialog.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
-    dialogs/zdvidadvanceddialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp
