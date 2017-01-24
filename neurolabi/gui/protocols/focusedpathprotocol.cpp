@@ -290,6 +290,14 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
         m_currentBodyPaths << FocusedPath(ann);
     }
 
+
+    // debug
+    std::cout << "loadCurrentBodyPaths(): " << m_currentBodyPaths.size() << " paths for body " << bodyID << std::endl;
+    for (int i=0; i<m_currentBodyPaths.size(); i++) {
+        std::cout << "path " << i << ": last point = " << m_currentBodyPaths[i].getLastPoint().toString() << " with prob = "
+            << m_currentBodyPaths[i].getProbability() << std::endl;
+    }
+
     emit currentBodyPathsLoaded();
 }
 
@@ -370,12 +378,11 @@ void FocusedPathProtocol::displayCurrentPath() {
     // load edges into UI and update labels
 
     std::cout << "displayCurrentPath()" << std::endl;
-    std::cout << "first point = " << m_currentPath.getFirstPoint().toString() << std::endl;
+    printPath(m_currentPath);
+
     FocusedEdge firstEdge = m_currentPath.getEdge(0);
-    std::cout << "first edge, first point = " << firstEdge.getFirstPoint().toString() << std::endl;
-    std::cout << "first edge, first body ID = " << firstEdge.getFirstBodyID() << std::endl;
-    std::cout << "first edge, last point = " << firstEdge.getLastPoint().toString() << std::endl;
-    std::cout << "first edge, last body ID = " << firstEdge.getLastBodyID() << std::endl;
+    std::cout << "first edge:" << std::endl;
+    printEdge(firstEdge);
 
     // load data into model
     m_edgeModel->clear();
@@ -384,9 +391,6 @@ void FocusedPathProtocol::displayCurrentPath() {
     m_edgeModel->setRowCount(m_currentPath.getNumEdges());
     for (int i=0; i<m_currentPath.getNumEdges(); i++) {
         FocusedEdge edge = m_currentPath.getEdge(i);
-
-        std::cout << "displayCurrentPath(): first body ID = " << edge.getFirstBodyID() << std::endl;
-        std::cout << "displayCurrentPath(): last body ID = " << edge.getLastBodyID() << std::endl;
 
         QStandardItem * bodyID1Item = new QStandardItem();
         bodyID1Item->setData(QVariant(edge.getFirstBodyID()), Qt::DisplayRole);
@@ -474,8 +478,6 @@ void FocusedPathProtocol::updateProgressLabel() {
 
 void FocusedPathProtocol::updateColorMap() {
 
-    std::cout << "updateColorMap()" << std::endl;
-
     // rebuild from scratch
     m_colorScheme.clear();
     m_colorScheme.setDefaultColor(COLOR_DEFAULT);
@@ -509,10 +511,11 @@ void FocusedPathProtocol::updateColorMap() {
 
 void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection newItem, QItemSelection oldItem) {
 
-    std::cout << "onEdgeSelectionChanged()" << std::endl;
-
     // go to new edge point
     gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
+
+    // debug:
+    printEdge(m_currentPath.getEdge(newItem.indexes().first().row()));
 
     // update color map (it depends on edge, not just path)
     updateColorMap();
@@ -534,6 +537,22 @@ void FocusedPathProtocol::gotoEdgePoint(FocusedEdge edge) {
     //  that define the edge
     ZIntPoint point = (edge.getFirstPoint() + edge.getLastPoint()) / 2.0;
     emit requestDisplayPoint(point.getX(), point.getY(), point.getZ());
+}
+
+void FocusedPathProtocol::printEdge(FocusedEdge edge) {
+    // for debugging
+    std::cout << "edge: " << edge.getFirstPoint().toString() << " - " << edge.getLastPoint().toString() << std::endl;
+    std::cout << "body IDs: " << edge.getFirstBodyID() << " - " << edge.getLastBodyID() << std::endl;
+    std::cout << "weight = " << edge.getWeight() << std::endl;
+    std::cout << "examined by " << edge.getExaminer() << " at " << edge.getTimeExamined() << std::endl;
+}
+
+void FocusedPathProtocol::printPath(FocusedPath path) {
+    // for debugging
+    std::cout << "path: " << path.getFirstPoint().toString() << " - " << path.getLastPoint().toString() << std::endl;
+    std::cout << "body IDs: " << path.getFirstBodyID() << " - " << path.getLastBodyID() << std::endl;
+    std::cout << "unexamined edges: " << path.getNumUnexaminedEdges() << "/" << path.getNumEdges() << std::endl;
+    std::cout << "probability = " << path.getProbability() << std::endl;
 }
 
 void FocusedPathProtocol::saveState() {

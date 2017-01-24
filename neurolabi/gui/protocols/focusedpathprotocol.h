@@ -102,6 +102,8 @@ private:
     void updateColorMap();
     void gotoEdgePoint(FocusedEdge edge);
     FocusedEdge getSelectedEdge();
+    void printEdge(FocusedEdge edge);
+    void printPath(FocusedPath path);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

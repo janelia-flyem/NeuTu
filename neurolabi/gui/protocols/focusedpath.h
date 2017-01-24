@@ -19,12 +19,14 @@ public:
 
     ZIntPoint getFirstPoint() const;
     ZIntPoint getLastPoint() const;
+    uint64_t getFirstBodyID() const;
+    uint64_t getLastBodyID() const;
     double getProbability();
     void setProbability(double probability);
-    int getNumEdges();
+    int getNumEdges() const;
     FocusedEdge getEdge(ZIntPoint point);
     FocusedEdge getEdge(int i);
-    bool hasEdges();
+    bool hasEdges() const;
     void loadEdges(ZDvidReader& reader, std::string instance);
     bool isConnected();
     std::string getConnectionTextIcon();

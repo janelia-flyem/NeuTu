@@ -53,6 +53,22 @@ ZIntPoint FocusedPath::getLastPoint() const {
     return m_lastPoint;
 }
 
+uint64_t FocusedPath::getFirstBodyID() const {
+    if (hasEdges()) {
+        return m_bodyIDs[getFirstPoint()];
+    } else {
+        return -1;
+    }
+}
+
+uint64_t FocusedPath::getLastBodyID() const {
+    if (hasEdges()) {
+        return m_bodyIDs[getLastPoint()];
+    } else {
+        return -1;
+    }
+}
+
 void FocusedPath::setProbability(double probability) {
     m_probability = probability;
 }
@@ -69,7 +85,7 @@ FocusedEdge FocusedPath::getEdge(int i) {
     return getEdge(m_edgePoints[i]);
 }
 
-int FocusedPath::getNumEdges() {
+int FocusedPath::getNumEdges() const {
     return m_edgePoints.size();
 }
 
@@ -108,7 +124,7 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
 
 }
 
-bool FocusedPath::hasEdges() {
+bool FocusedPath::hasEdges() const {
     return getNumEdges() > 0;
 }
 
