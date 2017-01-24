@@ -466,7 +466,7 @@
       "user_name": ["shinomiyak", "takemuras"]
     },
     {
-      "address": "emdata2.int.janelia.org",
+      "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "@MB6",
       "name": "MB_Synapse_Shift",
