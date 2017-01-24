@@ -389,6 +389,7 @@ private:
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
   ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
 
+  void prepareTile(ZDvidTileEnsemble *te);
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

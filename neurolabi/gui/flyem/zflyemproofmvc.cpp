@@ -1027,8 +1027,32 @@ void ZFlyEmProofMvc::setLabelAlpha(int alpha)
 //  getCompleteDocument()->setLabelSliceAlpha(alpha);
 }
 
+void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
+{
+  te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
+  te->enhanceContrast(getCompletePresenter()->highTileContrast());
+  te->attachView(getView());
+  ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
+  ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
+  patchFetcher->setDvidTarget(getDvidTarget());
+  patchUpdater->setData(te, getDocument());
+  connect(patchFetcher, SIGNAL(dataFetched(ZDvidPatchDataFetcher*)),
+          patchUpdater, SLOT(updateData(ZDvidPatchDataFetcher*)),
+          Qt::QueuedConnection);
+  te->setDataFetcher(patchFetcher);
+  patchFetcher->start(100);
+}
+
 void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 {
+  if (getCompleteDocument() == NULL) {
+    emit messageGenerated(
+          ZWidgetMessage("Corrupted data structure. Abort",
+                         NeuTube::MSG_WARNING,
+                         ZWidgetMessage::TARGET_DIALOG));
+    return;
+  }
+
   if (getCompleteDocument()->getDvidTarget().isValid()) {
     emit messageGenerated(
           ZWidgetMessage("You cannot change the database in this window. "
@@ -1051,83 +1075,59 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   getProgressSignal()->startProgress("Loading data ...");
 
-  if (getCompleteDocument() != NULL) {
-#if 0
-//    QByteArray geometry;
-    bool isMaximized = false;
-    if (getMainWindow() != NULL) {
-      isMaximized = getMainWindow()->isMaximized();
-//      geometry = parentWidget()->saveGeometry();
-    }
-#endif
+  clear();
+  getProgressSignal()->advanceProgress(0.1);
+  //    getCompleteDocument()->clearData();
+  getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 
+  ZJsonObject contrastObj = reader.readContrastProtocal();
+  getPresenter()->setHighContrastProtocal(contrastObj);
 
-//    reader.updateMaxLabelZoom();
-
-    clear();
-    getProgressSignal()->advanceProgress(0.1);
-//    getCompleteDocument()->clearData();
-    getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
-
-    ZJsonObject contrastObj = reader.readContrastProtocal();
-    getPresenter()->setHighContrastProtocal(contrastObj);
-
-//    getCompleteDocument()->beginObjectModifiedMode(
-//          ZStackDoc::OBJECT_MODIFIED_CACHE);
-//    getCompleteDocument()->updateTileData();
-//    getCompleteDocument()->endObjectModifiedMode();
-    QList<ZDvidTileEnsemble*> teList =
-        getCompleteDocument()->getDvidTileEnsembleList();
-    foreach (ZDvidTileEnsemble *te, teList) {
-      te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
-      te->enhanceContrast(getCompletePresenter()->highTileContrast());
-      te->attachView(getView());
-      ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
-      ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
-      patchFetcher->setDvidTarget(getDvidTarget());
-      patchUpdater->setData(te, getDocument());
-      connect(patchFetcher, SIGNAL(dataFetched(ZDvidPatchDataFetcher*)),
-              patchUpdater, SLOT(updateData(ZDvidPatchDataFetcher*)),
-              Qt::QueuedConnection);
-      te->setDataFetcher(patchFetcher);
-      patchFetcher->start(100);
-    }
-
-    getView()->reset(false);
-    getProgressSignal()->advanceProgress(0.1);
-
-#if 0
-    if (getMainWindow() != NULL) {
-//      parentWidget()->hide();
-//      parentWidget()->restoreGeometry(geometry);
-//      parentWidget()->show();
-      if (isMaximized) {
-        getMainWindow()->showNormal();
-        getMainWindow()->showMaximized();
-      }
-    }
-#endif
-
-    m_splitProject.setDvidTarget(getDvidTarget());
-    getCompleteDocument()->syncMergeWithDvid();
-//    m_mergeProject.setDvidTarget(getDvidTarget());
-//    m_mergeProject.syncWithDvid();
-    m_splitUploadDlg->setDvidTarget(getDvidTarget());
-
-    getProgressSignal()->advanceProgress(0.2);
-
-
-    if (getDvidTarget().isValid()) {
-      getCompleteDocument()->downloadSynapse();
-      enableSynapseFetcher();
-      getCompleteDocument()->downloadBookmark();
-      getCompleteDocument()->downloadTodoList();
-    }
-
-    getProgressSignal()->advanceProgress(0.5);
-
-    emit dvidTargetChanged(getDvidTarget());
+  //    getCompleteDocument()->beginObjectModifiedMode(
+  //          ZStackDoc::OBJECT_MODIFIED_CACHE);
+  //    getCompleteDocument()->updateTileData();
+  //    getCompleteDocument()->endObjectModifiedMode();
+  QList<ZDvidTileEnsemble*> teList =
+      getCompleteDocument()->getDvidTileEnsembleList();
+  foreach (ZDvidTileEnsemble *te, teList) {
+    prepareTile(te);
   }
+
+  getView()->reset(false);
+  getProgressSignal()->advanceProgress(0.1);
+
+#if 0
+  if (getMainWindow() != NULL) {
+    //      parentWidget()->hide();
+    //      parentWidget()->restoreGeometry(geometry);
+    //      parentWidget()->show();
+    if (isMaximized) {
+      getMainWindow()->showNormal();
+      getMainWindow()->showMaximized();
+    }
+  }
+#endif
+
+  m_splitProject.setDvidTarget(getDvidTarget());
+  getCompleteDocument()->syncMergeWithDvid();
+  //    m_mergeProject.setDvidTarget(getDvidTarget());
+  //    m_mergeProject.syncWithDvid();
+  m_splitUploadDlg->setDvidTarget(getDvidTarget());
+
+  getProgressSignal()->advanceProgress(0.2);
+
+
+  if (getDvidTarget().isValid()) {
+    getCompleteDocument()->downloadSynapse();
+    enableSynapseFetcher();
+    getCompleteDocument()->downloadBookmark();
+    getCompleteDocument()->downloadTodoList();
+  }
+
+  getProgressSignal()->advanceProgress(0.5);
+
+  emit dvidTargetChanged(getDvidTarget());
+
 
   m_roiDlg->clear();
   m_roiDlg->updateDvidTarget();
