@@ -3,6 +3,8 @@
 
 #include <QStringList>
 #include <QObject>
+#include <string>
+
 #include "neutube.h"
 
 class ZWidgetMessage
@@ -15,7 +17,13 @@ public:
 
 
   ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
-  ZWidgetMessage(const QString &msg,
+  explicit ZWidgetMessage(const std::string &msg,
+                 NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
+                 ETarget target = TARGET_TEXT_APPENDING);
+  explicit ZWidgetMessage(const char *msg,
+                 NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
+                 ETarget target = TARGET_TEXT_APPENDING);
+  explicit ZWidgetMessage(const QString &msg,
                  NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
 

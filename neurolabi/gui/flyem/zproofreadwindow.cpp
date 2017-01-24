@@ -204,6 +204,11 @@ void ZProofreadWindow::stressTestSlot()
   }
 }
 
+void ZProofreadWindow::diagnose()
+{
+  m_mainMvc->diagnose();
+}
+
 void ZProofreadWindow::stressTest()
 {
   if (!m_mainMvc->getDvidTarget().isValid()) {
@@ -384,6 +389,10 @@ void ZProofreadWindow::createMenu()
   QAction *testAction = new QAction("Test", this);
   connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
   m_advancedMenu->addAction(testAction);
+
+  QAction *diagnoseAction = new QAction("Diagnose", this);
+  connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
+  m_advancedMenu->addAction(diagnoseAction);
 
 
 //  m_viewMenu->setEnabled(false);
