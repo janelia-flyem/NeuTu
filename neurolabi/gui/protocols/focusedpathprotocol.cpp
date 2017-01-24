@@ -405,13 +405,13 @@ void FocusedPathProtocol::displayCurrentPath() {
 
     // other table adjustments
 #if QT_VERSION >= 0x050000
-    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID1_COLUMN, QHeaderView::ResizeToContents);
-    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(CONNECTION_COLUMN, QHeaderView::Stretch);
-    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID2_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID1_COLUMN, QHeaderView::Stretch);
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(CONNECTION_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setSectionResizeMode(BODYID2_COLUMN, QHeaderView::Stretch);
 #else
-    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID1_COLUMN, QHeaderView::ResizeToContents);
-    ui->edgesTableView->horizontalHeader()->setResizeMode(CONNECTION_COLUMN, QHeaderView::Stretch);
-    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID2_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID1_COLUMN, QHeaderView::Stretch);
+    ui->edgesTableView->horizontalHeader()->setResizeMode(CONNECTION_COLUMN, QHeaderView::ResizeToContents);
+    ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID2_COLUMN, QHeaderView::Stretch);
 #endif
 
 
@@ -430,8 +430,8 @@ void FocusedPathProtocol::displayCurrentPath() {
         gotoEdgePoint(m_currentPath.getEdge(index));
 
 
-        // updateColorMap();
-        // emit requestActivateColorMap();
+        updateColorMap();
+        emit requestActivateColorMap();
 
     }
 
@@ -507,15 +507,15 @@ void FocusedPathProtocol::updateColorMap() {
     emit requestColorMapChange(m_colorScheme);
 }
 
-void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem) {
+void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection newItem, QItemSelection oldItem) {
 
     std::cout << "onEdgeSelectionChanged()" << std::endl;
 
     // go to new edge point
-    // gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
+    gotoEdgePoint(m_currentPath.getEdge(newItem.indexes().first().row()));
 
     // update color map (it depends on edge, not just path)
-    // updateColorMap();
+    updateColorMap();
 
 }
 

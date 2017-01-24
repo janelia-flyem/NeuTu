@@ -66,9 +66,6 @@ FocusedEdge FocusedPath::getEdge(ZIntPoint point) {
 }
 
 FocusedEdge FocusedPath::getEdge(int i) {
-
-    std::cout << "getEdge: body ID = " << getEdge(m_edgePoints[i]).getFirstBodyID() << std::endl;
-
     return getEdge(m_edgePoints[i]);
 }
 
