@@ -223,8 +223,12 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
     if (hasRectDecoration()) {
       if (event->modifiers() == Qt::ShiftModifier) {
         emit selectingSwcNodeTreeInRoi(true);
-      } else {
+      } else if (event->modifiers() == Qt::NoModifier) {
         emit selectingSwcNodeTreeInRoi(false);
+      } else if (event->modifiers() == Qt::ControlModifier) {
+        emit selectingTerminalBranchInRoi(false);
+      } else if (event->modifiers() == Qt::ControlModifier | Qt::ShiftModifier) {
+        emit selectingTerminalBranchInRoi(true);
       }
       processed = true;
     }

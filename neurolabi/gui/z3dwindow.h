@@ -435,6 +435,7 @@ public slots:
 
   void selectSwcTreeNodeInRoi(bool appending);
   void selectSwcTreeNodeTreeInRoi(bool appending);
+  void selectTerminalBranchInRoi(bool appending);
   void cropSwcInRoi();
 
   void updateCuttingBox();

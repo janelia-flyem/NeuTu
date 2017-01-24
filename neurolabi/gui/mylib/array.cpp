@@ -12380,6 +12380,8 @@ mylib::Range_Bundle *mylib::Array_Range(Range_Bundle *_R(_O(rng)), AForm *o)
   mylib::Size_Type n = AForm_Size(o);
 
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           mylib::uint8  x, min, max;
@@ -12887,6 +12889,8 @@ mylib::APart *mylib::Scale_Array(APart *_R(_M(o)), double factor, double offset)
 
   n = AForm_Size(o);
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           if (Is_Slice(o))
@@ -13004,6 +13008,8 @@ mylib::APart *mylib::Scale_Array_To_Range(APart *_R(_M(o)), Value min, Value max
 
   Array_Range(&crn,o);
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         if (crn.maxval.uval == crn.minval.uval)
           break;
@@ -13135,6 +13141,8 @@ mylib::APart *mylib::Array_Op_Scalar(APart *_R(_M(o)), Operator op, Value_Type t
 
   n = AForm_Size(m);
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           mylib::uint8  setval;
@@ -15846,6 +15854,8 @@ mylib::APart *mylib::Complex_Op_Scalar(APart *_R(_M(o)), Operator op,
 
   n = AForm_Size(m);
   switch (a->type) {
+    case mylib::UNKNOWN_TYPE:
+      break;
     case mylib::UINT8_TYPE:
       { mylib::uint8 *d = AUINT8(a);
         mylib::uint8 *D = d+1;
@@ -21234,6 +21244,8 @@ APart *Array_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_uval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   switch (op) {
@@ -22491,6 +22503,8 @@ APart *Array_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_ival(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   switch (op) {
@@ -23748,6 +23762,8 @@ APart *Array_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_fval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   switch (op) {
@@ -25058,6 +25074,8 @@ APart *Complex_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_uval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -26741,6 +26759,8 @@ APart *Complex_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_ival(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -28424,6 +28444,8 @@ APart *Complex_Op_Array(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_fval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -30162,6 +30184,8 @@ APart *Complex_Op_Complex(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_uval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -32043,6 +32067,8 @@ APart *Complex_Op_Complex(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_ival(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -33924,6 +33950,8 @@ APart *Complex_Op_Complex(APart *_R(_M(o)), Operator op, AForm *q)
             j = load_buffer_fval(buffer,q,crea,j,brea);
 
             switch (a->type) {
+              case mylib::UNKNOWN_TYPE:
+                break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *d = AUINT8(a);
                   mylib::uint8 *D = d+1;
@@ -35814,6 +35842,8 @@ APart *Array_Fct_Val(APart *_R(_M(o)), Value (*fct)(void *valp))
     }
 
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           if (Is_Slice(s))
@@ -35973,6 +36003,8 @@ APart *Array_Fct_Idx(APart *_R(_M(o)), Value (*fct)(Coordinate *coord))
     s = Make_Slice(a,Idx2CoordA(a,0),Idx2CoordA(a,a->size-1));
 
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           e = Set_Slice_To_Last(s); 
@@ -36084,6 +36116,8 @@ APart *Threshold_Array(APart *_R(_M(o)), Value cutoff)
     }
 
   switch (a->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           mylib::uint8  x, c = (mylib::uint8) cutoff.uval;
@@ -41808,6 +41842,8 @@ static void translate_RGBA_2_RGB_FLOAT64(void *sdata, void *tdata, mylib::Size_T
 static void translate_CPLX_2_NORM(void *sdata, void *tdata, mylib::Size_Type size,
                           Value_Type stype, int ctype, double afactor)
 { switch (stype) {
+      case mylib::UNKNOWN_TYPE:
+        break;
        case mylib::UINT8_TYPE:
          translate_CPLX_2_NORM_UINT8(sdata,tdata,size,ctype,afactor);
          return;
@@ -41846,6 +41882,8 @@ static void translate_CPLX_2_NORM(void *sdata, void *tdata, mylib::Size_Type siz
 static void translate_RGB_2_NORM(void *sdata, void *tdata, mylib::Size_Type size,
                           Value_Type stype, int ctype, double afactor)
 { switch (stype) {
+      case mylib::UNKNOWN_TYPE:
+        break;
        case mylib::UINT8_TYPE:
          translate_RGB_2_NORM_UINT8(sdata,tdata,size,ctype,afactor);
          return;
@@ -41884,6 +41922,8 @@ static void translate_RGB_2_NORM(void *sdata, void *tdata, mylib::Size_Type size
 static void translate_RGBA_2_NORM(void *sdata, void *tdata, mylib::Size_Type size,
                           Value_Type stype, int ctype, double afactor)
 { switch (stype) {
+      case mylib::UNKNOWN_TYPE:
+        break;
        case mylib::UINT8_TYPE:
          translate_RGBA_2_NORM_UINT8(sdata,tdata,size,ctype,afactor);
          return;
@@ -41922,6 +41962,8 @@ static void translate_RGBA_2_NORM(void *sdata, void *tdata, mylib::Size_Type siz
 static void translate_RGBA_2_RGB(void *sdata, void *tdata, mylib::Size_Type size,
                           Value_Type stype, int ctype, double afactor)
 { switch (stype) {
+      case mylib::UNKNOWN_TYPE:
+        break;
        case mylib::UINT8_TYPE:
          translate_RGBA_2_RGB_UINT8(sdata,tdata,size,ctype,afactor);
          return;
@@ -42023,9 +42065,13 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
 
       if (shift > 0 || dscale != 1.)
         switch (stype) {
+            case mylib::UNKNOWN_TYPE:
+              break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *s = (mylib::uint8 *) sdata;
                 switch (ttype) {
+                    case mylib::UNKNOWN_TYPE:
+                      break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42092,6 +42138,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT16_TYPE:
               { mylib::uint16 *s = (mylib::uint16 *) sdata;
                 switch (ttype) {
+                    case mylib::UNKNOWN_TYPE:
+                      break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42158,6 +42206,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT32_TYPE:
               { mylib::uint32 *s = (mylib::uint32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42224,6 +42274,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT64_TYPE:
               { mylib::uint64  *s = (mylib::uint64  *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42290,6 +42342,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT8_TYPE:
               { mylib::int8 *s = (mylib::int8 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42356,6 +42410,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT16_TYPE:
               { mylib::int16 *s = (mylib::int16 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42422,6 +42478,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT32_TYPE:
               { mylib::int32 *s = (mylib::int32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42488,6 +42546,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT64_TYPE:
               { mylib::int64 *s = (mylib::int64 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42554,6 +42614,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::FLOAT32_TYPE:
               { mylib::float32 *s = (mylib::float32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42620,6 +42682,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::FLOAT64_TYPE:
               { mylib::float64 *s = (mylib::float64 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42687,10 +42751,14 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
 
       else if (shift < 0)
         switch (stype) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *s = (mylib::uint8 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42758,6 +42826,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::uint16 *s = (mylib::uint16 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42825,6 +42895,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::uint32 *s = (mylib::uint32 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42892,6 +42964,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::uint64  *s = (mylib::uint64  *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -42959,6 +43033,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::int8 *s = (mylib::int8 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43026,6 +43102,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::int16 *s = (mylib::int16 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43093,6 +43171,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::int32 *s = (mylib::int32 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43160,6 +43240,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::int64 *s = (mylib::int64 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43227,6 +43309,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::float32 *s = (mylib::float32 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43294,6 +43378,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
               { mylib::float64 *s = (mylib::float64 *) sdata;
                 shift  = - shift;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)              
@@ -43361,9 +43447,13 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
 
       else
         switch (stype) {
+        case mylib::UNKNOWN_TYPE:
+          break;
             case mylib::UINT8_TYPE:
               { mylib::uint8 *s = (mylib::uint8 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43430,6 +43520,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT16_TYPE:
               { mylib::uint16 *s = (mylib::uint16 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43496,6 +43588,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT32_TYPE:
               { mylib::uint32 *s = (mylib::uint32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43562,6 +43656,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::UINT64_TYPE:
               { mylib::uint64  *s = (mylib::uint64  *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43628,6 +43724,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT8_TYPE:
               { mylib::int8 *s = (mylib::int8 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43694,6 +43792,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT16_TYPE:
               { mylib::int16 *s = (mylib::int16 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43760,6 +43860,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT32_TYPE:
               { mylib::int32 *s = (mylib::int32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43826,6 +43928,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::INT64_TYPE:
               { mylib::int64 *s = (mylib::int64 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43892,6 +43996,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::FLOAT32_TYPE:
               { mylib::float32 *s = (mylib::float32 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -43958,6 +44064,8 @@ static void translate(int conversion, mylib::Size_Type size, Domain *source,
             case mylib::FLOAT64_TYPE:
               { mylib::float64 *s = (mylib::float64 *) sdata;
                 switch (ttype) {
+                case mylib::UNKNOWN_TYPE:
+                  break;
                     case mylib::UINT8_TYPE:
                       { mylib::uint8 *t  = (mylib::uint8 *) tdata;
                         for (p = 0; p < size; p++)                      
@@ -44029,6 +44137,8 @@ static void imaginary_fill(mylib::Size_Type size, Domain *target)
 { mylib::Indx_Type p, q;
 
   switch (target->type) {
+  case mylib::UNKNOWN_TYPE:
+    break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(target);
           q = size;
@@ -44126,6 +44236,8 @@ static void alpha_fill(mylib::Size_Type size, Domain *target, Value alpha)
 { mylib::Indx_Type p;
 
   switch (target->type) {
+  case mylib::UNKNOWN_TYPE:
+    break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(target) + 3*size;
           for (p = 0; p < size; p++)
@@ -44380,6 +44492,8 @@ mylib::boolean Image_Check(mylib::Array *array)
     }
 
   switch (array->type) {
+  case mylib::UNKNOWN_TYPE:
+    break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *v = AUINT8(array);
           for (p = 0; p < array->size; p++)
@@ -44582,6 +44696,8 @@ mylib::Array *_G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
         case 0:
           p_off = b_off;          
           switch (a->type) {
+          case mylib::UNKNOWN_TYPE:
+            break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *z = AUINT8(prod);
                   mylib::uint8 *y = AUINT8(b);
@@ -44778,6 +44894,8 @@ mylib::Array *_G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
           p_off = (b_off << 1);   
           b_off = p_off;          
           switch (a->type) {
+          case mylib::UNKNOWN_TYPE:
+            break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *z = AUINT8(prod);
                   mylib::uint8 *y = AUINT8(b);
@@ -45024,6 +45142,8 @@ mylib::Array *_G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
           p_off = (b_off << 1);   
           a_off <<= 1;            
           switch (a->type) {
+          case mylib::UNKNOWN_TYPE:
+            break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *z = AUINT8(prod);
                   mylib::uint8 *y = AUINT8(b);
@@ -45271,6 +45391,8 @@ mylib::Array *_G(Array_Multiply)(mylib::Array *a, mylib::Array *b)
           b_off = p_off;          
           a_off <<= 1;            
           switch (a->type) {
+          case mylib::UNKNOWN_TYPE:
+            break;
               case mylib::UINT8_TYPE:
                 { mylib::uint8 *z = AUINT8(prod);
                   mylib::uint8 *y = AUINT8(b);
@@ -45564,6 +45686,8 @@ mylib::Array *_G(Apply_Map)(mylib::Array *image, mylib::Array *map)
   { mylib::Indx_Type p, q;
 
     switch (map->type) {
+    case mylib::UNKNOWN_TYPE:
+      break;
         case mylib::UINT8_TYPE:
           switch (image->type) {
               case mylib::UINT8_TYPE:
@@ -46172,6 +46296,8 @@ static void down_sample(AForm *source, void *target, mylib::Coordinate *_F(voxel
 
     if ( ! isframe)        
       switch (src->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *d = AUINT8(src);
               mylib::uint8 *a = (mylib::uint8 *) target;
@@ -46565,6 +46691,8 @@ static void down_sample(AForm *source, void *target, mylib::Coordinate *_F(voxel
         }
     else if (offsetable)   
       switch (src->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *d = AUINT8(src) + Frame_Index(source);
               mylib::uint8 *a = (mylib::uint8 *) target;
@@ -46958,6 +47086,8 @@ static void down_sample(AForm *source, void *target, mylib::Coordinate *_F(voxel
         }
     else                   
       switch (src->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *d = (mylib::uint8 *) Frame_Values(source);
               mylib::uint8 *a = (mylib::uint8 *) target;
@@ -47455,6 +47585,8 @@ void clip_array(mylib::Array *source, void *target, mylib::Coordinate *_S(beg), 
   slice = Make_Slice(source,beg,end);
 
   switch (source->type) {
+  case mylib::UNKNOWN_TYPE:
+    break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(source);
           mylib::uint8 *a = (mylib::uint8 *) target;
@@ -47590,6 +47722,8 @@ void clip_frame(Frame *frame, void *target, mylib::Coordinate *_S(beg), mylib::C
   slice = Make_Slice(Inc_Array(Frame_Array(bundle,frame)),beg,end);
 
   switch (a->type) {
+  case mylib::UNKNOWN_TYPE:
+    break;
       case mylib::UINT8_TYPE:
         { mylib::uint8 *d = AUINT8(a);
           mylib::uint8 *a = (mylib::uint8 *) target;
@@ -47998,6 +48132,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
     { x = Slice_Index(source);
       q = Set_Slice_To_Last(source);
       switch (target->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *a = AUINT8(target);
               mylib::uint8 *d = AUINT8(base);
@@ -48155,6 +48291,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
    if (Frame_Within_Array(source))
     { mylib::Offs_Type *off = Frame_Offsets(source) + size;
       switch (target->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *a = AUINT8(target);
               mylib::uint8 *d = AUINT8(base);
@@ -48300,6 +48438,8 @@ void expand_array(mylib::Array *target, AForm *source, mylib::Size_Type size,
    else
     {
       switch (target->type) {
+      case mylib::UNKNOWN_TYPE:
+        break;
           case mylib::UINT8_TYPE:
             { mylib::uint8 *a = AUINT8(target);
               mylib::uint8 *d = (mylib::uint8 *) Frame_Values(source);

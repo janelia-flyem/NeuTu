@@ -631,6 +631,9 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeTreeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeTreeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(),
+            SIGNAL(selectingTerminalBranchInRoi(bool)),
+            this, SLOT(selectTerminalBranchInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -4622,6 +4625,54 @@ void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
           while (dsIter.hasNext()) {
             Swc_Tree_Node *tn = dsIter.next();
             tree->selectNode(tn, true);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
+void Z3DWindow::selectTerminalBranchInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::TerminalIterator termIter(tree);
+      while (termIter.hasNext()) {
+        Swc_Tree_Node *terminal = termIter.next();
+        Swc_Tree_Node *tn = terminal;
+        bool treeInRoi = true;
+        while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
+          const QPointF &pt = getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+          tn = SwcTreeNode::parent(tn);
+        }
+
+        if (treeInRoi) {
+          tn = terminal;
+          while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
+            tree->selectNode(tn, true);
+            tn = SwcTreeNode::parent(tn);
           }
         }
       }

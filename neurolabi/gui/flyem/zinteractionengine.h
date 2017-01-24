@@ -103,6 +103,7 @@ signals:
   void showingContextMenu();
   void selectingSwcNodeInRoi(bool appending);
   void selectingSwcNodeTreeInRoi(bool appending);
+  void selectingTerminalBranchInRoi(bool appending);
   void selectingDownstreamSwcNode();
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();
