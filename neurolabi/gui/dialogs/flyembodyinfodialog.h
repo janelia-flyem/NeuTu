@@ -131,6 +131,7 @@ private:
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
+    bool m_cancelLoading;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
     std::string m_defaultSynapseLabelsz;
