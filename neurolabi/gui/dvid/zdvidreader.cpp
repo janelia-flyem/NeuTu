@@ -884,6 +884,32 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
   return spStack;
 }
 
+#if 0
+ZStack* ZDvidReader::readGrayScaleOld(
+    int x0, int y0, int z0, int width, int height, int depth) const
+{
+  ZStack *stack = NULL;
+
+  ZDvidUrl url(getDvidTarget());
+
+  m_bufferReader.read(url.getGrayscaleUrl(
+                        width, height, depth, x0, y0, z0).c_str(), isVerbose());
+
+  setStatusCode(m_bufferReader.getStatusCode());
+
+  const QByteArray &buffer = m_bufferReader.getBuffer();
+
+  if (!buffer.isEmpty()) {
+    ZIntCuboid box(x0, y0, z0, x0 + width - 1, y0 + height - 1, z0 + depth - 1);
+    stack = new ZStack(GREY, box, 1);
+
+    memcpy(stack->array8(), buffer.constData(), buffer.size());
+  }
+
+  return stack;
+}
+#endif
+
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth) const
 {

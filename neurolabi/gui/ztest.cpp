@@ -12,12 +12,18 @@
 #include <QElapsedTimer>
 #include <QTime>
 #include <QProcess>
+#include <QtCore>
 #include <iostream>
 #include <ostream>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
+#endif
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
@@ -286,6 +292,7 @@ using namespace std;
 #include "flyem/zflyemmisc.h"
 #include "test/zgradientmagnitudemoduletest.h"
 #include "dialogs/zstresstestoptiondialog.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
 
 using namespace std;
 
@@ -21697,6 +21704,41 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZNeuronTracer tracer;
   tracer.test();
+#endif
+
+#if 1
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setGrayScaleName("grayscale");
+//  target.setGrayScaleName("google_grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidUrl url(reader.getDvidTarget());
+  QList<ZDvidGrayscaleReadTask*> taskList;
+
+  for (int k = 0; k < 10; ++k) {
+    ZDvidGrayscaleReadTask *task = new ZDvidGrayscaleReadTask(NULL);
+    task->setDvidTarget(target);
+    taskList.append(task);
+  }
+
+
+
+  for (int z = 0; z < 10; ++z) {
+    tic();
+    for (int k = 0; k < 10; ++k) {
+      taskList[k]->setRange(512, 512, 6511, 5473, 9540 + z * 10 + k);
+      taskList[k]->setFormat("jpg");
+    }
+    QtConcurrent::blockingMap(taskList, &ZDvidGrayscaleReadTask::ExecuteTask);
+    ptoc();
+//    reader.getBufferReader().read(
+//          url.getGrayscaleUrl(1024, 1024, 6511, 5473, 9540 + z).c_str(), false);
+//    reader.readGrayScale(6511, 5473, 9540 + z, 1024, 1024, 1);
+  }
+
 #endif
 
 #if 0

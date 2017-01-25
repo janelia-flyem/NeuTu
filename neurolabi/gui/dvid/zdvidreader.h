@@ -82,6 +82,10 @@ public:
 
   ZDvid::ENodeStatus getNodeStatus() const;
 
+  ZDvidBufferReader& getBufferReader() const {
+    return m_bufferReader;
+  }
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
@@ -111,6 +115,10 @@ public:
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
+#if 0
+  ZStack* readGrayScaleOld(
+      int x0, int y0, int z0, int width, int height, int depth) const;
+#endif
   ZStack* readGrayScale(const ZIntCuboid &cuboid);
   ZStack* readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
