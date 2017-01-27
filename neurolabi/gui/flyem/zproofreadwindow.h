@@ -80,6 +80,7 @@ public slots:
   void exportNeuronScreenshot();
 
   void stressTestSlot();
+  void diagnose();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);

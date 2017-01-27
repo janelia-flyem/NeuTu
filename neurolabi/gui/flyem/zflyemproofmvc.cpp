@@ -1096,18 +1096,6 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   getView()->reset(false);
   getProgressSignal()->advanceProgress(0.1);
 
-#if 0
-  if (getMainWindow() != NULL) {
-    //      parentWidget()->hide();
-    //      parentWidget()->restoreGeometry(geometry);
-    //      parentWidget()->show();
-    if (isMaximized) {
-      getMainWindow()->showNormal();
-      getMainWindow()->showMaximized();
-    }
-  }
-#endif
-
   m_splitProject.setDvidTarget(getDvidTarget());
   getCompleteDocument()->syncMergeWithDvid();
   //    m_mergeProject.setDvidTarget(getDvidTarget());
@@ -1143,6 +1131,41 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
             getDvidTarget().getSourceString(false).c_str()),
           NeuTube::MSG_INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
+}
+
+void ZFlyEmProofMvc::diagnose()
+{
+  emit messageGenerated(
+        ZWidgetMessage("Start diagnosing...", NeuTube::MSG_INFORMATION));
+
+  emit messageGenerated(
+        ZWidgetMessage(getDvidTarget().toJsonObject().dumpString(2),
+                       NeuTube::MSG_INFORMATION));
+
+  QList<ZDvidTileEnsemble*> teList =
+      getCompleteDocument()->getDvidTileEnsembleList();
+  emit messageGenerated(
+        ZWidgetMessage(QString("%1 tile objects").arg(teList.size())));
+  foreach (ZDvidTileEnsemble *te, teList) {
+    emit messageGenerated(
+          ZWidgetMessage(QString("  Tile axis %1: %2").
+                         arg(te->getSource().c_str()).arg(te->getSliceAxis())));
+    emit messageGenerated(
+          ZWidgetMessage("  Contrast: " + te->getContrastProtocal().dumpString(2)));
+    emit messageGenerated(
+          ZWidgetMessage(QString("  %1 receiver(s) for data fetcher").arg(
+                           te->getDataFetcher()->receiverCount(
+                             SIGNAL(dataFetched(ZDvidPatchDataFetcher*))))));
+//    te->getDataFetcher()->dumpObjectInfo();
+  }
+
+  QList<ZDvidSynapseEnsemble*> seList =
+      getCompleteDocument()->getDvidSynapseEnsembleList();
+  foreach (ZDvidSynapseEnsemble *se, seList) {
+    emit messageGenerated(
+          ZWidgetMessage(QString("Synapse axis %1: %2").
+                         arg(se->getSource().c_str()).arg(se->getSliceAxis())));
+  }
 }
 
 void ZFlyEmProofMvc::setDvidTarget()

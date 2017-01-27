@@ -51,6 +51,9 @@ public:
 
   void setDataFetcher(ZDvidPatchDataFetcher *fetcher);
 
+  ZJsonObject getContrastProtocal() const;
+  ZDvidPatchDataFetcher *getDataFetcher() const;
+
 public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);

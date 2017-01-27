@@ -15,6 +15,20 @@ ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
   m_message.append(msg);
 }
 
+ZWidgetMessage::ZWidgetMessage(const char *msg, NeuTube::EMessageType type,
+                               ETarget target) :
+  m_type(type), m_target(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const std::string &msg, NeuTube::EMessageType type,
+                               ETarget target) :
+  m_type(type), m_target(target)
+{
+  m_message.append(msg.c_str());
+}
+
 QString ZWidgetMessage::ToHtmlString(
     const QString &msg, NeuTube::EMessageType type)
 {

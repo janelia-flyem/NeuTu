@@ -127,6 +127,8 @@ public:
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
+  void diagnose();
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);

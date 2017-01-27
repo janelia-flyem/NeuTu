@@ -65,6 +65,16 @@ void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
   m_contrastProtocal = obj;
 }
 
+ZJsonObject ZDvidTileEnsemble::getContrastProtocal() const
+{
+  return m_contrastProtocal;
+}
+
+ZDvidPatchDataFetcher* ZDvidTileEnsemble::getDataFetcher() const
+{
+  return m_dataFetcher;
+}
+
 void ZDvidTileEnsemble::updatePatch(
     const ZImage *patch, const ZIntCuboid &region)
 {
