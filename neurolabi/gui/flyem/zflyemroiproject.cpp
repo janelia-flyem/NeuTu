@@ -557,13 +557,23 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
         return false;
       }
 
-      ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
-      int minZ = blockObj.getMinZ();
-      int maxZ = blockObj.getMaxZ();
+//      ZObject3dScan blockObj = getDvidInfo().getBlockIndex(obj);
+      int intv = ZDvid::DEFAULT_ROI_BLOCK_SIZE - 1;
+
+#ifdef _DEBUG_2
+      std::cout << obj.getMinZ() << std::endl;
+      std::cout << obj.getMaxZ() << std::endl;
+#endif
+
+      obj.downsampleMax(intv, intv, intv);
+      obj.setDsIntv(0, 0, 0);
+
+      int minZ = obj.getMinZ();
+      int maxZ = obj.getMaxZ();
 
       ZObject3dScan interpolated;
       for (int z = minZ; z <= maxZ; ++z) {
-        interpolated.concat(blockObj.interpolateSlice(z));
+        interpolated.concat(obj.interpolateSlice(z));
       }
 
       ZJsonArray array = ZJsonFactory::MakeJsonArray(
