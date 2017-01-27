@@ -365,6 +365,7 @@ void ZTest::CrashTest()
   std::cout << obj1->getSource() << std::endl;
 #endif
 
+
 }
 
 void ZTest::stressTest(MainWindow *host)
@@ -21746,6 +21747,23 @@ void ZTest::test(MainWindow *host)
   target.set("emdata2.int.janelia.org", "43f", 9000);
   target.setSupervisorServer("emdata1.int.janelia.org:9000");
   std::cout << target.toJsonObject().dumpString(2);
+#endif
+
+#if 1
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
+
+  std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree1, tree2);
+  tree2.setType(0);
+  for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    SwcTreeNode::setType(*iter, 2);
+  }
+
+  tree2.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

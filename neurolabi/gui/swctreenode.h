@@ -452,7 +452,7 @@ double pathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 double planePathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 enum EDistanceType {
-  GEODESIC, EUCLIDEAN, PLANE_EUCLIDEAN, EUCLIDEAN_SURFACE
+  GEODESIC, EUCLIDEAN, EUCLIDEAN_SQUARE, PLANE_EUCLIDEAN, EUCLIDEAN_SURFACE
 };
 
 /*!

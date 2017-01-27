@@ -17,6 +17,7 @@
 #include "swc/zswcpruner.h"
 #include "zswcforest.h"
 #include "neutubeconfig.h"
+#include "zswcutil.h"
 
 #ifdef _USE_GTEST_
 
@@ -610,8 +611,57 @@ TEST(SwcTree, Attributes)
   ASSERT_EQ(2.0, SwcTreeNode::y(tn));
   ASSERT_EQ(3.0, SwcTreeNode::z(tn));
   ASSERT_EQ(5.0, SwcTreeNode::radius(tn));
+}
+
+TEST(SwcTree, Distance)
+{
+  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn1, 1.0);
+  SwcTreeNode::setY(tn1, 2.0);
+  SwcTreeNode::setZ(tn1, 3.0);
+  SwcTreeNode::setRadius(tn1, 5.0);
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn2, 1.0);
+  SwcTreeNode::setY(tn2, 2.0);
+  SwcTreeNode::setZ(tn2, 4.0);
+  SwcTreeNode::setRadius(tn2, 5.0);
 
 
+  ASSERT_DOUBLE_EQ(
+        1.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN));
+  ASSERT_DOUBLE_EQ(
+        1.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SQUARE));
+
+
+  SwcTreeNode::setZ(tn2, 5.0);
+  ASSERT_DOUBLE_EQ(
+        2.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN));
+  ASSERT_DOUBLE_EQ(
+        4.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SQUARE));
+
+}
+
+TEST(SwcTree, Util)
+{
+  ZSwcTree tree1;
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
+  tree1.addRegularRoot(tn);
+
+  ZSwcTree tree2;
+
+  tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 1, 10, 0, 0, 5, -1);
+  tree2.addRegularRoot(tn);
+
+  tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
+  tree2.addRegularRoot(tn);
+
+  std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree1, tree2);
+  ASSERT_EQ(1, (int) nodeArray.size());
+  ASSERT_EQ(tn, nodeArray.front());
 }
 
 #endif
