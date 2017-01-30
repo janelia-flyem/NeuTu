@@ -21707,7 +21707,7 @@ void ZTest::test(MainWindow *host)
   tracer.test();
 #endif
 
-#if 1
+#if 0
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
@@ -21749,21 +21749,59 @@ void ZTest::test(MainWindow *host)
   std::cout << target.toJsonObject().dumpString(2);
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree1;
   tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
 
   ZSwcTree tree2;
   tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
 
-  std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree1, tree2);
+
   tree2.setType(0);
-  for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
-       iter != nodeArray.end(); ++iter) {
-    SwcTreeNode::setType(*iter, 2);
+  ZSwcForest *forest = tree1.toSwcTreeArray();
+  int type = 2;
+  for (ZSwcForest::const_iterator iter = forest->begin();
+       iter != forest->end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+    std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(*tree, tree2);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+         iter != nodeArray.end(); ++iter) {
+      SwcTreeNode::setType(*iter, type);
+    }
+    type++;
   }
 
   tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+  tree.forceVirtualRoot();
+  Swc_Tree_Node *root = tree.root();
+  std::vector<Swc_Tree_Node *> nodeArray = tree.getSwcTreeNodeArray();
+  for (std::vector<Swc_Tree_Node *>::iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    if (!SwcTreeNode::isRoot(tn)) {
+      if (SwcTreeNode::type(tn) != SwcTreeNode::type(SwcTreeNode::parent(tn))) {
+        SwcTreeNode::setParent(tn, root);
+      }
+    }
+  }
+  tree.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+#endif
+
+#if 1
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_allseg.swc");
+
+  Swc_Tree_Subtract(tree2.data(), tree.data());
+
+  tree2.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_sub.swc");
 #endif
 
   std::cout << "Done." << std::endl;
