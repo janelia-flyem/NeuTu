@@ -15,6 +15,8 @@ std::vector<Swc_Tree_Node*> FindOverlapNode(
     const ZSwcTree *tree1, const ZSwcTree *tree2);
 std::vector<Swc_Tree_Node*> FindOverlapNode(
     const ZSwcTree &tree1, const ZSwcTree &tree2);
+
+void Subtract(ZSwcTree *tree1, const ZSwcTree *tree2);
 }
 
 #endif // ZSWCUTIL_H

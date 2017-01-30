@@ -31,3 +31,8 @@ std::vector<Swc_Tree_Node*> ZSwc::FindOverlapNode(
 {
   return FindOverlapNode(&tree1, &tree2);
 }
+
+void ZSwc::Subtract(ZSwcTree *tree1, const ZSwcTree *tree2)
+{
+  Swc_Tree_Subtract(tree1->data(), tree2->data());
+}

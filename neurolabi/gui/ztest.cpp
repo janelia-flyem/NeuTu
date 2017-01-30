@@ -21707,7 +21707,7 @@ void ZTest::test(MainWindow *host)
   std::cout << target.toJsonObject().dumpString(2);
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree1;
   tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
 
@@ -21721,6 +21721,17 @@ void ZTest::test(MainWindow *host)
     SwcTreeNode::setType(*iter, 2);
   }
 
+  tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
+
+  ZSwc::Subtract(&tree2, &tree1);
   tree2.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
