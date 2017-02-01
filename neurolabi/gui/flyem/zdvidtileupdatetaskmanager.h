@@ -4,6 +4,7 @@
 #include "zmultitaskmanager.h"
 #include "tz_stdint.h"
 #include "ztask.h"
+#include "dvid/zdvidreader.h"
 
 class ZDvidTile;
 
@@ -45,6 +46,38 @@ private:
   int m_length;
   int m_z;
   bool m_highContrast;
+};
+
+class ZDvidGrayscaleReadTask : public ZTask
+{
+public:
+  ZDvidGrayscaleReadTask(QObject *parent) : ZTask(parent) {}
+  void execute();
+
+  void setDvidTarget(const ZDvidTarget &target) {
+    m_reader.open(target);
+  }
+
+  void setRange(int sx, int sy, int x, int y, int z) {
+    m_sx = sx;
+    m_sy = sy;
+    m_x = x;
+    m_y = y;
+    m_z = z;
+  }
+
+  void setFormat(const std::string &format) {
+    m_format = format;
+  }
+
+private:
+  ZDvidReader m_reader;
+  int m_sx;
+  int m_sy;
+  int m_x;
+  int m_y;
+  int m_z;
+  std::string m_format;
 };
 
 

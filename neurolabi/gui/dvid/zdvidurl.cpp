@@ -1,5 +1,7 @@
 #include "zdvidurl.h"
 #include <sstream>
+#include <iostream>
+
 #include "dvid/zdviddata.h"
 #include "zstring.h"
 #include "zintpoint.h"
@@ -392,7 +394,9 @@ const
   if (!format.empty()) {
     stream << "/" << format;
   }
-  return GetFullUrl(getGrayscaleUrl(), stream.str());
+  std::string url = GetFullUrl(getGrayscaleUrl(), stream.str());
+
+  return url;
 }
 
 std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,

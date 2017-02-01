@@ -46,8 +46,18 @@ void ZDvidTileDecodeTask::ExecuteTask(ZDvidTileDecodeTask *task)
   task->execute();
 }
 
+//////////////////
+void ZDvidGrayscaleReadTask::execute()
+{
+  ZDvidUrl url(m_reader.getDvidTarget());
+  std::string urlStr = url.getGrayscaleUrl(m_sx, m_sy, m_x, m_y, m_z, m_format);
+#ifdef _DEBUG_2
+std::cout << urlStr << std::endl;
+#endif
+  m_reader.getBufferReader().read(urlStr.c_str(), false);
+}
 
-////////////////////////////////////
+////////////////////////////////////512
 ZDvidTileUpdateTaskManager::ZDvidTileUpdateTaskManager()
 {
 }

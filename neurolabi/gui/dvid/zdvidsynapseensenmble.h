@@ -262,6 +262,8 @@ private:
   void init();
   void updateFromCacheUnsync(int z);
   void deselectSubUnsync();
+  void unsyncedFetch(const ZIntCuboid &box);
+  void syncedFetch(const ZIntCuboid &box, int startZ, int endZ, bool isFull);
 
 private:
   QVector<SynapseSlice> m_synapseEnsemble;

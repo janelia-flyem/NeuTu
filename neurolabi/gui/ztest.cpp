@@ -12,12 +12,18 @@
 #include <QElapsedTimer>
 #include <QTime>
 #include <QProcess>
+#include <QtCore>
 #include <iostream>
 #include <ostream>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
+#endif
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
@@ -286,6 +292,7 @@ using namespace std;
 #include "flyem/zflyemmisc.h"
 #include "test/zgradientmagnitudemoduletest.h"
 #include "dialogs/zstresstestoptiondialog.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
 
 using namespace std;
 
@@ -21701,6 +21708,41 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setGrayScaleName("grayscale");
+//  target.setGrayScaleName("google_grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidUrl url(reader.getDvidTarget());
+  QList<ZDvidGrayscaleReadTask*> taskList;
+
+  for (int k = 0; k < 10; ++k) {
+    ZDvidGrayscaleReadTask *task = new ZDvidGrayscaleReadTask(NULL);
+    task->setDvidTarget(target);
+    taskList.append(task);
+  }
+
+
+
+  for (int z = 0; z < 10; ++z) {
+    tic();
+    for (int k = 0; k < 10; ++k) {
+      taskList[k]->setRange(512, 512, 6511, 5473, 9540 + z * 10 + k);
+      taskList[k]->setFormat("jpg");
+    }
+    QtConcurrent::blockingMap(taskList, &ZDvidGrayscaleReadTask::ExecuteTask);
+    ptoc();
+//    reader.getBufferReader().read(
+//          url.getGrayscaleUrl(1024, 1024, 6511, 5473, 9540 + z).c_str(), false);
+//    reader.readGrayScale(6511, 5473, 9540 + z, 1024, 1024, 1);
+  }
+
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "43f", 9000);
   target.setSupervisorServer("emdata1.int.janelia.org:9000");
@@ -21714,17 +21756,25 @@ void ZTest::test(MainWindow *host)
   ZSwcTree tree2;
   tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
 
-  std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree1, tree2);
+
   tree2.setType(0);
-  for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
-       iter != nodeArray.end(); ++iter) {
-    SwcTreeNode::setType(*iter, 2);
+  ZSwcForest *forest = tree1.toSwcTreeArray();
+  int type = 2;
+  for (ZSwcForest::const_iterator iter = forest->begin();
+       iter != forest->end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+    std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(*tree, tree2);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+         iter != nodeArray.end(); ++iter) {
+      SwcTreeNode::setType(*iter, type);
+    }
+    type++;
   }
 
   tree2.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree1;
   tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
 
@@ -21733,6 +21783,36 @@ void ZTest::test(MainWindow *host)
 
   ZSwc::Subtract(&tree2, &tree1);
   tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+  tree.forceVirtualRoot();
+  Swc_Tree_Node *root = tree.root();
+  std::vector<Swc_Tree_Node *> nodeArray = tree.getSwcTreeNodeArray();
+  for (std::vector<Swc_Tree_Node *>::iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    if (!SwcTreeNode::isRoot(tn)) {
+      if (SwcTreeNode::type(tn) != SwcTreeNode::type(SwcTreeNode::parent(tn))) {
+        SwcTreeNode::setParent(tn, root);
+      }
+    }
+  }
+  tree.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+#endif
+
+#if 1
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_allseg.swc");
+
+  Swc_Tree_Subtract(tree2.data(), tree.data());
+
+  tree2.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_sub.swc");
 #endif
 
   std::cout << "Done." << std::endl;

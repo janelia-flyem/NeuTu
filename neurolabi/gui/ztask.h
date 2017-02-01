@@ -16,6 +16,10 @@ public:
   virtual void execute() = 0;
   virtual void prepare() {}
 
+  static void ExecuteTask(ZTask *task) {
+    task->execute();
+  }
+
 signals:
   void finished();
 };

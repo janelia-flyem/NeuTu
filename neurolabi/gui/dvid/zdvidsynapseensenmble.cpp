@@ -123,6 +123,30 @@ void ZDvidSynapseEnsemble::download(int z)
   downloadUnsync(z);
 }
 
+void ZDvidSynapseEnsemble::unsyncedFetch(const ZIntCuboid &box)
+{
+  QVector<ZIntCuboid> region;
+  region.append(box);
+  m_dataFetcher->submit(region);
+}
+
+void ZDvidSynapseEnsemble::syncedFetch(
+    const ZIntCuboid &box, int startZ, int endZ, bool isFull)
+{
+  ZIntCuboid dataBox = updateUnsync(box);
+  for (int cz = startZ; cz <= endZ; ++cz) {
+    SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
+    if (isFull && m_dataRange.isEmpty()) {
+      slice.setStatus(STATUS_READY);
+    } else {
+      slice.setDataRect(
+            QRect(dataBox.getFirstCorner().getX(), dataBox.getFirstCorner().getY(),
+                  dataBox.getWidth(), box.getHeight()));
+      slice.setStatus(STATUS_PARTIAL_READY);
+    }
+  }
+}
+
 void ZDvidSynapseEnsemble::downloadUnsync(int z)
 {
   if (m_dvidTarget.getSynapseName().empty()) {
@@ -138,8 +162,10 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
   ZIntCuboid blockBox =
       m_dvidInfo.getBlockBox(blockIndex, blockIndex, blockIndex);
   blockBox.shiftSliceAxis(m_sliceAxis);
+  int startZ = blockBox.getFirstCorner().getZ();
+  int endZ = blockBox.getLastCorner().getZ();
 
-  if (currentArea > 0 && currentArea < m_maxPartialArea) {
+  if (currentArea > 0 && currentArea <= m_maxPartialArea) {
     QRect viewPort = m_view->getViewParameter().getViewPort();
     ZIntCuboid box(
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
@@ -147,16 +173,13 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     box.shiftSliceAxisInverse(m_sliceAxis);
     if (m_dataFetcher == NULL || getSliceAxis() == NeuTube::Z_AXIS) {
       updateUnsync(box);
-      for (int cz = blockBox.getFirstCorner().getZ();
-           cz <= blockBox.getLastCorner().getZ(); ++cz) {
+      for (int cz = startZ; cz <= endZ; ++cz) {
         SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
         slice.setDataRect(viewPort);
         slice.setStatus(STATUS_PARTIAL_READY);
       }
     } else {
-      QVector<ZIntCuboid> region;
-      region.append(box);
-      m_dataFetcher->submit(region);
+      unsyncedFetch(box);
     }
   } else {
     ZIntPoint lastCorner = m_dvidInfo.getEndCoordinates();
@@ -178,8 +201,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     if (m_dataFetcher == NULL) {
       box = updateUnsync(box);
 
-      for (int cz = blockBox.getFirstCorner().getZ();
-           cz <= blockBox.getLastCorner().getZ(); ++cz) {
+      for (int cz = startZ; cz <= endZ; ++cz) {
         SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
         if (m_dataRange.isEmpty()) {
           slice.setStatus(STATUS_READY);
@@ -191,10 +213,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
         }
       }
     } else {
-      QVector<ZIntCuboid> region;
-      region.append(box);
-      m_dataFetcher->submit(region);
-//      m_dataFetcher->addSynapse(this); //for testing
+      unsyncedFetch(box);
     }
   }
 }

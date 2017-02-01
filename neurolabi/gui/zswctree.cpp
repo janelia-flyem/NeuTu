@@ -2571,7 +2571,9 @@ void ZSwcTree::setLabel(int v) const
 
 void ZSwcTree::setType(int type)
 {
-  Swc_Tree_Set_Type(data(), type);
+  if (!isEmpty()) {
+    Swc_Tree_Set_Type(data(), type);
+  }
 }
 
 void ZSwcTree::setTypeByLabel()
