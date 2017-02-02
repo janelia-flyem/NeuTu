@@ -11,6 +11,7 @@
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
 #include "dialogs/zdvidadvanceddialog.h"
+#include "dvid/zdvidreader.h"
 
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
@@ -342,26 +343,38 @@ void ZDvidDialog::setAdvanced()
   }
 }
 
+
 void ZDvidDialog::updateWidgetForDefaultSetting()
 {
-  ui->grayScalelineEdit->setVisible(!usingDefaultSetting());
-  ui->bodyLineEdit->setVisible(!usingDefaultSetting());
-  ui->labelBlockLineEdit->setVisible(!usingDefaultSetting());
-  ui->synapseLineEdit->setVisible(!usingDefaultSetting());
+  ui->grayScalelineEdit->setVisible(true);
+  ui->bodyLineEdit->setVisible(true);
+  ui->labelBlockLineEdit->setVisible(true);
+  ui->synapseLineEdit->setVisible(true);
+
+
+  ZJsonObject obj;
 
   if (usingDefaultSetting()) {
-    ui->grayscaleLabel->setText("Gray Scale <default>");
-    ui->bodyLabelLabel->setText("Body Label <default>");
-    ui->labelBlockLabel->setText("Label Block <default>");
-    ui->synapseLabel->setText("Synapse <default>");
-  } else {
-    ui->grayscaleLabel->setText("Gray Scale");
-    ui->bodyLabelLabel->setText("Body Label");
-    ui->labelBlockLabel->setText("Label Block");
-    ui->synapseLabel->setText("Synapse");
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      obj = reader.readDefaultDataSetting();
+    }
   }
 
-  m_advancedDlg->updateWidgetForDefaultSetting(usingDefaultSetting());
+  ZDvidAdvancedDialog::UpdateWidget(
+        ui->grayscaleLabel, ui->grayScalelineEdit, "Gray Scale", obj,
+        "grayscale");
+  ZDvidAdvancedDialog::UpdateWidget(
+        ui->bodyLabelLabel, ui->bodyLineEdit, "Body Label",
+        obj, "bodies");
+  ZDvidAdvancedDialog::UpdateWidget(
+        ui->labelBlockLabel, ui->labelBlockLineEdit, "Label Block",
+        obj, "segmentation");
+  ZDvidAdvancedDialog::UpdateWidget(
+        ui->synapseLabel, ui->synapseLineEdit, "Synapse",
+        obj, "synapses");
+
+  m_advancedDlg->updateWidgetForDefaultSetting(obj);
 }
 
 void ZDvidDialog::deleteCurrentTarget()

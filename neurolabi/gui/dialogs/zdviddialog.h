@@ -11,6 +11,8 @@ class ZDvidDialog;
 
 class StringListDialog;
 class ZDvidAdvancedDialog;
+class QLabel;
+class QLineEdit;
 
 class ZDvidDialog : public QDialog
 {
@@ -45,6 +47,7 @@ public slots:
 private:
   bool usingDefaultSetting() const;
   void resetAdvancedDlg(const ZDvidTarget &dvidTarget);
+
 
 private:
   Ui::ZDvidDialog *ui;

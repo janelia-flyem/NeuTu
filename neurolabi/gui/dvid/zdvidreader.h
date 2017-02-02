@@ -324,7 +324,8 @@ public:
     READ_CURRENT, READ_TRACE_BACK
   };
 
-  ZJsonObject readDefaultDataSetting(EReadOption option) const;
+  ZJsonObject readDefaultDataSetting(
+      EReadOption option = ZDvidReader::READ_CURRENT) const;
 
   ZJsonObject readDataMap() const;
 

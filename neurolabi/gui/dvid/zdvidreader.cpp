@@ -947,7 +947,7 @@ ZStack* ZDvidReader::readGrayScale(
   }
 
 #else
-  ZDvidBufferReader bufferReader;
+  ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl url(getDvidTarget());
   /*
   if (depth == 1) {

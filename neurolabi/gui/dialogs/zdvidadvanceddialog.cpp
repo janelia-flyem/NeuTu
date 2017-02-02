@@ -1,5 +1,7 @@
 #include "zdvidadvanceddialog.h"
 #include "ui_zdvidadvanceddialog.h"
+#include "zjsonobject.h"
+#include "zjsonparser.h"
 
 ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
   QDialog(parent),
@@ -40,14 +42,42 @@ void ZDvidAdvancedDialog::updateWidgetForEdit(bool editable)
   ui->todoLineEdit->setEnabled(editable);
 }
 
-void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(bool usingDefault)
+void ZDvidAdvancedDialog::UpdateWidget(
+    QLabel *label, QLineEdit *lineEdit,
+    const QString &labelText, const QString &dataText)
 {
+  if (!dataText.isEmpty()) {
+    lineEdit->setVisible(false);
+    label->setText(labelText + ": " + dataText);
+  } else {
+    lineEdit->setVisible(true);
+    label->setText(labelText);
+  }
+}
+
+void ZDvidAdvancedDialog::UpdateWidget(
+    QLabel *label, QLineEdit *lineEdit, const QString &labelText,
+    const ZJsonObject &obj, const char *key)
+{
+  if (obj.hasKey(key)) {
+    UpdateWidget(label, lineEdit, labelText, ZJsonParser::stringValue(obj[key]));
+  } else {
+    UpdateWidget(label, lineEdit, labelText, "");
+  }
+}
+
+void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
+{
+  UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos");
+
+  /*
   ui->todoLineEdit->setVisible(!usingDefault);
   if (usingDefault) {
     ui->todoLabel->setText("Todo Name <default>");
   } else {
     ui->todoLabel->setText("Todo Name");
   }
+  */
 }
 
 void ZDvidAdvancedDialog::setTodoName(const std::string &name)

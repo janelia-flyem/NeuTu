@@ -8,6 +8,10 @@ namespace Ui {
 class ZDvidAdvancedDialog;
 }
 
+class ZJsonObject;
+class QLabel;
+class QLineEdit;
+
 class ZDvidAdvancedDialog : public QDialog
 {
   Q_OBJECT
@@ -18,7 +22,7 @@ public:
 
   void setDvidServer(const QString &str);
   void updateWidgetForEdit(bool editable);
-  void updateWidgetForDefaultSetting(bool usingDefault);
+  void updateWidgetForDefaultSetting(const ZJsonObject &obj);
 
   void setTodoName(const std::string &name);
   std::string getTodoName() const;
@@ -29,6 +33,12 @@ public:
 
   void backup();
   void recover();
+
+  static void UpdateWidget(QLabel *label, QLineEdit *lineEdit,
+                    const QString &labelText, const QString &dataText);
+  static void UpdateWidget(QLabel *label, QLineEdit *lineEdit,
+                    const QString &labelText, const ZJsonObject &obj,
+                    const char *key);
 
 private:
   Ui::ZDvidAdvancedDialog *ui;
