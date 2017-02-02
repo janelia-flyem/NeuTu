@@ -21775,6 +21775,17 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
+
+  ZSwc::Subtract(&tree2, &tree1);
+  tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
   tree.forceVirtualRoot();
