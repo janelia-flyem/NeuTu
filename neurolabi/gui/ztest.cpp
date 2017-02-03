@@ -21803,7 +21803,7 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree2;
   tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
 
@@ -21813,6 +21813,50 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Subtract(tree2.data(), tree.data());
 
   tree2.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_sub.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
+
+  for (int i = 1; i <= 13; ++i) {
+    QString path = QString("%1/%2.swc").
+        arg((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie8/cast").c_str()).arg(i);
+    std::cout << "Processing " << path.toStdString() << std::endl;
+    ZSwcTree tree2;
+    tree2.load(path.toStdString());
+    std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree2, tree);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+         iter != nodeArray.end(); ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      if (SwcTreeNode::radius((tn)) >= 1.0) {
+        SwcTreeNode::setRadius(tn, SwcTreeNode::radius((tn)) - 0.1);
+      } else {
+        SwcTreeNode::setRadius(tn, SwcTreeNode::radius((tn))*0.9);
+      }
+    }
+  }
+
+  tree.save(GET_TEST_DATA_DIR + "/flyem/MB/paper/movie8/cast/14.swc");
+#endif
+
+#if 1
+  Stack *stack = C_Stack::make(GREY, 32, 32, 32);
+  C_Stack::setOne(stack);
+  C_Stack::setPixel(stack, 0, 0, 0, 0, 0);
+  C_Stack::setPixel(stack, 2, 0, 0, 0, 0);
+
+  size_t voxelCount = C_Stack::voxelNumber(stack);
+  long int *label = new long int[voxelCount];
+  tic();
+  Stack *out = C_Stack::Bwdist(stack, NULL, label);
+  ptoc();
+
+  for (size_t i = 0; i < voxelCount; ++i) {
+//    std::cout << i << " " << label[i] << std::endl;
+  }
+
+  C_Stack::kill(out);
 #endif
 
   std::cout << "Done." << std::endl;

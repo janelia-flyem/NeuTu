@@ -3594,50 +3594,70 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
-    int x, int y, int z, bool checked)
+    int x, int y, int z, bool checked, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(ZIntPoint(x, y, z), checked);
-}
-
-void ZFlyEmProofDoc::executeAddTodoItemCommand(const ZIntPoint &pt, bool checked)
-{
-  ZFlyEmToDoItem item(pt);
-  item.setUserName(NeuTube::GetCurrentUserName());
-  if (checked) {
-    item.setChecked(checked);
-  }
-
-  executeAddTodoItemCommand(item);
+  executeAddTodoItemCommand(ZIntPoint(x, y, z), checked, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
-    int x, int y, int z, ZFlyEmToDoItem::EToDoAction action)
+    const ZIntPoint &pt, bool checked, uint64_t bodyId)
 {
-  ZFlyEmToDoItem item(x, y, z);
-  item.setUserName(NeuTube::GetCurrentUserName());
-  item.setAction(action);
+  bool consistent = true;
+  if (bodyId > 0) {
+    if (bodyId != getDvidReader().readBodyIdAt(pt)) {
+      consistent = false;
+    }
+  }
 
-  executeAddTodoItemCommand(item);
+  if (consistent) {
+    ZFlyEmToDoItem item(pt);
+    item.setUserName(NeuTube::GetCurrentUserName());
+    if (checked) {
+      item.setChecked(checked);
+    }
+
+    executeAddTodoItemCommand(item);
+  }
 }
 
-void ZFlyEmProofDoc::executeAddToMergeItemCommand(int x, int y, int z)
+void ZFlyEmProofDoc::executeAddTodoItemCommand(
+    int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_MERGE);
+  bool consistent = true;
+  if (bodyId > 0) {
+    if (bodyId != getDvidReader().readBodyIdAt(x, y, z)) {
+      consistent = false;
+    }
+  }
+
+
+  if (consistent) {
+    ZFlyEmToDoItem item(x, y, z);
+    item.setUserName(NeuTube::GetCurrentUserName());
+    item.setAction(action);
+
+    executeAddTodoItemCommand(item);
+  }
 }
 
-void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt)
+void ZFlyEmProofDoc::executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddToMergeItemCommand(pt.getX(), pt.getY(), pt.getZ());
+  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_MERGE, bodyId);
 }
 
-void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z)
+void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_SPLIT);
+  executeAddToMergeItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
-void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt)
+void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ());
+  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_SPLIT, bodyId);
+}
+
+void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId)
+{
+  executeAddToSplitItemCommand(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)

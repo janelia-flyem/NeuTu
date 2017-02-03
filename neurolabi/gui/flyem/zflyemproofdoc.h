@@ -390,15 +390,15 @@ public slots: //Commands
   void executeRemoveBookmarkCommand(const QList<ZFlyEmBookmark*> &bookmarkList);
   void executeAddBookmarkCommand(ZFlyEmBookmark *bookmark);
 
-  void executeAddTodoItemCommand(int x, int y, int z, bool checked);
-  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked);
+  void executeAddTodoItemCommand(int x, int y, int z, bool checked, uint64_t bodyId = 0);
+  void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(
-      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action);
+      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
-  void executeAddToMergeItemCommand(int x, int y, int z);
-  void executeAddToMergeItemCommand(const ZIntPoint &pt);
-  void executeAddToSplitItemCommand(int x, int y, int z);
-  void executeAddToSplitItemCommand(const ZIntPoint &pt);
+  void executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
+  void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
+  void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
 
 
   void executeRemoveTodoItemCommand();

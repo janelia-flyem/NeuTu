@@ -46,8 +46,21 @@ using namespace std;
 
 const int ZSwcTree::m_nodeStateCosmetic = 1;
 
-ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
+ZSwcTree::ZSwcTree()
 {
+  init();
+
+#if defined(_QT_GUI_USED_)
+#ifdef _FLYEM_
+    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
+#endif
+#endif
+}
+
+void ZSwcTree::init()
+{
+  m_smode = STRUCT_NORMAL;
+  m_hitSwcNode = NULL;
   m_tree = NULL;
   //m_source = "new tree";
   m_iteratorReady = false;
@@ -56,11 +69,7 @@ ZSwcTree::ZSwcTree() : m_smode(STRUCT_NORMAL), m_hitSwcNode(NULL)
   addVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
   setTarget(GetDefaultTarget());
 
-#if defined(_QT_GUI_USED_)
-#ifdef _FLYEM_
-    ZOUT(LTRACE(), 5) << "Creating SWC: " << this;
-#endif
-#endif
+  m_label = 0;
 }
 
 ZSwcTree::~ZSwcTree()
@@ -99,8 +108,20 @@ void ZSwcTree::setStructrualMode(EStructrualMode mode)
   }
 }
 
+void ZSwcTree::setLabel(uint64_t label)
+{
+  m_label = label;
+}
+
+uint64_t ZSwcTree::getLabel() const
+{
+  return m_label;
+}
+
 void swap(ZSwcTree &first, ZSwcTree &second)
 {
+  first.unlinkRootHost();
+  second.unlinkRootHost();
   std::swap(first.m_tree, second.m_tree);
   first.deprecate(ZSwcTree::ALL_COMPONENT);
   second.deprecate(ZSwcTree::ALL_COMPONENT);
@@ -125,6 +146,7 @@ void ZSwcTree::setData(Swc_Tree *tree, ESetDataOption option)
 
   m_tree = tree;
   initHostState();
+  unlinkRootHost();
 
   deprecate(ALL_COMPONENT);
 }
@@ -177,6 +199,7 @@ void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
   }
 
   m_tree->root = node;
+  unlinkRootHost();
   deprecate(ALL_COMPONENT);
 
   /*
@@ -1209,7 +1232,7 @@ void ZSwcTree::labelBranchLevel(int rootType)
 
 void ZSwcTree::labelBranchLevelFromLeaf()
 {
-  setLabel(0);
+  setNodeLabel(0);
 
   updateIterator(SWC_TREE_ITERATOR_LEAF);
 
@@ -2564,7 +2587,7 @@ void ZSwcTree::merge(ZSwcTree *tree, bool freeInput)
   }
 }
 
-void ZSwcTree::setLabel(int v) const
+void ZSwcTree::setNodeLabel(int v) const
 {
   Swc_Tree_Set_Label(data(), v);
 }
@@ -2649,7 +2672,7 @@ void ZSwcTree::resample(double step)
 
 void ZSwcTree::labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer)
 {
-  setLabel(0);
+  setNodeLabel(0);
   ZSwcPath branch = mainTrunk(trunkAnalyzer);
 
 #ifdef _DEBUG_2
@@ -2939,6 +2962,27 @@ void ZSwcTree::addRegularRoot(Swc_Tree_Node *tn)
   }
 }
 
+void ZSwcTree::linkHost(Swc_Tree_Node *tn)
+{
+  if (tn != NULL) {
+    tn->data_link = this;
+  }
+}
+
+void ZSwcTree::unlinkHost(Swc_Tree_Node *tn)
+{
+  if (tn != NULL) {
+    tn->data_link = NULL;
+  }
+}
+
+void ZSwcTree::unlinkRootHost()
+{
+  if (m_tree != NULL) {
+    unlinkHost(m_tree->root);
+  }
+}
+
 Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
 {
   if (m_tree == NULL) {
@@ -2956,6 +3000,8 @@ Swc_Tree_Node *ZSwcTree::forceVirtualRoot()
     SwcTreeNode::setParent(m_tree->root, tn);
     m_tree->root = tn;
   }
+
+  linkHost(m_tree->root);
 
   deprecate(ALL_COMPONENT);
 
@@ -3327,7 +3373,7 @@ double ZSwcTree::getMaxSegmentLenth()
 
   return maxLength;
 }
-
+#if 0
 void ZSwcTree::updateHostState()
 {
   initHostState();
@@ -3336,7 +3382,9 @@ void ZSwcTree::updateHostState()
     setHostState(tn);
   }
 }
+#endif
 
+#if 0
 bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
 {
   bool on = false;
@@ -3350,6 +3398,7 @@ bool ZSwcTree::getHostState(const Swc_Tree_Node *tn, ENodeState state)
 
   return on;
 }
+#endif
 
 void ZSwcTree::setColorScheme(EColorScheme scheme)
 {
@@ -3421,10 +3470,12 @@ int ZSwcTree::getTreeState() const
   return state;
 }
 
+/*
 void ZSwcTree::setHostState(Swc_Tree_Node *tn) const
 {
   tn->tree_state = getTreeState();
 }
+*/
 
 ZClosedCurve ZSwcTree::toClosedCurve() const
 {

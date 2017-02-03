@@ -172,12 +172,15 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     if (m_dataFetcher == NULL || getSliceAxis() == NeuTube::Z_AXIS) {
+      syncedFetch(box, startZ, endZ, false);
+      /*
       updateUnsync(box);
       for (int cz = startZ; cz <= endZ; ++cz) {
         SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
         slice.setDataRect(viewPort);
         slice.setStatus(STATUS_PARTIAL_READY);
       }
+      */
     } else {
       unsyncedFetch(box);
     }
@@ -199,6 +202,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     box.shiftSliceAxisInverse(m_sliceAxis);
 
     if (m_dataFetcher == NULL) {
+      syncedFetch(box, startZ, endZ, true);
+      /*
       box = updateUnsync(box);
 
       for (int cz = startZ; cz <= endZ; ++cz) {
@@ -212,6 +217,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           slice.setStatus(STATUS_PARTIAL_READY);
         }
       }
+      */
     } else {
       unsyncedFetch(box);
     }

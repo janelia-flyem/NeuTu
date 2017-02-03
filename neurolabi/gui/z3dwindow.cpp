@@ -2380,34 +2380,34 @@ void Z3DWindow::saveSelectedPunctaAs()
   }
 }
 
-void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked)
+void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId)
 {
-  emit addingTodoMarker(x, y, z, checked);
+  emit addingTodoMarker(x, y, z, checked, bodyId);
 }
 
-void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked)
+void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked, uint64_t bodyId)
 {
-  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked);
+  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked, bodyId);
 }
 
-void Z3DWindow::emitAddToMergeMarker(int x, int y, int z)
+void Z3DWindow::emitAddToMergeMarker(int x, int y, int z, uint64_t bodyId)
 {
-  emit addingToMergeMarker(x, y, z);
+  emit addingToMergeMarker(x, y, z, bodyId);
 }
 
-void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt)
+void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId)
 {
-  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ());
+  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
-void Z3DWindow::emitAddToSplitMarker(int x, int y, int z)
+void Z3DWindow::emitAddToSplitMarker(int x, int y, int z, uint64_t bodyId)
 {
-  emit addingToSplitMarker(x, y, z);
+  emit addingToSplitMarker(x, y, z, bodyId);
 }
 
-void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt)
+void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId)
 {
-  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ());
+  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
 }
 
 static void AddTodoMarker(
@@ -2416,19 +2416,25 @@ static void AddTodoMarker(
   QList<Swc_Tree_Node*> swcNodeList =
       window->getDocument()->getSelectedSwcNodeList();
   if (swcNodeList.size() == 1) {
-    ZIntPoint pt = SwcTreeNode::center(swcNodeList.front()).toIntPoint();
+    Swc_Tree_Node *tn = swcNodeList.front();
+    ZSwcTree *tree = window->getDocument()->nodeToSwcTree(tn);
+    uint64_t bodyId = 0;
+    if (tree != NULL) {
+      bodyId = tree->getLabel();
+    }
+    ZIntPoint pt = SwcTreeNode::center(tn).toIntPoint();
     if (checked) {
-      window->emitAddTodoMarker(pt, checked);
+      window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
       case ZFlyEmToDoItem::TO_DO:
-        window->emitAddTodoMarker(pt, checked);
+        window->emitAddTodoMarker(pt, checked, bodyId);
         break;
       case ZFlyEmToDoItem::TO_MERGE:
-        window->emitAddToMergeMarker(pt);
+        window->emitAddToMergeMarker(pt, bodyId);
         break;
       case ZFlyEmToDoItem::TO_SPLIT:
-        window->emitAddToSplitMarker(pt);
+        window->emitAddToSplitMarker(pt, bodyId);
         break;
       }
     }

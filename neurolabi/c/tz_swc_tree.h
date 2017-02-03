@@ -30,7 +30,7 @@ typedef struct _Swc_Tree_Node {
   int index;                           /**< 0-based index in iteration */ 
   int flag;                            /**< a flag for temporary operation */
                                        /*Must reset to 0 after usage*/
-  int tree_state;                      /**< State of the host tree. 
+  void *data_link;                      /**< Link to external data. 
                                         *Reserved for high-level data structure. */
 } Swc_Tree_Node;
 

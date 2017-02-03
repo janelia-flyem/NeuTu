@@ -817,7 +817,7 @@ void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
     SwcTreeNode::setLink(child, tn, SwcTreeNode::PARENT);
     SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
     SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
-    child->tree_state = tn->tree_state;
+//    child->tree_state = tn->tree_state;
   }
 }
 

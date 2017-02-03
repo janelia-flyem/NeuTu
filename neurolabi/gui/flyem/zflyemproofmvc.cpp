@@ -597,15 +597,15 @@ void ZFlyEmProofMvc::makeBodyWindow()
           doc, SLOT(showTodo(bool)));
   connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
-  connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool)),
+  connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool,uint64_t)),
           getCompleteDocument(),
-          SLOT(executeAddTodoItemCommand(int,int,int,bool)));
-  connect(m_bodyWindow, SIGNAL(addingToMergeMarker(int,int,int)),
+          SLOT(executeAddTodoItemCommand(int,int,int,bool,uint64_t)));
+  connect(m_bodyWindow, SIGNAL(addingToMergeMarker(int,int,int,uint64_t)),
           getCompleteDocument(),
-          SLOT(executeAddToMergeItemCommand(int,int,int)));
-  connect(m_bodyWindow, SIGNAL(addingToSplitMarker(int,int,int)),
+          SLOT(executeAddToMergeItemCommand(int,int,int,uint64_t)));
+  connect(m_bodyWindow, SIGNAL(addingToSplitMarker(int,int,int,uint64_t)),
           getCompleteDocument(),
-          SLOT(executeAddToSplitItemCommand(int,int,int)));
+          SLOT(executeAddToSplitItemCommand(int,int,int,uint64_t)));
 
   setWindowSignalSlot(m_bodyWindow);
 

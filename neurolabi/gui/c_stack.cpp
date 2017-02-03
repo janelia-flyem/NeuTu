@@ -1840,6 +1840,15 @@ Stack* C_Stack::Bwdist_L_U16P(const Stack *in, Stack *out, int pad)
   return Stack_Bwdist_L_U16P(in, out, pad);
 }
 
+Stack* C_Stack::Bwdist(const Stack *in, Stack *out, long int *label)
+{
+  if (in == NULL) {
+    return NULL;
+  }
+
+  return Stack_Bwdist_L(in, out, label);
+}
+
 void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)
 {
   if (r == 0) {

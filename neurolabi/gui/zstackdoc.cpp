@@ -5995,14 +5995,14 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
             SwcTreeNode::detachParent(begin);
             Kill_Swc_Tree(branch);
 
-
+/*
             ZSwcPath path(begin, leaf);
             for (ZSwcPath::iterator iter = path.begin(); iter != path.end();
                  ++iter) {
               Swc_Tree_Node *tn = *iter;
               tn->tree_state = prevNode->tree_state;
             }
-
+*/
 //            resampler.setDistanceScale(3.0);
 //            resampler.setRadiusScale(0.0);
 
@@ -7545,7 +7545,7 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
       addSwcTreeP(tree);
       if (obj->hasRole(ZStackObjectRole::ROLE_ROI)) {
         tree->useCosmeticPen(true);
-        tree->updateHostState();
+//        tree->updateHostState();
       }
     }
   }

@@ -425,6 +425,7 @@ Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
 
 //Processing functions
 Stack* Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
+Stack* Bwdist(const Stack *in, Stack *out, long *label);
 
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,

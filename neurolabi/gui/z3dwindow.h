@@ -242,12 +242,12 @@ public:
   //Control panel setup
 
 public: //external signal call
-  void emitAddTodoMarker(int x, int y, int z, bool checked);
-  void emitAddToMergeMarker(int x, int y, int z);
-  void emitAddToSplitMarker(int x, int y, int z);
-  void emitAddTodoMarker(const ZIntPoint &pt, bool checked);
-  void emitAddToMergeMarker(const ZIntPoint &pt);
-  void emitAddToSplitMarker(const ZIntPoint &pt);
+  void emitAddTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
+  void emitAddToMergeMarker(int x, int y, int z, uint64_t bodyId);
+  void emitAddToSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void emitAddTodoMarker(const ZIntPoint &pt, bool checked, uint64_t bodyId);
+  void emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId);
+  void emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId);
 
 protected:
 
@@ -288,9 +288,9 @@ signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
-  void addingTodoMarker(int x, int y, int z, bool checked);
-  void addingToMergeMarker(int x, int y, int z);
-  void addingToSplitMarker(int x, int y, int z);
+  void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
+  void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
+  void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position

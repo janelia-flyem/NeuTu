@@ -617,7 +617,7 @@ int ZStackView::getIntensityThreshold()
 
 void ZStackView::updatePaintBundle()
 {
-  m_paintBundle.unsetSwcNodeList();
+//  m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
   if (buddyDocument()) {
     m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());

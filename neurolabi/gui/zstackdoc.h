@@ -591,6 +591,8 @@ public:
   bool importSynapseAnnotation(const std::string &filePath,
                                int s = 0);
 
+  ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
+
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
 
@@ -1235,7 +1237,6 @@ private:
   //void loadTraceMask(bool traceMasked);
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
-  ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
   ResolutionDialog* getResolutionDialog();
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,

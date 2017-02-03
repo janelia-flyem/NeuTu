@@ -1119,6 +1119,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
                 bodyId, GetBodyTypeName(bodyType)));
         tree->setObjectClass(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+        tree->setLabel(bodyId);
       }
     }
   }

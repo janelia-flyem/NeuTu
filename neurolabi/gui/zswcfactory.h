@@ -61,9 +61,12 @@ public:
 
   static ZSwcTree* CreateSwc(const ZObject3dScan &obj);
 
+  static ZSwcTree* CreateSurfaceSwc(
+      const ZStack &stack, int sparseLevel, const ZIntPoint &scale, ZSwcTree *tree);
   static ZSwcTree* CreateSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
-  static ZSwcTree* CreateSurfaceSwc(const ZObject3dScan &obj,
-                                    int sparseLevel = 1);
+  static ZSwcTree* CreateSurfaceSwcNoPartition(
+      const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree);
+  static ZSwcTree* CreateSurfaceSwc(const ZObject3dScan &obj, int sparseLevel = 1);
 
   static ZSwcTree* CreateSwc(const ZClosedCurve &curve, double radius);
 

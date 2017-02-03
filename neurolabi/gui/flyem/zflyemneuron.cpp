@@ -159,7 +159,7 @@ ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const
     if (model != NULL) {
       m_buddyModel = model->clone();
       m_buddyModel->resample(rs);
-      m_buddyModel->setLabel(0);
+      m_buddyModel->setNodeLabel(0);
     }
   }
 
