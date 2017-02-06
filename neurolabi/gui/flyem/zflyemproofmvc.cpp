@@ -2121,8 +2121,6 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       body->runFillValueFunc();
 
       m_splitProject.setBodyId(bodyId);
-      ZOUT(LINFO(), 3) << "Removing ROI";
-      getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
       labelSlice->setVisible(false);
       labelSlice->setHittable(false);
@@ -2246,6 +2244,8 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
   updateUserBookmarkTable();
 
 //  emit bookmarkUpdated(&m_splitProject);
+  ZOUT(LINFO(), 3) << "Removing ROI";
+  getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
   getView()->redrawObject();
 }
 
