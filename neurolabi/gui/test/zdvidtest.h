@@ -12,6 +12,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
 #include "zdvidutil.h"
+#include "dvid/zdvidnode.h"
 
 #ifdef _USE_GTEST_
 
@@ -405,6 +406,62 @@ TEST(ZDvidTest, Reader)
     ASSERT_FALSE(reader2.open("", reader.getDvidTarget().getUuid().c_str(),
                               reader.getDvidTarget().getPort()));
   }
+}
+
+TEST(ZDvidTest, ZDvidNode)
+{
+  ZDvidNode node;
+  node.setServer("http://emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.setServer("http://emdata2.int.janelia.org");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(-1, node.getPort());
+
+  node.setUuid("234");
+  ASSERT_EQ("234", node.getUuid());
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddressWithPort());
+
+  node.setServer("emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+  ASSERT_EQ("3456", node.getUuid());
+
+  ZJsonObject obj;
+  obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"uuid\": \"2a3\"}");
+  node.loadJsonObject(obj);
+
+  ASSERT_EQ("hackathon.janelia.org", node.getAddress());
+  ASSERT_EQ(-1, node.getPort());
+  ASSERT_EQ("2a3", node.getUuid());
+
+  obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
+                   "\"uuid\": \"2a3\"}");
+  node.loadJsonObject(obj);
+
+  ZJsonObject obj2 = node.toJsonObject();
+  ASSERT_STREQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["address"]));
+  ASSERT_STREQ("2a3", ZJsonParser::stringValue(obj2["uuid"]));
+  ASSERT_EQ(8800, ZJsonParser::integerValue(obj2["port"]));
+
+  node.print();
 }
 
 TEST(ZDvidTest, ZDvidTarget)
