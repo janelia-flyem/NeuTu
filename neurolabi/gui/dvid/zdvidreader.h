@@ -42,6 +42,7 @@ class ZDvidSparseStack;
 class ZFlyEmBodyAnnotation;
 class ZFlyEmBookmark;
 class ZFlyEmToDoItem;
+class ZDvidRoi;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -199,6 +200,10 @@ public:
     return m_dvidTarget;
   }
 
+  ZDvidTarget& getDvidTarget() {
+    return m_dvidTarget;
+  }
+
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
@@ -226,9 +231,12 @@ public:
 
   ZObject3dScan readRoi(const std::string &dataName);
   ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
+  ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
+
+  bool hasBodyAnnotation() const;
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
@@ -261,6 +269,10 @@ public:
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
       FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+  std::vector<ZDvidSynapse> readSynapse(
+      uint64_t label, const ZDvidRoi &roi,
+      FlyEM::EDvidAnnotationLoadMode mode) const;
+
   ZDvidSynapse readSynapse(
       int x, int y, int z,
       FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
@@ -304,6 +316,8 @@ public:
   };
 
   ZJsonObject readDefaultDataSetting(EReadOption option) const;
+
+  ZJsonObject readDataMap() const;
 
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);

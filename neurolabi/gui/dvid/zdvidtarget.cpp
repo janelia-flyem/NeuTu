@@ -353,6 +353,11 @@ std::string ZDvidTarget::getSynapseLabelszName() const
                             getSynapseName());
 }
 
+void ZDvidTarget::setSynapseLabelszName(const std::string &name)
+{
+  m_synapseLabelszName = name;
+}
+
 void ZDvidTarget::loadDvidDataSetting(const ZJsonObject &obj)
 {
   if (obj.hasKey("segmentation")) {

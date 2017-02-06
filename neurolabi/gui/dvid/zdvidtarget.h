@@ -238,6 +238,7 @@ public:
   */
 
   std::string getSynapseLabelszName() const;
+  void setSynapseLabelszName(const std::string &name);
 
   bool usingDefaultDataSetting() const {
     return m_usingDefaultSetting;

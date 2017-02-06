@@ -75,6 +75,7 @@ private slots:
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
     void onMaxBodiesChanged(int maxBodies);
+    void onRoiChanged(int index);
     void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
 
 private:
@@ -125,12 +126,15 @@ private:
     QMap<uint64_t, QString> m_bodyNames;
     QSet<uint64_t> m_namelessBodies;
     QSet<QString> m_bodyAnnotationKeys;
+    QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
+    bool m_cancelLoading;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
+    std::string m_defaultSynapseLabelsz;
     int m_currentMaxBodies;
     bool m_connectionsLoading;
     int m_connectionsTableState;
@@ -164,6 +168,9 @@ private:
     void setConnectionsHeaders(QStandardItemModel *model);
     void exportData(QString filename, ExportKind kind);
     void setupMaxBodyMenu();
+    void updateRoi();
+    void updateRoi(const std::vector<std::string> &roiList);
+    ZDvidRoi* getRoi(const QString &name);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

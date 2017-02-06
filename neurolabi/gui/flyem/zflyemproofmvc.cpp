@@ -2232,6 +2232,9 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
 
+  ZOUT(LINFO(), 3) << "Removing ROI";
+  getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
+
 //  m_latencyLabelWidget->hide();
 
   m_paintLabelWidget->show();
@@ -2244,8 +2247,6 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
   updateUserBookmarkTable();
 
 //  emit bookmarkUpdated(&m_splitProject);
-  ZOUT(LINFO(), 3) << "Removing ROI";
-  getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
   getView()->redrawObject();
 }
 
