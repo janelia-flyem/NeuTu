@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <string>
 
+class ZDvidNode;
+
 namespace Ui {
 class ZDvidSourceWidget;
 }
@@ -19,6 +21,8 @@ public:
   int getPort() const;
   QString getAddress() const;
   QString getUuid() const;
+
+  ZDvidNode getNode() const;
 
   void setAddress(const std::string &address);
   void setPort(int port);

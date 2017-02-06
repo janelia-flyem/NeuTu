@@ -502,6 +502,17 @@ TEST(ZDvidTest, ZDvidTarget)
 
   target.setTodoListName("test");
   ASSERT_EQ("test", target.getTodoListName());
+
+  ZJsonObject obj;
+  obj.decodeString("{\"gray_scale\":{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
+                   "\"uuid\": \"2a3\"}}");
+  target.setSourceConfig(obj);
+  target.prepareGrayScale();
+
+  ASSERT_EQ("hackathon.janelia.org", target.getAddress());
+  ASSERT_EQ("2a3", target.getUuid());
+  ASSERT_EQ(8800, target.getPort());
+
 }
 
 #endif

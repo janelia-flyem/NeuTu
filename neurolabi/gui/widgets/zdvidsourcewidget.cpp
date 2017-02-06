@@ -1,5 +1,6 @@
 #include "zdvidsourcewidget.h"
 #include "ui_zdvidsourcewidget.h"
+#include "dvid/zdvidnode.h"
 
 ZDvidSourceWidget::ZDvidSourceWidget(QWidget *parent) :
   QWidget(parent),
@@ -26,6 +27,14 @@ QString ZDvidSourceWidget::getAddress() const
 QString ZDvidSourceWidget::getUuid() const
 {
   return ui->uuidLineEdit->text();
+}
+
+ZDvidNode ZDvidSourceWidget::getNode() const
+{
+  ZDvidNode node;
+  node.set(getAddress().toStdString(), getUuid().toStdString(), getPort());
+
+  return node;
 }
 
 void ZDvidSourceWidget::setPort(int port)

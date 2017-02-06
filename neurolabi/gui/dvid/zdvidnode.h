@@ -58,6 +58,8 @@ public:
     return m_uuid;
   }
 
+  std::string getUrl() const;
+
   /*!
    * \brief Get a single string to represent the target
    *

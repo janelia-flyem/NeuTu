@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zdviddata.h"
+#include "zdvidnode.h"
 
 /*!
  * \brief The class of representing a dvid node.
@@ -38,7 +39,7 @@ public:
   void setFromUrl(const std::string &url);
 
   inline const std::string& getAddress() const {
-    return m_address;
+    return m_node.getAddress();
   }
 
   /*!
@@ -49,7 +50,7 @@ public:
   std::string getAddressWithPort() const;
 
   inline const std::string& getUuid() const {
-    return m_uuid;
+    return m_node.getUuid();
   }
 
   inline const std::string& getComment() const {
@@ -61,7 +62,7 @@ public:
   }
 
   inline int getPort() const {
-    return m_port;
+    return m_node.getPort();
   }
 
   /*!
@@ -248,13 +249,15 @@ public:
     m_usingDefaultSetting = on;
   }
 
+  void setSourceConfig(const ZJsonObject &config);
+  void prepareGrayScale();
+  void prepareTile();
+
 private:
   void init();
 
 private:
-  std::string m_address;
-  std::string m_uuid;
-  int m_port;
+  ZDvidNode m_node;
   std::string m_name;
   std::string m_comment;
   std::string m_localFolder;
@@ -262,6 +265,7 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName; //default lossless tile name
   ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
+  ZJsonObject m_sourceConfig;
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
@@ -282,9 +286,6 @@ private:
   bool m_isEditable;
   bool m_readOnly;
 
-  const static char* m_addressKey;
-  const static char* m_portKey;
-  const static char* m_uuidKey;
   const static char* m_commentKey;
   const static char* m_nameKey;
   const static char* m_localKey;
@@ -305,6 +306,7 @@ private:
   const static char* m_maxLabelZoomKey;
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
+  const static char* m_sourceConfigKey;
 };
 
 #endif // ZDVIDTARGET_H

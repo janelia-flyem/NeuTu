@@ -20384,7 +20384,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
 

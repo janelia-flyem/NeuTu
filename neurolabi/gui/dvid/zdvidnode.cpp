@@ -233,6 +233,22 @@ std::string ZDvidNode::getAddressWithPort() const
   return address;
 }
 
+std::string ZDvidNode::getUrl() const
+{
+  ZString url = "";
+  if (isValid()) {
+    url = "http://" + m_address;
+    if (m_port >= 0) {
+      url += ":";
+      url.appendNumber(m_port);
+    }
+    url += "/api/node/" + m_uuid;
+  }
+
+  return url;
+}
+
+
 void ZDvidNode::print() const
 {
   std::cout << getSourceString() << std::endl;
