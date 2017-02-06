@@ -306,7 +306,7 @@ void ZROIWidget::updateSelectedROIs()
         QColor color = tw_ROIs->item(i,1)->foreground().color();
 
         ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
-              m_loadedROIs.at(i), m_dvidInfo, color, getDsIntv());
+              m_loadedROIs.at(i), color, getDsIntv());
         cubes->setSource(m_roiSourceList[i]);
         cubes->setColor(color);
         m_window->getDocument()->addObject(cubes, true);
@@ -349,7 +349,7 @@ void ZROIWidget::updateROIs()
                                   blockSize.getZ());
 
             ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
-                  m_loadedROIs.at(i), dvidInfo, color, getDsIntv());
+                  m_loadedROIs.at(i), color, getDsIntv());
             cubes->setSource(m_roiSourceList[i]);
             cubes->setColor(color);
             m_window->getDocument()->addObject(cubes, true);
