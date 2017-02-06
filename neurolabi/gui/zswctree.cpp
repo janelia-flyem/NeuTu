@@ -524,46 +524,10 @@ const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) cons
 }
 #endif
 
-void ZSwcTree::display(ZPainter &painter, int slice,
-                       ZStackObject::EDisplayStyle style,
-                       NeuTube::EAxis axis) const
-{
-  //To do: reorganize; separate node and skeleton widths
-  if (!isVisible()) {
-    return;
-  }
-
-  if (axis != NeuTube::Z_AXIS) {
-    return;
-  }
-
 #if defined(_QT_GUI_USED_)
-  bool isProj = false;
-  if (slice < 0) {
-    isProj = true;
-  }
-//  painter.save();
-
-//  double dataFocus = slice + painter.getZOffset();
-  double dataFocus = painter.getZ(slice);
-
-  const double strokeWidth = getPenWidth();
-
-  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
-
-  if (style == NORMAL) {
-    style = SOLID;
-  }
-
-  QPen pen;
-  pen.setColor(m_nodeFocusColor);
-  pen.setWidth(strokeWidth);
-  painter.setPen(pen);
-  painter.setBrush(Qt::NoBrush);
-
-  //Draw skeletons
-  pen.setCosmetic(true);
-  pen.setWidthF(strokeWidth * 2.0);
+void ZSwcTree::displaySkeleton(
+    ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const
+{
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (!SwcTreeNode::isRoot(tn)) {
       const Swc_Tree_Node *lowerTn = tn;
@@ -661,28 +625,17 @@ void ZSwcTree::display(ZPainter &painter, int slice,
         }
       }
     }
-    /*
-    std::pair<const Swc_Tree_Node*, const Swc_Tree_Node*> nodePair =
-        extractCurveTerminal();
-    if (nodePair.first != NULL && nodePair.second != NULL) {
-      QPointF lineStart, lineEnd;
-      bool visible = false;
-      computeLineSegment(
-            nodePair.first, nodePair.second, lineStart, lineEnd, visible,
-            dataFocus, isProj);
-      if (visible) {
-        pen.setColor(QColor(0, 255, 0));
-        painter.setPen(pen);
-        painter.drawLine(lineStart, lineEnd);
-      }
-    }
-    */
   }
-  //pen.setCosmetic(false);
+}
 
-  pen.setCosmetic(m_usingCosmeticPen);
+void ZSwcTree::displayNode(
+      ZPainter &painter, double dataFocus, int slice, bool isProj,
+      ZStackObject::EDisplayStyle style, NeuTube::EAxis axis) const
+{
+  ZStackBall circle;
+  circle.setBasePenWidth(getBasePenWidth());
+  circle.useCosmeticPen(m_usingCosmeticPen);
 
-  pen.setWidthF(strokeWidth);
 
   for (const Swc_Tree_Node *tn = begin(); tn != end(); tn = next()) {
     if (SwcTreeNode::isVirtual(tn)) { //Skip virtual node
@@ -695,7 +648,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     if (fabs(SwcTreeNode::z(tn) - dataFocus) <= 0.5) {
       focused = true;
     }
-    if (focused || (slice < 0)) {
+    if (focused || isProj) {
       visible = true;
       focused = true;
     } else if (fabs(SwcTreeNode::z(tn) - dataFocus) < r) {
@@ -709,43 +662,20 @@ void ZSwcTree::display(ZPainter &painter, int slice,
     if (visible) {
       nodeColor = getNodeColor(tn, focused);
 
-      switch (style) {
-      case BOUNDARY:
-        //if (SwcTreeNode::isRoot(tn) || SwcTreeNode::isBranchPoint(tn)) {
-      {
-          ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                         SwcTreeNode::radius(tn));
-          circle.addVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
-//          if (isNodeSelected(tn)) {
-//            circle.setSelected(true);
-//          }
-          circle.setColor(nodeColor);
-          circle.useCosmeticPen(m_usingCosmeticPen);
-          circle.display(painter, slice, style, axis);
-//          circle.displayHelper(&painter, stackFocus, style);
-      }
-        //}
-        break;
-      case SOLID:
-      {
-//        QColor brushColor= pen.color();
-//        brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
-//        painter.setBrush(brushColor);
-        ZStackBall circle(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                       SwcTreeNode::radius(tn));
-        circle.addVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
-//        if (isNodeSelected(tn)) {
-//          circle.setSelected(true);
-//        }
-        circle.setColor(nodeColor);
-        circle.useCosmeticPen(m_usingCosmeticPen);
-
+      if (style == SOLID) {
         QColor brushColor = nodeColor;
         brushColor.setAlphaF(sqrt(brushColor.alphaF() / 2.0));
         painter.setBrush(brushColor);
-        circle.display(painter, slice, style, axis);
-//        circle.displayHelper(&painter, stackFocus, style);
       }
+
+      switch (style) {
+      case BOUNDARY:
+      case SOLID:
+        circle.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                   SwcTreeNode::radius(tn));
+        circle.addVisualEffect(NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM);
+        circle.setColor(nodeColor);
+        circle.display(painter, slice, style, axis);
         break;
       case SKELETON:
         if (SwcTreeNode::isBranchPoint(tn)) {
@@ -758,29 +688,87 @@ void ZSwcTree::display(ZPainter &painter, int slice,
       }
     }
   }
+}
 
-  //Draw selected nodes
+void ZSwcTree::displaySelectedNode(
+    ZPainter &painter, int slice, NeuTube::EAxis axis) const
+{
+  ZStackBall selectionCircle;
+  selectionCircle.setColor(255, 255, 0);
+  selectionCircle.setVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL |
+                         NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
+                         NeuTube::Display::Sphere::VE_DASH_PATTERN);
+  selectionCircle.useCosmeticPen(m_usingCosmeticPen);
+
+  ZStackBall selectionBox;
+  selectionBox.setColor(255, 255, 0);
+  selectionBox.useCosmeticPen(true);
+  selectionBox.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
+                               NeuTube::Display::Sphere::VE_NO_CIRCLE);
+
   for (std::set<Swc_Tree_Node*>::const_iterator iter = m_selectedNode.begin();
        iter != m_selectedNode.end(); ++iter) {
     const Swc_Tree_Node *tn = *iter;
-    ZStackBall circle;
-    circle.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-               SwcTreeNode::radius(tn));
+    selectionCircle.set(
+          SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+          SwcTreeNode::radius(tn));
+    selectionCircle.display(painter, slice, BOUNDARY, axis);
 
-    circle.setColor(255, 255, 0);
-    circle.setVisualEffect(NeuTube::Display::Sphere::VE_NO_FILL |
-                           NeuTube::Display::Sphere::VE_OUT_FOCUS_DIM |
-                           NeuTube::Display::Sphere::VE_DASH_PATTERN);
-    circle.useCosmeticPen(m_usingCosmeticPen);
-    circle.display(painter, slice, BOUNDARY, axis);
+    selectionBox.set(
+          SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+          SwcTreeNode::radius(tn));
+    selectionBox.display(painter, slice, BOUNDARY, axis);
+  }
+}
+#endif
 
-    circle.useCosmeticPen(true);
-    circle.setVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX |
-                           NeuTube::Display::Sphere::VE_NO_CIRCLE);
-    circle.display(painter, slice, BOUNDARY, axis);
+void ZSwcTree::display(ZPainter &painter, int slice,
+                       ZStackObject::EDisplayStyle style,
+                       NeuTube::EAxis axis) const
+{
+  //To do: reorganize; separate node and skeleton widths
+  if (!isVisible()) {
+    return;
   }
 
-//  painter.restore();
+  if (axis != NeuTube::Z_AXIS) {
+    return;
+  }
+
+#if defined(_QT_GUI_USED_)
+  bool isProj = false;
+  if (slice < 0) {
+    isProj = true;
+  }
+//  painter.save();
+
+//  double dataFocus = slice + painter.getZOffset();
+  double dataFocus = painter.getZ(slice);
+
+  const double strokeWidth = getPenWidth();
+
+  updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
+
+  if (style == NORMAL) {
+    style = SOLID;
+  }
+
+  QPen pen;
+  pen.setColor(m_nodeFocusColor);
+  pen.setWidth(strokeWidth);
+  painter.setPen(pen);
+  painter.setBrush(Qt::NoBrush);
+
+  //Draw skeletons
+  pen.setCosmetic(true);
+  pen.setWidthF(strokeWidth * 2.0);
+  displaySkeleton(painter, pen, dataFocus, slice, isProj);
+
+  displayNode(painter, dataFocus, slice, isProj, style, axis);
+
+  //Draw selected nodes
+  displaySelectedNode(painter, slice, axis);
+
 #endif
 }
 

@@ -821,6 +821,14 @@ public: //static functions
 
 private:
   void init();
+#if defined(_QT_GUI_USED_)
+  void displaySkeleton(
+      ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
+  void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
+      ZStackObject::EDisplayStyle style, NeuTube::EAxis axis) const;
+  void displaySelectedNode(ZPainter &painter, int slice, NeuTube::EAxis axis)
+  const;
+#endif
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
