@@ -2590,6 +2590,10 @@ ZObject3dScan* ZDvidReader::readRoi(
   }
   result->importDvidRoi(array);
 
+  ZIntPoint blockSize = readRoiBlockSize(dataName);
+  result->setDsIntv(blockSize.getX() - 1, blockSize.getY() - 1,
+                    blockSize.getZ() - 1);
+
   return result;
 }
 

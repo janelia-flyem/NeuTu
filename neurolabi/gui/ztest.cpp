@@ -27,7 +27,6 @@
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
-
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -20428,6 +20427,50 @@ void ZTest::test(MainWindow *host)
        iter != nodeList.end(); ++iter) {
     std::cout << "  " << *iter << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("kc_alpha_roi");
+
+  std::cout << obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+               (obj.getDsIntv().getY() + 1) * 8 *
+               (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000
+            << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("roi_new_segmentation_LO_LOP_x1");
+
+  size_t v1 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x2");
+
+  size_t v2 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x3");
+
+  size_t v3 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  std::cout << v1 + v2 + v3 << std::endl;
 #endif
 
 #if 0

@@ -21,6 +21,8 @@ void ZDvidAdvancedDialog::backup()
   m_oldSupervised = isSupervised();
   m_oldSupervisorServer = getSupervisorServer();
   m_oldTodoName = getTodoName();
+  m_oldGrayscaleSource = ui->grayscaleSourceWidget->getNode();
+  m_oldTileSource = ui->tileSourceWidget->getNode();
 }
 
 void ZDvidAdvancedDialog::recover()
@@ -28,6 +30,8 @@ void ZDvidAdvancedDialog::recover()
   setSupervised(m_oldSupervised);
   setSupervisorServer(m_oldSupervisorServer);
   setTodoName(m_oldTodoName);
+  setGrayscaleSource(m_oldGrayscaleSource);
+  setTileSource(m_oldTileSource);
 }
 
 void ZDvidAdvancedDialog::setDvidServer(const QString &str)
@@ -69,15 +73,26 @@ void ZDvidAdvancedDialog::UpdateWidget(
 void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
 {
   UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos");
+}
 
-  /*
-  ui->todoLineEdit->setVisible(!usingDefault);
-  if (usingDefault) {
-    ui->todoLabel->setText("Todo Name <default>");
-  } else {
-    ui->todoLabel->setText("Todo Name");
-  }
-  */
+void ZDvidAdvancedDialog::setGrayscaleSource(const ZDvidNode &node)
+{
+  ui->grayscaleSourceWidget->setNode(node);
+}
+
+void ZDvidAdvancedDialog::setTileSource(const ZDvidNode &node)
+{
+  ui->tileSourceWidget->setNode(node);
+}
+
+ZDvidNode ZDvidAdvancedDialog::getGrayscaleSource() const
+{
+  return ui->grayscaleSourceWidget->getNode();
+}
+
+ZDvidNode ZDvidAdvancedDialog::getTileSource() const
+{
+  return ui->tileSourceWidget->getNode();
 }
 
 void ZDvidAdvancedDialog::setTodoName(const std::string &name)

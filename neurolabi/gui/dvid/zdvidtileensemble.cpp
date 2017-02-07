@@ -545,7 +545,8 @@ void ZDvidTileEnsemble::display(
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {
   m_dvidTarget = dvidTarget;
-  if (m_reader.open(dvidTarget)) {
+  m_dvidTarget.prepareTile();
+  if (m_reader.open(m_dvidTarget)) {
     m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
 
     ZJsonObject obj = m_reader.readContrastProtocal();

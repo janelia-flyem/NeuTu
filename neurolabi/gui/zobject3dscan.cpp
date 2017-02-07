@@ -981,11 +981,22 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 
   TEvent event = EVENT_NULL;
 
+#ifdef _DEBUG_2
+      std::cout << getMinZ() << std::endl;
+      std::cout << getMaxZ() << std::endl;
+#endif
+
   if (yintv > 0 || zintv > 0) {
     for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
+#ifdef _DEBUG_2
+    std::cout << iter->getZ() << std::endl;
+#endif
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
+#ifdef _DEBUG_2
+    std::cout << iter->getZ() << std::endl;
+#endif
     }
     //m_isCanonized = false;
     event |= EVENT_OBJECT_UNCANONIZED;
@@ -1003,6 +1014,11 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   processEvent(event);
 
   pushDsIntv(xintv, yintv, zintv);
+
+#ifdef _DEBUG_
+      std::cout << getMinZ() << std::endl;
+      std::cout << getMaxZ() << std::endl;
+#endif
 
   canonize();
 

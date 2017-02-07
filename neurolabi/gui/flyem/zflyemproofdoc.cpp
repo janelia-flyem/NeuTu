@@ -725,7 +725,7 @@ void ZFlyEmProofDoc::prepareDvidData()
           obj->setTarget(ZStackObject::TARGET_WIDGET);
           obj->useCosmeticPen(true);
           obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
-          obj->setDsIntv(31, 31, 31);
+//          obj->setDsIntv(31, 31, 31);
           obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setHittable(false);
           addObject(obj);

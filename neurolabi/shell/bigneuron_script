@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cd ..
+neurolabiDir=$PWD
+dataDir=data
+cd $dataDir
+fileList=`find bigneuron | grep 'v3dpbd$'`
+if [ `uname` == 'Linux' ]
+then
+  neuTube=$neurolabiDir/neuTube_Release/neuTube
+else
+  neuTube=../neuTube/neuTube.app/Contents/MacOS/neuTube
+fi
+vaa3d=/Users/zhaot/Work/vaa3d/bin/vaa3d64.app/Contents/MacOS/vaa3d64
+for file in $fileList
+do
+  filePath=$PWD/$file
+  echo "$vaa3d -x neuron_tracing/neutube_v2 -f tracing -i $filePath  -p 1; cp ${filePath}_neutube_v2.swc /Users/zhaot/Work/neutube/neurolabi/data/bigneuron/result/"
+done
+ 

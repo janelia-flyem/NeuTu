@@ -1,0 +1,12 @@
+digraph {
+  ZTask__run -> ZTask__execute;
+  ZTask__execute -> ZTask__finished [arrowhead = onormal];
+  is_task_done [shape = record, label = "<no> no | <cond> is finished | <yes> yes"];
+  QRunnable__run -> ZTask__run;
+  ZTaskManager__start -> ZTaskManager__prepare;
+  ZTaskManager__prepare -> ZTask__run [arrowhead = onormal];
+  ZTaskManager__process -> is_task_done:cond;
+  is_task_done:yes -> ZTaskManager__postProcess [arrowhead = onormal];
+  ZTaskManager__postProcess -> ZTaskManager__finished [arrowhead = onormal];
+  ZTaskManager__addTask -> ZTask__prepare;
+}

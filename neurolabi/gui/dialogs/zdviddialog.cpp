@@ -109,17 +109,17 @@ ZDvidDialog::~ZDvidDialog()
 
 int ZDvidDialog::getPort() const
 {
-  return ui->portSpinBox->value();
+  return ui->dvidSourceWidget->getPort();
 }
 
 QString ZDvidDialog::getAddress() const
 {
-  return ui->addressLineEdit->text();
+  return ui->dvidSourceWidget->getAddress();
 }
 
 QString ZDvidDialog::getUuid() const
 {
-  return ui->uuidLineEdit->text();
+  return ui->dvidSourceWidget->getUuid();
 }
 
 ZDvidTarget &ZDvidDialog::getDvidTarget()
@@ -150,6 +150,9 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.enableSupervisor(m_advancedDlg->isSupervised());
     target.setSupervisorServer(m_advancedDlg->getSupervisorServer());
     target.setTodoListName(m_advancedDlg->getTodoName());
+    target.setGrayScaleSource(m_advancedDlg->getGrayscaleSource());
+    target.setTileSource(m_advancedDlg->getTileSource());
+
 #if 0
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
@@ -171,9 +174,9 @@ void ZDvidDialog::setServer(int index)
   ZDvidTarget dvidTarget = m_dvidRepo[index];
 
   ui->readOnlyCheckBox->setChecked(dvidTarget.readOnly());
-  ui->addressLineEdit->setText(dvidTarget.getAddress().c_str());
-  ui->portSpinBox->setValue(dvidTarget.getPort());
-  ui->uuidLineEdit->setText(dvidTarget.getUuid().c_str());
+  ui->dvidSourceWidget->setAddress(dvidTarget.getAddress());
+  ui->dvidSourceWidget->setPort(dvidTarget.getPort());
+  ui->dvidSourceWidget->setUuid(dvidTarget.getUuid());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());
   ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
@@ -203,9 +206,7 @@ void ZDvidDialog::setServer(int index)
   ui->roiLineEdit->setText(dvidTarget.getRoiName().c_str());
   ui->settingCheckBox->setChecked(dvidTarget.usingDefaultDataSetting());
 
-  ui->addressLineEdit->setReadOnly(!dvidTarget.isEditable());
-  ui->portSpinBox->setReadOnly(!dvidTarget.isEditable());
-  ui->uuidLineEdit->setReadOnly(!dvidTarget.isEditable());
+  ui->dvidSourceWidget->setReadOnly(!dvidTarget.isEditable());
   ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->labelBlockLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->grayScalelineEdit->setReadOnly(!dvidTarget.isEditable());
@@ -226,6 +227,8 @@ void ZDvidDialog::setServer(int index)
 
   m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
   m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
+  m_advancedDlg->setGrayscaleSource(dvidTarget.getGrayScaleSource());
+  m_advancedDlg->setTileSource(dvidTarget.getTileSource());
   m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 

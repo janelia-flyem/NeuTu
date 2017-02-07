@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]
+then
+  echo 'Usage: flyem_backup_node <node>'
+  exit 1
+fi
+
+./flyem_backup_node emdata1.int.janelia.org:8500 $1
+ 

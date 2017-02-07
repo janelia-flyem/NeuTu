@@ -2243,8 +2243,6 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       body->runFillValueFunc();
 
       m_splitProject.setBodyId(bodyId);
-      ZOUT(LINFO(), 3) << "Removing ROI";
-      getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
       ZDvidLabelSlice *labelSlice =
           getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -2398,6 +2396,9 @@ void ZFlyEmProofMvc::clearBodyMergeStage()
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
+
+  ZOUT(LINFO(), 3) << "Removing ROI";
+  getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
 //  m_latencyLabelWidget->hide();
 

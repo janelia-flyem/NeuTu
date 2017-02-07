@@ -731,7 +731,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodyscreenshotdialog.h\
     dialogs/zflyemskeletonupdatedialog.h \
     dialogs/zdvidadvanceddialog.h \
-    dvid/zdvidroi.h
+    dvid/zdvidroi.h \
+    widgets/zdvidsourcewidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -825,7 +826,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zstresstestoptiondialog.ui \
     dialogs/zflyembodyscreenshotdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
-    dialogs/zflyemskeletonupdatedialog.ui
+    dialogs/zflyemskeletonupdatedialog.ui \
+    widgets/zdvidsourcewidget.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1263,7 +1265,8 @@ SOURCES += main.cpp \
     dialogs/zflyembodyscreenshotdialog.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
-    dvid/zdvidroi.cpp
+    dvid/zdvidroi.cpp \
+    widgets/zdvidsourcewidget.cpp
 
 OTHER_FILES += \
     extlib.pri \

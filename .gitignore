@@ -16,8 +16,6 @@
 *.xcf
 *.pyc
 *.log
-neuTube*/
-build-*/
 TAGS
 devnull
 doc/doxfiles/
@@ -44,12 +42,14 @@ release/
 /neurolabi/lib/genelib/src/*.c
 /neurolabi/c/config.log
 /neurolabi/lib/genelib/src/config.log
+neuTube*/
 *-build-desktop-Qt*/
 gui-build-Desktop-*/
 gui-build-Desktop*-*/
 build-gui-Desktop-*/
 build-gui-Desktop*-*/
 build-gui-*/
+build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake

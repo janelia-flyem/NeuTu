@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <string>
 
+#include "dvid/zdvidnode.h"
+
 namespace Ui {
 class ZDvidAdvancedDialog;
 }
@@ -31,6 +33,12 @@ public:
   void setSupervised(bool supervised);
   void setSupervisorServer(const std::string &server);
 
+  void setGrayscaleSource(const ZDvidNode &node);
+  void setTileSource(const ZDvidNode &node);
+
+  ZDvidNode getGrayscaleSource() const;
+  ZDvidNode getTileSource() const;
+
   void backup();
   void recover();
 
@@ -46,6 +54,8 @@ private:
   bool m_oldSupervised;
   std::string m_oldSupervisorServer;
   std::string m_oldTodoName;
+  ZDvidNode m_oldGrayscaleSource;
+  ZDvidNode m_oldTileSource;
 };
 
 #endif // ZDVIDADVANCEDDIALOG_H

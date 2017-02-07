@@ -1,0 +1,16 @@
+digraph {
+ ZImageWidget [label = "ZImageWidget",shape = "box"];
+ ZStackPresenter [label = "ZStackPresenter",shape = "box"];
+ ZStackView [label = "ZStackView",shape = "box"];
+ ZImageWidget__increaseZoomRatio [label = "increaseZoomRatio",];
+ ZImageWidget__update [label = "update",];
+ ZStackView__increaseZoomRatio [label = "increaseZoomRatio",];
+ ZStackPresenter__increaseZoomRatio [label = "increaseZoomRatio",];
+ ZImageWidget -> ZImageWidget__increaseZoomRatio [arrowhead = odot];
+ ZImageWidget -> ZImageWidget__update [arrowhead = odot];
+ ZStackView -> ZStackView__increaseZoomRatio [arrowhead = odot];
+ ZStackPresenter -> ZStackPresenter__increaseZoomRatio [arrowhead = odot];
+ ZStackPresenter__increaseZoomRatio -> ZStackView__increaseZoomRatio [arrowhead = onormal];
+ ZStackView__increaseZoomRatio -> ZImageWidget__increaseZoomRatio [arrowhead = onormal];
+ ZImageWidget__increaseZoomRatio -> ZImageWidget__update [arrowhead = onormal];
+}
