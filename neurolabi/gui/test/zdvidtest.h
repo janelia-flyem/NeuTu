@@ -535,6 +535,24 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ("1a3", target.getUuid());
   ASSERT_EQ(9800, target.getPort());
   target.print();
+
+  target.setTileSource(ZDvidNode("emdata2.int.janelia.org", "1234", 9000));
+  ZDvidNode node = target.getTileSource();
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+  ASSERT_EQ("1234", node.getUuid());
+
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
+  node = target.getGrayScaleSource();
+  ASSERT_EQ("emdata3.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9100, node.getPort());
+  ASSERT_EQ("2234", node.getUuid());
+
+  target.setTileSource(ZDvidNode("", "", -1));
+  node = target.getTileSource();
+  ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
+  ASSERT_EQ(9800, node.getPort());
+  ASSERT_EQ("1a3", node.getUuid());
 }
 
 #endif

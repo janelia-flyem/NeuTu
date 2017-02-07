@@ -21,7 +21,6 @@
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
-
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
