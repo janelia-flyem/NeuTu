@@ -163,7 +163,10 @@ public:
                        int width, int height, int depth) const;
   ZArray* readLabels64(int x0, int y0, int z0,
                        int width, int height, int depth, int zoom = 0) const;
-  ZArray* readLabels64(const ZIntCuboid &box, int zoom = 0);
+  ZArray* readLabels64(const ZIntCuboid &box, int zoom = 0) const;
+
+  ZIntPoint readPosition(uint64_t bodyId, int x, int y, int z) const;
+  ZIntPoint readPosition(uint64_t bodyId, const ZIntPoint &pt) const;
 
   /*!
    * \brief Read labels in the zoomed space

@@ -577,11 +577,11 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
   ZIntPoint dsIntv = obj.getDsIntv();
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
-    obj2.downsample(intv, intv, intv);
+    obj2.downsampleMax(intv, intv, intv);
     intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
-      obj2.downsample(intv, intv, intv);
+      obj2.downsampleMax(intv, intv, intv);
     }
 
     dsIntv = obj2.getDsIntv();
@@ -591,7 +591,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       ZObject3dScan obj2 = obj;
-      obj2.downsample(intv, intv, intv);
+      obj2.downsampleMax(intv, intv, intv);
       dsIntv = obj2.getDsIntv();
       stack = obj2.toStackObjectWithMargin(1, 1);
     } else {

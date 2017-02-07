@@ -31,6 +31,7 @@
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidroi.h"
+#include "zflyemutilities.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -1814,6 +1815,49 @@ ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
   return box;
 }
 
+ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, const ZIntPoint &pt) const
+{
+  return readPosition(bodyId, pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, int x, int y, int z) const
+{
+  if (bodyId == readBodyIdAt(x, y, z)) {
+    return ZIntPoint(x, y, z);
+  }
+
+  ZDvidInfo dvidInfo = readLabelInfo();
+  ZIntPoint blockIndex = dvidInfo.getBlockIndex(x, y, z);
+  ZIntCuboid box = dvidInfo.getBlockBox(blockIndex);
+  ZArray *label = readLabels64(box);
+
+  ZStack *stack = new ZStack(GREY, box, 1);
+  size_t voxelCount = stack->getVoxelNumber();
+  uint64_t *array = label->getDataPointer<uint64_t>();
+  uint8_t *stackArray = stack->array8();
+  bool found = false;
+  for (size_t offset = 0; offset < voxelCount; ++offset) {
+    if (array[offset] == bodyId) {
+      stackArray[offset] = 0;
+      found = true;
+    } else {
+      stackArray[offset] = 1;
+    }
+  }
+
+  ZIntPoint pt;
+  pt.invalidate();
+
+  if (found) {
+    pt = FlyEm::FindClosestBg(stack, x, y, z);
+  }
+
+  delete label;
+  delete stack;
+
+  return pt;
+}
+
 ZArray* ZDvidReader::readLabels64(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
@@ -1831,7 +1875,7 @@ ZArray* ZDvidReader::readLabels64Raw(
                      x0, y0, z0, width, height, depth);
 }
 
-ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box, int zoom)
+ZArray* ZDvidReader::readLabels64(const ZIntCuboid &box, int zoom) const
 {
   return readLabels64(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                       box.getFirstCorner().getZ(), box.getWidth(),

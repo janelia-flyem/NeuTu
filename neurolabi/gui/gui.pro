@@ -732,7 +732,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemskeletonupdatedialog.h \
     dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
-    widgets/zdvidsourcewidget.h
+    widgets/zdvidsourcewidget.h \
+    z3dmainwindow.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1266,7 +1267,8 @@ SOURCES += main.cpp \
     dialogs/zflyemskeletonupdatedialog.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
-    widgets/zdvidsourcewidget.cpp
+    widgets/zdvidsourcewidget.cpp \
+    z3dmainwindow.cpp
 
 OTHER_FILES += \
     extlib.pri \

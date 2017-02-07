@@ -3602,15 +3602,10 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
     const ZIntPoint &pt, bool checked, uint64_t bodyId)
 {
-  bool consistent = true;
-  if (bodyId > 0) {
-    if (bodyId != getDvidReader().readBodyIdAt(pt)) {
-      consistent = false;
-    }
-  }
+  ZIntPoint position = getDvidReader().readPosition(bodyId, pt);
 
-  if (consistent) {
-    ZFlyEmToDoItem item(pt);
+  if (position.isValid()) {
+    ZFlyEmToDoItem item(position);
     item.setUserName(NeuTube::GetCurrentUserName());
     if (checked) {
       item.setChecked(checked);
@@ -3623,16 +3618,10 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
     int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId)
 {
-  bool consistent = true;
-  if (bodyId > 0) {
-    if (bodyId != getDvidReader().readBodyIdAt(x, y, z)) {
-      consistent = false;
-    }
-  }
+  ZIntPoint position = getDvidReader().readPosition(bodyId, x, y, z);
 
-
-  if (consistent) {
-    ZFlyEmToDoItem item(x, y, z);
+  if (position.isValid()) {
+    ZFlyEmToDoItem item(position);
     item.setUserName(NeuTube::GetCurrentUserName());
     item.setAction(action);
 

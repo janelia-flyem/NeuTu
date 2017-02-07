@@ -292,6 +292,7 @@ using namespace std;
 #include "test/zgradientmagnitudemoduletest.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
+#include "zflyemutilities.h"
 
 using namespace std;
 
@@ -21883,11 +21884,11 @@ void ZTest::test(MainWindow *host)
   tree.save(GET_TEST_DATA_DIR + "/flyem/MB/paper/movie8/cast/14.swc");
 #endif
 
-#if 1
-  Stack *stack = C_Stack::make(GREY, 32, 32, 32);
+#if 0
+  Stack *stack = C_Stack::make(GREY, 3, 3, 3);
   C_Stack::setOne(stack);
-  C_Stack::setPixel(stack, 0, 0, 0, 0, 0);
-  C_Stack::setPixel(stack, 2, 0, 0, 0, 0);
+//  C_Stack::setPixel(stack, 0, 0, 0, 0, 0);
+//  C_Stack::setPixel(stack, 2, 0, 0, 0, 0);
 
   size_t voxelCount = C_Stack::voxelNumber(stack);
   long int *label = new long int[voxelCount];
@@ -21896,10 +21897,48 @@ void ZTest::test(MainWindow *host)
   ptoc();
 
   for (size_t i = 0; i < voxelCount; ++i) {
-//    std::cout << i << " " << label[i] << std::endl;
+    std::cout << i << " " << label[i] << std::endl;
   }
 
   C_Stack::kill(out);
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeOneStack(3, 3, 3);
+  stack->setOffset(1, 2, 3);
+  stack->setIntValue(3, 4, 5, 0, 0);
+  ZIntPoint pt = FlyEm::FindClosestBg(stack, 1, 2, 3);
+
+  std::cout << pt.toString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::cout << reader.getDvidTarget().toJsonObject().dumpString(2) << std::endl;
+
+  ZIntPoint pt = reader.readPosition(4699477314, 9255, 5397, 11259);
+  std::cout << pt.toString() << std::endl;
+
+  std::cout << reader.readBodyIdAt(pt) << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  ZDvidReader reader;
+  reader.open(target);
+  ZIntPoint pt = reader.readPosition(200002591, 4080, 5648, 7088);
+
+  std::cout << pt.toString() << std::endl;
+
+  std::cout << reader.readBodyIdAt(pt) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

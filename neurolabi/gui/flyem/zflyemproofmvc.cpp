@@ -75,6 +75,7 @@
 #include "zinteractionevent.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyemskeletonupdatedialog.h"
+#include "z3dmainwindow.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
