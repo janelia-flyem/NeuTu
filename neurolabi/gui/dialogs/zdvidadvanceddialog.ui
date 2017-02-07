@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>371</width>
-    <height>157</height>
+    <width>470</width>
+    <height>290</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,6 +60,47 @@
     </layout>
    </item>
    <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Grayscale Source:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="ZDvidSourceWidget" name="grayscaleSourceWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Tile Source:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="ZDvidSourceWidget" name="tileSourceWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_15">
      <item>
       <widget class="QCheckBox" name="librarianCheckBox">
@@ -88,6 +129,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ZDvidSourceWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">widgets/zdvidsourcewidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

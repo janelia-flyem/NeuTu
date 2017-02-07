@@ -149,6 +149,9 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.enableSupervisor(m_advancedDlg->isSupervised());
     target.setSupervisorServer(m_advancedDlg->getSupervisorServer());
     target.setTodoListName(m_advancedDlg->getTodoName());
+    target.setGrayScaleSource(m_advancedDlg->getGrayscaleSource());
+    target.setTileSource(m_advancedDlg->getTileSource());
+
 #if 0
     target.enableSupervisor(ui->librarianCheckBox->isChecked());
     target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
@@ -223,6 +226,8 @@ void ZDvidDialog::setServer(int index)
 
   m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
   m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
+  m_advancedDlg->setGrayscaleSource(dvidTarget.getGrayScaleSource());
+  m_advancedDlg->setTileSource(dvidTarget.getTileSource());
   m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 

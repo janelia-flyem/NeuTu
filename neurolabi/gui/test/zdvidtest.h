@@ -462,6 +462,16 @@ TEST(ZDvidTest, ZDvidNode)
   ASSERT_EQ(8800, ZJsonParser::integerValue(obj2["port"]));
 
   node.print();
+
+  ZDvidNode node2;
+  node2.set("emdata2.int.janelia.org", "uuid", 8000);
+
+  ASSERT_EQ(node, node);
+  ASSERT_NE(node, node2);
+
+  ZDvidNode node3;
+  node3.set("emdata2.int.janelia.org", "uuid", 8100);
+  ASSERT_NE(node2, node3);
 }
 
 TEST(ZDvidTest, ZDvidTarget)
@@ -507,12 +517,24 @@ TEST(ZDvidTest, ZDvidTarget)
   obj.decodeString("{\"gray_scale\":{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
                    "\"uuid\": \"2a3\"}}");
   target.setSourceConfig(obj);
-  target.prepareGrayScale();
+  target.prepareTile();
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+  ASSERT_EQ("3456", target.getUuid());
 
+  target.prepareGrayScale();
   ASSERT_EQ("hackathon.janelia.org", target.getAddress());
   ASSERT_EQ("2a3", target.getUuid());
   ASSERT_EQ(8800, target.getPort());
 
+  obj.decodeString("{\"multires_tile\":{\"address\":\"hackathon2.janelia.org\", \"port\": 9800, "
+                   "\"uuid\": \"1a3\"}}");
+  target.setSourceConfig(obj);
+  target.prepareTile();
+  ASSERT_EQ("hackathon2.janelia.org", target.getAddress());
+  ASSERT_EQ("1a3", target.getUuid());
+  ASSERT_EQ(9800, target.getPort());
+  target.print();
 }
 
 #endif

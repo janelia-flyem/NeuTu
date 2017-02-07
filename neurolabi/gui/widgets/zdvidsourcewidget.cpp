@@ -37,6 +37,13 @@ ZDvidNode ZDvidSourceWidget::getNode() const
   return node;
 }
 
+void ZDvidSourceWidget::setNode(const ZDvidNode &node)
+{
+  setAddress(node.getAddress());
+  setPort(node.getPort());
+  setUuid(node.getUuid());
+}
+
 void ZDvidSourceWidget::setPort(int port)
 {
   ui->portSpinBox->setValue(port);

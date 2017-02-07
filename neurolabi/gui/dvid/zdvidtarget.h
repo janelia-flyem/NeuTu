@@ -65,6 +65,10 @@ public:
     return m_node.getPort();
   }
 
+  const ZDvidNode& getNode() const {
+    return m_node;
+  }
+
   /*!
    * \brief Check if there is a port
    *
@@ -250,11 +254,26 @@ public:
   }
 
   void setSourceConfig(const ZJsonObject &config);
+
+  /*!
+   * \brief Set dvid source of grayscale data
+   *
+   * If \a node is invalid, the source will be set to the main source.
+   *
+   * \param node
+   */
+  void setGrayScaleSource(const ZDvidNode &node);
+  void setTileSource(const ZDvidNode &node);
   void prepareGrayScale();
   void prepareTile();
 
+  ZDvidNode getGrayScaleSource() const;
+  ZDvidNode getTileSource() const;
+
 private:
   void init();
+  void setSource(const char *key, const ZDvidNode &node);
+  ZDvidNode getSource(const char *key) const;
 
 private:
   ZDvidNode m_node;

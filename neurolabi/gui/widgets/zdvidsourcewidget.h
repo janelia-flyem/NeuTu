@@ -24,6 +24,7 @@ public:
 
   ZDvidNode getNode() const;
 
+  void setNode(const ZDvidNode &node);
   void setAddress(const std::string &address);
   void setPort(int port);
   void setUuid(const std::string &uuid);

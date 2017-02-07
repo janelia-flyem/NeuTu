@@ -85,6 +85,9 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  bool operator == (const ZDvidNode &node) const;
+  bool operator != (const ZDvidNode &node) const;
+
 private:
   void init();
 

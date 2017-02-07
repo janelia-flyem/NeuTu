@@ -2,6 +2,7 @@
 #include "zstring.h"
 #include "zerror.h"
 #include "zjsonparser.h"
+#include "zjsonobject.h"
 #include "zdviddata.h"
 #if _QT_APPLICATION_
 #include <QtDebug>
@@ -104,7 +105,7 @@ void ZDvidTarget::clear()
   m_userList.clear();
   m_supervisorServer.clear();
   m_tileConfig.clear();
-//  m_sourceConfig.clear();
+  m_sourceConfig.clear();
 //  m_tileJson = ZJsonArray();
 }
 
@@ -245,11 +246,9 @@ ZJsonObject ZDvidTarget::toJsonObject() const
     obj.setEntry(m_tileConfigKey, const_cast<ZJsonObject&>(m_tileConfig));
   }
 
-  /*
   if (!m_sourceConfig.isEmpty()) {
     obj.setEntry(m_sourceConfigKey, const_cast<ZJsonObject&>(m_sourceConfig));
   }
-  */
 
   obj.setEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
@@ -394,11 +393,9 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
       m_supervisorServer = ZJsonParser::stringValue(obj[m_supervisorServerKey]);
     }
 
-    /*
     if (obj.hasKey(m_sourceConfigKey)) {
       m_sourceConfig.set(obj.value(m_sourceConfigKey));
     }
-    */
   }
 }
 
@@ -688,27 +685,67 @@ const std::set<std::string>& ZDvidTarget::getUserNameSet() const
 
 void ZDvidTarget::setSourceConfig(const ZJsonObject &config)
 {
-//  m_sourceConfig = config;
+  m_sourceConfig = config;
 }
+
+void ZDvidTarget::setSource(const char *key, const ZDvidNode &node)
+{
+  if (node == m_node || !node.isValid()) {
+    m_sourceConfig.removeKey(key);
+  } else {
+    m_sourceConfig.setEntry(key, node.toJsonObject().getData());
+  }
+}
+
+void ZDvidTarget::setGrayScaleSource(const ZDvidNode &node)
+{
+  setSource(m_grayScaleNameKey, node);
+}
+
+ZDvidNode ZDvidTarget::getSource(const char *key) const
+{
+  if (m_sourceConfig.hasKey(key)) {
+    ZDvidNode node;
+    ZJsonObject obj(m_sourceConfig.value(key));
+    node.loadJsonObject(obj);
+    if (node.isValid()) {
+      return node;
+    }
+  }
+
+  return m_node;
+}
+
+ZDvidNode ZDvidTarget::getGrayScaleSource() const
+{
+  return getSource(m_grayScaleNameKey);
+}
+
+ZDvidNode ZDvidTarget::getTileSource() const
+{
+  return getSource(m_multiscale2dNameKey);
+}
+
+void ZDvidTarget::setTileSource(const ZDvidNode &node)
+{
+  setSource(m_multiscale2dNameKey, node);
+}
+
 
 void ZDvidTarget::prepareGrayScale()
 {
-  /*
   if (m_sourceConfig.hasKey(m_grayScaleNameKey)) {
     ZJsonObject nodeJson(m_sourceConfig.value(m_grayScaleNameKey));
     m_node.loadJsonObject(nodeJson);
   }
-  */
 }
 
 void ZDvidTarget::prepareTile()
 {
-  /*
   if (m_sourceConfig.hasKey(m_multiscale2dNameKey)) {
     ZJsonObject nodeJson(m_sourceConfig.value(m_multiscale2dNameKey));
     m_node.loadJsonObject(nodeJson);
   }
-  */
 }
 
 bool ZDvidTarget::isDvidTarget(const std::string &source)

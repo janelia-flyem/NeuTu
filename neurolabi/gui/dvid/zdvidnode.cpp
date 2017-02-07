@@ -47,6 +47,19 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
   return source;
 }
 
+bool ZDvidNode::operator ==(const ZDvidNode &node) const
+{
+  return m_address == node.m_address && m_port == node.m_port &&
+      m_uuid == node.m_uuid;
+}
+
+bool ZDvidNode::operator !=(const ZDvidNode &node) const
+{
+  return m_address != node.m_address || m_port != node.m_port ||
+      m_uuid != node.m_uuid;
+}
+
+
 void ZDvidNode::set(
     const std::string &address, const std::string &uuid, int port)
 {
