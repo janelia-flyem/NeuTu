@@ -30,8 +30,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_progressSignal = new ZProgressSignal(this);
   setAcceptDrops(true);
 
-  qRegisterMetaType<uint64_t>("uint64_t");
-  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+//  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 
   m_testTimer = new QTimer(this);
 }

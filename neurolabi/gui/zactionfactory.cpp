@@ -546,6 +546,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_UNMERGE:
     action = new QAction("Unmerge", parent);
     break;
+  case ACTION_DESELECT_BODY:
+    action = new QAction("Deselect Body", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;

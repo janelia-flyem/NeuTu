@@ -559,6 +559,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
   switch (item) {
+  case ZActionFactory::ACTION_DESELECT_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
+    break;
   case ZActionFactory::ACTION_DELETE_SELECTED:
     if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
       action = m_actionLibrary->getAction(
@@ -2357,6 +2360,28 @@ void Z3DWindow::updateBody()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->forceBodyUpdate();
+  }
+}
+
+void Z3DWindow::deselectBody()
+{
+  std::set<uint64_t> bodySet;
+  QList<Swc_Tree_Node*> swcNodeList =
+      getDocument()->getSelectedSwcNodeList();
+  for (QList<Swc_Tree_Node*>::const_iterator iter = swcNodeList.begin();
+       iter != swcNodeList.end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+    uint64_t bodyId = 0;
+    if (tree != NULL) {
+      bodyId = tree->getLabel();
+    }
+    if (bodyId > 0) {
+      bodySet.insert(bodyId);
+    }
+  }
+  if (!bodySet.empty()) {
+    emit deselectingBody(bodySet);
   }
 }
 

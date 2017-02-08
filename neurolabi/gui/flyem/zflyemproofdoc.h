@@ -47,6 +47,8 @@ public:
   };
   */
 
+//  void makeAction(ZActionFactory::EAction item);
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
@@ -104,6 +106,13 @@ public:
   void setSelectedBody(const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void toggleBodySelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  /*!
+   * \brief Deselect bodies
+   *
+   * Deselect bodies that have the same mapped ID as that of \a bodyId.
+   */
+  void deselectMappedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void deselectMappedBody(const std::set<uint64_t> &bodySet, NeuTube::EBodyLabelType labelType);
 
   void addSelectedBody(
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
@@ -399,8 +408,6 @@ public slots: //Commands
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
-
-
   void executeRemoveTodoItemCommand();
 
 
@@ -437,6 +444,7 @@ public slots:
   void verifySelectedSynapse();
   void unverifySelectedSynapse();
 
+  void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
   void checkInSelectedBody();
   void checkInSelectedBodyAdmin();
   void checkOutBody();

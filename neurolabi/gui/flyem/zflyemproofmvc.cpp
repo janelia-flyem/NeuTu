@@ -124,7 +124,7 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
   connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
 
-  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+//  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   initBodyWindow();
   m_objectWindow = NULL;
@@ -558,6 +558,27 @@ void ZFlyEmProofMvc::makeOrthoWindow()
   syncBodySelectionToOrthoWindow();
 }
 
+void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
+    Z3DWindow *window, ZFlyEmBody3dDoc *doc)
+{
+  connect(window->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showTodo(bool)));
+  connect(window->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
+  connect(window, SIGNAL(addingTodoMarker(int,int,int,bool,uint64_t)),
+          getCompleteDocument(),
+          SLOT(executeAddTodoItemCommand(int,int,int,bool,uint64_t)));
+  connect(window, SIGNAL(addingToMergeMarker(int,int,int,uint64_t)),
+          getCompleteDocument(),
+          SLOT(executeAddToMergeItemCommand(int,int,int,uint64_t)));
+  connect(window, SIGNAL(addingToSplitMarker(int,int,int,uint64_t)),
+          getCompleteDocument(),
+          SLOT(executeAddToSplitItemCommand(int,int,int,uint64_t)));
+  connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
+          getCompleteDocument(),
+          SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
+}
+
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
@@ -565,11 +586,12 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   doc->showSynapse(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isVisible(Z3DWindow::LAYER_TODO));
 
-  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
-          doc, SLOT(showSynapse(bool)));
-  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
-          doc, SLOT(showTodo(bool)));
+//  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+//          doc, SLOT(showSynapse(bool)));
+//  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+//          doc, SLOT(showTodo(bool)));
   setWindowSignalSlot(m_coarseBodyWindow);
+  prepareBodyWindowSignalSlot(m_coarseBodyWindow, doc);
 
   m_coarseBodyWindow->setWindowType(NeuTube3D::TYPE_COARSE_BODY);
   m_coarseBodyWindow->readSettings();
@@ -594,20 +616,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
   doc->showTodo(m_bodyWindow->isVisible(Z3DWindow::LAYER_TODO));
 
 
-  connect(m_bodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
-          doc, SLOT(showTodo(bool)));
-  connect(m_bodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
-          doc, SLOT(showSynapse(bool)));
-  connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool,uint64_t)),
-          getCompleteDocument(),
-          SLOT(executeAddTodoItemCommand(int,int,int,bool,uint64_t)));
-  connect(m_bodyWindow, SIGNAL(addingToMergeMarker(int,int,int,uint64_t)),
-          getCompleteDocument(),
-          SLOT(executeAddToMergeItemCommand(int,int,int,uint64_t)));
-  connect(m_bodyWindow, SIGNAL(addingToSplitMarker(int,int,int,uint64_t)),
-          getCompleteDocument(),
-          SLOT(executeAddToSplitItemCommand(int,int,int,uint64_t)));
-
+  prepareBodyWindowSignalSlot(m_bodyWindow, doc);
   setWindowSignalSlot(m_bodyWindow);
 
   m_bodyWindow->setWindowType(NeuTube3D::TYPE_BODY);
@@ -1359,25 +1368,23 @@ void ZFlyEmProofMvc::customInit()
 
 
   // connections to body info dialog (aka "sequencer")
-  connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
-          this, SLOT(locateBody(uint64_t)));
-  connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
-          this, SLOT(addLocateBody(uint64_t)));
-  /*
-  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-          this, SLOT(locateBody(QList<uint64_t>)));
-          */
-  connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-          this, SLOT(selectBody(QList<uint64_t>)));
-  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-          m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-  connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
-          this, SLOT(prepareBodyMap(ZJsonValue)));
-  connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-          getCompleteDocument(),
-          SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-  connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
-          this, SLOT(zoomTo(int,int,int)));
+  if (m_bodyInfoDlg != NULL) {
+    connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
+            this, SLOT(locateBody(uint64_t)));
+    connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
+            this, SLOT(addLocateBody(uint64_t)));
+    connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+            this, SLOT(selectBody(QList<uint64_t>)));
+    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+            m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+    connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
+            this, SLOT(prepareBodyMap(ZJsonValue)));
+    connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+            getCompleteDocument(),
+            SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+    connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+            this, SLOT(zoomTo(int,int,int)));
+  }
 
   // connections to protocols
   connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),

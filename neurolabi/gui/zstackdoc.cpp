@@ -182,8 +182,8 @@ void ZStackDoc::init()
 //  m_undoAction = NULL;
 //  m_redoAction = NULL;
 
-  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
-  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
+//  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
+//  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   connectSignalSlot();
 
   //setReporter(new ZQtMessageReporter());
@@ -1523,10 +1523,11 @@ void ZStackDoc::makeAction(ZActionFactory::EAction item)
     } else {
       action = m_actionFactory->makeAction(item, this);
     }
-    m_actionMap[item] = action;
 
     //Additional behaviors
     if (action != NULL) {
+      m_actionMap[item] = action;
+
       switch (item) {
       case ZActionFactory::ACTION_SELECT_DOWNSTREAM:
         connect(action, SIGNAL(triggered()), this, SLOT(selectDownstreamNode()));
@@ -2822,7 +2823,7 @@ void ZStackDoc::exportPuncta(const char *filePath)
   ZPunctumIO::save(filePath, punctaList);
 }
 
-ZSwcTree *ZStackDoc::nodeToSwcTree(Swc_Tree_Node *node) const
+ZSwcTree *ZStackDoc::nodeToSwcTree(const Swc_Tree_Node *node) const
 {
   ZOUT(LTRACE(), 5) << "Obtaining node host:" << node;
 

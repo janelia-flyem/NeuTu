@@ -195,27 +195,6 @@ void ZFlyEmProofDoc::runRoutineCheck()
   }
 }
 
-void ZFlyEmProofDoc::setSelectedBody(
-    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
-{
-  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
-
-  if (currentSelected != selected) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-    if (!sliceList.isEmpty()) {
-      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-           iter != sliceList.end(); ++iter) {
-        ZDvidLabelSlice *slice = *iter;
-        slice->recordSelection();
-        slice->setSelection(selected, labelType);
-        slice->processSelection();
-      }
-
-      notifyBodySelectionChanged();
-    }
-  }
-}
-
 QString ZFlyEmProofDoc::getBodySelectionMessage() const
 {
   QString msg;
@@ -272,6 +251,27 @@ void ZFlyEmProofDoc::addSelectedBody(
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
+    const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
+
+  if (currentSelected != selected) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    if (!sliceList.isEmpty()) {
+      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+           iter != sliceList.end(); ++iter) {
+        ZDvidLabelSlice *slice = *iter;
+        slice->recordSelection();
+        slice->setSelection(selected, labelType);
+        slice->processSelection();
+      }
+
+      notifyBodySelectionChanged();
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setSelectedBody(
     uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {
   std::set<uint64_t> selected;
@@ -289,6 +289,46 @@ void ZFlyEmProofDoc::toggleBodySelection(
     currentSelected.insert(bodyId);
   }
   setSelectedBody(currentSelected, labelType);
+}
+
+void ZFlyEmProofDoc::deselectMappedBody(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> currentSelected =
+      getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  std::set<uint64_t> newSelected;
+  uint64_t mappedBodyId = bodyId;
+  if (labelType == NeuTube::BODY_LABEL_ORIGINAL) {
+    mappedBodyId = getBodyMerger()->getFinalLabel(bodyId);
+  }
+  for (std::set<uint64_t>::const_iterator iter = currentSelected.begin();
+       iter != currentSelected.end(); ++iter) {
+    if (getBodyMerger()->getFinalLabel(*iter) != mappedBodyId) {
+      newSelected.insert(*iter);
+    }
+  }
+
+  setSelectedBody(newSelected, NeuTube::BODY_LABEL_ORIGINAL);
+}
+
+void ZFlyEmProofDoc::deselectMappedBody(
+    const std::set<uint64_t> &bodySet, NeuTube::EBodyLabelType labelType)
+{
+  std::set<uint64_t> currentSelected =
+      getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  std::set<uint64_t> newSelected;
+  std::set<uint64_t> mappedBodySet = bodySet;
+  if (labelType == NeuTube::BODY_LABEL_ORIGINAL) {
+    mappedBodySet = getBodyMerger()->getFinalLabel(bodySet);
+  }
+  for (std::set<uint64_t>::const_iterator iter = currentSelected.begin();
+       iter != currentSelected.end(); ++iter) {
+    if (mappedBodySet.count(getBodyMerger()->getFinalLabel(*iter)) == 0) {
+      newSelected.insert(*iter);
+    }
+  }
+
+  setSelectedBody(newSelected, NeuTube::BODY_LABEL_ORIGINAL);
 }
 
 bool ZFlyEmProofDoc::hasBodySelected() const
@@ -1436,6 +1476,27 @@ std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
 
   return std::set<uint64_t>();
 }
+
+void ZFlyEmProofDoc::deselectMappedBodyWithOriginalId(
+    const std::set<uint64_t> &bodySet)
+{
+  deselectMappedBody(bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+}
+
+/*
+void ZFlyEmProofDoc::makeAction(ZActionFactory::EAction item)
+{
+  if (!m_actionMap.contains(item)) {
+    QAction *action = NULL;
+    switch (item) {
+    case ZActionFactory::ACTION_DESELECT_BODY:
+      connect(action, SIGNAL(triggered()), this, SLOT(deselectMappedBodyWithOriginalId(uint64_t))
+    }
+  }
+
+  ZStackDoc::makeAction(item);
+}
+*/
 
 void ZFlyEmProofDoc::checkInSelectedBody()
 {

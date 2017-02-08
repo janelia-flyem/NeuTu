@@ -214,6 +214,7 @@ signals:
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void deselectingBody(const std::set<uint64_t> bodyId);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -326,6 +327,7 @@ public slots:
   void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
+  void deselectBody();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);

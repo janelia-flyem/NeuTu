@@ -23,6 +23,8 @@ bool IsAdminUser();
 
 QFileDialog::Options GetFileDialogOption();
 QString GetLastFilePath();
+
+void RegisterMetaType();
 }
 
 

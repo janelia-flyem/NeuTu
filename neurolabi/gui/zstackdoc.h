@@ -591,7 +591,7 @@ public:
   bool importSynapseAnnotation(const std::string &filePath,
                                int s = 0);
 
-  ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
+  ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);

@@ -200,7 +200,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_reporter = new ZQtMessageReporter(this);
 
-  qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
+//  qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
 
   m_lastOpenedFilePath = ".";
   m_ui->setupUi(this);
