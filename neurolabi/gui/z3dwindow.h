@@ -207,41 +207,6 @@ public: //external signal call
   void emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId);
   void emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId);
 
-protected:
-
-private:
-  // UI
-  void createMenus();
-  void createActions();
-  void customizeContextMenu();
-  void createContextMenu();
-  void createStatusBar();
-  void createDockWindows();
-  void customizeDockWindows(QTabWidget *m_settingTab);
-  void setWindowSize();
-
-  //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
-
-  // init 3D view
-  void init(EInitMode mode = INIT_NORMAL);
-
-  void cleanup();
-
-  int channelNumber();
-
-  void setupCamera(const std::vector<double> &bound,
-                   Z3DCamera::ResetCameraOptions options);
-
-  bool hasVolume();
-
-  //conditions for customization
-  bool hasSwc() const;
-  bool hasSelectedSwc() const;
-  bool hasSelectedSwcNode() const;
-  bool hasMultipleSelectedSwcNode() const;
-
 signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
@@ -406,6 +371,51 @@ protected:
   void closeEvent(QCloseEvent * event);
 //  void paintEvent(QPaintEvent *event);
 
+
+protected:
+
+private:
+  // UI
+  void createMenus();
+  void createActions();
+  void customizeContextMenu();
+  void createContextMenu();
+  void createStatusBar();
+  void createDockWindows();
+  void customizeDockWindows(QTabWidget *m_settingTab);
+  void setWindowSize();
+
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
+
+  // init 3D view
+  void init(EInitMode mode = INIT_NORMAL);
+
+  void cleanup();
+
+  int channelNumber();
+
+  void setupCamera(const std::vector<double> &bound,
+                   Z3DCamera::ResetCameraOptions options);
+
+  bool hasVolume();
+
+  //conditions for customization
+  bool hasSwc() const;
+  bool hasSelectedSwc() const;
+  bool hasSelectedSwcNode() const;
+  bool hasMultipleSelectedSwcNode() const;
+
+  bool addingSwcNode() const;
+  bool movingObject() const;
+  bool extendingSwc() const;
+  void exitAddingSwcNode();
+  void exitMovingObject();
+  void exitExtendingSwc();
+
+  bool exitEditMode();
+
 private:
   QTabWidget* createBasicSettingTabWidget();
   QTabWidget* createAdvancedSettingTabWidget();
@@ -435,7 +445,7 @@ private:
   QAction *m_openVolumeZoomInViewAction;
   QAction *m_exitVolumeZoomInViewAction;
   QAction *m_markPunctumAction;
-  QAction *m_toogleAddSwcNodeModeAction;
+  QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;

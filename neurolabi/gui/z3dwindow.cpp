@@ -628,9 +628,9 @@ void Z3DWindow::createActions()
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Add neuron node", this);
-  m_toogleAddSwcNodeModeAction->setCheckable(true);
-  connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
+  m_toggleAddSwcNodeModeAction = new QAction("Add neuron node", this);
+  m_toggleAddSwcNodeModeAction->setCheckable(true);
+  connect(m_toggleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
 
   m_toggleMoveSelectedObjectsAction =
@@ -871,7 +871,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addSeparator();
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
   contextMenu->addAction(m_changeSwcNodeTypeAction);
-  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
+  contextMenu->addAction(m_toggleAddSwcNodeModeAction);
 
   m_contextMenuGroup["swcnode"] = contextMenu;
 
@@ -929,7 +929,7 @@ void Z3DWindow::customizeContextMenu()
   m_selectSwcNodeTreeAction->setVisible(false);
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    m_toogleAddSwcNodeModeAction->setVisible(false);
+    m_toggleAddSwcNodeModeAction->setVisible(false);
     m_toggleMoveSelectedObjectsAction->setVisible(false);
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
     m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
@@ -947,7 +947,7 @@ void Z3DWindow::customizeContextMenu()
     m_refreshTraceMaskAction->setVisible(false);
   } else if (GET_APPLICATION_NAME == "FlyEM") {
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
-    m_toogleAddSwcNodeModeAction->setVisible(false);
+    m_toggleAddSwcNodeModeAction->setVisible(false);
     //m_toogleMoveSelectedObjectsAction->setVisible(false);
     m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
     m_refreshTraceMaskAction->setVisible(false);
@@ -1942,7 +1942,7 @@ void Z3DWindow::pointInVolumeLeftClicked(
     m_blockingTraceMenu = false;
   } else {
     if (hasVolume() && channelNumber() == 1 &&
-        !m_toogleAddSwcNodeModeAction->isChecked() &&
+        !m_toggleAddSwcNodeModeAction->isChecked() &&
         !m_toggleMoveSelectedObjectsAction->isChecked() &&
         !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
         NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
@@ -1951,22 +1951,62 @@ void Z3DWindow::pointInVolumeLeftClicked(
   }
 }
 
-void Z3DWindow::show3DViewContextMenu(QPoint pt)
+bool Z3DWindow::addingSwcNode() const
 {
-  notifyUser(" ");
-  if (m_toogleAddSwcNodeModeAction->isChecked()) {
-    m_toogleAddSwcNodeModeAction->setChecked(false);
-    return;
-  } else if (m_toggleMoveSelectedObjectsAction->isChecked()) {
-    m_toggleMoveSelectedObjectsAction->setChecked(false);
-    return;
-  } else if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
-    m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
-    return;
+  return m_toggleAddSwcNodeModeAction->isChecked();
+}
+
+bool Z3DWindow::extendingSwc() const
+{
+  return m_toggleSmartExtendSelectedSwcNodeAction->isChecked();
+}
+
+bool Z3DWindow::movingObject() const
+{
+  return m_toggleMoveSelectedObjectsAction->isChecked();
+}
+
+void Z3DWindow::exitAddingSwcNode()
+{
+  m_toggleAddSwcNodeModeAction->setChecked(false);
+}
+
+void Z3DWindow::exitMovingObject()
+{
+  m_toggleMoveSelectedObjectsAction->setChecked(false);
+}
+
+void Z3DWindow::exitExtendingSwc()
+{
+  m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
+}
+
+bool Z3DWindow::exitEditMode()
+{
+  bool acted = false;
+  if (addingSwcNode()) {
+    exitAddingSwcNode();
+    acted = true;
+  } else if (movingObject()) {
+    exitMovingObject();
+    acted = true;
+  } else if (extendingSwc()) {
+    exitExtendingSwc();
+    acted = true;
   } else if (getSwcFilter()->getInteractionMode() ==
              Z3DSwcFilter::ConnectSwcNode) {
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
     m_canvas->setCursor(Qt::ArrowCursor);
+    acted = true;
+  }
+
+  return acted;
+}
+
+void Z3DWindow::show3DViewContextMenu(QPoint pt)
+{
+  notifyUser(" ");
+  if (exitEditMode()) {
     return;
   } else if (m_canvas->suppressingContextMenu()) {
     return;
@@ -2559,10 +2599,10 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
 void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
 {
   if (checked) {
-    if (m_toogleAddSwcNodeModeAction->isChecked()) {
-      m_toogleAddSwcNodeModeAction->blockSignals(true);
-      m_toogleAddSwcNodeModeAction->setChecked(false);
-      m_toogleAddSwcNodeModeAction->blockSignals(false);
+    if (m_toggleAddSwcNodeModeAction->isChecked()) {
+      m_toggleAddSwcNodeModeAction->blockSignals(true);
+      m_toggleAddSwcNodeModeAction->setChecked(false);
+      m_toggleAddSwcNodeModeAction->blockSignals(false);
     }
     //    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
@@ -2939,7 +2979,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
     if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["empty"]->addAction(m_toogleAddSwcNodeModeAction);
+      m_contextMenuGroup["empty"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
@@ -2962,7 +3002,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
     if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["volume"]->addAction(m_toogleAddSwcNodeModeAction);
+      m_contextMenuGroup["volume"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
