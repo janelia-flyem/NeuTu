@@ -177,7 +177,9 @@ ZDvidReader& ZDvidSparseStack::getMaskReader() const
 ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
 {
   if (!m_grayScaleReader.isReady()) {
-    m_grayScaleReader.open(getDvidTarget());
+    ZDvidTarget target = getDvidTarget();
+    target.prepareGrayScale();
+    m_grayScaleReader.open(target);
     m_grayscaleInfo = m_grayScaleReader.readGrayScaleInfo();
   }
 
@@ -308,7 +310,9 @@ bool ZDvidSparseStack::fillValue(
       ZOUT(LTRACE(), 5) << "Locking m_fillValueMutex";
       QMutexLocker locker(&m_fillValueMutex);
 
-      ZOUT(LTRACE(), 5) << "Downloading grayscale ...";
+      ZOUT(LTRACE(), 5) << "Downloading grayscale from "
+                        << reader.getDvidTarget().getSourceString()
+                        << "...";
       if (!box.isEmpty()) {
         ZOUT(LTRACE(), 5) << "  Range: " << box.toJsonArray().dumpString(0);
       }

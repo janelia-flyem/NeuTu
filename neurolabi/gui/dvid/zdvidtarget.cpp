@@ -2,6 +2,7 @@
 #include "zstring.h"
 #include "zerror.h"
 #include "zjsonparser.h"
+#include "zjsonobject.h"
 #include "zdviddata.h"
 #if _QT_APPLICATION_
 #include <QtDebug>
@@ -10,9 +11,6 @@
 #endif
 #include "neutubeconfig.h"
 
-const char* ZDvidTarget::m_addressKey = "address";
-const char* ZDvidTarget::m_portKey = "port";
-const char* ZDvidTarget::m_uuidKey = "uuid";
 const char* ZDvidTarget::m_commentKey = "comment";
 const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
@@ -33,6 +31,7 @@ const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
 const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
 const char* ZDvidTarget::m_todoListNameKey = "todo";
 const char* ZDvidTarget::m_defaultSettingKey = "default";
+const char* ZDvidTarget::m_sourceConfigKey = "@source";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -49,7 +48,6 @@ ZDvidTarget::ZDvidTarget(
 
 void ZDvidTarget::init()
 {
-  m_port = -1;
   m_isSupervised = true;
   m_bgValue = 255;
   m_isEditable = true;
@@ -83,46 +81,12 @@ std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 void ZDvidTarget::set(
     const std::string &address, const std::string &uuid, int port)
 {
-  ZString s(address);
-  std::string pureAddress = address;
-  if (port < 0) { //parsing address
-    if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
-      s = s.substr(7);
-      std::vector<std::string> tokenArray = s.tokenize(':');
-      if (tokenArray.empty()) {
-        pureAddress = "";
-      } else {
-        pureAddress = tokenArray[0];
-        if (tokenArray.size() > 1 && port < 0) {
-          std::string portStr = tokenArray[1];
-          std::string::size_type pos = portStr.find_first_of('/');
-          if (pos != std::string::npos) {
-            if (pos > 0) {
-              portStr = portStr.substr(0, pos + 1);
-            } else {
-              portStr = "";
-            }
-          }
-
-          if (!portStr.empty()) {
-            int tmpPort = std::atoi(portStr.c_str());
-            if (tmpPort > 0) {
-              port = tmpPort;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  setServer(pureAddress);
-  setPort(port);
-  setUuid(uuid);
+  m_node.set(address, uuid, port);
 }
 
 void ZDvidTarget::clear()
 {
-  set("", "", -1);
+  m_node.clear();
   init();
   m_name = "";
   m_comment = "";
@@ -141,66 +105,23 @@ void ZDvidTarget::clear()
   m_userList.clear();
   m_supervisorServer.clear();
   m_tileConfig.clear();
+  m_sourceConfig.clear();
 //  m_tileJson = ZJsonArray();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
 {
-  m_address = address;
-
-  if (!address.empty()) {
-    ZString addressObj(address);
-
-    if (addressObj.startsWith("http://")) {
-      addressObj = address.substr(7);
-    } else if (ZString(address).startsWith("//")) {
-      addressObj = address.substr(2);
-    } else {
-      addressObj = address;
-    }
-
-    std::vector<std::string> strArray = addressObj.toWordArray("/");
-    if (!strArray.empty()) {
-      addressObj = strArray[0];
-      strArray = addressObj.toWordArray(":");
-
-      if (strArray.size() > 1) {
-        std::vector<int> intArray = ZString(strArray[1]).toIntegerArray();
-        if (!intArray.empty()) {
-          setPort(intArray[0]);
-        }
-      }
-    }
-
-    m_address = strArray[0];
-
-#if defined(_FLYEM_)
-    m_address = GET_FLYEM_CONFIG.mapAddress(m_address);
-#endif
-  }
+  m_node.setServer(address);
 }
 
 void ZDvidTarget::setUuid(const std::string &uuid)
 {
-  if (ZString(uuid).startsWith("ref:")) {
-#if _QT_APPLICATION_
-    std::string uuidLink = uuid.substr(4);
-    ZDvidBufferReader reader;
-    reader.read(uuidLink.c_str());
-    m_uuid = reader.getBuffer().constData();
-#else
-    m_uuid = "";
-    std::cout << "Unsupported uuid ref in non-GUI application. No uuid is set."
-              << std::endl;
-#endif
-  } else {
-    m_uuid = uuid;
-  }
+  m_node.setUuid(uuid);
 }
 
 void ZDvidTarget::setPort(int port)
 {
-  m_port = port;
+  m_node.setPort(port);
 }
 
 void ZDvidTarget::setFromUrl(const std::string &url)
@@ -299,13 +220,7 @@ std::string ZDvidTarget::getBodyPath(uint64_t bodyId) const
 
 ZJsonObject ZDvidTarget::toJsonObject() const
 {
-  ZJsonObject obj;
-  if (m_port >= 0) {
-    obj.setEntry(m_portKey, m_port);
-  }
-
-  obj.setEntry(m_addressKey, m_address);
-  obj.setEntry(m_uuidKey, m_uuid);
+  ZJsonObject obj = m_node.toJsonObject();
   obj.setEntry(m_commentKey, m_comment);
   obj.setEntry(m_nameKey, m_name);
   obj.setEntry(m_localKey, m_localFolder);
@@ -329,6 +244,10 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
   if (!m_tileConfig.isEmpty()) {
     obj.setEntry(m_tileConfigKey, const_cast<ZJsonObject&>(m_tileConfig));
+  }
+
+  if (!m_sourceConfig.isEmpty()) {
+    obj.setEntry(m_sourceConfigKey, const_cast<ZJsonObject&>(m_sourceConfig));
   }
 
   obj.setEntry(m_synapseNameKey, m_synapseName);
@@ -408,13 +327,7 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (isValidJson) {
-    setServer(ZJsonParser::stringValue(obj[m_addressKey]));
-    if (obj.hasKey(m_portKey)) {
-      setPort(ZJsonParser::integerValue(obj[m_portKey]));
-    } else {
-      setPort(-1);
-    }
-    setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
+    m_node.loadJsonObject(obj);
     m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
     m_name = ZJsonParser::stringValue(obj[m_nameKey]);
     m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
@@ -479,22 +392,16 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     if (obj.hasKey(m_supervisorServerKey)) {
       m_supervisorServer = ZJsonParser::stringValue(obj[m_supervisorServerKey]);
     }
+
+    if (obj.hasKey(m_sourceConfigKey)) {
+      m_sourceConfig.set(obj.value(m_sourceConfigKey));
+    }
   }
 }
 
 std::string ZDvidTarget::getUrl() const
 {
-  ZString url = "";
-  if (isValid()) {
-    url = "http://" + m_address;
-    if (m_port >= 0) {
-      url += ":";
-      url.appendNumber(m_port);
-    }
-    url += "/api/node/" + m_uuid;
-  }
-
-  return url;
+  return m_node.getUrl();
 }
 
 std::string ZDvidTarget::getLocalLowResGrayScalePath(
@@ -774,6 +681,71 @@ void ZDvidTarget::setUserName(const std::string &name)
 const std::set<std::string>& ZDvidTarget::getUserNameSet() const
 {
   return m_userList;
+}
+
+void ZDvidTarget::setSourceConfig(const ZJsonObject &config)
+{
+  m_sourceConfig = config;
+}
+
+void ZDvidTarget::setSource(const char *key, const ZDvidNode &node)
+{
+  if (node == m_node || !node.isValid()) {
+    m_sourceConfig.removeKey(key);
+  } else {
+    m_sourceConfig.setEntry(key, node.toJsonObject().getData());
+  }
+}
+
+void ZDvidTarget::setGrayScaleSource(const ZDvidNode &node)
+{
+  setSource(m_grayScaleNameKey, node);
+}
+
+ZDvidNode ZDvidTarget::getSource(const char *key) const
+{
+  if (m_sourceConfig.hasKey(key)) {
+    ZDvidNode node;
+    ZJsonObject obj(m_sourceConfig.value(key));
+    node.loadJsonObject(obj);
+    if (node.isValid()) {
+      return node;
+    }
+  }
+
+  return m_node;
+}
+
+ZDvidNode ZDvidTarget::getGrayScaleSource() const
+{
+  return getSource(m_grayScaleNameKey);
+}
+
+ZDvidNode ZDvidTarget::getTileSource() const
+{
+  return getSource(m_multiscale2dNameKey);
+}
+
+void ZDvidTarget::setTileSource(const ZDvidNode &node)
+{
+  setSource(m_multiscale2dNameKey, node);
+}
+
+
+void ZDvidTarget::prepareGrayScale()
+{
+  if (m_sourceConfig.hasKey(m_grayScaleNameKey)) {
+    ZJsonObject nodeJson(m_sourceConfig.value(m_grayScaleNameKey));
+    m_node.loadJsonObject(nodeJson);
+  }
+}
+
+void ZDvidTarget::prepareTile()
+{
+  if (m_sourceConfig.hasKey(m_multiscale2dNameKey)) {
+    ZJsonObject nodeJson(m_sourceConfig.value(m_multiscale2dNameKey));
+    m_node.loadJsonObject(nodeJson);
+  }
 }
 
 bool ZDvidTarget::isDvidTarget(const std::string &source)

@@ -63,6 +63,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // office phone number = random seed
     qsrand(2094656);
     m_quitting = false;
+    m_cancelLoading = false;
     m_connectionsLoading = false;
 
 
@@ -272,6 +273,14 @@ void FlyEmBodyInfoDialog::loadData() {
 
     setStatusLabel("Loading...");
 
+    QString loadingThreadId = "importBodiesDvid";
+    m_cancelLoading = true;
+    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
+    if (future != NULL) {
+      future->waitForFinished();
+    }
+    m_cancelLoading = false;
+
     // we can load this info from different sources, depending on
     //  what's available in DVID
     if (bodyAnnotationsPresent()) {
@@ -282,11 +291,11 @@ void FlyEmBodyInfoDialog::loadData() {
             if (ui->maxBodiesMenu->count() == 0) {
                 setupMaxBodyMenu();
             }
-            m_futureMap["importBodiesDvid"] =
+            m_futureMap[loadingThreadId] =
                 QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid2);
         } else {
             // this is the fallback method; it needs body annotations only
-            m_futureMap["importBodiesDvid"] =
+            m_futureMap[loadingThreadId] =
                 QtConcurrent::run(this, &FlyEmBodyInfoDialog::importBodiesDvid);
         }
     } else {
@@ -616,9 +625,13 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         m_namelessBodies.clear();
         for (size_t i=0; i<thresholdData.size(); i++) {
             // if application is quitting, return = exit thread
-            if (m_quitting) {
+            if (m_quitting || m_cancelLoading) {
+#ifdef _DEBUG_
+              std::cout << "Sequencer loading canceled." << std::endl;
+#endif
                 return;
             }
+
             ZJsonObject thresholdEntry(thresholdData.value(i));
             int64_t bodyID = ZJsonParser::integerValue(thresholdEntry["Label"]);
             QString bodyIDstring = QString::number(bodyID);

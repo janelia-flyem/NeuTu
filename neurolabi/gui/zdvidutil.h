@@ -82,7 +82,6 @@ bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
 bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
-
 }
 
 #endif // ZDVIDUTIL_H
