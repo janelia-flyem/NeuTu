@@ -180,8 +180,8 @@ public slots:
   void saveMergeOperation();
   void commitMerge();
   void commitCurrentSplit();
-  void locateBody(uint64_t bodyId, bool appending);
-  void locateBody(uint64_t bodyId);
+  bool locateBody(uint64_t bodyId, bool appending);
+  bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId);

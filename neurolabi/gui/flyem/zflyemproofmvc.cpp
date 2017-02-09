@@ -394,39 +394,49 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
   float nearDist = m_skeletonWindow->getCamera()->getNearDist();
   glm::vec3 upVector = m_skeletonWindow->getCamera()->getUpVector();
 
+  std::vector<uint64_t> skippedBodyIdArray;
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter) {
     uint64_t bodyId = *iter;
 
-    locateBody(bodyId);
+    if (locateBody(bodyId)) {
+      ZFlyEmBody3dDoc *doc =
+          qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+      doc->waitForAllEvent();
+      QApplication::processEvents();
 
-    ZFlyEmBody3dDoc *doc =
-        qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
-    doc->waitForAllEvent();
-    QApplication::processEvents();
+      //  m_skeletonWindow->getCamera()->setProjectionType(Z3DCamera::Orthographic);
 
-    //  m_skeletonWindow->getCamera()->setProjectionType(Z3DCamera::Orthographic);
+      //    QString outDir = (GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/screenshots").c_str();
+      m_skeletonWindow->getCamera()->setEye(eye);
+      m_skeletonWindow->getCamera()->setUpVector(upVector);
+      m_skeletonWindow->getCamera()->setNearDist(nearDist);
+      //  double eyeDist = eye[0];
+      m_skeletonWindow->takeScreenShot(
+            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
 
-//    QString outDir = (GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/screenshots").c_str();
-    m_skeletonWindow->getCamera()->setEye(eye);
-    m_skeletonWindow->getCamera()->setUpVector(upVector);
-    m_skeletonWindow->getCamera()->setNearDist(nearDist);
-    //  double eyeDist = eye[0];
-    m_skeletonWindow->takeScreenShot(
-          QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+      m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
+      //  m_skeletonWindow->setXZView();
+      //  eye = m_skeletonWindow->getCamera()->getEye();
+      //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
+      //  m_skeletonWindow->getCamera()->setEye(eye);
+      m_skeletonWindow->takeScreenShot(
+            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
 
-    m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
-    //  m_skeletonWindow->setXZView();
-    //  eye = m_skeletonWindow->getCamera()->getEye();
-    //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
-    //  m_skeletonWindow->getCamera()->setEye(eye);
-    m_skeletonWindow->takeScreenShot(
-          QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
-
-    m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
-    m_skeletonWindow->takeScreenShot(
-          QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+      m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
+      m_skeletonWindow->takeScreenShot(
+            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+    } else {
+      skippedBodyIdArray.push_back(bodyId);
+    }
   }
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Screenshots created for %1 bodies; %2 bodies skipped").
+          arg(bodyIdArray.size() - skippedBodyIdArray.size()).
+          arg(skippedBodyIdArray.size()), NeuTube::MSG_INFORMATION));
+
 }
 
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
@@ -3481,8 +3491,9 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
 }
 #endif
 
-void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
+bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
+  bool succ = true;
   if (!getCompletePresenter()->isSplitWindow()) {
     ZDvidReader &reader = getCompleteDocument()->getDvidReader();
     if (reader.isReady()) {
@@ -3509,15 +3520,20 @@ void ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
           emit messageGenerated(
                 ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
                                arg(bodyId), NeuTube::MSG_ERROR));
+          succ = false;
         }
       }
     }
+  } else {
+    succ = false;
   }
+
+  return succ;
 }
 
-void ZFlyEmProofMvc::locateBody(uint64_t bodyId)
+bool ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {
-  locateBody(bodyId, false);
+  return locateBody(bodyId, false);
 }
 
 void ZFlyEmProofMvc::addLocateBody(uint64_t bodyId)

@@ -197,6 +197,17 @@ void FlyEmProofControlForm::createMenu()
   m_mainMenu->addAction(infoAction);
   connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
 
+  QMenu *bodyMenu = m_mainMenu->addMenu("Bodies");
+  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
+  bodyMenu->addAction(exportBodyAction);
+
+  QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
+  connect(skeletonizeAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeSelectedBody()));
+  bodyMenu->addAction(skeletonizeAction);
+
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
   QAction *clearMergeAction = new QAction("Clear All Merges", this);
@@ -204,15 +215,7 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
 
-  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
-  connect(exportBodyAction, SIGNAL(triggered()),
-          this, SLOT(exportSelectedBody()));
-  developerMenu->addAction(exportBodyAction);
 
-  QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
-  connect(skeletonizeAction, SIGNAL(triggered()),
-          this, SLOT(skeletonizeSelectedBody()));
-  developerMenu->addAction(skeletonizeAction);
 #endif
 //  colorMenu->setEnabled(false);
 }

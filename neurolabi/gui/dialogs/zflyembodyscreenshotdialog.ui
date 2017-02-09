@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>210</height>
+    <width>473</width>
+    <height>204</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Take Screenshot</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -116,6 +116,13 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Note: The skeleton window should be set to the angle of YZ view</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
