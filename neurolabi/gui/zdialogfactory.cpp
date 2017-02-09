@@ -271,9 +271,14 @@ QString ZDialogFactory::GetSaveFileName(
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)
 {
-  QMessageBox::information(
-        parent, "3D Unavailable", "The 3D visualization is unavailable in this"
-        "plug-in because of some technical problems. To obtain a "
-        "fully-functioing version of neuTube, because visit "
-        "<a href=www.neutracing.com>www.neutracing.com</a>");
+  if (Z3DApplication::app() == NULL) {
+    QMessageBox::information(
+          parent, "3D Unavailable", "The 3D visualization is unavailable in this"
+          "plug-in because of some technical problems. To obtain a "
+          "fully-functioing version of neuTube, because visit "
+          "<a href=www.neutracing.com>www.neutracing.com</a>");
+  } else {
+    QMessageBox::critical(parent, "3D functions are disabled",
+                          Z3DApplication::app()->getErrorMessage());
+  }
 }

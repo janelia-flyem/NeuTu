@@ -2532,7 +2532,8 @@ void MainWindow::on_action3DView_triggered()
   if (frame != NULL) {
 //    getProgressDialog()->setRange(0, 0);
     //startProgress("Open 3D Window ...");
-    frame->open3DWindow();
+    ZWindowFactory::Open3DWindow(frame);
+//    frame->open3DWindow();
 //    endProgress();
 //    window->raise();
   }
@@ -3336,7 +3337,8 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (wholeTree != NULL) {
         frame->executeAddObjectCommand(wholeTree);
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
                NeuTube::MSG_ERROR);
@@ -3667,8 +3669,9 @@ void MainWindow::on_actionImport_Network_triggered()
     frame->document()->appendSwcNetwork(*network);
     delete network;
 
+    ZWindowFactory::Open3DWindow(frame);
     //addStackFrame(frame);
-    frame->open3DWindow();
+//    frame->open3DWindow();
     delete frame;
 
     QApplication::processEvents(); //force file dialog to close.
@@ -3693,7 +3696,8 @@ void MainWindow::on_actionAddSWC_triggered()
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
           isExpandSwcWith3DWindow()) {
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       }
     }
   }
@@ -4640,7 +4644,8 @@ void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+    ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//    frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
   }
 }
 
@@ -5187,7 +5192,8 @@ void MainWindow::on_actionMask_SWC_triggered()
 //        swcFrame->document()->notifySwcModified();
 
         if (frame != stackFrame) {
-          swcFrame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(swcFrame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          swcFrame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
           if (swcFrame != stackFrame) {
             delete swcFrame;
           }
@@ -5237,7 +5243,8 @@ void MainWindow::expandCurrentFrame()
       if (swcLoaded) {
         if (NeutubeConfig::getInstance().getMainWindowConfig().
             isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
       }
     }
@@ -5498,7 +5505,8 @@ void MainWindow::createDvidFrame()
     frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
     } else {
       addStackFrame(frame);
@@ -5846,8 +5854,10 @@ void MainWindow::on_actionTiles_triggered()
     frame->swcFilename.append(".swc");
     if (QFile::exists(frame->swcFilename)) {
         frame->load(frame->swcFilename);
-        if (NeutubeConfig::getInstance().getMainWindowConfig().isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        if (NeutubeConfig::getInstance().getMainWindowConfig().
+            isExpandSwcWith3DWindow()) {
+          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
     }
 
@@ -5902,7 +5912,8 @@ void MainWindow::showStackFrame(
       }
 
       if (opening3DWindow) {
-        frame->open3DWindow();
+        ZWindowFactory::Open3DWindow(frame);
+//        frame->open3DWindow();
       }
 
       if (!hasImageFile) {
@@ -6654,7 +6665,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       //QApplication::processEvents();
     } else {
       emit progressDone();
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
     }
     if (!fileName.isEmpty()) {
@@ -6688,7 +6700,8 @@ ZStackFrame* MainWindow::showStackDoc(ZStackDocPtr doc)
     } else {
       emit progressDone();
       progressProcessed = true;
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
       frame = NULL;
     }
@@ -6740,7 +6753,8 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
-      newFrame->open3DWindow();
+      ZWindowFactory::Open3DWindow(newFrame);
+//      newFrame->open3DWindow();
       delete newFrame;
       //addStackFrame(newFrame);
       //presentStackFrame(newFrame);

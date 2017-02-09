@@ -22,10 +22,10 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
-#include "z3dwindow.h"
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
+//#include "z3dwindow.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -156,7 +156,7 @@ public:
   void hideObject();
   void showObject();
 
-  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+//  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   /*!
    * \brief Get the main window ancestor of the frame.
    */

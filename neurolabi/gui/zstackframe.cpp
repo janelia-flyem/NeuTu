@@ -705,7 +705,8 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
 }
@@ -1295,6 +1296,7 @@ void ZStackFrame::showObject()
   presenter()->setObjectVisible(true);
 }
 
+#if 0
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
   if (Z3DApplication::app() == NULL) {
@@ -1345,6 +1347,7 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 
   return window;
 }
+#endif
 
 void ZStackFrame::load(const QList<QUrl> &urls)
 {
@@ -1748,7 +1751,8 @@ void ZStackFrame::locateSwcNodeIn3DView()
   if (document()->hasSelectedSwcNode()) {
     Z3DWindow *window = document()->getParent3DWindow();
     if (!window) {
-      window = open3DWindow();
+      window = ZWindowFactory::Open3DWindow(this);
+//      window = open3DWindow();
     }
     //QApplication::processEvents();
     window->zoomToSelectedSwcNodes();
@@ -1838,9 +1842,11 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK ||
           frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
-        frame->open3DWindow();
+        ZWindowFactory::Open3DWindow(frame);
+//        frame->open3DWindow();
       }
     }
     message->deactivate();

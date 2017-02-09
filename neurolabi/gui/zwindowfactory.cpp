@@ -15,6 +15,9 @@
 #include "z3dpunctafilter.h"
 #include "z3dutils.h"
 #include "zstackdoc.h"
+#include "zstackframe.h"
+#include "zdialogfactory.h"
+#include "mainwindow.h"
 
 ZWindowFactory::ZWindowFactory()
 {
@@ -128,7 +131,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
     for (QMap<Z3DWindow::ERendererLayer, bool>::const_iterator
          iter = m_layerVisible.begin(); iter != m_layerVisible.end(); ++iter) {
-      window->setVisible(iter.key(), iter.value());
+      window->setLayerVisible(iter.key(), iter.value());
     }
 
     if (!isControlPanelVisible()) {
@@ -141,6 +144,55 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
     configure(window);
 //    doc->registerUser(window);
+  }
+
+  return window;
+}
+
+Z3DWindow* ZWindowFactory::Open3DWindow(
+    ZStackFrame *frame, Z3DWindow::EInitMode mode)
+{
+  if (Z3DApplication::app() == NULL) {
+    ZDialogFactory::Notify3DDisabled(frame);
+
+    return NULL;
+  }
+
+  ZSharedPointer<ZStackDoc> doc = frame->document();
+  if (doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    doc = doc->getParentDoc();
+  }
+
+  Z3DWindow *window = doc->getParent3DWindow();
+
+  if (window == NULL) {
+    if (frame->getMainWindow() != NULL) {
+      frame->getMainWindow()->startProgress("Opening 3D View ...", 0);
+    }
+
+    ZWindowFactory factory;
+    //factory.setParentWidget(parent);
+    window = factory.make3DWindow(doc, mode);
+    QString title = frame->windowTitle();
+    if (title.endsWith(" *")) {
+      title.resize(title.size()-2);
+    }
+    window->setWindowTitle(title);
+
+    doc->registerUser(window);
+
+    frame->connect(frame, SIGNAL(closed(ZStackFrame*)), window, SLOT(close()));
+//    connect(window, SIGNAL(destroyed()), this, SLOT(detach3DWindow()));
+    if (frame->getMainWindow() != NULL) {
+      frame->getMainWindow()->endProgress();
+    }
+  }
+
+  if (window != NULL) {
+    window->show();
+    window->raise();
+  } else {
+    ZDialogFactory::Notify3DDisabled(frame);
   }
 
   return window;

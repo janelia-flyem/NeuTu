@@ -100,8 +100,8 @@ public: //properties
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
   using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  void setVisible(ERendererLayer layer, bool visible);
-  bool isVisible(ERendererLayer layer) const;
+  void setLayerVisible(ERendererLayer layer, bool visible);
+  bool isLayerVisible(ERendererLayer layer) const;
 
   void configure(const ZJsonObject &obj);
 
@@ -152,17 +152,6 @@ public: //Components
 
   QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
-public: //Bounding box
-  void updateVolumeBoundBox();
-  void updateSwcBoundBox();
-  void updateGraphBoundBox();
-  void updateSurfaceBoundBox();
-  void updateTodoBoundBox();
-//  void updateDecorationBoundBox();
-  void updatePunctaBoundBox();
-  void updateOverallBoundBox(std::vector<double> bound);
-  void updateOverallBoundBox();       //get bounding box of all objects in world coordinate :[xmin xmax ymin ymax zmin zmax]
-
   /*!
    * \brief Get the document associated with the window
    */
@@ -172,26 +161,40 @@ public: //Bounding box
     return dynamic_cast<T*>(m_doc.get());
   }
 
-  void createToolBar();
-
+public: //Bounding box
+  void updateVolumeBoundBox();
+  void updateSwcBoundBox();
+  void updateGraphBoundBox();
+  void updateSurfaceBoundBox();
+  void updateTodoBoundBox();
+//  void updateDecorationBoundBox();
+  void updatePunctaBoundBox();
+  void updateOverallBoundBox(std::vector<double> bound);
+  //get bounding box of all objects in world coordinate:
+  //[xmin xmax ymin ymax zmin zmax]
+  void updateOverallBoundBox();
   void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
-  void hideControlPanel();
-  void hideObjectView();
 
   bool hasRectRoi() const;
   ZRect2d getRectRoi() const;
   void removeRectRoi();
 
-  QDockWidget * getSettingsDockWidget();
-  QDockWidget * getObjectsDockWidget();
-  ZROIWidget * getROIsDockWidget();
 
-public:
+
+public: //controls
+  void createToolBar();
+  void hideControlPanel();
+  void hideObjectView();
+
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
 
   QAction* getAction(ZActionFactory::EAction item);
+
+  QDockWidget * getSettingsDockWidget();
+  QDockWidget * getObjectsDockWidget();
+  ZROIWidget * getROIsDockWidget();
 
 public:
   void setROIs(size_t n);

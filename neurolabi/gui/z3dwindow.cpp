@@ -527,7 +527,7 @@ void Z3DWindow::init(EInitMode mode)
 
 void Z3DWindow::setROIs(size_t n)
 {
-    m_surfaceFilter->initRenderers(n);
+  m_surfaceFilter->initRenderers(n);
 }
 
 void Z3DWindow::setWindowSize()
@@ -1279,7 +1279,7 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
     if (obj.hasKey("visible")) {
-      setVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
+      setLayerVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
     }
     if (obj.hasKey("front")) {
       filter->setStayOnTop(ZJsonParser::booleanValue(obj["front"]));
@@ -1328,7 +1328,7 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   ZJsonObject configJson;
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
-    configJson.setEntry("visible", isVisible(layer));
+    configJson.setEntry("visible", isLayerVisible(layer));
     configJson.setEntry("front", filter->isStayOnTop());
     configJson.setEntry("size_scale", filter->getSizeScale());
   }
@@ -4379,7 +4379,7 @@ void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
   getRendererBase(layer)->setOpacity(opacity);
 }
 
-void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
+void Z3DWindow::setLayerVisible(ERendererLayer layer, bool visible)
 {
   switch (layer) {
   case LAYER_GRAPH:
@@ -4406,7 +4406,7 @@ void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
   }
 }
 
-bool Z3DWindow::isVisible(ERendererLayer layer) const
+bool Z3DWindow::isLayerVisible(ERendererLayer layer) const
 {
   switch (layer) {
   case LAYER_GRAPH:
