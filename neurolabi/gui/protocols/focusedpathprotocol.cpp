@@ -320,6 +320,22 @@ void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
 
     std::cout << "onCurrentBodyPathsLoaded" << std::endl;
 
+    // load the body IDs at all endpoints of all paths;
+    //  save for later reuse
+    std::vector<ZIntPoint> points;
+    foreach(FocusedPath path, m_currentBodyPaths) {
+        points.push_back(path.getFirstPoint());
+        points.push_back(path.getLastPoint());
+    }
+    std::vector<uint64_t> bodyIDs = m_reader.readBodyIdAt(points);
+
+    m_currentPathBodyIDs.clear();
+    for (size_t i=0; i<points.size(); i++) {
+        m_currentPathBodyIDs[points[i]] = bodyIDs[i];
+    }
+
+
+    // get to work:
     m_currentPath = findNextPath();
     m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
     while (m_currentPath.isConnected()) {
@@ -335,25 +351,11 @@ void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
 }
 
 FocusedPath FocusedPathProtocol::findNextPath() {
-
-    // load the body IDs at all endpoints
-    std::vector<ZIntPoint> points;
-    foreach(FocusedPath path, m_currentBodyPaths) {
-        points.push_back(path.getFirstPoint());
-        points.push_back(path.getLastPoint());
-    }
-    std::vector<uint64_t> bodyIDs = m_reader.readBodyIdAt(points);
-
-    m_currentPathBodyIDs.clear();
-    for (size_t i=0; i<points.size(); i++) {
-        m_currentPathBodyIDs[points[i]] = bodyIDs[i];
-    }
-
     // candidate path; get its endpoint bodyID and
     //  see if there are any other paths to that ID
     //  that have higher probability (yes, we check
     //  against itself first time through loop; it's
-    //  just easier that way
+    //  just easier that way)
     FocusedPath path = m_currentBodyPaths.first();
     foreach(FocusedPath path2, m_currentBodyPaths) {
         if (m_currentPathBodyIDs[path.getLastPoint()] == m_currentPathBodyIDs[path2.getLastPoint()] &&
