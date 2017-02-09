@@ -233,7 +233,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zobject3dscan.hpp \
    $${PWD}/dvid/zdviddef.h \
    $${PWD}/zswcutil.h \
-   $${PWD}dvid/zdvidnode.h
+   $${PWD}/dvid/zdvidnode.h
 
 SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zstack.cxx \
