@@ -228,7 +228,8 @@ bool ZDvidTileEnsemble::update(
 #else
 //    ZMultiTaskManager taskManager;
     if (!tile_locs_array.empty()) {
-      std::cout << "Reading tiles ..." << std::endl;
+      std::cout << "Reading tiles from " << m_reader.getDvidTarget().getSourceString(false)
+                << "..." << std::endl;
       QElapsedTimer timer;
       timer.start();
 //      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),

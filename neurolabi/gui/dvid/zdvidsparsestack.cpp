@@ -310,9 +310,9 @@ bool ZDvidSparseStack::fillValue(
       ZOUT(LTRACE(), 5) << "Locking m_fillValueMutex";
       QMutexLocker locker(&m_fillValueMutex);
 
-      ZOUT(LTRACE(), 5) << "Downloading grayscale from "
-                        << reader.getDvidTarget().getSourceString()
-                        << "...";
+      LINFO() << "Downloading grayscale from "
+              << reader.getDvidTarget().getSourceString(false)
+              << "...";
       if (!box.isEmpty()) {
         ZOUT(LTRACE(), 5) << "  Range: " << box.toJsonArray().dumpString(0);
       }
