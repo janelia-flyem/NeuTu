@@ -722,6 +722,9 @@ void ZStackDoc::processDataBuffer()
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
+#ifdef _DEBUG_
+    u->print();
+#endif
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
       case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
@@ -5267,10 +5270,35 @@ void ZStackDoc::test(QProgressBar *pb)
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
 //    mainStack->enhanceLine();
-    ZSwcTree *tree = new ZSwcTree;
-    tree->load(GET_TEST_DATA_DIR + "/benchmark/diadem_e1.swc");
-    m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    ZStack *label = new ZStack;
+    label->load(GET_TEST_DATA_DIR + "/benchmark/binary/3d/diadem_e1.tif");
+
+    ZObject3dScan *seed = new ZObject3dScan;
+    seed->setLabel(1);
+    seed->setRole(ZStackObjectRole::ROLE_SEED);
+    addObject(seed);
+
+    setLabelField(label);
+
+    ZIntPoint dsIntv(0, 0, 0);
+    QtConcurrent::run(
+          this, &ZStackDoc::updateWatershedBoundaryObject, dsIntv);
+
+    for (int i = 0; i < 10; ++i) {
+      ZSwcTree *tree = new ZSwcTree;
+      tree->load(GET_TEST_DATA_DIR + "/benchmark/swc/diadem_e1.swc");
+      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
+                        tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
+//                        tree, ZStackDocObjectUpdate::ACTION_KILL);
+
+
+      addObject(tree);
+//      m_dataBuffer->addUpdate(tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      m_dataBuffer->deliver();
+    }
     m_dataBuffer->deliver();
+    std::cout << getObjectGroup().size() << std::endl;
   }
 }
 
@@ -9075,6 +9103,15 @@ void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
   notifyObjectModified();
 }
 
+void ZStackDoc::updateWatershedBoundaryObject(ZIntPoint dsIntv)
+{
+  QMutexLocker locker(&m_labelFieldMutex);
+
+  if (m_labelField != NULL) {
+    updateWatershedBoundaryObject(m_labelField, dsIntv);
+  }
+}
+
 void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 {
   if (out != NULL) {
@@ -9099,12 +9136,13 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
     QList<ZDocPlayer*> playerList =
         getPlayerList(ZStackObjectRole::ROLE_SEED);
     //foreach (ZStroke2d *stroke, m_strokeList) {
-    foreach (const ZDocPlayer *player, playerList) {
-      for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
-           iter != objArray.end(); ++iter) {
-        ZObject3dScan *obj = *iter;
-        if (obj != NULL) {
-          if (!obj->isEmpty()) {
+
+    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+         iter != objArray.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      if (obj != NULL) {
+        if (!obj->isEmpty()) {
+          foreach (const ZDocPlayer *player, playerList) {
             if ((int) obj->getLabel() == player->getLabel()) {
               obj->setColor(player->getData()->getColor());
               //ZString objectSource = "localSeededWatershed:Temporary_Border:";
@@ -9116,10 +9154,11 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
               LINFO() << "Adding" << obj << obj->getSource();
-              addObject(obj, true);
-//              m_dataBuffer->addUpdate(
-//                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-//              m_dataBuffer->deliver();
+              //              addObject(obj, true);
+              m_dataBuffer->addUpdate(
+                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+              m_dataBuffer->deliver();
+              break;
             }
           }
         }
@@ -9280,14 +9319,14 @@ void ZStackDoc::seededWatershed()
       ZStack *out = engine.run(signalStack, seedMask);
       getProgressSignal()->advanceProgress(0.3);
 
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
-      updateWatershedBoundaryObject(out, dsIntv);
+      updateWatershedBoundaryObject(dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
-
-      ZOUT(LINFO(), 3) << "Setting label field";
-      setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 

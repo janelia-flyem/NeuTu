@@ -2824,14 +2824,15 @@ void ZFlyEmProofDoc::runSplitFunc()
       out->setDsIntv(dsIntv);
       getProgressSignal()->advanceProgress(0.3);
 
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
-      updateWatershedBoundaryObject(out, dsIntv);
+      updateWatershedBoundaryObject(dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
-      ZOUT(LINFO(), 3) << "Setting label field";
-      setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 
@@ -2892,14 +2893,16 @@ void ZFlyEmProofDoc::localSplitFunc()
       ZStack *out = engine.run(signalStack, seedMask);
       getProgressSignal()->advanceProgress(0.3);
 
+
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
-      updateWatershedBoundaryObject(out, dsIntv);
+      updateWatershedBoundaryObject(dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
-      ZOUT(LINFO(), 3) << "Setting label field";
-      setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 

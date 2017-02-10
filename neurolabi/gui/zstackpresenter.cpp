@@ -1659,30 +1659,9 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   return succ;
 }
 
-bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
+bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 {
   bool processed = true;
-
-  if (processKeyPressEventForActiveStroke(event)) {
-    return processed;
-  }
-
-  if (processKeyPressEventForSwc(event)) {
-    return processed;
-  }
-
-  if (processKeyPressEventForStroke(event)) {
-    return processed;
-  }
-
-  if (processKeyPressEventForObject(event)) {
-    return processed;
-  }
-
-  if (processKeyPressEventForStack(event)) {
-    return processed;
-  }
-
   switch (event->key()) {
   /*
   case Qt::Key_Backspace:
@@ -1702,6 +1681,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     } else if (event->modifiers() == Qt::ShiftModifier) {
       buddyDocument()->pushSelectedLocsegChain();
       updateView();
+    } else {
+      processed = false;
     }
     break;
 
@@ -1709,24 +1690,32 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
   case Qt::Key_Up:
     if (event->modifiers() == Qt::NoModifier) {
       increaseZoomRatio();
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_2:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
       increaseZoomRatio();
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_Minus:
   case Qt::Key_Down:
     if (event->modifiers() == Qt::NoModifier) {
       decreaseZoomRatio();
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_1:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
       decreaseZoomRatio();
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_W:
@@ -1753,6 +1742,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
       if (getParentFrame() != NULL) {
         buddyDocument()->saveSwc(getParentFrame());
       }
+    } else {
+      processed = false;
     }
     break;
 
@@ -1772,6 +1763,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         step = -5;
       }
       buddyView()->stepSlice(step);
+    } else {
+      processed = false;
     }
     break;
 
@@ -1783,6 +1776,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         step = 5;
       }
       buddyView()->stepSlice(step);
+    } else {
+      processed = false;
     }
     break;
 
@@ -1815,6 +1810,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         stroke->addWidth(-1.0);
       }
       buddyView()->paintActiveDecoration();
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_Period:
@@ -1830,6 +1827,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
           buddyView()->paintActiveDecoration();
         }
       }
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_Space:
@@ -1844,6 +1843,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
           buddyDocument()->runLocalSeededWatershed();
         }
       //}
+    } else {
+      processed = false;
     }
     break;
   case Qt::Key_Z:
@@ -1855,6 +1856,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
         buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
 //        buddyDocument()->undoStack()->undo();
       }
+    } else {
+      processed = false;
     }
     break;
     /*
@@ -1866,6 +1869,34 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     processed = false;
     break;
   }
+}
+
+bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
+{
+  bool processed = true;
+
+  if (processKeyPressEventForActiveStroke(event)) {
+    return processed;
+  }
+
+  if (processKeyPressEventForSwc(event)) {
+    return processed;
+  }
+
+  if (processKeyPressEventForStroke(event)) {
+    return processed;
+  }
+
+  if (processKeyPressEventForObject(event)) {
+    return processed;
+  }
+
+  if (processKeyPressEventForStack(event)) {
+    return processed;
+  }
+
+
+  processed = processKeyPressEventOther(event);
 
   if (!processed) {
     processed = customKeyProcess(event);

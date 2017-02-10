@@ -1226,6 +1226,7 @@ protected:
   void removeRect2dRoi();
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
 
 private:
   void init();
