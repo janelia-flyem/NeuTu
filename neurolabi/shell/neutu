@@ -6,4 +6,4 @@ then
 fi
 
 export LD_LIBRARY_PATH=$dvidlib:$LD_LIBRARY_PATH
-/opt/Download/neutube/neurolabi/build/neuTube $*
+/opt/Download/neutube/neurolabi/build/neutu $*
