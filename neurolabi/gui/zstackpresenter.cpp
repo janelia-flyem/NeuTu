@@ -1661,14 +1661,8 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
 
 bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 {
-  bool processed = true;
+  bool processed = false;
   switch (event->key()) {
-  /*
-  case Qt::Key_Backspace:
-  case Qt::Key_Delete:
-    buddyDocument()->executeRemoveSelectedObjectCommand();
-    break;
-    */
   case Qt::Key_P:
     if (event->modifiers() == Qt::ControlModifier) {
       if (interactiveContext().isProjectView()) {
@@ -1678,11 +1672,11 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
       }
       updateView();
       emit(viewModeChanged());
+      processed = true;
     } else if (event->modifiers() == Qt::ShiftModifier) {
       buddyDocument()->pushSelectedLocsegChain();
       updateView();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
 
@@ -1690,32 +1684,28 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
   case Qt::Key_Up:
     if (event->modifiers() == Qt::NoModifier) {
       increaseZoomRatio();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
   case Qt::Key_2:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
       increaseZoomRatio();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
   case Qt::Key_Minus:
   case Qt::Key_Down:
     if (event->modifiers() == Qt::NoModifier) {
       decreaseZoomRatio();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
   case Qt::Key_1:
     if (m_interactiveContext.strokeEditMode() !=
         ZInteractiveContext::STROKE_DRAW) {
       decreaseZoomRatio();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
   case Qt::Key_W:
@@ -1724,6 +1714,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     } else {
       moveViewPort(0, 1);
     }
+    processed = true;
     break;
   case Qt::Key_A:
     if (event->modifiers() == Qt::ShiftModifier) {
@@ -1731,19 +1722,21 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     } else {
       moveViewPort(1, 0);
     }
+    processed = true;
     break;
 
   case Qt::Key_S:
     if (event->modifiers() == Qt::ShiftModifier) {
       moveViewPort(0, -10);
+      processed = true;
     } else if (event->modifiers() == Qt::NoModifier) {
       moveViewPort(0, -1);
+      processed = true;
     } else if (event->modifiers() == Qt::ControlModifier) {
       if (getParentFrame() != NULL) {
         buddyDocument()->saveSwc(getParentFrame());
+        processed = true;
       }
-    } else {
-      processed = false;
     }
     break;
 
@@ -1753,6 +1746,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     } else {
       moveViewPort(-1, 0);
     }
+    processed = true;
     break;
 
   case Qt::Key_Left:
@@ -1763,8 +1757,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         step = -5;
       }
       buddyView()->stepSlice(step);
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
 
@@ -1776,8 +1769,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         step = 5;
       }
       buddyView()->stepSlice(step);
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
 
@@ -1789,9 +1781,8 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         QPointF dataPos = stackPositionFromMouse(MOVE);
         buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
                                      buddyView()->sliceIndex());
+        processed = true;
       }
-    } else {
-      processed = false;
     }
     break;
 
@@ -1802,6 +1793,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     //turnOffStroke();
     exitStrokeEdit();
     updateCursor();
+    processed = true;
     break;
   case Qt::Key_Comma:
     if (isActiveObjectOn()) {
@@ -1810,8 +1802,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         stroke->addWidth(-1.0);
       }
       buddyView()->paintActiveDecoration();
-    } else {
-      processed = false;
+      processed = true;
     }
     break;
   case Qt::Key_Period:
@@ -1822,29 +1813,26 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
           stroke->addWidth(1.0);
         }
         buddyView()->paintActiveDecoration();
+        processed = true;
       } else if (event->modifiers() == Qt::ShiftModifier) {
         if (estimateActiveStrokeWidth()) {
           buddyView()->paintActiveDecoration();
+          processed = true;
         }
       }
-    } else {
-      processed = false;
     }
     break;
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
-      //if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
-       //   buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
-         // buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
+      if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
         if (event->modifiers() == Qt::ShiftModifier) {
           ZOUT(LTRACE(), 5) << "Starting watershed ...";
           buddyDocument()->runSeededWatershed();
         } else {
           buddyDocument()->runLocalSeededWatershed();
         }
-      //}
-    } else {
-      processed = false;
+        processed = true;
+      }
     }
     break;
   case Qt::Key_Z:
@@ -1852,12 +1840,12 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
       if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
         buddyDocument()->getAction(ZActionFactory::ACTION_REDO)->trigger();
 //        buddyDocument()->undoStack()->redo();
+        processed = true;
       } else if (event->modifiers() == Qt::ControlModifier) {
         buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
 //        buddyDocument()->undoStack()->undo();
+        processed = true;
       }
-    } else {
-      processed = false;
     }
     break;
     /*
@@ -1866,9 +1854,10 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     break;
     */
   default:
-    processed = false;
     break;
   }
+
+  return processed;
 }
 
 bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)

@@ -329,12 +329,14 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 
   switch (event->key()) {
   case Qt::Key_Space:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      emit runningSplit();
-      processed = true;
-    } else if (event->modifiers() == Qt::NoModifier) {
-      emit runningLocalSplit();
-      processed = true;
+    if (isSplitOn()) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        emit runningSplit();
+        processed = true;
+      } else if (event->modifiers() == Qt::NoModifier) {
+        emit runningLocalSplit();
+        processed = true;
+      }
     }
     break;
   case Qt::Key_F1:
