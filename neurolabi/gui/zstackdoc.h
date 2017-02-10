@@ -1307,7 +1307,6 @@ private:
 
   ZActionFactory *m_actionFactory;
 
-  ZStackDocDataBuffer *m_dataBuffer;
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;
@@ -1339,6 +1338,7 @@ protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
   ZThreadFutureMap m_futureMap;
+  ZStackDocDataBuffer *m_dataBuffer;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
