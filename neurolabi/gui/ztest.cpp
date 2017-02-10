@@ -21,7 +21,6 @@
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
-
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -211,6 +210,7 @@ using namespace std;
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidroi.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
@@ -221,6 +221,7 @@ using namespace std;
 #include "test/zopenvdbtest.h"
 #include "zsparseobject.h"
 #include "test/zdvidtest.h"
+#include "test/zdvidroitest.h"
 #include "bigdata/zdvidblockgrid.h"
 #include "test/zblockgridtest.h"
 #include "test/zsparsestacktest.h"
@@ -405,7 +406,6 @@ void ZTest::test(MainWindow *host)
   gv->show();
 
 #endif
-
 
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
@@ -19986,13 +19986,13 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.set("emdata2.int.janelia.org", "bdca", 7000);
   target.setBodyLabelName("segmentation-labelvol");
-  target.setLabelBlockName("segmentation");
+  target.setLabelBlockName("segmentation2");
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.syncAnnotation("segmentation-labelvol_todo");
+  writer.syncAnnotation("segmentation-labelvol_todo", "replace=true");
 #endif
 
 #if 0
@@ -20370,6 +20370,50 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("kc_alpha_roi");
+
+  std::cout << obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+               (obj.getDsIntv().getY() + 1) * 8 *
+               (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000
+            << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("roi_new_segmentation_LO_LOP_x1");
+
+  size_t v1 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x2");
+
+  size_t v2 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x3");
+
+  size_t v3 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  std::cout << v1 + v2 + v3 << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@FIB19", 7000);
 
   ZDvidReader reader;
@@ -20401,6 +20445,25 @@ void ZTest::test(MainWindow *host)
   myList.append(12345);
 
   std::cout << myMap.dumpString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+
+  if (reader.open(target)) {
+    ZDvidRoi roi;
+    reader.readRoi("ROI_LOP_15", &roi);
+
+    std::cout << roi.getRoiRef()->getVoxelNumber() << std::endl;
+    std::cout << roi.getBlockSize().toString() << std::endl;
+    std::cout << roi.getName() << std::endl;
+
+    std::cout << roi.contains(8781, 5368, 14824) << std::endl;
+    std::cout << roi.contains(5778, 5564, 15442) << std::endl;
+  }
 #endif
 
 #if 0
@@ -20540,12 +20603,12 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.set("emdata2.int.janelia.org", "27b2", 7000);
 
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.createData("keyvalue", "data_test2", false);
+  writer.createData("keyvalue", "branches", false);
 #endif
 
 #if 0
@@ -21320,7 +21383,125 @@ void ZTest::test(MainWindow *host)
   
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "005a", 7000);
+  target.set("emdata2.int.janelia.org", "a031", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+  std::cout << "Master node: " << reader.readMasterNode() << std::endl;
+
+  std::cout << "Node history:" << std::endl;
+  std::vector<std::string> nodeList = reader.readMasterList();
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  target.setUuid("@FIB19");
+  std::cout << "Master node: " << ZDvidReader::ReadMasterNode(target) << std::endl;
+
+  nodeList = reader.ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+
+  obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
+  obj.print();
+
+  target.setUuid("e2f0");
+  ZDvidReader reader2;
+  reader2.open(target);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  reader.open(target);
+
+  target.loadDvidDataSetting(
+        reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT));
+  ZDvidReader reader2;
+  reader2.open(target);
+
+  ZObject3dScan obj = reader2.readCoarseBody(4833432549);
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+//  target.set("emdata2.int.janelia.org", "d35f", 7000);
+  target.useDefaultDataSetting(true);
+  target.setBodyLabelName("bodies_test");
+  target.setSynapseName("synapses_test");
+  target.setLabelBlockName("label_test");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().toDvidDataSetting().print();
+
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+
+  target = reader.getDvidTarget();
+  target.loadDvidDataSetting(obj);
+  target.setSynapseName("annot_synapse_010417");
+  target.setLabelBlockName("segmentation2");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject labelszObj;
+  labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
+  labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
+
+  ZJsonObject obj;
+  obj.setEntry("roi_synapse_labelsz", labelszObj);
+
+  writer.writeDataMap(obj);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZJsonObject obj = reader.readDataMap();
+  obj.print();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "3b54", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setSynapseName("annot_synapse_08162016");
+  target.setLabelBlockName("labels1104");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
 #endif
 
 #if 0
@@ -21407,7 +21588,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   ZObject3dScan *obj = new ZObject3dScan;
   obj->load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
@@ -21434,6 +21615,13 @@ void ZTest::test(MainWindow *host)
     frame->document()->addObject(*iter);
   }
 
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+  target.setSupervisorServer("emdata1.int.janelia.org:9000");
+  std::cout << target.toJsonObject().dumpString(2);
 #endif
 
   std::cout << "Done." << std::endl;

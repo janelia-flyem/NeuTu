@@ -114,6 +114,8 @@ private:
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;
+  mutable ZDvidInfo m_grayscaleInfo;
+
   ZThreadFutureMap m_futureMap;
   bool m_cancelingValueFill;
 

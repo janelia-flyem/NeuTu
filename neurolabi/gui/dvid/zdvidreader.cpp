@@ -30,6 +30,7 @@
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
+#include "dvid/zdvidroi.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -209,13 +210,22 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
   m_dvidTarget = target;
 
-  std::string masterNode = readMasterNode();
+  std::string masterNode = ReadMasterNode(target);
   if (!masterNode.empty()) {
     m_dvidTarget.setUuid(masterNode.substr(0, 4));
   }
 
-  return startService();
+  bool succ = startService();
+
+  if (succ) { //Read default settings
+    if (getDvidTarget().usingDefaultDataSetting()) {
+      loadDefaultDataSetting();
+    }
+  }
+
+  return succ;
 }
+
 
 bool ZDvidReader::open(const QString &sourceString)
 {
@@ -702,7 +712,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
       blockCoords[0] = blockIndex.getX();
       blockCoords[1] = blockIndex.getY();
       blockCoords[2] = blockIndex.getZ();
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "starting reading" << std::endl;
         std::cout << getDvidTarget().getGrayScaleName() << std::endl;
         std::cout << blockCoords[0] << " " << blockCoords[1] << " " << blockCoords[2] << std::endl;
@@ -711,13 +721,13 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 #endif
       libdvid::GrayscaleBlocks blocks = m_service->get_grayblocks(
             getDvidTarget().getGrayScaleName(), blockCoords, blockNumber);
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "one read done" << std::endl;
 #endif
 
       ZIntCuboid currentBox = dvidInfo.getBlockBox(blockIndex);
       for (int i = 0; i < blockNumber; ++i) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
         std::cout << "block:" << i << "/" << blockNumber << std::endl;
 #endif
         stackArray[i] = new ZStack(GREY, currentBox, 1);
@@ -2286,6 +2296,34 @@ void ZDvidReader::clearBuffer() const
   m_bufferReader.clearBuffer();
 }
 
+std::string ZDvidReader::GetMasterNodeFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::string master;
+
+  ZJsonArray branchJson;
+  branchJson.decodeString(bufferReader.getBuffer().data());
+  if (branchJson.size() > 0) {
+    master = ZJsonParser::stringValue(branchJson.at(0));
+  }
+
+  return master;
+}
+
+std::vector<std::string> ZDvidReader::GetMasterListFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::vector<std::string> masterList;
+
+  ZJsonArray branchJson;
+  branchJson.decodeString(bufferReader.getBuffer().data());
+  for (size_t i = 0; i < branchJson.size(); ++i) {
+    masterList.push_back(ZJsonParser::stringValue(branchJson.at(i)));
+  }
+
+  return masterList;
+}
+
 ZDvidVersionDag ZDvidReader::readVersionDag() const
 {
   ZJsonObject jsonInfo = readInfo();
@@ -2518,6 +2556,10 @@ ZObject3dScan* ZDvidReader::readRoi(
   }
   result->importDvidRoi(array);
 
+  ZIntPoint blockSize = readRoiBlockSize(dataName);
+  result->setDsIntv(blockSize.getX() - 1, blockSize.getY() - 1,
+                    blockSize.getZ() - 1);
+
   return result;
 }
 
@@ -2526,6 +2568,21 @@ ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
   ZObject3dScan obj;
   readRoi(dataName, &obj);
   return obj;
+}
+
+ZDvidRoi* ZDvidReader::readRoi(const std::string &dataName, ZDvidRoi *roi)
+{
+  if (roi == NULL) {
+    roi = new ZDvidRoi();
+  } else {
+    roi->clear();
+  }
+
+  readRoi(dataName, roi->getRoiRef());
+  roi->setName(dataName);
+  roi->setBlockSize(readRoiBlockSize(dataName));
+
+  return roi;
 }
 
 ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
@@ -2542,6 +2599,11 @@ ZFlyEmBodyAnnotation ZDvidReader::readBodyAnnotation(uint64_t bodyId) const
   }
 
   return annotation;
+}
+
+bool ZDvidReader::hasBodyAnnotation() const
+{
+  return hasData(getDvidTarget().getBodyAnnotationName());
 }
 
 ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
@@ -2675,6 +2737,30 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
   return synapseArray;
 }
 
+std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
+    uint64_t label, const ZDvidRoi &roi,
+    FlyEM::EDvidAnnotationLoadMode mode) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  ZJsonArray obj = readJsonArray(
+        dvidUrl.getSynapseUrl(label, mode != FlyEM::LOAD_NO_PARTNER));
+
+  std::vector<ZDvidSynapse> synapseArray;
+
+  for (size_t i = 0; i < obj.size(); ++i) {
+    ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+    ZIntPoint position = ZDvidAnnotation::GetPosition(synapseJson);
+    if (roi.contains(position)) {
+      synapseArray.resize(synapseArray.size() + 1);
+      synapseArray.back().loadJsonObject(synapseJson, mode);
+      synapseArray.back().setBodyId(label);
+    }
+  }
+
+  return synapseArray;
+}
+
 ZDvidSynapse ZDvidReader::readSynapse(
     int x, int y, int z, FlyEM::EDvidAnnotationLoadMode mode) const
 {
@@ -2695,7 +2781,110 @@ ZDvidSynapse ZDvidReader::readSynapse(
 
 std::string ZDvidReader::readMasterNode() const
 {
-  return ReadMasterNode(getDvidTarget());
+  std::string master;
+
+  if (good()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getMasterUrl();
+    LINFO() << "Master url: " << url;
+    m_bufferReader.read(url.c_str());
+    master = GetMasterNodeFromBuffer(m_bufferReader);
+  }
+
+  return master;
+}
+
+std::vector<std::string> ZDvidReader::readMasterList() const
+{
+  std::vector<std::string> masterList;
+
+  if (good()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getMasterUrl();
+    LINFO() << "Master url: " << url;
+    m_bufferReader.read(url.c_str());
+    masterList = GetMasterListFromBuffer(m_bufferReader);
+  }
+
+  return masterList;
+}
+
+
+void ZDvidReader::loadDvidDataSetting(const ZJsonObject obj)
+{
+  m_dvidTarget.loadDvidDataSetting(obj);
+}
+
+void ZDvidReader::loadDefaultDataSetting()
+{
+  ZJsonObject obj = readDefaultDataSetting(READ_CURRENT);
+  loadDvidDataSetting(obj);
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSettingCurrent() const
+{
+  ZJsonObject obj;
+
+  ZDvidUrl url(getDvidTarget());
+
+  obj = readJsonObject(url.getDefaultDataInstancesUrl());
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSettingTraceBack() const
+{
+  ZJsonObject obj;
+
+  std::vector<std::string> uuidList = readMasterList();
+  int index = -1;
+  for (size_t i = 0; i < uuidList.size(); ++i) {
+    const std::string &uuid = uuidList[i];
+    if (ZDvid::IsUuidMatched(uuid, getDvidTarget().getUuid())) {
+      index = i;
+      break;
+    }
+  }
+
+  obj = readDefaultDataSettingCurrent();
+
+  for (int i = index + 1; i < (int) uuidList.size(); ++i) {
+    ZDvidReader nodeReader;
+    ZDvidTarget target = getDvidTarget();
+    target.setUuid(uuidList[i]);
+    if (nodeReader.open(target)) {
+      ZJsonObject prevObj = nodeReader.readDefaultDataSettingCurrent();
+      obj.addEntryFrom(prevObj);
+    }
+  }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDefaultDataSetting(EReadOption option) const
+{
+  ZJsonObject obj;
+  switch (option) {
+  case READ_CURRENT:
+    obj = readDefaultDataSettingCurrent();
+    break;
+  case READ_TRACE_BACK:
+    obj = readDefaultDataSettingTraceBack();
+    break;
+  }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readDataMap() const
+{
+  ZJsonObject obj;
+
+  ZDvidUrl url(getDvidTarget());
+
+  obj = readJsonObject(url.getDataMapUrl());
+
+  return obj;
 }
 
 /*
@@ -2712,16 +2901,11 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(target);
-    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
-        "/branches/key/master";
+    ZDvidUrl dvidUrl(target, rootNode);
+    std::string url = dvidUrl.getMasterUrl();
     LINFO() << "Master url: " << url;
     reader.read(url.c_str());
-    ZJsonArray branchJson;
-    branchJson.decodeString(reader.getBuffer().data());
-    if (branchJson.size() > 0) {
-      master = ZJsonParser::stringValue(branchJson.at(0));
-    }
+    master = GetMasterNodeFromBuffer(reader);
   }
 
   return master;
@@ -2736,16 +2920,11 @@ std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)
       GET_FLYEM_CONFIG.getDvidRootNode(target.getUuid());
   if (!rootNode.empty()) {
     ZDvidBufferReader reader;
-    ZDvidUrl dvidUrl(target);
-    std::string url = dvidUrl.getApiUrl() + "/node/" + rootNode +
-        "/branches/key/master";
+    ZDvidUrl dvidUrl(target, rootNode);
+    std::string url = dvidUrl.getMasterUrl();
     LINFO() << "Master url: " << url;
     reader.read(url.c_str());
-    ZJsonArray branchJson;
-    branchJson.decodeString(reader.getBuffer().data());
-    for (size_t i = 0; i < branchJson.size(); ++i) {
-      masterList.push_back(ZJsonParser::stringValue(branchJson.at(i)));
-    }
+    masterList = GetMasterListFromBuffer(reader);
   }
 
   return masterList;

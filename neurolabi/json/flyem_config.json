@@ -1,5 +1,5 @@
 {
-  "librarian": "emdata1.int.janelia.org:9100",
+  "librarian": "emdata2.int.janelia.org:9100",
   "mb6_paper": false,
   "dvid root": {
     "@MB6": "99ef",
@@ -70,7 +70,7 @@
       "uuid": "@FIB19",
       "default": true,
       "name": "FIB19 (emdata2)",
-      "comment": "branched from 94b2",
+      "comment": "FIB19 production",
       "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
       "multires_tile": "graytiles",

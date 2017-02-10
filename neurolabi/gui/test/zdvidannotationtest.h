@@ -6,6 +6,7 @@
 #include "dvid/zdvidannotation.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "flyem/zflyemtodoitem.h"
 
 #ifdef _USE_GTEST_
 
@@ -38,6 +39,41 @@ TEST(ZDvidAnnotation, Json)
   index = ZDvidAnnotation::MatchRelation(
           relArray, ZIntPoint(4, 5, 7), "PostSynTo");
   ASSERT_EQ(-1, index);
+
+  ZDvidAnnotation annot;
+  ZJsonObject jsonObj = annot.toJsonObject();
+  ASSERT_FALSE(jsonObj.hasKey("Prop"));
+  ZDvidAnnotation::AddProperty(jsonObj, "test", true);
+  ASSERT_TRUE(jsonObj.hasKey("Prop"));
+  ZJsonObject propJson(jsonObj.value("Prop"));
+
+//  std::cout << ZJsonParser::stringValue(propJson.value("test").getData()) << std::endl;
+
+  ASSERT_STREQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
+
+  ZDvidAnnotation::AddProperty(jsonObj, "test2", "true");
+  ASSERT_STREQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
+
+}
+
+TEST(ZDvidAnnotation, ZFlyEmToDoItem)
+{
+  ZFlyEmToDoItem item;
+//  item.toJsonObject().print();
+
+  item.setChecked(true);
+  item.setAction(ZFlyEmToDoItem::TO_MERGE);
+//  item.toJsonObject().print();
+  ASSERT_EQ(ZFlyEmToDoItem::TO_MERGE, item.getAction());
+
+  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
+  ASSERT_EQ(ZFlyEmToDoItem::TO_SPLIT, item.getAction());
+
+  item.setAction(ZFlyEmToDoItem::TO_DO);
+//  item.toJsonObject().print();
+  ASSERT_EQ(ZFlyEmToDoItem::TO_DO, item.getAction());
+
+
 }
 
 #endif

@@ -515,6 +515,13 @@ void ZFlyEmProofMvc::makeBodyWindow()
   connect(m_bodyWindow, SIGNAL(addingTodoMarker(int,int,int,bool)),
           getCompleteDocument(),
           SLOT(executeAddTodoItemCommand(int,int,int,bool)));
+  connect(m_bodyWindow, SIGNAL(addingToMergeMarker(int,int,int)),
+          getCompleteDocument(),
+          SLOT(executeAddToMergeItemCommand(int,int,int)));
+  connect(m_bodyWindow, SIGNAL(addingToSplitMarker(int,int,int)),
+          getCompleteDocument(),
+          SLOT(executeAddToSplitItemCommand(int,int,int)));
+
   setWindowSignalSlot(m_bodyWindow);
 
   m_bodyWindow->setWindowType(NeuTube3D::TYPE_BODY);
@@ -2114,8 +2121,6 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
       body->runFillValueFunc();
 
       m_splitProject.setBodyId(bodyId);
-      ZOUT(LINFO(), 3) << "Removing ROI";
-      getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
       labelSlice->setVisible(false);
       labelSlice->setHittable(false);
@@ -2226,6 +2231,9 @@ void ZFlyEmProofMvc::clearBodyMergeStage()
 void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
 {
   enableSplit();
+
+  ZOUT(LINFO(), 3) << "Removing ROI";
+  getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
 //  m_latencyLabelWidget->hide();
 

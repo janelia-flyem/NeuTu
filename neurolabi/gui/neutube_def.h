@@ -44,12 +44,13 @@ enum ESizeHintOption {
   SIZE_HINT_DEFAULT, SIZE_HINT_CURRENT_BEST, SIZE_HINT_TAKING_SPACE
 };
 
+//Must have value X=0, Y=1, Z=2 for indexing
 enum EAxis {
-  X_AXIS, Y_AXIS, Z_AXIS
+  X_AXIS = 0, Y_AXIS, Z_AXIS
 };
 
-enum EPLANE {
-  PLANE_XY, PLANE_XZ, PLANE_YZ
+enum EPlane {
+  PLANE_XY = 0, PLANE_XZ, PLANE_YZ
 };
 
 enum EAxisSystem {
