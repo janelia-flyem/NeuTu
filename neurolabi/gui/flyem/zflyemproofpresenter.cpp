@@ -225,6 +225,8 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 {
   bool processed = false;
 
+  ZFlyEmProofDoc *doc = getCompleteDocument();
+
   switch (event->key()) {
   case Qt::Key_H:
     if (!isSplitOn()) {
@@ -240,13 +242,17 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_M:
-    emit mergingBody();
-    processed = true;
+    if (!doc->getDvidTarget().readOnly()) {
+      emit mergingBody();
+      processed = true;
+    }
     break;
   case Qt::Key_U:
-    if (!isSplitWindow()) {
-      emit uploadingMerge();
-      processed = true;
+    if (!doc->getDvidTarget().readOnly()) {
+      if (!isSplitWindow()) {
+        emit uploadingMerge();
+        processed = true;
+      }
     }
     break;
   case Qt::Key_B:
@@ -277,7 +283,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     }
     break;
   case Qt::Key_V:
-  {
+  if (!doc->getDvidTarget().readOnly()) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_MOVE);
       if (action != NULL) {
@@ -288,7 +294,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   }
     break;
   case Qt::Key_X:
-  {
+  if (!doc->getDvidTarget().readOnly()) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_DELETE);
       if (action != NULL) {
@@ -299,7 +305,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   }
     break;
   case Qt::Key_Y:
-  {
+  if (!doc->getDvidTarget().readOnly()) {
     if (event->modifiers() == Qt::NoModifier) {
       QAction *action = getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY);
       if (action != NULL) {

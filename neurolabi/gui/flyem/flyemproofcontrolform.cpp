@@ -308,7 +308,7 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
 
   if (target.readOnly()) {
     ui->mergeSegmentPushButton->setEnabled(false);
-    ui->menuPushButton->setEnabled(false);
+//    ui->menuPushButton->setEnabled(false);
     ui->uploadPushButton->setEnabled(false);
     ui->splitPushButton->setEnabled(false);
   }

@@ -647,6 +647,24 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
   m_viewTodoAction->setEnabled(target.isValid());
 
   m_viewMenu->setEnabled(true);
+
+  if (target.readOnly()) {
+    m_roiToolAction->setVisible(false);
+    m_openProtocolsAction->setVisible(false);
+    m_openTodoAction->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_ADD_PRE)->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_ADD_POST)->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_DELETE)->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_MOVE)->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_LINK)->setVisible(false);
+    m_mainMvc->getCompletePresenter()->getAction(
+      ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
+  }
 }
 
 void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)

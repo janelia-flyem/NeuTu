@@ -134,30 +134,32 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SELECT_BODY_IN_RECT);
         actionList.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
       } else {
-        std::set<uint64_t> selectedOriginal =
-            doc->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
-        std::set<uint64_t> selectedMapped =
-            doc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+        if (!doc->getDvidTarget().readOnly()) {
+          std::set<uint64_t> selectedOriginal =
+              doc->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+          std::set<uint64_t> selectedMapped =
+              doc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
 
-        if (!selectedOriginal.empty()) {
-          if (selectedOriginal.size() == 1) {
-            if (doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-              actionList.append(ZActionFactory::ACTION_BODY_SPLIT_START);
+          if (!selectedOriginal.empty()) {
+            if (selectedOriginal.size() == 1) {
+              if (doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+                actionList.append(ZActionFactory::ACTION_BODY_SPLIT_START);
+              }
+              actionList.append(ZActionFactory::ACTION_BODY_ANNOTATION);
             }
-            actionList.append(ZActionFactory::ACTION_BODY_ANNOTATION);
-          }
 
-          if (selectedMapped.size() > 1) {
-            actionList.append(ZActionFactory::ACTION_BODY_MERGE);
-          }
-          if (selectedMapped.size() != selectedOriginal.size()) {
-            actionList.append(ZActionFactory::ACTION_BODY_UNMERGE);
-          }
+            if (selectedMapped.size() > 1) {
+              actionList.append(ZActionFactory::ACTION_BODY_MERGE);
+            }
+            if (selectedMapped.size() != selectedOriginal.size()) {
+              actionList.append(ZActionFactory::ACTION_BODY_UNMERGE);
+            }
 
-          actionList.append(ZActionFactory::ACTION_BODY_CHECKOUT);
-          actionList.append(ZActionFactory::ACTION_BODY_CHECKIN);
-          if (isAdmin()) {
-            actionList.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+            actionList.append(ZActionFactory::ACTION_BODY_CHECKOUT);
+            actionList.append(ZActionFactory::ACTION_BODY_CHECKIN);
+            if (isAdmin()) {
+              actionList.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+            }
           }
         }
       }
@@ -167,36 +169,38 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       if (!actionList.isEmpty()) {
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
-
-      actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
-      actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
-      actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
-      actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
-      actionList.append(ZActionFactory::ACTION_SEPARATOR);
-      if (doc->hasTodoItemSelected()) {
-        actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
-        actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
-        actionList.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
-      }
-
-      actionList.append(ZActionFactory::ACTION_SEPARATOR);
-
       /* Synapse actions */
-      actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
-      actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_POST);
-
-      std::set<ZIntPoint> synapseSet = doc->getSelectedSynapse();
-      if (!synapseSet.empty()) {
-        actionList.append(ZActionFactory::ACTION_SYNAPSE_DELETE);
-        if (synapseSet.size() == 1) {
-          actionList.append(ZActionFactory::ACTION_SYNAPSE_MOVE);
-        } else {
-          actionList.append(ZActionFactory::ACTION_SYNAPSE_LINK);
+      if (!doc->getDvidTarget().readOnly()) {
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+        actionList.append(ZActionFactory::ACTION_SEPARATOR);
+        if (doc->hasTodoItemSelected()) {
+          actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+          actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+          actionList.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
         }
-        actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
-        actionList.append(ZActionFactory::ACTION_SYNAPSE_VERIFY);
-        actionList.append(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
-        actionList.append(ZActionFactory::ACTION_SYNAPSE_REPAIR);
+
+        actionList.append(ZActionFactory::ACTION_SEPARATOR);
+
+
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
+        actionList.append(ZActionFactory::ACTION_SYNAPSE_ADD_POST);
+
+        std::set<ZIntPoint> synapseSet = doc->getSelectedSynapse();
+        if (!synapseSet.empty()) {
+          actionList.append(ZActionFactory::ACTION_SYNAPSE_DELETE);
+          if (synapseSet.size() == 1) {
+            actionList.append(ZActionFactory::ACTION_SYNAPSE_MOVE);
+          } else {
+            actionList.append(ZActionFactory::ACTION_SYNAPSE_LINK);
+          }
+          actionList.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
+          actionList.append(ZActionFactory::ACTION_SYNAPSE_VERIFY);
+          actionList.append(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
+          actionList.append(ZActionFactory::ACTION_SYNAPSE_REPAIR);
+        }
       }
 
       if (!actionList.isEmpty()) {
@@ -208,11 +212,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SAVE_STACK);
       }
 
-      if (doc->getCuboidRoi().getDepth() > 1) {
-        if (!actionList.isEmpty()) {
-          actionList.append(ZActionFactory::ACTION_SEPARATOR);
+      if (!doc->getDvidTarget().readOnly()) {
+        if (doc->getCuboidRoi().getDepth() > 1) {
+          if (!actionList.isEmpty()) {
+            actionList.append(ZActionFactory::ACTION_SEPARATOR);
+          }
+          actionList.append(ZActionFactory::ACTION_REWRITE_SEGMENTATION);
         }
-        actionList.append(ZActionFactory::ACTION_REWRITE_SEGMENTATION);
       }
     }
 
