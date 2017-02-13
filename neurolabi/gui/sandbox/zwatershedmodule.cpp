@@ -2,7 +2,7 @@
 #include<QMessageBox>
 #include<vector>
 #include"zwatershedmodule.h"
-#include"zstackwatershed.h"
+#include"imgproc/zstackwatershed.h"
 #include"zstackdoc.h"
 #include"zsandbox.h"
 #include"mainwindow.h"

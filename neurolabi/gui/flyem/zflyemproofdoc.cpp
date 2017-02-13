@@ -40,7 +40,7 @@
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "zstackarray.h"
 #include "zsleeper.h"
 #include "zdvidutil.h"

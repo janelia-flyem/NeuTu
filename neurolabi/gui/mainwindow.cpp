@@ -30,7 +30,7 @@
 #include "dialogs/channeldialog.h"
 #include "tz_math.h"
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "tz_error.h"
 #include "dialogs/zeditswcdialog.h"
 #include "dialogs/cannyedgedialog.h"

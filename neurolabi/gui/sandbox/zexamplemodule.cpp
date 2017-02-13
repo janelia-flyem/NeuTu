@@ -4,7 +4,7 @@
 
 #include "zsandbox.h"
 #include "zstackdoc.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 
 ZExampleModule::ZExampleModule(QObject *parent) :
   ZSandboxModule(parent)

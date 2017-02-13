@@ -10,7 +10,7 @@
 #include "zgradientmagnitudemodule.h"
 #include "mainwindow.h"
 #include "zsandbox.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 
 ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
   ZSandboxModule(parent)

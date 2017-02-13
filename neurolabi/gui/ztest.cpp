@@ -38,7 +38,7 @@ using namespace std;
 #include <set>
 #include "zopencv_header.h"
 #include "neutube.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "zfilelist.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_bwmorph.h"
@@ -246,7 +246,7 @@ using namespace std;
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
 #include "test/zdvidannotationtest.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
 #include "test/zstackobjectgrouptest.h"

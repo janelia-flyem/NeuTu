@@ -67,7 +67,7 @@
 #include "flyem/zneuronnetwork.h"
 #include "zfiletype.h"
 #include "zstackfile.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "zswcobjsmodel.h"
 #include "zdocplayerobjsmodel.h"
 #include "zswcnodeobjsmodel.h"
@@ -88,7 +88,7 @@
 #include "dialogs/swcskeletontransformdialog.h"
 #include "dialogs/swcsizedialog.h"
 #include "tz_stack_watershed.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "zstackarray.h"
 #include "zstackfactory.h"
 #include "zsparseobject.h"
@@ -179,11 +179,6 @@ void ZStackDoc::init()
   m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
-//  m_undoAction = NULL;
-//  m_redoAction = NULL;
-
-//  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
-//  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   connectSignalSlot();
 
   //setReporter(new ZQtMessageReporter());
