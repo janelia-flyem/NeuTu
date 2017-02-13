@@ -40,10 +40,11 @@
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "zstackarray.h"
 #include "zsleeper.h"
 #include "zdvidutil.h"
+#include "zstackdocdatabuffer.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -76,6 +77,10 @@ void ZFlyEmProofDoc::initTimer()
 
   m_routineTimer = new QTimer(this);
   m_routineTimer->setInterval(10000);
+}
+
+void ZFlyEmProofDoc::startTimer()
+{
   if (m_routineCheck) {
     m_routineTimer->start();
   }
@@ -158,15 +163,15 @@ void ZFlyEmProofDoc::runRoutineCheck()
   if (m_routineCheck) {
     if (NeutubeConfig::GetVerboseLevel() >= 5) {
       if (getSupervisor() != NULL) {
-        QElapsedTimer timer;
-        timer.start();
-        int statusCode = getSupervisor()->testServer();
-        if (statusCode == 200) {
-          ZOUT(LTRACE(), 5) << "HEAD time:"
-                            << getSupervisor()->getMainUrl() + ":"
-                            << timer.elapsed() << "ms";
-        } else {
-          if (!getSupervisor()->isEmpty()) {
+        if (!getSupervisor()->isEmpty()) {
+          QElapsedTimer timer;
+          timer.start();
+          int statusCode = getSupervisor()->testServer();
+          if (statusCode == 200) {
+            ZOUT(LTRACE(), 5) << "HEAD time:"
+                              << getSupervisor()->getMainUrl() + ":"
+                              << timer.elapsed() << "ms";
+          } else {
             LWARN() << "API load failed:" << getSupervisor()->getMainUrl();
           }
         }
@@ -668,27 +673,40 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
-    m_synapseReader.open(target);
-    m_todoReader.open(target);
-    m_sparseVolReader.open(target);
+    m_synapseReader.open(m_dvidReader.getDvidTarget());
+    m_todoReader.open(m_dvidReader.getDvidTarget());
+    m_sparseVolReader.open(m_dvidReader.getDvidTarget());
     m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(target);
     readInfo();
     initData(target);
+    if (getSupervisor() != NULL) {
+      getSupervisor()->setDvidTarget(m_dvidTarget);
+      if (!getSupervisor()->isEmpty()) {
+        int statusCode = getSupervisor()->testServer();
+        if (statusCode != 200) {
+          emit messageGenerated(
+                ZWidgetMessage(
+                  QString("WARNING: Failed to connect to the librarian %1. "
+                          "Please do NOT proofread segmentation "
+                          "until you fix the problem.").
+                  arg(getSupervisor()->getMainUrl().c_str()),
+                  NeuTube::MSG_WARNING));
+        }
+      }
+    }
+
+    prepareDvidData();
+
+    updateDvidTargetForObject();
+
+    startTimer();
   } else {
     m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
-
-  if (getSupervisor() != NULL) {
-    getSupervisor()->setDvidTarget(m_dvidTarget);
-  }
-
-  prepareDvidData();
-
-  updateDvidTargetForObject();
 }
 
 bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
@@ -736,6 +754,38 @@ void ZFlyEmProofDoc::readInfo()
   LINFO() << startLog;
 }
 
+void ZFlyEmProofDoc::loadRoiFunc()
+{
+  if (!getDvidTarget().getRoiName().empty()) {
+    if (!m_roiReader.isReady()) {
+      m_roiReader.open(m_dvidReader.getDvidTarget());
+    }
+    ZObject3dScan *obj =
+        m_roiReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
+    if (obj != NULL) {
+      if (!obj->isEmpty()) {
+#ifdef _DEBUG_
+        std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
+#endif
+        obj->setColor(0, 255, 0);
+        obj->setZOrder(2);
+        obj->setTarget(ZStackObject::TARGET_WIDGET);
+        obj->useCosmeticPen(true);
+        obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+        //          obj->setDsIntv(31, 31, 31);
+        obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+        obj->setHittable(false);
+        //      addObject(obj);
+        m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        m_dataBuffer->deliver();
+        //          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
+      } else {
+        delete obj;
+      }
+    }
+  }
+}
+
 void ZFlyEmProofDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
@@ -752,6 +802,9 @@ void ZFlyEmProofDoc::prepareDvidData()
     loadStack(stack);
 
     //Download ROI
+    m_futureMap["loadRoiFunc"] =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
+#if 0
     if (!getDvidTarget().getRoiName().empty()) {
       ZObject3dScan *obj =
           m_dvidReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
@@ -776,6 +829,7 @@ void ZFlyEmProofDoc::prepareDvidData()
       }
 
     }
+#endif
   }
 
 
@@ -2824,14 +2878,15 @@ void ZFlyEmProofDoc::runSplitFunc()
       out->setDsIntv(dsIntv);
       getProgressSignal()->advanceProgress(0.3);
 
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
-      updateWatershedBoundaryObject(out, dsIntv);
+      updateWatershedBoundaryObject(dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
-      ZOUT(LINFO(), 3) << "Setting label field";
-      setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 
@@ -2892,14 +2947,16 @@ void ZFlyEmProofDoc::localSplitFunc()
       ZStack *out = engine.run(signalStack, seedMask);
       getProgressSignal()->advanceProgress(0.3);
 
+
+      ZOUT(LINFO(), 3) << "Setting label field";
+      setLabelField(out);
+
       ZOUT(LINFO(), 3) << "Updating watershed boundary object";
-      updateWatershedBoundaryObject(out, dsIntv);
+      updateWatershedBoundaryObject(dsIntv);
       getProgressSignal()->advanceProgress(0.1);
 
 //      notifyObj3dModified();
 
-      ZOUT(LINFO(), 3) << "Setting label field";
-      setLabelField(out);
 //      m_isSegmentationReady = true;
       setSegmentationReady(true);
 

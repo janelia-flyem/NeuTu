@@ -273,7 +273,7 @@ public:
 //        const std::vector<Stack*> &stackArray,
 //        const int *offset, int xIntv, int yIntv, int zIntv) const;
 
-//  int getLabel() const;
+  int getLabel() const;
 //  ZSwcTree* getSwcDecoration() const;
 //  Z3DGraph get3DGraph() const;
 //  ZJsonObject toJsonObject() const;

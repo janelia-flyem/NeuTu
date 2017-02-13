@@ -30,7 +30,7 @@
 #include "dialogs/channeldialog.h"
 #include "tz_math.h"
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "tz_error.h"
 #include "dialogs/zeditswcdialog.h"
 #include "dialogs/cannyedgedialog.h"
@@ -1058,70 +1058,76 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
-  //m_ui->toolBar->setStyleSheet("border: none");
-  //m_ui->toolBar->setIconSize(QSize(32, 32));
+  //m_toolBar->setStyleSheet("border: none");
+//  m_toolBar->setIconSize(QSize(24, 24));
+
+  m_toolBar = new QToolBar(this);
+  m_toolBar->setObjectName(QString::fromUtf8("toolBar"));
+//  m_toolBar->setIconSize(QSize(32, 32));
+
+  addToolBar(Qt::TopToolBarArea, m_toolBar);
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-//    m_ui->toolBar->addAction(m_ui->actionNewProject);
-    m_ui->toolBar->addAction(m_ui->actionTiles);
+//    m_toolBar->addAction(m_ui->actionNewProject);
+    m_toolBar->addAction(m_ui->actionTiles);
   }
-  //m_ui->toolBar->addAction(openAction);
+  //m_toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
-    m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
-    m_ui->toolBar->addAction(m_ui->actionDVID_Bundle);
-    //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
-//    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
-//    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
-    m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
-    m_ui->toolBar->addSeparator();
-    m_ui->toolBar->addAction(m_ui->actionProof);
+    m_toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+    m_toolBar->addAction(m_ui->actionDVID_Bundle);
+    //m_toolBar->addAction(m_ui->actionDvid_Object);
+//    m_toolBar->addAction(m_ui->actionSplit_Body);
+//    m_toolBar->addAction(m_ui->actionMerge_Body_Project);
+    m_toolBar->addAction(m_ui->actionFlyEmROI);
+    m_toolBar->addSeparator();
+    m_toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
-    m_ui->toolBar->addAction(m_ui->actionShape_Matching);
+    m_toolBar->addAction(m_ui->actionShape_Matching);
 #endif
   }
 
-  //m_ui->toolBar->addAction(expandAction);
+  //m_toolBar->addAction(expandAction);
   //fileToolBar->addAction(saveAction);
 
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addSeparator();
 
   if (GET_APPLICATION_NAME == "General") {
-    m_ui->toolBar->addActions(interactiveTrace->actions());
+    m_toolBar->addActions(interactiveTrace->actions());
   }
 
-  //m_ui->toolBar->addSeparator();
-  //m_ui->toolBar->addAction(m_ui->actionAutomatic);
+  //m_toolBar->addSeparator();
+  //m_toolBar->addAction(m_ui->actionAutomatic);
 
-  m_ui->toolBar->addAction(m_ui->actionMake_Projection);
-  m_ui->toolBar->addAction(m_ui->actionMask);
-  m_ui->toolBar->addAction(m_ui->actionMask_SWC);
+  m_toolBar->addAction(m_ui->actionMake_Projection);
+  m_toolBar->addAction(m_ui->actionMask);
+  m_toolBar->addAction(m_ui->actionMask_SWC);
 
-  m_ui->toolBar->addSeparator();
-  //m_ui->toolBar->addAction(objectViewHideAction);
-  m_ui->toolBar->addAction(objectViewSolidAction);
-  m_ui->toolBar->addAction(objectViewSurfaceAction);
-  m_ui->toolBar->addAction(objectViewSkeletonAction);
+  m_toolBar->addSeparator();
+  //m_toolBar->addAction(objectViewHideAction);
+  m_toolBar->addAction(objectViewSolidAction);
+  m_toolBar->addAction(objectViewSurfaceAction);
+  m_toolBar->addAction(objectViewSkeletonAction);
 
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addSeparator();
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    m_ui->toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
+    m_toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
   }
-  m_ui->toolBar->addAction(m_ui->actionTile_Manager_2);
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addAction(m_ui->actionTile_Manager_2);
+  m_toolBar->addSeparator();
 
-  m_ui->toolBar->addAction(m_ui->actionBrightnessContrast);
+  m_toolBar->addAction(m_ui->actionBrightnessContrast);
 #ifdef _ADVANCED_
-  //m_ui->toolBar->addAction(infoViewAction);
+  //m_toolBar->addAction(infoViewAction);
 #endif
-  m_ui->toolBar->addAction(settingAction);
-  m_ui->toolBar->addAction(screenshotAction);
+  m_toolBar->addAction(settingAction);
+  m_toolBar->addAction(screenshotAction);
 //#ifdef _DEBUG_
-  m_ui->toolBar->addAction(testAction);
-  m_ui->toolBar->addAction(testAction2);
+  m_toolBar->addAction(testAction);
+  m_toolBar->addAction(testAction2);
 //#endif
-  m_ui->toolBar->addAction(m_ui->actionShortcut);
+  m_toolBar->addAction(m_ui->actionShortcut);
 }
 
 void MainWindow::createStatusBar()

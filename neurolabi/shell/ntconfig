@@ -8,5 +8,9 @@ if [ -d $dst_neutu/neurolabi/build_debug ]
 then
   cp $src_neutu/neurolabi/json/flyem_config.json $dst_neutu/neurolabi/build_debug/json/
 fi
+if [ -d $dst_neutu/neurolabi/build_sanitize ]
+then
+  cp $src_neutu/neurolabi/json/flyem_config.json $dst_neutu/neurolabi/build_sanitize/json/
+fi
 
  

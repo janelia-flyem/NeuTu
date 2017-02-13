@@ -149,6 +149,7 @@ public:
 */
   void processMouseReleaseEvent(QMouseEvent *event);
   virtual bool processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEventOther(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);

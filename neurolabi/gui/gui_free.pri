@@ -1,8 +1,8 @@
 include($${PWD}/json.pri)
 include($${PWD}/mylib/mylib.pri)
+include($${PWD}/imgproc/imgproc.pri)
 
-HEADERS +=$${PWD}/zstackprocessor.h \
-   $${PWD}/zstack.hxx \
+HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
    $${PWD}/zellipse.h \
    $${PWD}/zswctree.h \
@@ -186,7 +186,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zintarray.h \
    $${PWD}/zintset.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
-   $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
    $${PWD}/flyem/zflyemconfig.h \
    $${PWD}/tr1_header.h \
@@ -235,8 +234,7 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zswcutil.h \
    $${PWD}/dvid/zdvidnode.h
 
-SOURCES +=$${PWD}/zstackprocessor.cpp \
-   $${PWD}/zstack.cxx \
+SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
    $${PWD}/zellipse.cpp \
    $${PWD}/zswctree.cpp \
@@ -407,7 +405,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zintarray.cpp \
    $${PWD}/zintset.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
-   $${PWD}/zstackwatershed.cpp \
    $${PWD}/zstackarray.cpp \
    $${PWD}/flyem/zflyemconfig.cpp \
    $${PWD}/geometry/zgeo3dtransform.cpp \

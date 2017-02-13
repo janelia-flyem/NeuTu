@@ -480,12 +480,14 @@ private:
 
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
+  void loadRoiFunc();
 
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
 
   void init();
   void initTimer();
   void initAutoSave();
+  void startTimer();
 
   QString getBodySelectionMessage() const;
 
@@ -525,6 +527,7 @@ protected:
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;
   ZDvidReader m_todoReader;
+  ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;

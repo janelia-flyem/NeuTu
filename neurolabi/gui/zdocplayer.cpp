@@ -575,6 +575,10 @@ ZObject3dScanPlayer::ZObject3dScanPlayer(ZStackObject *data) :
 {
 }
 
+int ZObject3dScanPlayer::getLabel() const
+{
+  return (int) getCompleteData()->getLabel();
+}
 
 const ZObject3dScan* ZObject3dScanPlayer::getCompleteData() const
 {

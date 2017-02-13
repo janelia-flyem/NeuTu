@@ -21,7 +21,7 @@
 #include "zerror.h"
 #include "zweightedpointarray.h"
 #include "tz_stack_objlabel.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 
 using namespace std;
 

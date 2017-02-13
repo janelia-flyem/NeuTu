@@ -1822,7 +1822,7 @@ ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, const ZIntPoint &pt) const
 
 ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, int x, int y, int z) const
 {
-  if (bodyId == readBodyIdAt(x, y, z)) {
+  if (bodyId == 0 || bodyId == readBodyIdAt(x, y, z)) {
     return ZIntPoint(x, y, z);
   }
 

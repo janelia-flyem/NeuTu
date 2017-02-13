@@ -9,7 +9,7 @@
 #include "mainwindow.h"
 #include "zobject3dscan.hpp"
 #include "zdownsamplingmodule.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 
 void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
 {

@@ -96,6 +96,7 @@ private:
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
   QAction *m_nameColorAction;
+
 //  QAction *m_sequencerColorAction;
 //  QAction *m_focusedColorAction;
 
