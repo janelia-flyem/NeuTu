@@ -601,6 +601,7 @@ private:
   // toolbars
   QToolBar *fileToolBar;
   QToolBar *editToolBar;
+  QToolBar *m_toolBar;
 
   // 'File' menu: 'New', 'Open', 'Import', 'Export', 'Save', 'Save As',
   //              'Close', 'Exit'

@@ -637,6 +637,8 @@ void ZProofreadWindow::initProgress(int nticks)
 
 void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
 {
+//  removeToolBar(m_toolBar);
+
   setWindowTitle((target.getName() + " @ " + target.getSourceString(false)).c_str());
 
   m_viewSynapseAction->setEnabled(target.isValid());
@@ -665,6 +667,11 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
     m_mainMvc->getCompletePresenter()->getAction(
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
   }
+
+//  m_toolBar->hide();
+//  m_toolBar->show();
+//  addToolBar(Qt::TopToolBarArea, m_toolBar);
+//  m_toolBar->show();
 }
 
 void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
