@@ -42,7 +42,7 @@ source $scriptDir/flyem_utilities.sh
 update_gcc $condaDir
 
 #install lowtis
-if [ -d $install_dir/use_lowtis ]
+if [ `uname` != 'Darwin' ]
 then
   flyem_build_lowtis $install_dir $scriptDir
 fi
