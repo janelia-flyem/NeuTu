@@ -104,7 +104,7 @@ public:
 
   bool isEmpty() const;
 
-  void merge(const ZSparseStack &sparseStack);
+  void merge(ZSparseStack &sparseStack);
 
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,

@@ -83,6 +83,21 @@ bool ZStackBlockGrid::consumeStack(const ZIntPoint &blockIndex, ZStack *stack)
   return true;
 }
 
+void ZStackBlockGrid::consume(ZStackBlockGrid *grid)
+{
+  if (grid != NULL) {
+    if (grid->m_stackArray.size() > m_stackArray.size()) {
+      m_stackArray.resize(grid->m_stackArray.size(), NULL);
+      for (size_t i = 0; i < m_stackArray.size(); ++i) {
+        if (m_stackArray[i] == NULL && grid->m_stackArray[i] != NULL) {
+          m_stackArray[i] = grid->m_stackArray[i];
+          grid->m_stackArray[i] = NULL;
+        }
+      }
+    }
+  }
+}
+
 ZStack* ZStackBlockGrid::getStack(const ZIntPoint &blockIndex) const
 {
   ZStack *stack = NULL;
