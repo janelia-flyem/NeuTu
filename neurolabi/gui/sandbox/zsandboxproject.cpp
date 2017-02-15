@@ -8,9 +8,8 @@
 #include "zrgb2graymodule.h"
 #include "ztracemodule.h"
 #include "zimageinfomodule.h"
-#include "zwatershedmodule.h"
+#include "zmultiscalewatershedmodule.h"
 #include "zgradientmagnitudemodule.h"
-#include "zdownsamplingmodule.h"
 /*************************************/
 
 
@@ -29,7 +28,6 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZRgb2GrayModule>();
   RegisterModule<ZTraceModule>();
   RegisterModule<ZImageInfoModule>();
-  RegisterModule<ZWaterShedModule>();
+  RegisterModule<ZMultiscaleWaterShedModule>();
   RegisterModule<ZGradientMagnitudeModule>();
-  RegisterModule<ZDownSamplingModule>();
 }

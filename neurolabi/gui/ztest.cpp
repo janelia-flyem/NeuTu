@@ -21941,12 +21941,49 @@ void ZTest::test(MainWindow *host)
   std::cout << reader.readBodyIdAt(pt) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZStackDoc *doc = new ZStackDoc;
   doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
   doc->test();
 
   doc->test();
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/misc/larva/3.tif");
+
+  Stack stack1 = C_Stack::sliceView(stack.c_stack(), 0);
+  Stack stack2 = C_Stack::sliceView(stack.c_stack(), 1);
+
+  Stack *out = Stack_Sub(&stack1, &stack2, NULL);
+
+  std::vector<int> zArray;
+  zArray.push_back(0);
+  for (int z = 1; z < stack.depth(); ++z) {
+    stack2 = C_Stack::sliceView(stack.c_stack(), z);
+    Stack_Sub(&stack2, &stack1, out);
+    double diff = C_Stack::sum(out);
+    if (diff> 0) {
+//      std::cout << z << " " << C_Stack::sum(out) << std::endl;
+      zArray.push_back(z);
+    }
+    stack1 = stack2;
+  }
+
+  Stack *newStack = C_Stack::make(GREY, stack.width(), stack.height(), zArray.size());
+  for (size_t i = 0; i < zArray.size(); ++i) {
+    stack1 = C_Stack::sliceView(stack.c_stack(), zArray[i]);
+    C_Stack::copyPlaneValue(newStack, C_Stack::array8(&stack1), i);
+  }
+
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", newStack);
+
+//  std::cout << C_Stack::sum(out) << std::endl;
+
+  C_Stack::kill(out);
+  C_Stack::kill(newStack);
+
 #endif
 
   std::cout << "Done." << std::endl;
