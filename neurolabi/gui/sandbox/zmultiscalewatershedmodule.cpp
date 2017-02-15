@@ -526,11 +526,40 @@ void ZWaterShedWindow::onScaleLargerThanOne()
   sampled->downsampleMin(step-1,step-1,step-1);
 
   std::vector<ZStack*> seeds;
-  getSeeds(doc,seeds);
+
+  QList<ZSwcTree*> trees=doc->getSwcList();
+  if(trees.size()<2 || trees.size()>255)
+  {
+    return ;
+  }
+  uint seed_index=1;
+  /*for each swc tree we create a relative seed stack*/
+  for(QList<ZSwcTree*>::iterator it=trees.begin();it!=trees.end();++it)
+  {
+    ZSwcTree* tree=*it;
+    ZCuboid box=tree->getBoundBox();
+    ZStack* seed=new ZStack(original->kind(),
+                            std::max(1,(int)(box.width()/step)),
+                            std::max(1,(int)(box.height()/step)),
+                            std::max(1,(int)(box.depth()/step)),
+                            original->channelNumber());
+    ZPoint _off=box.firstCorner();
+    ZIntPoint off(_off.getX()/step,_off.getY()/step,_off.getZ()/step);
+    seed->setOffset(off);
+    for(int i=0;i<seed->getVoxelNumber();++i)
+    {
+      seed->array8()[i]=seed_index;
+    }
+    seed_index++;
+    //tree->labelStack(seed,seed_index++);
+    seeds.push_back(seed);
+  }
+/*  getSeeds(doc,seeds);
   for(uint i=0;i<seeds.size();++i)
   {
+    seeds[i]->
     seeds[i]->downsampleMin(step-1,step-1,step-1);
-  }
+  }*/
 
   ZStack* sampled_water_shed=WaterShed(seeds,sampled);
   if(sampled_water_shed)
