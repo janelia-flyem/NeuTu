@@ -325,6 +325,38 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan* ZDvidReader::readBodyWithPartition(
+    uint64_t bodyId, int npar, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    const ZObject3dScan &coarseBody = readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = readLabelInfo();
+    int minZ = dvidInfo.getCoordZ(coarseBody.getMinZ());
+    int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ());
+
+    if (npar <= 0) {
+      npar = 1;
+    }
+
+    int dz = (maxZ - minZ) / npar;
+    readBody(bodyId, minZ, minZ + dz, true, NeuTube::Z_AXIS, result);
+    for (int startZ = minZ; startZ <= maxZ; startZ += dz) {
+
+    }
+
+  }
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int minZ, int maxZ, bool canonizing, NeuTube::EAxis axis,
     ZObject3dScan *result)

@@ -226,7 +226,20 @@ public:
   void canonize();
   void sortedCanonize();
   void fullySortedCanonize();
+
+  /*!
+   * \brief Unify two objects
+   *
+   * Unify \a obj to the current object and keep the result canonized.
+   */
   void unify(const ZObject3dScan &obj);
+
+  /*!
+   * \brief Concatenate two objects
+   *
+   * The current object will be changed to the combination of its old content
+   * and \a obj. The result will not be canonized.
+   */
   void concat(const ZObject3dScan &obj);
 
   ZObject3dScan subtract(const ZObject3dScan &obj);

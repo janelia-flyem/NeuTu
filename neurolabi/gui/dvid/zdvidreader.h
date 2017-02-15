@@ -108,6 +108,8 @@ public:
       uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
+  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, int npar, ZObject3dScan *result);
+
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId);

@@ -916,8 +916,19 @@ void ZObject3dScan::canonize()
 
 void ZObject3dScan::unify(const ZObject3dScan &obj)
 {
-  concat(obj);
-  canonize();
+  bool processed = false;
+  if (isCanonized() && obj.isCanonized()) {
+    if (obj.getMinZ() > getMaxZ()) {
+      concat(obj);
+      setCanonized(true);
+      processed = true;
+    }
+  }
+
+  if (processed == false) {
+    concat(obj);
+    canonize();
+  }
 }
 
 void ZObject3dScan::concat(const ZObject3dScan &obj)

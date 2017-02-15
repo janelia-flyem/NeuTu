@@ -42,6 +42,8 @@ public:
 
   int getBlockIndexZ(int z) const;
 
+  int getCoordZ(int zIndex) const;
+
   /*!
    * \brief Get the indices of all blocks containing at least one voxel of an object
    */
