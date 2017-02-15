@@ -520,6 +520,39 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
   ZIntCuboid box = obj.getBoundBox();
+
+  int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
+                                    ZObject3dScan::MAX_SPAN_HINT)));
+
+  size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
+      ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
+
+  ZSwcTree *tree = NULL;
+  if (volume > MAX_INT32) {
+    //Separate into two parts
+    int minZ = obj.getMinZ();
+    int maxZ = obj.getMaxZ();
+    int medZ = (minZ + maxZ) / 2;
+
+    ZObject3dScan obj1 = obj.getSlice(minZ, medZ);
+    ZObject3dScan obj2 = obj.getSlice(medZ + 1, maxZ);
+    tree = CreateSurfaceSwcNoPartition(obj1, sparseLevel, NULL);
+    tree = CreateSurfaceSwcNoPartition(obj2, sparseLevel, tree);
+  } else {
+    tree = CreateSurfaceSwcNoPartition(obj, sparseLevel, NULL);
+  }
+
+  if (tree != NULL) {
+    tree->setColor(obj.getColor());
+  }
+
+  return tree;
+}
+
+ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
+    const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree)
+{
+  ZIntCuboid box = obj.getBoundBox();
 //  size_t voxelNumber = obj.getVoxelNumber();
 
   int intv = iround(Cube_Root(round(double(obj.getSegmentNumber()) /
@@ -544,11 +577,11 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   ZIntPoint dsIntv = obj.getDsIntv();
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
-    obj2.downsample(intv, intv, intv);
+    obj2.downsampleMax(intv, intv, intv);
     intv = iround(Cube_Root(round(double(obj2.getSegmentNumber()) /
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
-      obj2.downsample(intv, intv, intv);
+      obj2.downsampleMax(intv, intv, intv);
     }
 
     dsIntv = obj2.getDsIntv();
@@ -558,7 +591,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
                                   ZObject3dScan::MAX_SPAN_HINT)));
     if (intv > 0) {
       ZObject3dScan obj2 = obj;
-      obj2.downsample(intv, intv, intv);
+      obj2.downsampleMax(intv, intv, intv);
       dsIntv = obj2.getDsIntv();
       stack = obj2.toStackObjectWithMargin(1, 1);
     } else {
@@ -567,14 +600,14 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   }
   std::cout << "Preparing for stack time: " << toc() << std::endl;
 
-  ZSwcTree *tree = NULL;
+//  ZSwcTree *tree = NULL;
   if (stack != NULL) {
-    tree = CreateSurfaceSwc(*stack, sparseLevel);
+    tree = CreateSurfaceSwc(*stack, sparseLevel, dsIntv + 1, tree);
     if (tree != NULL) {
-      tree->setColor(obj.getColor());
-      tree->rescale(dsIntv.getX() + 1,
-                    dsIntv.getY() + 1,
-                    dsIntv.getZ() + 1);
+//      tree->setColor(obj.getColor());
+//      tree->rescale(dsIntv.getX() + 1,
+//                    dsIntv.getY() + 1,
+//                    dsIntv.getZ() + 1);
     } else {
       LWARN() << "Failed to generate body surface for sparsevol: "
               << obj.getVoxelNumber() << " voxels";
@@ -587,11 +620,17 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
 {
+  return CreateSurfaceSwc(stack, sparseLevel, ZIntPoint(0, 0, 0), NULL);
+}
+
+ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
+    const ZStack &stack, int sparseLevel, const ZIntPoint &scale, ZSwcTree *tree)
+{
   if (stack.kind() != GREY) {
     return NULL;
   }
 
-  ZSwcTree *tree = NULL;
+//  ZSwcTree *tree = NULL;
 
   if (stack.hasData()) {
     int width = stack.width();
@@ -611,12 +650,14 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
     int n_in_bound = conn;
     int count = 0;
 
-    tree = new ZSwcTree();
+    if (tree == NULL) {
+      tree = new ZSwcTree();
+    }
     tree->forceVirtualRoot();
     Swc_Tree_Node *root = tree->root();
     Stack_Neighbor_Offset(conn, width, height, neighbor);
 
-    double radius = sparseLevel * 0.7;
+    double radius = sparseLevel * 0.7 * sqrt(scale.getX() * scale.getY());
     tic();
     for (int k = 0; k <= cdepth; k++) {
       for (int j = 0; j <= cheight; j++) {
@@ -640,10 +681,11 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)
 
             if (isSurface) {
               if (count++ % sparseLevel == 0) {
-                SwcTreeNode::makePointer(i + stack.getOffset().getX(),
-                                         j + stack.getOffset().getY(),
-                                         k + stack.getOffset().getZ(),
-                                         radius, root);
+                SwcTreeNode::makePointer(
+                      (i + stack.getOffset().getX()) * scale.getX(),
+                      (j + stack.getOffset().getY()) * scale.getY(),
+                      (k + stack.getOffset().getZ()) * scale.getZ(),
+                      radius, root);
               }
             }
           }

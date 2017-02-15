@@ -1,12 +1,22 @@
 #include "zresolution.h"
 
+#include <cmath>
+
+#include "zjsonobject.h"
+#include "zjsonparser.h"
+
 ZResolution::ZResolution()
 {
-   m_voxelSize[0] = 1.0;
-   m_voxelSize[1] = 1.0;
-   m_voxelSize[2] = 1.0;
-   m_unit = 'p';
- }
+  reset();
+}
+
+void ZResolution::reset()
+{
+  m_voxelSize[0] = 1.0;
+  m_voxelSize[1] = 1.0;
+  m_voxelSize[2] = 1.0;
+  m_unit = 'p';
+}
 
 void ZResolution::setUnit(const std::string &unit)
 {
@@ -33,6 +43,35 @@ std::string ZResolution::getUnitName() const
   return "undefined";
 }
 
+ZResolution::EUnit ZResolution::getUnit() const
+{
+  switch (m_unit) {
+  case 'u':
+    return UNIT_MICRON;
+  case 'n':
+    return UNIT_NANOMETER;
+  case 'p':
+    return UNIT_PIXEL;
+  }
+
+  return UNIT_PIXEL;
+}
+
+void ZResolution::setUnit(EUnit unit)
+{
+  switch (unit) {
+  case UNIT_PIXEL:
+    m_unit = 'p';
+    break;
+  case UNIT_MICRON:
+    m_unit = 'u';
+    break;
+  case UNIT_NANOMETER:
+    m_unit = 'n';
+    break;
+  }
+}
+
 void ZResolution::convertUnit(char unit)
 {
   if (m_unit == 'u' && unit == 'n') {
@@ -49,4 +88,123 @@ void ZResolution::convertUnit(char unit)
     m_voxelSize[0] = 1.0;
   }
   m_unit = unit;
+}
+
+
+void ZResolution::loadJsonObject(const ZJsonObject &obj)
+{
+  reset();
+
+  if (obj.hasKey("unit")) {
+    setUnit(ZJsonParser::stringValue(obj["unit"]));
+  }
+
+  if (obj.hasKey("voxel_size")) {
+    ZJsonArray sizeJson(obj.value("voxel_size"));
+    if (sizeJson.size() == 3) {
+      setVoxelSize(ZJsonParser::numberValue(sizeJson.at(0)),
+                   ZJsonParser::numberValue(sizeJson.at(1)),
+                   ZJsonParser::numberValue(sizeJson.at(2)));
+    }
+  }
+}
+
+double ZResolution::getUnitVoxelSize(EUnit unit) const
+{
+  double v = 1.0;
+
+  EUnit currentUnit = getUnit();
+  if (currentUnit != unit) {
+    switch (unit) {
+    case UNIT_MICRON:
+      if (currentUnit == UNIT_NANOMETER) {
+        v /= 1000.0;
+      }
+      break;
+    case UNIT_NANOMETER:
+      if (currentUnit == UNIT_MICRON) {
+        v *= 1000.0;
+      }
+      break;
+    case UNIT_PIXEL:
+      break;
+    }
+  }
+
+  return v;
+}
+
+double ZResolution::getVoxelSize(NeuTube::EAxis axis, EUnit unit) const
+{
+  return m_voxelSize[axis] * getUnitVoxelSize(unit);
+}
+
+double ZResolution::getPlaneVoxelSize(NeuTube::EPlane plane) const
+{
+  double v = 1.0;
+  switch (plane) {
+  case NeuTube::PLANE_XY:
+    v = voxelSizeX() * voxelSizeY();
+    break;
+  case NeuTube::PLANE_YZ:
+    v = voxelSizeY() * voxelSizeZ();
+    break;
+  case NeuTube::PLANE_XZ:
+    v = voxelSizeX() * voxelSizeZ();
+    break;
+  }
+
+  return v;
+}
+
+double ZResolution::getPlaneVoxelSpan(NeuTube::EPlane plane) const
+{
+  double v1 = 1.0;
+  double v2 = 1.0;
+  switch (plane) {
+  case NeuTube::PLANE_XY:
+    v1 = voxelSizeX();
+    v2 = voxelSizeY();
+    break;
+  case NeuTube::PLANE_YZ:
+    v1 = voxelSizeY();
+    v2 = voxelSizeZ();
+    break;
+  case NeuTube::PLANE_XZ:
+    v1 = voxelSizeX();
+    v2 = voxelSizeZ();
+    break;
+  }
+
+  double v = 1.0;
+  if (v1 == v2) {
+    v = v1;
+  } else {
+    v = sqrt(v1 * v2);
+  }
+
+  return v;
+}
+
+double ZResolution::getPlaneVoxelSize(NeuTube::EPlane plane, EUnit unit) const
+{
+  double v = 1.0;
+  switch (plane) {
+  case NeuTube::PLANE_XY:
+    v = getVoxelSize(NeuTube::X_AXIS, unit) * getVoxelSize(NeuTube::Y_AXIS, unit);
+    break;
+  case NeuTube::PLANE_YZ:
+    v = getVoxelSize(NeuTube::Y_AXIS, unit) * getVoxelSize(NeuTube::Z_AXIS, unit);
+    break;
+  case NeuTube::PLANE_XZ:
+    v = getVoxelSize(NeuTube::X_AXIS, unit) * getVoxelSize(NeuTube::Z_AXIS, unit);
+    break;
+  }
+
+  return v;
+}
+
+double ZResolution::getPlaneVoxelSpan(NeuTube::EPlane plane, EUnit unit) const
+{
+  return getPlaneVoxelSpan(plane) * getUnitVoxelSize(unit);
 }

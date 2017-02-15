@@ -183,7 +183,7 @@ int Trace_Workspace_Mask_Value_Z(const Trace_Workspace *tw,
 BOOL Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
 				    const double pos[3])
 {
-  if (pos[0] >= 0) {
+  if (pos[0] >= 0 && pos[1] >= 0 && pos[2] >= 0) {
     int i;
     for (i = 0; i < 3; i++) {
       if (tw->trace_range[i] >= 0.0) {

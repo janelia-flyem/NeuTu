@@ -55,6 +55,9 @@ public:
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
+  bool isSwcWrittable();
+
+
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
@@ -79,7 +82,8 @@ public:
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
 
-  void syncAnnotation(const std::string &name);
+  void syncAnnotation(
+      const std::string &name, const std::string &queryString = "");
   void syncLabelsz(const std::string &dataName,
                    const std::string &annotationName);
   void syncSynapseLabelsz();
@@ -181,6 +185,10 @@ public:
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
+  void writeDefaultDataSetting(const ZJsonObject &obj);
+  void writeDefaultDataSetting();
+
+  void writeDataMap(const ZJsonObject &obj);
 
   inline int getStatusCode() const {
     return m_statusCode;

@@ -342,6 +342,9 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
           this, SLOT(notifyViewChanged(ZStackViewParam)));
 
   connectAction(m_view, SIGNAL(changingSetting()), this, SLOT(showSetting()));
+
+  connectAction(m_view, SIGNAL(closingChildFrame()),
+                this, SLOT(closeAllChildFrame()));
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
@@ -523,7 +526,7 @@ int ZStackFrame::readStack(const char *filePath)
 {
   Q_ASSERT(m_doc.get() != NULL);
 
-  switch (ZFileType::fileType(filePath)) {
+  switch (ZFileType::FileType(filePath)) {
   case ZFileType::SWC_FILE:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
@@ -702,7 +705,8 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
 }
@@ -1060,9 +1064,9 @@ void ZStackFrame::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   document()->executeSwcRescaleCommand(setting);
 }
 
-void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample)
+void ZStackFrame::executeAutoTraceCommand(int traceLevel, bool doResample, int c)
 {
-  document()->executeAutoTraceCommand(traceLevel, doResample);
+  document()->executeAutoTraceCommand(traceLevel, doResample, c);
 }
 
 void ZStackFrame::executeAutoTraceAxonCommand()
@@ -1292,6 +1296,7 @@ void ZStackFrame::showObject()
   presenter()->setObjectVisible(true);
 }
 
+#if 0
 Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 {
   if (Z3DApplication::app() == NULL) {
@@ -1342,6 +1347,7 @@ Z3DWindow* ZStackFrame::open3DWindow(Z3DWindow::EInitMode mode)
 
   return window;
 }
+#endif
 
 void ZStackFrame::load(const QList<QUrl> &urls)
 {
@@ -1506,7 +1512,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::fileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);
@@ -1745,7 +1751,8 @@ void ZStackFrame::locateSwcNodeIn3DView()
   if (document()->hasSelectedSwcNode()) {
     Z3DWindow *window = document()->getParent3DWindow();
     if (!window) {
-      window = open3DWindow();
+      window = ZWindowFactory::Open3DWindow(this);
+//      window = open3DWindow();
     }
     //QApplication::processEvents();
     window->zoomToSelectedSwcNodes();
@@ -1835,9 +1842,11 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_STACK ||
           frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
-        frame->open3DWindow();
+        ZWindowFactory::Open3DWindow(frame);
+//        frame->open3DWindow();
       }
     }
     message->deactivate();

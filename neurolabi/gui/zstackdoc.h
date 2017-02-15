@@ -164,6 +164,11 @@ public: //attributes
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+
+  // hasSwc() returns true iff it has a non-empty SWC object.
+  bool hasSwcData() const;
+
+
   bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable() const;
@@ -208,6 +213,8 @@ public: //attributes
   double getPreferredZScale() const;
 
   void setResolution(const Cz_Lsminfo &lsmInfo);
+
+  void setResolution(const ZResolution &res);
 
   /*!
    * \brief Get the data space coordinates of stack coordinates
@@ -319,6 +326,11 @@ public: //swc tree edit
 
   void estimateSwcRadius(ZSwcTree *tree, int maxIter = 1);
   void estimateSwcRadius();
+
+  /*!
+   * \brief Test if the Z coordinate represents a projection
+   */
+  bool isZProjection(int z) const;
 
 public: //swc selection
   void selectSwcNodeNeighbor();
@@ -447,6 +459,12 @@ public:
 
   void importSeedMask(const QString &filePath);
 
+  /*
+  ZNeuronTracer &getNeuronTracer() {
+    return m_neuronTracer;
+  }
+  */
+
 public: //Image processing
   static int autoThreshold(Stack* getStack);
   void autoThreshold();
@@ -572,6 +590,8 @@ public:
    */
   bool importSynapseAnnotation(const std::string &filePath,
                                int s = 0);
+
+  ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
@@ -749,6 +769,11 @@ public:
   virtual void selectSwcNode(const ZRect2d &roi);
 
   void setStackBc(double factor, double offset, int channel);
+
+  void selectNoisyTrees(double minLength, double minDist,
+                        double sx, double sy, double sz);
+  void selectNoisyTrees(double minLength, double minDist);
+  void selectNoisyTrees();
 
 public:
   inline NeuTube::Document::ETag getTag() const { return m_tag; }
@@ -1007,7 +1032,7 @@ public slots: //undoable commands
 
   virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   virtual bool executeRemoveTubeCommand();
-  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample);
+  virtual bool executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   virtual bool executeAutoTraceAxonCommand();
 
   virtual bool executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist);
@@ -1041,6 +1066,7 @@ public slots: //undoable commands
   virtual bool executeMergeSwcNodeCommand();
   virtual bool executeTraceSwcBranchCommand(double x, double y, double z);
   virtual bool executeTraceSwcBranchCommand(double x, double y);
+  virtual bool executeTraceSwcBranchCommand(double x, double y, double z, int c);
   virtual bool executeInterpolateSwcZCommand();
   virtual bool executeInterpolateSwcRadiusCommand();
   virtual bool executeInterpolateSwcPositionCommand();
@@ -1087,7 +1113,6 @@ public slots:
   void selectTreeNode();
   void selectConnectedNode();
   void inverseSwcNodeSelection();
-  void selectNoisyTrees();
 
   /*!
    * \brief Select neighboring swc nodes.
@@ -1190,6 +1215,7 @@ signals:
 //  void newDocReady(const ZStackDocReader &reader);
 
   void zoomingToSelectedSwcNode();
+  void stackBoundBoxChanged();
 
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
@@ -1200,6 +1226,7 @@ protected:
   void removeRect2dRoi();
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
+  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
 
 private:
   void init();
@@ -1211,7 +1238,6 @@ private:
   //void loadTraceMask(bool traceMasked);
   int xmlConnNode(QXmlStreamReader *xml, QString *filePath, int *spot);
   int xmlConnMode(QXmlStreamReader *xml);
-  ZSwcTree* nodeToSwcTree(Swc_Tree_Node* node) const;
   ResolutionDialog* getResolutionDialog();
 
   static void expandSwcNodeList(QList<Swc_Tree_Node*> *swcList,
@@ -1221,6 +1247,8 @@ private:
                                 const Swc_Tree_Node *excluded);
   template<typename T>
   const T* getFirstUserByType() const;
+
+  void updateTraceMask();
 
 private:
   //Main stack
@@ -1279,7 +1307,6 @@ private:
 
   ZActionFactory *m_actionFactory;
 
-  ZStackDocDataBuffer *m_dataBuffer;
 
   bool m_selectionSilent;
   bool m_isReadyForPaint;
@@ -1311,6 +1338,7 @@ protected:
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZStackDoc> m_parentDoc;
   ZThreadFutureMap m_futureMap;
+  ZStackDocDataBuffer *m_dataBuffer;
 };
 
 typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;

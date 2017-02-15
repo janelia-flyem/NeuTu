@@ -10,6 +10,9 @@ class ZDvidDialog;
 }
 
 class StringListDialog;
+class ZDvidAdvancedDialog;
+class QLabel;
+class QLineEdit;
 
 class ZDvidDialog : public QDialog
 {
@@ -38,12 +41,20 @@ public slots:
   void saveCurrentTargetAs();
   void deleteCurrentTarget();
   void editRoiList();
+  void updateWidgetForDefaultSetting();
+  void setAdvanced();
+
+private:
+  bool usingDefaultSetting() const;
+  void resetAdvancedDlg(const ZDvidTarget &dvidTarget);
+
 
 private:
   Ui::ZDvidDialog *ui;
   QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
   StringListDialog *m_roiDlg;
+  ZDvidAdvancedDialog *m_advancedDlg;
   const static char *m_dvidRepoKey;
 };
 

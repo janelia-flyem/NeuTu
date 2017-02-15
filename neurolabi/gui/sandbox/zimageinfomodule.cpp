@@ -5,7 +5,7 @@
 #include<QPen>
 #include<QString>
 #include"zsandbox.h"
-#include"zstackprocessor.h"
+#include"imgproc/zstackprocessor.h"
 #include"zimageinfomodule.h"
 
 ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)

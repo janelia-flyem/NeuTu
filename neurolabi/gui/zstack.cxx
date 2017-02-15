@@ -669,7 +669,7 @@ void ZStack::setResolution(double x, double y, double z, char unit)
 int ZStack::getChannelNumber(const string &filepath)
 {
   int nchannel = 0;
-  ZFileType::EFileType type = ZFileType::fileType(filepath);
+  ZFileType::EFileType type = ZFileType::FileType(filepath);
 
   if (type == ZFileType::TIFF_FILE ||
       type == ZFileType::LSM_FILE) {
@@ -772,8 +772,8 @@ string ZStack::save(const string &filepath) const
     resultFilePath = filepath;
     if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
         (getVoxelNumber() > 2147483648)) { //save as raw
-      if (ZFileType::fileType(filepath) != ZFileType::V3D_RAW_FILE ||
-          ZFileType::fileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
+      if (ZFileType::FileType(filepath) != ZFileType::V3D_RAW_FILE ||
+          ZFileType::FileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
         resultFilePath += ".raw";
         std::cout << resultFilePath << " saved instead." << endl;
@@ -1258,7 +1258,7 @@ bool ZStack::isTracable()
 bool ZStack::isSwc()
 {
   if (isVirtual()) {
-    return ZFileType::fileType(m_source.firstUrl()) == ZFileType::SWC_FILE;
+    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::SWC_FILE;
     /*
     if (m_source != NULL) {
       if (m_source->type == STACK_DOC_SWC_FILE) {

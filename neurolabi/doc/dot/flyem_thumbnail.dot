@@ -1,0 +1,23 @@
+digraph G {
+  QGraphicsView [shape = hexagon];
+  QGraphicsRectItem [shape = hexagon];
+  QGraphicsScene [shape = hexagon];
+  QGraphicsPixmapItem [shape = hexagon];
+  ZFlyEmQueryView [shape = box];
+  FlyEmDataForm [shape = box];
+  QGraphicsScene [shape = hexagon];
+  QTableView [shape = hexagon];
+  clicked [shape = none, label="clicked()"];
+  ZFlyEmQueryView -> clicked;
+  clicked -> updateThumbnail;
+  FlyEmDataForm -> updateThumbnail [arrowhead = odot];
+  QTableView -> ZFlyEmQueryView;
+  FlyEmDataForm -> ZFlyEmQueryView [arrowhead = diamond];
+  FlyEmDataForm -> QGraphicsView [arrowhead = diamond];
+  FlyEmDataForm -> QGraphicsScene [arrowhead = diamond];
+  QGraphicsView -> QGraphicsScene [arrowhead = odiamond];
+  QGraphicsView -> clear [arrowhead = odot];
+  QGraphicsView -> addItem [arrowhead = odot];
+  updateThumbnail -> clear;
+  clear -> addItem [arrowhead = onormal];
+}

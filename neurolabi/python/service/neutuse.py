@@ -212,7 +212,7 @@ def updateBody():
             eventQueue.put(event)
             print "+++Event added:", event
 
-        if option == "update":
+        if option == "update" or option == "add":
             event = fd.DataEvent(fd.DataEvent.DATA_UPDATE, fd.DataId(fd.DataId.DATA_SKELETON, bodyId), dvidEnv)
             eventQueue.put(event)
             print "+++Event added:", event

@@ -45,17 +45,17 @@ public:
     if (m_bundle) {
       if (pos == Begin) {
         m_listIdx = 0;
-        m_swcNodeIter = m_bundle->m_swcNodes->begin();
+//        m_swcNodeIter = m_bundle->m_swcNodes->begin();
         while (m_listIdx < m_bundle->m_objLists.size() &&
                m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) {
-          setSwcNodeAdaptor();
+//          setSwcNodeAdaptor();
         }
       } else if (pos == End) {
         m_listIdx = m_bundle->m_objLists.size();
-        m_swcNodeIter = m_bundle->m_swcNodes->end();
+//        m_swcNodeIter = m_bundle->m_swcNodes->end();
       }
     }
   }
@@ -67,7 +67,7 @@ public:
                 >::type = enabler()
       )
     : m_bundle(other.m_bundle), m_listIdx(other.m_listIdx), m_drawableIdx(other.m_drawableIdx)
-    , m_swcNodeIter(other.m_swcNodeIter)
+//    , m_swcNodeIter(other.m_swcNodeIter)
   {}
 
 private:
@@ -79,8 +79,9 @@ private:
   {
     return this->m_bundle == other.m_bundle &&
         this->m_listIdx == other.m_listIdx &&
-        this->m_drawableIdx == other.m_drawableIdx &&
-        this->m_swcNodeIter == other.m_swcNodeIter;
+        this->m_drawableIdx == other.m_drawableIdx;
+//    &&
+//        this->m_swcNodeIter == other.m_swcNodeIter;
   }
 
   void increment()
@@ -97,13 +98,13 @@ private:
           ++m_listIdx;
         }
         if (m_listIdx == m_bundle->m_objLists.size()) { // move out of list, return first item of node set
-          setSwcNodeAdaptor();
+//          setSwcNodeAdaptor();
         }
       }
-    } else if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // inside node set, move to next
+    }/* else if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // inside node set, move to next
       ++m_swcNodeIter;
       setSwcNodeAdaptor();
-    }
+    }*/
   }
 
   TStackDrawablePtr dereference() const
@@ -113,6 +114,7 @@ private:
           dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
+#if 0
   void setSwcNodeAdaptor()
   {
     if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
@@ -141,11 +143,11 @@ private:
 //      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
     }
   }
-
+#endif
   TPaintBundle* m_bundle;
   int m_listIdx;
   int m_drawableIdx;
-  std::set<Swc_Tree_Node*>::const_iterator m_swcNodeIter;
+//  std::set<Swc_Tree_Node*>::const_iterator m_swcNodeIter;
 
   ZStackBall m_nodeAdaptor;
 };
@@ -177,8 +179,8 @@ public:
   inline void addDrawableList(const QList<ZStackObject*>* lst) { if (lst) m_objLists.push_back(lst); }
   inline void removeDrawableList(const QList<ZStackObject*>* lst) { m_objLists.removeAll(lst); }
 
-  inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
-  inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
+//  inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
+//  inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
 
   inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
   inline int sliceIndex() const { return m_sliceIndex; }
@@ -206,12 +208,12 @@ private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
 
   QList<const QList<ZStackObject*>*> m_objLists;
-  const std::set<Swc_Tree_Node*>* m_swcNodes;
+//  const std::set<Swc_Tree_Node*>* m_swcNodes;
   int m_sliceIndex;
   ZStackObject::EDisplayStyle m_style;
 
   QList<ZStackObject*> m_otherDrawables; // collect single input
-  std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
+//  std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
 
   ZIntPoint m_stackOffset;
   NeuTube::EAxis m_sliceAxis;

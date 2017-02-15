@@ -52,6 +52,11 @@ void ZDvidPatchDataFetcher::fetch(const ZIntCuboid &region)
   }
 }
 
+int ZDvidPatchDataFetcher::receiverCount(const char *signal) const
+{
+  return receivers(signal);
+}
+
 bool ZDvidPatchDataFetcher::updatePatch(ZDvidTileEnsemble *slice, int z)
 {
   QMutexLocker locker(&m_dataMutex);

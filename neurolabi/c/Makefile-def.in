@@ -53,5 +53,5 @@ endif
 #VERSION=1.0.0
 
 OTHER_LIBFLAGS =  -L/sw/lib -L/usr/X11R6/lib/ -lX11 -lXext -ljpeg -lgif -lImlib -I/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include -I/sw/include
-LDFLAGS = $(LIBFLAGS) @ARCH_FLAG@ @SANITIZE_FLAG@
+LDFLAGS = $(LIBFLAGS) @ARCH_FLAG@
 #-fprofile-arcs -ftest-coverage

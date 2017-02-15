@@ -4,7 +4,7 @@
 
 #include "zsandbox.h"
 #include "zstackdoc.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "mainwindow.h"
 
 ZRgb2GrayModule::ZRgb2GrayModule(QObject *parent) :

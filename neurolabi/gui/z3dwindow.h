@@ -53,55 +53,15 @@ class ZStroke2d;
 class ZStackViewParam;
 class Z3DWindow;
 class ZRect2d;
+class ZSwcIsolationDialog;
+class HelpDialog;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
 class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
-class Z3DTabWidget;
 
-class Z3DMainWindow : public QMainWindow
-{
-    Q_OBJECT
-public:
-    Z3DMainWindow(QWidget* parent = 0);
-    ~Z3DMainWindow();
-
-    void closeEvent(QCloseEvent *event);
-
-    void setCurrentWidow(Z3DWindow *window);
-
-private:
-    Z3DTabWidget* getCentralTab() const;
-
-private slots:
-    void stayOnTop(bool on);
-
-public:
-    QToolBar *toolBar;
-
-public:
-    QAction *resetCameraAction;
-    QAction *xzViewAction;
-    QAction *yzViewAction;
-    QAction *recenterAction;
-    QAction *showGraphAction;
-    QAction *settingsAction;
-    QAction *objectsAction;
-    QAction *roiAction;
-
-    QAction *m_stayOnTopAction;
-
-public slots:
-    void updateButtonShowGraph(bool v);
-    void updateButtonSettings(bool v);
-    void updateButtonObjects(bool v);
-    void updateButtonROIs(bool v);
-
-signals:
-    void closed();
-};
 
 class Z3DWindow : public QMainWindow
 {
@@ -140,8 +100,8 @@ public: //properties
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
   using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  void setVisible(ERendererLayer layer, bool visible);
-  bool isVisible(ERendererLayer layer) const;
+  void setLayerVisible(ERendererLayer layer, bool visible);
+  bool isLayerVisible(ERendererLayer layer) const;
 
   void configure(const ZJsonObject &obj);
 
@@ -155,6 +115,9 @@ public: //properties
 
   void writeSettings();
   void readSettings();
+  void setCutBox(ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(ERendererLayer layer);
+
 
 public: //Camera adjustment
   void gotoPosition(double x, double y, double z, double radius = 64);
@@ -189,17 +152,6 @@ public: //Components
 
   QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
-public: //Bounding box
-  void updateVolumeBoundBox();
-  void updateSwcBoundBox();
-  void updateGraphBoundBox();
-  void updateSurfaceBoundBox();
-  void updateTodoBoundBox();
-//  void updateDecorationBoundBox();
-  void updatePunctaBoundBox();
-  void updateOverallBoundBox(std::vector<double> bound);
-  void updateOverallBoundBox();       //get bounding box of all objects in world coordinate :[xmin xmax ymin ymax zmin zmax]
-
   /*!
    * \brief Get the document associated with the window
    */
@@ -209,26 +161,40 @@ public: //Bounding box
     return dynamic_cast<T*>(m_doc.get());
   }
 
-  void createToolBar();
-
+public: //Bounding box
+  void updateVolumeBoundBox();
+  void updateSwcBoundBox();
+  void updateGraphBoundBox();
+  void updateSurfaceBoundBox();
+  void updateTodoBoundBox();
+//  void updateDecorationBoundBox();
+  void updatePunctaBoundBox();
+  void updateOverallBoundBox(std::vector<double> bound);
+  //get bounding box of all objects in world coordinate:
+  //[xmin xmax ymin ymax zmin zmax]
+  void updateOverallBoundBox();
   void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
-  void hideControlPanel();
-  void hideObjectView();
 
   bool hasRectRoi() const;
   ZRect2d getRectRoi() const;
   void removeRectRoi();
 
-  QDockWidget * getSettingsDockWidget();
-  QDockWidget * getObjectsDockWidget();
-  ZROIWidget * getROIsDockWidget();
 
-public:
+
+public: //controls
+  void createToolBar();
+  void hideControlPanel();
+  void hideObjectView();
+
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
 
   QAction* getAction(ZActionFactory::EAction item);
+
+  QDockWidget * getSettingsDockWidget();
+  QDockWidget * getObjectsDockWidget();
+  ZROIWidget * getROIsDockWidget();
 
 public:
   void setROIs(size_t n);
@@ -236,46 +202,23 @@ public:
 public:
   //Control panel setup
 
-protected:
-
-private:
-  // UI
-  void createMenus();
-  void createActions();
-  void customizeContextMenu();
-  void createContextMenu();
-  void createStatusBar();
-  void createDockWindows();
-  void customizeDockWindows(QTabWidget *m_settingTab);
-  void setWindowSize();
-
-  //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
-
-  // init 3D view
-  void init(EInitMode mode = INIT_NORMAL);
-
-  void cleanup();
-
-  int channelNumber();
-
-  void setupCamera(const std::vector<double> &bound, Z3DCamera::ResetCameraOptions options);
-
-  bool hasVolume();
-
-  //conditions for customization
-  bool hasSwc() const;
-  bool hasSelectedSwc() const;
-  bool hasSelectedSwcNode() const;
-  bool hasMultipleSelectedSwcNode() const;
+public: //external signal call
+  void emitAddTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
+  void emitAddToMergeMarker(int x, int y, int z, uint64_t bodyId);
+  void emitAddToSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void emitAddTodoMarker(const ZIntPoint &pt, bool checked, uint64_t bodyId);
+  void emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId);
+  void emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId);
 
 signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
-  void addingTodoMarker(int x, int y, int z, bool checked);
-  
+  void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
+  void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
+  void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
+  void deselectingBody(const std::set<uint64_t> bodyId);
+
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
   void resetCameraCenter();
@@ -383,8 +326,11 @@ public slots:
   void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
   void addTodoMarker();
+  void addToMergeMarker();
+  void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
+  void deselectBody();
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -413,9 +359,14 @@ public slots:
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
 
   void markSwcSoma();
+  void help();
 
   void selectSwcTreeNodeInRoi(bool appending);
+  void selectSwcTreeNodeTreeInRoi(bool appending);
+  void selectTerminalBranchInRoi(bool appending);
   void cropSwcInRoi();
+
+  void updateCuttingBox();
 
 
 protected:
@@ -424,6 +375,51 @@ protected:
   virtual void keyPressEvent(QKeyEvent *event);
   void closeEvent(QCloseEvent * event);
 //  void paintEvent(QPaintEvent *event);
+
+
+protected:
+
+private:
+  // UI
+  void createMenus();
+  void createActions();
+  void customizeContextMenu();
+  void createContextMenu();
+  void createStatusBar();
+  void createDockWindows();
+  void customizeDockWindows(QTabWidget *m_settingTab);
+  void setWindowSize();
+
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
+
+  // init 3D view
+  void init(EInitMode mode = INIT_NORMAL);
+
+  void cleanup();
+
+  int channelNumber();
+
+  void setupCamera(const std::vector<double> &bound,
+                   Z3DCamera::ResetCameraOptions options);
+
+  bool hasVolume();
+
+  //conditions for customization
+  bool hasSwc() const;
+  bool hasSelectedSwc() const;
+  bool hasSelectedSwcNode() const;
+  bool hasMultipleSelectedSwcNode() const;
+
+  bool addingSwcNode() const;
+  bool movingObject() const;
+  bool extendingSwc() const;
+  void exitAddingSwcNode();
+  void exitMovingObject();
+  void exitExtendingSwc();
+
+  bool exitEditMode();
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -448,12 +444,13 @@ private:
 
   ZActionLibrary *m_actionLibrary;
   ZMenuFactory *m_menuFactory;
+  QMenu *m_helpMenu;
 
   QAction *m_removeSelectedObjectsAction;
   QAction *m_openVolumeZoomInViewAction;
   QAction *m_exitVolumeZoomInViewAction;
   QAction *m_markPunctumAction;
-  QAction *m_toogleAddSwcNodeModeAction;
+  QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
@@ -478,6 +475,7 @@ private:
   QAction *m_selectAllSwcNodeAction;
   QAction *m_translateSwcNodeAction;
   QAction *m_changeSwcNodeSizeAction;
+  QAction *m_helpAction;
 
   QAction *m_refreshTraceMaskAction;
 
@@ -553,6 +551,7 @@ private:
   ZROIWidget *m_roiDockWidget;
 
   bool m_isStereoView;
+  bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;
 
@@ -561,6 +560,8 @@ private:
   QToolBar *m_toolBar;
 
   mutable QMutex m_filterMutex;
+  ZSwcIsolationDialog *m_swcIsolationDlg;
+  HelpDialog *m_helpDlg;
 };
 
 #endif // Z3DWINDOW_H

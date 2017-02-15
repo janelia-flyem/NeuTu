@@ -16,7 +16,7 @@ public:
   ~ZTestOptionDialog();
 
   enum EOption {
-    OPTION_NORMAL, OPTION_STRESS, OPTION_UNIT, OPTION_CRASH
+    OPTION_NORMAL, OPTION_STRESS, OPTION_UNIT, OPTION_CRASH, OPTION_COMMAND
   };
 
   EOption getOption() const;

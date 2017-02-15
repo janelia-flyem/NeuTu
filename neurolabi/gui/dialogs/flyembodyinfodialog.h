@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QItemSelection>
 #include <QSortFilterProxyModel>
 
 #include "dvid/zdvidtarget.h"
@@ -74,6 +75,8 @@ private slots:
     void onDoubleClickIOBodyTable(QModelIndex proxyIndex);
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
     void onMaxBodiesChanged(int maxBodies);
+    void onRoiChanged(int index);
+    void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
 
 private:
     enum Tabs {
@@ -123,16 +126,20 @@ private:
     QMap<uint64_t, QString> m_bodyNames;
     QSet<uint64_t> m_namelessBodies;
     QSet<QString> m_bodyAnnotationKeys;
+    QMap<QString, ZDvidRoi> m_roiStore;
     ZFlyEmSequencerColorScheme m_colorScheme;
     qlonglong m_totalPre;
     qlonglong m_totalPost;
     bool m_quitting;
+    bool m_cancelLoading;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
+    std::string m_defaultSynapseLabelsz;
     int m_currentMaxBodies;
     bool m_connectionsLoading;
     int m_connectionsTableState;
     uint64_t m_connectionsBody;
+    qint64 m_totalConnections;
     QMap<uint64_t, QList<ZIntPoint> > m_connectionsSites;
     ZThreadFutureMap m_futureMap;
 
@@ -140,10 +147,8 @@ private:
     void setFilterHeaders(QStandardItemModel*);
     void loadData();
     bool isValidBookmarkFile(ZJsonObject object);
-    bool dvidBookmarksPresent();
     bool bodyAnnotationsPresent();
     bool labelszPresent();
-    void importBookmarksDvid();
     void importBodiesDvid();
     void importBodiesDvid2();
     void setStatusLabel(QString label);
@@ -163,6 +168,9 @@ private:
     void setConnectionsHeaders(QStandardItemModel *model);
     void exportData(QString filename, ExportKind kind);
     void setupMaxBodyMenu();
+    void updateRoi();
+    void updateRoi(const std::vector<std::string> &roiList);
+    ZDvidRoi* getRoi(const QString &name);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

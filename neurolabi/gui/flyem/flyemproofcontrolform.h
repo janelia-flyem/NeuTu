@@ -53,6 +53,7 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void skeletonizingSelectedBody();
   void showingInfo();
 
 public slots:
@@ -81,9 +82,11 @@ private slots:
 //  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void skeletonizeSelectedBody();
 
 private:
   void createMenu();
+  void createColorMenu();
   QSortFilterProxyModel *createSortingProxy(ZFlyEmBookmarkListModel *model);
 
 private:
@@ -93,7 +96,9 @@ private:
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
   QAction *m_nameColorAction;
-  QAction *m_sequencerColorAction;
+
+//  QAction *m_sequencerColorAction;
+//  QAction *m_focusedColorAction;
 
   ZColorLabel *m_latencyWidget;
 

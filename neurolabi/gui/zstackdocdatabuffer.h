@@ -27,6 +27,8 @@ public:
     return m_obj;
   }
 
+  void print() const;
+
 private:
   ZStackObject *m_obj;
   EAction m_action;

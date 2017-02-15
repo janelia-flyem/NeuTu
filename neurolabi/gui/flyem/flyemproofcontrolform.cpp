@@ -14,6 +14,7 @@
 #include "widgets/zcolorlabel.h"
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
+#include "flyem/zflyembodycoloroption.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -132,6 +133,45 @@ ZFlyEmBookmarkView* FlyEmProofControlForm::getAssignedBookmarkView() const
 //  return ui->bookmarkView;
 }
 
+static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
+                                  QWidget *parent)
+{
+  QAction *action =
+      new QAction(ZFlyEmBodyColorOption::GetColorMapName(option), parent);
+  action->setCheckable(true);
+
+  return action;
+}
+
+void FlyEmProofControlForm::createColorMenu()
+{
+  QMenu *colorMenu = m_mainMenu->addMenu("Color Map");
+  QActionGroup *colorActionGroup = new QActionGroup(this);
+  QAction *normalColorAction = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, this);
+
+  m_nameColorAction = CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_NAME, this);
+  m_nameColorAction->setEnabled(false);
+
+  QAction *sequencerColorAction = CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, this);
+
+  QAction *focusedColorAction = CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED, this);
+
+  colorActionGroup->addAction(normalColorAction);
+  colorActionGroup->addAction(m_nameColorAction);
+  colorActionGroup->addAction(sequencerColorAction);
+  colorActionGroup->addAction(focusedColorAction);
+  colorActionGroup->setExclusive(true);
+
+  colorMenu->addActions(colorActionGroup->actions());
+
+  connect(colorActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(changeColorMap(QAction*)));
+}
+
 void FlyEmProofControlForm::createMenu()
 {
   m_mainMenu = new QMenu(this);
@@ -151,35 +191,22 @@ void FlyEmProofControlForm::createMenu()
   m_mainMenu->addAction(selectBodyAction);
   connect(selectBodyAction, SIGNAL(triggered()), this, SLOT(selectBody()));
 
-  QMenu *colorMenu = m_mainMenu->addMenu("Color Map");
-  QActionGroup *colorActionGroup = new QActionGroup(this);
-  QAction *normalColorAction = new QAction("Normal", this);
-  normalColorAction->setCheckable(true);
-  normalColorAction->setChecked(true);
-
-  m_nameColorAction = new QAction("Name", this);
-  m_nameColorAction->setCheckable(true);
-  m_nameColorAction->setEnabled(false);
-
-  m_sequencerColorAction = new QAction("Sequencer", this);
-  m_sequencerColorAction->setCheckable(true);
-  m_sequencerColorAction->setEnabled(true);
-
-  colorActionGroup->addAction(normalColorAction);
-  colorActionGroup->addAction(m_nameColorAction);
-  colorActionGroup->addAction(m_sequencerColorAction);
-  colorActionGroup->setExclusive(true);
-
-  colorMenu->addAction(normalColorAction);
-  colorMenu->addAction(m_nameColorAction);
-  colorMenu->addAction(m_sequencerColorAction);
-
-  connect(colorActionGroup, SIGNAL(triggered(QAction*)),
-          this, SLOT(changeColorMap(QAction*)));
+  createColorMenu();
 
   QAction *infoAction = new QAction("Information", this);
   m_mainMenu->addAction(infoAction);
   connect(infoAction, SIGNAL(triggered()), this, SIGNAL(showingInfo()));
+
+  QMenu *bodyMenu = m_mainMenu->addMenu("Bodies");
+  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
+  bodyMenu->addAction(exportBodyAction);
+
+  QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
+  connect(skeletonizeAction, SIGNAL(triggered()),
+          this, SLOT(skeletonizeSelectedBody()));
+  bodyMenu->addAction(skeletonizeAction);
 
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
@@ -188,10 +215,7 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
 
-  QAction *exportBodyAction = new QAction("Export Selected Bodies", this);
-  connect(exportBodyAction, SIGNAL(triggered()),
-          this, SLOT(exportSelectedBody()));
-  developerMenu->addAction(exportBodyAction);
+
 #endif
 //  colorMenu->setEnabled(false);
 }
@@ -199,6 +223,11 @@ void FlyEmProofControlForm::createMenu()
 void FlyEmProofControlForm::exportSelectedBody()
 {
   emit exportingSelectedBody();
+}
+
+void FlyEmProofControlForm::skeletonizeSelectedBody()
+{
+  emit skeletonizingSelectedBody();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
@@ -278,7 +307,8 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
   ui->dvidPushButton->setEnabled(false);
 
   if (target.readOnly()) {
-    ui->menuPushButton->setEnabled(false);
+    ui->mergeSegmentPushButton->setEnabled(false);
+//    ui->menuPushButton->setEnabled(false);
     ui->uploadPushButton->setEnabled(false);
     ui->splitPushButton->setEnabled(false);
   }
@@ -303,88 +333,6 @@ void FlyEmProofControlForm::setDvidInfo(const ZDvidTarget &target)
 #endif
   setInfo(info.c_str());
 }
-
-/*
-void FlyEmProofControlForm::removeBookmarkFromTable(ZFlyEmBookmark *bookmark)
-{
-  if (bookmark != NULL) {
-    if (bookmark->isCustom()) {
-      m_userBookmarkList.removeBookmark(bookmark);
-    } else {
-      m_assignedBookmarkList.removeBookmark(bookmark);
-    }
-  }
-}
-*/
-
-#if 0
-void FlyEmProofControlForm::updateUserBookmarkTable(ZStackDoc *doc)
-{
-  m_userBookmarkList.clear();
-  if (doc != NULL) {
-    ZOUT(LTRACE(), 5) << "Update user bookmark table";
-    const TStackObjectList &objList =
-        doc->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
-    for (TStackObjectList::const_iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-      if (bookmark != NULL) {
-        if (bookmark->isCustom()) {
-          m_userBookmarkList.append(bookmark);
-        }
-      }
-    }
-  }
-  getUserBookmarkView()->sort();
-  /*
-  m_userBookmarkProxy->sort(m_userBookmarkProxy->sortColumn(),
-                            m_userBookmarkProxy->sortOrder());
-                            */
-//  ui->userBookmarkView->resizeColumnsToContents();
-}
-#endif
-
-#if 0
-void FlyEmProofControlForm::updateBookmarkTable(ZFlyEmBodyMergeProject *project)
-{
-  if (project != NULL) {
-//    const ZFlyEmBookmarkArray &bookmarkArray = project->getBookmarkArray();
-    ZOUT(LINFO(), 3) << "Update bookmark table for merge project";
-    m_assignedBookmarkList.clear();
-
-    ZOUT(LINFO(), 3) << "Bookmark list cleared";
-//    project->clearBookmarkDecoration();
-
-    if (project->getDocument() != NULL) {
-      const TStackObjectList &objList =
-          project->getDocument()->getObjectList(ZStackObject::TYPE_FLYEM_BOOKMARK);
-      //        foreach (ZFlyEmBookmark bookmark, *bookmarkArray) {
-      for (TStackObjectList::const_iterator iter = objList.begin();
-           iter != objList.end(); ++iter) {
-        const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-        if (/*bookmark->getBookmarkType() != ZFlyEmBookmark::TYPE_FALSE_MERGE &&*/
-            !bookmark->isCustom()) {
-          m_assignedBookmarkList.append(bookmark);
-        }
-      }
-    }
-
-    getAssignedBookmarkView()->sort();
-    ZOUT(LINFO(), 3) << "Bookmark sorted";
-    /*
-    m_bookmarkProxy->sort(m_bookmarkProxy->sortColumn(),
-                          m_bookmarkProxy->sortOrder());
-                          */
-//    ui->bookmarkView->resizeColumnsToContents();
-//    project->addBookmarkDecoration(m_bookmarkList.getBookmarkArray());
-  }
-}
-
-void FlyEmProofControlForm::clearBookmarkTable(ZFlyEmBodyMergeProject */*project*/)
-{
-  m_assignedBookmarkList.clear();
-}
-#endif
 
 void FlyEmProofControlForm::locateBookmark(const ZFlyEmBookmark *bookmark)
 {

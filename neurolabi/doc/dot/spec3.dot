@@ -1,0 +1,3 @@
+digraph {
+  Class4 -> Class5;
+}

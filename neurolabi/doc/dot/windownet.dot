@@ -1,0 +1,21 @@
+digraph {
+ ZMessageProcessor [label = "ZMessageProcessor",shape = "box"];
+ ZMessageManager [label = "ZMessageManager",shape = "box"];
+ ZMainWindowMessageProcessor [label = "ZMainWindowMessageProcessor",shape = "box"];
+ QObject [label = "QObject",shape = "box"];
+ ZMessageManager__processMessage [label = "processMessage",];
+ ZMessageManager__dispatchMessage [label = "dispatchMessage",];
+ ZMessageManager__reportMessage [label = "reportMessage",];
+ ZMessageManager__registerWidget [label = "registerWidget",];
+ ZMessageProcessor__processMessage [label = "processMessage",];
+ ZMessageManager__getRootManager [label = "getRootManager",];
+ QObject -> ZMessageManager
+ ZMessageProcessor -> ZMainWindowMessageProcessor
+ ZMessageManager -> ZMessageManager__processMessage [arrowhead = odot];
+ ZMessageManager -> ZMessageManager__dispatchMessage [arrowhead = odot];
+ ZMessageManager -> ZMessageManager__reportMessage [arrowhead = odot];
+ ZMessageManager -> ZMessageManager__registerWidget [arrowhead = odot];
+ ZMessageProcessor -> ZMessageProcessor__processMessage [arrowhead = odot];
+ ZMessageManager -> ZMessageManager__getRootManager [arrowhead = odot];
+ ZMessageManager -> ZMessageProcessor [arrowhead = diamond];
+}

@@ -1,5 +1,7 @@
 #include "zdvidurl.h"
 #include <sstream>
+#include <iostream>
+
 #include "dvid/zdviddata.h"
 #include "zstring.h"
 #include "zintpoint.h"
@@ -37,9 +39,20 @@ ZDvidUrl::ZDvidUrl(const ZDvidTarget &target)
   m_dvidTarget = target;
 }
 
+ZDvidUrl::ZDvidUrl(const ZDvidTarget &target, const std::string &uuid)
+{
+  setDvidTarget(target, uuid);
+}
+
 void ZDvidUrl::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
+}
+
+void ZDvidUrl::setDvidTarget(const ZDvidTarget &target, const std::string &uuid)
+{
+  m_dvidTarget = target;
+  m_dvidTarget.setUuid(uuid);
 }
 
 std::string ZDvidUrl::GetFullUrl(
@@ -48,7 +61,7 @@ std::string ZDvidUrl::GetFullUrl(
   std::string url;
 
   if (!prefix.empty() && !endpoint.empty()) {
-    if (endpoint[0] == '/') {
+    if (endpoint[0] == '/' || endpoint[0] == '?') {
       url = prefix + endpoint;
     } else {
       url = prefix + "/" + endpoint;
@@ -336,6 +349,21 @@ std::string ZDvidUrl::getInstanceUrl() const
   return GetFullUrl(getRepoUrl(), "instance");
 }
 
+std::string ZDvidUrl::getMasterUrl() const
+{
+  return getKeyUrl("branches", "master");
+}
+
+std::string ZDvidUrl::getDefaultDataInstancesUrl() const
+{
+  return getKeyUrl("default_instances", "data");
+}
+
+std::string ZDvidUrl::getDataMapUrl() const
+{
+  return getKeyUrl("default_instances", "data_map");
+}
+
 std::string ZDvidUrl::getCommitInfoUrl() const
 {
   return GetFullUrl(getNodeUrl(), "commit");
@@ -366,7 +394,9 @@ const
   if (!format.empty()) {
     stream << "/" << format;
   }
-  return GetFullUrl(getGrayscaleUrl(), stream.str());
+  std::string url = GetFullUrl(getGrayscaleUrl(), stream.str());
+
+  return url;
 }
 
 std::string ZDvidUrl::getGrayscaleUrl(int sx, int sy, int sz,
@@ -827,6 +857,18 @@ std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const
 std::string ZDvidUrl::getAnnotationSyncUrl(const std::string &dataName) const
 {
   return GetFullUrl(getAnnotationUrl(dataName), "sync");
+}
+
+std::string ZDvidUrl::getAnnotationSyncUrl(
+    const std::string &dataName, const std::string &queryString) const
+{
+  std::string url = getAnnotationSyncUrl(dataName);
+
+  if (!queryString.empty()) {
+   url = GetFullUrl(url, "?" + queryString);
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const

@@ -11,7 +11,7 @@ ZSwcSubtreeAnalyzer::ZSwcSubtreeAnalyzer() :
 
 int ZSwcSubtreeAnalyzer::labelSubtree(ZSwcTree *tree) const
 {
-  tree->setLabel(0);
+  tree->setNodeLabel(0);
   tree->computeBackTraceLength();
 
   ZSwcTreeNodeArray nodeArray =
@@ -61,7 +61,7 @@ int ZSwcSubtreeAnalyzer::labelSubtree(ZSwcTree *tree) const
 int ZSwcSubtreeAnalyzer::decompose(ZSwcTree *tree) const
 {
   tree->forceVirtualRoot();
-  tree->setLabel(0);
+  tree->setNodeLabel(0);
   tree->computeBackTraceLength();
 
   ZSwcTreeNodeArray nodeArray =

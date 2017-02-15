@@ -12,16 +12,21 @@
 #include <QElapsedTimer>
 #include <QTime>
 #include <QProcess>
+#include <QtCore>
 #include <iostream>
 #include <ostream>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
+#include <QtConcurrentRun>
+#endif
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
-
 #ifdef __GLIBCXX__
 #include <tr1/memory>
 using namespace std::tr1;
@@ -33,7 +38,7 @@ using namespace std;
 #include <set>
 #include "zopencv_header.h"
 #include "neutube.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "zfilelist.h"
 #include "tz_sp_grow.h"
 #include "tz_stack_bwmorph.h"
@@ -199,6 +204,7 @@ using namespace std;
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
+#include "test/zflyembodycoloroptiontest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
@@ -211,6 +217,7 @@ using namespace std;
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidroi.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
@@ -221,6 +228,7 @@ using namespace std;
 #include "test/zopenvdbtest.h"
 #include "zsparseobject.h"
 #include "test/zdvidtest.h"
+#include "test/zdvidroitest.h"
 #include "bigdata/zdvidblockgrid.h"
 #include "test/zblockgridtest.h"
 #include "test/zsparsestacktest.h"
@@ -229,6 +237,8 @@ using namespace std;
 #include "test/zvoxelarraytest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
+#include "test/zflyemproofdoctest.h"
+#include "test/zresolutiontest.h"
 //#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
@@ -236,7 +246,7 @@ using namespace std;
 #include "dvid/libdvidheader.h"
 #include "test/zarraytest.h"
 #include "test/zdvidannotationtest.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
 #include "test/zstackobjectgrouptest.h"
@@ -280,6 +290,10 @@ using namespace std;
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
 #include "test/zgradientmagnitudemoduletest.h"
+#include "dialogs/zstresstestoptiondialog.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
+#include "zflyemutilities.h"
+
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
@@ -318,6 +332,12 @@ int ZTest::RunUnitTest(int argc, char *argv[])
 #endif
 }
 
+void ZTest::CommandLineTest()
+{
+  ZCommandLine command;
+  command.runTest();
+}
+
 void ZTest::CrashTest()
 {
   /*
@@ -345,6 +365,7 @@ void ZTest::CrashTest()
   std::cout << obj1->getSource() << std::endl;
 #endif
 
+
 }
 
 void ZTest::stressTest(MainWindow *host)
@@ -366,6 +387,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Start testing ..." << std::endl;
 
   UNUSED_PARAMETER(host);
+
 #if 0
   ZStackFrame *frame = (ZStackFrame *) mdiArea->currentSubWindow();
   if (frame != NULL) {
@@ -442,7 +464,6 @@ void ZTest::test(MainWindow *host)
   gv->show();
 
 #endif
-
 
 #if 0
   QProgressDialog *pd = new QProgressDialog("Testing", "Cancel", 0, 100, this);
@@ -19906,7 +19927,11 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
+#endif
 
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/body_150.sobj");
 
@@ -20023,13 +20048,13 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "dfa8", 7000);
+  target.set("emdata2.int.janelia.org", "bdca", 7000);
   target.setBodyLabelName("segmentation-labelvol");
-  target.setLabelBlockName("segmentation");
+  target.setLabelBlockName("segmentation2");
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.syncAnnotation("segmentation-labelvol_todo");
+  writer.syncAnnotation("segmentation-labelvol_todo", "replace=true");
 #endif
 
 #if 0
@@ -20407,6 +20432,50 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("kc_alpha_roi");
+
+  std::cout << obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+               (obj.getDsIntv().getY() + 1) * 8 *
+               (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000
+            << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("roi_new_segmentation_LO_LOP_x1");
+
+  size_t v1 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x2");
+
+  size_t v2 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  obj = reader.readRoi("roi_new_segmentation_LO_LOP_x3");
+
+  size_t v3 = obj.getVoxelNumber() * (obj.getDsIntv().getX() + 1) * 8 *
+      (obj.getDsIntv().getY() + 1) * 8 *
+      (obj.getDsIntv().getZ() + 1) * 8 / 1000 / 1000 /1000;
+
+  std::cout << v1 + v2 + v3 << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@FIB19", 7000);
 
   ZDvidReader reader;
@@ -20438,6 +20507,25 @@ void ZTest::test(MainWindow *host)
   myList.append(12345);
 
   std::cout << myMap.dumpString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+
+  if (reader.open(target)) {
+    ZDvidRoi roi;
+    reader.readRoi("ROI_LOP_15", &roi);
+
+    std::cout << roi.getRoiRef()->getVoxelNumber() << std::endl;
+    std::cout << roi.getBlockSize().toString() << std::endl;
+    std::cout << roi.getName() << std::endl;
+
+    std::cout << roi.contains(8781, 5368, 14824) << std::endl;
+    std::cout << roi.contains(5778, 5564, 15442) << std::endl;
+  }
 #endif
 
 #if 0
@@ -20577,12 +20665,12 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "372c", 8500);
+  target.set("emdata2.int.janelia.org", "27b2", 7000);
 
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.createData("keyvalue", "data_test2", false);
+  writer.createData("keyvalue", "branches", false);
 #endif
 
 #if 0
@@ -20998,7 +21086,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   int statusCode;
   std::string url = "http://emdata2.int.janelia.org:9000/api/repo/2ad2";
   ZDvid::MakeHeadRequest(url, statusCode);
@@ -21368,6 +21455,109 @@ void ZTest::test(MainWindow *host)
   int a[1];
   a[1] = 1;
 #endif
+  
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "a031", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+  std::cout << "Master node: " << reader.readMasterNode() << std::endl;
+
+  std::cout << "Node history:" << std::endl;
+  std::vector<std::string> nodeList = reader.readMasterList();
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  target.setUuid("@FIB19");
+  std::cout << "Master node: " << ZDvidReader::ReadMasterNode(target) << std::endl;
+
+  nodeList = reader.ReadMasterList(target);
+  for (std::vector<std::string>::const_iterator iter = nodeList.begin();
+       iter != nodeList.end(); ++iter) {
+    std::cout << "  " << *iter << std::endl;
+  }
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+
+  obj = reader.readDefaultDataSetting(ZDvidReader::READ_TRACE_BACK);
+  obj.print();
+
+  target.setUuid("e2f0");
+  ZDvidReader reader2;
+  reader2.open(target);
+  obj = reader2.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+  obj.print();
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  reader.open(target);
+
+  target.loadDvidDataSetting(
+        reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT));
+  ZDvidReader reader2;
+  reader2.open(target);
+
+  ZObject3dScan obj = reader2.readCoarseBody(4833432549);
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+//  target.set("emdata2.int.janelia.org", "d35f", 7000);
+  target.useDefaultDataSetting(true);
+  target.setBodyLabelName("bodies_test");
+  target.setSynapseName("synapses_test");
+  target.setLabelBlockName("label_test");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().toDvidDataSetting().print();
+
+
+  ZJsonObject obj = reader.readDefaultDataSetting(ZDvidReader::READ_CURRENT);
+
+  target = reader.getDvidTarget();
+  target.loadDvidDataSetting(obj);
+  target.setSynapseName("annot_synapse_010417");
+  target.setLabelBlockName("segmentation2");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZStack stack;
+  Stack *desstack = C_Stack::make(GREY, 32, 32, 1);
+  stack.load(GET_TEST_DATA_DIR + "/system/diadem/diadem_e2_proj.tif");
+
+  int width = stack.width();
+  int height = stack.height();
+  for (int left = 0; left < width - 32; left += 16) {
+    for (int top = 0; top < height - 32; top += 16) {
+      C_Stack::crop(stack.c_stack(), left, top, 0, 32, 32, 1, desstack);
+      ZString output = GET_TEST_DATA_DIR + "/system/substruct/general/diadem_e2_";
+      output.appendNumber(left);
+      output += "_";
+      output.appendNumber(top);
+      if (C_Stack::mean(desstack) > 30) {
+        C_Stack::write(output, desstack);
+      }
+    }
+  }
+
+
+#endif
 
 #if 0
   std::cout << sizeof(ZDvidAnnotation) << std::endl;
@@ -21375,6 +21565,49 @@ void ZTest::test(MainWindow *host)
   std::cout << sizeof(ZIntPoint) << std::endl;
   std::cout << sizeof(std::vector<ZIntPoint>) << std::endl;
   std::cout << sizeof(std::vector<std::string>) << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonObject labelszObj;
+  labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
+  labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
+
+  ZJsonObject obj;
+  obj.setEntry("roi_synapse_labelsz", labelszObj);
+
+  writer.writeDataMap(obj);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZJsonObject obj = reader.readDataMap();
+  obj.print();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "3b54", 7000);
+  target.setBodyLabelName("bodies1104");
+  target.setSynapseName("annot_synapse_08162016");
+  target.setLabelBlockName("labels1104");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
 #endif
 
 #if 0
@@ -21436,6 +21669,321 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   host->testFlyEmProofread();
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/system/slice15_L11.tif");
+
+  stack.crop(ZIntCuboid(ZIntPoint(463, 382, 49), ZIntPoint(669, 547, 67)));
+
+  stack.save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZStressTestOptionDialog *dlg = new ZStressTestOptionDialog(host);
+  if (dlg->exec()) {
+    switch (dlg->getOption()) {
+    case ZStressTestOptionDialog::OPTION_BODY_MERGE:
+      std::cout << "Testing body merge" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
+      std::cout << "Testing body split" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_CUSTOM:
+      std::cout << "Custom testing" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_OBJECT_MANAGEMENT:
+      std::cout << "Testing multithread object" << std::endl;
+      break;
+    case ZStressTestOptionDialog::OPTION_BODY_3DVIS:
+      std::cout << "Testing 3D body visualization" << std::endl;
+      break;
+    }
+  }
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  ZStack *stack = ZStackFactory::makeVirtualStack(obj->getBoundBox());
+  frame->loadStack(stack);
+
+  frame->document()->addObject(obj);
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  /*
+  ZObject3dScan slice = obj->getSlice(343);
+  ZStroke2d* stroke = ZFlyEmMisc::MakeSplitSeed(slice, 1);
+
+  frame->document()->addObject(stroke);
+
+  slice = obj->getSlice(344);
+  frame->document()->addObject(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+  */
+
+  std::vector<ZStroke2d*> seedList = ZFlyEmMisc::MakeSplitSeedList(*obj);
+  for (std::vector<ZStroke2d*>::iterator iter = seedList.begin();
+       iter != seedList.end(); ++iter) {
+    frame->document()->addObject(*iter);
+  }
+
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
+  tree.addComment("Test");
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+
+  std::cout << tree.toString() << std::endl;
+#endif
+
+#if 0
+  host->startProofread();
+
+#endif
+
+#if 0
+  ZNeuronTracer tracer;
+  tracer.test();
+#endif
+
+#if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.setGrayScaleName("grayscale");
+//  target.setGrayScaleName("google_grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidUrl url(reader.getDvidTarget());
+  QList<ZDvidGrayscaleReadTask*> taskList;
+
+  for (int k = 0; k < 10; ++k) {
+    ZDvidGrayscaleReadTask *task = new ZDvidGrayscaleReadTask(NULL);
+    task->setDvidTarget(target);
+    taskList.append(task);
+  }
+
+
+
+  for (int z = 0; z < 10; ++z) {
+    tic();
+    for (int k = 0; k < 10; ++k) {
+      taskList[k]->setRange(512, 512, 6511, 5473, 9540 + z * 10 + k);
+      taskList[k]->setFormat("jpg");
+    }
+    QtConcurrent::blockingMap(taskList, &ZDvidGrayscaleReadTask::ExecuteTask);
+    ptoc();
+//    reader.getBufferReader().read(
+//          url.getGrayscaleUrl(1024, 1024, 6511, 5473, 9540 + z).c_str(), false);
+//    reader.readGrayScale(6511, 5473, 9540 + z, 1024, 1024, 1);
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+  target.setSupervisorServer("emdata1.int.janelia.org:9000");
+  std::cout << target.toJsonObject().dumpString(2);
+#endif
+
+#if 0
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
+
+
+  tree2.setType(0);
+  ZSwcForest *forest = tree1.toSwcTreeArray();
+  int type = 2;
+  for (ZSwcForest::const_iterator iter = forest->begin();
+       iter != forest->end(); ++iter) {
+    const ZSwcTree *tree = *iter;
+    std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(*tree, tree2);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+         iter != nodeArray.end(); ++iter) {
+      SwcTreeNode::setType(*iter, type);
+    }
+    type++;
+  }
+
+  tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSwcTree tree1;
+  tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
+
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl.swc");
+
+  ZSwc::Subtract(&tree2, &tree1);
+  tree2.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+  tree.forceVirtualRoot();
+  Swc_Tree_Node *root = tree.root();
+  std::vector<Swc_Tree_Node *> nodeArray = tree.getSwcTreeNodeArray();
+  for (std::vector<Swc_Tree_Node *>::iterator iter = nodeArray.begin();
+       iter != nodeArray.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    if (!SwcTreeNode::isRoot(tn)) {
+      if (SwcTreeNode::type(tn) != SwcTreeNode::type(SwcTreeNode::parent(tn))) {
+        SwcTreeNode::setParent(tn, root);
+      }
+    }
+  }
+  tree.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_bk3.swc");
+#endif
+
+#if 0
+  ZSwcTree tree2;
+  tree2.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
+
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_allseg.swc");
+
+  Swc_Tree_Subtract(tree2.data(), tree.data());
+
+  tree2.save(GET_TEST_DATA_DIR + "/flyem/MB/apl_sub.swc");
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_original.swc");
+
+  for (int i = 1; i <= 13; ++i) {
+    QString path = QString("%1/%2.swc").
+        arg((GET_TEST_DATA_DIR + "/flyem/MB/paper/movie8/cast").c_str()).arg(i);
+    std::cout << "Processing " << path.toStdString() << std::endl;
+    ZSwcTree tree2;
+    tree2.load(path.toStdString());
+    std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree2, tree);
+    for (std::vector<Swc_Tree_Node*>::iterator iter = nodeArray.begin();
+         iter != nodeArray.end(); ++iter) {
+      Swc_Tree_Node *tn = *iter;
+      if (SwcTreeNode::radius((tn)) >= 1.0) {
+        SwcTreeNode::setRadius(tn, SwcTreeNode::radius((tn)) - 0.1);
+      } else {
+        SwcTreeNode::setRadius(tn, SwcTreeNode::radius((tn))*0.9);
+      }
+    }
+  }
+
+  tree.save(GET_TEST_DATA_DIR + "/flyem/MB/paper/movie8/cast/14.swc");
+#endif
+
+#if 0
+  Stack *stack = C_Stack::make(GREY, 3, 3, 3);
+  C_Stack::setOne(stack);
+//  C_Stack::setPixel(stack, 0, 0, 0, 0, 0);
+//  C_Stack::setPixel(stack, 2, 0, 0, 0, 0);
+
+  size_t voxelCount = C_Stack::voxelNumber(stack);
+  long int *label = new long int[voxelCount];
+  tic();
+  Stack *out = C_Stack::Bwdist(stack, NULL, label);
+  ptoc();
+
+  for (size_t i = 0; i < voxelCount; ++i) {
+    std::cout << i << " " << label[i] << std::endl;
+  }
+
+  C_Stack::kill(out);
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeOneStack(3, 3, 3);
+  stack->setOffset(1, 2, 3);
+  stack->setIntValue(3, 4, 5, 0, 0);
+  ZIntPoint pt = FlyEm::FindClosestBg(stack, 1, 2, 3);
+
+  std::cout << pt.toString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::cout << reader.getDvidTarget().toJsonObject().dumpString(2) << std::endl;
+
+  ZIntPoint pt = reader.readPosition(4699477314, 9255, 5397, 11259);
+  std::cout << pt.toString() << std::endl;
+
+  std::cout << reader.readBodyIdAt(pt) << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  ZDvidReader reader;
+  reader.open(target);
+  ZIntPoint pt = reader.readPosition(200002591, 4080, 5648, 7088);
+
+  std::cout << pt.toString() << std::endl;
+
+  std::cout << reader.readBodyIdAt(pt) << std::endl;
+#endif
+
+#if 0
+  ZStackDoc *doc = new ZStackDoc;
+  doc->loadFile(GET_TEST_DATA_DIR + "/system/diadem/diadem_e1.tif");
+  doc->test();
+
+  doc->test();
+#endif
+
+#if 1
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/misc/larva/3.tif");
+
+  Stack stack1 = C_Stack::sliceView(stack.c_stack(), 0);
+  Stack stack2 = C_Stack::sliceView(stack.c_stack(), 1);
+
+  Stack *out = Stack_Sub(&stack1, &stack2, NULL);
+
+  std::vector<int> zArray;
+  zArray.push_back(0);
+  for (int z = 1; z < stack.depth(); ++z) {
+    stack2 = C_Stack::sliceView(stack.c_stack(), z);
+    Stack_Sub(&stack2, &stack1, out);
+    double diff = C_Stack::sum(out);
+    if (diff> 0) {
+//      std::cout << z << " " << C_Stack::sum(out) << std::endl;
+      zArray.push_back(z);
+    }
+    stack1 = stack2;
+  }
+
+  Stack *newStack = C_Stack::make(GREY, stack.width(), stack.height(), zArray.size());
+  for (size_t i = 0; i < zArray.size(); ++i) {
+    stack1 = C_Stack::sliceView(stack.c_stack(), zArray[i]);
+    C_Stack::copyPlaneValue(newStack, C_Stack::array8(&stack1), i);
+  }
+
+  C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", newStack);
+
+//  std::cout << C_Stack::sum(out) << std::endl;
+
+  C_Stack::kill(out);
+  C_Stack::kill(newStack);
+
 #endif
 
   std::cout << "Done." << std::endl;

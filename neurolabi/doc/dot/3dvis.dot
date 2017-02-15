@@ -1,0 +1,174 @@
+digraph {
+ Z3DVolume [label = "Z3DVolume",shape = "box"];
+ Z3DTriangleList [label = "Z3DTriangleList",shape = "box"];
+ Z3DInteractionHandler [label = "Z3DInteractionHandler",shape = "box"];
+ Z3DBackgroundRenderer [label = "Z3DBackgroundRenderer",shape = "box"];
+ ZEventListenerParameter [label = "ZEventListenerParameter",shape = "box"];
+ Z3DVolumeRaycaster [label = "Z3DVolumeRaycaster",shape = "box"];
+ Z3DShaderProgram [label = "Z3DShaderProgram",shape = "box"];
+ Z3DTextureCoordinateRenderer [label = "Z3DTextureCoordinateRenderer",shape = "box"];
+ Z3DTextureCopyRenderer [label = "Z3DTextureCopyRenderer",shape = "box"];
+ Z3DWindow [label = "Z3DWindow",shape = "box"];
+ Z3DGraphFilter [label = "Z3DGraphFilter",shape = "box"];
+ Z3DCanvasEventListener [label = "Z3DCanvasEventListener",shape = "box"];
+ Z3DImage2DRenderer [label = "Z3DImage2DRenderer",shape = "box"];
+ Z3DShaderGroup [label = "Z3DShaderGroup",shape = "box"];
+ Z3DLineRenderer [label = "Z3DLineRenderer",shape = "box"];
+ Z3DCompositor [label = "Z3DCompositor",shape = "box"];
+ ZStackDoc [label = "ZStackDoc",shape = "box"];
+ Z3DVolumeRaycasterRenderer [label = "Z3DVolumeRaycasterRenderer",shape = "box"];
+ Z3DCanvas [label = "Z3DCanvas",shape = "box"];
+ Z3DTexture [label = "Z3DTexture",shape = "box"];
+ Z3DCanvasRenderer [label = "Z3DCanvasRenderer",shape = "box"];
+ Z3DSphereRenderer [label = "Z3DSphereRenderer",shape = "box"];
+ Z3DAxis [label = "Z3DAxis",shape = "box"];
+ Z3DLineWithFixedWidthColorRenderer [label = "Z3DLineWithFixedWidthColorRenderer",shape = "box"];
+ Z3DRendererBase [label = "Z3DRendererBase",shape = "box"];
+ Z3DVolumeSource [label = "Z3DVolumeSource",shape = "box"];
+ Z3DOutputPort [label = "Z3DOutputPort",shape = "box"];
+ Z3DVolumeSliceRenderer [label = "Z3DVolumeSliceRenderer",shape = "box"];
+ Z3DSwcFilter [label = "Z3DSwcFilter",shape = "box"];
+ Z3DNetworkEvaluator [label = "Z3DNetworkEvaluator",shape = "box"];
+ Z3DProcessWrapper [label = "Z3DProcessWrapper",shape = "box"];
+ ZParameter [label = "ZParameter",shape = "box"];
+ Z3DProcessor [label = "Z3DProcessor",shape = "box"];
+ Z3DCameraParameter [label = "Z3DCameraParameter",shape = "box"];
+ Z3DRenderOutputPort [label = "Z3DRenderOutputPort",shape = "box"];
+ Z3DGeometryFilter [label = "Z3DGeometryFilter",shape = "box"];
+ Z3DPunctaFilter [label = "Z3DPunctaFilter",shape = "box"];
+ Z3DConeRenderer [label = "Z3DConeRenderer",shape = "box"];
+ Stack [label = "Stack",shape = "box"];
+ Z3DTrackballInteractionHandler [label = "Z3DTrackballInteractionHandler",shape = "box"];
+ Z3DPort [label = "Z3DPort",shape = "box"];
+ Z3DPickingManager [label = "Z3DPickingManager",shape = "box"];
+ Z3DArrowRenderer [label = "Z3DArrowRenderer",shape = "box"];
+ Z3DRenderProcessor [label = "Z3DRenderProcessor",shape = "box"];
+ Z3DRenderInputPort [label = "Z3DRenderInputPort",shape = "box"];
+ Z3DProcessorOutputPort [label = "Z3DProcessorOutputPort",shape = "box"];
+ Z3DTextureBlendRenderer [label = "Z3DTextureBlendRenderer",shape = "box"];
+ Z3DInputPortBase [label = "Z3DInputPortBase",shape = "box"];
+ Z3DOutputPortBase [label = "Z3DOutputPortBase",shape = "box"];
+ Z3DPrimitiveRenderer [label = "Z3DPrimitiveRenderer",shape = "box"];
+ Z3DFontRenderer [label = "Z3DFontRenderer",shape = "box"];
+ Z3DTextureUnitManager [label = "Z3DTextureUnitManager",shape = "box"];
+ QGraphicsView [label = "QGraphicsView",shape = "box"];
+ Z3DCheckOpenGLStateProcessWrapper [label = "Z3DCheckOpenGLStateProcessWrapper",shape = "box"];
+ Z3DProfileProcessWrapper [label = "Z3DProfileProcessWrapper",shape = "box"];
+ Z3DRenderTarget [label = "Z3DRenderTarget",shape = "box"];
+ Z3DInputPort [label = "Z3DInputPort",shape = "box"];
+ ZPunctum [label = "ZPunctum",shape = "box"];
+ Z3DPrimitiveRenderer -> Z3DImage2DRenderer
+ Z3DPrimitiveRenderer -> Z3DSphereRenderer
+ Z3DOutputPortBase -> Z3DOutputPort
+ Z3DGeometryFilter -> Z3DPunctaFilter
+ Z3DPrimitiveRenderer -> Z3DConeRenderer
+ Z3DProcessor -> Z3DVolumeSource
+ Z3DGeometryFilter -> Z3DGraphFilter
+ Z3DOutputPortBase -> Z3DProcessorOutputPort
+ Z3DRenderProcessor -> Z3DCompositor
+ Z3DGeometryFilter -> Z3DSwcFilter
+ Z3DInputPortBase -> Z3DRenderInputPort
+ Z3DLineRenderer -> Z3DLineWithFixedWidthColorRenderer
+ Z3DInteractionHandler -> Z3DTrackballInteractionHandler
+ Z3DProcessor -> Z3DRenderProcessor
+ Z3DCanvasEventListener -> Z3DProcessor
+ QGLShaderProgram -> Z3DShaderProgram
+ Z3DConeRenderer -> Z3DArrowRenderer
+ Z3DPrimitiveRenderer -> Z3DTextureBlendRenderer
+ Z3DProcessWrapper -> Z3DCheckOpenGLStateProcessWrapper
+ Z3DProcessor -> Z3DGeometryFilter
+ Z3DProcessWrapper -> Z3DProfileProcessWrapper
+ Z3DRenderProcessor -> Z3DCanvasRenderer
+ QGraphicsView -> Z3DCanvas
+ Z3DPrimitiveRenderer -> Z3DLineRenderer
+ Z3DGeometryFilter -> Z3DAxis
+ Z3DPrimitiveRenderer -> Z3DFontRenderer
+ Z3DRenderProcessor -> Z3DVolumeRaycaster
+ Z3DInputPortBase -> Z3DInputPort
+ Z3DOutputPortBase -> Z3DRenderOutputPort
+ Z3DPort -> Z3DOutputPortBase
+ Z3DPrimitiveRenderer -> Z3DTextureCopyRenderer
+ Z3DPort -> Z3DInputPortBase
+ Z3DPrimitiveRenderer -> Z3DVolumeRaycasterRenderer
+ Z3DPrimitiveRenderer -> Z3DVolumeSliceRenderer
+ Z3DPrimitiveRenderer -> Z3DBackgroundRenderer
+ Z3DPrimitiveRenderer -> Z3DTextureCoordinateRenderer
+ Z3DWindow -> Z3DNetworkEvaluator [arrowhead = diamond];
+ Z3DWindow -> Z3DVolumeSource [arrowhead = diamond];
+ Z3DWindow -> Z3DVolumeRaycaster [arrowhead = diamond];
+ Z3DWindow -> Z3DPunctaFilter [arrowhead = diamond];
+ Z3DWindow -> Z3DCompositor [arrowhead = diamond];
+ Z3DWindow -> Z3DSwcFilter [arrowhead = diamond];
+ Z3DWindow -> Z3DGraphFilter [arrowhead = diamond];
+ Z3DWindow -> ZStackDoc [arrowhead = diamond];
+ Z3DWindow -> Z3DCanvasRenderer [arrowhead = diamond];
+ Z3DWindow -> Z3DAxis [arrowhead = diamond];
+ Z3DWindow -> Z3DCanvas [arrowhead = diamond];
+ Z3DNetworkEvaluator -> Z3DProcessWrapper [arrowhead = diamond];
+ Z3DNetworkEvaluator -> Z3DProcessor [arrowhead = odiamond];
+ Z3DNetworkEvaluator -> Z3DCanvas [arrowhead = odiamond];
+ Z3DNetworkEvaluator -> Z3DCanvasRenderer [arrowhead = odiamond];
+ Z3DNetworkEvaluator -> Z3DRenderProcessor [arrowhead = odiamond];
+ Z3DConeRenderer -> Z3DShaderGroup [arrowhead = diamond];
+ Z3DProcessor -> ZParameter [arrowhead = diamond];
+ Z3DProcessor -> Z3DInputPortBase [arrowhead = diamond];
+ Z3DProcessor -> Z3DOutputPortBase [arrowhead = diamond];
+ Z3DProcessor -> Z3DInteractionHandler [arrowhead = diamond];
+ Z3DGeometryFilter -> Z3DRendererBase [arrowhead = diamond];
+ Z3DGeometryFilter -> Z3DPickingManager [arrowhead = odiamond];
+ Z3DCanvas -> Z3DNetworkEvaluator [arrowhead = odiamond];
+ Z3DCanvasRenderer -> Z3DCanvas [arrowhead = odiamond];
+ Z3DCanvasRenderer -> Z3DRenderInputPort [arrowhead = diamond];
+ Z3DAxis -> Z3DLineRenderer [arrowhead = odiamond];
+ Z3DAxis -> Z3DArrowRenderer [arrowhead = odiamond];
+ Z3DAxis -> Z3DFontRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DVolumeRaycasterRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DVolumeSliceRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DTextureCoordinateRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DTextureCopyRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DImage2DRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DLineRenderer [arrowhead = odiamond];
+ Z3DVolumeRaycaster -> Z3DInputPort [arrowhead = diamond];
+ Z3DVolumeRaycaster -> Z3DRenderOutputPort [arrowhead = diamond];
+ Z3DRendererBase -> Z3DPrimitiveRenderer [arrowhead = diamond];
+ Z3DSwcFilter -> Z3DLineRenderer [arrowhead = diamond];
+ Z3DSwcFilter -> Z3DConeRenderer [arrowhead = diamond];
+ Z3DSwcFilter -> Z3DSphereRenderer [arrowhead = diamond];
+ Z3DSwcFilter -> Z3DLineWithFixedWidthColorRenderer [arrowhead = diamond];
+ Z3DVolumeSource -> Z3DVolume [arrowhead = diamond];
+ Z3DVolumeSource -> Z3DOutputPort [arrowhead = diamond];
+ Z3DVolumeSource -> ZStackDoc [arrowhead = odiamond];
+ Z3DPort -> Z3DProcessor [arrowhead = odiamond];
+ Z3DGraphFilter -> Z3DLineRenderer [arrowhead = diamond];
+ Z3DGraphFilter -> Z3DConeRenderer [arrowhead = diamond];
+ Z3DGraphFilter -> Z3DSphereRenderer [arrowhead = diamond];
+ Z3DLineRenderer -> Z3DShaderGroup [arrowhead = diamond];
+ Z3DSphereRenderer -> Z3DShaderGroup [arrowhead = diamond];
+ Z3DFontRenderer -> Z3DShaderGroup [arrowhead = diamond];
+ Z3DShaderGroup -> Z3DRendererBase [arrowhead = odiamond];
+ Z3DBackgroundRenderer -> Z3DShaderGroup [arrowhead = diamond];
+ Z3DShaderGroup -> Z3DShaderProgram [arrowhead = diamond];
+ Z3DVolumeRaycasterRenderer -> Z3DShaderProgram [arrowhead = diamond];
+ Z3DVolumeRaycasterRenderer -> Z3DTriangleList [arrowhead = diamond];
+ Z3DVolumeRaycasterRenderer -> Z3DVolume [arrowhead = odiamond];
+ Z3DVolumeSliceRenderer -> Z3DVolume [arrowhead = odiamond];
+ Z3DVolumeSliceRenderer -> Z3DShaderProgram [arrowhead = diamond];
+ Z3DVolumeSliceRenderer -> Z3DTriangleList [arrowhead = diamond];
+ Z3DPunctaFilter -> Z3DSphereRenderer [arrowhead = diamond];
+ Z3DPunctaFilter -> Z3DLineWithFixedWidthColorRenderer [arrowhead = diamond];
+ Z3DPunctaFilter -> ZPunctum [arrowhead = odiamond];
+ Z3DCompositor -> Z3DTextureBlendRenderer [arrowhead = diamond];
+ Z3DCompositor -> Z3DBackgroundRenderer [arrowhead = diamond];
+ Z3DCompositor -> Z3DPickingManager [arrowhead = diamond];
+ Z3DCompositor -> Z3DRenderTarget [arrowhead = diamond];
+ Z3DCompositor -> Z3DShaderProgram [arrowhead = diamond];
+ Z3DCompositor -> Z3DTrackballInteractionHandler [arrowhead = diamond];
+ Z3DInteractionHandler -> Z3DCameraParameter [arrowhead = odiamond];
+ Z3DInteractionHandler -> ZEventListenerParameter [arrowhead = diamond];
+ Z3DCompositor -> Z3DCameraParameter [arrowhead = diamond];
+ Z3DShaderProgram -> Z3DTextureUnitManager [arrowhead = diamond];
+ Z3DVolume -> Stack [arrowhead = diamond];
+ Z3DVolume -> Z3DTexture [arrowhead = diamond];
+ Z3DRenderTarget -> Z3DTexture [arrowhead = diamond];
+ Z3DProcessor -> ZEventListenerParameter [arrowhead = odiamond];
+}

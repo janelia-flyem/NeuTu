@@ -49,7 +49,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = NeuTube::INVALID_Z_INDEX;
+  m_z = NeuTube::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -1843,7 +1843,7 @@ bool ZImage::writeImage(const QImage &image, const QString &filename)
   if (!writer.write(image)) {
     writer.setCompression(0);
     if (!writer.write(image)) {
-      if (ZFileType::fileType(filename.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(filename.toStdString()) == ZFileType::TIFF_FILE) {
         Stack *stack = C_Stack::make(COLOR, image.width(), image.height(), 1);
         color_t *arrayc = (color_t*) stack->array;
         size_t index = 0;

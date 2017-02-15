@@ -8,7 +8,7 @@ ZSwcNodeDistSelector::ZSwcNodeDistSelector()
 
 ZSwcTreeNodeArray ZSwcNodeDistSelector::select(const ZSwcTree &tree) const
 {
-  tree.setLabel(0);
+  tree.setNodeLabel(0);
   ZSwcTreeNodeArray nodeArray;
 
   tree.updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);

@@ -7,9 +7,15 @@
 #include "zpoint.h"
 #include "tz_geo3d_utils.h"
 #include "geometry/zgeometry.h"
+#include "neutube_def.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
+}
+
+bool ZIntPoint::IsNormalDimIndex(int index)
+{
+  return index >= NeuTube::DIM_MIN_NORMAL_INDEX;
 }
 
 ZIntPoint::ZIntPoint(int x, int y, int z)

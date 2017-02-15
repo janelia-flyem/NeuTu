@@ -12,6 +12,7 @@ class ZSwcTree;
 class ZSwcTreeMatcher;
 class ZStack;
 class ZWeightedPoint;
+class ZDvidReader;
 
 class ZCommandLine
 {
@@ -28,6 +29,8 @@ public:
 
   int run(int argc, char *argv[]);
 
+
+  friend class ZTest;
 
 private:
   void init();
@@ -46,7 +49,7 @@ private:
   int runComputeSeed();
   int runTest();
 
-  std::set<uint64_t> loadBodySet(const std::string &input);
+  std::set<uint64_t> loadBodySet(const std::string &input) const;
 
   void loadConfig(const std::string &filePath);
   void expandConfig(const std::string &configFilePath, const std::string &key);
@@ -61,6 +64,10 @@ private:
   void loadTraceConfig();
   static bool ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
                                const std::string &outFilePath);
+  int skeletonizeDvid();
+  int skeletonizeFile();
+  std::vector<uint64_t> getSkeletonBodyList(ZDvidReader &reader) const;
+  ZJsonObject getSkeletonizeConfig(ZDvidReader &reader);
 
 private:
   std::vector<std::string> m_input;

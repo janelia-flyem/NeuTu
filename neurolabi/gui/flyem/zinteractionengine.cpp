@@ -1,5 +1,6 @@
 #include "zinteractionengine.h"
 #include <QMouseEvent>
+#include "z3dinteractionhandler.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
@@ -214,6 +215,20 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
         emit selectingSwcNodeInRoi(true);
       } else {
         emit selectingSwcNodeInRoi(false);
+      }
+      processed = true;
+    }
+    break;
+  case Qt::Key_T:
+    if (hasRectDecoration()) {
+      if (event->modifiers() == Qt::ShiftModifier) {
+        emit selectingSwcNodeTreeInRoi(true);
+      } else if (event->modifiers() == Qt::NoModifier) {
+        emit selectingSwcNodeTreeInRoi(false);
+      } else if (event->modifiers() == Qt::ControlModifier) {
+        emit selectingTerminalBranchInRoi(false);
+      } else if (event->modifiers() == Qt::ControlModifier | Qt::ShiftModifier) {
+        emit selectingTerminalBranchInRoi(true);
       }
       processed = true;
     }

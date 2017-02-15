@@ -506,8 +506,8 @@ void ZSwcTreeMatcher::match(ZSwcTree &tree1, ZSwcTree &tree2)
   ZSwcBranch *branch1 = tree1.extractFurthestBranch();
   ZSwcBranch *branch2 = tree2.extractFurthestBranch();
 
-  tree1.setLabel(1);
-  tree2.setLabel(1);
+  tree1.setNodeLabel(1);
+  tree2.setNodeLabel(1);
 
   m_matchingResult = match(*branch1, *branch2);
 
@@ -561,8 +561,8 @@ double ZSwcTreeMatcher::matchAll(ZSwcTree &tree1, ZSwcTree &tree2)
   ZSwcBranch *pBranch1 = tree1.extractFurthestBranch();
   ZSwcBranch *pBranch2 = tree2.extractFurthestBranch();
 
-  tree1.setLabel(1);
-  tree2.setLabel(1);
+  tree1.setNodeLabel(1);
+  tree2.setNodeLabel(1);
 
   //cout << "Tree size: " << tree1.size() << endl;
 
@@ -693,8 +693,8 @@ void ZSwcTreeMatcher::matchAllG(ZSwcTree &tree1, ZSwcTree &tree2, int level)
   SwcTreeNode::setAsRoot(branch2[0]);
   tree2.setDataFromNodeRoot(branch2[0], ZSwcTree::LEAVE_ALONE);
 
-  tree1.setLabel(0);
-  tree2.setLabel(0);
+  tree1.setNodeLabel(0);
+  tree2.setNodeLabel(0);
 
   //cout << "Tree size: " << tree1.size() << endl;
 

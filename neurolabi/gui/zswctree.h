@@ -27,6 +27,7 @@ class ZSwcTrunkAnalyzer;
 class QPointF;
 class ZClosedCurve;
 class ZRect2d;
+class ZJsonObject;
 
 //! SWC tree class
 /*!
@@ -210,6 +211,9 @@ public:
    */
   bool isForest() const;
 
+  void setLabel(uint64_t label);
+  uint64_t getLabel() const;
+
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        NeuTube::EAxis axis) const;
@@ -226,6 +230,8 @@ public:
   bool load(const char *filePath);
   void save(const std::string &filePath);
   void load(const std::string &filePath);
+
+//  void save(const std::string &filePath, const ZJsonObject &info);
 
   /*!
    * \brief Load swc from buffer
@@ -268,6 +274,7 @@ public:
   inline void addComment(const std::string &comment) {
     m_comment.push_back(comment);
   }
+  void clearComment();
 
 public:
   int size();
@@ -348,7 +355,7 @@ public:
 
     if (m_tree->begin != NULL) {
       m_tree->iterator = m_tree->begin->next;
-      m_tree->begin->tree_state = m_tree->tree_state;
+//      m_tree->begin->tree_state = m_tree->tree_state;
     }
 
     return m_tree->begin;
@@ -544,7 +551,7 @@ public:
 
   ZSwcBranch *extractBranch(int beginId, int endId);
   ZSwcBranch *extractBranch(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
-  ZSwcBranch *extractBranch(int setLabel);
+  ZSwcBranch *extractBranch(int label);
   ZSwcBranch *extractLongestBranch();
   ZSwcBranch *extractFurthestBranch();
 
@@ -564,7 +571,7 @@ public:
   void merge(Swc_Tree *tree, bool freeInput = false);
   void merge(ZSwcTree *tree, bool freeInput = false);
 
-  void setLabel(int v) const;
+  void setNodeLabel(int v) const;
   void setType(int type);
 
   void translate(const ZPoint& offset);
@@ -613,7 +620,7 @@ public:
   int regularDepth();
 
   ZSwcPath mainTrunk(ZSwcTrunkAnalyzer *trunkAnalyzer);
-  ZSwcPath subTrunk(Swc_Tree_Node *start, int setLabel);
+  ZSwcPath subTrunk(Swc_Tree_Node *start, int setNodeLabel);
   ZSwcPath subTrunk(Swc_Tree_Node *start,
                     const std::set<Swc_Tree_Node*> &blocker,
                     ZSwcTrunkAnalyzer *trunkAnalyzer);
@@ -690,7 +697,7 @@ public:
   void initHostState();
 
   //void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
-  void setHostState(Swc_Tree_Node *tn) const;
+//  void setHostState(Swc_Tree_Node *tn) const;
 
   inline EStructrualMode getStructrualMode() const {
     return m_smode;
@@ -699,7 +706,7 @@ public:
 
   ZClosedCurve toClosedCurve() const;
 
-  void updateHostState();
+//  void updateHostState();
 
   //Iterator classes
   class ExtIterator {
@@ -807,12 +814,21 @@ public: //static functions
                                          double branchAngleMu,
                                          double branchAngleSigma);
 
-  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
+//  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
 
   static ETarget GetDefaultTarget();
 
 
 private:
+  void init();
+#if defined(_QT_GUI_USED_)
+  void displaySkeleton(
+      ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
+  void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
+      ZStackObject::EDisplayStyle style, NeuTube::EAxis axis) const;
+  void displaySelectedNode(ZPainter &painter, int slice, NeuTube::EAxis axis)
+  const;
+#endif
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
@@ -821,12 +837,20 @@ private:
   extractCurveTerminal() const;
   int getTreeState() const;
 
+  void writeSwc(FILE *fp);
+
+  static std::string GetCommentHeader();
+  void linkHost(Swc_Tree_Node *tn);
+  void unlinkHost(Swc_Tree_Node *tn);
+  void unlinkRootHost();
+
 #ifdef _QT_GUI_USED_
   const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
 #endif
 
 private:
   Swc_Tree *m_tree;
+  uint64_t m_label;
   EStructrualMode m_smode;
 //  TVisualEffect m_visualEffect;
 

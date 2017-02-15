@@ -80,6 +80,7 @@ void ZObject3dScan::init()
   m_blockingEvent = false;
   m_zProjection = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
+  setColor(255, 255, 255, 255);
 }
 
 
@@ -644,13 +645,13 @@ bool ZObject3dScan::load(const string &filePath)
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
-      if (ZFileType::fileType(strArray[0]) == ZFileType::HDF5_FILE) {
+      if (ZFileType::FileType(strArray[0]) == ZFileType::HDF5_FILE) {
         succ = importHdf5(strArray[0], strArray[1]);
       }
     }
-  } else if (ZFileType::fileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
     succ = importDvidObject(filePath);
-  } else if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
       int stripeNumber = 0;
@@ -980,11 +981,22 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 
   TEvent event = EVENT_NULL;
 
+#ifdef _DEBUG_2
+      std::cout << getMinZ() << std::endl;
+      std::cout << getMaxZ() << std::endl;
+#endif
+
   if (yintv > 0 || zintv > 0) {
     for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
+#ifdef _DEBUG_2
+    std::cout << iter->getZ() << std::endl;
+#endif
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
+#ifdef _DEBUG_2
+    std::cout << iter->getZ() << std::endl;
+#endif
     }
     //m_isCanonized = false;
     event |= EVENT_OBJECT_UNCANONIZED;
@@ -1002,6 +1014,11 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   processEvent(event);
 
   pushDsIntv(xintv, yintv, zintv);
+
+#ifdef _DEBUG_
+      std::cout << getMinZ() << std::endl;
+      std::cout << getMaxZ() << std::endl;
+#endif
 
   canonize();
 
@@ -3242,7 +3259,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::INVALID_Z_INDEX;
+  int cz = NeuTube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 

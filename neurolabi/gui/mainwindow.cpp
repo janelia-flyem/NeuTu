@@ -30,7 +30,7 @@
 #include "dialogs/channeldialog.h"
 #include "tz_math.h"
 //itkimagedefs.h has to be included before tz_error.h for unknown reason.
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 #include "tz_error.h"
 #include "dialogs/zeditswcdialog.h"
 #include "dialogs/cannyedgedialog.h"
@@ -200,7 +200,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_reporter = new ZQtMessageReporter(this);
 
-  qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
+//  qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
 
   m_lastOpenedFilePath = ".";
   m_ui->setupUi(this);
@@ -935,6 +935,7 @@ void MainWindow::customizeActions()
     m_ui->actionMask_SWC->setVisible(false);
     m_ui->actionTile_Manager_2->setVisible(false);
     m_ui->actionTiles->setVisible(false);
+    m_ui->actionTiles2->setVisible(false);
     //m_ui->menuHelp->menuAction()->setVisible(false);
   }
 
@@ -1057,70 +1058,76 @@ void MainWindow::createToolBars()
 {
 //  fileToolBar = addToolBar(tr("&File"));
   //fileToolBar->addAction(newAction);
-  //m_ui->toolBar->setStyleSheet("border: none");
-  //m_ui->toolBar->setIconSize(QSize(32, 32));
+  //m_toolBar->setStyleSheet("border: none");
+//  m_toolBar->setIconSize(QSize(24, 24));
+
+  m_toolBar = new QToolBar(this);
+  m_toolBar->setObjectName(QString::fromUtf8("toolBar"));
+//  m_toolBar->setIconSize(QSize(32, 32));
+
+  addToolBar(Qt::TopToolBarArea, m_toolBar);
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-//    m_ui->toolBar->addAction(m_ui->actionNewProject);
-    m_ui->toolBar->addAction(m_ui->actionTiles);
+//    m_toolBar->addAction(m_ui->actionNewProject);
+    m_toolBar->addAction(m_ui->actionTiles);
   }
-  //m_ui->toolBar->addAction(openAction);
+  //m_toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
-    m_ui->toolBar->addAction(m_ui->actionImportFlyEmDatabase);
-    m_ui->toolBar->addAction(m_ui->actionDVID_Bundle);
-    //m_ui->toolBar->addAction(m_ui->actionDvid_Object);
-//    m_ui->toolBar->addAction(m_ui->actionSplit_Body);
-//    m_ui->toolBar->addAction(m_ui->actionMerge_Body_Project);
-    m_ui->toolBar->addAction(m_ui->actionFlyEmROI);
-    m_ui->toolBar->addSeparator();
-    m_ui->toolBar->addAction(m_ui->actionProof);
+    m_toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+    m_toolBar->addAction(m_ui->actionDVID_Bundle);
+    //m_toolBar->addAction(m_ui->actionDvid_Object);
+//    m_toolBar->addAction(m_ui->actionSplit_Body);
+//    m_toolBar->addAction(m_ui->actionMerge_Body_Project);
+    m_toolBar->addAction(m_ui->actionFlyEmROI);
+    m_toolBar->addSeparator();
+    m_toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
-    m_ui->toolBar->addAction(m_ui->actionShape_Matching);
+    m_toolBar->addAction(m_ui->actionShape_Matching);
 #endif
   }
 
-  //m_ui->toolBar->addAction(expandAction);
+  //m_toolBar->addAction(expandAction);
   //fileToolBar->addAction(saveAction);
 
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addSeparator();
 
   if (GET_APPLICATION_NAME == "General") {
-    m_ui->toolBar->addActions(interactiveTrace->actions());
+    m_toolBar->addActions(interactiveTrace->actions());
   }
 
-  //m_ui->toolBar->addSeparator();
-  //m_ui->toolBar->addAction(m_ui->actionAutomatic);
+  //m_toolBar->addSeparator();
+  //m_toolBar->addAction(m_ui->actionAutomatic);
 
-  m_ui->toolBar->addAction(m_ui->actionMake_Projection);
-  m_ui->toolBar->addAction(m_ui->actionMask);
-  m_ui->toolBar->addAction(m_ui->actionMask_SWC);
+  m_toolBar->addAction(m_ui->actionMake_Projection);
+  m_toolBar->addAction(m_ui->actionMask);
+  m_toolBar->addAction(m_ui->actionMask_SWC);
 
-  m_ui->toolBar->addSeparator();
-  //m_ui->toolBar->addAction(objectViewHideAction);
-  m_ui->toolBar->addAction(objectViewSolidAction);
-  m_ui->toolBar->addAction(objectViewSurfaceAction);
-  m_ui->toolBar->addAction(objectViewSkeletonAction);
+  m_toolBar->addSeparator();
+  //m_toolBar->addAction(objectViewHideAction);
+  m_toolBar->addAction(objectViewSolidAction);
+  m_toolBar->addAction(objectViewSurfaceAction);
+  m_toolBar->addAction(objectViewSkeletonAction);
 
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addSeparator();
 
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-    m_ui->toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
+    m_toolBar->addAction(m_ui->actionOpen_3D_View_Without_Volume);
   }
-  m_ui->toolBar->addAction(m_ui->actionTile_Manager_2);
-  m_ui->toolBar->addSeparator();
+  m_toolBar->addAction(m_ui->actionTile_Manager_2);
+  m_toolBar->addSeparator();
 
-  m_ui->toolBar->addAction(m_ui->actionBrightnessContrast);
+  m_toolBar->addAction(m_ui->actionBrightnessContrast);
 #ifdef _ADVANCED_
-  //m_ui->toolBar->addAction(infoViewAction);
+  //m_toolBar->addAction(infoViewAction);
 #endif
-  m_ui->toolBar->addAction(settingAction);
-  m_ui->toolBar->addAction(screenshotAction);
+  m_toolBar->addAction(settingAction);
+  m_toolBar->addAction(screenshotAction);
 //#ifdef _DEBUG_
-  m_ui->toolBar->addAction(testAction);
-  m_ui->toolBar->addAction(testAction2);
+  m_toolBar->addAction(testAction);
+  m_toolBar->addAction(testAction2);
 //#endif
-  m_ui->toolBar->addAction(m_ui->actionShortcut);
+  m_toolBar->addAction(m_ui->actionShortcut);
 }
 
 void MainWindow::createStatusBar()
@@ -1165,6 +1172,10 @@ void MainWindow::updateAction()
 
   foreach (ZActionActivator *actionActivator, m_actionActivatorList) {
     actionActivator->update(frame);
+  }
+
+  if (GET_APPLICATION_NAME != "General") {
+    m_ui->actionAutomatic_Axon->setVisible(false);
   }
 }
 
@@ -1400,11 +1411,11 @@ void MainWindow::takeScreenshot()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     QString fileName =
-        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif) ");
+        getSaveFileName("Save Screenshot", "Tiff stack files (*.tif)");
 #if 0
 
         QFileDialog::getSaveFileName(this, tr("Save Screenshot"), m_lastOpenedFilePath,
-                                     tr("Tiff stack files (*.tif) "), NULL/*,
+                                     tr("Tiff stack files (*.tif)"), NULL/*,
                                      QFileDialog::DontUseNativeDialog*/);
 #endif
     if (!fileName.isEmpty()) {
@@ -1534,7 +1545,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 {
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
-    ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+    ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
     if (ZFileType::isNeutubeOpenable(fileType)) {
       NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
@@ -1562,7 +1573,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
 
 void MainWindow::openFileFunc(const QString &fileName)
 {
-  ZFileType::EFileType fileType = ZFileType::fileType(fileName.toStdString());
+  ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
     NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
@@ -1756,12 +1767,12 @@ void MainWindow::saveAs()
       openFileName = frame->document()->getStack()->sourcePath().c_str();
     }
     QString fileName = getSaveFileName(
-          "Save stack", "Tiff stack files (*.tif) ", openFileName);
+          "Save stack", "Tiff stack files (*.tif)", openFileName);
 #if 0
         QFileDialog::getSaveFileName(
           this, tr("Save stack"),
           frame->document()->stack()->sourcePath().c_str(),
-          tr("Tiff stack files (*.tif) "), NULL/*,
+          tr("Tiff stack files (*.tif)"), NULL/*,
           QFileDialog::DontUseNativeDialog*/);
 #endif
 
@@ -1775,11 +1786,11 @@ void MainWindow::saveAs()
 #if 0
 void MainWindow::exportSwc()
 {
-  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc) ");
+  QString fileName = getSaveFileName("Save SWC", "SWC files (*.swc)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save SWC"), m_lastOpenedFilePath,
-         tr("SWC files (*.swc) "));
+         tr("SWC files (*.swc)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1794,11 +1805,11 @@ void MainWindow::exportSwc()
 
 void MainWindow::exportPuncta()
 {
-  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo) ");
+  QString fileName = getSaveFileName("Save Puncta", "Puncta files (*.apo)");
 
 #if 0
     QFileDialog::getSaveFileName(this, tr("Save Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -1849,11 +1860,11 @@ void MainWindow::exportChainFileList()
 }
 void MainWindow::exportSvg()
 {
-  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg) ",
+  QString fileName = getSaveFileName("Save svg file", "Svg file (*.svg)",
                                      "./untitled.svg");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save svg file"), "./untitled.svg",
-           tr("Svg file (*.svg) "));
+           tr("Svg file (*.svg)"));
 #endif
   if (!fileName.isEmpty()) {
     activeStackFrame()->document()->exportSvg(
@@ -1863,12 +1874,12 @@ void MainWindow::exportSvg()
 
 void MainWindow::exportTraceProject()
 {
-  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml) ",
+  QString fileName = getSaveFileName("Save trace project", "XML file (*.xml)",
                                      "./untitled.xml");
 #if 0
       QFileDialog::getSaveFileName(this, tr("Save trace project"),
                                    "./untitled.xml",
-                                   tr("XML file (*.xml) "));
+                                   tr("XML file (*.xml)"));
 #endif
 
   if (!fileName.isEmpty()) {
@@ -2527,7 +2538,8 @@ void MainWindow::on_action3DView_triggered()
   if (frame != NULL) {
 //    getProgressDialog()->setRange(0, 0);
     //startProgress("Open 3D Window ...");
-    frame->open3DWindow();
+    ZWindowFactory::Open3DWindow(frame);
+//    frame->open3DWindow();
 //    endProgress();
 //    window->raise();
   }
@@ -2654,7 +2666,8 @@ void MainWindow::autoTrace(ZStackFrame *frame)
   frame->document()->setProgressReporter(&reporter);
 
   frame->executeAutoTraceCommand(m_autoTraceDlg->getTraceLevel(),
-                                 m_autoTraceDlg->getDoResample());
+                                 m_autoTraceDlg->getDoResample(),
+                                 m_autoTraceDlg->getChannel());
 
   frame->document()->setProgressReporter(oldReporter);
 
@@ -2665,6 +2678,28 @@ void MainWindow::on_actionAutomatic_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
+    //Temporary fix
+    if (frame->document()->getStack()->depth() <= 1) {
+      QMessageBox::warning(
+            this, "Auto-Tracing Failed",
+            "Tracing can only be done on a 3D image (more than one slice). "
+            "No result is generated.");
+
+      return;
+    }
+
+    if (frame->document()->getStack()->kind() != GREY &&
+        frame->document()->getStack()->kind() != GREY16) {
+      QMessageBox::warning(this, "Auto-Tracing Failed",
+                           "The image type must be 8-bit or 16-bit grayscale. "
+                           "No result is generated.");
+
+      return;
+    }
+
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
     if (m_autoTraceDlg->exec()) {
       m_progress->setRange(0, 100);
       m_progress->setValue(1);
@@ -3308,7 +3343,8 @@ void MainWindow::on_actionSkeletonization_triggered()
 
       if (wholeTree != NULL) {
         frame->executeAddObjectCommand(wholeTree);
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
                NeuTube::MSG_ERROR);
@@ -3397,6 +3433,9 @@ void MainWindow::test(ZTestOptionDialog *dlg)
     break;
   case ZTestOptionDialog::OPTION_CRASH:
     ZTest::CrashTest();
+    break;
+  case ZTestOptionDialog::OPTION_COMMAND:
+    ZTest::CommandLineTest();
     break;
   }
 }
@@ -3636,8 +3675,9 @@ void MainWindow::on_actionImport_Network_triggered()
     frame->document()->appendSwcNetwork(*network);
     delete network;
 
+    ZWindowFactory::Open3DWindow(frame);
     //addStackFrame(frame);
-    frame->open3DWindow();
+//    frame->open3DWindow();
     delete frame;
 
     QApplication::processEvents(); //force file dialog to close.
@@ -3662,7 +3702,8 @@ void MainWindow::on_actionAddSWC_triggered()
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
           isExpandSwcWith3DWindow()) {
-        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       }
     }
   }
@@ -3816,42 +3857,6 @@ void MainWindow::on_actionImportMask_triggered()
 
 void MainWindow::on_actionFlyEmSelect_triggered()
 {
-  /*
-  ZStackFrame *frame = currentStackFrame();
-  if (frame != NULL) {
-    ParameterDialog dlg;
-    dlg.setWindowTitle(tr("Select Bodies"));
-    if (dlg.exec() == QDialog::Accepted) {
-      ZString str(dlg.parameter());
-      std::vector<int> bodyColor;
-      if (str.startsWith("b")) {
-        std::vector<int> bodyId = str.toIntegerArray();
-        for (size_t i = 0; i < bodyId.size(); ++i) {
-          std::vector<uint8_t> code =
-              FlyEm::ZSegmentationAnalyzer::idToChannelCode(bodyId[i], 3);
-          bodyColor.push_back(code[0]);
-          bodyColor.push_back(code[1]);
-          bodyColor.push_back(code[2]);
-        }
-      } else {
-        bodyColor = str.toIntegerArray();
-      }
-
-      ZStackFrame *newFrame = NULL;
-
-      if (frame->name() == "flyem") {
-        ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
-        newFrame = completeFrame->spinoffSegmentationSelection(bodyColor);
-      } else {
-        newFrame = frame->spinoffStackSelection(bodyColor);
-      }
-
-      if (newFrame != NULL) {
-        addStackFrame(newFrame);
-      }
-    }
-  }*/
-
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     ZFlyEmStackFrame *completeFrame = (ZFlyEmStackFrame*) frame;
@@ -4645,7 +4650,8 @@ void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+    ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//    frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
   }
 }
 
@@ -5192,7 +5198,8 @@ void MainWindow::on_actionMask_SWC_triggered()
 //        swcFrame->document()->notifySwcModified();
 
         if (frame != stackFrame) {
-          swcFrame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(swcFrame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          swcFrame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
           if (swcFrame != stackFrame) {
             delete swcFrame;
           }
@@ -5223,7 +5230,7 @@ void MainWindow::expandCurrentFrame()
     bool swcLoaded = false;
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
-        switch (ZFileType::fileType(filePath.toStdString())) {
+        switch (ZFileType::FileType(filePath.toStdString())) {
         case ZFileType::SWC_FILE:
           frame->importSwc(filePath);
           swcLoaded = true;
@@ -5242,7 +5249,8 @@ void MainWindow::expandCurrentFrame()
       if (swcLoaded) {
         if (NeutubeConfig::getInstance().getMainWindowConfig().
             isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
       }
     }
@@ -5285,11 +5293,11 @@ void MainWindow::on_actionSave_SWC_triggered()
       }
 
       QString fileName = getSaveFileName(
-            "Save neuron as SWC", tr("SWC file (*.swc) "), swcSource.c_str());
+            "Save neuron as SWC", tr("SWC file (*.swc)"), swcSource.c_str());
 #if 0
           QFileDialog::getSaveFileName(this, tr("Save neuron as SWC"),
                                        swcSource.c_str(),
-                                       tr("SWC file (*.swc) "));
+                                       tr("SWC file (*.swc)"));
 #endif
       if (!fileName.isEmpty()) {
         frame->document()->saveSwc(fileName.toStdString());
@@ -5335,14 +5343,14 @@ void MainWindow::on_actionSparse_objects_triggered()
       presentStackFrame(frame);
     } else {
       foreach (QString file, fileList) {
-        if (ZFileType::fileType(file.toStdString()) ==
+        if (ZFileType::FileType(file.toStdString()) ==
             ZFileType::OBJECT_SCAN_FILE) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
-          if (ZFileType::fileType(file.toStdString()) ==
+          if (ZFileType::FileType(file.toStdString()) ==
               ZFileType::TIFF_FILE) {
             ZStack stack;
             stack.load(file.toStdString());
@@ -5503,7 +5511,8 @@ void MainWindow::createDvidFrame()
     frame->addDocData(reader);
 
     if (!frame->document()->hasStackData()) {
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
     } else {
       addStackFrame(frame);
@@ -5667,9 +5676,9 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
             m_lastOpenedFilePath += ".swc";
           }
           //QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-          //                                   tr("SWC file (*.swc) "), false);
+          //                                   tr("SWC file (*.swc)"), false);
           QString fileName = getSaveFileName(tr("Export neuron as SWC"),
-                                             tr("SWC file (*.swc) "));
+                                             tr("SWC file (*.swc)"));
           if (!fileName.isEmpty()) {
             ZSwcTree *tree = frame->document()->getMergedSwc();
             if (tree != NULL) {
@@ -5851,8 +5860,10 @@ void MainWindow::on_actionTiles_triggered()
     frame->swcFilename.append(".swc");
     if (QFile::exists(frame->swcFilename)) {
         frame->load(frame->swcFilename);
-        if (NeutubeConfig::getInstance().getMainWindowConfig().isExpandSwcWith3DWindow()) {
-          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
+        if (NeutubeConfig::getInstance().getMainWindowConfig().
+            isExpandSwcWith3DWindow()) {
+          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
     }
 
@@ -5888,10 +5899,10 @@ void MainWindow::showStackFrame(
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
-      if (ZFileType::fileType(file.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::TIFF_FILE) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::fileType(file.toStdString()) == ZFileType::SWC_FILE) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::SWC_FILE) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }
@@ -5907,7 +5918,8 @@ void MainWindow::showStackFrame(
       }
 
       if (opening3DWindow) {
-        frame->open3DWindow();
+        ZWindowFactory::Open3DWindow(frame);
+//        frame->open3DWindow();
       }
 
       if (!hasImageFile) {
@@ -6516,7 +6528,7 @@ void MainWindow::testFlyEmProofread()
 {
   ZProofreadWindow* window = startProofread();
 
-  window->test();
+  window->stressTest();
 }
 
 void MainWindow::runBodySplit()
@@ -6659,7 +6671,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
       //QApplication::processEvents();
     } else {
       emit progressDone();
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
     }
     if (!fileName.isEmpty()) {
@@ -6693,7 +6706,8 @@ ZStackFrame* MainWindow::showStackDoc(ZStackDocPtr doc)
     } else {
       emit progressDone();
       progressProcessed = true;
-      frame->open3DWindow();
+      ZWindowFactory::Open3DWindow(frame);
+//      frame->open3DWindow();
       delete frame;
       frame = NULL;
     }
@@ -6745,7 +6759,8 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
-      newFrame->open3DWindow();
+      ZWindowFactory::Open3DWindow(newFrame);
+//      newFrame->open3DWindow();
       delete newFrame;
       //addStackFrame(newFrame);
       //presentStackFrame(newFrame);
@@ -7466,6 +7481,52 @@ void MainWindow::runRoutineCheck()
     }
   }
 }
+
+void MainWindow::on_actionTrace_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    Stack *mask = frame->document()->getTraceWorkspace()->trace_mask;
+
+    if (mask != NULL) {
+      ZStackDocReader reader;
+      ZStack *stack = new ZStack;
+      Stack *stackData = C_Stack::translate(mask, GREY, 0);
+      stack->consume(stackData);
+      reader.setStack(stack);
+      ZStackFrame *newFrame = createStackFrame(reader);
+      addStackFrame(newFrame);
+      presentStackFrame(newFrame);
+    }
+  }
+}
+
+void MainWindow::on_actionSeed_Mask_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+
+  if (frame != NULL) {
+    int channelNumber = frame->document()->getStack()->channelNumber();
+    m_autoTraceDlg->setChannelNumber(channelNumber);
+
+    Stack *stackData =
+        C_Stack::clone(
+          frame->document()->getStack()->c_stack(m_autoTraceDlg->getChannel()));
+    Stack *mask =
+        frame->document()->getNeuronTracer()->computeSeedMask(stackData);
+    C_Stack::kill(stackData);
+
+    ZStackDocReader reader;
+    ZStack *stack = new ZStack;
+    stack->consume(mask);
+    reader.setStack(stack);
+    ZStackFrame *newFrame = createStackFrame(reader);
+    addStackFrame(newFrame);
+    presentStackFrame(newFrame);
+  }
+}
+
 
 void MainWindow::on_actionSubtract_Background_triggered()
 {

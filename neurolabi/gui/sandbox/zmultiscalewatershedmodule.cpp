@@ -7,13 +7,13 @@
 #include <QGridLayout>
 #include <cstdlib>
 #include "zmultiscalewatershedmodule.h"
-#include "zstackwatershed.h"
+#include "imgproc/zstackwatershed.h"
 #include "zstackdoc.h"
 #include "zsandbox.h"
 #include "mainwindow.h"
 #include "neutubeconfig.h"
 #include "zobject3dscan.hpp"
-#include "zstackwatershed.h"
+//#include "zdownsamplingmodule.h"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)

@@ -1,5 +1,7 @@
 #include "zstackdocdatabuffer.h"
 
+#include <iostream>
+
 #include "zstackobject.h"
 
 ZStackDocObjectUpdate::ZStackDocObjectUpdate(ZStackObject *obj, EAction action)
@@ -19,6 +21,34 @@ void ZStackDocObjectUpdate::reset()
 {
   m_obj = NULL;
   m_action = ACTION_NULL;
+}
+
+void ZStackDocObjectUpdate::print() const
+{
+  switch (m_action) {
+  case ACTION_ADD_NONUNIQUE:
+    std::cout << "Add nonunique";
+    break;
+  case ACTION_ADD_UNIQUE:
+    std::cout << "Add unique";
+    break;
+  case ACTION_EXPEL:
+    std::cout << "Expel";
+    break;
+  case ACTION_KILL:
+    std::cout << "Kill";
+    break;
+  case ACTION_NULL:
+    std::cout << "No action on";
+    break;
+  case ACTION_RECYCLE:
+    std::cout << "Recycle";
+    break;
+  case ACTION_UPDATE:
+    std::cout << "Update";
+    break;
+  }
+  std::cout << " " << m_obj << std::endl;
 }
 
 ZStackDocDataBuffer::ZStackDocDataBuffer(QObject *parent) : QObject(parent)

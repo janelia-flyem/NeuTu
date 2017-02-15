@@ -61,6 +61,12 @@ ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
   }
 }
 
+void ZFlyEmBody3dDoc::waitForAllEvent()
+{
+  processEvent();
+  m_futureMap.waitForFinished();
+}
+
 void ZFlyEmBody3dDoc::connectSignalSlot()
 {
   connect(m_timer, SIGNAL(timeout()), this, SLOT(processEvent()));
@@ -1113,6 +1119,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
                 bodyId, GetBodyTypeName(bodyType)));
         tree->setObjectClass(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+        tree->setLabel(bodyId);
       }
     }
   }

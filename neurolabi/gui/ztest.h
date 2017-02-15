@@ -38,6 +38,7 @@ public:
   static bool testTreeIterator();
   static int RunUnitTest(int argc, char *argv[]);
   static void CrashTest();
+  static void CommandLineTest();
 
 public:
   static bool testTreeIterator(ZSwcTree &tree,

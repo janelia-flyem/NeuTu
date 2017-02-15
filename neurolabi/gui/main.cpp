@@ -163,6 +163,8 @@ int main(int argc, char *argv[])
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
   QApplication app(argc, argv, guiEnabled);
 
+  NeuTube::RegisterMetaType();
+
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
@@ -235,6 +237,12 @@ int main(int argc, char *argv[])
     syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
                NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
 
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      tracingConfig.load(
+            config.getApplicatinDir() + "/json/trace_config_biocytin.json");
+    } else {
+      tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    }
   }
 
 #ifdef _DEBUG_

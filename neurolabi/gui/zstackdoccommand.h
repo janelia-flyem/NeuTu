@@ -465,12 +465,16 @@ public:
   SwcTreeLabeTraceMask(ZStackDoc *doc, Swc_Tree *tree, QUndoCommand *parent = NULL);
   virtual ~SwcTreeLabeTraceMask();
 
+  void setOffset(const ZPoint &pt);
+  void setOffset(const ZIntPoint &pt);
+
   void undo();
   void redo();
 
 private:
   ZStackDoc *m_doc;
   Swc_Tree *m_tree;
+  ZPoint m_offset;
 };
 
 class SwcPathLabeTraceMask : public ZUndoCommand

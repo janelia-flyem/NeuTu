@@ -65,6 +65,16 @@ void ZDvidTileEnsemble::setContrastProtocal(const ZJsonObject &obj)
   m_contrastProtocal = obj;
 }
 
+ZJsonObject ZDvidTileEnsemble::getContrastProtocal() const
+{
+  return m_contrastProtocal;
+}
+
+ZDvidPatchDataFetcher* ZDvidTileEnsemble::getDataFetcher() const
+{
+  return m_dataFetcher;
+}
+
 void ZDvidTileEnsemble::updatePatch(
     const ZImage *patch, const ZIntCuboid &region)
 {
@@ -228,7 +238,8 @@ bool ZDvidTileEnsemble::update(
 #else
 //    ZMultiTaskManager taskManager;
     if (!tile_locs_array.empty()) {
-      std::cout << "Reading tiles ..." << std::endl;
+      std::cout << "Reading tiles from " << m_reader.getDvidTarget().getSourceString(false)
+                << "..." << std::endl;
       QElapsedTimer timer;
       timer.start();
 //      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
@@ -535,7 +546,8 @@ void ZDvidTileEnsemble::display(
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {
   m_dvidTarget = dvidTarget;
-  if (m_reader.open(dvidTarget)) {
+  m_dvidTarget.prepareTile();
+  if (m_reader.open(m_dvidTarget)) {
     m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
 
     ZJsonObject obj = m_reader.readContrastProtocal();

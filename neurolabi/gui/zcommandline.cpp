@@ -382,7 +382,7 @@ int ZCommandLine::runSynapseObjectList()
 
 int ZCommandLine::runOutputClassList()
 {
-  if (ZFileType::fileType(m_input[0]) == ZFileType::JSON_FILE) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::JSON_FILE) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
     std::map<string, int> classMap = bundle.getClassIdMap();
@@ -516,7 +516,7 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-    if (ZFileType::fileType(m_output) == ZFileType::SWC_FILE) {
+    if (ZFileType::FileType(m_output) == ZFileType::SWC_FILE) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
 
       //Unfortunately ZSwcTree::save does not return any status, so we use this
@@ -648,19 +648,23 @@ int ZCommandLine::runImageSeparation()
   return 0;
 }
 
-std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input)
+std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input) const
 {
 //  ZString
 
   std::set<uint64_t> bodySet;
 
   FILE *fp = fopen(input.c_str(), "r");
-  ZString str;
-  while (str.readLine(fp)) {
-    std::vector<uint64_t> bodyArray = str.toUint64Array();
-    bodySet.insert(bodyArray.begin(), bodyArray.end());
+  if (fp != NULL) {
+    ZString str;
+    while (str.readLine(fp)) {
+      std::vector<uint64_t> bodyArray = str.toUint64Array();
+      bodySet.insert(bodyArray.begin(), bodyArray.end());
+    }
+    fclose(fp);
+  } else {
+    std::cout << "Failed to open " << input << std::endl;
   }
-  fclose(fp);
 
   return bodySet;
 }
@@ -673,7 +677,7 @@ int ZCommandLine::runTest()
   std::cout << m_configJson.dumpString(2) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZJsonObject dvidConfig;
   dvidConfig.setEntry("address", "10.101.10.80");
   dvidConfig.setEntry("port", 8000);
@@ -685,6 +689,73 @@ int ZCommandLine::runTest()
   if (stack != NULL) {
     stack->save(GET_TEST_DATA_DIR + "/test.tif");
   }
+#endif
+
+#if 0
+//  ZDvidTarget target;
+//  target.set("emdata2.int.janelia.org", "3303", 8500);
+//  target.setBodyLabelName("bodies3");
+//  target.setLabelBlockName("labels3");
+//  target.setGrayScaleName("grayscale");
+
+  m_input.push_back("http:emdata2.int.janelia.org:8500:3303:bodies3");
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0]);
+
+  m_input.push_back(GET_TEST_DATA_DIR + "/benchmark/bodies.txt");
+//  m_input.push_back(GET_APPLICATION_DIR + "/json/skeletonize_fib25_len40.json");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonObject config = getSkeletonizeConfig(reader);
+  config.print();
+
+  std::vector<uint64_t> bodyList = getSkeletonBodyList(reader);
+  std::cout << "#Bodies: " << bodyList.size() << std::endl;
+  std::cout << bodyList.back() << std::endl;
+
+  ZDvidWriter writer;
+  writer.open(target);
+  std::cout << writer.isSwcWrittable() << std::endl;
+
+  ZStackSkeletonizer skeletonizer;
+  skeletonizer.configure(config);
+  std::cout << skeletonizer.toSwcComment() << std::endl;
+
+  m_forceUpdate = true;
+  int stat = skeletonizeDvid();
+  std::cout << stat << std::endl;
+
+#endif
+
+#if 1
+  m_input.push_back("http:emdata1.int.janelia.org:7000:005a:segmentation-labelvol");
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0]);
+
+  m_input.push_back(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/bodylist.txt");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonObject config = getSkeletonizeConfig(reader);
+  config.print();
+
+  std::vector<uint64_t> bodyList = getSkeletonBodyList(reader);
+  std::cout << "#Bodies: " << bodyList.size() << std::endl;
+  std::cout << bodyList.back() << std::endl;
+
+  ZDvidWriter writer;
+  writer.open(target);
+  std::cout << writer.isSwcWrittable() << std::endl;
+
+  ZStackSkeletonizer skeletonizer;
+  skeletonizer.configure(config);
+  std::cout << skeletonizer.toSwcComment() << std::endl;
+
+//  m_forceUpdate = true;
+  int stat = skeletonizeDvid();
+  std::cout << stat << std::endl;
+
 #endif
 
   return 0;
@@ -789,58 +860,23 @@ int ZCommandLine::runCompareSwc()
   return 1;
 }
 
-int ZCommandLine::runSkeletonize()
+std::vector<uint64_t> ZCommandLine::getSkeletonBodyList(ZDvidReader &reader) const
 {
-  if (m_input.empty()) {
-    std::cout << "Please specify input." << std::endl;
-    return 0;
-  }
+  std::vector<uint64_t> bodyIdArray = m_bodyIdArray;
 
-  if (m_isVerbose) {
-    tic();
-  }
+  if (bodyIdArray.empty()) {
+    std::set<uint64_t> bodyIdSet;
 
-  if (ZDvidTarget::isDvidTarget(m_input[0])) {
-    ZDvidTarget target;
-    //target.setBodyLabelName("sp2body");
-    target.setFromSourceString(m_input[0]);
-    //target.set("emdata2.int.janelia.org", "43f", 9000);
-
-    ZDvidReader reader;
-    reader.open(target);
-
-    ZDvidWriter writer;
-    writer.open(target);
-
-    ZDvidUrl dvidUrl(target);
-
-    ZSwcTree testTree;
-    testTree.setDataFromNode(SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1));
-    writer.writeSwc(0, &testTree);
-    if (writer.getStatusCode() != 200) {
-      std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
-      std::cout << writer.getStandardOutput().toStdString() << std::endl;
-      std::cout << "Cannot access " << dvidUrl.getSkeletonUrl()
-                << std::endl;
-      std::cout << "Please create the keyvalue data for skeletons first:"
-                << std::endl;
-      std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
-                   "-d '{\"dataname\": \""
-                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                      ZDvidData::ROLE_BODY_LABEL,
-                                      target.getBodyLabelName())
-                << "\", " << "\"typename\": \"keyvalue\"}' "
-                << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
-                << std::endl;
-
-      return 1;
+    bool hasBodyFile = false;
+    if (m_input.size() > 1) {
+      if (m_input[1] != "#") {
+        hasBodyFile = true;
+      }
     }
 
-    std::vector<uint64_t> bodyIdArray = m_bodyIdArray;
-
-    if (bodyIdArray.empty()) {
-      std::set<uint64_t> bodyIdSet;
-
+    if (hasBodyFile) {
+      bodyIdSet = loadBodySet(m_input[1]);
+    } else {
       if (m_input.size() == 1) {
         bodyIdSet = reader.readBodyId(100000);
         if (bodyIdSet.empty()) {
@@ -849,143 +885,218 @@ int ZCommandLine::runSkeletonize()
           if (bodyIdSet.empty()) {
             std::cout << "Done: No annotated body found in the database."
                       << std::endl;
-            return 1;
           }
         }
-      } else {
-        bodyIdSet = loadBodySet(m_input[1]);
       }
+    }
 
-      for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
-           iter != bodyIdSet.end(); ++iter) {
-        int bodyId = *iter;
-        if (m_namedOnly) {
-          ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
-          if (!annotation.getName().empty()) {
-            bodyIdArray.push_back(bodyId);
-          }
-        } else {
+    for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
+         iter != bodyIdSet.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      if (m_namedOnly) {
+        ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+        if (!annotation.getName().empty()) {
           bodyIdArray.push_back(bodyId);
         }
+      } else {
+        bodyIdArray.push_back(bodyId);
       }
     }
+  }
 
-    std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
+  return bodyIdArray;
+}
+
+ZJsonObject ZCommandLine::getSkeletonizeConfig(ZDvidReader &reader)
+{
+  //Priority: file, dvid, internal configuration
+  ZJsonObject config;
+  if (m_input.size() > 2) {
+    config.load(m_input[2]);
+  } else {
+    config = reader.readSkeletonConfig();
+  }
+
+  if (config.isEmpty()) {
+    if (m_configJson.hasKey("skeletonize")) {
+      config = ZJsonObject(m_configJson.value("skeletonize"));
+    }
+  }
+
+  return config;
+}
+
+int ZCommandLine::skeletonizeDvid()
+{
+  ZDvidTarget target;
+  //target.setBodyLabelName("sp2body");
+  target.setFromSourceString(m_input[0]);
+  if (!target.isValid()) {
+    std::cout << "Invalid DVID settings" << std::endl;
+    return 1;
+  }
+  //target.set("emdata2.int.janelia.org", "43f", 9000);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZDvidUrl dvidUrl(target);
+
+  if (!writer.isSwcWrittable()) {
+    std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
+    std::cout << writer.getStandardOutput().toStdString() << std::endl;
+    std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
+    std::cout << "Please create the keyvalue data for skeletons first:"
+              << std::endl;
+    std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
+                 "-d '{\"dataname\": \""
+              << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
+                                    ZDvidData::ROLE_BODY_LABEL,
+                                    target.getBodyLabelName())
+              << "\", " << "\"typename\": \"keyvalue\"}' "
+              << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
               << std::endl;
 
-    ZRandomGenerator rnd;
-    std::vector<int> rank = rnd.randperm(bodyIdArray.size());
-    std::set<uint64_t> excluded;
-    //excluded.insert(16493);
-    //excluded.insert(8772496);
+    return 1;
+  }
 
-    ZStackSkeletonizer skeletonizer;
+  std::vector<uint64_t> bodyIdArray = getSkeletonBodyList(reader);
+  if (bodyIdArray.empty()) {
+    return 1;
+  }
 
-    ZJsonObject config;
-    if (m_input.size() <= 2) {
-      config = reader.readSkeletonConfig();
-    }
+  std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
+            << std::endl;
 
-    if (config.isEmpty()) {
-      if (m_configJson.hasKey("skeletonize")) {
-        skeletonizer.configure(
-              ZJsonObject(m_configJson["skeletonize"],
-              ZJsonValue::SET_INCREASE_REF_COUNT));
-      } else {
-        if (m_input.size() >= 2) {
-          config.load(m_input[2]);
-        }
-      }
-    }
+  ZRandomGenerator rnd;
+  std::vector<int> rank = rnd.randperm(bodyIdArray.size());
+  std::set<uint64_t> excluded;
+  //excluded.insert(16493);
+  //excluded.insert(8772496);
+
+  ZStackSkeletonizer skeletonizer;
+
+  ZJsonObject config = getSkeletonizeConfig(reader);
+  if (!config.isEmpty()) {
     skeletonizer.configure(config);
+  }
 
-    for (size_t i = 0; i < bodyIdArray.size(); ++i) {
-      uint64_t bodyId = bodyIdArray[rank[i] - 1];
-      if (excluded.count(bodyId) == 0) {
-        ZSwcTree *tree = NULL;
-        if (!m_forceUpdate) {
-          tree = reader.readSwc(bodyId);
-        }
-        if (tree == NULL) {
-          ZObject3dScan obj;
-          reader.readBody(bodyId, true, &obj);
-          tree = skeletonizer.makeSkeleton(obj);
-          writer.writeSwc(bodyId, tree);
-        }
-        delete tree;
-        std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
-                  << bodyIdArray.size() << std::endl;
+  for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+    uint64_t bodyId = bodyIdArray[rank[i] - 1];
+    if (excluded.count(bodyId) == 0) {
+      ZSwcTree *tree = NULL;
+      if (!m_forceUpdate) {
+        tree = reader.readSwc(bodyId);
       }
-    }
-  } else {
-    if (!fexist(m_input[0].c_str())) {
-      m_reporter.report("Skeletonization Failed",
-                        "The input file " + m_input[0] + " seems not exist.",
-          NeuTube::MSG_ERROR);
-      return 1;
-    }
-
-    ZStackSkeletonizer skeletonizer;
-
-    ZSwcTree *tree = NULL;
-
-    if (m_configJson.hasKey("skeletonize")) {
-      skeletonizer.configure(
-            ZJsonObject(m_configJson["skeletonize"],
-            ZJsonValue::SET_INCREASE_REF_COUNT));
-    }
-
-    if (m_isVerbose) {
-      skeletonizer.print();
-    }
-
-    if (ZFileType::fileType(m_input[0]) == ZFileType::TIFF_FILE) {
-      if (m_output.empty()) {
-        m_reporter.report("Skeletonization Failed",
-                          "The input is not a binary image.",
-                          NeuTube::MSG_ERROR);
-        return 1;
-      }
-      ZStack stack;
-      stack.load(m_input[0]);
-
-      if (!stack.isBinary()) {
-        std::cout << "The image is not binary. Binarizing..." << std::endl;
-        stack.binarize();
-      }
-      tree = skeletonizer.makeSkeleton(stack);
-    } else if (ZFileType::fileType(m_input[0]) == ZFileType::OBJECT_SCAN_FILE) {
-      ZObject3dScan obj;
-      obj.load(m_input[0]);
-      if (m_isVerbose) {
-        std::cout << obj.getVoxelNumber() << " foreground voxels." << std::endl;
-      }
-      tree = skeletonizer.makeSkeleton(obj);
-    } else {
-      m_reporter.report(
-            "Skeletonization Failed",
-            "Unrecognized output: " + m_input[0],
-          NeuTube::MSG_ERROR);
-//      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
-    }
-
-    if (tree != NULL) {
-      if (!tree->isEmpty()) {
-        if (!m_output.empty()) {
-          tree->save(m_output);
-          std::cout << "SWC saved in " << m_output << std::endl;
-        }
-      } else {
-        std::cout << "No SWC generated." << std::endl;
+      if (tree == NULL) {
+        ZObject3dScan obj;
+        reader.readBody(bodyId, true, &obj);
+        tree = skeletonizer.makeSkeleton(obj);
+        writer.writeSwc(bodyId, tree);
       }
       delete tree;
-    } else {
-      std::cout << "No SWC generated." << std::endl;
+      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
+                << bodyIdArray.size() << std::endl;
     }
+  }
+
+  return 0;
+}
+
+int ZCommandLine::runSkeletonize()
+{
+  int stat = 0;
+
+  if (m_input.empty()) {
+    std::cout << "Please specify input." << std::endl;
+    return 1;
+  }
+
+  if (m_isVerbose) {
+    tic();
+  }
+
+  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+    stat = skeletonizeDvid();
+  } else {
+    stat = skeletonizeFile();
   }
 
   if (m_isVerbose) {
     ptoc();
+  }
+
+  return stat;
+}
+
+int ZCommandLine::skeletonizeFile()
+{
+  if (!fexist(m_input[0].c_str())) {
+    m_reporter.report("Skeletonization Failed",
+                      "The input file " + m_input[0] + " seems not exist.",
+        NeuTube::MSG_ERROR);
+    return 1;
+  }
+
+  ZStackSkeletonizer skeletonizer;
+
+  ZSwcTree *tree = NULL;
+
+  if (m_configJson.hasKey("skeletonize")) {
+    skeletonizer.configure(
+          ZJsonObject(m_configJson["skeletonize"],
+          ZJsonValue::SET_INCREASE_REF_COUNT));
+  }
+
+  if (m_isVerbose) {
+    skeletonizer.print();
+  }
+
+  if (ZFileType::FileType(m_input[0]) == ZFileType::TIFF_FILE) {
+    if (m_output.empty()) {
+      m_reporter.report("Skeletonization Failed",
+                        "The input is not a binary image.",
+                        NeuTube::MSG_ERROR);
+      return 1;
+    }
+    ZStack stack;
+    stack.load(m_input[0]);
+
+    if (!stack.isBinary()) {
+      std::cout << "The image is not binary. Binarizing..." << std::endl;
+      stack.binarize();
+    }
+    tree = skeletonizer.makeSkeleton(stack);
+  } else if (ZFileType::FileType(m_input[0]) == ZFileType::OBJECT_SCAN_FILE) {
+    ZObject3dScan obj;
+    obj.load(m_input[0]);
+    if (m_isVerbose) {
+      std::cout << obj.getVoxelNumber() << " foreground voxels." << std::endl;
+    }
+    tree = skeletonizer.makeSkeleton(obj);
+  } else {
+    m_reporter.report(
+          "Skeletonization Failed",
+          "Unrecognized output: " + m_input[0],
+        NeuTube::MSG_ERROR);
+//      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
+  }
+
+  if (tree != NULL) {
+    if (!tree->isEmpty()) {
+      if (!m_output.empty()) {
+        tree->save(m_output);
+        std::cout << "SWC saved in " << m_output << std::endl;
+      }
+    } else {
+      std::cout << "No SWC generated." << std::endl;
+    }
+    delete tree;
+  } else {
+    std::cout << "No SWC generated." << std::endl;
   }
 
   return 0;

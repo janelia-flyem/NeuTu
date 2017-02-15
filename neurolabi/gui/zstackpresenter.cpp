@@ -420,6 +420,46 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
 
     if (!connectAction(action, item)) {
       LWARN() << "Failed to connect action: " << action->text();
+#if 0
+        //Body actions
+      case ZActionFactory::ACTION_BODY_ANNOTATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyAnnotationTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_SPLIT_START:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodySplitTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyForceCheckinTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_CHECKOUT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyCheckoutTriggered()));
+        break;
+      case ZActionFactory::ACTION_BODY_DECOMPOSE:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyBodyDecomposeTriggered()));
+        break;
+      case ZActionFactory::ACTION_BOOKMARK_CHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
+        break;
+      case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
+        connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
+        break;
+      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
+        connect(action, SIGNAL(triggered()),
+                buddyDocument(), SLOT(selectAllSwcTreeNode()));
+        break;
+      default:
+        break;
+      }
+#endif
     }
   } else {
     action = m_actionMap[item];
@@ -1619,6 +1659,207 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
   return succ;
 }
 
+bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
+{
+  bool processed = false;
+  switch (event->key()) {
+  case Qt::Key_P:
+    if (event->modifiers() == Qt::ControlModifier) {
+      if (interactiveContext().isProjectView()) {
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+      } else {
+        interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
+      }
+      updateView();
+      emit(viewModeChanged());
+      processed = true;
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      buddyDocument()->pushSelectedLocsegChain();
+      updateView();
+      processed = true;
+    }
+    break;
+
+  case Qt::Key_Equal:
+  case Qt::Key_Up:
+    if (event->modifiers() == Qt::NoModifier) {
+      increaseZoomRatio();
+      processed = true;
+    }
+    break;
+  case Qt::Key_2:
+    if (m_interactiveContext.strokeEditMode() !=
+        ZInteractiveContext::STROKE_DRAW) {
+      increaseZoomRatio();
+      processed = true;
+    }
+    break;
+  case Qt::Key_Minus:
+  case Qt::Key_Down:
+    if (event->modifiers() == Qt::NoModifier) {
+      decreaseZoomRatio();
+      processed = true;
+    }
+    break;
+  case Qt::Key_1:
+    if (m_interactiveContext.strokeEditMode() !=
+        ZInteractiveContext::STROKE_DRAW) {
+      decreaseZoomRatio();
+      processed = true;
+    }
+    break;
+  case Qt::Key_W:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      moveViewPort(0, 10);
+    } else {
+      moveViewPort(0, 1);
+    }
+    processed = true;
+    break;
+  case Qt::Key_A:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      moveViewPort(10, 0);
+    } else {
+      moveViewPort(1, 0);
+    }
+    processed = true;
+    break;
+
+  case Qt::Key_S:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      moveViewPort(0, -10);
+      processed = true;
+    } else if (event->modifiers() == Qt::NoModifier) {
+      moveViewPort(0, -1);
+      processed = true;
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      if (getParentFrame() != NULL) {
+        buddyDocument()->saveSwc(getParentFrame());
+        processed = true;
+      }
+    }
+    break;
+
+  case Qt::Key_D:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      moveViewPort(-10, 0);
+    } else {
+      moveViewPort(-1, 0);
+    }
+    processed = true;
+    break;
+
+  case Qt::Key_Left:
+    if (!interactiveContext().isProjectView()) {
+      int step = -1;
+
+      if (event->modifiers() & Qt::ShiftModifier) {
+        step = -5;
+      }
+      buddyView()->stepSlice(step);
+      processed = true;
+    }
+    break;
+
+  case Qt::Key_Right:
+    if (!interactiveContext().isProjectView()) {
+      int step = 1;
+
+      if (event->modifiers() & Qt::ShiftModifier) {
+        step = 5;
+      }
+      buddyView()->stepSlice(step);
+      processed = true;
+    }
+    break;
+
+
+  case Qt::Key_M:
+    if (m_interactiveContext.isStackSliceView()) {
+      if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
+          (!buddyDocument()->getStack()->isVirtual())) {
+        QPointF dataPos = stackPositionFromMouse(MOVE);
+        buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
+                                     buddyView()->sliceIndex());
+        processed = true;
+      }
+    }
+    break;
+
+  case Qt::Key_Escape:
+    enterSwcSelectMode();
+//    m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
+    m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
+    //turnOffStroke();
+    exitStrokeEdit();
+    updateCursor();
+    processed = true;
+    break;
+  case Qt::Key_Comma:
+    if (isActiveObjectOn()) {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
+      if (stroke != NULL) {
+        stroke->addWidth(-1.0);
+      }
+      buddyView()->paintActiveDecoration();
+      processed = true;
+    }
+    break;
+  case Qt::Key_Period:
+    if (isActiveObjectOn()) {
+      if (event->modifiers() == Qt::NoModifier) {
+        ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
+        if (stroke != NULL) {
+          stroke->addWidth(1.0);
+        }
+        buddyView()->paintActiveDecoration();
+        processed = true;
+      } else if (event->modifiers() == Qt::ShiftModifier) {
+        if (estimateActiveStrokeWidth()) {
+          buddyView()->paintActiveDecoration();
+          processed = true;
+        }
+      }
+    }
+    break;
+  case Qt::Key_Space:
+    if (GET_APPLICATION_NAME == "FlyEM") {
+      if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
+        if (event->modifiers() == Qt::ShiftModifier) {
+          ZOUT(LTRACE(), 5) << "Starting watershed ...";
+          buddyDocument()->runSeededWatershed();
+        } else {
+          buddyDocument()->runLocalSeededWatershed();
+        }
+        processed = true;
+      }
+    }
+    break;
+  case Qt::Key_Z:
+    if (getParentMvc() != NULL) {
+      if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+        buddyDocument()->getAction(ZActionFactory::ACTION_REDO)->trigger();
+//        buddyDocument()->undoStack()->redo();
+        processed = true;
+      } else if (event->modifiers() == Qt::ControlModifier) {
+        buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
+//        buddyDocument()->undoStack()->undo();
+        processed = true;
+      }
+    }
+    break;
+    /*
+  case Qt::Key_F:
+    toggleObjectVisible();
+    break;
+    */
+  default:
+    break;
+  }
+
+  return processed;
+}
+
 bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 {
   bool processed = true;
@@ -1643,189 +1884,8 @@ bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
     return processed;
   }
 
-  switch (event->key()) {
-  /*
-  case Qt::Key_Backspace:
-  case Qt::Key_Delete:
-    buddyDocument()->executeRemoveSelectedObjectCommand();
-    break;
-    */
-  case Qt::Key_P:
-    if (event->modifiers() == Qt::ControlModifier) {
-      if (interactiveContext().isProjectView()) {
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
-      } else {
-        interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
-      }
-      updateView();
-      emit(viewModeChanged());
-    } else if (event->modifiers() == Qt::ShiftModifier) {
-      buddyDocument()->pushSelectedLocsegChain();
-      updateView();
-    }
-    break;
 
-  case Qt::Key_Equal:
-  case Qt::Key_Up:
-    if (event->modifiers() == Qt::NoModifier) {
-      increaseZoomRatio();
-    }
-    break;
-  case Qt::Key_2:
-    if (m_interactiveContext.strokeEditMode() !=
-        ZInteractiveContext::STROKE_DRAW) {
-      increaseZoomRatio();
-    }
-    break;
-  case Qt::Key_Minus:
-  case Qt::Key_Down:
-    if (event->modifiers() == Qt::NoModifier) {
-      decreaseZoomRatio();
-    }
-    break;
-  case Qt::Key_1:
-    if (m_interactiveContext.strokeEditMode() !=
-        ZInteractiveContext::STROKE_DRAW) {
-      decreaseZoomRatio();
-    }
-    break;
-  case Qt::Key_W:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      moveViewPort(0, 10);
-    } else {
-      moveViewPort(0, 1);
-    }
-    break;
-  case Qt::Key_A:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      moveViewPort(10, 0);
-    } else {
-      moveViewPort(1, 0);
-    }
-    break;
-
-  case Qt::Key_S:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      moveViewPort(0, -10);
-    } else if (event->modifiers() == Qt::NoModifier) {
-      moveViewPort(0, -1);
-    } else if (event->modifiers() == Qt::ControlModifier) {
-      if (getParentFrame() != NULL) {
-        buddyDocument()->saveSwc(getParentFrame());
-      }
-    }
-    break;
-
-  case Qt::Key_D:
-    if (event->modifiers() == Qt::ShiftModifier) {
-      moveViewPort(-10, 0);
-    } else {
-      moveViewPort(-1, 0);
-    }
-    break;
-
-  case Qt::Key_Left:
-    if (!interactiveContext().isProjectView()) {
-      int step = -1;
-
-      if (event->modifiers() & Qt::ShiftModifier) {
-        step = -5;
-      }
-      buddyView()->stepSlice(step);
-    }
-    break;
-
-  case Qt::Key_Right:
-    if (!interactiveContext().isProjectView()) {
-      int step = 1;
-
-      if (event->modifiers() & Qt::ShiftModifier) {
-        step = 5;
-      }
-      buddyView()->stepSlice(step);
-    }
-    break;
-
-
-  case Qt::Key_M:
-    if (m_interactiveContext.isStackSliceView()) {
-      if (interactiveContext().markPuncta() && buddyDocument()->hasStackData() &&
-          (!buddyDocument()->getStack()->isVirtual())) {
-        QPointF dataPos = stackPositionFromMouse(MOVE);
-        buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
-                                     buddyView()->sliceIndex());
-      }
-    } else {
-      processed = false;
-    }
-    break;
-
-  case Qt::Key_Escape:
-    enterSwcSelectMode();
-//    m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_SELECT);
-    m_interactiveContext.setTubeEditMode(ZInteractiveContext::TUBE_EDIT_OFF);
-    //turnOffStroke();
-    exitStrokeEdit();
-    updateCursor();
-    break;
-  case Qt::Key_Comma:
-    if (isActiveObjectOn()) {
-      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
-      if (stroke != NULL) {
-        stroke->addWidth(-1.0);
-      }
-      buddyView()->paintActiveDecoration();
-    }
-    break;
-  case Qt::Key_Period:
-    if (isActiveObjectOn()) {
-      if (event->modifiers() == Qt::NoModifier) {
-        ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
-        if (stroke != NULL) {
-          stroke->addWidth(1.0);
-        }
-        buddyView()->paintActiveDecoration();
-      } else if (event->modifiers() == Qt::ShiftModifier) {
-        if (estimateActiveStrokeWidth()) {
-          buddyView()->paintActiveDecoration();
-        }
-      }
-    }
-    break;
-  case Qt::Key_Space:
-    if (GET_APPLICATION_NAME == "FlyEM") {
-      //if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT ||
-       //   buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
-         // buddyDocument()->getTag() == NeuTube::Document::SEGMENTATION_TARGET) {
-        if (event->modifiers() == Qt::ShiftModifier) {
-          ZOUT(LTRACE(), 5) << "Starting watershed ...";
-          buddyDocument()->runSeededWatershed();
-        } else {
-          buddyDocument()->runLocalSeededWatershed();
-        }
-      //}
-    }
-    break;
-  case Qt::Key_Z:
-    if (getParentMvc() != NULL) {
-      if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
-        buddyDocument()->getAction(ZActionFactory::ACTION_REDO)->trigger();
-//        buddyDocument()->undoStack()->redo();
-      } else if (event->modifiers() == Qt::ControlModifier) {
-        buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
-//        buddyDocument()->undoStack()->undo();
-      }
-    }
-    break;
-    /*
-  case Qt::Key_F:
-    toggleObjectVisible();
-    break;
-    */
-  default:
-    processed = false;
-    break;
-  }
+  processed = processKeyPressEventOther(event);
 
   if (!processed) {
     processed = customKeyProcess(event);
@@ -2033,48 +2093,39 @@ void ZStackPresenter::autoTrace()
 }
 */
 
+ZPoint ZStackPresenter::getMousePositionInStack(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
+{
+  const ZMouseEvent &event =
+      m_mouseEventProcessor.getMouseEvent(buttons, action);
+  ZPoint pt = event.getStackPosition();
+
+  return pt;
+}
+
 void ZStackPresenter::traceTube()
 {
   //QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   buddyView()->setScreenCursor(Qt::BusyCursor);
-  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
-        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
-  if (buddyDocument()->getStack()->channelNumber() == 1) {
-    if (event.getRawStackPosition().z() < 0) {
-      buddyDocument()->executeTraceSwcBranchCommand(pt.x(), pt.y());
-    } else {
-      buddyDocument()->executeTraceSwcBranchCommand(pt.x(), pt.y(), pt.z());
-    }
 
-    /*
-    buddyDocument()->executeTraceSwcBranchCommand(
-          dataPos.x(), dataPos.y(), m_mouseLeftReleasePosition[2]);
-          */
-#if 0
-    QUndoCommand *traceTubeCommand = new ZStackDocTraceTubeCommand(buddyDocument(),
-                                                                   dataPos.x(), dataPos.y(),
-                                                                   m_mouseLeftReleasePosition[2]);
-    buddyDocument()->pushUndoCommand(traceTubeCommand);
-#endif
+  ZPoint pt = getMousePositionInStack(
+        Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
+  ZStackDoc *doc = buddyDocument();
+  if (doc->getStack()->channelNumber() == 1) {
+    if (doc->isZProjection(pt.getZ())) {
+      doc->executeTraceSwcBranchCommand(pt.x(), pt.y());
+    } else {
+      doc->executeTraceSwcBranchCommand(pt.x(), pt.y(), pt.z());
+    }
   } else if (buddyDocument()->getStack()->channelNumber() > 1) {
     ChannelDialog dlg(NULL, buddyDocument()->getStack()->channelNumber());
     if (dlg.exec() == QDialog::Accepted) {
       int channel = dlg.channel();
-      buddyDocument()->executeTraceTubeCommand(
+      buddyDocument()->executeTraceSwcBranchCommand(
             pt.x(), pt.y(), pt.z(), channel);
-#if 0
-      QUndoCommand *traceTubeCommand = new ZStackDocTraceTubeCommand(buddyDocument(),
-                                                                     dataPos.x(), dataPos.y(),
-                                                                     m_mouseLeftReleasePosition[2],
-                                                                     channel);
-      buddyDocument()->pushUndoCommand(traceTubeCommand);
-#endif
     }
   }
-  //buddyView()->setImageWidgetCursor(Qt::CrossCursor);
   updateCursor();
-  //updateView();
 }
 
 void ZStackPresenter::fitSegment()
@@ -2230,7 +2281,7 @@ bool ZStackPresenter::enterSwcExtendMode()
   if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
     const Swc_Tree_Node *tn = getSelectedSwcNode();
     if (tn != NULL) {
-      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+      notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                  "Right click to exit extending mode.");
 
 //      m_stroke.setFilled(false);
@@ -2886,14 +2937,24 @@ bool ZStackPresenter::process(ZStackOperator &op)
           enterSwcExtendMode();
         }
       }
+
+      if (interactiveContext().swcEditMode() ==
+          ZInteractiveContext::SWC_EDIT_OFF) {
+        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
+      }
     }
-//    interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_SELECTED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_ALL_NODE:
     buddyDocument()->deselectAllSwcTreeNodes();
+    interactionEvent.setEvent(
+          ZInteractionEvent::EVENT_SWC_NODE_SELECTION_CLEARED);
     break;
   case ZStackOperator::OP_SWC_DESELECT_SINGLE_NODE:
     buddyDocument()->deselectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
+    if (buddyDocument()->getSelectedSwcNodeNumber() == 0) {
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_SWC_NODE_SELECTION_CLEARED);
+    }
     //buddyDocument()->setSwcTreeNodeSelected(op.getHitSwcNode(), false);
     break;
   case ZStackOperator::OP_SWC_SELECT_MULTIPLE_NODE:

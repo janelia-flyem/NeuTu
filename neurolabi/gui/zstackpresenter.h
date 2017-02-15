@@ -149,6 +149,7 @@ public:
 */
   void processMouseReleaseEvent(QMouseEvent *event);
   virtual bool processKeyPressEvent(QKeyEvent *event);
+  bool processKeyPressEventOther(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event);
   void processMouseDoubleClickEvent(QMouseEvent *eventint);
@@ -469,6 +470,9 @@ protected:
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
   void addActiveObject(EObjectRole role, ZStackObject *obj);
+
+  ZPoint getMousePositionInStack(
+      Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
 
 protected:
   //ZStackFrame *m_parent;

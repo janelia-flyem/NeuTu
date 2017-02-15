@@ -506,6 +506,10 @@ private slots:
   void tryToClose();
   void showAndRaise();
 
+  void on_actionTrace_Mask_triggered();
+  void on_actionSeed_Mask_triggered();
+
+
 private:
   void createActions();
   void createFileActions();
@@ -597,6 +601,7 @@ private:
   // toolbars
   QToolBar *fileToolBar;
   QToolBar *editToolBar;
+  QToolBar *m_toolBar;
 
   // 'File' menu: 'New', 'Open', 'Import', 'Export', 'Save', 'Save As',
   //              'Close', 'Exit'

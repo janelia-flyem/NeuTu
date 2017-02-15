@@ -47,4 +47,9 @@ HEADERS +=     test/zswctreetest.h \
     test/ztestheader.h \
     test/zvoxelarraytest.h \
     test/zdvidannotationtest.h \
-    $$PWD/zgradientmagnitudemoduletest.h
+    test/zgradientmagnitudemoduletest.h \
+    test/zflyemproofdoctest.h \
+    test/zflyembodycoloroptiontest.h \
+    test/zresolutiontest.h \
+    test/zflyemproofdoctest.h \
+    test/zdvidroitest.h

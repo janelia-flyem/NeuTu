@@ -64,6 +64,8 @@ CONFIG(debug, debug|release) {
 #    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
+message("Target: $$TARGET")
+
 unix {
 include(extratarget.pri)
 
@@ -140,6 +142,19 @@ contains(CONFIG, sanitize) {
   }
 }
 
+contains(CONFIG, sanitize) {
+  message(Using sanitize)
+  unix {
+    macx {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    } else {
+      QMAKE_CXXFLAGS += -fsanitize=address
+      QMAKE_LFLAGS += -fsanitize=address
+    }
+  }
+}
+
 #QT += webkit
 
 contains(CONFIG, static_glew) { # glew from ext folder
@@ -176,29 +191,31 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        OSX_VERSION = $$system(sw_vers -productVersion)
-        message("Mac OS X $$OSX_VERSION")
-        MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
-        OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
-        OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
-        !isEqual(OSX_MAJOR_VERSION, 10) {
+        contains(CONFIG, autotarget) {
+          OSX_VERSION = $$system(sw_vers -productVersion)
+          message("Mac OS X $$OSX_VERSION")
+          MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
+          OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
+          OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
+          !isEqual(OSX_MAJOR_VERSION, 10) {
             error("Could not recognize OSX version")
-        }
+          }
 
-        OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
-        QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
-        message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+          OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
+          QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
+          message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
-        greaterThan(OSX_MINOR_VERSION, 8) {
-            contains(CONFIG, libstdc++) {
-                message("Using libstdc++")
-            } else {
-                LIBS -= -lstdc++
-                QMAKE_CXXFLAGS += -stdlib=libc++
-            }
+          greaterThan(OSX_MINOR_VERSION, 8) {
+          contains(CONFIG, libstdc++) {
+            message("Using libstdc++")
+          } else {
+            LIBS -= -lstdc++
+            QMAKE_CXXFLAGS += -stdlib=libc++
+          }
 
             QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
             message("SDK: $$QMAKE_MAC_SDK")
+          }
         }
 
         doc.files = doc
@@ -707,7 +724,16 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodychopdialog.h \
     zstackdocdatabuffer.h \
     dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h
+    dialogs/zinfodialog.h \
+    dialogs/zswcisolationdialog.h \
+    flyem/zflyembodycoloroption.h \
+    dialogs/zstresstestoptiondialog.h \
+    dialogs/zflyembodyscreenshotdialog.h\
+    dialogs/zflyemskeletonupdatedialog.h \
+    dialogs/zdvidadvanceddialog.h \
+    dvid/zdvidroi.h \
+    widgets/zdvidsourcewidget.h \
+    z3dmainwindow.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -796,7 +822,14 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemsplituploadoptiondialog.ui \
     widgets/zaxiswidget.ui \
     dialogs/ztestoptiondialog.ui \
-    dialogs/zinfodialog.ui
+    dialogs/zinfodialog.ui \
+    dialogs/zswcisolationdialog.ui \
+    dialogs/zstresstestoptiondialog.ui \
+    dialogs/zflyembodyscreenshotdialog.ui \
+    dialogs/zdvidadvanceddialog.ui \
+    dialogs/zflyemskeletonupdatedialog.ui \
+    widgets/zdvidsourcewidget.ui
+
 SOURCES += main.cpp \
     mainwindow.cpp \
     zstackview.cpp \
@@ -1226,7 +1259,16 @@ SOURCES += main.cpp \
     dialogs/zflyembodychopdialog.cpp \
     zstackdocdatabuffer.cpp \
     dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp
+    dialogs/zinfodialog.cpp \
+    dialogs/zswcisolationdialog.cpp \
+    flyem/zflyembodycoloroption.cpp \
+    dialogs/zstresstestoptiondialog.cpp \
+    dialogs/zflyembodyscreenshotdialog.cpp \
+    dialogs/zflyemskeletonupdatedialog.cpp \
+    dialogs/zdvidadvanceddialog.cpp \
+    dvid/zdvidroi.cpp \
+    widgets/zdvidsourcewidget.cpp \
+    z3dmainwindow.cpp
 
 OTHER_FILES += \
     extlib.pri \

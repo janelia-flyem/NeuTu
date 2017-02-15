@@ -772,7 +772,7 @@ void C_Stack::write(
     return;
   }
 
-  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+  ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
   case ZFileType::MC_STACK_RAW_FILE:
@@ -920,7 +920,7 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
   }
 
   Mc_Stack *stack = NULL;
-  ZFileType::EFileType fileType = ZFileType::fileType(filePath) ;
+  ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
   case ZFileType::OBJECT_SCAN_FILE:
@@ -1029,7 +1029,7 @@ Stack* C_Stack::readSc(const string &filePath)
 {
   Stack *stack = NULL;
 
-  if (ZFileType::fileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
       ZObject3d *obj3d = obj.toObject3d();
@@ -1838,6 +1838,15 @@ Stack* C_Stack::Bwdist_L_U16P(const Stack *in, Stack *out, int pad)
   STACK_MUTEX_GUARD
 
   return Stack_Bwdist_L_U16P(in, out, pad);
+}
+
+Stack* C_Stack::Bwdist(const Stack *in, Stack *out, long int *label)
+{
+  if (in == NULL) {
+    return NULL;
+  }
+
+  return Stack_Bwdist_L(in, out, label);
 }
 
 void C_Stack::shrinkBorder(const Stack *stack, int r, int nnbr)

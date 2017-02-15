@@ -4,26 +4,17 @@ function update_gcc
   CONDA_ROOT=`$condaDir/bin/conda info --root`
   if [ `uname` != 'Darwin' ]
   then
-    GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
-    if [ $GCCVER \> '4.9.0' ]
+    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
     then
-      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
-      then
-        source ${CONDA_ROOT}/bin/activate dvidenv
-        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
-      fi
+      source ${CONDA_ROOT}/bin/activate dvidenv
+      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
     fi
-
-    if [ $GCCVER \< '4.8.0' ]
-    then
-      if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
-      then
-        source ${CONDA_ROOT}/bin/activate dvidenv
-        $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
-      fi
-    fi
+    #GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+    #if [ $GCCVER \> '4.9.0' ] || [ $GCCVER \< '4.8.0' ]
+    #then
+    #  source ${CONDA_ROOT}/bin/activate dvidenv
+    #fi
   fi
-
 }
 
 function flyem_build_lowtis {
@@ -33,8 +24,6 @@ function flyem_build_lowtis {
   condaDir=$downloadDir/miniconda
   envDir=$condaDir/envs/dvidenv
 
-  update_gcc $condaDir
-  
   if [ `uname` != 'Darwin' ]
   then
     if [ -d $downloadDir/lowtis ]
@@ -44,15 +33,20 @@ function flyem_build_lowtis {
     else
       git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
     fi
+    #new version is not compatible with libdvidcpp in conda
+    cd $downloadDir/lowtis
+    git checkout f666d30
+
+    update_gcc $condaDir
+    source $condaDir/bin/activate dvidenv
 
     cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
-    cd $downloadDir/lowtis
-    mkdir build
+    mkdir -p build
     cd build
     cmake -DCMAKE_PREFIX_PATH=$envDir ..
     make -j3
     cd ..
-    mkdir build_debug
+    mkdir -p build_debug
     cd build_debug
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$envDir ..
     make -j3

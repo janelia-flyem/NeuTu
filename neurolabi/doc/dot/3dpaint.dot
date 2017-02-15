@@ -1,0 +1,19 @@
+digraph {
+ Z3DWindow [label = "Z3DWindow",shape = "box",];
+ Z3DCanvas [label = "Z3DCanvas",shape = "box",];
+ ZInteractionEngine [label = "ZInteractionEngine",shape = "box",];
+ Z3DCanvas__strokePainted [label = "strokePainted()",shape = "none",];
+ ZInteractionEngine__strokePainted [label = "strokePainted()",shape = "none",];
+ Z3DCanvas__strokePainted [label = "strokePainted",];
+ ZInteractionEngine__commitData [label = "commitData",];
+ Z3DWindow__addStrokeFrom3DPaint [label = "addStrokeFrom3DPaint",];
+ QGraphicsScene -> Z3DCanvas
+ Z3DCanvas -> Z3DCanvas__strokePainted [arrowhead = odot];
+ ZInteractionEngine -> ZInteractionEngine__strokePainted [arrowhead = odot];
+ ZInteractionEngine -> ZInteractionEngine__commitData [arrowhead = odot];
+ Z3DWindow -> Z3DWindow__addStrokeFrom3DPaint [arrowhead = odot];
+ ZInteractionEngine__strokePainted -> Z3DCanvas__strokePainted
+ Z3DCanvas__strokePainted -> Z3DWindow__addStrokeFrom3DPaint
+ Z3DCanvas -> ZInteractionEngine [arrowhead = diamond];
+ Z3DWindow -> Z3DCanvas [arrowhead = diamond];
+}

@@ -20,6 +20,8 @@ class FlyEmBodyFilterDialog;
 class ZFlyEmDataLoader;
 class FlyEmProofControlForm;
 class FlyEmSplitControlForm;
+class ZStressTestOptionDialog;
+class ZFlyEmBodyScreenshotDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -40,7 +42,7 @@ public:
   void setDvidDialog(ZDvidDialog *dvidDlg);
 
 public:
-  void test();
+  void stressTest();
 
 signals:
   void splitTriggered(uint64_t bodyId);
@@ -75,7 +77,10 @@ public slots:
   void operateDvid();
   void exploreBody();
 
-  void testSlot();
+  void exportNeuronScreenshot();
+
+  void stressTestSlot();
+  void diagnose();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
@@ -148,6 +153,8 @@ private:
   ZFlyEmDataLoader *m_flyemDataLoader;
   DvidOperateDialog *m_dvidOpDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
+  ZStressTestOptionDialog *m_stressTestOptionDlg;
+  ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
 };
 
 

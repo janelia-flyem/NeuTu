@@ -38,6 +38,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QRadioButton" name="commandTestRadioButton">
+        <property name="text">
+         <string>Command line test</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="stressTestRadioButton">
         <property name="text">
          <string>Stress Test</string>
@@ -56,6 +63,7 @@
      <zorder>normalTestRadioButton</zorder>
      <zorder>unitTestRadioButton</zorder>
      <zorder>crashTestRadioButton</zorder>
+     <zorder>commandTestRadioButton</zorder>
     </widget>
    </item>
    <item>

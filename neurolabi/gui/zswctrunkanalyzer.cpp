@@ -30,7 +30,7 @@ void ZSwcTrunkAnalyzer::clearBlocker()
 
 void ZSwcTrunkAnalyzer::labelTraffic(ZSwcTree *tree, ETrafficRule rule)
 {
-  tree->setLabel(0);
+  tree->setNodeLabel(0);
 
   switch (rule) {
   case FURTEST_PAIR:

@@ -23,12 +23,20 @@ public:
 
   std::string getOwner(uint64_t bodyId) const;
 
+  /*!
+   * \brief Test if the server is normal
+   *
+   * \return the status code from the server if the server address is valid.
+   *         Otherwise it returns 0.
+   */
   int testServer();
 
   bool isLocked(uint64_t bodyId) const;
 
   void setDvidTarget(const ZDvidTarget &target);
   const ZDvidTarget& getDvidTarget() const;
+
+  bool isEmpty() const;
 
   void setSever(const std::string &server);
 
@@ -44,9 +52,9 @@ public:
 
   class BodyStatus {
   private:
-    EBodyStatus m_bodyStatus;
+//    EBodyStatus m_bodyStatus;
     std::string m_user;
-    uint64_t m_bodyId;
+//    uint64_t m_bodyId;
   };
 
   std::string getUuid() const;

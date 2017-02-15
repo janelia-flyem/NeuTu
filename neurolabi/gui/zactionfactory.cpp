@@ -546,6 +546,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_UNMERGE:
     action = new QAction("Unmerge", parent);
     break;
+  case ACTION_DESELECT_BODY:
+    action = new QAction("Deselect Body", parent);
+    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
@@ -566,6 +569,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
     break;
+  case ACTION_ADD_TODO_MERGE:
+    action = new QAction("To merge here", parent);
+    break;
+  case ACTION_ADD_TODO_SPLIT:
+    action = new QAction("To split here", parent);
+    break;
   case ACTION_REMOVE_TODO_ITEM:
     action = new QAction("Remove todo", parent);
     break;
@@ -574,6 +583,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_UNCHECK_TODO_ITEM:
     action = new QAction("Set unchecked", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_NORMAL:
+    action = new QAction("Normal todo", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_MERGE:
+    action = new QAction("To merge", parent);
+    break;
+  case ACTION_TODO_ITEM_ANNOT_SPLIT:
+    action = new QAction("To split", parent);
     break;
   case ACTION_SELECT_BODY_IN_RECT:
     action = new QAction("Select bodies", parent);

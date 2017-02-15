@@ -21,7 +21,7 @@
 #include "zerror.h"
 #include "zweightedpointarray.h"
 #include "tz_stack_objlabel.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
 
 using namespace std;
 
@@ -217,6 +217,37 @@ double SwcTreeNode::downstreamLength(Swc_Tree_Node *tn)
   return length;
 }
 
+double SwcTreeNode::downstreamLength(
+    Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child, sx, sy, sz);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
+}
+
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
                                 Swc_Tree_Node_Compare compfunc)
 {
@@ -356,6 +387,12 @@ int SwcTreeNode::index(const Swc_Tree_Node *tn)
 double SwcTreeNode::length(const Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Length(tn);
+}
+
+double SwcTreeNode::length(
+    const Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  return Swc_Tree_Node_Scaled_Length(tn, sx, sy, sz);
 }
 
 bool SwcTreeNode::isLeaf(const Swc_Tree_Node *tn)
@@ -575,6 +612,14 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   case SwcTreeNode::EUCLIDEAN:
     dist = Swc_Tree_Node_Dist(tn1, tn2);
     break;
+  case SwcTreeNode::EUCLIDEAN_SQUARE:
+  {
+    double dx = x(tn1) - x(tn2);
+    double dy = y(tn1) - y(tn2);
+    double dz = z(tn1) - z(tn2);
+    dist = dx * dx + dy * dy + dz * dz;
+  }
+    break;
   case SwcTreeNode::PLANE_EUCLIDEAN:
   {
     double dx = x(tn1) - x(tn2);
@@ -772,7 +817,7 @@ void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
     SwcTreeNode::setLink(child, tn, SwcTreeNode::PARENT);
     SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
     SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
-    child->tree_state = tn->tree_state;
+//    child->tree_state = tn->tree_state;
   }
 }
 

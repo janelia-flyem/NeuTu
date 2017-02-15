@@ -34,6 +34,8 @@ public:
 
   Z3DWindow* make3DWindow(ZSharedPointer<ZStackDoc> doc,
                           Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+  static Z3DWindow* Open3DWindow(
+      ZStackFrame *frame, Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
 
 
   Z3DWindow* make3DWindow(ZScalableStack *stack);

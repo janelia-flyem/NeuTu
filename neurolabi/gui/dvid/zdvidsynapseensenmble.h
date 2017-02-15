@@ -17,6 +17,7 @@
 #include "zselector.h"
 #include "zjsonarray.h"
 #include "dvid/zdvidwriter.h"
+#include "zresolution.h"
 
 class ZStackView;
 class ZIntCuboid;
@@ -45,6 +46,13 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
+
+  ZResolution getResolution() const {
+    return m_resolution;
+  }
+  void setResolution(const ZResolution &resolution) {
+    m_resolution = resolution;
+  }
 
   class SynapseMap : public QMap<int, ZDvidSynapse> {
   public:
@@ -254,6 +262,8 @@ private:
   void init();
   void updateFromCacheUnsync(int z);
   void deselectSubUnsync();
+  void unsyncedFetch(const ZIntCuboid &box);
+  void syncedFetch(const ZIntCuboid &box, int startZ, int endZ, bool isFull);
 
 private:
   QVector<SynapseSlice> m_synapseEnsemble;
@@ -278,6 +288,7 @@ private:
   bool m_isReady;
 
   ZIntCuboid m_dataRange;
+  ZResolution m_resolution;
 
   ZFlyEmSynapseDataFetcher *m_dataFetcher;
 

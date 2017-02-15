@@ -1,0 +1,38 @@
+digraph {
+ Swc_Tree_Node [label = "Swc_Tree_Node",shape = "box"];
+ ZSwcObjsModel [label = "ZSwcObjsModel",shape = "box"];
+ ZStackDoc [label = "ZStackDoc",shape = "box"];
+ ZPunctaObjsModel [label = "ZPunctaObjsModel",shape = "box"];
+ ZSwcTree [label = "ZSwcTree",shape = "box"];
+ ZPunctum [label = "ZPunctum",shape = "box"];
+ ZSwcNodeObjsModel [label = "ZSwcNodeObjsModel",shape = "box"];
+ ZObjsModel [label = "ZObjsModel",shape = "box"];
+ ZObjsManagerWidget [label = "ZObjsManagerWidget",shape = "box"];
+ QTreeView [label = "QTreeView",shape = "box"];
+ QAbstractItemModel [label = "QAbstractItemModel",shape = "box"];
+ ZObjsItem [label = "ZObjsItem",shape = "box"];
+ QVariant [label = "QVariant",shape = "box"];
+ QAbstractItemModel -> ZObjsModel
+ ZObjsModel -> ZSwcObjsModel
+ ZObjsModel -> ZPunctaObjsModel
+ ZObjsModel -> ZSwcNodeObjsModel
+ QWidget -> ZObjsManagerWidget
+ ZObjsModel -> ZObjsItem [arrowhead = diamond];
+ ZObjsItem -> ZObjsItem [arrowhead = diamond];
+ ZObjsItem -> QVariant [arrowhead = diamond];
+ ZSwcObjsModel -> ZStackDoc [arrowhead = odiamond];
+ ZSwcObjsModel -> ZSwcTree [arrowhead = odiamond];
+ ZSwcObjsModel -> Swc_Tree_Node [arrowhead = odiamond];
+ ZObjsManagerWidget -> QTreeView [arrowhead = diamond];
+ ZObjsManagerWidget -> ZStackDoc [arrowhead = odiamond];
+ QTreeView -> QAbstractItemModel [arrowhead = odiamond];
+ ZStackDoc -> ZSwcObjsModel [arrowhead = diamond];
+ ZStackDoc -> ZSwcNodeObjsModel [arrowhead = diamond];
+ ZStackDoc -> ZPunctaObjsModel [arrowhead = diamond];
+ ZStackDoc -> ZSwcTree [arrowhead = diamond];
+ ZSwcTree -> Swc_Tree_Node [arrowhead = diamond];
+ ZSwcNodeObjsModel -> Swc_Tree_Node [arrowhead = odiamond];
+ ZPunctaObjsModel -> ZPunctum [arrowhead = odiamond];
+ ZStackDoc -> ZPunctum [arrowhead = diamond];
+ ZPunctaObjsModel -> ZStackDoc [arrowhead = odiamond];
+}

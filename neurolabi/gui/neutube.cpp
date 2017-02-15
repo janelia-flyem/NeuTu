@@ -2,10 +2,26 @@
 
 #include <QtGlobal>
 #include <QByteArray>
+#include <QMetaType>
 #include <iostream>
 
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
+#include "dvid/zdvidtarget.h"
+#include "zstackdoc.h"
+#include "zwidgetmessage.h"
+
+void NeuTube::RegisterMetaType()
+{
+  qRegisterMetaType<uint64_t>("uint64_t");
+  qRegisterMetaType<ZJsonValue>("ZJsonValue");
+  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+  qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
+  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
+  qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
+  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
+  qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+}
 
 ZMessageReporter* NeuTube::getMessageReporter()
 {
@@ -16,7 +32,6 @@ ZLogMessageReporter* NeuTube::getLogMessageReporter()
 {
   return dynamic_cast<ZLogMessageReporter*>(getMessageReporter());
 }
-
 
 
 std::string NeuTube::getErrorFile()

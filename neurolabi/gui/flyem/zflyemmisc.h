@@ -19,6 +19,7 @@ class ZStackViewParam;
 class ZObject3dScan;
 class QPointF;
 class QComboBox;
+class ZStroke2d;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -28,6 +29,8 @@ Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
 ZCubeArray* MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);
+ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, QColor color, int dsIntv);
+
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -53,6 +56,9 @@ void PrepareBodyStatus(QComboBox *box);
 QString GetMemoryUsage();
 
 QString ReadLastLines(const QString &filePath, int maxCount);
+
+ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
+std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 class HackathonEvaluator {
 public:

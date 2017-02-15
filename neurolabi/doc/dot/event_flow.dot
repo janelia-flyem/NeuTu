@@ -1,0 +1,7 @@
+digraph G {
+  Z3DWindow -> Z3DCanvas;
+  Z3DCanvas -> Z3DSwcFilter [label = "broardcastEvent"];
+  Z3DSwcFilter -> ZEventListnerParameter [label = "Z3DProcess::onEvent : sendEvent"];
+  ZEventListnerParameter -> eventTriggered [label = "emit"];
+  eventTriggered -> Z3DSwcFilter [label = "call selectSwc"];
+}

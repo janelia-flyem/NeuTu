@@ -64,7 +64,7 @@ void Default_Swc_Tree_Node(Swc_Tree_Node *node)
     node->feature = 0.0;
     node->index = -1;
     node->flag = 0;
-    node->tree_state = 0;
+    node->data_link = NULL;
   }
 }
 
@@ -836,7 +836,7 @@ void Swc_Tree_Node_Set_Parent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
       Swc_Tree_Node_Data(tn)->parent_id = Swc_Tree_Node_Id(parent);
       Swc_Tree_Node_Add_Child(parent, tn);
     }
-    tn->tree_state = parent->tree_state;
+    //tn->tree_state = parent->tree_state;
   } 
 }
 
@@ -3083,7 +3083,7 @@ Swc_Tree_Node* Swc_Tree_Next(Swc_Tree *tree)
 
   if (tn != NULL) {
     //tree->iterator = Swc_Tree_Node_Next(tn);
-    tn->tree_state = tree->tree_state;
+    //tn->tree_state = tree->tree_state;
     tree->iterator = tn->next;
   }
 

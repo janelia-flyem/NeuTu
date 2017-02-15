@@ -63,61 +63,67 @@ bool ZStackBinarizer::binarize(Stack *stack)
     }
   }
 
+  bool succ = true;
+
   if (low == high && hist != NULL) {
-    BINARIZE_CLEAN
-    return false;
+    succ = false;
   }
 
 
-  switch (m_method) {
-  case BM_RC_THRESHOLD:
-    threshold = Int_Histogram_Rc_Threshold(hist, low, high);
-    break;
-  case BM_STABLE_POINT:
-    threshold = Int_Histogram_Stable_Point(hist, low, high);
-    break;
-  case BM_TRIANGLE:
-    threshold = Int_Histogram_Triangle_Threshold(hist, low, high);
-    break;
-  case BM_LOCMAX:
-    if ((double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) <= 1e-5) {
-      threshold = Stack_Common_Intensity(stack, 0, high);
-    } else {
-      threshold = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
-      threshold = refineLocmaxThreshold(refStack, threshold, hist, high);
-    }
-    /*
+  if (succ) {
+    switch (m_method) {
+    case BM_RC_THRESHOLD:
+      threshold = Int_Histogram_Rc_Threshold(hist, low, high);
+      break;
+    case BM_STABLE_POINT:
+      threshold = Int_Histogram_Stable_Point(hist, low, high);
+      break;
+    case BM_TRIANGLE:
+      threshold = Int_Histogram_Triangle_Threshold(hist, low, high);
+      break;
+    case BM_LOCMAX:
+      if ((double) Int_Histogram_Sum(hist) / C_Stack::voxelNumber(stack) <= 1e-5) {
+        threshold = Stack_Common_Intensity(stack, 0, high);
+      } else {
+        threshold = Int_Histogram_Triangle_Threshold(hist, low, high - 1);
+        threshold = refineLocmaxThreshold(refStack, threshold, hist, high);
+      }
+      /*
     if (threshold <= Int_Histogram_Quantile(hist, 0.5)) {
       BINARIZE_CLEAN
       return false;
     }
     */
-    break;
-  case BM_MEAN:
-    threshold = iround(Stack_Mean(stack));
-    break;
-  case BM_ONE_SIGMA:
-    threshold = iround(Stack_Mean(stack) + sqrt(Stack_Var(stack)));
-    break;
-  case BM_NSIGMA:
-    threshold =
-        iround(Stack_Mean(stack) + m_sigmaScale * sqrt(Stack_Var(stack)));
-    break;
-  default:
-    break;
-  }
+      break;
+    case BM_MEAN:
+      threshold = iround(Stack_Mean(stack));
+      break;
+    case BM_ONE_SIGMA:
+      threshold = iround(Stack_Mean(stack) + sqrt(Stack_Var(stack)));
+      break;
+    case BM_NSIGMA:
+      threshold =
+          iround(Stack_Mean(stack) + m_sigmaScale * sqrt(Stack_Var(stack)));
+      break;
+    default:
+      break;
+    }
 
 #ifdef _DEBUG_
-  std::cout << "Threshold: " << threshold << std::endl;
+    std::cout << "Threshold: " << threshold << std::endl;
 #endif
 
-  Stack_Threshold_Binarize(stack, threshold);
-
-  postProcess(stack);
+    Stack_Threshold_Binarize(stack, threshold);
+  } else {
+    Stack_Binarize(stack);
+  }
 
   BINARIZE_CLEAN
 
-  return true;
+  postProcess(stack);
+
+
+  return succ;
 }
 
 int* ZStackBinarizer::computeLocmaxHist(const Stack *stack)

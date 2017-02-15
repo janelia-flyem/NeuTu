@@ -10,6 +10,16 @@
 *~
 *.pro.user*
 .DS_Store
+*.mexmaci64
+*.swp
+*.bk
+*.xcf
+*.pyc
+*.log
+TAGS
+devnull
+doc/doxfiles/
+~*
 
 !/neurolabi/lib/Mingw/*.zip
 /neurolabi/lib/*.tar
@@ -32,11 +42,14 @@ release/
 /neurolabi/lib/genelib/src/*.c
 /neurolabi/c/config.log
 /neurolabi/lib/genelib/src/config.log
+neuTube*/
 *-build-desktop-Qt*/
 gui-build-Desktop-*/
 gui-build-Desktop*-*/
 build-gui-Desktop-*/
 build-gui-Desktop*-*/
+build-gui-*/
+build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -59,6 +72,9 @@ neurolabi/lib/msvc/jansson*/
 neurolabi/lib/msvc/libxml2*/
 neurolabi/lib/msvc/pcre*/
 neurolabi/lib/msvc/zlib*/
+neurolabi/lib/msvc/
+neurolabi/c/lib/
+neutube_win64_*/
 
 /neurolabi/gui/gui.pro.user*
 /neurolabi/c/c_lib.creator.user*
@@ -170,6 +186,7 @@ neurolabi/lib/msvc/zlib*/
 
 # more auto-generated files
 /neurolabi/gui/neuTube_d.app/
+/neurolabi/gui/neutu_d.app/
 /neurolabi/gui/moc_*
 /neurolabi/gui/Makefile
 /neurolabi/gui/ui_*

@@ -21,7 +21,7 @@ void ZFlyEmOrthoMvc::init()
 //  m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = NULL;
 
-  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
+//  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
   m_objectWindow = NULL;
 }

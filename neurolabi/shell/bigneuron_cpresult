@@ -1,0 +1,21 @@
+#!/bin/bash
+
+dataDir=../data
+cd $dataDir
+fileList=`find bigneuron | grep 'v3dpbd$'`
+neuTube=../neuTube/neuTube.app/Contents/MacOS/neuTube
+resultDir=/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data
+
+for file in $fileList
+do
+  swcFile=$file.neutube_autotrace.swc
+  filePath=$PWD/$swcFile
+  echo $filePath
+  #outfile="$filePath".neutube_autotrace.swc
+  scp "zhaot@zhaot-ws1:$resultDir/$swcFile" $filePath
+  #if [ ! -f $outfile ]
+  #then
+  #  $neuTube --command --trace $filePath -o $outfile
+  #fi
+done
+ 

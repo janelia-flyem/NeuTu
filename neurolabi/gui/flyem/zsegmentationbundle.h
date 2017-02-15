@@ -48,7 +48,7 @@ public:
     GREY_SCALE, SUPERPIXEL, SUPERPIXEL_MAP, ANY_DATA
   };
 */
-#define setGrayScaleSource setGreyScaleSource
+//#define setGrayScaleSource setGreyScaleSource
 
   void setGreyScaleSource(const ZStackFile &file);
   void setSuperpixelSource(const ZStackFile &file);

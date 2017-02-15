@@ -149,7 +149,7 @@ void Biocytin::SwcProcessor::SmoothZ(ZSwcTree *tree)
 {
   const std::vector<Swc_Tree_Node*> &leafArray =
       tree->getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR);
-  tree->setLabel(0);
+  tree->setNodeLabel(0);
   for (std::vector<Swc_Tree_Node*>::const_iterator iter =
        leafArray.begin(); iter != leafArray.end(); ++iter) {
     Swc_Tree_Node *endTn = *iter;
@@ -170,7 +170,7 @@ void Biocytin::SwcProcessor::SmoothRadius(ZSwcTree *tree)
 {
   const std::vector<Swc_Tree_Node*> &leafArray =
       tree->getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR);
-  tree->setLabel(0);
+  tree->setNodeLabel(0);
   for (std::vector<Swc_Tree_Node*>::const_iterator iter =
        leafArray.begin(); iter != leafArray.end(); ++iter) {
     Swc_Tree_Node *endTn = *iter;

@@ -232,15 +232,25 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     }
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
-      if (doc->getSelectedSwcNodeList().size() == 1) {
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+      int swcNodeCount = doc->getSelectedSwcNodeNumber();
+
+      if (swcNodeCount == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
       }
 
       if (!actionList.isEmpty()) {
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
+
+      if (swcNodeCount > 0) {
+        actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
+      }
+
       actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
     }
 

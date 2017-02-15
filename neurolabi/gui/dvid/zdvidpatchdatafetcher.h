@@ -24,6 +24,8 @@ public:
   bool updatePatch(ZDvidTileEnsemble *slice, int z);
   bool updatePatch(ZDvidTileEnsemble *slice);
 
+  int receiverCount(const char* signal) const;
+
 signals:
   void dataFetched(ZDvidPatchDataFetcher*);
 

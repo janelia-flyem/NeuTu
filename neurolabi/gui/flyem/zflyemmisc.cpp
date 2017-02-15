@@ -27,7 +27,7 @@
 #include "zobject3dfactory.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
-
+#include "zstroke2d.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -307,6 +307,91 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
 #endif
 
   return graph;
+}
+
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+//  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+//    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZIntPoint roiDsIntv = dsRoi.getDsIntv();
+//  int sampleInterval = dsIntv;
+
+  ZCubeArray *cubes = new ZCubeArray;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+  //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  //
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
+
+  //
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+//        bool goodCube = (sampleInterval == 0);
+//        if (!goodCube) {
+//          goodCube = (k % sampleInterval == 0);
+//        }
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box;
+              box.setFirstCorner((i + startCoord[0]) * (roiDsIntv.getX() + 1),
+                                 (j + startCoord[1]) * (roiDsIntv.getY() + 1),
+                                 (k + startCoord[2]) * (roiDsIntv.getZ() + 1));
+              box.setSize(
+                    roiDsIntv.getX() + 2, roiDsIntv.getY() + 2, roiDsIntv.getZ() + 2);
+//              ZIntCuboid box = dsInfo.getBlockBox(
+//                    i * dsInt, j + startCoord[1], k + startCoord[2]);
+//              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
+              cubes->append(*cube);
+              delete cube;
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  //
+  return cubes;
 }
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
@@ -781,6 +866,35 @@ QString ZFlyEmMisc::GetMemoryUsage()
   p.close();
 #endif
   return memInfo;
+}
+
+ZStroke2d* ZFlyEmMisc::MakeSplitSeed(const ZObject3dScan &slice, int label)
+{
+  ZVoxel voxel = slice.getMarker();
+  ZStroke2d *stroke = new ZStroke2d;
+  stroke->setWidth(10);
+  stroke->setZ(voxel.z());
+  stroke->append(voxel.x(), voxel.y());
+  stroke->addRole(ZStackObjectRole::ROLE_SEED);
+  stroke->setLabel(label);
+  stroke->setPenetrating(false);
+
+  return stroke;
+}
+
+std::vector<ZStroke2d*> ZFlyEmMisc::MakeSplitSeedList(const ZObject3dScan &obj)
+{
+  std::vector<ZStroke2d*> seedList;
+
+  ZVoxel voxel = obj.getMarker();
+
+  ZObject3dScan slice = obj.getSlice(voxel.z());
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 1));
+
+  slice = obj.getSlice(voxel.z() + 1);
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+
+  return seedList;
 }
 
 QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)

@@ -12,6 +12,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdviddata.h"
 #include "zdvidutil.h"
+#include "dvid/zdvidnode.h"
 
 #ifdef _USE_GTEST_
 
@@ -19,7 +20,6 @@ TEST(ZDvidTest, ZDvidInfo)
 {
   ZDvidInfo info;
   info.print();
-
   /*
   const char* ZDvidInfo::m_minPointKey = "MinPoint";
   const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
@@ -297,6 +297,10 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getAnnotationUrl("test"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getAnnotationSyncUrl("test"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
+            dvidUrl.getAnnotationSyncUrl("test", ""));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync?replace=true",
+            dvidUrl.getAnnotationSyncUrl("test", "replace=true"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/test/sync",
             dvidUrl.getLabelszSyncUrl("test"));
@@ -360,6 +364,194 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_1/raw/0_1_2/100_200_300/1_2_3",
             dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 1));
   ASSERT_EQ("", dvidUrl3.getLabels64Url(100, 200, 300, 1, 2, 3, 6));
+
+
+  ZDvidUrl dvidUrl4(target, "1234");
+  std::cout << dvidUrl4.getHelpUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/help", dvidUrl.getHelpUrl());
+
+//  std::cout << dvidUrl.getSkeletonUrl() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/1234/branches/key/master",
+            dvidUrl4.getMasterUrl());
+
+  dvidUrl4.setDvidTarget(target, "3456");
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2_skeletons",
+            dvidUrl4.getSkeletonUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/branches/key/master",
+            dvidUrl4.getMasterUrl());
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
+            dvidUrl4.getDefaultDataInstancesUrl());
+}
+
+TEST(ZDvidTest, Reader)
+{
+  ZDvidReader reader;
+  ASSERT_FALSE(reader.open("foo:9001"));
+  ASSERT_FALSE(reader.open("", "uuid", 1));
+  ASSERT_FALSE(reader.open("server", "", 1));
+
+
+//  ASSERT_TRUE(reader.open("http://emdata2.int.janelia.org:9000:2ad1"));
+  if (reader.open("http://emdata2.int.janelia.org:9000:2ad1")) {
+    std::cout << "Connected to " << reader.getDvidTarget().getAddressWithPort()
+              << std::endl;
+    ASSERT_TRUE(reader.good());
+    ASSERT_TRUE(reader.isReady());
+
+    ZDvidReader reader2;
+    ASSERT_FALSE(reader2.open(reader.getDvidTarget().getAddress().c_str(), "",
+                              reader.getDvidTarget().getPort()));
+    ASSERT_FALSE(reader2.open("", reader.getDvidTarget().getUuid().c_str(),
+                              reader.getDvidTarget().getPort()));
+  }
+}
+
+TEST(ZDvidTest, ZDvidNode)
+{
+  ZDvidNode node;
+  node.setServer("http://emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.setServer("http://emdata2.int.janelia.org");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(-1, node.getPort());
+
+  node.setUuid("234");
+  ASSERT_EQ("234", node.getUuid());
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddressWithPort());
+
+  node.setServer("emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+  ASSERT_EQ("3456", node.getUuid());
+
+  ZJsonObject obj;
+  obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"uuid\": \"2a3\"}");
+  node.loadJsonObject(obj);
+
+  ASSERT_EQ("hackathon.janelia.org", node.getAddress());
+  ASSERT_EQ(-1, node.getPort());
+  ASSERT_EQ("2a3", node.getUuid());
+
+  obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
+                   "\"uuid\": \"2a3\"}");
+  node.loadJsonObject(obj);
+
+  ZJsonObject obj2 = node.toJsonObject();
+  ASSERT_STREQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["address"]));
+  ASSERT_STREQ("2a3", ZJsonParser::stringValue(obj2["uuid"]));
+  ASSERT_EQ(8800, ZJsonParser::integerValue(obj2["port"]));
+
+  node.print();
+
+  ZDvidNode node2;
+  node2.set("emdata2.int.janelia.org", "uuid", 8000);
+
+  ASSERT_EQ(node, node);
+  ASSERT_NE(node, node2);
+
+  ZDvidNode node3;
+  node3.set("emdata2.int.janelia.org", "uuid", 8100);
+  ASSERT_NE(node2, node3);
+}
+
+TEST(ZDvidTest, ZDvidTarget)
+{
+  ZDvidTarget target;
+  target.setServer("http://emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.setServer("http://emdata2.int.janelia.org");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(-1, target.getPort());
+
+  target.setUuid("234");
+  ASSERT_EQ("234", target.getUuid());
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddressWithPort());
+
+  target.setServer("emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+
+  target.clear();
+  target.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+  ASSERT_EQ("3456", target.getUuid());
+  target.setTodoListName("test");
+  ASSERT_EQ("test", target.getTodoListName());
+
+  ZJsonObject obj;
+  obj.decodeString("{\"gray_scale\":{\"address\":\"hackathon.janelia.org\", \"port\": 8800, "
+                   "\"uuid\": \"2a3\"}}");
+  target.setSourceConfig(obj);
+  target.prepareTile();
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+  ASSERT_EQ("3456", target.getUuid());
+
+  target.prepareGrayScale();
+  ASSERT_EQ("hackathon.janelia.org", target.getAddress());
+  ASSERT_EQ("2a3", target.getUuid());
+  ASSERT_EQ(8800, target.getPort());
+
+  obj.decodeString("{\"multires_tile\":{\"address\":\"hackathon2.janelia.org\", \"port\": 9800, "
+                   "\"uuid\": \"1a3\"}}");
+  target.setSourceConfig(obj);
+  target.prepareTile();
+  ASSERT_EQ("hackathon2.janelia.org", target.getAddress());
+  ASSERT_EQ("1a3", target.getUuid());
+  ASSERT_EQ(9800, target.getPort());
+  target.print();
+
+  target.setTileSource(ZDvidNode("emdata2.int.janelia.org", "1234", 9000));
+  ZDvidNode node = target.getTileSource();
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+  ASSERT_EQ("1234", node.getUuid());
+
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
+  node = target.getGrayScaleSource();
+  ASSERT_EQ("emdata3.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9100, node.getPort());
+  ASSERT_EQ("2234", node.getUuid());
+
+  target.setTileSource(ZDvidNode("", "", -1));
+  node = target.getTileSource();
+  ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
+  ASSERT_EQ(9800, node.getPort());
+  ASSERT_EQ("1a3", node.getUuid());
 }
 
 #endif
