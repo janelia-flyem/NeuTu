@@ -104,6 +104,8 @@ public:
 
   bool isEmpty() const;
 
+  void merge(const ZSparseStack &sparseStack);
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid,

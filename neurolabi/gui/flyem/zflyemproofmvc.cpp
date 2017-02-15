@@ -2378,6 +2378,36 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 #endif
 }
 
+void ZFlyEmProofMvc::exportSelectedBodyStack()
+{
+  QString fileName =
+      ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
+  if (!fileName.isEmpty()) {
+    ZDvidLabelSlice *slice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+    if (slice != NULL) {
+      std::set<uint64_t> idSet =
+          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+
+      ZObject3dScan obj;
+
+      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+      if (reader.isReady()) {
+        for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+             iter != idSet.end(); ++iter) {
+          ZDvidSparseStack *sparseStack = reader.readDvidSparseStack(*iter);
+
+          ZObject3dScan subobj;
+          reader.readBody(*iter, false, &subobj);
+          obj.concat(subobj);
+        }
+      }
+      obj.canonize();
+      obj.save(fileName.toStdString());
+    }
+  }
+}
+
 void ZFlyEmProofMvc::exportSelectedBody()
 {
   QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);

@@ -21949,7 +21949,7 @@ void ZTest::test(MainWindow *host)
   doc->test();
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/misc/larva/3.tif");
 
@@ -21985,6 +21985,25 @@ void ZTest::test(MainWindow *host)
   C_Stack::kill(newStack);
 
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  uint64_t bodyId = 1321847559;
+  ZObject3dScan *obj1 = reader.readBody(bodyId, true, NULL);
+  ZObject3dScan *obj2 = reader.readBodyWithPartition(bodyId, NULL);
+
+  Q_ASSERT(obj1->equalsLiterally(*obj2));
+
+  delete obj1;
+  delete obj2;
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

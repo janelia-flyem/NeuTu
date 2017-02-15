@@ -326,7 +326,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
-    uint64_t bodyId, int npar, ZObject3dScan *result)
+    uint64_t bodyId, ZObject3dScan *result)
 {
   if (result != NULL) {
     result->clear();
@@ -342,16 +342,32 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
     int minZ = dvidInfo.getCoordZ(coarseBody.getMinZ());
     int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ());
 
-    if (npar <= 0) {
-      npar = 1;
+    int dz = 100;
+
+    int startZ = minZ;
+    int endZ = startZ + dz;
+    ZObject3dScan part;
+    while (startZ <= maxZ) {
+      if (endZ > maxZ) {
+        endZ = maxZ;
+      }
+      if (startZ == minZ) {
+#ifdef _DEBUG_
+        std::cout << "Read first part: " << startZ << "--" << endZ << std::endl;
+#endif
+        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, result);
+      } else {
+#ifdef _DEBUG_
+        std::cout << "Read part: " << startZ << "--" << endZ << std::endl;
+#endif
+        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, &part);
+        if (!part.isEmpty()) {
+          result->unify(part);
+        }
+      }
+      startZ = endZ + 1;
+      endZ = startZ + dz;
     }
-
-    int dz = (maxZ - minZ) / npar;
-    readBody(bodyId, minZ, minZ + dz, true, NeuTube::Z_AXIS, result);
-    for (int startZ = minZ; startZ <= maxZ; startZ += dz) {
-
-    }
-
   }
 
   return result;

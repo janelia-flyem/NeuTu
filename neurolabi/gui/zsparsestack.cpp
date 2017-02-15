@@ -330,6 +330,14 @@ void ZSparseStack::setObjectMask(ZObject3dScan *obj)
   }
 }
 
+void ZSparseStack::merge(const ZSparseStack &sparseStack)
+{
+  if (!sparseStack.isEmpty()) {
+    m_objectMask->unify(*(sparseStack.getObjectMask()));
+
+  }
+}
+
 ZIntCuboid ZSparseStack::getBoundBox() const
 {
   ZIntCuboid box;

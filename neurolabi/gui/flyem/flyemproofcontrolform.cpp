@@ -215,9 +215,17 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
 
-
+  QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
+  connect(exportBodyStackAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyStack()));
+  bodyMenu->addAction(exportBodyStackAction);
 #endif
 //  colorMenu->setEnabled(false);
+}
+
+void FlyEmProofControlForm::exportSelectedBodyStack()
+{
+  emit exportingSelectedBodyStack();
 }
 
 void FlyEmProofControlForm::exportSelectedBody()
