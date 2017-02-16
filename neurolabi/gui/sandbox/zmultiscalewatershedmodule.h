@@ -17,9 +17,6 @@ class ZWaterShedWindow:public QWidget
 public:
   ZWaterShedWindow(QWidget *parent = 0);
 private slots:
-  void onRecover(ZStack* sampled,ZStack* original);
-  void onScaleEqualsOne();
-  void onScaleLargerThanOne();
   void onOk();
   void onCancel();
 private:
