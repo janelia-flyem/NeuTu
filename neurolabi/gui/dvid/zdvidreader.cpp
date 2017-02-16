@@ -340,9 +340,10 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
     const ZObject3dScan &coarseBody = readCoarseBody(bodyId);
     ZDvidInfo dvidInfo = readLabelInfo();
     int minZ = dvidInfo.getCoordZ(coarseBody.getMinZ());
-    int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ());
+    int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ()) +
+        dvidInfo.getBlockSize().getZ() - 1;
 
-    int dz = 100;
+    int dz = 1000;
 
     int startZ = minZ;
     int endZ = startZ + dz;
@@ -563,23 +564,25 @@ ZObject3dScan *ZDvidReader::readBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    timer.start();
-    const QByteArray &buffer = reader.getBuffer();
-    result->importDvidObjectBuffer(buffer.data(), buffer.size());
-    if (canonizing) {
-      result->canonize();
-    }
+    if (reader.getStatusCode() == 200) {
+      timer.start();
+      const QByteArray &buffer = reader.getBuffer();
+      result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      if (canonizing) {
+        result->canonize();
+      }
 
 #ifdef _DEBUG_
-    std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
-//    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+      std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
+      //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-    std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
-
+      std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+      result->setLabel(bodyId);
+    } else {
+      readBodyWithPartition(bodyId, result);
+    }
     reader.clearBuffer();
-
-    result->setLabel(bodyId);
   }
 
 #if 0

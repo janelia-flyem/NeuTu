@@ -104,6 +104,10 @@ TEST(ZStackBlockGrid, basic)
     grid.getValue(39, 78, 73);
   }
   ptoc();
+
+  ZStackBlockGrid grid1;
+  grid1.setGridSize(5, 4, 3);
+  grid1.setBlockSize(16, 32, 64);
 }
 #endif
 

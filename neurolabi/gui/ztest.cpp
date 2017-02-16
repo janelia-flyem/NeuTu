@@ -21986,7 +21986,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
   target.useDefaultDataSetting(true);
@@ -21995,13 +21995,41 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   uint64_t bodyId = 1321847559;
+  tic();
   ZObject3dScan *obj1 = reader.readBody(bodyId, true, NULL);
+  ptoc();
+  tic();
   ZObject3dScan *obj2 = reader.readBodyWithPartition(bodyId, NULL);
+  ptoc();
 
-  Q_ASSERT(obj1->equalsLiterally(*obj2));
+  std::cout << "Equal: " << obj1->equalsLiterally(*obj2) << std::endl;
+  std::cout << obj1->getMinZ() << " " << obj1->getMaxZ() << " "
+            << obj1->getVoxelNumber() << std::endl;
+  std::cout << obj2->getMinZ() << " " << obj2->getMaxZ() << " "
+            << obj2->getVoxelNumber() << std::endl;
+
+//  Q_ASSERT(obj1->equalsLiterally(*obj2));
 
   delete obj1;
   delete obj2;
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  uint64_t bodyId = 115901398;
+
+  tic();
+  ZObject3dScan *obj2 = reader.readBodyWithPartition(bodyId, NULL);
+  ptoc();
+
+  std::cout << obj2->getMinZ() << " " << obj2->getMaxZ() << " "
+            << obj2->getVoxelNumber() << std::endl;
 #endif
 
 
