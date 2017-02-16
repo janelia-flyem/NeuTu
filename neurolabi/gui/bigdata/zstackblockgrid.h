@@ -24,7 +24,8 @@ public:
 
   void consumeStack(const ZIntPoint &blockIndex, std::vector<ZStack*> stackArray);
 
-  void consume(ZStackBlockGrid *grid);
+  void consume(ZStackBlockGrid &grid);
+  void consume(ZStackBlockGrid *&grid);
 
   int getValue(int x, int y, int z) const;
 

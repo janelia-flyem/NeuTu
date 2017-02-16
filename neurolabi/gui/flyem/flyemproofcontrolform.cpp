@@ -218,7 +218,7 @@ void FlyEmProofControlForm::createMenu()
   QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
   connect(exportBodyStackAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBodyStack()));
-  bodyMenu->addAction(exportBodyStackAction);
+  developerMenu->addAction(exportBodyStackAction);
 #endif
 //  colorMenu->setEnabled(false);
 }

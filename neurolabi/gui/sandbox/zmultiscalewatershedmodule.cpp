@@ -18,6 +18,7 @@
 #include "zobject3darray.h"
 #include "zstackdocdatabuffer.h"
 #include "zstackframe.h"
+#include "zcolorscheme.h"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -83,24 +84,33 @@ void ZWaterShedWindow::onOk()
   ZStack* result=watershed.run(src,trees,scale);
   if(result)
   {
-    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(result);
-    ZSandbox::GetMainWindow()->addStackFrame(frame);
-    ZSandbox::GetMainWindow()->presentStackFrame(frame);
+    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(src->clone());
+//    ZSandbox::GetMainWindow()->addStackFrame(frame);
+//    ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
     std::vector<ZObject3dScan*> objArray =
         ZObject3dFactory::MakeObject3dScanPointerArray(*result);
 
-    ZStack* edge_obj=new ZStack(result->kind(),result->width(),result->height(),
-                                result->depth(),result->channelNumber());
-    frame=ZSandbox::GetMainWindow()->createStackFrame(edge_obj);
+//    ZStack* edge_obj=new ZStack(result->kind(),result->width(),result->height(),
+//                                result->depth(),result->channelNumber());
+//    frame=ZSandbox::GetMainWindow()->createStackFrame(edge_obj);
+
+    ZColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+    int colorIndex = 0;
+
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter)
     {
       ZObject3dScan *obj = *iter;
+
       if (obj != NULL && !obj->isEmpty())
       {
-        obj->setColor(255,255,255);
-        frame->document()->getDataBuffer()->addUpdate(obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+        QColor color = colorScheme.getColor(colorIndex++);
+        color.setAlpha(164);
+        obj->setColor(color);
+        frame->document()->getDataBuffer()->addUpdate(
+              obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
         frame->document()->getDataBuffer()->deliver();
       }
     }

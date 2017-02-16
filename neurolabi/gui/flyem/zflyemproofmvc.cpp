@@ -2389,21 +2389,23 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
       std::set<uint64_t> idSet =
           slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
 
-      ZObject3dScan obj;
 
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+      ZDvidSparseStack *sparseStack = NULL;
       if (reader.isReady()) {
-        for (std::set<uint64_t>::const_iterator iter = idSet.begin();
-             iter != idSet.end(); ++iter) {
-          ZDvidSparseStack *sparseStack = reader.readDvidSparseStack(*iter);
+        std::set<uint64_t>::const_iterator iter = idSet.begin();
+        sparseStack = reader.readDvidSparseStack(*iter);
+        ++iter;
+        for (; iter != idSet.end(); ++iter) {
+          ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
+          sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
 
-          ZObject3dScan subobj;
-          reader.readBody(*iter, false, &subobj);
-          obj.concat(subobj);
+          delete sparseStack2;
         }
       }
-      obj.canonize();
-      obj.save(fileName.toStdString());
+
+      sparseStack->getStack()->save(fileName.toStdString());
+      delete sparseStack;
     }
   }
 }

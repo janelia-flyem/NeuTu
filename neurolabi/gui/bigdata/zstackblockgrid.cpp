@@ -83,31 +83,40 @@ bool ZStackBlockGrid::consumeStack(const ZIntPoint &blockIndex, ZStack *stack)
   return true;
 }
 
-void ZStackBlockGrid::consume(ZStackBlockGrid *grid)
+void ZStackBlockGrid::consume(ZStackBlockGrid &grid)
 {
-  if (grid != NULL) {
-    //Check compatibility
-    bool compatible = true;
+  bool compatible = true;
 
-    if (m_blockSize != grid->m_blockSize || m_minPoint != grid->m_minPoint) {
-      compatible = false;
-    }
+  //Check compatibility
+  if (m_blockSize != grid.m_blockSize || m_minPoint != grid.m_minPoint) {
+    compatible = false;
+  }
 
-    if (grid->m_stackArray.size() > m_stackArray.size()) {
-      m_stackArray.resize(grid->m_stackArray.size(), NULL);
+  if (compatible) {
+    if (grid.m_stackArray.size() > m_stackArray.size()) {
+      m_stackArray.resize(grid.m_stackArray.size(), NULL);
       for (size_t i = 0; i < m_stackArray.size(); ++i) {
-        if (m_stackArray[i] == NULL && grid->m_stackArray[i] != NULL) {
-          m_stackArray[i] = grid->m_stackArray[i];
-          grid->m_stackArray[i] = NULL;
+        if (m_stackArray[i] == NULL && grid.m_stackArray[i] != NULL) {
+          m_stackArray[i] = grid.m_stackArray[i];
+          grid.m_stackArray[i] = NULL;
         }
       }
 
       for (int i = 0; i < 3; ++i) {
-        if (m_size[i] < grid->m_size[i]) {
-          m_size[i] = grid->m_size[i];
+        if (m_size[i] < grid.m_size[i]) {
+          m_size[i] = grid.m_size[i];
         }
       }
     }
+  }
+}
+
+void ZStackBlockGrid::consume(ZStackBlockGrid *&grid)
+{
+  if (grid != NULL) {
+    consume(*grid);
+    delete grid;
+    grid = NULL;
   }
 }
 

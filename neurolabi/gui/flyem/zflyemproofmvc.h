@@ -516,7 +516,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
-  connect(panel, SIGNAL(exportingSelectedBody()),
+  connect(panel, SIGNAL(exportingSelectedBodyStack()),
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
