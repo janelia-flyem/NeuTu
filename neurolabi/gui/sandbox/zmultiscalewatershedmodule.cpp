@@ -81,10 +81,18 @@ void ZWaterShedWindow::onOk()
 
   ZStackMultiScaleWatershed watershed;
   QList<ZSwcTree*> trees=doc->getSwcList();
-  ZStack* result=watershed.run(src,trees,scale);
+  ZStack* sc=src->clone();
+  sc->setOffset(0,0,0);
+  for(int i=0;i<trees.size();++i)
+  {
+    ZSwcTree* tree=trees[i];
+    tree->translate(-src->getOffset().m_x,-src->getOffset().m_y,-src->getOffset().m_z);
+  }
+  ZStack* result=watershed.run(sc,trees,scale);
+
   if(result)
   {
-    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(src->clone());
+    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sc);
 //    ZSandbox::GetMainWindow()->addStackFrame(frame);
 //    ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
@@ -116,6 +124,7 @@ void ZWaterShedWindow::onOk()
     }
     ZSandbox::GetMainWindow()->addStackFrame(frame);
     ZSandbox::GetMainWindow()->presentStackFrame(frame);
+    delete result;
   }
 }
 

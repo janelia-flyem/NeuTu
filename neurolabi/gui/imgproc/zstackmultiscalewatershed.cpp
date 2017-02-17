@@ -25,8 +25,8 @@ void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
               uint8_t t=po[z*slice+y*width+x];
               if(v<t)
               {
-                metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-                metrix[t-1][v-1].push_back(ZIntPoint(x,y,z));
+                metrix[v][t].push_back(ZIntPoint(i,j,k));
+                metrix[t][v].push_back(ZIntPoint(x,y,z));
               }
             }
       }
@@ -76,10 +76,10 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
   int slice=width*height;
 
   int size=std::ceil(stack->max());
-  std::vector<ZIntPoint>** metrix=new std::vector<ZIntPoint>*[size];
-  for(int i=0;i<size;++i)
+  std::vector<ZIntPoint>** metrix=new std::vector<ZIntPoint>*[size+1];
+  for(int i=0;i<size+1;++i)
   {
-    metrix[i]=new std::vector<ZIntPoint>[size];
+    metrix[i]=new std::vector<ZIntPoint>[size+1];
   }
   getEdgePoints(stack,metrix);
 
@@ -87,9 +87,9 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
   uint8_t* pr=rv->array8();
   rv->setZero();
   int index=1;
-  for(int i=0;i<size-1;++i)
+  for(int i=0;i<size;++i)
   {
-    for(int j=i+1;j<size;++j)
+    for(int j=i+1;j<size+1;++j)
     {
       int s=metrix[i][j].size();
       for(int k=0;k<s;++k)
@@ -107,7 +107,7 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
     }
   }
 
-  for(int i=0;i<size;++i)
+  for(int i=0;i<size+1;++i)
   {
     delete[] metrix[i];
   }
@@ -296,14 +296,19 @@ void localWaterShed(const std::vector<ZStack*>& seeds,
                     const Cuboid_I& range,
                     ZStack* recovered,ZStack* original,const ZStack* edge_map,int step)
 {
+  /*    ZStack* src_clone=src->clone();
+    uint8_t* p=src_clone->array8();
+    for(uint i=0;i<src_clone->getVoxelNumber();++i)
+    {
+      if(p[i]==0)p[i]=1;
+    }*/
   ZStackWatershed watershed;
   watershed.setRange(range);
+  ZStack* copy=original->clone();
   //set points that are (not seeds and not at any edge) to zero
-  setNoneEdgePoints2Zero(original,edge_map,range,step);
+  setNoneEdgePoints2Zero(copy,edge_map,range,step);
   watershed.setFloodingZero(false);
-  ZStack* result=watershed.run(original,seeds);
-
-
+  ZStack* result=watershed.run(copy,seeds);
   //merge result into recovered image
   uint8_t* p=recovered->array8();
   uint8_t* q=result->array8();
@@ -330,6 +335,7 @@ void localWaterShed(const std::vector<ZStack*>& seeds,
   }
  // recovered->setBlockValue(range.cb[0],range.cb[1],range.cb[2],result);
   delete result;
+  delete copy;
 }
 
 
@@ -369,26 +375,29 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
 {
   _scale=scale;
   ZStack* rv=0;
-  //down sample src stack
-  ZStack* sampled=src->clone();
-  sampled->downsampleMin(scale-1,scale-1,scale-1);
-  //get seeds in sampled stack
   std::vector<ZStack*> seeds;
   getSeeds(seeds,trees);
   //run watershed
   ZStackWatershed watershed;
+  if(scale==1)
+  {
+    rv=watershed.run(src,seeds);
+    for(std::vector<ZStack*>::iterator it=seeds.begin();it!=seeds.end();++it)
+    {
+      delete *it;
+    }
+    return rv;
+  }
+  //down sample src stack
+  ZStack* sampled=src->clone();
+  sampled->downsampleMin(scale-1,scale-1,scale-1);
+  //get seeds in sampled stack
+
   ZStack* sampled_watershed=watershed.run(sampled,seeds);
 
   if(sampled_watershed)
   {
-    ZStack* src_clone=src->clone();
-    uint8_t* p=src_clone->array8();
-    for(uint i=0;i<src_clone->getVoxelNumber();++i)
-    {
-      if(p[i]==0)p[i]=1;
-    }
-    rv=upSampleAndRecoverEdge(sampled_watershed,src_clone);
-    delete src_clone;
+    rv=upSampleAndRecoverEdge(sampled_watershed,src);
     delete sampled_watershed;
   }
   delete sampled;
