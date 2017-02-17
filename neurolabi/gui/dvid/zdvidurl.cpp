@@ -871,6 +871,18 @@ std::string ZDvidUrl::getAnnotationSyncUrl(
   return url;
 }
 
+std::string ZDvidUrl::getDataSyncUrl(
+    const std::string &dataName, const std::string &queryString) const
+{
+  std::string url = GetFullUrl(getDataUrl(dataName), "sync");
+
+  if (!queryString.empty()) {
+   url = GetFullUrl(url, "?" + queryString);
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), "sync");

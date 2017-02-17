@@ -97,7 +97,7 @@ void ZWaterShedWindow::onOk()
 //    ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
     std::vector<ZObject3dScan*> objArray =
-        ZObject3dFactory::MakeObject3dScanPointerArray(*result);
+        ZObject3dFactory::MakeObject3dScanPointerArray(*result, 1, false);
 
 //    ZStack* edge_obj=new ZStack(result->kind(),result->width(),result->height(),
 //                                result->depth(),result->channelNumber());

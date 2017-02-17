@@ -53,7 +53,7 @@ void ZDvidTarget::init()
   m_isEditable = true;
   m_readOnly = false;
   m_maxLabelZoom = 0;
-  m_usingMultresBodyLabel = false;
+  m_usingMultresBodyLabel = true;
   m_usingDefaultSetting = false;
 
   setDefaultMultiscale2dName();

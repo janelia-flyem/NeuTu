@@ -401,6 +401,16 @@ void ZDvidWriter::syncAnnotation(
   post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
 }
 
+void ZDvidWriter::syncData(
+    const std::string &dataName, const std::string &syncDataName,
+    const std::string &queryString)
+{
+  ZDvidUrl url(getDvidTarget());
+  ZJsonObject jsonObj;
+  jsonObj.setEntry("sync", syncDataName);
+  post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+}
+
 void ZDvidWriter::syncLabelsz(
     const std::string &dataName, const std::string &annotationName)
 {

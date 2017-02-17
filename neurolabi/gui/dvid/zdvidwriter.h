@@ -89,6 +89,10 @@ public:
   void syncSynapseLabelsz();
   void createSynapseLabelsz();
 
+  void syncData(
+      const std::string &dataName, const std::string &syncDataName,
+      const std::string &queryString = "");
+
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);
   //void writeMaxBodyId(int bodyId);

@@ -22014,7 +22014,7 @@ void ZTest::test(MainWindow *host)
   delete obj2;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
   target.useDefaultDataSetting(true);
@@ -22025,13 +22025,34 @@ void ZTest::test(MainWindow *host)
   uint64_t bodyId = 115901398;
 
   tic();
-  ZObject3dScan *obj2 = reader.readBodyWithPartition(bodyId, NULL);
+//  ZObject3dScan *obj2 = reader.readBodyWithPartition(bodyId, NULL);
+  ZObject3dScan *obj2 = reader.readBody(bodyId, true, NULL);
   ptoc();
 
   std::cout << obj2->getMinZ() << " " << obj2->getMaxZ() << " "
             << obj2->getVoxelNumber() << std::endl;
 #endif
 
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/split_test2.tif");
+  stack.setOffset(0, 0, 0);
+  stack.save(GET_TEST_DATA_DIR + "/split_test3.tif");
+
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "df58", 9000);
+//  target.setBodyLabelName("segmentation-labelvol");
+//  target.setLabelBlockName("segmentation2");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncData("gtpruned-bodies_2", "groundtruth_pruned_2", "replace=true");
+  writer.syncData("gtpruned-bodies_3", "groundtruth_pruned_3", "replace=true");
+  writer.syncData("gtpruned-bodies_4", "groundtruth_pruned_4", "replace=true");
+#endif
 
   std::cout << "Done." << std::endl;
 }

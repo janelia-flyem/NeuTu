@@ -564,7 +564,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatusCode() == 200) {
+    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());

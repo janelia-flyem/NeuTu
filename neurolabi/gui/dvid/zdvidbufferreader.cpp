@@ -125,6 +125,8 @@ void ZDvidBufferReader::read(
 
 void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 {
+  m_statusCode = 0;
+
   if (url.isEmpty()) {
     return;
   }
@@ -164,6 +166,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
       std::cout << e.what() << std::endl;
+      m_statusCode = e.getStatus();
       m_status = READ_FAILED;
     }
   } else {

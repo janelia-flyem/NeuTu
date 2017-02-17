@@ -203,6 +203,8 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, const ZIntCuboid &box) const;
 
+  std::string getDataSyncUrl(
+      const std::string &dataName, const std::string &queryString) const;
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
   std::string getAnnotationSyncUrl(
       const std::string &dataName, const std::string &queryString) const;
