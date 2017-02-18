@@ -18,15 +18,16 @@ void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
       for(int i=0;i<width;++i)
       {
         uint8_t v=po[_offset+i];
-        for(int z=std::max(0,k-1);z<=std::min(depth-1,k+1);++z)
-          for(int y=std::max(0,j-1);y<=std::min(height-1,j+1);++y)
-            for(int x=std::max(0,i-1);x<=std::min(width-1,i+1);++x)
+        for(int z=k;z<=std::min(depth-1,k+1);++z)
+          for(int y=j;y<=std::min(height-1,j+1);++y)
+            for(int x=i;x<=std::min(width-1,i+1);++x)
             {
               uint8_t t=po[z*slice+y*width+x];
-              if(v<t)
+              if(v!=t)
               {
                 metrix[v][t].push_back(ZIntPoint(i,j,k));
                 metrix[t][v].push_back(ZIntPoint(x,y,z));
+                break;
               }
             }
       }
@@ -85,7 +86,7 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
 
   ZStack* rv=new ZStack(stack->kind(),width,height,stack->depth(),stack->channelNumber());
   uint8_t* pr=rv->array8();
-  rv->setZero();
+  //rv->setZero();
   int index=1;
   for(int i=0;i<size;++i)
   {
@@ -139,29 +140,18 @@ inline bool hasNeighborOnEdge(const ZStack* edge_map,int x,int y,int z)
   int depth=edge_map->depth();
   int slice=width*height;
   const uint8_t* p=edge_map->array8();
-  if(x>0 && p[x-1+y*width+z*slice])
+  for(int k=std::max(0,z-1);k<=std::min(depth-1,z+1);++k)
   {
-    return true;
-  }
-  if(x<width-1 && p[x+1+y*width+z*slice])
-  {
-    return true;
-  }
-  if(y>0 && p[x+(y-1)*width+z*slice])
-  {
-    return true;
-  }
-  if(y<height-1 && p[x+(y+1)*width+z*slice])
-  {
-    return true;
-  }
-  if(z>0 && p[x+y*width+(z-1)*slice])
-  {
-    return true;
-  }
-  if(z<depth-1 && p[x+y*width+(z+1)*slice])
-  {
-    return true;
+    for(int j=std::max(0,y-1);j<=std::min(height-1,y+1);++j)
+    {
+      for(int i=std::max(0,x-1);i<=std::min(width-1,x+1);++i)
+      {
+        if(p[i+j*width+k*slice])
+        {
+          return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -183,6 +173,9 @@ void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
   int end_y=box.getLastCorner().m_y;
   int end_z=box.getLastCorner().m_z;
 
+  int ofx=stack->getOffset().m_x;
+  int ofy=stack->getOffset().m_y;
+  int ofz=stack->getOffset().m_z;
   //find points which are appropriate to be seeds in the box
   for(int z=start_z;z<=end_z;++z)
   {
@@ -198,7 +191,7 @@ void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
           {
             seed->array8()[i]=v;
           }
-          seed->setOffset(x,y,z);
+          seed->setOffset(x+ofx,y+ofy,z+ofz);
           seeds.push_back(seed);
         }
       }
@@ -207,18 +200,19 @@ void generateSeedsInSampledSpace(std::vector<ZStack*>& seeds,
 }
 
 
-void mapSeeds2OriginalSpace(std::vector<ZStack*>& seeds,const int step,int width,int height,int depth)
+void mapSeeds2OriginalSpace(std::vector<ZStack*>& seeds,const int step,ZStack* src)
 {
+  int width=src->width(),height=src->height(),depth=src->depth();
   for(std::vector<ZStack*>::iterator it=seeds.begin();it!=seeds.end();++it)
   {
     ZStack* seed=*it;
     ZIntPoint offset=seed->getOffset();
-    int x=offset.m_x*step;
-    int y=offset.m_y*step;
-    int z=offset.m_z*step;
-    if(x>=width)x=width-1;
-    if(y>=height)y=height-1;
-    if(z>=depth)z=depth-1;
+    int x=std::max(offset.m_x*step,src->getOffset().m_x);
+    int y=std::max(offset.m_y*step,src->getOffset().m_y);
+    int z=std::max(offset.m_z*step,src->getOffset().m_z);
+    if(x>=src->getOffset().m_x+width)x=src->getOffset().m_x+width-1;
+    if(y>=src->getOffset().m_y+height)y=src->getOffset().m_y+height-1;
+    if(z>=src->getOffset().m_z+depth)z=src->getOffset().m_z+depth-1;
     seed->setOffset(x,y,z);
   }
 }
@@ -280,12 +274,14 @@ void setNoneEdgePoints2Zero(ZStack* stack,const ZStack* edge_map,
     {
       for(int x=range.cb[0]/step;x<=range.ce[0]/step;++x)
       {
-        if(!isEdgePoint(edge_map,x,y,z) && (!hasNeighborOnEdge(edge_map,x,y,z)))
+        if(!hasNeighborOnEdge(edge_map,x,y,z))
         {
           for(int d=z*step;d<std::min((z+1)*step,depth);++d)
             for(int h=y*step;h<std::min((y+1)*step,height);++h)
               for(int w=x*step;w<std::min((x+1)*step,width);++w)
+              {
                 q[d*slice+h*width+w]=0;
+              }
         }
       }
     }
@@ -293,32 +289,58 @@ void setNoneEdgePoints2Zero(ZStack* stack,const ZStack* edge_map,
 }
 
 void localWaterShed(const std::vector<ZStack*>& seeds,
-                    const Cuboid_I& range,
+                    Cuboid_I& range,
                     ZStack* recovered,ZStack* original,const ZStack* edge_map,int step)
 {
+
+  int x1=range.cb[0],x2=range.ce[0];
+  int y1=range.cb[1],y2=range.ce[1];
+  int z1=range.cb[2],z2=range.ce[2];
   ZStackWatershed watershed;
-  watershed.setRange(range);
   //set points that are (not seeds and not at any edge) to zero
   setNoneEdgePoints2Zero(original,edge_map,range,step);
+
+  range.cb[0]+=original->getOffset().m_x;
+  range.ce[0]+=original->getOffset().m_x;
+  range.cb[1]+=original->getOffset().m_y;
+  range.ce[1]+=original->getOffset().m_y;
+  range.cb[2]+=original->getOffset().m_z;
+  range.ce[2]+=original->getOffset().m_z;
+  watershed.setRange(range);
   watershed.setFloodingZero(false);
+/*  std::cout<<"no"<<range.cb[0]<<" "<<range.cb[1]<<" "<<range.cb[2]<<std::endl;
+  std::cout<<"no"<<range.ce[0]<<" "<<range.ce[1]<<" "<<range.ce[2]<<std::endl;
+  std::cout<<"no"<<seeds[0]->getOffset().m_x<<" "<<seeds[0]->getOffset().m_y<<" "<<
+             seeds[0]->getOffset().m_z<<std::endl;
+  std::cout<<"no"<<original->getOffset().m_x<<" "<<
+             original->getOffset().m_y<<" "<<
+             original->getOffset().m_z<<std::endl;
+  std::cout.flush();*/
+
   ZStack* result=watershed.run(original,seeds);
+  if(!result)
+  {
+    std::cout<<"local watershed failed"<<std::endl;
+    return;
+  }
   //merge result into recovered image
   uint8_t* p=recovered->array8();
   uint8_t* q=result->array8();
   int width=original->width();
   int slice=width*original->height();
-  int x1=range.cb[0],x2=range.ce[0];
-  int y1=range.cb[1],y2=range.ce[1];
-  int z1=range.cb[2],z2=range.ce[2];
-  int ox=result->getOffset().m_x,oy=result->getOffset().m_y,oz=result->getOffset().m_z;
+
   int r_w=result->width(),r_s=result->height()*r_w;
+
+  int rofx=result->getOffset().m_x-original->getOffset().m_x,
+      rofy=result->getOffset().m_y-original->getOffset().m_y,
+      rofz=result->getOffset().m_z-original->getOffset().m_z;
   for(int z=z1;z<=z2;++z)
   {
     for(int y=y1;y<=y2;++y)
     {
       for(int x=x1;x<=x2;++x)
       {
-        int v=q[x-ox+(y-oy)*r_w+(z-oz)*r_s];
+        int v=q[x-rofx+(y-rofy)*r_w+(z-rofz)*r_s];
         if(v)
         {
           p[x+y*width+z*slice]=v;
@@ -344,9 +366,10 @@ Cuboid_I getRange(const ZIntCuboid& box,const ZStack* stack,int step)
   range.cb[0]=p.m_x*step;
   range.cb[1]=p.m_y*step;
   range.cb[2]=p.m_z*step;
-  range.ce[0]=std::min((q.m_x+2)*step,width-1);
-  range.ce[1]=std::min((q.m_y+2)*step,height-1);
-  range.ce[2]=std::min((q.m_z+2)*step,depth-1);
+  range.ce[0]=std::min((q.m_x+1)*step-1,width-1);
+  range.ce[1]=std::min((q.m_y+1)*step-1,height-1);
+  range.ce[2]=std::min((q.m_z+1)*step-1,depth-1);
+
   return range;
 }
 
@@ -383,7 +406,6 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
   //down sample src stack
   ZStack* sampled=src->clone();
   sampled->downsampleMin(scale-1,scale-1,scale-1);
-  //get seeds in sampled stack
 
   ZStack* sampled_watershed=watershed.run(sampled,seeds);
 
@@ -410,9 +432,10 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
 
 ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src)
 {
-  int width=src->width(),height=src->height(),depth=src->depth();
   ZStack* recovered=recover2OriginalSize(src,sampled_watershed,_scale);
-
+  //ZStack* recovered=new ZStack(src->kind(),src->width(),src->height(),src->depth(),1);
+  recovered->setOffset(src->getOffset());
+  //return recovered;
   std::vector<ZIntCuboid>boxes;
   std::vector<ZStack*> seeds;
   //get bound boxes of each each
@@ -426,7 +449,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
 
       generateSeedsInSampledSpace(seeds,box,edge_map,sampled_watershed,_scale);
 
-      mapSeeds2OriginalSpace(seeds,_scale,width,height,depth);
+      mapSeeds2OriginalSpace(seeds,_scale,src);
 
       localWaterShed(seeds,range,recovered,src,edge_map,_scale);
 
@@ -436,6 +459,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
       }
       seeds.clear();
   }
+
   delete edge_map;
   return recovered;
 
@@ -456,8 +480,11 @@ void ZStackMultiScaleWatershed::getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcT
     ZStack* seed=new ZStack(GREY,std::max(1,(int)(box.width()/_scale)),
                             std::max(1,(int)(box.height()/_scale)),
                             std::max(1,(int)(box.depth()/_scale)),1);
-    ZPoint _off=box.firstCorner();
-    ZIntPoint off(_off.getX()/_scale,_off.getY()/_scale,_off.getZ()/_scale);
+    ZPoint f=box.firstCorner();
+    ZPoint l=box.lastCorner();
+    ZIntPoint off((f.getX()+l.getX())/2/_scale,
+                  (f.getY()+l.getY())/2/_scale,
+                  (f.getZ()+l.getZ())/2/_scale);
     seed->setOffset(off);
     uint8_t* p=seed->array8();
     for(uint i=0;i<seed->getVoxelNumber();++i)
