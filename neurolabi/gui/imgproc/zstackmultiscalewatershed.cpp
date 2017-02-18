@@ -140,11 +140,11 @@ inline bool hasNeighborOnEdge(const ZStack* edge_map,int x,int y,int z)
   int depth=edge_map->depth();
   int slice=width*height;
   const uint8_t* p=edge_map->array8();
-  for(int k=std::max(0,z-1);k<=std::min(depth-1,z+1);++k)
+  for(int k=std::max(0,z-2);k<=std::min(depth-1,z+2);++k)
   {
-    for(int j=std::max(0,y-1);j<=std::min(height-1,y+1);++j)
+    for(int j=std::max(0,y-2);j<=std::min(height-1,y+2);++j)
     {
-      for(int i=std::max(0,x-1);i<=std::min(width-1,x+1);++i)
+      for(int i=std::max(0,x-2);i<=std::min(width-1,x+2);++i)
       {
         if(p[i+j*width+k*slice])
         {
