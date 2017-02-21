@@ -22,7 +22,7 @@ const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent), m_bodyType(BODY_FULL), m_quitting(false),
+  ZStackDoc(parent), m_bodyType(FlyEM::BODY_FULL), m_quitting(false),
   m_showingSynapse(true), m_showingTodo(true), m_garbageJustDumped(false)
 {
   m_timer = new QTimer(this);
@@ -536,7 +536,7 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
   if (!hasBody(bodyId)) {
     m_bodySet.insert(bodyId);
-    if (getBodyType() == BODY_SKELETON) {
+    if (getBodyType() == FlyEM::BODY_SKELETON) {
       addBodyFunc(bodyId, color, -1);
     } else {
       addBodyFunc(bodyId, color, 5);
@@ -544,17 +544,17 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
   }
 }
 
-void ZFlyEmBody3dDoc::setBodyType(EBodyType type)
+void ZFlyEmBody3dDoc::setBodyType(FlyEM::EBodyType type)
 {
   m_bodyType = type;
   switch (m_bodyType) {
-  case BODY_COARSE:
+  case FlyEM::BODY_COARSE:
     setTag(NeuTube::Document::FLYEM_BODY_3D_COARSE);
     break;
-  case BODY_FULL:
+  case FlyEM::BODY_FULL:
     setTag(NeuTube::Document::FLYEM_BODY_3D);
     break;
-  case BODY_SKELETON:
+  case FlyEM::BODY_SKELETON:
     setTag(NeuTube::Document::FLYEM_SKELETON);
     break;
   }
@@ -563,16 +563,16 @@ void ZFlyEmBody3dDoc::setBodyType(EBodyType type)
 void ZFlyEmBody3dDoc::updateBody(
     uint64_t bodyId, const QColor &color)
 {
-  updateBody(bodyId, color, BODY_COARSE);
-  updateBody(bodyId, color, BODY_FULL);
-  updateBody(bodyId, color, BODY_SKELETON);
+  updateBody(bodyId, color, FlyEM::BODY_COARSE);
+  updateBody(bodyId, color, FlyEM::BODY_FULL);
+  updateBody(bodyId, color, FlyEM::BODY_SKELETON);
 }
 
 void ZFlyEmBody3dDoc::updateBody(
-    uint64_t bodyId, const QColor &color, EBodyType type)
+    uint64_t bodyId, const QColor &color, FlyEM::EBodyType type)
 {
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-  ZSwcTree *tree = getBodyModel(bodyId, type);
+  ZSwcTree *tree = getBodyModel(bodyId, 0, type);
   if (tree != NULL) {
     if (tree->getColor() != color) {
       tree->setColor(color);
@@ -583,9 +583,10 @@ void ZFlyEmBody3dDoc::updateBody(
   notifyObjectModified(true);
 }
 
-ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(uint64_t bodyId, EBodyType bodyType)
+ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
-  return retrieveBodyModel(bodyId, bodyType);
+  return retrieveBodyModel(bodyId, zoom, bodyType);
 }
 
 void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event)
@@ -607,7 +608,7 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     if (labelSlice != NULL) {
       QColor color;
 
-      if (getBodyType() == BODY_FULL) { //using the original color
+      if (getBodyType() == FlyEM::BODY_FULL) { //using the original color
         color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
       } else {
         color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
@@ -618,7 +619,7 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
   }
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
-      getBodyType() != BODY_SKELETON) {
+      getBodyType() != FlyEM::BODY_SKELETON) {
     event.setResLevel(5);
   }
 
@@ -631,16 +632,20 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   bool loaded =
       !(getObjectGroup().findSameClass(
           ZStackObject::TYPE_SWC,
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).isEmpty());
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+        isEmpty());
 
   ZSwcTree *tree = NULL;
   if (tree == NULL) {
     if (resLevel == 5) {
-      tree = makeBodyModel(bodyId, ZFlyEmBody3dDoc::BODY_COARSE);
+      tree = makeBodyModel(bodyId, FlyEM::BODY_COARSE);
       if (tree != NULL) {
-        if (tree->getSource() == ZStackObjectSourceFactory::MakeFlyEmBodySource(
-              bodyId, GetBodyTypeName(BODY_FULL))) {
-          resLevel = 0;
+        //The tree can be retrieved with full resolution from cache
+        for (int i = 0; i < 5; ++i) {
+          if (tree->getSource() == ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                bodyId, i, FlyEM::BODY_FULL)) {
+            resLevel = i;
+          }
         }
       }
     } else if (resLevel == 0) {
@@ -649,7 +654,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
       emit messageGenerated(ZWidgetMessage("3D Body view synced"));
     }
 
-    if (resLevel > 0 && getBodyType() == ZFlyEmBody3dDoc::BODY_FULL) {
+    if (resLevel > 0 && getBodyType() == FlyEM::BODY_FULL) {
       QMutexLocker locker(&m_eventQueueMutex);
       BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
       bodyEvent.setBodyColor(color);
@@ -1037,46 +1042,51 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
   ZOUT(LTRACE(), 5) << "Remove body:" << bodyId << "Done.";
 }
 
-ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(uint64_t bodyId, EBodyType bodyType)
+ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
   ZStackObject *obj = getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_SWC,
         ZStackObjectSourceFactory::MakeFlyEmBodySource(
-          bodyId, GetBodyTypeName(bodyType)));
+          bodyId, zoom, bodyType));
 
   ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
 
   return tree;
 }
 
-ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId)
+ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId, int zoom)
 {
-  return makeBodyModel(bodyId, getBodyType());
+  return makeBodyModel(bodyId, zoom, getBodyType());
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
-    uint64_t bodyId, ZFlyEmBody3dDoc::EBodyType bodyType)
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
   ZSwcTree *tree = NULL;
 
-  if (bodyType == BODY_COARSE) {
+  if (bodyType == FlyEM::BODY_COARSE || bodyType == FlyEM::BODY_SKELETON) {
+    zoom = 0;
+  }
+
+  if (bodyType == FlyEM::BODY_COARSE) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            bodyId, GetBodyTypeName(BODY_FULL)));
+            bodyId, zoom, FlyEM::BODY_FULL));
   }
 
   if (tree == NULL) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            bodyId, GetBodyTypeName(bodyType)));
+            bodyId, zoom, bodyType));
   }
 
   if (tree == NULL) {
     if (bodyId > 0) {
       int t = m_objectTime.elapsed();
-      if (bodyType == BODY_SKELETON) {
+      if (bodyType == FlyEM::BODY_SKELETON) {
         tree = m_dvidReader.readSwc(bodyId);
-      } else if (bodyType == BODY_COARSE) {
+      } else if (bodyType == FlyEM::BODY_COARSE) {
         ZObject3dScan obj = m_dvidReader.readCoarseBody(bodyId);
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
@@ -1100,7 +1110,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
         if (cachedBody == NULL) {
           ZObject3dScan obj;
-          m_dvidReader.readBody(bodyId, true, &obj);
+          m_dvidReader.readMultiscaleBody(bodyId, zoom, true, &obj);
 #ifdef _DEBUG_2
           m_dvidReader.readBodyDs(bodyId, true, &obj);
 #endif
@@ -1116,7 +1126,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         tree->setTimeStamp(t);
         tree->setSource(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyId, GetBodyTypeName(bodyType)));
+                bodyId, zoom, bodyType));
         tree->setObjectClass(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
         tree->setLabel(bodyId);
@@ -1125,20 +1135,6 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   }
 
   return tree;
-}
-
-std::string ZFlyEmBody3dDoc::GetBodyTypeName(EBodyType bodyType)
-{
-  switch (bodyType) {
-  case BODY_FULL:
-    return "full";
-  case BODY_COARSE:
-    return "coarse";
-  case BODY_SKELETON:
-    return "skeleton";
-  }
-
-  return "";
 }
 
 const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const

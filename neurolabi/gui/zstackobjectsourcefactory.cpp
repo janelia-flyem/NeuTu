@@ -35,18 +35,49 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
+std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
+{
+  return MakeFlyEmBodySource(bodyId, 0, FlyEM::BODY_COARSE);
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom)
 {
   ZString source = "#.FlyEmBody#";
   source.appendNumber(bodyId);
+  if (zoom > 0) {
+    source += "_";
+    source.appendNumber(zoom);
+  }
 
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
-    uint64_t bodyId, const std::string &tag)
+std::string ZStackObjectSourceFactory::GetBodyTypeName(
+    FlyEM::EBodyType bodyType)
 {
-  return MakeFlyEmBodySource(bodyId) + "#." + tag;
+  switch (bodyType) {
+  case FlyEM::BODY_FULL:
+    return "full";
+  case FlyEM::BODY_COARSE:
+    return "coarse";
+  case FlyEM::BODY_SKELETON:
+    return "skeleton";
+  }
+
+  return "";
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom, const std::string &tag)
+{
+  return MakeFlyEmBodySource(bodyId, zoom) + "#." + tag;
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
+{
+  return MakeFlyEmBodySource(bodyId, zoom, GetBodyTypeName(bodyType));
 }
 
 uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
@@ -57,6 +88,30 @@ uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
   ZString sourceBase = "#.FlyEmBody#";
   if (source.length() > sourceBase.length()) {
     ZString substr = source.substr(sourceBase.length() - 1);
+    std::vector<uint64_t> idArray = substr.toUint64Array();
+    if (idArray.size() >= 1) {
+      id = idArray.front();
+    }
+  }
+
+  return id;
+}
+
+uint64_t ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+    const std::string &source)
+{
+  uint64_t id = 0;
+
+  ZString sourceBase = "#.FlyEmBody#";
+  if (source.length() > sourceBase.length()) {
+    ZString::size_type startPos = sourceBase.length() - 1;
+    ZString::size_type tokenPos = source.find('#', startPos);
+    ZString substr;
+    if (tokenPos == ZString::npos) {
+      substr = source.substr(startPos);
+    } else {
+      substr = source.substr(startPos, tokenPos - startPos);
+    }
     std::vector<uint64_t> idArray = substr.toUint64Array();
     if (idArray.size() == 1) {
       id = idArray.front();

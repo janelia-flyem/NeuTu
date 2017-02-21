@@ -150,7 +150,7 @@ public:
   void paintBuffer();
 
 private:
-  inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
+  const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
   void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
@@ -173,9 +173,10 @@ private:
   void updateRgbTable();
 
   ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
+  void clearLabelData();
 
 private:
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
   ZStackViewParam m_currentViewParam;

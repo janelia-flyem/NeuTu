@@ -669,6 +669,11 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
   }
 }
 
+const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
+{
+  return m_dvidReader.getDvidTarget();
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
@@ -676,13 +681,13 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_synapseReader.open(m_dvidReader.getDvidTarget());
     m_todoReader.open(m_dvidReader.getDvidTarget());
     m_sparseVolReader.open(m_dvidReader.getDvidTarget());
-    m_dvidTarget = target;
+//    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(target);
+    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
     readInfo();
     initData(target);
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(m_dvidTarget);
+      getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
       if (!getSupervisor()->isEmpty()) {
         int statusCode = getSupervisor()->testServer();
         if (statusCode != 200) {
@@ -703,7 +708,8 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
     startTimer();
   } else {
-    m_dvidTarget.clear();
+    m_dvidReader.clear();
+//    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
@@ -1765,7 +1771,8 @@ void ZFlyEmProofDoc::clearData()
 {
   ZStackDoc::clearData();
   m_bodyMerger.clear();
-  m_dvidTarget.clear();
+  m_dvidReader.clear();
+//  m_dvidTarget.clear();
   m_grayScaleInfo.clear();
   m_labelInfo.clear();
   m_versionDag.clear();

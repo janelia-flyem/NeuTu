@@ -76,7 +76,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
     ZStack *stack = m_dvidReader.readGrayScale(box);
     loadStack(stack);
 
-    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZDvidUrl dvidUrl(getDvidTarget());
     QElapsedTimer timer;
     timer.start();
     ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));

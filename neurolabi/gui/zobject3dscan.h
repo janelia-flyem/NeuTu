@@ -106,6 +106,7 @@ public:
   void loadStack(const ZStack &stack);
 
   void print() const;
+  void printInfo() const;
 
   bool save(const char *filePath);
   bool save(const char *filePath) const;
@@ -380,6 +381,7 @@ public:
 
   void setDsIntv(int x, int y, int z);
   void setDsIntv(const ZIntPoint &intv);
+  void setDsIntv(int intv);
 
   ZPoint getCentroid() const;
   /*!

@@ -8,6 +8,8 @@ class ZJsonValue;
 class ZDvidTarget;
 class ZJsonObject;
 class ZDvidVersionDag;
+class ZDvidInfo;
+class ZIntCuboid;
 
 #define DVID_UUID_COMMON_LENGTH 4
 
@@ -82,6 +84,9 @@ bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
 bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+
+ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
+ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
 }
 
 #endif // ZDVIDUTIL_H

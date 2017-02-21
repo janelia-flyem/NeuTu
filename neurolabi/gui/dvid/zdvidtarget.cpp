@@ -450,6 +450,18 @@ std::string ZDvidTarget::getBodyLabelName() const
   return m_bodyLabelName;
 }
 
+std::string ZDvidTarget::getBodyLabelName(int zoom) const
+{
+  std::string name;
+  if (zoom == 0) {
+    return getBodyLabelName();
+  } else if (zoom > 0) {
+    name = getBodyLabelName() + "_" + ZString::num2str(zoom);
+  }
+
+  return name;
+}
+
 bool ZDvidTarget::usingMulitresBodylabel() const
 {
   if (m_usingMultresBodyLabel) {

@@ -621,6 +621,14 @@ void ZObject3dScan::loadStack(const ZStack &stack)
   m_dsIntv = stack.getDsIntv();
 }
 
+void ZObject3dScan::printInfo() const
+{
+  std::cout << "Sparse object:" << getSource() << std::endl;
+  std::cout << "  Canonized: " << isCanonized() << std::endl;
+  std::cout << "  #Voxels: " << getVoxelNumber() << std::endl;
+  std::cout << "  Z Range: " << getMinZ() << "-" << getMaxZ() <<std::endl;
+}
+
 void ZObject3dScan::print() const
 {
   cout << getStripeNumber() << " stripes" << endl;
@@ -1950,6 +1958,11 @@ void ZObject3dScan::setDsIntv(int x, int y, int z)
 void ZObject3dScan::setDsIntv(const ZIntPoint &intv)
 {
   m_dsIntv = intv;
+}
+
+void ZObject3dScan::setDsIntv(int intv)
+{
+  setDsIntv(intv, intv, intv);
 }
 
 void ZObject3dScan::pushDsIntv(int xintv, int yintv, int zintv)

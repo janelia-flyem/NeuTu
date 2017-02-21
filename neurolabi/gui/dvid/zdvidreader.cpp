@@ -608,6 +608,58 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan* ZDvidReader::readMultiscaleBody(
+    uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady() && zoom <= getDvidTarget().getMaxLabelZoom()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    ZDvidBufferReader &reader = m_bufferReader;
+
+    reader.tryCompress(true);
+    ZDvidUrl dvidUrl(getDvidTarget());
+
+    QElapsedTimer timer;
+    timer.start();
+
+    reader.read(
+          dvidUrl.getMultiscaleSparsevolUrl(bodyId, zoom).c_str(), isVerbose());
+
+    reader.tryCompress(false);
+
+    std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+      timer.start();
+      const QByteArray &buffer = reader.getBuffer();
+      result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      if (canonizing) {
+        result->canonize();
+      }
+
+#ifdef _DEBUG_
+      std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
+      //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+      std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+      result->setLabel(bodyId);
+      int zoomRatio = pow(2, zoom);
+      result->setDsIntv(zoomRatio - 1);
+    }
+
+    reader.clearBuffer();
+  }
+
+  return result;
+}
+
 /*
 ZObject3dScan ZDvidReader::readBody(uint64_t bodyId, bool canonizing)
 {

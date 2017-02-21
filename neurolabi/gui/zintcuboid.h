@@ -69,6 +69,7 @@ public:
   void setSize(const ZIntPoint &size);
 
   void setWidth(int width);
+  void setHeight(int height);
 
   int getWidth() const;
   int getHeight() const;

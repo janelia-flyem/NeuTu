@@ -466,8 +466,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
   }
 }
 
-ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
-    ZFlyEmBody3dDoc::EBodyType bodyType)
+ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(FlyEM::EBodyType bodyType)
 {
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
@@ -591,7 +590,7 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
@@ -620,7 +619,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
@@ -645,7 +644,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
@@ -844,7 +843,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+            ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(*iter));
     }
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
@@ -872,7 +871,8 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
       for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
            iter != selectedMapped.end(); ++iter) {
         uint64_t label = *iter;
-        std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
+        std::string source =
+            ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(label);
         if (oldBodySourceSet.count(source) == 0) {
           ZObject3dScan body;
 
@@ -1215,7 +1215,7 @@ void ZFlyEmProofMvc::setDvidTarget()
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
   if (m_dvidDlg != NULL) {
-    return getCompleteDocument()->getDvidReader().getDvidTarget();
+    return getCompleteDocument()->getDvidTarget();
 //    return m_dvidDlg->getDvidTarget();
   }
 

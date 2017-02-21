@@ -167,6 +167,19 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
+{
+  std::string url;
+
+  if (zoom == 0) {
+    url = getSparsevolUrl(bodyId);
+  } else {
+    url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, NeuTube::EAxis axis) const
 {

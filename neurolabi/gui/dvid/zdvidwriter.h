@@ -76,6 +76,7 @@ public:
   void writeJson(const std::string &url, const ZJsonValue &value,
                  const std::string &emptyValueString = "");
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
+  void writeRoi(const ZObject3dScan &roi, const std::string &roiName);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
@@ -185,7 +186,9 @@ public:
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
   void writeLabel(const ZArray &label);
+  void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
+  void refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom);
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);

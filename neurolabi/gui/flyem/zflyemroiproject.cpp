@@ -579,8 +579,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       ZJsonArray array = ZJsonFactory::MakeJsonArray(
             interpolated, ZJsonFactory::OBJECT_SPARSE);
       m_dvidWriter.writeJson(
-            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName),
-            array);
+            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName), array);
       if (m_dvidWriter.getStatusCode() == 200) {
         emit messageGenerated(ZWidgetMessage(
                                 QString("ROI data %1 has been uploaded.").

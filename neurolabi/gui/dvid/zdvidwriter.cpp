@@ -319,6 +319,13 @@ void ZDvidWriter::writeJson(const std::string &url, const ZJsonValue &value,
   }
 }
 
+void ZDvidWriter::writeRoi(const ZObject3dScan &roi, const std::string &roiName)
+{
+  ZJsonArray array =
+      ZJsonFactory::MakeJsonArray(roi, ZJsonFactory::OBJECT_SPARSE);
+//  std::cout << array.dumpString() << std::endl;
+  writeJson(ZDvidUrl(getDvidTarget()).getRoiUrl(roiName), array);
+}
 
 void ZDvidWriter::mergeBody(const std::string &dataName,
                             uint64_t targetId,
@@ -1491,11 +1498,23 @@ void ZDvidWriter::writeLabel(const ZArray &label)
   }
 }
 
+void ZDvidWriter::writeLabel(const ZArray &label, int zoom)
+{
+  if (!label.isEmpty()) {
+    ZDvidUrl url(getDvidTarget());
+    post(url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
+                            label.getStartCoordinate(0),
+                            label.getStartCoordinate(1),
+                            label.getStartCoordinate(2), zoom) + "?mutate=true",
+         label.getDataPointer<char>(), label.getByteNumber(), false);
+  }
+}
+
 void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+    ZDvidInfo dvidInfo = reader.readLabelInfo();
     ZIntCuboid alignedBox;
     alignedBox.setFirstCorner(
           dvidInfo.getBlockBox(
@@ -1518,6 +1537,30 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
     delete label;
   }
 }
+
+void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom)
+{
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    ZDvidInfo dvidInfo = reader.readLabelInfo();
+
+    ZIntCuboid alignedBox =
+        ZDvid::GetAlignedBox(ZDvid::GetZoomBox(box, zoom), dvidInfo);
+    ZArray *label = reader.readLabels64(alignedBox);
+
+    //Reset label
+    uint64_t tmpLabel = label->getMax<uint64_t>() + 1;
+    label->replaceValue(bodyId, tmpLabel);
+
+    writeLabel(*label, zoom);
+
+    label->replaceValue(tmpLabel, bodyId);
+    writeLabel(*label, zoom);
+
+    delete label;
+  }
+}
+
 
 void ZDvidWriter::refreshLabel(
     const ZIntCuboid &box, const std::set<uint64_t> &bodySet)

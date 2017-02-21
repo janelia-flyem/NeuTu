@@ -109,10 +109,6 @@ public:
     int m_resLevel;
   };
 
-  enum EBodyType {
-    BODY_FULL, BODY_COARSE, BODY_SKELETON
-  };
-
   class ObjectStatus {
   public:
     explicit ObjectStatus(int timeStamp = 0);
@@ -133,13 +129,13 @@ public:
     int m_resLevel;
   };
 
-  void setBodyType(EBodyType type);
-  EBodyType getBodyType() { return m_bodyType; }
+  void setBodyType(FlyEM::EBodyType type);
+  FlyEM::EBodyType getBodyType() { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
-  void updateBody(uint64_t bodyId, const QColor &color, EBodyType type);
+  void updateBody(uint64_t bodyId, const QColor &color, FlyEM::EBodyType type);
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
@@ -204,11 +200,11 @@ protected:
   void autoSave() {}
 
 private:
-  ZSwcTree* retrieveBodyModel(uint64_t bodyId, EBodyType bodyType);
-  ZSwcTree* getBodyModel(uint64_t bodyId, EBodyType bodyType);
+  ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
 
-  ZSwcTree* makeBodyModel(uint64_t bodyId);
-  ZSwcTree* makeBodyModel(uint64_t bodyId, EBodyType bodyType);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
@@ -224,7 +220,6 @@ private:
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
   QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
-  static std::string GetBodyTypeName(EBodyType bodyType);
 
   template<typename T>
   T* recoverFromGarbage(const std::string &source);
@@ -244,7 +239,7 @@ private:
 
 private:
   QSet<uint64_t> m_bodySet;
-  EBodyType m_bodyType;
+  FlyEM::EBodyType m_bodyType;
 
   bool m_quitting;
   bool m_showingSynapse;

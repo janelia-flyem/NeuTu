@@ -147,7 +147,12 @@ enum EProofreadingMode {
   PR_NORMAL, PR_SPLIT
 };
 
-static const uint64_t LABEL_ID_SELECTION = std::numeric_limits<uint64_t>::max() - 1;
+enum EBodyType {
+  BODY_FULL, BODY_COARSE, BODY_SKELETON
+};
+
+static const uint64_t LABEL_ID_SELECTION =
+    std::numeric_limits<uint64_t>::max() - 1;
 
 }
 

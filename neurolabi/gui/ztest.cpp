@@ -22041,7 +22041,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "df58", 9000);
 //  target.setBodyLabelName("segmentation-labelvol");
@@ -22052,6 +22052,83 @@ void ZTest::test(MainWindow *host)
   writer.syncData("gtpruned-bodies_2", "groundtruth_pruned_2", "replace=true");
   writer.syncData("gtpruned-bodies_3", "groundtruth_pruned_3", "replace=true");
   writer.syncData("gtpruned-bodies_4", "groundtruth_pruned_4", "replace=true");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "df58", 9000);
+  target.setBodyLabelName("gtpruned-bodies");
+  target.setLabelBlockName("groundtruth_pruned");
+  ZDvidReader reader;
+  reader.open(target);
+  tic();
+  reader.updateMaxLabelZoom();
+  ptoc();
+  std::cout << reader.getDvidTarget().getMaxLabelZoom() << std::endl;
+
+  ZObject3dScan *obj = reader.readMultiscaleBody(244264, 4, true, NULL);
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "7abe", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan roiAlpha = reader.readRoi("kc_alpha_roi");
+  roiAlpha.printInfo();
+
+  ZObject3dScan roiAlpha1 = reader.readRoi("alpha1_roi");
+  roiAlpha1.printInfo();
+
+  ZObject3dScan roiAlpha2 = reader.readRoi("alpha2_roi");
+  roiAlpha2.printInfo();
+
+  ZObject3dScan roiAlpha3 = reader.readRoi("alpha3_roi");
+  roiAlpha3.printInfo();
+
+  std::cout << roiAlpha1.getVoxelNumber() + roiAlpha2.getVoxelNumber() +
+               roiAlpha3.getVoxelNumber() << std::endl;
+
+  ZObject3dScan newRoiAlpha3 =
+      roiAlpha.getSlice(roiAlpha.getMinZ(), 159);
+  newRoiAlpha3.printInfo();
+
+  ZObject3dScan newRoiAlpha2 =
+      roiAlpha.getSlice(160, 281);
+  newRoiAlpha2.printInfo();
+
+  ZObject3dScan newRoiAlpha1 =
+      roiAlpha.getSlice(282, roiAlpha.getMaxZ());
+  newRoiAlpha1.printInfo();
+
+  std::cout << newRoiAlpha1.getVoxelNumber() + newRoiAlpha2.getVoxelNumber() +
+               newRoiAlpha3.getVoxelNumber() << std::endl;
+
+  ZObject3dScan newRoi;
+  newRoi.concat(newRoiAlpha3);
+  newRoi.concat(newRoiAlpha2);
+  newRoi.concat(newRoiAlpha1);
+  newRoi.setCanonized(true);
+  newRoi.setDsIntv(31, 31, 31);
+
+  newRoi.printInfo();
+  std::cout << newRoi.equalsLiterally(roiAlpha) << std::endl;
+
+  ZJsonArray array1 =
+      ZJsonFactory::MakeJsonArray(newRoiAlpha1, ZJsonFactory::OBJECT_SPARSE);
+  array1.dump(GET_TEST_DATA_DIR + "/alpha1.json");
+
+#if 0
+  ZDvidWriter writer;
+  writer.open(target);
+  newRoiAlpha1.printInfo();
+  writer.writeRoi(newRoiAlpha1, "alpha1_roi");
+//  writer.writeRoi(newRoiAlpha2, "alpha2_roi");
+//  writer.writeRoi(newRoiAlpha3, "alpha3_roi");
+#endif
+
 #endif
 
   std::cout << "Done." << std::endl;

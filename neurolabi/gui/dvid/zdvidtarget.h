@@ -150,6 +150,7 @@ public:
 //  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
+  std::string getBodyLabelName(int zoom) const;
   void setBodyLabelName(const std::string &name);
 
   void setNullBodyLabelName();

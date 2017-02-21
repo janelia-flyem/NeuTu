@@ -15,7 +15,6 @@
 #include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
-#include "flyem/zflyembody3ddoc.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -45,6 +44,8 @@ class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
 class ZRandomGenerator;
 class ZFlyEmSkeletonUpdateDialog;
+class ZFlyEmBody3dDoc;
+class ZDvidLabelSlice;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -370,7 +371,7 @@ private:
   void makeExternalNeuronWindow();
   void makeOrthoWindow();
 
-  ZFlyEmBody3dDoc *makeBodyDoc(ZFlyEmBody3dDoc::EBodyType bodyType);
+  ZFlyEmBody3dDoc *makeBodyDoc(FlyEM::EBodyType bodyType);
 
   void prepareBodyWindowSignalSlot(Z3DWindow *window, ZFlyEmBody3dDoc *doc);
 
