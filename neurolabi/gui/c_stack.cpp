@@ -378,6 +378,9 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
 #define DOWNSAMPLE_MIN(srcArray, dstArray) \
   DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
 
+#define DOWNSAMPLE_MIN_IGNORE_ZERO(srcArray, dstArray) \
+  DOWNSAMPLE_GENERAL(srcArray, dstArray, ((*srcArray < *dstArray)&&(*srcArray!=0)))
+
 Stack* C_Stack::downsampleMax(
     const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
 {
@@ -492,6 +495,63 @@ Stack* C_Stack::downsampleMin(
 
   return out;
 }
+
+
+Stack* C_Stack::downsampleMinIgnoreZero(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *out)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return clone(stack);
+  }
+
+  int xCounter = 0;
+  int yCounter = 0;
+  int zCounter = 0;
+
+  int w = width(stack);
+  int h = height(stack);
+  int d = depth(stack);
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  if (out == NULL) {
+    out = make(kind(stack), swidth, sheight, sdepth);
+  } else {
+    out->kind = kind(stack);
+    out->width = swidth;
+    out->height = sheight;
+    out->depth = sdepth;
+  }
+  setZero(out);
+
+  size_t outArea = area(out);
+
+  Image_Array srcIma;
+  Image_Array dstIma;
+  srcIma.array = stack->array;
+  dstIma.array = out->array;
+
+  switch (kind(stack)) {
+  case GREY:
+    DOWNSAMPLE_MIN_IGNORE_ZERO(srcIma.array8, dstIma.array8);
+    break;
+  case GREY16:
+    DOWNSAMPLE_MIN_IGNORE_ZERO(srcIma.array16, dstIma.array16);
+    break;
+  case GREY32:
+    DOWNSAMPLE_MIN_IGNORE_ZERO(srcIma.array32, dstIma.array32);
+    break;
+  case GREY64:
+    DOWNSAMPLE_MIN_IGNORE_ZERO(srcIma.array64, dstIma.array64);
+    break;
+  default:
+    break;
+  }
+
+  return out;
+}
+
 
 /*
 Stack* C_Stack::copy(const Stack *stack)

@@ -248,7 +248,8 @@ Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
 Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
-
+Stack* downsampleMinIgnoreZero(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 void print(const Stack *stack);
 
 /*!

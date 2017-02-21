@@ -18,9 +18,12 @@ void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
       for(int i=0;i<width;++i)
       {
         uint8_t v=po[_offset+i];
-        for(int z=k;z<=std::min(depth-1,k+1);++z)
-          for(int y=j;y<=std::min(height-1,j+1);++y)
-            for(int x=i;x<=std::min(width-1,i+1);++x)
+        int ez=std::min(depth-1,k+1);
+        int ey=std::min(height-1,j+1);
+        int ex=std::min(width-1,i+1);
+        for(int z=k;z<=ez;++z)
+          for(int y=j;y<=ey;++y)
+            for(int x=i;x<=ex;++x)
             {
               uint8_t t=po[z*slice+y*width+x];
               if(v!=t)
@@ -140,11 +143,11 @@ inline bool hasNeighborOnEdge(const ZStack* edge_map,int x,int y,int z)
   int depth=edge_map->depth();
   int slice=width*height;
   const uint8_t* p=edge_map->array8();
-  for(int k=std::max(0,z-2);k<=std::min(depth-1,z+2);++k)
+  for(int k=std::max(0,z-1);k<=std::min(depth-1,z+1);++k)
   {
-    for(int j=std::max(0,y-2);j<=std::min(height-1,y+2);++j)
+    for(int j=std::max(0,y-1);j<=std::min(height-1,y+1);++j)
     {
-      for(int i=std::max(0,x-2);i<=std::min(width-1,x+2);++i)
+      for(int i=std::max(0,x-1);i<=std::min(width-1,x+1);++i)
       {
         if(p[i+j*width+k*slice])
         {
@@ -405,7 +408,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
   }
   //down sample src stack
   ZStack* sampled=src->clone();
-  sampled->downsampleMin(scale-1,scale-1,scale-1);
+  sampled->downsampleMinIgnoreZero(scale-1,scale-1,scale-1);
 
   ZStack* sampled_watershed=watershed.run(sampled,seeds);
 

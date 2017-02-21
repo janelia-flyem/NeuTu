@@ -72,7 +72,6 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
 
 void ZWaterShedWindow::onOk()
 {
-
   ZStackDoc *doc =ZSandbox::GetCurrentDoc();
   if(!doc)return;
   ZStack  *src=doc->getStack();
@@ -83,6 +82,7 @@ void ZWaterShedWindow::onOk()
   QList<ZSwcTree*> trees=doc->getSwcList();
 
   ZStack* result=watershed.run(src,trees,scale);
+
 
   if(result)
   {
@@ -119,9 +119,9 @@ void ZWaterShedWindow::onOk()
     ZSandbox::GetMainWindow()->addStackFrame(frame);
     ZSandbox::GetMainWindow()->presentStackFrame(frame);
 
-  //  frame=ZSandbox::GetMainWindow()->createStackFrame(result);
-  //  ZSandbox::GetMainWindow()->addStackFrame(frame);
-  //  ZSandbox::GetMainWindow()->presentStackFrame(frame);
+    //frame=ZSandbox::GetMainWindow()->createStackFrame(result);
+    //ZSandbox::GetMainWindow()->addStackFrame(frame);
+    //ZSandbox::GetMainWindow()->presentStackFrame(frame);
     delete result;
   }
 }
