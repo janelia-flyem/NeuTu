@@ -236,6 +236,8 @@ private slots:
 
 private:
   void processEventFunc(const BodyEvent &event);
+  ZSwcTree* recoverFullBodyFromGarbage(
+      uint64_t bodyId, int resLevel);
 
 private:
   QSet<uint64_t> m_bodySet;

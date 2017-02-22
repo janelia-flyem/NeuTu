@@ -1081,6 +1081,23 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId, int zoom)
 }
 #endif
 
+ZSwcTree* ZFlyEmBody3dDoc::recoverFullBodyFromGarbage(uint64_t bodyId, int resLevel)
+{
+  ZSwcTree *tree = NULL;
+
+//  int maxZoom = getDvidTarget().getMaxLabelZoom();
+  for (int zoom = 0; zoom <= resLevel; ++zoom) {
+    tree = recoverFromGarbage<ZSwcTree>(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            bodyId, zoom, FlyEM::BODY_FULL));
+    if (tree != NULL) {
+      break;
+    }
+  }
+
+  return tree;
+}
+
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
     uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
@@ -1093,12 +1110,12 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   if (bodyType == FlyEM::BODY_COARSE) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(bodyId));
-  }
-
-  if (tree == NULL) {
+  } else if (bodyType == FlyEM::BODY_SKELETON) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            bodyId, zoom, bodyType));
+            bodyId, 0, bodyType));
+  } else if (bodyType == FlyEM::BODY_FULL) {
+    tree = recoverFullBodyFromGarbage(bodyId, zoom);
   }
 
   if (tree == NULL) {
