@@ -1023,25 +1023,27 @@ void Z3DSwcFilter::prepareData()
         type = 0;
       }
 
-      m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
-      QString guiname;
-      if (type >= m_guiNameList.size()) {
-        guiname = QString("Type %1 Color").arg(type);
-      } else {
-        guiname = m_guiNameList[type];
-      }
-      if (m_biocytinColorMapper.find(type) == m_biocytinColorMapper.end()) {
-        QColor color = m_colorScheme.getColor(type);
-        m_biocytinColorMapper[type] =
-            new ZVec4Parameter(guiname, glm::vec4(color.redF(), color.greenF(),
-                                                  color.blueF(), 1.f));
-        m_biocytinColorMapper[type]->setStyle("COLOR");
-        connect(m_biocytinColorMapper[type], SIGNAL(valueChanged()),
-            this, SLOT(prepareColor()));
-        addParameter(m_biocytinColorMapper[type]);
-        needUpdateWidget = true;
-      } else {
-        m_biocytinColorMapper[type]->setName(guiname);
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
+        QString guiname;
+        if (type >= m_guiNameList.size()) {
+          guiname = QString("Type %1 Color").arg(type);
+        } else {
+          guiname = m_guiNameList[type];
+        }
+        if (m_biocytinColorMapper.find(type) == m_biocytinColorMapper.end()) {
+          QColor color = m_colorScheme.getColor(type);
+          m_biocytinColorMapper[type] =
+              new ZVec4Parameter(guiname, glm::vec4(color.redF(), color.greenF(),
+                                                    color.blueF(), 1.f));
+          m_biocytinColorMapper[type]->setStyle("COLOR");
+          connect(m_biocytinColorMapper[type], SIGNAL(valueChanged()),
+                  this, SLOT(prepareColor()));
+          addParameter(m_biocytinColorMapper[type]);
+          needUpdateWidget = true;
+        } else {
+          m_biocytinColorMapper[type]->setName(guiname);
+        }
       }
     }
   }
@@ -1686,6 +1688,7 @@ void Z3DSwcFilter::decompseSwcTree()
   m_decompsedNodePairs.resize(m_swcList.size());
   m_decomposedNodes.resize(m_swcList.size());
 
+  int prevType = -1;
   for (size_t i=0; i<m_swcList.size(); i++) {
     if (m_swcList[i]->isVisible()) {
       std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > allPairs;
@@ -1695,9 +1698,12 @@ void Z3DSwcFilter::decompseSwcTree()
       for (Swc_Tree_Node *tn = swcTree->begin(); tn != swcTree->end(); tn = swcTree->next()) {
         if (!Swc_Tree_Node_Is_Virtual(tn)) {
           int type = SwcTreeNode::type(tn);
-          m_allNodeType.insert(type);
-          if (type > m_maxType) {
-            m_maxType = type;
+          if (type != prevType) {
+            m_allNodeType.insert(type);
+            if (type > m_maxType) {
+              m_maxType = type;
+            }
+            prevType = type;
           }
           allNodes.push_back(tn);
           m_sortedNodeList.push_back(tn);

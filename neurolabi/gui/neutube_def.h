@@ -148,7 +148,7 @@ enum EProofreadingMode {
 };
 
 enum EBodyType {
-  BODY_FULL, BODY_COARSE, BODY_SKELETON
+  BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_NULL
 };
 
 static const uint64_t LABEL_ID_SELECTION =

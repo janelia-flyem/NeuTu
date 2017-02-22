@@ -527,6 +527,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   size_t volume = size_t((box.getWidth() + 2)) * ((box.getHeight() + 2)) *
       ((box.getDepth() + 2))/ (intv + 1) / (intv + 1) / (intv + 1);
 
+
   ZSwcTree *tree = NULL;
   if (volume > MAX_INT32) {
     //Separate into two parts
@@ -538,11 +539,16 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     ZObject3dScan obj2 = obj.getSlice(medZ + 1, maxZ);
     tree = CreateSurfaceSwcNoPartition(obj1, sparseLevel, NULL);
     tree = CreateSurfaceSwcNoPartition(obj2, sparseLevel, tree);
+    tree->setSource("oversize"); //ad hoc flag for stating that the object is big enough
   } else {
     tree = CreateSurfaceSwcNoPartition(obj, sparseLevel, NULL);
   }
 
   if (tree != NULL) {
+    if (intv > 0) {
+      tree->setSource("oversize");
+    }
+
     tree->setColor(obj.getColor());
   }
 

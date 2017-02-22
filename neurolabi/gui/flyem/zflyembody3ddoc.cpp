@@ -557,6 +557,8 @@ void ZFlyEmBody3dDoc::setBodyType(FlyEM::EBodyType type)
   case FlyEM::BODY_SKELETON:
     setTag(NeuTube::Document::FLYEM_SKELETON);
     break;
+  case FlyEM::BODY_NULL:
+    break;
   }
 }
 
@@ -638,7 +640,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   ZSwcTree *tree = NULL;
   if (tree == NULL) {
     if (resLevel == 5) {
-      tree = makeBodyModel(bodyId, FlyEM::BODY_COARSE);
+      tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
       if (tree != NULL) {
         //The tree can be retrieved with full resolution from cache
         for (int i = 0; i < 5; ++i) {
@@ -650,31 +652,48 @@ void ZFlyEmBody3dDoc::addBodyFunc(
       }
     } else if (resLevel == 0) {
       emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-      tree = makeBodyModel(bodyId, getBodyType());
+      tree = makeBodyModel(bodyId, 0, getBodyType());
       emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+    } else {
+      if (getBodyType() == FlyEM::BODY_FULL) {
+        emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+        tree = makeBodyModel(bodyId, resLevel, getBodyType());
+        emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+      }
     }
 
-    if (resLevel > 0 && getBodyType() == FlyEM::BODY_FULL) {
-      QMutexLocker locker(&m_eventQueueMutex);
-      BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
-      bodyEvent.setBodyColor(color);
-      bodyEvent.setResLevel(--resLevel);
-      bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
-      bool removing = false;
+    if (tree != NULL) {
+      if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+            tree->getSource()) == FlyEM::BODY_FULL) {
+        resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+              tree->getSource());
+      }
+      if (resLevel > 0) {
+        QMutexLocker locker(&m_eventQueueMutex);
+        BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
+        bodyEvent.setBodyColor(color);
+        --resLevel;
+        if (resLevel > getDvidTarget().getMaxLabelZoom()) {
+          resLevel = getDvidTarget().getMaxLabelZoom();
+        }
+        bodyEvent.setResLevel(resLevel);
+        bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+        bool removing = false;
 
-      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-           iter != m_eventQueue.end(); ++iter) {
-        BodyEvent &event = *iter;
-        if (event.getBodyId() == bodyId) {
-          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-            removing = true;
-          } else {
-            removing = false;
+        for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+             iter != m_eventQueue.end(); ++iter) {
+          BodyEvent &event = *iter;
+          if (event.getBodyId() == bodyId) {
+            if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+              removing = true;
+            } else {
+              removing = false;
+            }
           }
         }
-      }
-      if (!removing) {
-        m_eventQueue.enqueue(bodyEvent);
+        if (!removing) {
+          m_eventQueue.enqueue(bodyEvent);
+        }
       }
     }
   }
@@ -1055,10 +1074,12 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
   return tree;
 }
 
+#if 0
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(uint64_t bodyId, int zoom)
 {
   return makeBodyModel(bodyId, zoom, getBodyType());
 }
+#endif
 
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
     uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
@@ -1071,8 +1092,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
   if (bodyType == FlyEM::BODY_COARSE) {
     tree = recoverFromGarbage<ZSwcTree>(
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            bodyId, zoom, FlyEM::BODY_FULL));
+          ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(bodyId));
   }
 
   if (tree == NULL) {
@@ -1124,6 +1144,9 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
       if (tree != NULL) {
         tree->setTimeStamp(t);
+        if (tree->getSource() == "oversize" || zoom <= 2) {
+          zoom = 0;
+        }
         tree->setSource(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
                 bodyId, zoom, bodyType));

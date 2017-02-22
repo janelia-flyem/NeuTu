@@ -22,8 +22,11 @@ public:
       uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   static std::string GetBodyTypeName(FlyEM::EBodyType bodyType);
 
+  static std::string ExtractBodyStrFromFlyEmBodySource(const std::string &source);
   static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);
-  static uint64_t ExtractZoomFromFlyEmBodySource(const std::string &source);
+  static int ExtractZoomFromFlyEmBodySource(const std::string &source);
+  static FlyEM::EBodyType ExtractBodyTypeFromFlyEmBodySource(
+      const std::string &source);
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();

@@ -1,4 +1,6 @@
 #include "zstackobjectsourcefactory.h"
+
+#include <iostream>
 #include "zstring.h"
 #include "zstackobjectsource.h"
 
@@ -63,6 +65,8 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
     return "coarse";
   case FlyEM::BODY_SKELETON:
     return "skeleton";
+  case FlyEM::BODY_NULL:
+    break;
   }
 
   return "";
@@ -80,45 +84,66 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
   return MakeFlyEmBodySource(bodyId, zoom, GetBodyTypeName(bodyType));
 }
 
-uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+std::string ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
     const std::string &source)
 {
-  uint64_t id = 0;
-
+  ZString substr;
   ZString sourceBase = "#.FlyEmBody#";
   if (source.length() > sourceBase.length()) {
-    ZString substr = source.substr(sourceBase.length() - 1);
-    std::vector<uint64_t> idArray = substr.toUint64Array();
-    if (idArray.size() >= 1) {
-      id = idArray.front();
-    }
-  }
-
-  return id;
-}
-
-uint64_t ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-    const std::string &source)
-{
-  uint64_t id = 0;
-
-  ZString sourceBase = "#.FlyEmBody#";
-  if (source.length() > sourceBase.length()) {
-    ZString::size_type startPos = sourceBase.length() - 1;
+    ZString::size_type startPos = sourceBase.length();
     ZString::size_type tokenPos = source.find('#', startPos);
-    ZString substr;
     if (tokenPos == ZString::npos) {
       substr = source.substr(startPos);
     } else {
       substr = source.substr(startPos, tokenPos - startPos);
     }
-    std::vector<uint64_t> idArray = substr.toUint64Array();
-    if (idArray.size() == 1) {
-      id = idArray.front();
-    }
+  }
+
+  return substr;
+}
+
+uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+    const std::string &source)
+{
+  uint64_t id = 0;
+
+  ZString substr = ExtractBodyStrFromFlyEmBodySource(source);
+  std::vector<uint64_t> idArray = substr.toUint64Array();
+  if (idArray.size() >= 1) {
+    id = idArray.front();
   }
 
   return id;
+}
+
+FlyEM::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+      const std::string &source)
+{
+  ZString str(source);
+  FlyEM::EBodyType bodyType = FlyEM::BODY_NULL;
+  if (str.endsWith("#.full")) {
+    bodyType = FlyEM::BODY_FULL;
+  } else if (str.endsWith("#.coarse")) {
+    bodyType = FlyEM::BODY_COARSE;
+  } else if (str.endsWith("#.skeleton")) {
+    bodyType = FlyEM::BODY_SKELETON;
+  }
+
+  return bodyType;
+}
+
+int ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+    const std::string &source)
+{
+  int zoom = 0;
+
+  ZString substr = ExtractBodyStrFromFlyEmBodySource(source);
+  std::vector<uint64_t> idArray = substr.toUint64Array();
+  if (idArray.size() >= 2) {
+    zoom = idArray[1];
+  }
+
+  return zoom;
 }
 
 std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)

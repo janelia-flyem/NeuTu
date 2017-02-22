@@ -238,6 +238,7 @@ using namespace std;
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "test/zflyemproofdoctest.h"
+#include "test/zflyembody3dtest.h"
 #include "test/zresolutiontest.h"
 //#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
@@ -22054,7 +22055,7 @@ void ZTest::test(MainWindow *host)
   writer.syncData("gtpruned-bodies_4", "groundtruth_pruned_4", "replace=true");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "df58", 9000);
   target.setBodyLabelName("gtpruned-bodies");
@@ -22070,7 +22071,7 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
@@ -22086,6 +22087,44 @@ void ZTest::test(MainWindow *host)
   roiAlpha2.printInfo();
 
   ZObject3dScan roiAlpha3 = reader.readRoi("alpha3_roi");
+  roiAlpha3.printInfo();
+
+  ZObject3dScan newRoiAlpha1 = reader.readRoi("alpha1_roi_0217");
+  newRoiAlpha1.printInfo();
+
+  ZObject3dScan newRoiAlpha2 = reader.readRoi("alpha2_roi_0217");
+  newRoiAlpha2.printInfo();
+
+  ZObject3dScan newRoiAlpha3 = reader.readRoi("alpha3_roi_0217");
+  newRoiAlpha3.printInfo();
+
+  ZObject3dScan newRoi;
+  newRoi.concat(newRoiAlpha3);
+  newRoi.concat(newRoiAlpha2);
+  newRoi.concat(newRoiAlpha1);
+  newRoi.setCanonized(true);
+  newRoi.setDsIntv(31, 31, 31);
+
+  newRoi.printInfo();
+  std::cout << newRoi.equalsLiterally(roiAlpha) << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "7abe", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan roiAlpha = reader.readRoi("kc_alpha_roi");
+  roiAlpha.printInfo();
+
+  ZObject3dScan roiAlpha1 = reader.readRoi("alpha1_roi_0217");
+  roiAlpha1.printInfo();
+
+  ZObject3dScan roiAlpha2 = reader.readRoi("alpha2_roi_0217");
+  roiAlpha2.printInfo();
+
+  ZObject3dScan roiAlpha3 = reader.readRoi("alpha3_roi_0217");
   roiAlpha3.printInfo();
 
   std::cout << roiAlpha1.getVoxelNumber() + roiAlpha2.getVoxelNumber() +
@@ -22124,9 +22163,9 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
   newRoiAlpha1.printInfo();
-  writer.writeRoi(newRoiAlpha1, "alpha1_roi");
-//  writer.writeRoi(newRoiAlpha2, "alpha2_roi");
-//  writer.writeRoi(newRoiAlpha3, "alpha3_roi");
+  writer.writeRoi(newRoiAlpha1, "alpha1_roi_0217");
+  writer.writeRoi(newRoiAlpha2, "alpha2_roi_0217");
+  writer.writeRoi(newRoiAlpha3, "alpha3_roi_0217");
 #endif
 
 #endif

@@ -51,5 +51,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyemproofdoctest.h \
     test/zflyembodycoloroptiontest.h \
     test/zresolutiontest.h \
-    test/zflyemproofdoctest.h \
-    test/zdvidroitest.h
+    test/zdvidroitest.h \
+    test/zflyembody3dtest.h
