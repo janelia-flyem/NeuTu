@@ -22071,7 +22071,7 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
@@ -22107,6 +22107,20 @@ void ZTest::test(MainWindow *host)
 
   newRoi.printInfo();
   std::cout << newRoi.equalsLiterally(roiAlpha) << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "4b2f", 8700);
+  target.setBodyLabelName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_vol");
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0");
+  target.setGrayScaleName("grayscale");
+  target.setMultiscale2dName("tiles");
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
+
 #endif
 
 #if 0
