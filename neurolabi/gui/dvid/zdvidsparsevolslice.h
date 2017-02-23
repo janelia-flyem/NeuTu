@@ -4,6 +4,7 @@
 #include "zobject3dscan.h"
 #include "zdvidtarget.h"
 #include "zdvidreader.h"
+#include "zstackviewparam.h"
 
 class ZDvidSparsevolSlice : public ZObject3dScan
 {
@@ -24,15 +25,17 @@ public:
 
   bool update(int z);
   void update();
+  bool update(const ZStackViewParam &viewParam);
 
   bool isSliceVisible(int z, NeuTube::EAxis axis) const;
 
 private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);
-
+  void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
 
 private:
   int m_currentZ;
+  ZStackViewParam m_currentViewParam;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZDvidReader *m_externalReader;
