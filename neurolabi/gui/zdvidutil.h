@@ -86,7 +86,9 @@ bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
 ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
+#if defined(_ENABLE_LIBDVIDCPP_)
 ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
+#endif
 }
 
 #endif // ZDVIDUTIL_H

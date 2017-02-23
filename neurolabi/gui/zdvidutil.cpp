@@ -1,6 +1,7 @@
 #include "zdvidutil.h"
 
 #include <QUrl>
+#include <cmath>
 
 #include "neutubeconfig.h"
 #include "zjsonvalue.h"
@@ -261,6 +262,7 @@ libdvid::BinaryDataPtr ZDvid::Post(
 
 #endif
 
+#if defined(_ENABLE_LIBDVIDCPP_)
 ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
 {
   ZIntCuboid alignedBox;
@@ -273,6 +275,7 @@ ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo
 
   return alignedBox;
 }
+#endif
 
 ZIntCuboid ZDvid::GetZoomBox(const ZIntCuboid &box, int zoom)
 {

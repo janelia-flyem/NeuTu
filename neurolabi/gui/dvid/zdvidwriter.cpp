@@ -1540,6 +1540,7 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
 
 void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom)
 {
+#if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     ZDvidInfo dvidInfo = reader.readLabelInfo();
@@ -1559,6 +1560,7 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom)
 
     delete label;
   }
+#endif
 }
 
 
