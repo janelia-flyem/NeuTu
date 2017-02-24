@@ -104,6 +104,7 @@ private:
     FocusedEdge getSelectedEdge();
     void printEdge(FocusedEdge edge);
     void printPath(FocusedPath path);
+    std::string getPropertyKey(std::string prefix, ZIntPoint point);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

@@ -13,7 +13,7 @@ class FocusedPath
 {
 public:
     FocusedPath();
-    FocusedPath(ZDvidAnnotation annotation);
+    FocusedPath(ZIntPoint firstPoint, ZIntPoint lastPoint, double probability, std::string edgeListString);
 
     bool operator==(const FocusedPath&) const;
 

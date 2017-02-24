@@ -282,12 +282,29 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
 
     m_currentBodyPaths.clear();
 
+    // each annotation can have multiple paths originating from its position;
+    //  the relations hold the locations of the opposite endpoints, and the
+    //  edge lists and probabilities are encoded in properties, in keys based
+    //  on the far endpoints
+
     ZJsonArray annotations = m_reader.readAnnotation(m_pathDataInstance, bodyID,
         FlyEM::LOAD_PARTNER_LOCATION);
     for (size_t i=0; i<annotations.size(); i++) {
+        // we can get partner points straight from the annotations array, but it's
+        //  easier to get properties from the ZDvidAnnotation object
+
         ZDvidAnnotation ann;
         ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_PARTNER_RELJSON);
-        m_currentBodyPaths << FocusedPath(ann);
+
+        std::vector<ZIntPoint> farEndpoints = ZDvidAnnotation::GetPartners(annotations.value(i));
+        for (size_t j=0; j<farEndpoints.size(); j++) {
+            ZIntPoint p2 = farEndpoints[j];
+            std::string edgeListString = ann.getProperty<std::string>(getPropertyKey(FocusedPathProtocol::PROPERTY_PATH, p2));
+            std::string probabilityString = ann.getProperty<std::string>(getPropertyKey(FocusedPathProtocol::PROPERTY_PROBABILITY, p2));
+            double probability = atof(probabilityString.c_str());
+
+            m_currentBodyPaths << FocusedPath(ann.getPosition(), p2, probability, edgeListString);
+        }
     }
 
 
@@ -299,6 +316,18 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
     }
 
     emit currentBodyPathsLoaded();
+}
+
+std::string FocusedPathProtocol::getPropertyKey(std::string prefix, ZIntPoint point) {
+    std::ostringstream outputStream;
+    outputStream << prefix;
+    outputStream << "_";
+    outputStream << point.getX();
+    outputStream << "_";
+    outputStream << point.getY();
+    outputStream << "_";
+    outputStream << point.getZ();
+    return outputStream.str();
 }
 
 /*
@@ -368,6 +397,14 @@ FocusedPath FocusedPathProtocol::findNextPath() {
 }
 
 void FocusedPathProtocol::deletePath(FocusedPath path) {
+
+
+    // this needs updating: can't delete paths as easily with new format
+    // since we now have multiple paths in one annotation, we will have
+    //  to read, alter, and save path annotation, from both ends (!!), leaving the
+    //  rest of the data untouched
+    // if all paths removed, then it's a total delete, but not otherwise
+
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {
         writer.deletePointAnnotation(m_pathDataInstance, path.getFirstPoint());
