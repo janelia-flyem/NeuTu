@@ -10,6 +10,7 @@ class ZSwcTree;
 class ZStack;
 class ZObject3dScan;
 class ZJsonObject;
+class ZIntPoint;
 
 class ZStackSkeletonizer : public ZProgressable
 {
@@ -74,11 +75,8 @@ public:
     m_resolution[2] = zRes;
   }
 
-  inline void setDownsampleInterval(int xintv, int yintv, int zintv) {
-    m_downsampleInterval[0] = xintv;
-    m_downsampleInterval[1] = yintv;
-    m_downsampleInterval[2] = zintv;
-  }
+  void setDownsampleInterval(const ZIntPoint &intv);
+  void setDownsampleInterval(int xintv, int yintv, int zintv);
 
   inline void getDownsampleInterval(int *xintv, int *yintv, int *zintv) {
     *xintv = m_downsampleInterval[0];

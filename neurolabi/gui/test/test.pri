@@ -1,4 +1,5 @@
-HEADERS +=     test/zswctreetest.h \
+HEADERS += \
+    test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \
     test/zswcpathtest.h \
@@ -52,4 +53,5 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyembodycoloroptiontest.h \
     test/zresolutiontest.h \
     test/zdvidroitest.h \
-    test/zflyembody3dtest.h
+    test/zflyembody3dtest.h \
+    test/zstackskeletonizertest.h

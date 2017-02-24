@@ -204,6 +204,7 @@ using namespace std;
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
+#include "test/zstackskeletonizertest.h"
 #include "test/zflyembodycoloroptiontest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
@@ -22109,7 +22110,7 @@ void ZTest::test(MainWindow *host)
   std::cout << newRoi.equalsLiterally(roiAlpha) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "4b2f", 8700);
   target.setBodyLabelName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_vol");
@@ -22120,6 +22121,35 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
   writer.writeDefaultDataSetting();
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "1165", 8700);
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZJsonObject obj = reader.readDefaultDataSetting();
+
+  target.loadDvidDataSetting(obj);
+
+  std::cout << target.toJsonObject().dumpString(2) << std::endl;
+
+  std::cout << "Todo data: " << reader.hasData(target.getTodoListName())
+            << std::endl;
+  std::cout << "Label block: " << reader.hasData(target.getLabelBlockName())
+            << std::endl;
+  std::cout << "Labelvol: " << reader.hasData(target.getBodyLabelName())
+            << std::endl;
+  std::cout << "Body annotation: " << reader.hasData(target.getBodyAnnotationName())
+            << std::endl;
+  std::cout << "Skeleton: " << reader.hasData(target.getSkeletonName())
+            << std::endl;
+  std::cout << "Grayscale: " << reader.hasData(target.getGrayScaleName())
+            << std::endl;
+  std::cout << "Tile: " << reader.hasData(target.getMultiscale2dName())
+            << std::endl;
 
 #endif
 
