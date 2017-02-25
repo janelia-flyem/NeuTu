@@ -571,6 +571,7 @@ public: /* processing routines */
    * The offset postion is adjusted accordingly.
    */
   void downsampleMin(int xintv, int yintv, int zintv);
+  void downsampleMinIgnoreZero(int xintv, int yintv, int zintv);
 
   void crop(const ZIntCuboid &cuboid);
   ZStack* makeCrop(const ZIntCuboid &cuboid) const;
