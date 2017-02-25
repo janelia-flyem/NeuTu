@@ -9,6 +9,18 @@ ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
 {
   ui->setupUi(this);
   m_oldSupervised = true;
+
+  if (ui->grayscaleMainCheckBox->isChecked()) {
+    ui->grayscaleSourceWidget->setEnabled(false);
+  }
+  if (ui->tileMainCheckBox->isChecked()) {
+    ui->tileSourceWidget->setEnabled(false);
+  }
+
+  connect(ui->grayscaleMainCheckBox, SIGNAL(toggled(bool)),
+          ui->grayscaleSourceWidget, SLOT(setDisabled(bool)));
+  connect(ui->tileMainCheckBox, SIGNAL(toggled(bool)),
+          ui->tileSourceWidget, SLOT(setDisabled(bool)));
 }
 
 ZDvidAdvancedDialog::~ZDvidAdvancedDialog()
@@ -75,23 +87,49 @@ void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
   UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos");
 }
 
-void ZDvidAdvancedDialog::setGrayscaleSource(const ZDvidNode &node)
+
+void ZDvidAdvancedDialog::setGrayscaleSource(
+    const ZDvidNode &node)
 {
   ui->grayscaleSourceWidget->setNode(node);
 }
 
-void ZDvidAdvancedDialog::setTileSource(const ZDvidNode &node)
+void ZDvidAdvancedDialog::setTileSource(
+    const ZDvidNode &node)
 {
   ui->tileSourceWidget->setNode(node);
 }
 
+
+void ZDvidAdvancedDialog::setGrayscaleSource(
+    const ZDvidNode &node, bool sameMainSource)
+{
+  ui->grayscaleSourceWidget->setNode(node);
+  ui->grayscaleMainCheckBox->setChecked(sameMainSource);
+}
+
+void ZDvidAdvancedDialog::setTileSource(
+    const ZDvidNode &node, bool sameMainSource)
+{
+  ui->tileSourceWidget->setNode(node);
+  ui->tileMainCheckBox->setChecked(sameMainSource);
+}
+
 ZDvidNode ZDvidAdvancedDialog::getGrayscaleSource() const
 {
+  if (ui->grayscaleMainCheckBox->isChecked()) {
+    return ZDvidNode();
+  }
+
   return ui->grayscaleSourceWidget->getNode();
 }
 
 ZDvidNode ZDvidAdvancedDialog::getTileSource() const
 {
+  if (ui->tileMainCheckBox->isChecked()) {
+    return ZDvidNode();
+  }
+
   return ui->tileSourceWidget->getNode();
 }
 

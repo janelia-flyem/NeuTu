@@ -77,9 +77,11 @@ private:
   std::string m_synapseFile;
   ZJsonObject m_configJson;
   std::string m_configDir;
+  std::string m_outputFlag;
   int m_ravelerHeight;
   int m_zStart;
   int m_intv[3];
+  bool m_intvSpecified;
   int m_blockOffset[3];
   int m_position[3];
   int m_size[3];

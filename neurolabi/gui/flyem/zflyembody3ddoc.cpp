@@ -640,7 +640,13 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   ZSwcTree *tree = NULL;
   if (tree == NULL) {
     if (resLevel == 5) {
-      tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
+      if (getBodyType() == FlyEM::BODY_FULL) {
+        tree = recoverFullBodyFromGarbage(bodyId, resLevel);
+      }
+      if (tree == NULL) {
+        tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
+      }
+#if 0
       if (tree != NULL) {
         //The tree can be retrieved with full resolution from cache
         for (int i = 0; i < 5; ++i) {
@@ -650,6 +656,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
           }
         }
       }
+#endif
     } else if (resLevel == 0) {
       emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
       tree = makeBodyModel(bodyId, 0, getBodyType());

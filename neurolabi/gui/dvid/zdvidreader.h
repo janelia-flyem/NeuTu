@@ -104,8 +104,7 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
-  ZObject3dScan* readBody(
-      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result);

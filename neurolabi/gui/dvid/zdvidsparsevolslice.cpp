@@ -62,9 +62,56 @@ bool ZDvidSparsevolSlice::update(int z)
   return updated;
 }
 
+bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
+{
+  if (viewParam.getSliceAxis() != m_sliceAxis) {
+    return false;
+  }
+
+  if (viewParam.getViewPort().isEmpty()) {
+    return false;
+  }
+
+  bool updated = false;
+
+  ZStackViewParam newViewParam = viewParam;
+
+  if (!m_currentViewParam.contains(newViewParam)) {
+    forceUpdate(newViewParam, true);
+    updated = true;
+
+    m_currentViewParam = newViewParam;
+  }
+
+  return updated;
+}
+
 void ZDvidSparsevolSlice::update()
 {
   m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
+}
+
+void ZDvidSparsevolSlice::forceUpdate(
+    const ZStackViewParam &viewParam, bool ignoringHidden)
+{
+  if (viewParam.getSliceAxis() != m_sliceAxis) {
+    return;
+  }
+
+  if ((!ignoringHidden) || isVisible()) {
+    QRect viewPort = viewParam.getViewPort();
+    ZIntCuboid box;
+    box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
+    box.setSize(viewPort.width(), viewPort.height(), 1);
+
+    box.shiftSliceAxisInverse(m_sliceAxis);
+
+    if (m_externalReader != NULL) {
+      m_externalReader->readBody(getLabel(), box, true, this);
+    } else {
+      m_reader.readBody(getLabel(), box, true, this);
+    }
+  }
 }
 
 void ZDvidSparsevolSlice::display(

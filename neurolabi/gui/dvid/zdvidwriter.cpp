@@ -1696,6 +1696,7 @@ void ZDvidWriter::addSynapseProperty(
 void ZDvidWriter::writeDefaultDataSetting(const ZJsonObject &obj)
 {
   ZDvidUrl url(getDvidTarget());
+
   writeJson(url.getDefaultDataInstancesUrl(), obj);
 }
 
