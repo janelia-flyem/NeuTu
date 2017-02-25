@@ -83,7 +83,6 @@ void ZWaterShedWindow::onOk()
 
   ZStack* result=watershed.run(src,trees,scale);
 
-
   if(result)
   {
     ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(src->clone());
