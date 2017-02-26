@@ -5,33 +5,28 @@
 #include "zobject3darray.h"
 #include "zstackfactory.h"
 
-ZStack* recover2OriginalSize(ZStack* original,ZStack* sampled,int step)
+ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 {
-  int width=original->width();
-  int height=original->height();
-  int depth=original->depth();
-  ZStack* recover=new ZStack(original->kind(),width,height,depth,original->channelNumber());
-  uint8_t* pr=recover->array8();
-  uint8_t* ps=sampled->array8();
-  int s_width=sampled->width();
-  int s_slice=s_width*sampled->height();
-  size_t s_offset=0;
-  int r_slice=width*height;
-
-  for(int k=0;k<sampled->depth();++k)
+  int s_w=sampled->width(),s_s=s_w*sampled->height();
+  ZStack* recover=new ZStack(GREY,width,height,depth,1);
+  uint8_t* pr=recover->array8(),*ps_begin=sampled->array8(),*ps=0;
+  int strip=width/scale,remain=width%scale;
+  for(int k=0;k<depth;++k)
   {
-    s_offset=k*s_slice;
-    for(int j=0;j<sampled->height();++j)
+    for(int j=0;j<height;++j)
     {
-      size_t ss_offset=s_offset+j*s_width;
-      for(int i=0;i<s_width;++i)
+      ps=ps_begin+j/scale*s_w+k/scale*s_s;
+      for(int i=0;i<strip;++i)
       {
-        uint8_t v=ps[ss_offset+i];
-        for(int d=k*step;d<std::min((k+1)*step,depth);++d)
-          for(int h=j*step;h<std::min((j+1)*step,height);++h)
-            for(int w=i*step;w<std::min((i+1)*step,width);++w)
-              pr[d*r_slice+h*width+w]=v;
-
+        for(int t=0;t<scale;++t)
+        {
+          *pr++=*ps;
+        }
+        ++ps;
+      }
+      for(int i=0;i<remain;++i)
+      {
+        *pr++=*ps;
       }
     }
   }
@@ -39,31 +34,17 @@ ZStack* recover2OriginalSize(ZStack* original,ZStack* sampled,int step)
 }
 
 
-
-ZStack* getEdgeMap(const ZStack& stack)
+void _getEdgeMap(uchar index_map[256][256],int& index,uint8_t* originalArray,uint8_t* maskArray,
+                  int width,size_t area,
+                  int start_x,int end_x,int start_y,int end_y,int start_z,int end_z)
 {
-  int index=1;
-  uchar index_map[256][256]={0};
-  const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
-        stack.width(), stack.height(), stack.depth());
-  Stack *maskStack = mask->c_stack();
-
-  int width = C_Stack::width(originalStack);
-  int height = C_Stack::height(originalStack);
-  int depth = C_Stack::depth(originalStack);
-
-  size_t area = C_Stack::area(originalStack);
-  size_t offset = 0;
-  uint8_t *originalArray = originalStack->array;
-  uint8_t *maskArray= maskStack->array;
-  //x scan
-  for (int z = 0; z < depth; ++z)
+  size_t offset=0;
+  for (int z = start_z; z <= end_z; ++z)
   {
-    for (int y = 0; y < height; ++y)
+    for (int y = start_y; y <= end_y; ++y)
     {
-      offset++;
-      for (int x = 1; x < width; ++x)
+      offset=z*area+y*width+start_x+1;
+      for (int x = start_x+1; x <= end_x; ++x,++offset)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - 1];
         if(v>t)
@@ -84,19 +65,16 @@ ZStack* getEdgeMap(const ZStack& stack)
             maskArray[offset] =maskArray[offset-1]= index_map[v][t]=index++;
           }
         }
-        offset++;
       }
     }
   }
 
-
-  //y scan
-  for (int z = 0; z < depth; ++z)
+  for (int z = start_z; z <=end_z; ++z)
   {
-    for (int x = 0; x < width; ++x)
+    for (int x = start_x; x <= end_x; ++x)
     {
-      offset = area * z + x + width;
-      for (int y = 1; y < height; ++y)
+      offset = area * z + x + (start_y+1)*width;
+      for (int y = start_y+1; y <= end_y; ++y,offset += width)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - width];
         if(v>t)
@@ -117,18 +95,16 @@ ZStack* getEdgeMap(const ZStack& stack)
             maskArray[offset] =maskArray[offset-width]= index_map[v][t]=index++;
           }
         }
-        offset += width;
       }
     }
   }
 
-  //z scan
-  for (int y = 0; y < height; ++y)
+  for (int y = start_y; y <= end_y; ++y)
   {
-    for (int x = 0; x < width; ++x)
+    for (int x = start_x; x <=end_x; ++x)
     {
-      offset = width * y + x + area;
-      for (int z = 1; z < depth; ++z)
+      offset = width * y + x + (start_z+1)*area;
+      for (int z = start_z+1; z <= end_z; ++z,offset += area)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - area];
         if(v>t)
@@ -149,11 +125,84 @@ ZStack* getEdgeMap(const ZStack& stack)
             maskArray[offset] =maskArray[offset-area]= index_map[v][t]=index++;
           }
         }
-        offset += area;
       }
     }
   }
 
+}
+
+ZStack* getEdgeMap(const ZStack& stack)
+{
+  const Stack *originalStack = stack.c_stack();
+  ZStack *mask = ZStackFactory::makeZeroStack(
+        stack.width(), stack.height(), stack.depth());
+  Stack *maskStack = mask->c_stack();
+
+  int width = C_Stack::width(originalStack);
+  int height = C_Stack::height(originalStack);
+  int depth = C_Stack::depth(originalStack);
+
+  uint8_t *originalArray = originalStack->array;
+  uint8_t *maskArray= maskStack->array;
+  int index=1;
+  uchar index_map[256][256]={0};
+
+  static int step=32;
+  int x,y,z;
+  for(z=step;z<depth;z+=step)
+  {
+    for(y=step;y<height;y+=step)
+    {
+      for(x=step;x<width;x+=step)
+      {
+        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,x-1,y-step,y-1,z-step,z-1);
+        memset(index_map,0,256*256);
+      }
+       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,width-1,y-step,y-1,z-step,z-1);
+       memset(index_map,0,256*256);
+    }
+    if(y-step<=height-1)
+    {
+      for(x=step;x<width;x+=step)
+      {
+        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,x-1,y-step,height-1,z-step,z-1);
+        memset(index_map,0,256*256);
+      }
+       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,width-1,y-step,height-1,z-step,z-1);
+       memset(index_map,0,256*256);
+    }
+  }
+  if(z-step<=depth-1)
+  {
+    for(y=step;y<height;y+=step)
+    {
+      for(x=step;x<width;x+=step)
+      {
+        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,x-1,y-step,y-1,z-step,depth-1);
+        memset(index_map,0,256*256);
+      }
+       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,width-1,y-step,y-1,z-step,depth-1);
+       memset(index_map,0,256*256);
+    }
+    if(y-step<=height-1)
+    {
+      for(x=step;x<width;x+=step)
+      {
+        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,x-1,y-step,height-1,z-step,depth-1);
+        memset(index_map,0,256*256);
+      }
+       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
+                    x-step,width-1,y-step,height-1,z-step,depth-1);
+       memset(index_map,0,256*256);
+    }
+  }
   return mask;
 }
 
@@ -296,7 +345,7 @@ void localWaterShed(ZStack* seed,Cuboid_I& range,
   int x1=range.cb[0],x2=range.ce[0];
   int y1=range.cb[1],y2=range.ce[1];
   int z1=range.cb[2],z2=range.ce[2];
-  uint8_t* p_rec=recovered->array8(),*p_src=original->array8();
+  uint8_t* p_rec_begin=recovered->array8(),*p_src=original->array8(),*p_rec=0;
   const uint8_t *p_edg=edge_map->array8(),*p_sed=seed_map->array8();
 
   int width=original->width();
@@ -317,7 +366,6 @@ void localWaterShed(ZStack* seed,Cuboid_I& range,
       }
     }
   }
-
   ZStackWatershed watershed;
   range.cb[0]+=original->getOffset().m_x;
   range.ce[0]+=original->getOffset().m_x;
@@ -337,20 +385,22 @@ void localWaterShed(ZStack* seed,Cuboid_I& range,
 
   uint8_t* p_res=result->array8();
   //merge result into recovered image
-  int r_w=result->width(),r_s=result->height()*r_w;
+  int r_w=result->width(),r_h=result->height(),r_d=result->depth();
   int rofx=result->getOffset().m_x-original->getOffset().m_x,
       rofy=result->getOffset().m_y-original->getOffset().m_y,
       rofz=result->getOffset().m_z-original->getOffset().m_z;
-  for(int z=z1-rofz;z<=z2-rofz;++z)
+  for(int z=0;z<r_d;++z)
   {
-    off=z*r_s;
-    for(int y=y1-rofy;y<=y2-rofy;++y)
+    for(int y=0;y<r_h;++y)
     {
-      _off=off+y*r_w+x1-rofx;
-      for(int x=x1-rofx;x<=x2-rofx;++x,++_off)
+      p_rec=p_rec_begin+(z+rofz)*slice+(y+rofy)*width+rofx;
+      for(int x=0;x<r_w;++x)
       {
-        int v=p_res[_off];
-        if(v)p_rec[x+rofx+(y+rofy)*width+(z+rofz)*slice]=v;
+        if(*p_res)
+        {
+          *p_rec=*p_res;
+        }
+        ++p_rec,++p_res;
       }
     }
   }
@@ -393,13 +443,12 @@ ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 
 ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src)
 {
-  ZStack* recovered=recover2OriginalSize(src,sampled_watershed,_scale);
+  ZStack* recovered=upSample(src->width(),src->height(),src->depth(),_scale,sampled_watershed);
   recovered->setOffset(src->getOffset());
-  //return recovered;
   std::vector<ZIntCuboid>boxes;
   //get bound boxes of each each
   ZStack* _edge_map=getBoundBoxes(sampled_watershed,boxes);
-  ZStack* edge_map=recover2OriginalSize(src,_edge_map,_scale);
+  ZStack* edge_map=upSample(src->width(),src->height(),src->depth(),_scale,_edge_map);
   ZStack* seed_map=new ZStack(GREY,src->width(),src->height(),src->depth(),1);
   //process each bound box
   for(std::vector<ZIntCuboid>::iterator it=boxes.begin();it!=boxes.end();++it)
