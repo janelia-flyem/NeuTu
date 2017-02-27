@@ -7,6 +7,7 @@
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zdviddata.h"
+#include "zdvidnode.h"
 
 /*!
  * \brief The class of representing a dvid node.
@@ -38,7 +39,7 @@ public:
   void setFromUrl(const std::string &url);
 
   inline const std::string& getAddress() const {
-    return m_address;
+    return m_node.getAddress();
   }
 
   /*!
@@ -49,7 +50,7 @@ public:
   std::string getAddressWithPort() const;
 
   inline const std::string& getUuid() const {
-    return m_uuid;
+    return m_node.getUuid();
   }
 
   inline const std::string& getComment() const {
@@ -61,7 +62,11 @@ public:
   }
 
   inline int getPort() const {
-    return m_port;
+    return m_node.getPort();
+  }
+
+  const ZDvidNode& getNode() const {
+    return m_node;
   }
 
   /*!
@@ -248,13 +253,30 @@ public:
     m_usingDefaultSetting = on;
   }
 
-private:
-  void init();
+  void setSourceConfig(const ZJsonObject &config);
+
+  /*!
+   * \brief Set dvid source of grayscale data
+   *
+   * If \a node is invalid, the source will be set to the main source.
+   *
+   * \param node
+   */
+  void setGrayScaleSource(const ZDvidNode &node);
+  void setTileSource(const ZDvidNode &node);
+  void prepareGrayScale();
+  void prepareTile();
+
+  ZDvidNode getGrayScaleSource() const;
+  ZDvidNode getTileSource() const;
 
 private:
-  std::string m_address;
-  std::string m_uuid;
-  int m_port;
+  void init();
+  void setSource(const char *key, const ZDvidNode &node);
+  ZDvidNode getSource(const char *key) const;
+
+private:
+  ZDvidNode m_node;
   std::string m_name;
   std::string m_comment;
   std::string m_localFolder;
@@ -262,6 +284,7 @@ private:
   std::string m_labelBlockName;
   std::string m_multiscale2dName; //default lossless tile name
   ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
+  ZJsonObject m_sourceConfig;
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
@@ -282,9 +305,6 @@ private:
   bool m_isEditable;
   bool m_readOnly;
 
-  const static char* m_addressKey;
-  const static char* m_portKey;
-  const static char* m_uuidKey;
   const static char* m_commentKey;
   const static char* m_nameKey;
   const static char* m_localKey;
@@ -305,6 +325,7 @@ private:
   const static char* m_maxLabelZoomKey;
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
+  const static char* m_sourceConfigKey;
 };
 
 #endif // ZDVIDTARGET_H
