@@ -147,62 +147,27 @@ ZStack* getEdgeMap(const ZStack& stack)
   int index=1;
   uchar index_map[256][256]={0};
 
-  static int step=32;
-  int x,y,z;
-  for(z=step;z<depth;z+=step)
+  int start_x,end_x,start_y,end_y,start_z,end_z;
+  int slice_z=depth>180?5:(depth>120?4:(depth>60?3:(depth>20?2:1)));
+  int slice_y=height>180?5:(height>120?4:(height>60?3:(height>20?2:1)));
+  int slice_x=width>180?5:(width>120?4:(width>60?3:(width>20?2:1)));
+  for(start_z=0;start_z<depth;start_z+=depth/slice_z)
   {
-    for(y=step;y<height;y+=step)
+    end_z=start_z+depth/slice_z>=depth?depth-1:start_z+depth/slice_z;
+    for(start_y=0;start_y<height;start_y+=height/slice_y)
     {
-      for(x=step;x<width;x+=step)
+      end_y=start_y+height/slice_y>=height?height-1:start_y+height/slice_y;
+      for(start_x=0;start_x<width;start_x+=width/slice_x)
       {
+        assert(index<256);
+        end_x=start_x+width/slice_x>=width?width-1:start_x+width/slice_x;
         _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,x-1,y-step,y-1,z-step,z-1);
+                    start_x,end_x,start_y,end_y,start_z,end_z);
         memset(index_map,0,256*256);
       }
-       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,width-1,y-step,y-1,z-step,z-1);
-       memset(index_map,0,256*256);
-    }
-    if(y-step<=height-1)
-    {
-      for(x=step;x<width;x+=step)
-      {
-        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,x-1,y-step,height-1,z-step,z-1);
-        memset(index_map,0,256*256);
-      }
-       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,width-1,y-step,height-1,z-step,z-1);
-       memset(index_map,0,256*256);
     }
   }
-  if(z-step<=depth-1)
-  {
-    for(y=step;y<height;y+=step)
-    {
-      for(x=step;x<width;x+=step)
-      {
-        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,x-1,y-step,y-1,z-step,depth-1);
-        memset(index_map,0,256*256);
-      }
-       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,width-1,y-step,y-1,z-step,depth-1);
-       memset(index_map,0,256*256);
-    }
-    if(y-step<=height-1)
-    {
-      for(x=step;x<width;x+=step)
-      {
-        _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,x-1,y-step,height-1,z-step,depth-1);
-        memset(index_map,0,256*256);
-      }
-       _getEdgeMap(index_map,index,originalArray,maskArray,width,width*height,
-                    x-step,width-1,y-step,height-1,z-step,depth-1);
-       memset(index_map,0,256*256);
-    }
-  }
+
   return mask;
 }
 
@@ -417,13 +382,12 @@ Cuboid_I getRange(const ZIntCuboid& box,const ZStack* stack,int step)
   int width=stack->width();
   int height=stack->height();
   int depth=stack->depth();
-
-  range.cb[0]=p.m_x*step;
-  range.cb[1]=p.m_y*step;
-  range.cb[2]=p.m_z*step;
-  range.ce[0]=std::min((q.m_x+1)*step-1,width-1);
-  range.ce[1]=std::min((q.m_y+1)*step-1,height-1);
-  range.ce[2]=std::min((q.m_z+1)*step-1,depth-1);
+  range.cb[0]=std::max(0,(p.m_x-1)*step-1);
+  range.cb[1]=std::max(0,(p.m_y-1)*step-1);
+  range.cb[2]=std::max(0,(p.m_z-1)*step-1);
+  range.ce[0]=std::min((q.m_x+2)*step,width-1);
+  range.ce[1]=std::min((q.m_y+2)*step,height-1);
+  range.ce[2]=std::min((q.m_z+2)*step,depth-1);
 
   return range;
 }
