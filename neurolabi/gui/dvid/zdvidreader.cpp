@@ -1706,7 +1706,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
   if (!pt.isValid()) {
     ZObject3dScan body = readCoarseBody(bodyId);
     if (!body.isEmpty()) {
-      ZDvidInfo dvidInfo = readGrayScaleInfo();
+      ZDvidInfo dvidInfo = readLabelInfo();
 
       ZObject3dScan objSlice = body.getMedianSlice();
       ZVoxel voxel = objSlice.getMarker();
