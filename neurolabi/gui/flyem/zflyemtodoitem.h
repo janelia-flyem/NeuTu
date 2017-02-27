@@ -19,6 +19,11 @@ public:
    * With a position given, the object is set to a valid type.
    */
   ZFlyEmToDoItem(const ZIntPoint &pos);
+  ZFlyEmToDoItem(int x, int y, int z);
+
+  enum EToDoAction {
+    TO_DO, TO_MERGE, TO_SPLIT
+  };
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -33,6 +38,9 @@ public:
 
   bool isChecked() const;
   void setChecked(bool checked);
+
+  void setAction(EToDoAction action);
+  EToDoAction getAction() const;
 
   QColor getDisplayColor() const;
 

@@ -10,6 +10,10 @@ enum ELabelIndexType {
 enum ENodeStatus {
   NODE_NORMAL, NODE_INVALID, NODE_OFFLINE, NODE_LOCKED
 };
+
+
+static const int DEFAULT_ROI_BLOCK_SIZE = 32;
+
 }
 
 #endif // ZDVIDDEF_H

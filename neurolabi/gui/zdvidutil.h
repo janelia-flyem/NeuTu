@@ -68,11 +68,20 @@ ZJsonObject GetDataInstances(const std::string &type);
 
 #endif
 
+/*!
+ * \brief Test if two UUIDs they point to the same DVID node
+ *
+ * The two UUIDs \a uuid1 and \a uuid2 are mached or considered as the same node
+ * iff:
+ *   1. Neither \a uuid1 and \a uuid2 are empty
+ *   2. Either of the two UUIDs equals to the starting characters of the other
+ *
+ * \return true if the two UUIDs are matched
+ */
 bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
 bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
-
 }
 
 #endif // ZDVIDUTIL_H

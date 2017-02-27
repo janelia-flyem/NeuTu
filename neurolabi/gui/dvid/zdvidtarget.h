@@ -115,6 +115,9 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  void loadDvidDataSetting(const ZJsonObject &obj);
+  ZJsonObject toDvidDataSetting() const;
+
   void print() const;
 
   //Special functions
@@ -193,6 +196,7 @@ public:
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
+  void setTodoListName(const std::string &name);
 
   std::string getBodyAnnotationName() const;
 
@@ -234,6 +238,15 @@ public:
   */
 
   std::string getSynapseLabelszName() const;
+  void setSynapseLabelszName(const std::string &name);
+
+  bool usingDefaultDataSetting() const {
+    return m_usingDefaultSetting;
+  }
+
+  void useDefaultDataSetting(bool on) {
+    m_usingDefaultSetting = on;
+  }
 
 private:
   void init();
@@ -252,6 +265,7 @@ private:
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
+  std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
   std::set<std::string> m_userList;
@@ -259,6 +273,7 @@ private:
   std::string m_supervisorServer;
   int m_maxLabelZoom;
   bool m_usingMultresBodyLabel;
+  bool m_usingDefaultSetting;
 //  std::string m_userName;
 //  std::string m_tileName;
 
@@ -283,11 +298,13 @@ private:
   const static char* m_roiListKey;
   const static char* m_roiNameKey;
   const static char* m_synapseNameKey;
+  const static char* m_defaultSettingKey;
   const static char* m_userNameKey;
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
   const static char* m_synapseLabelszKey;
+  const static char* m_todoListNameKey;
 };
 
 #endif // ZDVIDTARGET_H

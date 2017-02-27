@@ -2,6 +2,7 @@
 #define ZDVIDANNOTATION_HPP
 
 #include "dvid/zdvidannotation.h"
+#include "zjsonparser.h"
 
 template <typename InputIterator>
 int ZDvidAnnotation::AddRelation(
