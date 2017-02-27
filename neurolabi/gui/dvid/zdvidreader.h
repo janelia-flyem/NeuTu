@@ -197,8 +197,10 @@ public:
                          */
 
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -351,6 +353,8 @@ public:
 
   void testApiLoad();
 
+  int checkProofreadingData() const;
+
 signals:
   void readingDone();
 
@@ -387,6 +391,8 @@ private:
   ZJsonObject readDefaultDataSettingTraceBack() const;
   void loadDefaultDataSetting();
   void loadDvidDataSetting(const ZJsonObject obj);
+
+  bool reportMissingData(const std::string dataName) const;
 
 protected:
 //  QEventLoop *m_eventLoop;
