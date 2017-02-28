@@ -22112,9 +22112,9 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "4b2f", 8700);
-  target.setBodyLabelName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_vol");
-  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0");
+  target.set("emdata1.int.janelia.org", "d0b7", 8700);
+  target.setBodyLabelName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_vol");
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded");
   target.setGrayScaleName("grayscale");
   target.setMultiscale2dName("tiles");
 
@@ -22211,6 +22211,42 @@ void ZTest::test(MainWindow *host)
   writer.writeRoi(newRoiAlpha2, "alpha2_roi_0217");
   writer.writeRoi(newRoiAlpha3, "alpha3_roi_0217");
 #endif
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "d0b7", 8700);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  int missing = reader.checkProofreadingData();
+  if (missing > 0) {
+    std::cout << missing << " data are missing for proofreading." << std::endl;
+  }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "d0b7", 8700);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
+  writer.createSplitLabel();
+//  writer.createKeyvalue("neutu_config");
+  writer.createKeyvalue(reader.getDvidTarget().getBodyInfoName());
+//  writer.createKeyvalue(reader.getDvidTarget().get);
+
+  int missing = reader.checkProofreadingData();
+  if (missing > 0) {
+    std::cout << missing << " data are missing for proofreading." << std::endl;
+  }
 
 #endif
 

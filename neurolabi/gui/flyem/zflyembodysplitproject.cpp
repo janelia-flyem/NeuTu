@@ -2261,9 +2261,10 @@ bool ZFlyEmBodySplitProject::isReadyForSplit(const ZDvidTarget &target)
       succ = false;
     }
 
-    std::string splitLabelName = ZDvidData::GetName(
+    std::string splitLabelName = target.getSplitLabelName();
+    /*ZDvidData::GetName(
           ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
-          target.getBodyLabelName());
+          target.getBodyLabelName());*/
 
     if (!reader.hasData(splitLabelName)) {
       message.appendMessage(("Incomplete split database: data \"" + splitLabelName +

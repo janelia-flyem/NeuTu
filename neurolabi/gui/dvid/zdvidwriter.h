@@ -20,7 +20,7 @@
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
 #include "zsharedpointer.h"
-
+#include "zdvidreader.h"
 
 namespace libdvid{
 class DVIDNodeService;
@@ -51,7 +51,7 @@ public:
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_reader.getDvidTarget();
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
@@ -107,6 +107,8 @@ public:
    * It does nothing if the data has already existed.
    */
   void createKeyvalue(const std::string &name);
+
+  void createSplitLabel();
 
   void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
@@ -253,7 +255,8 @@ private:
 //  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
 //  QTimer *m_timer;
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
   QString m_errorOutput;
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;

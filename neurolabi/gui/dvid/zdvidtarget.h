@@ -165,6 +165,8 @@ public:
 
   void setNullLabelBlockName();
 
+  std::string getBodyInfoName() const;
+
   std::string getMultiscale2dName() const;
   bool isTileLowQuality() const;
 
@@ -205,6 +207,8 @@ public:
   void setTodoListName(const std::string &name);
 
   std::string getBodyAnnotationName() const;
+
+  std::string getSplitLabelName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);

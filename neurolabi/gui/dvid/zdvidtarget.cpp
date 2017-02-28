@@ -526,6 +526,13 @@ bool ZDvidTarget::isTileLowQuality() const
   return isLowQualityTile(getMultiscale2dName());
 }
 
+std::string ZDvidTarget::getBodyInfoName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
+}
+
 bool ZDvidTarget::isLowQualityTile(const std::string &name) const
 {
   bool lowQuality = true;
@@ -683,6 +690,13 @@ void ZDvidTarget::setSynapseName(const std::string &name)
   m_synapseName = name;
 }
 
+
+std::string ZDvidTarget::getSplitLabelName() const
+{
+  return ZDvidData::GetName(
+        ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+        getBodyLabelName());
+}
 /*
 void ZDvidTarget::setUserName(const std::string &name)
 {

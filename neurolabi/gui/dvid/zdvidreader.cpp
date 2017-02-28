@@ -3153,3 +3153,31 @@ ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
 {
   return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
 }
+
+bool ZDvidReader::reportMissingData(const std::string dataName) const
+{
+  bool missing = !hasData(dataName);
+
+  if (missing) {
+    std::cout << "WARNING: " << dataName << " is missing" << std::endl;
+  }
+
+  return missing;
+}
+
+int ZDvidReader::checkProofreadingData() const
+{
+  int missing = 0;
+
+  std::cout << "Checking proofreading status" << std::endl;
+  missing += reportMissingData(getDvidTarget().getTodoListName());
+  missing += reportMissingData(getDvidTarget().getLabelBlockName());
+  missing += reportMissingData(getDvidTarget().getBodyLabelName());
+  missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
+  missing += reportMissingData(getDvidTarget().getSkeletonName());
+  missing += reportMissingData(getDvidTarget().getGrayScaleName());
+  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
+  missing += reportMissingData(getDvidTarget().getSplitLabelName());
+
+  return missing;
+}
