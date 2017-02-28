@@ -2563,7 +2563,7 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     notifyViewChanged(param);
   }
 }
-
+#if 0
 void ZStackView::processViewChange(const ZStackViewParam &param)
 {
   if (buddyPresenter()->isObjectVisible()) {
@@ -2581,6 +2581,7 @@ void ZStackView::processViewChange(const ZStackViewParam &param)
 //    buddyDocument()->updateActiveViewObject(param);
   }
 }
+#endif
 
 void ZStackView::setHoverFocus(bool on)
 {
