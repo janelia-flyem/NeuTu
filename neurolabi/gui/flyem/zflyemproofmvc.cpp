@@ -1475,6 +1475,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
              iter != selected.end(); ++iter) {
           uint64_t bodyId = *iter;
           ZDvidSparsevolSlice *obj = doc->makeDvidSparsevol(labelSlice, bodyId);
+          obj->update(getView()->getViewParameter());
           /*
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
           obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
