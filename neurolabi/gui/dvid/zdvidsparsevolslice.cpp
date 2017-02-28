@@ -3,17 +3,20 @@
 #include "neutubeconfig.h"
 #include "zpainter.h"
 
-ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan(), m_currentZ(-1)
+ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()/*, m_currentZ(-1)*/
 {
   m_type = GetType();
   setHittable(false);
   m_externalReader = NULL;
+  m_isFullView = false;
 }
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice(const ZDvidSparsevolSlice &obj) :
   ZObject3dScan(obj)
 {
-  m_currentZ = obj.m_currentZ;
+  m_currentViewParam = obj.m_currentViewParam;
+  m_isFullView = obj.m_isFullView;
+//  m_currentZ = obj.m_currentZ;
   m_dvidTarget = obj.m_dvidTarget;
   m_externalReader = obj.m_externalReader;
 }
@@ -43,24 +46,52 @@ bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, NeuTube::EAxis axis) const
   return isVisible();
 }
 
+bool ZDvidSparsevolSlice::updateRequired(const ZStackViewParam &viewParam) const
+{
+  bool required = !m_currentViewParam.contains(viewParam);
+
+  if (required) {
+    required = updateRequired(viewParam.getZ());
+  }
+
+  return required;
+}
+
+bool ZDvidSparsevolSlice::updateRequired(int z) const
+{
+  bool required = true;
+
+  if (m_currentViewParam.getZ() == z) {
+    if (m_isFullView) {
+      required = false;
+    }
+  }
+
+  return required;
+}
+
 bool ZDvidSparsevolSlice::update(int z)
 {
   bool updated = false;
-  if (m_currentZ != z) {
-    m_currentZ = z;
+  if (updateRequired(z)) {
+//    m_currentZ = z;
+    m_currentViewParam.setZ(z);
     if (z < getMinZ() || z > getMaxZ()) {
       if (m_externalReader != NULL) {
         m_externalReader->readBody(
-              getLabel(), m_currentZ, m_sliceAxis, true, this);
+              getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
       } else {
-        m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
+        m_reader.readBody(
+              getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
       }
+      m_isFullView = true;
       updated = true;
     }
   }
 
   return updated;
 }
+
 
 bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
 {
@@ -76,8 +107,15 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
 
   ZStackViewParam newViewParam = viewParam;
 
-  if (!m_currentViewParam.contains(newViewParam)) {
-    forceUpdate(newViewParam, true);
+  if (updateRequired(newViewParam)) {
+    if (newViewParam.getArea() < 800 * 600) {
+      forceUpdate(newViewParam, true);
+      m_isFullView = false;
+    } else {
+      update(newViewParam.getZ());
+    }
+
+
     updated = true;
 
     m_currentViewParam = newViewParam;
@@ -88,7 +126,8 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
 
 void ZDvidSparsevolSlice::update()
 {
-  m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
+  update(m_currentViewParam);
+//  m_reader.readBody(getLabel(), m_currentZ, m_sliceAxis, true, this);
 }
 
 void ZDvidSparsevolSlice::forceUpdate(
@@ -119,7 +158,7 @@ void ZDvidSparsevolSlice::display(
     NeuTube::EAxis sliceAxis) const
 {
   if (slice >= 0) {
-    const_cast<ZDvidSparsevolSlice&>(*this).update(painter.getZOffset() + slice);
+//    const_cast<ZDvidSparsevolSlice&>(*this).update(painter.getZOffset() + slice);
     ZObject3dScan::display(painter, slice, option, sliceAxis);
   }
 }
