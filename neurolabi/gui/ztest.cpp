@@ -21419,7 +21419,7 @@ void ZTest::test(MainWindow *host)
   reader.readCoarseBody(200013118);
 */
 #endif
-  
+
 #if 0
   QProcess p;
   p.start("sysctl", QStringList() << "kern.version" << "hw.memsize");
@@ -21457,7 +21457,7 @@ void ZTest::test(MainWindow *host)
   int a[1];
   a[1] = 1;
 #endif
-  
+
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "a031", 7000);
@@ -22228,7 +22228,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "d0b7", 8700);
   target.useDefaultDataSetting(true);
@@ -22248,6 +22248,24 @@ void ZTest::test(MainWindow *host)
     std::cout << missing << " data are missing for proofreading." << std::endl;
   }
 
+#endif
+
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "6a1b", 8700);
+//  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setGrayScaleName("grayscale_lcn");
+  ZDvidReader reader;
+  reader.open(target);
+  ZIntPoint blockIndex(53, 13, 54);
+  int blockNumber = 4;
+
+  ZDvidInfo grayscaleInfo = reader.readGrayScaleInfo();
+  tic();
+  std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
+        blockIndex, grayscaleInfo, blockNumber);
+  ptoc();
 #endif
 
   std::cout << "Done." << std::endl;

@@ -359,7 +359,7 @@ public:
 
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
-  void processViewChange(const ZStackViewParam &param);
+//  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
   void setSmoothDisplay(bool on);
@@ -410,6 +410,7 @@ protected:
   void updatePaintBundle();
 
   ZPixmap* updateProjCanvas(ZPixmap *canvas);
+  ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 

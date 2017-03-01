@@ -1035,7 +1035,7 @@ uint64_t ZDvidWriter::writeSplit(
 
   QString command = QString(
         "curl -i -X POST %1 --data-binary \"@%2\"").
-      arg(ZDvidUrl(m_dvidTarget).getSplitUrl(dataName, oldLabel).c_str()).
+      arg(ZDvidUrl(getDvidTarget()).getSplitUrl(dataName, oldLabel).c_str()).
       arg(tmpPath);
 
 //  qDebug() << command;
@@ -1289,8 +1289,8 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
 
   QString command = QString(
         "curl -i -X POST %1 --data-binary \"@%2\"").
-      arg(ZDvidUrl(m_dvidTarget).getCoarseSplitUrl(
-            m_dvidTarget.getBodyLabelName(), oldLabel).c_str()).
+      arg(ZDvidUrl(getDvidTarget()).getCoarseSplitUrl(
+            getDvidTarget().getBodyLabelName(), oldLabel).c_str()).
       arg(tmpPath);
 
 //  qDebug() << command;

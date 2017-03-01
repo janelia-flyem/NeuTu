@@ -37,7 +37,7 @@
  *  FLOAT32: 32-bit float
  *  FLOAT64: 64-bit float
  *  COLOR: 24-bit color
- *Note that the COLOR type does not specify multi-channel data. It means the
+ *Note that the COLOR type does not specify multi-channel data. It means a
  *single voxel has 3 contiguous bytes, which can be interpreted as a RGB color.
 */
 
@@ -73,6 +73,15 @@ public:
   ZStack(Mc_Stack *stack/*,
          C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill*/);
 
+  /*! Constructor
+   *
+   * Construct a stack with essential parameters.
+   *
+   * \param kind Voxel kind of the stack.
+   * \param box Bounding box of the stack.
+   * \param nchannel Number of the channels of the stack.
+   * \param isVirtual Create a virtual stack or not.
+   */
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
 #if 0
@@ -98,7 +107,6 @@ public: /* attributes */
   //! Get the C-compatible data
   /*!
    The returned pointer is owned by ZStack.
-   \sa setData()
    */
   inline Mc_Stack* mc_stack() { return m_stack; }
   inline const Mc_Stack* mc_stack() const { return m_stack; }
@@ -116,8 +124,8 @@ public: /* attributes */
   /*!
    * \brief Set data from stack
    *
-   * \a stack will be destroyed after function call. It does nothing if \a stack
-   * is NULL.
+   * \a stack will be destroyed after function call. \a stack must be created
+   * by the new operator if it is not NULL. It does nothing if \a stack is NULL.
    */
   void consume(Stack *stack);
   void consume(ZStack *stack);

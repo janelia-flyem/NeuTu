@@ -32,10 +32,13 @@ public:
 private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);
   void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
+  bool updateRequired(const ZStackViewParam &viewParam) const;
+  bool updateRequired(int z) const;
 
 private:
-  int m_currentZ;
+//  int m_currentZ;
   ZStackViewParam m_currentViewParam;
+  bool m_isFullView;
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZDvidReader *m_externalReader;
