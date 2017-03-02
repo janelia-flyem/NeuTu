@@ -21796,6 +21796,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
   ZSwcTree tree1;
   tree1.load(GET_TEST_DATA_DIR + "/flyem/MB/apl_segments.swc");
 
@@ -22228,8 +22229,26 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "6a1b", 8700);
+//  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setGrayScaleName("grayscale_lcn");
+  ZDvidReader reader;
+  reader.open(target);
+  ZIntPoint blockIndex(53, 13, 54);
+  int blockNumber = 4;
+
+  ZDvidInfo grayscaleInfo = reader.readGrayScaleInfo();
+  tic();
+  std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
+        blockIndex, grayscaleInfo, blockNumber);
+  ptoc();
+#endif
+
 #if 1
   ZDvidTarget target;
+
   target.set("emdata1.int.janelia.org", "d0b7", 8700);
   target.useDefaultDataSetting(true);
 
@@ -22247,7 +22266,25 @@ void ZTest::test(MainWindow *host)
   if (missing > 0) {
     std::cout << missing << " data are missing for proofreading." << std::endl;
   }
+#endif
 
+
+#if 0
+  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setSynapseName("annot_synapse_010417");
+  target.setSynapseLabelszName("annot_synapse_010417_ROI_LOP_15");
+  ZDvidReader reader;
+  reader.open(target);
+
+  int count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_PRE_SYN);
+  std::cout << "Pre count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_POST_SYN);
+  std::cout << "Post count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
+  std::cout << "All count: " << count << std::endl;
+>>>>>>> flyem_release
 #endif
 
   std::cout << "Done." << std::endl;

@@ -84,6 +84,7 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
     m_dvidTarget.setUuid(masterNode.substr(0, 4));
   }
 #endif
+
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
@@ -1155,7 +1156,7 @@ uint64_t ZDvidWriter::writePartition(
     ZDvidInfo dvidInfo;
     ZDvidReader &reader = m_reader;
     if (reader.isReady()) {
-      dvidInfo = reader.readGrayScaleInfo();
+      dvidInfo = reader.readLabelInfo();
     } else {
       LERROR() << "DVID connection error.";
       return 0;

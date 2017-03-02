@@ -7730,6 +7730,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
         break;
+      case ZStackObject::TYPE_DVID_SPARSEVOL_SLICE:
+        player = new ZDvidSparsevolSlicePlayer(obj);
+        break;
       default:
         player = new ZDocPlayer(obj);
         break;
