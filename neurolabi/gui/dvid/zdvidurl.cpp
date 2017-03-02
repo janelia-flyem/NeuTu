@@ -1090,6 +1090,17 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getDepth());
 }
 
+std::string ZDvidUrl::getSynapseLabelszBodyUrl(uint64_t bodyId) const
+{
+  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
+
+  if (!url.empty()) {
+    url += "/count/" + ZString::num2str(bodyId);
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
   std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
@@ -1132,6 +1143,13 @@ std::string ZDvidUrl::getSynapseLabelszUrl(
     int n, ZDvid::ELabelIndexType indexType) const
 {
   return GetFullUrl(getSynapseLabelszUrl(n), GetLabelszIndexTypeStr(indexType));
+}
+
+std::string ZDvidUrl::getSynapseLabelszBodyUrl(
+    uint64_t bodyId, ZDvid::ELabelIndexType indexType) const
+{
+  return GetFullUrl(getSynapseLabelszBodyUrl(bodyId),
+                    GetLabelszIndexTypeStr(indexType));
 }
 
 std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {

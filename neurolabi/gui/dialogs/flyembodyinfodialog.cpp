@@ -603,7 +603,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         // as it turns out, that's usually too many (and you would have to retrieve
         //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
-        ZJsonArray thresholdData = reader.readSynapseLabelsz(m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
+        ZJsonArray thresholdData = reader.readSynapseLabelsz(
+              m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
         dvidTime += dvidTimer.elapsed();
 
         // first, get the list of bodies that actually have annotations,

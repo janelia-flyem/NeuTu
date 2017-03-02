@@ -1161,7 +1161,8 @@ uint64_t ZDvidWriter::writePartition(
     ZDvidInfo dvidInfo;
     ZDvidReader reader;
     if (reader.open(m_dvidTarget)) {
-      dvidInfo = reader.readGrayScaleInfo();
+//      dvidInfo = reader.readGrayScaleInfo();
+      dvidInfo = reader.readLabelInfo();
     } else {
       LERROR() << "DVID connection error.";
       return 0;
