@@ -671,6 +671,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             // synapse info
             // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
+            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
+            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+            dvidTime += dvidTimer.elapsed();
+
+#if 0
             std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_NO_PARTNER);
             dvidTime += dvidTimer.elapsed();
             int npre = 0;
@@ -682,6 +687,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
                     npost++;
                 }
             }
+#endif
             entry.setEntry("body T-bars", npre);
             entry.setEntry("body PSDs", npost);
 
@@ -692,8 +698,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
         //  they should be very low overhead
-        // std::cout << "total time (ms) = " << fullTime << std::endl;
-        // std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
+         std::cout << "total time (ms) = " << fullTime << std::endl;
+         std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
 
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
