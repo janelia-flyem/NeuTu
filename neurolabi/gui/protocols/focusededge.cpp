@@ -24,17 +24,17 @@ FocusedEdge::FocusedEdge() {
 
 }
 
-FocusedEdge::FocusedEdge(ZJsonObject edge)
+FocusedEdge::FocusedEdge(std::string edgeID, ZJsonObject edge)
 {
-    ZDvidAnnotation ann;
-    ann.loadJsonObject(edge, FlyEM::LOAD_PARTNER_LOCATION);
+    m_edgeID = edgeID;
 
-    m_firstPoint = ZJsonParser::toIntPoint(edge["Pos"]);
-    m_lastPoint = ann.getPartners()[0];
+    m_firstPoint = ZJsonParser::toIntPoint(edge["point1"]);
+    m_lastPoint = ZJsonParser::toIntPoint(edge["point2"]);
 
-    ZJsonObject properties = edge.value("Prop");
-    m_weight = ZJsonParser::numberValue(properties["weight"]);
-    m_examiner = ZJsonParser::stringValue(properties["examiner"]);
+    m_weight = ZJsonParser::numberValue(edge["weight"]);
+    m_examiner = ZJsonParser::stringValue(edge["examiner"]);
+
+    // we don't need the time examined for this task
 
     // the body IDs are not available yet, so fill in with invalid value
     m_firstBodyID = -1;
@@ -47,6 +47,9 @@ const std::string FocusedEdge::GLYPH_CONNECTED = "-----";
 const std::string FocusedEdge::GLYPH_UNCONNECTED = "--X--";
 const std::string FocusedEdge::GLYPH_UNKNOWN = "--?--";
 
+std::string FocusedEdge::getEdgeID() const {
+    return m_edgeID;
+}
 
 ZIntPoint FocusedEdge::getFirstPoint() const
 {

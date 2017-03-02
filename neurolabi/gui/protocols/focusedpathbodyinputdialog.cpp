@@ -25,6 +25,10 @@ std::string FocusedPathBodyInputDialog::getPathInstance() {
     return ui->pathInstanceInput->text().toStdString();
 }
 
+std::string FocusedPathBodyInputDialog::getPointInstance() {
+    return ui->pointInstanceInput->text().toStdString();
+}
+
 FocusedPathBodyInputDialog::~FocusedPathBodyInputDialog()
 {
     delete ui;

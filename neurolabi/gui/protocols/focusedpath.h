@@ -13,10 +13,11 @@ class FocusedPath
 {
 public:
     FocusedPath();
-    FocusedPath(ZIntPoint firstPoint, ZIntPoint lastPoint, double probability, std::string edgeListString);
+    FocusedPath(std::string pathID, ZJsonObject path);
 
     bool operator==(const FocusedPath&) const;
 
+    std::string getPathID() const;
     ZIntPoint getFirstPoint() const;
     ZIntPoint getLastPoint() const;
     uint64_t getFirstBodyID() const;
@@ -34,8 +35,12 @@ public:
     int getFirstUnexaminedEdgeIndex();
 
 private:
+    std::string m_pathID;
     ZIntPoint m_firstPoint;
     ZIntPoint m_lastPoint;
+
+    QStringList m_edgeIDs;
+
     QList<ZIntPoint> m_edgePoints;
     QMap<ZIntPoint, FocusedEdge> m_edgeMap;
     QMap<ZIntPoint, uint64_t> m_bodyIDs;

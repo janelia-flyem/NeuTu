@@ -10,12 +10,13 @@ class FocusedEdge
 {
 public:
     FocusedEdge();
-    FocusedEdge(ZJsonObject edge);
+    FocusedEdge(std::string edgeID, ZJsonObject edge);
 
     static const std::string GLYPH_CONNECTED;
     static const std::string GLYPH_UNCONNECTED;
     static const std::string GLYPH_UNKNOWN;
 
+    std::string getEdgeID() const;
     ZIntPoint getFirstPoint() const;
     ZIntPoint getLastPoint() const;
     ZIntPoint getOtherPoint(ZIntPoint point);
@@ -32,6 +33,7 @@ public:
     std::string getConnectionTextIcon();
 
 private:
+    std::string m_edgeID;
     ZIntPoint m_firstPoint;
     ZIntPoint m_lastPoint;
     double m_weight;

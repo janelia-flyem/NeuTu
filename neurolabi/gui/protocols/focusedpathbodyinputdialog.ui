@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>144</height>
+    <height>234</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Enter body ID and DVID data instance:</string>
+      <string>Enter body ID and DVID data instances:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -39,11 +39,18 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>DVID instances:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>DVID edge instance:</string>
+        <string>Key-value with edges:</string>
        </property>
       </widget>
      </item>
@@ -60,12 +67,26 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>DVID path instance: </string>
+        <string>Key-value with paths: </string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLineEdit" name="pathInstanceInput"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Annotation with locations:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="pointInstanceInput"/>
      </item>
     </layout>
    </item>

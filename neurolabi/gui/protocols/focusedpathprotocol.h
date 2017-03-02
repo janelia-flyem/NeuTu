@@ -52,6 +52,7 @@ private:
     static const std::string KEY_BODYID;
     static const std::string KEY_EDGE_INSTANCE;
     static const std::string KEY_PATH_INSTANCE;
+    static const std::string KEY_POINT_INSTANCE;
     enum EdgeTableColumns {
         BODYID1_COLUMN,
         CONNECTION_COLUMN,
@@ -71,10 +72,11 @@ public:
     static const std::string KEY_ASSIGNMENT_BODIES;
     static const std::string KEY_ASSIGNMENT_EDGE_INSTANCE;
     static const std::string KEY_ASSIGNMENT_PATH_INSTANCE;
+    static const std::string KEY_ASSIGNMENT_POINT_INSTANCE;
     static const std::string TAG_PATH;
     static const std::string TAG_EDGE;
-    static const std::string PROPERTY_PROBABILITY;
-    static const std::string PROPERTY_PATH;
+    static const std::string PROPERTY_EDGES;
+    static const std::string PROPERTY_PATHS;
 
 private:
     Ui::FocusedPathProtocol *ui;
@@ -83,6 +85,7 @@ private:
     std::string m_variation;
     std::string m_edgeDataInstance;
     std::string m_pathDataInstance;
+    std::string m_pointDataInstance;
     QList<uint64_t> m_bodies;
     uint64_t m_currentBody;
     QList<FocusedPath> m_currentBodyPaths;

@@ -19,17 +19,19 @@ FocusedPath::FocusedPath() {
     // I hate C++
 }
 
-FocusedPath::FocusedPath(ZIntPoint firstPoint, ZIntPoint lastPoint, double probability, std::string edgeListString)
+FocusedPath::FocusedPath(std::string pathID, ZJsonObject path)
 {
-    m_firstPoint = firstPoint;
-    m_lastPoint = lastPoint;
-    m_probability = probability;
+    m_pathID = pathID;
 
-    // edge points
-    ZJsonArray edgeList;
-    edgeList.decode(edgeListString);
-    for (size_t i=0; i<edgeList.size(); i++) {
-        m_edgePoints.append(ZJsonParser::toIntPoint(edgeList.at(i)));
+    m_firstPoint = ZJsonParser::toIntPoint(path["point1"]);
+    m_lastPoint = ZJsonParser::toIntPoint(path["point2"]);
+    m_probability = ZJsonParser::numberValue(path["probability"]);
+
+    // new: edge ID list
+    ZJsonArray edgeIDList;
+    edgeIDList.decode(ZJsonParser::stringValue(path["edges"]));
+    for (size_t i=0; i<edgeIDList.size(); i++) {
+        m_edgeIDs.append(QString::fromStdString(ZJsonParser::stringValue(edgeIDList.at(i))));
     }
 
     // we do not load the actual edges right away
@@ -39,6 +41,10 @@ FocusedPath::FocusedPath(ZIntPoint firstPoint, ZIntPoint lastPoint, double proba
 bool FocusedPath::operator ==(const FocusedPath& other) const {
     // needed to get QList to behave
     return m_firstPoint == other.getFirstPoint() && m_lastPoint == other.getLastPoint();
+}
+
+std::string FocusedPath::getPathID() const {
+    return m_pathID;
 }
 
 ZIntPoint FocusedPath::getFirstPoint() const {
@@ -86,16 +92,19 @@ int FocusedPath::getNumEdges() const {
 }
 
 void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
-    // unfortunately, no way to bulk load annotations by point right now
+    // unfortunately, no way to bulk load key-value right now
 
     m_edgeMap.clear();
+    m_edgePoints.clear();
 
     std::vector<ZIntPoint> points;
+    foreach(QString edgeID, m_edgeIDs) {
+        const QByteArray &temp = reader.readKeyValue(QString::fromStdString(instance), edgeID);
+        ZJsonObject edgeData;
+        edgeData.decodeString(temp.data());
 
-    foreach(ZIntPoint point, m_edgePoints) {
-
-        ZJsonObject jsonEdge = reader.readAnnotationJson(instance, point);
-        FocusedEdge edge(jsonEdge);
+        FocusedEdge edge(edgeID.toStdString(), edgeData);
+        m_edgePoints.append(edge.getFirstPoint());
         m_edgeMap[edge.getFirstPoint()] = edge;
         m_edgeMap[edge.getLastPoint()] = edge;
 

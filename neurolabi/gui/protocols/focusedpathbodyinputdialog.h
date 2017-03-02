@@ -16,6 +16,7 @@ public:
     ~FocusedPathBodyInputDialog();
     std::string getEdgeInstance();
     std::string getPathInstance();
+    std::string getPointInstance();
     uint64_t getBodyID();
 
 private:
