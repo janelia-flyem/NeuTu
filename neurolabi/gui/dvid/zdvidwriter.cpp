@@ -81,7 +81,6 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   if (!masterNode.empty()) {
     m_dvidTarget.setUuid(masterNode.substr(0, 4));
   }
-
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
