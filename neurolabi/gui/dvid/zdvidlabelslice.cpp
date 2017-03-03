@@ -16,6 +16,7 @@
 #include "zpainter.h"
 #include "neutubeconfig.h"
 #include "zpixmap.h"
+#include "zstring.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -230,12 +231,12 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
 
 void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+//  m_dvidTarget = target;
 #ifdef _DEBUG_2
   m_dvidTarget.set("emdata1.int.janelia.org", "e8c1", 8600);
   m_dvidTarget.setLabelBlockName("labels3");
 #endif
-  m_reader.open(m_dvidTarget);
+  m_reader.open(target);
 }
 
 int64_t ZDvidLabelSlice::getReadingTime() const
@@ -332,6 +333,14 @@ void ZDvidLabelSlice::paintBuffer()
   paintBufferUnsync();
 }
 
+void ZDvidLabelSlice::clearLabelData()
+{
+  delete m_labelArray;
+  m_labelArray = NULL;
+  delete m_mappedLabelArray;
+  m_mappedLabelArray = NULL;
+}
+
 void ZDvidLabelSlice::forceUpdate(
     const ZStackViewParam &viewParam, bool ignoringHidden)
 {
@@ -375,13 +384,10 @@ void ZDvidLabelSlice::forceUpdate(
 
     box.shiftSliceAxisInverse(m_sliceAxis);
 
-    delete m_labelArray;
-    m_labelArray = NULL;
-    delete m_mappedLabelArray;
-    m_mappedLabelArray = NULL;
+    clearLabelData();
 
     QString cacheKey = (box.getFirstCorner().toString() + " " +
-        box.getLastCorner().toString()).c_str();
+        box.getLastCorner().toString() + " " + ZString::num2str(zoom)).c_str();
 
     if (m_objCache.contains(cacheKey)) {
       m_labelArray = m_objCache.take(cacheKey);
@@ -428,6 +434,11 @@ void ZDvidLabelSlice::update(int z)
   update(viewParam);
 
   m_isFullView = false;
+}
+
+const ZDvidTarget& ZDvidLabelSlice::getDvidTarget() const
+{
+  return m_reader.getDvidTarget();
 }
 
 void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)

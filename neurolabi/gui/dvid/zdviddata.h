@@ -27,7 +27,7 @@ public:
     ROLE_SUPERPIXEL, //Superpixel (NOT in DVID)
     ROLE_SP2BODY, // Superpixel mapping (NOT in DVID)
     /*ROLE_SPARSEVOL, ROLE_SPARSEVOL_COARSE,*/
-    ROLE_SPLIT_LABEL, //Obsolete
+    ROLE_SPLIT_LABEL,
     ROLE_SPLIT_STATUS, //Obsolete
     ROLE_BODY_INFO, //Body information, e.g. size and bounding box
     ROLE_MERGE_TEST_BODY_LABEL, //Obsolete

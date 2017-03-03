@@ -104,9 +104,12 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
-  ZObject3dScan* readBody(
-      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
+
+  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readMultiscaleBody(
+      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -193,9 +196,13 @@ public:
                          int dim1, int dim2, int width, int height);
                          */
 
+  int readSynapseLabelszBody(
+      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -348,6 +355,8 @@ public:
 
   void testApiLoad();
 
+  int checkProofreadingData() const;
+
 signals:
   void readingDone();
 
@@ -384,6 +393,8 @@ private:
   ZJsonObject readDefaultDataSettingTraceBack() const;
   void loadDefaultDataSetting();
   void loadDvidDataSetting(const ZJsonObject obj);
+
+  bool reportMissingData(const std::string dataName) const;
 
 protected:
 //  QEventLoop *m_eventLoop;

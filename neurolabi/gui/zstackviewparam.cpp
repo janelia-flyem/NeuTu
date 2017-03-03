@@ -68,6 +68,11 @@ bool ZStackViewParam::contains(const ZStackViewParam &param) const
   return false;
 }
 
+bool ZStackViewParam::containsViewport(const ZStackViewParam &param) const
+{
+  return m_viewPort.contains(param.m_viewPort);
+}
+
 bool ZStackViewParam::contains(int x, int y, int z)
 {
   ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());

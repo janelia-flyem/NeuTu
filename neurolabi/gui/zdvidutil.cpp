@@ -8,6 +8,7 @@
 #include "dvid/zdvidtarget.h"
 #include "zjsonparser.h"
 #include "dvid/zdvidversiondag.h"
+#include "zintcuboid.h"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
@@ -259,6 +260,31 @@ libdvid::BinaryDataPtr ZDvid::Post(
 #endif
 
 #endif
+
+ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
+{
+  ZIntCuboid alignedBox;
+  alignedBox.setFirstCorner(
+        dvidInfo.getBlockBox(
+          dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+  alignedBox.setLastCorner(
+        dvidInfo.getBlockBox(
+          dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+  return alignedBox;
+}
+
+ZIntCuboid ZDvid::GetZoomBox(const ZIntCuboid &box, int zoom)
+{
+  ZIntCuboid zoomBox;
+
+  int zoomRatio = pow(2, zoom);
+  zoomBox.setFirstCorner(box.getFirstCorner() / zoomRatio);
+  zoomBox.setWidth(box.getWidth() / zoomRatio);
+  zoomBox.setHeight(box.getHeight() / zoomRatio);
+
+  return zoomBox;
+}
 
 bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
                         const ZJsonObject &infoJson, const ZDvidVersionDag &dag)

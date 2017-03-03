@@ -1,15 +1,6 @@
-#include <QAction>
-#include <QWidget>
-#include <QSpinBox>
-#include <QMessageBox>
-#include <QPushButton>
-#include <cstdlib>
-#include "zsandbox.h"
+#include "zstackmultiscalewatershed.h"
+#include "zstackwatershed.h"
 #include "zstackdoc.h"
-#include "mainwindow.h"
-#include "zobject3dscan.hpp"
-#include "zdownsamplingmodule.h"
-#include "imgproc/zstackwatershed.h"
 
 void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
 {
@@ -34,8 +25,8 @@ void getEdgePoints(ZStack* stack,std::vector<ZIntPoint>** metrix)
               uint8_t t=po[z*slice+y*width+x];
               if(v<t)
               {
-                metrix[v-1][t-1].push_back(ZIntPoint(i,j,k));
-                metrix[t-1][v-1].push_back(ZIntPoint(x,y,z));
+                metrix[v][t].push_back(ZIntPoint(i,j,k));
+                metrix[t][v].push_back(ZIntPoint(x,y,z));
               }
             }
       }
@@ -85,10 +76,10 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
   int slice=width*height;
 
   int size=std::ceil(stack->max());
-  std::vector<ZIntPoint>** metrix=new std::vector<ZIntPoint>*[size];
-  for(int i=0;i<size;++i)
+  std::vector<ZIntPoint>** metrix=new std::vector<ZIntPoint>*[size+1];
+  for(int i=0;i<size+1;++i)
   {
-    metrix[i]=new std::vector<ZIntPoint>[size];
+    metrix[i]=new std::vector<ZIntPoint>[size+1];
   }
   getEdgePoints(stack,metrix);
 
@@ -96,9 +87,9 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
   uint8_t* pr=rv->array8();
   rv->setZero();
   int index=1;
-  for(int i=0;i<size-1;++i)
+  for(int i=0;i<size;++i)
   {
-    for(int j=i+1;j<size;++j)
+    for(int j=i+1;j<size+1;++j)
     {
       int s=metrix[i][j].size();
       for(int k=0;k<s;++k)
@@ -116,7 +107,7 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
     }
   }
 
-  for(int i=0;i<size;++i)
+  for(int i=0;i<size+1;++i)
   {
     delete[] metrix[i];
   }
@@ -311,8 +302,6 @@ void localWaterShed(const std::vector<ZStack*>& seeds,
   setNoneEdgePoints2Zero(original,edge_map,range,step);
   watershed.setFloodingZero(false);
   ZStack* result=watershed.run(original,seeds);
-
-
   //merge result into recovered image
   uint8_t* p=recovered->array8();
   uint8_t* q=result->array8();
@@ -362,34 +351,84 @@ Cuboid_I getRange(const ZIntCuboid& box,const ZStack* stack,int step)
 }
 
 
-void ZDownSamplingWindow::onRecover()
+ZStackMultiScaleWatershed::ZStackMultiScaleWatershed()
 {
-  if(!original)return;
-  //ZStack* zo=original->clone();
 
-  int width=original->width(),height=original->height(),depth=original->depth();
-  ZStack* sampled=ZSandbox::GetCurrentDoc()->getStack();
-  ZStack* recovered=recover2OriginalSize(original,sampled,step);
+}
+
+
+ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
+{
+
+}
+
+
+ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int scale)
+{
+  _scale=scale;
+  ZStack* rv=0;
+  std::vector<ZStack*> seeds;
+  getSeeds(seeds,trees);
+  //run watershed
+  ZStackWatershed watershed;
+  if(scale==1)
+  {
+    rv=watershed.run(src,seeds);
+    for(std::vector<ZStack*>::iterator it=seeds.begin();it!=seeds.end();++it)
+    {
+      delete *it;
+    }
+    return rv;
+  }
+  //down sample src stack
+  ZStack* sampled=src->clone();
+  sampled->downsampleMin(scale-1,scale-1,scale-1);
+  //get seeds in sampled stack
+
+  ZStack* sampled_watershed=watershed.run(sampled,seeds);
+
+  if(sampled_watershed)
+  {
+    ZStack* src_clone=src->clone();
+      /*uint8_t* p=src_clone->array8();
+      for(uint i=0;i<src_clone->getVoxelNumber();++i)
+      {
+        if(p[i]==0)p[i]=1;
+      }*/
+    rv=upSampleAndRecoverEdge(sampled_watershed,src_clone);
+    delete sampled_watershed;
+    delete src_clone;
+  }
+  delete sampled;
+  for(std::vector<ZStack*>::iterator it=seeds.begin();it!=seeds.end();++it)
+  {
+    delete *it;
+  }
+  return rv;
+}
+
+
+ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src)
+{
+  int width=src->width(),height=src->height(),depth=src->depth();
+  ZStack* recovered=recover2OriginalSize(src,sampled_watershed,_scale);
 
   std::vector<ZIntCuboid>boxes;
   std::vector<ZStack*> seeds;
   //get bound boxes of each each
-  ZStack* edge_map=getBoundBoxes(sampled,boxes);
+  ZStack* edge_map=getBoundBoxes(sampled_watershed,boxes);
 
   //process each bound box
   for(uint i=0;i<boxes.size();++i)//deal with each edge
   {
       const ZIntCuboid& box=boxes[i];
-      Cuboid_I range=getRange(box,original,step);
+      Cuboid_I range=getRange(box,src,_scale);
 
-      generateSeedsInSampledSpace(seeds,box,edge_map,sampled,step);
+      generateSeedsInSampledSpace(seeds,box,edge_map,sampled_watershed,_scale);
 
-      mapSeeds2OriginalSpace(seeds,step,width,height,depth);
+      mapSeeds2OriginalSpace(seeds,_scale,width,height,depth);
 
-      localWaterShed(seeds,range,recovered,original,edge_map,step);
-
-    //  drawSeeds(seeds,zo,step,0);
-     // drawRange(zo,range,0);
+      localWaterShed(seeds,range,recovered,src,edge_map,_scale);
 
       for(uint j=0;j<seeds.size();++j)
       {
@@ -398,92 +437,34 @@ void ZDownSamplingWindow::onRecover()
       seeds.clear();
   }
   delete edge_map;
-  delete original;
-  original=0;
+  return recovered;
 
-  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(recovered);
-  ZSandbox::GetMainWindow()->addStackFrame(frame);
-  ZSandbox::GetMainWindow()->presentStackFrame(frame);
- // frame=ZSandbox::GetMainWindow()->createStackFrame(zo);
- // ZSandbox::GetMainWindow()->addStackFrame(frame);
- // ZSandbox::GetMainWindow()->presentStackFrame(frame);
 }
 
-
-ZDownSamplingModule::ZDownSamplingModule(QObject *parent) :
-  ZSandboxModule(parent)
+void ZStackMultiScaleWatershed::getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcTree*>& trees)
 {
-  init();
-}
-
-
-void ZDownSamplingModule::init()
-{
-  m_action = new QAction("Downsampling", this);
-  connect(m_action, SIGNAL(triggered()), this, SLOT(execute()));
-  window=new ZDownSamplingWindow();
-}
-
-
-ZDownSamplingModule::~ZDownSamplingModule()
-{
-  delete window;
-}
-
-
-void ZDownSamplingModule::execute()
-{
-  window->show();
-}
-
-
-ZDownSamplingWindow::ZDownSamplingWindow(QWidget* parent)
-  :QWidget(parent)
-{
-  this->setWindowTitle("DownSampling");
-  Qt::WindowFlags flags = this->windowFlags();
-  flags |= Qt::WindowStaysOnTopHint;
-  this->setWindowFlags(flags);
-  QVBoxLayout* lay=new QVBoxLayout(this);
-  down=new QPushButton("downSampling");
-  recover=new QPushButton("recover");
-  spin_step=new QSpinBox();
-  spin_step->setMinimum(2);
-  lay->addWidget(down);
-  lay->addWidget(recover);
-  QHBoxLayout* lay_spin=new QHBoxLayout();
-  lay->addLayout(lay_spin);
-  lay_spin->addWidget(new QLabel("down sample step:"));
-  lay_spin->addWidget(spin_step);
-  this->setLayout(lay);
-  this->move(300,200);
-  this->resize(180,150);
-  connect(down,SIGNAL(clicked()),this,SLOT(onDownSampling()));
-  connect(recover,SIGNAL(clicked()),this,SLOT(onRecover()));
-  original=NULL;
-}
-
-
-void ZDownSamplingWindow::onDownSampling()
-{
-  ZStackDoc *doc =ZSandbox::GetCurrentDoc();
-  if(!doc)return;
-  ZStack  *original_img=doc->getStack();
-  if(!original_img)return;
-
-  original=original_img->clone();
-  uint8_t* p=original->array8();
-  for(uint i=0;i<original->getVoxelNumber();++i)
+  if(trees.size()<2 || trees.size()>255)
   {
-    if(p[i]==0)
-      p[i]=1;
+    return ;
   }
-  step=spin_step->value();
+  uint seed_index=1;
 
-  ZStack* s=original_img->clone();
-  s->downsampleMin(step-1,step-1,step-1);
-
-  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(s);
-  ZSandbox::GetMainWindow()->addStackFrame(frame);
-  ZSandbox::GetMainWindow()->presentStackFrame(frame);
+  for(QList<ZSwcTree*>::iterator it=trees.begin();it!=trees.end();++it)
+  {
+    ZSwcTree* tree=*it;
+    ZCuboid box=tree->getBoundBox();
+    ZStack* seed=new ZStack(GREY,std::max(1,(int)(box.width()/_scale)),
+                            std::max(1,(int)(box.height()/_scale)),
+                            std::max(1,(int)(box.depth()/_scale)),1);
+    ZPoint _off=box.firstCorner();
+    ZIntPoint off(_off.getX()/_scale,_off.getY()/_scale,_off.getZ()/_scale);
+    seed->setOffset(off);
+    uint8_t* p=seed->array8();
+    for(uint i=0;i<seed->getVoxelNumber();++i)
+    {
+      *p++=seed_index;
+    }
+    seed_index++;
+    seeds.push_back(seed);
+  }
 }

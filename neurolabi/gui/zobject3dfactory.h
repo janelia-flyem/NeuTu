@@ -36,7 +36,7 @@ public:
       const ZStack &stack, NeuTube::EAxis sliceAxis);
 
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
-      const ZStack &stack, int yStep = 1);
+      const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
 
   static ZObject3dScanArray* MakeObject3dScanArray(
       const ZArray &array, int yStep, ZObject3dScanArray *out,

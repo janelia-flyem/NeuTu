@@ -683,7 +683,7 @@ bool ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) con
   if (m_enableUpdate) {
     ZDvidSparsevolSlice *obj = getCompleteData();
     if (obj != NULL) {
-      updated = obj->update(viewParam.getZ());
+      updated = obj->update(viewParam);
     }
   }
 

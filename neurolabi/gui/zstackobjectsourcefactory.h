@@ -14,10 +14,20 @@ public:
   static std::string MakeWatershedBoundarySource(int label);
   static std::string MakeRectRoiSource(const std::string &suffix = "");
   static std::string MakeFlyEmBodyMaskSource(uint64_t bodyId);
-  static std::string MakeFlyEmBodySource(uint64_t bodyId);
+  static std::string MakeFlyEmCoarseBodySource(uint64_t bodyId);
+  static std::string MakeFlyEmBodySource(uint64_t bodyId, int zoom = 0);
   static std::string MakeFlyEmBodySource(
-      uint64_t bodyId, const std::string &tag);
+      uint64_t bodyId, int zoom, const std::string &tag);
+  static std::string MakeFlyEmBodySource(
+      uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  static std::string GetBodyTypeName(FlyEM::EBodyType bodyType);
+
+  static std::string ExtractBodyStrFromFlyEmBodySource(const std::string &source);
   static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);
+  static int ExtractZoomFromFlyEmBodySource(const std::string &source);
+  static FlyEM::EBodyType ExtractBodyTypeFromFlyEmBodySource(
+      const std::string &source);
+
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
   static std::string MakeDvidLabelSliceSource(NeuTube::EAxis axis);

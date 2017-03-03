@@ -238,6 +238,14 @@ ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
   return blockIndex;
 }
 
+int ZDvidInfo::getCoordZ(int zIndex) const
+{
+  int z =
+      (zIndex - m_startBlockIndex[2]) * m_blockSize[2] + m_startCoordinates[2];
+
+  return z;
+}
+
 int ZDvidInfo::getBlockIndexZ(int z) const
 {
   int bz = -1;

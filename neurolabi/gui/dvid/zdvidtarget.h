@@ -150,6 +150,7 @@ public:
 //  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
+  std::string getBodyLabelName(int zoom) const;
   void setBodyLabelName(const std::string &name);
 
   void setNullBodyLabelName();
@@ -163,6 +164,8 @@ public:
   void setLabelBlockName(const std::string &name);
 
   void setNullLabelBlockName();
+
+  std::string getBodyInfoName() const;
 
   std::string getMultiscale2dName() const;
   bool isTileLowQuality() const;
@@ -204,6 +207,8 @@ public:
   void setTodoListName(const std::string &name);
 
   std::string getBodyAnnotationName() const;
+
+  std::string getSplitLabelName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);

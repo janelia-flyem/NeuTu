@@ -325,6 +325,38 @@ TEST(ZIntCuboidFaceArray, basic)
   ASSERT_EQ(7, (int) faceArray3.size());
 }
 
+TEST(ZIntCuboid, basic)
+{
+  ZIntCuboid box;
+  box.set(1, 2, 3, 10, 20, 30);
+  ASSERT_EQ(1, box.getFirstCorner().getX());
+  ASSERT_EQ(2, box.getFirstCorner().getY());
+  ASSERT_EQ(3, box.getFirstCorner().getZ());
+
+  ASSERT_EQ(10, box.getLastCorner().getX());
+  ASSERT_EQ(20, box.getLastCorner().getY());
+  ASSERT_EQ(30, box.getLastCorner().getZ());
+
+  ASSERT_EQ(10, box.getWidth());
+  ASSERT_EQ(19, box.getHeight());
+  ASSERT_EQ(28, box.getDepth());
+
+  box.setWidth(5);
+  ASSERT_EQ(1, box.getFirstCorner().getX());
+  ASSERT_EQ(5, box.getWidth());
+
+  box.setHeight(10);
+
+#if 0
+  std::cout << box.getFirstCorner().toString() << std::endl;
+  std::cout << box.getLastCorner().toString() << std::endl;
+#endif
+
+  ASSERT_EQ(2, box.getFirstCorner().getY());
+  ASSERT_EQ(10, box.getHeight());
+
+}
+
 TEST(ZIntCuboid, hasOverlap)
 {
   ZIntCuboid box;

@@ -1354,6 +1354,31 @@ TEST(ZObject3dScan, Intersect)
   ASSERT_TRUE(obj3.contains(1, 1, 1));
 }
 
+TEST(ZObject3dScan, Unify)
+{
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 0, 0, 2);
+  obj1.addSegment(1, 1, 1, 3);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(2, 0, 0, 2);
+  obj2.addSegment(3, 1, 1, 3);
+
+  obj1.unify(obj2);
+
+  ZObject3dScan obj3;
+  obj3.addSegment(2, 0, 0, 2);
+  obj3.addSegment(3, 1, 1, 3);
+
+  ZObject3dScan obj4;
+  obj4.addSegment(0, 0, 0, 2);
+  obj4.addSegment(1, 1, 1, 3);
+
+  obj3.unify(obj4);
+
+  obj1.equalsLiterally(obj3);
+}
+
 TEST(ZObject3dScan, Mainpulate)
 {
   ZObject3dScan obj;

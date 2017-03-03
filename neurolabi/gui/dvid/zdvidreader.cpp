@@ -325,6 +325,55 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan* ZDvidReader::readBodyWithPartition(
+    uint64_t bodyId, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    const ZObject3dScan &coarseBody = readCoarseBody(bodyId);
+    ZDvidInfo dvidInfo = readLabelInfo();
+    int minZ = dvidInfo.getCoordZ(coarseBody.getMinZ());
+    int maxZ = dvidInfo.getCoordZ(coarseBody.getMaxZ()) +
+        dvidInfo.getBlockSize().getZ() - 1;
+
+    int dz = 1000;
+
+    int startZ = minZ;
+    int endZ = startZ + dz;
+    ZObject3dScan part;
+    while (startZ <= maxZ) {
+      if (endZ > maxZ) {
+        endZ = maxZ;
+      }
+      if (startZ == minZ) {
+#ifdef _DEBUG_
+        std::cout << "Read first part: " << startZ << "--" << endZ << std::endl;
+#endif
+        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, result);
+      } else {
+#ifdef _DEBUG_
+        std::cout << "Read part: " << startZ << "--" << endZ << std::endl;
+#endif
+        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, &part);
+        if (!part.isEmpty()) {
+          result->unify(part);
+        }
+      }
+      startZ = endZ + 1;
+      endZ = startZ + dz;
+    }
+  }
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int minZ, int maxZ, bool canonizing, NeuTube::EAxis axis,
     ZObject3dScan *result)
@@ -515,23 +564,25 @@ ZObject3dScan *ZDvidReader::readBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    timer.start();
-    const QByteArray &buffer = reader.getBuffer();
-    result->importDvidObjectBuffer(buffer.data(), buffer.size());
-    if (canonizing) {
-      result->canonize();
-    }
+    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+      timer.start();
+      const QByteArray &buffer = reader.getBuffer();
+      result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      if (canonizing) {
+        result->canonize();
+      }
 
 #ifdef _DEBUG_
-    std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
-//    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+      std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
+      //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-    std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
-
+      std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+      result->setLabel(bodyId);
+    } else {
+      readBodyWithPartition(bodyId, result);
+    }
     reader.clearBuffer();
-
-    result->setLabel(bodyId);
   }
 
 #if 0
@@ -553,6 +604,58 @@ ZObject3dScan *ZDvidReader::readBody(
     *result = bodyArray[0];
   }
 #endif
+
+  return result;
+}
+
+ZObject3dScan* ZDvidReader::readMultiscaleBody(
+    uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result)
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady() && zoom <= getDvidTarget().getMaxLabelZoom()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    ZDvidBufferReader &reader = m_bufferReader;
+
+    reader.tryCompress(true);
+    ZDvidUrl dvidUrl(getDvidTarget());
+
+    QElapsedTimer timer;
+    timer.start();
+
+    reader.read(
+          dvidUrl.getMultiscaleSparsevolUrl(bodyId, zoom).c_str(), isVerbose());
+
+    reader.tryCompress(false);
+
+    std::cout << "Body reading time: " << timer.elapsed() << std::endl;
+
+    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+      timer.start();
+      const QByteArray &buffer = reader.getBuffer();
+      result->importDvidObjectBuffer(buffer.data(), buffer.size());
+      if (canonizing) {
+        result->canonize();
+      }
+
+#ifdef _DEBUG_
+      std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
+      //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+      std::cout << "Body parsing time: " << timer.elapsed() << std::endl;
+      result->setLabel(bodyId);
+      int zoomRatio = pow(2, zoom);
+      result->setDsIntv(zoomRatio - 1);
+    }
+
+    reader.clearBuffer();
+  }
 
   return result;
 }
@@ -1741,7 +1844,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
   if (!pt.isValid()) {
     ZObject3dScan body = readCoarseBody(bodyId);
     if (!body.isEmpty()) {
-      ZDvidInfo dvidInfo = readGrayScaleInfo();
+      ZDvidInfo dvidInfo = readLabelInfo();
 
       ZObject3dScan objSlice = body.getMedianSlice();
       ZVoxel voxel = objSlice.getMarker();
@@ -2783,6 +2886,21 @@ ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) 
   return obj;
 }
 
+int ZDvidReader::readSynapseLabelszBody(
+    uint64_t bodyId, ZDvid::ELabelIndexType index) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject obj = readJsonObject(dvidUrl.getSynapseLabelszBodyUrl(bodyId, index));
+
+  int count = 0;
+  std::string key = ZDvidUrl::GetLabelszIndexTypeStr(index);
+  if (obj.hasKey(key.c_str())) {
+    count = ZJsonParser::integerValue(obj[key.c_str()]);
+  }
+
+  return count;
+}
+
 ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const {
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index));
@@ -3049,4 +3167,32 @@ ZJsonObject ZDvidReader::readToDoItemJson(int x, int y, int z)
 ZJsonObject ZDvidReader::readToDoItemJson(const ZIntPoint &pt)
 {
   return readToDoItemJson(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZDvidReader::reportMissingData(const std::string dataName) const
+{
+  bool missing = !hasData(dataName);
+
+  if (missing) {
+    std::cout << "WARNING: " << dataName << " is missing" << std::endl;
+  }
+
+  return missing;
+}
+
+int ZDvidReader::checkProofreadingData() const
+{
+  int missing = 0;
+
+  std::cout << "Checking proofreading status" << std::endl;
+  missing += reportMissingData(getDvidTarget().getTodoListName());
+  missing += reportMissingData(getDvidTarget().getLabelBlockName());
+  missing += reportMissingData(getDvidTarget().getBodyLabelName());
+  missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
+  missing += reportMissingData(getDvidTarget().getSkeletonName());
+  missing += reportMissingData(getDvidTarget().getGrayScaleName());
+  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
+  missing += reportMissingData(getDvidTarget().getSplitLabelName());
+
+  return missing;
 }

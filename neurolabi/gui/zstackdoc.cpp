@@ -435,7 +435,9 @@ void ZStackDoc::autoSave()
           qDebug() << autoSavePath.c_str();
 
           delete tree;
-        }
+
+//          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
+        } 
       }
     }
   }
@@ -7729,6 +7731,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
         break;
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
+        break;
+      case ZStackObject::TYPE_DVID_SPARSEVOL_SLICE:
+        player = new ZDvidSparsevolSlicePlayer(obj);
         break;
       default:
         player = new ZDocPlayer(obj);

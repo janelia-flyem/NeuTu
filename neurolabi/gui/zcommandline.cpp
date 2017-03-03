@@ -63,7 +63,7 @@ void ZCommandLine::init()
   m_fullOverlapScreen = false;
   m_forceUpdate = false;
   m_namedOnly = false;
-
+  m_intvSpecified = false;
 }
 
 ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
@@ -984,6 +984,17 @@ int ZCommandLine::skeletonizeDvid()
     skeletonizer.configure(config);
   }
 
+  if (m_intvSpecified) {
+    skeletonizer.setDownsampleInterval(m_intv[0], m_intv[1], m_intv[2]);
+  }
+
+  std::ofstream stream;
+  if (!m_output.empty() && !m_outputFlag.empty()) {
+    if (m_outputFlag == "thickness") {
+      stream.open(m_output.c_str());
+    }
+  }
+
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
@@ -995,7 +1006,22 @@ int ZCommandLine::skeletonizeDvid()
         ZObject3dScan obj;
         reader.readBody(bodyId, true, &obj);
         tree = skeletonizer.makeSkeleton(obj);
-        writer.writeSwc(bodyId, tree);
+        if (tree != NULL) {
+          writer.writeSwc(bodyId, tree);
+        } else {
+          std::cout << "WARNING: skeletonization failed for "
+                    << bodyId << std::endl;
+        }
+      }
+
+      if (tree != NULL) {
+        if (stream.is_open()) {
+          if (m_outputFlag == "thickness") {
+            stream << bodyId << " "
+                   << SwcTreeNode::radius(tree->getThickestNode())
+                   << std::endl;
+          }
+        }
       }
       delete tree;
       std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
@@ -1049,6 +1075,10 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.configure(
           ZJsonObject(m_configJson["skeletonize"],
           ZJsonValue::SET_INCREASE_REF_COUNT));
+  }
+
+  if (m_intvSpecified) {
+    skeletonizer.setDownsampleInterval(m_intv[0], m_intv[1], m_intv[2]);
   }
 
   if (m_isVerbose) {
@@ -1112,7 +1142,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
     "[--compare_swc] [--scale <double>]",
-    "[--trace] [--level <int>]","[--separate <string>]",
+    "[--trace] [--level <int>]","[--separate <string>]", "[--foutput <string>]",
     "[--compute_seed]",
     "[--position <int> <int> <int>]",
     "[--size <int> <int> <int>]",
@@ -1171,6 +1201,10 @@ int ZCommandLine::run(int argc, char *argv[])
     m_namedOnly = true;
   }
 
+  if (Is_Arg_Matched(const_cast<char*>("--foutput"))) {
+    m_outputFlag = Get_String_Arg(const_cast<char*>("--foutput"));
+  }
+
   m_scale = 1.0;
   if (Is_Arg_Matched(const_cast<char*>("--scale"))) {
     m_scale = Get_Double_Arg(const_cast<char*>("--scale"));
@@ -1209,6 +1243,7 @@ int ZCommandLine::run(int argc, char *argv[])
     for (int i = 0; i < 3; ++i) {
       m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i + 1);
     }
+    m_intvSpecified = true;
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--position"))) {

@@ -36,6 +36,11 @@ protected:
   ZBoolParameter m_useDynamicMaterial;
 
 private:
+  static void SetDataColors(
+      const std::vector<glm::vec4> *pointColorsInput,
+      std::vector<glm::vec4> &pointColors);
+
+private:
   std::vector<glm::vec4> m_pointAndRadius;
   std::vector<glm::vec4> m_specularAndShininess;
   std::vector<glm::vec4> m_pointColors;

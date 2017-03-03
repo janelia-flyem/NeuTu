@@ -56,9 +56,19 @@ void ZIntCuboid::setSize(int width, int height, int depth)
                    m_firstCorner.getZ() + depth - 1);
 }
 
+void ZIntCuboid::setSize(const ZIntPoint &size)
+{
+  setSize(size.getX(), size.getY(), size.getZ());
+}
+
 void ZIntCuboid::setWidth(int width)
 {
   m_lastCorner.setX(m_firstCorner.getX() + width - 1);
+}
+
+void ZIntCuboid::setHeight(int height)
+{
+  m_lastCorner.setY(m_firstCorner.getY() + height - 1);
 }
 
 void ZIntCuboid::set(int x1, int y1, int z1, int x2, int y2, int z2)

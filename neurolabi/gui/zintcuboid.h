@@ -66,8 +66,10 @@ public:
    * \brief Change the size of the cuboid by fixing the first corner
    */
   void setSize(int width, int height, int depth);
+  void setSize(const ZIntPoint &size);
 
   void setWidth(int width);
+  void setHeight(int height);
 
   int getWidth() const;
   int getHeight() const;

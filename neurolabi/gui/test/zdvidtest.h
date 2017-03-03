@@ -139,6 +139,12 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2/sparsevol/1",
             dvidUrl2.getSparsevolUrl(1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2/sparsevol/1",
+            dvidUrl2.getMultiscaleSparsevolUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_1/sparsevol/1",
+            dvidUrl2.getMultiscaleSparsevolUrl(1, 1));
+
+
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol-coarse",
             dvidUrl.getCoarseSparsevolUrl("bodies"));

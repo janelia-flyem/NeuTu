@@ -57,9 +57,7 @@ public:
 
   virtual void updateTileData();
 
-  inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
-  }
+  const ZDvidTarget& getDvidTarget() const;
 
   const ZDvidInfo& getGrayScaleInfo() const {
     return m_grayScaleInfo;
@@ -522,7 +520,7 @@ private:
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;

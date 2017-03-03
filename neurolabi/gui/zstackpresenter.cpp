@@ -2233,7 +2233,9 @@ void ZStackPresenter::meanshiftAllPuncta()
 
 void ZStackPresenter::updateStackBc()
 {
-  optimizeStackBc();
+  if (buddyDocument()->getStack()->kind() != GREY) {
+    optimizeStackBc();
+  }
 }
 
 

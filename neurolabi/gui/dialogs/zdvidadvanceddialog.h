@@ -36,6 +36,9 @@ public:
   void setGrayscaleSource(const ZDvidNode &node);
   void setTileSource(const ZDvidNode &node);
 
+  void setGrayscaleSource(const ZDvidNode &node, bool sameMainSource);
+  void setTileSource(const ZDvidNode &node, bool sameMainSource);
+
   ZDvidNode getGrayscaleSource() const;
   ZDvidNode getTileSource() const;
 

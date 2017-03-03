@@ -227,8 +227,14 @@ void ZDvidDialog::setServer(int index)
 
   m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
   m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
-  m_advancedDlg->setGrayscaleSource(dvidTarget.getGrayScaleSource());
-  m_advancedDlg->setTileSource(dvidTarget.getTileSource());
+
+  ZDvidNode node = dvidTarget.getGrayScaleSource();
+  m_advancedDlg->setGrayscaleSource(node, node == dvidTarget.getNode());
+
+  node = dvidTarget.getTileSource();
+  m_advancedDlg->setTileSource(
+        dvidTarget.getTileSource(), node == dvidTarget.getNode());
+
   m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
 }
 

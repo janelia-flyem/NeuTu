@@ -53,7 +53,7 @@ void ZDvidTarget::init()
   m_isEditable = true;
   m_readOnly = false;
   m_maxLabelZoom = 0;
-  m_usingMultresBodyLabel = false;
+  m_usingMultresBodyLabel = true;
   m_usingDefaultSetting = false;
 
   setDefaultMultiscale2dName();
@@ -450,6 +450,18 @@ std::string ZDvidTarget::getBodyLabelName() const
   return m_bodyLabelName;
 }
 
+std::string ZDvidTarget::getBodyLabelName(int zoom) const
+{
+  std::string name;
+  if (zoom == 0) {
+    return getBodyLabelName();
+  } else if (zoom > 0) {
+    name = getBodyLabelName() + "_" + ZString::num2str(zoom);
+  }
+
+  return name;
+}
+
 bool ZDvidTarget::usingMulitresBodylabel() const
 {
   if (m_usingMultresBodyLabel) {
@@ -512,6 +524,13 @@ std::string ZDvidTarget::getMultiscale2dName() const
 bool ZDvidTarget::isTileLowQuality() const
 {
   return isLowQualityTile(getMultiscale2dName());
+}
+
+std::string ZDvidTarget::getBodyInfoName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_BODY_INFO,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
 }
 
 bool ZDvidTarget::isLowQualityTile(const std::string &name) const
@@ -671,6 +690,13 @@ void ZDvidTarget::setSynapseName(const std::string &name)
   m_synapseName = name;
 }
 
+
+std::string ZDvidTarget::getSplitLabelName() const
+{
+  return ZDvidData::GetName(
+        ZDvidData::ROLE_SPLIT_LABEL, ZDvidData::ROLE_BODY_LABEL,
+        getBodyLabelName());
+}
 /*
 void ZDvidTarget::setUserName(const std::string &name)
 {

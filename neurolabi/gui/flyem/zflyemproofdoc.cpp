@@ -669,6 +669,11 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
   }
 }
 
+const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
+{
+  return m_dvidReader.getDvidTarget();
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
@@ -676,14 +681,14 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_synapseReader.open(m_dvidReader.getDvidTarget());
     m_todoReader.open(m_dvidReader.getDvidTarget());
     m_sparseVolReader.open(m_dvidReader.getDvidTarget());
-    m_dvidTarget = target;
+//    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(target);
+    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
     readInfo();
     initData(target);
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(m_dvidTarget);
-      if (!getSupervisor()->isEmpty()) {
+      getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
+      if (!getSupervisor()->isEmpty() && !target.readOnly()) {
         int statusCode = getSupervisor()->testServer();
         if (statusCode != 200) {
           emit messageGenerated(
@@ -701,9 +706,24 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
     updateDvidTargetForObject();
 
+    if (!target.readOnly()) {
+      int missing = m_dvidReader.checkProofreadingData();
+      if (missing > 0) {
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("WARNING: Some data for proofreading are missing in "
+                        "the database. "
+                        "Please do NOT proofread segmentation "
+                        "until you fix the problem.").
+                arg(getSupervisor()->getMainUrl().c_str()),
+                NeuTube::MSG_WARNING));
+      }
+    }
+
     startTimer();
   } else {
-    m_dvidTarget.clear();
+    m_dvidReader.clear();
+//    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
@@ -1765,7 +1785,8 @@ void ZFlyEmProofDoc::clearData()
 {
   ZStackDoc::clearData();
   m_bodyMerger.clear();
-  m_dvidTarget.clear();
+  m_dvidReader.clear();
+//  m_dvidTarget.clear();
   m_grayScaleInfo.clear();
   m_labelInfo.clear();
   m_versionDag.clear();

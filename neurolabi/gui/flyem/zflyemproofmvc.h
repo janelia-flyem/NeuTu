@@ -15,7 +15,6 @@
 #include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
-#include "flyem/zflyembody3ddoc.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -45,6 +44,8 @@ class ZFlyEmBodyChopDialog;
 class ZInfoDialog;
 class ZRandomGenerator;
 class ZFlyEmSkeletonUpdateDialog;
+class ZFlyEmBody3dDoc;
+class ZDvidLabelSlice;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -327,6 +328,7 @@ protected slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -369,7 +371,7 @@ private:
   void makeExternalNeuronWindow();
   void makeOrthoWindow();
 
-  ZFlyEmBody3dDoc *makeBodyDoc(ZFlyEmBody3dDoc::EBodyType bodyType);
+  ZFlyEmBody3dDoc *makeBodyDoc(FlyEM::EBodyType bodyType);
 
   void prepareBodyWindowSignalSlot(Z3DWindow *window, ZFlyEmBody3dDoc *doc);
 
@@ -515,6 +517,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(panel, SIGNAL(exportingSelectedBodyStack()),
+          this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));

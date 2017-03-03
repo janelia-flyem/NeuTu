@@ -288,12 +288,15 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
-      const ZStack &stack, int yStep)
+    const ZStack &stack, int yStep, bool boundaryOnly)
 {
   std::vector<ZObject3dScan*> objArray;
 
   if (stack.hasData()) {
-    ZStack *mask = MakeBoundaryStack(stack);
+    const ZStack *mask = &stack;
+    if (boundaryOnly) {
+      mask = MakeBoundaryStack(stack);
+    }
 
     std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
@@ -311,7 +314,9 @@ std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
       }
     }
 
-    delete mask;
+    if (mask != &stack) {
+      delete mask;
+    }
   }
 
   return objArray;
