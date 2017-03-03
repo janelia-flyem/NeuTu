@@ -29,7 +29,7 @@ void AutosaveSwcListDialog::updateFile()
 {
   m_fileList.loadDir(
         NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str(),
-        true);
+        false);
   updateCount();
 }
 

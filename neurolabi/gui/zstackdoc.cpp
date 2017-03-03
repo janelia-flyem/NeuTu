@@ -440,7 +440,7 @@ void ZStackDoc::autoSave()
 
           delete tree;
 
-          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
+//          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
         } 
       }
     }

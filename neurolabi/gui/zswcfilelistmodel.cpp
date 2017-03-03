@@ -2,7 +2,7 @@
 
 #include <QDir>
 
-int ZSwcFileListModel::maxFileCount = 50;
+int ZSwcFileListModel::maxFileCount = 500;
 
 ZSwcFileListModel::ZSwcFileListModel(QObject *parent) :
   QAbstractListModel(parent)
