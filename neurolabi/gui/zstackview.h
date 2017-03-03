@@ -407,6 +407,7 @@ protected:
   void updatePaintBundle();
 
   ZPixmap* updateProjCanvas(ZPixmap *canvas);
+  ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 

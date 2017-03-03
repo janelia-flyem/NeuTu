@@ -7,6 +7,7 @@
 #include <QsLog.h>
 #include <QDebug>
 #include <QFileInfo>
+#include <QFileInfoList>
 #include <QString>
 #endif
 
@@ -52,6 +53,7 @@ void NeutubeConfig::init()
   m_autoSaveInterval = 600000;
   m_autoSaveEnabled =true;
   m_usingNativeDialog = true;
+  m_autoSaveMaxSwcCount = 50;
 
   m_messageReporter = new ZLogMessageReporter;
   setDefaultSoftwareName();
@@ -101,6 +103,11 @@ void NeutubeConfig::SetTestSoftwareName()
   getInstance().setTestSoftwareName();
 }
 
+void NeutubeConfig::UpdateAutoSaveDir()
+{
+  getInstance().updateAutoSaveDir();
+}
+
 void NeutubeConfig::setWorkDir(const string str)
 {
   if (m_workDir == m_logDir) { //Reset log dir
@@ -140,6 +147,32 @@ void NeutubeConfig::updateLogDir()
       m_logDestDir = "";
     }
   }
+}
+
+void NeutubeConfig::updateAutoSaveDir()
+{
+#if defined(_QT_GUI_USED_)
+  std::string autoSaveDir = getPath(NeutubeConfig::AUTO_SAVE);
+  LINFO() << "Updating autosave directory:" << autoSaveDir;
+  QDir dir(autoSaveDir.c_str());
+  if (dir.exists()) {
+    QStringList filter;
+    filter << "*.swc" << "*.SWC";
+    QFileInfoList fileList =
+        dir.entryInfoList(filter, QDir::NoFilter, QDir::Time);
+
+    int maxFileCount = m_autoSaveMaxSwcCount;
+    if (fileList.size() > maxFileCount) {
+      int fileCount = maxFileCount;
+      int originalCount = fileList.size();
+
+      for (int i = fileCount; i < originalCount; ++i) {
+        QFileInfo fileInfo = fileList.takeLast();
+        QFile::remove(fileInfo.absoluteFilePath());
+      }
+    }
+  }
+#endif
 }
 
 void NeutubeConfig::operator=(const NeutubeConfig& config)

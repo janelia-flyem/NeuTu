@@ -89,7 +89,7 @@ QString Z3DNetworkEvaluator::process(bool stereo)
   for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
     Z3DProcessor* currentProcessor = m_renderingOrder[i];
 
-    qDebug() << currentProcessor->getClassName();
+    qDebug() << "3D Processor: " << currentProcessor->getClassName();
 
 
     // all processors should have been initialized at this point

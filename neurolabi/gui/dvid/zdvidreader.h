@@ -99,8 +99,7 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
-  ZObject3dScan* readBody(
-      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
@@ -181,6 +180,8 @@ public:
                          int dim1, int dim2, int width, int height);
                          */
 
+  int readSynapseLabelszBody(
+      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;

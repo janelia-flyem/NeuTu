@@ -1433,6 +1433,93 @@ void ZStackView::updateTileCanvas()
     //m_tileCanvas->fill(Qt::transparent);
 }
 
+ZPixmap *ZStackView::updateViewPortCanvas(ZPixmap *canvas)
+{
+  ZStTransform transform = getViewTransform();
+
+  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+  QSize viewPortSize = viewPort.size();
+  QSize newSize = viewPortSize;
+
+  if (canvas != NULL) {
+    if (canvas->size() != newSize) {
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+
+  if (canvas == NULL) {
+    canvas = new ZPixmap(newSize);
+  }
+
+  canvas->getProjTransform().estimate(
+        QRectF(QPointF(0, 0), QSizeF(viewPortSize)), getProjRegion());
+  transform.setScale(1.0, 1.0);
+  transform.setOffset(-viewPort.left(), -viewPort.top());
+
+  canvas->setTransform(transform);
+
+  if (canvas != NULL) {
+    if (canvas->isVisible()){
+      canvas->cleanUp();
+    }
+  }
+
+  return canvas;
+}
+
+#if 1
+ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
+{
+  ZStTransform transform = getViewTransform();
+
+  QSize newSize = getProjRegion().size().toSize();
+  bool usingProjSize = true;
+
+  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+
+  //When the projection region is not much smaller or even bigger than viewport,
+  //use viewport instead for precise painting.
+  if (transform.getSx() > 1.1) {
+    newSize = viewPort.size();
+    usingProjSize = false;
+  }
+
+//  qDebug() << "  Canvas size" << newSize;
+
+  if (canvas != NULL) {
+    if (canvas->size() != newSize) {
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+
+  if (canvas == NULL) {
+    canvas = new ZPixmap(newSize);
+  }
+
+  if (usingProjSize == false) {
+    canvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
+  } else {
+    canvas->getProjTransform().setScale(1.0, 1.0);
+  }
+
+  canvas->setTransform(transform);
+
+  if (canvas != NULL) {
+    if (canvas->isVisible()){
+      canvas->cleanUp();
+    }
+  }
+
+  return canvas;
+}
+#endif
+
+#if 0
 ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 {
   ZStTransform transform = getViewTransform();
@@ -1473,9 +1560,11 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   return canvas;
 }
+#endif
 
 void ZStackView::updateDynamicObjectCanvas()
 {
+//  ZPixmap *newCanvas = updateViewPortCanvas(m_dynamicObjectCanvas);
   ZPixmap *newCanvas = updateProjCanvas(m_dynamicObjectCanvas);
   m_imageWidget->setDynamicObjectCanvas(newCanvas);
 
