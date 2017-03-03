@@ -23,7 +23,6 @@ public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
 
-  bool update(int z);
   void update();
   bool update(const ZStackViewParam &viewParam);
 
@@ -33,7 +32,8 @@ private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);
   void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
   bool updateRequired(const ZStackViewParam &viewParam) const;
-  bool updateRequired(int z) const;
+//  bool updateRequired(int z) const;
+  void forceUpdate(int z);
 
 private:
 //  int m_currentZ;

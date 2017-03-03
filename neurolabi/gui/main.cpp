@@ -299,6 +299,7 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow::createWorkDir();
+    NeutubeConfig::UpdateAutoSaveDir();
 
 #if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");

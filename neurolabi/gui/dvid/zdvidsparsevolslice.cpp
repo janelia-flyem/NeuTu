@@ -48,20 +48,25 @@ bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, NeuTube::EAxis axis) const
 
 bool ZDvidSparsevolSlice::updateRequired(const ZStackViewParam &viewParam) const
 {
-  bool required = !m_currentViewParam.contains(viewParam);
+  bool required = true;
 
-  if (required) {
-    required = updateRequired(viewParam.getZ());
+  if (m_currentViewParam.containsViewport(viewParam) || m_isFullView) {
+    if (m_currentViewParam.getZ() == viewParam.getZ()) {
+      required = false;
+    } else if (viewParam.getZ() >= getMinZ() && viewParam.getZ() <= getMaxZ()) {
+      required  =false;
+    }
   }
 
   return required;
 }
 
+#if 0
 bool ZDvidSparsevolSlice::updateRequired(int z) const
 {
   bool required = true;
 
-  if (m_currentViewParam.getZ() == z) {
+  if (z >= getMinZ() && z <= getMaxZ()) {
     if (m_isFullView) {
       required = false;
     }
@@ -69,27 +74,19 @@ bool ZDvidSparsevolSlice::updateRequired(int z) const
 
   return required;
 }
+#endif
 
-bool ZDvidSparsevolSlice::update(int z)
+void ZDvidSparsevolSlice::forceUpdate(int z)
 {
-  bool updated = false;
-  if (updateRequired(z)) {
-//    m_currentZ = z;
-    m_currentViewParam.setZ(z);
-    if (z < getMinZ() || z > getMaxZ()) {
-      if (m_externalReader != NULL) {
-        m_externalReader->readBody(
-              getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
-      } else {
-        m_reader.readBody(
-              getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
-      }
-      m_isFullView = true;
-      updated = true;
-    }
+  m_currentViewParam.setZ(z);
+  if (m_externalReader != NULL) {
+    m_externalReader->readBody(
+          getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
+  } else {
+    m_reader.readBody(
+          getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
   }
-
-  return updated;
+  m_isFullView = true;
 }
 
 
@@ -112,7 +109,7 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
       forceUpdate(newViewParam, true);
       m_isFullView = false;
     } else {
-      update(newViewParam.getZ());
+      forceUpdate(newViewParam.getZ());
     }
 
 

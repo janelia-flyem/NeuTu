@@ -435,7 +435,9 @@ void ZStackDoc::autoSave()
           qDebug() << autoSavePath.c_str();
 
           delete tree;
-        }
+
+//          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
+        } 
       }
     }
   }

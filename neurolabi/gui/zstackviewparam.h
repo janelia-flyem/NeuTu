@@ -51,6 +51,7 @@ public:
   bool operator !=(const ZStackViewParam &param) const;
 
   bool contains(const ZStackViewParam &param) const;
+  bool containsViewport(const ZStackViewParam &param) const;
 
   bool contains(int x, int y, int z);
 
