@@ -27,6 +27,7 @@ private slots:
 
 private:
   QModelIndexList getSelected() const;
+  void updateCount();
 
 private:
   Ui::AutosaveSwcListDialog *ui;

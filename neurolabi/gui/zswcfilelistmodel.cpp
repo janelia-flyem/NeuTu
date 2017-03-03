@@ -2,17 +2,65 @@
 
 #include <QDir>
 
+int ZSwcFileListModel::maxFileCount = 50;
+
 ZSwcFileListModel::ZSwcFileListModel(QObject *parent) :
   QAbstractListModel(parent)
 {
 }
 
-void ZSwcFileListModel::loadDir(const QString &dirPath)
+QFileInfoList ZSwcFileListModel::LoadDir(
+    const QString &dirPath, bool removingExtra)
 {
   QDir dir(dirPath);
   QStringList filter;
   filter << "*.swc" << "*.SWC";
-  m_fileList = dir.entryInfoList(filter, QDir::NoFilter, QDir::Time);
+  QFileInfoList fileList =
+      dir.entryInfoList(filter, QDir::NoFilter, QDir::Time);
+
+  if (fileList.size() > maxFileCount) {
+    int fileCount = maxFileCount;
+    int originalCount = fileList.size();
+
+    for (int i = fileCount; i < originalCount; ++i) {
+      QFileInfo fileInfo = fileList.takeLast();
+      if (removingExtra) {
+        QFile::remove(fileInfo.absoluteFilePath());
+      }
+    }
+  }
+
+  return fileList;
+}
+
+void ZSwcFileListModel::loadDir(const QString &dirPath, bool removingExtra)
+{
+  m_fileList = LoadDir(dirPath, removingExtra);
+#if 0
+  QDir dir(dirPath);
+  QStringList filter;
+  filter << "*.swc" << "*.SWC";
+  QFileInfoList fileList =
+      dir.entryInfoList(filter, QDir::NoFilter, QDir::Time);
+
+  int fileCount = std::min(maxFileCount, fileList.size());
+  m_fileList.clear();
+  m_fileList.reserve(fileCount);
+  for (int i = 0; i < fileCount; ++i) {
+    m_fileList.append(fileList[i]);
+  }
+  if (removingExtra) {
+    for (int i = fileCount; i < fileList.size(); ++i) {
+      QFile::remove(fileList[i].absoluteFilePath());
+    }
+  }
+#endif
+//  m_fileList = dir.entryInfoList(filter, QDir::NoFilter, QDir::Time);
+}
+
+int ZSwcFileListModel::getMaxFileCount() const
+{
+  return maxFileCount;
 }
 
 int ZSwcFileListModel::rowCount(const QModelIndex &/*parent*/) const
