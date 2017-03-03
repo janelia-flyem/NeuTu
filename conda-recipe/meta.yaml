@@ -1,0 +1,24 @@
+package:
+  name: neutu
+  version: "0.1"
+
+source:
+    path: ../
+
+build:
+  number: 6
+
+requirements:
+  build:
+    - qt      4.8.6.99   # [osx]
+    - qt      4.8.7      # [linux]
+    - libdvid-cpp 0.2.post55
+
+  run:
+    - qt       4.8.6.99   # [osx]
+    - qt       4.8.7      # [linux]
+    - libdvid-cpp 0.2.post55
+
+about:
+  home: http://github.com/janelia-flyem/NeuTu
+  license: GPL
