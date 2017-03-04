@@ -8,7 +8,8 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/qcustomplot.h \
     $$PWD/zimageinfomodule.h \
     $$PWD/zgradientmagnitudemodule.h \
-    $$PWD/zmultiscalewatershedmodule.h
+    $$PWD/zmultiscalewatershedmodule.h \
+    $$PWD/surfrecon.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zexamplemodule.cpp \

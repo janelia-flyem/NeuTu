@@ -1,9 +1,61 @@
+#include<fstream>
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
 #include "zstackdoc.h"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackfactory.h"
+
+
+#undef ASCII
+#undef BOOL
+#undef TRUE
+#undef FALSE
+#include "surfrecon.h"
+
+/*
+void printStack(ZStack* s)//for test
+{
+  for(int j=0;j<s->height();++j)
+  {
+    for(int i=0;i<s->width();++i)
+    {
+      std::cout<<(int)s->array8()[i+j*s->width()]<<" ";
+    }
+    std::cout<<std::endl;
+  }
+  std::cout<<std::endl;
+}
+
+
+void loadStack(ZStack*& img,std::vector<ZStack*>& seeds)
+{
+  std::ifstream fin;
+  fin.open("/home/deli/img.txt");
+  int width,height;
+  fin>>height>>width;
+  img=new ZStack(GREY,width,height,1,1);
+  for(int j=0;j<height;++j)
+  {
+    for(int i=0;i<width;++i)
+    {
+      fin>>img->array8()[i+j*width];
+      img->array8()[i+j*width]-='0';
+    }
+  }
+  int ns,x,y;
+  fin>>ns;
+  for(int i=0;i<ns;++i)
+  {
+    ZStack* seed=new ZStack(GREY,1,1,1,1);
+    fin>>y>>x;
+    fin>>seed->array8()[0];
+    seed->array8()[0]-='0';
+    seed->setOffset(x,y,0);
+    seeds.push_back(seed);
+  }
+}
+*/
 
 ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 {
@@ -267,12 +319,14 @@ ZStack* generateSeeds(ZStack* src,const ZIntCuboid& box,const ZStack* edge_map,c
         if(!p[start_x+y*s_w+offset]&&p[start_x+1+y*s_w+offset])
         {
           ADD_SEED(z*step-start_z_r,std::min((z+1)*step,depth)-start_z_r,y*step-start_y_r,
-                   std::min((y+1)*step,height)-start_y_r,start_x*step+step-1-start_x_r,seed_s,seed_w,1,ps[_offset]);
+                   std::min((y+1)*step,height)-start_y_r,start_x*step+step-1-start_x_r,
+                   seed_s,seed_w,1,ps[start_x+y*s_w+offset]);
         }
         if(!p[end_x+y*s_w+offset]&&p[end_x-1+y*s_w+offset])
         {
           ADD_SEED(z*step-start_z_r,std::min((z+1)*step,depth)-start_z_r,y*step-start_y_r,
-                   std::min((y+1)*step,height)-start_y_r,end_x*step-start_x_r,seed_s,seed_w,1,ps[_offset]);
+                   std::min((y+1)*step,height)-start_y_r,end_x*step-start_x_r,
+                   seed_s,seed_w,1,ps[end_x+y*s_w+offset]);
         }
       }
     }
@@ -308,13 +362,13 @@ ZStack* generateSeeds(ZStack* src,const ZIntCuboid& box,const ZStack* edge_map,c
         {
           ADD_SEED(z*step-start_z_r,std::min((z+1)*step,depth)-start_z_r,x*step-start_x_r,
                    std::min((x+1)*step,width)-start_x_r,
-                   start_y*step+step-1-start_y_r,seed_s,1,seed_w,ps[_offset]);
+                   start_y*step+step-1-start_y_r,seed_s,1,seed_w,ps[offset+x+start_y*s_w]);
         }
         if(!p[end_y*s_w+offset+x]&&p[(end_y-1)*s_w+offset+x])
         {
           ADD_SEED(z*step-start_z_r,std::min((z+1)*step,depth)-start_z_r,x*step-start_x_r,
                    std::min((x+1)*step,width)-start_x_r,
-                   end_y*step-start_y_r,seed_s,1,seed_w,ps[_offset]);
+                   end_y*step-start_y_r,seed_s,1,seed_w,ps[end_y*s_w+offset+x]);
         }
       }
     }
@@ -350,13 +404,13 @@ ZStack* generateSeeds(ZStack* src,const ZIntCuboid& box,const ZStack* edge_map,c
         {
           ADD_SEED(y*step-start_y_r,std::min((y+1)*step,height)-start_y_r,x*step-start_x_r,
                    std::min((x+1)*step,width)-start_x_r,
-                   start_z*step+step-1-start_z_r,seed_w,1,seed_s,ps[_offset]);
+                   start_z*step+step-1-start_z_r,seed_w,1,seed_s,ps[start_z*s_s+offset+x]);
         }
         if(!p[end_z*s_s+offset+x]&&p[(end_z-1)*s_s+offset+x])
         {
           ADD_SEED(y*step-start_y_r,std::min((y+1)*step,height)-start_y_r,x*step-start_x_r,
                    std::min((x+1)*step,width)-start_x_r,
-                   end_z*step-start_z_r,seed_w,1,seed_s,ps[_offset]);
+                   end_z*step-start_z_r,seed_w,1,seed_s,ps[end_z*s_s+offset+x]);
         }
       }
     }
@@ -469,10 +523,18 @@ ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src)
 {
   ZStack* recovered=upSample(src->width(),src->height(),src->depth(),_scale,sampled_watershed);
+
+  //std::cout<<"recovered:"<<std::endl;
+  //printStack(recovered);
+
   recovered->setOffset(src->getOffset());
   std::vector<ZIntCuboid>boxes;
   //get bound boxes of each each
   ZStack* edge_map=getBoundBoxes(sampled_watershed,boxes);
+
+  //std::cout<<"edge_map:"<<std::endl;
+  //printStack(edge_map);
+
   uint8_t* p=edge_map->array8();
   size_t off=0;
   uint width=edge_map->width(),slice=edge_map->height()*width;
@@ -482,6 +544,11 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
     const ZIntCuboid& box=boxes[i];
     Cuboid_I range=getRange(box,src,_scale);
     ZStack* seed=generateSeeds(src,box,edge_map,sampled_watershed,_scale);
+
+    //std::cout<<"seed:"<<std::endl;
+    //std::cout<<seed->getOffset().m_x<<" "<<seed->getOffset().m_y<<std::endl;
+    //printStack(seed);
+
     if(seed)
     {
       localWaterShed(seed,range,recovered,src,edge_map,_scale);
@@ -504,7 +571,98 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
   return recovered;
 
 }
+/*
+void ZStackMultiScaleWatershed::test()
+{
+    ZStack *src;
+    std::vector<ZStack *> seeds;
+    loadStack(src,seeds);
+    ZStack* rv=0;
+    std::cout<<"src:"<<std::endl;
+    printStack(src);
 
+    rv=ZStackWatershed().run(src,seeds);
+    std::cout<<"result:"<<std::endl;
+    printStack(rv);
+
+
+    ZStack* sampled=src->clone();
+    sampled->downsampleMinIgnoreZero(1,1,1);
+    std::cout<<"sampled:"<<std::endl;
+    printStack(sampled);
+    std::cout<<"seeds:"<<std::endl;
+    for(int i=0;i<seeds.size();++i)
+    {
+       ZStack* seed=seeds[i];
+       seed->setOffset(seed->getOffset().m_x/2,seed->getOffset().m_y/2,0);
+       std::cout<<seed->getOffset().m_y<<" "<<seed->getOffset().m_x<<std::endl;
+    }
+
+    ZStack* sampled_watershed=ZStackWatershed().run(sampled,seeds);
+    std::cout<<"sampled result:"<<std::endl;
+    printStack(sampled_watershed);
+
+    _scale=2;
+    if(sampled_watershed)
+    {
+      ZStack* src_clone=src->clone();
+      rv=upSampleAndRecoverEdge(sampled_watershed,src_clone);
+      std::cout<<"result:"<<std::endl;
+      printStack(rv);
+    }
+
+
+    sampled->downsampleMinIgnoreZero(1,1,1);
+    std::cout<<"sampled:"<<std::endl;
+    printStack(sampled);
+    std::cout<<"seeds:"<<std::endl;
+    for(int i=0;i<seeds.size();++i)
+    {
+       ZStack* seed=seeds[i];
+       seed->setOffset(seed->getOffset().m_x/2,seed->getOffset().m_y/2,0);
+       std::cout<<seed->getOffset().m_y<<" "<<seed->getOffset().m_x<<std::endl;
+    }
+
+    sampled_watershed=ZStackWatershed().run(sampled,seeds);
+    std::cout<<"sampled result:"<<std::endl;
+    printStack(sampled_watershed);
+
+    _scale=4;
+    if(sampled_watershed)
+    {
+      ZStack* src_clone=src->clone();
+      rv=upSampleAndRecoverEdge(sampled_watershed,src_clone);
+      std::cout<<"result:"<<std::endl;
+      printStack(rv);
+    }
+
+
+    sampled->downsampleMinIgnoreZero(1,1,1);
+    std::cout<<"sampled:"<<std::endl;
+    printStack(sampled);
+    std::cout<<"seeds:"<<std::endl;
+    for(int i=0;i<seeds.size();++i)
+    {
+       ZStack* seed=seeds[i];
+       seed->setOffset(seed->getOffset().m_x/2,seed->getOffset().m_y/2,0);
+       std::cout<<seed->getOffset().m_y<<" "<<seed->getOffset().m_x<<std::endl;
+    }
+
+   sampled_watershed=ZStackWatershed().run(sampled,seeds);
+    std::cout<<"sampled result:"<<std::endl;
+    printStack(sampled_watershed);
+
+    _scale=8;
+    if(sampled_watershed)
+    {
+      ZStack* src_clone=src->clone();
+      rv=upSampleAndRecoverEdge(sampled_watershed,src_clone);
+      std::cout<<"result:"<<std::endl;
+      printStack(rv);
+    }
+
+}
+*/
 
 ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int scale)
 {

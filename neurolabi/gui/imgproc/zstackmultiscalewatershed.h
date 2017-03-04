@@ -3,6 +3,7 @@
 #include <QList>
 #include <vector>
 
+
 class ZStack;
 class ZSwcTree;
 
@@ -13,6 +14,7 @@ public:
   ~ZStackMultiScaleWatershed();
 public:
   ZStack* run(ZStack *src,QList<ZSwcTree*>& trees,int scale);
+  void test();
 private:
   void getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcTree*>& trees);
   ZStack* upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src);

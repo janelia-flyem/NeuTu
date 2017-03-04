@@ -1273,3 +1273,7 @@ SOURCES += main.cpp \
 OTHER_FILES += \
     extlib.pri \
     extratarget.pri
+
+
+LIBS+=-lCGAL -lCGAL_Core -lCGAL_ImageIO -lsurfrecon
+QMAKE_CXXFLAGS+=-fext-numeric-literals
