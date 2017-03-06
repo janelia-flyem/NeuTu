@@ -10,7 +10,9 @@ else
     QMAKE_SPEC_PATH=${PREFIX}/mkspecs/linux-g++-64
 fi
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem -q "CONDA_ENV=${PREFIX}"
+export CONDA_ENV=${PREFIX}
+
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem -q "CONDA_ENV=${CONDA_ENV}"
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
