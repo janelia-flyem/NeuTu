@@ -295,45 +295,28 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
 
     m_currentBodyPaths.clear();
 
-    // each annotation has the path and edge IDs originating from its position
-
+    // each point annotation has lists of path and edge IDs originating from its position
     ZJsonArray annotations = m_reader.readAnnotation(m_pointDataInstance, bodyID,
         FlyEM::LOAD_NO_PARTNER);
 
     for (size_t i=0; i<annotations.size(); i++) {
 
-
-        // get path list at each point
-        // parse it
-        // iterate over it
-        // for each:
-        //  read key value
-        //  create path object
-        //  add to list
-
-
-
-
+        // get path list at each point (if it exists) and parse it
         ZDvidAnnotation ann;
         ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_NO_PARTNER);
+        std::string pathListString = ann.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PATHS);
 
-        std::vector<ZIntPoint> farEndpoints = ZDvidAnnotation::GetPartners(annotations.value(i));
-        for (size_t j=0; j<farEndpoints.size(); j++) {
-            ZIntPoint p2 = farEndpoints[j];
-            std::string edgeListString = ann.getProperty<std::string>(getPropertyKey(FocusedPathProtocol::PROPERTY_PATH, p2));
-            std::string probabilityString = ann.getProperty<std::string>(getPropertyKey(FocusedPathProtocol::PROPERTY_PROBABILITY, p2));
-            double probability = atof(probabilityString.c_str());
+        // it's easiest to parse that list in Qt; strip off the [], split on comma,
+        //  then strip whitespace
+        QString tempString = QString::fromStdString(pathListString);
+        QStringList pathIDList = tempString.mid(1, tempString.size() - 2).split(",");
+        foreach (QString pathID, pathIDList) {
+            const QByteArray &temp = m_reader.readKeyValue(QString::fromStdString(m_pathDataInstance), pathID.trimmed());
+            ZJsonObject pathData;
+            pathData.decodeString(temp.data());
 
-            m_currentBodyPaths << FocusedPath(ann.getPosition(), p2, probability, edgeListString);
+            m_currentBodyPaths << FocusedPath(pathID.trimmed().toStdString(), pathData);
         }
-    }
-
-
-    // debug
-    std::cout << "loadCurrentBodyPaths(): " << m_currentBodyPaths.size() << " paths for body " << bodyID << std::endl;
-    for (int i=0; i<m_currentBodyPaths.size(); i++) {
-        std::cout << "path " << i << ": last point = " << m_currentBodyPaths[i].getLastPoint().toString() << " with prob = "
-            << m_currentBodyPaths[i].getProbability() << std::endl;
     }
 
     emit currentBodyPathsLoaded();
@@ -367,8 +350,6 @@ void FocusedPathProtocol::onBodyListsLoaded() {
 }
 
 void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
-
-    std::cout << "onCurrentBodyPathsLoaded" << std::endl;
 
     // load the body IDs at all endpoints of all paths;
     //  save for later reuse
@@ -419,6 +400,8 @@ FocusedPath FocusedPathProtocol::findNextPath() {
 
 void FocusedPathProtocol::deletePath(FocusedPath path) {
 
+    std::cout << "deletePath() disabled" << std::endl;
+    return;
 
     // this needs updating: can't delete paths as easily with new format
     // since we now have multiple paths in one annotation, we will have
@@ -436,13 +419,7 @@ void FocusedPathProtocol::deletePath(FocusedPath path) {
 void FocusedPathProtocol::displayCurrentPath() {
     // edges already loaded in path, and  path known to be unconnected;
     // load edges into UI and update labels
-
-    std::cout << "displayCurrentPath()" << std::endl;
-    printPath(m_currentPath);
-
     FocusedEdge firstEdge = m_currentPath.getEdge(0);
-    std::cout << "first edge:" << std::endl;
-    printEdge(firstEdge);
 
     // load data into model
     m_edgeModel->clear();

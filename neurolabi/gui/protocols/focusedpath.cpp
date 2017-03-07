@@ -27,15 +27,24 @@ FocusedPath::FocusedPath(std::string pathID, ZJsonObject path)
     m_lastPoint = ZJsonParser::toIntPoint(path["point2"]);
     m_probability = ZJsonParser::numberValue(path["probability"]);
 
-    // new: edge ID list
-    ZJsonArray edgeIDList;
-    edgeIDList.decode(ZJsonParser::stringValue(path["edges"]));
-    for (size_t i=0; i<edgeIDList.size(); i++) {
-        m_edgeIDs.append(QString::fromStdString(ZJsonParser::stringValue(edgeIDList.at(i))));
+    // NOTE: there was an ambiguity in our format that led to this conditional parsing
+    // I intended the path and edge IDs to be arbitrary but implied they could/should be
+    //  integers in the format; as a result, in this case, the edge list comes back
+    //  as a list of ints instead of strings, as intended; so account for that
+    //  difference (but hopefully in the future, it'll be strings)
+
+    ZJsonArray edgeList(path.value("edges"));
+    for (size_t i=0; i<edgeList.size(); i++) {
+        if (!ZJsonParser::isInteger(edgeList.at(i))) {
+            // string
+            m_edgeIDs.append(QString::fromUtf8(ZJsonParser::stringValue(edgeList.at(i))));
+        } else {
+            // int
+            m_edgeIDs.append(QString::number(ZJsonParser::integerValue(edgeList.at(i))));
+        }
     }
 
     // we do not load the actual edges right away
-
 }
 
 bool FocusedPath::operator ==(const FocusedPath& other) const {
