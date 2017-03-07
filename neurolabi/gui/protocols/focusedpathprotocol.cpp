@@ -401,18 +401,52 @@ FocusedPath FocusedPathProtocol::findNextPath() {
 void FocusedPathProtocol::deletePath(FocusedPath path) {
 
     std::cout << "deletePath() disabled" << std::endl;
+
+    // for testing: add a "really delete?" dialog here before you remove
+    //  that unconditional return!
+    // untested:
+    QMessageBox confirmBox;
+    confirmBox.setText("Are you sure?");
+    confirmBox.setInformativeText("Really delete this path (yes) or skip (no)?");
+    confirmBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    confirmBox.setDefaultButton(QMessageBox::No);
+    confirmBox.setIcon(QMessageBox::Warning);
+    if (confirmBox.exec() == QMessageBox::No) {
+        return;
+    }
+
+
     return;
 
-    // this needs updating: can't delete paths as easily with new format
-    // since we now have multiple paths in one annotation, we will have
-    //  to read, alter, and save path annotation, from both ends (!!), leaving the
-    //  rest of the data untouched
-    // if all paths removed, then it's a total delete, but not otherwise
+
 
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {
-        writer.deletePointAnnotation(m_pathDataInstance, path.getFirstPoint());
-        writer.deletePointAnnotation(m_pathDataInstance, path.getLastPoint());
+
+        // remove path ID from point annotation at both endpoints
+        // ugh, need to read, parse, alter, then write back
+
+        foreach (ZIntPoint point, QList<ZIntPoint>() << path.getFirstPoint() << path.getLastPoint()) {
+            ZJsonObject annJson = m_reader.readAnnotationJson(m_pointDataInstance, point);
+
+            // this is really roundabout...load the property, parse the path string list,
+            //  break the list down to items, remove the one we don't want, then reassemble
+
+            ZDvidAnnotation ann;
+            ann.loadJsonObject(annJson, FlyEM::LOAD_NO_PARTNER);
+            std::string pathListString = ann.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PATHS);
+
+            QString tempString = QString::fromStdString(pathListString).remove(' ');
+            QStringList pathIDList = tempString.mid(1, tempString.size() - 2).split(",");
+
+            pathIDList.removeAll(QString::fromStdString(path.getPathID()));
+
+            ann.addProperty(FocusedPathProtocol::PROPERTY_PATHS, pathIDList.join(", ").toStdString());
+            writer.writePointAnnotation(m_pointDataInstance, ann.toJsonObject());
+        }
+
+        // delete path from key-value
+        writer.deleteKey(path.getPathID(), m_pathDataInstance);
     }
 }
 
