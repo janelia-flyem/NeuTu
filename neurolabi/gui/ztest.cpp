@@ -206,6 +206,7 @@ using namespace std;
 #include "test/zstacktest.h"
 #include "test/zstackskeletonizertest.h"
 #include "test/zflyembodycoloroptiontest.h"
+#include "test/zflyembodyannotationtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
