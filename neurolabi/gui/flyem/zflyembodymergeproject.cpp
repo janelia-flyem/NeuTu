@@ -425,6 +425,10 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       }
     }
 
+    if (annotation.getStatus().empty()) {
+      annotation.setStatus("Not examined");
+    }
+
     if (!annotation.isEmpty()) {
       ZDvidWriter writer;
       if (writer.open(getDvidTarget())) {

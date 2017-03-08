@@ -1542,7 +1542,11 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
           if (!annotation.isEmpty()) {
             getCompleteDocument()->recordAnnotation(bodyId, annotation);
-            finalAnnotation.mergeAnnotation(annotation);
+            if (finalAnnotation.isEmpty()) {
+              finalAnnotation = annotation;
+            } else {
+              finalAnnotation.mergeAnnotation(annotation);
+            }
           }
         }
 
