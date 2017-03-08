@@ -54,4 +54,6 @@ HEADERS += \
     test/zresolutiontest.h \
     test/zdvidroitest.h \
     test/zflyembody3dtest.h \
-    test/zstackskeletonizertest.h
+    test/zstackskeletonizertest.h \
+    test/zdvidroitest.h \
+    test/zflyembodyannotationtest.h

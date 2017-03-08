@@ -512,11 +512,17 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
       ZFlyEmBodyColorOption::EColorOption option);
 
   void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
+
+  QString getAnnotationNameWarningDetail(
+      const QMap<uint64_t, QVector<QString> > &nameMap) const;
+  QString getAnnotationFinalizedWarningDetail(
+      const std::vector<uint64_t> &finalizedBodyArray) const;
 
 protected:
   ZFlyEmBodyMerger m_bodyMerger;

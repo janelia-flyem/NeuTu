@@ -15,6 +15,9 @@ ZFlyEmSplitUploadOptionDialog::ZFlyEmSplitUploadOptionDialog(QWidget *parent) :
   ui->setupUi(this);
 
   ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
+  if (ui->statusComboBox->count() > 1) {
+    ui->statusComboBox->setCurrentIndex(1);
+  }
 //  m_statusBar = new QStatusBar(this);
 //  ui->statusBarLayout->addWidget(m_statusBar);
 }
