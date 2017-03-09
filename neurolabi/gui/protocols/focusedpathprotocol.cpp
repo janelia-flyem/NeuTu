@@ -400,8 +400,6 @@ FocusedPath FocusedPathProtocol::findNextPath() {
 
 void FocusedPathProtocol::deletePath(FocusedPath path) {
 
-    std::cout << "deletePath() disabled" << std::endl;
-
     // for testing: add a "really delete?" dialog here before you remove
     //  that unconditional return!
     // untested:

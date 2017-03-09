@@ -82,30 +82,30 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="linkButton">
+        <widget class="QPushButton" name="mergeButton">
          <property name="text">
-          <string>Link</string>
+          <string>Merge selected edge</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="dontLinkButton">
+        <widget class="QPushButton" name="dontMergeButton">
          <property name="text">
-          <string>Don't link</string>
+          <string>Mark edge as broken</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="linkAllButton">
+        <widget class="QPushButton" name="mergeAllButton">
          <property name="text">
-          <string>Link all</string>
+          <string>Merge all edges</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="finishButton">
          <property name="text">
-          <string>Finish</string>
+          <string>Finish edge/upload results</string>
          </property>
         </widget>
        </item>
@@ -123,9 +123,9 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="skipButton">
+        <widget class="QPushButton" name="skipPathButton">
          <property name="text">
-          <string>Skip</string>
+          <string>Skip this path</string>
          </property>
         </widget>
        </item>
