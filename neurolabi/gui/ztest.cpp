@@ -20355,6 +20355,7 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
+
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
@@ -22317,6 +22318,22 @@ void ZTest::test(MainWindow *host)
 
   count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
   std::cout << "All count: " << count << std::endl;
+#endif
+
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZStack *stack = reader.readGrayScaleLowtis(2610, 2354, 3197, 512, 512, 1);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+
 #endif
 
   std::cout << "Done." << std::endl;
