@@ -53,6 +53,7 @@ void ZDvidTarget::init()
   m_isEditable = true;
   m_readOnly = false;
   m_maxLabelZoom = 0;
+  m_maxGrayscaleZoom = 0;
   m_usingMultresBodyLabel = true;
   m_usingDefaultSetting = false;
 
@@ -492,14 +493,43 @@ std::string ZDvidTarget::getLabelBlockName() const
   return m_labelBlockName;
 }
 
+std::string ZDvidTarget::GetMultiscaleDataName(
+    const std::string &dataName, int zoom)
+{
+  std::string name = dataName;
+
+  if (!name.empty() && zoom > 0) {
+    name = name + "_" + ZString::num2str(zoom);
+  }
+
+  return name;
+}
+
 std::string ZDvidTarget::getLabelBlockName(int zoom) const
 {
+  return GetMultiscaleDataName(getLabelBlockName(), zoom);
+  /*
   std::string name = getLabelBlockName();
   if (!name.empty() && zoom > 0) {
     name = name + "_" + ZString::num2str(zoom);
   }
 
   return name;
+  */
+}
+
+std::string ZDvidTarget::getGrayScaleName(int zoom) const
+{
+  return GetMultiscaleDataName(getGrayScaleName(), zoom);
+}
+
+std::string ZDvidTarget::getValidGrayScaleName(int zoom) const
+{
+  if (zoom < 0 || zoom > getMaxGrayscaleZoom()) {
+    return "";
+  }
+
+  return getGrayScaleName(zoom);
 }
 
 std::string ZDvidTarget::getValidLabelBlockName(int zoom) const

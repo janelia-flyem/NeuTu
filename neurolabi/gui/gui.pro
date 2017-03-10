@@ -729,7 +729,8 @@ HEADERS += mainwindow.h \
     dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
     widgets/zdvidsourcewidget.h \
-    z3dmainwindow.h
+    z3dmainwindow.h \
+    dvid/zdvidgrayscale.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1264,7 +1265,8 @@ SOURCES += main.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
     widgets/zdvidsourcewidget.cpp \
-    z3dmainwindow.cpp
+    z3dmainwindow.cpp \
+    dvid/zdvidgrayscale.cpp
 
 OTHER_FILES += \
     extlib.pri \

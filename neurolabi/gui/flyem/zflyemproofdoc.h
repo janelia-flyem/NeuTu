@@ -497,6 +497,7 @@ private:
 
   void readInfo();
   void updateMaxLabelZoom();
+  void updateMaxGrayscaleZoom();
 
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
       ZFlyEmBodyColorOption::EColorOption type);

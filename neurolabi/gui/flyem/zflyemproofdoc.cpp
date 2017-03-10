@@ -792,6 +792,11 @@ void ZFlyEmProofDoc::updateMaxLabelZoom()
   m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
+void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
+{
+  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
+}
+
 void ZFlyEmProofDoc::readInfo()
 {
   m_grayScaleInfo = m_dvidReader.readGrayScaleInfo();
@@ -817,6 +822,7 @@ void ZFlyEmProofDoc::readInfo()
   }
 
   updateMaxLabelZoom();
+  updateMaxGrayscaleZoom();
 
   LINFO() << startLog;
 }

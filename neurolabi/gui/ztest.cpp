@@ -296,6 +296,7 @@ using namespace std;
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
+#include "dvid/zdvidgrayslice.h"
 
 using namespace std;
 
@@ -20355,6 +20356,7 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
+
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
@@ -22319,10 +22321,12 @@ void ZTest::test(MainWindow *host)
   std::cout << "All count: " << count << std::endl;
 #endif
 
+
 #if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
   target.useDefaultDataSetting(true);
+
 
   ZDvidReader reader;
   reader.open(target);
@@ -22415,6 +22419,57 @@ void ZTest::test(MainWindow *host)
     }
     tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/9829583889_shift.swc");
   }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscalejpeg");
+  ZStack *stack = reader.readGrayScaleLowtis(2610, 2354, 3197, 512, 512, 1);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  std::cout << reader.getDvidTarget().getMaxGrayscaleZoom() << std::endl;
+
+  ZStack* stack = reader.readGrayScale(2610, 2354, 3197, 512, 512, 1, 2);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete stack;
+
+#endif
+
+#if 1
+  ZDvidGraySlice slice;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  slice.setDvidTarget(reader.getDvidTarget());
+
+  ZStackViewParam param;
+  param.setViewPort(2610, 2354, 2610 + 1024, 2354 + 1024);
+  param.setZ(3197);
+
+  slice.update(param);
+  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+
 #endif
 
   std::cout << "Done." << std::endl;

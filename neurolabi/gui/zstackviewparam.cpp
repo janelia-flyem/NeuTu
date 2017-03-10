@@ -1,6 +1,9 @@
 #include "zstackviewparam.h"
 
+#include <cmath>
+
 #include "geometry/zgeometry.h"
+#include "tz_math.h"
 
 ZStackViewParam::ZStackViewParam()
 {
@@ -113,6 +116,27 @@ void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
 NeuTube::EAxis ZStackViewParam::getSliceAxis() const
 {
   return m_sliceAxis;
+}
+
+int ZStackViewParam::getZoomLevel(int maxLevel) const
+{
+  int zoom = iround(std::log(1.0 / getZoomRatio()) / std::log(2.0) );
+
+  if (zoom < 0) {
+    zoom = 0;
+  }
+
+  int scale = pow(2, zoom);
+  if (getViewPort().width() * getViewPort().height() /
+      scale / scale > 512 * 512) {
+    zoom += 1;
+  }
+
+  if (zoom > maxLevel) {
+    zoom = maxLevel;
+  }
+
+  return zoom;
 }
 
 double ZStackViewParam::getZoomRatio() const

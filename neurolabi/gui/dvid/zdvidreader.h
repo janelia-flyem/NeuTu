@@ -118,6 +118,11 @@ public:
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
+  ZStack* readGrayScale(
+      const std::string &dataName,
+      int x0, int y0, int z0, int width, int height, int depth) const;
+  ZStack* readGrayScale(
+      int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -190,6 +195,8 @@ public:
 #if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+  ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
+                              int width, int height, int zoom = 0) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
@@ -227,6 +234,9 @@ public:
 
   void updateMaxLabelZoom();
   void updateMaxLabelZoom(
+      const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+  void updateMaxGrayscaleZoom();
+  void updateMaxGrayscaleZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
   uint64_t readBodyIdAt(int x, int y, int z) const;
@@ -416,6 +426,8 @@ protected:
 #if defined(_ENABLE_LOWTIS_)
   mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
   mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
+  mutable lowtis::DVIDGrayblkConfig m_lowtisConfigGray;
+  mutable ZSharedPointer<lowtis::ImageService> m_lowtisServiceGray;
 #endif
 
 };

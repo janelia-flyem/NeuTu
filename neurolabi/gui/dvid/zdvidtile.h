@@ -5,7 +5,6 @@
 #include <QMutexLocker>
 #include <QPixmap>
 
-#include "zimage.h"
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
@@ -19,6 +18,7 @@ class ZStack;
 class ZStackView;
 class ZRect2d;
 class ZIntPoint;
+class ZImage;
 
 class ZDvidTile : public ZStackObject
 {
