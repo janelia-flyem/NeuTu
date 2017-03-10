@@ -389,6 +389,12 @@ int ZDvidInfo::getMaxY() const
   return getMinY() + m_stackSize[1] - 1;
 }
 
+ZIntCuboid ZDvidInfo::getDataRange() const
+{
+  return ZIntCuboid(getMinX(), getMinY(), getMinZ(),
+                    getMaxX(), getMaxY(), getMaxZ());
+}
+
 ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const
 {
   x -= m_startBlockIndex.getX();
