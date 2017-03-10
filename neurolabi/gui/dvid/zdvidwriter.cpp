@@ -84,6 +84,7 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
     m_dvidTarget.setUuid(masterNode.substr(0, 4));
   }
 #endif
+
 //  m_dvidClient->reset();
 //  m_dvidClient->setDvidTarget(target);
 
@@ -408,13 +409,17 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
   return jsonString;
 }
 
-void ZDvidWriter::syncAnnotation(
+void ZDvidWriter::syncAnnotationToLabel(
     const std::string &name, const std::string &queryString)
 {
   ZDvidUrl url(getDvidTarget());
   ZJsonObject jsonObj;
   jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
                    getDvidTarget().getBodyLabelName());
+#ifdef _DEBUG_
+  std::cout << jsonObj.dumpString(0) << std::endl;
+#endif
+
   post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
 }
 
@@ -494,7 +499,7 @@ void ZDvidWriter::createData(
   runCommand(command);
 #endif
   if (type == "annotation") {
-    syncAnnotation(name);
+    syncAnnotationToLabel(name);
   }
 }
 
@@ -1155,7 +1160,7 @@ uint64_t ZDvidWriter::writePartition(
     ZDvidInfo dvidInfo;
     ZDvidReader &reader = m_reader;
     if (reader.isReady()) {
-      dvidInfo = reader.readGrayScaleInfo();
+      dvidInfo = reader.readLabelInfo();
     } else {
       LERROR() << "DVID connection error.";
       return 0;
@@ -1492,6 +1497,10 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   ZDvidUrl url(getDvidTarget());
   ZJsonArray itemJson;
   itemJson.append(item.toJsonObject());
+
+#ifdef _DEBUG_
+  std::cout << itemJson.dumpString(0) << std::endl;
+#endif
 
   writeJson(url.getTodlListElementsUrl(), itemJson);
 }

@@ -20056,7 +20056,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.syncAnnotation("segmentation-labelvol_todo", "replace=true");
+  writer.syncAnnotationToLabel("segmentation-labelvol_todo", "replace=true");
 #endif
 
 #if 0
@@ -20067,7 +20067,7 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
 
-  writer.syncAnnotation("bodies121714_todo");
+  writer.syncAnnotationToLabel("bodies121714_todo");
 #endif
 
 #if 0
@@ -22126,6 +22126,37 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "89ec", 8700);
+  target.setBodyLabelName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setGrayScaleName("grayscale");
+  target.setMultiscale2dName("tiles");
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.writeDefaultDataSetting();
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "89ec", 8700);
+  target.setBodyLabelName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setGrayScaleName("grayscale");
+  target.setMultiscale2dName("tiles");
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotationToLabel(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol_todo");
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "1165", 8700);
 
   ZDvidReader reader;
@@ -22230,7 +22261,25 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "d0b7", 8700);
+  target.set("emdata1.int.janelia.org", "6a1b", 8700);
+//  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setGrayScaleName("grayscale_lcn");
+  ZDvidReader reader;
+  reader.open(target);
+  ZIntPoint blockIndex(53, 13, 54);
+  int blockNumber = 4;
+
+  ZDvidInfo grayscaleInfo = reader.readGrayScaleInfo();
+  tic();
+  std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
+        blockIndex, grayscaleInfo, blockNumber);
+  ptoc();
+#endif
+
+#if 0
+  ZDvidTarget target;
+
+  target.set("emdata1.int.janelia.org", "89ec", 8700);
   target.useDefaultDataSetting(true);
 
   ZDvidReader reader;
@@ -22246,8 +22295,9 @@ void ZTest::test(MainWindow *host)
   int missing = reader.checkProofreadingData();
   if (missing > 0) {
     std::cout << missing << " data are missing for proofreading." << std::endl;
+  } else {
+    std::cout << "The node looks good for proofreading." << std::endl;
   }
-
 #endif
 
 
@@ -22256,16 +22306,23 @@ void ZTest::test(MainWindow *host)
   target.set("emdata1.int.janelia.org", "6a1b", 8700);
 //  target.set("emdata2.int.janelia.org", "e2f0", 7000);
   target.setGrayScaleName("grayscale_lcn");
+#endif
+
+#if 0
+  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setSynapseName("annot_synapse_010417");
+  target.setSynapseLabelszName("annot_synapse_010417_ROI_LOP_15");
   ZDvidReader reader;
   reader.open(target);
-  ZIntPoint blockIndex(53, 13, 54);
-  int blockNumber = 4;
 
-  ZDvidInfo grayscaleInfo = reader.readGrayScaleInfo();
-  tic();
-  std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
-        blockIndex, grayscaleInfo, blockNumber);
-  ptoc();
+  int count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_PRE_SYN);
+  std::cout << "Pre count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_POST_SYN);
+  std::cout << "Post count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
+  std::cout << "All count: " << count << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

@@ -2886,6 +2886,21 @@ ZJsonArray ZDvidReader::readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) 
   return obj;
 }
 
+int ZDvidReader::readSynapseLabelszBody(
+    uint64_t bodyId, ZDvid::ELabelIndexType index) const
+{
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  ZJsonObject obj = readJsonObject(dvidUrl.getSynapseLabelszBodyUrl(bodyId, index));
+
+  int count = 0;
+  std::string key = ZDvidUrl::GetLabelszIndexTypeStr(index);
+  if (obj.hasKey(key.c_str())) {
+    count = ZJsonParser::integerValue(obj[key.c_str()]);
+  }
+
+  return count;
+}
+
 ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const {
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray obj = readJsonArray(dvidUrl.getSynapseLabelszThresholdUrl(threshold, index));

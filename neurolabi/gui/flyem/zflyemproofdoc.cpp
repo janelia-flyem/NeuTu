@@ -688,7 +688,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     initData(target);
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
-      if (!getSupervisor()->isEmpty()) {
+      if (!getSupervisor()->isEmpty() && !target.readOnly()) {
         int statusCode = getSupervisor()->testServer();
         if (statusCode != 200) {
           emit messageGenerated(
@@ -705,6 +705,20 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     prepareDvidData();
 
     updateDvidTargetForObject();
+
+    if (!target.readOnly()) {
+      int missing = m_dvidReader.checkProofreadingData();
+      if (missing > 0) {
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("WARNING: Some data for proofreading are missing in "
+                        "the database. "
+                        "Please do NOT proofread segmentation "
+                        "until you fix the problem.").
+                arg(getSupervisor()->getMainUrl().c_str()),
+                NeuTube::MSG_WARNING));
+      }
+    }
 
     startTimer();
   } else {

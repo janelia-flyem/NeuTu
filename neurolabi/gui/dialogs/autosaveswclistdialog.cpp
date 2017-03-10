@@ -28,7 +28,15 @@ AutosaveSwcListDialog::~AutosaveSwcListDialog()
 void AutosaveSwcListDialog::updateFile()
 {
   m_fileList.loadDir(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str());
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::AUTO_SAVE).c_str(),
+        false);
+  updateCount();
+}
+
+void AutosaveSwcListDialog::updateCount()
+{
+  ui->countLabel->setText(QString("%1 (Capacity: %2)").arg(m_fileList.rowCount()).
+                          arg(m_fileList.getMaxFileCount()));
 }
 
 QModelIndexList AutosaveSwcListDialog::getSelected() const
@@ -50,6 +58,7 @@ void AutosaveSwcListDialog::deleteSelected()
     for (int i = rowList.size() - 1; i >= 0; --i) {
       m_fileList.deleteFile(rowList[i]);
     }
+    updateCount();
   }
 }
 
@@ -85,4 +94,5 @@ void AutosaveSwcListDialog::on_pushButton_clicked()
   ui->listView->setUpdatesEnabled(false);
   m_fileList.deleteAll();
   ui->listView->setUpdatesEnabled(true);
+  updateCount();
 }
