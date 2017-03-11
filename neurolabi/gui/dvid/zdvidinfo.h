@@ -102,6 +102,8 @@ public:
   int getMinY() const;
   int getMaxY() const;
 
+  ZIntCuboid getDataRange() const;
+
   void clear();
 
   bool isValid() const;

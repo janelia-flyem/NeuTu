@@ -158,6 +158,8 @@ public:
   bool hasBodyLabel() const;
   bool hasLabelBlock() const;
 
+  static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
+
   std::string getLabelBlockName() const;
   std::string getLabelBlockName(int zoom) const;
   std::string getValidLabelBlockName(int zoom) const;
@@ -179,6 +181,8 @@ public:
   bool isLowQualityTile(const std::string &name) const;
 
   std::string getGrayScaleName() const;
+  std::string getGrayScaleName(int zoom) const;
+  std::string getValidGrayScaleName(int zoom) const;
   void setGrayScaleName(const std::string &name);
 
   std::string getRoiName() const;
@@ -238,6 +242,14 @@ public:
 
   void setMaxLabelZoom(int zoom) {
     m_maxLabelZoom = zoom;
+  }
+
+  int getMaxGrayscaleZoom() const {
+    return m_maxGrayscaleZoom;
+  }
+
+  void setMaxGrayscaleZoom(int zoom) {
+    m_maxGrayscaleZoom = zoom;
   }
 
   bool usingMulitresBodylabel() const;
@@ -300,6 +312,7 @@ private:
   bool m_isSupervised;
   std::string m_supervisorServer;
   int m_maxLabelZoom;
+  int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
 //  std::string m_userName;

@@ -510,28 +510,13 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
   }
 }
 
-void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
+QString ZFlyEmProofDoc::getAnnotationNameWarningDetail(
+    const QMap<uint64_t, QVector<QString> > &nameMap) const
 {
-  bool okToContinue = true;
+  QString detail;
 
-  cleanBodyAnnotationMap();
-
-  QMap<uint64_t, QVector<QString> > nameMap;
-  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
-       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
-    const ZFlyEmBodyAnnotation& anno = iter.value();
-    if (!anno.getName().empty()) {
-      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
-
-      if (!nameMap.contains(mappedBodyId)) {
-        nameMap[mappedBodyId] = QVector<QString>();
-      }
-      nameMap[mappedBodyId].append(anno.getName().c_str());
-//      nameMap[iter.key()] = anno.getName().c_str();
-    }
-  }
   if (nameMap.size() > 1) {
-    QString detail = "<p>Details: </p>";
+    detail = "<p>Details: </p>";
     detail += "<ul>";
     for (QMap<uint64_t, QVector<QString> >::const_iterator iter = nameMap.begin();
          iter != nameMap.end(); ++iter) {
@@ -546,11 +531,73 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
       detail += "</li>";
     }
     detail += "</ul>";
+  }
+
+  return detail;
+}
+
+QString ZFlyEmProofDoc::getAnnotationFinalizedWarningDetail(
+    const std::vector<uint64_t> &finalizedBodyArray) const
+{
+  QString detail;
+
+  if (!finalizedBodyArray.empty()) {
+    detail = "<p>Finalized: </p>";
+    detail += "<ul>";
+    for (std::vector<uint64_t>::const_iterator iter = finalizedBodyArray.begin();
+         iter != finalizedBodyArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      detail += QString("<li>%1</li>").arg(bodyId);
+    }
+    detail += "</ul>";
+  }
+
+  return detail;
+}
+
+void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
+{
+  bool okToContinue = true;
+
+  cleanBodyAnnotationMap();
+
+  QMap<uint64_t, QVector<QString> > nameMap;
+  std::vector<uint64_t> finalizedBodyArray;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!anno.getName().empty()) {
+      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
+
+      if (!nameMap.contains(mappedBodyId)) {
+        nameMap[mappedBodyId] = QVector<QString>();
+      }
+      nameMap[mappedBodyId].append(anno.getName().c_str());
+//      nameMap[iter.key()] = anno.getName().c_str();
+    }
+    if (anno.getStatus() == "Finalized") {
+      finalizedBodyArray.push_back(iter.key());
+    }
+  }
+
+  if (!finalizedBodyArray.empty()) {
+    QString detail = getAnnotationFinalizedWarningDetail(finalizedBodyArray);
     okToContinue = ZDialogFactory::Ask(
-          "Conflict to Resolve",
-          "You are about to merge multiple names. Do you want to continue?" +
+          "Merging Finalized Body",
+          "At least one of the bodies to be merge is finalized. Do you want to continue?" +
           detail,
           NULL);
+  }
+
+  if (okToContinue) {
+    if (nameMap.size() > 1) {
+      QString detail = getAnnotationNameWarningDetail(nameMap);
+      okToContinue = ZDialogFactory::Ask(
+            "Conflict to Resolve",
+            "You are about to merge multiple names. Do you want to continue?" +
+            detail,
+            NULL);
+    }
   }
 
   if (okToContinue) {
@@ -745,6 +792,11 @@ void ZFlyEmProofDoc::updateMaxLabelZoom()
   m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
+void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
+{
+  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
+}
+
 void ZFlyEmProofDoc::readInfo()
 {
   m_grayScaleInfo = m_dvidReader.readGrayScaleInfo();
@@ -770,6 +822,7 @@ void ZFlyEmProofDoc::readInfo()
   }
 
   updateMaxLabelZoom();
+  updateMaxGrayscaleZoom();
 
   LINFO() << startLog;
 }

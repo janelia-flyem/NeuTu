@@ -206,6 +206,7 @@ using namespace std;
 #include "test/zstacktest.h"
 #include "test/zstackskeletonizertest.h"
 #include "test/zflyembodycoloroptiontest.h"
+#include "test/zflyembodyannotationtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
@@ -295,6 +296,7 @@ using namespace std;
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
+#include "dvid/zdvidgrayslice.h"
 
 using namespace std;
 
@@ -20354,6 +20356,7 @@ void ZTest::test(MainWindow *host)
                                  4099 + 99, 5018 + 99, 10343 + 99), 1);
 #endif
 
+
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "372c", 8500);
@@ -22323,6 +22326,157 @@ void ZTest::test(MainWindow *host)
 
   count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
   std::cout << "All count: " << count << std::endl;
+#endif
+
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().print();
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
+
+  ZIntCuboid box = dvidInfo.getDataRange();
+
+  ZStack *stack = reader.readGrayScale(
+        box.getFirstCorner().getX(), 6100, box.getFirstCorner().getZ(),
+        box.getWidth(), 1, box.getDepth());
+
+  stack->reshape(stack->width(), stack->depth(), 1);
+  stack->setOffset(stack->getOffset().getX(), stack->getOffset().getZ(),
+                   stack->getOffset().getY());
+  stack->printInfo();
+
+//  stack->downsampleMin(7, 7, 7);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  delete stack;
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/test.tif");
+
+  stack.downsampleMin(7, 7, 7);
+  stack.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/slice_ds8.tif");
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/90_shift.swc");
+    tree.rescale(0.125, 0.125, 0.125);
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/90_shift_ds8.swc");
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/139_shift.swc");
+    tree.rescale(0.125, 0.125, 0.125);
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/139_shift_ds8.swc");
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/9829583889_shift.swc");
+    tree.rescale(0.125, 0.125, 0.125);
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/9829583889_shift_ds8.swc");
+  }
+#endif
+
+#if 0
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/90.swc");
+
+    ZSwcTree::DepthFirstIterator iter(&tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      std::swap(tn->node.y, tn->node.z);
+    }
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/90_shift.swc");
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/139.swc");
+
+    ZSwcTree::DepthFirstIterator iter(&tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      std::swap(tn->node.y, tn->node.z);
+    }
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/139_shift.swc");
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/9829583889.swc");
+
+    ZSwcTree::DepthFirstIterator iter(&tree);
+    while (iter.hasNext()) {
+      Swc_Tree_Node *tn = iter.next();
+      std::swap(tn->node.y, tn->node.z);
+    }
+    tree.save(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/9829583889_shift.swc");
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscalejpeg");
+  ZStack *stack = reader.readGrayScaleLowtis(2610, 2354, 3197, 512, 512, 1);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  std::cout << reader.getDvidTarget().getMaxGrayscaleZoom() << std::endl;
+
+  ZStack* stack = reader.readGrayScale(2610, 2354, 3197, 512, 512, 1, 2);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete stack;
+
+#endif
+
+#if 1
+  ZDvidGraySlice slice;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  slice.setDvidTarget(reader.getDvidTarget());
+
+  ZStackViewParam param;
+  param.setViewPort(2610, 2354, 2610 + 1024, 2354 + 1024);
+  param.setZ(3197);
+
+  slice.update(param);
+  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+
 #endif
 
   std::cout << "Done." << std::endl;

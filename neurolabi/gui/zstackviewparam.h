@@ -68,6 +68,8 @@ public:
     return m_fixingZ;
   }
 
+  int getZoomLevel(int maxLevel) const;
+
 private:
   void init(NeuTube::ECoordinateSystem coordSys);
 
