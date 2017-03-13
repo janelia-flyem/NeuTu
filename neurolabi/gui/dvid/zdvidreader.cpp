@@ -2146,6 +2146,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
+      m_lowtisConfigGray.centercut = std::tuple<int, int>(256, 256);
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -2178,9 +2179,17 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       offset[1] = y0;
       offset[2] = z0;
 
+      bool centerCut = true;
+      if (zoom == getDvidTarget().getMaxGrayscaleZoom()) {
+        centerCut = false;
+      }
+
+      if (zoom >= 1) {
+        zoom -= 1;
+      }
 
       m_lowtisServiceGray->retrieve_image(
-            width, height, offset, (char*) stack->array8(), zoom);
+            width, height, offset, (char*) stack->array8(), zoom, centerCut);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
