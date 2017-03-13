@@ -7,7 +7,7 @@
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::TARGET_STACK_CANVAS);
+  setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_GRAY_SLICE;
   m_zoom = 0;
   m_maxWidth = 512;
@@ -22,7 +22,7 @@ ZDvidGraySlice::~ZDvidGraySlice()
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 
 void ZDvidGraySlice::clear()
-{
+{ 
   m_reader.clear();
 //  delete m_reader;
 //  m_reader = NULL;
@@ -44,7 +44,8 @@ void ZDvidGraySlice::display(
     const_cast<ZDvidGraySlice&>(*this).update(z);
 
     if (z == getZ() && !m_image.isNull()) {
-      painter.drawImage(getX(), getY(), m_image);
+//      painter.drawImage(getX(), getY(), m_image);
+      painter.drawPixmap(getX(), getY(), m_pixmap);
     }
 }
 
@@ -61,6 +62,11 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
 void ZDvidGraySlice::saveImage(const std::string &path)
 {
   m_image.save(path.c_str());
+}
+
+void ZDvidGraySlice::savePixmap(const std::string &path)
+{
+  m_pixmap.save(path.c_str());
 }
 
 void ZDvidGraySlice::updateImage()
@@ -83,6 +89,20 @@ void ZDvidGraySlice::updateImage()
       m_image.setData((uint8_t*) buffer.data()/*, 1.5, 0*/);
     }
   }
+}
+
+int ZDvidGraySlice::getScale() const
+{
+  return pow(2, m_zoom);
+}
+
+void ZDvidGraySlice::updatePixmap()
+{
+  m_pixmap.detach();
+  m_pixmap.convertFromImage(m_image);
+  double scale = 1.0 / getScale();
+  m_pixmap.setScale(scale, scale);
+  m_pixmap.setOffset(-getX(), -getY());
 }
 
 void ZDvidGraySlice::setBoundBox(const ZRect2d &rect)
@@ -113,6 +133,7 @@ void ZDvidGraySlice::update(int z)
 //    m_z = z;
     m_currentViewParam.setZ(z);
     updateImage();
+    updatePixmap();
   }
 }
 
@@ -172,10 +193,12 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
+  m_currentViewParam = viewParam;
+
 //  QMutexLocker locker(&m_updateMutex);
 
   if (isVisible()) {
-    int zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
+    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
 //    int zoomRatio = pow(2, zoom);
 
     QRect viewPort = viewParam.getViewPort();
@@ -194,9 +217,10 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     ZStack *stack = m_reader.readGrayScale(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
           box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1,
-          zoom);
+          m_zoom);
 #endif
     updateImage(stack);
+    updatePixmap();
   }
 }
 

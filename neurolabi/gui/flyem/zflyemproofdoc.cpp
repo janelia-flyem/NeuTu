@@ -37,6 +37,7 @@
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"
+#include "dvid/zdvidgrayslice.h"
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
@@ -877,41 +878,25 @@ void ZFlyEmProofDoc::prepareDvidData()
     //Download ROI
     m_futureMap["loadRoiFunc"] =
         QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
-#if 0
-    if (!getDvidTarget().getRoiName().empty()) {
-      ZObject3dScan *obj =
-          m_dvidReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
-      if (obj != NULL) {
-        if (!obj->isEmpty()) {
-#ifdef _DEBUG_
-          std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
-#endif
-          obj->setColor(0, 255, 0);
-          obj->setZOrder(2);
-          obj->setTarget(ZStackObject::TARGET_WIDGET);
-          obj->useCosmeticPen(true);
-          obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
-//          obj->setDsIntv(31, 31, 31);
-          obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
-          obj->setHittable(false);
-          addObject(obj);
-//          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
-        } else {
-          delete obj;
-        }
-      }
-
-    }
-#endif
   }
 
 
-  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-  ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-  ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-  addObject(ensemble, true);
+  if (getDvidTarget().hasTileData()) {
+    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+    ensemble->setDvidTarget(getDvidTarget());
+    addObject(ensemble, true);
+  } else {
+    if (getDvidTarget().hasGrayScaleData()) {
+      ZDvidGraySlice *slice = new ZDvidGraySlice;
+      slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+      slice->setDvidTarget(getDvidTarget());
+      addObject(slice, true);
+    }
+  }
 
-  ensemble->setDvidTarget(getDvidTarget());
   addDvidLabelSlice(NeuTube::Z_AXIS);
 
 //    addDvidLabelSlice(NeuTube::Y_AXIS);

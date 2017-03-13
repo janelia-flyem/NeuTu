@@ -551,6 +551,11 @@ std::string ZDvidTarget::getMultiscale2dName() const
   return m_multiscale2dName;
 }
 
+bool ZDvidTarget::hasTileData() const
+{
+  return !getMultiscale2dName().empty();
+}
+
 bool ZDvidTarget::isTileLowQuality() const
 {
   return isLowQualityTile(getMultiscale2dName());
@@ -578,6 +583,15 @@ bool ZDvidTarget::isLowQualityTile(const std::string &name) const
   }
 
   return lowQuality;
+}
+
+bool ZDvidTarget::hasGrayScaleData() const
+{
+  if (getGrayScaleName() == "*") {
+    return false;
+  }
+
+  return true;
 }
 
 std::string ZDvidTarget::getGrayScaleName() const
