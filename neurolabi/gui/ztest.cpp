@@ -22469,6 +22469,7 @@ void ZTest::test(MainWindow *host)
 
   slice.update(param);
   slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
 
 #endif
 

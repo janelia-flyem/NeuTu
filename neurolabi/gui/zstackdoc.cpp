@@ -565,6 +565,11 @@ bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
     return m_objectGroup.findFirstSameSource(type, source) != NULL;
 }
 
+bool ZStackDoc::hasObject(ZStackObject::ETarget target) const
+{
+  return m_objectGroup.hasObject(target);
+}
+
 ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &source) const
 {
     return m_objectGroup.findFirstSameSource(type, source);
@@ -7731,6 +7736,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
         break;
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
+        break;
+      case ZStackObject::TYPE_DVID_GRAY_SLICE:
+        player = new ZDvidGraySlicePlayer(obj);
         break;
       case ZStackObject::TYPE_DVID_SPARSEVOL_SLICE:
         player = new ZDvidSparsevolSlicePlayer(obj);

@@ -1871,7 +1871,7 @@ bool ZStackView::paintTileCanvasBuffer()
 
 //  QElapsedTimer timer;
 //  timer.start();
-  if (buddyDocument()->hasObject(ZStackObject::TYPE_DVID_TILE_ENSEMBLE)) {
+  if (buddyDocument()->hasObject(ZStackObject::TARGET_TILE_CANVAS)) {
 #ifdef _DEBUG_
     std::cout << "updating tile canvas ..." << std::endl;
 #endif

@@ -156,6 +156,7 @@ public: //attributes
   bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
+  bool hasObject(ZStackObject::ETarget target) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 
