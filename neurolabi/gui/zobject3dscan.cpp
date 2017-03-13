@@ -1731,6 +1731,7 @@ void ZObject3dScan::displaySolid(
 //  return painted;
 }
 
+#ifdef _QT_GUI_USED_
 static QList<std::vector<QPoint> > extract_contour(
     Stack *stack, int dx, int dy, int sx, int sy)
 {
@@ -1791,6 +1792,7 @@ static QList<std::vector<QPoint> > extract_contour(
 
   return contourList;
 }
+#endif
 
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
                             NeuTube::EAxis sliceAxis) const
@@ -3136,7 +3138,9 @@ bool ZObject3dScan::importDvidObjectBufferDs(
     intv = 0;
   }
 
+  #ifdef _QT_GUI_USED_
   LINFO() << "Downsample interval:" << intv;
+  #endif
 
   int xIntv = intv;
   int yIntv = intv;
