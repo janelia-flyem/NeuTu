@@ -148,36 +148,35 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
   }
 
   bool updated = false;
-  if (viewParam.getZ() != m_currentViewParam.getZ()){
-    ZStackViewParam newViewParam = viewParam;
 
-    int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
-    if (maxZoomLevel < 3) {
-      int width = viewParam.getViewPort().width();
-      int height = viewParam.getViewPort().height();
-      int area = width * height;
-      //  const int maxWidth = 512;
-      //  const int maxHeight = 512;
-      if (area > m_maxWidth * m_maxHeight) {
-        if (width > m_maxWidth) {
-          width = m_maxWidth;
-        }
-        if (height > m_maxHeight) {
-          height = m_maxHeight;
-        }
-        newViewParam.resize(width, height);
+  ZStackViewParam newViewParam = viewParam;
+
+  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  if (maxZoomLevel < 3) {
+    int width = viewParam.getViewPort().width();
+    int height = viewParam.getViewPort().height();
+    int area = width * height;
+    //  const int maxWidth = 512;
+    //  const int maxHeight = 512;
+    if (area > m_maxWidth * m_maxHeight) {
+      if (width > m_maxWidth) {
+        width = m_maxWidth;
       }
+      if (height > m_maxHeight) {
+        height = m_maxHeight;
+      }
+      newViewParam.resize(width, height);
     }
+  }
 
 
-    if (!m_currentViewParam.contains(newViewParam) ||
-        viewParam.getZoomLevel(maxZoomLevel) <
-        m_currentViewParam.getZoomLevel(maxZoomLevel)) {
-      forceUpdate(newViewParam);
-      updated = true;
+  if (!m_currentViewParam.contains(newViewParam) ||
+      viewParam.getZoomLevel(maxZoomLevel) <
+      m_currentViewParam.getZoomLevel(maxZoomLevel)) {
+    forceUpdate(newViewParam);
+    updated = true;
 
-      m_currentViewParam = newViewParam;
-    }
+    m_currentViewParam = newViewParam;
   }
 
   return updated;
