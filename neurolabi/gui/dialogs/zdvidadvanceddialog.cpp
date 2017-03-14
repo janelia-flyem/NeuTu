@@ -1,5 +1,7 @@
 #include "zdvidadvanceddialog.h"
 #include "ui_zdvidadvanceddialog.h"
+#include "dvid/zdvidtarget.h"
+#include "neutubeconfig.h"
 
 ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
   QDialog(parent),
@@ -26,6 +28,45 @@ ZDvidAdvancedDialog::~ZDvidAdvancedDialog()
   delete ui;
 }
 
+void ZDvidAdvancedDialog::update(const ZDvidTarget &dvidTarget)
+{
+  setSupervised(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
+  setSupervisorServer(
+        dvidTarget.getSupervisor().empty() ?
+          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+          dvidTarget.getSupervisor().c_str());
+#endif
+
+  if (dvidTarget.isDefaultTodoListName()) {
+    setTodoName("");
+  } else {
+    setTodoName(dvidTarget.getTodoListName());
+  }
+  setDvidServer(dvidTarget.getAddressWithPort().c_str());
+
+  ZDvidNode node = dvidTarget.getGrayScaleSource();
+  setGrayscaleSource(node, node == dvidTarget.getNode());
+
+  node = dvidTarget.getTileSource();
+  setTileSource(
+        dvidTarget.getTileSource(), node == dvidTarget.getNode());
+
+  updateWidgetForEdit(dvidTarget.isEditable());
+  updateWidgetForDefaultSetting(dvidTarget.usingDefaultDataSetting());
+}
+
+void ZDvidAdvancedDialog::configure(ZDvidTarget *target)
+{
+  if (target != NULL) {
+    target->enableSupervisor(isSupervised());
+    target->setSupervisorServer(getSupervisorServer());
+    target->setTodoListName(getTodoName());
+    target->setGrayScaleSource(getGrayscaleSource());
+    target->setTileSource(getTileSource());
+  }
+}
+
 void ZDvidAdvancedDialog::backup()
 {
   m_oldSupervised = isSupervised();
@@ -33,6 +74,9 @@ void ZDvidAdvancedDialog::backup()
   m_oldTodoName = getTodoName();
   m_oldGrayscaleSource = ui->grayscaleSourceWidget->getNode();
   m_oldTileSource = ui->tileSourceWidget->getNode();
+  m_oldMainGrayscale = ui->grayscaleMainCheckBox->isChecked();
+  m_oldMainTile = ui->tileMainCheckBox->isChecked();
+//  m_oldDefaultTodo = ui->defaultTodoCheckBox->isChecked();
 }
 
 void ZDvidAdvancedDialog::recover()
@@ -40,8 +84,9 @@ void ZDvidAdvancedDialog::recover()
   setSupervised(m_oldSupervised);
   setSupervisorServer(m_oldSupervisorServer);
   setTodoName(m_oldTodoName);
-  setGrayscaleSource(m_oldGrayscaleSource);
-  setTileSource(m_oldTileSource);
+  setGrayscaleSource(m_oldGrayscaleSource, m_oldMainGrayscale);
+  setTileSource(m_oldTileSource, m_oldMainTile);
+//  ui->defaultTodoCheckBox->setChecked(m_oldDefaultTodo);
 }
 
 void ZDvidAdvancedDialog::setDvidServer(const QString &str)
@@ -118,7 +163,13 @@ void ZDvidAdvancedDialog::setTodoName(const std::string &name)
 
 std::string ZDvidAdvancedDialog::getTodoName() const
 {
-  return ui->todoLineEdit->text().toStdString();
+  /*
+  if (ui->defaultTodoCheckBox->isChecked()) {
+    return "";
+  }
+  */
+
+  return ui->todoLineEdit->text().trimmed().toStdString();
 }
 
 bool ZDvidAdvancedDialog::isSupervised() const
