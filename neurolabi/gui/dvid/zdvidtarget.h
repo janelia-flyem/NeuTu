@@ -211,6 +211,7 @@ public:
 
   std::string getTodoListName() const;
   void setTodoListName(const std::string &name);
+  bool isDefaultTodoListName() const;
 
   std::string getBodyAnnotationName() const;
 

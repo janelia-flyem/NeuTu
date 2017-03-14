@@ -6,6 +6,8 @@
 
 #include "dvid/zdvidnode.h"
 
+class ZDvidTarget;
+
 namespace Ui {
 class ZDvidAdvancedDialog;
 }
@@ -21,6 +23,9 @@ class ZDvidAdvancedDialog : public QDialog
 public:
   explicit ZDvidAdvancedDialog(QWidget *parent = 0);
   ~ZDvidAdvancedDialog();
+
+  void update(const ZDvidTarget &target);
+  void configure(ZDvidTarget *target);
 
   void setDvidServer(const QString &str);
   void updateWidgetForEdit(bool editable);
@@ -46,10 +51,11 @@ public:
   void recover();
 
   static void UpdateWidget(QLabel *label, QLineEdit *lineEdit,
-                    const QString &labelText, const QString &dataText);
+                    const QString &labelText, const QString &dataText,
+                           QWidget *hintWidget = NULL);
   static void UpdateWidget(QLabel *label, QLineEdit *lineEdit,
                     const QString &labelText, const ZJsonObject &obj,
-                    const char *key);
+                    const char *key, QWidget *hintWidget = NULL);
 
 private:
   Ui::ZDvidAdvancedDialog *ui;
@@ -59,6 +65,9 @@ private:
   std::string m_oldTodoName;
   ZDvidNode m_oldGrayscaleSource;
   ZDvidNode m_oldTileSource;
+  bool m_oldMainGrayscale;
+  bool m_oldMainTile;
+//  bool m_oldDefaultTodo;
 };
 
 #endif // ZDVIDADVANCEDDIALOG_H

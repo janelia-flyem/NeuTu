@@ -57,6 +57,13 @@
      <item>
       <widget class="QLineEdit" name="todoLineEdit"/>
      </item>
+     <item>
+      <widget class="QLabel" name="todoHintLabel">
+       <property name="text">
+        <string>Leave it empty to use default name</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
