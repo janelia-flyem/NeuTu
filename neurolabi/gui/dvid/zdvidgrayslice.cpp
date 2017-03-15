@@ -4,6 +4,8 @@
 #include "zrect2d.h"
 #include "zpainter.h"
 #include "zstackviewparam.h"
+#include "misc/miscutility.h"
+#include "imgproc/zstackprocessor.h"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
@@ -217,8 +219,25 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
           box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1,
           m_zoom);
+
+    if (m_zoom > 0) {
+      int z = box.getFirstCorner().getZ();
+      int scale = misc::GetZoomScale(m_zoom);
+      int remain = z % scale;
+      if (remain > 0) {
+        int z1 = z + scale;
+        ZStack *stack2 = m_reader.readGrayScale(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              z1, box.getWidth(), box.getHeight(), 1, m_zoom);
+        double lambda = double(remain) / scale;
+        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
+        delete stack2;
+      }
+    }
 #endif
     updateImage(stack);
+    delete stack;
+
     updatePixmap();
   }
 }
