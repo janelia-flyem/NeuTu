@@ -22304,7 +22304,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "6a1b", 8700);
 //  target.set("emdata2.int.janelia.org", "e2f0", 7000);
@@ -22456,7 +22456,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidGraySlice slice;
 
   ZDvidTarget target;
