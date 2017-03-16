@@ -1059,6 +1059,61 @@ ZStack* ZStackProcessor::IntepolateFovia(
   return out;
 }
 
+ZStack* ZStackProcessor::IntepolateFovia(
+    const ZStack *stack1, const ZStack *stack2, int cw, int ch,
+    int scale, int z1, int z2, int z, ZStack *out)
+{
+  if (stack1->kind() == GREY && stack2->kind() == GREY &&
+      stack1->depth() == 1 && stack2->depth() == 1) {
+    if (out == NULL) {
+      out = new ZStack(stack1->kind(), stack1->getBoundBox(), 1);
+    }
+
+    int h = stack1->height();
+    int w = stack1->width();
+
+    int sw1 = (w - cw) / 2;
+    int sw2 = sw1 + cw;
+    int sh1 = (h - ch) / 2;
+    int sh2 = sh1 + ch;
+
+    const uint8_t *array1 = stack1->array8();
+    const uint8_t *array2 = stack2->array8();
+    uint8_t *outArray = out->array8();
+
+    int prevZ = (z1 / scale) * scale;
+    int nextZ = (z2 / scale) * scale;
+
+    int centerScale = scale / 2;
+    int prevCenterZ = (z1 / centerScale) * centerScale;
+    int nextCenterZ = (z2 / centerScale) * centerScale;
+
+    double lambda1 = double(z - prevZ) / (nextZ - prevZ);
+    double lambda2 = double(z - prevCenterZ) / (nextCenterZ - prevCenterZ);
+
+
+    for (int y = h - 1; y >= 0; --y) {
+      int yOffset = y * w;
+      if (y < sh1 || y >= sh2) {
+        interpolateArray(
+              array1, array2, 0, w, yOffset, lambda1, outArray);
+      } else {
+        interpolateArray(
+              array1, array2, 0, sw1, yOffset, lambda1, outArray);
+        interpolateArray(
+              array1, array2, sw1, sw2, yOffset, lambda2, outArray);
+        interpolateArray(
+              array1, array2, sw2, w, yOffset, lambda1, outArray);
+      }
+    }
+  } else {
+    return NULL;
+  }
+
+  return out;
+}
+
+
 static void interpolateArray(
     const uint8_t *array1, const uint8_t *array2, int scale,
     int x0, int x1, int yOffset1, int yOffset2, double lambda, uint8_t *outArray)

@@ -22492,11 +22492,23 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+  ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, 7, 5, 1, 1);
+  ZStack *stack2 = ZStackFactory::makeOneStack(7, 5, 1, 1);
+  C_Stack::setConstant(stack2->data(), 255);
+
+  ZStack *out = ZStackProcessor::IntepolateFovia(stack1, stack2, 3, 3, 4, 1, 6, 1);
+
+  C_Stack::printValue(out->c_stack());
+//  out->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#endif
+
+#if 0
   ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, 512, 256, 1, 1);
   ZStack *stack2 = ZStackFactory::makeOneStack(512, 256, 1, 1);
   C_Stack::setConstant(stack2->data(), 255);
 
-  ZStack *out = ZStackProcessor::IntepolateFovia(stack1, stack2, 128, 128, 0.5);
+  ZStack *out = ZStackProcessor::IntepolateFovia(stack1, stack2, 128, 128, 2, 0, 2, 1);
 
 //  C_Stack::printValue(out->c_stack());
   out->save(GET_TEST_DATA_DIR + "/test.tif");
