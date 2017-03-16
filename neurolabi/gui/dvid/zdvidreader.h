@@ -197,6 +197,9 @@ public:
                              int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
                               int width, int height, int zoom = 0) const;
+  ZStack *readGrayScaleLowtis(
+      int x0, int y0, int z0,
+      int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,

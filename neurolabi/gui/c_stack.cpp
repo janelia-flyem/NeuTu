@@ -221,6 +221,80 @@ void C_Stack::setOne(Mc_Stack *stack)
   }
 }
 
+template <typename T>
+static void SetConstant(Mc_Stack *stack, const T &value)
+{
+  Stack sstack;
+  for (int i = 0; i < C_Stack::channelNumber(stack); ++i) {
+    C_Stack::view(stack, &sstack, i);
+    Stack_Set_Constant(&sstack, &value);
+  }
+}
+
+static void SetConstant(Mc_Stack *stack, const color_t &value)
+{
+  Stack sstack;
+  for (int i = 0; i < C_Stack::channelNumber(stack); ++i) {
+    C_Stack::view(stack, &sstack, i);
+    Stack_Set_Constant(&sstack, value);
+  }
+}
+
+void C_Stack::setConstant(Mc_Stack *stack, int value)
+{
+  switch (kind(stack)) {
+  case GREY:
+  {
+    uint8_t v = value;
+    if (value < 0) {
+      v = 0;
+    } else if (value > 255) {
+      v = 255;
+    }
+    SetConstant(stack, v);
+  }
+    break;
+  case GREY16:
+  {
+    uint16_t v = value;
+    if (value < 0) {
+      v = 0;
+    } else if (value > 65535) {
+      v = 65535;
+    }
+    SetConstant(stack, v);
+  }
+    break;
+  case FLOAT32:
+  {
+    float v = value;
+    SetConstant(stack, v);
+  }
+    break;
+  case FLOAT64:
+  {
+    double v = value;
+    SetConstant(stack, v);
+  }
+    break;
+  case COLOR:
+  {
+    color_t v;
+
+    if (value < 0) {
+      value = 0;
+    } else if (value > 255) {
+      value = 255;
+    }
+    v[0] = value;
+    v[1] = value;
+    v[2] = value;
+
+    SetConstant(stack, v);
+  }
+    break;
+  }
+}
 
 
 ssize_t C_Stack::offset(int x, int y, int z, int width, int height, int depth)

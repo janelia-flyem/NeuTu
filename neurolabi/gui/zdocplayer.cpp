@@ -10,6 +10,7 @@
 #include "swctreenode.h"
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
+#include "dvid/zdvidgrayslice.h"
 
 ZDocPlayer::~ZDocPlayer()
 {
@@ -639,6 +640,37 @@ Z3DGraph ZStackBallPlayer::get3DGraph() const
 
   return graph;
 }
+
+//////////////
+ZDvidGraySlicePlayer::ZDvidGraySlicePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
+ZDvidGraySlice* ZDvidGraySlicePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidGraySlice*>(m_data);
+}
+
+bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidGraySlice *obj = getCompleteData();
+    if (obj != NULL) {
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
+    }
+  }
+
+  return updated;
+}
+
+/////////////////////////////
+
+
+///////////////////
 
 ZDvidLabelSlicePlayer::ZDvidLabelSlicePlayer(ZStackObject *data) :
   ZDocPlayer(data)

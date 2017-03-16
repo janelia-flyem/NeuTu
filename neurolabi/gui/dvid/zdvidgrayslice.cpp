@@ -4,10 +4,12 @@
 #include "zrect2d.h"
 #include "zpainter.h"
 #include "zstackviewparam.h"
+#include "misc/miscutility.h"
+#include "imgproc/zstackprocessor.h"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::TARGET_STACK_CANVAS);
+  setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = ZStackObject::TYPE_DVID_GRAY_SLICE;
   m_zoom = 0;
   m_maxWidth = 512;
@@ -22,7 +24,7 @@ ZDvidGraySlice::~ZDvidGraySlice()
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 
 void ZDvidGraySlice::clear()
-{
+{ 
   m_reader.clear();
 //  delete m_reader;
 //  m_reader = NULL;
@@ -44,7 +46,8 @@ void ZDvidGraySlice::display(
     const_cast<ZDvidGraySlice&>(*this).update(z);
 
     if (z == getZ() && !m_image.isNull()) {
-      painter.drawImage(getX(), getY(), m_image);
+//      painter.drawImage(getX(), getY(), m_image);
+      painter.drawPixmap(getX(), getY(), m_pixmap);
     }
 }
 
@@ -61,6 +64,11 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
 void ZDvidGraySlice::saveImage(const std::string &path)
 {
   m_image.save(path.c_str());
+}
+
+void ZDvidGraySlice::savePixmap(const std::string &path)
+{
+  m_pixmap.save(path.c_str());
 }
 
 void ZDvidGraySlice::updateImage()
@@ -83,6 +91,20 @@ void ZDvidGraySlice::updateImage()
       m_image.setData((uint8_t*) buffer.data()/*, 1.5, 0*/);
     }
   }
+}
+
+int ZDvidGraySlice::getScale() const
+{
+  return pow(2, m_zoom);
+}
+
+void ZDvidGraySlice::updatePixmap()
+{
+  m_pixmap.detach();
+  m_pixmap.convertFromImage(m_image);
+  double scale = 1.0 / getScale();
+  m_pixmap.setScale(scale, scale);
+  m_pixmap.setOffset(-getX(), -getY());
 }
 
 void ZDvidGraySlice::setBoundBox(const ZRect2d &rect)
@@ -113,6 +135,7 @@ void ZDvidGraySlice::update(int z)
 //    m_z = z;
     m_currentViewParam.setZ(z);
     updateImage();
+    updatePixmap();
   }
 }
 
@@ -127,36 +150,35 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
   }
 
   bool updated = false;
-  if (viewParam.getZ() != m_currentViewParam.getZ()){
-    ZStackViewParam newViewParam = viewParam;
 
-    int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
-    if (maxZoomLevel < 3) {
-      int width = viewParam.getViewPort().width();
-      int height = viewParam.getViewPort().height();
-      int area = width * height;
-      //  const int maxWidth = 512;
-      //  const int maxHeight = 512;
-      if (area > m_maxWidth * m_maxHeight) {
-        if (width > m_maxWidth) {
-          width = m_maxWidth;
-        }
-        if (height > m_maxHeight) {
-          height = m_maxHeight;
-        }
-        newViewParam.resize(width, height);
+  ZStackViewParam newViewParam = viewParam;
+
+  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  if (maxZoomLevel < 3) {
+    int width = viewParam.getViewPort().width();
+    int height = viewParam.getViewPort().height();
+    int area = width * height;
+    //  const int maxWidth = 512;
+    //  const int maxHeight = 512;
+    if (area > m_maxWidth * m_maxHeight) {
+      if (width > m_maxWidth) {
+        width = m_maxWidth;
       }
+      if (height > m_maxHeight) {
+        height = m_maxHeight;
+      }
+      newViewParam.resize(width, height);
     }
+  }
 
 
-    if (!m_currentViewParam.contains(newViewParam) ||
-        viewParam.getZoomLevel(maxZoomLevel) <
-        m_currentViewParam.getZoomLevel(maxZoomLevel)) {
-      forceUpdate(newViewParam);
-      updated = true;
+  if (!m_currentViewParam.contains(newViewParam) ||
+      viewParam.getZoomLevel(maxZoomLevel) <
+      m_currentViewParam.getZoomLevel(maxZoomLevel)) {
+    forceUpdate(newViewParam);
+    updated = true;
 
-      m_currentViewParam = newViewParam;
-    }
+    m_currentViewParam = newViewParam;
   }
 
   return updated;
@@ -172,10 +194,12 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
+  m_currentViewParam = viewParam;
+
 //  QMutexLocker locker(&m_updateMutex);
 
   if (isVisible()) {
-    int zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
+    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
 //    int zoomRatio = pow(2, zoom);
 
     QRect viewPort = viewParam.getViewPort();
@@ -186,17 +210,55 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 
 #if defined(_ENABLE_LOWTIS_)
-    ZStack *stack = m_reader.readLabels64Lowtis(
+    int cx = 256;
+    int cy = 256;
+    int z = box.getFirstCorner().getZ();
+    int scale = misc::GetZoomScale(m_zoom+1);
+    int remain = z % scale;
+    z -= remain;
+
+    ZStack *stack = m_reader.readGrayScaleLowtis(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-          box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
-          zoom);
+          z, box.getWidth(), box.getHeight(),
+          m_zoom, cx, cy);
+    if (m_zoom > 0) {
+      if (remain > 0) {
+//        int z1 = z + scale - remain;
+        int z1 = z + scale;
+        ZStack *stack2 = m_reader.readGrayScaleLowtis(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              z1, box.getWidth(), box.getHeight(), m_zoom, cx, cy);
+        double lambda = double(remain) / scale;
+//        ZStackProcessor::IntepolateFovia(stack, stack2, 0, 0, lambda, stack);
+        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
+        delete stack2;
+      }
+    }
 #else
     ZStack *stack = m_reader.readGrayScale(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
           box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1,
-          zoom);
+          m_zoom);
+
+    if (m_zoom > 0) {
+      int z = box.getFirstCorner().getZ();
+      int scale = misc::GetZoomScale(m_zoom);
+      int remain = z % scale;
+      if (remain > 0) {
+        int z1 = z + scale;
+        ZStack *stack2 = m_reader.readGrayScale(
+              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              z1, box.getWidth(), box.getHeight(), 1, m_zoom);
+        double lambda = double(remain) / scale;
+        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
+        delete stack2;
+      }
+    }
 #endif
     updateImage(stack);
+    delete stack;
+
+    updatePixmap();
   }
 }
 

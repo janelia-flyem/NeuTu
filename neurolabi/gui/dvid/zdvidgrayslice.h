@@ -5,6 +5,7 @@
 #include "zimage.h"
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
+#include "zpixmap.h"
 
 //#include "zdvidtarget.h"
 
@@ -62,11 +63,14 @@ public:
 
 public: //for testing
   void saveImage(const std::string &path);
+  void savePixmap(const std::string &path);
 
 private:
   void updateImage();
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
+  void updatePixmap();
+  int getScale() const;
 
   /*!
    * \brief Check if the regions of the image and the slice are consistent.
@@ -75,6 +79,9 @@ private:
 
 private:
   ZImage m_image;
+  ZPixmap m_pixmap;
+
+  QMutex m_pixmapMutex;
 //  int m_x;
 //  int m_y;
 //  int m_z;

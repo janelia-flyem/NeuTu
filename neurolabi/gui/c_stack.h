@@ -367,6 +367,13 @@ void setZero(Mc_Stack *stack);
  */
 void setOne(Mc_Stack *stack);
 
+/*!
+ * \brief Set all pixels to a constant value.
+ *
+ * The value is reset to the closest bound when it is out of range.
+ */
+void setConstant(Mc_Stack *stack, int value);
+
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,
     int conn, double value);

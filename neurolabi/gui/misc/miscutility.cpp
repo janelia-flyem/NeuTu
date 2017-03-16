@@ -330,6 +330,35 @@ bool misc::exportPointList(
   return false;
 }
 
+int misc::GetZoomScale(int zoom)
+{
+  switch (zoom) {
+  case 0:
+    return 1;
+  case 1:
+    return 2;
+  case 2:
+    return 4;
+  case 3:
+    return 8;
+  case 4:
+    return 16;
+  case 5:
+    return 32;
+  case 6:
+    return 64;
+  default:
+    break;
+  }
+
+  int scale = 1;
+  while (zoom--) {
+    scale *= 2;
+  }
+
+  return scale;
+}
+
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;

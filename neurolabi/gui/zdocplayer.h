@@ -24,6 +24,7 @@ class ZObject3dScan;
 class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
+class ZDvidGraySlice;
 
 /*!
  * \brief The basic class of manage roles to a stack object
@@ -317,6 +318,18 @@ class ZPlanePlayer : public ZDocPlayer
 {
 public:
   QString getTypeName() const { return "Plane"; }
+};
+
+/**************************************************/
+class ZDvidGraySlicePlayer : public ZDocPlayer
+{
+public:
+  ZDvidGraySlicePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidGraySlice"; }
+  bool updateData(const ZStackViewParam &viewParam) const;
+  ZDvidGraySlice *getCompleteData() const;
 };
 
 /**************************************************/

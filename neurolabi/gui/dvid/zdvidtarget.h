@@ -171,6 +171,7 @@ public:
 
   std::string getMultiscale2dName() const;
   bool isTileLowQuality() const;
+  bool hasTileData() const;
 
   void setMultiscale2dName(const std::string &name);
   void setDefaultMultiscale2dName();
@@ -180,6 +181,7 @@ public:
 //  std::string getLossTileName() const;
   bool isLowQualityTile(const std::string &name) const;
 
+  bool hasGrayScaleData() const;
   std::string getGrayScaleName() const;
   std::string getGrayScaleName(int zoom) const;
   std::string getValidGrayScaleName(int zoom) const;
@@ -209,6 +211,7 @@ public:
 
   std::string getTodoListName() const;
   void setTodoListName(const std::string &name);
+  bool isDefaultTodoListName() const;
 
   std::string getBodyAnnotationName() const;
 
