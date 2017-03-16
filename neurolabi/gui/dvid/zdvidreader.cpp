@@ -2122,7 +2122,7 @@ bool ZDvidReader::refreshLabelBuffer()
 
 #if defined(_ENABLE_LOWTIS_)
 ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
-    int width, int height, int zoom) const
+    int width, int height, int zoom, int cx, int cy) const
 {
   if (!getDvidTarget().hasLabelBlock()) {
     return NULL;
@@ -2146,7 +2146,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
-      m_lowtisConfigGray.centercut = std::tuple<int, int>(256, 256);
+      m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -2205,6 +2205,13 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
   }
 
   return stack;
+}
+
+
+ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
+    int width, int height, int zoom) const
+{
+  return readGrayScaleLowtis(x0, y0, z0, width, height, zoom, 256, 256);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
