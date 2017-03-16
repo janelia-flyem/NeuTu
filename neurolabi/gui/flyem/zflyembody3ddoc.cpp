@@ -891,7 +891,8 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
         //        item->setColor(255, 255, 0);
         item->setSource(source);
 //        addObject(item, false);
-        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+        getDataBuffer()->addUpdate(
+              item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
 
 //      endObjectModifiedMode();

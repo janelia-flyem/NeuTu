@@ -72,7 +72,7 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
       color.setRgb(255, 0, 0, 192);
       break;
     case ZFlyEmToDoItem::TO_MERGE:
-      color.setRgb(0, 0, 255, 192);
+      color.setRgb(255, 164, 0, 192);
       break;
     case ZFlyEmToDoItem::TO_SPLIT:
       color.setRgb(200, 0, 255, 192);

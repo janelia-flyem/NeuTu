@@ -723,6 +723,11 @@ std::string ZDvidTarget::getTodoListName() const
                             getBodyLabelName());
 }
 
+bool ZDvidTarget::isDefaultTodoListName() const
+{
+  return m_todoListName.empty();
+}
+
 std::string ZDvidTarget::getBodyAnnotationName() const
 {
   return ZDvidData::GetName(ZDvidData::ROLE_BODY_ANNOTATION,

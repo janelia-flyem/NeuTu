@@ -22449,7 +22449,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidGraySlice slice;
 
   ZDvidTarget target;
@@ -22470,6 +22470,49 @@ void ZTest::test(MainWindow *host)
   slice.update(param);
   slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
   slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+
+#endif
+
+#if 0
+  ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, 3, 3, 1, 1);
+  ZStack *stack2 = ZStackFactory::makeOneStack(3, 3, 1, 1);
+  C_Stack::setConstant(stack2->data(), 255);
+
+  ZStack *out = ZStackProcessor::Intepolate(stack1, stack2, 0.5);
+
+  C_Stack::printValue(out->c_stack());
+
+#endif
+
+#if 1
+  ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, 512, 512, 1, 1);
+  ZStack *stack2 = ZStackFactory::makeOneStack(128, 128, 1, 1);
+  C_Stack::setConstant(stack2->data(), 255);
+
+  ZStack *out = ZStackProcessor::IntepolateFovia(stack1, stack2, 4, 256, 256, 0.5);
+
+//  C_Stack::printValue(out->c_stack());
+  out->save(GET_TEST_DATA_DIR + "/test.tif");
+
+#endif
+
+#if 0
+  std::cout << misc::GetZoomScale(1) << std::endl;
+  std::cout << misc::GetZoomScale(10) << std::endl;
+
+  tic();
+  int n = 100000000;
+  for (int i = n; i >= 0; --i) {
+    int x = i * i;
+  }
+  ptoc();
+
+  tic();
+  int i = 100000000;
+  while (i--) {
+    int x = i * i;
+  }
+  ptoc();
 
 #endif
 
