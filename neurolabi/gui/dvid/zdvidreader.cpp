@@ -2185,7 +2185,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       }
 
       if (zoom >= 1) {
-        zoom -= 1;
+//        zoom -= 1;
       }
 
       m_lowtisServiceGray->retrieve_image(
