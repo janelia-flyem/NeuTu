@@ -46,8 +46,11 @@ public:
   static ZStack* Intepolate(
       const ZStack *stack1, const ZStack *stack2, double lambda,
       ZStack *out = NULL);
-  static ZStack* IntepolateFovia(
+  static ZStack* IntepolatePri(
       const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
+      double lambda, ZStack *out = NULL);
+  static ZStack* IntepolateFovia(
+      const ZStack *stack1, const ZStack *stack2, int cw, int ch,
       double lambda, ZStack *out = NULL);
 
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
