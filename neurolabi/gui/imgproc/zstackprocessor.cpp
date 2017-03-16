@@ -1008,6 +1008,61 @@ ZStack* ZStackProcessor::Intepolate(
 }
 
 static void interpolateArray(
+    const uint8_t *array1, const uint8_t *array2,
+    int x0, int x1, int yOffset, double lambda, uint8_t *outArray)
+{
+  for (int x = x0; x < x1; ++x) {
+    int offset = yOffset + x;
+    outArray[offset] =
+        iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+  }
+}
+
+ZStack* ZStackProcessor::IntepolateFovia(
+    const ZStack *stack1, const ZStack *stack2, int cw, int ch,
+    double lambda, ZStack *out)
+{
+  if (stack1->kind() == GREY && stack2->kind() == GREY &&
+      stack1->depth() == 1 && stack2->depth() == 1) {
+    if (out == NULL) {
+      out = new ZStack(stack1->kind(), stack1->getBoundBox(), 1);
+    }
+
+    int h = stack1->height();
+    int w = stack1->width();
+    int h2 = stack2->height();
+
+    int sw1 = (w - cw) / 2;
+    int sw2 = sw1 + cw;
+    int sh1 = (h - ch) / 2;
+    int sh2 = sh1 + ch;
+
+    const uint8_t *array1 = stack1->array8();
+    const uint8_t *array2 = stack2->array8();
+    uint8_t *outArray = out->array8();
+
+    for (int y = h - 1; y >= 0; --y) {
+      if (y < h2) {
+        int yOffset = y * h;
+        if (y < sh1 || y >= sh2) {
+          interpolateArray(
+                array1, array2, 0, w, yOffset, lambda, outArray);
+        } else {
+          interpolateArray(
+                array1, array2, 0, sw1, yOffset, lambda, outArray);
+          interpolateArray(
+                array1, array2, sw2, w, yOffset, lambda, outArray);
+        }
+      }
+    }
+  } else {
+    return NULL;
+  }
+
+  return out;
+}
+
+static void interpolateArray(
     const uint8_t *array1, const uint8_t *array2, int scale,
     int x0, int x1, int yOffset1, int yOffset2, double lambda, uint8_t *outArray)
 {
@@ -1019,7 +1074,7 @@ static void interpolateArray(
   }
 }
 
-ZStack* ZStackProcessor::IntepolateFovia(
+ZStack* ZStackProcessor::IntepolatePri(
     const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
     double lambda, ZStack *out)
 {
