@@ -1109,8 +1109,8 @@ ZStack* ZStackProcessor::IntepolatePri(
     for (int y = h - 1; y >= 0; --y) {
       int y2 = y / scale;
       if (y2 < h2) {
-        int yOffset = y * h;
-        int yOffset2 = y2 * h2;
+        int yOffset = y * w;
+        int yOffset2 = y2 * w2;
         if (y < sh1 || y >= sh2) {
           interpolateArray(
                 array1, array2, scale, 0, w, yOffset, yOffset2, lambda, outArray);
