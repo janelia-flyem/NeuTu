@@ -1030,7 +1030,6 @@ ZStack* ZStackProcessor::IntepolateFovia(
 
     int h = stack1->height();
     int w = stack1->width();
-    int h2 = stack2->height();
 
     int sw1 = (w - cw) / 2;
     int sw2 = sw1 + cw;
@@ -1042,17 +1041,15 @@ ZStack* ZStackProcessor::IntepolateFovia(
     uint8_t *outArray = out->array8();
 
     for (int y = h - 1; y >= 0; --y) {
-      if (y < h2) {
-        int yOffset = y * h;
-        if (y < sh1 || y >= sh2) {
-          interpolateArray(
-                array1, array2, 0, w, yOffset, lambda, outArray);
-        } else {
-          interpolateArray(
-                array1, array2, 0, sw1, yOffset, lambda, outArray);
-          interpolateArray(
-                array1, array2, sw2, w, yOffset, lambda, outArray);
-        }
+      int yOffset = y * h;
+      if (y < sh1 || y >= sh2) {
+        interpolateArray(
+              array1, array2, 0, w, yOffset, lambda, outArray);
+      } else {
+        interpolateArray(
+              array1, array2, 0, sw1, yOffset, lambda, outArray);
+        interpolateArray(
+              array1, array2, sw2, w, yOffset, lambda, outArray);
       }
     }
   } else {

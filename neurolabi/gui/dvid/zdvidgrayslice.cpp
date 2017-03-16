@@ -226,7 +226,8 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               z1, box.getWidth(), box.getHeight(), m_zoom, cx, cy);
         double lambda = double(remain) / scale;
-        ZStackProcessor::IntepolateFovia(stack, stack2, scale, cx, cy, lambda, stack);
+//        ZStackProcessor::IntepolateFovia(stack, stack2, 0, 0, lambda, stack);
+        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
         delete stack2;
       }
     }
