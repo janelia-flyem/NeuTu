@@ -2180,7 +2180,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       offset[2] = z0;
 
       bool centerCut = true;
-      if (zoom == getDvidTarget().getMaxGrayscaleZoom()) {
+      if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
+          width < cx || height < cy) {
         centerCut = false;
       }
 

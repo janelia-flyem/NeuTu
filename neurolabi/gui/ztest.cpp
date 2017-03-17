@@ -36,6 +36,11 @@ using namespace std;
 #endif
 #include <string>
 #include <set>
+
+#if defined(_ENABLE_LOWTIS_)
+#include <lowtis/LowtisConfig.h>
+#endif
+
 #include "zopencv_header.h"
 #include "neutube.h"
 #include "imgproc/zstackprocessor.h"
@@ -22491,7 +22496,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, 7, 5, 1, 1);
   ZStack *stack2 = ZStackFactory::makeOneStack(7, 5, 1, 1);
   C_Stack::setConstant(stack2->data(), 255);
@@ -22513,6 +22518,54 @@ void ZTest::test(MainWindow *host)
 //  C_Stack::printValue(out->c_stack());
   out->save(GET_TEST_DATA_DIR + "/test.tif");
 
+#endif
+
+#if 1
+#  if defined(_ENABLE_LOWTIS_)
+  lowtis::DVIDGrayblkConfig lowtisConfigGray;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6c", 8700);
+  target.setGrayScaleName("grayscalejpeg");
+
+  int cx = 256;
+  int cy = 256;
+  bool centerCut = false;
+
+  lowtisConfigGray.username = NeuTube::GetCurrentUserName();
+  lowtisConfigGray.dvid_server = target.getAddressWithPort();
+  lowtisConfigGray.dvid_uuid = target.getUuid();
+  lowtisConfigGray.datatypename = target.getGrayScaleName();
+  lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
+
+  ZSharedPointer<lowtis::ImageService> lowtisServiceGray =
+      ZSharedPointer<lowtis::ImageService>(
+        new lowtis::ImageService(lowtisConfigGray));
+  int width = 250;
+  int height = 256;
+  std::vector<int> offset(3);
+  int x0 = offset[0] = 2960;
+  int y0 = offset[1] = 3319;
+  int z0 = offset[2] = 3433;
+  int zoom = 1;
+  int scale = 1;
+
+  ZIntCuboid box;
+  box.setFirstCorner(x0 / scale, y0 / scale, z0 / scale);
+  box.setWidth(width);
+  box.setHeight(height);
+  box.setDepth(1);
+
+
+  ZStack *stack = new ZStack(GREY, box, 1);
+
+  for (int i = 0; i < 100; ++i) {
+    offset[2] += 1;
+    lowtisServiceGray->retrieve_image(
+          width, height, offset, (char*) stack->array8(), zoom, centerCut);
+  }
+
+#  endif
 #endif
 
 #if 0

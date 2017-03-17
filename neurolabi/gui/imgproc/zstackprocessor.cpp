@@ -1077,6 +1077,7 @@ ZStack* ZStackProcessor::IntepolateFovia(
     int sh1 = (h - ch) / 2;
     int sh2 = sh1 + ch;
 
+
     const uint8_t *array1 = stack1->array8();
     const uint8_t *array2 = stack2->array8();
     uint8_t *outArray = out->array8();
@@ -1092,18 +1093,26 @@ ZStack* ZStackProcessor::IntepolateFovia(
     double lambda2 = double(z - prevCenterZ) / (nextCenterZ - prevCenterZ);
 
 
-    for (int y = h - 1; y >= 0; --y) {
-      int yOffset = y * w;
-      if (y < sh1 || y >= sh2) {
+    if (w <= cw || h <= ch) { //always high res
+      for (int y = h - 1; y >= 0; --y) {
+        int yOffset = y * w;
         interpolateArray(
-              array1, array2, 0, w, yOffset, lambda1, outArray);
-      } else {
-        interpolateArray(
-              array1, array2, 0, sw1, yOffset, lambda1, outArray);
-        interpolateArray(
-              array1, array2, sw1, sw2, yOffset, lambda2, outArray);
-        interpolateArray(
-              array1, array2, sw2, w, yOffset, lambda1, outArray);
+              array1, array2, 0, w, yOffset, lambda2, outArray);
+      }
+    } else {
+      for (int y = h - 1; y >= 0; --y) {
+        int yOffset = y * w;
+        if (y < sh1 || y >= sh2) {
+          interpolateArray(
+                array1, array2, 0, w, yOffset, lambda1, outArray);
+        } else {
+          interpolateArray(
+                array1, array2, 0, sw1, yOffset, lambda1, outArray);
+          interpolateArray(
+                array1, array2, sw1, sw2, yOffset, lambda2, outArray);
+          interpolateArray(
+                array1, array2, sw2, w, yOffset, lambda1, outArray);
+        }
       }
     }
   } else {

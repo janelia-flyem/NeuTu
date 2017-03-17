@@ -213,7 +213,8 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     int cx = 256;
     int cy = 256;
     int z = box.getFirstCorner().getZ();
-    int scale = misc::GetZoomScale(m_zoom+1);
+    int zoom = m_zoom + 1;
+    int scale = misc::GetZoomScale(zoom);
     int remain = z % scale;
     ZStack *stack = m_reader.readGrayScaleLowtis(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
@@ -227,7 +228,8 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               z1, box.getWidth(), box.getHeight(), m_zoom, cx, cy);
 //        double lambda = double(remain) / scale;
-        ZStackProcessor::IntepolateFovia(stack, stack2, scale, z, z1, z, stack);
+        ZStackProcessor::IntepolateFovia(
+              stack, stack2, cx, cy, scale, z, z1, z, stack);
 //        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
         delete stack2;
       }
