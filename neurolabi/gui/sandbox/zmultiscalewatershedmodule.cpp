@@ -82,7 +82,10 @@ void ZWaterShedWindow::onOk()
   ZStackMultiScaleWatershed watershed;
   QList<ZSwcTree*> trees=doc->getSwcList();
 
+  clock_t start=clock();
   ZStack* result=watershed.run(src,trees,scale);
+  clock_t end=clock();
+  std::cout<<"multiscale watershed total run time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
 
   if(result)
   {

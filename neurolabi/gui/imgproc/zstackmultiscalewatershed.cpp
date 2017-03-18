@@ -59,27 +59,51 @@ void loadStack(ZStack*& img,std::vector<ZStack*>& seeds)
 
 ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 {
-  int s_w=sampled->width(),s_s=s_w*sampled->height();
+  int s_w=sampled->width(),s_h=sampled->height(),s_s=s_w*s_h;
   ZStack* recover=new ZStack(GREY,width,height,depth,1);
-  uint8_t* pr=recover->array8(),*ps_begin=sampled->array8(),*ps=0;
-  int strip=width/scale,remain=width%scale;
-  for(int k=0;k<depth;++k)
+  uint8_t* src=sampled->array8(),*dst=recover->array8();
+
+  int xcnt=0,ycnt=0,zcnt=0;
+
+  for (int z = 0; z < depth; ++z)
   {
-    for(int j=0;j<height;++j)
+    for (int y = 0; y < height; ++y)
     {
-      ps=ps_begin+j/scale*s_w+k/scale*s_s;
-      for(int i=0;i<strip;++i)
+      for (int x = 0; x < width; ++x)
       {
-        for(int t=0;t<scale;++t)
+        *dst++=*src;
+        if(++xcnt>=scale)
         {
-          *pr++=*ps;
+          xcnt=0;
+          ++src;
         }
-        ++ps;
       }
-      for(int i=0;i<remain;++i)
+      if(xcnt)
       {
-        *pr++=*ps;
+        xcnt=0;
+        ++src;
       }
+      if(++ycnt>=scale)
+      {
+        ycnt=0;
+      }
+      else
+      {
+        src-=s_w;
+      }
+    }
+    if(ycnt)
+    {
+      ycnt=0;
+      src+=s_w;
+    }
+    if(++zcnt>=scale)
+    {
+      zcnt=0;
+    }
+    else
+    {
+      src-=s_s;
     }
   }
   return recover;
@@ -522,8 +546,12 @@ ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 
 ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src)
 {
-  ZStack* recovered=upSample(src->width(),src->height(),src->depth(),_scale,sampled_watershed);
 
+  clock_t start,end;
+  start=clock();
+  ZStack* recovered=upSample(src->width(),src->height(),src->depth(),_scale,sampled_watershed);
+  end=clock();
+  std::cout<<"upsampling time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
   //std::cout<<"recovered:"<<std::endl;
   //printStack(recovered);
 
@@ -538,35 +566,47 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
   uint8_t* p=edge_map->array8();
   size_t off=0;
   uint width=edge_map->width(),slice=edge_map->height()*width;
+
+  double gs_time=0.0,lw_time=0.0;
   //process each bound box
   for(uint i=0;i<boxes.size();++i)
   {
     const ZIntCuboid& box=boxes[i];
     Cuboid_I range=getRange(box,src,_scale);
+    start=clock();
     ZStack* seed=generateSeeds(src,box,edge_map,sampled_watershed,_scale);
-
+    end=clock();
+    gs_time+=double(end-start)/CLOCKS_PER_SEC;
     //std::cout<<"seed:"<<std::endl;
     //std::cout<<seed->getOffset().m_x<<" "<<seed->getOffset().m_y<<std::endl;
     //printStack(seed);
 
     if(seed)
     {
+      start=clock();
       localWaterShed(seed,range,recovered,src,edge_map,_scale);
-      if(i!=boxes.size()-1)
+      end=clock();
+      lw_time+=double(end-start)/CLOCKS_PER_SEC;
+      /*if(i!=boxes.size()-1)
       {
-        for(int z=box.getFirstCorner().m_z;z<=box.getLastCorner().m_z;++z)
+        int start_z=box.getFirstCorner().m_z,end_z=box.getLastCorner().m_z;
+        int start_y=box.getFirstCorner().m_y,end_y=box.getLastCorner().m_y;
+        int start_x=box.getFirstCorner().m_x,end_x=box.getLastCorner().m_x;
+        for(int z=start_z;z<=end_z;++z)
         {
-          for(int y=box.getFirstCorner().m_y;y<=box.getLastCorner().m_y;++y)
+          for(int y=start_y;y<=end_y;++y)
           {
-            off=z*slice+y*width;
-            for(int x=box.getFirstCorner().m_x;x<=box.getLastCorner().m_x;++x)
+            off=z*slice+y*width+start_x;
+            for(int x=start_x;x<=end_x;++x)
                p[off++]=0;
           }
         }
-      }
+      }*/
       delete seed;
     }
   }
+  std::cout<<"seeds generating time:"<<gs_time<<std::endl;
+  std::cout<<"edge thinning time:"<<lw_time<<std::endl;
   delete edge_map;
   return recovered;
 
@@ -683,9 +723,18 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
   }
   //down sample src stack
   ZStack* sampled=src->clone();
+
+  clock_t start,end;
+  start=clock();
   sampled->downsampleMinIgnoreZero(scale-1,scale-1,scale-1);
+  end=clock();
+  std::cout<<"downsampling time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
+
   //sampled->downsampleMin(scale-1,scale-1,scale-1);
+  start=clock();
   ZStack* sampled_watershed=watershed.run(sampled,seeds);
+  end=clock();
+  std::cout<<"downsampled image segmentation time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
 
   if(sampled_watershed)
   {
