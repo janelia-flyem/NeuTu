@@ -408,6 +408,7 @@ void ZStackView::reset(bool updatingScreen)
   updateChannelControl();
   if (stack != NULL) {
     updateSlider();
+    m_depthControl->setValue(getDepth() / 2);
 //    resetDepthControl();
 //    m_imageWidget->reset();
 
