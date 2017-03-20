@@ -36,6 +36,8 @@ public:
   void setVisible(bool v);
   bool isVisible() const;
 
+    void updateGraph();
+
 signals:
   void objectSelected(ZStackObject*, bool append);
   void visibleChanged(bool);
@@ -60,6 +62,7 @@ private:
   void init();
   void updateGraphVisibleState();
   void addItem(ZFlyEmToDoItem *item);
+  void addItemNode(const ZFlyEmToDoItem *item);
 
   void resetData();
 

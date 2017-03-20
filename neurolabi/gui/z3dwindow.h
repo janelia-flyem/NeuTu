@@ -214,10 +214,12 @@ signals:
   void closed();
   void locating2DViewTriggered(const ZStackViewParam &param);
   void croppingSwcInRoi();
+
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
   void deselectingBody(const std::set<uint64_t> bodyId);
+  void settingNormalTodoVisible(bool);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -240,6 +242,7 @@ public slots:
   void update3DGraphDisplay();
   void update3DCubeDisplay();
   void updateTodoDisplay();
+  void updateTodoVisibility();
 //  void updateDecorationDisplay();
   void updateDisplay();
 
@@ -331,6 +334,8 @@ public slots:
   void addDoneMarker();
   void updateBody();
   void deselectBody();
+  void setNormalTodoVisible(bool visible);
+
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);

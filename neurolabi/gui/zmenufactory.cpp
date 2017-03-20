@@ -232,6 +232,10 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     }
 
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
+      actionList.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    }
+
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
         doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
       int swcNodeCount = doc->getSelectedSwcNodeNumber();

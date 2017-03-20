@@ -17,10 +17,11 @@
 #include "dvid/zdvidinfo.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
+//#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
-class ZFlyEmToDoItem;
+//class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -177,6 +178,7 @@ public:
   void cancelEventThread();
 
   void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;
 
@@ -192,6 +194,7 @@ public slots:
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
+  void setNormalTodoVisible(bool visible);
 
   void recycleObject(ZStackObject *obj);
   void killObject(ZStackObject *obj);
@@ -225,6 +228,7 @@ private:
   T* recoverFromGarbage(const std::string &source);
 
 signals:
+  void todoVisibleChanged();
 
 public slots:
 

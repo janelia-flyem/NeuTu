@@ -587,6 +587,11 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
+  connect(m_bodyWindow, SIGNAL(settingNormalTodoVisible(bool)),
+          doc, SLOT(setNormalTodoVisible(bool)));
+  connect(doc, SIGNAL(todoVisibleChanged()),
+          m_bodyWindow, SLOT(updateTodoVisibility()));
+
 }
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
@@ -627,6 +632,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 
   prepareBodyWindowSignalSlot(m_bodyWindow, doc);
+
   setWindowSignalSlot(m_bodyWindow);
 
   m_bodyWindow->setWindowType(NeuTube3D::TYPE_BODY);
