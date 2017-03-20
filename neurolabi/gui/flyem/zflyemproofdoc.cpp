@@ -2111,7 +2111,6 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId)
   return puncta;
 }
 
-
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId)
 {
   std::vector<ZPunctum*> puncta;

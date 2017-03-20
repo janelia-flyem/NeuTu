@@ -232,73 +232,99 @@ void ZFlyEmTodoListFilter::process(Z3DEye)
   }
 }
 
+void ZFlyEmTodoListFilter::updateGraph()
+{
+  m_graph.clear();
+  deregisterPickingObjects(getPickingManager());
+  m_selected.clear();
+
+  for (std::vector<ZFlyEmToDoItem*>::const_iterator iter = m_itemList.begin();
+       iter != m_itemList.end(); ++iter) {
+    const ZFlyEmToDoItem *item = *iter;
+    if (item->isVisible()) {
+      addItemNode(item);
+    }
+  }
+
+  m_dataIsInvalid = true;
+  invalidateResult();
+}
+
+void ZFlyEmTodoListFilter::addItemNode(const ZFlyEmToDoItem *item)
+{
+  Z3DGraphNode node;
+  node.setCenter(item->getPosition());
+  node.setRadius(item->getRadius());
+  node.setColor(item->getDisplayColor());
+  m_graph.addNode(node);
+
+  ZPoint center = node.center();
+  double d = node.radius() + node.radius();
+
+  int nodeCount = m_graph.getNodeNumber();
+
+  node.setCenter(center);
+  node.setX(center.getX() - d);
+  node.setColor(item->getDisplayColor());
+  node.setRadius(0);
+  m_graph.addNode(node);
+
+  node.setCenter(center);
+  node.setX(center.getX() + d);
+  m_graph.addNode(node);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(2);
+
+  edge.setConnection(nodeCount, nodeCount + 1);
+  m_graph.addEdge(edge);
+
+
+  nodeCount = m_graph.getNodeNumber();
+
+  node.setCenter(center);
+  node.setY(center.getY() - d);
+  m_graph.addNode(node);
+
+  node.setCenter(center);
+  node.setY(center.getY() + d);
+  m_graph.addNode(node);
+
+  edge.useNodeColor(true);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(2);
+
+  edge.setConnection(nodeCount, nodeCount + 1);
+  m_graph.addEdge(edge);
+
+  nodeCount = m_graph.getNodeNumber();
+
+  node.setCenter(center);
+  node.setZ(center.getZ() - d);
+  m_graph.addNode(node);
+
+  node.setCenter(center);
+  node.setZ(center.getZ() + d);
+  m_graph.addNode(node);
+
+  edge.useNodeColor(true);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(2);
+
+  edge.setConnection(nodeCount, nodeCount + 1);
+  m_graph.addEdge(edge);
+}
+
 void ZFlyEmTodoListFilter::addItem(ZFlyEmToDoItem *item)
 {
   if (item != NULL) {
     m_itemList.push_back(item);
-    Z3DGraphNode node;
-    node.setCenter(item->getPosition());
-    node.setRadius(item->getRadius());
-    node.setColor(item->getDisplayColor());
-    m_graph.addNode(node);
 
-    ZPoint center = node.center();
-    double d = node.radius() + node.radius();
-
-    int nodeCount = m_graph.getNodeNumber();
-
-    node.setCenter(center);
-    node.setX(center.getX() - d);
-    node.setColor(item->getDisplayColor());
-    node.setRadius(0);
-    m_graph.addNode(node);
-
-    node.setCenter(center);
-    node.setX(center.getX() + d);
-    m_graph.addNode(node);
-
-    Z3DGraphEdge edge;
-    edge.useNodeColor(true);
-    edge.setShape(GRAPH_LINE);
-    edge.setWidth(2);
-
-    edge.setConnection(nodeCount, nodeCount + 1);
-    m_graph.addEdge(edge);
-
-
-    nodeCount = m_graph.getNodeNumber();
-
-    node.setCenter(center);
-    node.setY(center.getY() - d);
-    m_graph.addNode(node);
-
-    node.setCenter(center);
-    node.setY(center.getY() + d);
-    m_graph.addNode(node);
-
-    edge.useNodeColor(true);
-    edge.setShape(GRAPH_LINE);
-    edge.setWidth(2);
-
-    edge.setConnection(nodeCount, nodeCount + 1);
-    m_graph.addEdge(edge);
-
-    nodeCount = m_graph.getNodeNumber();
-
-    node.setCenter(center);
-    node.setZ(center.getZ() - d);
-    m_graph.addNode(node);
-
-    node.setCenter(center);
-    node.setZ(center.getZ() + d);
-    m_graph.addNode(node);
-
-    edge.useNodeColor(true);
-    edge.setShape(GRAPH_LINE);
-    edge.setWidth(2);
-
-    edge.setConnection(nodeCount, nodeCount + 1);
-    m_graph.addEdge(edge);
+    if (item->isVisible()) {
+      addItemNode(item);
+    }
   }
 }
 

@@ -15,7 +15,11 @@ QAction* ZActionLibrary::getAction(
   } else {
     action = m_actionFactory.makeAction(item, m_actionParent);
     if (receiver != NULL && slot != NULL) {
-      QObject::connect(action, SIGNAL(triggered()), receiver, slot);
+      if (action->isCheckable()) {
+        QObject::connect(action, SIGNAL(triggered(bool)), receiver, slot);
+      } else {
+        QObject::connect(action, SIGNAL(triggered()), receiver, slot);
+      }
     }
 
     m_actionMap[item] = action;
