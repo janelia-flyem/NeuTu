@@ -46,6 +46,7 @@ class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
 class ZStTransform;
+class ZScrollSliceStrategy;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -172,6 +173,8 @@ public:
    * \brief Set the cursor of the image screen
    */
   void setScreenCursor(const QCursor &cursor);
+
+  void setScrollStrategy(ZScrollSliceStrategy *strategy);
 
   //void resetScreenCursor();
   int getIntensityThreshold();
@@ -429,7 +432,9 @@ protected:
   ZPainter* getPainter(ZStackObject::ETarget target);
   ZPixmap* getCanvas(ZStackObject::ETarget target);
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
-  void resetDepthControl();
+//  void resetDepthControl();
+
+  void setSliceRange(int minSlice, int maxSlice);
 
   bool event(QEvent *event);
 
@@ -488,6 +493,7 @@ protected:
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
 
+  ZScrollSliceStrategy *m_sliceStrategy;
 //  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 

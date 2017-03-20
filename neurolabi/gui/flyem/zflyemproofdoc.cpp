@@ -860,6 +860,14 @@ void ZFlyEmProofDoc::loadRoiFunc()
   }
 }
 
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
+{
+  ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+
+  return dynamic_cast<ZDvidGraySlice*>(obj);
+}
+
 void ZFlyEmProofDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {

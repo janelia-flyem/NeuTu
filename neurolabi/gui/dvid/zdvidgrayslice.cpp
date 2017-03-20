@@ -93,11 +93,6 @@ void ZDvidGraySlice::updateImage()
   }
 }
 
-int ZDvidGraySlice::getScale() const
-{
-  return pow(2, m_zoom);
-}
-
 void ZDvidGraySlice::updatePixmap()
 {
   m_pixmap.detach();
@@ -182,6 +177,21 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
   }
 
   return updated;
+}
+
+int ZDvidGraySlice::getZoom() const
+{
+  return m_zoom;
+}
+
+void ZDvidGraySlice::setZoom(int zoom)
+{
+  m_zoom = zoom;
+}
+
+int ZDvidGraySlice::getScale() const
+{
+  return misc::GetZoomScale(getZoom());
 }
 
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)

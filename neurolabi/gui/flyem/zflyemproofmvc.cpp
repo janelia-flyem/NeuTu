@@ -76,6 +76,7 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "z3dmainwindow.h"
+#include "dvid/zdvidgrayslicescrollstrategy.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1099,6 +1100,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   getProgressSignal()->advanceProgress(0.1);
   //    getCompleteDocument()->clearData();
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
+  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+  if (slice != NULL) {
+    ZDvidGraySliceScrollStrategy *scrollStrategy =
+        new ZDvidGraySliceScrollStrategy;
+    scrollStrategy->setGraySlice(slice);
+
+    getView()->setScrollStrategy(scrollStrategy);
+  }
 
   ZJsonObject contrastObj = reader.readContrastProtocal();
   getPresenter()->setHighContrastProtocal(contrastObj);

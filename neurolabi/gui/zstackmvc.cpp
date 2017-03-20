@@ -79,7 +79,6 @@ void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
 
 void ZStackMvc::customInit()
 {
-
 }
 
 void ZStackMvc::BaseConstruct(

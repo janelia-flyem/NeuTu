@@ -60,6 +60,11 @@ public:
 
   void setBoundBox(const ZRect2d &rect);
 
+  int getZoom() const;
+  int getScale() const;
+
+  void setZoom(int zoom);
+
 
 public: //for testing
   void saveImage(const std::string &path);
@@ -70,7 +75,6 @@ private:
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updatePixmap();
-  int getScale() const;
 
   /*!
    * \brief Check if the regions of the image and the slice are consistent.

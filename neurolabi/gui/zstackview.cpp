@@ -38,6 +38,7 @@
 #include "zstackobjectpainter.h"
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
+#include "zscrollslicestrategy.h"
 
 #ifdef _QT5_
 #include <QtWidgets>
@@ -81,6 +82,7 @@ ZStackView::~ZStackView()
   }
   delete m_imageMask;
 
+  delete m_sliceStrategy;
 //  delete m_tileCanvas;
 }
 
@@ -211,6 +213,8 @@ void ZStackView::init()
   setDepthFrozen(false);
   setViewPortFrozen(false);
   blockViewChangeEvent(false);
+
+  m_sliceStrategy = new ZScrollSliceStrategy;
   //customizeWidget();
 }
 
@@ -377,21 +381,34 @@ void ZStackView::setSliceAxis(NeuTube::EAxis axis)
   m_paintBundle.setSliceAxis(axis);
 }
 
+void ZStackView::setSliceRange(int minSlice, int maxSlice)
+{
+  m_depthControl->setRangeQuietly(minSlice, maxSlice);
+  m_zSpinBox->setRange(minSlice, maxSlice);
+  m_sliceStrategy->setRange(minSlice, maxSlice);
+}
+
+
+#if 0
 void ZStackView::resetDepthControl()
 {
   ZStack *stack = stackData();
   if (stack != NULL) {
-    m_depthControl->setRange(0, getDepth() - 1);
+    updateSlider();
+//    setSliceRange(0, getDepth() - 1);
+//    m_depthControl->setRange(0, getDepth() - 1);
     m_depthControl->setValue(getDepth() / 2);
   }
 }
+#endif
 
 void ZStackView::reset(bool updatingScreen)
 { 
   ZStack *stack = stackData();
   updateChannelControl();
   if (stack != NULL) {
-    resetDepthControl();
+    updateSlider();
+//    resetDepthControl();
 //    m_imageWidget->reset();
 
     if (updatingScreen) {
@@ -442,6 +459,9 @@ void ZStackView::updateSlider()
     if (value >= box.getDepth()) {
       m_depthControl->setValueQuietly(box.getDepth() - 1);
     }
+
+    m_sliceStrategy->setRange(
+          m_depthControl->minimum(), m_depthControl->maximum());
 
     m_zSpinBox->setRange(box.getFirstCorner().getZ(),
                          box.getLastCorner().getZ());
@@ -794,7 +814,11 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
           ratio = 10;
         }
 
-        int newPos = m_depthControl->value() + numSteps * ratio;
+        int step = numSteps * ratio;
+        int newPos = m_sliceStrategy->scroll(sliceIndex(), step);
+
+
+//        int newPos = m_depthControl->value() + numSteps * ratio;
         if ((newPos >= m_depthControl->minimum()) &&
             (newPos <= m_depthControl->maximum())) {
           setSliceIndex(newPos);
@@ -943,6 +967,15 @@ void ZStackView::setImageWidgetCursor(const QCursor & cursor)
 void ZStackView::setScreenCursor(const QCursor &cursor)
 {
   imageWidget()->setCursor(cursor);
+}
+
+void ZStackView::setScrollStrategy(ZScrollSliceStrategy *strategy)
+{
+  delete m_sliceStrategy;
+
+  m_sliceStrategy = strategy;
+  m_sliceStrategy->setRange(
+        m_depthControl->minimum(), m_depthControl->maximum());
 }
 
 /*
