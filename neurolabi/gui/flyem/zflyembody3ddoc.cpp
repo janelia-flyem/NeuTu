@@ -851,13 +851,33 @@ void ZFlyEmBody3dDoc::showTodo(bool on)
   addTodo(on);
 }
 
+bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
+{
+  return getObjectGroup().findFirstSameSource(
+        ZStackObject::TYPE_PUNCTUM,
+        ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) != NULL;
+}
+
+void ZFlyEmBody3dDoc::addSynapse(
+    std::vector<ZPunctum*> &puncta,
+    uint64_t bodyId, const std::string &source, double radius, const QColor &color)
+{
+  for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
+       iter != puncta.end(); ++iter) {
+    ZPunctum *punctum = *iter;
+    punctum->setRadius(radius);
+    punctum->setColor(color);
+    punctum->setSource(source);
+    if (punctum->name().isEmpty()) {
+      punctum->setName(QString("%1").arg(bodyId));
+    }
+    getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+}
+
 void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
 {
-  if (m_showingSynapse) {
-    if (getObjectGroup().findFirstSameSource(
-          ZStackObject::TYPE_PUNCTUM,
-          ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) == NULL) {
-//      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  if (m_showingSynapse && !synapseLoaded(bodyId)) {
       std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
           getDataDocument()->getSynapse(bodyId);
       {
@@ -872,7 +892,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
             punctum->setName(QString("%1").arg(bodyId));
           }
           getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-//          addObject(punctum, false);
+          //          addObject(punctum, false);
         }
       }
       {
@@ -883,14 +903,13 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           punctum->setRadius(30);
           punctum->setColor(128, 128, 128);
           punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-//          addObject(punctum, false);
+          //          addObject(punctum, false);
           getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
         }
       }
       getDataBuffer()->deliver();
-//      endObjectModifiedMode();
-//      notifyObjectModified();
-    }
+      //      endObjectModifiedMode();
+      //      notifyObjectModified();
   }
 }
 

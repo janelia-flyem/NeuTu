@@ -223,6 +223,11 @@ private:
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
   QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
+  bool synapseLoaded(uint64_t bodyId) const;
+  void addSynapse(
+      std::vector<ZPunctum*> &puncta,
+      uint64_t bodyId, const std::string &source, double radius,
+      const QColor &color);
 
   template<typename T>
   T* recoverFromGarbage(const std::string &source);
