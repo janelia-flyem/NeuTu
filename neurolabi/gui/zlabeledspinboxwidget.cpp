@@ -47,6 +47,13 @@ int ZLabeledSpinBoxWidget::getValue() const
   return m_mainWidget->value();
 }
 
+void ZLabeledSpinBoxWidget::setValueQuietly(int v)
+{
+  m_mainWidget->blockSignals(true);
+  m_mainWidget->setValue(v);
+  m_mainWidget->blockSignals(false);
+}
+
 void ZLabeledSpinBoxWidget::setValue(int v)
 {
   m_mainWidget->setValue(v);

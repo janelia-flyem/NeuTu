@@ -607,6 +607,7 @@ void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
     m_depthControl->setValueQuietly(slice);
+    m_zSpinBox->setValueQuietly(slice);
   }
 }
 

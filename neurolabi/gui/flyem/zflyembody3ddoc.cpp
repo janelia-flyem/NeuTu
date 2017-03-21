@@ -880,6 +880,15 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
   if (m_showingSynapse && !synapseLoaded(bodyId)) {
       std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
           getDataDocument()->getSynapse(bodyId);
+      addSynapse(
+            synapse.first, bodyId,
+            ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId),
+            30, QColor(255, 255, 0));
+      addSynapse(
+            synapse.second, bodyId,
+            ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId),
+            30, QColor(128, 128, 128));
+#if 0
       {
         std::vector<ZPunctum*> &puncta = synapse.first;
         for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
@@ -907,6 +916,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
           getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
         }
       }
+#endif
       getDataBuffer()->deliver();
       //      endObjectModifiedMode();
       //      notifyObjectModified();
