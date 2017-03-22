@@ -2643,25 +2643,6 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     notifyViewChanged(param);
   }
 }
-#if 0
-void ZStackView::processViewChange(const ZStackViewParam &param)
-{
-  if (buddyPresenter()->isObjectVisible()) {
-//  QSet<ZStackObject::ETarget> targetSet =
-    ZStackDoc::ActiveViewObjectUpdater updater(buddyDocument());
-    if (buddyPresenter()->interactiveContext().exploreMode() ==
-        ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
-        buddyPresenter()->interactiveContext().exploreMode() ==
-        ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
-      updater.exclude(ZStackObject::TYPE_DVID_LABEL_SLICE);
-    }
-
-    updater.update(param);
-//    m_objectUpdater.clearState();
-//    buddyDocument()->updateActiveViewObject(param);
-  }
-}
-#endif
 
 void ZStackView::setHoverFocus(bool on)
 {
@@ -3078,8 +3059,4 @@ void ZStackView::highlightPosition(int x, int y, int z)
 //  buddyPresenter()->addDecoration(ball);
 
   updateImageScreen(UPDATE_QUEUED);
-
-//  buddyPresenter()->setHighlight(false);
-
-//  buddyPresenter()->removeDecoration(ball, false);
 }

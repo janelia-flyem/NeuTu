@@ -888,35 +888,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
             synapse.second, bodyId,
             ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId),
             30, QColor(128, 128, 128));
-#if 0
-      {
-        std::vector<ZPunctum*> &puncta = synapse.first;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(255, 255, 0);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-          if (punctum->name().isEmpty()) {
-            punctum->setName(QString("%1").arg(bodyId));
-          }
-          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-          //          addObject(punctum, false);
-        }
-      }
-      {
-        std::vector<ZPunctum*> &puncta = synapse.second;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-          //          addObject(punctum, false);
-          getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-        }
-      }
-#endif
+
       getDataBuffer()->deliver();
       //      endObjectModifiedMode();
       //      notifyObjectModified();
@@ -929,18 +901,14 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
     ZOUT(LTRACE(), 5) << "Update todo";
 
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
-//    removeObject(source, true);
+
     TStackObjectList objList = getObjectGroup().findSameSource(source);
     for (TStackObjectList::iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
-//      removeObject(*iter, false);
-//      dumpGarbage(*iter, true);
     }
 
     if (hasBody(bodyId)) {
-//      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
 
@@ -948,15 +916,10 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
            iter != itemList.end(); ++iter) {
         ZFlyEmToDoItem *item = *iter;
         item->setRadius(30);
-        //        item->setColor(255, 255, 0);
         item->setSource(source);
-//        addObject(item, false);
         getDataBuffer()->addUpdate(
               item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
-
-//      endObjectModifiedMode();
-//      notifyObjectModified(true);
     }
 
     getDataBuffer()->deliver();
@@ -968,8 +931,6 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
   if (m_showingTodo) {
     ZOUT(LTRACE(), 5) << "Add todo items";
 
-//    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
     if (getObjectGroup().findFirstSameSource(
           ZStackObject::TYPE_FLYEM_TODO_ITEM, source) == NULL) {
@@ -980,17 +941,12 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
            iter != itemList.end(); ++iter) {
         ZFlyEmToDoItem *item = *iter;
         item->setRadius(30);
-//        item->setColor(255, 255, 0);
         item->setSource(source);
         getDataBuffer()->addUpdate(
               item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-//        addObject(item, false);
       }
     }
     getDataBuffer()->deliver();
-
-//    endObjectModifiedMode();
-//    notifyObjectModified(true);
   }
 }
 
