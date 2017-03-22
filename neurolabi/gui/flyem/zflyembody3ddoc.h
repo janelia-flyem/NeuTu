@@ -232,6 +232,10 @@ private:
   template<typename T>
   T* recoverFromGarbage(const std::string &source);
 
+  ZSwcTree *getBodyQuickly(uint64_t bodyId);
+  BodyEvent makeMultresBodyEvent(
+      uint64_t bodyId, int resLevel, const QColor &color);
+
 signals:
   void todoVisibleChanged();
 
@@ -283,6 +287,7 @@ private:
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
+  const static int MAX_RES_LEVEL;
 };
 
 template <typename InputIterator>

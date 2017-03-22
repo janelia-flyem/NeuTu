@@ -20,6 +20,7 @@
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
+const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(FlyEM::BODY_FULL), m_quitting(false),
@@ -659,6 +660,36 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
   m_eventQueue.enqueue(event);
 }
 
+ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
+{
+  ZSwcTree *tree = NULL;
+
+  if (getBodyType() == FlyEM::BODY_FULL) {
+    tree = recoverFullBodyFromGarbage(bodyId, MAX_RES_LEVEL);
+  }
+
+  if (tree == NULL) {
+    tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
+  }
+
+  return tree;
+}
+
+ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
+    uint64_t bodyId, int resLevel, const QColor &color)
+{
+  BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
+  bodyEvent.setBodyColor(color);
+  --resLevel;
+  if (resLevel > getDvidTarget().getMaxLabelZoom()) {
+    resLevel = getDvidTarget().getMaxLabelZoom();
+  }
+  bodyEvent.setResLevel(resLevel);
+  bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+
+  return bodyEvent;
+}
+
 void ZFlyEmBody3dDoc::addBodyFunc(
     uint64_t bodyId, const QColor &color, int resLevel)
 {
@@ -670,34 +701,12 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 
   ZSwcTree *tree = NULL;
   if (tree == NULL) {
-    if (resLevel == 5) {
-      if (getBodyType() == FlyEM::BODY_FULL) {
-        tree = recoverFullBodyFromGarbage(bodyId, resLevel);
-      }
-      if (tree == NULL) {
-        tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
-      }
-#if 0
-      if (tree != NULL) {
-        //The tree can be retrieved with full resolution from cache
-        for (int i = 0; i < 5; ++i) {
-          if (tree->getSource() == ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyId, i, FlyEM::BODY_FULL)) {
-            resLevel = i;
-          }
-        }
-      }
-#endif
-    } else if (resLevel == 0) {
-      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-      tree = makeBodyModel(bodyId, 0, getBodyType());
-      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+    if (resLevel == MAX_RES_LEVEL) {
+      tree = getBodyQuickly(bodyId);
     } else {
-      if (getBodyType() == FlyEM::BODY_FULL) {
-        emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-        tree = makeBodyModel(bodyId, resLevel, getBodyType());
-        emit messageGenerated(ZWidgetMessage("3D Body view synced"));
-      }
+      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+      tree = makeBodyModel(bodyId, resLevel, getBodyType());
+      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
     }
 
     if (tree != NULL) {
@@ -708,14 +717,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
       }
       if (resLevel > 0) {
         QMutexLocker locker(&m_eventQueueMutex);
-        BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
-        bodyEvent.setBodyColor(color);
-        --resLevel;
-        if (resLevel > getDvidTarget().getMaxLabelZoom()) {
-          resLevel = getDvidTarget().getMaxLabelZoom();
-        }
-        bodyEvent.setResLevel(resLevel);
-        bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+
         bool removing = false;
 
         for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
@@ -730,6 +732,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
           }
         }
         if (!removing) {
+          BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel, color);
           m_eventQueue.enqueue(bodyEvent);
         }
       }
@@ -737,30 +740,14 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   }
 
   if (tree != NULL) {
-//    if (getBodyType() != BODY_SKELETON) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
-//    }
 
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
 #endif
     tree->setColor(color);
 
-//    delete tree;
-//    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-
     updateBodyFunc(bodyId, tree);
-    /*
-    removeBodyFunc(bodyId, false);
-    TStackObjectList objList = takeObject(tree->getType(), tree->getSource());
-    if (!objList.empty()) {
-      dumpGarbage(objList.begin(), objList.end(), false);
-    }
-    addObject(tree, false);
-    processObjectModified(tree);
-    endObjectModifiedMode();
-    notifyObjectModified(true);
-    */
 
     if (!loaded) {
       addSynapse(bodyId);
