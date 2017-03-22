@@ -22588,5 +22588,20 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@CX", 8700);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan roi = reader.readRoi("CXPB-ROI-2");
+  ZIntPoint pt = reader.readRoiBlockSize("CXPB-ROI-2");
+
+  std::cout << "Volume: "
+            << (double) roi.getVoxelNumber() * pt.getX() * pt.getY() * pt.getZ()
+               * 0.008 * 0.008 *0.008 << std::endl;
+#endif
+
   std::cout << "Done." << std::endl;
 }
