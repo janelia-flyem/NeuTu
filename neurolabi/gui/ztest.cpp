@@ -22588,7 +22588,22 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "1cea", 8800);
+  target.setBodyLabelName("labels");
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan *obj = reader.readBody(51000860214, true, NULL);
+  std::cout << "Voxel count: " << obj->getVoxelNumber() << std::endl;
+
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@CX", 8700);
 
