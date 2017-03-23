@@ -700,46 +700,42 @@ void ZFlyEmBody3dDoc::addBodyFunc(
         isEmpty());
 
   ZSwcTree *tree = NULL;
-  if (tree == NULL) {
-    if (resLevel == MAX_RES_LEVEL) {
-      tree = getBodyQuickly(bodyId);
-    } else {
-      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-      tree = makeBodyModel(bodyId, resLevel, getBodyType());
-      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
-    }
-
-    if (tree != NULL) {
-      if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
-            tree->getSource()) == FlyEM::BODY_FULL) {
-        resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-              tree->getSource());
-      }
-      if (resLevel > 0) {
-        QMutexLocker locker(&m_eventQueueMutex);
-
-        bool removing = false;
-
-        for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-             iter != m_eventQueue.end(); ++iter) {
-          BodyEvent &event = *iter;
-          if (event.getBodyId() == bodyId) {
-            if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-              removing = true;
-            } else {
-              removing = false;
-            }
-          }
-        }
-        if (!removing) {
-          BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel, color);
-          m_eventQueue.enqueue(bodyEvent);
-        }
-      }
-    }
+  if (resLevel == MAX_RES_LEVEL) {
+    tree = getBodyQuickly(bodyId);
+  } else {
+    emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+    tree = makeBodyModel(bodyId, resLevel, getBodyType());
+    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
   }
 
   if (tree != NULL) {
+    if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+          tree->getSource()) == FlyEM::BODY_FULL) {
+      resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+          tree->getSource());
+    }
+    if (resLevel > 0) {
+      QMutexLocker locker(&m_eventQueueMutex);
+
+      bool removing = false;
+
+      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+          iter != m_eventQueue.end(); ++iter) {
+        BodyEvent &event = *iter;
+        if (event.getBodyId() == bodyId) {
+          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+            removing = true;
+          } else {
+            removing = false;
+          }
+        }
+      }
+      if (!removing) {
+        BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel, color);
+        m_eventQueue.enqueue(bodyEvent);
+      }
+    }
+
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
 #ifdef _DEBUG_
@@ -754,53 +750,6 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 //      addTodo(bodyId);
       updateTodo(bodyId);
     }
-    //Add synapse
-#if 0
-    if (m_showingSynapse) {
-      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-//      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
-      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
-          getDataDocument()->getSynapse(bodyId);
-      {
-        std::vector<ZPunctum*> &puncta = synapse.first;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(255, 255, 0);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-          addObject(punctum, false);
-        }
-      }
-      {
-        std::vector<ZPunctum*> &puncta = synapse.second;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-          addObject(punctum, false);
-        }
-      }
-#if 0
-      std::vector<ZPunctum*> todoPuncta =
-          getDataDocument()->getTodoPuncta(bodyId);
-      for (std::vector<ZPunctum*>::const_iterator iter = todoPuncta.begin();
-           iter != todoPuncta.end(); ++iter) {
-        ZPunctum *punctum = *iter;
-//        punctum->setRadius(30);
-//        punctum->setColor(128, 128, 128);
-        punctum->setSource(ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-        addObject(punctum, false);
-      }
-#endif
-      endObjectModifiedMode();
-      notifyObjectModified(true);
-    }
-#endif
-//    removeObject(tree->getSource(), true);
-//    removeObject(tree, true);
   }
 }
 
