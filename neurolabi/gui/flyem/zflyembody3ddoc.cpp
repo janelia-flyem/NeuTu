@@ -337,6 +337,20 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+int ZFlyEmBody3dDoc::getMinResLevel() const
+{
+  int resLevel = 0;
+  switch (getBodyType()) {
+  case FlyEM::BODY_COARSE:
+    resLevel = MAX_RES_LEVEL;
+    break;
+  default:
+    break;
+  }
+
+  return resLevel;
+}
+
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
@@ -571,7 +585,7 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
     if (getBodyType() == FlyEM::BODY_SKELETON) {
       addBodyFunc(bodyId, color, -1);
     } else {
-      addBodyFunc(bodyId, color, 5);
+      addBodyFunc(bodyId, color, MAX_RES_LEVEL);
     }
   }
 }
@@ -654,7 +668,7 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != FlyEM::BODY_SKELETON) {
-    event.setResLevel(5);
+    event.setResLevel(MAX_RES_LEVEL);
   }
 
   m_eventQueue.enqueue(event);
@@ -680,7 +694,6 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
 {
   BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
   bodyEvent.setBodyColor(color);
-  --resLevel;
   if (resLevel > getDvidTarget().getMaxLabelZoom()) {
     resLevel = getDvidTarget().getMaxLabelZoom();
   }
@@ -714,28 +727,30 @@ void ZFlyEmBody3dDoc::addBodyFunc(
       resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
           tree->getSource());
     }
-    if (resLevel > 0) {
-      QMutexLocker locker(&m_eventQueueMutex);
+  }
 
-      bool removing = false;
+  if (resLevel > getMinResLevel()) {
+    QMutexLocker locker(&m_eventQueueMutex);
+    bool removing = false;
 
-      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-          iter != m_eventQueue.end(); ++iter) {
-        BodyEvent &event = *iter;
-        if (event.getBodyId() == bodyId) {
-          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-            removing = true;
-          } else {
-            removing = false;
-          }
+    for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+         iter != m_eventQueue.end(); ++iter) {
+      BodyEvent &event = *iter;
+      if (event.getBodyId() == bodyId) {
+        if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+          removing = true;
+        } else {
+          removing = false;
         }
       }
-      if (!removing) {
-        BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel, color);
-        m_eventQueue.enqueue(bodyEvent);
-      }
     }
+    if (!removing) {
+      BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
+      m_eventQueue.enqueue(bodyEvent);
+    }
+  }
 
+  if (tree != NULL) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
 #ifdef _DEBUG_

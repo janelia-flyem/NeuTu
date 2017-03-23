@@ -37,6 +37,23 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::GetBodyTypeName(
+    FlyEM::EBodyType bodyType)
+{
+  switch (bodyType) {
+  case FlyEM::BODY_FULL:
+    return "full";
+  case FlyEM::BODY_COARSE:
+    return "coarse";
+  case FlyEM::BODY_SKELETON:
+    return "skeleton";
+  case FlyEM::BODY_NULL:
+    break;
+  }
+
+  return "";
+}
+
 std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
 {
   return MakeFlyEmBodySource(bodyId, 0, FlyEM::BODY_COARSE);
@@ -53,23 +70,6 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
   }
 
   return source;
-}
-
-std::string ZStackObjectSourceFactory::GetBodyTypeName(
-    FlyEM::EBodyType bodyType)
-{
-  switch (bodyType) {
-  case FlyEM::BODY_FULL:
-    return "full";
-  case FlyEM::BODY_COARSE:
-    return "coarse";
-  case FlyEM::BODY_SKELETON:
-    return "skeleton";
-  case FlyEM::BODY_NULL:
-    break;
-  }
-
-  return "";
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(

@@ -131,7 +131,7 @@ public:
   };
 
   void setBodyType(FlyEM::EBodyType type);
-  FlyEM::EBodyType getBodyType() { return m_bodyType; }
+  FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
@@ -251,6 +251,7 @@ private:
   void processEventFunc(const BodyEvent &event);
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
+  int getMinResLevel() const;
 
 private:
   QSet<uint64_t> m_bodySet;
