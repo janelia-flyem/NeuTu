@@ -138,7 +138,7 @@ bool ZFlyEmBodyAnnotation::isEmpty() const
 int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
 {
   if (status.empty()) {
-    return -1;
+    return 8;
   }
 
   std::string statusLowerCase = status;
@@ -162,11 +162,11 @@ int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
   }
 
   if (statusLowerCase == "not examined") {
-    return 4;
+    return 5;
   }
 
   if (statusLowerCase == "hard to trace") {
-    return 5;
+    return 4;
   }
 
   if (statusLowerCase == "orphan") {

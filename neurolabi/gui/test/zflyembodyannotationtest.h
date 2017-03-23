@@ -15,7 +15,7 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation2.setStatus("");
 
   annotation1.mergeAnnotation(annotation2);
-  ASSERT_TRUE(annotation1.getStatus().empty());
+  ASSERT_EQ("Orphan", annotation1.getStatus());
 
   annotation1.setStatus("Orphan");
 
@@ -25,7 +25,7 @@ TEST(ZFlyEmBodyAnnotation, merge)
 
   annotation1.setStatus("Not examined");
   annotation1.mergeAnnotation(annotation2);
-  ASSERT_EQ("Not examined", annotation1.getStatus());
+  ASSERT_EQ("Hard to trace", annotation1.getStatus());
 
 
   annotation2.setStatus("Partially traced");
