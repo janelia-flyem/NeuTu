@@ -455,7 +455,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
     QString detail = getAnnotationFinalizedWarningDetail(finalizedBodyArray);
     okToContinue = ZDialogFactory::Ask(
           "Merging Finalized Body",
-          "At least one of the bodies to be merge is finalized. Do you want to continue?" +
+          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
           detail,
           NULL);
   }
