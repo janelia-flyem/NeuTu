@@ -521,6 +521,10 @@ void ZFlyEmProofMvc::makeBodyWindow()
   connect(m_bodyWindow, SIGNAL(addingToSplitMarker(int,int,int)),
           getCompleteDocument(),
           SLOT(executeAddToSplitItemCommand(int,int,int)));
+  connect(m_bodyWindow, SIGNAL(settingNormalTodoVisible(bool)),
+          doc, SLOT(setNormalTodoVisible(bool)));
+  connect(doc, SIGNAL(todoVisibleChanged()),
+          m_bodyWindow, SLOT(updateTodoVisibility()));
 
   setWindowSignalSlot(m_bodyWindow);
 
@@ -1542,7 +1546,11 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
           if (!annotation.isEmpty()) {
             getCompleteDocument()->recordAnnotation(bodyId, annotation);
-            finalAnnotation.mergeAnnotation(annotation);
+            if (finalAnnotation.isEmpty()) {
+              finalAnnotation = annotation;
+            } else {
+              finalAnnotation.mergeAnnotation(annotation);
+            }
           }
         }
 

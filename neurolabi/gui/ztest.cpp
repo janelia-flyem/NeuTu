@@ -198,6 +198,7 @@ using namespace std;
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
+#include "test/zflyembodyannotationtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
@@ -21641,7 +21642,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e2f0", 7000);
   target.setSynapseName("annot_synapse_010417");

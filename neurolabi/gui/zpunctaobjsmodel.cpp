@@ -162,10 +162,11 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
       m_punctaSourceParentToRow[sourceParent] = sourceParentRow++;
 
       data.clear();
-      data << QString("puncta %1").arg(m_punctaSourceToCount[p->getSource().c_str()] + 1, numDigit, 10, QLatin1Char('0')) << p->score() << p->name() << p->comment() << p->x() << p->y() <<
-              p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
-              p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
-              p->property3() << p->color() << sourceInfo.fileName();
+      data << QString("puncta %1").arg(m_punctaSourceToCount[p->getSource().c_str()] + 1, numDigit, 10, QLatin1Char('0'))
+          << p->score() << p->name() << p->comment() << p->x() << p->y() <<
+             p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
+             p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
+             p->property3() << p->color() << sourceInfo.fileName();
       m_punctaToRow[p] = m_punctaSourceToCount[p->getSource().c_str()];
       m_punctaSourceToCount[p->getSource().c_str()]++;
       ZObjsItem *punctum = new ZObjsItem(data, p, sourceParent);

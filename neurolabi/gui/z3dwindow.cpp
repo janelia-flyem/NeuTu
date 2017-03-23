@@ -696,6 +696,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
             item, this, SLOT(deleteSelectedSwcNode()));
     }
     break;
+  case ZActionFactory::ACTION_SHOW_NORMAL_TODO:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(setNormalTodoVisible(bool)));
+    break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
     break;
@@ -1744,6 +1748,16 @@ void Z3DWindow::updateTodoList()
 #endif
 }
 
+void Z3DWindow::updateTodoVisibility()
+{
+  if (m_todoFilter != NULL) {
+    m_todoFilter->updateGraph();
+    updateTodoBoundBox();
+    updateOverallBoundBox();
+    resetCameraClippingRange();
+  }
+}
+
 void Z3DWindow::updateTodoDisplay()
 {
   if (m_todoFilter != NULL) {
@@ -2403,6 +2417,11 @@ static void AddTodoMarker(
       }
     }
   }
+}
+
+void Z3DWindow::setNormalTodoVisible(bool visible)
+{
+  emit settingNormalTodoVisible(visible);
 }
 
 void Z3DWindow::addTodoMarker()
