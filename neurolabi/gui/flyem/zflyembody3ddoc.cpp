@@ -390,6 +390,37 @@ void ZFlyEmBody3dDoc::setTodoItemSelected(
   getObjectGroup().setSelected(item, select);
 }
 
+#if 0
+void ZFlyEmProofDoc::setTodoVisible(
+    ZFlyEmToDoItem::EToDoAction action, bool visible)
+{
+  QList<ZFlyEmToDoItem*> objList = getObjectList<ZFlyEmToDoItem>();
+  for (QList<ZFlyEmToDoItem*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZFlyEmToDoItem *item = *iter;
+    if (item->getAction() == action) {
+      item->setVisible(visible);
+    }
+  }
+
+  emit todoVisibleChanged();
+}
+#endif
+
+void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
+{
+  QList<ZFlyEmToDoItem*> objList = getObjectList<ZFlyEmToDoItem>();
+  for (QList<ZFlyEmToDoItem*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    ZFlyEmToDoItem *item = *iter;
+    if (item->getAction() == ZFlyEmToDoItem::TO_DO) {
+      item->setVisible(visible);
+    }
+  }
+
+  emit todoVisibleChanged();
+}
+
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(
@@ -884,7 +915,8 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
         item->setRadius(30);
 //        item->setColor(255, 255, 0);
         item->setSource(source);
-        getDataBuffer()->addUpdate(item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+        getDataBuffer()->addUpdate(
+              item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
 //        addObject(item, false);
       }
     }

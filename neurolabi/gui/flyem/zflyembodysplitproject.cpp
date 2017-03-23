@@ -1530,6 +1530,11 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         updateBodyArray.push_back(newBodyId);
       }
 
+      ZFlyEmBodyAnnotation annot;
+      annot.setBodyId(newBodyId);
+      annot.setStatus("Not examined");
+      writer.writeBodyAnntation(annot);
+
       emitMessage(msg);
     } else {
       emitError("Warning: Something wrong happened during uploading! "

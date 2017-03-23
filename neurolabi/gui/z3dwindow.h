@@ -285,6 +285,7 @@ signals:
   void addingTodoMarker(int x, int y, int z, bool checked);
   void addingToMergeMarker(int x, int y, int z);
   void addingToSplitMarker(int x, int y, int z);
+  void settingNormalTodoVisible(bool);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -307,6 +308,7 @@ public slots:
   void update3DGraphDisplay();
   void update3DCubeDisplay();
   void updateTodoDisplay();
+  void updateTodoVisibility();
 //  void updateDecorationDisplay();
   void updateDisplay();
 
@@ -397,6 +399,7 @@ public slots:
   void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
+  void setNormalTodoVisible(bool visible);
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);

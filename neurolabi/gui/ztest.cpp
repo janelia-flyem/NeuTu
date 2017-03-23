@@ -198,6 +198,7 @@ using namespace std;
 #include "test/zmatrixtest.h"
 #include "test/zobject3dfactorytest.h"
 #include "test/zstacktest.h"
+#include "test/zflyembodyannotationtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"
@@ -21624,7 +21625,7 @@ void ZTest::test(MainWindow *host)
   std::cout << target.toJsonObject().dumpString(2);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "6a1b", 8700);
 //  target.set("emdata2.int.janelia.org", "e2f0", 7000);
@@ -21640,5 +21641,24 @@ void ZTest::test(MainWindow *host)
         blockIndex, grayscaleInfo, blockNumber);
   ptoc();
 #endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setSynapseName("annot_synapse_010417");
+  target.setSynapseLabelszName("annot_synapse_010417_ROI_LOP_15");
+  ZDvidReader reader;
+  reader.open(target);
+
+  int count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_PRE_SYN);
+  std::cout << "Pre count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_POST_SYN);
+  std::cout << "Post count: " << count << std::endl;
+
+  count = reader.readSynapseLabelszBody(80, ZDvid::INDEX_ALL_SYN);
+  std::cout << "All count: " << count << std::endl;
+#endif
+
   std::cout << "Done." << std::endl;
 }

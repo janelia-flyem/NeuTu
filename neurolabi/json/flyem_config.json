@@ -4,7 +4,8 @@
   "dvid root": {
     "@MB6": "99ef",
     "@FIB19": "752d",
-    "@FIB25": "41cc"
+    "@FIB25": "41cc",
+    "@CX": "2a3b"
   },
   "dvid repo": [
     {
@@ -285,7 +286,7 @@
       "user_name": ["peeld"]
     },
     {
-      "address": "emdata2.int.janelia.org",
+      "address": "emdata1.int.janelia.org",
       "port": 8500,
       "uuid": "b6bc",
       "name": "MB_Test",

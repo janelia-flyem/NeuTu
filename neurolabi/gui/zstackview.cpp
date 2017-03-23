@@ -1468,6 +1468,7 @@ ZPixmap *ZStackView::updateViewPortCanvas(ZPixmap *canvas)
   return canvas;
 }
 
+#if 1
 ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 {
   ZStTransform transform = getViewTransform();
@@ -1477,7 +1478,7 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   QRect viewPort = getViewPort(NeuTube::COORD_STACK);
 
-  //When the projection region is not much bigger or even smaller than viewport,
+  //When the projection region is not much smaller or even bigger than viewport,
   //use viewport instead for precise painting.
   if (transform.getSx() > 1.1) {
     newSize = viewPort.size();
@@ -1516,6 +1517,50 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   return canvas;
 }
+#endif
+
+#if 0
+ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
+{
+  ZStTransform transform = getViewTransform();
+
+  QSize newSize = getProjRegion().size().toSize();
+
+//  qDebug() << "  Canvas size" << newSize;
+
+  if (canvas != NULL) {
+    if (canvas->size() != newSize) {
+      delete canvas;
+      canvas = NULL;
+    }
+  }
+
+  if (canvas == NULL) {
+    canvas = new ZPixmap(newSize);
+  }
+
+  if (transform.getSx() > 1.1) {
+    QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+    newSize = viewPort.size();
+    canvas->getProjTransform().estimate(
+          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+    transform.setScale(1.0, 1.0);
+    transform.setOffset(-viewPort.left(), -viewPort.top());
+  } else {
+    canvas->getProjTransform().setScale(1.0, 1.0);
+  }
+
+  canvas->setTransform(transform);
+
+  if (canvas != NULL) {
+    if (canvas->isVisible()){
+      canvas->cleanUp();
+    }
+  }
+
+  return canvas;
+}
+#endif
 
 void ZStackView::updateDynamicObjectCanvas()
 {

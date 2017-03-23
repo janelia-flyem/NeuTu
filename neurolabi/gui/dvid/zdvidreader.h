@@ -180,6 +180,8 @@ public:
                          int dim1, int dim2, int width, int height);
                          */
 
+  int readSynapseLabelszBody(
+      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;

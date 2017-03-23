@@ -233,6 +233,10 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
     }
 
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
+      actionList.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    }
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
       if (doc->getSelectedSwcNodeList().size() == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

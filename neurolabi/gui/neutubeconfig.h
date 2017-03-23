@@ -126,6 +126,9 @@ public:
     return m_isStereoOn;
   }
 
+  void updateAutoSaveDir();
+  static void UpdateAutoSaveDir();
+
 #ifdef _QT_GUI_USED_
   inline QSettings& getSettings() {
     return m_settings;
@@ -389,6 +392,7 @@ private:
   std::string m_logDir;
   std::string m_logDestDir;
   int m_autoSaveInterval;
+  int m_autoSaveMaxSwcCount;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
   bool m_loggingProfile;
