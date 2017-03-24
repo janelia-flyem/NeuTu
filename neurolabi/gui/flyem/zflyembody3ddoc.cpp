@@ -20,6 +20,7 @@
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
+const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent), m_bodyType(FlyEM::BODY_FULL), m_quitting(false),
@@ -336,6 +337,20 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+int ZFlyEmBody3dDoc::getMinResLevel() const
+{
+  int resLevel = 0;
+  switch (getBodyType()) {
+  case FlyEM::BODY_COARSE:
+    resLevel = MAX_RES_LEVEL;
+    break;
+  default:
+    break;
+  }
+
+  return resLevel;
+}
+
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
@@ -570,7 +585,7 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
     if (getBodyType() == FlyEM::BODY_SKELETON) {
       addBodyFunc(bodyId, color, -1);
     } else {
-      addBodyFunc(bodyId, color, 5);
+      addBodyFunc(bodyId, color, MAX_RES_LEVEL);
     }
   }
 }
@@ -653,10 +668,39 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != FlyEM::BODY_SKELETON) {
-    event.setResLevel(5);
+    event.setResLevel(MAX_RES_LEVEL);
   }
 
   m_eventQueue.enqueue(event);
+}
+
+ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
+{
+  ZSwcTree *tree = NULL;
+
+  if (getBodyType() == FlyEM::BODY_FULL) {
+    tree = recoverFullBodyFromGarbage(bodyId, MAX_RES_LEVEL);
+  }
+
+  if (tree == NULL) {
+    tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
+  }
+
+  return tree;
+}
+
+ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
+    uint64_t bodyId, int resLevel, const QColor &color)
+{
+  BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
+  bodyEvent.setBodyColor(color);
+  if (resLevel > getDvidTarget().getMaxLabelZoom()) {
+    resLevel = getDvidTarget().getMaxLabelZoom();
+  }
+  bodyEvent.setResLevel(resLevel);
+  bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+
+  return bodyEvent;
 }
 
 void ZFlyEmBody3dDoc::addBodyFunc(
@@ -669,151 +713,58 @@ void ZFlyEmBody3dDoc::addBodyFunc(
         isEmpty());
 
   ZSwcTree *tree = NULL;
-  if (tree == NULL) {
-    if (resLevel == 5) {
-      if (getBodyType() == FlyEM::BODY_FULL) {
-        tree = recoverFullBodyFromGarbage(bodyId, resLevel);
-      }
-      if (tree == NULL) {
-        tree = makeBodyModel(bodyId, 0, FlyEM::BODY_COARSE);
-      }
-#if 0
-      if (tree != NULL) {
-        //The tree can be retrieved with full resolution from cache
-        for (int i = 0; i < 5; ++i) {
-          if (tree->getSource() == ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyId, i, FlyEM::BODY_FULL)) {
-            resLevel = i;
-          }
+  if (resLevel == MAX_RES_LEVEL) {
+    tree = getBodyQuickly(bodyId);
+  } else {
+    emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+    tree = makeBodyModel(bodyId, resLevel, getBodyType());
+    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+  }
+
+  if (tree != NULL) {
+    if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+          tree->getSource()) == FlyEM::BODY_FULL) {
+      resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+          tree->getSource());
+    }
+  }
+
+  if (resLevel > getMinResLevel()) {
+    QMutexLocker locker(&m_eventQueueMutex);
+    bool removing = false;
+
+    for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+         iter != m_eventQueue.end(); ++iter) {
+      BodyEvent &event = *iter;
+      if (event.getBodyId() == bodyId) {
+        if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+          removing = true;
+        } else {
+          removing = false;
         }
-      }
-#endif
-    } else if (resLevel == 0) {
-      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-      tree = makeBodyModel(bodyId, 0, getBodyType());
-      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
-    } else {
-      if (getBodyType() == FlyEM::BODY_FULL) {
-        emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-        tree = makeBodyModel(bodyId, resLevel, getBodyType());
-        emit messageGenerated(ZWidgetMessage("3D Body view synced"));
       }
     }
-
-    if (tree != NULL) {
-      if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
-            tree->getSource()) == FlyEM::BODY_FULL) {
-        resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-              tree->getSource());
-      }
-      if (resLevel > 0) {
-        QMutexLocker locker(&m_eventQueueMutex);
-        BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
-        bodyEvent.setBodyColor(color);
-        --resLevel;
-        if (resLevel > getDvidTarget().getMaxLabelZoom()) {
-          resLevel = getDvidTarget().getMaxLabelZoom();
-        }
-        bodyEvent.setResLevel(resLevel);
-        bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
-        bool removing = false;
-
-        for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-             iter != m_eventQueue.end(); ++iter) {
-          BodyEvent &event = *iter;
-          if (event.getBodyId() == bodyId) {
-            if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-              removing = true;
-            } else {
-              removing = false;
-            }
-          }
-        }
-        if (!removing) {
-          m_eventQueue.enqueue(bodyEvent);
-        }
-      }
+    if (!removing) {
+      BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
+      m_eventQueue.enqueue(bodyEvent);
     }
   }
 
   if (tree != NULL) {
-//    if (getBodyType() != BODY_SKELETON) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
-//    }
 
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
 #endif
     tree->setColor(color);
 
-//    delete tree;
-//    beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-
     updateBodyFunc(bodyId, tree);
-    /*
-    removeBodyFunc(bodyId, false);
-    TStackObjectList objList = takeObject(tree->getType(), tree->getSource());
-    if (!objList.empty()) {
-      dumpGarbage(objList.begin(), objList.end(), false);
-    }
-    addObject(tree, false);
-    processObjectModified(tree);
-    endObjectModifiedMode();
-    notifyObjectModified(true);
-    */
 
     if (!loaded) {
       addSynapse(bodyId);
 //      addTodo(bodyId);
       updateTodo(bodyId);
     }
-    //Add synapse
-#if 0
-    if (m_showingSynapse) {
-      beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-//      std::vector<ZPunctum*> puncta = getDataDocument()->getTbar(bodyId);
-      std::pair<std::vector<ZPunctum*>, std::vector<ZPunctum*> > synapse =
-          getDataDocument()->getSynapse(bodyId);
-      {
-        std::vector<ZPunctum*> &puncta = synapse.first;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(255, 255, 0);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
-          addObject(punctum, false);
-        }
-      }
-      {
-        std::vector<ZPunctum*> &puncta = synapse.second;
-        for (std::vector<ZPunctum*>::const_iterator iter = puncta.begin();
-             iter != puncta.end(); ++iter) {
-          ZPunctum *punctum = *iter;
-          punctum->setRadius(30);
-          punctum->setColor(128, 128, 128);
-          punctum->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource(bodyId));
-          addObject(punctum, false);
-        }
-      }
-#if 0
-      std::vector<ZPunctum*> todoPuncta =
-          getDataDocument()->getTodoPuncta(bodyId);
-      for (std::vector<ZPunctum*>::const_iterator iter = todoPuncta.begin();
-           iter != todoPuncta.end(); ++iter) {
-        ZPunctum *punctum = *iter;
-//        punctum->setRadius(30);
-//        punctum->setColor(128, 128, 128);
-        punctum->setSource(ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
-        addObject(punctum, false);
-      }
-#endif
-      endObjectModifiedMode();
-      notifyObjectModified(true);
-    }
-#endif
-//    removeObject(tree->getSource(), true);
-//    removeObject(tree, true);
   }
 }
 

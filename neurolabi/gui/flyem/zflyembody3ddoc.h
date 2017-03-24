@@ -131,7 +131,7 @@ public:
   };
 
   void setBodyType(FlyEM::EBodyType type);
-  FlyEM::EBodyType getBodyType() { return m_bodyType; }
+  FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
@@ -232,6 +232,10 @@ private:
   template<typename T>
   T* recoverFromGarbage(const std::string &source);
 
+  ZSwcTree *getBodyQuickly(uint64_t bodyId);
+  BodyEvent makeMultresBodyEvent(
+      uint64_t bodyId, int resLevel, const QColor &color);
+
 signals:
   void todoVisibleChanged();
 
@@ -247,6 +251,7 @@ private:
   void processEventFunc(const BodyEvent &event);
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
+  int getMinResLevel() const;
 
 private:
   QSet<uint64_t> m_bodySet;
@@ -283,6 +288,7 @@ private:
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
+  const static int MAX_RES_LEVEL;
 };
 
 template <typename InputIterator>

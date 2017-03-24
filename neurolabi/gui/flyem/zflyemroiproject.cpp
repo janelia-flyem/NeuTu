@@ -1220,7 +1220,7 @@ double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
 
   ZObject3dScan obj = getRoiObject(19, 19, 19);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   obj.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 

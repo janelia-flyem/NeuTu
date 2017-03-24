@@ -22602,5 +22602,66 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "1cea", 8800);
+  target.setBodyLabelName("labels");
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan *obj = reader.readBody(51000860214, true, NULL);
+  std::cout << "Voxel count: " << obj->getVoxelNumber() << std::endl;
+
+  obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@CX", 8700);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan roi = reader.readRoi("CXPB-ROI-2");
+  ZIntPoint pt = reader.readRoiBlockSize("CXPB-ROI-2");
+
+  std::cout << "Volume: "
+            << (double) roi.getVoxelNumber() * pt.getX() * pt.getY() * pt.getZ()
+               * 0.008 * 0.008 *0.008 << std::endl;
+#endif
+
+#if 1
+  std::string source =
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, FlyEM::BODY_FULL);
+  std::cout << source << std::endl;
+
+  source =
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 0, FlyEM::BODY_FULL);
+  std::cout << source << std::endl;
+
+  source =
+      ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(source);
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Agree#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Split#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Merge#123_1#.full");
+  std::cout << source << std::endl;
+#endif
+
+
   std::cout << "Done." << std::endl;
 }

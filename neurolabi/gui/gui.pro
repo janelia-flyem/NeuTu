@@ -732,7 +732,8 @@ HEADERS += mainwindow.h \
     z3dmainwindow.h \
     dvid/zdvidgrayscale.h \
     zscrollslicestrategy.h \
-    dvid/zdvidgrayslicescrollstrategy.h
+    dvid/zdvidgrayslicescrollstrategy.h \
+    zviewproj.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1270,7 +1271,8 @@ SOURCES += main.cpp \
     z3dmainwindow.cpp \
     dvid/zdvidgrayscale.cpp \
     zscrollslicestrategy.cpp \
-    dvid/zdvidgrayslicescrollstrategy.cpp
+    dvid/zdvidgrayslicescrollstrategy.cpp \
+    zviewproj.cpp
 
 OTHER_FILES += \
     extlib.pri \

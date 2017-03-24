@@ -38,6 +38,8 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->nextPushButton, SIGNAL(clicked()), this, SLOT(nextSlice()));
   connect(ui->estimatePushButton, SIGNAL(clicked()), this, SLOT(estimateRoi()));
   connect(ui->dvidRoiPushButton, SIGNAL(clicked()), this, SLOT(createRoiData()));
+  connect(ui->estimateVolumeButton, SIGNAL(clicked()),
+          this, SLOT(estimateRoiVolume()));
 
   clear();
   downloadAllProject();
@@ -183,6 +185,14 @@ void ZFlyEmRoiToolDialog::goToNearestRoiSlice(int z)
     if (getProject()->hasRoi()) {
       getProject()->getNearestRoiZ(z);
     }
+  }
+}
+
+void ZFlyEmRoiToolDialog::estimateRoiVolume()
+{
+  if (m_project != NULL) {
+    double volume = m_project->estimateRoiVolume('u');
+    dump(QString("ROI Volume: ~%1 um^3").arg(volume));
   }
 }
 

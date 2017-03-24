@@ -37,6 +37,23 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::GetBodyTypeName(
+    FlyEM::EBodyType bodyType)
+{
+  switch (bodyType) {
+  case FlyEM::BODY_FULL:
+    return "full";
+  case FlyEM::BODY_COARSE:
+    return "coarse";
+  case FlyEM::BODY_SKELETON:
+    return "skeleton";
+  case FlyEM::BODY_NULL:
+    break;
+  }
+
+  return "";
+}
+
 std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
 {
   return MakeFlyEmBodySource(bodyId, 0, FlyEM::BODY_COARSE);
@@ -55,23 +72,6 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
   return source;
 }
 
-std::string ZStackObjectSourceFactory::GetBodyTypeName(
-    FlyEM::EBodyType bodyType)
-{
-  switch (bodyType) {
-  case FlyEM::BODY_FULL:
-    return "full";
-  case FlyEM::BODY_COARSE:
-    return "coarse";
-  case FlyEM::BODY_SKELETON:
-    return "skeleton";
-  case FlyEM::BODY_NULL:
-    break;
-  }
-
-  return "";
-}
-
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
     uint64_t bodyId, int zoom, const std::string &tag)
 {
@@ -88,9 +88,9 @@ std::string ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
     const std::string &source)
 {
   ZString substr;
-  ZString sourceBase = "#.FlyEmBody#";
-  if (source.length() > sourceBase.length()) {
-    ZString::size_type startPos = sourceBase.length();
+  ZString sourceBase = "#.FlyEmBody";
+  if (source.length() > sourceBase.length() + 1) {
+    ZString::size_type startPos = source.find('#', sourceBase.length()) + 1;
     ZString::size_type tokenPos = source.find('#', startPos);
     if (tokenPos == ZString::npos) {
       substr = source.substr(startPos);

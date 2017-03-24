@@ -29,7 +29,7 @@
 #include <QtGlobal>
 #include <iostream>
 
-const int QsLogging::SizeRotationStrategy::MaxBackupCount = 10;
+const int QsLogging::SizeRotationStrategy::MaxBackupCount = 100;
 
 QsLogging::RotationStrategy::~RotationStrategy()
 {
