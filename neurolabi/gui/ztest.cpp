@@ -98,6 +98,7 @@ using namespace std;
 #include "zswcspatialfeatureanalyzer.h"
 #include "swctreenode.h"
 #include "zparameterarray.h"
+#include "zviewproj.h"
 #include "zswcnetwork.h"
 #include "zdoublevector.h"
 #include "zswcdisttrunkanalyzer.h"
@@ -247,6 +248,7 @@ using namespace std;
 #include "test/zflyemproofdoctest.h"
 #include "test/zflyembody3dtest.h"
 #include "test/zresolutiontest.h"
+#include "test/zviewprojtest.h"
 //#include "zcircle.h"
 #include "test/zlinesegmenttest.h"
 #include "test/zdvidiotest.h"
@@ -22632,7 +22634,7 @@ void ZTest::test(MainWindow *host)
                * 0.008 * 0.008 *0.008 << std::endl;
 #endif
 
-#if 1
+#if 0
   std::string source =
       ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, FlyEM::BODY_FULL);
   std::cout << source << std::endl;
@@ -22662,6 +22664,29 @@ void ZTest::test(MainWindow *host)
   std::cout << source << std::endl;
 #endif
 
+#if 0
+  QRect rect(0, 0, 5, 6);
+  qDebug() << rect.width() << rect.height();
+  qDebug() << rect.topLeft();
+  qDebug() << rect.bottomRight();
+
+  QRectF rect2(0, 0, 5.5, 6);
+  qDebug() << rect2.width() << rect2.height();
+  qDebug() << rect2.topLeft();
+  qDebug() << rect2.bottomRight();
+
+  //Float conversion preserves size instead of corners
+  QRectF rect3(rect);
+  qDebug() << rect3.width() << rect3.height();
+  qDebug() << rect3.topLeft();
+  qDebug() << rect3.bottomRight();
+
+#endif
+
+#if 1
+  ZViewProj viewProj;
+
+#endif
 
   std::cout << "Done." << std::endl;
 }

@@ -17,18 +17,28 @@ public:
   void setOffset(int x0, int y0);
   void setZoom(double zoom);
 
+  void update();
+
   QRectF getProjRegion() const;
   QRect getViewPort() const;
 
+  bool isValid() const;
+
 private:
   void init();
+  double adjustProj(int vx, int cx, double px, double zoom);
+  double adjustProjMin(int vx, int cx, double px, double zoom);
+  double adjustProjMax(int vx, int cx, double px, double zoom);
+
 
 private:
   int m_x0;
   int m_y0;
-  double m_zoom;
+  double m_zoom; //the ratio from view to projection: p/v
   QRect m_canvasRect;
   QRect m_widgetRect;
+  QRectF m_projRegion;
+  QRect m_viewPort;
 };
 
 #endif // ZVIEWPROJ_H
