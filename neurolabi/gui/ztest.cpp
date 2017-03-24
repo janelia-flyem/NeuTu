@@ -22194,6 +22194,20 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@CX", 8700);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().setSynapseName("synapses_20170307_highprec_reload");
+  ZDvidWriter writer;
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
   ZDvidReader reader;
