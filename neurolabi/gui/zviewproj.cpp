@@ -85,6 +85,59 @@ QRect ZViewProj::getViewPort() const
   return m_viewPort;
 }
 
+bool ZViewProj::isSourceValid() const
+{
+  return m_canvasRect.isValid() && m_widgetRect.isValid();
+}
+
+void ZViewProj::maximizeViewPort()
+{
+  if (isSourceValid()) {
+    double xZoom = (double) m_widgetRect.width() / m_canvasRect.width();
+    double yZoom = (double) m_widgetRect.height() / m_canvasRect.height();
+    setZoom(std::min(xZoom, yZoom));
+    setOffset(m_canvasRect.left(), m_canvasRect.top());
+  }
+
+  update();
+}
+
+void ZViewProj::updateZoom(double zoom)
+{
+  setZoom(zoom);
+  update();
+}
+
+void ZViewProj::updateZoom(double zoom, EReference ref)
+{
+  if (zoom > 0) {
+    if (ref == REF_CENTER) {
+      update();
+      QPoint viewCenter = getViewPort().center();
+      QPointF projCenter = getProjRegion().center();
+      int cx = iround(projCenter.x() / zoom);
+      int cy = iround(projCenter.y() / zoom);
+
+      setOffset(viewCenter.x() - cx, viewCenter.y() - cy);
+    }
+  }
+
+  updateZoom(zoom);
+}
+
+void ZViewProj::updateZoomWithFixedPoint(
+    double zoom, QPoint viewPoint, QPointF projPoint)
+{
+  if (zoom > 0) {
+    int cx = iround(projPoint.x() / zoom);
+    int cy = iround(projPoint.y() / zoom);
+
+    setOffset(viewPoint.x() - cx, viewPoint.y() - cy);
+  }
+
+  updateZoom(zoom);
+}
+
 void ZViewProj::update()
 {
   m_projRegion = QRectF();

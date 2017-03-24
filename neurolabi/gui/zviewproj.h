@@ -11,6 +11,10 @@ class ZViewProj
 public:
   ZViewProj();
 
+  enum EReference {
+    REF_LEFTOP, REF_CENTER
+  };
+
   void set(int x0, int y0, double zoom);
   void setCanvasRect(const QRect &canvasRect);
   void setWidgetRect(const QRect &widgetRect);
@@ -23,6 +27,14 @@ public:
   QRect getViewPort() const;
 
   bool isValid() const;
+  bool isSourceValid() const;
+
+  void maximizeViewPort();
+
+  void updateZoom(double zoom);
+  void updateZoom(double zoom, EReference ref);
+  void updateZoomWithFixedPoint(
+      double zoom, QPoint viewPoint, QPointF projPoint);
 
 private:
   void init();

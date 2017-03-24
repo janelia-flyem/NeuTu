@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 
 #include "neutube_def.h"
+#include "zviewproj.h"
 
 class QPaintEvent;
 class ZPaintBundle;
@@ -270,6 +271,8 @@ private:
   bool m_isViewHintVisible;
   bool m_paintBlocked;
   QRect m_canvasRegion; //Whole canvas region
+
+  ZViewProj m_viewProj;
 
   NeuTube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
