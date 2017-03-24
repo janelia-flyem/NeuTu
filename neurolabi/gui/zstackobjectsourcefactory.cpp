@@ -88,9 +88,9 @@ std::string ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
     const std::string &source)
 {
   ZString substr;
-  ZString sourceBase = "#.FlyEmBody#";
-  if (source.length() > sourceBase.length()) {
-    ZString::size_type startPos = sourceBase.length();
+  ZString sourceBase = "#.FlyEmBody";
+  if (source.length() > sourceBase.length() + 1) {
+    ZString::size_type startPos = source.find('#', sourceBase.length()) + 1;
     ZString::size_type tokenPos = source.find('#', startPos);
     if (tokenPos == ZString::npos) {
       substr = source.substr(startPos);

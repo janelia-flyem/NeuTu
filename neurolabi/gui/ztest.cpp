@@ -22618,5 +22618,36 @@ void ZTest::test(MainWindow *host)
                * 0.008 * 0.008 *0.008 << std::endl;
 #endif
 
+#if 1
+  std::string source =
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, FlyEM::BODY_FULL);
+  std::cout << source << std::endl;
+
+  source =
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 0, FlyEM::BODY_FULL);
+  std::cout << source << std::endl;
+
+  source =
+      ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(source);
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Agree#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Split#123_1#.full");
+  std::cout << source << std::endl;
+
+  source = ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+        "#.FlyEmBody.Merge#123_1#.full");
+  std::cout << source << std::endl;
+#endif
+
+
   std::cout << "Done." << std::endl;
 }
