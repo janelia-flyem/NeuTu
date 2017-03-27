@@ -22686,6 +22686,20 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZViewProj viewProj;
 
+  viewProj.setCanvasRect(QRect(0, 0, 100, 200));
+  viewProj.setWidgetRect(QRect(0, 0, 100, 200));
+  viewProj.setZoom(2);
+
+  QPoint pt = viewProj.mapPointBack(QPointF(10, 10));
+  qDebug() << pt;
+
+  viewProj.setZoomWithFixedPoint(1, QPoint(10, 20), QPointF(50, 80));
+  QPointF pt2 = viewProj.mapPoint(QPoint(10, 20));
+  pt = viewProj.mapPointBack(QPointF(50, 80));
+  qDebug() << pt2;
+  qDebug() << pt;
+
+
 #endif
 
   std::cout << "Done." << std::endl;

@@ -114,9 +114,13 @@ public:
 
   QSize canvasSize() const;
   QSize screenSize() const;
-  inline QSizeF projectSize() const { return m_projRegion.size(); }
-  inline const QRectF& projectRegion() const { return m_projRegion; }
-  inline const QRect& viewPort() const { return m_viewPort; }
+//  inline QSizeF projectSize() const { return m_projRegion.size(); }
+//  inline const QRectF& projectRegion() const { return m_projRegion; }
+//  inline const QRect& viewPort() const { return m_viewPort; }
+  QSizeF projectSize() const;
+  QRectF projectRegion() const;
+  QRect viewPort() const;
+
   inline const QRect& canvasRegion() const { return m_canvasRegion; }
 
   /*!
@@ -220,6 +224,8 @@ protected:
   int getMaxZoomRatio() const;
 
 private:
+  void init();
+
   void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
   /*!
@@ -261,8 +267,8 @@ private:
   ZPixmap *m_activeDecorationCanvas;
 //  ZPixmap *m_widgetCanvas;
 
-  QRect m_viewPort; /* viewport, in world coordinates */
-  QRectF m_projRegion; /* projection region */
+//  QRect m_viewPort; /* viewport, in world coordinates */
+//  QRectF m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;
   QMenu *m_leftButtonMenu;

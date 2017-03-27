@@ -24,28 +24,42 @@ void ZViewProj::set(int x0, int y0, double zoom)
   setZoom(zoom);
 }
 
+void ZViewProj::deprecateViewPort() const
+{
+  m_viewPort.setWidth(0);
+}
+
 void ZViewProj::setCanvasRect(const QRect &canvasRect)
 {
   m_canvasRect = canvasRect;
+  deprecateViewPort();
 }
 
 void ZViewProj::setWidgetRect(const QRect &widgetRect)
 {
   m_widgetRect = widgetRect;
+  deprecateViewPort();
 }
 
 void ZViewProj::setOffset(int x0, int y0)
 {
   m_x0 = x0;
   m_y0 = y0;
+  deprecateViewPort();
 }
 
 void ZViewProj::setZoom(double zoom)
 {
   m_zoom = zoom;
+  deprecateViewPort();
 }
 
-double ZViewProj::adjustProj(int vx, int cx, double px, double zoom)
+double ZViewProj::getZoom() const
+{
+  return m_zoom;
+}
+
+double ZViewProj::adjustProj(int vx, int cx, double px, double zoom) const
 {
   int dx = cx - vx;
   double newPx = px + dx * zoom;
@@ -53,7 +67,7 @@ double ZViewProj::adjustProj(int vx, int cx, double px, double zoom)
   return newPx;
 }
 
-double ZViewProj::adjustProjMin(int vx, int cx, double px, double zoom)
+double ZViewProj::adjustProjMin(int vx, int cx, double px, double zoom) const
 {
   double newPx = px;
 
@@ -64,7 +78,7 @@ double ZViewProj::adjustProjMin(int vx, int cx, double px, double zoom)
   return newPx;
 }
 
-double ZViewProj::adjustProjMax(int vx, int cx, double px, double zoom)
+double ZViewProj::adjustProjMax(int vx, int cx, double px, double zoom) const
 {
   double newPx = px;
 
@@ -77,11 +91,19 @@ double ZViewProj::adjustProjMax(int vx, int cx, double px, double zoom)
 
 QRectF ZViewProj::getProjRegion() const
 {
+  if (m_viewPort.isEmpty()) {
+    update();
+  }
+
   return m_projRegion;
 }
 
 QRect ZViewProj::getViewPort() const
 {
+  if (m_viewPort.isEmpty()) {
+    update();
+  }
+
   return m_viewPort;
 }
 
@@ -98,17 +120,23 @@ void ZViewProj::maximizeViewPort()
     setZoom(std::min(xZoom, yZoom));
     setOffset(m_canvasRect.left(), m_canvasRect.top());
   }
-
-  update();
 }
 
-void ZViewProj::updateZoom(double zoom)
+/*
+void ZViewProj::setZoom(double zoom)
 {
   setZoom(zoom);
   update();
 }
+*/
 
-void ZViewProj::updateZoom(double zoom, EReference ref)
+void ZViewProj::move(int dx, int dy)
+{
+  m_x0 += dx;
+  m_y0 += dy;
+}
+
+void ZViewProj::setZoom(double zoom, EReference ref)
 {
   if (zoom > 0) {
     if (ref == REF_CENTER) {
@@ -122,10 +150,48 @@ void ZViewProj::updateZoom(double zoom, EReference ref)
     }
   }
 
-  updateZoom(zoom);
+  setZoom(zoom);
 }
 
-void ZViewProj::updateZoomWithFixedPoint(
+double ZViewProj::getMaxZoomRatio() const
+{
+  if (isSourceValid()) {
+    return std::max(m_widgetRect.width() / 16, m_widgetRect.height() / 16);
+  }
+
+  return 0.0;
+}
+
+void ZViewProj::setZoomCapped(double zoom)
+{
+  double maxZoom = getMaxZoomRatio();
+  if (zoom > maxZoom) {
+    zoom = maxZoom;
+  }
+
+  setZoom(zoom);
+}
+
+void ZViewProj::increaseZoom() const
+{
+  setZoomCapped(m_zoom * 1.1);
+}
+
+void ZViewProj::decreaseZoom() const
+{
+  setZoomCapped(m_zoom / 1.1);
+}
+
+void ZViewProj::increaseZoom(int rx, int ry) const
+{
+  double zoom = m_zoom * 1.1;
+  if (zoom > maxZoom) {
+    zoom = maxZoom;
+  }
+  setZoomWithFixedPoint(zoom, QPoint(rx, ry));
+}
+
+void ZViewProj::setZoomWithFixedPoint(
     double zoom, QPoint viewPoint, QPointF projPoint)
 {
   if (zoom > 0) {
@@ -135,10 +201,35 @@ void ZViewProj::updateZoomWithFixedPoint(
     setOffset(viewPoint.x() - cx, viewPoint.y() - cy);
   }
 
-  updateZoom(zoom);
+  setZoom(zoom);
 }
 
-void ZViewProj::update()
+void ZViewProj::setZoomWithFixedPoint(double zoom, QPoint viewPoint)
+{
+  setZoomWithFixedPoint(zoom, viewPoint, mapPoint(viewPoint));
+}
+
+QPointF ZViewProj::mapPoint(const QPoint &p)
+{
+  double x = (p.x() - m_x0) * m_zoom;
+  double y = (p.y() - m_y0) * m_zoom;
+
+  return QPointF(x, y);
+}
+
+QPoint ZViewProj::mapPointBack(const QPointF &p)
+{
+  if (m_zoom <= 0) {
+    return QPoint(0, 0);
+  }
+
+  int x = iround(p.x() / m_zoom) + m_x0;
+  int y = iround(p.y() / m_zoom) + m_y0;
+
+  return QPoint(x, y);
+}
+
+void ZViewProj::update() const
 {
   m_projRegion = QRectF();
   m_viewPort = QRect();
