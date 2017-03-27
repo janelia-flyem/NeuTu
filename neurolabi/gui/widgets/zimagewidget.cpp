@@ -767,7 +767,6 @@ QRect ZImageWidget::canvasRegion() const
   return m_viewProj.getCanvasRect();
 }
 
-
 #define VIEW_PORT_AREA_THRESHOLD 25000000
 
 void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
@@ -1083,6 +1082,7 @@ void ZImageWidget::paintZoomHint()
     painter.drawRect(0, 0, ratio * canvasSize().width(),
                      ratio * canvasSize().height());
     painter.setPen(QPen(QColor(0, 255, 0, 128)));
+
     painter.drawRect(ratio * (viewPort().left() - canvasRegion().left()),
                      ratio * (viewPort().top() - canvasRegion().top()),
                      ratio * viewPort().width(), ratio * viewPort().height());

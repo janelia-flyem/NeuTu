@@ -151,6 +151,7 @@ void ZViewProj::setZoom(double zoom)
 }
 */
 
+
 void ZViewProj::move(int dx, int dy)
 {
   m_x0 += dx;
@@ -223,6 +224,7 @@ void ZViewProj::increaseZoom(int rx, int ry)
   double zoom = m_zoom * 1.1;
 
   double maxZoom = getMaxZoomRatio();
+
   if (zoom > maxZoom) {
     zoom = maxZoom;
   }

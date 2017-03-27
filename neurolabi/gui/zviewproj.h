@@ -26,7 +26,6 @@ public:
 
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
-
   double getZoom() const;
 
   QRectF getProjRegion() const;
@@ -51,6 +50,7 @@ public:
 
   void increaseZoom();
   void decreaseZoom();
+
 
   /*!
    * \brief Zooming with reference point

@@ -122,7 +122,6 @@ public:
   QRect viewPort() const;
   QRect canvasRegion() const;
 
-//  inline const QRect& canvasRegion() const { return m_canvasRegion; }
 
   /*!
    * \brief Map the widget coordinates to world coordinates
