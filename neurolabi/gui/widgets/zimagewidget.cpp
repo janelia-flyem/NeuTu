@@ -13,34 +13,9 @@
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
 
-ZImageWidget::ZImageWidget(QWidget *parent, ZImage *image) : QWidget(parent),
-  m_isViewHintVisible(true), m_freeMoving(false), m_hoverFocus(false),
-  m_smoothDisplay(false)
+ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
-  if (image != NULL) {
-    m_viewPort.setRect(0, 0, image->width(), image->height());
-  }
-
-  m_projRegion.setRect(0, 0, 0, 0);
-
-  //m_zoomRatio = 1;
-
-  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-  setAttribute(Qt::WA_OpaquePaintEvent);
-  //setAttribute(Qt::WA_NoSystemBackground);
-  setImage(image);
-  setCursor(Qt::CrossCursor);
-  setMouseTracking(true);
-  m_leftButtonMenu = new QMenu(this);
-  m_rightButtonMenu = new QMenu(this);
-  m_paintBundle = NULL;
-  m_tileCanvas = NULL;
-  m_objectCanvas = NULL;
-  m_dynamicObjectCanvas = NULL;
-  m_activeDecorationCanvas = NULL;
-//  m_widgetCanvas = NULL;
-
-  m_sliceAxis = NeuTube::Z_AXIS;
+  init();
 }
 
 ZImageWidget::~ZImageWidget()
@@ -56,6 +31,40 @@ ZImageWidget::~ZImageWidget()
 //      delete m_image;
 //    }
 //  }
+}
+
+void ZImageWidget::init()
+{
+  m_isViewHintVisible = true;
+  m_freeMoving = false;
+  m_hoverFocus = false;
+  m_smoothDisplay = false;
+
+#if 0
+  if (image != NULL) {
+    m_viewPort.setRect(0, 0, image->width(), image->height());
+  }
+
+  m_projRegion.setRect(0, 0, 0, 0);
+#endif
+  //m_zoomRatio = 1;
+
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  setAttribute(Qt::WA_OpaquePaintEvent);
+  //setAttribute(Qt::WA_NoSystemBackground);
+  setImage(NULL);
+  setCursor(Qt::CrossCursor);
+  setMouseTracking(true);
+  m_leftButtonMenu = new QMenu(this);
+  m_rightButtonMenu = new QMenu(this);
+  m_paintBundle = NULL;
+  m_tileCanvas = NULL;
+  m_objectCanvas = NULL;
+  m_dynamicObjectCanvas = NULL;
+  m_activeDecorationCanvas = NULL;
+//  m_widgetCanvas = NULL;
+
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
@@ -83,9 +92,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     //Compute real viewport and projregion
 //#ifdef _DEBUG_
     //setView(m_zoomRatio, m_viewPort.topLeft());
-    if (m_projRegion.isEmpty() || m_viewPort.isEmpty()) {
+#if 0
+    if (!m_viewProj.isValid()) {
       setView(1, QPoint(0, 0));
     }
+#endif
 //#endif
 
     /* draw gray regions */
@@ -94,7 +105,8 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 //    QSize size = projectSize();
 
     if (m_image != NULL) {
-      painter.drawImage(m_projRegion, *m_image, m_viewPort);
+      painter.drawImage(
+            m_viewProj, *m_image);
 #ifdef _DEBUG_2
       m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
@@ -105,7 +117,8 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 #ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
+      painter.drawPixmap(m_viewProj, *m_tileCanvas);
+//      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
     }
     //std::cout << "paint tile canvas: " << toc() << std::endl;
 
@@ -113,8 +126,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     //tic();
     for (int i = 0; i < m_mask.size(); ++i) {
       if (m_mask[i] != NULL) {
-        painter.drawImage(//QRect(0, 0, size.width(), size.height()),
-                          m_projRegion, *(m_mask[i]), m_viewPort);
+        painter.drawImage(m_viewProj, *(m_mask[i]));
       }
     }
     //std::cout << "paint object canvas: " << toc() << std::endl;
@@ -140,7 +152,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
       if (m_objectCanvas->isVisible()) {
-        painter.drawPixmap(m_projRegion, *m_objectCanvas, m_viewPort);
+        painter.drawPixmap(m_viewProj, *m_objectCanvas);
       }
     }
     //std::cout << "paint object canvas: " << toc() << std::endl;
@@ -226,6 +238,7 @@ void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
   m_activeDecorationCanvas = canvas;
 }
 
+#if 0
 void ZImageWidget::setViewPort(const QRect &rect)
 {
   setValidViewPort(rect);
@@ -235,7 +248,9 @@ void ZImageWidget::setViewPort(const QRect &rect)
   }
   */
 }
+#endif
 
+/*
 void ZImageWidget::setProjRegion(const QRectF &rect)
 {
   if (m_projRegion != rect) {
@@ -251,7 +266,9 @@ void ZImageWidget::setView(const QRect &viewPort, const QRectF &projRegion)
     m_projRegion = projRegion;
   }
 }
+*/
 
+#if 0
 void ZImageWidget::adjustViewPort(EViewPortAdjust option)
 {
   m_viewPort = adjustViewPort(m_viewPort, option);
@@ -297,7 +314,9 @@ QRect ZImageWidget::adjustViewPort(const QRect &viewPort, EViewPortAdjust option
 
   return newViewPort;
 }
+#endif
 
+#if 0
 void ZImageWidget::maximizeViewPort()
 {
   double wRatio = (double) m_viewPort.width() / projectRegion().width();
@@ -322,7 +341,9 @@ void ZImageWidget::maximizeViewPort()
     }
   }
 }
+#endif
 
+#if 0
 void ZImageWidget::alignProjRegion(double ratio)
 {
   m_projRegion.setWidth(m_viewPort.width() * ratio);
@@ -433,10 +454,14 @@ void ZImageWidget::adjustProjRegion()
 {
   adjustProjRegion(m_viewPort);
 }
+#endif
+
 
 void ZImageWidget::zoom(
     double zoomRatio, const QPointF &ref, EViewPortAdjust option)
 {
+  m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));
+#if 0
   if (zoomRatio < 1.0) {
     zoomRatio = 1.0;
   }
@@ -460,10 +485,13 @@ void ZImageWidget::zoom(
   m_viewPort = alignViewPort(viewPort, iround(vx), iround(vy),
                              iround(ref.x()), iround(ref.y()));
   adjustViewPort(option);
+#endif
 }
 
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
+  m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));
+#if 0
   if (zoomRatio < 1.0) {
     zoomRatio = 1.0;
   }
@@ -493,9 +521,10 @@ void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
   maximizeViewPort();
 
   //setValidViewPort(viewPort);
+#endif
 }
 
-
+#if 0
 void ZImageWidget::setValidViewPort(const QRect &viewPort)
 {
   QRect newViewPort = viewPort;
@@ -528,7 +557,7 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
     int height = iround(screenSize().height() / wRatio);
     int margin = (height - viewPort.height()) / 2; //expand both sides
     int top = newViewPort.top() - margin;
-    if (top < m_canvasRegion.top()) {
+    if (top < canvasRegion().top()) {
       top = m_canvasRegion.top();
     }
     newViewPort.setTop(top);
@@ -556,19 +585,25 @@ void ZImageWidget::setValidViewPort(const QRect &viewPort)
 
   setView(newViewPort, projRect);
 }
+#endif
 
 void ZImageWidget::setView(double zoomRatio, const QPoint &zoomOffset)
 {
+  m_viewProj.set(zoomOffset, zoomRatio);
+#if 0
   QRect viewPort;
   viewPort.setTopLeft(zoomOffset);
   viewPort.setSize(QSize(iround(canvasSize().width() / zoomRatio),
                    iround(canvasSize().height() / zoomRatio)));
 
   setValidViewPort(viewPort);
+#endif
 }
 
 void ZImageWidget::setViewPortOffset(int x, int y)
 {
+  m_viewProj.setOffset(x, y);
+#if 0
   x -= m_canvasRegion.left();
   y -= m_canvasRegion.top();
 
@@ -598,10 +633,13 @@ void ZImageWidget::setViewPortOffset(int x, int y)
                     y + m_canvasRegion.top(),
                     m_viewPort.width(), m_viewPort.height()));
                     */
+#endif
 }
 
 void ZImageWidget::setZoomRatio(double zoomRatio)
 {
+  m_viewProj.setZoom(zoomRatio);
+#if 0
 #if 0
   zoomRatio = std::max(zoomRatio, 1);
   zoomRatio = std::min(getMaxZoomRatio(), zoomRatio);
@@ -616,10 +654,13 @@ void ZImageWidget::setZoomRatio(double zoomRatio)
   zoomRatio = std::min(double(getMaxZoomRatio()), zoomRatio);
   zoom(zoomRatio);
   update();
+#endif
 }
 
+
+#if 0
 void ZImageWidget::zoomWithWidthAligned(int x0, int x1, int cy)
-{
+{  
   m_viewPort.setLeft(x0);
   m_viewPort.setRight(x1);
 
@@ -704,11 +745,39 @@ void ZImageWidget::zoomWithHeightAligned(int y0, int y1, double ph, int cx)
 
   update();
 }
+#endif
+
+QSizeF ZImageWidget::projectSize() const
+{
+  return projectRegion().size();
+}
+
+QRectF ZImageWidget::projectRegion() const
+{
+  return m_viewProj.getProjRegion();
+}
+
+QRect ZImageWidget::viewPort() const
+{
+  return m_viewProj.getViewPort();
+}
+
+QRect ZImageWidget::canvasRegion() const
+{
+  return m_viewProj.getCanvasRect();
+}
+
 
 #define VIEW_PORT_AREA_THRESHOLD 25000000
 
 void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 {
+  if (usingRef) {
+    m_viewProj.increaseZoom(x, y);
+  } else {
+    m_viewProj.increaseZoom();
+  }
+#if 0
   double zoomRatio = std::max(
         static_cast<double>(canvasSize().width()) /m_viewPort.width(),
         static_cast<double>(canvasSize().height()) / m_viewPort.height());
@@ -730,10 +799,19 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     }
     update();
   }
+#endif
+
 }
 
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 {
+  if (usingRef) {
+    m_viewProj.decreaseZoom(x, y);
+  } else {
+    m_viewProj.decreaseZoom();
+  }
+
+#if 0
 //  int oldWidth = m_viewPort.width();
 //  int oldHeight = m_viewPort.height();
 
@@ -779,6 +857,8 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 
     update();
   }
+#endif
+
 }
 
 void ZImageWidget::increaseZoomRatio()
@@ -846,11 +926,14 @@ void ZImageWidget::decreaseZoomRatio()
 
 void ZImageWidget::moveViewPort(int x, int y)
 {
-  setViewPortOffset(m_viewPort.left() + x, m_viewPort.top() + y);
+  m_viewProj.move(x, y);
+//  setViewPortOffset(m_viewPort.left() + x, m_viewPort.top() + y);
 }
 
 void ZImageWidget::zoom(double zoomRatio)
 {
+  m_viewProj.setZoom(zoomRatio);
+#if 0
   if (zoomRatio <= 1.0) {
     setViewPort(m_canvasRegion);
     if (canvasSize().width() * screenSize().height() >=
@@ -870,8 +953,10 @@ void ZImageWidget::zoom(double zoomRatio)
 
     zoom(zoomRatio, ref);
   }
+#endif
 }
 
+#if 0
 void ZImageWidget::zoom(double zoomRatio, EViewPortAdjust option)
 {
   if (zoomRatio <= 1.0) {
@@ -883,11 +968,13 @@ void ZImageWidget::zoom(double zoomRatio, EViewPortAdjust option)
     zoom(zoomRatio, ref, option);
   }
 }
+#endif
 
 void ZImageWidget::paintObject()
 {
   if (m_paintBundle) {
-    double zoomRatio = projectSize().width() * 1.0 / m_viewPort.width();
+    double zoomRatio = m_viewProj.getZoom();
+//    double zoomRatio =  double(projectSize()).width() / m_viewPort.width();
     ZPainter painter;
     ZStackObjectPainter paintHelper;
 
@@ -905,8 +992,8 @@ void ZImageWidget::paintObject()
     painter.setRenderHints(QPainter::Antialiasing/* | QPainter::HighQualityAntialiasing*/);
 
     QTransform transform;
-    transform.translate((0.5 - m_viewPort.left())*zoomRatio,
-                        (0.5 - m_viewPort.top())*zoomRatio);
+    transform.translate((0.5 - viewPort().left())*zoomRatio,
+                        (0.5 - viewPort().top())*zoomRatio);
     transform.scale(zoomRatio, zoomRatio);
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
@@ -987,8 +1074,8 @@ void ZImageWidget::paintZoomHint()
 
   painter.setRenderHint(QPainter::Antialiasing, false);
   //if (m_zoomRatio > 1 && m_isViewHintVisible) {
-  if ((m_viewPort.size().width() < canvasSize().width()
-       || m_viewPort.size().height() < canvasSize().height()) &&
+  if ((viewPort().size().width() < canvasSize().width()
+       || viewPort().size().height() < canvasSize().height()) &&
       m_isViewHintVisible) {
     painter.setPen(QPen(QColor(0, 0, 255, 128)));
     double ratio = (double) projectSize().width() /
@@ -996,9 +1083,9 @@ void ZImageWidget::paintZoomHint()
     painter.drawRect(0, 0, ratio * canvasSize().width(),
                      ratio * canvasSize().height());
     painter.setPen(QPen(QColor(0, 255, 0, 128)));
-    painter.drawRect(ratio * (m_viewPort.left() - m_canvasRegion.left()),
-                     ratio * (m_viewPort.top() - m_canvasRegion.top()),
-                     ratio * m_viewPort.width(), ratio * m_viewPort.height());
+    painter.drawRect(ratio * (viewPort().left() - canvasRegion().left()),
+                     ratio * (viewPort().top() - canvasRegion().top()),
+                     ratio * viewPort().width(), ratio * viewPort().height());
   }
 }
 
@@ -1016,16 +1103,18 @@ QSize ZImageWidget::minimumSizeHint() const
 
 QSize ZImageWidget::sizeHint() const
 {
-  if (m_projRegion.size().isEmpty()) {
+  if (projectRegion().size().isEmpty()) {
     return minimumSizeHint();
   } else {
-    return QSize(std::ceil(m_projRegion.width()),
-                 std::ceil(m_projRegion.height()));
+    return QSize(std::ceil(projectRegion().width()),
+                 std::ceil(projectRegion().height()));
   }
 }
 
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
+  m_viewProj.setCanvasRect(QRect(x0, y0, w, h));
+#if 0
   if ((m_canvasRegion.left() != x0) || (m_canvasRegion.top() != y0) ||
       (m_canvasRegion.width() != w) || (m_canvasRegion.height() != h)) {
     m_canvasRegion.setLeft(x0);
@@ -1037,7 +1126,7 @@ void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 //    m_viewPort.setSize(QSize(0, 0));
 //    m_projRegion.setSize(QSize(0, 0));
   }
-
+#endif
   /*
   if (m_viewPort.width() == 0) {
     m_viewPort = m_canvasRegion;
@@ -1073,21 +1162,13 @@ QSize ZImageWidget::screenSize() const
   if (canvasSize().isEmpty()) {
     return QSize(0, 0);
   } else {
-    /*
-    int width;
-    int height;
-    Raster_Ratio_Scale(m_image->width(), m_image->height(),
-                       this->width(), this->height(), &width, &height);
-
-    return QSize(width, height);
-    */
     return size();
   }
 }
 
 QSize ZImageWidget::canvasSize() const
 {
-  return m_canvasRegion.size();
+  return canvasRegion().size();
   /*
   if (m_image == NULL) {
     return getMaskSize();
@@ -1110,10 +1191,10 @@ QPointF ZImageWidget::worldCoordinate(QPoint widgetCoord) const
   QPointF pt;
 
   if (csize.width() > 0 && csize.height() > 0) {
-    pt.setX(static_cast<double>(widgetCoord.x() * (m_viewPort.width()))/
-            (csize.width()) + m_viewPort.left() - 0.5);
-    pt.setY(static_cast<double>(widgetCoord.y() * (m_viewPort.height()))/
-            (csize.height()) + m_viewPort.top() - 0.5);
+    pt.setX(static_cast<double>(widgetCoord.x() * (viewPort().width()))/
+            (csize.width()) + viewPort().left() - 0.5);
+    pt.setY(static_cast<double>(widgetCoord.y() * (viewPort().height()))/
+            (csize.height()) + viewPort().top() - 0.5);
   }
 
   return pt;
@@ -1191,7 +1272,8 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
-  setValidViewPort(m_viewPort);
+  m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
+//  setValidViewPort(m_viewPort);
 }
 
 void ZImageWidget::keyPressEvent(QKeyEvent *event)
@@ -1226,16 +1308,20 @@ int ZImageWidget::getMaxZoomRatio() const
 
 double ZImageWidget::getAcutalZoomRatioX() const
 {
-  return static_cast<double>(m_projRegion.width()) / m_viewPort.width();
+  return m_viewProj.getZoom();
+//  return static_cast<double>(m_projRegion.width()) / m_viewPort.width();
 }
 
 double ZImageWidget::getAcutalZoomRatioY() const
 {
-  return static_cast<double>(m_projRegion.height()) / m_viewPort.height();
+  return m_viewProj.getZoom();
+//  return static_cast<double>(m_projRegion.height()) / m_viewPort.height();
 }
 
+#if 0
 double ZImageWidget::getActualOffsetX() const
 {
+
   return static_cast<double>(
         m_viewPort.left() * m_projRegion.right() -
         m_viewPort.right() * m_projRegion.left()) / m_viewPort.width();
@@ -1247,6 +1333,7 @@ double ZImageWidget::getActualOffsetY() const
         m_viewPort.top() * m_projRegion.bottom() -
         m_viewPort.bottom() * m_projRegion.top()) / m_viewPort.height();
 }
+#endif
 
 void ZImageWidget::updateView()
 {
@@ -1317,7 +1404,8 @@ void ZImageWidget::reset()
   m_activeDecorationCanvas = NULL;
   m_dynamicObjectCanvas = NULL;
 
-  m_viewPort.setSize(QSize(0, 0));
-  m_canvasRegion.setSize(QSize(0, 0));
-  m_projRegion.setSize(QSize(0, 0));
+  m_viewProj.reset();
+//  m_viewPort.setSize(QSize(0, 0));
+//  m_canvasRegion.setSize(QSize(0, 0));
+//  m_projRegion.setSize(QSize(0, 0));
 }

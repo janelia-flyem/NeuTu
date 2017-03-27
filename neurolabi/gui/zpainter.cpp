@@ -13,6 +13,7 @@
 #include "tz_math.h"
 #include "zpixmap.h"
 #include "zrect2d.h"
+#include "zviewproj.h"
 
 ZPainter::ZPainter() : m_z(0), m_isPainted(false)
 {
@@ -231,6 +232,13 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
   }
 }
 
+void ZPainter::drawImage(const ZViewProj &viewProj, const ZImage &image)
+{
+  if (viewProj.isSourceValid()) {
+    drawImage(viewProj.getProjRegion(), image, viewProj.getViewPort());
+  }
+}
+
 void ZPainter::drawPixmap(
     const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect)
 {
@@ -242,6 +250,11 @@ void ZPainter::drawPixmap(
 
     setPainted(true);
   }
+}
+
+void ZPainter::drawPixmap(const ZViewProj &viewProj, const ZPixmap &image)
+{
+  drawPixmap(viewProj.getProjRegion(), image, viewProj.getViewPort());
 }
 
 void ZPainter::drawPixmap(const QRectF &targetRect, const ZPixmap &image)

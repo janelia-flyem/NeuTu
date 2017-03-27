@@ -15,7 +15,7 @@ TEST(ZViewProj, basic)
   ASSERT_TRUE(viewProj.getViewPort().isNull());
 
   viewProj.setCanvasRect(QRect(0, 0, 100, 200));
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_FALSE(viewProj.isValid());
   ASSERT_TRUE(viewProj.getProjRegion().isNull());
@@ -25,7 +25,7 @@ TEST(ZViewProj, basic)
   viewProj.setWidgetRect(QRect(0, 0, 100, 200));
   viewProj.setZoom(1);
 
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_TRUE(viewProj.isValid());
   ASSERT_TRUE(viewProj.getProjRegion().isValid());
@@ -43,7 +43,7 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(200, viewProj.getProjRegion().height());
 
   viewProj.setZoom(2);
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_TRUE(viewProj.isValid());
   ASSERT_TRUE(viewProj.getProjRegion().isValid());
@@ -62,7 +62,7 @@ TEST(ZViewProj, basic)
 
 
   viewProj.setCanvasRect(QRect(0, 0, 100, 100));
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_EQ(0, viewProj.getViewPort().left());
   ASSERT_EQ(0, viewProj.getViewPort().top());
@@ -76,7 +76,7 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(200, viewProj.getProjRegion().height());
 
   viewProj.setCanvasRect(QRect(0, 0, 100, 300));
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_EQ(0, viewProj.getViewPort().left());
   ASSERT_EQ(0, viewProj.getViewPort().top());
@@ -90,7 +90,7 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(200, viewProj.getProjRegion().height());
 
   viewProj.setCanvasRect(QRect(0, 0, 200, 300));
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_EQ(0, viewProj.getViewPort().left());
   ASSERT_EQ(0, viewProj.getViewPort().top());
@@ -105,7 +105,7 @@ TEST(ZViewProj, basic)
 
   viewProj.setCanvasRect(QRect(30, 50, 200, 300));
   viewProj.setZoom(1);
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_EQ(30, viewProj.getViewPort().left());
   ASSERT_EQ(50, viewProj.getViewPort().top());
@@ -119,7 +119,7 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(150, viewProj.getProjRegion().height());
 
   viewProj.setZoom(2);
-  viewProj.update();
+//  viewProj.update();
 
   ASSERT_EQ(30, viewProj.getViewPort().left());
   ASSERT_EQ(50, viewProj.getViewPort().top());
@@ -131,6 +131,28 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(100, viewProj.getProjRegion().top());
   ASSERT_DOUBLE_EQ(40, viewProj.getProjRegion().width());
   ASSERT_DOUBLE_EQ(100, viewProj.getProjRegion().height());
+
+  viewProj.setCanvasRect(QRect(0, 0, 100, 200));
+  viewProj.setWidgetRect(QRect(0, 0, 100, 200));
+  viewProj.setZoom(2);
+
+  QPoint pt = viewProj.mapPointBack(QPointF(10, 10));
+  ASSERT_EQ(QPoint(5, 5), pt);
+
+  viewProj.setZoomWithFixedPoint(1, QPoint(10, 20), QPointF(50, 80));
+  QPointF pt2 = viewProj.mapPoint(QPoint(10, 20));
+  pt = viewProj.mapPointBack(QPointF(50, 80));
+  ASSERT_DOUBLE_EQ(50.0, pt2.x());
+  ASSERT_DOUBLE_EQ(80.0, pt2.y());
+  ASSERT_EQ(QPoint(10, 20), pt);
+
+  viewProj.setOffset(0, 0);
+  viewProj.setZoomWithFixedPoint(1, QPoint(10, 20), QPointF(50, 80));
+  pt2 = viewProj.mapPoint(QPoint(10, 20));
+  pt = viewProj.mapPointBack(QPointF(50, 80));
+  ASSERT_DOUBLE_EQ(50.0, pt2.x());
+  ASSERT_DOUBLE_EQ(80.0, pt2.y());
+  ASSERT_EQ(QPoint(10, 20), pt);
 
 }
 
