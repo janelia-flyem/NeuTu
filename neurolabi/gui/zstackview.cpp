@@ -2344,6 +2344,7 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
   }
 }
 
+#if 0
 void ZStackView::zoomWithWidthAligned(int x0, int x1, int cy)
 {
   imageWidget()->zoomWithWidthAligned(x0, x1, cy);
@@ -2371,6 +2372,7 @@ void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz
   blockSignals(false);
   processViewChange(true, depthChanged);
 }
+#endif
 
 ZIntPoint ZStackView::getCenter(NeuTube::ECoordinateSystem coordSys) const
 {
@@ -2415,13 +2417,19 @@ QRectF ZStackView::getProjRegion() const
   return m_imageWidget->projectRegion();
 }
 
+ZViewProj ZStackView::getViewProj() const
+{
+  return m_imageWidget->getViewProj();
+}
+
 ZStackViewParam ZStackView::getViewParameter(
     NeuTube::ECoordinateSystem coordSys, NeuTube::View::EExploreAction action) const
 {
   ZStackViewParam param(coordSys);
   param.setZ(getZ(coordSys));
-  param.setViewPort(getViewPort(coordSys));
-  param.setProjRect(getProjRegion());
+  param.setViewProj(getViewProj());
+//  param.setViewPort(getViewPort(coordSys));
+//  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
   //param.setViewPort(imageWidget()->viewPort());
@@ -2513,16 +2521,15 @@ void ZStackView::setView(const ZStackViewParam &param)
 
     bool depthChanged = false;
     int slice = param.getZ();
-    QRect viewPort = param.getViewPort();
+//    QRect viewPort = param.getViewPort();
 
+    ZViewProj viewProj = param.getViewProj();
 
     switch (param.getCoordinateSystem()) {
     case NeuTube::COORD_RAW_STACK:
     {
-      viewPort.translate(QPoint(box.getFirstCorner().getX(),
-                                box.getFirstCorner().getY()));
-//      m_imageWidget->setViewPort(param.getViewPort());
-//      setSliceIndexQuietly(param.getZ());
+      viewProj.move(box.getFirstCorner().getX(),
+                    box.getFirstCorner().getY());
     }
       break;
     case NeuTube::COORD_STACK:
@@ -2536,7 +2543,8 @@ void ZStackView::setView(const ZStackViewParam &param)
       break;
     }
 
-    m_imageWidget->setViewPort(viewPort);
+    m_imageWidget->setViewProj(viewProj);
+//    m_imageWidget->setViewPort(viewPort);
 
     if (param.fixingZ() == false) {
       if (slice != m_depthControl->value()) {

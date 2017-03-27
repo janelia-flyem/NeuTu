@@ -60,7 +60,7 @@ public:
     VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
   };
 
-  void setViewPort(const QRect &rect);
+//  void setViewPort(const QRect &rect);
   void setProjRegion(const QRectF &rect);
   void setView(double zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRectF &projRegion);
@@ -72,6 +72,14 @@ public:
    * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
    */
   void setViewPortOffset(int x, int y);
+
+  const ZViewProj& getViewProj() const {
+    return m_viewProj;
+  }
+
+  void setViewProj(const ZViewProj &viewProj) {
+    m_viewProj = viewProj;
+  }
 
   /*!
    * \brief Move viewport.
@@ -98,11 +106,11 @@ public:
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
   void zoom(double zoomRatio, const QPointF &ref);
-  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
+//  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
 
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 

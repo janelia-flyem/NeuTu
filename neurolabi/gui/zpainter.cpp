@@ -235,7 +235,7 @@ void ZPainter::drawImage(int x, int y, const ZImage &image)
 void ZPainter::drawImage(const ZViewProj &viewProj, const ZImage &image)
 {
   if (viewProj.isSourceValid()) {
-    drawImage(viewProj.getProjRegion(), image, viewProj.getViewPort());
+    drawImage(viewProj.getProjRect(), image, viewProj.getViewPort());
   }
 }
 
@@ -254,7 +254,7 @@ void ZPainter::drawPixmap(
 
 void ZPainter::drawPixmap(const ZViewProj &viewProj, const ZPixmap &image)
 {
-  drawPixmap(viewProj.getProjRegion(), image, viewProj.getViewPort());
+  drawPixmap(viewProj.getProjRect(), image, viewProj.getViewPort());
 }
 
 void ZPainter::drawPixmap(const QRectF &targetRect, const ZPixmap &image)

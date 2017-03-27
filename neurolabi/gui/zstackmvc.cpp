@@ -548,6 +548,14 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
 void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 {
+  ZStackViewParam param = view->getViewParameter();
+
+  ZIntPoint center = view->getViewCenter();
+  center.shiftSliceAxis(getView()->getSliceAxis());
+
+  view->setViewProj(param.getViewProj().getOffsetX(), center.getY(), param.getZ());
+
+#if 0
   ZIntPoint center = view->getViewCenter();
 
   center.shiftSliceAxis(getView()->getSliceAxis());
@@ -559,6 +567,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
   zoomWithWidthAligned(refViewPort.left(), refViewPort.right(),
                        view->getProjRegion().width(),
                        center.getY(), center.getZ());
+#endif
 }
 
 void ZStackMvc::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)

@@ -22,13 +22,14 @@ public:
   void setCanvasRect(const QRect &canvasRect);
   void setWidgetRect(const QRect &widgetRect);
   void setOffset(int x0, int y0);
+  void setOffset(const QPoint &offset);
   void setZoom(double zoom);
 
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
   double getZoom() const;
 
-  QRectF getProjRegion() const;
+  QRectF getProjRect() const;
   QRect getViewPort() const;
 
   bool isValid() const;
@@ -50,6 +51,8 @@ public:
 
   void increaseZoom();
   void decreaseZoom();
+
+  void setViewPort(const QRect &rect);
 
 
   /*!

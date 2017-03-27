@@ -59,6 +59,11 @@ void ZViewProj::setOffset(int x0, int y0)
   deprecateViewPort();
 }
 
+void ZViewProj::setOffset(const QPoint &offset)
+{
+  setOffset(offset.x(), offset.y());
+}
+
 void ZViewProj::setZoom(double zoom)
 {
   m_zoom = zoom;
@@ -110,13 +115,22 @@ double ZViewProj::adjustProjMax(int vx, int cx, double px, double zoom) const
   return newPx;
 }
 
-QRectF ZViewProj::getProjRegion() const
+QRectF ZViewProj::getProjRect() const
 {
   if (m_viewPort.isEmpty()) {
     update();
   }
 
   return m_projRegion;
+}
+
+void ZViewProj::setViewPort(const QRect &rect)
+{
+  if (rect.isValid()) {
+  setOffset(rect.topLeft());
+  setZoom(std::min((double) (m_canvasRect.width()) / rect.width(),
+                   (double) (m_canvasRect.height()) / rect.height()));
+  }
 }
 
 QRect ZViewProj::getViewPort() const
@@ -164,7 +178,7 @@ void ZViewProj::setZoom(double zoom, EReference ref)
     if (ref == REF_CENTER) {
       update();
       QPoint viewCenter = getViewPort().center();
-      QPointF projCenter = getProjRegion().center();
+      QPointF projCenter = getProjRect().center();
       int cx = iround(projCenter.x() / zoom);
       int cy = iround(projCenter.y() / zoom);
 

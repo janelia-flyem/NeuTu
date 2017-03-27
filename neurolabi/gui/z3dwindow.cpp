@@ -3279,10 +3279,10 @@ void Z3DWindow::locateSwcNodeIn2DView()
       if (radius < minRadius) {
         radius = minRadius;
       }
+      int width = radius * 2 + 1;
 
       ZStackViewParam param(NeuTube::COORD_STACK);
-      param.setViewPort(iround(cx - radius), iround(cy - radius),
-                        iround(cx + radius), iround(cy + radius));
+      param.setViewPort(QRect(cx - radius, cy - radius, width, width));
       param.setZ(iround(cz));
       emit locating2DViewTriggered(param);
     }
@@ -3295,14 +3295,15 @@ void Z3DWindow::locate2DView(const ZPoint &center, double radius)
   if (radius < minRadius) {
     radius = minRadius;
   }
+  int width = radius * 2 + 1;
 
   ZStackViewParam param(NeuTube::COORD_STACK);
 
   double cx = center.getX();
   double cy = center.getY();
   double cz = center.getZ();
-  param.setViewPort(iround(cx - radius), iround(cy - radius),
-                    iround(cx + radius), iround(cy + radius));
+  param.setViewPort(
+        QRect(iround(cx - radius), iround(cy - radius), width, width));
   param.setZ(iround(cz));
 
   emit locating2DViewTriggered(param);

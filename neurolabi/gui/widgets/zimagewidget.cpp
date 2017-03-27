@@ -456,7 +456,7 @@ void ZImageWidget::adjustProjRegion()
 }
 #endif
 
-
+#if 0
 void ZImageWidget::zoom(
     double zoomRatio, const QPointF &ref, EViewPortAdjust option)
 {
@@ -487,6 +487,7 @@ void ZImageWidget::zoom(
   adjustViewPort(option);
 #endif
 }
+#endif
 
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
@@ -661,6 +662,8 @@ void ZImageWidget::setZoomRatio(double zoomRatio)
 #if 0
 void ZImageWidget::zoomWithWidthAligned(int x0, int x1, int cy)
 {  
+  m_viewProj.setLeftOffset(x0);
+
   m_viewPort.setLeft(x0);
   m_viewPort.setRight(x1);
 
@@ -754,7 +757,7 @@ QSizeF ZImageWidget::projectSize() const
 
 QRectF ZImageWidget::projectRegion() const
 {
-  return m_viewProj.getProjRegion();
+  return m_viewProj.getProjRect();
 }
 
 QRect ZImageWidget::viewPort() const
